@@ -1,0 +1,1 @@
+rendere editabile RGBWColor
