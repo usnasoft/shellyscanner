@@ -60,9 +60,9 @@ public class PanelFWUpdate extends AbstractSettingsPanel {
 		table = new ExTooltipTable(tModel) {
 			private static final long serialVersionUID = 1L;
 			{
-				((JComponent) getDefaultRenderer(Boolean.class)).setOpaque(true);
-//				getColumnModel().getColumn(COL_UPDATE_IND).setCellRenderer(getDefaultRenderer(Boolean.class));
-//				getColumnModel().getColumn(COL_BETA_IND).setCellRenderer(getDefaultRenderer(Boolean.class));
+//				((JComponent) getDefaultRenderer(Boolean.class)).setOpaque(true);
+				getColumnModel().getColumn(COL_UPDATE_IND).setCellRenderer(getDefaultRenderer(Boolean.class));
+				getColumnModel().getColumn(COL_BETA_IND).setCellRenderer(getDefaultRenderer(Boolean.class));
 			}
 
 			@Override
@@ -73,7 +73,9 @@ public class PanelFWUpdate extends AbstractSettingsPanel {
 			@Override
 			public Component prepareRenderer(TableCellRenderer renderer, int row, int column) {
 				Component comp = super.prepareRenderer(renderer, row, column);
-				comp.setEnabled(getValueAt(row, column) != null);
+				if(column == COL_UPDATE_IND || column == COL_BETA_IND) {
+					comp.setEnabled(getValueAt(row, column) != null);
+				}
 				return comp;
 			}
 
@@ -160,6 +162,9 @@ public class PanelFWUpdate extends AbstractSettingsPanel {
 		btnCheck.setHorizontalAlignment(SwingConstants.RIGHT);
 		panel.add(btnCheck);
 		btnCheck.addActionListener(event -> {
+			btnUnselectAll.setEnabled(false);
+			btnSelectStable.setEnabled(false);
+			btnSelectBeta.setEnabled(false);
 			exeService.execute(() -> {
 				setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 				fwModule.parallelStream().filter(fw-> fw != null).forEach(fw -> {
@@ -177,9 +182,6 @@ public class PanelFWUpdate extends AbstractSettingsPanel {
 
 	private void fill() {
 		tModel.clear();
-		btnUnselectAll.setEnabled(false);
-		btnSelectStable.setEnabled(false);
-		btnSelectBeta.setEnabled(false);
 		boolean globalStable = false;
 		boolean globalBeta = false;
 		for(int i = 0; i < devices.size(); i++) {
@@ -207,6 +209,9 @@ public class PanelFWUpdate extends AbstractSettingsPanel {
 
 	@Override
 	public String showing() throws InterruptedException {
+		btnUnselectAll.setEnabled(false);
+		btnSelectStable.setEnabled(false);
+		btnSelectBeta.setEnabled(false);
 		final int size = devices.size();
 		fwModule = Arrays.asList(new FirmwareManager[size]);
 		try {
