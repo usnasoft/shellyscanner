@@ -21,6 +21,7 @@ import javax.swing.JTextField;
 import it.usna.shellyscan.Main;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.WIFIManager;
+import it.usna.shellyscan.view.util.Msg;
 import it.usna.shellyscan.view.util.UtilCollecion;
 
 public class PanelWIFI extends AbstractSettingsPanel {
@@ -245,7 +246,7 @@ public class PanelWIFI extends AbstractSettingsPanel {
 
 	@Override
 	public String showing() throws InterruptedException {
-		String exclude = "<html>";
+		String exclude = "<html>" + LABELS.getString("dlgExcludedDevicesMsg");
 		int excludeCount = 0;
 		ShellyAbstractDevice d = null;
 		fwModule.clear();
@@ -295,10 +296,7 @@ public class PanelWIFI extends AbstractSettingsPanel {
 					fwModule.add(sta);
 				} catch(IOException | RuntimeException e) {
 					fwModule.add(null);
-					if(excludeCount > 0) {
-						exclude += "<br>";
-					}
-					exclude += UtilCollecion.getFullName(d);
+					exclude += "<br>" + UtilCollecion.getFullName(d);
 					excludeCount++;
 				}
 			}
@@ -308,7 +306,7 @@ public class PanelWIFI extends AbstractSettingsPanel {
 			if(excludeCount == devices.size()) {
 				return LABELS.getString("msgAllDevicesExcluded");
 			} else if (excludeCount > 0) {
-				JOptionPane.showMessageDialog(this, exclude, LABELS.getString("dlgExcludedDevicesTitle"), JOptionPane.WARNING_MESSAGE);
+				Msg.showHtmlMessageDialog(this, exclude, LABELS.getString("dlgExcludedDevicesTitle"), JOptionPane.WARNING_MESSAGE);
 			}
 			chckbxEnabled.setEnabled(true); // form is active
 			chckbxEnabled.setSelected(enabledGlobal);
