@@ -453,7 +453,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 
 	private Action settingsAction = new UsnaAction(this, "/images/Tool.png", "action_general_conf_tooltip", e -> {
 		List<ShellyAbstractDevice> devices = Arrays.stream(devicesTable.getSelectedRows()).mapToObj(i -> model.get(devicesTable.convertRowIndexToModel(i))).collect(Collectors.toList());
-		new DialogDeviceSettings(MainView.this, devices);
+		new DialogDeviceSettings(MainView.this, model, devices);
 	});
 	
 	private Action eraseFilterAction = new UsnaAction(this, "/images/erase-9-16.png", null, e -> {

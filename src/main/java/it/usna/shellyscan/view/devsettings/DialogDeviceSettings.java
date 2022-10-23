@@ -37,7 +37,7 @@ public class DialogDeviceSettings extends JDialog {
 	private AbstractSettingsPanel currentPanel = null;
 	private ExecutorService exeService = Executors.newFixedThreadPool(1);
 
-	public DialogDeviceSettings(final MainView owner, List<ShellyAbstractDevice> devices) {
+	public DialogDeviceSettings(final MainView owner, Devices model, List<ShellyAbstractDevice> devices) {
 		super(owner, false);
 		if(devices.size() > 1) {
 			setTitle(Main.LABELS.getString("dlgSetTitle"));
@@ -56,7 +56,7 @@ public class DialogDeviceSettings extends JDialog {
 		Gen devTypes = getTypes(devices);
 		PanelFWUpdate panelFW = new PanelFWUpdate(devices/*, tp*/);
 		tabbedPane.add(Main.LABELS.getString("dlgSetFWUpdate"), panelFW);
-		PanelWIFI panelWIFI = new PanelWIFI(devices);
+		PanelWIFI panelWIFI = new PanelWIFI(this, devices, model);
 		tabbedPane.add(Main.LABELS.getString("dlgSetWIFIBackup"), panelWIFI);
 		PanelResLogin panelResLogin = new PanelResLogin(devices);
 		tabbedPane.add(Main.LABELS.getString("dlgSetRestrictedLogin"), panelResLogin);

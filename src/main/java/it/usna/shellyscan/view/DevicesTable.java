@@ -113,14 +113,6 @@ public class DevicesTable extends ExTooltipTable {
 		colCommand.setCellEditor(new DeviceTableCellEditor(this));
 
 		TableRowSorter<?> sorter = (TableRowSorter<?>)getRowSorter();
-//		sorter.setComparator(COL_IP_IDX, (InetAddress o1, InetAddress o2) -> {
-//			byte[] i1 = o1.getAddress();
-//			byte[] i2 = o2.getAddress();
-//			if(i1[0] != i2[0]) return (i1[0] & 0xFF) - (i2[0] & 0xFF);
-//			if(i1[1] != i2[1]) return (i1[1] & 0xFF) - (i2[1] & 0xFF);
-//			if(i1[2] != i2[2]) return (i1[2] & 0xFF) - (i2[2] & 0xFF);
-//			return (i1[3] & 0xFF) - (i2[3] & 0xFF);
-//		});
 		sorter.setComparator(COL_IP_IDX, new IPv4Comparator());
 		
 		sorter.setComparator(COL_COMMAND_IDX, (o1, o2) -> {

@@ -29,7 +29,9 @@ import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.g1.AbstractG1Device;
 import it.usna.shellyscan.model.device.g1.MQTTManagerG1;
 import it.usna.shellyscan.view.IntegerTextFieldPanel;
+import it.usna.shellyscan.view.util.Msg;
 import it.usna.shellyscan.view.util.UtilCollecion;
+import javax.swing.JButton;
 
 //https://shelly-api-docs.shelly.cloud/gen1/#settings
 public class PanelMQTTG1 extends AbstractSettingsPanel {
@@ -55,6 +57,7 @@ public class PanelMQTTG1 extends AbstractSettingsPanel {
 	private JCheckBox chckbxNoPWD;
 	private JCheckBox chckbxDefaultPrefix;
 	private List<MQTTManagerG1> mqttModule = new ArrayList<>();
+	private JButton btnCopy;
 
 	public PanelMQTTG1(List<ShellyAbstractDevice> devices) {
 		super(devices);
@@ -78,13 +81,21 @@ public class PanelMQTTG1 extends AbstractSettingsPanel {
 
 		GridBagConstraints gbc_chckbxEnabled = new GridBagConstraints();
 		gbc_chckbxEnabled.weightx = 1.0;
-		gbc_chckbxEnabled.gridwidth = 4;
+		gbc_chckbxEnabled.gridwidth = 3;
 		gbc_chckbxEnabled.anchor = GridBagConstraints.WEST;
-		gbc_chckbxEnabled.insets = new Insets(0, 0, 5, 0);
+		gbc_chckbxEnabled.insets = new Insets(0, 0, 5, 5);
 		gbc_chckbxEnabled.gridx = 1;
 		gbc_chckbxEnabled.gridy = 0;
 		chckbxEnabled.setHorizontalAlignment(SwingConstants.LEFT);
 		contentPanel.add(chckbxEnabled, gbc_chckbxEnabled);
+		
+		btnCopy = new JButton(LABELS.getString("btnCopy"));
+		GridBagConstraints gbc_btnCopy = new GridBagConstraints();
+		gbc_btnCopy.anchor = GridBagConstraints.EAST;
+		gbc_btnCopy.insets = new Insets(0, 0, 5, 0);
+		gbc_btnCopy.gridx = 4;
+		gbc_btnCopy.gridy = 0;
+		contentPanel.add(btnCopy, gbc_btnCopy);
 
 		JLabel lblNewLabel_1 = new JLabel(LABELS.getString("dlgSetServer"));
 		GridBagConstraints gbc_lblNewLabel_1 = new GridBagConstraints();
@@ -182,7 +193,7 @@ public class PanelMQTTG1 extends AbstractSettingsPanel {
 		GridBagConstraints gbc_chckbxNewCheckBox = new GridBagConstraints();
 		gbc_chckbxNewCheckBox.anchor = GridBagConstraints.WEST;
 		gbc_chckbxNewCheckBox.gridwidth = 4;
-		gbc_chckbxNewCheckBox.insets = new Insets(0, 0, 5, 5);
+		gbc_chckbxNewCheckBox.insets = new Insets(0, 0, 5, 0);
 		gbc_chckbxNewCheckBox.gridx = 1;
 		gbc_chckbxNewCheckBox.gridy = 6;
 		contentPanel.add(chckbxDefaultPrefix, gbc_chckbxNewCheckBox);
@@ -420,7 +431,7 @@ public class PanelMQTTG1 extends AbstractSettingsPanel {
 	public String showing() throws InterruptedException {
 		mqttModule.clear();
 		ShellyAbstractDevice d = null;
-		String exclude = "<html>";
+		String exclude = "<html>" + LABELS.getString("dlgExcludedDevicesMsg");
 		int excludeCount = 0;
 		try {
 			chckbxEnabled.setEnabled(false);
@@ -487,10 +498,7 @@ public class PanelMQTTG1 extends AbstractSettingsPanel {
 					mqttModule.add(mqttm);
 				} catch(IOException | RuntimeException e) {
 					mqttModule.add(null);
-					if(excludeCount > 0) {
-						exclude += "<br>";
-					}
-					exclude += UtilCollecion.getFullName(d);
+					exclude += "<br>" + UtilCollecion.getFullName(d);
 					excludeCount++;
 				}
 			}
@@ -500,7 +508,7 @@ public class PanelMQTTG1 extends AbstractSettingsPanel {
 			if(excludeCount == devices.size()) {
 				return LABELS.getString("msgAllDevicesExcluded");
 			} else if (excludeCount > 0) {
-				JOptionPane.showMessageDialog(this, exclude, LABELS.getString("dlgExcludedDevicesTitle"), JOptionPane.WARNING_MESSAGE);
+				Msg.showHtmlMessageDialog(this, exclude, LABELS.getString("dlgExcludedDevicesTitle"), JOptionPane.WARNING_MESSAGE);
 			}
 			chckbxEnabled.setEnabled(true); // form is active
 			chckbxEnabled.setSelected(enabledGlobal);

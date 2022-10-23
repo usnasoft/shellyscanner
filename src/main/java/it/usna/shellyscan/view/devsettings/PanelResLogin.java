@@ -24,6 +24,7 @@ import it.usna.shellyscan.model.device.LoginManager;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.g2.LoginManagerG2;
 import it.usna.shellyscan.view.devsettings.DialogDeviceSettings.Gen;
+import it.usna.shellyscan.view.util.Msg;
 import it.usna.shellyscan.view.util.UtilCollecion;
 
 public class PanelResLogin extends AbstractSettingsPanel {
@@ -125,7 +126,7 @@ public class PanelResLogin extends AbstractSettingsPanel {
 
 	@Override
 	public String showing() throws InterruptedException {
-		String exclude = "<html>";
+		String exclude = "<html>" + LABELS.getString("dlgExcludedDevicesMsg");
 		int excludeCount = 0;
 		loginModule.clear();
 		ShellyAbstractDevice d = null;
@@ -155,10 +156,7 @@ public class PanelResLogin extends AbstractSettingsPanel {
 					loginModule.add(lm);
 				} catch(IOException | RuntimeException e) {
 					loginModule.add(null);
-					if(excludeCount > 0) {
-						exclude += "<br>";
-					}
-					exclude += UtilCollecion.getFullName(d);
+					exclude += "<br>" + UtilCollecion.getFullName(d);
 					excludeCount++;
 				}
 			}
@@ -172,7 +170,7 @@ public class PanelResLogin extends AbstractSettingsPanel {
 			if(excludeCount == devices.size()) {
 				return LABELS.getString("msgAllDevicesExcluded");
 			} else if (excludeCount > 0) {
-				JOptionPane.showMessageDialog(this, exclude, LABELS.getString("dlgExcludedDevicesTitle"), JOptionPane.WARNING_MESSAGE);
+				Msg.showHtmlMessageDialog(this, exclude, LABELS.getString("dlgExcludedDevicesTitle"), JOptionPane.WARNING_MESSAGE);
 			}
 			chckbxEnabled.setEnabled(true); // form is active
 			setEnabledLogin(enabledGlobal);

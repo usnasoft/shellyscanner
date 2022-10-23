@@ -11,7 +11,9 @@ import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
+import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPasswordField;
@@ -19,12 +21,16 @@ import javax.swing.JRadioButton;
 import javax.swing.JTextField;
 
 import it.usna.shellyscan.Main;
+import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.WIFIManager;
+import it.usna.shellyscan.model.device.WIFIManager.Network;
+import it.usna.shellyscan.view.DialogDeviceSelection;
 import it.usna.shellyscan.view.util.Msg;
 import it.usna.shellyscan.view.util.UtilCollecion;
+import it.usna.util.UsnaEventListener;
 
-public class PanelWIFI extends AbstractSettingsPanel {
+public class PanelWIFI extends AbstractSettingsPanel implements UsnaEventListener<ShellyAbstractDevice, Void> {
 	private static final long serialVersionUID = 1L;
 	private JCheckBox chckbxEnabled;
 	private JTextField textFieldSSID;
@@ -40,8 +46,9 @@ public class PanelWIFI extends AbstractSettingsPanel {
 	private List<WIFIManager> fwModule = new ArrayList<>();
 
 	private final static String IPV4_REGEX = "^((0|1\\d?\\d?|2[0-4]?\\d?|25[0-5]?|[3-9]\\d?)\\.){3}(0|1\\d?\\d?|2[0-4]?\\d?|25[0-5]?|[3-9]\\d?)$";
+	private JButton btnCopy = new JButton(LABELS.getString("btnCopy"));
 
-	public PanelWIFI(List<ShellyAbstractDevice> devices) {
+	public PanelWIFI(JDialog owner, List<ShellyAbstractDevice> devices, final Devices model) {
 		super(devices);
 		setBorder(BorderFactory.createEmptyBorder(6, 6, 2, 6));
 		GridBagLayout gridBagLayout = new GridBagLayout();
@@ -61,11 +68,20 @@ public class PanelWIFI extends AbstractSettingsPanel {
 
 		chckbxEnabled = new JCheckBox(/*"", true*/);
 		GridBagConstraints gbc_chckbxEnabled = new GridBagConstraints();
+		gbc_chckbxEnabled.gridwidth = 2;
 		gbc_chckbxEnabled.anchor = GridBagConstraints.WEST;
 		gbc_chckbxEnabled.insets = new Insets(0, 0, 5, 5);
 		gbc_chckbxEnabled.gridx = 1;
 		gbc_chckbxEnabled.gridy = 0;
 		add(chckbxEnabled, gbc_chckbxEnabled);
+
+		GridBagConstraints gbc_btnCopy = new GridBagConstraints();
+		gbc_btnCopy.anchor = GridBagConstraints.EAST;
+		gbc_btnCopy.insets = new Insets(0, 0, 5, 0);
+		gbc_btnCopy.gridx = 3;
+		gbc_btnCopy.gridy = 0;
+		add(btnCopy, gbc_btnCopy);
+		btnCopy.addActionListener(e -> new DialogDeviceSelection(owner, this, model));
 
 		JLabel lblNewLabel_1 = new JLabel(Main.LABELS.getString("dlgSetSSID"));
 		GridBagConstraints gbc_lblNewLabel_1 = new GridBagConstraints();
@@ -251,6 +267,7 @@ public class PanelWIFI extends AbstractSettingsPanel {
 		ShellyAbstractDevice d = null;
 		fwModule.clear();
 		try {
+			btnCopy.setEnabled(false);
 			chckbxEnabled.setEnabled(false);
 			setEnabledWIFI(false, false); // disable while checking
 			boolean enabledGlobal = false;
@@ -318,6 +335,7 @@ public class PanelWIFI extends AbstractSettingsPanel {
 			textFieldGateway.setText(globalGW);
 			textFieldDNS.setText(globalDNS);			
 			setEnabledWIFI(/*chckbxEnabled.isSelected()*/enabledGlobal, /*rdbtnStaticIP.isSelected()*/staticIPGlobal);
+			btnCopy.setEnabled(true);
 			return null;
 		} catch (/*IOException |*/ RuntimeException e) {
 			setEnabledWIFI(false, false);
@@ -384,5 +402,17 @@ public class PanelWIFI extends AbstractSettingsPanel {
 			showing();
 		} catch (InterruptedException e) {}
 		return res;
+	}
+
+	@Override
+	public void update(ShellyAbstractDevice device, Void dummy) {
+		try {
+			WIFIManager m = device.getWIFIManager(Network.SECONDARY);
+			chckbxEnabled.setSelected(m.isEnabled());
+			textFieldSSID.setText(m.getSSID());
+			//todo
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 }

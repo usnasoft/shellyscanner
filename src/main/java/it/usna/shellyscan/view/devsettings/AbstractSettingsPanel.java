@@ -20,9 +20,8 @@ public abstract class AbstractSettingsPanel extends JPanel {
 
 	public abstract String apply();
 	
-	protected String getExtendedName(ShellyAbstractDevice d) {
+	public static String getExtendedName(ShellyAbstractDevice d) {
 		final String dName = d.getName();
 		return d.getHostname() + " - " + (dName.length() > 0 ? dName : d.getTypeName());
 	}
-
 }
