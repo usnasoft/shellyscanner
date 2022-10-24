@@ -80,7 +80,7 @@ import it.usna.util.UsnaEventListener;
 
 public class MainView extends MainWindow implements UsnaEventListener<Devices.EventType, Integer> {
 	private static final long serialVersionUID = 1L;
-	private final static int SHORTCUT_KEY = Toolkit.getDefaultToolkit().getMenuShortcutKeyMask(); // from 1.10 getMenuShortcutKeyMaskEx
+	public final static int SHORTCUT_KEY = Toolkit.getDefaultToolkit().getMenuShortcutKeyMask(); // from 1.10 getMenuShortcutKeyMaskEx
 	private final static Logger LOG = LoggerFactory.getLogger(MainWindow.class);
 
 	private AppProperties appProp;

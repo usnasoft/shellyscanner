@@ -42,7 +42,7 @@ import javax.swing.JLabel;
 
 public class DialogDeviceLogsG2 extends JDialog implements ClipboardOwner {
 	private static final long serialVersionUID = 1L;
-	private final static int SHORTCUT_KEY = Toolkit.getDefaultToolkit().getMenuShortcutKeyMask(); // from 1.10 getMenuShortcutKeyMaskEx
+//	private final static int SHORTCUT_KEY = Toolkit.getDefaultToolkit().getMenuShortcutKeyMask(); // from 1.10 getMenuShortcutKeyMaskEx
 	private WebSocketClient clientEndPoint = null;
 
 	public DialogDeviceLogsG2(final MainView owner, Devices model, int index) {
@@ -68,7 +68,7 @@ public class DialogDeviceLogsG2 extends JDialog implements ClipboardOwner {
 			}
 		};
 		JButton jButtonFind = new JButton(findAction);
-		jButtonFind.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_F, SHORTCUT_KEY), "find_act");
+		jButtonFind.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_F, MainView.SHORTCUT_KEY), "find_act");
 		jButtonFind.getActionMap().put("find_act", findAction);
 
 		JButton jButtonCopyAll = new JButton(Main.LABELS.getString("btnCopyAll"));

@@ -14,6 +14,7 @@ import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
 import javax.swing.JCheckBox;
+import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -25,16 +26,21 @@ import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingConstants;
 
 import it.usna.shellyscan.Main;
+import it.usna.shellyscan.model.Devices;
+import it.usna.shellyscan.model.device.MQTTManager;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.g1.AbstractG1Device;
 import it.usna.shellyscan.model.device.g1.MQTTManagerG1;
+import it.usna.shellyscan.view.DialogDeviceSelection;
 import it.usna.shellyscan.view.IntegerTextFieldPanel;
 import it.usna.shellyscan.view.util.Msg;
 import it.usna.shellyscan.view.util.UtilCollecion;
+import it.usna.util.UsnaEventListener;
+
 import javax.swing.JButton;
 
 //https://shelly-api-docs.shelly.cloud/gen1/#settings
-public class PanelMQTTG1 extends AbstractSettingsPanel {
+public class PanelMQTTG1 extends AbstractSettingsPanel implements UsnaEventListener<ShellyAbstractDevice, Object> {
 	private static final long serialVersionUID = 1L;
 	private char pwdEchoChar;
 	private JCheckBox chckbxEnabled = new JCheckBox();
@@ -57,9 +63,8 @@ public class PanelMQTTG1 extends AbstractSettingsPanel {
 	private JCheckBox chckbxNoPWD;
 	private JCheckBox chckbxDefaultPrefix;
 	private List<MQTTManagerG1> mqttModule = new ArrayList<>();
-	private JButton btnCopy;
 
-	public PanelMQTTG1(List<ShellyAbstractDevice> devices) {
+	public PanelMQTTG1(JDialog owner, List<ShellyAbstractDevice> devices, final Devices model) {
 		super(devices);
 		//		this.setSize(800, 800);
 		JPanel contentPanel = new JPanel();
@@ -89,13 +94,14 @@ public class PanelMQTTG1 extends AbstractSettingsPanel {
 		chckbxEnabled.setHorizontalAlignment(SwingConstants.LEFT);
 		contentPanel.add(chckbxEnabled, gbc_chckbxEnabled);
 		
-		btnCopy = new JButton(LABELS.getString("btnCopy"));
+		JButton btnCopy = new JButton(LABELS.getString("btnCopy"));
 		GridBagConstraints gbc_btnCopy = new GridBagConstraints();
 		gbc_btnCopy.anchor = GridBagConstraints.EAST;
 		gbc_btnCopy.insets = new Insets(0, 0, 5, 0);
 		gbc_btnCopy.gridx = 4;
 		gbc_btnCopy.gridy = 0;
 		contentPanel.add(btnCopy, gbc_btnCopy);
+		btnCopy.addActionListener(e -> new DialogDeviceSelection(owner, this, model));
 
 		JLabel lblNewLabel_1 = new JLabel(LABELS.getString("dlgSetServer"));
 		GridBagConstraints gbc_lblNewLabel_1 = new GridBagConstraints();
@@ -606,6 +612,18 @@ public class PanelMQTTG1 extends AbstractSettingsPanel {
 			showing();
 		} catch (InterruptedException e) {}
 		return res;
+	}
+	
+	@Override
+	public void update(ShellyAbstractDevice device, Object dummy) {
+		try {
+			MQTTManager m = device.getMQTTManager();
+			chckbxEnabled.setSelected(m.isEnabled());
+			textFieldServer.setText(m.getServer());
+			//todo
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 }
 //580

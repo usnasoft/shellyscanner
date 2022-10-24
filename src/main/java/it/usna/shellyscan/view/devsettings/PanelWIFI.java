@@ -30,7 +30,7 @@ import it.usna.shellyscan.view.util.Msg;
 import it.usna.shellyscan.view.util.UtilCollecion;
 import it.usna.util.UsnaEventListener;
 
-public class PanelWIFI extends AbstractSettingsPanel implements UsnaEventListener<ShellyAbstractDevice, Void> {
+public class PanelWIFI extends AbstractSettingsPanel implements UsnaEventListener<ShellyAbstractDevice, Object> {
 	private static final long serialVersionUID = 1L;
 	private JCheckBox chckbxEnabled;
 	private JTextField textFieldSSID;
@@ -405,7 +405,7 @@ public class PanelWIFI extends AbstractSettingsPanel implements UsnaEventListene
 	}
 
 	@Override
-	public void update(ShellyAbstractDevice device, Void dummy) {
+	public void update(ShellyAbstractDevice device, Object dummy) {
 		try {
 			WIFIManager m = device.getWIFIManager(Network.SECONDARY);
 			chckbxEnabled.setSelected(m.isEnabled());

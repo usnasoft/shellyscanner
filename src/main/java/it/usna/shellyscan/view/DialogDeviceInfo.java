@@ -44,7 +44,7 @@ import it.usna.swing.dialog.FindReplaceDialog;
 
 public class DialogDeviceInfo extends JDialog {
 	private static final long serialVersionUID = 1L;
-	private final static int SHORTCUT_KEY = Toolkit.getDefaultToolkit().getMenuShortcutKeyMask(); // from 1.10 getMenuShortcutKeyMaskEx
+//	private final static int SHORTCUT_KEY = Toolkit.getDefaultToolkit().getMenuShortcutKeyMask(); // from 1.10 getMenuShortcutKeyMaskEx
 	private ScheduledExecutorService executor = Executors.newScheduledThreadPool(2); // too many concurrent requests are dangerous (device reboot)
 
 	public DialogDeviceInfo(final MainView owner, boolean json, ShellyAbstractDevice device, String[] infoList) {
@@ -71,7 +71,7 @@ public class DialogDeviceInfo extends JDialog {
 		});
 
 		JButton jButtonFind = new JButton(findAction);
-		jButtonFind.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_F, SHORTCUT_KEY), "find_act");
+		jButtonFind.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_F, MainView.SHORTCUT_KEY), "find_act");
 		jButtonFind.getActionMap().put("find_act", findAction);
 
 

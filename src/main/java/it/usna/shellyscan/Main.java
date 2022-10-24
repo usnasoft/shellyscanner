@@ -275,6 +275,8 @@ public class Main {
 //0.8.6
 // stato input
 // fw update - selection buttons
+// mqtt -copy 
+// wifi2 - copy
 
 //todo
 // 2.5 ottimizzazione array ralay 2.5

@@ -62,9 +62,9 @@ public class DialogDeviceSettings extends JDialog {
 		tabbedPane.add(Main.LABELS.getString("dlgSetRestrictedLogin"), panelResLogin);
 		AbstractSettingsPanel panelMQTT;
 		if(devTypes == Gen.G1) {
-			panelMQTT = new PanelMQTTG1(devices);
+			panelMQTT = new PanelMQTTG1(this, devices, model);
 		} else {
-			panelMQTT = new PanelMQTTAll(devices);
+			panelMQTT = new PanelMQTTAll(this, devices, model);
 		}
 		tabbedPane.add(Main.LABELS.getString("dlgSetMQTT"), panelMQTT);
 

@@ -12,7 +12,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.BorderFactory;
+import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -23,15 +25,17 @@ import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingConstants;
 
 import it.usna.shellyscan.Main;
+import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.MQTTManager;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
+import it.usna.shellyscan.view.DialogDeviceSelection;
 import it.usna.shellyscan.view.util.Msg;
 import it.usna.shellyscan.view.util.UtilCollecion;
-import javax.swing.JButton;
+import it.usna.util.UsnaEventListener;
 
 //https://shelly-api-docs.shelly.cloud/gen2/Components/SystemComponents/Mqtt
 //https://shelly-api-docs.shelly.cloud/gen1/#settings
-public class PanelMQTTAll extends AbstractSettingsPanel {
+public class PanelMQTTAll extends AbstractSettingsPanel implements UsnaEventListener<ShellyAbstractDevice, Object> {
 	private static final long serialVersionUID = 1L;
 	private char pwdEchoChar;
 	private JCheckBox chckbxEnabled = new JCheckBox();
@@ -44,7 +48,7 @@ public class PanelMQTTAll extends AbstractSettingsPanel {
 	private JCheckBox chckbxDefaultPrefix;
 	private List<MQTTManager> mqttModule = new ArrayList<>();
 
-	public PanelMQTTAll(List<ShellyAbstractDevice> devices) {
+	public PanelMQTTAll(JDialog owner, List<ShellyAbstractDevice> devices, final Devices model) {
 		super(devices);
 		//		this.setSize(800, 800);
 		JPanel contentPanel = new JPanel();
@@ -78,6 +82,7 @@ public class PanelMQTTAll extends AbstractSettingsPanel {
 		gbc_btnCopy.gridx = 4;
 		gbc_btnCopy.gridy = 0;
 		contentPanel.add(btnCopy, gbc_btnCopy);
+		btnCopy.addActionListener(e -> new DialogDeviceSelection(owner, this, model));
 
 		JLabel lblNewLabel_1 = new JLabel(LABELS.getString("dlgSetServer"));
 		GridBagConstraints gbc_lblNewLabel_1 = new GridBagConstraints();
@@ -336,5 +341,17 @@ public class PanelMQTTAll extends AbstractSettingsPanel {
 			showing();
 		} catch (InterruptedException e) {}
 		return res;
+	}
+	
+	@Override
+	public void update(ShellyAbstractDevice device, Object dummy) {
+		try {
+			MQTTManager m = device.getMQTTManager();
+			chckbxEnabled.setSelected(m.isEnabled());
+			textFieldServer.setText(m.getServer());
+			//todo
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 }
