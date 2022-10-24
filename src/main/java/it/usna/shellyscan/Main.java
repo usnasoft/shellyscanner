@@ -277,6 +277,7 @@ public class Main {
 // fw update - selection buttons
 // mqtt -copy 
 // wifi2 - copy
+// ^S combo change selection
 
 //todo
 // 2.5 ottimizzazione array ralay 2.5

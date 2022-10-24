@@ -130,9 +130,8 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		}
 	}
 
-	private Action infoAction = new ViewSelectedAction("action_info_name", "action_info_tooltip", "/images/Bubble3_16.png", "/images/Bubble3.png", (i, d) -> {
-		new DialogDeviceInfo(MainView.this, true, d, d.getInfoRequests());
-	});
+	private Action infoAction = new ViewSelectedAction("action_info_name", "action_info_tooltip", "/images/Bubble3_16.png", "/images/Bubble3.png",
+			(i, d) -> new DialogDeviceInfo(MainView.this, true, d, d.getInfoRequests()) );
 
 	private Action infoLogAction = new ViewSelectedAction("/images/Document2.png", "action_info_log_tooltip", (i, d) -> {
 		if(d instanceof AbstractG2Device) {
@@ -218,9 +217,8 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		JOptionPane.showMessageDialog(MainView.this, ep, Main.APP_NAME, JOptionPane.INFORMATION_MESSAGE, new ImageIcon(Main.class.getResource("/images/ShSc.png")));
 	});
 	
-	private Action loginAction = new ViewSelectedAction("action_nema_login", null, "/images/Key16.png", null, (i, d) -> {
-		model.create(d.getHttpHost().getAddress(), d.getHostname());
-	});
+	private Action loginAction = new ViewSelectedAction("action_nema_login", null, "/images/Key16.png", null,
+			(i, d) -> model.create(d.getHttpHost().getAddress(), d.getHostname()) );
 
 	private Action backupAction = new UsnaAction(this, "action_back_name", "action_back_tooltip", "/images/Download16.png", "/images/Download.png", e -> {
 		int[] ind = devicesTable.getSelectedRows();
@@ -640,7 +638,11 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		});
 		
 		getRootPane().registerKeyboardAction(e -> textFieldFilter.requestFocus(), KeyStroke.getKeyStroke(KeyEvent.VK_F, SHORTCUT_KEY), JComponent.WHEN_IN_FOCUSED_WINDOW);
-		getRootPane().registerKeyboardAction(e -> comboFilterCol.requestFocus(), KeyStroke.getKeyStroke(KeyEvent.VK_S, SHORTCUT_KEY), JComponent.WHEN_IN_FOCUSED_WINDOW);
+		getRootPane().registerKeyboardAction(e -> {
+			int selected = comboFilterCol.getSelectedIndex();
+			comboFilterCol.setSelectedIndex(++selected >= comboFilterCol.getItemCount() ? 0 : selected);
+			textFieldFilter.requestFocus();
+		} , KeyStroke.getKeyStroke(KeyEvent.VK_S, SHORTCUT_KEY), JComponent.WHEN_IN_FOCUSED_WINDOW);
 
 		rescanAction.setEnabled(false);
 		refreshAction.setEnabled(false);

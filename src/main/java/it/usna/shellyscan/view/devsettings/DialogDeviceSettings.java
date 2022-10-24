@@ -5,8 +5,6 @@ import static it.usna.shellyscan.Main.LABELS;
 import java.awt.BorderLayout;
 import java.awt.Cursor;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import javax.swing.JButton;
@@ -35,12 +33,13 @@ public class DialogDeviceSettings extends JDialog {
 	private Thread showCurrentThread;
 	
 	private AbstractSettingsPanel currentPanel = null;
-	private ExecutorService exeService = Executors.newFixedThreadPool(1);
+//	private ExecutorService exeService = Executors.newFixedThreadPool(1);
 
 	public DialogDeviceSettings(final MainView owner, Devices model, List<ShellyAbstractDevice> devices) {
 		super(owner, false);
-		if(devices.size() > 1) {
-			setTitle(Main.LABELS.getString("dlgSetTitle"));
+		int numDev = devices.size();
+		if(numDev > 1) {
+			setTitle(String.format(Main.LABELS.getString("dlgSetTitle"), numDev));
 		} else {
 			setTitle(Main.LABELS.getString("dlgSetTitle") + " - " + UtilCollecion.getDescName(devices.get(0)));
 		}
@@ -70,9 +69,6 @@ public class DialogDeviceSettings extends JDialog {
 
 //		if(devTypes != Gen.G1) {
 //			JOptionPane.showMessageDialog(owner, "Some function is momentary not available for second generatione devices.", Main.LABELS.getString("dlgSetTitle"), JOptionPane.WARNING_MESSAGE);
-////			tabbedPane.setEnabledAt(1, false);
-////			tabbedPane.setEnabledAt(2, false);
-////			tabbedPane.setEnabledAt(3, false);
 //		}
 
 		getContentPane().add(tabbedPane, BorderLayout.CENTER);
@@ -103,7 +99,7 @@ public class DialogDeviceSettings extends JDialog {
 		if(currentPanel != null) {
 			currentPanel.hiding();
 		}
-		exeService.shutdownNow();
+//		exeService.shutdownNow();
 		super.dispose();
 	}
 	

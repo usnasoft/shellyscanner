@@ -4,11 +4,15 @@ import static it.usna.shellyscan.Main.LABELS;
 
 import java.awt.BorderLayout;
 import java.awt.Cursor;
+import java.awt.FlowLayout;
 import java.awt.Window;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.net.InetAddress;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import javax.swing.Action;
 import javax.swing.BorderFactory;
@@ -35,13 +39,15 @@ import it.usna.shellyscan.view.util.IPv4Comparator;
 import it.usna.swing.table.ExTooltipTable;
 import it.usna.swing.table.UsnaTableModel;
 import it.usna.util.UsnaEventListener;
-import java.awt.FlowLayout;
 
 public class DialogDeviceSelection extends JDialog {
 	private static final long serialVersionUID = 1L;
 
 	private UsnaTableModel tModel = new UsnaTableModel(LABELS.getString("col_device"), LABELS.getString("col_ip"));
 	private ExTooltipTable table = new ExTooltipTable(tModel, true);
+//	private Thread selectCurrentThread = null;
+//	private ExecutorService exeService = Executors.newFixedThreadPool(1);
+	private Future<?> updateTaskFuture;
 
 	public DialogDeviceSelection(final Window owner, UsnaEventListener<ShellyAbstractDevice, Object> listener, Devices model) {
 		super(owner, LABELS.getString("dlgSelectorTitle"));
@@ -134,15 +140,35 @@ public class DialogDeviceSelection extends JDialog {
 		table.sortByColumn(0, true);
 
 		// Selection
-		table.getSelectionModel().addListSelectionListener(e -> {
-			if(e.getValueIsAdjusting() == false) {
-				// todo thread che si interromper in caso di nuova chiamata
-				setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-				try {
-					listener.update(model.get(table.convertRowIndexToModel(table.getSelectedRow())), null);
-				} finally {
-					setCursor(Cursor.getDefaultCursor());
+		ExecutorService exeService = Executors.newFixedThreadPool(1);
+		table.getSelectionModel().addListSelectionListener(event -> {
+			if(event.getValueIsAdjusting() == false) {
+//				if(selectCurrentThread != null) {
+//					selectCurrentThread.interrupt();
+//				}
+//				selectCurrentThread = new Thread(() -> {
+//					setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+//					if(Thread.interrupted() == false) {
+//						try {
+//							listener.update(model.get(table.convertRowIndexToModel(table.getSelectedRow())), null);
+//						} finally {
+//							setCursor(Cursor.getDefaultCursor());
+//						}
+//					}
+//				});
+//				selectCurrentThread.start();
+
+				if(updateTaskFuture != null) {
+					updateTaskFuture.cancel(true);
 				}
+				updateTaskFuture = exeService.submit(() -> {
+					setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+					try {
+						listener.update(model.get(table.convertRowIndexToModel(table.getSelectedRow())), null);
+					} finally {
+						setCursor(Cursor.getDefaultCursor());
+					}
+				});
 			}
 		});
 		
