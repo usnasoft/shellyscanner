@@ -535,7 +535,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		statusButtonPanel.add(eraseFilterButton);
 
 		JButton btnSelectAll = new JButton(new UsnaAction("labelSelectAll", e -> devicesTable.selectAll()));
-		btnSelectAll.setBorder(new EmptyBorder(2, 7, 2, 7));
+		btnSelectAll.setBorder(BorderFactory.createEmptyBorder(2, 7, 2, 7));
 		statusButtonPanel.add(btnSelectAll);
 		
 		JButton btnSelectOnline = new JButton(new UsnaAction("labelSelectOnLine", e -> {
@@ -547,7 +547,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 				}
 			}
 		}));
-		btnSelectOnline.setBorder(new EmptyBorder(2, 7, 2, 7));
+		btnSelectOnline.setBorder(BorderFactory.createEmptyBorder(2, 7, 2, 7));
 		statusButtonPanel.add(btnSelectOnline);
 		
 		statusPanel.add(statusButtonPanel, BorderLayout.EAST);

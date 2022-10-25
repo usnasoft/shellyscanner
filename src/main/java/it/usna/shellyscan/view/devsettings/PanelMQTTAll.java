@@ -24,6 +24,9 @@ import javax.swing.JTextField;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingConstants;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import it.usna.shellyscan.Main;
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.MQTTManager;
@@ -37,6 +40,8 @@ import it.usna.util.UsnaEventListener;
 //https://shelly-api-docs.shelly.cloud/gen1/#settings
 public class PanelMQTTAll extends AbstractSettingsPanel implements UsnaEventListener<ShellyAbstractDevice, Object> {
 	private static final long serialVersionUID = 1L;
+	private final static Logger LOG = LoggerFactory.getLogger(PanelMQTTAll.class);
+	
 	private char pwdEchoChar;
 	private JCheckBox chckbxEnabled = new JCheckBox();
 	private JTextField textFieldServer;
@@ -47,6 +52,9 @@ public class PanelMQTTAll extends AbstractSettingsPanel implements UsnaEventList
 	private JCheckBox chckbxNoPWD;
 	private JCheckBox chckbxDefaultPrefix;
 	private List<MQTTManager> mqttModule = new ArrayList<>();
+	
+	private JButton btnCopy = new JButton(LABELS.getString("btnCopy"));
+	private DialogDeviceSelection selDialog = null;
 
 	public PanelMQTTAll(JDialog owner, List<ShellyAbstractDevice> devices, final Devices model) {
 		super(devices);
@@ -75,14 +83,13 @@ public class PanelMQTTAll extends AbstractSettingsPanel implements UsnaEventList
 		chckbxEnabled.setHorizontalAlignment(SwingConstants.LEFT);
 		contentPanel.add(chckbxEnabled, gbc_chckbxEnabled);
 		
-		JButton btnCopy = new JButton(LABELS.getString("btnCopy"));
 		GridBagConstraints gbc_btnCopy = new GridBagConstraints();
 		gbc_btnCopy.anchor = GridBagConstraints.EAST;
 		gbc_btnCopy.insets = new Insets(0, 0, 5, 0);
 		gbc_btnCopy.gridx = 4;
 		gbc_btnCopy.gridy = 0;
 		contentPanel.add(btnCopy, gbc_btnCopy);
-		btnCopy.addActionListener(e -> new DialogDeviceSelection(owner, this, model));
+		btnCopy.addActionListener(e -> selDialog = new DialogDeviceSelection(owner, this, model));
 
 		JLabel lblNewLabel_1 = new JLabel(LABELS.getString("dlgSetServer"));
 		GridBagConstraints gbc_lblNewLabel_1 = new GridBagConstraints();
@@ -232,6 +239,7 @@ public class PanelMQTTAll extends AbstractSettingsPanel implements UsnaEventList
 		String exclude = "<html>" + LABELS.getString("dlgExcludedDevicesMsg");
 		int excludeCount = 0;
 		try {
+			btnCopy.setEnabled(false);
 			chckbxEnabled.setEnabled(false);
 			setEnabledMQTT(false, false); // disable while checking
 			boolean enabledGlobal = false;
@@ -288,10 +296,16 @@ public class PanelMQTTAll extends AbstractSettingsPanel implements UsnaEventList
 			textFieldID.setText(idGlobal);
 
 			setEnabledMQTT(enabledGlobal, devices.size() == 1);
+			btnCopy.setEnabled(true);
 			return null;
 		} catch (RuntimeException e) {
 			return getExtendedName(d) + ": " + e.getMessage();
 		}
+	}
+	
+	@Override
+	public void hiding() {
+		if(selDialog != null) selDialog.dispose();
 	}
 
 	@Override
@@ -349,9 +363,9 @@ public class PanelMQTTAll extends AbstractSettingsPanel implements UsnaEventList
 			MQTTManager m = device.getMQTTManager();
 			chckbxEnabled.setSelected(m.isEnabled());
 			textFieldServer.setText(m.getServer());
-			//todo
+			textFieldUser.setText(m.getUser());
 		} catch (IOException e) {
-			e.printStackTrace();
+			LOG.error("copy", e);
 		}
 	}
-}
+} // 371

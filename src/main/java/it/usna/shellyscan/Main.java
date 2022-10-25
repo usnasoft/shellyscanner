@@ -27,7 +27,7 @@ import it.usna.util.AppProperties;
 
 public class Main {
 	public final static String APP_NAME = "Shelly Scanner";
-	public final static String VERSION = "0.8.6 alpha2";
+	public final static String VERSION = "0.8.6 beta";
 	public final static String ICON = "/images/ShSc24.png";
 	public final static ResourceBundle LABELS = ResourceBundle.getBundle("LabelsBundle");
 	public static Color BG_COLOR = new Color(50, 60, 65);
@@ -274,14 +274,13 @@ public class Main {
 
 //0.8.6
 // stato input
-// fw update - selection buttons
+// fw update - selection buttons / counters
 // mqtt -copy 
 // wifi2 - copy
 // ^S combo change selection
 
 //todo
 // 2.5 ottimizzazione array ralay 2.5
-// global settings: copia da un dispositivo
 // global settings: wi-fi 2 (chiedere se il dispositivo e' connesso a questo)
 // global settings: wi-fi 1 (chiedere se il dispositivo e' connesso a questo)
 // bottone resume refresh (log)

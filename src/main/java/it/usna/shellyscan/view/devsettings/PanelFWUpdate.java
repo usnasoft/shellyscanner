@@ -16,6 +16,7 @@ import java.util.concurrent.Future;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -122,6 +123,7 @@ public class PanelFWUpdate extends AbstractSettingsPanel {
 		add(panel, BorderLayout.SOUTH);
 		panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
 		
+		btnUnselectAll.setBorder(BorderFactory.createEmptyBorder(4, 7, 4, 7));
 		panel.add(btnUnselectAll);
 		btnUnselectAll.addActionListener(event -> {
 			for(int i= 0; i < tModel.getRowCount(); i++) {
@@ -135,6 +137,7 @@ public class PanelFWUpdate extends AbstractSettingsPanel {
 			countSelection();
 		});
 
+		btnSelectStable.setBorder(BorderFactory.createEmptyBorder(4, 7, 4, 7));
 		panel.add(btnSelectStable);
 		btnSelectStable.addActionListener(event -> {
 			for(int i= 0; i < tModel.getRowCount(); i++) {
@@ -148,6 +151,7 @@ public class PanelFWUpdate extends AbstractSettingsPanel {
 			countSelection();
 		});
 		
+		btnSelectBeta.setBorder(BorderFactory.createEmptyBorder(4, 7, 4, 7));
 		panel.add(btnSelectBeta);
 		btnSelectBeta.addActionListener(event -> {
 			for(int i= 0; i < tModel.getRowCount(); i++) {
@@ -165,6 +169,7 @@ public class PanelFWUpdate extends AbstractSettingsPanel {
 		panel.add(Box.createHorizontalGlue());
 
 		JButton btnCheck = new JButton(LABELS.getString("btn_check"));
+		btnCheck.setBorder(BorderFactory.createEmptyBorder(4, 7, 4, 7));
 		btnCheck.setHorizontalAlignment(SwingConstants.RIGHT);
 		panel.add(btnCheck);
 		btnCheck.addActionListener(event -> {
@@ -338,4 +343,4 @@ public class PanelFWUpdate extends AbstractSettingsPanel {
 //		}
 	}
 }
-// 341
+// 346

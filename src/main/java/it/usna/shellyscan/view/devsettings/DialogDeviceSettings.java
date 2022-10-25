@@ -31,17 +31,15 @@ public class DialogDeviceSettings extends JDialog {
 	private JButton btnOKButton = new JButton(Main.LABELS.getString("dlgApply"));
 	private JButton btnApplyClose = new JButton(Main.LABELS.getString("dlgApplyClose"));
 	private Thread showCurrentThread;
-	
 	private AbstractSettingsPanel currentPanel = null;
-//	private ExecutorService exeService = Executors.newFixedThreadPool(1);
 
 	public DialogDeviceSettings(final MainView owner, Devices model, List<ShellyAbstractDevice> devices) {
 		super(owner, false);
 		int numDev = devices.size();
 		if(numDev > 1) {
-			setTitle(String.format(Main.LABELS.getString("dlgSetTitle"), numDev));
+			setTitle(String.format(Main.LABELS.getString("dlgSetTitle"), numDev + ""));
 		} else {
-			setTitle(Main.LABELS.getString("dlgSetTitle") + " - " + UtilCollecion.getDescName(devices.get(0)));
+			setTitle(String.format(Main.LABELS.getString("dlgSetTitle"), UtilCollecion.getDescName(devices.get(0))));
 		}
 		BorderLayout borderLayout = (BorderLayout) getContentPane().getLayout();
 		borderLayout.setVgap(5);
@@ -99,7 +97,6 @@ public class DialogDeviceSettings extends JDialog {
 		if(currentPanel != null) {
 			currentPanel.hiding();
 		}
-//		exeService.shutdownNow();
 		super.dispose();
 	}
 	
@@ -145,9 +142,7 @@ public class DialogDeviceSettings extends JDialog {
 						btnApplyClose.setEnabled(true);
 					}
 				}
-			} catch (InterruptedException e) {
-//				e.printStackTrace();
-			}
+			} catch (InterruptedException e) {}
 		});
 		showCurrentThread.start();
 	}

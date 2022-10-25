@@ -45,8 +45,6 @@ public class DialogDeviceSelection extends JDialog {
 
 	private UsnaTableModel tModel = new UsnaTableModel(LABELS.getString("col_device"), LABELS.getString("col_ip"));
 	private ExTooltipTable table = new ExTooltipTable(tModel, true);
-//	private Thread selectCurrentThread = null;
-//	private ExecutorService exeService = Executors.newFixedThreadPool(1);
 	private Future<?> updateTaskFuture;
 
 	public DialogDeviceSelection(final Window owner, UsnaEventListener<ShellyAbstractDevice, Object> listener, Devices model) {
@@ -91,7 +89,7 @@ public class DialogDeviceSelection extends JDialog {
 		panelFind.add(new JLabel(LABELS.getString("lblFilter")));
 		
 		JTextField textFieldFilter = new JTextField();
-//		textFieldFilter.setBorder(BorderFactory.createEmptyBorder(2, 0, 2, 0));
+		textFieldFilter.setBorder(BorderFactory.createEmptyBorder(2, 1, 2, 1));
 		textFieldFilter.setColumns(24);
 		panelFind.add(textFieldFilter);
 		textFieldFilter.getDocument().addDocumentListener(new DocumentListener() {
@@ -143,21 +141,6 @@ public class DialogDeviceSelection extends JDialog {
 		ExecutorService exeService = Executors.newFixedThreadPool(1);
 		table.getSelectionModel().addListSelectionListener(event -> {
 			if(event.getValueIsAdjusting() == false) {
-//				if(selectCurrentThread != null) {
-//					selectCurrentThread.interrupt();
-//				}
-//				selectCurrentThread = new Thread(() -> {
-//					setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-//					if(Thread.interrupted() == false) {
-//						try {
-//							listener.update(model.get(table.convertRowIndexToModel(table.getSelectedRow())), null);
-//						} finally {
-//							setCursor(Cursor.getDefaultCursor());
-//						}
-//					}
-//				});
-//				selectCurrentThread.start();
-
 				if(updateTaskFuture != null) {
 					updateTaskFuture.cancel(true);
 				}

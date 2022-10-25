@@ -47,6 +47,7 @@ public class PanelWIFI extends AbstractSettingsPanel implements UsnaEventListene
 
 	private final static String IPV4_REGEX = "^((0|1\\d?\\d?|2[0-4]?\\d?|25[0-5]?|[3-9]\\d?)\\.){3}(0|1\\d?\\d?|2[0-4]?\\d?|25[0-5]?|[3-9]\\d?)$";
 	private JButton btnCopy = new JButton(LABELS.getString("btnCopy"));
+	private DialogDeviceSelection selDialog = null;
 
 	public PanelWIFI(JDialog owner, List<ShellyAbstractDevice> devices, final Devices model) {
 		super(devices);
@@ -81,7 +82,7 @@ public class PanelWIFI extends AbstractSettingsPanel implements UsnaEventListene
 		gbc_btnCopy.gridx = 3;
 		gbc_btnCopy.gridy = 0;
 		add(btnCopy, gbc_btnCopy);
-		btnCopy.addActionListener(e -> new DialogDeviceSelection(owner, this, model));
+		btnCopy.addActionListener(e -> selDialog = new DialogDeviceSelection(owner, this, model));
 
 		JLabel lblNewLabel_1 = new JLabel(Main.LABELS.getString("dlgSetSSID"));
 		GridBagConstraints gbc_lblNewLabel_1 = new GridBagConstraints();
@@ -342,6 +343,11 @@ public class PanelWIFI extends AbstractSettingsPanel implements UsnaEventListene
 			return getExtendedName(d) + ": " + e.getMessage();
 		}
 	}
+	
+	@Override
+	public void hiding() {
+		if(selDialog != null) selDialog.dispose();
+	}
 
 	@Override
 	public String apply() {
@@ -410,7 +416,11 @@ public class PanelWIFI extends AbstractSettingsPanel implements UsnaEventListene
 			WIFIManager m = device.getWIFIManager(Network.SECONDARY);
 			chckbxEnabled.setSelected(m.isEnabled());
 			textFieldSSID.setText(m.getSSID());
-			//todo
+			rdbtnStaticIP.setSelected(m.isStaticIP());
+			rdbtnDHCP.setSelected(m.isStaticIP() == false);
+			textFieldGateway.setText(m.getGateway());
+			textFieldNetmask.setText(m.getMask());
+			textFieldDNS.setText(m.getDNS());
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
