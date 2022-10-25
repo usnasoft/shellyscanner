@@ -13,7 +13,9 @@ import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
+import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -24,16 +26,24 @@ import javax.swing.JTextField;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingConstants;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import it.usna.shellyscan.Main;
+import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
-import it.usna.shellyscan.model.device.g1.AbstractG1Device;
 import it.usna.shellyscan.model.device.g1.MQTTManagerG1;
+import it.usna.shellyscan.view.DialogDeviceSelection;
 import it.usna.shellyscan.view.IntegerTextFieldPanel;
+import it.usna.shellyscan.view.util.Msg;
 import it.usna.shellyscan.view.util.UtilCollecion;
+import it.usna.util.UsnaEventListener;
 
 //https://shelly-api-docs.shelly.cloud/gen1/#settings
-public class PanelMQTTG1 extends AbstractSettingsPanel {
+public class PanelMQTTG1 extends AbstractSettingsPanel implements UsnaEventListener<ShellyAbstractDevice, Object> {
 	private static final long serialVersionUID = 1L;
+	private final static Logger LOG = LoggerFactory.getLogger(PanelMQTTG1.class);
+	
 	private char pwdEchoChar;
 	private JCheckBox chckbxEnabled = new JCheckBox();
 	private JTextField textFieldServer;
@@ -55,8 +65,11 @@ public class PanelMQTTG1 extends AbstractSettingsPanel {
 	private JCheckBox chckbxNoPWD;
 	private JCheckBox chckbxDefaultPrefix;
 	private List<MQTTManagerG1> mqttModule = new ArrayList<>();
+	
+	private JButton btnCopy = new JButton(LABELS.getString("btnCopy"));
+	private DialogDeviceSelection selDialog = null;
 
-	public PanelMQTTG1(List<ShellyAbstractDevice> devices) {
+	public PanelMQTTG1(JDialog owner, List<ShellyAbstractDevice> devices, final Devices model) {
 		super(devices);
 		//		this.setSize(800, 800);
 		JPanel contentPanel = new JPanel();
@@ -78,13 +91,21 @@ public class PanelMQTTG1 extends AbstractSettingsPanel {
 
 		GridBagConstraints gbc_chckbxEnabled = new GridBagConstraints();
 		gbc_chckbxEnabled.weightx = 1.0;
-		gbc_chckbxEnabled.gridwidth = 4;
+		gbc_chckbxEnabled.gridwidth = 3;
 		gbc_chckbxEnabled.anchor = GridBagConstraints.WEST;
-		gbc_chckbxEnabled.insets = new Insets(0, 0, 5, 0);
+		gbc_chckbxEnabled.insets = new Insets(0, 0, 5, 5);
 		gbc_chckbxEnabled.gridx = 1;
 		gbc_chckbxEnabled.gridy = 0;
 		chckbxEnabled.setHorizontalAlignment(SwingConstants.LEFT);
 		contentPanel.add(chckbxEnabled, gbc_chckbxEnabled);
+		
+		GridBagConstraints gbc_btnCopy = new GridBagConstraints();
+		gbc_btnCopy.anchor = GridBagConstraints.EAST;
+		gbc_btnCopy.insets = new Insets(0, 0, 5, 0);
+		gbc_btnCopy.gridx = 4;
+		gbc_btnCopy.gridy = 0;
+		contentPanel.add(btnCopy, gbc_btnCopy);
+		btnCopy.addActionListener(e -> selDialog = new DialogDeviceSelection(owner, this, model));
 
 		JLabel lblNewLabel_1 = new JLabel(LABELS.getString("dlgSetServer"));
 		GridBagConstraints gbc_lblNewLabel_1 = new GridBagConstraints();
@@ -182,7 +203,7 @@ public class PanelMQTTG1 extends AbstractSettingsPanel {
 		GridBagConstraints gbc_chckbxNewCheckBox = new GridBagConstraints();
 		gbc_chckbxNewCheckBox.anchor = GridBagConstraints.WEST;
 		gbc_chckbxNewCheckBox.gridwidth = 4;
-		gbc_chckbxNewCheckBox.insets = new Insets(0, 0, 5, 5);
+		gbc_chckbxNewCheckBox.insets = new Insets(0, 0, 5, 0);
 		gbc_chckbxNewCheckBox.gridx = 1;
 		gbc_chckbxNewCheckBox.gridy = 6;
 		contentPanel.add(chckbxDefaultPrefix, gbc_chckbxNewCheckBox);
@@ -420,9 +441,10 @@ public class PanelMQTTG1 extends AbstractSettingsPanel {
 	public String showing() throws InterruptedException {
 		mqttModule.clear();
 		ShellyAbstractDevice d = null;
-		String exclude = "<html>";
+		String exclude = "<html>" + LABELS.getString("dlgExcludedDevicesMsg");
 		int excludeCount = 0;
 		try {
+			btnCopy.setEnabled(false);
 			chckbxEnabled.setEnabled(false);
 			setEnabledMQTT(false, false); // disable while checking
 			boolean enabledGlobal = false;
@@ -441,7 +463,7 @@ public class PanelMQTTG1 extends AbstractSettingsPanel {
 			for(int i = 0; i < devices.size(); i++) {
 				try {
 					d = devices.get(i);
-					MQTTManagerG1 mqttm = ((AbstractG1Device)d).getMQTTManager();
+					MQTTManagerG1 mqttm = (MQTTManagerG1)d.getMQTTManager();
 					if(Thread.interrupted()) {
 						throw new InterruptedException();
 					}
@@ -487,10 +509,7 @@ public class PanelMQTTG1 extends AbstractSettingsPanel {
 					mqttModule.add(mqttm);
 				} catch(IOException | RuntimeException e) {
 					mqttModule.add(null);
-					if(excludeCount > 0) {
-						exclude += "<br>";
-					}
-					exclude += UtilCollecion.getFullName(d);
+					exclude += "<br>" + UtilCollecion.getFullName(d);
 					excludeCount++;
 				}
 			}
@@ -500,7 +519,7 @@ public class PanelMQTTG1 extends AbstractSettingsPanel {
 			if(excludeCount == devices.size()) {
 				return LABELS.getString("msgAllDevicesExcluded");
 			} else if (excludeCount > 0) {
-				JOptionPane.showMessageDialog(this, exclude, LABELS.getString("dlgExcludedDevicesTitle"), JOptionPane.WARNING_MESSAGE);
+				Msg.showHtmlMessageDialog(this, exclude, LABELS.getString("dlgExcludedDevicesTitle"), JOptionPane.WARNING_MESSAGE);
 			}
 			chckbxEnabled.setEnabled(true); // form is active
 			chckbxEnabled.setSelected(enabledGlobal);
@@ -535,10 +554,16 @@ public class PanelMQTTG1 extends AbstractSettingsPanel {
 			textFieldUpdatePeriod.setValue(updatePerGlobal >= 0 ? updatePerGlobal : null);
 
 			setEnabledMQTT(enabledGlobal, devices.size() == 1);
+			btnCopy.setEnabled(true);
 			return null;
 		} catch (RuntimeException e) {
 			return getExtendedName(d) + ": " + e.getMessage();
 		}
+	}
+	
+	@Override
+	public void hiding() {
+		if(selDialog != null) selDialog.dispose();
 	}
 
 	@Override
@@ -599,5 +624,26 @@ public class PanelMQTTG1 extends AbstractSettingsPanel {
 		} catch (InterruptedException e) {}
 		return res;
 	}
+	
+	@Override
+	public void update(ShellyAbstractDevice device, Object dummy) {
+		try {
+			MQTTManagerG1 m = (MQTTManagerG1)device.getMQTTManager();
+			chckbxEnabled.setSelected(m.isEnabled());
+			textFieldServer.setText(m.getServer());
+			textFieldUser.setText(m.getUser());
+			textFieldMaxTimeout.setValue(m.getrTimeoutMax());
+			textFieldMinTimeout.setValue(m.getrTimeoutMin());
+			textFieldKeepAlive.setValue(m.getKeepAlive());
+			textFieldQOS.setValue(m.getQos());
+			textFieldUpdatePeriod.setValue(m.getUpdatePeriod());
+			rdbtnCleanSessionYes.setSelected(m.isCleanSession());
+			rdbtnCleanSessionNo.setSelected(m.isCleanSession() == false);
+			rdbtnRetainYes.setSelected(m.isRetain());
+			rdbtnRetainNo.setSelected(m.isRetain() == false);
+		} catch (IOException e) {
+			LOG.error("copy", e);
+		}
+	}
 }
-//580
+//649

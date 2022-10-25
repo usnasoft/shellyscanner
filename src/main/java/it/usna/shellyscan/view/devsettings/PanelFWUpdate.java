@@ -16,6 +16,7 @@ import java.util.concurrent.Future;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -33,6 +34,7 @@ import it.usna.shellyscan.model.device.FirmwareManager;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.swing.table.ExTooltipTable;
 import it.usna.swing.table.UsnaTableModel;
+import javax.swing.JLabel;
 
 public class PanelFWUpdate extends AbstractSettingsPanel {
 	private static final long serialVersionUID = 1L;
@@ -46,6 +48,7 @@ public class PanelFWUpdate extends AbstractSettingsPanel {
 	private JButton btnUnselectAll = new JButton(LABELS.getString("btn_unselectAll"));
 	private JButton btnSelectStable = new JButton(LABELS.getString("btn_selectAllSta"));
 	private JButton btnSelectBeta = new JButton(LABELS.getString("btn_selectAllbeta"));
+	private JLabel lblCount = new JLabel();
 	
 	/**
 	 * @wbp.nonvisual location=61,49
@@ -99,6 +102,7 @@ public class PanelFWUpdate extends AbstractSettingsPanel {
 						setValueAt(Boolean.FALSE, r, toOff);
 					}
 				}
+				countSelection();
 			}
 			
 			@Override
@@ -119,6 +123,7 @@ public class PanelFWUpdate extends AbstractSettingsPanel {
 		add(panel, BorderLayout.SOUTH);
 		panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
 		
+		btnUnselectAll.setBorder(BorderFactory.createEmptyBorder(4, 7, 4, 7));
 		panel.add(btnUnselectAll);
 		btnUnselectAll.addActionListener(event -> {
 			for(int i= 0; i < tModel.getRowCount(); i++) {
@@ -129,8 +134,10 @@ public class PanelFWUpdate extends AbstractSettingsPanel {
 					tModel.setValueAt(Boolean.FALSE, i, COL_BETA_IND);
 				}
 			}
+			countSelection();
 		});
 
+		btnSelectStable.setBorder(BorderFactory.createEmptyBorder(4, 7, 4, 7));
 		panel.add(btnSelectStable);
 		btnSelectStable.addActionListener(event -> {
 			for(int i= 0; i < tModel.getRowCount(); i++) {
@@ -141,8 +148,10 @@ public class PanelFWUpdate extends AbstractSettingsPanel {
 					}
 				}
 			}
+			countSelection();
 		});
 		
+		btnSelectBeta.setBorder(BorderFactory.createEmptyBorder(4, 7, 4, 7));
 		panel.add(btnSelectBeta);
 		btnSelectBeta.addActionListener(event -> {
 			for(int i= 0; i < tModel.getRowCount(); i++) {
@@ -153,12 +162,14 @@ public class PanelFWUpdate extends AbstractSettingsPanel {
 					}
 				}
 			}
+			countSelection();
 		});
 		
-		Component horizontalGlue = Box.createHorizontalGlue();
-		panel.add(horizontalGlue);
+		panel.add(lblCount);
+		panel.add(Box.createHorizontalGlue());
 
 		JButton btnCheck = new JButton(LABELS.getString("btn_check"));
+		btnCheck.setBorder(BorderFactory.createEmptyBorder(4, 7, 4, 7));
 		btnCheck.setHorizontalAlignment(SwingConstants.RIGHT);
 		panel.add(btnCheck);
 		btnCheck.addActionListener(event -> {
@@ -204,11 +215,13 @@ public class PanelFWUpdate extends AbstractSettingsPanel {
 			btnUnselectAll.setEnabled(globalStable || globalBeta);
 			btnSelectStable.setEnabled(globalStable);
 			btnSelectBeta.setEnabled(globalBeta);
+			countSelection();
 		}
 	}
 
 	@Override
 	public String showing() throws InterruptedException {
+		lblCount.setText("");
 		btnUnselectAll.setEnabled(false);
 		btnSelectStable.setEnabled(false);
 		btnSelectBeta.setEnabled(false);
@@ -260,19 +273,12 @@ public class PanelFWUpdate extends AbstractSettingsPanel {
 
 	@Override
 	public String apply() {
-		int count = 0;
-		for(int i=0; i < devices.size(); i++) {
-			Object update = tModel.getValueAt(i, COL_UPDATE_IND);
-			Object beta = tModel.getValueAt(i, COL_BETA_IND);
-			if(update instanceof Boolean && ((Boolean)update) == Boolean.TRUE || beta instanceof Boolean && ((Boolean)beta) == Boolean.TRUE) {
-				count++;
-			}
-		}
+		int count = countSelection();
 		if(count > 0 && JOptionPane.showConfirmDialog(this,
 				String.format(LABELS.getString("dlgSetConfirmUpdate"), count), LABELS.getString("dlgSetFWUpdate"),
 				JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION) {
 			String res = "";
-			for(int i=0; i < devices.size(); i++) {
+			for(int i = 0; i < devices.size(); i++) {
 				Object update = tModel.getValueAt(i, COL_UPDATE_IND);
 				Object beta = tModel.getValueAt(i, COL_BETA_IND);
 				if(update instanceof Boolean && ((Boolean)update) == Boolean.TRUE) {
@@ -293,6 +299,23 @@ public class PanelFWUpdate extends AbstractSettingsPanel {
 			return res;
 		}
 		return null;
+	}
+	
+	private int countSelection() {
+		int countS = 0;
+		int countB = 0;
+		for(int i=0; i < tModel.getRowCount(); i++) {
+			Object update = tModel.getValueAt(i, COL_UPDATE_IND);
+			Object beta = tModel.getValueAt(i, COL_BETA_IND);
+			if(update instanceof Boolean && ((Boolean)update) == Boolean.TRUE) {
+				countS++;
+			}
+			if(beta instanceof Boolean && ((Boolean)beta) == Boolean.TRUE) {
+				countB++;
+			}
+		}
+		lblCount.setText(String.format(LABELS.getString("lbl_update_count"), countS, countB));
+		return countS + countB;
 	}
 
 	private static class FWCell {
@@ -320,4 +343,4 @@ public class PanelFWUpdate extends AbstractSettingsPanel {
 //		}
 	}
 }
-// 318
+// 346

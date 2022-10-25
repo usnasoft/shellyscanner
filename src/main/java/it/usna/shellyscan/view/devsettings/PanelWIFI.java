@@ -11,7 +11,9 @@ import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
+import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPasswordField;
@@ -19,11 +21,16 @@ import javax.swing.JRadioButton;
 import javax.swing.JTextField;
 
 import it.usna.shellyscan.Main;
+import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.WIFIManager;
+import it.usna.shellyscan.model.device.WIFIManager.Network;
+import it.usna.shellyscan.view.DialogDeviceSelection;
+import it.usna.shellyscan.view.util.Msg;
 import it.usna.shellyscan.view.util.UtilCollecion;
+import it.usna.util.UsnaEventListener;
 
-public class PanelWIFI extends AbstractSettingsPanel {
+public class PanelWIFI extends AbstractSettingsPanel implements UsnaEventListener<ShellyAbstractDevice, Object> {
 	private static final long serialVersionUID = 1L;
 	private JCheckBox chckbxEnabled;
 	private JTextField textFieldSSID;
@@ -39,8 +46,10 @@ public class PanelWIFI extends AbstractSettingsPanel {
 	private List<WIFIManager> fwModule = new ArrayList<>();
 
 	private final static String IPV4_REGEX = "^((0|1\\d?\\d?|2[0-4]?\\d?|25[0-5]?|[3-9]\\d?)\\.){3}(0|1\\d?\\d?|2[0-4]?\\d?|25[0-5]?|[3-9]\\d?)$";
+	private JButton btnCopy = new JButton(LABELS.getString("btnCopy"));
+	private DialogDeviceSelection selDialog = null;
 
-	public PanelWIFI(List<ShellyAbstractDevice> devices) {
+	public PanelWIFI(JDialog owner, List<ShellyAbstractDevice> devices, final Devices model) {
 		super(devices);
 		setBorder(BorderFactory.createEmptyBorder(6, 6, 2, 6));
 		GridBagLayout gridBagLayout = new GridBagLayout();
@@ -60,11 +69,20 @@ public class PanelWIFI extends AbstractSettingsPanel {
 
 		chckbxEnabled = new JCheckBox(/*"", true*/);
 		GridBagConstraints gbc_chckbxEnabled = new GridBagConstraints();
+		gbc_chckbxEnabled.gridwidth = 2;
 		gbc_chckbxEnabled.anchor = GridBagConstraints.WEST;
 		gbc_chckbxEnabled.insets = new Insets(0, 0, 5, 5);
 		gbc_chckbxEnabled.gridx = 1;
 		gbc_chckbxEnabled.gridy = 0;
 		add(chckbxEnabled, gbc_chckbxEnabled);
+
+		GridBagConstraints gbc_btnCopy = new GridBagConstraints();
+		gbc_btnCopy.anchor = GridBagConstraints.EAST;
+		gbc_btnCopy.insets = new Insets(0, 0, 5, 0);
+		gbc_btnCopy.gridx = 3;
+		gbc_btnCopy.gridy = 0;
+		add(btnCopy, gbc_btnCopy);
+		btnCopy.addActionListener(e -> selDialog = new DialogDeviceSelection(owner, this, model));
 
 		JLabel lblNewLabel_1 = new JLabel(Main.LABELS.getString("dlgSetSSID"));
 		GridBagConstraints gbc_lblNewLabel_1 = new GridBagConstraints();
@@ -245,11 +263,12 @@ public class PanelWIFI extends AbstractSettingsPanel {
 
 	@Override
 	public String showing() throws InterruptedException {
-		String exclude = "<html>";
+		String exclude = "<html>" + LABELS.getString("dlgExcludedDevicesMsg");
 		int excludeCount = 0;
 		ShellyAbstractDevice d = null;
 		fwModule.clear();
 		try {
+			btnCopy.setEnabled(false);
 			chckbxEnabled.setEnabled(false);
 			setEnabledWIFI(false, false); // disable while checking
 			boolean enabledGlobal = false;
@@ -295,10 +314,7 @@ public class PanelWIFI extends AbstractSettingsPanel {
 					fwModule.add(sta);
 				} catch(IOException | RuntimeException e) {
 					fwModule.add(null);
-					if(excludeCount > 0) {
-						exclude += "<br>";
-					}
-					exclude += UtilCollecion.getFullName(d);
+					exclude += "<br>" + UtilCollecion.getFullName(d);
 					excludeCount++;
 				}
 			}
@@ -308,7 +324,7 @@ public class PanelWIFI extends AbstractSettingsPanel {
 			if(excludeCount == devices.size()) {
 				return LABELS.getString("msgAllDevicesExcluded");
 			} else if (excludeCount > 0) {
-				JOptionPane.showMessageDialog(this, exclude, LABELS.getString("dlgExcludedDevicesTitle"), JOptionPane.WARNING_MESSAGE);
+				Msg.showHtmlMessageDialog(this, exclude, LABELS.getString("dlgExcludedDevicesTitle"), JOptionPane.WARNING_MESSAGE);
 			}
 			chckbxEnabled.setEnabled(true); // form is active
 			chckbxEnabled.setSelected(enabledGlobal);
@@ -320,11 +336,17 @@ public class PanelWIFI extends AbstractSettingsPanel {
 			textFieldGateway.setText(globalGW);
 			textFieldDNS.setText(globalDNS);			
 			setEnabledWIFI(/*chckbxEnabled.isSelected()*/enabledGlobal, /*rdbtnStaticIP.isSelected()*/staticIPGlobal);
+			btnCopy.setEnabled(true);
 			return null;
 		} catch (/*IOException |*/ RuntimeException e) {
 			setEnabledWIFI(false, false);
 			return getExtendedName(d) + ": " + e.getMessage();
 		}
+	}
+	
+	@Override
+	public void hiding() {
+		if(selDialog != null) selDialog.dispose();
 	}
 
 	@Override
@@ -386,5 +408,21 @@ public class PanelWIFI extends AbstractSettingsPanel {
 			showing();
 		} catch (InterruptedException e) {}
 		return res;
+	}
+
+	@Override
+	public void update(ShellyAbstractDevice device, Object dummy) {
+		try {
+			WIFIManager m = device.getWIFIManager(Network.SECONDARY);
+			chckbxEnabled.setSelected(m.isEnabled());
+			textFieldSSID.setText(m.getSSID());
+			rdbtnStaticIP.setSelected(m.isStaticIP());
+			rdbtnDHCP.setSelected(m.isStaticIP() == false);
+			textFieldGateway.setText(m.getGateway());
+			textFieldNetmask.setText(m.getMask());
+			textFieldDNS.setText(m.getDNS());
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 }

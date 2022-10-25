@@ -51,6 +51,7 @@ import it.usna.shellyscan.model.device.modules.RGBWCommander;
 import it.usna.shellyscan.model.device.modules.RelayCommander;
 import it.usna.shellyscan.model.device.modules.RollerCommander;
 import it.usna.shellyscan.model.device.modules.WhiteCommander;
+import it.usna.shellyscan.view.util.IPv4Comparator;
 import it.usna.swing.ArrayTableCellRenderer;
 import it.usna.swing.DecimalTableCellRenderer;
 import it.usna.swing.table.ExTooltipTable;
@@ -112,14 +113,7 @@ public class DevicesTable extends ExTooltipTable {
 		colCommand.setCellEditor(new DeviceTableCellEditor(this));
 
 		TableRowSorter<?> sorter = (TableRowSorter<?>)getRowSorter();
-		sorter.setComparator(COL_IP_IDX, (InetAddress o1, InetAddress o2) -> {
-			byte[] i1 = o1.getAddress();
-			byte[] i2 = o2.getAddress();
-			if(i1[0] != i2[0]) return (i1[0] & 0xFF) - (i2[0] & 0xFF);
-			if(i1[1] != i2[1]) return (i1[1] & 0xFF) - (i2[1] & 0xFF);
-			if(i1[2] != i2[2]) return (i1[2] & 0xFF) - (i2[2] & 0xFF);
-			return (i1[3] & 0xFF) - (i2[3] & 0xFF);
-		});
+		sorter.setComparator(COL_IP_IDX, new IPv4Comparator());
 		
 		sorter.setComparator(COL_COMMAND_IDX, (o1, o2) -> {
 			final String s1, s2;
