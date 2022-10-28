@@ -97,7 +97,7 @@ public class DevicesFactory {
 						do {
 							credentials.setVisible(true);
 							if((user = credentials.getUser()) != null) {
-								lastCredentialsProv = credsProvider = LoginManager.getCredentialsProvider(user,credentials.getPassword());
+								lastCredentialsProv = credsProvider = LoginManager.getCredentialsProvider(user, credentials.getPassword().clone());
 							}
 							credentials.setMessage(String.format(Main.LABELS.getString("dlgAuthMessageError"), name));
 						} while(user != null && testAuthentication(address, credsProvider, "/settings") != HttpURLConnection.HTTP_OK);
