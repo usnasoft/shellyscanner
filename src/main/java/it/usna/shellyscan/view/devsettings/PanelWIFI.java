@@ -46,7 +46,7 @@ public class PanelWIFI extends AbstractSettingsPanel implements UsnaEventListene
 	private List<WIFIManager> fwModule = new ArrayList<>();
 
 	private final static String IPV4_REGEX = "^((0|1\\d?\\d?|2[0-4]?\\d?|25[0-5]?|[3-9]\\d?)\\.){3}(0|1\\d?\\d?|2[0-4]?\\d?|25[0-5]?|[3-9]\\d?)$";
-	private JButton btnCopy = new JButton(LABELS.getString("btnCopy"));
+	private JButton btnCopy = new JButton(LABELS.getString("btnCopyFrom"));
 	private DialogDeviceSelection selDialog = null;
 
 	public PanelWIFI(JDialog owner, List<ShellyAbstractDevice> devices, final Devices model) {
@@ -69,7 +69,6 @@ public class PanelWIFI extends AbstractSettingsPanel implements UsnaEventListene
 
 		chckbxEnabled = new JCheckBox(/*"", true*/);
 		GridBagConstraints gbc_chckbxEnabled = new GridBagConstraints();
-		gbc_chckbxEnabled.gridwidth = 2;
 		gbc_chckbxEnabled.anchor = GridBagConstraints.WEST;
 		gbc_chckbxEnabled.insets = new Insets(0, 0, 5, 5);
 		gbc_chckbxEnabled.gridx = 1;
@@ -94,6 +93,7 @@ public class PanelWIFI extends AbstractSettingsPanel implements UsnaEventListene
 
 		textFieldSSID = new JTextField();
 		GridBagConstraints gbc_textFieldSSID = new GridBagConstraints();
+		gbc_textFieldSSID.weightx = 1.0;
 		gbc_textFieldSSID.gridwidth = 3;
 		gbc_textFieldSSID.insets = new Insets(0, 0, 5, 0);
 		gbc_textFieldSSID.fill = GridBagConstraints.HORIZONTAL;
@@ -113,6 +113,7 @@ public class PanelWIFI extends AbstractSettingsPanel implements UsnaEventListene
 		textFieldPwd = new JPasswordField();
 		pwdEchoChar = textFieldPwd.getEchoChar();
 		GridBagConstraints gbc_textFieldPwd = new GridBagConstraints();
+		gbc_textFieldPwd.weightx = 1.0;
 		gbc_textFieldPwd.gridwidth = 3;
 		gbc_textFieldPwd.insets = new Insets(0, 0, 5, 0);
 		gbc_textFieldPwd.fill = GridBagConstraints.HORIZONTAL;

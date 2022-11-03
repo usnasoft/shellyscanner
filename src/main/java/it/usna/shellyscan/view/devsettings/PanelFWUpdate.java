@@ -95,8 +95,7 @@ public class PanelFWUpdate extends AbstractSettingsPanel {
 				final int r = getEditingRow();
 				final int c = getEditingColumn();
 				super.editingStopped(e);
-//				Object v;
-				if(r >= 0 && c >= 0 && getValueAt(r, c) == Boolean.TRUE /*(v = getValueAt(r, c)) instanceof Boolean && ((Boolean)v) == Boolean.TRUE*/) {
+				if(r >= 0 && c >= 0 && getValueAt(r, c) == Boolean.TRUE) {
 					final int toOff = (c == COL_UPDATE_IND) ? COL_BETA_IND : COL_UPDATE_IND;
 					if(getValueAt(r, toOff) instanceof Boolean) {
 						setValueAt(Boolean.FALSE, r, toOff);

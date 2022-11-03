@@ -66,7 +66,7 @@ public class PanelMQTTG1 extends AbstractSettingsPanel implements UsnaEventListe
 	private JCheckBox chckbxDefaultPrefix;
 	private List<MQTTManagerG1> mqttModule = new ArrayList<>();
 	
-	private JButton btnCopy = new JButton(LABELS.getString("btnCopy"));
+	private JButton btnCopy = new JButton(LABELS.getString("btnCopyFrom"));
 	private DialogDeviceSelection selDialog = null;
 
 	public PanelMQTTG1(JDialog owner, List<ShellyAbstractDevice> devices, final Devices model) {

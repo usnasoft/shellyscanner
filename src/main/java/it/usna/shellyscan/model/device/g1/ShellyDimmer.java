@@ -40,7 +40,7 @@ public class ShellyDimmer extends AbstractG1Device implements WhiteCommander, In
 				}
 		};
 	}
-	
+
 	@Override
 	public String getTypeName() {
 		return "Shelly Dimmer";

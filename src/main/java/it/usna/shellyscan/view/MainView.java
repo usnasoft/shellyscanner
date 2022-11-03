@@ -498,7 +498,6 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		textFieldFilter.setColumns(16);
 		
 		JComboBox<String> comboFilterCol = new JComboBox<>();
-//		comboFilterCol.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
 		comboFilterCol.addItem(LABELS.getString("col_device") + " - " + LABELS.getString("col_device_name"));
 		comboFilterCol.addItem(LABELS.getString("col_device"));
 		comboFilterCol.addItem(LABELS.getString("col_device_name"));

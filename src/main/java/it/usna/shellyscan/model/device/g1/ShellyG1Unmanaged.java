@@ -15,11 +15,6 @@ public class ShellyG1Unmanaged extends AbstractG1Device implements ShellyUnmanag
 	private String type;
 	private Exception ex;
 
-//	public ShellyG2Unmanaged(InetAddress address, String auth) throws IOException {
-//		super(address, auth);
-//		fill(getJSON("/settings"), getJSON("/status"));
-//	}
-
 	public ShellyG1Unmanaged(InetAddress address, String hostname, CredentialsProvider credentialsProv) {
 		super(address, credentialsProv);
 		try {
@@ -41,7 +36,7 @@ public class ShellyG1Unmanaged extends AbstractG1Device implements ShellyUnmanag
 	}
 	
 	public ShellyG1Unmanaged(InetAddress address, String hostname, CredentialsProvider credentialsProv, Exception e) {
-		super(address, null);
+		super(address, /*null*/credentialsProv);
 		this.ex = e;
 		this.hostname = hostname;
 		name = "";

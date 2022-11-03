@@ -134,7 +134,7 @@ public class DialogDeviceSettings extends JDialog {
 				btnClose.requestFocus(); // remove focus from form element, it could be disabled now
 				String msg = currentPanel.showing();
 				if(Thread.interrupted() == false) {
-					DialogDeviceSettings.this.setCursor(Cursor.getDefaultCursor());
+//					DialogDeviceSettings.this.setCursor(Cursor.getDefaultCursor());
 					if(isVisible() && currentPanel.isVisible() && msg != null && msg.length() > 0) {
 						JOptionPane.showMessageDialog(this, msg, LABELS.getString("errorTitle"), JOptionPane.ERROR_MESSAGE);
 					} else { //if(msg == null) { // "" -> panel displayed his own message
@@ -142,7 +142,10 @@ public class DialogDeviceSettings extends JDialog {
 						btnApplyClose.setEnabled(true);
 					}
 				}
-			} catch (InterruptedException e) {}
+			} catch (InterruptedException e) {
+			} finally {
+				DialogDeviceSettings.this.setCursor(Cursor.getDefaultCursor());
+			}
 		});
 		showCurrentThread.start();
 	}
