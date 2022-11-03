@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.InetAddress;
 import java.net.URL;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.hc.client5.http.auth.AuthCache;
 import org.apache.hc.client5.http.auth.CredentialsProvider;
@@ -61,7 +62,6 @@ import it.usna.shellyscan.view.DialogAuthentication;
 public class DevicesFactory {
 	private DevicesFactory() {}
 
-//	private final static ObjectMapper jsonMapper = new ObjectMapper();
 	private final static Logger LOG = LoggerFactory.getLogger(DevicesFactory.class);
 	private static CredentialsProvider lastCredentialsProv;
 
@@ -104,6 +104,7 @@ public class DevicesFactory {
 						credentials.dispose();
 					}
 				}
+				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			}
 			switch(info.get("type").asText()) {
 			//case ShellyPlugS.ID: return new Shelly25(address, authStringEnc); // test
@@ -169,6 +170,7 @@ public class DevicesFactory {
 						credentials.dispose();
 					}
 				}
+				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			}
 			switch(info.get("app").asText()) {
 			case ShellyPlus1.ID: return new ShellyPlus1(address, credsProvider);
@@ -190,7 +192,6 @@ public class DevicesFactory {
 	}
 
 	private static int testAuthentication(final InetAddress address, CredentialsProvider credsProvider, String testCommand) {
-//		HttpHost httpHost = new HttpHost(address, address.getHostAddress(), 80, HttpHost.DEFAULT_SCHEME_NAME);
 		HttpHost httpHost = new HttpHost(null, address, address.getHostAddress(), 80);
 		AuthCache authCache = new BasicAuthCache();
 		authCache.put(httpHost, new BasicScheme());
@@ -199,7 +200,7 @@ public class DevicesFactory {
 		context.setAuthCache(authCache);
 
 		try (CloseableHttpClient httpClient = HttpClients.createDefault(); CloseableHttpResponse response = httpClient.execute(httpHost, new HttpGet(testCommand), context)) {
-			return response./*getStatusLine().getStatusCode()*/getCode();
+			return response.getCode();
 		} catch(IOException | RuntimeException e) {
 			return HttpURLConnection.HTTP_INTERNAL_ERROR;
 		}

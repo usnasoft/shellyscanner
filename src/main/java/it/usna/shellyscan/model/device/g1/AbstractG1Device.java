@@ -43,7 +43,6 @@ import it.usna.shellyscan.model.device.g1.modules.Actions;
 
 public abstract class AbstractG1Device extends ShellyAbstractDevice {
 //	private final static JsonPointer RSSI = JsonPointer.valueOf("/wifi_sta/rssi");
-//	private final static JsonPointer SSID = JsonPointer.valueOf("/wifi_sta/ssid");
 	private final static Logger LOG = LoggerFactory.getLogger(AbstractG1Device.class);
 
 	protected AbstractG1Device(InetAddress address, CredentialsProvider credentialsProv) {
@@ -181,7 +180,6 @@ public abstract class AbstractG1Device extends ShellyAbstractDevice {
 		try (   ZipFile in = new ZipFile(file);
 				InputStream isSettings = in.getInputStream(in.getEntry("settings.json"));
 				) {
-//			final ObjectMapper mapper = new ObjectMapper();
 			JsonNode settings = jsonMapper.readTree(isSettings);
 			final String fileHostname = settings.get("device").get("hostname").asText("");
 			final String fileType = settings.get("device").get("type").asText();
@@ -218,7 +216,6 @@ public abstract class AbstractG1Device extends ShellyAbstractDevice {
 		try (   ZipFile in = new ZipFile(file);
 				InputStream isSettings = in.getInputStream(in.getEntry("settings.json"));
 				InputStream isActions = in.getInputStream(in.getEntry("actions.json")) ) {
-//			final ObjectMapper mapper = new ObjectMapper();
 			JsonNode settings = jsonMapper.readTree(isSettings);
 			final ArrayList<String> errors = new ArrayList<>();
 			restore(settings, errors);

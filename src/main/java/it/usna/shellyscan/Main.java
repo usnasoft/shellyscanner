@@ -27,7 +27,7 @@ import it.usna.util.AppProperties;
 
 public class Main {
 	public final static String APP_NAME = "Shelly Scanner";
-	public final static String VERSION = "0.8.6 beta";
+	public final static String VERSION = "0.8.6";
 	public final static String ICON = "/images/ShSc24.png";
 	public final static ResourceBundle LABELS = ResourceBundle.getBundle("LabelsBundle");
 	public static Color BG_COLOR = new Color(50, 60, 65);

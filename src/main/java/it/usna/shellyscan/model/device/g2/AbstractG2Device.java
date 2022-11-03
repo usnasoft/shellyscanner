@@ -122,7 +122,6 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 	
 	public String postCommand(final String method, JsonNode payload) {
 		try {
-//			ObjectMapper mapper = new ObjectMapper();
 			String pl = jsonMapper.writeValueAsString(payload);
 			return postCommand(method, pl);
 		} catch (JsonProcessingException e) {
@@ -160,9 +159,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 
 	private JsonNode executeRPC(final String method, String payload) throws IOException, StreamReadException {
 		HttpPost httpPost = new HttpPost("/rpc");
-//		try {
-			httpPost.setEntity(new StringEntity("{\"id\":1, \"method\":\"" + method + "\", \"params\":" + payload + "}"));
-//		} catch (UnsupportedEncodingException e1) {}
+		httpPost.setEntity(new StringEntity("{\"id\":1, \"method\":\"" + method + "\", \"params\":" + payload + "}"));
 		try (CloseableHttpClient httpClient = HttpClients.createDefault(); CloseableHttpResponse response = httpClient.execute(httpHost, httpPost, clientContext)) {
 			int statusCode = response./*getStatusLine().getStatusCode()*/getCode();
 			if(statusCode == HttpURLConnection.HTTP_OK) {
@@ -219,7 +216,6 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 				InputStream isDevInfo = in.getInputStream(in.getEntry("Shelly.GetDeviceInfo.json"));
 				InputStream isConfig = in.getInputStream(in.getEntry("Shelly.GetConfig.json"));
 				) {
-//			final ObjectMapper mapper = new ObjectMapper();
 			JsonNode devInfo = jsonMapper.readTree(isDevInfo);
 			JsonNode config = jsonMapper.readTree(isConfig);
 			final String fileHostname = devInfo.get("id").asText("");
@@ -276,7 +272,6 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 				InputStream isConfig = in.getInputStream(in.getEntry("Shelly.GetConfig.json"));
 				InputStream isSchedule = in.getInputStream(in.getEntry("Schedule.List.json"));
 				InputStream isWebhook = in.getInputStream(in.getEntry("Webhook.List.json")) ) {
-//			final ObjectMapper mapper = new ObjectMapper();
 			final ArrayList<String> errors = new ArrayList<>();
 			JsonNode config = jsonMapper.readTree(isConfig);
 			restore(config, errors);
