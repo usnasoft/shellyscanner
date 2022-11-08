@@ -34,8 +34,8 @@ import javax.swing.table.TableRowSorter;
 import it.usna.shellyscan.controller.UsnaAction;
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
-import it.usna.shellyscan.view.devsettings.AbstractSettingsPanel;
 import it.usna.shellyscan.view.util.IPv4Comparator;
+import it.usna.shellyscan.view.util.UtilCollecion;
 import it.usna.swing.table.ExTooltipTable;
 import it.usna.swing.table.UsnaTableModel;
 import it.usna.util.UsnaEventListener;
@@ -43,14 +43,36 @@ import it.usna.util.UsnaEventListener;
 public class DialogDeviceSelection extends JDialog {
 	private static final long serialVersionUID = 1L;
 
-	private UsnaTableModel tModel = new UsnaTableModel(LABELS.getString("col_device"), LABELS.getString("col_ip"));
-	private ExTooltipTable table = new ExTooltipTable(tModel, true);
+	
 	private Future<?> updateTaskFuture;
 
-	public DialogDeviceSelection(final Window owner, UsnaEventListener<ShellyAbstractDevice, Object> listener, Devices model) {
+	public DialogDeviceSelection(final Window owner, UsnaEventListener<ShellyAbstractDevice, Future<?>> listener, Devices model) {
 		super(owner, LABELS.getString("dlgSelectorTitle"));
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		
+		UsnaTableModel tModel = new UsnaTableModel(LABELS.getString("col_device"), LABELS.getString("col_ip"));
+		ExTooltipTable table = new ExTooltipTable(tModel, true) {
+			private static final long serialVersionUID = 1L;
+			{
+				columnModel.getColumn(1).setCellRenderer(new DefaultTableCellRenderer() {
+					private static final long serialVersionUID = 1L;
+					@Override
+					public void setValue(Object value) {
+						setText(((InetAddress)value).getHostAddress());
+					}
+				});
+			}
+
+			@Override
+			protected String cellTooltipValue(Object value, boolean cellTooSmall, int row, int column) {
+				if(cellTooSmall && value instanceof InetAddress) {
+					return ((InetAddress)value).getHostAddress();
+				} else {
+					return super.cellTooltipValue(value, cellTooSmall, row, column);
+				}
+			}
+		};
+
 		JScrollPane scrollPane = new JScrollPane();
 		scrollPane.setViewportView(table);
 		getContentPane().add(scrollPane, BorderLayout.CENTER);
@@ -58,18 +80,10 @@ public class DialogDeviceSelection extends JDialog {
 		for(int i = 0; i < model.size(); i++) {
 			ShellyAbstractDevice d = model.get(i);
 //			if(d.getStatus() == ShellyAbstractDevice.Status.ON_LINE) {
-				tModel.addRow(AbstractSettingsPanel.getExtendedName(d), d.getHttpHost().getAddress());
+				tModel.addRow(UtilCollecion.getExtendedHostName(d), d.getHttpHost().getAddress());
 //			}
 		}
 
-		table.getColumnModel().getColumn(1).setCellRenderer(new DefaultTableCellRenderer() {
-			private static final long serialVersionUID = 1L;
-			@Override
-			public void setValue(Object value) {
-				setText(((InetAddress)value).getHostAddress());
-			}
-		});
-		
 		table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		
 		JPanel panel = new JPanel();
@@ -147,7 +161,7 @@ public class DialogDeviceSelection extends JDialog {
 				updateTaskFuture = exeService.submit(() -> {
 					setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 					try {
-						listener.update(model.get(table.convertRowIndexToModel(table.getSelectedRow())), null);
+						listener.update(model.get(table.convertRowIndexToModel(table.getSelectedRow())), updateTaskFuture);
 					} finally {
 						setCursor(Cursor.getDefaultCursor());
 					}

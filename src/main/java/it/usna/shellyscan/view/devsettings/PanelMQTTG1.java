@@ -10,6 +10,7 @@ import java.awt.Insets;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Future;
 
 import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
@@ -40,7 +41,7 @@ import it.usna.shellyscan.view.util.UtilCollecion;
 import it.usna.util.UsnaEventListener;
 
 //https://shelly-api-docs.shelly.cloud/gen1/#settings
-public class PanelMQTTG1 extends AbstractSettingsPanel implements UsnaEventListener<ShellyAbstractDevice, Object> {
+public class PanelMQTTG1 extends AbstractSettingsPanel implements UsnaEventListener<ShellyAbstractDevice, Future<?>> {
 	private static final long serialVersionUID = 1L;
 	private final static Logger LOG = LoggerFactory.getLogger(PanelMQTTG1.class);
 	
@@ -557,7 +558,7 @@ public class PanelMQTTG1 extends AbstractSettingsPanel implements UsnaEventListe
 			btnCopy.setEnabled(true);
 			return null;
 		} catch (RuntimeException e) {
-			return getExtendedName(d) + ": " + e.getMessage();
+			return UtilCollecion.getFullName(d) + ": " + e.getMessage();
 		}
 	}
 	
@@ -626,23 +627,25 @@ public class PanelMQTTG1 extends AbstractSettingsPanel implements UsnaEventListe
 	}
 	
 	@Override
-	public void update(ShellyAbstractDevice device, Object dummy) {
-		try {
-			MQTTManagerG1 m = (MQTTManagerG1)device.getMQTTManager();
-			chckbxEnabled.setSelected(m.isEnabled());
-			textFieldServer.setText(m.getServer());
-			textFieldUser.setText(m.getUser());
-			textFieldMaxTimeout.setValue(m.getrTimeoutMax());
-			textFieldMinTimeout.setValue(m.getrTimeoutMin());
-			textFieldKeepAlive.setValue(m.getKeepAlive());
-			textFieldQOS.setValue(m.getQos());
-			textFieldUpdatePeriod.setValue(m.getUpdatePeriod());
-			rdbtnCleanSessionYes.setSelected(m.isCleanSession());
-			rdbtnCleanSessionNo.setSelected(m.isCleanSession() == false);
-			rdbtnRetainYes.setSelected(m.isRetain());
-			rdbtnRetainNo.setSelected(m.isRetain() == false);
-		} catch (IOException e) {
-			LOG.error("copy", e);
+	public void update(ShellyAbstractDevice device, Future<?> future) {
+		if(future.isCancelled() == false) {
+			try {
+				MQTTManagerG1 m = (MQTTManagerG1)device.getMQTTManager();
+				chckbxEnabled.setSelected(m.isEnabled());
+				textFieldServer.setText(m.getServer());
+				textFieldUser.setText(m.getUser());
+				textFieldMaxTimeout.setValue(m.getrTimeoutMax());
+				textFieldMinTimeout.setValue(m.getrTimeoutMin());
+				textFieldKeepAlive.setValue(m.getKeepAlive());
+				textFieldQOS.setValue(m.getQos());
+				textFieldUpdatePeriod.setValue(m.getUpdatePeriod());
+				rdbtnCleanSessionYes.setSelected(m.isCleanSession());
+				rdbtnCleanSessionNo.setSelected(m.isCleanSession() == false);
+				rdbtnRetainYes.setSelected(m.isRetain());
+				rdbtnRetainNo.setSelected(m.isRetain() == false);
+			} catch (IOException e) {
+				LOG.error("copy", e);
+			}
 		}
 	}
 }

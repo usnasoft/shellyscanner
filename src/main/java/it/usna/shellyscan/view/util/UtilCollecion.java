@@ -18,4 +18,9 @@ public class UtilCollecion {
 			return d.getHostname() + " - " + d.getTypeName();
 		}
 	}
+	
+	public static String getExtendedHostName(ShellyAbstractDevice d) {
+		final String dName = d.getName();
+		return d.getHostname() + " - " + (dName.length() > 0 ? dName : d.getTypeName());
+	}
 }

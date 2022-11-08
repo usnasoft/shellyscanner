@@ -8,6 +8,7 @@ import java.awt.Insets;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Future;
 
 import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
@@ -20,6 +21,9 @@ import javax.swing.JPasswordField;
 import javax.swing.JRadioButton;
 import javax.swing.JTextField;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import it.usna.shellyscan.Main;
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
@@ -30,8 +34,10 @@ import it.usna.shellyscan.view.util.Msg;
 import it.usna.shellyscan.view.util.UtilCollecion;
 import it.usna.util.UsnaEventListener;
 
-public class PanelWIFI extends AbstractSettingsPanel implements UsnaEventListener<ShellyAbstractDevice, Object> {
+public class PanelWIFI extends AbstractSettingsPanel implements UsnaEventListener<ShellyAbstractDevice, Future<?>> {
 	private static final long serialVersionUID = 1L;
+	private final static Logger LOG = LoggerFactory.getLogger(PanelWIFI.class);
+	
 	private JCheckBox chckbxEnabled;
 	private JTextField textFieldSSID;
 	private JPasswordField textFieldPwd;
@@ -322,9 +328,9 @@ public class PanelWIFI extends AbstractSettingsPanel implements UsnaEventListene
 //			if(Thread.interrupted()) {
 //				throw new InterruptedException();
 //			}
-			if(excludeCount == devices.size()) {
+			if(excludeCount == devices.size() && isShowing()) {
 				return LABELS.getString("msgAllDevicesExcluded");
-			} else if (excludeCount > 0) {
+			} else if (excludeCount > 0 && isShowing()) {
 				Msg.showHtmlMessageDialog(this, exclude, LABELS.getString("dlgExcludedDevicesTitle"), JOptionPane.WARNING_MESSAGE);
 			}
 			chckbxEnabled.setEnabled(true); // form is active
@@ -341,7 +347,7 @@ public class PanelWIFI extends AbstractSettingsPanel implements UsnaEventListene
 			return null;
 		} catch (/*IOException |*/ RuntimeException e) {
 			setEnabledWIFI(false, false);
-			return getExtendedName(d) + ": " + e.getMessage();
+			return UtilCollecion.getFullName(d) + ": " + e.getMessage();
 		}
 	}
 	
@@ -412,18 +418,20 @@ public class PanelWIFI extends AbstractSettingsPanel implements UsnaEventListene
 	}
 
 	@Override
-	public void update(ShellyAbstractDevice device, Object dummy) {
-		try {
-			WIFIManager m = device.getWIFIManager(Network.SECONDARY);
-			chckbxEnabled.setSelected(m.isEnabled());
-			textFieldSSID.setText(m.getSSID());
-			rdbtnStaticIP.setSelected(m.isStaticIP());
-			rdbtnDHCP.setSelected(m.isStaticIP() == false);
-			textFieldGateway.setText(m.getGateway());
-			textFieldNetmask.setText(m.getMask());
-			textFieldDNS.setText(m.getDNS());
-		} catch (IOException e) {
-			e.printStackTrace();
+	public void update(ShellyAbstractDevice device, Future<?> future) {
+		if(future.isCancelled() == false) {
+			try {
+				WIFIManager m = device.getWIFIManager(Network.SECONDARY);
+				chckbxEnabled.setSelected(m.isEnabled());
+				textFieldSSID.setText(m.getSSID());
+				rdbtnStaticIP.setSelected(m.isStaticIP());
+				rdbtnDHCP.setSelected(m.isStaticIP() == false);
+				textFieldGateway.setText(m.getGateway());
+				textFieldNetmask.setText(m.getMask());
+				textFieldDNS.setText(m.getDNS());
+			} catch (IOException e) {
+				LOG.error("copy", e);
+			}
 		}
 	}
 }

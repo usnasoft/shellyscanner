@@ -10,6 +10,7 @@ import java.awt.Insets;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Future;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -38,7 +39,7 @@ import it.usna.util.UsnaEventListener;
 
 //https://shelly-api-docs.shelly.cloud/gen2/Components/SystemComponents/Mqtt
 //https://shelly-api-docs.shelly.cloud/gen1/#settings
-public class PanelMQTTAll extends AbstractSettingsPanel implements UsnaEventListener<ShellyAbstractDevice, Object> {
+public class PanelMQTTAll extends AbstractSettingsPanel implements UsnaEventListener<ShellyAbstractDevice, Future<?>> {
 	private static final long serialVersionUID = 1L;
 	private final static Logger LOG = LoggerFactory.getLogger(PanelMQTTAll.class);
 	
@@ -299,7 +300,7 @@ public class PanelMQTTAll extends AbstractSettingsPanel implements UsnaEventList
 			btnCopy.setEnabled(true);
 			return null;
 		} catch (RuntimeException e) {
-			return getExtendedName(d) + ": " + e.getMessage();
+			return UtilCollecion.getFullName(d) + ": " + e.getMessage();
 		}
 	}
 	
@@ -358,14 +359,16 @@ public class PanelMQTTAll extends AbstractSettingsPanel implements UsnaEventList
 	}
 	
 	@Override
-	public void update(ShellyAbstractDevice device, Object dummy) {
-		try {
-			MQTTManager m = device.getMQTTManager();
-			chckbxEnabled.setSelected(m.isEnabled());
-			textFieldServer.setText(m.getServer());
-			textFieldUser.setText(m.getUser());
-		} catch (IOException e) {
-			LOG.error("copy", e);
+	public void update(ShellyAbstractDevice device, Future<?> future) {
+		if(future.isCancelled() == false) {
+			try {
+				MQTTManager m = device.getMQTTManager();
+				chckbxEnabled.setSelected(m.isEnabled());
+				textFieldServer.setText(m.getServer());
+				textFieldUser.setText(m.getUser());
+			} catch (IOException e) {
+				LOG.error("copy", e);
+			}
 		}
 	}
 } // 371

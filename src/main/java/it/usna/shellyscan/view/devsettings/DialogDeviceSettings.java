@@ -121,6 +121,7 @@ public class DialogDeviceSettings extends JDialog {
 	private synchronized void showCurrent() {
 		if(showCurrentThread != null) {
 			showCurrentThread.interrupt();
+			DialogDeviceSettings.this.setCursor(Cursor.getDefaultCursor());
 		}
 		setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 		btnOKButton.setEnabled(false);

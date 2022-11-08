@@ -27,7 +27,7 @@ import it.usna.util.AppProperties;
 
 public class Main {
 	public final static String APP_NAME = "Shelly Scanner";
-	public final static String VERSION = "0.8.6";
+	public final static String VERSION = "0.8.7 alpha";
 	public final static String ICON = "/images/ShSc24.png";
 	public final static ResourceBundle LABELS = ResourceBundle.getBundle("LabelsBundle");
 	public static Color BG_COLOR = new Color(50, 60, 65);
@@ -53,6 +53,10 @@ public class Main {
 			for (LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
 				if ("Nimbus".equals(info.getName())) {
 					UIManager.setLookAndFeel(info.getClassName());
+					
+//					UIManager.put("Table.background", new ColorUIResource(TAB_LINE1));
+//					UIManager.put("Table.alternateRowColor", TAB_LINE2);
+//					UIManager.getLookAndFeelDefaults().put("Table:\"Table.cellRenderer\".background", new ColorUIResource(TAB_LINE1));
 					break;
 				}
 			}
@@ -279,7 +283,14 @@ public class Main {
 // wifi2 - copy
 // ^S combo change selection
 
+//0.8.7
+// fw update su tre colonne
+
+
 //todo
+//wi-fi 1 con copia su 2 e viceversa
+//check alterazione wi-fi corrente
+//archivio (additivo) dispositivi collegati opzionalmente caricabile (con eventuale default da settings)
 // 2.5 ottimizzazione array ralay 2.5
 // global settings: wi-fi 2 (chiedere se il dispositivo e' connesso a questo)
 // global settings: wi-fi 1 (chiedere se il dispositivo e' connesso a questo)
