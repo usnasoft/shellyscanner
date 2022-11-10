@@ -28,7 +28,6 @@ import it.usna.shellyscan.Main;
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.WIFIManager;
-import it.usna.shellyscan.model.device.WIFIManager.Network;
 import it.usna.shellyscan.view.DialogDeviceSelection;
 import it.usna.shellyscan.view.util.Msg;
 import it.usna.shellyscan.view.util.UtilCollecion;
@@ -49,14 +48,16 @@ public class PanelWIFI extends AbstractSettingsPanel implements UsnaEventListene
 	private JRadioButton rdbtnDHCP = new JRadioButton(Main.LABELS.getString("dlgSetEnabled"));
 	private JRadioButton rdbtnStaticIP = new JRadioButton(Main.LABELS.getString("dlgSetStatic"));
 	private char pwdEchoChar;
+	private WIFIManager.Network netModule;
 	private List<WIFIManager> fwModule = new ArrayList<>();
 
 	private final static String IPV4_REGEX = "^((0|1\\d?\\d?|2[0-4]?\\d?|25[0-5]?|[3-9]\\d?)\\.){3}(0|1\\d?\\d?|2[0-4]?\\d?|25[0-5]?|[3-9]\\d?)$";
 	private JButton btnCopy = new JButton(LABELS.getString("btnCopyFrom"));
 	private DialogDeviceSelection selDialog = null;
 
-	public PanelWIFI(JDialog owner, List<ShellyAbstractDevice> devices, final Devices model) {
+	public PanelWIFI(JDialog owner, WIFIManager.Network net, List<ShellyAbstractDevice> devices, final Devices model) {
 		super(devices);
+		this.netModule = net;
 		setBorder(BorderFactory.createEmptyBorder(6, 6, 2, 6));
 		GridBagLayout gridBagLayout = new GridBagLayout();
 		gridBagLayout.columnWidths = new int[] {0, 0, 0, 0};
@@ -235,7 +236,7 @@ public class PanelWIFI extends AbstractSettingsPanel implements UsnaEventListene
 		ButtonGroup dhcpStatic = new ButtonGroup();
 		dhcpStatic.add(rdbtnDHCP);
 		dhcpStatic.add(rdbtnStaticIP);
-		rdbtnStaticIP.addItemListener(event -> setStaticIP(event.getStateChange() == java.awt.event.ItemEvent.SELECTED));
+		rdbtnStaticIP.addItemListener(event -> setEnabledStaticIP(event.getStateChange() == java.awt.event.ItemEvent.SELECTED));
 
 		chckbxEnabled.addItemListener(event -> setEnabledWIFI(event.getStateChange() == java.awt.event.ItemEvent.SELECTED, rdbtnStaticIP.isSelected()));
 	}
@@ -246,16 +247,10 @@ public class PanelWIFI extends AbstractSettingsPanel implements UsnaEventListene
 		chckbxShowPwd.setEnabled(enabled);
 		rdbtnDHCP.setEnabled(enabled && devices.size() == 1);
 		rdbtnStaticIP.setEnabled(enabled && devices.size() == 1);
-		if(enabled == false) {
-			//			textFieldSSID.setText("");
-			//			textFieldPwd.setText("");
-			setStaticIP(false);
-		} else {
-			setStaticIP(staticIP);
-		}
+		setEnabledStaticIP(staticIP && enabled);
 	}
 
-	private void setStaticIP(boolean staticIP) {
+	private void setEnabledStaticIP(boolean staticIP) {
 		textFieldStaticIP.setEnabled(staticIP && devices.size() == 1);
 		textFieldNetmask.setEnabled(staticIP);
 		textFieldGateway.setEnabled(staticIP);
@@ -289,7 +284,7 @@ public class PanelWIFI extends AbstractSettingsPanel implements UsnaEventListene
 			for(int i = 0; i < devices.size(); i++) {
 				d = devices.get(i);
 				try {
-					WIFIManager sta = d.getWIFIManager(WIFIManager.Network.SECONDARY);
+					WIFIManager sta = d.getWIFIManager(netModule);
 					if(Thread.interrupted()) {
 						throw new InterruptedException();
 					}
@@ -421,11 +416,11 @@ public class PanelWIFI extends AbstractSettingsPanel implements UsnaEventListene
 	public void update(ShellyAbstractDevice device, Future<?> future) {
 		if(future.isCancelled() == false) {
 			try {
-				WIFIManager m = device.getWIFIManager(Network.SECONDARY);
+				WIFIManager m = device.getWIFIManager(netModule);
 				chckbxEnabled.setSelected(m.isEnabled());
 				textFieldSSID.setText(m.getSSID());
 				rdbtnStaticIP.setSelected(m.isStaticIP());
-				rdbtnDHCP.setSelected(m.isStaticIP() == false);
+				rdbtnDHCP.setSelected(m.isStaticIP() == false || devices.size() > 1);
 				textFieldGateway.setText(m.getGateway());
 				textFieldNetmask.setText(m.getMask());
 				textFieldDNS.setText(m.getDNS());

@@ -61,6 +61,7 @@ public class DialogDeviceSelection extends JDialog {
 						setText(((InetAddress)value).getHostAddress());
 					}
 				});
+				((TableRowSorter<?>)getRowSorter()).setComparator(1, new IPv4Comparator());
 			}
 
 			@Override

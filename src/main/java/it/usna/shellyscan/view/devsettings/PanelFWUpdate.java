@@ -22,13 +22,11 @@ import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
-import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
-import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.table.TableCellEditor;
@@ -55,7 +53,7 @@ public class PanelFWUpdate extends AbstractSettingsPanel {
 	private JButton btnSelectBeta = new JButton(LABELS.getString("btn_selectAllbeta"));
 	private JLabel lblCount = new JLabel();
 	
-	private final static Pattern VERSION_PATTERN = Pattern.compile(".*/v?([\\.\\d]+(-beta.*)?)(-|@).*");
+	private final static Pattern VERSION_PATTERN = Pattern.compile(".*/v?([\\.\\d]+(-beta.*)?)(-|@).*"); // 20210429-100340/v1.10.4-g3f94cd7 - 20211222-144927/0.9.2-beta2-gc538a83 - 20211223-144928/v2.0.5@3f0fcbbe
 	
 	/**
 	 * @wbp.nonvisual location=61,49
@@ -69,8 +67,8 @@ public class PanelFWUpdate extends AbstractSettingsPanel {
 		table = new ExTooltipTable(tModel) {
 			private static final long serialVersionUID = 1L;
 			{
-				((JComponent) getDefaultRenderer(Boolean.class)).setOpaque(true);
-				((JComponent) getDefaultRenderer(Boolean.class)).setOpaque(true);
+				((JCheckBox) getDefaultRenderer(Boolean.class)).setOpaque(true);
+				((JCheckBox) getDefaultRenderer(Boolean.class)).setHorizontalAlignment(JCheckBox.LEFT);
 				TableCellRenderer  fwRendered = new FWCellRendered();
 				getColumnModel().getColumn(COL_STABLE).setCellRenderer(fwRendered);
 				getColumnModel().getColumn(COL_BETA).setCellRenderer(fwRendered);
@@ -175,7 +173,6 @@ public class PanelFWUpdate extends AbstractSettingsPanel {
 
 		JButton btnCheck = new JButton(LABELS.getString("btn_check"));
 		btnCheck.setBorder(BorderFactory.createEmptyBorder(4, 7, 4, 7));
-		btnCheck.setHorizontalAlignment(SwingConstants.RIGHT);
 		panel.add(btnCheck);
 		btnCheck.addActionListener(event -> {
 			btnUnselectAll.setEnabled(false);
@@ -247,7 +244,7 @@ public class PanelFWUpdate extends AbstractSettingsPanel {
 			table.columnsWidthAdapt();
 			final FontMetrics fm = getGraphics().getFontMetrics();
 			table.getColumnModel().getColumn(COL_STABLE).setPreferredWidth(SwingUtilities.computeStringWidth(fm, "0.12.0"));
-			table.getColumnModel().getColumn(COL_BETA).setPreferredWidth(SwingUtilities.computeStringWidth(fm, "0.12.0-beta"));
+			table.getColumnModel().getColumn(COL_BETA).setPreferredWidth(SwingUtilities.computeStringWidth(fm, "0.12.0-beta1"));
 		} catch (/*IOException |*/ RuntimeException e) {
 			return e.toString();
 		}
@@ -341,7 +338,6 @@ public class PanelFWUpdate extends AbstractSettingsPanel {
 		public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
 			if(value == null || value instanceof Boolean) {
 				JCheckBox c = (JCheckBox)table.getDefaultRenderer(Boolean.class).getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-				c.setHorizontalAlignment(JLabel.LEFT);
 				if(value == null) {
 					c.setEnabled(false);
 					c.setText("");
@@ -359,4 +355,4 @@ public class PanelFWUpdate extends AbstractSettingsPanel {
 		}
 	}
 }
-// 346 - 360
+// 346 - 358

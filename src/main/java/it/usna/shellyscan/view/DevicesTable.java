@@ -237,7 +237,7 @@ public class DevicesTable extends ExTooltipTable {
 			} else if (value instanceof ImageIcon) {
 				adaptTooltipLocation = false;
 				return ((ImageIcon)value).getDescription();
-			} else if(value instanceof DeviceModule[] && isColumnVisible(COL_SOURCE_IDX) == false) {
+			} else if(value instanceof DeviceModule[] && isColumnVisible(COL_SOURCE_IDX) == false && ((DeviceModule[])value).length > 0 && ((DeviceModule[])value)[0].getLastSource() != null) {
 				adaptTooltipLocation = false;
 				return Arrays.stream((DeviceModule[])value).
 						map(rel -> String.format(LABELS.getString("col_last_source_tooltip"), rel, rel.getLastSource())).collect(Collectors.joining("<br>", "<html>", "</html>"));
