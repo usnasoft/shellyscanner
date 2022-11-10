@@ -100,8 +100,7 @@ public class WIFIManagerG2 implements WIFIManager {
 		config.set("config", network);
 		return d.postCommand("Wifi.SetConfig", config);
 	}
-	
-	// todo netmask
+
 	@Override
 	public String set(String ssid, String pwd, String ip, String netmask, String gw, String dns) {
 		JsonNodeFactory factory = new JsonNodeFactory(false);
