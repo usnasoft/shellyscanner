@@ -141,20 +141,21 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		}
 	});
 
-	private Action rescanAction = new UsnaAction(this, "/images/73-radar.png", "action_scan_tooltip", e -> {
+	private Action rescanAction = new UsnaAction(null, "/images/73-radar.png", "action_scan_tooltip", e -> {
 		statusLabel.setText(LABELS.getString("scanning_start"));
+		devicesTable.clearSelection();
 		SwingUtilities.invokeLater(() -> {
+			MainView.this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 			try {
-				setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-				setEnabled(false);
+//				setEnabled(false);
 				model.scan();
-				Thread.sleep(2500); // too many call disturb some devices
+				Thread.sleep(500); // too many call disturb some devices
 			} catch (IOException e1) {
 				Main.errorMsg(e1);
 			} catch (InterruptedException e1) {
 			} finally {
-				setEnabled(true);
-				setCursor(Cursor.getDefaultCursor());
+//				setEnabled(true);
+				MainView.this.setCursor(Cursor.getDefaultCursor());
 			}
 		});
 	});
@@ -240,7 +241,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 					try {
 						final boolean connected;
 						if(ind.length > 1) {
-							connected = d.backup(new File(fc.getSelectedFile(), hostName.replaceAll("[^\\w_-]+", "_") + ".sbk"));
+							connected = d.backup(new File(fc.getSelectedFile(), hostName.replaceAll("[^\\w_-]+", "_") + "." + Main.BACKUP_FILE_EXT));
 						} else {
 							connected = d.backup(fc.getSelectedFile());
 						}
@@ -274,7 +275,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 			}
 		} else if(ind.length == 1) {
 			fc.setAcceptAllFileFilterUsed(false);
-			fc.addChoosableFileFilter(new FileNameExtensionFilter(LABELS.getString("filetype_sbk_desc"), "sbk"));
+			fc.addChoosableFileFilter(new FileNameExtensionFilter(LABELS.getString("filetype_sbk_desc"), Main.BACKUP_FILE_EXT));
 			ShellyAbstractDevice device = model.get(devicesTable.convertRowIndexToModel(ind[0]));
 			String fileName = device.getHostname().replaceAll("[^\\w_-]+", "_") + ".sbk";
 			fc.setSelectedFile(new File(fileName));
@@ -297,8 +298,8 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 				fc.setCurrentDirectory(new File(path));
 			}
 			fc.setAcceptAllFileFilterUsed(false);
-			fc.addChoosableFileFilter(new FileNameExtensionFilter(LABELS.getString("filetype_sbk_desc"), "sbk"));
-			final String fileName = device.getHostname().replaceAll("[^\\w_-]+", "_") + ".sbk";
+			fc.addChoosableFileFilter(new FileNameExtensionFilter(LABELS.getString("filetype_sbk_desc"), Main.BACKUP_FILE_EXT));
+			final String fileName = device.getHostname().replaceAll("[^\\w_-]+", "_") + "." + Main.BACKUP_FILE_EXT;
 			fc.setSelectedFile(new File(fileName));
 			if(fc.showOpenDialog(MainView.this) == JFileChooser.APPROVE_OPTION) {
 				MainView.this.getContentPane().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));

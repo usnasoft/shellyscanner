@@ -43,7 +43,6 @@ import it.usna.util.UsnaEventListener;
 public class DialogDeviceSelection extends JDialog {
 	private static final long serialVersionUID = 1L;
 
-	
 	private Future<?> updateTaskFuture;
 
 	public DialogDeviceSelection(final Window owner, UsnaEventListener<ShellyAbstractDevice, Future<?>> listener, Devices model) {

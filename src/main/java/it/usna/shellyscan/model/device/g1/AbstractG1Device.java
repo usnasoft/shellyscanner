@@ -70,12 +70,13 @@ public abstract class AbstractG1Device extends ShellyAbstractDevice {
 		this.rssi = wifi.path("rssi").asInt(0);
 		this.ssid = wifi.path("ssid").asText("");
 		this.uptime = status.get("uptime").asInt();
+		this.mqttConnected = status.path("mqtt").path("connected").asBoolean();
 	}
 
 	public String sendCommand(final String command) {
 		HttpGet httpget = new HttpGet(command);
 		try (CloseableHttpClient httpClient = HttpClients.createDefault(); CloseableHttpResponse response = httpClient.execute(httpHost, httpget, clientContext)) {
-			int statusCode = response./*getStatusLine().getStatusCode()*/getCode();
+			int statusCode = response.getCode();
 			if(statusCode == HttpURLConnection.HTTP_OK) {
 				status = Status.ON_LINE;
 			} else if(statusCode == HttpURLConnection.HTTP_UNAUTHORIZED) {

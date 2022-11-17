@@ -31,6 +31,7 @@ public abstract class ShellyAbstractDevice {
 	protected boolean cloudEnabled;
 	protected boolean cloudConnected;
 	protected boolean mqttEnabled;
+	protected boolean mqttConnected;
 	protected LogMode debugEnabled = LogMode.NO;
 	protected int rssi;
 	protected String ssid;
@@ -142,6 +143,10 @@ public abstract class ShellyAbstractDevice {
 	
 	public boolean getMQTTEnabled() {
 		return mqttEnabled;
+	}
+	
+	public boolean getMQTTConnected() {
+		return mqttConnected;
 	}
 
 	public int getRssi() {

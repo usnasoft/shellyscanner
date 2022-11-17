@@ -77,6 +77,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 		this.rssi = wifiNode.path("rssi").asInt();
 		this.ssid = wifiNode.path("ssid").asText();
 		this.uptime = status.get("sys").get("uptime").asInt();
+		this.mqttConnected = status.path("mqtt").path("connected").asBoolean();
 	}
 
 	@Override
