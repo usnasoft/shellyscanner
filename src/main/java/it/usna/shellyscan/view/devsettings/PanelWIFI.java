@@ -47,6 +47,7 @@ public class PanelWIFI extends AbstractSettingsPanel implements UsnaEventListene
 	private JTextField textFieldDNS;
 	private JRadioButton rdbtnDHCP = new JRadioButton(Main.LABELS.getString("dlgSetEnabled"));
 	private JRadioButton rdbtnStaticIP = new JRadioButton(Main.LABELS.getString("dlgSetStatic"));
+	private JRadioButton rdbtnDhcpNoChange = new JRadioButton(LABELS.getString("dlgSetDoNotChange"));
 	private char pwdEchoChar;
 	private WIFIManager.Network netModule;
 	private List<WIFIManager> fwModule = new ArrayList<>();
@@ -155,13 +156,19 @@ public class PanelWIFI extends AbstractSettingsPanel implements UsnaEventListene
 		add(rdbtnDHCP, gbc_rdbtnDHCP);
 
 		GridBagConstraints gbc_rdbtnStaticIP = new GridBagConstraints();
-		gbc_rdbtnStaticIP.anchor = GridBagConstraints.EAST;
 		gbc_rdbtnStaticIP.insets = new Insets(0, 0, 5, 5);
 		gbc_rdbtnStaticIP.gridx = 2;
 		gbc_rdbtnStaticIP.gridy = 4;
 		add(rdbtnStaticIP, gbc_rdbtnStaticIP);
+		
+		GridBagConstraints gbc_rdbtnDhcpNoChange = new GridBagConstraints();
+		gbc_rdbtnDhcpNoChange.anchor = GridBagConstraints.WEST;
+		gbc_rdbtnDhcpNoChange.insets = new Insets(0, 0, 5, 0);
+		gbc_rdbtnDhcpNoChange.gridx = 3;
+		gbc_rdbtnDhcpNoChange.gridy = 4;
+		add(rdbtnDhcpNoChange, gbc_rdbtnDhcpNoChange);
 
-		JLabel lblNewLabel_4 = new JLabel(Main.LABELS.getString("dlgSetIP"));
+		JLabel lblNewLabel_4 = new JLabel(LABELS.getString("dlgSetIP"));
 		GridBagConstraints gbc_lblNewLabel_4 = new GridBagConstraints();
 		gbc_lblNewLabel_4.anchor = GridBagConstraints.WEST;
 		gbc_lblNewLabel_4.insets = new Insets(0, 0, 5, 5);
@@ -179,7 +186,7 @@ public class PanelWIFI extends AbstractSettingsPanel implements UsnaEventListene
 		add(textFieldStaticIP, gbc_textFieldStaticIP);
 		textFieldStaticIP.setColumns(16);
 
-		JLabel lblNewLabel_5 = new JLabel(Main.LABELS.getString("dlgSetNetmask"));
+		JLabel lblNewLabel_5 = new JLabel(LABELS.getString("dlgSetNetmask"));
 		GridBagConstraints gbc_lblNewLabel_5 = new GridBagConstraints();
 		gbc_lblNewLabel_5.anchor = GridBagConstraints.WEST;
 		gbc_lblNewLabel_5.insets = new Insets(0, 0, 5, 5);
@@ -197,7 +204,7 @@ public class PanelWIFI extends AbstractSettingsPanel implements UsnaEventListene
 		add(textFieldNetmask, gbc_textFieldNetmask);
 		textFieldNetmask.setColumns(16);
 
-		JLabel lblNewLabel_6 = new JLabel(Main.LABELS.getString("dlgSetGateway"));
+		JLabel lblNewLabel_6 = new JLabel(LABELS.getString("dlgSetGateway"));
 		GridBagConstraints gbc_lblNewLabel_6 = new GridBagConstraints();
 		gbc_lblNewLabel_6.anchor = GridBagConstraints.WEST;
 		gbc_lblNewLabel_6.insets = new Insets(0, 0, 5, 5);
@@ -215,7 +222,7 @@ public class PanelWIFI extends AbstractSettingsPanel implements UsnaEventListene
 		add(textFieldGateway, gbc_textFieldGateway);
 		textFieldGateway.setColumns(16);
 
-		JLabel lblNewLabel_7 = new JLabel(Main.LABELS.getString("dlgSetDNS"));
+		JLabel lblNewLabel_7 = new JLabel(LABELS.getString("dlgSetDNS"));
 		GridBagConstraints gbc_lblNewLabel_7 = new GridBagConstraints();
 		gbc_lblNewLabel_7.anchor = GridBagConstraints.WEST;
 		gbc_lblNewLabel_7.insets = new Insets(0, 0, 0, 5);
@@ -236,31 +243,26 @@ public class PanelWIFI extends AbstractSettingsPanel implements UsnaEventListene
 		ButtonGroup dhcpStatic = new ButtonGroup();
 		dhcpStatic.add(rdbtnDHCP);
 		dhcpStatic.add(rdbtnStaticIP);
+		dhcpStatic.add(rdbtnDhcpNoChange);
 		rdbtnStaticIP.addItemListener(event -> setEnabledStaticIP(event.getStateChange() == java.awt.event.ItemEvent.SELECTED));
 
 		chckbxEnabled.addItemListener(event -> setEnabledWIFI(event.getStateChange() == java.awt.event.ItemEvent.SELECTED, rdbtnStaticIP.isSelected()));
 	}
 
-	private void setEnabledWIFI(boolean enabled, boolean staticIP) {
+	private void setEnabledWIFI(boolean enabled, Boolean staticIP) {
 		textFieldSSID.setEnabled(enabled);
 		textFieldPwd.setEnabled(enabled);
 		chckbxShowPwd.setEnabled(enabled);
-		rdbtnDHCP.setEnabled(enabled && devices.size() == 1);
-		rdbtnStaticIP.setEnabled(enabled && devices.size() == 1);
-		setEnabledStaticIP(staticIP && enabled);
+		rdbtnDHCP.setEnabled(enabled /*&& devices.size() == 1*/);
+		rdbtnStaticIP.setEnabled(enabled && staticIP == Boolean.TRUE /*devices.size() == 1*/);
+		setEnabledStaticIP((staticIP == null || staticIP) && enabled);
 	}
 
-	private void setEnabledStaticIP(boolean staticIP) {
-		textFieldStaticIP.setEnabled(staticIP && devices.size() == 1);
-		textFieldNetmask.setEnabled(staticIP);
-		textFieldGateway.setEnabled(staticIP);
-		textFieldDNS.setEnabled(staticIP);
-		//		if(staticIP == false) {
-		//			textFieldStaticIP.setText("");
-		//			textFieldNetmask.setText("");
-		//			textFieldGateway.setText("");
-		//			textFieldDNS.setText("");
-		//		}
+	private void setEnabledStaticIP(Boolean staticIP) {
+		textFieldStaticIP.setEnabled(staticIP == Boolean.TRUE && devices.size() == 1);
+		textFieldNetmask.setEnabled(staticIP == null || staticIP == Boolean.TRUE);
+		textFieldGateway.setEnabled(staticIP == null || staticIP == Boolean.TRUE);
+		textFieldDNS.setEnabled(staticIP == null || staticIP == Boolean.TRUE);
 	}
 
 	@Override
@@ -275,7 +277,7 @@ public class PanelWIFI extends AbstractSettingsPanel implements UsnaEventListene
 			setEnabledWIFI(false, false); // disable while checking
 			boolean enabledGlobal = false;
 			String ssidGlobal = "";
-			boolean staticIPGlobal = false;
+			Boolean staticIPGlobal = false;
 			String globalIP = "";
 			String globalNetmask = "";
 			String globalGW = "";
@@ -307,7 +309,7 @@ public class PanelWIFI extends AbstractSettingsPanel implements UsnaEventListene
 					} else {
 						if(enabled != enabledGlobal) enabledGlobal = false;
 						if(dSSID.equals(ssidGlobal) == false) ssidGlobal = "";
-						if(staticIP != staticIPGlobal) staticIPGlobal = false;
+						if(staticIP != staticIPGlobal) staticIPGlobal = null;
 						if(ip.equals(globalIP) == false) globalIP = "";
 						if(netmask.equals(globalNetmask) == false) globalNetmask = "";
 						if(gw.equals(globalGW) == false) globalGW = "";
@@ -331,8 +333,10 @@ public class PanelWIFI extends AbstractSettingsPanel implements UsnaEventListene
 			chckbxEnabled.setEnabled(true); // form is active
 			chckbxEnabled.setSelected(enabledGlobal);
 			textFieldSSID.setText(ssidGlobal);
-			rdbtnDHCP.setSelected(staticIPGlobal == false);
-			rdbtnStaticIP.setSelected(staticIPGlobal);
+			rdbtnDhcpNoChange.setSelected(staticIPGlobal == null);
+			rdbtnDhcpNoChange.setVisible(staticIPGlobal == null);
+			rdbtnDHCP.setSelected(staticIPGlobal == Boolean.FALSE);
+			rdbtnStaticIP.setSelected(staticIPGlobal == Boolean.TRUE);
 			textFieldStaticIP.setText(globalIP);
 			textFieldNetmask.setText(globalNetmask);
 			textFieldGateway.setText(globalGW);
@@ -342,6 +346,7 @@ public class PanelWIFI extends AbstractSettingsPanel implements UsnaEventListene
 			return null;
 		} catch (/*IOException |*/ RuntimeException e) {
 			setEnabledWIFI(false, false);
+			LOG.error("WI-FI showing", e);
 			return UtilCollecion.getFullName(d) + ": " + e.getMessage();
 		}
 	}

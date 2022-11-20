@@ -54,7 +54,7 @@ public class Devices extends UsnaObservable<Devices.EventType, Integer> {
 	private int higherIP;
 
 	private final static String SERVICE_TYPE1 = "_http._tcp.local.";
-	//	private final static String SERVICE_TYPE2 = "_shelly._tcp.local.";
+//	private final static String SERVICE_TYPE2 = "_shelly._tcp.local.";
 	private final List<ShellyAbstractDevice> devices = new ArrayList<>();
 	private final List<ScheduledFuture<?>> refreshProcess = new ArrayList<>();
 	private int refreshInterval = 1000;
@@ -72,6 +72,7 @@ public class Devices extends UsnaObservable<Devices.EventType, Integer> {
 				bjServices.add(dns);
 				LOG.debug("{} {}", dns.getName(), dns.getInetAddress());
 				dns.addServiceListener(SERVICE_TYPE1, dnsListener);
+//				dns.addServiceListener(SERVICE_TYPE2, dnsListener);
 			}
 			jd.addNetworkTopologyListener(new NetworkTopologyListener() {
 				@Override
@@ -88,6 +89,7 @@ public class Devices extends UsnaObservable<Devices.EventType, Integer> {
 						LOG.debug("DNS add {} {}", dns.getName(), dns.getInetAddress());
 						bjServices.add(dns);
 						dns.addServiceListener(SERVICE_TYPE1, dnsListener);
+//						dns.addServiceListener(SERVICE_TYPE2, dnsListener);
 					} catch (IOException e) {
 						LOG.error("DNS add {}", dns.getName(), e);
 					}
@@ -98,6 +100,7 @@ public class Devices extends UsnaObservable<Devices.EventType, Integer> {
 			bjServices.add(dns);
 			LOG.debug("Local scan: {} {}", dns.getName(), dns.getInetAddress());
 			dns.addServiceListener(SERVICE_TYPE1, dnsListener);
+//			dns.addServiceListener(SERVICE_TYPE2, dnsListener);
 		}
 		fireEvent(EventType.READY);
 	}
@@ -225,7 +228,7 @@ public class Devices extends UsnaObservable<Devices.EventType, Integer> {
 						if(d.getStatus() == Status.ERROR) {
 							LOG.error("Unexpected on refresh", e);
 						} else {
-							LOG.debug("refresh {} - {}", d/*.toString()*/, d.getStatus());
+							LOG.debug("refresh {} - {}", d, d.getStatus());
 						}
 					} finally {
 						synchronized(devices) {

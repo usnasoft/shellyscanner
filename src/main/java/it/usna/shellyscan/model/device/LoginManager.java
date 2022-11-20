@@ -18,7 +18,7 @@ public interface LoginManager {
 	
 	public static CredentialsProvider getCredentialsProvider(String user, char[] pwd) {
 		BasicCredentialsProvider credsProvider = new BasicCredentialsProvider();
-		credsProvider.setCredentials(new AuthScope(null, 80), new UsernamePasswordCredentials(user, pwd));
+		credsProvider.setCredentials(new AuthScope(null, -1), new UsernamePasswordCredentials(user, pwd));
 		return credsProvider;
 	}
 }

@@ -19,12 +19,11 @@ import java.util.stream.Collectors;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
 
+import org.apache.hc.client5.http.ClientProtocolException;
 import org.apache.hc.client5.http.auth.CredentialsProvider;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
-import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
-import org.apache.hc.core5.http.ParseException;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -73,30 +72,54 @@ public abstract class AbstractG1Device extends ShellyAbstractDevice {
 		this.mqttConnected = status.path("mqtt").path("connected").asBoolean();
 	}
 
+//	public String sendCommand(final String command) {
+//		HttpGet httpget = new HttpGet(command);
+//		try (CloseableHttpClient httpClient = HttpClients.createDefault(); CloseableHttpResponse response = httpClient.execute(httpHost, httpget, clientContext)) {
+//			int statusCode = response.getCode();
+//			if(statusCode == HttpURLConnection.HTTP_OK) {
+//				status = Status.ON_LINE;
+//			} else if(statusCode == HttpURLConnection.HTTP_UNAUTHORIZED) {
+//				status = Status.NOT_LOOGGED;
+//			} else /*if(statusCode == HttpURLConnection.HTTP_INTERNAL_ERROR)*/ {
+//				status = Status.ERROR;
+//			} /*else {
+//				status = Status.OFF_LINE;
+//			}*/
+////			String ret = new BufferedReader(new InputStreamReader(response.getEntity().getContent())).lines().collect(Collectors.joining("\n"));
+//			String ret = EntityUtils.toString(response.getEntity());
+//			return (ret == null || ret.length() == 0 || ret/*.trim()*/.startsWith("{")) ? null : ret;
+//		} catch(IOException e) {
+//			status = Status.OFF_LINE;
+//			return "Status-OFFLINE"; //Main.LABELS.getString("err_connection_offline"); //todo
+//		} catch(ParseException | RuntimeException e) {
+//			return e.getMessage();
+//		}
+//	}
+	
 	public String sendCommand(final String command) {
 		HttpGet httpget = new HttpGet(command);
-		try (CloseableHttpClient httpClient = HttpClients.createDefault(); CloseableHttpResponse response = httpClient.execute(httpHost, httpget, clientContext)) {
-			int statusCode = response.getCode();
-			if(statusCode == HttpURLConnection.HTTP_OK) {
-				status = Status.ON_LINE;
-			} else if(statusCode == HttpURLConnection.HTTP_UNAUTHORIZED) {
-				status = Status.NOT_LOOGGED;
-			} else /*if(statusCode == HttpURLConnection.HTTP_INTERNAL_ERROR)*/ {
-				status = Status.ERROR;
-			} /*else {
-				status = Status.OFF_LINE;
-			}*/
-//			String ret = new BufferedReader(new InputStreamReader(response.getEntity().getContent())).lines().collect(Collectors.joining("\n"));
-			String ret = EntityUtils.toString(response.getEntity());
-			return (ret == null || ret.length() == 0 || ret/*.trim()*/.startsWith("{")) ? null : ret;
+		try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
+			return httpClient.execute(httpHost, httpget, clientContext, response -> {
+				int statusCode = response.getCode();
+				if(statusCode == HttpURLConnection.HTTP_OK) {
+					status = Status.ON_LINE;
+				} else if(statusCode == HttpURLConnection.HTTP_UNAUTHORIZED) {
+					status = Status.NOT_LOOGGED;
+				} else /*if(statusCode == HttpURLConnection.HTTP_INTERNAL_ERROR)*/ {
+					status = Status.ERROR;
+				} /*else { status = Status.OFF_LINE; }*/
+				//String ret = new BufferedReader(new InputStreamReader(response.getEntity().getContent())).lines().collect(Collectors.joining("\n"));
+				String ret = EntityUtils.toString(response.getEntity());
+				return (ret == null || ret.length() == 0 || ret/*.trim()*/.startsWith("{")) ? null : ret;
+			});
+		} catch(ClientProtocolException | RuntimeException e) {
+			return e.getMessage();
 		} catch(IOException e) {
 			status = Status.OFF_LINE;
 			return "Status-OFFLINE"; //Main.LABELS.getString("err_connection_offline"); //todo
-		} catch(ParseException | RuntimeException e) {
-			return e.getMessage();
 		}
 	}
-//	
+		
 //	public URLConnection getUrlConnection(String urlPart) throws IOException {
 //	//String authString = user + ":" + new String(credentials.getPassword());
 //	//String authStringEnc = Base64.getEncoder().encodeToString(authString.getBytes());
