@@ -46,6 +46,8 @@ import javax.swing.JTextField;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
+import javax.swing.RowSorter;
+import javax.swing.SortOrder;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import javax.swing.UIManager;
@@ -194,11 +196,8 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 	
 	private Action checkListAction = new UsnaAction(this, "/images/Ok.png", "action_checklist_tooltip", e -> {
 		List<ShellyAbstractDevice> devices = Arrays.stream(devicesTable.getSelectedRows()).mapToObj(i -> model.get(devicesTable.convertRowIndexToModel(i))).collect(Collectors.toList());
-//		try {
-//			Desktop.getDesktop().browse(new URI(d.getHttpHost().getSchemeName() + "://" + d.getHttpHost().getAddress().getHostAddress()));
-//		} catch (IOException e) {
-//			Main.errorMsg(e);
-//		}
+		List<? extends RowSorter.SortKey> k = devicesTable.getRowSorter().getSortKeys();
+		new DialogDeviceCheckList(this, devices, /*k.size() > 0 &&*/ k.get(0).getColumn() == DevicesTable.COL_IP_IDX ? k.get(0).getSortOrder() == SortOrder.ASCENDING : null);
 	});
 	
 	private Action browseAction = new ViewSelectedAction("action_web_name", "action_web_tooltip", "/images/Computer16.png", "/images/Computer.png", (i, d) -> {
