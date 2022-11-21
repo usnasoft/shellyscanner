@@ -192,6 +192,15 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		}
 	});
 	
+	private Action checkListAction = new UsnaAction(this, "/images/Ok.png", "action_checklist_tooltip", e -> {
+		List<ShellyAbstractDevice> devices = Arrays.stream(devicesTable.getSelectedRows()).mapToObj(i -> model.get(devicesTable.convertRowIndexToModel(i))).collect(Collectors.toList());
+//		try {
+//			Desktop.getDesktop().browse(new URI(d.getHttpHost().getSchemeName() + "://" + d.getHttpHost().getAddress().getHostAddress()));
+//		} catch (IOException e) {
+//			Main.errorMsg(e);
+//		}
+	});
+	
 	private Action browseAction = new ViewSelectedAction("action_web_name", "action_web_tooltip", "/images/Computer16.png", "/images/Computer.png", (i, d) -> {
 		try {
 			Desktop.getDesktop().browse(new URI(d.getHttpHost().getSchemeName() + "://" + d.getHttpHost().getAddress().getHostAddress()));
@@ -581,6 +590,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		toolBar.addSeparator();
 		toolBar.add(infoAction);
 		toolBar.add(infoLogAction);
+		toolBar.add(checkListAction);
 		toolBar.add(browseAction);
 		toolBar.addSeparator();
 		toolBar.add(backupAction);
@@ -666,6 +676,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 				final boolean singleSelection = devicesTable.getSelectedRowCount() == 1;
 				infoAction.setEnabled(singleSelection);
 				infoLogAction.setEnabled(singleSelection);
+				checkListAction.setEnabled(selection);
 				rebootAction.setEnabled(selection);
 				browseAction.setEnabled(selection && Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE));
 				backupAction.setEnabled(selection);

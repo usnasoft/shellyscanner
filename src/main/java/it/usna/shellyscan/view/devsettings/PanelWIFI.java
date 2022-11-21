@@ -244,9 +244,17 @@ public class PanelWIFI extends AbstractSettingsPanel implements UsnaEventListene
 		dhcpStatic.add(rdbtnDHCP);
 		dhcpStatic.add(rdbtnStaticIP);
 		dhcpStatic.add(rdbtnDhcpNoChange);
-		rdbtnStaticIP.addItemListener(event -> setEnabledStaticIP(event.getStateChange() == java.awt.event.ItemEvent.SELECTED));
+		rdbtnDHCP.addItemListener(event -> {
+			if(event.getStateChange() == java.awt.event.ItemEvent.SELECTED) setEnabledStaticIP(false);
+		});
+		rdbtnStaticIP.addItemListener(event -> {
+			if(event.getStateChange() == java.awt.event.ItemEvent.SELECTED) setEnabledStaticIP(true);
+		});
+		rdbtnDhcpNoChange.addItemListener(event -> {
+			if(event.getStateChange() == java.awt.event.ItemEvent.SELECTED) setEnabledStaticIP(null);
+		});
 
-		chckbxEnabled.addItemListener(event -> setEnabledWIFI(event.getStateChange() == java.awt.event.ItemEvent.SELECTED, rdbtnStaticIP.isSelected()));
+		chckbxEnabled.addItemListener(event -> setEnabledWIFI(event.getStateChange() == java.awt.event.ItemEvent.SELECTED, rdbtnDhcpNoChange.isSelected() ? null : rdbtnStaticIP.isSelected()));
 	}
 
 	private void setEnabledWIFI(boolean enabled, Boolean staticIP) {
@@ -361,8 +369,8 @@ public class PanelWIFI extends AbstractSettingsPanel implements UsnaEventListene
 		final boolean enabled = chckbxEnabled.isSelected();
 		final String ssid = textFieldSSID.getText().trim();
 		final String pwd = new String(textFieldPwd.getPassword()).trim();
-		final boolean dhcp = rdbtnDHCP.isSelected();
-		final String ip = textFieldStaticIP.getText().trim();
+		boolean dhcp = rdbtnDHCP.isSelected();
+		String ip = textFieldStaticIP.getText().trim();
 		final String gw = textFieldGateway.getText().trim();
 		final String netmask = textFieldNetmask.getText().trim();
 		final String dns = textFieldDNS.getText().trim();
@@ -396,6 +404,10 @@ public class PanelWIFI extends AbstractSettingsPanel implements UsnaEventListene
 			if(wfManager != null) { // wfManager == null excluded device
 				String msg = null;
 				if(enabled) {
+					if(rdbtnDhcpNoChange.isSelected()) {
+						dhcp = wfManager.isStaticIP() == false;
+						ip = wfManager.getIP();
+					}
 					if(dhcp) {
 						msg = wfManager.set(ssid, pwd);
 					} else {

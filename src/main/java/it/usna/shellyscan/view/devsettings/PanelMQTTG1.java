@@ -454,10 +454,10 @@ public class PanelMQTTG1 extends AbstractSettingsPanel implements UsnaEventListe
 			String idGlobal = "";
 			int rTimeoutMaxGlobal = 0;
 			int rTimeoutMinGlobal = 0;
-			String cleanSessionGlobal = "";
+			Boolean cleanSessionGlobal = false;
 			int keepAliveGlobal = 0;
 			int qosGlobal = 0;
-			String retainGlobal = "";
+			Boolean retainGlobal = false;
 			int updatePerGlobal = 0;
 			boolean noPwdGlobal = false;
 			boolean first = true;
@@ -474,10 +474,10 @@ public class PanelMQTTG1 extends AbstractSettingsPanel implements UsnaEventListe
 					String id = mqttm.getPrefix();
 					int rTimeoutMax = mqttm.getrTimeoutMax();
 					int rTimeoutMin = mqttm.getrTimeoutMin();
-					String cleanSession =  mqttm.isCleanSession() ? "Y" : "N";
+					Boolean cleanSession = mqttm.isCleanSession();// ? "Y" : "N";
 					int keepAlive = mqttm.getKeepAlive();
 					int qos = mqttm.getQos();
-					String retain = mqttm.isRetain() ? "Y" : "N";
+					Boolean retain = mqttm.isRetain();// ? "Y" : "N";
 					int updatePer = mqttm.getUpdatePeriod();
 					if(first) {
 						enabledGlobal = enabled;
@@ -500,10 +500,10 @@ public class PanelMQTTG1 extends AbstractSettingsPanel implements UsnaEventListe
 						if(id.equals(idGlobal) == false) idGlobal = "";
 						if(rTimeoutMaxGlobal != rTimeoutMax) rTimeoutMaxGlobal = -1;
 						if(rTimeoutMinGlobal != rTimeoutMin) rTimeoutMinGlobal = -1;
-						if(cleanSessionGlobal.equals(cleanSession) == false) cleanSessionGlobal = "";
+						if(cleanSession.equals(cleanSessionGlobal) == false) cleanSessionGlobal = null;
 						if(keepAliveGlobal != keepAlive) keepAliveGlobal = -1;
 						if(qosGlobal != qos) qosGlobal = -1;
-						if(retain.equals(retainGlobal) == false) retainGlobal = "";
+						if(retain.equals(retainGlobal) == false) retainGlobal = null;
 						if(updatePerGlobal != updatePer) updatePerGlobal = -1;
 						noPwdGlobal &= user.isEmpty();
 					}
@@ -530,27 +530,27 @@ public class PanelMQTTG1 extends AbstractSettingsPanel implements UsnaEventListe
 			textFieldID.setText(idGlobal);
 			textFieldMaxTimeout.setValue(rTimeoutMaxGlobal >= 0 ? rTimeoutMaxGlobal : null);
 			textFieldMinTimeout.setValue(rTimeoutMinGlobal >= 0 ? rTimeoutMinGlobal : null);
-			if(cleanSessionGlobal.equals("Y")) {
-				rdbtnCleanSessionYes.setSelected(true);
-				rdbtnCleanSessionUnchange.setVisible(false);
-			} else if(cleanSessionGlobal.equals("N")) {
-				rdbtnCleanSessionNo.setSelected(true);
-				rdbtnCleanSessionUnchange.setVisible(false);
-			} else {
+			if(cleanSessionGlobal == null) {
 				rdbtnCleanSessionUnchange.setSelected(true);
 				rdbtnCleanSessionUnchange.setVisible(true);
+			} else if(cleanSessionGlobal == Boolean.TRUE) {
+				rdbtnCleanSessionYes.setSelected(true);
+				rdbtnCleanSessionUnchange.setVisible(false);
+			} else if(cleanSessionGlobal == Boolean.FALSE) {
+				rdbtnCleanSessionNo.setSelected(true);
+				rdbtnCleanSessionUnchange.setVisible(false);
 			}
 			textFieldKeepAlive.setValue(keepAliveGlobal >= 0 ? keepAliveGlobal : null);
 			textFieldQOS.setValue(qosGlobal >= 0 ? qosGlobal : null);
-			if(retainGlobal.equals("Y")) {
-				rdbtnRetainYes .setSelected(true);
-				rdbtnRetainUnchange.setVisible(false);
-			} else if(retainGlobal.equals("N")) {
-				rdbtnRetainNo.setSelected(true);
-				rdbtnRetainUnchange.setVisible(false);
-			} else {
+			if(retainGlobal == null) {
 				rdbtnRetainUnchange.setSelected(true);
 				rdbtnRetainUnchange.setVisible(true);
+			} else if(retainGlobal == Boolean.TRUE) {
+				rdbtnRetainYes.setSelected(true);
+				rdbtnRetainUnchange.setVisible(false);
+			} else if(retainGlobal == Boolean.FALSE) {
+				rdbtnRetainNo.setSelected(true);
+				rdbtnRetainUnchange.setVisible(false);
 			}
 			textFieldUpdatePeriod.setValue(updatePerGlobal >= 0 ? updatePerGlobal : null);
 
