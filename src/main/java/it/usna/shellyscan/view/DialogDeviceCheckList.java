@@ -6,9 +6,11 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
+import java.awt.FlowLayout;
 import java.awt.Window;
 import java.awt.event.KeyEvent;
 import java.net.InetAddress;
+import java.util.Comparator;
 import java.util.List;
 
 import javax.swing.Action;
@@ -42,7 +44,6 @@ import it.usna.shellyscan.view.util.IPv4Comparator;
 import it.usna.shellyscan.view.util.UtilCollecion;
 import it.usna.swing.table.ExTooltipTable;
 import it.usna.swing.table.UsnaTableModel;
-import java.awt.FlowLayout;
 
 public class DialogDeviceCheckList extends JDialog {
 	private static final long serialVersionUID = 1L;
@@ -53,19 +54,16 @@ public class DialogDeviceCheckList extends JDialog {
 		BorderLayout borderLayout = (BorderLayout) getContentPane().getLayout();
 		borderLayout.setVgap(2);
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-		
+
 		UsnaTableModel tModel = new UsnaTableModel(
-				LABELS.getString("col_device"), LABELS.getString("col_ip"), LABELS.getString("col_eco"), LABELS.getString("col_ledoff"), LABELS.getString("col_AP"), LABELS.getString("col_logs"));
+				LABELS.getString("col_device"), LABELS.getString("col_ip"), LABELS.getString("col_eco"), LABELS.getString("col_ledoff"),
+				LABELS.getString("col_AP"), LABELS.getString("col_logs"), LABELS.getString("col_blt"));
 		ExTooltipTable table = new ExTooltipTable(tModel, true) {
 			private static final long serialVersionUID = 1L;
 			{
-				String[] headerTips = new String[6];
-				headerTips[2] = LABELS.getString("col_eco_tooltip");
-				headerTips[3] = LABELS.getString("col_ledoff_tooltip");
-				headerTips[4] = LABELS.getString("col_AP_tooltip");
-				headerTips[5] = LABELS.getString("col_logs_tooltip");
-				setHeadersTooltip(headerTips);
-				
+				setHeadersTooltip(null, null, LABELS.getString("col_eco_tooltip"), LABELS.getString("col_ledoff_tooltip"),
+						LABELS.getString("col_AP_tooltip"),  LABELS.getString("col_logs_tooltip"), LABELS.getString("col_blt_tooltip"));
+
 				columnModel.getColumn(1).setCellRenderer(new DefaultTableCellRenderer() {
 					private static final long serialVersionUID = 1L;
 					@Override
@@ -79,8 +77,17 @@ public class DialogDeviceCheckList extends JDialog {
 				columnModel.getColumn(3).setCellRenderer(rendTrueOk);
 				columnModel.getColumn(4).setCellRenderer(rendFalseOk);
 				columnModel.getColumn(5).setCellRenderer(rendFalseOk);
-				
-				((TableRowSorter<?>)getRowSorter()).setComparator(1, new IPv4Comparator());
+				columnModel.getColumn(6).setCellRenderer(rendFalseOk);
+
+				TableRowSorter<?> rowSorter = ((TableRowSorter<?>)getRowSorter());
+				Comparator<?> oc =  (o1, o2) -> {return o1 == null ? -1 : o1.toString().compareTo(o2.toString());};
+				rowSorter.setComparator(1, new IPv4Comparator());
+				rowSorter.setComparator(2, oc);
+				rowSorter.setComparator(3, oc);
+				rowSorter.setComparator(4, oc);
+				rowSorter.setComparator(5, oc);
+				rowSorter.setComparator(6, oc);
+
 				if(ipSort != null) {
 					sortByColumn(1, ipSort);
 				}
@@ -106,16 +113,16 @@ public class DialogDeviceCheckList extends JDialog {
 
 		JPanel panelBottom = new JPanel(new BorderLayout(0, 0));
 		getContentPane().add(panelBottom, BorderLayout.SOUTH);
-		
+
 		// Find panel
 		JPanel panelFind = new JPanel();
 		FlowLayout flowLayout_1 = (FlowLayout) panelFind.getLayout();
 		flowLayout_1.setVgap(0);
 		panelBottom.add(panelFind, BorderLayout.EAST);
-		
+
 		JLabel label = new JLabel("Filter:");
 		panelFind.add(label);
-		
+
 		JTextField textFieldFilter = new JTextField();
 		textFieldFilter.setColumns(20);
 		textFieldFilter.setBorder(BorderFactory.createEmptyBorder(2, 1, 2, 1));
@@ -130,12 +137,12 @@ public class DialogDeviceCheckList extends JDialog {
 			public void removeUpdate(DocumentEvent e) {
 				setRowFilter(textFieldFilter.getText());
 			}
-			
+
 			@Override
 			public void insertUpdate(DocumentEvent e) {
 				setRowFilter(textFieldFilter.getText());
 			}
-			
+
 			public void setRowFilter(String filter) {
 				TableRowSorter<?> sorter = (TableRowSorter<?>)table.getRowSorter();
 				if(filter.length() > 0) {
@@ -147,27 +154,27 @@ public class DialogDeviceCheckList extends JDialog {
 			}
 		});
 		getRootPane().registerKeyboardAction(e -> textFieldFilter.requestFocus(), KeyStroke.getKeyStroke(KeyEvent.VK_F, MainView.SHORTCUT_KEY), JComponent.WHEN_IN_FOCUSED_WINDOW);
-		
+
 		final Action eraseFilterAction = new UsnaAction(this, "/images/erase-9-16.png", null, e -> {
 			textFieldFilter.setText("");
 			textFieldFilter.requestFocusInWindow();
 			table.clearSelection();
 		});
-		
+
 		JButton eraseFilterButton = new JButton(eraseFilterAction);
 		eraseFilterButton.setBorder(BorderFactory.createEmptyBorder(0, 2, 0, 2));
 		eraseFilterButton.setContentAreaFilled(false);
 		eraseFilterButton.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_E, MainView.SHORTCUT_KEY), "find_erase");
 		eraseFilterButton.getActionMap().put("find_erase", eraseFilterAction);
 		panelFind.add(eraseFilterButton);
-		
+
 		JPanel panelButtons = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
 		panelBottom.add(panelButtons, BorderLayout.WEST);
-		
+
 		JButton btnClose = new JButton(LABELS.getString("dlgClose"));
 		btnClose.addActionListener(e -> dispose());
 		panelButtons.add(btnClose);
-		
+
 		JButton btnNewButton = new JButton(LABELS.getString("labelRefresh"));
 		btnNewButton.addActionListener(e -> {
 			tModel.clear();
@@ -175,49 +182,45 @@ public class DialogDeviceCheckList extends JDialog {
 		});
 		panelButtons.add(btnNewButton);
 
-		setSize(650, 420);
+		setSize(680, 420);
 		setVisible(true);
 		setLocationRelativeTo(owner);
 		table.columnsWidthAdapt();
 	}
-	
+
 	private void fill(UsnaTableModel tModel, List<ShellyAbstractDevice> model) {
 		setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 		try {
 			model.forEach(d -> {
-				if(d instanceof AbstractG1Device) {
-					try {
+				try {
+					if(d instanceof AbstractG1Device) {
 						JsonNode settings = d.getJSON("/settings");
 						Boolean eco = boolVal(settings.path("eco_mode_enabled"));
 						Boolean ledOff = boolVal(settings.path("led_status_disable"));
 						boolean debug = d.getDebugMode() != ShellyAbstractDevice.LogMode.NO;
-						tModel.addRow(UtilCollecion.getExtendedHostName(d), d.getHttpHost().getAddress(), eco, ledOff, "-", debug);
-					} catch (Exception e) {
-						tModel.addRow(UtilCollecion.getExtendedHostName(d), d.getHttpHost().getAddress());
-						LOG.error("{}", d, e);
-					}
-				} else { // G2
-					try {
+						tModel.addRow(UtilCollecion.getExtendedHostName(d), d.getHttpHost().getAddress(), eco, ledOff, "-", debug, "-");
+					} else { // G2
 						JsonNode settings = d.getJSON("/rpc/Shelly.GetConfig");
 						Boolean eco = boolVal(settings.at("/sys/device/eco_mode"));
 						Boolean ap = boolVal(settings.at("/wifi/ap/enable"));
 						String debug = LABELS.getString("debug" + d.getDebugMode());
-						tModel.addRow(UtilCollecion.getExtendedHostName(d), d.getHttpHost().getAddress(), eco, "-", ap, debug);
-					} catch (Exception e) {
-						tModel.addRow(UtilCollecion.getExtendedHostName(d), d.getHttpHost().getAddress());
-						LOG.error("{}", d, e);
+						Boolean ble = boolVal(settings.at("/ble/enable"));
+						tModel.addRow(UtilCollecion.getExtendedHostName(d), d.getHttpHost().getAddress(), eco, "-", ap, debug, ble);
 					}
+				} catch (Exception e) {
+					tModel.addRow(UtilCollecion.getExtendedHostName(d), d.getHttpHost().getAddress());
+					LOG.error("{}", d, e);
 				}
 			});
 		} finally {
 			setCursor(Cursor.getDefaultCursor());
 		}
 	}
-	
+
 	private static Boolean boolVal(JsonNode node) {
 		return node.isMissingNode() ? null : node.asBoolean();
 	}
-	
+
 	private static class CheckRenderer extends DefaultTableCellRenderer {
 		private static final long serialVersionUID = 1L;
 		private final static String TRUE = LABELS.getString("true_yn");

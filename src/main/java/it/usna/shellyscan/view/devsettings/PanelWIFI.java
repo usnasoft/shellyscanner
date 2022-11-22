@@ -330,7 +330,7 @@ public class PanelWIFI extends AbstractSettingsPanel implements UsnaEventListene
 					fwModule.add(null);
 					exclude += "<br>" + UtilCollecion.getFullName(d);
 					excludeCount++;
-					e.printStackTrace();
+//					e.printStackTrace();
 				}
 			}
 //			if(Thread.interrupted()) {
