@@ -21,7 +21,13 @@ public class WIFIManagerG1 implements WIFIManager {
 	private String dns;
 	
 	public WIFIManagerG1(AbstractG1Device d, Network network) throws IOException {
-		net = (network == Network.PRIMARY) ? "sta" : "sta1";
+		if(network == Network.PRIMARY) {
+			net = "sta";
+		} else if(network == Network.SECONDARY) {
+			net = "sta1";
+		} else {
+			net = "err";
+		}
 		this.d = d;
 		init();
 	}

@@ -500,10 +500,10 @@ public class PanelMQTTG1 extends AbstractSettingsPanel implements UsnaEventListe
 						if(id.equals(idGlobal) == false) idGlobal = "";
 						if(rTimeoutMaxGlobal != rTimeoutMax) rTimeoutMaxGlobal = -1;
 						if(rTimeoutMinGlobal != rTimeoutMin) rTimeoutMinGlobal = -1;
-						if(cleanSession.equals(cleanSessionGlobal) == false) cleanSessionGlobal = null;
+						if(cleanSessionGlobal != null && cleanSession.equals(cleanSessionGlobal) == false) cleanSessionGlobal = null;
 						if(keepAliveGlobal != keepAlive) keepAliveGlobal = -1;
 						if(qosGlobal != qos) qosGlobal = -1;
-						if(retain.equals(retainGlobal) == false) retainGlobal = null;
+						if(retainGlobal != null && retain.equals(retainGlobal) == false) retainGlobal = null;
 						if(updatePerGlobal != updatePer) updatePerGlobal = -1;
 						noPwdGlobal &= user.isEmpty();
 					}

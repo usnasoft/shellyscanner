@@ -262,7 +262,8 @@ public class PanelWIFI extends AbstractSettingsPanel implements UsnaEventListene
 		textFieldPwd.setEnabled(enabled);
 		chckbxShowPwd.setEnabled(enabled);
 		rdbtnDHCP.setEnabled(enabled /*&& devices.size() == 1*/);
-		rdbtnStaticIP.setEnabled(enabled && staticIP == Boolean.TRUE /*devices.size() == 1*/);
+		rdbtnStaticIP.setEnabled(enabled && (staticIP == Boolean.TRUE || devices.size() == 1));
+		rdbtnDhcpNoChange.setEnabled(enabled);
 		setEnabledStaticIP((staticIP == null || staticIP) && enabled);
 	}
 
@@ -280,6 +281,7 @@ public class PanelWIFI extends AbstractSettingsPanel implements UsnaEventListene
 		ShellyAbstractDevice d = null;
 		fwModule.clear();
 		try {
+			rdbtnDhcpNoChange.setVisible(false);
 			btnCopy.setEnabled(false);
 			chckbxEnabled.setEnabled(false);
 			setEnabledWIFI(false, false); // disable while checking
@@ -317,7 +319,7 @@ public class PanelWIFI extends AbstractSettingsPanel implements UsnaEventListene
 					} else {
 						if(enabled != enabledGlobal) enabledGlobal = false;
 						if(dSSID.equals(ssidGlobal) == false) ssidGlobal = "";
-						if(staticIP != staticIPGlobal) staticIPGlobal = null;
+						if(staticIPGlobal != null && staticIP != staticIPGlobal) staticIPGlobal = null;
 						if(ip.equals(globalIP) == false) globalIP = "";
 						if(netmask.equals(globalNetmask) == false) globalNetmask = "";
 						if(gw.equals(globalGW) == false) globalGW = "";
@@ -328,6 +330,7 @@ public class PanelWIFI extends AbstractSettingsPanel implements UsnaEventListene
 					fwModule.add(null);
 					exclude += "<br>" + UtilCollecion.getFullName(d);
 					excludeCount++;
+					e.printStackTrace();
 				}
 			}
 //			if(Thread.interrupted()) {
@@ -370,6 +373,7 @@ public class PanelWIFI extends AbstractSettingsPanel implements UsnaEventListene
 		final String ssid = textFieldSSID.getText().trim();
 		final String pwd = new String(textFieldPwd.getPassword()).trim();
 		boolean dhcp = rdbtnDHCP.isSelected();
+		boolean noChange = rdbtnDhcpNoChange.isSelected();
 		String ip = textFieldStaticIP.getText().trim();
 		final String gw = textFieldGateway.getText().trim();
 		final String netmask = textFieldNetmask.getText().trim();
@@ -391,7 +395,7 @@ public class PanelWIFI extends AbstractSettingsPanel implements UsnaEventListene
 			if(dhcp == false && devices.size() == 1 && ip.isEmpty()) {
 				throw new IllegalArgumentException(Main.LABELS.getString("dlgSetMsgObbStaticIP"));
 			}
-			if(dhcp == false && (netmask.isEmpty() || gw.isEmpty())) {
+			if((dhcp == false || noChange) && (netmask.isEmpty() || gw.isEmpty())) {
 				throw new IllegalArgumentException(Main.LABELS.getString("dlgSetMsgObbStaticMaskGW"));
 			}
 			if(ssid.isEmpty() || pwd.isEmpty()) {
@@ -406,11 +410,13 @@ public class PanelWIFI extends AbstractSettingsPanel implements UsnaEventListene
 				if(enabled) {
 					if(rdbtnDhcpNoChange.isSelected()) {
 						dhcp = wfManager.isStaticIP() == false;
-						ip = wfManager.getIP();
 					}
 					if(dhcp) {
 						msg = wfManager.set(ssid, pwd);
 					} else {
+						if(textFieldStaticIP.isEnabled() == false) { // more than 1 device selected -> keep IP
+							ip = wfManager.getIP();
+						}
 						msg = wfManager.set(ssid, pwd, ip, netmask, gw, dns);
 					}
 				} else {
