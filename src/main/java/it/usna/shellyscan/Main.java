@@ -289,10 +289,10 @@ public class Main {
 // fw update su tre colonne
 // restore script da backup
 // mqtt status: connected
+//chk table (blt, save mode, led, AP, logs)
 
 //todo
 //wi-fi 1 con copia su 2 e viceversa
-//chk table (blt, save mode, led, AP, ...)
 // mqtt specific G2 settings
 
 //check alterazione wi-fi corrente

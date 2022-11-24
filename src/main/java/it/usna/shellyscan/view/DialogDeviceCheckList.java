@@ -6,10 +6,17 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
+import java.awt.Desktop;
 import java.awt.FlowLayout;
+import java.awt.GridLayout;
 import java.awt.Window;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.io.IOException;
 import java.net.InetAddress;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Comparator;
 import java.util.List;
 
@@ -37,6 +44,7 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
+import it.usna.shellyscan.Main;
 import it.usna.shellyscan.controller.UsnaAction;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.g1.AbstractG1Device;
@@ -48,8 +56,10 @@ import it.usna.swing.table.UsnaTableModel;
 public class DialogDeviceCheckList extends JDialog {
 	private static final long serialVersionUID = 1L;
 	private final static Logger LOG = LoggerFactory.getLogger(AbstractG1Device.class);
+	private final static String TRUE = LABELS.getString("true_yn");
+	private final static String FALSE = LABELS.getString("false_yn");
 
-	public DialogDeviceCheckList(final Window owner, List<ShellyAbstractDevice> model, Boolean ipSort) {
+	public DialogDeviceCheckList(final Window owner, final List<ShellyAbstractDevice> devices, final Boolean ipSort) {
 		super(owner, LABELS.getString("dlgChecklistTitle"));
 		BorderLayout borderLayout = (BorderLayout) getContentPane().getLayout();
 		borderLayout.setVgap(2);
@@ -107,7 +117,7 @@ public class DialogDeviceCheckList extends JDialog {
 		scrollPane.setViewportView(table);
 		getContentPane().add(scrollPane, BorderLayout.CENTER);
 
-		fill(tModel, model);
+		fill(tModel, devices);
 
 		table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
@@ -168,19 +178,42 @@ public class DialogDeviceCheckList extends JDialog {
 		eraseFilterButton.getActionMap().put("find_erase", eraseFilterAction);
 		panelFind.add(eraseFilterButton);
 
-		JPanel panelButtons = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+		JPanel panelButtons = new JPanel();
 		panelBottom.add(panelButtons, BorderLayout.WEST);
 
 		JButton btnClose = new JButton(LABELS.getString("dlgClose"));
 		btnClose.addActionListener(e -> dispose());
+		panelButtons.setLayout(new GridLayout(0, 3, 0, 0));
 		panelButtons.add(btnClose);
 
-		JButton btnNewButton = new JButton(LABELS.getString("labelRefresh"));
-		btnNewButton.addActionListener(e -> {
+		JButton btnRefresh = new JButton(LABELS.getString("labelRefresh"));
+		btnRefresh.addActionListener(e -> {
 			tModel.clear();
-			fill(tModel, model);
+			fill(tModel, devices);
 		});
-		panelButtons.add(btnNewButton);
+		panelButtons.add(btnRefresh);
+		
+		JButton btnEdit = new JButton(LABELS.getString("edit"));
+		btnEdit.setEnabled(false);
+		btnEdit.addActionListener(ev -> {
+			ShellyAbstractDevice d = devices.get(table.convertRowIndexToModel(table.getSelectedRow()));
+			try {
+				Desktop.getDesktop().browse(new URI(d.getHttpHost().getSchemeName() + "://" + d.getHttpHost().getAddress().getHostAddress()));
+			} catch (IOException | URISyntaxException e) {
+				Main.errorMsg(e);
+			}
+		});
+		panelButtons.add(btnEdit);
+		
+		table.getSelectionModel().addListSelectionListener(l -> btnEdit.setEnabled(table.getSelectedRow() >= 0));
+		
+		table.addMouseListener(new MouseAdapter() {
+		    public void mousePressed(MouseEvent evt) {
+		        if (evt.getClickCount() == 2 && table.getSelectedRow() != -1) {
+		        	btnEdit.doClick();
+		        }
+		    }
+		});
 
 		setSize(680, 420);
 		setVisible(true);
@@ -202,8 +235,11 @@ public class DialogDeviceCheckList extends JDialog {
 					} else { // G2
 						JsonNode settings = d.getJSON("/rpc/Shelly.GetConfig");
 						Boolean eco = boolVal(settings.at("/sys/device/eco_mode"));
-						Boolean ap = boolVal(settings.at("/wifi/ap/enable"));
-						String debug = LABELS.getString("debug" + d.getDebugMode());
+						Object ap = boolVal(settings.at("/wifi/ap/enable"));
+						if(ap != null && ap == Boolean.TRUE && settings.at("/wifi/ap/is_open").asBoolean(true) == false) {
+							ap = TRUE; // AP active but protected with pwd
+						}
+						Object debug = (d.getDebugMode() == ShellyAbstractDevice.LogMode.NO) ? Boolean.FALSE : LABELS.getString("debug" + d.getDebugMode());
 						Boolean ble = boolVal(settings.at("/ble/enable"));
 						tModel.addRow(UtilCollecion.getExtendedHostName(d), d.getHttpHost().getAddress(), eco, "-", ap, debug, ble);
 					}
@@ -223,8 +259,6 @@ public class DialogDeviceCheckList extends JDialog {
 
 	private static class CheckRenderer extends DefaultTableCellRenderer {
 		private static final long serialVersionUID = 1L;
-		private final static String TRUE = LABELS.getString("true_yn");
-		private final static String FALSE = LABELS.getString("false_yn");
 		private final boolean goodVal;
 
 		private CheckRenderer(boolean goodVal) {
