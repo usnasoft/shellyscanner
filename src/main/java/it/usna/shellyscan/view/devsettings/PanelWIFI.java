@@ -37,20 +37,20 @@ public class PanelWIFI extends AbstractSettingsPanel implements UsnaEventListene
 	private static final long serialVersionUID = 1L;
 	private final static Logger LOG = LoggerFactory.getLogger(PanelWIFI.class);
 	
-	private JCheckBox chckbxEnabled;
-	private JTextField textFieldSSID;
-	private JPasswordField textFieldPwd;
-	private JCheckBox chckbxShowPwd;
-	private JTextField textFieldStaticIP;
-	private JTextField textFieldNetmask;
-	private JTextField textFieldGateway;
-	private JTextField textFieldDNS;
-	private JRadioButton rdbtnDHCP = new JRadioButton(Main.LABELS.getString("dlgSetEnabled"));
-	private JRadioButton rdbtnStaticIP = new JRadioButton(Main.LABELS.getString("dlgSetStatic"));
-	private JRadioButton rdbtnDhcpNoChange = new JRadioButton(LABELS.getString("dlgSetDoNotChange"));
-	private char pwdEchoChar;
-	private WIFIManager.Network netModule;
-	private List<WIFIManager> fwModule = new ArrayList<>();
+	private final WIFIManager.Network netModule;
+	private final JCheckBox chckbxEnabled = new JCheckBox();
+	private final JTextField textFieldSSID = new JTextField();
+	private final JPasswordField textFieldPwd = new JPasswordField();
+	private final JCheckBox chckbxShowPwd = new JCheckBox(Main.LABELS.getString("labelShowPwd"));;
+	private final JTextField textFieldStaticIP = new JTextField();
+	private final JTextField textFieldNetmask = new JTextField();
+	private final JTextField textFieldGateway = new JTextField();
+	private final JTextField textFieldDNS = new JTextField();;
+	private final JRadioButton rdbtnDHCP = new JRadioButton(Main.LABELS.getString("dlgSetEnabled"));
+	private final JRadioButton rdbtnStaticIP = new JRadioButton(Main.LABELS.getString("dlgSetStatic"));
+	private final JRadioButton rdbtnDhcpNoChange = new JRadioButton(LABELS.getString("dlgSetDoNotChange"));
+	private final char pwdEchoChar;
+	private final List<WIFIManager> fwModule = new ArrayList<>();
 
 	private final static String IPV4_REGEX = "^((0|1\\d?\\d?|2[0-4]?\\d?|25[0-5]?|[3-9]\\d?)\\.){3}(0|1\\d?\\d?|2[0-4]?\\d?|25[0-5]?|[3-9]\\d?)$";
 	private JButton btnCopy = new JButton(LABELS.getString("btnCopyFrom"));
@@ -75,7 +75,6 @@ public class PanelWIFI extends AbstractSettingsPanel implements UsnaEventListene
 		gbc_lblNewLabel.gridy = 0;
 		add(lblNewLabel, gbc_lblNewLabel);
 
-		chckbxEnabled = new JCheckBox(/*"", true*/);
 		GridBagConstraints gbc_chckbxEnabled = new GridBagConstraints();
 		gbc_chckbxEnabled.anchor = GridBagConstraints.WEST;
 		gbc_chckbxEnabled.insets = new Insets(0, 0, 5, 5);
@@ -99,7 +98,6 @@ public class PanelWIFI extends AbstractSettingsPanel implements UsnaEventListene
 		gbc_lblNewLabel_1.gridy = 1;
 		add(lblNewLabel_1, gbc_lblNewLabel_1);
 
-		textFieldSSID = new JTextField();
 		GridBagConstraints gbc_textFieldSSID = new GridBagConstraints();
 		gbc_textFieldSSID.weightx = 1.0;
 		gbc_textFieldSSID.gridwidth = 3;
@@ -118,7 +116,6 @@ public class PanelWIFI extends AbstractSettingsPanel implements UsnaEventListene
 		gbc_lblNewLabel_2.gridy = 2;
 		add(lblNewLabel_2, gbc_lblNewLabel_2);
 
-		textFieldPwd = new JPasswordField();
 		pwdEchoChar = textFieldPwd.getEchoChar();
 		GridBagConstraints gbc_textFieldPwd = new GridBagConstraints();
 		gbc_textFieldPwd.weightx = 1.0;
@@ -130,7 +127,6 @@ public class PanelWIFI extends AbstractSettingsPanel implements UsnaEventListene
 		add(textFieldPwd, gbc_textFieldPwd);
 		textFieldPwd.setColumns(10);
 
-		chckbxShowPwd = new JCheckBox(Main.LABELS.getString("labelShowPwd"));
 		chckbxShowPwd.addItemListener(e -> textFieldPwd.setEchoChar((e.getStateChange() == java.awt.event.ItemEvent.SELECTED) ? '\0' : pwdEchoChar));
 		GridBagConstraints gbc_chckbxNewCheckBox = new GridBagConstraints();
 		gbc_chckbxNewCheckBox.gridwidth = 2;
@@ -176,7 +172,6 @@ public class PanelWIFI extends AbstractSettingsPanel implements UsnaEventListene
 		gbc_lblNewLabel_4.gridy = 5;
 		add(lblNewLabel_4, gbc_lblNewLabel_4);
 
-		textFieldStaticIP = new JTextField();
 		GridBagConstraints gbc_textFieldStaticIP = new GridBagConstraints();
 		gbc_textFieldStaticIP.gridwidth = 2;
 		gbc_textFieldStaticIP.insets = new Insets(0, 0, 5, 5);
@@ -194,7 +189,6 @@ public class PanelWIFI extends AbstractSettingsPanel implements UsnaEventListene
 		gbc_lblNewLabel_5.gridy = 6;
 		add(lblNewLabel_5, gbc_lblNewLabel_5);
 
-		textFieldNetmask = new JTextField();
 		GridBagConstraints gbc_textFieldNetmask = new GridBagConstraints();
 		gbc_textFieldNetmask.gridwidth = 2;
 		gbc_textFieldNetmask.insets = new Insets(0, 0, 5, 5);
@@ -212,7 +206,6 @@ public class PanelWIFI extends AbstractSettingsPanel implements UsnaEventListene
 		gbc_lblNewLabel_6.gridy = 7;
 		add(lblNewLabel_6, gbc_lblNewLabel_6);
 
-		textFieldGateway = new JTextField();
 		GridBagConstraints gbc_textFieldGateway = new GridBagConstraints();
 		gbc_textFieldGateway.gridwidth = 2;
 		gbc_textFieldGateway.insets = new Insets(0, 0, 5, 5);
@@ -230,7 +223,6 @@ public class PanelWIFI extends AbstractSettingsPanel implements UsnaEventListene
 		gbc_lblNewLabel_7.gridy = 8;
 		add(lblNewLabel_7, gbc_lblNewLabel_7);
 
-		textFieldDNS = new JTextField();
 		GridBagConstraints gbc_textFieldDNS = new GridBagConstraints();
 		gbc_textFieldDNS.gridwidth = 2;
 		gbc_textFieldDNS.insets = new Insets(0, 0, 0, 5);
@@ -415,7 +407,7 @@ public class PanelWIFI extends AbstractSettingsPanel implements UsnaEventListene
 						msg = wfManager.set(ssid, pwd);
 					} else {
 						if(textFieldStaticIP.isEnabled() == false) { // more than 1 device selected -> keep IP
-							ip = wfManager.getIP();
+							ip = null; //wfManager.getIP();
 						}
 						msg = wfManager.set(ssid, pwd, ip, netmask, gw, dns);
 					}

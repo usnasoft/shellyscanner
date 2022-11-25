@@ -46,26 +46,26 @@ public class PanelMQTTG1 extends AbstractSettingsPanel implements UsnaEventListe
 	private final static Logger LOG = LoggerFactory.getLogger(PanelMQTTG1.class);
 	
 	private char pwdEchoChar;
-	private JCheckBox chckbxEnabled = new JCheckBox();
-	private JTextField textFieldServer;
-	private JPasswordField textFieldPwd;
-	private JCheckBox chckbxShowPwd;
-	private IntegerTextFieldPanel textFieldMaxTimeout;
-	private IntegerTextFieldPanel textFieldMinTimeout;
-	private IntegerTextFieldPanel textFieldKeepAlive;
-	private JTextField textFieldUser;
-	private JTextField textFieldID;
-	private IntegerTextFieldPanel textFieldQOS;
-	private IntegerTextFieldPanel textFieldUpdatePeriod;
-	private JRadioButton rdbtnCleanSessionYes;
-	private JRadioButton rdbtnCleanSessionNo;
-	private JRadioButton rdbtnCleanSessionUnchange;
-	private JRadioButton rdbtnRetainYes;
-	private JRadioButton rdbtnRetainNo;
-	private JRadioButton rdbtnRetainUnchange;
-	private JCheckBox chckbxNoPWD;
-	private JCheckBox chckbxDefaultPrefix;
-	private List<MQTTManagerG1> mqttModule = new ArrayList<>();
+	private final JCheckBox chckbxEnabled = new JCheckBox();
+	private final JTextField textFieldServer = new JTextField();
+	private final JPasswordField textFieldPwd = new JPasswordField();
+	private final JCheckBox chckbxShowPwd = new JCheckBox(LABELS.getString("labelShowPwd"));
+	private final IntegerTextFieldPanel textFieldMaxTimeout = new IntegerTextFieldPanel(0, 65535);
+	private final IntegerTextFieldPanel textFieldMinTimeout = new IntegerTextFieldPanel(0, 65535);
+	private final IntegerTextFieldPanel textFieldKeepAlive = new IntegerTextFieldPanel(0, 65535);
+	private final JTextField textFieldUser = new JTextField();
+	private final JTextField textFieldID = new JTextField();
+	private final IntegerTextFieldPanel textFieldQOS = new IntegerTextFieldPanel(0, 2);
+	private final IntegerTextFieldPanel textFieldUpdatePeriod = new IntegerTextFieldPanel(0, 65535);
+	private final JRadioButton rdbtnCleanSessionYes = new JRadioButton(LABELS.getString("true_yna"));
+	private final JRadioButton rdbtnCleanSessionNo = new JRadioButton(LABELS.getString("false_yna"));
+	private final JRadioButton rdbtnCleanSessionUnchange = new JRadioButton(LABELS.getString("dlgSetDoNotChange"));
+	private final JRadioButton rdbtnRetainYes = new JRadioButton(LABELS.getString("true_yna"));
+	private final JRadioButton rdbtnRetainNo = new JRadioButton(LABELS.getString("false_yna"));;
+	private final JRadioButton rdbtnRetainUnchange = new JRadioButton(LABELS.getString("dlgSetDoNotChange"));
+	private final JCheckBox chckbxNoPWD = new JCheckBox(LABELS.getString("labelNoPwd"));
+	private final JCheckBox chckbxDefaultPrefix = new JCheckBox(LABELS.getString("dlgSetMqttIdDefault"));
+	private final List<MQTTManagerG1> mqttModule = new ArrayList<>();
 	
 	private JButton btnCopy = new JButton(LABELS.getString("btnCopyFrom"));
 	private DialogDeviceSelection selDialog = null;
@@ -116,7 +116,6 @@ public class PanelMQTTG1 extends AbstractSettingsPanel implements UsnaEventListe
 		gbc_lblNewLabel_1.gridy = 1;
 		contentPanel.add(lblNewLabel_1, gbc_lblNewLabel_1);
 
-		textFieldServer = new JTextField();
 		GridBagConstraints gbc_textFieldServer = new GridBagConstraints();
 		gbc_textFieldServer.gridwidth = 4;
 		gbc_textFieldServer.insets = new Insets(0, 0, 5, 0);
@@ -134,7 +133,6 @@ public class PanelMQTTG1 extends AbstractSettingsPanel implements UsnaEventListe
 		gbc_lblNewLabel_8.gridy = 2;
 		contentPanel.add(lblNewLabel_8, gbc_lblNewLabel_8);
 
-		textFieldUser = new JTextField();
 		GridBagConstraints gbc_textFieldUser = new GridBagConstraints();
 		gbc_textFieldUser.gridwidth = 4;
 		gbc_textFieldUser.insets = new Insets(0, 0, 5, 0);
@@ -152,7 +150,6 @@ public class PanelMQTTG1 extends AbstractSettingsPanel implements UsnaEventListe
 		gbc_lblNewLabel_2.gridy = 3;
 		contentPanel.add(lblNewLabel_2, gbc_lblNewLabel_2);
 
-		textFieldPwd = new JPasswordField();
 		pwdEchoChar = textFieldPwd.getEchoChar();
 		GridBagConstraints gbc_textFieldPwd = new GridBagConstraints();
 		gbc_textFieldPwd.gridwidth = 4;
@@ -163,7 +160,6 @@ public class PanelMQTTG1 extends AbstractSettingsPanel implements UsnaEventListe
 		contentPanel.add(textFieldPwd, gbc_textFieldPwd);
 		textFieldPwd.setColumns(10);
 
-		chckbxShowPwd = new JCheckBox(LABELS.getString("labelShowPwd"));
 		chckbxShowPwd.addItemListener(e -> textFieldPwd.setEchoChar((e.getStateChange() == java.awt.event.ItemEvent.SELECTED) ? '\0' : pwdEchoChar));
 		setLayout(new BorderLayout(0, 0));
 		GridBagConstraints gbc_chckbxSPwd = new GridBagConstraints();
@@ -174,7 +170,6 @@ public class PanelMQTTG1 extends AbstractSettingsPanel implements UsnaEventListe
 		gbc_chckbxSPwd.gridy = 4;
 		contentPanel.add(chckbxShowPwd, gbc_chckbxSPwd);
 
-		chckbxNoPWD = new JCheckBox(LABELS.getString("labelNoPwd"));
 		GridBagConstraints gbc_chckbxNoPWD = new GridBagConstraints();
 		gbc_chckbxNoPWD.anchor = GridBagConstraints.WEST;
 		gbc_chckbxNoPWD.insets = new Insets(0, 10, 5, 0);
@@ -190,7 +185,6 @@ public class PanelMQTTG1 extends AbstractSettingsPanel implements UsnaEventListe
 		gbc_lblNewLabel_3.gridy = 5;
 		contentPanel.add(lblNewLabel_3, gbc_lblNewLabel_3);
 
-		textFieldID = new JTextField();
 		GridBagConstraints gbc_textFieldID = new GridBagConstraints();
 		gbc_textFieldID.gridwidth = 4;
 		gbc_textFieldID.insets = new Insets(0, 0, 5, 0);
@@ -200,7 +194,6 @@ public class PanelMQTTG1 extends AbstractSettingsPanel implements UsnaEventListe
 		contentPanel.add(textFieldID, gbc_textFieldID);
 		textFieldID.setColumns(10);
 
-		chckbxDefaultPrefix = new JCheckBox(LABELS.getString("dlgSetMqttIdDefault"));
 		GridBagConstraints gbc_chckbxNewCheckBox = new GridBagConstraints();
 		gbc_chckbxNewCheckBox.anchor = GridBagConstraints.WEST;
 		gbc_chckbxNewCheckBox.gridwidth = 4;
@@ -217,7 +210,6 @@ public class PanelMQTTG1 extends AbstractSettingsPanel implements UsnaEventListe
 		gbc_lblNewLabel_4.gridy = 7;
 		contentPanel.add(lblNewLabel_4, gbc_lblNewLabel_4);
 
-		textFieldMaxTimeout = new IntegerTextFieldPanel(0, 65535);
 		GridBagConstraints gbc_textFieldMaxTimeout = new GridBagConstraints();
 		gbc_textFieldMaxTimeout.gridwidth = 4;
 		gbc_textFieldMaxTimeout.anchor = GridBagConstraints.WEST;
@@ -235,7 +227,6 @@ public class PanelMQTTG1 extends AbstractSettingsPanel implements UsnaEventListe
 		gbc_lblNewLabel_5.gridy = 8;
 		contentPanel.add(lblNewLabel_5, gbc_lblNewLabel_5);
 
-		textFieldMinTimeout = new IntegerTextFieldPanel(0, 65535);
 		GridBagConstraints gbc_textFieldMinTimeout = new GridBagConstraints();
 		gbc_textFieldMinTimeout.gridwidth = 4;
 		gbc_textFieldMinTimeout.anchor = GridBagConstraints.WEST;
@@ -253,7 +244,6 @@ public class PanelMQTTG1 extends AbstractSettingsPanel implements UsnaEventListe
 		gbc_lblNewLabel_6.gridy = 9;
 		contentPanel.add(lblNewLabel_6, gbc_lblNewLabel_6);
 
-		rdbtnCleanSessionYes = new JRadioButton(LABELS.getString("true_yna"));
 		GridBagConstraints gbc_rdbtnCleanSessionYes = new GridBagConstraints();
 		gbc_rdbtnCleanSessionYes.anchor = GridBagConstraints.WEST;
 		gbc_rdbtnCleanSessionYes.insets = new Insets(0, 0, 5, 5);
@@ -261,7 +251,6 @@ public class PanelMQTTG1 extends AbstractSettingsPanel implements UsnaEventListe
 		gbc_rdbtnCleanSessionYes.gridy = 9;
 		contentPanel.add(rdbtnCleanSessionYes, gbc_rdbtnCleanSessionYes);
 
-		rdbtnCleanSessionNo = new JRadioButton(LABELS.getString("false_yna"));
 		GridBagConstraints gbc_rdbtnCleanSessionNo = new GridBagConstraints();
 		gbc_rdbtnCleanSessionNo.anchor = GridBagConstraints.WEST;
 		gbc_rdbtnCleanSessionNo.insets = new Insets(0, 0, 5, 5);
@@ -269,7 +258,6 @@ public class PanelMQTTG1 extends AbstractSettingsPanel implements UsnaEventListe
 		gbc_rdbtnCleanSessionNo.gridy = 9;
 		contentPanel.add(rdbtnCleanSessionNo, gbc_rdbtnCleanSessionNo);
 
-		rdbtnCleanSessionUnchange = new JRadioButton(LABELS.getString("dlgSetDoNotChange"));
 		GridBagConstraints gbc_rdbtnCleanSessionUnchange = new GridBagConstraints();
 		gbc_rdbtnCleanSessionUnchange.gridwidth = 2;
 		gbc_rdbtnCleanSessionUnchange.weightx = 2.0;
@@ -292,7 +280,6 @@ public class PanelMQTTG1 extends AbstractSettingsPanel implements UsnaEventListe
 		gbc_lblNewLabel_7.gridy = 10;
 		contentPanel.add(lblNewLabel_7, gbc_lblNewLabel_7);
 
-		textFieldKeepAlive = new IntegerTextFieldPanel(0, 65535);
 		GridBagConstraints gbc_textFieldKeepAlive = new GridBagConstraints();
 		gbc_textFieldKeepAlive.gridwidth = 4;
 		gbc_textFieldKeepAlive.anchor = GridBagConstraints.WEST;
@@ -310,7 +297,6 @@ public class PanelMQTTG1 extends AbstractSettingsPanel implements UsnaEventListe
 		gbc_lblNewLabel_9.gridy = 11;
 		contentPanel.add(lblNewLabel_9, gbc_lblNewLabel_9);
 
-		textFieldQOS = new IntegerTextFieldPanel(0, 2);
 		GridBagConstraints gbc_textFieldQOS = new GridBagConstraints();
 		gbc_textFieldQOS.gridwidth = 4;
 		gbc_textFieldQOS.anchor = GridBagConstraints.WEST;
@@ -328,7 +314,6 @@ public class PanelMQTTG1 extends AbstractSettingsPanel implements UsnaEventListe
 		gbc_lblNewLabel_10.gridy = 12;
 		contentPanel.add(lblNewLabel_10, gbc_lblNewLabel_10);
 
-		rdbtnRetainYes = new JRadioButton(LABELS.getString("true_yna"));
 		GridBagConstraints gbc_rdbtnNewRetainYes = new GridBagConstraints();
 		gbc_rdbtnNewRetainYes.anchor = GridBagConstraints.WEST;
 		gbc_rdbtnNewRetainYes.insets = new Insets(0, 0, 5, 5);
@@ -336,7 +321,6 @@ public class PanelMQTTG1 extends AbstractSettingsPanel implements UsnaEventListe
 		gbc_rdbtnNewRetainYes.gridy = 12;
 		contentPanel.add(rdbtnRetainYes, gbc_rdbtnNewRetainYes);
 
-		rdbtnRetainNo = new JRadioButton(LABELS.getString("false_yna"));
 		GridBagConstraints gbc_rdbtnNewRetainNo = new GridBagConstraints();
 		gbc_rdbtnNewRetainNo.anchor = GridBagConstraints.WEST;
 		gbc_rdbtnNewRetainNo.insets = new Insets(0, 0, 5, 5);
@@ -344,7 +328,6 @@ public class PanelMQTTG1 extends AbstractSettingsPanel implements UsnaEventListe
 		gbc_rdbtnNewRetainNo.gridy = 12;
 		contentPanel.add(rdbtnRetainNo, gbc_rdbtnNewRetainNo);
 
-		rdbtnRetainUnchange = new JRadioButton(LABELS.getString("dlgSetDoNotChange"));
 		GridBagConstraints gbc_rdbtnNewRetainUnchange = new GridBagConstraints();
 		gbc_rdbtnNewRetainUnchange.gridwidth = 2;
 		gbc_rdbtnNewRetainUnchange.weightx = 2.0;
@@ -368,7 +351,6 @@ public class PanelMQTTG1 extends AbstractSettingsPanel implements UsnaEventListe
 		gbc_lblNewLabel_11.gridy = 13;
 		contentPanel.add(lblNewLabel_11, gbc_lblNewLabel_11);
 
-		textFieldUpdatePeriod = new IntegerTextFieldPanel(0, 65535);
 		GridBagConstraints gbc_textFieldUpdatePeriod = new GridBagConstraints();
 		gbc_textFieldUpdatePeriod.insets = new Insets(0, 0, 5, 0);
 		gbc_textFieldUpdatePeriod.gridwidth = 4;
@@ -649,4 +631,4 @@ public class PanelMQTTG1 extends AbstractSettingsPanel implements UsnaEventListe
 		}
 	}
 }
-//649
+//634
