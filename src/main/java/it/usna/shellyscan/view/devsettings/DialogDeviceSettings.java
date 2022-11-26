@@ -16,6 +16,7 @@ import javax.swing.JTabbedPane;
 import it.usna.shellyscan.Main;
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
+import it.usna.shellyscan.model.device.WIFIManager;
 import it.usna.shellyscan.model.device.g1.AbstractG1Device;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.view.MainView;
@@ -53,21 +54,21 @@ public class DialogDeviceSettings extends JDialog {
 		Gen devTypes = getTypes(devices);
 		PanelFWUpdate panelFW = new PanelFWUpdate(devices/*, tp*/);
 		tabbedPane.add(Main.LABELS.getString("dlgSetFWUpdate"), panelFW);
-		PanelWIFI panelWIFI = new PanelWIFI(this, devices, model);
-		tabbedPane.add(Main.LABELS.getString("dlgSetWIFIBackup"), panelWIFI);
+//		PanelWIFI panelWIFI1 = new PanelWIFI(this, WIFIManager.Network.PRIMARY, devices, model);
+//		tabbedPane.add(Main.LABELS.getString("dlgSetWIFI1"), panelWIFI1);
+		PanelWIFI panelWIFI2 = new PanelWIFI(this, WIFIManager.Network.SECONDARY, devices, model);
+		tabbedPane.add(Main.LABELS.getString("dlgSetWIFIBackup"), panelWIFI2);
 		PanelResLogin panelResLogin = new PanelResLogin(devices);
 		tabbedPane.add(Main.LABELS.getString("dlgSetRestrictedLogin"), panelResLogin);
 		AbstractSettingsPanel panelMQTT;
 		if(devTypes == Gen.G1) {
 			panelMQTT = new PanelMQTTG1(this, devices, model);
+		} else if(devTypes == Gen.G2) {
+			panelMQTT = new PanelMQTTG2(this, devices, model);
 		} else {
 			panelMQTT = new PanelMQTTAll(this, devices, model);
 		}
 		tabbedPane.add(Main.LABELS.getString("dlgSetMQTT"), panelMQTT);
-
-//		if(devTypes != Gen.G1) {
-//			JOptionPane.showMessageDialog(owner, "Some function is momentary not available for second generatione devices.", Main.LABELS.getString("dlgSetTitle"), JOptionPane.WARNING_MESSAGE);
-//		}
 
 		getContentPane().add(tabbedPane, BorderLayout.CENTER);
 
@@ -100,7 +101,7 @@ public class DialogDeviceSettings extends JDialog {
 		super.dispose();
 	}
 	
-	public static Gen getTypes(List<ShellyAbstractDevice> devices) {
+	static Gen getTypes(List<ShellyAbstractDevice> devices) {
 		Gen r = null;
 		for(ShellyAbstractDevice d: devices) {
 			if(r == null) {
@@ -120,6 +121,7 @@ public class DialogDeviceSettings extends JDialog {
 
 	private synchronized void showCurrent() {
 		if(showCurrentThread != null) {
+			DialogDeviceSettings.this.setCursor(Cursor.getDefaultCursor());
 			showCurrentThread.interrupt();
 		}
 		setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));

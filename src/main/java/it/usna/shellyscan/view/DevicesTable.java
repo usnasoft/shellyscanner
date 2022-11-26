@@ -171,9 +171,10 @@ public class DevicesTable extends ExTooltipTable {
 			}
 		});
 		
-		String[] headerTips = new String[COL_CLOUD + 1];
+		String[] headerTips = new String[COL_MQTT + 1];
 		headerTips[COL_STATUS_IDX] = LABELS.getString("col_status_exp");
 		headerTips[COL_CLOUD] = LABELS.getString("col_cloud_exp");
+		headerTips[COL_MQTT] = LABELS.getString("col_mqtt_exp");
 		setHeadersTooltip(headerTips);
 
 		// sorter.setSortsOnUpdates(true); // messes rows heights and selection
@@ -237,7 +238,7 @@ public class DevicesTable extends ExTooltipTable {
 			} else if (value instanceof ImageIcon) {
 				adaptTooltipLocation = false;
 				return ((ImageIcon)value).getDescription();
-			} else if(value instanceof DeviceModule[] && isColumnVisible(COL_SOURCE_IDX) == false) {
+			} else if(value instanceof DeviceModule[] && isColumnVisible(COL_SOURCE_IDX) == false && ((DeviceModule[])value).length > 0 && ((DeviceModule[])value)[0].getLastSource() != null) {
 				adaptTooltipLocation = false;
 				return Arrays.stream((DeviceModule[])value).
 						map(rel -> String.format(LABELS.getString("col_last_source_tooltip"), rel, rel.getLastSource())).collect(Collectors.joining("<br>", "<html>", "</html>"));
@@ -413,7 +414,7 @@ public class DevicesTable extends ExTooltipTable {
 			if(d.getStatus() != Status.NOT_LOOGGED && d.getStatus() != Status.ERROR /*&&(d instanceof ShellyUnmanagedDevice == false || ((ShellyUnmanagedDevice)d).geException() == null)*/) {
 				row[DevicesTable.COL_RSSI_IDX] = d.getRssi();
 				row[DevicesTable.COL_CLOUD] = (d.getCloudEnabled() ? TRUE : FALSE) + " " + (d.getCloudConnected() ? TRUE : FALSE);
-				row[DevicesTable.COL_MQTT] = (d.getMQTTEnabled() ? TRUE : FALSE);
+				row[DevicesTable.COL_MQTT] = (d.getMQTTEnabled() ? TRUE : FALSE) + " " + (d.getMQTTConnected() ? TRUE : FALSE);
 				row[DevicesTable.COL_UPTIME_IDX] = d.getUptime();
 				row[DevicesTable.COL_INT_TEMP] = (d instanceof InternalTmpHolder) ? ((InternalTmpHolder)d).getInternalTmp() : null;
 				row[DevicesTable.COL_MEASURES_IDX] = d.getMeters();

@@ -167,17 +167,17 @@ public class PanelResLogin extends AbstractSettingsPanel {
 //			if(Thread.interrupted()) {
 //				throw new InterruptedException();
 //			}
-			if(excludeCount == devices.size()) {
+			if(excludeCount == devices.size() && isShowing()) {
 				return LABELS.getString("msgAllDevicesExcluded");
-			} else if (excludeCount > 0) {
+			} else if (excludeCount > 0 && isShowing()) {
 				Msg.showHtmlMessageDialog(this, exclude, LABELS.getString("dlgExcludedDevicesTitle"), JOptionPane.WARNING_MESSAGE);
 			}
 			chckbxEnabled.setEnabled(true); // form is active
 			setEnabledLogin(enabledGlobal);
 			return null;
 		} catch (RuntimeException e) {
-			e.printStackTrace();
-			return getExtendedName(d) + ": " + e.getMessage();
+//			e.printStackTrace();
+			return /*getExtendedName(d)*/UtilCollecion.getFullName(d) + ": " + e.getMessage();
 		}
 	}
 

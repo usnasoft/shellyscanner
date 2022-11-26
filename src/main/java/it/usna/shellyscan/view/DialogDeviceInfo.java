@@ -28,7 +28,6 @@ import javax.swing.text.JTextComponent;
 
 import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
-import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -140,13 +139,23 @@ public class DialogDeviceInfo extends JDialog {
 							((AbstractBatteryDevice)device).setStoredJSON(info, val);
 						}
 					} else { // log
-						try (CloseableHttpClient httpClient = HttpClients.createDefault();
-								CloseableHttpResponse response = httpClient.execute(device.getHttpHost(), new HttpGet(info), device.getClientContext());
-								InputStream in = response.getEntity().getContent();
-								BufferedReader br = new BufferedReader(new InputStreamReader(in))) {
-							textArea.setForeground(Color.BLACK);
-							textArea.setText("");
-							br.lines().forEach(l -> textArea.append(l + "\n"));
+//						try (CloseableHttpClient httpClient = HttpClients.createDefault();
+//								CloseableHttpResponse response = httpClient.execute(device.getHttpHost(), new HttpGet(info), device.getClientContext());
+//								InputStream in = response.getEntity().getContent();
+//								BufferedReader br = new BufferedReader(new InputStreamReader(in))) {
+//							textArea.setForeground(Color.BLACK);
+//							textArea.setText("");
+//							br.lines().forEach(l -> textArea.append(l + "\n"));
+//						}
+						try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
+							httpClient.execute(device.getHttpHost(), new HttpGet(info), device.getClientContext(), response -> {
+								try(InputStream in = response.getEntity().getContent(); BufferedReader br = new BufferedReader(new InputStreamReader(in))) {
+									textArea.setForeground(Color.BLACK);
+									textArea.setText("");
+									br.lines().forEach(l -> textArea.append(l + "\n"));
+								}
+								return null;
+							});
 						}
 					}
 					textArea.setCaretPosition(0);

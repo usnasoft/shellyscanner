@@ -4,7 +4,6 @@ import static it.usna.shellyscan.Main.LABELS;
 
 import java.awt.BorderLayout;
 import java.awt.Cursor;
-import java.awt.FlowLayout;
 import java.awt.Window;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
@@ -34,8 +33,8 @@ import javax.swing.table.TableRowSorter;
 import it.usna.shellyscan.controller.UsnaAction;
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
-import it.usna.shellyscan.view.devsettings.AbstractSettingsPanel;
 import it.usna.shellyscan.view.util.IPv4Comparator;
+import it.usna.shellyscan.view.util.UtilCollecion;
 import it.usna.swing.table.ExTooltipTable;
 import it.usna.swing.table.UsnaTableModel;
 import it.usna.util.UsnaEventListener;
@@ -43,14 +42,39 @@ import it.usna.util.UsnaEventListener;
 public class DialogDeviceSelection extends JDialog {
 	private static final long serialVersionUID = 1L;
 
-	private UsnaTableModel tModel = new UsnaTableModel(LABELS.getString("col_device"), LABELS.getString("col_ip"));
-	private ExTooltipTable table = new ExTooltipTable(tModel, true);
 	private Future<?> updateTaskFuture;
 
-	public DialogDeviceSelection(final Window owner, UsnaEventListener<ShellyAbstractDevice, Object> listener, Devices model) {
+	public DialogDeviceSelection(final Window owner, UsnaEventListener<ShellyAbstractDevice, Future<?>> listener, Devices model) {
 		super(owner, LABELS.getString("dlgSelectorTitle"));
+		BorderLayout borderLayout = (BorderLayout) getContentPane().getLayout();
+		borderLayout.setVgap(2);
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		
+		UsnaTableModel tModel = new UsnaTableModel(LABELS.getString("col_device"), LABELS.getString("col_ip"));
+		ExTooltipTable table = new ExTooltipTable(tModel, true) {
+			private static final long serialVersionUID = 1L;
+			{
+				columnModel.getColumn(1).setCellRenderer(new DefaultTableCellRenderer() {
+					private static final long serialVersionUID = 1L;
+					@Override
+					public void setValue(Object value) {
+						setText(((InetAddress)value).getHostAddress());
+					}
+				});
+				((TableRowSorter<?>)getRowSorter()).setComparator(1, new IPv4Comparator());
+				sortByColumn(0, true);
+			}
+
+			@Override
+			protected String cellTooltipValue(Object value, boolean cellTooSmall, int row, int column) {
+				if(cellTooSmall && value instanceof InetAddress) {
+					return ((InetAddress)value).getHostAddress();
+				} else {
+					return super.cellTooltipValue(value, cellTooSmall, row, column);
+				}
+			}
+		};
+
 		JScrollPane scrollPane = new JScrollPane();
 		scrollPane.setViewportView(table);
 		getContentPane().add(scrollPane, BorderLayout.CENTER);
@@ -58,39 +82,27 @@ public class DialogDeviceSelection extends JDialog {
 		for(int i = 0; i < model.size(); i++) {
 			ShellyAbstractDevice d = model.get(i);
 //			if(d.getStatus() == ShellyAbstractDevice.Status.ON_LINE) {
-				tModel.addRow(AbstractSettingsPanel.getExtendedName(d), d.getHttpHost().getAddress());
+				tModel.addRow(UtilCollecion.getExtendedHostName(d), d.getHttpHost().getAddress());
 //			}
 		}
 
-		table.getColumnModel().getColumn(1).setCellRenderer(new DefaultTableCellRenderer() {
-			private static final long serialVersionUID = 1L;
-			@Override
-			public void setValue(Object value) {
-				setText(((InetAddress)value).getHostAddress());
-			}
-		});
-		
 		table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		
-		JPanel panel = new JPanel();
+		JPanel panel = new JPanel(new BorderLayout(0, 0));
 		getContentPane().add(panel, BorderLayout.SOUTH);
 		
 		JButton btnClose = new JButton(LABELS.getString("dlgClose"));
 		btnClose.addActionListener(e -> dispose());
-		panel.add(btnClose);
 		
-		// Find panel
 		JPanel panelFind = new JPanel();
-		getContentPane().add(panelFind, BorderLayout.NORTH);
+		panel.add(panelFind, BorderLayout.EAST);
 		
-		FlowLayout flowLayout = (FlowLayout) panelFind.getLayout();
-		flowLayout.setVgap(4);
-		flowLayout.setAlignment(FlowLayout.LEFT);
-		panelFind.add(new JLabel(LABELS.getString("lblFilter")));
+		JLabel label = new JLabel("Filter:");
+		panelFind.add(label);
 		
 		JTextField textFieldFilter = new JTextField();
+		textFieldFilter.setColumns(18);
 		textFieldFilter.setBorder(BorderFactory.createEmptyBorder(2, 1, 2, 1));
-		textFieldFilter.setColumns(24);
 		panelFind.add(textFieldFilter);
 		textFieldFilter.getDocument().addDocumentListener(new DocumentListener() {
 			private final int[] cols = new int[] {0, 1};
@@ -126,17 +138,13 @@ public class DialogDeviceSelection extends JDialog {
 			table.clearSelection();
 		});
 		JButton eraseFilterButton = new JButton(eraseFilterAction);
-		eraseFilterButton.setBorder(BorderFactory.createEmptyBorder(0, 2, 0, 2));
 		eraseFilterButton.setContentAreaFilled(false);
 		eraseFilterButton.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_E, MainView.SHORTCUT_KEY), "find_erase");
 		eraseFilterButton.getActionMap().put("find_erase", eraseFilterAction);
+		eraseFilterButton.setBorder(BorderFactory.createEmptyBorder(0, 2, 0, 2));
 		panelFind.add(eraseFilterButton);
+		panel.add(btnClose, BorderLayout.WEST);
 		
-		// Sort
-		TableRowSorter<?> sorter = (TableRowSorter<?>)table.getRowSorter();
-		sorter.setComparator(1, new IPv4Comparator());
-		table.sortByColumn(0, true);
-
 		// Selection
 		ExecutorService exeService = Executors.newFixedThreadPool(1);
 		table.getSelectionModel().addListSelectionListener(event -> {
@@ -147,7 +155,7 @@ public class DialogDeviceSelection extends JDialog {
 				updateTaskFuture = exeService.submit(() -> {
 					setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 					try {
-						listener.update(model.get(table.convertRowIndexToModel(table.getSelectedRow())), null);
+						listener.update(model.get(table.convertRowIndexToModel(table.getSelectedRow())), updateTaskFuture);
 					} finally {
 						setCursor(Cursor.getDefaultCursor());
 					}

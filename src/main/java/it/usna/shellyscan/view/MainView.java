@@ -46,6 +46,8 @@ import javax.swing.JTextField;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
+import javax.swing.RowSorter;
+import javax.swing.SortOrder;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import javax.swing.UIManager;
@@ -141,20 +143,21 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		}
 	});
 
-	private Action rescanAction = new UsnaAction(this, "/images/73-radar.png", "action_scan_tooltip", e -> {
+	private Action rescanAction = new UsnaAction(null, "/images/73-radar.png", "action_scan_tooltip", e -> {
 		statusLabel.setText(LABELS.getString("scanning_start"));
+		devicesTable.clearSelection();
 		SwingUtilities.invokeLater(() -> {
+			MainView.this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 			try {
-				setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-				setEnabled(false);
+//				setEnabled(false);
 				model.scan();
-				Thread.sleep(2500); // too many call disturb some devices
+				Thread.sleep(500); // too many call disturb some devices
 			} catch (IOException e1) {
 				Main.errorMsg(e1);
 			} catch (InterruptedException e1) {
 			} finally {
-				setEnabled(true);
-				setCursor(Cursor.getDefaultCursor());
+//				setEnabled(true);
+				MainView.this.setCursor(Cursor.getDefaultCursor());
 			}
 		});
 	});
@@ -189,6 +192,15 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 				SwingUtilities.invokeLater(() -> model.reboot(modelRow));
 			}
 		}
+	});
+	
+	private Action checkListAction = new UsnaAction(this, "/images/Ok.png", "action_checklist_tooltip", e -> {
+		List<ShellyAbstractDevice> devices = Arrays.stream(devicesTable.getSelectedRows()).mapToObj(i -> model.get(devicesTable.convertRowIndexToModel(i))).collect(Collectors.toList());
+		List<? extends RowSorter.SortKey> k = devicesTable.getRowSorter().getSortKeys();
+		new DialogDeviceCheckList(this, devices, k.get(0).getColumn() == DevicesTable.COL_IP_IDX ? k.get(0).getSortOrder() == SortOrder.ASCENDING : null);
+		try {
+			Thread.sleep(250); // too many call disturb some devices at least (2.5)
+		} catch (InterruptedException e1) {}
 	});
 	
 	private Action browseAction = new ViewSelectedAction("action_web_name", "action_web_tooltip", "/images/Computer16.png", "/images/Computer.png", (i, d) -> {
@@ -240,7 +252,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 					try {
 						final boolean connected;
 						if(ind.length > 1) {
-							connected = d.backup(new File(fc.getSelectedFile(), hostName.replaceAll("[^\\w_-]+", "_") + ".sbk"));
+							connected = d.backup(new File(fc.getSelectedFile(), hostName.replaceAll("[^\\w_-]+", "_") + "." + Main.BACKUP_FILE_EXT));
 						} else {
 							connected = d.backup(fc.getSelectedFile());
 						}
@@ -274,7 +286,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 			}
 		} else if(ind.length == 1) {
 			fc.setAcceptAllFileFilterUsed(false);
-			fc.addChoosableFileFilter(new FileNameExtensionFilter(LABELS.getString("filetype_sbk_desc"), "sbk"));
+			fc.addChoosableFileFilter(new FileNameExtensionFilter(LABELS.getString("filetype_sbk_desc"), Main.BACKUP_FILE_EXT));
 			ShellyAbstractDevice device = model.get(devicesTable.convertRowIndexToModel(ind[0]));
 			String fileName = device.getHostname().replaceAll("[^\\w_-]+", "_") + ".sbk";
 			fc.setSelectedFile(new File(fileName));
@@ -297,8 +309,8 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 				fc.setCurrentDirectory(new File(path));
 			}
 			fc.setAcceptAllFileFilterUsed(false);
-			fc.addChoosableFileFilter(new FileNameExtensionFilter(LABELS.getString("filetype_sbk_desc"), "sbk"));
-			final String fileName = device.getHostname().replaceAll("[^\\w_-]+", "_") + ".sbk";
+			fc.addChoosableFileFilter(new FileNameExtensionFilter(LABELS.getString("filetype_sbk_desc"), Main.BACKUP_FILE_EXT));
+			final String fileName = device.getHostname().replaceAll("[^\\w_-]+", "_") + "." + Main.BACKUP_FILE_EXT;
 			fc.setSelectedFile(new File(fileName));
 			if(fc.showOpenDialog(MainView.this) == JFileChooser.APPROVE_OPTION) {
 				MainView.this.getContentPane().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
@@ -580,6 +592,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		toolBar.addSeparator();
 		toolBar.add(infoAction);
 		toolBar.add(infoLogAction);
+		toolBar.add(checkListAction);
 		toolBar.add(browseAction);
 		toolBar.addSeparator();
 		toolBar.add(backupAction);
@@ -665,6 +678,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 				final boolean singleSelection = devicesTable.getSelectedRowCount() == 1;
 				infoAction.setEnabled(singleSelection);
 				infoLogAction.setEnabled(singleSelection);
+				checkListAction.setEnabled(selection);
 				rebootAction.setEnabled(selection);
 				browseAction.setEnabled(selection && Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE));
 				backupAction.setEnabled(selection);

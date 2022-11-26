@@ -99,6 +99,29 @@ public class MQTTManagerG2 implements MQTTManager {
 		return d.postCommand("MQTT.SetConfig", config);
 	}
 	
+	public String set(Boolean rpcNtf, Boolean statusNtf, String server, String user, String pwd, String prefix) {
+		JsonNodeFactory factory = new JsonNodeFactory(false);
+		ObjectNode pars = factory.objectNode();
+		pars.put("enable", true);
+		if(rpcNtf != null) {
+			pars.put("rpc_ntf", rpcNtf);
+		}
+		if(statusNtf != null) {
+			pars.put("status_ntf", statusNtf);
+		}
+		pars.put("server", server);
+		pars.put("user", user);
+		pars.put("pass", pwd);
+		if(prefix == null) {
+			pars.putNull("topic_prefix"); // device id is used as topic prefix (default)
+		} else if(prefix.isEmpty() == false) {
+			pars.put("topic_prefix", prefix); // do not alter if field is left blank
+		}
+		ObjectNode config = factory.objectNode();
+		config.set("config", pars);
+		return d.postCommand("MQTT.SetConfig", config);
+	}
+	
 	// todo test
 	public String restore(final JsonNode mqtt, String pwd) {
 		JsonNodeFactory factory = new JsonNodeFactory(false);

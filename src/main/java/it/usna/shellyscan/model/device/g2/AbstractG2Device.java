@@ -18,7 +18,6 @@ import java.util.zip.ZipOutputStream;
 import org.apache.hc.client5.http.auth.CredentialsProvider;
 import org.apache.hc.client5.http.classic.methods.HttpPost;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
-import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.hc.core5.http.io.entity.StringEntity;
 import org.slf4j.Logger;
@@ -77,6 +76,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 		this.rssi = wifiNode.path("rssi").asInt();
 		this.ssid = wifiNode.path("ssid").asText();
 		this.uptime = status.get("sys").get("uptime").asInt();
+		this.mqttConnected = status.path("mqtt").path("connected").asBoolean();
 	}
 
 	@Override
@@ -157,20 +157,42 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 		}	
 	}
 
+//	private JsonNode executeRPC(final String method, String payload) throws IOException, StreamReadException {
+//		HttpPost httpPost = new HttpPost("/rpc");
+//		httpPost.setEntity(new StringEntity("{\"id\":1, \"method\":\"" + method + "\", \"params\":" + payload + "}"));
+//		try (CloseableHttpClient httpClient = HttpClients.createDefault(); CloseableHttpResponse response = httpClient.execute(httpHost, httpPost, clientContext)) {
+//			int statusCode = response./*getStatusLine().getStatusCode()*/getCode();
+//			if(statusCode == HttpURLConnection.HTTP_OK) {
+//				status = Status.ON_LINE;
+//			} else if(statusCode == HttpURLConnection.HTTP_UNAUTHORIZED) {
+//				status = Status.NOT_LOOGGED;
+//			} else /*if(statusCode == HttpURLConnection.HTTP_INTERNAL_ERROR || statusCode == HttpURLConnection.HTTP_BAD_REQUEST)*/ {
+//				status = Status.ERROR;
+//			}
+//			return jsonMapper.readTree(response.getEntity().getContent());
+//		} catch(StreamReadException e) { // StreamReadException extends ... IOException
+//			throw e;
+//		} catch(IOException e) { // java.net.SocketTimeoutException
+//			status = Status.OFF_LINE;
+//			throw e;
+//		}
+//	}
+
 	private JsonNode executeRPC(final String method, String payload) throws IOException, StreamReadException {
 		HttpPost httpPost = new HttpPost("/rpc");
 		httpPost.setEntity(new StringEntity("{\"id\":1, \"method\":\"" + method + "\", \"params\":" + payload + "}"));
-		try (CloseableHttpClient httpClient = HttpClients.createDefault(); CloseableHttpResponse response = httpClient.execute(httpHost, httpPost, clientContext)) {
-			int statusCode = response./*getStatusLine().getStatusCode()*/getCode();
-			if(statusCode == HttpURLConnection.HTTP_OK) {
-				status = Status.ON_LINE;
-			} else if(statusCode == HttpURLConnection.HTTP_UNAUTHORIZED) {
-				status = Status.NOT_LOOGGED;
-			} else /*if(statusCode == HttpURLConnection.HTTP_INTERNAL_ERROR || statusCode == HttpURLConnection.HTTP_BAD_REQUEST)*/ {
-				status = Status.ERROR;
-			}
-//			final ObjectMapper mapper = new ObjectMapper();
-			return jsonMapper.readTree(response.getEntity().getContent());
+		try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
+			return httpClient.execute(httpHost, httpPost, clientContext, response -> {
+				int statusCode = response./*getStatusLine().getStatusCode()*/getCode();
+				if(statusCode == HttpURLConnection.HTTP_OK) {
+					status = Status.ON_LINE;
+				} else if(statusCode == HttpURLConnection.HTTP_UNAUTHORIZED) {
+					status = Status.NOT_LOOGGED;
+				} else /*if(statusCode == HttpURLConnection.HTTP_INTERNAL_ERROR || statusCode == HttpURLConnection.HTTP_BAD_REQUEST)*/ {
+					status = Status.ERROR;
+				}
+				return jsonMapper.readTree(response.getEntity().getContent());
+			});
 		} catch(StreamReadException e) { // StreamReadException extends ... IOException
 			throw e;
 		} catch(IOException e) { // java.net.SocketTimeoutException

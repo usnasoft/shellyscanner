@@ -10,6 +10,7 @@ import java.awt.Insets;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Future;
 
 import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
@@ -40,31 +41,31 @@ import it.usna.shellyscan.view.util.UtilCollecion;
 import it.usna.util.UsnaEventListener;
 
 //https://shelly-api-docs.shelly.cloud/gen1/#settings
-public class PanelMQTTG1 extends AbstractSettingsPanel implements UsnaEventListener<ShellyAbstractDevice, Object> {
+public class PanelMQTTG1 extends AbstractSettingsPanel implements UsnaEventListener<ShellyAbstractDevice, Future<?>> {
 	private static final long serialVersionUID = 1L;
 	private final static Logger LOG = LoggerFactory.getLogger(PanelMQTTG1.class);
 	
 	private char pwdEchoChar;
-	private JCheckBox chckbxEnabled = new JCheckBox();
-	private JTextField textFieldServer;
-	private JPasswordField textFieldPwd;
-	private JCheckBox chckbxShowPwd;
-	private IntegerTextFieldPanel textFieldMaxTimeout;
-	private IntegerTextFieldPanel textFieldMinTimeout;
-	private IntegerTextFieldPanel textFieldKeepAlive;
-	private JTextField textFieldUser;
-	private JTextField textFieldID;
-	private IntegerTextFieldPanel textFieldQOS;
-	private IntegerTextFieldPanel textFieldUpdatePeriod;
-	private JRadioButton rdbtnCleanSessionYes;
-	private JRadioButton rdbtnCleanSessionNo;
-	private JRadioButton rdbtnCleanSessionUnchange;
-	private JRadioButton rdbtnRetainYes;
-	private JRadioButton rdbtnRetainNo;
-	private JRadioButton rdbtnRetainUnchange;
-	private JCheckBox chckbxNoPWD;
-	private JCheckBox chckbxDefaultPrefix;
-	private List<MQTTManagerG1> mqttModule = new ArrayList<>();
+	private final JCheckBox chckbxEnabled = new JCheckBox();
+	private final JTextField textFieldServer = new JTextField();
+	private final JPasswordField textFieldPwd = new JPasswordField();
+	private final JCheckBox chckbxShowPwd = new JCheckBox(LABELS.getString("labelShowPwd"));
+	private final IntegerTextFieldPanel textFieldMaxTimeout = new IntegerTextFieldPanel(0, 65535);
+	private final IntegerTextFieldPanel textFieldMinTimeout = new IntegerTextFieldPanel(0, 65535);
+	private final IntegerTextFieldPanel textFieldKeepAlive = new IntegerTextFieldPanel(0, 65535);
+	private final JTextField textFieldUser = new JTextField();
+	private final JTextField textFieldID = new JTextField();
+	private final IntegerTextFieldPanel textFieldQOS = new IntegerTextFieldPanel(0, 2);
+	private final IntegerTextFieldPanel textFieldUpdatePeriod = new IntegerTextFieldPanel(0, 65535);
+	private final JRadioButton rdbtnCleanSessionYes = new JRadioButton(LABELS.getString("true_yna"));
+	private final JRadioButton rdbtnCleanSessionNo = new JRadioButton(LABELS.getString("false_yna"));
+	private final JRadioButton rdbtnCleanSessionUnchange = new JRadioButton(LABELS.getString("dlgSetDoNotChange"));
+	private final JRadioButton rdbtnRetainYes = new JRadioButton(LABELS.getString("true_yna"));
+	private final JRadioButton rdbtnRetainNo = new JRadioButton(LABELS.getString("false_yna"));;
+	private final JRadioButton rdbtnRetainUnchange = new JRadioButton(LABELS.getString("dlgSetDoNotChange"));
+	private final JCheckBox chckbxNoPWD = new JCheckBox(LABELS.getString("labelNoPwd"));
+	private final JCheckBox chckbxDefaultPrefix = new JCheckBox(LABELS.getString("dlgSetMqttIdDefault"));
+	private final List<MQTTManagerG1> mqttModule = new ArrayList<>();
 	
 	private JButton btnCopy = new JButton(LABELS.getString("btnCopyFrom"));
 	private DialogDeviceSelection selDialog = null;
@@ -115,7 +116,6 @@ public class PanelMQTTG1 extends AbstractSettingsPanel implements UsnaEventListe
 		gbc_lblNewLabel_1.gridy = 1;
 		contentPanel.add(lblNewLabel_1, gbc_lblNewLabel_1);
 
-		textFieldServer = new JTextField();
 		GridBagConstraints gbc_textFieldServer = new GridBagConstraints();
 		gbc_textFieldServer.gridwidth = 4;
 		gbc_textFieldServer.insets = new Insets(0, 0, 5, 0);
@@ -133,7 +133,6 @@ public class PanelMQTTG1 extends AbstractSettingsPanel implements UsnaEventListe
 		gbc_lblNewLabel_8.gridy = 2;
 		contentPanel.add(lblNewLabel_8, gbc_lblNewLabel_8);
 
-		textFieldUser = new JTextField();
 		GridBagConstraints gbc_textFieldUser = new GridBagConstraints();
 		gbc_textFieldUser.gridwidth = 4;
 		gbc_textFieldUser.insets = new Insets(0, 0, 5, 0);
@@ -151,7 +150,6 @@ public class PanelMQTTG1 extends AbstractSettingsPanel implements UsnaEventListe
 		gbc_lblNewLabel_2.gridy = 3;
 		contentPanel.add(lblNewLabel_2, gbc_lblNewLabel_2);
 
-		textFieldPwd = new JPasswordField();
 		pwdEchoChar = textFieldPwd.getEchoChar();
 		GridBagConstraints gbc_textFieldPwd = new GridBagConstraints();
 		gbc_textFieldPwd.gridwidth = 4;
@@ -162,7 +160,6 @@ public class PanelMQTTG1 extends AbstractSettingsPanel implements UsnaEventListe
 		contentPanel.add(textFieldPwd, gbc_textFieldPwd);
 		textFieldPwd.setColumns(10);
 
-		chckbxShowPwd = new JCheckBox(LABELS.getString("labelShowPwd"));
 		chckbxShowPwd.addItemListener(e -> textFieldPwd.setEchoChar((e.getStateChange() == java.awt.event.ItemEvent.SELECTED) ? '\0' : pwdEchoChar));
 		setLayout(new BorderLayout(0, 0));
 		GridBagConstraints gbc_chckbxSPwd = new GridBagConstraints();
@@ -173,7 +170,6 @@ public class PanelMQTTG1 extends AbstractSettingsPanel implements UsnaEventListe
 		gbc_chckbxSPwd.gridy = 4;
 		contentPanel.add(chckbxShowPwd, gbc_chckbxSPwd);
 
-		chckbxNoPWD = new JCheckBox(LABELS.getString("labelNoPwd"));
 		GridBagConstraints gbc_chckbxNoPWD = new GridBagConstraints();
 		gbc_chckbxNoPWD.anchor = GridBagConstraints.WEST;
 		gbc_chckbxNoPWD.insets = new Insets(0, 10, 5, 0);
@@ -189,7 +185,6 @@ public class PanelMQTTG1 extends AbstractSettingsPanel implements UsnaEventListe
 		gbc_lblNewLabel_3.gridy = 5;
 		contentPanel.add(lblNewLabel_3, gbc_lblNewLabel_3);
 
-		textFieldID = new JTextField();
 		GridBagConstraints gbc_textFieldID = new GridBagConstraints();
 		gbc_textFieldID.gridwidth = 4;
 		gbc_textFieldID.insets = new Insets(0, 0, 5, 0);
@@ -199,7 +194,6 @@ public class PanelMQTTG1 extends AbstractSettingsPanel implements UsnaEventListe
 		contentPanel.add(textFieldID, gbc_textFieldID);
 		textFieldID.setColumns(10);
 
-		chckbxDefaultPrefix = new JCheckBox(LABELS.getString("dlgSetMqttIdDefault"));
 		GridBagConstraints gbc_chckbxNewCheckBox = new GridBagConstraints();
 		gbc_chckbxNewCheckBox.anchor = GridBagConstraints.WEST;
 		gbc_chckbxNewCheckBox.gridwidth = 4;
@@ -216,7 +210,6 @@ public class PanelMQTTG1 extends AbstractSettingsPanel implements UsnaEventListe
 		gbc_lblNewLabel_4.gridy = 7;
 		contentPanel.add(lblNewLabel_4, gbc_lblNewLabel_4);
 
-		textFieldMaxTimeout = new IntegerTextFieldPanel(0, 65535);
 		GridBagConstraints gbc_textFieldMaxTimeout = new GridBagConstraints();
 		gbc_textFieldMaxTimeout.gridwidth = 4;
 		gbc_textFieldMaxTimeout.anchor = GridBagConstraints.WEST;
@@ -234,7 +227,6 @@ public class PanelMQTTG1 extends AbstractSettingsPanel implements UsnaEventListe
 		gbc_lblNewLabel_5.gridy = 8;
 		contentPanel.add(lblNewLabel_5, gbc_lblNewLabel_5);
 
-		textFieldMinTimeout = new IntegerTextFieldPanel(0, 65535);
 		GridBagConstraints gbc_textFieldMinTimeout = new GridBagConstraints();
 		gbc_textFieldMinTimeout.gridwidth = 4;
 		gbc_textFieldMinTimeout.anchor = GridBagConstraints.WEST;
@@ -252,7 +244,6 @@ public class PanelMQTTG1 extends AbstractSettingsPanel implements UsnaEventListe
 		gbc_lblNewLabel_6.gridy = 9;
 		contentPanel.add(lblNewLabel_6, gbc_lblNewLabel_6);
 
-		rdbtnCleanSessionYes = new JRadioButton(LABELS.getString("true_yna"));
 		GridBagConstraints gbc_rdbtnCleanSessionYes = new GridBagConstraints();
 		gbc_rdbtnCleanSessionYes.anchor = GridBagConstraints.WEST;
 		gbc_rdbtnCleanSessionYes.insets = new Insets(0, 0, 5, 5);
@@ -260,7 +251,6 @@ public class PanelMQTTG1 extends AbstractSettingsPanel implements UsnaEventListe
 		gbc_rdbtnCleanSessionYes.gridy = 9;
 		contentPanel.add(rdbtnCleanSessionYes, gbc_rdbtnCleanSessionYes);
 
-		rdbtnCleanSessionNo = new JRadioButton(LABELS.getString("false_yna"));
 		GridBagConstraints gbc_rdbtnCleanSessionNo = new GridBagConstraints();
 		gbc_rdbtnCleanSessionNo.anchor = GridBagConstraints.WEST;
 		gbc_rdbtnCleanSessionNo.insets = new Insets(0, 0, 5, 5);
@@ -268,7 +258,6 @@ public class PanelMQTTG1 extends AbstractSettingsPanel implements UsnaEventListe
 		gbc_rdbtnCleanSessionNo.gridy = 9;
 		contentPanel.add(rdbtnCleanSessionNo, gbc_rdbtnCleanSessionNo);
 
-		rdbtnCleanSessionUnchange = new JRadioButton(LABELS.getString("dlgSetDoNotChange"));
 		GridBagConstraints gbc_rdbtnCleanSessionUnchange = new GridBagConstraints();
 		gbc_rdbtnCleanSessionUnchange.gridwidth = 2;
 		gbc_rdbtnCleanSessionUnchange.weightx = 2.0;
@@ -291,7 +280,6 @@ public class PanelMQTTG1 extends AbstractSettingsPanel implements UsnaEventListe
 		gbc_lblNewLabel_7.gridy = 10;
 		contentPanel.add(lblNewLabel_7, gbc_lblNewLabel_7);
 
-		textFieldKeepAlive = new IntegerTextFieldPanel(0, 65535);
 		GridBagConstraints gbc_textFieldKeepAlive = new GridBagConstraints();
 		gbc_textFieldKeepAlive.gridwidth = 4;
 		gbc_textFieldKeepAlive.anchor = GridBagConstraints.WEST;
@@ -309,7 +297,6 @@ public class PanelMQTTG1 extends AbstractSettingsPanel implements UsnaEventListe
 		gbc_lblNewLabel_9.gridy = 11;
 		contentPanel.add(lblNewLabel_9, gbc_lblNewLabel_9);
 
-		textFieldQOS = new IntegerTextFieldPanel(0, 2);
 		GridBagConstraints gbc_textFieldQOS = new GridBagConstraints();
 		gbc_textFieldQOS.gridwidth = 4;
 		gbc_textFieldQOS.anchor = GridBagConstraints.WEST;
@@ -327,7 +314,6 @@ public class PanelMQTTG1 extends AbstractSettingsPanel implements UsnaEventListe
 		gbc_lblNewLabel_10.gridy = 12;
 		contentPanel.add(lblNewLabel_10, gbc_lblNewLabel_10);
 
-		rdbtnRetainYes = new JRadioButton(LABELS.getString("true_yna"));
 		GridBagConstraints gbc_rdbtnNewRetainYes = new GridBagConstraints();
 		gbc_rdbtnNewRetainYes.anchor = GridBagConstraints.WEST;
 		gbc_rdbtnNewRetainYes.insets = new Insets(0, 0, 5, 5);
@@ -335,7 +321,6 @@ public class PanelMQTTG1 extends AbstractSettingsPanel implements UsnaEventListe
 		gbc_rdbtnNewRetainYes.gridy = 12;
 		contentPanel.add(rdbtnRetainYes, gbc_rdbtnNewRetainYes);
 
-		rdbtnRetainNo = new JRadioButton(LABELS.getString("false_yna"));
 		GridBagConstraints gbc_rdbtnNewRetainNo = new GridBagConstraints();
 		gbc_rdbtnNewRetainNo.anchor = GridBagConstraints.WEST;
 		gbc_rdbtnNewRetainNo.insets = new Insets(0, 0, 5, 5);
@@ -343,7 +328,6 @@ public class PanelMQTTG1 extends AbstractSettingsPanel implements UsnaEventListe
 		gbc_rdbtnNewRetainNo.gridy = 12;
 		contentPanel.add(rdbtnRetainNo, gbc_rdbtnNewRetainNo);
 
-		rdbtnRetainUnchange = new JRadioButton(LABELS.getString("dlgSetDoNotChange"));
 		GridBagConstraints gbc_rdbtnNewRetainUnchange = new GridBagConstraints();
 		gbc_rdbtnNewRetainUnchange.gridwidth = 2;
 		gbc_rdbtnNewRetainUnchange.weightx = 2.0;
@@ -367,7 +351,6 @@ public class PanelMQTTG1 extends AbstractSettingsPanel implements UsnaEventListe
 		gbc_lblNewLabel_11.gridy = 13;
 		contentPanel.add(lblNewLabel_11, gbc_lblNewLabel_11);
 
-		textFieldUpdatePeriod = new IntegerTextFieldPanel(0, 65535);
 		GridBagConstraints gbc_textFieldUpdatePeriod = new GridBagConstraints();
 		gbc_textFieldUpdatePeriod.insets = new Insets(0, 0, 5, 0);
 		gbc_textFieldUpdatePeriod.gridwidth = 4;
@@ -453,10 +436,10 @@ public class PanelMQTTG1 extends AbstractSettingsPanel implements UsnaEventListe
 			String idGlobal = "";
 			int rTimeoutMaxGlobal = 0;
 			int rTimeoutMinGlobal = 0;
-			String cleanSessionGlobal = "";
+			Boolean cleanSessionGlobal = false;
 			int keepAliveGlobal = 0;
 			int qosGlobal = 0;
-			String retainGlobal = "";
+			Boolean retainGlobal = false;
 			int updatePerGlobal = 0;
 			boolean noPwdGlobal = false;
 			boolean first = true;
@@ -473,10 +456,10 @@ public class PanelMQTTG1 extends AbstractSettingsPanel implements UsnaEventListe
 					String id = mqttm.getPrefix();
 					int rTimeoutMax = mqttm.getrTimeoutMax();
 					int rTimeoutMin = mqttm.getrTimeoutMin();
-					String cleanSession =  mqttm.isCleanSession() ? "Y" : "N";
+					Boolean cleanSession = mqttm.isCleanSession();// ? "Y" : "N";
 					int keepAlive = mqttm.getKeepAlive();
 					int qos = mqttm.getQos();
-					String retain = mqttm.isRetain() ? "Y" : "N";
+					Boolean retain = mqttm.isRetain();// ? "Y" : "N";
 					int updatePer = mqttm.getUpdatePeriod();
 					if(first) {
 						enabledGlobal = enabled;
@@ -499,10 +482,10 @@ public class PanelMQTTG1 extends AbstractSettingsPanel implements UsnaEventListe
 						if(id.equals(idGlobal) == false) idGlobal = "";
 						if(rTimeoutMaxGlobal != rTimeoutMax) rTimeoutMaxGlobal = -1;
 						if(rTimeoutMinGlobal != rTimeoutMin) rTimeoutMinGlobal = -1;
-						if(cleanSessionGlobal.equals(cleanSession) == false) cleanSessionGlobal = "";
+						if(cleanSessionGlobal != null && cleanSession.equals(cleanSessionGlobal) == false) cleanSessionGlobal = null;
 						if(keepAliveGlobal != keepAlive) keepAliveGlobal = -1;
 						if(qosGlobal != qos) qosGlobal = -1;
-						if(retain.equals(retainGlobal) == false) retainGlobal = "";
+						if(retainGlobal != null && retain.equals(retainGlobal) == false) retainGlobal = null;
 						if(updatePerGlobal != updatePer) updatePerGlobal = -1;
 						noPwdGlobal &= user.isEmpty();
 					}
@@ -529,27 +512,27 @@ public class PanelMQTTG1 extends AbstractSettingsPanel implements UsnaEventListe
 			textFieldID.setText(idGlobal);
 			textFieldMaxTimeout.setValue(rTimeoutMaxGlobal >= 0 ? rTimeoutMaxGlobal : null);
 			textFieldMinTimeout.setValue(rTimeoutMinGlobal >= 0 ? rTimeoutMinGlobal : null);
-			if(cleanSessionGlobal.equals("Y")) {
-				rdbtnCleanSessionYes.setSelected(true);
-				rdbtnCleanSessionUnchange.setVisible(false);
-			} else if(cleanSessionGlobal.equals("N")) {
-				rdbtnCleanSessionNo.setSelected(true);
-				rdbtnCleanSessionUnchange.setVisible(false);
-			} else {
+			if(cleanSessionGlobal == null) {
 				rdbtnCleanSessionUnchange.setSelected(true);
 				rdbtnCleanSessionUnchange.setVisible(true);
+			} else if(cleanSessionGlobal == Boolean.TRUE) {
+				rdbtnCleanSessionYes.setSelected(true);
+				rdbtnCleanSessionUnchange.setVisible(false);
+			} else if(cleanSessionGlobal == Boolean.FALSE) {
+				rdbtnCleanSessionNo.setSelected(true);
+				rdbtnCleanSessionUnchange.setVisible(false);
 			}
 			textFieldKeepAlive.setValue(keepAliveGlobal >= 0 ? keepAliveGlobal : null);
 			textFieldQOS.setValue(qosGlobal >= 0 ? qosGlobal : null);
-			if(retainGlobal.equals("Y")) {
-				rdbtnRetainYes .setSelected(true);
-				rdbtnRetainUnchange.setVisible(false);
-			} else if(retainGlobal.equals("N")) {
-				rdbtnRetainNo.setSelected(true);
-				rdbtnRetainUnchange.setVisible(false);
-			} else {
+			if(retainGlobal == null) {
 				rdbtnRetainUnchange.setSelected(true);
 				rdbtnRetainUnchange.setVisible(true);
+			} else if(retainGlobal == Boolean.TRUE) {
+				rdbtnRetainYes.setSelected(true);
+				rdbtnRetainUnchange.setVisible(false);
+			} else if(retainGlobal == Boolean.FALSE) {
+				rdbtnRetainNo.setSelected(true);
+				rdbtnRetainUnchange.setVisible(false);
 			}
 			textFieldUpdatePeriod.setValue(updatePerGlobal >= 0 ? updatePerGlobal : null);
 
@@ -557,7 +540,7 @@ public class PanelMQTTG1 extends AbstractSettingsPanel implements UsnaEventListe
 			btnCopy.setEnabled(true);
 			return null;
 		} catch (RuntimeException e) {
-			return getExtendedName(d) + ": " + e.getMessage();
+			return UtilCollecion.getFullName(d) + ": " + e.getMessage();
 		}
 	}
 	
@@ -626,24 +609,26 @@ public class PanelMQTTG1 extends AbstractSettingsPanel implements UsnaEventListe
 	}
 	
 	@Override
-	public void update(ShellyAbstractDevice device, Object dummy) {
-		try {
-			MQTTManagerG1 m = (MQTTManagerG1)device.getMQTTManager();
-			chckbxEnabled.setSelected(m.isEnabled());
-			textFieldServer.setText(m.getServer());
-			textFieldUser.setText(m.getUser());
-			textFieldMaxTimeout.setValue(m.getrTimeoutMax());
-			textFieldMinTimeout.setValue(m.getrTimeoutMin());
-			textFieldKeepAlive.setValue(m.getKeepAlive());
-			textFieldQOS.setValue(m.getQos());
-			textFieldUpdatePeriod.setValue(m.getUpdatePeriod());
-			rdbtnCleanSessionYes.setSelected(m.isCleanSession());
-			rdbtnCleanSessionNo.setSelected(m.isCleanSession() == false);
-			rdbtnRetainYes.setSelected(m.isRetain());
-			rdbtnRetainNo.setSelected(m.isRetain() == false);
-		} catch (IOException e) {
-			LOG.error("copy", e);
+	public void update(ShellyAbstractDevice device, Future<?> future) {
+		if(future.isCancelled() == false) {
+			try {
+				MQTTManagerG1 m = (MQTTManagerG1)device.getMQTTManager();
+				chckbxEnabled.setSelected(m.isEnabled());
+				textFieldServer.setText(m.getServer());
+				textFieldUser.setText(m.getUser());
+				textFieldMaxTimeout.setValue(m.getrTimeoutMax());
+				textFieldMinTimeout.setValue(m.getrTimeoutMin());
+				textFieldKeepAlive.setValue(m.getKeepAlive());
+				textFieldQOS.setValue(m.getQos());
+				textFieldUpdatePeriod.setValue(m.getUpdatePeriod());
+				rdbtnCleanSessionYes.setSelected(m.isCleanSession());
+				rdbtnCleanSessionNo.setSelected(m.isCleanSession() == false);
+				rdbtnRetainYes.setSelected(m.isRetain());
+				rdbtnRetainNo.setSelected(m.isRetain() == false);
+			} catch (IOException e) {
+				LOG.error("copy", e);
+			}
 		}
 	}
 }
-//649
+//634

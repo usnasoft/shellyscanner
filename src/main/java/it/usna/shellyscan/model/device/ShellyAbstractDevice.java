@@ -17,7 +17,6 @@ import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.impl.auth.BasicAuthCache;
 import org.apache.hc.client5.http.impl.auth.BasicScheme;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
-import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.hc.client5.http.protocol.HttpClientContext;
 import org.apache.hc.core5.http.HttpHost;
@@ -31,6 +30,7 @@ public abstract class ShellyAbstractDevice {
 	protected boolean cloudEnabled;
 	protected boolean cloudConnected;
 	protected boolean mqttEnabled;
+	protected boolean mqttConnected;
 	protected LogMode debugEnabled = LogMode.NO;
 	protected int rssi;
 	protected String ssid;
@@ -69,31 +69,59 @@ public abstract class ShellyAbstractDevice {
 		}
 	}
 	
+//	public JsonNode getJSON(final String command) throws IOException { //JsonProcessingException extends IOException
+//		HttpGet httpget = new HttpGet(command);
+//		int statusCode;
+//		try (CloseableHttpClient httpClient = HttpClients.createDefault(); CloseableHttpResponse response = httpClient.execute(httpHost, httpget, clientContext)) {
+//			statusCode = response./*getStatusLine().getStatusCode();*/getCode();
+//			if(statusCode == HttpURLConnection.HTTP_OK) {
+//				status = Status.ON_LINE;
+//				return jsonMapper.readTree(response.getEntity().getContent());
+//			}
+//		}  catch(SocketException | SocketTimeoutException e) {
+//			status = Status.OFF_LINE;
+//			throw e;
+//		} catch(/*JsonParseException |*/ IOException | RuntimeException e) {
+//			status = Status.ERROR;
+//			throw e;
+//		}
+//		if(statusCode == HttpURLConnection.HTTP_UNAUTHORIZED) {
+//			status = Status.NOT_LOOGGED;
+//		} else if(statusCode == HttpURLConnection.HTTP_INTERNAL_ERROR) {
+//			status = Status.ERROR;
+//		} else {
+//			status = Status.OFF_LINE;
+//		}
+//		throw new IOException("Status-" + statusCode);
+//	}
+	
 	public JsonNode getJSON(final String command) throws IOException { //JsonProcessingException extends IOException
 		HttpGet httpget = new HttpGet(command);
-		int statusCode;
-		try (CloseableHttpClient httpClient = HttpClients.createDefault(); CloseableHttpResponse response = httpClient.execute(httpHost, httpget, clientContext)) {
-			statusCode = response./*getStatusLine().getStatusCode();*/getCode();
-			if(statusCode == HttpURLConnection.HTTP_OK) {
-				status = Status.ON_LINE;
-//				final ObjectMapper mapper = new ObjectMapper();
-				return jsonMapper.readTree(response.getEntity().getContent());
-			}
+		try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
+			return httpClient.execute(httpHost, httpget, clientContext, response -> {
+				int statusCode = response.getCode();
+				if(statusCode == HttpURLConnection.HTTP_OK) {
+					status = Status.ON_LINE;
+					return jsonMapper.readTree(response.getEntity().getContent());
+				}
+				if(statusCode == HttpURLConnection.HTTP_UNAUTHORIZED) {
+					status = Status.NOT_LOOGGED;
+				} else if(statusCode == HttpURLConnection.HTTP_INTERNAL_ERROR) {
+					status = Status.ERROR;
+				} else {
+					status = Status.OFF_LINE;
+				}
+				throw new IOException("Status-" + statusCode);
+			});
 		}  catch(SocketException | SocketTimeoutException e) {
 			status = Status.OFF_LINE;
 			throw e;
 		} catch(/*JsonParseException |*/ IOException | RuntimeException e) {
-			status = Status.ERROR;
+			if(status == Status.ON_LINE) {
+				status = Status.ERROR;
+			}
 			throw e;
 		}
-		if(statusCode == HttpURLConnection.HTTP_UNAUTHORIZED) {
-			status = Status.NOT_LOOGGED;
-		} else if(statusCode == HttpURLConnection.HTTP_INTERNAL_ERROR) {
-			status = Status.ERROR;
-		} else {
-			status = Status.OFF_LINE;
-		}
-		throw new IOException("Status-" + statusCode);
 	}
 
 	public String getHostname() {
@@ -142,6 +170,10 @@ public abstract class ShellyAbstractDevice {
 	
 	public boolean getMQTTEnabled() {
 		return mqttEnabled;
+	}
+	
+	public boolean getMQTTConnected() {
+		return mqttConnected;
 	}
 
 	public int getRssi() {
@@ -219,17 +251,17 @@ public abstract class ShellyAbstractDevice {
 	protected void sectionToStream(String section, String entryName, ZipOutputStream out) throws IOException {
 		ZipEntry entry = new ZipEntry(entryName);
 		out.putNextEntry(entry);
-//		URLConnection uc = getUrlConnection(section);
-		byte[] buffer = new byte[4096];
-		int l;
-
-		HttpGet httpget = new HttpGet(section);
-		try (CloseableHttpClient httpClient = HttpClients.createDefault();
-				CloseableHttpResponse response = httpClient.execute(httpHost, httpget, clientContext);
-				BufferedInputStream br = new BufferedInputStream(response.getEntity().getContent())) {
-			while ((l = br.read(buffer)) >= 0) {
-				out.write(buffer, 0, l);
-			}
+		try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
+			httpClient.execute(httpHost, new HttpGet(section), clientContext, response -> {
+				byte[] buffer = new byte[4096];
+				int l;
+				try (BufferedInputStream br = new BufferedInputStream(response.getEntity().getContent())) {
+					while ((l = br.read(buffer)) >= 0) {
+						out.write(buffer, 0, l);
+					}
+				}
+				return null;
+			});
 		}
 		out.closeEntry();
 	}

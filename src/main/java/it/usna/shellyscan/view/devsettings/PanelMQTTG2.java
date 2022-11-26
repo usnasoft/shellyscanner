@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.concurrent.Future;
 
 import javax.swing.BorderFactory;
+import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JDialog;
@@ -32,17 +33,25 @@ import it.usna.shellyscan.Main;
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.MQTTManager;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
+import it.usna.shellyscan.model.device.g2.MQTTManagerG2;
 import it.usna.shellyscan.view.DialogDeviceSelection;
 import it.usna.shellyscan.view.util.Msg;
 import it.usna.shellyscan.view.util.UtilCollecion;
 import it.usna.util.UsnaEventListener;
+import javax.swing.JRadioButton;
 
 //https://shelly-api-docs.shelly.cloud/gen2/Components/SystemComponents/Mqtt
-//https://shelly-api-docs.shelly.cloud/gen1/#settings
-public class PanelMQTTAll extends AbstractSettingsPanel implements UsnaEventListener<ShellyAbstractDevice, Future<?>> {
+//TODO
+public class PanelMQTTG2 extends AbstractSettingsPanel implements UsnaEventListener<ShellyAbstractDevice, Future<?>> {
 	private static final long serialVersionUID = 1L;
-	private final static Logger LOG = LoggerFactory.getLogger(PanelMQTTAll.class);
+	private final static Logger LOG = LoggerFactory.getLogger(PanelMQTTG2.class);
 	
+	private JRadioButton rdbtnRPCYes = new JRadioButton(LABELS.getString("true_yna"));
+	private JRadioButton rdbtnRPCNo = new JRadioButton(LABELS.getString("false_yna"));
+	private JRadioButton rdbtnRPCNoChange = new JRadioButton(LABELS.getString("dlgSetDoNotChange"));
+	private JRadioButton rdbtnGenericSUpdareYes = new JRadioButton(LABELS.getString("true_yna"));
+	private JRadioButton rdbtnGenericSUpdareNo = new JRadioButton(LABELS.getString("false_yna"));
+	private JRadioButton rdbtnGenericSUpdareNoChange = new JRadioButton(LABELS.getString("dlgSetDoNotChange"));
 	private char pwdEchoChar;
 	private JCheckBox chckbxEnabled = new JCheckBox();
 	private JTextField textFieldServer;
@@ -52,12 +61,12 @@ public class PanelMQTTAll extends AbstractSettingsPanel implements UsnaEventList
 	private JTextField textFieldID;
 	private JCheckBox chckbxNoPWD;
 	private JCheckBox chckbxDefaultPrefix;
-	private List<MQTTManager> mqttModule = new ArrayList<>();
+	private List<MQTTManagerG2> mqttModule = new ArrayList<>();
 	
 	private JButton btnCopy = new JButton(LABELS.getString("btnCopyFrom"));
 	private DialogDeviceSelection selDialog = null;
 
-	public PanelMQTTAll(JDialog owner, List<ShellyAbstractDevice> devices, final Devices model) {
+	public PanelMQTTG2(JDialog owner, List<ShellyAbstractDevice> devices, final Devices model) {
 		super(devices);
 		//		this.setSize(800, 800);
 		JPanel contentPanel = new JPanel();
@@ -91,13 +100,81 @@ public class PanelMQTTAll extends AbstractSettingsPanel implements UsnaEventList
 		gbc_btnCopy.gridy = 0;
 		contentPanel.add(btnCopy, gbc_btnCopy);
 		btnCopy.addActionListener(e -> selDialog = new DialogDeviceSelection(owner, this, model));
+		
+		JLabel lblNewLabel_4 = new JLabel(LABELS.getString("dlgSetMqttRPCnotif"));
+		GridBagConstraints gbc_lblNewLabel_4 = new GridBagConstraints();
+		gbc_lblNewLabel_4.anchor = GridBagConstraints.WEST;
+		gbc_lblNewLabel_4.insets = new Insets(0, 0, 5, 5);
+		gbc_lblNewLabel_4.gridx = 0;
+		gbc_lblNewLabel_4.gridy = 1;
+		contentPanel.add(lblNewLabel_4, gbc_lblNewLabel_4);
+
+		GridBagConstraints gbc_rdbtnRPCYes = new GridBagConstraints();
+		gbc_rdbtnRPCYes.anchor = GridBagConstraints.WEST;
+		gbc_rdbtnRPCYes.insets = new Insets(0, 0, 5, 5);
+		gbc_rdbtnRPCYes.gridx = 1;
+		gbc_rdbtnRPCYes.gridy = 1;
+		contentPanel.add(rdbtnRPCYes, gbc_rdbtnRPCYes);
+
+		GridBagConstraints gbc_rdbtnRPCNo = new GridBagConstraints();
+		gbc_rdbtnRPCNo.anchor = GridBagConstraints.WEST;
+		gbc_rdbtnRPCNo.insets = new Insets(0, 0, 5, 5);
+		gbc_rdbtnRPCNo.gridx = 2;
+		gbc_rdbtnRPCNo.gridy = 1;
+		contentPanel.add(rdbtnRPCNo, gbc_rdbtnRPCNo);
+		
+		GridBagConstraints gbc_rdbtnRPCNoChange = new GridBagConstraints();
+		gbc_rdbtnRPCNoChange.anchor = GridBagConstraints.WEST;
+		gbc_rdbtnRPCNoChange.insets = new Insets(0, 0, 5, 5);
+		gbc_rdbtnRPCNoChange.gridx = 3;
+		gbc_rdbtnRPCNoChange.gridy = 1;
+		contentPanel.add(rdbtnRPCNoChange, gbc_rdbtnRPCNoChange);
+		
+		ButtonGroup rpcRadio = new ButtonGroup();
+		rpcRadio.add(rdbtnRPCYes);
+		rpcRadio.add(rdbtnRPCNo);
+		rpcRadio.add(rdbtnRPCNoChange);
+		
+		JLabel lblNewLabel_5 = new JLabel(LABELS.getString("dlgSetMqttGenericNotif"));
+		GridBagConstraints gbc_lblNewLabel_5 = new GridBagConstraints();
+		gbc_lblNewLabel_5.anchor = GridBagConstraints.WEST;
+		gbc_lblNewLabel_5.insets = new Insets(0, 0, 5, 5);
+		gbc_lblNewLabel_5.gridx = 0;
+		gbc_lblNewLabel_5.gridy = 2;
+		contentPanel.add(lblNewLabel_5, gbc_lblNewLabel_5);
+		
+		GridBagConstraints gbc_rdbtnGenericSUpdareYes = new GridBagConstraints();
+		gbc_rdbtnGenericSUpdareYes.anchor = GridBagConstraints.WEST;
+		gbc_rdbtnGenericSUpdareYes.insets = new Insets(0, 0, 5, 5);
+		gbc_rdbtnGenericSUpdareYes.gridx = 1;
+		gbc_rdbtnGenericSUpdareYes.gridy = 2;
+		contentPanel.add(rdbtnGenericSUpdareYes, gbc_rdbtnGenericSUpdareYes);
+
+		GridBagConstraints gbc_rdbtnGenericSUpdareNo = new GridBagConstraints();
+		gbc_rdbtnGenericSUpdareNo.anchor = GridBagConstraints.WEST;
+		gbc_rdbtnGenericSUpdareNo.insets = new Insets(0, 0, 5, 5);
+		gbc_rdbtnGenericSUpdareNo.gridx = 2;
+		gbc_rdbtnGenericSUpdareNo.gridy = 2;
+		contentPanel.add(rdbtnGenericSUpdareNo, gbc_rdbtnGenericSUpdareNo);
+		
+		GridBagConstraints gbc_rdbtnGenericSUpdareNoChange = new GridBagConstraints();
+		gbc_rdbtnGenericSUpdareNoChange.anchor = GridBagConstraints.WEST;
+		gbc_rdbtnGenericSUpdareNoChange.insets = new Insets(0, 0, 5, 5);
+		gbc_rdbtnGenericSUpdareNoChange.gridx = 3;
+		gbc_rdbtnGenericSUpdareNoChange.gridy = 2;
+		contentPanel.add(rdbtnGenericSUpdareNoChange, gbc_rdbtnGenericSUpdareNoChange);
+		
+		ButtonGroup rpcNotificationRadio = new ButtonGroup();
+		rpcNotificationRadio.add(rdbtnGenericSUpdareYes);
+		rpcNotificationRadio.add(rdbtnGenericSUpdareNo);
+		rpcNotificationRadio.add(rdbtnGenericSUpdareNoChange);
 
 		JLabel lblNewLabel_1 = new JLabel(LABELS.getString("dlgSetServer"));
 		GridBagConstraints gbc_lblNewLabel_1 = new GridBagConstraints();
 		gbc_lblNewLabel_1.anchor = GridBagConstraints.WEST;
 		gbc_lblNewLabel_1.insets = new Insets(0, 0, 5, 5);
 		gbc_lblNewLabel_1.gridx = 0;
-		gbc_lblNewLabel_1.gridy = 1;
+		gbc_lblNewLabel_1.gridy = 3;
 		contentPanel.add(lblNewLabel_1, gbc_lblNewLabel_1);
 
 		textFieldServer = new JTextField();
@@ -106,7 +183,7 @@ public class PanelMQTTAll extends AbstractSettingsPanel implements UsnaEventList
 		gbc_textFieldServer.insets = new Insets(0, 0, 5, 0);
 		gbc_textFieldServer.fill = GridBagConstraints.HORIZONTAL;
 		gbc_textFieldServer.gridx = 1;
-		gbc_textFieldServer.gridy = 1;
+		gbc_textFieldServer.gridy = 3;
 		contentPanel.add(textFieldServer, gbc_textFieldServer);
 		textFieldServer.setColumns(10);
 
@@ -115,7 +192,7 @@ public class PanelMQTTAll extends AbstractSettingsPanel implements UsnaEventList
 		gbc_lblNewLabel_8.anchor = GridBagConstraints.WEST;
 		gbc_lblNewLabel_8.insets = new Insets(0, 0, 5, 5);
 		gbc_lblNewLabel_8.gridx = 0;
-		gbc_lblNewLabel_8.gridy = 2;
+		gbc_lblNewLabel_8.gridy = 4;
 		contentPanel.add(lblNewLabel_8, gbc_lblNewLabel_8);
 
 		textFieldUser = new JTextField();
@@ -124,7 +201,7 @@ public class PanelMQTTAll extends AbstractSettingsPanel implements UsnaEventList
 		gbc_textFieldUser.insets = new Insets(0, 0, 5, 0);
 		gbc_textFieldUser.fill = GridBagConstraints.HORIZONTAL;
 		gbc_textFieldUser.gridx = 1;
-		gbc_textFieldUser.gridy = 2;
+		gbc_textFieldUser.gridy = 4;
 		contentPanel.add(textFieldUser, gbc_textFieldUser);
 		textFieldUser.setColumns(10);
 
@@ -133,7 +210,7 @@ public class PanelMQTTAll extends AbstractSettingsPanel implements UsnaEventList
 		gbc_lblNewLabel_2.anchor = GridBagConstraints.WEST;
 		gbc_lblNewLabel_2.insets = new Insets(0, 0, 5, 5);
 		gbc_lblNewLabel_2.gridx = 0;
-		gbc_lblNewLabel_2.gridy = 3;
+		gbc_lblNewLabel_2.gridy = 5;
 		contentPanel.add(lblNewLabel_2, gbc_lblNewLabel_2);
 
 		textFieldPwd = new JPasswordField();
@@ -143,7 +220,7 @@ public class PanelMQTTAll extends AbstractSettingsPanel implements UsnaEventList
 		gbc_textFieldPwd.insets = new Insets(0, 0, 5, 0);
 		gbc_textFieldPwd.fill = GridBagConstraints.HORIZONTAL;
 		gbc_textFieldPwd.gridx = 1;
-		gbc_textFieldPwd.gridy = 3;
+		gbc_textFieldPwd.gridy = 5;
 		contentPanel.add(textFieldPwd, gbc_textFieldPwd);
 		textFieldPwd.setColumns(10);
 
@@ -155,7 +232,7 @@ public class PanelMQTTAll extends AbstractSettingsPanel implements UsnaEventList
 		gbc_chckbxSPwd.anchor = GridBagConstraints.WEST;
 		gbc_chckbxSPwd.insets = new Insets(0, 0, 5, 5);
 		gbc_chckbxSPwd.gridx = 1;
-		gbc_chckbxSPwd.gridy = 4;
+		gbc_chckbxSPwd.gridy = 6;
 		contentPanel.add(chckbxShowPwd, gbc_chckbxSPwd);
 
 		chckbxNoPWD = new JCheckBox(LABELS.getString("labelNoPwd"));
@@ -163,7 +240,7 @@ public class PanelMQTTAll extends AbstractSettingsPanel implements UsnaEventList
 		gbc_chckbxNoPWD.anchor = GridBagConstraints.WEST;
 		gbc_chckbxNoPWD.insets = new Insets(0, 10, 5, 0);
 		gbc_chckbxNoPWD.gridx = 4;
-		gbc_chckbxNoPWD.gridy = 4;
+		gbc_chckbxNoPWD.gridy = 6;
 		contentPanel.add(chckbxNoPWD, gbc_chckbxNoPWD);
 
 		JLabel lblNewLabel_3 = new JLabel(LABELS.getString("dlgSetMqttId"));
@@ -171,7 +248,7 @@ public class PanelMQTTAll extends AbstractSettingsPanel implements UsnaEventList
 		gbc_lblNewLabel_3.anchor = GridBagConstraints.WEST;
 		gbc_lblNewLabel_3.insets = new Insets(0, 0, 5, 5);
 		gbc_lblNewLabel_3.gridx = 0;
-		gbc_lblNewLabel_3.gridy = 5;
+		gbc_lblNewLabel_3.gridy = 7;
 		contentPanel.add(lblNewLabel_3, gbc_lblNewLabel_3);
 
 		textFieldID = new JTextField();
@@ -180,16 +257,18 @@ public class PanelMQTTAll extends AbstractSettingsPanel implements UsnaEventList
 		gbc_textFieldID.insets = new Insets(0, 0, 5, 0);
 		gbc_textFieldID.fill = GridBagConstraints.HORIZONTAL;
 		gbc_textFieldID.gridx = 1;
-		gbc_textFieldID.gridy = 5;
+		gbc_textFieldID.gridy = 7;
 		contentPanel.add(textFieldID, gbc_textFieldID);
 		textFieldID.setColumns(10);
 
 		chckbxDefaultPrefix = new JCheckBox(LABELS.getString("dlgSetMqttIdDefault"));
-		GridBagConstraints gbc_chckbxNewCheckBox = new GridBagConstraints();
-		gbc_chckbxNewCheckBox.insets = new Insets(0, 0, 5, 5);
-		gbc_chckbxNewCheckBox.gridx = 1;
-		gbc_chckbxNewCheckBox.gridy = 6;
-		contentPanel.add(chckbxDefaultPrefix, gbc_chckbxNewCheckBox);
+		GridBagConstraints gbc_chckbxNewCheckBox1 = new GridBagConstraints();
+		gbc_chckbxNewCheckBox1.anchor = GridBagConstraints.WEST;
+		gbc_chckbxNewCheckBox1.gridwidth = 3;
+		gbc_chckbxNewCheckBox1.insets = new Insets(0, 0, 5, 5);
+		gbc_chckbxNewCheckBox1.gridx = 1;
+		gbc_chckbxNewCheckBox1.gridy = 8;
+		contentPanel.add(chckbxDefaultPrefix, gbc_chckbxNewCheckBox1);
 
 		JLabel lblNewLabel_12 = new JLabel(LABELS.getString("dlgSetMsgMqttReboot"));
 		lblNewLabel_12.setHorizontalAlignment(SwingConstants.LEFT);
@@ -200,7 +279,7 @@ public class PanelMQTTAll extends AbstractSettingsPanel implements UsnaEventList
 		gbc_lblNewLabel_12.anchor = GridBagConstraints.NORTH;
 		gbc_lblNewLabel_12.gridwidth = 4;
 		gbc_lblNewLabel_12.gridx = 1;
-		gbc_lblNewLabel_12.gridy = 7;
+		gbc_lblNewLabel_12.gridy = 9;
 		contentPanel.add(lblNewLabel_12, gbc_lblNewLabel_12);
 
 		JScrollPane scrollPane = new JScrollPane();
@@ -222,6 +301,12 @@ public class PanelMQTTAll extends AbstractSettingsPanel implements UsnaEventList
 	}
 
 	private void setEnabledMQTT(boolean enabled, boolean single) {
+		rdbtnRPCYes.setEnabled(enabled);
+		rdbtnRPCNo.setEnabled(enabled);
+		rdbtnRPCNoChange.setEnabled(enabled);
+		rdbtnGenericSUpdareYes.setEnabled(enabled);
+		rdbtnGenericSUpdareNo.setEnabled(enabled);
+		rdbtnGenericSUpdareNoChange.setEnabled(enabled);
 		textFieldServer.setEnabled(enabled);
 		textFieldUser.setEnabled(enabled);
 		textFieldPwd.setEnabled(enabled);
@@ -244,6 +329,8 @@ public class PanelMQTTAll extends AbstractSettingsPanel implements UsnaEventList
 			chckbxEnabled.setEnabled(false);
 			setEnabledMQTT(false, false); // disable while checking
 			boolean enabledGlobal = false;
+			Boolean rpcStatusGlobal = Boolean.FALSE;
+			Boolean genStatusGlobal = Boolean.FALSE;
 			String serverGlobal = "";
 			String userGlobal = "";
 			String idGlobal = "";
@@ -252,16 +339,20 @@ public class PanelMQTTAll extends AbstractSettingsPanel implements UsnaEventList
 			for(int i = 0; i < devices.size(); i++) {
 				try {
 					d = devices.get(i);
-					MQTTManager mqttm = d.getMQTTManager();
+					MQTTManagerG2 mqttm = (MQTTManagerG2)d.getMQTTManager();
 					if(Thread.interrupted()) {
 						throw new InterruptedException();
 					}
 					boolean enabled = mqttm.isEnabled();
+					boolean rpcStatus = mqttm.isRpcNtf();
+					boolean genStatus = mqttm.isStatusNtf();
 					String server = mqttm.getServer();
 					String user = mqttm.getUser();
 					String id = mqttm.getPrefix();
 					if(first) {
 						enabledGlobal = enabled;
+						rpcStatusGlobal = rpcStatus;
+						genStatusGlobal = genStatus;
 						serverGlobal = server;
 						userGlobal = user;
 						idGlobal = id;
@@ -269,6 +360,8 @@ public class PanelMQTTAll extends AbstractSettingsPanel implements UsnaEventList
 						first = false;
 					} else {
 						if(enabled != enabledGlobal) enabledGlobal = false;
+						if(rpcStatusGlobal != null && rpcStatusGlobal != rpcStatus) rpcStatusGlobal = null;
+						if(genStatusGlobal != null && genStatusGlobal != genStatus) genStatusGlobal = null;
 						if(server.equals(serverGlobal) == false) serverGlobal = "";
 						if(user.equals(userGlobal) == false) userGlobal = "";
 						if(id.equals(idGlobal) == false) idGlobal = "";
@@ -288,6 +381,28 @@ public class PanelMQTTAll extends AbstractSettingsPanel implements UsnaEventList
 				return LABELS.getString("msgAllDevicesExcluded");
 			} else if (excludeCount > 0) {
 				Msg.showHtmlMessageDialog(this, exclude, LABELS.getString("dlgExcludedDevicesTitle"), JOptionPane.WARNING_MESSAGE);
+			}
+			if(rpcStatusGlobal != null) {
+				rdbtnRPCNoChange.setVisible(false);
+				if(rpcStatusGlobal) {
+					rdbtnRPCYes.setSelected(true);
+				} else {
+					rdbtnRPCNo.setSelected(true);
+				}
+			} else {
+				rdbtnRPCNoChange.setVisible(true);
+				rdbtnRPCNoChange.setSelected(true);
+			}
+			if(genStatusGlobal != null) {
+				rdbtnGenericSUpdareNoChange.setVisible(false);
+				if(genStatusGlobal) {
+					rdbtnGenericSUpdareYes.setSelected(true);
+				} else {
+					rdbtnGenericSUpdareNo.setSelected(true);
+				}
+			} else {
+				rdbtnGenericSUpdareNoChange.setVisible(true);
+				rdbtnGenericSUpdareNoChange.setSelected(true);
 			}
 			chckbxEnabled.setEnabled(true); // form is active
 			chckbxEnabled.setSelected(enabledGlobal);
@@ -312,6 +427,8 @@ public class PanelMQTTAll extends AbstractSettingsPanel implements UsnaEventList
 	@Override
 	public String apply() {
 		final boolean enabled = chckbxEnabled.isSelected();
+		Boolean prcNtf = rdbtnRPCYes.isSelected() ? Boolean.TRUE : rdbtnRPCNo.isSelected() ? Boolean.FALSE : null;
+		Boolean genNtf = rdbtnGenericSUpdareYes.isSelected() ? Boolean.TRUE : rdbtnGenericSUpdareNo.isSelected() ? Boolean.FALSE : null;
 		final String server = textFieldServer.getText().trim();
 		String user = textFieldUser.getText().trim();
 		String pwd = new String(textFieldPwd.getPassword()).trim();
@@ -330,7 +447,7 @@ public class PanelMQTTAll extends AbstractSettingsPanel implements UsnaEventList
 		String res = "<html>";
 		for(int i=0; i < devices.size(); i++) {
 			String msg;
-			MQTTManager mqttM = mqttModule.get(i);
+			MQTTManagerG2 mqttM = mqttModule.get(i);
 			if(mqttM != null) {
 				if(enabled) {
 					String prefix ;
@@ -341,7 +458,7 @@ public class PanelMQTTAll extends AbstractSettingsPanel implements UsnaEventList
 					} else {
 						prefix = textFieldID.getText();
 					}
-					msg = mqttM.set(server, user, pwd, prefix);
+					msg = mqttM.set(prcNtf, genNtf, server, user, pwd, prefix);
 				} else {
 					msg = mqttM.disable();
 				}
@@ -366,9 +483,21 @@ public class PanelMQTTAll extends AbstractSettingsPanel implements UsnaEventList
 				chckbxEnabled.setSelected(m.isEnabled());
 				textFieldServer.setText(m.getServer());
 				textFieldUser.setText(m.getUser());
+				if(m instanceof MQTTManagerG2) {
+					if(((MQTTManagerG2)m).isRpcNtf()) {
+						rdbtnRPCYes.setSelected(true);
+					} else {
+						rdbtnRPCNo.setSelected(true);
+					}
+					if(((MQTTManagerG2)m).isStatusNtf()) {
+						rdbtnGenericSUpdareYes.setSelected(true);
+					} else {
+						rdbtnGenericSUpdareNo.setSelected(true);
+					}
+				}
 			} catch (IOException e) {
 				LOG.error("copy", e);
 			}
 		}
 	}
-} // 371
+} // 371 - 503

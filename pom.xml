@@ -2,7 +2,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>it.usna</groupId>
 	<artifactId>shellyscan</artifactId>
-	<version>0.8.6</version>
+	<version>0.8.7alpha</version>
 	<name>shellyscan</name>
 	<packaging>jar</packaging>
 
@@ -81,7 +81,8 @@
 		<dependency>
 			<groupId>org.apache.httpcomponents.client5</groupId>
 			<artifactId>httpclient5</artifactId>
-			<version>5.1.3</version>
+			<!-- <version>5.2</version> basic auth does not work -->
+			<version>5.1.3</version> <!-- <version>5.1.5</version> -->
 		</dependency>
 		<dependency>
 			<groupId>org.java-websocket</groupId>

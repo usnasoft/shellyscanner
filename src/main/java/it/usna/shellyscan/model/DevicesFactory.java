@@ -12,7 +12,6 @@ import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.impl.auth.BasicAuthCache;
 import org.apache.hc.client5.http.impl.auth.BasicScheme;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
-import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.hc.client5.http.protocol.HttpClientContext;
 import org.apache.hc.core5.http.HttpHost;
@@ -199,13 +198,15 @@ public class DevicesFactory {
 		context.setCredentialsProvider(credsProvider);
 		context.setAuthCache(authCache);
 
-		try (CloseableHttpClient httpClient = HttpClients.createDefault(); CloseableHttpResponse response = httpClient.execute(httpHost, new HttpGet(testCommand), context)) {
-			return response.getCode();
+		try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
+			return httpClient.execute(httpHost, new HttpGet(testCommand), context, response -> {
+				return response.getCode();
+			});
 		} catch(IOException | RuntimeException e) {
 			return HttpURLConnection.HTTP_INTERNAL_ERROR;
 		}
 	}
-	
+
 	public static void setCredentialProvider(CredentialsProvider cp) {
 		DevicesFactory.lastCredentialsProv = cp;
 	}
