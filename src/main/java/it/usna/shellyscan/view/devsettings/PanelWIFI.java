@@ -407,7 +407,7 @@ public class PanelWIFI extends AbstractSettingsPanel implements UsnaEventListene
 						msg = wfManager.set(ssid, pwd);
 					} else {
 						if(textFieldStaticIP.isEnabled() == false) { // more than 1 device selected -> keep IP
-							ip = null; //wfManager.getIP();
+							ip = /*null; */wfManager.getIP();
 						}
 						msg = wfManager.set(ssid, pwd, ip, netmask, gw, dns);
 					}
