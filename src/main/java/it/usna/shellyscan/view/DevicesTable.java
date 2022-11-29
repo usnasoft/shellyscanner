@@ -92,7 +92,7 @@ public class DevicesTable extends ExTooltipTable {
 
 	public DevicesTable(TableModel tm) {
 		super(tm, true);
-		columnModel.getColumn(COL_STATUS_IDX).setMaxWidth(/*MainView.*/ONLINE_BULLET.getIconWidth() + 4);
+		columnModel.getColumn(COL_STATUS_IDX).setMaxWidth(ONLINE_BULLET.getIconWidth() + 4);
 		columnModel.getColumn(COL_IP_IDX).setCellRenderer(new DefaultTableCellRenderer() {
 			private static final long serialVersionUID = 1L;
 			@Override

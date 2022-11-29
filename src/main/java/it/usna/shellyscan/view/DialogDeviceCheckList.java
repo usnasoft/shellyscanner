@@ -5,7 +5,6 @@ import static it.usna.shellyscan.Main.LABELS;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Cursor;
 import java.awt.Desktop;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
@@ -19,9 +18,12 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import javax.swing.Action;
 import javax.swing.BorderFactory;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
@@ -47,6 +49,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import it.usna.shellyscan.Main;
 import it.usna.shellyscan.controller.UsnaAction;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
+import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
+import it.usna.shellyscan.model.device.g1.AbstractBatteryDevice;
 import it.usna.shellyscan.model.device.g1.AbstractG1Device;
 import it.usna.shellyscan.view.util.IPv4Comparator;
 import it.usna.shellyscan.view.util.UtilCollecion;
@@ -58,6 +62,11 @@ public class DialogDeviceCheckList extends JDialog {
 	private final static Logger LOG = LoggerFactory.getLogger(AbstractG1Device.class);
 	private final static String TRUE = LABELS.getString("true_yn");
 	private final static String FALSE = LABELS.getString("false_yn");
+	private final static int COL_STATUS = 0;
+	private final static int COL_NAME = 1;
+	private final static int COL_IP = 2;
+//	private final 
+	private ExecutorService exeService /*= Executors.newFixedThreadPool(20)*/;
 
 	public DialogDeviceCheckList(final Window owner, final List<ShellyAbstractDevice> devices, final Boolean ipSort) {
 		super(owner, LABELS.getString("dlgChecklistTitle"));
@@ -65,16 +74,18 @@ public class DialogDeviceCheckList extends JDialog {
 		borderLayout.setVgap(2);
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 
-		UsnaTableModel tModel = new UsnaTableModel(
+		UsnaTableModel tModel = new UsnaTableModel("",
 				LABELS.getString("col_device"), LABELS.getString("col_ip"), LABELS.getString("col_eco"), LABELS.getString("col_ledoff"),
-				LABELS.getString("col_AP"), LABELS.getString("col_logs"), LABELS.getString("col_blt"));
+				LABELS.getString("col_AP"), LABELS.getString("col_logs"), LABELS.getString("col_blt"), LABELS.getString("col_wifi1"), LABELS.getString("col_wifi2"));
+		
 		ExTooltipTable table = new ExTooltipTable(tModel, true) {
 			private static final long serialVersionUID = 1L;
 			{
-				setHeadersTooltip(null, null, LABELS.getString("col_eco_tooltip"), LABELS.getString("col_ledoff_tooltip"),
-						LABELS.getString("col_AP_tooltip"),  LABELS.getString("col_logs_tooltip"), LABELS.getString("col_blt_tooltip"));
+				columnModel.getColumn(COL_STATUS).setMaxWidth( DevicesTable.ONLINE_BULLET.getIconWidth() + 4);
+				setHeadersTooltip(LABELS.getString("col_status_exp"), null, null, LABELS.getString("col_eco_tooltip"), LABELS.getString("col_ledoff_tooltip"),
+						LABELS.getString("col_AP_tooltip"), LABELS.getString("col_logs_tooltip"), LABELS.getString("col_blt_tooltip"), LABELS.getString("col_wifi1_tooltip"), LABELS.getString("col_wifi2_tooltip"));
 
-				columnModel.getColumn(1).setCellRenderer(new DefaultTableCellRenderer() {
+				columnModel.getColumn(COL_IP).setCellRenderer(new DefaultTableCellRenderer() {
 					private static final long serialVersionUID = 1L;
 					@Override
 					public void setValue(Object value) {
@@ -83,24 +94,27 @@ public class DialogDeviceCheckList extends JDialog {
 				});
 				TableCellRenderer rendTrueOk = new CheckRenderer(true);
 				TableCellRenderer rendFalseOk = new CheckRenderer(false);
-				columnModel.getColumn(2).setCellRenderer(rendTrueOk);
 				columnModel.getColumn(3).setCellRenderer(rendTrueOk);
-				columnModel.getColumn(4).setCellRenderer(rendFalseOk);
+				columnModel.getColumn(4).setCellRenderer(rendTrueOk);
 				columnModel.getColumn(5).setCellRenderer(rendFalseOk);
 				columnModel.getColumn(6).setCellRenderer(rendFalseOk);
+				columnModel.getColumn(7).setCellRenderer(rendFalseOk);
+				columnModel.getColumn(8).setCellRenderer(rendTrueOk); // null -> "-"
+				columnModel.getColumn(9).setCellRenderer(rendTrueOk); // null -> "-"
 
 				TableRowSorter<?> rowSorter = ((TableRowSorter<?>)getRowSorter());
-				Comparator<?> oc =  (o1, o2) -> {return o1 == null ? -1 : o1.toString().compareTo(o2.toString());};
-				rowSorter.setComparator(1, new IPv4Comparator());
-				rowSorter.setComparator(2, oc);
+				Comparator<?> oc = (o1, o2) -> {return o1 == null ? -1 : o1.toString().compareTo(o2.toString());};
+				rowSorter.setComparator(COL_IP, new IPv4Comparator());
 				rowSorter.setComparator(3, oc);
 				rowSorter.setComparator(4, oc);
 				rowSorter.setComparator(5, oc);
 				rowSorter.setComparator(6, oc);
+				rowSorter.setComparator(7, oc);
 
 				if(ipSort != null) {
-					sortByColumn(1, ipSort);
+					sortByColumn(COL_IP, ipSort);
 				}
+				rowSorter.setSortsOnUpdates(true);
 			}
 
 			@Override
@@ -138,7 +152,7 @@ public class DialogDeviceCheckList extends JDialog {
 		textFieldFilter.setBorder(BorderFactory.createEmptyBorder(2, 1, 2, 1));
 		panelFind.add(textFieldFilter);
 		textFieldFilter.getDocument().addDocumentListener(new DocumentListener() {
-			private final int[] cols = new int[] {0, 1};
+			private final int[] cols = new int[] {COL_NAME, COL_IP};
 			@Override
 			public void changedUpdate(DocumentEvent e) {
 			}
@@ -189,7 +203,11 @@ public class DialogDeviceCheckList extends JDialog {
 		JButton btnRefresh = new JButton(LABELS.getString("labelRefresh"));
 		btnRefresh.addActionListener(e -> {
 			tModel.clear();
+			exeService.shutdownNow();
 			fill(tModel, devices);
+			try {
+				Thread.sleep(250); // too many call disturb some devices at least (2.5)
+			} catch (InterruptedException e1) {}
 		});
 		panelButtons.add(btnRefresh);
 		
@@ -215,41 +233,94 @@ public class DialogDeviceCheckList extends JDialog {
 		    }
 		});
 
-		setSize(680, 420);
+		setSize(740, 420);
 		setVisible(true);
 		setLocationRelativeTo(owner);
 		table.columnsWidthAdapt();
 	}
 
+	@Override
+	public void dispose() {
+		exeService.shutdownNow();
+		super.dispose();
+	}
+	
 	private void fill(UsnaTableModel tModel, List<ShellyAbstractDevice> model) {
-		setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-		try {
-			model.forEach(d -> {
+		exeService = Executors.newFixedThreadPool(20);
+		model.forEach(d -> {
+			final int row = tModel.addRow(DevicesTable.UPDATING_BULLET, UtilCollecion.getExtendedHostName(d), d.getHttpHost().getAddress());
+			exeService.execute(() -> {
 				try {
 					if(d instanceof AbstractG1Device) {
-						JsonNode settings = d.getJSON("/settings");
-						Boolean eco = boolVal(settings.path("eco_mode_enabled"));
-						Boolean ledOff = boolVal(settings.path("led_status_disable"));
-						boolean debug = d.getDebugMode() != ShellyAbstractDevice.LogMode.NO;
-						tModel.addRow(UtilCollecion.getExtendedHostName(d), d.getHttpHost().getAddress(), eco, ledOff, "-", debug, "-");
+						tModel.setRow(row, g1Row(d, d.getJSON("/settings")));
 					} else { // G2
-						JsonNode settings = d.getJSON("/rpc/Shelly.GetConfig");
-						Boolean eco = boolVal(settings.at("/sys/device/eco_mode"));
-						Object ap = boolVal(settings.at("/wifi/ap/enable"));
-						if(ap != null && ap == Boolean.TRUE && settings.at("/wifi/ap/is_open").asBoolean(true) == false) {
-							ap = TRUE; // AP active but protected with pwd
-						}
-						Object debug = (d.getDebugMode() == ShellyAbstractDevice.LogMode.NO) ? Boolean.FALSE : LABELS.getString("debug" + d.getDebugMode());
-						Boolean ble = boolVal(settings.at("/ble/enable"));
-						tModel.addRow(UtilCollecion.getExtendedHostName(d), d.getHttpHost().getAddress(), eco, "-", ap, debug, ble);
+						tModel.setRow(row, g2Row(d, d.getJSON("/rpc/Shelly.GetConfig")));
 					}
 				} catch (Exception e) {
-					tModel.addRow(UtilCollecion.getExtendedHostName(d), d.getHttpHost().getAddress());
+					if(d instanceof AbstractBatteryDevice) { // G1 only
+						tModel.setRow(row, g1Row(d, ((AbstractBatteryDevice)d).getStoredJSON("/settings")));
+					} else {
+						tModel.setRow(row, getStatusIcon(d), UtilCollecion.getExtendedHostName(d), d.getHttpHost().getAddress());
+					}
 					LOG.error("{}", d, e);
 				}
 			});
-		} finally {
-			setCursor(Cursor.getDefaultCursor());
+		});
+	}
+	
+	private static Object[] g1Row(ShellyAbstractDevice d, JsonNode settings) {
+		Boolean eco = boolVal(settings.path("eco_mode_enabled"));
+		Boolean ledOff = boolVal(settings.path("led_status_disable"));
+		boolean debug = d.getDebugMode() != ShellyAbstractDevice.LogMode.NO;
+		String wifi1;
+		if(settings.at("/wifi_sta/enabled").asBoolean()) {
+			wifi1 = "static".equals(settings.at("/wifi_sta/ipv4_method").asText()) ? TRUE : FALSE;
+		} else {
+			wifi1 = "-";
+		}
+		String wifi2;
+		if(settings.at("/wifi_sta1/enabled").asBoolean()) {
+			wifi2 = "static".equals(settings.at("/wifi_sta1/ipv4_method").asText()) ? TRUE : FALSE;
+		} else {
+			wifi2 = "-";
+		}
+		return new Object[] {getStatusIcon(d), UtilCollecion.getExtendedHostName(d), d.getHttpHost().getAddress(), eco, ledOff, "-", debug, "-", wifi1, wifi2};
+	}
+	
+	private static Object[] g2Row(ShellyAbstractDevice d, JsonNode settings) {
+		Boolean eco = boolVal(settings.at("/sys/device/eco_mode"));
+		Object ap = boolVal(settings.at("/wifi/ap/enable"));
+		if(ap != null && ap == Boolean.TRUE && settings.at("/wifi/ap/is_open").asBoolean(true) == false) {
+			ap = TRUE; // AP active but protected with pwd
+		}
+		Object debug = (d.getDebugMode() == ShellyAbstractDevice.LogMode.NO) ? Boolean.FALSE : LABELS.getString("debug" + d.getDebugMode());
+		Boolean ble = boolVal(settings.at("/ble/enable"));
+		String wifi1;
+		if(settings.at("/wifi/sta/enable").asBoolean()) {
+			wifi1 = "static".equals(settings.at("/wifi/sta/ipv4mode").asText()) ? TRUE : FALSE;
+		} else {
+			wifi1 = "-";
+		}
+		String wifi2;
+		if(settings.at("/wifi/sta1/enable").asBoolean()) {
+			wifi2 = "static".equals(settings.at("/wifi/sta1/ipv4mode").asText()) ? TRUE : FALSE;
+		} else {
+			wifi2 = "-";
+		}
+		return new Object[] {getStatusIcon(d), UtilCollecion.getExtendedHostName(d), d.getHttpHost().getAddress(), eco, "-", ap, debug, ble, wifi1, wifi2};
+	}
+	
+	private static ImageIcon getStatusIcon(ShellyAbstractDevice d) {
+		if(d.getStatus() == Status.ON_LINE) {
+			return DevicesTable.ONLINE_BULLET;
+		} else if(d.getStatus() == Status.OFF_LINE) {
+			return DevicesTable.OFFLINE_BULLET;
+		} else if(d.getStatus() == Status.READING) {
+			return DevicesTable.UPDATING_BULLET;
+		} else if(d.getStatus() == Status.ERROR) {
+			return DevicesTable.ERROR_BULLET;
+		} else { // Status.NOT_LOOGGED
+			return DevicesTable.LOGIN_BULLET;
 		}
 	}
 

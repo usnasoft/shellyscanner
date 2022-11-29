@@ -27,7 +27,7 @@ import it.usna.util.AppProperties;
 
 public class Main {
 	public final static String APP_NAME = "Shelly Scanner";
-	public final static String VERSION = "0.8.7 alpha";
+	public final static String VERSION = "0.8.7 beta";
 	public final static String ICON = "/images/ShSc24.png";
 	public final static String BACKUP_FILE_EXT = "sbk";
 	
@@ -287,9 +287,10 @@ public class Main {
 
 //0.8.7
 // fw update su tre colonne
+// wi-fi 1
 // restore script da backup
 // mqtt status: connected
-//chk table (blt, save mode, led, AP, logs)
+//chk table (blt, eco mode, led, AP, logs, ...)
 
 //todo
 //wi-fi 1 con copia su 2 e viceversa

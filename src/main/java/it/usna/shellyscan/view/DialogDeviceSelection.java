@@ -62,7 +62,7 @@ public class DialogDeviceSelection extends JDialog {
 					}
 				});
 				((TableRowSorter<?>)getRowSorter()).setComparator(1, new IPv4Comparator());
-				sortByColumn(0, true);
+				sortByColumn(1, true);
 			}
 
 			@Override

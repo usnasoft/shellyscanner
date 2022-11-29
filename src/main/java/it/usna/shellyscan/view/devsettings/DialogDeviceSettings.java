@@ -54,8 +54,8 @@ public class DialogDeviceSettings extends JDialog {
 		Gen devTypes = getTypes(devices);
 		PanelFWUpdate panelFW = new PanelFWUpdate(devices/*, tp*/);
 		tabbedPane.add(Main.LABELS.getString("dlgSetFWUpdate"), panelFW);
-//		PanelWIFI panelWIFI1 = new PanelWIFI(this, WIFIManager.Network.PRIMARY, devices, model);
-//		tabbedPane.add(Main.LABELS.getString("dlgSetWIFI1"), panelWIFI1);
+		PanelWIFI panelWIFI1 = new PanelWIFI(this, WIFIManager.Network.PRIMARY, devices, model);
+		tabbedPane.add(Main.LABELS.getString("dlgSetWIFI1"), panelWIFI1);
 		PanelWIFI panelWIFI2 = new PanelWIFI(this, WIFIManager.Network.SECONDARY, devices, model);
 		tabbedPane.add(Main.LABELS.getString("dlgSetWIFIBackup"), panelWIFI2);
 		PanelResLogin panelResLogin = new PanelResLogin(devices);

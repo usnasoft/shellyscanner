@@ -111,12 +111,10 @@ public class WIFIManagerG1 implements WIFIManager {
 					"&ssid=" + URLEncoder.encode(ssid, StandardCharsets.UTF_8.name()) +
 					"&key=" + URLEncoder.encode(pwd, StandardCharsets.UTF_8.name()) +
 					"&ipv4_method=static" +
+					"&ip=" + ip +
 					"&netmask=" + netmask + // netmask = mask
 					"&gateway=" + gw + // gateway = gw
 					"&dns=" + dns;
-			if(ip != null && ip.isEmpty() == false) {
-				cmd += "&ip=" + ip;
-			}
 			return d.sendCommand(cmd);
 		} catch (UnsupportedEncodingException e) {
 			return e.getMessage();

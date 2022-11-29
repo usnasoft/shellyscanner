@@ -394,37 +394,40 @@ public class PanelWIFI extends AbstractSettingsPanel implements UsnaEventListene
 				throw new IllegalArgumentException(Main.LABELS.getString("dlgSetMsgObbSSID"));
 			}
 		}
-		String res = "<html>";
-		for(int i = 0; i < devices.size(); i++) {
-			WIFIManager wfManager = fwModule.get(i);
-			if(wfManager != null) { // wfManager == null excluded device
-				String msg = null;
-				if(enabled) {
-					if(rdbtnDhcpNoChange.isSelected()) {
-						dhcp = wfManager.isStaticIP() == false;
-					}
-					if(dhcp) {
-						msg = wfManager.set(ssid, pwd);
-					} else {
-						if(textFieldStaticIP.isEnabled() == false) { // more than 1 device selected -> keep IP
-							ip = /*null; */wfManager.getIP();
+		if(JOptionPane.showConfirmDialog(this, LABELS.getString("dlgSetConfirmWIFI"), LABELS.getString("dlgSetWIFI"), JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE) == JOptionPane.YES_OPTION) {
+			String res = "<html>";
+			for(int i = 0; i < devices.size(); i++) {
+				WIFIManager wfManager = fwModule.get(i);
+				if(wfManager != null) { // wfManager == null excluded device
+					String msg = null;
+					if(enabled) {
+						if(rdbtnDhcpNoChange.isSelected()) {
+							dhcp = wfManager.isStaticIP() == false;
 						}
-						msg = wfManager.set(ssid, pwd, ip, netmask, gw, dns);
+						if(dhcp) {
+							msg = wfManager.set(ssid, pwd);
+						} else {
+							if(textFieldStaticIP.isEnabled() == false) { // more than 1 device selected -> keep IP
+								ip = wfManager.getIP();
+							}
+							msg = wfManager.set(ssid, pwd, ip, netmask, gw, dns);
+						}
+					} else {
+						msg = wfManager.disable();
 					}
-				} else {
-					msg = wfManager.disable();
-				}
-				if(msg != null) {
-					res += String.format(LABELS.getString("dlgSetMultiMsgFail"), devices.get(i).getHostname()) + " (" + msg + ")<br>";
-				} else {
-					res += String.format(LABELS.getString("dlgSetMultiMsgOk"), devices.get(i).getHostname()) + "<br>";
+					if(msg != null) {
+						res += String.format(LABELS.getString("dlgSetMultiMsgFail"), devices.get(i).getHostname()) + " (" + msg + ")<br>";
+					} else {
+						res += String.format(LABELS.getString("dlgSetMultiMsgOk"), devices.get(i).getHostname()) + "<br>";
+					}
 				}
 			}
+			try {
+				showing();
+			} catch (InterruptedException e) {}
+			return res;
 		}
-		try {
-			showing();
-		} catch (InterruptedException e) {}
-		return res;
+		return null;
 	}
 
 	@Override
@@ -434,8 +437,17 @@ public class PanelWIFI extends AbstractSettingsPanel implements UsnaEventListene
 				WIFIManager m = device.getWIFIManager(netModule);
 				chckbxEnabled.setSelected(m.isEnabled());
 				textFieldSSID.setText(m.getSSID());
-				rdbtnStaticIP.setSelected(m.isStaticIP());
-				rdbtnDHCP.setSelected(m.isStaticIP() == false || devices.size() > 1);
+				if(m.isStaticIP()) {
+					if(devices.size() == 1) {
+						rdbtnStaticIP.setSelected(true);
+					} else if(rdbtnDhcpNoChange.isVisible()) {
+						rdbtnDhcpNoChange.setSelected(true);
+					} else {
+						rdbtnDHCP.setSelected(true);
+					}
+				} else {
+					rdbtnDHCP.setSelected(true);
+				}
 				textFieldGateway.setText(m.getGateway());
 				textFieldNetmask.setText(m.getMask());
 				textFieldDNS.setText(m.getDNS());
