@@ -133,6 +133,7 @@ public class DialogDeviceCheckList extends JDialog {
 
 		fill(tModel, devices);
 
+		table.setRowHeight(table.getRowHeight() + 2);
 		table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
 		JPanel panelBottom = new JPanel(new BorderLayout(0, 0));
