@@ -46,14 +46,15 @@ public class PanelWIFI extends AbstractSettingsPanel implements UsnaEventListene
 	private final JTextField textFieldNetmask = new JTextField();
 	private final JTextField textFieldGateway = new JTextField();
 	private final JTextField textFieldDNS = new JTextField();;
-	private final JRadioButton rdbtnDHCP = new JRadioButton(Main.LABELS.getString("dlgSetEnabled"));
-	private final JRadioButton rdbtnStaticIP = new JRadioButton(Main.LABELS.getString("dlgSetStatic"));
+	private final JRadioButton rdbtnDHCP = new JRadioButton(LABELS.getString("dlgSetEnabled"));
+	private final JRadioButton rdbtnStaticIP = new JRadioButton(LABELS.getString("dlgSetStatic"));
 	private final JRadioButton rdbtnDhcpNoChange = new JRadioButton(LABELS.getString("dlgSetDoNotChange"));
 	private final char pwdEchoChar;
 	private final List<WIFIManager> fwModule = new ArrayList<>();
 
 	private final static String IPV4_REGEX = "^((0|1\\d?\\d?|2[0-4]?\\d?|25[0-5]?|[3-9]\\d?)\\.){3}(0|1\\d?\\d?|2[0-4]?\\d?|25[0-5]?|[3-9]\\d?)$";
 	private JButton btnCopy = new JButton(LABELS.getString("btnCopyFrom"));
+//	private JButton btnCopyTo;
 	private DialogDeviceSelection selDialog = null;
 
 	public PanelWIFI(JDialog owner, WIFIManager.Network net, List<ShellyAbstractDevice> devices, final Devices model) {
@@ -61,13 +62,13 @@ public class PanelWIFI extends AbstractSettingsPanel implements UsnaEventListene
 		this.netModule = net;
 		setBorder(BorderFactory.createEmptyBorder(6, 6, 2, 6));
 		GridBagLayout gridBagLayout = new GridBagLayout();
-		gridBagLayout.columnWidths = new int[] {0, 0, 0, 0};
+		gridBagLayout.columnWidths = new int[] {0, 0, 0, 0, 0};
 		gridBagLayout.rowHeights = new int[]{0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-		gridBagLayout.columnWeights = new double[]{0.0, 0.0, 0.0, Double.MIN_VALUE};
+		gridBagLayout.columnWeights = new double[]{0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
 		gridBagLayout.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
 		setLayout(gridBagLayout);
 
-		JLabel lblNewLabel = new JLabel(Main.LABELS.getString("dlgSetEnabled"));
+		JLabel lblNewLabel = new JLabel(LABELS.getString("dlgSetEnabled"));
 		GridBagConstraints gbc_lblNewLabel = new GridBagConstraints();
 		gbc_lblNewLabel.anchor = GridBagConstraints.WEST;
 		gbc_lblNewLabel.insets = new Insets(0, 0, 5, 5);
@@ -81,11 +82,21 @@ public class PanelWIFI extends AbstractSettingsPanel implements UsnaEventListene
 		gbc_chckbxEnabled.gridx = 1;
 		gbc_chckbxEnabled.gridy = 0;
 		add(chckbxEnabled, gbc_chckbxEnabled);
+		
+//		btnCopyTo = new JButton(LABELS.getString(net == WIFIManager.Network.PRIMARY ? "dlgSetWIFI1to2" : "dlgSetWIFI2to1"));
+//		GridBagConstraints gbc_btnCopyTo = new GridBagConstraints();
+//		gbc_btnCopyTo.anchor = GridBagConstraints.EAST;
+//		gbc_btnCopyTo.weightx = 1.0;
+//		gbc_btnCopyTo.insets = new Insets(0, 0, 5, 5);
+//		gbc_btnCopyTo.gridx = 3;
+//		gbc_btnCopyTo.gridy = 0;
+//		add(btnCopyTo, gbc_btnCopyTo);
+//		btnCopyTo.addActionListener(e -> copyTo(net == WIFIManager.Network.PRIMARY ? WIFIManager.Network.SECONDARY : WIFIManager.Network.PRIMARY));
 
 		GridBagConstraints gbc_btnCopy = new GridBagConstraints();
 		gbc_btnCopy.anchor = GridBagConstraints.EAST;
 		gbc_btnCopy.insets = new Insets(0, 0, 5, 0);
-		gbc_btnCopy.gridx = 3;
+		gbc_btnCopy.gridx = 4;
 		gbc_btnCopy.gridy = 0;
 		add(btnCopy, gbc_btnCopy);
 		btnCopy.addActionListener(e -> selDialog = new DialogDeviceSelection(owner, this, model));
@@ -100,7 +111,7 @@ public class PanelWIFI extends AbstractSettingsPanel implements UsnaEventListene
 
 		GridBagConstraints gbc_textFieldSSID = new GridBagConstraints();
 		gbc_textFieldSSID.weightx = 1.0;
-		gbc_textFieldSSID.gridwidth = 3;
+		gbc_textFieldSSID.gridwidth = 4;
 		gbc_textFieldSSID.insets = new Insets(0, 0, 5, 0);
 		gbc_textFieldSSID.fill = GridBagConstraints.HORIZONTAL;
 		gbc_textFieldSSID.gridx = 1;
@@ -119,7 +130,7 @@ public class PanelWIFI extends AbstractSettingsPanel implements UsnaEventListene
 		pwdEchoChar = textFieldPwd.getEchoChar();
 		GridBagConstraints gbc_textFieldPwd = new GridBagConstraints();
 		gbc_textFieldPwd.weightx = 1.0;
-		gbc_textFieldPwd.gridwidth = 3;
+		gbc_textFieldPwd.gridwidth = 4;
 		gbc_textFieldPwd.insets = new Insets(0, 0, 5, 0);
 		gbc_textFieldPwd.fill = GridBagConstraints.HORIZONTAL;
 		gbc_textFieldPwd.gridx = 1;
@@ -265,6 +276,45 @@ public class PanelWIFI extends AbstractSettingsPanel implements UsnaEventListene
 		textFieldGateway.setEnabled(staticIP == null || staticIP == Boolean.TRUE);
 		textFieldDNS.setEnabled(staticIP == null || staticIP == Boolean.TRUE);
 	}
+	
+//	private void copyTo(WIFIManager.Network netFrom) {
+//		if(JOptionPane.showConfirmDialog(this, LABELS.getString("dlgSetConfirmWIFI"), LABELS.getString("dlgSetWIFI"), JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE) == JOptionPane.YES_OPTION) {
+//			String res = "<html>";
+//			ShellyAbstractDevice d = null;
+//			for(int i = 0; i < devices.size(); i++) {
+//				try {
+//					String msg = null;
+//					d = devices.get(i);
+//					WIFIManager wfManagerTo = fwModule.get(i);
+//					WIFIManager wfManagerFrom = d.getWIFIManager(netFrom);
+//					wfManagerFrom.getSSID();
+//					
+////					DialogAuthentication credentials = new DialogAuthentication(this,
+////							LABELS.getString("dlgSetWIFI"), LABELS.getString("dlgSetSSID"), LABELS.getString("labelPassword"), LABELS.getString("labelConfPassword"));
+////					credentials.setUser(test.get(ShellyAbstractDevice.Restore.RESTORE_WI_FI1));
+////					credentials.setMessage(LABELS.getString("msgRestoreEnterWIFI1"));
+////					credentials.editableUser(false);
+////					credentials.setVisible(true);
+//////					if(credentials.getUser() != null) {
+//////						resData.put(ShellyAbstractDevice.Restore.RESTORE_WI_FI1, new String(credentials.getPassword()));
+//////					}
+////					credentials.dispose();
+//					
+//					if(wfManagerTo != null) {
+//						msg = wfManagerTo.copyFrom(wfManagerFrom, null); // todo
+//					}
+//					if(msg != null) {
+//						res += String.format(LABELS.getString("dlgSetMultiMsgFail"), d.getHostname()) + " (" + msg + ")<br>";
+//					} else {
+//						res += String.format(LABELS.getString("dlgSetMultiMsgOk"), d.getHostname()) + "<br>";
+//					}
+//				} catch (IOException e) {
+//					res += String.format(LABELS.getString("dlgSetMultiMsgFail"), d.getHostname()) + "<br>";
+////					e.printStackTrace();
+//				}
+//			}
+//		}
+//	}
 
 	@Override
 	public String showing() throws InterruptedException {
@@ -275,6 +325,7 @@ public class PanelWIFI extends AbstractSettingsPanel implements UsnaEventListene
 		try {
 			rdbtnDhcpNoChange.setVisible(false);
 			btnCopy.setEnabled(false);
+//			btnCopyTo.setEnabled(false);
 			chckbxEnabled.setEnabled(false);
 			setEnabledWIFI(false, false); // disable while checking
 			boolean enabledGlobal = false;
@@ -346,6 +397,7 @@ public class PanelWIFI extends AbstractSettingsPanel implements UsnaEventListene
 			textFieldDNS.setText(globalDNS);			
 			setEnabledWIFI(/*chckbxEnabled.isSelected()*/enabledGlobal, /*rdbtnStaticIP.isSelected()*/staticIPGlobal);
 			btnCopy.setEnabled(true);
+//			btnCopyTo.setEnabled(true);
 			return null;
 		} catch (/*IOException |*/ RuntimeException e) {
 			setEnabledWIFI(false, false);
@@ -394,37 +446,40 @@ public class PanelWIFI extends AbstractSettingsPanel implements UsnaEventListene
 				throw new IllegalArgumentException(Main.LABELS.getString("dlgSetMsgObbSSID"));
 			}
 		}
-		String res = "<html>";
-		for(int i = 0; i < devices.size(); i++) {
-			WIFIManager wfManager = fwModule.get(i);
-			if(wfManager != null) { // wfManager == null excluded device
-				String msg = null;
-				if(enabled) {
-					if(rdbtnDhcpNoChange.isSelected()) {
-						dhcp = wfManager.isStaticIP() == false;
-					}
-					if(dhcp) {
-						msg = wfManager.set(ssid, pwd);
-					} else {
-						if(textFieldStaticIP.isEnabled() == false) { // more than 1 device selected -> keep IP
-							ip = /*null; */wfManager.getIP();
+		if(JOptionPane.showConfirmDialog(this, LABELS.getString("dlgSetConfirmWIFI"), LABELS.getString("dlgSetWIFI"), JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE) == JOptionPane.YES_OPTION) {
+			String res = "<html>";
+			for(int i = 0; i < devices.size(); i++) {
+				WIFIManager wfManager = fwModule.get(i);
+				if(wfManager != null) { // wfManager == null excluded device
+					String msg = null;
+					if(enabled) {
+						if(rdbtnDhcpNoChange.isSelected()) {
+							dhcp = wfManager.isStaticIP() == false;
 						}
-						msg = wfManager.set(ssid, pwd, ip, netmask, gw, dns);
+						if(dhcp) {
+							msg = wfManager.set(ssid, pwd);
+						} else {
+							if(textFieldStaticIP.isEnabled() == false) { // more than 1 device selected -> keep IP
+								ip = wfManager.getIP();
+							}
+							msg = wfManager.set(ssid, pwd, ip, netmask, gw, dns);
+						}
+					} else {
+						msg = wfManager.disable();
 					}
-				} else {
-					msg = wfManager.disable();
-				}
-				if(msg != null) {
-					res += String.format(LABELS.getString("dlgSetMultiMsgFail"), devices.get(i).getHostname()) + " (" + msg + ")<br>";
-				} else {
-					res += String.format(LABELS.getString("dlgSetMultiMsgOk"), devices.get(i).getHostname()) + "<br>";
+					if(msg != null) {
+						res += String.format(LABELS.getString("dlgSetMultiMsgFail"), devices.get(i).getHostname()) + " (" + msg + ")<br>";
+					} else {
+						res += String.format(LABELS.getString("dlgSetMultiMsgOk"), devices.get(i).getHostname()) + "<br>";
+					}
 				}
 			}
+			try {
+				showing();
+			} catch (InterruptedException e) {}
+			return res;
 		}
-		try {
-			showing();
-		} catch (InterruptedException e) {}
-		return res;
+		return null;
 	}
 
 	@Override
@@ -434,8 +489,17 @@ public class PanelWIFI extends AbstractSettingsPanel implements UsnaEventListene
 				WIFIManager m = device.getWIFIManager(netModule);
 				chckbxEnabled.setSelected(m.isEnabled());
 				textFieldSSID.setText(m.getSSID());
-				rdbtnStaticIP.setSelected(m.isStaticIP());
-				rdbtnDHCP.setSelected(m.isStaticIP() == false || devices.size() > 1);
+				if(m.isStaticIP()) {
+					if(devices.size() == 1) {
+						rdbtnStaticIP.setSelected(true);
+					} else if(rdbtnDhcpNoChange.isVisible()) {
+						rdbtnDhcpNoChange.setSelected(true);
+					} else {
+						rdbtnDHCP.setSelected(true);
+					}
+				} else {
+					rdbtnDHCP.setSelected(true);
+				}
 				textFieldGateway.setText(m.getGateway());
 				textFieldNetmask.setText(m.getMask());
 				textFieldDNS.setText(m.getDNS());

@@ -115,9 +115,7 @@ public class WIFIManagerG2 implements WIFIManager {
 		pars.put("pass", pwd);
 		pars.put("enable", true);
 		pars.put("ipv4mode", "static");
-		if(ip != null && ip.isEmpty() == false) {
-			pars.put("ip", ip);
-		}
+		pars.put("ip", ip);
 		if(netmask != null && netmask.isEmpty() == false) {
 			pars.put("netmask", netmask);
 		}
