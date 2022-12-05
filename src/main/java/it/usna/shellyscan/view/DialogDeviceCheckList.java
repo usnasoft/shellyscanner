@@ -75,15 +75,15 @@ public class DialogDeviceCheckList extends JDialog {
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 
 		UsnaTableModel tModel = new UsnaTableModel("",
-				LABELS.getString("col_device"), LABELS.getString("col_ip"), LABELS.getString("col_eco"), LABELS.getString("col_ledoff"),
-				LABELS.getString("col_AP"), LABELS.getString("col_logs"), LABELS.getString("col_blt"), LABELS.getString("col_wifi1"), LABELS.getString("col_wifi2"));
+				LABELS.getString("col_device"), LABELS.getString("col_ip"), LABELS.getString("col_eco"), LABELS.getString("col_ledoff"), LABELS.getString("col_logs"),
+				LABELS.getString("col_blt"), LABELS.getString("col_AP"), LABELS.getString("col_wifi1"), LABELS.getString("col_wifi2"));
 		
 		ExTooltipTable table = new ExTooltipTable(tModel, true) {
 			private static final long serialVersionUID = 1L;
 			{
-				columnModel.getColumn(COL_STATUS).setMaxWidth( DevicesTable.ONLINE_BULLET.getIconWidth() + 4);
-				setHeadersTooltip(LABELS.getString("col_status_exp"), null, null, LABELS.getString("col_eco_tooltip"), LABELS.getString("col_ledoff_tooltip"),
-						LABELS.getString("col_AP_tooltip"), LABELS.getString("col_logs_tooltip"), LABELS.getString("col_blt_tooltip"), LABELS.getString("col_wifi1_tooltip"), LABELS.getString("col_wifi2_tooltip"));
+				columnModel.getColumn(COL_STATUS).setMaxWidth(DevicesTable.ONLINE_BULLET.getIconWidth() + 4);
+				setHeadersTooltip(LABELS.getString("col_status_exp"), null, null, LABELS.getString("col_eco_tooltip"), LABELS.getString("col_ledoff_tooltip"), LABELS.getString("col_logs_tooltip"), 
+						LABELS.getString("col_blt_tooltip"), LABELS.getString("col_AP_tooltip"), LABELS.getString("col_wifi1_tooltip"), LABELS.getString("col_wifi2_tooltip"));
 
 				columnModel.getColumn(COL_IP).setCellRenderer(new DefaultTableCellRenderer() {
 					private static final long serialVersionUID = 1L;
@@ -94,13 +94,13 @@ public class DialogDeviceCheckList extends JDialog {
 				});
 				TableCellRenderer rendTrueOk = new CheckRenderer(true);
 				TableCellRenderer rendFalseOk = new CheckRenderer(false);
-				columnModel.getColumn(3).setCellRenderer(rendTrueOk);
-				columnModel.getColumn(4).setCellRenderer(rendTrueOk);
-				columnModel.getColumn(5).setCellRenderer(rendFalseOk);
-				columnModel.getColumn(6).setCellRenderer(rendFalseOk);
-				columnModel.getColumn(7).setCellRenderer(rendFalseOk);
-				columnModel.getColumn(8).setCellRenderer(rendTrueOk); // null -> "-"
-				columnModel.getColumn(9).setCellRenderer(rendTrueOk); // null -> "-"
+				columnModel.getColumn(3).setCellRenderer(rendTrueOk); // eco
+				columnModel.getColumn(4).setCellRenderer(rendTrueOk); // led
+				columnModel.getColumn(5).setCellRenderer(rendFalseOk); // logs
+				columnModel.getColumn(6).setCellRenderer(rendFalseOk); // bluetooth
+				columnModel.getColumn(7).setCellRenderer(rendFalseOk); // AP
+				columnModel.getColumn(8).setCellRenderer(rendTrueOk); // wifi1 null -> "-"
+				columnModel.getColumn(9).setCellRenderer(rendTrueOk); // wifi2 null -> "-"
 
 				TableRowSorter<?> rowSorter = ((TableRowSorter<?>)getRowSorter());
 				Comparator<?> oc = (o1, o2) -> {return o1 == null ? -1 : o1.toString().compareTo(o2.toString());};
@@ -133,7 +133,6 @@ public class DialogDeviceCheckList extends JDialog {
 
 		fill(tModel, devices);
 
-		table.setRowHeight(table.getRowHeight() + 2);
 		table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
 		JPanel panelBottom = new JPanel(new BorderLayout(0, 0));
@@ -285,7 +284,7 @@ public class DialogDeviceCheckList extends JDialog {
 		} else {
 			wifi2 = "-";
 		}
-		return new Object[] {getStatusIcon(d), UtilCollecion.getExtendedHostName(d), d.getHttpHost().getAddress(), eco, ledOff, "-", debug, "-", wifi1, wifi2};
+		return new Object[] {getStatusIcon(d), UtilCollecion.getExtendedHostName(d), d.getHttpHost().getAddress(), eco, ledOff, debug, "-", "-", wifi1, wifi2};
 	}
 	
 	private static Object[] g2Row(ShellyAbstractDevice d, JsonNode settings) {
@@ -308,7 +307,7 @@ public class DialogDeviceCheckList extends JDialog {
 		} else {
 			wifi2 = "-";
 		}
-		return new Object[] {getStatusIcon(d), UtilCollecion.getExtendedHostName(d), d.getHttpHost().getAddress(), eco, "-", ap, debug, ble, wifi1, wifi2};
+		return new Object[] {getStatusIcon(d), UtilCollecion.getExtendedHostName(d), d.getHttpHost().getAddress(), eco, "-", debug, ble, ap, wifi1, wifi2};
 	}
 	
 	private static ImageIcon getStatusIcon(ShellyAbstractDevice d) {

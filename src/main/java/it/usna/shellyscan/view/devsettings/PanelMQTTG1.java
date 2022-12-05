@@ -30,7 +30,6 @@ import javax.swing.SwingConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import it.usna.shellyscan.Main;
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.g1.MQTTManagerG1;
@@ -561,10 +560,10 @@ public class PanelMQTTG1 extends AbstractSettingsPanel implements UsnaEventListe
 			}
 			// Validation
 			if(server.isEmpty()) {
-				throw new IllegalArgumentException(Main.LABELS.getString("dlgSetMsgMqttServer"));
+				throw new IllegalArgumentException(LABELS.getString("dlgSetMsgMqttServer"));
 			}
 			if(chckbxNoPWD.isSelected() == false && (user.isEmpty() || pwd.isEmpty())) {
-				throw new IllegalArgumentException(Main.LABELS.getString("dlgSetMsgMqttUser"));
+				throw new IllegalArgumentException(LABELS.getString("dlgSetMsgMqttUser"));
 			}
 		}
 		String res = "<html>";

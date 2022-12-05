@@ -21,6 +21,7 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
+import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.ScrollPaneConstants;
@@ -29,7 +30,6 @@ import javax.swing.SwingConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import it.usna.shellyscan.Main;
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.MQTTManager;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
@@ -38,7 +38,6 @@ import it.usna.shellyscan.view.DialogDeviceSelection;
 import it.usna.shellyscan.view.util.Msg;
 import it.usna.shellyscan.view.util.UtilCollecion;
 import it.usna.util.UsnaEventListener;
-import javax.swing.JRadioButton;
 
 //https://shelly-api-docs.shelly.cloud/gen2/Components/SystemComponents/Mqtt
 //TODO
@@ -438,10 +437,10 @@ public class PanelMQTTG2 extends AbstractSettingsPanel implements UsnaEventListe
 			}
 			// Validation
 			if(server.isEmpty()) {
-				throw new IllegalArgumentException(Main.LABELS.getString("dlgSetMsgMqttServer"));
+				throw new IllegalArgumentException(LABELS.getString("dlgSetMsgMqttServer"));
 			}
 			if(chckbxNoPWD.isSelected() == false && (user.isEmpty() || pwd.isEmpty())) {
-				throw new IllegalArgumentException(Main.LABELS.getString("dlgSetMsgMqttUser"));
+				throw new IllegalArgumentException(LABELS.getString("dlgSetMsgMqttUser"));
 			}
 		}
 		String res = "<html>";
