@@ -152,7 +152,10 @@ public class WIFIManagerG2 implements WIFIManager {
 		}
 		outWifi.set("ap", outAP);
 
-		outWifi.set("roam", wifi.get("roam").deepCopy());
+		JsonNode roam = wifi.path("roam");
+		if(roam.isMissingNode() == false) {
+			outWifi.set("roam", roam.deepCopy());
+		}
 		
 		ObjectNode outConfig = factory.objectNode();
 		outConfig.set("config", outWifi);
