@@ -60,7 +60,11 @@ public class DialogDeviceInfo extends JDialog {
 		JPanel buttonsPanel = new JPanel();
 		getContentPane().add(buttonsPanel, BorderLayout.SOUTH);
 
-		JButton btnRefresh = new JButton(new UsnaAction("labelRefresh", e -> fill(tabbedPane, json, device, infoList)));
+		JButton btnRefresh = new JButton(new UsnaAction("labelRefresh", e -> {
+			int s = tabbedPane.getSelectedIndex();
+			fill(tabbedPane, json, device, infoList);
+			tabbedPane.setSelectedIndex(s);
+		}));
 
 		final Supplier<JTextComponent> ta = () -> (JTextComponent)((JScrollPane)((JPanel)tabbedPane.getSelectedComponent()).getComponent(0)).getViewport().getView();
 		final Action findAction = new UsnaAction("btnFind", e -> {

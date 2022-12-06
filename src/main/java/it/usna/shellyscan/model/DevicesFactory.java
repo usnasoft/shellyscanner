@@ -106,7 +106,6 @@ public class DevicesFactory {
 				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			}
 			switch(info.get("type").asText()) {
-			//case ShellyPlugS.ID: return new Shelly25(address, authStringEnc); // test
 			case Shelly1.ID: return new Shelly1(address, credsProvider);
 			case Shelly1L.ID: return new Shelly1L(address, credsProvider);
 			case Shelly1PM.ID: return new Shelly1PM(address, credsProvider);
@@ -132,6 +131,7 @@ public class DevicesFactory {
 			case ShellyFlood.ID: return new ShellyFlood(address, credsProvider, info);
 			case ShellyHT.ID: return new ShellyHT(address, credsProvider, info);
 			case ShellyMotion.ID: return new ShellyMotion(address, credsProvider);
+//			case ShellyTRV.ID: return new ShellyTRV(address, credsProvider);
 			default: return new ShellyG1Unmanaged(address, name, credsProvider);
 			}
 		} catch(Exception e) {

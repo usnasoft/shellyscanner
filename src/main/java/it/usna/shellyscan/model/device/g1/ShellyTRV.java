@@ -68,12 +68,12 @@ public class ShellyTRV extends AbstractG1Device {
 		return meters;
 	}
 	
-	@Override
-	protected void fillSettings(JsonNode settings) throws IOException {
-		super.fillSettings(settings);
-		JsonNode target = settings.get("thermostats").get(0).get("target_t");
-		targetTemp = target.get("enabled").asBoolean() ? (float)target.get("value").doubleValue() : 0f;
-	}
+//	@Override
+//	protected void fillSettings(JsonNode settings) throws IOException {
+//		super.fillSettings(settings);
+//		JsonNode target = settings.get("thermostats").get(0).get("target_t");
+//		targetTemp = target.get("enabled").asBoolean() ? (float)target.get("value").doubleValue() : 0f;
+//	}
 	
 	@Override
 	protected void fillStatus(JsonNode status) throws IOException {
@@ -82,14 +82,14 @@ public class ShellyTRV extends AbstractG1Device {
 		JsonNode therm = status.get("thermostats").get(0);
 		measuredTemp = (float)therm.get("tmp").get("value").doubleValue();
 		position = (float)therm.get("position").doubleValue();
-		
+		targetTemp = (float)therm.get("target_t").path("value").doubleValue();
 	}
 	
 	public float getMeasuredTemp() {
 		return measuredTemp;
 	}
 	
-	public float geTtargetTemp() {
+	public float getTargetTemp() {
 		return targetTemp;
 	}
 	
@@ -97,21 +97,12 @@ public class ShellyTRV extends AbstractG1Device {
 		return position;
 	}
 
-	// TODO
 	@Override
 	protected void restore(JsonNode settings, ArrayList<String> errors) throws IOException {
-//		JsonNode motion = settings.path("motion");
-//		String mSensitivity = motion.get("sensitivity").asText();
-//		String mBlind = motion.get("blind_time_minutes").asText();
-//		String mPulseCount = motion.get("pulse_count").asText();
-//		String mOperatingMode = motion.get("operating_mode").asText();
-//		String mEnabled = motion.get("enabled").asText();
-//		// sleep_time is a temporary parameter
-//		errors.add(sendCommand("/settings?" + jsonNodeToURLPar(settings, "led_status_disable", "tamper_sensitivity", "dark_threshold", "twilight_threshold", "temperature_offset") +
-//				"&motion.sensitivity=" + mSensitivity +
-//				"&motion.blind_time_minutes=" + mBlind +
-//				"&motion.pulse_count=" + mPulseCount +
-//				"&motion.operating_mode=" + mOperatingMode +
-//				"&motion.enabled=" + mEnabled));
+		JsonNode display = settings.path("display");
+		errors.add(sendCommand("/settings?child_lock=" + settings.get("child_lock").asText() +
+				"&display_brightness=" + display.get("brightness").asText() +
+				"&display_flipped=" + display.get("flipped").asText()));
+		// TODO thermostats
 	}
 }

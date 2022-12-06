@@ -545,11 +545,11 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		eraseFilterButton.getActionMap().put("find_erase", eraseFilterAction);
 		statusButtonPanel.add(eraseFilterButton);
 
-		JButton btnSelectAll = new JButton(new UsnaAction("labelSelectAll", e -> devicesTable.selectAll()));
-		btnSelectAll.setBorder(BorderFactory.createEmptyBorder(2, 7, 2, 7));
+		JButton btnSelectAll = new JButton(new UsnaAction(null, "labelSelectAll", null, "/images/list_unordered.png", null, e -> devicesTable.selectAll()));
+		btnSelectAll.setBorder(BorderFactory.createEmptyBorder(2, 7, 2, 8));
 		statusButtonPanel.add(btnSelectAll);
 		
-		JButton btnSelectOnline = new JButton(new UsnaAction("labelSelectOnLine", e -> {
+		JButton btnSelectOnline = new JButton(new UsnaAction(null, "labelSelectOnLine", null, "/images/list_online.png", null, e -> {
 			devicesTable.clearSelection();
 			for(int i = 0; i < model.size(); i++) {
 				int row = devicesTable.convertRowIndexToView(i);
@@ -558,7 +558,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 				}
 			}
 		}));
-		btnSelectOnline.setBorder(BorderFactory.createEmptyBorder(2, 7, 2, 7));
+		btnSelectOnline.setBorder(BorderFactory.createEmptyBorder(2, 7, 2, 8));
 		statusButtonPanel.add(btnSelectOnline);
 		
 		statusPanel.add(statusButtonPanel, BorderLayout.EAST);
