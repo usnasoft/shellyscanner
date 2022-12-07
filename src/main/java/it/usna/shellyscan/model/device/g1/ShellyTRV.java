@@ -11,29 +11,31 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import it.usna.shellyscan.model.device.Meters;
+import it.usna.shellyscan.model.device.g1.modules.Thermostat;
 
 public class ShellyTRV extends AbstractG1Device {
 	public final static String ID = "SHTRV-01";
 	private final static Logger LOG = LoggerFactory.getLogger(ShellyTRV.class);
 	private final static Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.BAT, Meters.Type.T};
+	private Thermostat thermostat = new Thermostat(this);
 	private float measuredTemp;
-	private float targetTemp;
-	private float position;
+//	private float targetTemp;
+//	private float position;
 	private Meters[] meters;
 	protected int bat;
 
 	public ShellyTRV(InetAddress address, CredentialsProvider credentialsProv) throws IOException {
 		super(address, credentialsProv);
+		JsonNode settings = getJSON("/settings");
+		fillOnce(settings);
+		fillSettings(settings);
 		try {
-			JsonNode settings = getJSON("/settings");
-			fillOnce(settings);
-			fillSettings(settings);
 			fillStatus(getJSON("/status"));
 		} catch(Exception e) {
 			status = Status.ERROR;
 			LOG.error(getTypeName(), e);
 		}
-		
+
 		meters = new Meters[] {
 				new Meters() {
 					@Override
@@ -81,8 +83,9 @@ public class ShellyTRV extends AbstractG1Device {
 		bat = status.get("bat").get("value").asInt();
 		JsonNode therm = status.get("thermostats").get(0);
 		measuredTemp = (float)therm.get("tmp").get("value").doubleValue();
-		position = (float)therm.get("position").doubleValue();
-		targetTemp = (float)therm.get("target_t").path("value").doubleValue();
+//		position = (float)therm.get("position").doubleValue();
+//		targetTemp = (float)therm.get("target_t").path("value").doubleValue();
+		thermostat.fillStatus(therm);
 	}
 	
 	public float getMeasuredTemp() {
@@ -90,11 +93,11 @@ public class ShellyTRV extends AbstractG1Device {
 	}
 	
 	public float getTargetTemp() {
-		return targetTemp;
+		return thermostat.getTargetTemp();
 	}
 	
 	public float getPosition() {
-		return position;
+		return thermostat.getPosition();
 	}
 
 	@Override
@@ -103,7 +106,8 @@ public class ShellyTRV extends AbstractG1Device {
 		errors.add(sendCommand("/settings?child_lock=" + settings.get("child_lock").asText() +
 				"&display_brightness=" + display.get("brightness").asText() +
 				"&display_flipped=" + display.get("flipped").asText()));
-		// TODO thermostats
+		// TODO
+		// errors.add(thermostat.restore(settings));
 	}
 }
 
