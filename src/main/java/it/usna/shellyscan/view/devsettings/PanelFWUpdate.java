@@ -31,6 +31,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumn;
 
 import it.usna.shellyscan.Main;
 import it.usna.shellyscan.model.device.FirmwareManager;
@@ -243,8 +244,10 @@ public class PanelFWUpdate extends AbstractSettingsPanel {
 
 			table.columnsWidthAdapt();
 			final FontMetrics fm = getGraphics().getFontMetrics();
-			table.getColumnModel().getColumn(COL_STABLE).setPreferredWidth(SwingUtilities.computeStringWidth(fm, "0.12.0"));
-			table.getColumnModel().getColumn(COL_BETA).setPreferredWidth(SwingUtilities.computeStringWidth(fm, "0.12.0-beta1"));
+			TableColumn stableC = table.getColumnModel().getColumn(COL_STABLE);
+			stableC.setPreferredWidth(Math.max(SwingUtilities.computeStringWidth(fm, "0.12.0"), stableC.getPreferredWidth()));
+			TableColumn betaC = table.getColumnModel().getColumn(COL_BETA);
+			betaC.setPreferredWidth(Math.max(SwingUtilities.computeStringWidth(fm, "0.12.0-beta1"), betaC.getPreferredWidth()));
 		} catch (/*IOException |*/ RuntimeException e) {
 			return e.toString();
 		}

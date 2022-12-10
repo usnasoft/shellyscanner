@@ -14,6 +14,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.net.InetAddress;
+import java.net.SocketTimeoutException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Comparator;
@@ -134,6 +135,7 @@ public class DialogDeviceCheckList extends JDialog {
 
 		fill(tModel, devices);
 
+		table.setRowHeight(table.getRowHeight() + 2);
 		table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
 		JPanel panelBottom = new JPanel(new BorderLayout(0, 0));
@@ -263,7 +265,9 @@ public class DialogDeviceCheckList extends JDialog {
 					} else {
 						tModel.setRow(row, getStatusIcon(d), UtilCollecion.getExtendedHostName(d), d.getHttpHost().getAddress());
 					}
-					LOG.error("{}", d, e);
+					if(e instanceof SocketTimeoutException == false) {
+						LOG.error("{}", d, e);
+					}
 				}
 			});
 		});
