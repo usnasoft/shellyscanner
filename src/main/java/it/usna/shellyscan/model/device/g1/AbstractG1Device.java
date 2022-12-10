@@ -247,8 +247,13 @@ public abstract class AbstractG1Device extends ShellyAbstractDevice {
 			restoreCommons(settings, data, errors);
 			JsonNode actions = jsonMapper.readTree(isActions);
 			Actions.restore(this, actions, errors);
+
+			JsonNode roam = settings.path("ap_roaming");
+			if(roam.isMissingNode() == false) {
+				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+				errors.add(WIFIManagerG1.restoreRoam(this, roam));
+			}
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-			
 			Network currentConnection = WIFIManagerG1.currentConnection(this);
 			JsonNode sta1 = settings.path("wifi_sta1"); // warning: motion doesn't have wi-fi2
 			if(currentConnection != Network.SECONDARY && sta1.isMissingNode() == false && (data.containsKey(Restore.RESTORE_WI_FI2) || sta1.path("enabled").asBoolean() == false)) {

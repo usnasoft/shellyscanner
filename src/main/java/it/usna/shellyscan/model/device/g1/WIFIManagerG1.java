@@ -140,4 +140,8 @@ public class WIFIManagerG1 implements WIFIManager {
 			return disable();
 		}
 	}
+	
+	public static String restoreRoam(AbstractG1Device d, JsonNode roam) {
+		return d.sendCommand("/settings?ap_roaming_enabled=" + roam.path("enabled").asBoolean() + "&ap_roaming_threshold=" + roam.path("threshold").asText());
+	}
 }

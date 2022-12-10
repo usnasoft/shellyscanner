@@ -23,16 +23,16 @@ public class ShellyMotion extends AbstractG1Device {
 
 	public ShellyMotion(InetAddress address, CredentialsProvider credentialsProv) throws IOException {
 		super(address, credentialsProv);
+		JsonNode settings = getJSON("/settings");
+		fillOnce(settings);
+		fillSettings(settings);
 		try {
-			JsonNode settings = getJSON("/settings");
-			fillOnce(settings);
-			fillSettings(settings);
 			fillStatus(getJSON("/status"));
 		} catch(Exception e) {
 			status = Status.ERROR;
 			LOG.error(getTypeName(), e);
 		}
-		
+
 		meters = new Meters[] {
 				new Meters() {
 					@Override

@@ -44,6 +44,7 @@ import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
 import it.usna.shellyscan.model.device.g1.ShellyDW;
 import it.usna.shellyscan.model.device.g1.ShellyFlood;
 import it.usna.shellyscan.model.device.g1.ShellyMotion;
+import it.usna.shellyscan.model.device.g1.ShellyTRV;
 import it.usna.shellyscan.model.device.g1.modules.LightBulbRGBCommander;
 import it.usna.shellyscan.model.device.modules.DeviceModule;
 import it.usna.shellyscan.model.device.modules.InputCommander;
@@ -432,14 +433,16 @@ public class DevicesTable extends ExTooltipTable {
 					row[DevicesTable.COL_COMMAND_IDX] = command = ((RGBWCommander)d).getColor(0);
 				} else if(d instanceof WhiteCommander && ((WhiteCommander)d).getWhiteCount() > 1) {
 					row[DevicesTable.COL_COMMAND_IDX] = command = ((WhiteCommander)d).getWhites();
+				} else if(d instanceof InputCommander) {
+					row[DevicesTable.COL_COMMAND_IDX] = ((InputCommander)d).getActionsGroups();
 				} else if(d instanceof ShellyDW) {
 					row[DevicesTable.COL_COMMAND_IDX] = LABELS.getString("lableStatusOpen") + ": " + (((ShellyDW)d).isOpen() ? YES : NO);
 				} else if(d instanceof ShellyFlood) {
 					row[DevicesTable.COL_COMMAND_IDX] = LABELS.getString("lableStatusFlood") + ": " + (((ShellyFlood)d).flood() ? YES : NO);
 				} else if(d instanceof ShellyMotion) {
-					row[DevicesTable.COL_COMMAND_IDX] = LABELS.getString("lableStatusMotion") + ": " + (((ShellyMotion)d).motion() ? YES : NO);
-				} else if(d instanceof InputCommander) {
-					row[DevicesTable.COL_COMMAND_IDX] = ((InputCommander)d).getActionsGroups();
+					row[DevicesTable.COL_COMMAND_IDX] = String.format(LABELS.getString("lableStatusMotion"), ((ShellyMotion)d).motion() ? YES : NO);
+				} else if(d instanceof ShellyTRV) {
+					row[DevicesTable.COL_COMMAND_IDX] = String.format(LABELS.getString("lableStatusTRV"), ((ShellyTRV)d).getPosition(), ((ShellyTRV)d).getTargetTemp());
 				}
 				if(command instanceof DeviceModule) {
 					row[DevicesTable.COL_SOURCE_IDX] = ((DeviceModule)command).getLastSource();

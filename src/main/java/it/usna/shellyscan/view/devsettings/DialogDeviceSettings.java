@@ -28,9 +28,9 @@ public class DialogDeviceSettings extends JDialog {
 	private static final long serialVersionUID = 1L;
 	
 	private JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
-	private JButton btnClose = new JButton(Main.LABELS.getString("dlgClose"));
-	private JButton btnOKButton = new JButton(Main.LABELS.getString("dlgApply"));
-	private JButton btnApplyClose = new JButton(Main.LABELS.getString("dlgApplyClose"));
+	private JButton btnClose = new JButton(LABELS.getString("dlgClose"));
+	private JButton btnOKButton = new JButton(LABELS.getString("dlgApply"));
+	private JButton btnApplyClose = new JButton(LABELS.getString("dlgApplyClose"));
 	private Thread showCurrentThread;
 	private AbstractSettingsPanel currentPanel = null;
 
@@ -38,9 +38,9 @@ public class DialogDeviceSettings extends JDialog {
 		super(owner, false);
 		int numDev = devices.size();
 		if(numDev > 1) {
-			setTitle(String.format(Main.LABELS.getString("dlgSetTitle"), numDev + ""));
+			setTitle(String.format(LABELS.getString("dlgSetTitle"), numDev + ""));
 		} else {
-			setTitle(String.format(Main.LABELS.getString("dlgSetTitle"), UtilCollecion.getDescName(devices.get(0))));
+			setTitle(String.format(LABELS.getString("dlgSetTitle"), UtilCollecion.getDescName(devices.get(0))));
 		}
 		BorderLayout borderLayout = (BorderLayout) getContentPane().getLayout();
 		borderLayout.setVgap(5);
@@ -53,13 +53,13 @@ public class DialogDeviceSettings extends JDialog {
 		getContentPane().add(panel_1, BorderLayout.SOUTH);
 		Gen devTypes = getTypes(devices);
 		PanelFWUpdate panelFW = new PanelFWUpdate(devices/*, tp*/);
-		tabbedPane.add(Main.LABELS.getString("dlgSetFWUpdate"), panelFW);
+		tabbedPane.add(LABELS.getString("dlgSetFWUpdate"), panelFW);
 		PanelWIFI panelWIFI1 = new PanelWIFI(this, WIFIManager.Network.PRIMARY, devices, model);
-		tabbedPane.add(Main.LABELS.getString("dlgSetWIFI1"), panelWIFI1);
+		tabbedPane.add(LABELS.getString("dlgSetWIFI1"), panelWIFI1);
 		PanelWIFI panelWIFI2 = new PanelWIFI(this, WIFIManager.Network.SECONDARY, devices, model);
-		tabbedPane.add(Main.LABELS.getString("dlgSetWIFIBackup"), panelWIFI2);
+		tabbedPane.add(LABELS.getString("dlgSetWIFIBackup"), panelWIFI2);
 		PanelResLogin panelResLogin = new PanelResLogin(devices);
-		tabbedPane.add(Main.LABELS.getString("dlgSetRestrictedLogin"), panelResLogin);
+		tabbedPane.add(LABELS.getString("dlgSetRestrictedLogin"), panelResLogin);
 		AbstractSettingsPanel panelMQTT;
 		if(devTypes == Gen.G1) {
 			panelMQTT = new PanelMQTTG1(this, devices, model);
@@ -68,7 +68,7 @@ public class DialogDeviceSettings extends JDialog {
 		} else {
 			panelMQTT = new PanelMQTTAll(this, devices, model);
 		}
-		tabbedPane.add(Main.LABELS.getString("dlgSetMQTT"), panelMQTT);
+		tabbedPane.add(LABELS.getString("dlgSetMQTT"), panelMQTT);
 
 		getContentPane().add(tabbedPane, BorderLayout.CENTER);
 

@@ -24,7 +24,6 @@ import javax.swing.JTextField;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import it.usna.shellyscan.Main;
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.WIFIManager;
@@ -41,7 +40,7 @@ public class PanelWIFI extends AbstractSettingsPanel implements UsnaEventListene
 	private final JCheckBox chckbxEnabled = new JCheckBox();
 	private final JTextField textFieldSSID = new JTextField();
 	private final JPasswordField textFieldPwd = new JPasswordField();
-	private final JCheckBox chckbxShowPwd = new JCheckBox(Main.LABELS.getString("labelShowPwd"));;
+	private final JCheckBox chckbxShowPwd = new JCheckBox(LABELS.getString("labelShowPwd"));;
 	private final JTextField textFieldStaticIP = new JTextField();
 	private final JTextField textFieldNetmask = new JTextField();
 	private final JTextField textFieldGateway = new JTextField();
@@ -101,7 +100,7 @@ public class PanelWIFI extends AbstractSettingsPanel implements UsnaEventListene
 		add(btnCopy, gbc_btnCopy);
 		btnCopy.addActionListener(e -> selDialog = new DialogDeviceSelection(owner, this, model));
 
-		JLabel lblNewLabel_1 = new JLabel(Main.LABELS.getString("dlgSetSSID"));
+		JLabel lblNewLabel_1 = new JLabel(LABELS.getString("dlgSetSSID"));
 		GridBagConstraints gbc_lblNewLabel_1 = new GridBagConstraints();
 		gbc_lblNewLabel_1.anchor = GridBagConstraints.WEST;
 		gbc_lblNewLabel_1.insets = new Insets(0, 0, 5, 5);
@@ -119,7 +118,7 @@ public class PanelWIFI extends AbstractSettingsPanel implements UsnaEventListene
 		add(textFieldSSID, gbc_textFieldSSID);
 		textFieldSSID.setColumns(10);
 
-		JLabel lblNewLabel_2 = new JLabel(Main.LABELS.getString("labelPassword"));
+		JLabel lblNewLabel_2 = new JLabel(LABELS.getString("labelPassword"));
 		GridBagConstraints gbc_lblNewLabel_2 = new GridBagConstraints();
 		gbc_lblNewLabel_2.anchor = GridBagConstraints.WEST;
 		gbc_lblNewLabel_2.insets = new Insets(0, 0, 5, 5);
@@ -147,7 +146,7 @@ public class PanelWIFI extends AbstractSettingsPanel implements UsnaEventListene
 		gbc_chckbxNewCheckBox.gridy = 3;
 		add(chckbxShowPwd, gbc_chckbxNewCheckBox);
 
-		JLabel lblNewLabel_3 = new JLabel(Main.LABELS.getString("dlgSetDHCP"));
+		JLabel lblNewLabel_3 = new JLabel(LABELS.getString("dlgSetDHCP"));
 		GridBagConstraints gbc_lblNewLabel_3 = new GridBagConstraints();
 		gbc_lblNewLabel_3.anchor = GridBagConstraints.WEST;
 		gbc_lblNewLabel_3.insets = new Insets(0, 0, 5, 5);
@@ -425,25 +424,25 @@ public class PanelWIFI extends AbstractSettingsPanel implements UsnaEventListene
 		if(enabled) {
 			// Validation
 			if(ip.isEmpty() == false && ip.matches(IPV4_REGEX) == false) {
-				throw new IllegalArgumentException(Main.LABELS.getString("dlgSetMsgWrongIP"));
+				throw new IllegalArgumentException(LABELS.getString("dlgSetMsgWrongIP"));
 			}
 			if(gw.isEmpty() == false && gw.matches(IPV4_REGEX) == false) {
-				throw new IllegalArgumentException(Main.LABELS.getString("dlgSetMsgWrongGW"));
+				throw new IllegalArgumentException(LABELS.getString("dlgSetMsgWrongGW"));
 			}
 			if(netmask.isEmpty() == false && netmask.matches(IPV4_REGEX) == false) {
-				throw new IllegalArgumentException(Main.LABELS.getString("dlgSetMsgWrongMask"));
+				throw new IllegalArgumentException(LABELS.getString("dlgSetMsgWrongMask"));
 			}
 			if(dns.isEmpty() == false && dns.matches(IPV4_REGEX) == false) {
-				throw new IllegalArgumentException(Main.LABELS.getString("dlgSetMsgWrongDNS"));
+				throw new IllegalArgumentException(LABELS.getString("dlgSetMsgWrongDNS"));
 			}
 			if(dhcp == false && devices.size() == 1 && ip.isEmpty()) {
-				throw new IllegalArgumentException(Main.LABELS.getString("dlgSetMsgObbStaticIP"));
+				throw new IllegalArgumentException(LABELS.getString("dlgSetMsgObbStaticIP"));
 			}
 			if((dhcp == false || noChange) && (netmask.isEmpty() || gw.isEmpty())) {
-				throw new IllegalArgumentException(Main.LABELS.getString("dlgSetMsgObbStaticMaskGW"));
+				throw new IllegalArgumentException(LABELS.getString("dlgSetMsgObbStaticMaskGW"));
 			}
 			if(ssid.isEmpty() || pwd.isEmpty()) {
-				throw new IllegalArgumentException(Main.LABELS.getString("dlgSetMsgObbSSID"));
+				throw new IllegalArgumentException(LABELS.getString("dlgSetMsgObbSSID"));
 			}
 		}
 		if(JOptionPane.showConfirmDialog(this, LABELS.getString("dlgSetConfirmWIFI"), LABELS.getString("dlgSetWIFI"), JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE) == JOptionPane.YES_OPTION) {

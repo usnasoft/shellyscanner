@@ -48,7 +48,7 @@ public class PanelResLogin extends AbstractSettingsPanel {
 		gridBagLayout.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
 		setLayout(gridBagLayout);
 
-		JLabel lblNewLabel = new JLabel(Main.LABELS.getString("dlgSetEnabled"));
+		JLabel lblNewLabel = new JLabel(LABELS.getString("dlgSetEnabled"));
 		GridBagConstraints gbc_lblNewLabel = new GridBagConstraints();
 		gbc_lblNewLabel.anchor = GridBagConstraints.WEST;
 		gbc_lblNewLabel.insets = new Insets(0, 0, 5, 5);
@@ -63,7 +63,7 @@ public class PanelResLogin extends AbstractSettingsPanel {
 		gbc_chckbxEnabled.gridy = 0;
 		add(chckbxEnabled, gbc_chckbxEnabled);
 
-		JLabel lblNewLabel_1 = new JLabel(Main.LABELS.getString("labelUser"));
+		JLabel lblNewLabel_1 = new JLabel(LABELS.getString("labelUser"));
 		GridBagConstraints gbc_lblNewLabel_1 = new GridBagConstraints();
 		gbc_lblNewLabel_1.anchor = GridBagConstraints.WEST;
 		gbc_lblNewLabel_1.insets = new Insets(0, 0, 5, 5);
@@ -105,7 +105,7 @@ public class PanelResLogin extends AbstractSettingsPanel {
 		add(textFieldPwd, gbc_textFieldPwd);
 		//		textFieldPwd.setColumns(10);
 
-		chckbxShowPwd = new JCheckBox(Main.LABELS.getString("labelShowPwd"));
+		chckbxShowPwd = new JCheckBox(LABELS.getString("labelShowPwd"));
 		chckbxShowPwd.setHorizontalAlignment(SwingConstants.TRAILING);
 		GridBagConstraints gbc_chckbxNewCheckBox = new GridBagConstraints();
 		gbc_chckbxNewCheckBox.anchor = GridBagConstraints.WEST;
@@ -188,7 +188,7 @@ public class PanelResLogin extends AbstractSettingsPanel {
 		final String user = textFieldUser.getText().trim();
 		final char[] pwd = textFieldPwd.getPassword();
 		if(enabled && (user.length() == 0 || pwd.length == 0)) {
-			throw new IllegalArgumentException(Main.LABELS.getString("dlgSetMsgObbUser"));
+			throw new IllegalArgumentException(LABELS.getString("dlgSetMsgObbUser"));
 		}
 		CredentialsProvider credsProvider = null;
 		if(enabled) {

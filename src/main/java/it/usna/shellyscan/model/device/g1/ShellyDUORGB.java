@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.hc.client5.http.auth.CredentialsProvider;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -17,6 +19,7 @@ import it.usna.shellyscan.model.device.g1.modules.LightBulbRGBCommander;
 
 public class ShellyDUORGB extends AbstractG1Device implements LightBulbRGBCommander {
 	public final static String ID = "SHCB-1";
+	private final static Logger LOG = LoggerFactory.getLogger(ShellyDUORGB.class);
 	private LightBulbRGB light = new LightBulbRGB(this, 0);
 	private float power;
 	private Meters[] meters;
@@ -26,8 +29,13 @@ public class ShellyDUORGB extends AbstractG1Device implements LightBulbRGBComman
 		JsonNode settings = getJSON("/settings");
 		fillOnce(settings);
 		fillSettings(settings);
-		fillStatus(getJSON("/status"));
-		
+		try {
+			fillStatus(getJSON("/status"));
+		} catch(Exception e) {
+			status = Status.ERROR;
+			LOG.error(getTypeName(), e);
+		}
+
 		meters = new Meters[] {
 				new MetersPower() {
 					@Override
