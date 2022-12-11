@@ -19,8 +19,6 @@ public class ShellyTRV extends AbstractG1Device {
 	private final static Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.BAT, Meters.Type.T};
 	private Thermostat thermostat = new Thermostat(this);
 	private float measuredTemp;
-//	private float targetTemp;
-//	private float position;
 	private Meters[] meters;
 	protected int bat;
 
@@ -70,12 +68,11 @@ public class ShellyTRV extends AbstractG1Device {
 		return meters;
 	}
 	
-//	@Override
-//	protected void fillSettings(JsonNode settings) throws IOException {
-//		super.fillSettings(settings);
-//		JsonNode target = settings.get("thermostats").get(0).get("target_t");
-//		targetTemp = target.get("enabled").asBoolean() ? (float)target.get("value").doubleValue() : 0f;
-//	}
+	@Override
+	protected void fillSettings(JsonNode settings) throws IOException {
+		super.fillSettings(settings);
+		thermostat.fillSettings(settings.get("thermostats").get(0));
+	}
 	
 	@Override
 	protected void fillStatus(JsonNode status) throws IOException {
@@ -83,8 +80,6 @@ public class ShellyTRV extends AbstractG1Device {
 		bat = status.get("bat").get("value").asInt();
 		JsonNode therm = status.get("thermostats").get(0);
 		measuredTemp = (float)therm.get("tmp").get("value").doubleValue();
-//		position = (float)therm.get("position").doubleValue();
-//		targetTemp = (float)therm.get("target_t").path("value").doubleValue();
 		thermostat.fillStatus(therm);
 	}
 	

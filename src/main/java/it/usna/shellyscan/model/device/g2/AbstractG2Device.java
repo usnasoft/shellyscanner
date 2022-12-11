@@ -100,6 +100,11 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 		getJSON("/rpc/Shelly.Reboot");
 	}
 	
+	public boolean needReboot() throws IOException {
+		JsonNode sysStatus = getJSON("/rpc/Sys.GetStatus");
+		return sysStatus.path("restart_required").asBoolean(false);
+	}
+	
 	@Override
 	public FirmwareManager getFWManager() throws IOException {
 		return new FirmwareManagerG2(this);

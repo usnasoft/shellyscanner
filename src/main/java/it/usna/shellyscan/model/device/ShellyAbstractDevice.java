@@ -135,10 +135,6 @@ public abstract class ShellyAbstractDevice {
 	public String getMacAddress() {
 		return mac;
 	}
-
-//	public InetAddress getAddress() {
-//		return address;
-//	}
 	
 	public HttpHost getHttpHost() {
 		return httpHost;
@@ -151,14 +147,6 @@ public abstract class ShellyAbstractDevice {
 	//	public String getFw() {
 	//		return fw;
 	//	}
-	
-//	public String getSSID() {
-//		return ssid;
-//	}
-
-//	public String getIPv4Method() {
-//		return ipv4Method;
-//	}
 
 	public boolean getCloudEnabled() {
 		return cloudEnabled;
@@ -209,19 +197,6 @@ public abstract class ShellyAbstractDevice {
 	public Meters[] getMeters() {
 		return null;
 	}
-	
-//	protected void setStatus(HttpResponse response) {
-//		int statusCode = response.getStatusLine().getStatusCode();
-//		if(statusCode == HttpURLConnection.HTTP_OK) {
-//			status = Status.ON_LINE;
-//		} else if(statusCode == HttpURLConnection.HTTP_UNAUTHORIZED) {
-//			status = Status.NOT_LOOGGED;
-//		} else if(statusCode == HttpURLConnection.HTTP_INTERNAL_ERROR) {
-//			status = Status.ON_LINE;
-//		} else {
-//			status = Status.OFF_LINE;
-//		}
-//	}
 
 	public abstract String[] getInfoRequests();
 
