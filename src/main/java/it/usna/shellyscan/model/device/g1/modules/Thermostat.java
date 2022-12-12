@@ -58,4 +58,9 @@ public class Thermostat /*implements ThermostatInterface*/ {
 //	public String restore(JsonNode data) throws IOException {
 //		return null;
 //	}
+	
+	@Override
+	public String toString() {
+		return "Profile:" + getCurrentProfile() + "; target:" + target;
+	}
 }

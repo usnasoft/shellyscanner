@@ -104,6 +104,11 @@ public class ShellyTRV extends AbstractG1Device {
 		// TODO
 		// errors.add(thermostat.restore(settings));
 	}
+	
+	@Override
+	public String toString() {
+		return super.toString() + " Thermostat: " + thermostat;
+	}
 }
 
 /*
