@@ -15,6 +15,7 @@ import java.util.EventObject;
 import java.util.MissingResourceException;
 
 import javax.swing.AbstractCellEditor;
+import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
@@ -23,14 +24,13 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
 import javax.swing.JTable;
-import javax.swing.border.EmptyBorder;
 import javax.swing.table.TableCellEditor;
 
 import it.usna.shellyscan.Main;
-//import it.usna.shellyscan.model.device.g1.modules.Actions;
 import it.usna.shellyscan.model.device.g1.modules.LightBulbRGB;
 import it.usna.shellyscan.model.device.g1.modules.LightRGBW;
 import it.usna.shellyscan.model.device.g1.modules.LightWhite;
+import it.usna.shellyscan.model.device.g1.modules.Thermostat;
 import it.usna.shellyscan.model.device.modules.InputInterface;
 import it.usna.shellyscan.model.device.modules.RelayInterface;
 import it.usna.shellyscan.model.device.modules.RollerInterface;
@@ -58,9 +58,15 @@ public class DeviceTableCellEditor extends AbstractCellEditor implements TableCe
 	private JLabel colorRGBGainLabel = new JLabel();
 	private JLabel colorRGBWhiteLabel = new JLabel();
 	
+	// Roller
 	private JPanel rollerPanel = new JPanel(new BorderLayout());
 	private JLabel rollerLabel = new JLabel();
 	private JSlider rollerPerc = new JSlider(0, 100);
+	
+	// Thermostat
+	private JPanel thermPanel = new JPanel(new BorderLayout());
+	private JLabel thermProfileLabel = new JLabel();
+	private JSlider thermSlider = new JSlider((int)(Thermostat.TARGET_MIN * 2), (int)(Thermostat.TARGET_MAX * 2));
 	
 	private JPanel stackedPanel = new JPanel();
 
@@ -118,7 +124,7 @@ public class DeviceTableCellEditor extends AbstractCellEditor implements TableCe
 		lightRGBPanel.add(lightRGBSouthPanel, BorderLayout.SOUTH);
 		lightRGBSouthPanel.setOpaque(false);
 		lightRGBSouthPanel.add(lightRGBBrightness, BorderLayout.CENTER);
-		lightEditRGBButton.setBorder(new EmptyBorder(0, 3, 0, 3));
+		lightEditRGBButton.setBorder(BorderFactory.createEmptyBorder(0, 3, 0, 3));
 		lightEditRGBButton.setContentAreaFilled(false);
 		lightEditRGBButton.addActionListener(e -> {
 			if(edited != null && edited instanceof LightBulbRGB) {
@@ -210,7 +216,7 @@ public class DeviceTableCellEditor extends AbstractCellEditor implements TableCe
 		stackedSliders.add(colorRGBBWhite);
 		colorRGBSlidersPanel.add(stackedSliders);
 		JButton editRGBButton = new JButton(new ImageIcon(getClass().getResource("/images/Write16.png")));
-		editRGBButton.setBorder(new EmptyBorder(0, 3, 0, 3));
+		editRGBButton.setBorder(BorderFactory.createEmptyBorder(0, 3, 0, 3));
 		editRGBButton.setContentAreaFilled(false);
 		editRGBButton.addActionListener(e -> {
 			if(edited != null && edited instanceof LightRGBW) {
@@ -236,9 +242,9 @@ public class DeviceTableCellEditor extends AbstractCellEditor implements TableCe
 		JButton rollerButtonUp = new JButton(new ImageIcon(getClass().getResource("/images/Arrow16up.png")));
 		JButton rollerButtonDown = new JButton(new ImageIcon(getClass().getResource("/images/Arrow16down.png")));
 		JButton rollerButtonStop = new JButton(new ImageIcon(getClass().getResource("/images/PlayerStop.png")));
-		rollerButtonUp.setBorder(new EmptyBorder(0, 0, 0, 0));
-		rollerButtonStop.setBorder(new EmptyBorder(0, 0, 0, 0));
-		rollerButtonDown.setBorder(new EmptyBorder(0, 0, 0, 0));
+		rollerButtonUp.setBorder(BorderFactory.createEmptyBorder());
+		rollerButtonStop.setBorder(BorderFactory.createEmptyBorder());
+		rollerButtonDown.setBorder(BorderFactory.createEmptyBorder());
 		rollerButtonPanel.add(rollerButtonUp);
 		rollerButtonPanel.add(rollerButtonStop);
 		rollerButtonPanel.add(rollerButtonDown);
@@ -292,6 +298,56 @@ public class DeviceTableCellEditor extends AbstractCellEditor implements TableCe
 			}
 		});
 		
+		// Thermostat
+		thermPanel.setBackground(table.getSelectionBackground());
+		thermPanel.add(thermProfileLabel, BorderLayout.CENTER);
+		thermPanel.add(thermSlider, BorderLayout.SOUTH);
+		JPanel thermButtonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 3, 0));
+		thermButtonPanel.setBorder(BorderFactory.createEmptyBorder(1, 0, 0, 0));
+		thermButtonPanel.setOpaque(false);
+		JButton thermButtonUp = new JButton(new ImageIcon(getClass().getResource("/images/Arrow16up.png")));
+		thermButtonUp.setBorder(BorderFactory.createEmptyBorder());
+		JButton thermButtonDown = new JButton(new ImageIcon(getClass().getResource("/images/Arrow16down.png")));
+		thermButtonDown.setBorder(BorderFactory.createEmptyBorder());
+		thermButtonPanel.add(thermButtonUp);
+		thermButtonPanel.add(thermButtonDown);
+		thermPanel.add(thermButtonPanel, BorderLayout.EAST);
+		thermProfileLabel.setForeground(table.getSelectionForeground());
+		thermSlider.addChangeListener(e -> {
+			try {
+				if(edited != null && edited instanceof Thermostat) {
+					if(thermSlider.getValueIsAdjusting()) {
+						thermProfileLabel.setText(((Thermostat)edited).getCurrentProfile() + " " + thermSlider.getValue()/2f + "°C");
+					} else {
+						((Thermostat)edited).setTargetTemp(thermSlider.getValue()/2f);
+						cancelCellEditing();
+					}
+				}
+			} catch (IOException ex) {
+				Main.errorMsg(ex);
+			}
+		});
+		thermButtonUp.addActionListener(e -> {
+			try {
+				if(edited != null && edited instanceof Thermostat) {
+					((Thermostat)edited).targetTempUp(0.5f);
+					cancelCellEditing();
+				}
+			} catch (IOException ex) {
+				Main.errorMsg(ex);
+			}
+		});
+		thermButtonDown.addActionListener(e -> {
+			try {
+				if(edited != null && edited instanceof Thermostat) {
+					((Thermostat)edited).targetTempDown(0.5f);
+					cancelCellEditing();
+				}
+			} catch (IOException ex) {
+				Main.errorMsg(ex);
+			}
+		});
+		
 		// used for Relay[]
 		BoxLayout stackedPanelLO = new BoxLayout(stackedPanel, BoxLayout.Y_AXIS);
 		stackedPanel.setLayout(stackedPanelLO);
@@ -314,6 +370,8 @@ public class DeviceTableCellEditor extends AbstractCellEditor implements TableCe
 			return getRGBWWhitePanel((LightWhite[])value, table.getSelectionForeground());
 		} else if(value instanceof InputInterface[]) {
 			return getActionsPanel((InputInterface[])value, table);
+		} else if(value instanceof Thermostat) {
+			return getThermostatPanel((Thermostat)value);
 		}
 		return null;
 	}
@@ -457,6 +515,15 @@ public class DeviceTableCellEditor extends AbstractCellEditor implements TableCe
 		}
 		edited = ligths;
 		return stackedPanel;
+	}
+	
+	private Component getThermostatPanel(Thermostat thermostat) {
+		thermSlider.setValue((int)(thermostat.getTargetTemp() * 2f));
+		thermProfileLabel.setText(thermostat.getCurrentProfile() + " " + thermostat.getTargetTemp() + "°C");
+		thermProfileLabel.setEnabled(thermostat.isScheduleActive());
+
+		edited = thermostat;
+		return thermPanel;
 	}
 	
 	private Component getActionsPanel(final InputInterface[] inputs, JTable table) {

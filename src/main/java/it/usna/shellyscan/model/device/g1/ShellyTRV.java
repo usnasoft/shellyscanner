@@ -87,12 +87,16 @@ public class ShellyTRV extends AbstractG1Device {
 		return measuredTemp;
 	}
 	
-	public float getTargetTemp() {
-		return thermostat.getTargetTemp();
-	}
+//	public float getTargetTemp() {
+//		return thermostat.getTargetTemp();
+//	}
+//	
+//	public float getPosition() {
+//		return thermostat.getPosition();
+//	}
 	
-	public float getPosition() {
-		return thermostat.getPosition();
+	public Thermostat getThermostat() {
+		return thermostat;
 	}
 
 	@Override

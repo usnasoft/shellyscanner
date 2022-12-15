@@ -27,7 +27,8 @@ import it.usna.util.AppProperties;
 
 public class Main {
 	public final static String APP_NAME = "Shelly Scanner";
-	public final static String VERSION = "0.8.8 test";
+//	public final static String VERSION = "0.8.8 early alpha b";
+	public final static String VERSION = "0.8.8 test_4";
 	public final static String ICON = "/images/ShSc24.png";
 	public final static String BACKUP_FILE_EXT = "sbk";
 	
@@ -46,7 +47,6 @@ public class Main {
 	private final static Logger LOG = LoggerFactory.getLogger(Main.class);
 
 	public static void main(final String ... args) {
-		//System.setProperty(org.slf4j.impl.SimpleLogger.DEFAULT_LOG_LEVEL_KEY, "TRACE");
 		LOG.info(APP_NAME + " " + VERSION);
 
 		//		Package mainPackage = Main.class.getPackage();

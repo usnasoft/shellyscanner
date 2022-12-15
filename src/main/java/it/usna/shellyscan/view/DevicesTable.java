@@ -13,6 +13,7 @@ import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.io.Writer;
 import java.net.InetAddress;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.stream.Collectors;
@@ -46,6 +47,7 @@ import it.usna.shellyscan.model.device.g1.ShellyFlood;
 import it.usna.shellyscan.model.device.g1.ShellyMotion;
 import it.usna.shellyscan.model.device.g1.ShellyTRV;
 import it.usna.shellyscan.model.device.g1.modules.LightBulbRGBCommander;
+import it.usna.shellyscan.model.device.g1.modules.Thermostat;
 import it.usna.shellyscan.model.device.modules.DeviceModule;
 import it.usna.shellyscan.model.device.modules.InputCommander;
 import it.usna.shellyscan.model.device.modules.RGBWCommander;
@@ -59,8 +61,9 @@ import it.usna.swing.table.ExTooltipTable;
 import it.usna.swing.table.UsnaTableModel;
 
 public class DevicesTable extends ExTooltipTable {
+	private final static URL OFFLINEIMG = MainView.class.getResource("/images/bullet_stop.png");
 	final static ImageIcon ONLINE_BULLET = new ImageIcon(MainView.class.getResource("/images/bullet_yes.png"), LABELS.getString("labelDevOnLIne"));
-	final static ImageIcon OFFLINE_BULLET = new ImageIcon(MainView.class.getResource("/images/bullet_stop.png"), LABELS.getString("labelDevOffLIne"));
+	final static ImageIcon OFFLINE_BULLET = new ImageIcon(OFFLINEIMG, LABELS.getString("labelDevOffLIne"));
 	final static ImageIcon LOGIN_BULLET = new ImageIcon(MainView.class.getResource("/images/bullet_star_yellow.png"), LABELS.getString("labelDevNotLogged"));
 	final static ImageIcon UPDATING_BULLET = new ImageIcon(MainView.class.getResource("/images/bullet_refresh.png"), LABELS.getString("labelDevUpdating"));
 	final static ImageIcon ERROR_BULLET = new ImageIcon(MainView.class.getResource("/images/bullet_error.png"), LABELS.getString("labelDevError"));
@@ -246,6 +249,8 @@ public class DevicesTable extends ExTooltipTable {
 			} else if(value instanceof DeviceModule && isColumnVisible(COL_SOURCE_IDX) == false && (ret = ((DeviceModule)value).getLastSource()) != null) {
 				adaptTooltipLocation = false;
 				return "<html>" + String.format(LABELS.getString("col_last_source_tooltip"), value, ret) + "</html>";
+			} else if(value instanceof Thermostat) {
+				return String.format(Locale.ENGLISH, LABELS.getString("col_command_therm_tooltip"), ((Thermostat)value).getCurrentProfile(), ((Thermostat)value).getTargetTemp(), ((Thermostat)value).getPosition());
 			} else if(value instanceof Meters[]) {
 				Component comp = getCellRenderer(r, c).getTableCellRendererComponent(this, value, false, false, r, c);
 				if(Arrays.stream((Meters[])value).anyMatch(m -> m instanceof LabelHolder) || getCellRect(r, c, false).width <= comp.getPreferredSize().width) {
@@ -399,7 +404,7 @@ public class DevicesTable extends ExTooltipTable {
 			if(d.getStatus() == Status.ON_LINE) {
 				row[DevicesTable.COL_STATUS_IDX] = ONLINE_BULLET;
 			} else if(d.getStatus() == Status.OFF_LINE) {
-				row[DevicesTable.COL_STATUS_IDX] = OFFLINE_BULLET;
+				row[DevicesTable.COL_STATUS_IDX] = new ImageIcon(OFFLINEIMG, String.format(LABELS.getString("labelDevOffLIneTime"), d.getLastTimestamp()));
 			} else if(d.getStatus() == Status.READING) {
 				row[DevicesTable.COL_STATUS_IDX] = UPDATING_BULLET;
 			} else if(d.getStatus() == Status.ERROR) {
@@ -423,6 +428,7 @@ public class DevicesTable extends ExTooltipTable {
 				Object command = null;
 				if(d instanceof RelayCommander && ((RelayCommander)d).getRelayCount() > 0) {
 					row[DevicesTable.COL_COMMAND_IDX] = command = ((RelayCommander)d).getRelays();
+//					row[DevicesTable.COL_COMMAND_IDX] = new Thermostat((AbstractG1Device)d); // test
 				} else if(d instanceof RollerCommander && ((RollerCommander)d).getRollerCount() > 0) {
 					row[DevicesTable.COL_COMMAND_IDX] = command = ((RollerCommander)d).getRoller(0);
 				} else if(d instanceof WhiteCommander && ((WhiteCommander)d).getWhiteCount() == 1) { // dimmer
@@ -442,7 +448,7 @@ public class DevicesTable extends ExTooltipTable {
 				} else if(d instanceof ShellyMotion) {
 					row[DevicesTable.COL_COMMAND_IDX] = String.format(LABELS.getString("lableStatusMotion"), ((ShellyMotion)d).motion() ? YES : NO);
 				} else if(d instanceof ShellyTRV) {
-					row[DevicesTable.COL_COMMAND_IDX] = String.format(LABELS.getString("lableStatusTRV"), ((ShellyTRV)d).getPosition(), ((ShellyTRV)d).getTargetTemp());
+					row[DevicesTable.COL_COMMAND_IDX] = ((ShellyTRV)d).getThermostat();
 				}
 				if(command instanceof DeviceModule) {
 					row[DevicesTable.COL_SOURCE_IDX] = ((DeviceModule)command).getLastSource();
@@ -454,12 +460,6 @@ public class DevicesTable extends ExTooltipTable {
 					}
 					row[DevicesTable.COL_SOURCE_IDX] = res;
 				}
-				// test
-				//Roller r = new Roller(d, 0);
-				//r.setCalibrated(true);
-				//row.add(r);
-				//row.add(new RGBWColor(d, 0));
-				//row.add(new RGBWWhite[] {new RGBWWhite(d, 0), new RGBWWhite(d, 1), new RGBWWhite(d, 2), new RGBWWhite(d, 3)});
 			} else {
 				row[DevicesTable.COL_RSSI_IDX] = row[DevicesTable.COL_CLOUD] = row[DevicesTable.COL_UPTIME_IDX] = row[DevicesTable.COL_INT_TEMP] =
 						row[DevicesTable.COL_MEASURES_IDX] = row[DevicesTable.COL_DEBUG] = row[DevicesTable.COL_COMMAND_IDX] = null;
@@ -469,4 +469,4 @@ public class DevicesTable extends ExTooltipTable {
 		}
 		return row;
 	}
-} // 462
+} // 462 - 472

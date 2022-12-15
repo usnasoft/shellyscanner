@@ -18,13 +18,13 @@ import javax.swing.JPanel;
 import javax.swing.JSlider;
 import javax.swing.JTable;
 import javax.swing.border.Border;
-import javax.swing.border.EmptyBorder;
 import javax.swing.table.TableCellRenderer;
 
 import it.usna.shellyscan.Main;
 import it.usna.shellyscan.model.device.g1.modules.LightBulbRGB;
 import it.usna.shellyscan.model.device.g1.modules.LightRGBW;
 import it.usna.shellyscan.model.device.g1.modules.LightWhite;
+import it.usna.shellyscan.model.device.g1.modules.Thermostat;
 import it.usna.shellyscan.model.device.modules.InputInterface;
 import it.usna.shellyscan.model.device.modules.RelayInterface;
 import it.usna.shellyscan.model.device.modules.RollerInterface;
@@ -34,7 +34,7 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 	private JPanel lightPanel = new JPanel(new BorderLayout());
 	private JLabel lightLabel = new JLabel();
 	private JButton lightButton = new JButton();
-	private JSlider lightBrightness = new JSlider(1, 100);	
+	private JSlider lightBrightness = new JSlider(1, 100);
 	
 	// RGBW Bulbs
 	private JPanel lightRGBBulbPanel = new JPanel(new BorderLayout());
@@ -55,16 +55,19 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 	private JPanel rollerPanel = new JPanel(new BorderLayout());
 	private JLabel rollerLabel = new JLabel();
 	private JSlider rollerPerc = new JSlider(0, 100);
+	
+	// Thermostat
+	private JPanel thermPanel = new JPanel(new BorderLayout());
+	private JLabel thermProfileLabel = new JLabel();
+	private JSlider thermSlider = new JSlider((int)(Thermostat.TARGET_MIN * 2), (int)(Thermostat.TARGET_MAX * 2));
 
 	private JPanel stackedPanel = new JPanel();
 	
 	private JLabel labelPlain = new JLabel();
 	
-//	static final Color BUTTON_ON_BG_COLOR = Color.cyan;
 	static final Color BUTTON_ON_BG_COLOR = new Color(120, 212, 233);
 	static final Color BUTTON_OFF_BG_COLOR = Color.white;
 	static final Color BUTTON_ON_FG_COLOR = new Color(210, 120, 0);
-//	static final Color BUTTON_ON_FG_COLOR = new Color(250, 180, 0);
 	private static final int BUTTON_MARGIN_H = 12;
 	private static final int BUTTON_MARGIN_V = 1;
 	static final int MAX_ACTIONS_SHOWN = 5; // if supported actions <= then show also disabled buttons
@@ -89,7 +92,7 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 		lightRGBBulbPanel.add(lightRGBBulbButton, BorderLayout.EAST);
 		lightRGBBulbPanel.add(lightRGBSouthPanel, BorderLayout.SOUTH);
 		lightRGBSouthPanel.add(lightRGBBulbBrightness, BorderLayout.CENTER);
-		lightEditRGBButton.setBorder(new EmptyBorder(0, 3, 0, 3));
+		lightEditRGBButton.setBorder(BorderFactory.createEmptyBorder(0, 3, 0, 3));
 		lightEditRGBButton.setContentAreaFilled(false);
 		lightRGBSouthPanel.add(lightEditRGBButton, BorderLayout.EAST);
 		lightRGBSouthPanel.setOpaque(false);
@@ -112,7 +115,7 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 		stackedSliders.add(colorRGBWWhite);
 		colorRGBSlidersPanel.add(stackedSliders);
 		JButton editRGBButton = new JButton(new ImageIcon(getClass().getResource("/images/Write16.png")));
-		editRGBButton.setBorder(new EmptyBorder(0, 3, 0, 3));
+		editRGBButton.setBorder(BorderFactory.createEmptyBorder(0, 3, 0, 3));
 		editRGBButton.setContentAreaFilled(false);
 		colorRGBSlidersPanel.add(editRGBButton);
 		colorRGBSlidersPanel.setOpaque(false);
@@ -127,15 +130,29 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 		JButton rollerButtonUp = new JButton(new ImageIcon(getClass().getResource("/images/Arrow16up.png")));
 		JButton rollerButtonDown = new JButton(new ImageIcon(getClass().getResource("/images/Arrow16down.png")));
 		JButton rollerButtonStop = new JButton(new ImageIcon(getClass().getResource("/images/PlayerStop.png")));
-		rollerButtonUp.setBorder(new EmptyBorder(0, 0, 0, 0));
-		rollerButtonStop.setBorder(new EmptyBorder(0, 0, 0, 0));
-		rollerButtonDown.setBorder(new EmptyBorder(0, 0, 0, 0));
+		rollerButtonUp.setBorder(BorderFactory.createEmptyBorder());
+		rollerButtonStop.setBorder(BorderFactory.createEmptyBorder());
+		rollerButtonDown.setBorder(BorderFactory.createEmptyBorder());
 		rollerButtonPanel.add(rollerButtonUp);
 		rollerButtonPanel.add(rollerButtonStop);
 		rollerButtonPanel.add(rollerButtonDown);
 		rollerSouthPanel.setOpaque(false);
 		rollerButtonPanel.setOpaque(false);
 		rollerPanel.add(rollerSouthPanel, BorderLayout.SOUTH);
+
+		// Thermostat
+		thermPanel.add(thermProfileLabel, BorderLayout.CENTER);
+		thermPanel.add(thermSlider, BorderLayout.SOUTH);
+		JPanel thermButtonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 3, 0));
+		thermButtonPanel.setBorder(BorderFactory.createEmptyBorder(1, 0, 0, 0));
+		thermButtonPanel.setOpaque(false);
+		JButton thermButtonUp = new JButton(new ImageIcon(getClass().getResource("/images/Arrow16up.png")));
+		thermButtonUp.setBorder(BorderFactory.createEmptyBorder());
+		JButton thermButtonDown = new JButton(new ImageIcon(getClass().getResource("/images/Arrow16down.png")));
+		thermButtonDown.setBorder(BorderFactory.createEmptyBorder());
+		thermButtonPanel.add(thermButtonUp);
+		thermButtonPanel.add(thermButtonDown);
+		thermPanel.add(thermButtonPanel, BorderLayout.EAST);
 		
 		BoxLayout stackedPanelLO = new BoxLayout(stackedPanel, BoxLayout.Y_AXIS);
 		stackedPanel.setLayout(stackedPanelLO);
@@ -243,9 +260,9 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 			colorRGBLabel.setText(color.getLabel());
 			colorRGBLabel.setForeground(foregroundColor);
 			colorRGBGainLabel.setForeground(foregroundColor);
-			colorRGBGainLabel.setText(Main.LABELS.getString("labelShortGain") + " " + color.getGain() + "% ");
+			colorRGBGainLabel.setText(Main.LABELS.getString("labelShortGain") + " " + color.getGain() + "%");
 			colorRGBWhiteLabel.setForeground(foregroundColor);
-			colorRGBWhiteLabel.setText(Main.LABELS.getString("labelShortWhite") + " " + color.getWhite() + "% ");
+			colorRGBWhiteLabel.setText(Main.LABELS.getString("labelShortWhite") + " " + color.getWhite() + "%");
 			ret = colorRGBPanel;
 		} else if(value instanceof LightWhite[]) { // RGBW2 white
 			stackedPanel.removeAll();
@@ -270,8 +287,15 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 				stackedPanel.add(relayPanel);
 			}
 			ret = stackedPanel;
-		} else if(value instanceof InputInterface[]) { // Button1 - I3
+		} else if(value instanceof InputInterface[]) { // Button1 - I3 - I4
 			ret = actionButtonsPanel((InputInterface[])value, foregroundColor);
+		} else if(value instanceof Thermostat) {
+			Thermostat thermostat = (Thermostat)value;
+			thermSlider.setValue((int)(thermostat.getTargetTemp() * 2));
+			thermProfileLabel.setText(thermostat.getCurrentProfile() + " " + thermostat.getTargetTemp() + "°C");
+			thermProfileLabel.setEnabled(thermostat.isScheduleActive());
+			thermProfileLabel.setForeground(foregroundColor);
+			ret = thermPanel;
 		} else {
 			labelPlain.setText(value == null ? "" : value.toString());
 			labelPlain.setForeground(foregroundColor);

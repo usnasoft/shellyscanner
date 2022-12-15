@@ -7,7 +7,10 @@ import java.net.HttpURLConnection;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
+import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.Map;
+import java.util.TimeZone;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -37,6 +40,7 @@ public abstract class ShellyAbstractDevice {
 	protected int uptime;
 	protected String name;
 	protected Status status;
+	protected long lastConnection /*= LocalDateTime.now()*/;
 	
 	protected final ObjectMapper jsonMapper = new ObjectMapper();
 	
@@ -69,32 +73,6 @@ public abstract class ShellyAbstractDevice {
 		}
 	}
 	
-//	public JsonNode getJSON(final String command) throws IOException { //JsonProcessingException extends IOException
-//		HttpGet httpget = new HttpGet(command);
-//		int statusCode;
-//		try (CloseableHttpClient httpClient = HttpClients.createDefault(); CloseableHttpResponse response = httpClient.execute(httpHost, httpget, clientContext)) {
-//			statusCode = response./*getStatusLine().getStatusCode();*/getCode();
-//			if(statusCode == HttpURLConnection.HTTP_OK) {
-//				status = Status.ON_LINE;
-//				return jsonMapper.readTree(response.getEntity().getContent());
-//			}
-//		}  catch(SocketException | SocketTimeoutException e) {
-//			status = Status.OFF_LINE;
-//			throw e;
-//		} catch(/*JsonParseException |*/ IOException | RuntimeException e) {
-//			status = Status.ERROR;
-//			throw e;
-//		}
-//		if(statusCode == HttpURLConnection.HTTP_UNAUTHORIZED) {
-//			status = Status.NOT_LOOGGED;
-//		} else if(statusCode == HttpURLConnection.HTTP_INTERNAL_ERROR) {
-//			status = Status.ERROR;
-//		} else {
-//			status = Status.OFF_LINE;
-//		}
-//		throw new IOException("Status-" + statusCode);
-//	}
-	
 	public JsonNode getJSON(final String command) throws IOException { //JsonProcessingException extends IOException
 		HttpGet httpget = new HttpGet(command);
 		try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
@@ -117,7 +95,7 @@ public abstract class ShellyAbstractDevice {
 			status = Status.OFF_LINE;
 			throw e;
 		} catch(/*JsonParseException |*/ IOException | RuntimeException e) {
-			if(status == Status.ON_LINE) {
+			if(status == Status.ON_LINE || status == Status.READING) {
 				status = Status.ERROR;
 			}
 			throw e;
@@ -196,6 +174,10 @@ public abstract class ShellyAbstractDevice {
 	
 	public Meters[] getMeters() {
 		return null;
+	}
+	
+	public LocalDateTime getLastTimestamp() {
+		return LocalDateTime.ofInstant(Instant.ofEpochMilli(lastConnection), TimeZone.getDefault().toZoneId());
 	}
 
 	public abstract String[] getInfoRequests();
