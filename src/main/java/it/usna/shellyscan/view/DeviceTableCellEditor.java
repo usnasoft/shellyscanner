@@ -62,7 +62,11 @@ public class DeviceTableCellEditor extends AbstractCellEditor implements TableCe
 	private JPanel rollerPanel = new JPanel(new BorderLayout());
 	private JLabel rollerLabel = new JLabel();
 	private JSlider rollerPerc = new JSlider(0, 100);
-	
+
+	// LightWhite[] - rgbw2 white
+	private JPanel editSwitchPanel = new JPanel(new BorderLayout());
+	private JButton editLightWhiteButton = new JButton(new ImageIcon(getClass().getResource("/images/Write16.png")));
+
 	// Thermostat
 	private JPanel thermPanel = new JPanel(new BorderLayout());
 	private JLabel thermProfileLabel = new JLabel();
@@ -298,6 +302,20 @@ public class DeviceTableCellEditor extends AbstractCellEditor implements TableCe
 			}
 		});
 		
+		// LightWhite[] - rgbw2 white
+		editSwitchPanel.setOpaque(false);
+		editLightWhiteButton.setBorder(BorderFactory.createEmptyBorder(0, 3, 0, 3));
+		editLightWhiteButton.setContentAreaFilled(false);
+		editLightWhiteButton.addChangeListener(e -> {
+				if(edited != null && edited instanceof LightWhite[]) {
+					final Window win = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusedWindow();
+					win.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+					new DialogEditLightsArray(win, (LightWhite[])edited);
+					cancelCellEditing();
+					win.setCursor(Cursor.getDefaultCursor());
+				}
+		});
+		
 		// Thermostat
 		thermPanel.setBackground(table.getSelectionBackground());
 		thermPanel.add(thermProfileLabel, BorderLayout.CENTER);
@@ -482,9 +500,10 @@ public class DeviceTableCellEditor extends AbstractCellEditor implements TableCe
 		return colorRGBPanel;
 	}
 	
-	private Component getRGBWWhitePanel(LightWhite[] ligths, Color selColor) {
+	private Component getRGBWWhitePanel(LightWhite[] lights, Color selColor) {
 		stackedPanel.removeAll();
-		for(LightWhite light: ligths) {
+		for(int i = 0; i < lights.length;) {
+			LightWhite light = lights[i];
 			JLabel relayLabel = new JLabel(light.getLabel());
 			relayLabel.setForeground(selColor);
 			JPanel relayPanel = new JPanel(new BorderLayout());
@@ -511,9 +530,17 @@ public class DeviceTableCellEditor extends AbstractCellEditor implements TableCe
 				relayButton.setText(DevicesCommandCellRenderer.LABEL_OFF);
 				relayButton.setBackground(DevicesCommandCellRenderer.BUTTON_OFF_BG_COLOR);
 			}
+			if(++i < lights.length) {
+				relayPanel.add(relayButton, BorderLayout.EAST);
+			} else {
+				editSwitchPanel.removeAll();
+				editSwitchPanel.add(relayButton, BorderLayout.EAST);
+				editSwitchPanel.add(BorderLayout.WEST, editLightWhiteButton);
+				relayPanel.add(editSwitchPanel, BorderLayout.EAST);
+			}
 			stackedPanel.add(relayPanel);
 		}
-		edited = ligths;
+		edited = lights;
 		return stackedPanel;
 	}
 	

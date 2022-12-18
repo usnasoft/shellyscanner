@@ -56,6 +56,10 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 	private JLabel rollerLabel = new JLabel();
 	private JSlider rollerPerc = new JSlider(0, 100);
 	
+	// LightWhite[] - rgbw2 white
+	private JPanel editSwitchPanel = new JPanel(new BorderLayout());
+	private JButton editLightWhiteButton = new JButton(new ImageIcon(getClass().getResource("/images/Write16.png")));
+	
 	// Thermostat
 	private JPanel thermPanel = new JPanel(new BorderLayout());
 	private JLabel thermProfileLabel = new JLabel();
@@ -139,6 +143,11 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 		rollerSouthPanel.setOpaque(false);
 		rollerButtonPanel.setOpaque(false);
 		rollerPanel.add(rollerSouthPanel, BorderLayout.SOUTH);
+		
+		// LightWhite[] - rgbw2 white
+		editSwitchPanel.setOpaque(false);
+		editLightWhiteButton.setBorder(BorderFactory.createEmptyBorder(0, 3, 0, 3));
+		editLightWhiteButton.setContentAreaFilled(false);
 
 		// Thermostat
 		thermPanel.add(thermProfileLabel, BorderLayout.CENTER);
@@ -266,23 +275,29 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 			ret = colorRGBPanel;
 		} else if(value instanceof LightWhite[]) { // RGBW2 white
 			stackedPanel.removeAll();
-			for(LightWhite light: (LightWhite[]) value) {
-				JLabel relayLabel = new JLabel(light.getLabel());
+			LightWhite[] lights = (LightWhite[]) value;
+			for(int i = 0; i < lights.length;) {
+				JLabel relayLabel = new JLabel(lights[i].getLabel());
 				JPanel relayPanel = new JPanel(new BorderLayout());
 				JButton relayButton = new JButton();
-
 				relayPanel.setOpaque(false);
 				relayButton.setBorder(BUTTON_BORDERS);
 				relayPanel.add(relayLabel, BorderLayout.CENTER);
-				relayPanel.add(relayButton, BorderLayout.EAST);
 				relayLabel.setForeground(foregroundColor);
-				
-				if(light.isOn()) {
+				if(lights[i].isOn()) {
 					relayButton.setText(LABEL_ON);
 					relayButton.setBackground(BUTTON_ON_BG_COLOR);
 				} else {
 					relayButton.setText(LABEL_OFF);
 					relayButton.setBackground(BUTTON_OFF_BG_COLOR);
+				}
+				if(++i < lights.length) {
+					relayPanel.add(relayButton, BorderLayout.EAST);
+				} else {
+					editSwitchPanel.removeAll();
+					editSwitchPanel.add(relayButton, BorderLayout.EAST);
+					editSwitchPanel.add(BorderLayout.WEST, editLightWhiteButton);
+					relayPanel.add(editSwitchPanel, BorderLayout.EAST);
 				}
 				stackedPanel.add(relayPanel);
 			}

@@ -27,8 +27,7 @@ import it.usna.util.AppProperties;
 
 public class Main {
 	public final static String APP_NAME = "Shelly Scanner";
-//	public final static String VERSION = "0.8.8 early alpha b";
-	public final static String VERSION = "0.8.8 test_4";
+	public final static String VERSION = "0.8.8 test_6";
 	public final static String ICON = "/images/ShSc24.png";
 	public final static String BACKUP_FILE_EXT = "sbk";
 	
@@ -292,6 +291,10 @@ public class Main {
 // mqtt status: connected
 // chk table (blt, eco mode, led, AP, logs, ...)
 // mqtt specific G2 settings
+
+//0.8.8
+// TRV
+// ultima connessione (tooltip off-line)
 
 // grafici
 // archivio (additivo) dispositivi collegati opzionalmente caricabile (con eventuale default da settings)

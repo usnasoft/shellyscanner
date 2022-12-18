@@ -10,6 +10,7 @@ import it.usna.shellyscan.model.device.modules.DeviceModule;
 public class Thermostat implements DeviceModule /*, ThermostatInterface*/ {
 	private final AbstractG1Device parent;
 	private final static String INDEX = "0";
+	private boolean autoTemp;
 	private float target; // Target temperature 4..31
 	private int position;
 	private boolean schedule;
@@ -27,6 +28,7 @@ public class Thermostat implements DeviceModule /*, ThermostatInterface*/ {
 		for(int i = 0; i < profiles.size(); i++) {
 			profileNames[i] = profiles.get(i).asText();
 		}
+		autoTemp = thermostat.get("t_auto").get("enabled").asBoolean();
 	}
 	
 	public void fillStatus(JsonNode thermostat) throws IOException {
@@ -36,12 +38,16 @@ public class Thermostat implements DeviceModule /*, ThermostatInterface*/ {
 		scheduleProfile = thermostat.path("schedule_profile").asInt();
 	}
 	
+	public boolean isAutoTemp() {
+		return autoTemp;
+	}
+	
 //	@Override
 	public float getTargetTemp() {
 		return target;
 	}
 	
-	public float getPosition() {
+	public int getPosition() {
 		return position;
 	}
 	
@@ -50,8 +56,11 @@ public class Thermostat implements DeviceModule /*, ThermostatInterface*/ {
 	}
 	
 	public String getCurrentProfile() {
-		return profileNames[scheduleProfile - 1];
-//		return "test";
+		try {
+			return profileNames[scheduleProfile - 1];
+		} catch(RuntimeException e) {
+			return "";
+		}
 	}
 
 	@Override
@@ -65,7 +74,7 @@ public class Thermostat implements DeviceModule /*, ThermostatInterface*/ {
 
 //	@Override
 	public void setTargetTemp(float temp) throws IOException {
-		/*final JsonNode t =*/ parent.getJSON("/settings/thermostats/" + INDEX + "?target_t=" +  temp);
+		/*final JsonNode t =*/ parent.getJSON("/settings/thermostats/" + INDEX + "?target_t=" + temp);
 		target = temp; // on error target is not changed
 	}
 	

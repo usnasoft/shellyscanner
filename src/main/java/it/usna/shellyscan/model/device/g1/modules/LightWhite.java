@@ -15,17 +15,17 @@ import it.usna.shellyscan.model.device.modules.DeviceModule;
  */
 public class LightWhite implements DeviceModule {
 	private final AbstractG1Device parent;
-//	private final int index;
 	private String name;
 	private boolean isOn;
-	private int brightness; // Brightness, 1..100
+	private int brightness; // Brightness, 1..100 - seems wrong, we see also 0
 	private String source;
 	private String prefix; // "/white/", "/light/"
 	private boolean inputIsOn;
+	public final static int MIN_BRIGHTNESS = 0;
+	public final static int MAX_BRIGHTNESS = 100;
 	
 	public LightWhite(AbstractG1Device parent, final String command, int index) {
 		this.parent = parent;
-//		this.index = index;
 		this.prefix = command + index;
 	}
 
