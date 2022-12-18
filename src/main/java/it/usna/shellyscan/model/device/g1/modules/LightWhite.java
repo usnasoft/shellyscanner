@@ -17,11 +17,11 @@ public class LightWhite implements DeviceModule {
 	private final AbstractG1Device parent;
 	private String name;
 	private boolean isOn;
-	private int brightness; // Brightness, 1..100 - seems wrong, we see also 0
+	private int brightness; // Brightness, 1..100 - seems wrong: 0 seems valid for RGBW2, not for dimmer
 	private String source;
 	private String prefix; // "/white/", "/light/"
 	private boolean inputIsOn;
-	public final static int MIN_BRIGHTNESS = 0;
+//	public final static int MIN_BRIGHTNESS = 0;
 	public final static int MAX_BRIGHTNESS = 100;
 	
 	public LightWhite(AbstractG1Device parent, final String command, int index) {

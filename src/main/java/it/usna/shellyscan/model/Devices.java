@@ -225,7 +225,9 @@ public class Devices extends UsnaObservable<Devices.EventType, Integer> {
 						d.refreshSettings();
 						Thread.sleep(MULTI_QUERY_DELAY);
 						d.refreshStatus();
-					} catch (Exception e) {
+					} catch (RuntimeException e) {
+						LOG.error("Unexpected on refresh", e);
+					} catch (IOException | InterruptedException e) {
 						if(d.getStatus() == Status.ERROR) {
 							LOG.error("Unexpected on refresh", e);
 						} else {

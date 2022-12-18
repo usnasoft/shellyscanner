@@ -11,8 +11,8 @@ public class Thermostat implements DeviceModule /*, ThermostatInterface*/ {
 	private final AbstractG1Device parent;
 	private final static String INDEX = "0";
 	private boolean autoTemp;
-	private float target; // Target temperature 4..31
-	private int position;
+	private float targetTemp; // Target temperature 4..31
+	private float position;
 	private boolean schedule;
 	private int scheduleProfile; //  1..5
 	private String[] profileNames = new String[5];
@@ -32,10 +32,8 @@ public class Thermostat implements DeviceModule /*, ThermostatInterface*/ {
 	}
 	
 	public void fillStatus(JsonNode thermostat) throws IOException {
-		target = (float)thermostat.get("target_t").get("value").asDouble();
-		position = thermostat.get("pos").intValue();
-		schedule = thermostat.get("schedule").asBoolean();
-		scheduleProfile = thermostat.path("schedule_profile").asInt();
+		position = (float)thermostat.get("pos").asDouble();
+		fillThermostat(thermostat);
 	}
 	
 	public boolean isAutoTemp() {
@@ -44,10 +42,10 @@ public class Thermostat implements DeviceModule /*, ThermostatInterface*/ {
 	
 //	@Override
 	public float getTargetTemp() {
-		return target;
+		return targetTemp;
 	}
 	
-	public int getPosition() {
+	public float getPosition() {
 		return position;
 	}
 	
@@ -74,16 +72,15 @@ public class Thermostat implements DeviceModule /*, ThermostatInterface*/ {
 
 //	@Override
 	public void setTargetTemp(float temp) throws IOException {
-		/*final JsonNode t =*/ parent.getJSON("/settings/thermostats/" + INDEX + "?target_t=" + temp);
-		target = temp; // on error target is not changed
+		fillThermostat(parent.getJSON("/settings/thermostats/" + INDEX + "?target_t=" + temp));
 	}
 	
 	public void targetTempUp(float delta) throws IOException {
-		setTargetTemp(Math.min(TARGET_MAX, target + delta));
+		setTargetTemp(Math.min(TARGET_MAX, targetTemp + delta));
 	}
 	
 	public void targetTempDown(float delta) throws IOException {
-		setTargetTemp(Math.max(TARGET_MIN, target - delta));
+		setTargetTemp(Math.max(TARGET_MIN, targetTemp - delta));
 	}
 	
 //	public String restore(JsonNode data) throws IOException {
@@ -92,6 +89,24 @@ public class Thermostat implements DeviceModule /*, ThermostatInterface*/ {
 	
 	@Override
 	public String toString() {
-		return "Prof:" + getCurrentProfile() + "; Temp:" + target;
+		return "Prof:" + getCurrentProfile() + "; Temp:" + targetTemp;
+	}
+	
+	private void fillThermostat(JsonNode thermostat) {
+		targetTemp = (float)thermostat.get("target_t").get("value").asDouble();
+//		position = thermostat.get("pos").intValue();
+		schedule = thermostat.get("schedule").asBoolean();
+		scheduleProfile = thermostat.get("schedule_profile").asInt();
 	}
 }
+
+/*
+.../settings/thermostats/0?target_t=20
+{
+"target_t":{"enabled":true,"value":20.0,"value_op":8.0,"units":"C","accelerated_heating":true},
+"schedule":true,
+"schedule_profile":1,
+"schedule_profile_names"🙁"Livingroom","Livingroom 1","Bedroom","Bedroom 1","Holiday"],"schedule_rules"🙁"0700-0123456-19","0910-0123456-16","1105-0123456-25","1230-0123456-19","2030-0123456-16"],
+"temperature_offset":-1.0,"ext_t":{"enabled":false, "floor_heating": false},"t_auto":{"enabled":true},
+"boost_minutes":30,"valve_min_percent":0.00,"force_close":false,"calibration_correction":true,"extra_pressure":false,"open_window_report":false}
+*/

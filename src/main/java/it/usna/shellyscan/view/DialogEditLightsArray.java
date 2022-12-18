@@ -93,7 +93,7 @@ public class DialogEditLightsArray extends JDialog {
 		stackedPanel.setBorder(BorderFactory.createEmptyBorder(0, 8, 10, 8));
 
 		for(int i = 0; i < lights.length; i++) {
-			LightWhite light = lights[i];
+			final LightWhite light = lights[i];
 			JPanel lp = new JPanel(new BorderLayout(10, 0));
 			JLabel label = new JLabel();
 			labels[i] = label;
@@ -114,13 +114,12 @@ public class DialogEditLightsArray extends JDialog {
 				}
 			});
 			lp.add(switchButton, BorderLayout.EAST);
-			JSlider brightness = new JSlider(LightWhite.MIN_BRIGHTNESS, LightWhite.MAX_BRIGHTNESS, light.getBrightness());
+			JSlider brightness = new JSlider(/*LightWhite.MIN_BRIGHTNESS*/0, LightWhite.MAX_BRIGHTNESS, light.getBrightness());
 			sliders[i] = brightness;
 			brightness.addChangeListener(e -> {
 				if(brightness.getValueIsAdjusting() == false) {
 					try {
-						int b = brightness.getValue();
-						light.setBrightness(b);
+						light.setBrightness(brightness.getValue());
 						adjust(lights);
 					} catch (IOException e1) {
 						LOG.error("brightness", e1);

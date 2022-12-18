@@ -116,6 +116,7 @@ public class ShellyTRV extends AbstractG1Device {
 }
 
 /*
+SETTINGS
 {
 "device" : {
   "type" : "SHTRV-01",
@@ -224,7 +225,7 @@ public class ShellyTRV extends AbstractG1Device {
 } ]
 }
 
-
+STATUS
 {
 "wifi_sta" : {
   "connected" : true,
