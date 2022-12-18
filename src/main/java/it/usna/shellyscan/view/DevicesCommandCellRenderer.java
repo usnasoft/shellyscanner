@@ -185,14 +185,6 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 				relayButtonPanel.setLayout(new BoxLayout(relayButtonPanel, BoxLayout.Y_AXIS));
 				relayButtonPanel.setOpaque(false);
 				relayButton.setBorder(BUTTON_BORDERS);
-
-//java.awt.FontMetrics fm = relayButton.getFontMetrics(relayButton.getFont());//.stringWidth("w");
-//				relayButton.setBorder(BUTTON_BORDERS);
-//relayButton.setBorder(BorderFactory.createLineBorder(Color.red, 1));
-//Border b = new BasicBorders.ButtonBorder(Color.red, Color.red, Color.red, Color.red);
-//relayButton.setBorder(b);
-//				relayButton.setPreferredSize(new Dimension(fm.stringWidth("wwww")+2, fm.getHeight() + 1));
-				
 				relayButtonPanel.add(Box.createVerticalGlue());
 				relayButtonPanel.add(relayButton);
 				relayButtonPanel.add(Box.createVerticalGlue());
@@ -269,9 +261,9 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 			colorRGBLabel.setText(color.getLabel());
 			colorRGBLabel.setForeground(foregroundColor);
 			colorRGBGainLabel.setForeground(foregroundColor);
-			colorRGBGainLabel.setText(Main.LABELS.getString("labelShortGain") + " " + color.getGain() + "%");
+			colorRGBGainLabel.setText(Main.LABELS.getString("labelShortGain") + " " + color.getGain() + "% ");
 			colorRGBWhiteLabel.setForeground(foregroundColor);
-			colorRGBWhiteLabel.setText(Main.LABELS.getString("labelShortWhite") + " " + color.getWhite() + "%");
+			colorRGBWhiteLabel.setText(Main.LABELS.getString("labelShortWhite") + " " + color.getWhite() + "% ");
 			ret = colorRGBPanel;
 		} else if(value instanceof LightWhite[]) { // RGBW2 white
 			stackedPanel.removeAll();
@@ -316,13 +308,6 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 			labelPlain.setForeground(foregroundColor);
 			ret = labelPlain;
 		}
-		/*if(isSelected) {
-			ret.setBackground(table.getSelectionBackground());
-		} else if(row % 2 == 0 ) {
-			ret.setBackground(Main.TAB_LINE1);
-		} else {
-			ret.setBackground(Main.TAB_LINE2);
-		}*/
 		return ret;
 //		}catch(Exception e) {
 //			e.printStackTrace();

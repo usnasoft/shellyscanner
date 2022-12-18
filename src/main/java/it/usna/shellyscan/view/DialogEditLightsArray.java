@@ -94,12 +94,15 @@ public class DialogEditLightsArray extends JDialog {
 
 		for(int i = 0; i < lights.length; i++) {
 			final LightWhite light = lights[i];
-			JPanel lp = new JPanel(new BorderLayout(10, 0));
-			JLabel label = new JLabel();
+			final JPanel lp = new JPanel(new BorderLayout(10, 0));
+			final JLabel label = new JLabel();
+			final JToggleButton switchButton = new JToggleButton(new ImageIcon(DialogEditRGB.class.getResource("/images/Standby24.png")));
+			final JSlider brightness = new JSlider(/*LightWhite.MIN_BRIGHTNESS*/0, LightWhite.MAX_BRIGHTNESS, light.getBrightness());
 			labels[i] = label;
-			lp.add(label, BorderLayout.NORTH);
-			JToggleButton switchButton = new JToggleButton(new ImageIcon(DialogEditRGB.class.getResource("/images/Standby24.png")));
 			buttons[i] = switchButton;
+			sliders[i] = brightness;
+			
+			lp.add(label, BorderLayout.NORTH);
 			switchButton.setSelectedIcon(new ImageIcon(DialogEditRGB.class.getResource("/images/StandbyOn24.png")));
 			switchButton.setRolloverIcon(new ImageIcon(DialogEditRGB.class.getResource("/images/Standby24.png")));
 			switchButton.setRolloverSelectedIcon(new ImageIcon(DialogEditRGB.class.getResource("/images/StandbyOn24.png")));
@@ -108,39 +111,40 @@ public class DialogEditLightsArray extends JDialog {
 			switchButton.addActionListener(e -> {
 				try {
 					light.toggle();
-					adjust(lights);
 				} catch (IOException e1) {
 					LOG.error("toggle", e1);
 				}
+				adjust(light, label, switchButton, brightness);
 			});
 			lp.add(switchButton, BorderLayout.EAST);
-			JSlider brightness = new JSlider(/*LightWhite.MIN_BRIGHTNESS*/0, LightWhite.MAX_BRIGHTNESS, light.getBrightness());
-			sliders[i] = brightness;
 			brightness.addChangeListener(e -> {
 				if(brightness.getValueIsAdjusting() == false) {
 					try {
 						light.setBrightness(brightness.getValue());
-						adjust(lights);
 					} catch (IOException e1) {
 						LOG.error("brightness", e1);
 					}
+					adjust(light, label, switchButton, brightness);
 				} else {
 					label.setText(light.getLabel() + " " + brightness.getValue() + "%");
 				}
 			});
 			lp.add(brightness, BorderLayout.CENTER);
+			adjust(light, label, switchButton, brightness);
 			stackedPanel.add(lp);
 		}
-		adjust(lights);
 		return stackedPanel;
+	}
+	
+	private static void adjust(LightWhite light, JLabel label, JToggleButton button, JSlider brightness) {
+		label.setText(light.getLabel() + " " + light.getBrightness() + "%");
+		button.setSelected(light.isOn());
+		brightness.setValue(light.getBrightness());
 	}
 	
 	private void adjust(LightWhite[] lights) {
 		for(int i = 0; i < lights.length; i++) {
-			final LightWhite light = lights[i];
-			labels[i].setText(light.getLabel() + " " + light.getBrightness() + "%");
-			buttons[i].setSelected(light.isOn());
-			sliders[i].setValue(light.getBrightness());
+			adjust(lights[i], labels[i], buttons[i], sliders[i]);
 		}
 	}
 }

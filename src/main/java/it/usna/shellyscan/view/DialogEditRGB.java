@@ -22,6 +22,9 @@ import javax.swing.JToggleButton;
 import javax.swing.SwingConstants;
 import javax.swing.event.ChangeListener;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import it.usna.shellyscan.model.device.g1.modules.LightRGBW;
 
 public class DialogEditRGB extends JDialog {
@@ -39,6 +42,7 @@ public class DialogEditRGB extends JDialog {
 	private JLabel labelBlue = new JLabel(/*light.getBlue() + ""*/);
 	private JLabel labelWhite = new JLabel(/*light.getBlue() + ""*/);
 	private final JPanel previewColorPanel = new JPanel();
+	private final static Logger LOG = LoggerFactory.getLogger(DialogEditRGB.class);
 	
 	/**
 	 * @wbp.parser.constructor
@@ -81,7 +85,7 @@ public class DialogEditRGB extends JDialog {
 				light.toggle();
 				adjust(light);
 			} catch (IOException e1) {
-				e1.printStackTrace();
+				LOG.error("switchButton", e1);
 			}
 		});
 		typePanel.add(Box.createHorizontalGlue());
@@ -125,7 +129,7 @@ public class DialogEditRGB extends JDialog {
 					light.setGain(sliderGain.getValue());
 					adjust(light);
 				} catch (IOException e1) {
-					e1.printStackTrace();
+					LOG.error("sliderGain", e1);
 				}
 			} else {
 				adjustGain(sliderGain.getValue());
@@ -253,7 +257,7 @@ public class DialogEditRGB extends JDialog {
 					light.setColor(sliderRed.getValue(), sliderGreen.getValue(), sliderBlue.getValue(), sliderWhite.getValue());
 					adjust(light);
 				} catch (IOException e1) {
-					e1.printStackTrace();
+					LOG.error("sliderColor", e1);
 				}
 			} else {
 				adjustLightRGBW(sliderRed.getValue(), sliderGreen.getValue(), sliderBlue.getValue(), sliderWhite.getValue());

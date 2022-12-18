@@ -27,6 +27,9 @@ import javax.swing.SwingConstants;
 import javax.swing.border.LineBorder;
 import javax.swing.event.ChangeListener;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import it.usna.shellyscan.model.device.g1.modules.LightBulbRGB;
 import it.usna.shellyscan.view.util.Kelvin2RGB;
 
@@ -54,6 +57,7 @@ public class DialogEditBulbRGB extends JDialog {
 	private JLabel labelBlue = new JLabel(/*light.getBlue() + ""*/);
 	private final JPanel previewColorPanel = new JPanel();
 	private final JPanel previewWhitePanel = new JPanel();
+	private final static Logger LOG = LoggerFactory.getLogger(DialogEditBulbRGB.class);
 	
 	/**
 	 * @wbp.parser.constructor
@@ -79,9 +83,7 @@ public class DialogEditBulbRGB extends JDialog {
 
 		getContentPane().add(modePanel(light), BorderLayout.NORTH);
 		getContentPane().add(panelCard, BorderLayout.CENTER);
-		
 
-		
 		pack();
 		setLocationRelativeTo(owner);
 		adjust(light);
@@ -102,7 +104,7 @@ public class DialogEditBulbRGB extends JDialog {
 					light.setColorMode(false);
 					adjust(light);
 				} catch (IOException e1) {
-					e1.printStackTrace();
+					LOG.error("whiteButton", e1);
 				}
 				setCursor(Cursor.getDefaultCursor());
 			}
@@ -115,7 +117,7 @@ public class DialogEditBulbRGB extends JDialog {
 					light.setColorMode(true);
 					adjust(light);
 				} catch (IOException e1) {
-					e1.printStackTrace();
+					LOG.error("colorButton", e1);
 				}
 				setCursor(Cursor.getDefaultCursor());
 			}
@@ -130,7 +132,7 @@ public class DialogEditBulbRGB extends JDialog {
 				light.toggle();
 				adjust(light);
 			} catch (IOException e1) {
-				e1.printStackTrace();
+				LOG.error("switchButton", e1);
 			}
 		});
 		typePanel.add(Box.createHorizontalStrut(10));
@@ -180,7 +182,7 @@ public class DialogEditBulbRGB extends JDialog {
 					light.setBrightness(sliderBrightness.getValue());
 					adjust(light);
 				} catch (IOException e1) {
-					e1.printStackTrace();
+					LOG.error("sliderBrightness", e1);
 				}
 			} else {
 				adjustBrightness(sliderBrightness.getValue());
@@ -218,7 +220,7 @@ public class DialogEditBulbRGB extends JDialog {
 					light.setTemp(sliderTemp.getValue());
 					adjust(light);
 				} catch (IOException e1) {
-					e1.printStackTrace();
+					LOG.error("sliderTemp", e1);
 				}
 			} else {
 				adjustLightTemp(sliderTemp.getValue());
@@ -279,7 +281,7 @@ public class DialogEditBulbRGB extends JDialog {
 					light.setGain(sliderGain.getValue());
 					adjust(light);
 				} catch (IOException e1) {
-					e1.printStackTrace();
+					LOG.error("sliderGain", e1);
 				}
 			} else {
 				adjustGain(sliderGain.getValue());
@@ -383,7 +385,7 @@ public class DialogEditBulbRGB extends JDialog {
 					light.setColor(sliderRed.getValue(), sliderGreen.getValue(), sliderBlue.getValue()/*, light.getWhite()*/);
 					adjust(light);
 				} catch (IOException e1) {
-					e1.printStackTrace();
+					LOG.error("slideColor", e1);
 				}
 			} else {
 				adjustLightRGB(sliderRed.getValue(), sliderGreen.getValue(), sliderBlue.getValue());
