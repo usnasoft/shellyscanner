@@ -28,11 +28,11 @@ public class DialogEditRGB extends JDialog {
 	private static final long serialVersionUID = 1L;
 	
 	private JToggleButton switchButton;
-	private JSlider sliderGain = new JSlider(0, 100/*, light.getGain()*/);
-	private JSlider sliderRed = new JSlider(0, 255/*, light.getRed()*/);
-	private JSlider sliderGreen = new JSlider(0, 255/*, light.getGreen()*/);
-	private JSlider sliderBlue = new JSlider(0, 255/*, light.getBlue()*/);
-	private JSlider sliderWhite = new JSlider(0, 255);
+	private JSlider sliderGain;
+	private JSlider sliderRed;
+	private JSlider sliderGreen;
+	private JSlider sliderBlue;
+	private JSlider sliderWhite;
 	private JLabel labelGain = new JLabel(/*light.getBrightness() + ""*/);
 	private JLabel labelRed = new JLabel(/*light.getRed() + ""*/);
 	private JLabel labelGreen = new JLabel(/*light.getGreen() + ""*/);
@@ -47,6 +47,12 @@ public class DialogEditRGB extends JDialog {
 		super(owner, light.getLabel(), Dialog.ModalityType.MODELESS);
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		getContentPane().setLayout(new BorderLayout(0, 10));
+		
+		sliderGain = new JSlider(0, 100, light.getGain()); // set sliders value before "addChangeListener" to avoid call on initial change
+		sliderRed = new JSlider(0, 255, light.getRed());
+		sliderGreen = new JSlider(0, 255, light.getGreen());
+		sliderBlue = new JSlider(0, 255, light.getBlue());
+		sliderWhite = new JSlider(0, 255, light.getWhite());
 
 		JPanel colorPanel = pColor(light);
 

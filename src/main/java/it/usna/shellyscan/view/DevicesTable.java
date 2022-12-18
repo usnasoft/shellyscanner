@@ -437,6 +437,7 @@ public class DevicesTable extends ExTooltipTable {
 					row[DevicesTable.COL_COMMAND_IDX] = command = ((LightBulbRGBCommander)d).getLight(0);
 //					row[DevicesTable.COL_COMMAND_IDX] = new Thermostat((AbstractG1Device)d); // test
 //					row[DevicesTable.COL_COMMAND_IDX] = new LightWhite[] {new LightWhite((AbstractG1Device)d, "", 0), new LightWhite((AbstractG1Device)d, "", 1), new LightWhite((AbstractG1Device)d, "", 2)}; // test
+//					row[DevicesTable.COL_COMMAND_IDX] = new LightRGBW((AbstractG1Device)d, 0); // test
 				} else if(d instanceof RGBWCommander && ((RGBWCommander)d).getColorCount() > 0) {
 					row[DevicesTable.COL_COMMAND_IDX] = command = ((RGBWCommander)d).getColor(0);
 				} else if(d instanceof WhiteCommander && ((WhiteCommander)d).getWhiteCount() > 1) {

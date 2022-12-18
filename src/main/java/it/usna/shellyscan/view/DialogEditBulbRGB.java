@@ -39,15 +39,15 @@ public class DialogEditBulbRGB extends JDialog {
 	private CardLayout cards = new CardLayout(0, 0);
 	private JPanel panelCard = new JPanel(cards);
 	
-	private JSlider sliderBrightness = new JSlider(0, 100/*, light.getBrightness()*/);
-	private JSlider sliderTemp = new JSlider(LightBulbRGB.MIN_TEMP, LightBulbRGB.MAX_TEMP/*, light.getTemp()*/);
+	private JSlider sliderBrightness;
+	private JSlider sliderTemp;
 	private JLabel labelBrightness = new JLabel(/*light.getBrightness() + ""*/);
 	private JLabel labelTemp = new JLabel(/*light.getTemp() + ""*/);
 	
-	private JSlider sliderGain = new JSlider(0, 100/*, light.getGain()*/);
-	private JSlider sliderRed = new JSlider(0, 255/*, light.getRed()*/);
-	private JSlider sliderGreen = new JSlider(0, 255/*, light.getGreen()*/);
-	private JSlider sliderBlue = new JSlider(0, 255/*, light.getBlue()*/);
+	private JSlider sliderGain;
+	private JSlider sliderRed;
+	private JSlider sliderGreen;
+	private JSlider sliderBlue;
 	private JLabel labelGain = new JLabel(/*light.getBrightness() + ""*/);
 	private JLabel labelRed = new JLabel(/*light.getRed() + ""*/);
 	private JLabel labelGreen = new JLabel(/*light.getGreen() + ""*/);
@@ -63,6 +63,13 @@ public class DialogEditBulbRGB extends JDialog {
 //		this.setSize(350, 210);
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		getContentPane().setLayout(new BorderLayout(0, 10));
+		
+		sliderBrightness = new JSlider(0, 100, light.getBrightness()); // set sliders value before "addChangeListener" to avoid call on initial change
+		sliderTemp = new JSlider(LightBulbRGB.MIN_TEMP, LightBulbRGB.MAX_TEMP, light.getTemp());
+		sliderGain = new JSlider(0, 100, light.getGain());
+		sliderRed = new JSlider(0, 255, light.getRed());
+		sliderGreen = new JSlider(0, 255, light.getGreen());
+		sliderBlue = new JSlider(0, 255, light.getBlue());
 
 		JPanel colorPanel = pColor(light);
 		panelCard.add(colorPanel, "ColorPanel");
@@ -72,6 +79,8 @@ public class DialogEditBulbRGB extends JDialog {
 
 		getContentPane().add(modePanel(light), BorderLayout.NORTH);
 		getContentPane().add(panelCard, BorderLayout.CENTER);
+		
+
 		
 		pack();
 		setLocationRelativeTo(owner);

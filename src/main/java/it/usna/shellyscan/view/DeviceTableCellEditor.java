@@ -341,7 +341,7 @@ public class DeviceTableCellEditor extends AbstractCellEditor implements TableCe
 						cancelCellEditing();
 					}
 				}
-			} catch (IOException ex) {
+			} catch (/*IO*/Exception ex) {
 				Main.errorMsg(ex);
 			}
 		});
@@ -351,7 +351,7 @@ public class DeviceTableCellEditor extends AbstractCellEditor implements TableCe
 					((Thermostat)edited).targetTempUp(0.5f);
 					cancelCellEditing();
 				}
-			} catch (IOException ex) {
+			} catch (/*IO*/Exception ex) {
 				Main.errorMsg(ex);
 			}
 		});
@@ -361,7 +361,7 @@ public class DeviceTableCellEditor extends AbstractCellEditor implements TableCe
 					((Thermostat)edited).targetTempDown(0.5f);
 					cancelCellEditing();
 				}
-			} catch (IOException ex) {
+			} catch (/*IO*/Exception ex) {
 				Main.errorMsg(ex);
 			}
 		});

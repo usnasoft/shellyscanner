@@ -102,7 +102,7 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 		lightRGBSouthPanel.setOpaque(false);
 		
 		// RGBW
-		colorRGBButton.setBorder(/*new EmptyBorder(BUTTON_MARGIN_V, BUTTON_MARGIN_H, BUTTON_MARGIN_V, BUTTON_MARGIN_H)*/BUTTON_BORDERS);
+		colorRGBButton.setBorder(BUTTON_BORDERS);
 		colorRGBPanel.add(colorRGBLabel, BorderLayout.CENTER);
 		colorRGBPanel.add(colorRGBButton, BorderLayout.EAST);
 		JPanel colorRGBSlidersPanel = new JPanel();
