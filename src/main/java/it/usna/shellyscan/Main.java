@@ -27,7 +27,7 @@ import it.usna.util.AppProperties;
 
 public class Main {
 	public final static String APP_NAME = "Shelly Scanner";
-	public final static String VERSION = "0.8.8 test_7";
+	public final static String VERSION = "0.8.8 beta";
 	public final static String ICON = "/images/ShSc24.png";
 	public final static String BACKUP_FILE_EXT = "sbk";
 	
@@ -295,6 +295,8 @@ public class Main {
 //0.8.8
 // TRV
 // ultima connessione (tooltip off-line)
+// edit rgbw2 white
+//
 
 // grafici
 // archivio (additivo) dispositivi collegati opzionalmente caricabile (con eventuale default da settings)

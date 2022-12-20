@@ -13,10 +13,12 @@ import java.awt.Insets;
 import java.awt.Window;
 import java.io.IOException;
 
+import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -58,10 +60,10 @@ public class DialogEditBulbRGB extends JDialog {
 	private final JPanel previewColorPanel = new JPanel();
 	private final JPanel previewWhitePanel = new JPanel();
 	private final static Logger LOG = LoggerFactory.getLogger(DialogEditBulbRGB.class);
+	private final JButton k3000 = new JButton("3000K");
+	private final JButton k4500 = new JButton("4500K");
+	private final JButton k6000 = new JButton("6000K");
 	
-	/**
-	 * @wbp.parser.constructor
-	 */
 	public DialogEditBulbRGB(final Window owner, LightBulbRGB light) {
 		super(owner, light.getLabel(), Dialog.ModalityType.MODELESS);
 //		this.setSize(350, 210);
@@ -149,13 +151,16 @@ public class DialogEditBulbRGB extends JDialog {
 		return typePanel;
 	}
 	
+	/**
+     * @wbp.parser.entryPoint
+     */
 	private JPanel pWhite(LightBulbRGB light) {
 		JPanel panelWhite = new JPanel();
 		GridBagLayout gbl_panelWhite = new GridBagLayout();
 		gbl_panelWhite.columnWidths = new int[] {10, 0, 0, 10};
-		gbl_panelWhite.rowHeights = new int[] {0, 0, 0, 40};
-		gbl_panelWhite.columnWeights = new double[]{0.0, 0.0, 0.0, 1.0};
-		gbl_panelWhite.rowWeights = new double[]{0.0, 0.0, 1.0, Double.MIN_VALUE};
+		gbl_panelWhite.rowHeights = new int[] {0, 0, 0, 0, 40};
+		gbl_panelWhite.columnWeights = new double[]{1.0, 0.0, 0.0, 1.0};
+		gbl_panelWhite.rowWeights = new double[]{0.0, 0.0, 1.0, 1.0, Double.MIN_VALUE};
 		panelWhite.setLayout(gbl_panelWhite);
 		
 		JLabel lblNewLabel = new JLabel(LABELS.getString("labelBrightness"));
@@ -235,11 +240,34 @@ public class DialogEditBulbRGB extends JDialog {
 		gbc_slider_1.gridy = 1;
 		panelWhite.add(sliderTemp, gbc_slider_1);
 		
+		JPanel kbuttonsPanel = new JPanel();
+		GridBagConstraints gbc_panel = new GridBagConstraints();
+		gbc_panel.gridwidth = 4;
+		gbc_panel.insets = new Insets(0, 0, 5, 5);
+		gbc_panel.fill = GridBagConstraints.BOTH;
+		gbc_panel.gridx = 0;
+		gbc_panel.gridy = 2;
+		panelWhite.add(kbuttonsPanel, gbc_panel);
+		
+		k3000.setBackground(Kelvin2RGB.kelvinToColor(3000));
+		k4500.setBackground(Kelvin2RGB.kelvinToColor(4500));
+		k6000.setBackground(Kelvin2RGB.kelvinToColor(6000));
+		k3000.setBorder(BorderFactory.createEmptyBorder(4, 7, 4, 7));
+		k4500.setBorder(BorderFactory.createEmptyBorder(4, 7, 4, 7));
+		k6000.setBorder(BorderFactory.createEmptyBorder(4, 7, 4, 7));
+		kbuttonsPanel.add(k3000);
+		kbuttonsPanel.add(k4500);
+		kbuttonsPanel.add(k6000);
+		k3000.addActionListener(e -> adjustLightTemp(3000)); // adjustLightTemp change slider value -> slider event change device setting
+		k4500.addActionListener(e -> adjustLightTemp(4500));
+		k6000.addActionListener(e -> adjustLightTemp(6000));
+		
 		GridBagConstraints gbc_previewWhitePanel = new GridBagConstraints();
-		gbc_previewWhitePanel.insets = new Insets(0, 10, 5, 10);
+		gbc_previewWhitePanel.gridwidth = 4;
+		gbc_previewWhitePanel.insets = new Insets(0, 10, 0, 10);
 		gbc_previewWhitePanel.fill = GridBagConstraints.BOTH;
-		gbc_previewWhitePanel.gridx = 3;
-		gbc_previewWhitePanel.gridy = 2;
+		gbc_previewWhitePanel.gridx = 0;
+		gbc_previewWhitePanel.gridy = 3;
 		previewWhitePanel.setBorder(new LineBorder(new Color(0, 0, 0), 1, true));
 		panelWhite.add(previewWhitePanel, gbc_previewWhitePanel);
 		return panelWhite;
@@ -426,7 +454,7 @@ public class DialogEditBulbRGB extends JDialog {
 	private void adjustLightTemp(int temp) {
 		sliderTemp.setValue(temp);
 		labelTemp.setText(temp + "");
-		previewWhitePanel.setBackground(Kelvin2RGB.getRGBFromK(temp));
+		previewWhitePanel.setBackground(Kelvin2RGB.kelvinToColor(temp));
 	}
 	
 	private void adjustGain(int g) {

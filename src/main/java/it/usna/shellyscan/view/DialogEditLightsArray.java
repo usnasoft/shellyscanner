@@ -59,6 +59,9 @@ public class DialogEditLightsArray extends JDialog {
 		onButton.setBorder(BorderFactory.createEmptyBorder(0, 2, 0, 2));
 		offButton.setContentAreaFilled(false);
 		onButton.setContentAreaFilled(false);
+		
+		JLabel lblNewLabel = new JLabel(LABELS.getString("dlgELAAllChannels"));
+		panel.add(lblNewLabel);
 		panel.add(offButton);
 		panel.add(onButton);
 		offButton.addActionListener(e -> {
