@@ -31,6 +31,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
+import it.usna.shellyscan.model.device.ShellyUnmanagedDevice;
 import it.usna.util.UsnaObservable;
 
 public class Devices extends UsnaObservable<Devices.EventType, Integer> {
@@ -224,7 +225,9 @@ public class Devices extends UsnaObservable<Devices.EventType, Integer> {
 						d.refreshSettings();
 						Thread.sleep(MULTI_QUERY_DELAY);
 						d.refreshStatus();
-					} catch (Exception e) {
+					} catch (RuntimeException e) {
+						LOG.error("Unexpected on refresh", e);
+					} catch (IOException | InterruptedException e) {
 						if(d.getStatus() == Status.ERROR) {
 							LOG.error("Unexpected on refresh", e);
 						} else {
@@ -296,10 +299,12 @@ public class Devices extends UsnaObservable<Devices.EventType, Integer> {
 				synchronized(devices) {
 					int ind;
 					if((ind = devices.indexOf(d)) >= 0) {
-						refreshProcess.get(ind).cancel(true);
-						devices.set(ind, d);
-						fireEvent(EventType.UPDATE, ind);
-						refreshProcess.set(ind, schedureRefresh(d, ind, refreshInterval, refreshTics));
+						if(d instanceof ShellyUnmanagedDevice == false || devices.get(ind) instanceof ShellyUnmanagedDevice) { // Do not replace device if was recocnized and now is not
+							refreshProcess.get(ind).cancel(true);
+							devices.set(ind, d);
+							fireEvent(EventType.UPDATE, ind);
+							refreshProcess.set(ind, schedureRefresh(d, ind, refreshInterval, refreshTics));
+						}
 					} else {
 						final int idx = devices.size();
 						devices.add(d);

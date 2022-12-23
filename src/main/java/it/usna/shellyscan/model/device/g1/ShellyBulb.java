@@ -26,6 +26,7 @@ public class ShellyBulb extends AbstractG1Device implements LightBulbRGBCommande
 		JsonNode settings = getJSON("/settings");
 		fillOnce(settings);
 		fillSettings(settings);
+		try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e) {}
 		fillStatus(getJSON("/status"));
 		
 		meters = new Meters[] {

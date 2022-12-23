@@ -49,6 +49,7 @@ import it.usna.shellyscan.model.device.g1.ShellyPlugE;
 import it.usna.shellyscan.model.device.g1.ShellyPlugS;
 import it.usna.shellyscan.model.device.g1.ShellyPlugUS;
 import it.usna.shellyscan.model.device.g1.ShellyRGBW2;
+import it.usna.shellyscan.model.device.g1.ShellyTRV;
 import it.usna.shellyscan.model.device.g1.ShellyUNI;
 import it.usna.shellyscan.model.device.g2.LoginManagerG2;
 import it.usna.shellyscan.model.device.g2.ShellyG2Unmanaged;
@@ -131,7 +132,7 @@ public class DevicesFactory {
 			case ShellyFlood.ID: return new ShellyFlood(address, credsProvider, info);
 			case ShellyHT.ID: return new ShellyHT(address, credsProvider, info);
 			case ShellyMotion.ID: return new ShellyMotion(address, credsProvider);
-//			case ShellyTRV.ID: return new ShellyTRV(address, credsProvider);
+			case ShellyTRV.ID: return new ShellyTRV(address, credsProvider);
 			default: return new ShellyG1Unmanaged(address, name, credsProvider);
 			}
 		} catch(Exception e) {

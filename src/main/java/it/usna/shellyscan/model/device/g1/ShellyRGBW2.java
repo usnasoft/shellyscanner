@@ -96,27 +96,21 @@ public class ShellyRGBW2 extends AbstractG1Device implements RGBWCommander, Whit
 		if(modeColor) {
 			if(color == null) {
 				color = new LightRGBW(this, 0);
+				white0 = white1 = white2 = white3 = null;
 			}
-			white0 = white1 = white2 = white3 = null;
 		} else {
 			JsonNode lightsSettings = settings.get("lights");
-			if(white0 == null) {
+			if(white0 == null /*|| white1 == null || white2 == null || white3 == null*/) {
 				white0 = new LightWhite(this, "/white/", 0);
+				white1 = new LightWhite(this, "/white/", 1);
+				white2 = new LightWhite(this, "/white/", 2);
+				white3 = new LightWhite(this, "/white/", 3);
+				color = null;
 			}
 			white0.fillSettings(lightsSettings.get(0));
-			if(white1 == null) {
-				white1 = new LightWhite(this, "/white/", 1);
-			}
 			white1.fillSettings(lightsSettings.get(1));
-			if(white2 == null) {
-				white2 = new LightWhite(this, "/white/", 2);
-			}
 			white2.fillSettings(lightsSettings.get(2));
-			if(white3 == null) {
-				white3 = new LightWhite(this, "/white/", 3);
-			}
 			white3.fillSettings(lightsSettings.get(3));
-			color = null;
 		}
 	}
 	
