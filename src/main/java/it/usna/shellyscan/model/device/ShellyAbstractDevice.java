@@ -7,10 +7,7 @@ import java.net.HttpURLConnection;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
-import java.time.Instant;
-import java.time.LocalDateTime;
 import java.util.Map;
-import java.util.TimeZone;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -40,7 +37,7 @@ public abstract class ShellyAbstractDevice {
 	protected int uptime;
 	protected String name;
 	protected Status status;
-	protected long lastConnection /*= LocalDateTime.now()*/;
+	protected long lastConnection = 0;
 	
 	protected final ObjectMapper jsonMapper = new ObjectMapper();
 	
@@ -176,9 +173,13 @@ public abstract class ShellyAbstractDevice {
 		return null;
 	}
 	
-	public LocalDateTime getLastTimestamp() {
-		return LocalDateTime.ofInstant(Instant.ofEpochMilli(lastConnection), TimeZone.getDefault().toZoneId());
+	public long getLastTime() {
+		return lastConnection;
 	}
+	
+//	public LocalDateTime getLastTimestamp() {
+//		return LocalDateTime.ofInstant(Instant.ofEpochMilli(lastConnection), TimeZone.getDefault().toZoneId());
+//	}
 
 	public abstract String[] getInfoRequests();
 

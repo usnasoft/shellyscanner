@@ -83,20 +83,22 @@ public class Thermostat implements DeviceModule /*, ThermostatInterface*/ {
 		setTargetTemp(Math.max(TARGET_MIN, targetTemp - delta));
 	}
 	
-//	public String restore(JsonNode data) throws IOException {
-//		return null;
-//	}
-	
-	@Override
-	public String toString() {
-		return "Prof:" + getCurrentProfile() + "; Temp:" + targetTemp;
-	}
-	
 	private void fillThermostat(JsonNode thermostat) {
 		targetTemp = (float)thermostat.get("target_t").get("value").asDouble();
 //		position = thermostat.get("pos").intValue();
 		schedule = thermostat.get("schedule").asBoolean();
 		scheduleProfile = thermostat.get("schedule_profile").asInt();
+	}
+	
+	public String restore(JsonNode data) throws IOException {
+		return parent.sendCommand("/settings/thermostats/" + INDEX + "?" +
+				AbstractG1Device.jsonNodeToURLPar(data, "temperature_offset") +
+				"&ext_t_enabled=" + data.get("ext_t").get("enabled").asBoolean());
+	}
+
+	@Override
+	public String toString() {
+		return "Prof:" + getCurrentProfile() + "; Temp:" + targetTemp;
 	}
 }
 

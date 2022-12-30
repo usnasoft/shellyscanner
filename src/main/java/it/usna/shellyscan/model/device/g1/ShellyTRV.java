@@ -3,6 +3,7 @@ package it.usna.shellyscan.model.device.g1;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.ArrayList;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.hc.client5.http.auth.CredentialsProvider;
 import org.slf4j.Logger;
@@ -10,6 +11,7 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
+import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.g1.modules.Thermostat;
 
@@ -100,13 +102,13 @@ public class ShellyTRV extends AbstractG1Device {
 	}
 
 	@Override
-	protected void restore(JsonNode settings, ArrayList<String> errors) throws IOException {
+	protected void restore(JsonNode settings, ArrayList<String> errors) throws IOException, InterruptedException {
 		JsonNode display = settings.path("display");
 		errors.add(sendCommand("/settings?child_lock=" + settings.get("child_lock").asText() +
 				"&display_brightness=" + display.get("brightness").asText() +
 				"&display_flipped=" + display.get("flipped").asText()));
-		// TODO
-		// errors.add(thermostat.restore(settings));
+		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+		errors.add(thermostat.restore(settings.get("thermostats").get(0)));
 	}
 	
 	@Override

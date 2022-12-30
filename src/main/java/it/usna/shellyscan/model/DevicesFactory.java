@@ -206,6 +206,7 @@ public class DevicesFactory {
 		} catch(IOException | RuntimeException e) {
 			return HttpURLConnection.HTTP_INTERNAL_ERROR;
 		}
+		// todo https://stackoverflow.com/questions/18108783/apache-httpclient-doesnt-set-basic-authentication-credentials
 	}
 
 	public static void setCredentialProvider(CredentialsProvider cp) {

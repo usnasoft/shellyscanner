@@ -14,8 +14,11 @@ import java.io.IOException;
 import java.io.Writer;
 import java.net.InetAddress;
 import java.net.URL;
+import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Locale;
+import java.util.TimeZone;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -405,7 +408,12 @@ public class DevicesTable extends ExTooltipTable {
 			if(d.getStatus() == Status.ON_LINE) {
 				row[DevicesTable.COL_STATUS_IDX] = ONLINE_BULLET;
 			} else if(d.getStatus() == Status.OFF_LINE) {
-				row[DevicesTable.COL_STATUS_IDX] = new ImageIcon(OFFLINEIMG, String.format(LABELS.getString("labelDevOffLIneTime"), d.getLastTimestamp()));
+				long lastOnline = d.getLastTime();
+				if(lastOnline > 0) {
+					row[DevicesTable.COL_STATUS_IDX] = new ImageIcon(OFFLINEIMG, String.format(LABELS.getString("labelDevOffLIneTime"), LocalDateTime.ofInstant(Instant.ofEpochMilli(lastOnline), TimeZone.getDefault().toZoneId())));
+				} else {
+					row[DevicesTable.COL_STATUS_IDX] = OFFLINE_BULLET;
+				}
 			} else if(d.getStatus() == Status.READING) {
 				row[DevicesTable.COL_STATUS_IDX] = UPDATING_BULLET;
 			} else if(d.getStatus() == Status.ERROR) {

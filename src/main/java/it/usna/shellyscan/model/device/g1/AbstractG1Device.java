@@ -310,7 +310,7 @@ public abstract class AbstractG1Device extends ShellyAbstractDevice {
 		return "";
 	}
 
-	protected static String jsonNodeToURLPar(JsonNode jNode, String ...pars) throws UnsupportedEncodingException {
+	public static String jsonNodeToURLPar(JsonNode jNode, String ...pars) throws UnsupportedEncodingException {
 		String res = pars[0] + "=" +  URLEncoder.encode(jNode.get(pars[0]).asText(), StandardCharsets.UTF_8.name());
 		for(int i = 1; i < pars.length; i++) {
 			JsonNode thisNode = jNode.get(pars[i]);
