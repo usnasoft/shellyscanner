@@ -112,21 +112,19 @@ public class Shelly25 extends AbstractG1Device implements RelayCommander, Roller
 		super.fillSettings(settings);
 		modeRelay = MODE_RELAY.equals(settings.get("mode").asText());
 		if(modeRelay) {
-			JsonNode ralaysSetting = settings.get("relays");
-			if(relay0 == null) {
+			if(relay0 == null /*|| relay1 == null*/) {
 				relay0 = new Relay(this, 0);
-			}
-			relay0.fillSettings(ralaysSetting.get(0));
-			if(relay1 == null) {
 				relay1 = new Relay(this, 1);
+				roller = null; // modeRelay change
 			}
+			JsonNode ralaysSetting = settings.get("relays");
+			relay0.fillSettings(ralaysSetting.get(0));
 			relay1.fillSettings(ralaysSetting.get(1));
-			roller = null; // modeRelay change
 		} else {
 			if(roller == null) {
 				roller = new Roller(this, 0);
+				relay0 = relay1 = null; // modeRelay change
 			}
-			relay0 = relay1 = null; // modeRelay change
 		}
 	}
 	

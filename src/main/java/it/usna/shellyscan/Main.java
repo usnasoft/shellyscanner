@@ -27,7 +27,7 @@ import it.usna.util.AppProperties;
 
 public class Main {
 	public final static String APP_NAME = "Shelly Scanner";
-	public final static String VERSION = "0.8.7";
+	public final static String VERSION = "0.8.8";
 	public final static String ICON = "/images/ShSc24.png";
 	public final static String BACKUP_FILE_EXT = "sbk";
 	
@@ -46,7 +46,6 @@ public class Main {
 	private final static Logger LOG = LoggerFactory.getLogger(Main.class);
 
 	public static void main(final String ... args) {
-		//System.setProperty(org.slf4j.impl.SimpleLogger.DEFAULT_LOG_LEVEL_KEY, "TRACE");
 		LOG.info(APP_NAME + " " + VERSION);
 
 		//		Package mainPackage = Main.class.getPackage();
@@ -293,7 +292,20 @@ public class Main {
 // chk table (blt, eco mode, led, AP, logs, ...)
 // mqtt specific G2 settings
 
+//0.8.8
+// TRV
+// ultima connessione (tooltip off-line)
+// edit rgbw2 white
+//
+
 // grafici
+/*
+<dependency>
+<groupId>org.jfree</groupId>
+<artifactId>jfreechart</artifactId>
+<version>1.5.3</version>
+</dependency>
+*/
 // archivio (additivo) dispositivi collegati opzionalmente caricabile (con eventuale default da settings)
 // 2.5 ottimizzazione array ralay 2.5
 // global settings: wi-fi 2 (chiedere se il dispositivo e' connesso a questo)

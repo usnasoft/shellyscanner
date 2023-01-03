@@ -22,23 +22,27 @@ import javax.swing.JToggleButton;
 import javax.swing.SwingConstants;
 import javax.swing.event.ChangeListener;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import it.usna.shellyscan.model.device.g1.modules.LightRGBW;
 
 public class DialogEditRGB extends JDialog {
 	private static final long serialVersionUID = 1L;
 	
 	private JToggleButton switchButton;
-	private JSlider sliderGain = new JSlider(0, 100/*, light.getGain()*/);
-	private JSlider sliderRed = new JSlider(0, 255/*, light.getRed()*/);
-	private JSlider sliderGreen = new JSlider(0, 255/*, light.getGreen()*/);
-	private JSlider sliderBlue = new JSlider(0, 255/*, light.getBlue()*/);
-	private JSlider sliderWhite = new JSlider(0, 255);
+	private JSlider sliderGain;
+	private JSlider sliderRed;
+	private JSlider sliderGreen;
+	private JSlider sliderBlue;
+	private JSlider sliderWhite;
 	private JLabel labelGain = new JLabel(/*light.getBrightness() + ""*/);
 	private JLabel labelRed = new JLabel(/*light.getRed() + ""*/);
 	private JLabel labelGreen = new JLabel(/*light.getGreen() + ""*/);
 	private JLabel labelBlue = new JLabel(/*light.getBlue() + ""*/);
 	private JLabel labelWhite = new JLabel(/*light.getBlue() + ""*/);
 	private final JPanel previewColorPanel = new JPanel();
+	private final static Logger LOG = LoggerFactory.getLogger(DialogEditRGB.class);
 	
 	/**
 	 * @wbp.parser.constructor
@@ -47,6 +51,12 @@ public class DialogEditRGB extends JDialog {
 		super(owner, light.getLabel(), Dialog.ModalityType.MODELESS);
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		getContentPane().setLayout(new BorderLayout(0, 10));
+		
+		sliderGain = new JSlider(0, 100, light.getGain()); // set sliders value before "addChangeListener" to avoid call on initial change
+		sliderRed = new JSlider(0, 255, light.getRed());
+		sliderGreen = new JSlider(0, 255, light.getGreen());
+		sliderBlue = new JSlider(0, 255, light.getBlue());
+		sliderWhite = new JSlider(0, 255, light.getWhite());
 
 		JPanel colorPanel = pColor(light);
 
@@ -75,7 +85,7 @@ public class DialogEditRGB extends JDialog {
 				light.toggle();
 				adjust(light);
 			} catch (IOException e1) {
-				e1.printStackTrace();
+				LOG.error("switchButton", e1);
 			}
 		});
 		typePanel.add(Box.createHorizontalGlue());
@@ -119,7 +129,7 @@ public class DialogEditRGB extends JDialog {
 					light.setGain(sliderGain.getValue());
 					adjust(light);
 				} catch (IOException e1) {
-					e1.printStackTrace();
+					LOG.error("sliderGain", e1);
 				}
 			} else {
 				adjustGain(sliderGain.getValue());
@@ -247,7 +257,7 @@ public class DialogEditRGB extends JDialog {
 					light.setColor(sliderRed.getValue(), sliderGreen.getValue(), sliderBlue.getValue(), sliderWhite.getValue());
 					adjust(light);
 				} catch (IOException e1) {
-					e1.printStackTrace();
+					LOG.error("sliderColor", e1);
 				}
 			} else {
 				adjustLightRGBW(sliderRed.getValue(), sliderGreen.getValue(), sliderBlue.getValue(), sliderWhite.getValue());

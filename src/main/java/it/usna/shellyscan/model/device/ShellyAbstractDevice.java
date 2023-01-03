@@ -37,6 +37,7 @@ public abstract class ShellyAbstractDevice {
 	protected int uptime;
 	protected String name;
 	protected Status status;
+	protected long lastConnection = 0;
 	
 	protected final ObjectMapper jsonMapper = new ObjectMapper();
 	
@@ -69,32 +70,6 @@ public abstract class ShellyAbstractDevice {
 		}
 	}
 	
-//	public JsonNode getJSON(final String command) throws IOException { //JsonProcessingException extends IOException
-//		HttpGet httpget = new HttpGet(command);
-//		int statusCode;
-//		try (CloseableHttpClient httpClient = HttpClients.createDefault(); CloseableHttpResponse response = httpClient.execute(httpHost, httpget, clientContext)) {
-//			statusCode = response./*getStatusLine().getStatusCode();*/getCode();
-//			if(statusCode == HttpURLConnection.HTTP_OK) {
-//				status = Status.ON_LINE;
-//				return jsonMapper.readTree(response.getEntity().getContent());
-//			}
-//		}  catch(SocketException | SocketTimeoutException e) {
-//			status = Status.OFF_LINE;
-//			throw e;
-//		} catch(/*JsonParseException |*/ IOException | RuntimeException e) {
-//			status = Status.ERROR;
-//			throw e;
-//		}
-//		if(statusCode == HttpURLConnection.HTTP_UNAUTHORIZED) {
-//			status = Status.NOT_LOOGGED;
-//		} else if(statusCode == HttpURLConnection.HTTP_INTERNAL_ERROR) {
-//			status = Status.ERROR;
-//		} else {
-//			status = Status.OFF_LINE;
-//		}
-//		throw new IOException("Status-" + statusCode);
-//	}
-	
 	public JsonNode getJSON(final String command) throws IOException { //JsonProcessingException extends IOException
 		HttpGet httpget = new HttpGet(command);
 		try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
@@ -117,7 +92,7 @@ public abstract class ShellyAbstractDevice {
 			status = Status.OFF_LINE;
 			throw e;
 		} catch(/*JsonParseException |*/ IOException | RuntimeException e) {
-			if(status == Status.ON_LINE) {
+			if(status == Status.ON_LINE || status == Status.READING) {
 				status = Status.ERROR;
 			}
 			throw e;
@@ -135,10 +110,6 @@ public abstract class ShellyAbstractDevice {
 	public String getMacAddress() {
 		return mac;
 	}
-
-//	public InetAddress getAddress() {
-//		return address;
-//	}
 	
 	public HttpHost getHttpHost() {
 		return httpHost;
@@ -151,14 +122,6 @@ public abstract class ShellyAbstractDevice {
 	//	public String getFw() {
 	//		return fw;
 	//	}
-	
-//	public String getSSID() {
-//		return ssid;
-//	}
-
-//	public String getIPv4Method() {
-//		return ipv4Method;
-//	}
 
 	public boolean getCloudEnabled() {
 		return cloudEnabled;
@@ -210,17 +173,12 @@ public abstract class ShellyAbstractDevice {
 		return null;
 	}
 	
-//	protected void setStatus(HttpResponse response) {
-//		int statusCode = response.getStatusLine().getStatusCode();
-//		if(statusCode == HttpURLConnection.HTTP_OK) {
-//			status = Status.ON_LINE;
-//		} else if(statusCode == HttpURLConnection.HTTP_UNAUTHORIZED) {
-//			status = Status.NOT_LOOGGED;
-//		} else if(statusCode == HttpURLConnection.HTTP_INTERNAL_ERROR) {
-//			status = Status.ON_LINE;
-//		} else {
-//			status = Status.OFF_LINE;
-//		}
+	public long getLastTime() {
+		return lastConnection;
+	}
+	
+//	public LocalDateTime getLastTimestamp() {
+//		return LocalDateTime.ofInstant(Instant.ofEpochMilli(lastConnection), TimeZone.getDefault().toZoneId());
 //	}
 
 	public abstract String[] getInfoRequests();

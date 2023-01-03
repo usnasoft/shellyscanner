@@ -52,7 +52,6 @@ public abstract class AbstractG1Device extends ShellyAbstractDevice {
 		JsonNode deviceNode = settings.get("device");
 		this.hostname = deviceNode.get("hostname").asText("");
 		this.mac = deviceNode.get("mac").asText();
-//		this.type = deviceNode.get("type").asText();
 	}
 	
 	protected void fillSettings(JsonNode settings) throws IOException {
@@ -70,6 +69,8 @@ public abstract class AbstractG1Device extends ShellyAbstractDevice {
 		this.ssid = wifi.path("ssid").asText("");
 		this.uptime = status.get("uptime").asInt();
 		this.mqttConnected = status.path("mqtt").path("connected").asBoolean();
+		
+		lastConnection = System.currentTimeMillis();
 	}
 
 //	public String sendCommand(final String command) {
@@ -119,30 +120,6 @@ public abstract class AbstractG1Device extends ShellyAbstractDevice {
 			return "Status-OFFLINE"; //Main.LABELS.getString("err_connection_offline"); //todo
 		}
 	}
-		
-//	public URLConnection getUrlConnection(String urlPart) throws IOException {
-//	//String authString = user + ":" + new String(credentials.getPassword());
-//	//String authStringEnc = Base64.getEncoder().encodeToString(authString.getBytes());
-//		final URL url = new URL("http://" + httpHost.getAddress().getHostAddress() + urlPart);
-//		URLConnection uc = url.openConnection();
-////		if(authStringEnc != null) {
-////			uc.setRequestProperty("Authorization", "Basic " + authStringEnc);
-////		}
-//		return uc;
-//	}
-//	
-//	protected void manageConnectionError(int response) {
-////try {
-////	final int response = ((HttpURLConnection)uc).getResponseCode();
-//	if(response == HttpURLConnection.HTTP_UNAUTHORIZED) {
-//		status = Status.NOT_LOOGGED;
-//	} else {
-//		status = Status.OFF_LINE;
-//	}
-////} catch(IOException ex) {
-////	status = Status.OFF_LINE;
-////}
-//}
 
 	@Override
 	public void refreshSettings() throws IOException {
@@ -333,7 +310,7 @@ public abstract class AbstractG1Device extends ShellyAbstractDevice {
 		return "";
 	}
 
-	protected static String jsonNodeToURLPar(JsonNode jNode, String ...pars) throws UnsupportedEncodingException {
+	public static String jsonNodeToURLPar(JsonNode jNode, String ...pars) throws UnsupportedEncodingException {
 		String res = pars[0] + "=" +  URLEncoder.encode(jNode.get(pars[0]).asText(), StandardCharsets.UTF_8.name());
 		for(int i = 1; i < pars.length; i++) {
 			JsonNode thisNode = jNode.get(pars[i]);

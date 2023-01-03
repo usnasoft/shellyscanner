@@ -3,6 +3,7 @@ package it.usna.shellyscan.model.device.g1;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.ArrayList;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.hc.client5.http.auth.CredentialsProvider;
 import org.slf4j.Logger;
@@ -10,6 +11,7 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
+import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.g1.modules.Thermostat;
 
@@ -19,8 +21,6 @@ public class ShellyTRV extends AbstractG1Device {
 	private final static Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.BAT, Meters.Type.T};
 	private Thermostat thermostat = new Thermostat(this);
 	private float measuredTemp;
-//	private float targetTemp;
-//	private float position;
 	private Meters[] meters;
 	protected int bat;
 
@@ -70,12 +70,11 @@ public class ShellyTRV extends AbstractG1Device {
 		return meters;
 	}
 	
-//	@Override
-//	protected void fillSettings(JsonNode settings) throws IOException {
-//		super.fillSettings(settings);
-//		JsonNode target = settings.get("thermostats").get(0).get("target_t");
-//		targetTemp = target.get("enabled").asBoolean() ? (float)target.get("value").doubleValue() : 0f;
-//	}
+	@Override
+	protected void fillSettings(JsonNode settings) throws IOException {
+		super.fillSettings(settings);
+		thermostat.fillSettings(settings.get("thermostats").get(0));
+	}
 	
 	@Override
 	protected void fillStatus(JsonNode status) throws IOException {
@@ -83,8 +82,6 @@ public class ShellyTRV extends AbstractG1Device {
 		bat = status.get("bat").get("value").asInt();
 		JsonNode therm = status.get("thermostats").get(0);
 		measuredTemp = (float)therm.get("tmp").get("value").doubleValue();
-//		position = (float)therm.get("position").doubleValue();
-//		targetTemp = (float)therm.get("target_t").path("value").doubleValue();
 		thermostat.fillStatus(therm);
 	}
 	
@@ -92,26 +89,36 @@ public class ShellyTRV extends AbstractG1Device {
 		return measuredTemp;
 	}
 	
-	public float getTargetTemp() {
-		return thermostat.getTargetTemp();
-	}
+//	public float getTargetTemp() {
+//		return thermostat.getTargetTemp();
+//	}
+//	
+//	public float getPosition() {
+//		return thermostat.getPosition();
+//	}
 	
-	public float getPosition() {
-		return thermostat.getPosition();
+	public Thermostat getThermostat() {
+		return thermostat;
 	}
 
 	@Override
-	protected void restore(JsonNode settings, ArrayList<String> errors) throws IOException {
+	protected void restore(JsonNode settings, ArrayList<String> errors) throws IOException, InterruptedException {
 		JsonNode display = settings.path("display");
 		errors.add(sendCommand("/settings?child_lock=" + settings.get("child_lock").asText() +
 				"&display_brightness=" + display.get("brightness").asText() +
 				"&display_flipped=" + display.get("flipped").asText()));
-		// TODO
-		// errors.add(thermostat.restore(settings));
+		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+		errors.add(thermostat.restore(settings.get("thermostats").get(0)));
+	}
+	
+	@Override
+	public String toString() {
+		return super.toString() + " Thermostat: " + thermostat;
 	}
 }
 
 /*
+SETTINGS
 {
 "device" : {
   "type" : "SHTRV-01",
@@ -220,7 +227,7 @@ public class ShellyTRV extends AbstractG1Device {
 } ]
 }
 
-
+STATUS
 {
 "wifi_sta" : {
   "connected" : true,

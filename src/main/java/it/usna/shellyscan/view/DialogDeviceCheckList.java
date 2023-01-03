@@ -14,7 +14,6 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.net.InetAddress;
-import java.net.SocketTimeoutException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Comparator;
@@ -42,6 +41,7 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableRowSorter;
 
+import org.apache.hc.client5.http.HttpHostConnectException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -265,7 +265,9 @@ public class DialogDeviceCheckList extends JDialog {
 					} else {
 						tModel.setRow(row, getStatusIcon(d), UtilCollecion.getExtendedHostName(d), d.getHttpHost().getAddress());
 					}
-					if(e instanceof SocketTimeoutException == false) {
+					if(e instanceof /*SocketTimeoutException*/HttpHostConnectException) {
+						LOG.debug("{}", d, e);
+					} else {
 						LOG.error("{}", d, e);
 					}
 				}

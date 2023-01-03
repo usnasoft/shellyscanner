@@ -77,6 +77,8 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 		this.ssid = wifiNode.path("ssid").asText();
 		this.uptime = status.get("sys").get("uptime").asInt();
 		this.mqttConnected = status.path("mqtt").path("connected").asBoolean();
+		
+		lastConnection = System.currentTimeMillis();
 	}
 
 	@Override
@@ -98,6 +100,11 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 	@Override
 	public void reboot() throws IOException {
 		getJSON("/rpc/Shelly.Reboot");
+	}
+	
+	public boolean needReboot() throws IOException {
+		JsonNode sysStatus = getJSON("/rpc/Sys.GetStatus");
+		return sysStatus.path("restart_required").asBoolean(false);
 	}
 	
 	@Override

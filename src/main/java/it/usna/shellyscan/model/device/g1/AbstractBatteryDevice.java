@@ -49,6 +49,7 @@ public abstract class AbstractBatteryDevice extends AbstractG1Device {
 		} else if(command.equals("/settings/actions")) {
 			this.settingsActions = val;
 		}
+		lastConnection = System.currentTimeMillis();
 	}
 	
 	@Override
