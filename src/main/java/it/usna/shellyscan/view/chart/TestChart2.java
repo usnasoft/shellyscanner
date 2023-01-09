@@ -1,5 +1,7 @@
 package it.usna.shellyscan.view.chart;
 
+import java.awt.Color;
+
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
@@ -7,60 +9,84 @@ import javax.swing.WindowConstants;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
-import org.jfree.data.category.DefaultCategoryDataset;  
+import org.jfree.chart.plot.XYPlot;
+import org.jfree.data.time.Day;
+import org.jfree.data.time.TimeSeries;
+import org.jfree.data.time.TimeSeriesCollection;
+import org.jfree.data.xy.XYDataset;  
 
 public class TestChart2 extends JFrame {
 	private static final long serialVersionUID = 1L;
 
-	public TestChart2() {
-		super("test");  
-		// Create dataset  
-		DefaultCategoryDataset dataset = createDataset();  
-		// Create chart  
-		JFreeChart chart = ChartFactory.createLineChart(  // createTimeSeriesChart - TimeSeriesCollection
-				"Site Traffic", // Chart title  
-				"Date", // X-Axis Label  
-				"Number of Visitor", // Y-Axis Label  
-				dataset  
-				);  
-
-		ChartPanel panel = new ChartPanel(chart);  
-		setContentPane(panel);  
-	}
-
-	private DefaultCategoryDataset createDataset() {  
-		String series1 = "Visitor";  
-		String series2 = "Unique Visitor";  
-
-		DefaultCategoryDataset dataset = new DefaultCategoryDataset();  
-
-		dataset.addValue(200, series1, "2016-12-19");  
-		dataset.addValue(150, series1, "2016-12-20");  
-		dataset.addValue(100, series1, "2016-12-21");  
-		dataset.addValue(210, series1, "2016-12-22");  
-		dataset.addValue(240, series1, "2016-12-23");  
-		dataset.addValue(195, series1, "2016-12-24");  
-		dataset.addValue(245, series1, "2016-12-25");  
-
-		dataset.addValue(150, series2, "2016-12-19");  
-		dataset.addValue(130, series2, "2016-12-20");  
-		dataset.addValue(95, series2, "2016-12-21");  
-		dataset.addValue(195, series2, "2016-12-22");  
-		dataset.addValue(200, series2, "2016-12-23");  
-		dataset.addValue(180, series2, "2016-12-24");  
-		dataset.addValue(230, series2, "2016-12-25");  
-
-		return dataset;  
-	}
-
-	public static void main(String[] args) {  
-		SwingUtilities.invokeLater(() -> {  
-			TestChart2 example = new TestChart2();  
-			example.setAlwaysOnTop(true);  
-			example.pack();  
-			example.setSize(600, 400);  
-			example.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);  
-			example.setVisible(true);  
-		});  
-	}  
+	 public TestChart2(String title) {  
+		    super(title);  
+		    // Create dataset  
+		    XYDataset dataset = createDataset();  
+		    // Create chart  
+		    JFreeChart chart = ChartFactory.createTimeSeriesChart(  
+		        "Time Series Chart Example", // Chart  
+		        "Date", // X-Axis Label  
+		        "Number", // Y-Axis Label  
+		        dataset);  
+		  
+		    //Changes background color  
+		    XYPlot plot = (XYPlot)chart.getPlot();  
+		    plot.setBackgroundPaint(new Color(255,228,196));  
+		      
+		    ChartPanel panel = new ChartPanel(chart);  
+		    setContentPane(panel);  
+		  }  
+		  
+		  private XYDataset createDataset() {  
+		    TimeSeriesCollection dataset = new TimeSeriesCollection();  
+		  
+		    TimeSeries series1 = new TimeSeries("Series1");  
+		    series1.add(new Day(1, 1, 2017), 50);  
+		    series1.add(new Day(2, 1, 2017), 40);  
+		    series1.add(new Day(3, 1, 2017), 45);  
+		    series1.add(new Day(4, 1, 2017), 30);  
+		    series1.add(new Day(5, 1, 2017), 50);  
+		    series1.add(new Day(6, 1, 2017), 45);  
+		    series1.add(new Day(7, 1, 2017), 60);  
+		    series1.add(new Day(8, 1, 2017), 45);  
+		    series1.add(new Day(9, 1, 2017), 55);  
+		    series1.add(new Day(10, 1, 2017), 48);  
+		    series1.add(new Day(11, 1, 2017), 60);  
+		    series1.add(new Day(12, 1, 2017), 45);  
+		    series1.add(new Day(13, 1, 2017), 65);  
+		    series1.add(new Day(14, 1, 2017), 45);  
+		    series1.add(new Day(15, 1, 2017), 55);  
+		    dataset.addSeries(series1);  
+		  
+		    TimeSeries series2 = new TimeSeries("Series2");  
+		    series2.add(new Day(1, 1, 2017), 40);  
+		    series2.add(new Day(2, 1, 2017), 35);  
+		    series2.add(new Day(3, 1, 2017), 26);  
+		    series2.add(new Day(4, 1, 2017), 45);  
+		    series2.add(new Day(5, 1, 2017), 40);  
+		    series2.add(new Day(6, 1, 2017), 35);  
+		    series2.add(new Day(7, 1, 2017), 45);  
+		    series2.add(new Day(8, 1, 2017), 48);  
+		    series2.add(new Day(9, 1, 2017), 31);  
+		    series2.add(new Day(10, 1, 2017), 32);  
+		    series2.add(new Day(11, 1, 2017), 21);  
+		    series2.add(new Day(12, 1, 2017), 35);  
+		    series2.add(new Day(13, 1, 2017), 10);  
+		    series2.add(new Day(14, 1, 2017), 25);  
+		    series2.add(new Day(15, 1, 2017), 15);  
+		    dataset.addSeries(series2);  
+		      
+		  
+		    return dataset;  
+		  }  
+		  
+		  public static void main(String[] args) {  
+		    SwingUtilities.invokeLater(() -> {  
+		    	TestChart2 example = new TestChart2("Time Series Chart");  
+		      example.setSize(800, 400);  
+		      example.setLocationRelativeTo(null);  
+		      example.setVisible(true);  
+		      example.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);  
+		    });  
+		  }
 }
