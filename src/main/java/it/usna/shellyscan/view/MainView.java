@@ -73,6 +73,7 @@ import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
 import it.usna.shellyscan.model.device.g1.AbstractG1Device;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.view.appsettings.DialogAppSettings;
+import it.usna.shellyscan.view.chart.MeasuresChart;
 import it.usna.shellyscan.view.devsettings.DialogDeviceSettings;
 import it.usna.shellyscan.view.util.Msg;
 import it.usna.swing.UsnaPopupMenu;
@@ -414,6 +415,11 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		}
 	});
 	
+	private Action chartAction = new UsnaAction(this, "/images/Stats2.png", "action_chart_tooltip", e -> {
+		List<Integer> devices = Arrays.stream(devicesTable.getSelectedRows()).mapToObj(i -> devicesTable.convertRowIndexToModel(i)).collect(Collectors.toList());
+		new MeasuresChart(this, model, devices);
+	});
+	
 	private Action appSettingsAction = new UsnaAction(this, "/images/Gear.png", "action_appsettings_tooltip", e -> {
 		if(details.isSelected()) {
 			detailedView(false);
@@ -445,7 +451,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		if(path != null) {
 			fc.setCurrentDirectory(new File(path));
 		}
-		fc.addChoosableFileFilter(new FileNameExtensionFilter(LABELS.getString("filetype_csv_desc"), "csv"));
+		fc.setFileFilter(new FileNameExtensionFilter(LABELS.getString("filetype_csv_desc"), "csv"));
 		if(fc.showSaveDialog(MainView.this) == JFileChooser.APPROVE_OPTION) {
 			File out = fc.getSelectedFile();
 			if(out.getName().contains(".") == false) {
@@ -601,6 +607,8 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		toolBar.add(settingsAction);
 		toolBar.add(scriptManagerAction);
 		toolBar.add(rebootAction);
+		toolBar.addSeparator();
+		toolBar.add(chartAction);
 		toolBar.add(Box.createHorizontalGlue());
 		toolBar.add(details);
 		toolBar.add(csvExportAction);
@@ -684,6 +692,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 				backupAction.setEnabled(selection);
 				restoreAction.setEnabled(singleSelection);
 				settingsAction.setEnabled(selection);
+				chartAction.setEnabled(selection);
 				ShellyAbstractDevice d = null;
 				if(singleSelection) {
 					d = model.get(devicesTable.convertRowIndexToModel(devicesTable.getSelectedRow()));
