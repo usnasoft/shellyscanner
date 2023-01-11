@@ -8,7 +8,6 @@ import java.awt.Toolkit;
 import java.text.NumberFormat;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import javax.swing.JButton;
@@ -38,12 +37,33 @@ import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
 import it.usna.shellyscan.view.util.UtilCollecion;
 import it.usna.util.UsnaEventListener;  
 
+// https://www.javatpoint.com/jfreechart-tutorial
 public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.EventType, Integer> {
 	private static final long serialVersionUID = 1L;
 	private final Devices model;
 	private final Map<Integer, TimeSeries> series = new HashMap<>();
+	
+	private enum ChartType {
+		INT_TEMP("dlgChartsIntTempLabel", "dlgChartsIntTempYLabel"),
+		RSSI("dlgChartsRSSILabel", "dlgChartsRSSIYLabel");
 
-	public MeasuresChart(JFrame owner, final Devices model, List<Integer> ind) {  
+		private final String yLabel;
+		private final String label;
+		
+		private ChartType(String labelID, String yLabelID) {
+			this.yLabel = LABELS.getString(yLabelID);
+			this.label = LABELS.getString(labelID);
+		}
+		
+		@Override
+		public String toString() { // combo box
+			return label;
+		}
+	}
+	
+	private ChartType currentType = ChartType.INT_TEMP;
+
+	public MeasuresChart(JFrame owner, final Devices model, int[] ind) {  
 		super(LABELS.getString("dlgChartsTitle"));
 		setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 		setIconImage(Toolkit.getDefaultToolkit().createImage(getClass().getResource(Main.ICON)));
@@ -58,10 +78,9 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 		JFreeChart chart = ChartFactory.createTimeSeriesChart(  
 				null, // Chart  
 				LABELS.getString("dlgChartsXLabel"), // X-Axis Label  
-				LABELS.getString("dlgChartsYLabel"), // Y-Axis Label  
+				"val", // Y-Axis Label  
 				dataset, true, true, false);  
 
-		// Changes background color  
 		XYPlot plot = chart.getXYPlot();
 		//		plot.setBackgroundPaint(new Color(255,255,196));
 
@@ -71,6 +90,8 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 		mainPanel.add(chartPanel, BorderLayout.CENTER);
 
 		JPanel commandPanel = new JPanel(new BorderLayout());
+		JPanel westCommandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
+		commandPanel.add(westCommandPanel, BorderLayout.WEST);
 		mainPanel.add(commandPanel, BorderLayout.SOUTH);
 
 		JButton btnClose = new JButton(LABELS.getString("dlgClose"));
@@ -93,19 +114,23 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 			else if(selected == 4) xAxis.setFixedAutoRange(1000 * 60 * 60);
 			else xAxis.setFixedAutoRange(0);
 		});
-
-		JPanel westCommandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
-		westCommandPanel.add(new JLabel(LABELS.getString("dlgChartsRangeLabel")));
+		
+		westCommandPanel.add(new JLabel(LABELS.getString("dlgChartsRangeComboLabel")));
 		westCommandPanel.add(rangeCombo);
-		commandPanel.add(westCommandPanel, BorderLayout.WEST);
-
-		for(int i: ind) {
-			String name = UtilCollecion.getDescName(model.get(i));
-			TimeSeries s = new TimeSeries(name);
-			dataset.addSeries(s);
-			series.put(i, s);
-			update(Devices.EventType.UPDATE, i);
+		westCommandPanel.add(new JLabel(LABELS.getString("dlgChartsTypeComboLabel")));
+		
+		JComboBox<ChartType> typeCombo = new JComboBox<>();
+		for(ChartType t: ChartType.values()) {
+			typeCombo.addItem(t);
 		}
+		typeCombo.addActionListener(e -> {
+			currentType = (ChartType)typeCombo.getSelectedItem();
+			initDataSet(plot.getRangeAxis(), dataset, model, ind);
+		});
+		
+		westCommandPanel.add(typeCombo);
+
+		initDataSet(plot.getRangeAxis(), dataset, model, ind);
 
 		NumberAxis yAxis = (NumberAxis)plot.getRangeAxis();
 		NumberFormat df = NumberFormat.getNumberInstance();
@@ -119,7 +144,19 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 		setLocationRelativeTo(owner);
 		setVisible(true);
 	}
-
+	
+	private void initDataSet(ValueAxis yAxis, TimeSeriesCollection dataset, final Devices model, int[] ind) {
+		dataset.removeAllSeries();
+		yAxis.setLabel(currentType.yLabel);
+		for(int i: ind) {
+			String name = UtilCollecion.getDescName(model.get(i));
+			TimeSeries s = new TimeSeries(name);
+			dataset.addSeries(s);
+			series.put(i, s);
+			update(Devices.EventType.UPDATE, i);
+		}
+	}
+	
 	@Override
 	public void dispose() {
 		model.removeListener(this);
@@ -134,8 +171,11 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 				// System.out.println(ind);
 				final ShellyAbstractDevice d = model.get(ind);
 				if(d.getStatus() == Status.ON_LINE) {
-					if(d instanceof InternalTmpHolder) {
-						ts.addOrUpdate(new Millisecond(new Date(d.getLastTime())), ((InternalTmpHolder)d).getInternalTmp());
+					final Millisecond timestamp = new Millisecond(new Date(d.getLastTime()));
+					if(currentType == ChartType.INT_TEMP && d instanceof InternalTmpHolder) {
+						ts.addOrUpdate(timestamp, ((InternalTmpHolder)d).getInternalTmp());
+					} else if(currentType == ChartType.INT_TEMP) {
+						ts.addOrUpdate(timestamp, d.getRssi());
 					}
 				}
 			});
