@@ -31,6 +31,8 @@ import org.jfree.chart.plot.XYPlot;
 import org.jfree.data.time.Millisecond;
 import org.jfree.data.time.TimeSeries;
 import org.jfree.data.time.TimeSeriesCollection;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import it.usna.shellyscan.Main;
 import it.usna.shellyscan.model.Devices;
@@ -46,6 +48,7 @@ import it.usna.util.UsnaEventListener;
 // https://www.javatpoint.com/jfreechart-tutorial
 public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.EventType, Integer> {
 	private static final long serialVersionUID = 1L;
+	private final static Logger LOG = LoggerFactory.getLogger(MeasuresChart.class);
 	private final Devices model;
 	private final Map<Integer, TimeSeries[]> seriesMap = new HashMap<>();
 
@@ -115,7 +118,7 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 		JPanel eastCommandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
 		commandPanel.add(eastCommandPanel, BorderLayout.EAST);
 		mainPanel.add(commandPanel, BorderLayout.SOUTH);
-		
+
 		JButton btnClear = new JButton(LABELS.getString("dlgChartsBtnClear"));
 		btnClear.addActionListener(e -> initDataSet(plot.getRangeAxis(), dataset, model, ind));
 		JButton btnClose = new JButton(LABELS.getString("dlgClose"));
@@ -186,10 +189,9 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 		yAxis.setLabel(currentType.yLabel);
 		for(int ind: indexes) {
 			final ShellyAbstractDevice d = model.get(ind);
-			final String name = UtilCollecion.getDescName(d);
-			
+
 			if(currentType.mType == null) {
-				TimeSeries s = new TimeSeries(name);
+				TimeSeries s = new TimeSeries(UtilCollecion.getDescName(d));
 				dataset.addSeries(s);
 				seriesMap.put(ind, new TimeSeries[] {s});
 			} else {
@@ -198,7 +200,7 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 				if(meters != null) {
 					for(int i = 0; i < meters.length; i++) {
 						if(meters[i].hasType(currentType.mType)) {
-							final String sName = temp.size() == 0 ? name : name + "-" + (i + 1);
+							final String sName = UtilCollecion.getDescName(d, i);
 							TimeSeries s = new TimeSeries(sName);
 							temp.add(s);
 							dataset.addSeries(s);
@@ -206,7 +208,7 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 					}
 				}
 				if(temp.size() == 0) {
-					dataset.addSeries(new TimeSeries(name)); // legend
+					dataset.addSeries(new TimeSeries(UtilCollecion.getDescName(d))); // legend
 				}
 				seriesMap.put(ind, temp.toArray(new TimeSeries[temp.size()]));
 			}
@@ -216,33 +218,38 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 
 	@Override
 	public void dispose() {
+		LOG.trace("closing charts");
 		model.removeListener(this);
 		super.dispose();
 	}
 
 	@Override
 	public void update(EventType mesgType, Integer ind) {
-		TimeSeries ts[];
-		if(mesgType == Devices.EventType.UPDATE && (ts = seriesMap.get(ind)) != null) {
-			SwingUtilities.invokeLater(() -> {
-				// System.out.println(ind);
-				final ShellyAbstractDevice d = model.get(ind);
-				if(d.getStatus() == Status.ON_LINE) {
-					final Millisecond timestamp = new Millisecond(new Date(d.getLastTime()));
-					Meters[] m;
-					if(currentType == ChartType.INT_TEMP && d instanceof InternalTmpHolder) {
-						ts[0].addOrUpdate(timestamp, ((InternalTmpHolder)d).getInternalTmp());
-					} else if(currentType == ChartType.RSSI) {
-						ts[0].addOrUpdate(timestamp, d.getRssi());
-					} else if(/*currentType.mType != null &&*/ (m = d.getMeters()) != null) {
-						for(int i = 0; i < m.length; i++) {
-							if(m[i].hasType(currentType.mType)) {
-								ts[i].addOrUpdate(timestamp, m[i].getValue(currentType.mType));
+		if(mesgType == Devices.EventType.UPDATE) {
+			TimeSeries ts[];
+			if((ts = seriesMap.get(ind)) != null) {
+				SwingUtilities.invokeLater(() -> {
+					// System.out.println(ind);
+					final ShellyAbstractDevice d = model.get(ind);
+					if(d.getStatus() == Status.ON_LINE) {
+						final Millisecond timestamp = new Millisecond(new Date(d.getLastTime()));
+						Meters[] m;
+						if(currentType == ChartType.INT_TEMP && d instanceof InternalTmpHolder) {
+							ts[0].addOrUpdate(timestamp, ((InternalTmpHolder)d).getInternalTmp());
+						} else if(currentType == ChartType.RSSI) {
+							ts[0].addOrUpdate(timestamp, d.getRssi());
+						} else if(/*currentType.mType != null &&*/ (m = d.getMeters()) != null) {
+							for(int i = 0; i < m.length; i++) {
+								if(m[i].hasType(currentType.mType)) {
+									ts[i].addOrUpdate(timestamp, m[i].getValue(currentType.mType));
+								}
 							}
 						}
 					}
-				}
-			});
+				});
+			}
+		} else if(mesgType == Devices.EventType.CLEAR) {
+			SwingUtilities.invokeLater(() ->dispose());
 		}
 	}  
 }
