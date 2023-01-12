@@ -7,7 +7,8 @@ public class UtilCollecion {
 	
 	public static String getDescName(ShellyAbstractDevice d) {
 		final String dName = d.getName();
-		return (dName.length() > 0 ? dName : d.getTypeName());
+//		return (dName.length() > 0 ? dName : d.getTypeName());
+		return (dName.length() > 0 ? dName : d.getHostname());
 	}
 	
 	public static String getFullName(ShellyAbstractDevice d) {

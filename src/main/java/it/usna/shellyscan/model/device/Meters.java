@@ -28,6 +28,13 @@ public abstract class Meters implements Comparable<Meters> {
 	
 	public abstract float getValue(Type t);
 	
+	public boolean hasType(Type t) {
+		for(Type type: getTypes()) {
+			if(type == t) return true;
+		}
+		return false;
+	}
+	
 	@Override
 	public int compareTo(Meters o) {
 		final Type t0 = getTypes()[0];

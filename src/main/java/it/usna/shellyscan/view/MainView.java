@@ -597,6 +597,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		toolBar.add(refreshAction);
 		toolBar.addSeparator();
 		toolBar.add(infoAction);
+		toolBar.add(chartAction);
 		toolBar.add(infoLogAction);
 		toolBar.add(checkListAction);
 		toolBar.add(browseAction);
@@ -607,8 +608,6 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		toolBar.add(settingsAction);
 		toolBar.add(scriptManagerAction);
 		toolBar.add(rebootAction);
-		toolBar.addSeparator();
-		toolBar.add(chartAction);
 		toolBar.add(Box.createHorizontalGlue());
 		toolBar.add(details);
 		toolBar.add(csvExportAction);
