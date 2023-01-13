@@ -417,7 +417,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 	
 	private Action chartAction = new UsnaAction(this, "/images/Stats2.png", "action_chart_tooltip", e -> {
 		int[] devicesInd = Arrays.stream(devicesTable.getSelectedRows()).map(i -> devicesTable.convertRowIndexToModel(i)).toArray();
-		new MeasuresChart(this, model, devicesInd);
+		new MeasuresChart(this, model, devicesInd, appProp);
 	});
 	
 	private Action appSettingsAction = new UsnaAction(this, "/images/Gear.png", "action_appsettings_tooltip", e -> {

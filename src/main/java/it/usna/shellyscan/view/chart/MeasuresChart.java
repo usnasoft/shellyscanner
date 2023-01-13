@@ -42,7 +42,9 @@ import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
 import it.usna.shellyscan.view.MainView;
+import it.usna.shellyscan.view.appsettings.DialogAppSettings;
 import it.usna.shellyscan.view.util.UtilCollecion;
+import it.usna.util.AppProperties;
 import it.usna.util.UsnaEventListener;  
 
 // https://www.javatpoint.com/jfreechart-tutorial
@@ -52,7 +54,7 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 	private final Devices model;
 	private final Map<Integer, TimeSeries[]> seriesMap = new HashMap<>();
 
-	private enum ChartType {
+	public enum ChartType {
 		INT_TEMP("dlgChartsIntTempLabel", "dlgChartsIntTempYLabel"),
 		RSSI("dlgChartsRSSILabel", "dlgChartsRSSIYLabel"),
 		P("dlgChartsAPowerLabel", "dlgChartsAPowerYLabel", Meters.Type.W),
@@ -84,9 +86,9 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 		}
 	}
 
-	private ChartType currentType = ChartType.INT_TEMP;
+	private ChartType currentType;
 
-	public MeasuresChart(JFrame owner, final Devices model, int[] ind) {  
+	public MeasuresChart(JFrame owner, final Devices model, int[] ind, AppProperties appProp) {  
 		super(LABELS.getString("dlgChartsTitle"));
 		setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 		setIconImage(Toolkit.getDefaultToolkit().createImage(getClass().getResource(Main.ICON)));
@@ -153,11 +155,22 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 			typeCombo.addItem(t);
 		}
 		typeCombo.addActionListener(e -> {
-			currentType = (ChartType)typeCombo.getSelectedItem();
+			currentType = (ChartType)typeCombo.getSelectedItem();currentType.name();
 			initDataSet(plot.getRangeAxis(), dataset, model, ind);
 		});
 
 		westCommandPanel.add(typeCombo);
+		
+		JButton btnDownload = new JButton(LABELS.getString("dlgChartsCSV"));
+		btnDownload.addActionListener(e -> ChartsUtil.download(appProp, dataset));
+		westCommandPanel.add(btnDownload);
+		
+		try {
+			this.currentType = ChartType.valueOf(appProp.getProperty(DialogAppSettings.PROP_CHARTS_START));
+		} catch (Exception e) {
+			this.currentType = ChartType.INT_TEMP;
+		}
+		typeCombo.setSelectedItem(currentType);
 
 		initDataSet(plot.getRangeAxis(), dataset, model, ind);
 
