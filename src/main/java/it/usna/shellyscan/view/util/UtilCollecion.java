@@ -27,7 +27,7 @@ public class UtilCollecion {
 	public static String getFullName(ShellyAbstractDevice d) {
 		final String dName = d.getName();
 		if(dName.length() > 0) {
-			return dName + " - " + d.getHostname() + "-" + d.getTypeName();
+			return dName + "-" + d.getHostname() + "-" + d.getTypeName();
 		} else {
 			return d.getHostname() + "-" + d.getTypeName();
 		}

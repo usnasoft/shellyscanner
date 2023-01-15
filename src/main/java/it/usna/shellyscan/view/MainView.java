@@ -287,7 +287,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 			}
 		} else if(ind.length == 1) {
 			fc.setAcceptAllFileFilterUsed(false);
-			fc.addChoosableFileFilter(new FileNameExtensionFilter(LABELS.getString("filetype_sbk_desc"), Main.BACKUP_FILE_EXT));
+			fc.setFileFilter(new FileNameExtensionFilter(LABELS.getString("filetype_sbk_desc"), Main.BACKUP_FILE_EXT));
 			ShellyAbstractDevice device = model.get(devicesTable.convertRowIndexToModel(ind[0]));
 			String fileName = device.getHostname().replaceAll("[^\\w_-]+", "_") + ".sbk";
 			fc.setSelectedFile(new File(fileName));
@@ -310,7 +310,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 				fc.setCurrentDirectory(new File(path));
 			}
 			fc.setAcceptAllFileFilterUsed(false);
-			fc.addChoosableFileFilter(new FileNameExtensionFilter(LABELS.getString("filetype_sbk_desc"), Main.BACKUP_FILE_EXT));
+			fc.setFileFilter(new FileNameExtensionFilter(LABELS.getString("filetype_sbk_desc"), Main.BACKUP_FILE_EXT));
 			final String fileName = device.getHostname().replaceAll("[^\\w_-]+", "_") + "." + Main.BACKUP_FILE_EXT;
 			fc.setSelectedFile(new File(fileName));
 			if(fc.showOpenDialog(MainView.this) == JFileChooser.APPROVE_OPTION) {

@@ -10,8 +10,11 @@ import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
+import javax.swing.BorderFactory;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
@@ -45,7 +48,8 @@ import it.usna.shellyscan.view.MainView;
 import it.usna.shellyscan.view.appsettings.DialogAppSettings;
 import it.usna.shellyscan.view.util.UtilCollecion;
 import it.usna.util.AppProperties;
-import it.usna.util.UsnaEventListener;  
+import it.usna.util.UsnaEventListener;
+import javax.swing.JToggleButton;  
 
 // https://www.javatpoint.com/jfreechart-tutorial
 public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.EventType, Integer> {
@@ -89,7 +93,7 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 	private ChartType currentType;
 
 	public MeasuresChart(JFrame owner, final Devices model, int[] ind, AppProperties appProp) {  
-		super(LABELS.getString("dlgChartsTitle"));
+		setTitle(LABELS.getString("dlgChartsTitle") + " - " + (ind.length == 1 ? UtilCollecion.getDescName(model.get(ind[0])) : ind.length));
 		setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 		setIconImage(Toolkit.getDefaultToolkit().createImage(getClass().getResource(Main.ICON)));
 		this.model = model;
@@ -107,7 +111,7 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 				dataset, true, true, false);  
 
 		XYPlot plot = chart.getXYPlot();
-		//		plot.setBackgroundPaint(new Color(255,255,196));
+		// plot.setBackgroundPaint(new Color(255,255,196));
 
 		ChartPanel chartPanel = new ChartPanel(chart);
 		chartPanel.setMouseZoomable(false);
@@ -136,15 +140,6 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 		rangeCombo.addItem(LABELS.getString("dlgChartsRange15min"));
 		rangeCombo.addItem(LABELS.getString("dlgChartsRange30min"));
 		rangeCombo.addItem(LABELS.getString("dlgChartsRange60min"));
-		rangeCombo.addActionListener(e -> {
-			int selected = rangeCombo.getSelectedIndex();
-			if(selected == 1) xAxis.setFixedAutoRange(1000 * 1 * 60);
-			else if(selected == 2) xAxis.setFixedAutoRange(1000 * 5 * 60);
-			else if(selected == 3) xAxis.setFixedAutoRange(1000 * 15 * 60);
-			else if(selected == 4) xAxis.setFixedAutoRange(1000 * 30 * 60);
-			else if(selected == 5) xAxis.setFixedAutoRange(1000 * 60 * 60);
-			else xAxis.setFixedAutoRange(0);
-		});
 
 		westCommandPanel.add(new JLabel(LABELS.getString("dlgChartsRangeComboLabel")));
 		westCommandPanel.add(rangeCombo);
@@ -155,15 +150,38 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 			typeCombo.addItem(t);
 		}
 		typeCombo.addActionListener(e -> {
-			currentType = (ChartType)typeCombo.getSelectedItem();currentType.name();
+			currentType = (ChartType)typeCombo.getSelectedItem();
 			initDataSet(plot.getRangeAxis(), dataset, model, ind);
 		});
 
 		westCommandPanel.add(typeCombo);
 		
-		JButton btnDownload = new JButton(LABELS.getString("dlgChartsCSV"));
-		btnDownload.addActionListener(e -> ChartsUtil.download(appProp, dataset));
+		JButton btnDownload = new JButton(new ImageIcon(MeasuresChart.class.getResource("/images/Download24.png")));
+		btnDownload.setContentAreaFilled(false);
+		btnDownload.setToolTipText(LABELS.getString("dlgChartsCSV"));
+		btnDownload.setBorder(BorderFactory.createEmptyBorder());
+		btnDownload.addActionListener(e -> ChartsUtil.exportCSV(this, appProp, dataset));
+		
+		JToggleButton btnPause = new JToggleButton(new ImageIcon(MeasuresChart.class.getResource("/images/PlayerPause24.png")));
+		btnPause.setSelectedIcon(new ImageIcon(MeasuresChart.class.getResource("/images/PlayerPlay24.png")));
+		btnPause.setRolloverEnabled(false);
+		btnPause.setContentAreaFilled(false);
+		btnPause.setBorder(BorderFactory.createEmptyBorder());
+		btnPause.addActionListener(e ->  {
+			if(btnPause.isSelected()) {
+				xAxis.setRange(xAxis.getRange());
+			} else {
+				setRange(xAxis, rangeCombo.getSelectedIndex());
+			}
+		});
+		
+		westCommandPanel.add(btnPause);
 		westCommandPanel.add(btnDownload);
+		
+		rangeCombo.addActionListener(e -> {
+			btnPause.setSelected(false);
+			setRange(xAxis, rangeCombo.getSelectedIndex());
+		});
 		
 		try {
 			this.currentType = ChartType.valueOf(appProp.getProperty(DialogAppSettings.PROP_CHARTS_START));
@@ -175,7 +193,7 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 		initDataSet(plot.getRangeAxis(), dataset, model, ind);
 
 		NumberAxis yAxis = (NumberAxis)plot.getRangeAxis();
-		NumberFormat df = NumberFormat.getNumberInstance();
+		NumberFormat df = NumberFormat.getNumberInstance(Locale.ENGLISH);
 		df.setMaximumFractionDigits(2);
 		df.setMinimumFractionDigits(2);
 		yAxis.setNumberFormatOverride(df);
@@ -184,17 +202,26 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 			int selected = rangeCombo.getSelectedIndex();
 			rangeCombo.setSelectedIndex(++selected >= rangeCombo.getItemCount() ? 0 : selected);
 		} , KeyStroke.getKeyStroke(KeyEvent.VK_R, MainView.SHORTCUT_KEY), JComponent.WHEN_IN_FOCUSED_WINDOW);
-
-		//		getRootPane().registerKeyboardAction(e -> {
-		//			int selected = typeCombo.getSelectedIndex();
-		//			typeCombo.setSelectedIndex(++selected >= typeCombo.getItemCount() ? 0 : selected);
-		//		} , KeyStroke.getKeyStroke(KeyEvent.VK_G, MainView.SHORTCUT_KEY), JComponent.WHEN_IN_FOCUSED_WINDOW);
+		
+		getRootPane().registerKeyboardAction(e -> {
+			btnPause.doClick();
+		} , KeyStroke.getKeyStroke(KeyEvent.VK_P, MainView.SHORTCUT_KEY), JComponent.WHEN_IN_FOCUSED_WINDOW);
 
 		model.addListener(this);
 
 		setSize(800, 460);
 		setLocationRelativeTo(owner);
 		setVisible(true);
+	}
+	
+	private static void setRange(ValueAxis xAxis, int selected) {
+		if(selected == 1) xAxis.setFixedAutoRange(1000 * 1 * 60);
+		else if(selected == 2) xAxis.setFixedAutoRange(1000 * 5 * 60);
+		else if(selected == 3) xAxis.setFixedAutoRange(1000 * 15 * 60);
+		else if(selected == 4) xAxis.setFixedAutoRange(1000 * 30 * 60);
+		else if(selected == 5) xAxis.setFixedAutoRange(1000 * 60 * 60);
+		else xAxis.setFixedAutoRange(0);
+		xAxis.setAutoRange(true);
 	}
 
 	private void initDataSet(ValueAxis yAxis, TimeSeriesCollection dataset, final Devices model, int[] indexes) {
@@ -262,7 +289,7 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 				});
 			}
 		} else if(mesgType == Devices.EventType.CLEAR) {
-			SwingUtilities.invokeLater(() ->dispose());
+			SwingUtilities.invokeLater(() -> dispose());
 		}
 	}  
 }

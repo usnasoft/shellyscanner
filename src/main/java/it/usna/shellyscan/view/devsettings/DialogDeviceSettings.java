@@ -36,17 +36,13 @@ public class DialogDeviceSettings extends JDialog {
 
 	public DialogDeviceSettings(final MainView owner, Devices model, List<ShellyAbstractDevice> devices) {
 		super(owner, false);
-		int numDev = devices.size();
-		if(numDev > 1) {
-			setTitle(String.format(LABELS.getString("dlgSetTitle"), numDev + ""));
-		} else {
-			setTitle(String.format(LABELS.getString("dlgSetTitle"), UtilCollecion.getDescName(devices.get(0))));
-		}
+		setTitle(LABELS.getString("dlgSetTitle") + " - " + (devices.size() == 1 ? UtilCollecion.getDescName(devices.get(0)) : devices.size()));
+		
 		BorderLayout borderLayout = (BorderLayout) getContentPane().getLayout();
 		borderLayout.setVgap(5);
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 
-		this.setSize(580, 420);
+		this.setSize(590, 420);
 		setLocationRelativeTo(owner);
 
 		JPanel panel_1 = new JPanel();
