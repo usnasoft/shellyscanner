@@ -239,9 +239,9 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 			rangeCombo.setSelectedIndex(++selected >= rangeCombo.getItemCount() ? 0 : selected);
 		} , KeyStroke.getKeyStroke(KeyEvent.VK_R, MainView.SHORTCUT_KEY), JComponent.WHEN_IN_FOCUSED_WINDOW);
 
-		getRootPane().registerKeyboardAction(e -> {
-			btnPause.doClick();
-		} , KeyStroke.getKeyStroke(KeyEvent.VK_P, MainView.SHORTCUT_KEY), JComponent.WHEN_IN_FOCUSED_WINDOW);
+		getRootPane().registerKeyboardAction(e -> btnPause.doClick(), KeyStroke.getKeyStroke(KeyEvent.VK_P, MainView.SHORTCUT_KEY), JComponent.WHEN_IN_FOCUSED_WINDOW);
+		
+		getRootPane().registerKeyboardAction(e -> chartPanel.doCopy(), KeyStroke.getKeyStroke(KeyEvent.VK_C, MainView.SHORTCUT_KEY), JComponent.WHEN_IN_FOCUSED_WINDOW);
 
 		model.addListener(this);
 
@@ -257,7 +257,6 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 		else if(selected == 4) xAxis.setFixedAutoRange(1000 * 30 * 60);
 		else if(selected == 5) xAxis.setFixedAutoRange(1000 * 60 * 60);
 		else xAxis.setFixedAutoRange(0); // selected == 0
-		//restoreAutoRangeBounds()
 		xAxis.setAutoRange(true);
 	}
 
