@@ -302,6 +302,8 @@ public class Main {
 // V on 2.5
 
 // TODO
+// https://docs.oracle.com/javase/8/docs/api/javax/security/auth/callback/CallbackHandler.html
+// https://www.baeldung.com/java-authentication-authorization-service
 // archivio (additivo) dispositivi collegati opzionalmente caricabile (con eventuale default da settings)
 // 2.5 ottimizzazione array ralay 2.5
 // global settings: wi-fi 2 (chiedere se il dispositivo e' connesso a questo)

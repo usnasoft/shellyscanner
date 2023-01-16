@@ -6,6 +6,8 @@ import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.Toolkit;
 import java.awt.event.KeyEvent;
+import java.io.File;
+import java.io.IOException;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -18,12 +20,16 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JToggleButton;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
@@ -31,6 +37,7 @@ import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.axis.ValueAxis;
 import org.jfree.chart.plot.XYPlot;
+import org.jfree.data.time.DateRange;
 import org.jfree.data.time.Millisecond;
 import org.jfree.data.time.TimeSeries;
 import org.jfree.data.time.TimeSeriesCollection;
@@ -48,13 +55,17 @@ import it.usna.shellyscan.view.MainView;
 import it.usna.shellyscan.view.appsettings.DialogAppSettings;
 import it.usna.shellyscan.view.util.UtilCollecion;
 import it.usna.util.AppProperties;
-import it.usna.util.UsnaEventListener;
-import javax.swing.JToggleButton;  
+import it.usna.util.UsnaEventListener;  
 
 // https://www.javatpoint.com/jfreechart-tutorial
 public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.EventType, Integer> {
 	private static final long serialVersionUID = 1L;
 	private final static Logger LOG = LoggerFactory.getLogger(MeasuresChart.class);
+	protected static NumberFormat NF = NumberFormat.getNumberInstance(Locale.ENGLISH);
+	static {
+		NF.setMaximumFractionDigits(2);
+		NF.setMinimumFractionDigits(2);
+	}
 	private final Devices model;
 	private final Map<Integer, TimeSeries[]> seriesMap = new HashMap<>();
 
@@ -115,6 +126,8 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 
 		ChartPanel chartPanel = new ChartPanel(chart);
 		chartPanel.setMouseZoomable(false);
+		chartPanel.setMouseWheelEnabled(true); // ?
+		chartPanel.setVerticalAxisTrace(true); // ?
 
 		mainPanel.add(chartPanel, BorderLayout.CENTER);
 
@@ -155,13 +168,12 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 		});
 
 		westCommandPanel.add(typeCombo);
-		
+
 		JButton btnDownload = new JButton(new ImageIcon(MeasuresChart.class.getResource("/images/Download24.png")));
 		btnDownload.setContentAreaFilled(false);
 		btnDownload.setToolTipText(LABELS.getString("dlgChartsCSV"));
 		btnDownload.setBorder(BorderFactory.createEmptyBorder());
-		btnDownload.addActionListener(e -> ChartsUtil.exportCSV(this, appProp, dataset));
-		
+
 		JToggleButton btnPause = new JToggleButton(new ImageIcon(MeasuresChart.class.getResource("/images/PlayerPause24.png")));
 		btnPause.setSelectedIcon(new ImageIcon(MeasuresChart.class.getResource("/images/PlayerPlay24.png")));
 		btnPause.setRolloverEnabled(false);
@@ -174,15 +186,38 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 				setRange(xAxis, rangeCombo.getSelectedIndex());
 			}
 		});
-		
+
 		westCommandPanel.add(btnPause);
 		westCommandPanel.add(btnDownload);
-		
+
 		rangeCombo.addActionListener(e -> {
 			btnPause.setSelected(false);
 			setRange(xAxis, rangeCombo.getSelectedIndex());
 		});
-		
+
+		btnDownload.addActionListener(e -> {
+			try {
+				final JFileChooser fc = new JFileChooser();
+				final String path = appProp.getProperty("LAST_PATH");
+				if(path != null) {
+					fc.setCurrentDirectory(new File(path));
+				}
+				fc.setFileFilter(new FileNameExtensionFilter(LABELS.getString("filetype_csv_desc"), "csv"));
+				if(fc.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
+					File out = fc.getSelectedFile();
+					if(out.getName().contains(".") == false) {
+						out = new File(out.getParentFile(), out.getName() + ".csv");
+					}
+					TimeChartsExporter exp = new TimeChartsExporter(dataset);
+					exp.exportAsCSV(out, appProp.getProperty(DialogAppSettings.PROP_CSV_SEPARATOR), btnPause.isSelected() ? (DateRange)xAxis.getRange() : null);
+					appProp.setProperty("LAST_PATH", fc.getCurrentDirectory().getPath());
+					JOptionPane.showMessageDialog(this, LABELS.getString("msgFileSaved"), Main.APP_NAME, JOptionPane.INFORMATION_MESSAGE);
+				}
+			} catch (IOException ex) {
+				Main.errorMsg(ex);
+			}
+		});
+
 		try {
 			this.currentType = ChartType.valueOf(appProp.getProperty(DialogAppSettings.PROP_CHARTS_START));
 		} catch (Exception e) {
@@ -193,16 +228,13 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 		initDataSet(plot.getRangeAxis(), dataset, model, ind);
 
 		NumberAxis yAxis = (NumberAxis)plot.getRangeAxis();
-		NumberFormat df = NumberFormat.getNumberInstance(Locale.ENGLISH);
-		df.setMaximumFractionDigits(2);
-		df.setMinimumFractionDigits(2);
-		yAxis.setNumberFormatOverride(df);
+		yAxis.setNumberFormatOverride(NF);
 
 		getRootPane().registerKeyboardAction(e -> {
 			int selected = rangeCombo.getSelectedIndex();
 			rangeCombo.setSelectedIndex(++selected >= rangeCombo.getItemCount() ? 0 : selected);
 		} , KeyStroke.getKeyStroke(KeyEvent.VK_R, MainView.SHORTCUT_KEY), JComponent.WHEN_IN_FOCUSED_WINDOW);
-		
+
 		getRootPane().registerKeyboardAction(e -> {
 			btnPause.doClick();
 		} , KeyStroke.getKeyStroke(KeyEvent.VK_P, MainView.SHORTCUT_KEY), JComponent.WHEN_IN_FOCUSED_WINDOW);
@@ -213,14 +245,15 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 		setLocationRelativeTo(owner);
 		setVisible(true);
 	}
-	
+
 	private static void setRange(ValueAxis xAxis, int selected) {
 		if(selected == 1) xAxis.setFixedAutoRange(1000 * 1 * 60);
 		else if(selected == 2) xAxis.setFixedAutoRange(1000 * 5 * 60);
 		else if(selected == 3) xAxis.setFixedAutoRange(1000 * 15 * 60);
 		else if(selected == 4) xAxis.setFixedAutoRange(1000 * 30 * 60);
 		else if(selected == 5) xAxis.setFixedAutoRange(1000 * 60 * 60);
-		else xAxis.setFixedAutoRange(0);
+		else xAxis.setFixedAutoRange(0); // selected == 0
+		//restoreAutoRangeBounds()
 		xAxis.setAutoRange(true);
 	}
 
@@ -266,27 +299,31 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 	@Override
 	public void update(EventType mesgType, Integer ind) {
 		if(mesgType == Devices.EventType.UPDATE) {
-			TimeSeries ts[];
-			if((ts = seriesMap.get(ind)) != null) {
-				SwingUtilities.invokeLater(() -> {
-					// System.out.println(ind);
-					final ShellyAbstractDevice d = model.get(ind);
-					if(d.getStatus() == Status.ON_LINE) {
-						final Millisecond timestamp = new Millisecond(new Date(d.getLastTime()));
-						Meters[] m;
-						if(currentType == ChartType.INT_TEMP && d instanceof InternalTmpHolder) {
-							ts[0].addOrUpdate(timestamp, ((InternalTmpHolder)d).getInternalTmp());
-						} else if(currentType == ChartType.RSSI) {
-							ts[0].addOrUpdate(timestamp, d.getRssi());
-						} else if(/*currentType.mType != null &&*/ (m = d.getMeters()) != null) {
-							for(int i = 0; i < m.length; i++) {
-								if(m[i].hasType(currentType.mType)) {
-									ts[i].addOrUpdate(timestamp, m[i].getValue(currentType.mType));
+			try {
+				TimeSeries ts[];
+				if((ts = seriesMap.get(ind)) != null) {
+					SwingUtilities.invokeLater(() -> {
+						// System.out.println(ind);
+						final ShellyAbstractDevice d = model.get(ind);
+						if(d.getStatus() == Status.ON_LINE) {
+							final Millisecond timestamp = new Millisecond(new Date(d.getLastTime()));
+							Meters[] m;
+							if(currentType == ChartType.INT_TEMP && d instanceof InternalTmpHolder) {
+								ts[0].add/*OrUpdate*/(timestamp, ((InternalTmpHolder)d).getInternalTmp());
+							} else if(currentType == ChartType.RSSI) {
+								ts[0].add/*OrUpdate*/(timestamp, d.getRssi());
+							} else if(/*currentType.mType != null &&*/ (m = d.getMeters()) != null) {
+								for(int i = 0; i < m.length; i++) {
+									if(m[i].hasType(currentType.mType)) {
+										ts[i].add/*OrUpdate*/(timestamp, m[i].getValue(currentType.mType));
+									}
 								}
 							}
 						}
-					}
-				});
+					});
+				}
+			} catch (Throwable ex) {
+				LOG.error("Unexpected", ex);
 			}
 		} else if(mesgType == Devices.EventType.CLEAR) {
 			SwingUtilities.invokeLater(() -> dispose());
