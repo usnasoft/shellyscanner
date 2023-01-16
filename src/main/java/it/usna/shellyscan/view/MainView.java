@@ -14,12 +14,13 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -457,7 +458,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 			if(out.getName().contains(".") == false) {
 				out = new File(out.getParentFile(), out.getName() + ".csv");
 			}
-			try (FileWriter w = new FileWriter(out)) {
+			try (BufferedWriter w = Files.newBufferedWriter(out.toPath())) {
 				devicesTable.csvExport(w, appProp.getProperty(DialogAppSettings.PROP_CSV_SEPARATOR, DialogAppSettings.PROP_CSV_SEPARATOR_DEFAULT));
 				JOptionPane.showMessageDialog(MainView.this, LABELS.getString("msgFileSaved"), Main.APP_NAME, JOptionPane.INFORMATION_MESSAGE);
 			} catch (IOException ex) {

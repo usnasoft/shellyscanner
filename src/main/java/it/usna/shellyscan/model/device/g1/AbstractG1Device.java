@@ -99,6 +99,7 @@ public abstract class AbstractG1Device extends ShellyAbstractDevice {
 	
 	public String sendCommand(final String command) {
 		HttpGet httpget = new HttpGet(command);
+		httpget.addHeader("Accept-Charset", StandardCharsets.UTF_16.name()); // test utf16
 		try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
 			return httpClient.execute(httpHost, httpget, clientContext, response -> {
 				int statusCode = response.getCode();

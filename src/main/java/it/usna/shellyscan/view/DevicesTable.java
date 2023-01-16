@@ -10,8 +10,8 @@ import java.awt.Toolkit;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
+import java.io.BufferedWriter;
 import java.io.IOException;
-import java.io.Writer;
 import java.net.InetAddress;
 import java.net.URL;
 import java.time.Instant;
@@ -326,20 +326,22 @@ public class DevicesTable extends ExTooltipTable {
 		}
 	}
 
-	public void csvExport(Writer w, String separator) throws IOException {
+	public void csvExport(BufferedWriter w, String separator) throws IOException {
 		Stream.Builder<String> h = Stream.builder();
 		for(int col = 0; col < getColumnCount(); col++) {
 			String name = getColumnName(col);
 			h.accept(name.length() == 0 ? LABELS.getString("col_status_exp") : name); // dirty and fast
 		}
-		w.write(h.build().collect(Collectors.joining(separator)) + "\n");
+		w.write(h.build().collect(Collectors.joining(separator)));
+		w.newLine();
 
 		for(int row = 0; row < getRowCount(); row++) {
 			Stream.Builder<String> r = Stream.builder();
 			for(int col = 0; col < getColumnCount(); col++) {
 				r.accept(cellTooltipValue(getValueAt(row, col), true, row, col));
 			}
-			w.write(r.build().collect(Collectors.joining(separator)) + "\n");
+			w.write(r.build().collect(Collectors.joining(separator)));
+			w.newLine();
 		}
 	}
 

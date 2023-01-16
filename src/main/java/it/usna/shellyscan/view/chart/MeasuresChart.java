@@ -3,6 +3,7 @@ package it.usna.shellyscan.view.chart;
 import static it.usna.shellyscan.Main.LABELS;
 
 import java.awt.BorderLayout;
+import java.awt.Cursor;
 import java.awt.FlowLayout;
 import java.awt.Toolkit;
 import java.awt.event.KeyEvent;
@@ -123,11 +124,14 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 
 		XYPlot plot = chart.getXYPlot();
 		// plot.setBackgroundPaint(new Color(255,255,196));
+		
+		NumberAxis yAxis = (NumberAxis)plot.getRangeAxis();
+		yAxis.setNumberFormatOverride(NF);
 
 		ChartPanel chartPanel = new ChartPanel(chart);
 		chartPanel.setMouseZoomable(false);
-		chartPanel.setMouseWheelEnabled(true); // ?
-		chartPanel.setVerticalAxisTrace(true); // ?
+//		chartPanel.setMouseWheelEnabled(true);
+//		chartPanel.setHorizontalAxisTrace(true);
 
 		mainPanel.add(chartPanel, BorderLayout.CENTER);
 
@@ -197,6 +201,7 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 
 		btnDownload.addActionListener(e -> {
 			try {
+				setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 				final JFileChooser fc = new JFileChooser();
 				final String path = appProp.getProperty("LAST_PATH");
 				if(path != null) {
@@ -215,6 +220,8 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 				}
 			} catch (IOException ex) {
 				Main.errorMsg(ex);
+			} finally {
+				setCursor(Cursor.getDefaultCursor());
 			}
 		});
 
@@ -226,9 +233,6 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 		typeCombo.setSelectedItem(currentType);
 
 		initDataSet(plot.getRangeAxis(), dataset, model, ind);
-
-		NumberAxis yAxis = (NumberAxis)plot.getRangeAxis();
-		yAxis.setNumberFormatOverride(NF);
 
 		getRootPane().registerKeyboardAction(e -> {
 			int selected = rangeCombo.getSelectedIndex();

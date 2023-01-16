@@ -27,7 +27,8 @@ public class TimeChartsExporter {
 			@SuppressWarnings("unchecked")
 			List<TimeSeries> tsList = dataset.getSeries();
 			for(TimeSeries ts: tsList) {
-				w.write(ts.getKey().toString() + "\n");
+				w.write(ts.getKey().toString());
+				w.newLine();
 				@SuppressWarnings("unchecked")
 				List<TimeSeriesDataItem> diList = ts.getItems();
 				Stream.Builder<String> timeCollector = Stream.builder();

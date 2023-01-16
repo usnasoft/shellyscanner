@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.InetAddress;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -188,6 +189,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 	private JsonNode executeRPC(final String method, String payload) throws IOException, StreamReadException {
 		HttpPost httpPost = new HttpPost("/rpc");
 		httpPost.setEntity(new StringEntity("{\"id\":1, \"method\":\"" + method + "\", \"params\":" + payload + "}"));
+		httpPost.addHeader("Accept-Charset", StandardCharsets.UTF_16.name()); // test utf16
 		try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
 			return httpClient.execute(httpHost, httpPost, clientContext, response -> {
 				int statusCode = response./*getStatusLine().getStatusCode()*/getCode();

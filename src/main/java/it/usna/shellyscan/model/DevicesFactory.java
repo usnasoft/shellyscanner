@@ -57,6 +57,8 @@ import it.usna.shellyscan.model.device.g2.ShellyPlus1;
 import it.usna.shellyscan.model.device.g2.ShellyPlus1PM;
 import it.usna.shellyscan.model.device.g2.ShellyPlus2PM;
 import it.usna.shellyscan.model.device.g2.ShellyPlusi4;
+import it.usna.shellyscan.model.device.g2.ShellyPro2;
+import it.usna.shellyscan.model.device.g2.ShellyPro2PM;
 import it.usna.shellyscan.view.DialogAuthentication;
 
 public class DevicesFactory {
@@ -173,10 +175,14 @@ public class DevicesFactory {
 				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			}
 			switch(info.get("app").asText()) {
+			// Plus
 			case ShellyPlus1.ID: return new ShellyPlus1(address, credsProvider);
 			case ShellyPlus1PM.ID: return new ShellyPlus1PM(address, credsProvider);
 			case ShellyPlus2PM.ID: return new ShellyPlus2PM(address, credsProvider);
 			case ShellyPlusi4.ID: return new ShellyPlusi4(address, credsProvider);
+			// PRO
+			case ShellyPro2PM.ID: return new ShellyPro2PM(address, credsProvider);
+			case ShellyPro2.ID: return new ShellyPro2(address, credsProvider);
 			default: return new ShellyG2Unmanaged(address, name, credsProvider);
 			}
 		} catch(Exception e) {
@@ -213,5 +219,3 @@ public class DevicesFactory {
 		DevicesFactory.lastCredentialsProv = cp;
 	}
 }
-
-//todo si potrebbero inviare messaggi per l'autenticazione alla view
