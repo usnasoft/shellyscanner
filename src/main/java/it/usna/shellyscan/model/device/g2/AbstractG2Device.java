@@ -188,8 +188,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 
 	private JsonNode executeRPC(final String method, String payload) throws IOException, StreamReadException {
 		HttpPost httpPost = new HttpPost("/rpc");
-		httpPost.setEntity(new StringEntity("{\"id\":1, \"method\":\"" + method + "\", \"params\":" + payload + "}"));
-		httpPost.addHeader("Accept-Charset", StandardCharsets.UTF_16.name()); // test utf16
+		httpPost.setEntity(new StringEntity("{\"id\":1, \"method\":\"" + method + "\", \"params\":" + payload + "}", StandardCharsets.UTF_8));
 		try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
 			return httpClient.execute(httpHost, httpPost, clientContext, response -> {
 				int statusCode = response./*getStatusLine().getStatusCode()*/getCode();
@@ -212,7 +211,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 		
 	@Override
 	public boolean backup(final File file) throws IOException {
-		try(ZipOutputStream out = new ZipOutputStream(new FileOutputStream(file))) {
+		try(ZipOutputStream out = new ZipOutputStream(new FileOutputStream(file), StandardCharsets.UTF_8)) {
 			sectionToStream("/rpc/Shelly.GetDeviceInfo", "Shelly.GetDeviceInfo.json", out);
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			sectionToStream("/rpc/Shelly.GetConfig", "Shelly.GetConfig.json", out);
@@ -243,7 +242,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 	@Override
 	public Map<Restore, String> restoreCheck(final File file) throws IOException {
 		HashMap<Restore, String> res = new HashMap<>();
-		try (   ZipFile in = new ZipFile(file);
+		try (   ZipFile in = new ZipFile(file, StandardCharsets.UTF_8);
 				InputStream isDevInfo = in.getInputStream(in.getEntry("Shelly.GetDeviceInfo.json"));
 				InputStream isConfig = in.getInputStream(in.getEntry("Shelly.GetConfig.json"));
 				) {
@@ -298,7 +297,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 	
 	@Override
 	public final String restore(final File file, Map<Restore, String> data) throws IOException {
-		try (   ZipFile in = new ZipFile(file);
+		try (   ZipFile in = new ZipFile(file, StandardCharsets.UTF_8);
 				InputStream isDevInfo = in.getInputStream(in.getEntry("Shelly.GetDeviceInfo.json"));
 				InputStream isConfig = in.getInputStream(in.getEntry("Shelly.GetConfig.json"));
 				InputStream isSchedule = in.getInputStream(in.getEntry("Schedule.List.json"));

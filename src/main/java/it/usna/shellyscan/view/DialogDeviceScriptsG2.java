@@ -13,6 +13,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.stream.Collectors;
 import java.util.zip.ZipException;
@@ -243,7 +244,7 @@ public class DialogDeviceScriptsG2 extends JDialog {
 	private void loadCodeFromFile(File in, Script sc) {
 		try {
 			String res = null;
-			try (ZipFile inZip = new ZipFile(in)) { // backup
+			try (ZipFile inZip = new ZipFile(in, StandardCharsets.UTF_8)) { // backup
 				String[] scriptList = inZip.stream().filter(z -> z.getName().endsWith(".mjs")).map(z -> z.getName().substring(0, z.getName().length() - 4)).toArray(String[]::new);
 				if(scriptList.length > 0) {
 					Object sName = JOptionPane.showInputDialog(this, LABELS.getString("scrSelectionMsg"), LABELS.getString("scrSelectionTitle"), JOptionPane.PLAIN_MESSAGE, null, scriptList, null);
