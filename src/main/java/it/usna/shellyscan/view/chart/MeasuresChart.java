@@ -38,6 +38,7 @@ import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.axis.ValueAxis;
 import org.jfree.chart.plot.XYPlot;
+import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.data.time.DateRange;
 import org.jfree.data.time.Millisecond;
 import org.jfree.data.time.TimeSeries;
@@ -125,13 +126,17 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 		XYPlot plot = chart.getXYPlot();
 		// plot.setBackgroundPaint(new Color(255,255,196));
 		
+		// TODO
+		XYLineAndShapeRenderer renderer = (XYLineAndShapeRenderer)plot.getRenderer();
+		renderer.setDefaultShapesVisible(true);
+		
 		NumberAxis yAxis = (NumberAxis)plot.getRangeAxis();
 		yAxis.setNumberFormatOverride(NF);
 
-		ChartPanel chartPanel = new ChartPanel(chart);
-		chartPanel.setMouseZoomable(false);
+		ChartPanel chartPanel = new ChartPanel(chart, false, false, false, false, true);
+//		chartPanel.setMouseZoomable(true);
 //		chartPanel.setMouseWheelEnabled(true);
-//		chartPanel.setHorizontalAxisTrace(true);
+//		chartPanel.setPopupMenu(null);
 
 		mainPanel.add(chartPanel, BorderLayout.CENTER);
 
@@ -190,7 +195,17 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 				setRange(xAxis, rangeCombo.getSelectedIndex());
 			}
 		});
+		
+		JToggleButton btnMarks = new JToggleButton(new ImageIcon(MeasuresChart.class.getResource("/images/Card4-24.png")));
+//		btnMarks.setSelectedIcon(new ImageIcon(MeasuresChart.class.getResource("/images/Card4-24.png")));
+//		btnMarks.setRolloverEnabled(false);
+		btnMarks.setContentAreaFilled(false);
+		btnMarks.setBorder(BorderFactory.createEmptyBorder());
+		btnMarks.addActionListener(e ->  {
 
+		});
+
+		westCommandPanel.add(btnMarks);
 		westCommandPanel.add(btnPause);
 		westCommandPanel.add(btnDownload);
 
