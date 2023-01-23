@@ -17,6 +17,7 @@ import java.util.Locale;
 import java.util.Map;
 
 import javax.swing.BorderFactory;
+import javax.swing.GrayFilter;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -124,11 +125,6 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 				dataset, true, true, false);  
 
 		XYPlot plot = chart.getXYPlot();
-		// plot.setBackgroundPaint(new Color(255,255,196));
-		
-		// TODO
-		XYLineAndShapeRenderer renderer = (XYLineAndShapeRenderer)plot.getRenderer();
-		renderer.setDefaultShapesVisible(true);
 		
 		NumberAxis yAxis = (NumberAxis)plot.getRangeAxis();
 		yAxis.setNumberFormatOverride(NF);
@@ -180,14 +176,15 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 
 		JButton btnDownload = new JButton(new ImageIcon(MeasuresChart.class.getResource("/images/Download24.png")));
 		btnDownload.setContentAreaFilled(false);
-		btnDownload.setToolTipText(LABELS.getString("dlgChartsCSV"));
 		btnDownload.setBorder(BorderFactory.createEmptyBorder());
+		btnDownload.setToolTipText(LABELS.getString("dlgChartsCSVTooltip"));
 
 		JToggleButton btnPause = new JToggleButton(new ImageIcon(MeasuresChart.class.getResource("/images/PlayerPause24.png")));
 		btnPause.setSelectedIcon(new ImageIcon(MeasuresChart.class.getResource("/images/PlayerPlay24.png")));
 		btnPause.setRolloverEnabled(false);
 		btnPause.setContentAreaFilled(false);
 		btnPause.setBorder(BorderFactory.createEmptyBorder());
+		btnPause.setToolTipText(LABELS.getString("dlgChartsPauseTooltip"));
 		btnPause.addActionListener(e ->  {
 			if(btnPause.isSelected()) {
 				xAxis.setRange(xAxis.getRange());
@@ -196,13 +193,16 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 			}
 		});
 		
-		JToggleButton btnMarks = new JToggleButton(new ImageIcon(MeasuresChart.class.getResource("/images/Card4-24.png")));
-//		btnMarks.setSelectedIcon(new ImageIcon(MeasuresChart.class.getResource("/images/Card4-24.png")));
-//		btnMarks.setRolloverEnabled(false);
+		ImageIcon markerIcon = new ImageIcon(MeasuresChart.class.getResource("/images/Card4-24.png"));
+		JToggleButton btnMarks = new JToggleButton(new ImageIcon(GrayFilter.createDisabledImage(markerIcon.getImage())));
+		btnMarks.setSelectedIcon(markerIcon);
+		btnMarks.setRolloverEnabled(false);
 		btnMarks.setContentAreaFilled(false);
 		btnMarks.setBorder(BorderFactory.createEmptyBorder());
+		btnMarks.setToolTipText(LABELS.getString("dlgChartsMarkersTooltip"));
 		btnMarks.addActionListener(e ->  {
-
+			XYLineAndShapeRenderer renderer = (XYLineAndShapeRenderer)plot.getRenderer();
+			renderer.setDefaultShapesVisible(btnMarks.isSelected());
 		});
 
 		westCommandPanel.add(btnMarks);
