@@ -4,13 +4,13 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.jfree.data.time.DateRange;
+import org.jfree.data.time.RegularTimePeriod;
 import org.jfree.data.time.TimeSeries;
 import org.jfree.data.time.TimeSeriesCollection;
 import org.jfree.data.time.TimeSeriesDataItem;
@@ -31,16 +31,22 @@ public class TimeChartsExporter {
 				w.newLine();
 				@SuppressWarnings("unchecked")
 				List<TimeSeriesDataItem> diList = ts.getItems();
-				Stream.Builder<String> timeCollector = Stream.builder();
+				Stream.Builder<Long> millisCollector = Stream.builder();
+				Stream.Builder<String> dateTimeCollector = Stream.builder();
 				Stream.Builder<String> valueCollector = Stream.builder();
 				for(TimeSeriesDataItem di: diList) {
-					Date tic = di.getPeriod().getStart();
-					if(range == null || (tic.getTime() >= range.getLowerMillis() && tic.getTime() <= range.getUpperMillis())) {
-						timeCollector.accept(String.format(Locale.ENGLISH, "%1$tF %1$tT", tic));
+					RegularTimePeriod period = di.getPeriod();
+//					Date tic = di.getPeriod().getStart();
+//					if(range == null || (tic.getTime() >= range.getLowerMillis() && tic.getTime() <= range.getUpperMillis())) {
+					if(range == null || (period.getFirstMillisecond() >= range.getLowerMillis() && period.getLastMillisecond() <= range.getUpperMillis())) {
+						millisCollector.accept(period.getFirstMillisecond());
+						dateTimeCollector.accept(String.format(Locale.ENGLISH, "%1$tF %1$tT", period.getStart()));
 						valueCollector.accept(String.format(Locale.ENGLISH, "%.2f", di.getValue()));
 					}
 				}
-				w.write(timeCollector.build().collect(Collectors.joining(separator)));
+				w.write(millisCollector.build().map(m -> m.toString()).collect(Collectors.joining(separator)));
+				w.newLine();
+				w.write(dateTimeCollector.build().collect(Collectors.joining(separator)));
 				w.newLine();
 				w.write(valueCollector.build().collect(Collectors.joining(separator)));
 				w.newLine();

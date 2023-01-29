@@ -4,19 +4,20 @@ import static it.usna.shellyscan.Main.LABELS;
 
 import java.awt.BorderLayout;
 import java.awt.Cursor;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Toolkit;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
 import java.text.NumberFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
-import javax.swing.BorderFactory;
 import javax.swing.GrayFilter;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -38,6 +39,7 @@ import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.axis.ValueAxis;
+import org.jfree.chart.labels.StandardXYToolTipGenerator;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.data.time.DateRange;
@@ -115,24 +117,28 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 		JPanel mainPanel = new JPanel(new BorderLayout());
 		this.setContentPane(mainPanel);
 
-		// Create dataset  
+		// Create dataset
 		TimeSeriesCollection dataset = new TimeSeriesCollection();
-		// Create chart  
+		// Create chart
 		JFreeChart chart = ChartFactory.createTimeSeriesChart(  
 				null, // Chart  
-				LABELS.getString("dlgChartsXLabel"), // X-Axis Label  
-				"val", // Y-Axis Label  
-				dataset, true, true, false);  
-
+				LABELS.getString("dlgChartsXLabel"), // X-Axis Label
+				"val", // Y-Axis Label
+				dataset, true, true, false);
+		
 		XYPlot plot = chart.getXYPlot();
 		
 		NumberAxis yAxis = (NumberAxis)plot.getRangeAxis();
 		yAxis.setNumberFormatOverride(NF);
+		
+		XYLineAndShapeRenderer renderer = (XYLineAndShapeRenderer)plot.getRenderer();
+		renderer.setDefaultToolTipGenerator(new StandardXYToolTipGenerator("{0}: {1} - {2}", new SimpleDateFormat("HH:mm:ss.SSS"), NF));
 
 		ChartPanel chartPanel = new ChartPanel(chart, false, false, false, false, true);
+		chartPanel.setInitialDelay(0); // tootip
+		chartPanel.setDismissDelay(20_000); // tootip
 //		chartPanel.setMouseZoomable(true);
 //		chartPanel.setMouseWheelEnabled(true);
-//		chartPanel.setPopupMenu(null);
 
 		mainPanel.add(chartPanel, BorderLayout.CENTER);
 
@@ -167,23 +173,17 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 		for(ChartType t: ChartType.values()) {
 			typeCombo.addItem(t);
 		}
-		typeCombo.addActionListener(e -> {
-			currentType = (ChartType)typeCombo.getSelectedItem();
-			initDataSet(plot.getRangeAxis(), dataset, model, ind);
-		});
 
 		westCommandPanel.add(typeCombo);
 
-		JButton btnDownload = new JButton(new ImageIcon(MeasuresChart.class.getResource("/images/Download24.png")));
-		btnDownload.setContentAreaFilled(false);
-		btnDownload.setBorder(BorderFactory.createEmptyBorder());
+		JButton btnDownload = new JButton(new ImageIcon(MeasuresChart.class.getResource("/images/DownloadEmpty16.png")));
+		btnDownload.setPreferredSize(new Dimension(33, 28));
 		btnDownload.setToolTipText(LABELS.getString("dlgChartsCSVTooltip"));
 
-		JToggleButton btnPause = new JToggleButton(new ImageIcon(MeasuresChart.class.getResource("/images/PlayerPause24.png")));
-		btnPause.setSelectedIcon(new ImageIcon(MeasuresChart.class.getResource("/images/PlayerPlay24.png")));
+		JToggleButton btnPause = new JToggleButton(new ImageIcon(MeasuresChart.class.getResource("/images/Pause16.png")));
+		btnPause.setSelectedIcon(new ImageIcon(MeasuresChart.class.getResource("/images/Play16.png")));
 		btnPause.setRolloverEnabled(false);
-		btnPause.setContentAreaFilled(false);
-		btnPause.setBorder(BorderFactory.createEmptyBorder());
+		btnPause.setPreferredSize(new Dimension(33, 28));
 		btnPause.setToolTipText(LABELS.getString("dlgChartsPauseTooltip"));
 		btnPause.addActionListener(e ->  {
 			if(btnPause.isSelected()) {
@@ -193,15 +193,13 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 			}
 		});
 		
-		ImageIcon markerIcon = new ImageIcon(MeasuresChart.class.getResource("/images/Card4-24.png"));
+		ImageIcon markerIcon = new ImageIcon(MeasuresChart.class.getResource("/images/Tag16.png"));
 		JToggleButton btnMarks = new JToggleButton(new ImageIcon(GrayFilter.createDisabledImage(markerIcon.getImage())));
 		btnMarks.setSelectedIcon(markerIcon);
 		btnMarks.setRolloverEnabled(false);
-		btnMarks.setContentAreaFilled(false);
-		btnMarks.setBorder(BorderFactory.createEmptyBorder());
+		btnMarks.setPreferredSize(new Dimension(33, 28));
 		btnMarks.setToolTipText(LABELS.getString("dlgChartsMarkersTooltip"));
 		btnMarks.addActionListener(e ->  {
-			XYLineAndShapeRenderer renderer = (XYLineAndShapeRenderer)plot.getRenderer();
 			renderer.setDefaultShapesVisible(btnMarks.isSelected());
 		});
 
@@ -213,15 +211,23 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 			btnPause.setSelected(false);
 			setRange(xAxis, rangeCombo.getSelectedIndex());
 		});
+		
+		typeCombo.addActionListener(e -> {
+			currentType = (ChartType)typeCombo.getSelectedItem();
+			initDataSet(plot.getRangeAxis(), dataset, model, ind);
+			btnPause.setSelected(false);
+			xAxis.setAutoRange(true);
+//			setRange(xAxis, rangeCombo.getSelectedIndex());
+		});
 
 		btnDownload.addActionListener(e -> {
 			try {
 				setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-				final JFileChooser fc = new JFileChooser();
-				final String path = appProp.getProperty("LAST_PATH");
-				if(path != null) {
-					fc.setCurrentDirectory(new File(path));
-				}
+				final JFileChooser fc = new JFileChooser(appProp.getProperty("LAST_PATH"));
+//				final String path = appProp.getProperty("LAST_PATH");
+//				if(path != null) {
+//					fc.setCurrentDirectory(new File(path));
+//				}
 				fc.setFileFilter(new FileNameExtensionFilter(LABELS.getString("filetype_csv_desc"), "csv"));
 				if(fc.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
 					File out = fc.getSelectedFile();
@@ -327,13 +333,13 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 							final Millisecond timestamp = new Millisecond(new Date(d.getLastTime()));
 							Meters[] m;
 							if(currentType == ChartType.INT_TEMP && d instanceof InternalTmpHolder) {
-								ts[0].add/*OrUpdate*/(timestamp, ((InternalTmpHolder)d).getInternalTmp());
+								ts[0].addOrUpdate(timestamp, ((InternalTmpHolder)d).getInternalTmp());
 							} else if(currentType == ChartType.RSSI) {
-								ts[0].add/*OrUpdate*/(timestamp, d.getRssi());
+								ts[0].addOrUpdate(timestamp, d.getRssi());
 							} else if(/*currentType.mType != null &&*/ (m = d.getMeters()) != null) {
 								for(int i = 0; i < m.length; i++) {
 									if(m[i].hasType(currentType.mType)) {
-										ts[i].add/*OrUpdate*/(timestamp, m[i].getValue(currentType.mType));
+										ts[i].addOrUpdate(timestamp, m[i].getValue(currentType.mType));
 									}
 								}
 							}
