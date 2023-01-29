@@ -21,11 +21,13 @@ import it.usna.shellyscan.model.device.modules.RollerCommander;
 
 public class Shelly25 extends AbstractG1Device implements RelayCommander, RollerCommander, InternalTmpHolder {
 	public final static String ID = "SHSW-25";
+	private final static Meters.Type[] SUPPORTED_MEASURES_C1 = new Meters.Type[] {Meters.Type.W, Meters.Type.V};
 	private boolean modeRelay;
 	private Relay relay0, relay1;
 	private Roller roller;
 	private float internalTmp;
 	private float power0, power1;
+	private float voltage;
 	private Meters[] meters;
 	
 	private final static String MODE_RELAY = "relay";
@@ -39,10 +41,15 @@ public class Shelly25 extends AbstractG1Device implements RelayCommander, Roller
 		fillStatus(getJSON("/status"));
 		
 		meters = new Meters[] {
-				new MetersPower() {
+				new Meters() {
 					@Override
 					public float getValue(Type t) {
-						return power0;
+						return t == Type.V ? voltage : power0;
+					}
+
+					@Override
+					public Type[] getTypes() {
+						return SUPPORTED_MEASURES_C1;
 					}
 				},
 				new MetersPower() {
@@ -136,6 +143,7 @@ public class Shelly25 extends AbstractG1Device implements RelayCommander, Roller
 		final JsonNode meters = status.get("meters");
 		power0 = (float)meters.get(0).get("power").asDouble(0);
 		power1 = (float)meters.get(1).get("power").asDouble(0);
+		voltage = (float)status.path("voltage").asDouble();
 		if(modeRelay) {
 			JsonNode ralaysStatus = status.get("relays");
 			JsonNode ralaysInputs = status.get("inputs");

@@ -99,6 +99,7 @@ public abstract class AbstractG1Device extends ShellyAbstractDevice {
 	
 	public String sendCommand(final String command) {
 		HttpGet httpget = new HttpGet(command);
+//		httpget.addHeader("Accept-Charset", StandardCharsets.UTF_8.name());
 		try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
 			return httpClient.execute(httpHost, httpget, clientContext, response -> {
 				int statusCode = response.getCode();
@@ -165,7 +166,7 @@ public abstract class AbstractG1Device extends ShellyAbstractDevice {
 	
 	@Override
 	public boolean backup(final File file) throws IOException {
-		try(ZipOutputStream out = new ZipOutputStream(new FileOutputStream(file))) {
+		try(ZipOutputStream out = new ZipOutputStream(new FileOutputStream(file), StandardCharsets.UTF_8)) {
 			sectionToStream("/settings", "settings.json", out);
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			sectionToStream("/settings/actions", "actions.json", out);
@@ -214,7 +215,7 @@ public abstract class AbstractG1Device extends ShellyAbstractDevice {
 	
 	@Override
 	public final String restore(final File file, Map<Restore, String> data) throws IOException {
-		try (   ZipFile in = new ZipFile(file);
+		try (   ZipFile in = new ZipFile(file, StandardCharsets.UTF_8);
 				InputStream isSettings = in.getInputStream(in.getEntry("settings.json"));
 				InputStream isActions = in.getInputStream(in.getEntry("actions.json")) ) {
 			JsonNode settings = jsonMapper.readTree(isSettings);

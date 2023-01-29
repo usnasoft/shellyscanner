@@ -2,7 +2,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>it.usna</groupId>
 	<artifactId>shellyscan</artifactId>
-	<version>0.8.8</version>
+	<version>0.9.0</version>
 	<name>shellyscan</name>
 	<packaging>jar</packaging>
 
@@ -88,6 +88,11 @@
 			<groupId>org.java-websocket</groupId>
 			<artifactId>Java-WebSocket</artifactId>
 			<version>1.5.3</version>
+		</dependency>
+		<dependency>
+    		<groupId>org.jfree</groupId>
+    		<artifactId>jfreechart</artifactId>
+    		<version>1.5.4</version>
 		</dependency>
 	</dependencies>
 </project>

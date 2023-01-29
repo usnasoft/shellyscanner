@@ -27,7 +27,7 @@ import it.usna.util.AppProperties;
 
 public class Main {
 	public final static String APP_NAME = "Shelly Scanner";
-	public final static String VERSION = "0.8.8";
+	public final static String VERSION = "0.9.0";
 	public final static String ICON = "/images/ShSc24.png";
 	public final static String BACKUP_FILE_EXT = "sbk";
 	
@@ -296,16 +296,15 @@ public class Main {
 // TRV
 // ultima connessione (tooltip off-line)
 // edit rgbw2 white
-//
 
-// grafici
-/*
-<dependency>
-<groupId>org.jfree</groupId>
-<artifactId>jfreechart</artifactId>
-<version>1.5.3</version>
-</dependency>
-*/
+//0.9.0
+// charts
+//pro2 - pro2pm
+// V on 2.5
+
+// TODO
+// https://docs.oracle.com/javase/8/docs/api/javax/security/auth/callback/CallbackHandler.html
+// https://www.baeldung.com/java-authentication-authorization-service
 // archivio (additivo) dispositivi collegati opzionalmente caricabile (con eventuale default da settings)
 // 2.5 ottimizzazione array ralay 2.5
 // global settings: wi-fi 2 (chiedere se il dispositivo e' connesso a questo)

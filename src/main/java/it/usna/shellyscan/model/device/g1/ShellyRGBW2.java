@@ -137,8 +137,8 @@ public class ShellyRGBW2 extends AbstractG1Device implements RGBWCommander, Whit
 	protected void restore(JsonNode settings, ArrayList<String> errors) throws IOException, InterruptedException {
 		errors.add(sendCommand("/settings?" + jsonNodeToURLPar(settings, "mode", "led_status_disable", "factory_reset_from_switch")));
 		JsonNode nightMode = settings.get("night_mode");
-		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 		if(nightMode != null) {
+			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			if(nightMode.get("enabled").asBoolean()) {
 				errors.add(sendCommand("/settings/night_mode?" + jsonNodeToURLPar(nightMode, "enabled", "start_time", "end_time", "brightness")));
 			} else {

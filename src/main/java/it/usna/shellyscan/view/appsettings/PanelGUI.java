@@ -22,7 +22,9 @@ import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
 
 import it.usna.shellyscan.view.DevicesTable;
+import it.usna.shellyscan.view.chart.MeasuresChart.ChartType;
 import it.usna.util.AppProperties;
+import javax.swing.JComboBox;
 
 public class PanelGUI extends JPanel {
 	private static final long serialVersionUID = 1L;
@@ -32,6 +34,7 @@ public class PanelGUI extends JPanel {
 	JRadioButton rdbtnDetailedViewFull;
 	JRadioButton rdbtnDetailedViewAsIs;
 	JRadioButton rdbtnNDetailedViewEstimate;
+	JComboBox<ChartType> comboCharts = new JComboBox<>();
 	
 	PanelGUI(DevicesTable devTable, final AppProperties appProp) {
 		GridBagLayout gridBagLayout = new GridBagLayout();
@@ -63,7 +66,7 @@ public class PanelGUI extends JPanel {
 		JRadioButton webUIButton = new JRadioButton(LABELS.getString("dlgAppSetWEBUI"));
 		GridBagConstraints gbc_webUIButton = new GridBagConstraints();
 		gbc_webUIButton.anchor = GridBagConstraints.WEST;
-		gbc_webUIButton.insets = new Insets(0, 0, 5, 0);
+		gbc_webUIButton.insets = new Insets(0, 0, 5, 5);
 		gbc_webUIButton.gridx = 2;
 		gbc_webUIButton.gridy = 0;
 		add(webUIButton, gbc_webUIButton);
@@ -106,7 +109,7 @@ public class PanelGUI extends JPanel {
 		rdbtnDetailedViewAsIs = new JRadioButton(LABELS.getString("dlgAppSetDetailedAsIs"));
 		GridBagConstraints gbc_rdbtnDetailedViewAsIs = new GridBagConstraints();
 		gbc_rdbtnDetailedViewAsIs.anchor = GridBagConstraints.WEST;
-		gbc_rdbtnDetailedViewAsIs.insets = new Insets(0, 0, 5, 0);
+		gbc_rdbtnDetailedViewAsIs.insets = new Insets(0, 0, 5, 5);
 		gbc_rdbtnDetailedViewAsIs.gridx = 2;
 		gbc_rdbtnDetailedViewAsIs.gridy = 2;
 		add(rdbtnDetailedViewAsIs, gbc_rdbtnDetailedViewAsIs);
@@ -122,7 +125,7 @@ public class PanelGUI extends JPanel {
 		rdbtnNDetailedViewEstimate = new JRadioButton(LABELS.getString("dlgAppSetDetailedCompute"));
 		GridBagConstraints gbc_rdbtnNDetailedViewEstimate = new GridBagConstraints();
 		gbc_rdbtnNDetailedViewEstimate.anchor = GridBagConstraints.WEST;
-		gbc_rdbtnNDetailedViewEstimate.insets = new Insets(0, 0, 5, 0);
+		gbc_rdbtnNDetailedViewEstimate.insets = new Insets(0, 0, 5, 5);
 		gbc_rdbtnNDetailedViewEstimate.gridx = 2;
 		gbc_rdbtnNDetailedViewEstimate.gridy = 3;
 		add(rdbtnNDetailedViewEstimate, gbc_rdbtnNDetailedViewEstimate);
@@ -169,7 +172,7 @@ public class PanelGUI extends JPanel {
 		gbc_csvTextField.gridy = 5;
 		add(csvTextField, gbc_csvTextField);
 		csvTextField.setColumns(2);
-
+		
 		JSeparator separator_3 = new JSeparator();
 		GridBagConstraints gbc_separator_3 = new GridBagConstraints();
 		gbc_separator_3.insets = new Insets(0, 0, 5, 0);
@@ -178,14 +181,45 @@ public class PanelGUI extends JPanel {
 		gbc_separator_3.gridx = 0;
 		gbc_separator_3.gridy = 6;
 		add(separator_3, gbc_separator_3);
+
+		JLabel lblNewLabel_7 = new JLabel(LABELS.getString("dlgAppSetCharts"));
+		lblNewLabel_7.setFont(new Font("Tahoma", Font.BOLD, 11));
+		GridBagConstraints gbc_lblNewLabel_7 = new GridBagConstraints();
+		gbc_lblNewLabel_7.anchor = GridBagConstraints.WEST;
+		gbc_lblNewLabel_7.insets = new Insets(0, 0, 5, 5);
+		gbc_lblNewLabel_7.gridx = 0;
+		gbc_lblNewLabel_7.gridy = 7;
+		add(lblNewLabel_7, gbc_lblNewLabel_7);
+		
+		GridBagConstraints gbc_comboCharts = new GridBagConstraints();
+		gbc_comboCharts.insets = new Insets(0, 0, 5, 5);
+		gbc_comboCharts.fill = GridBagConstraints.HORIZONTAL;
+		gbc_comboCharts.gridx = 1;
+		gbc_comboCharts.gridy = 7;
+		add(comboCharts, gbc_comboCharts);
+		for(ChartType t: ChartType.values()) {
+			comboCharts.addItem(t);
+		}
+		try {
+			comboCharts.setSelectedItem(ChartType.valueOf(appProp.getProperty(DialogAppSettings.PROP_CHARTS_START)));
+		} catch(RuntimeException e) {}
+
+		JSeparator separator_4 = new JSeparator();
+		GridBagConstraints gbc_separator_4 = new GridBagConstraints();
+		gbc_separator_4.insets = new Insets(0, 0, 5, 0);
+		gbc_separator_4.gridwidth = 4;
+		gbc_separator_4.fill = GridBagConstraints.HORIZONTAL;
+		gbc_separator_4.gridx = 0;
+		gbc_separator_4.gridy = 8;
+		add(separator_4, gbc_separator_4);
 		
 		JLabel lblNewLabel_2 = new JLabel(LABELS.getString("dlgAppSetLblColums"));
 		lblNewLabel_2.setFont(new Font("Tahoma", Font.BOLD, 11));
 		GridBagConstraints gbc_lblNewLabel_2 = new GridBagConstraints();
 		gbc_lblNewLabel_2.anchor = GridBagConstraints.WEST;
-		gbc_lblNewLabel_2.insets = new Insets(0, 0, 5, 5);
+		gbc_lblNewLabel_2.insets = new Insets(0, 0, 0, 5);
 		gbc_lblNewLabel_2.gridx = 0;
-		gbc_lblNewLabel_2.gridy = 7;
+		gbc_lblNewLabel_2.gridy = 9;
 		add(lblNewLabel_2, gbc_lblNewLabel_2);
 		
 		JPanel columnsPanel = getColumnsPanel(devTable);
@@ -196,7 +230,7 @@ public class PanelGUI extends JPanel {
 		gbc_panel.gridwidth = 4;
 		gbc_panel.insets = new Insets(0, 10, 0, 5);
 		gbc_panel.gridx = 0;
-		gbc_panel.gridy = 8;
+		gbc_panel.gridy = 10;
 		add(columnsPanel, gbc_panel);
 	}
 	

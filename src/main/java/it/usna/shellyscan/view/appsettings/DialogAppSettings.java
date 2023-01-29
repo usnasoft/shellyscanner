@@ -21,6 +21,7 @@ import it.usna.shellyscan.model.DevicesFactory;
 import it.usna.shellyscan.model.device.LoginManager;
 import it.usna.shellyscan.view.DevicesTable;
 import it.usna.shellyscan.view.MainView;
+import it.usna.shellyscan.view.chart.MeasuresChart.ChartType;
 import it.usna.util.AppProperties;
 
 public class DialogAppSettings extends JDialog {
@@ -34,6 +35,7 @@ public class DialogAppSettings extends JDialog {
 	public final static String PROP_SCAN_MODE_DEFAULT = "FULL";
 	public final static String PROP_DCLICK_ACTION = "DCLICK_ACTION";
 	public final static String PROP_DCLICK_ACTION_DEFAULT = "DET";
+	public final static String PROP_CHARTS_START = "CHART_DEF";
 	
 	public final static String PROP_DETAILED_VIEW_SCREEN = "DETAIL_SCREEN";
 	public final static String PROP_DETAILED_VIEW_SCREEN_FULL = "FULL";
@@ -114,6 +116,9 @@ public class DialogAppSettings extends JDialog {
 
 			// CVS
 			appProp.setProperty(PROP_CSV_SEPARATOR, panelGUI.csvTextField.getText());
+			
+			// Charts
+			appProp.setProperty(PROP_CHARTS_START, ((ChartType)panelGUI.comboCharts.getSelectedItem()).name());
 			
 			// Login
 			String rlUser = panelNetwork.userFieldRL.getText();

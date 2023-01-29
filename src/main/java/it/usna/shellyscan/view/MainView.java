@@ -14,12 +14,13 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -73,6 +74,7 @@ import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
 import it.usna.shellyscan.model.device.g1.AbstractG1Device;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.view.appsettings.DialogAppSettings;
+import it.usna.shellyscan.view.chart.MeasuresChart;
 import it.usna.shellyscan.view.devsettings.DialogDeviceSettings;
 import it.usna.shellyscan.view.util.Msg;
 import it.usna.swing.UsnaPopupMenu;
@@ -234,11 +236,11 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 
 	private Action backupAction = new UsnaAction(this, "action_back_name", "action_back_tooltip", "/images/Download16.png", "/images/Download.png", e -> {
 		int[] ind = devicesTable.getSelectedRows();
-		final JFileChooser fc = new JFileChooser();
-		final String path = appProp.getProperty("LAST_PATH");
-		if(path != null) {
-			fc.setCurrentDirectory(new File(path));
-		}
+		final JFileChooser fc = new JFileChooser(appProp.getProperty("LAST_PATH"));
+//		final String path = appProp.getProperty("LAST_PATH");
+//		if(path != null) {
+//			fc.setCurrentDirectory(new File(path));
+//		}
 
 		class BackWorker extends SwingWorker<String, Object> {
 			@Override
@@ -286,7 +288,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 			}
 		} else if(ind.length == 1) {
 			fc.setAcceptAllFileFilterUsed(false);
-			fc.addChoosableFileFilter(new FileNameExtensionFilter(LABELS.getString("filetype_sbk_desc"), Main.BACKUP_FILE_EXT));
+			fc.setFileFilter(new FileNameExtensionFilter(LABELS.getString("filetype_sbk_desc"), Main.BACKUP_FILE_EXT));
 			ShellyAbstractDevice device = model.get(devicesTable.convertRowIndexToModel(ind[0]));
 			String fileName = device.getHostname().replaceAll("[^\\w_-]+", "_") + ".sbk";
 			fc.setSelectedFile(new File(fileName));
@@ -302,14 +304,14 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 			Main.errorMsg(LABELS.getString("msgRestoreLogin"));
 			return;
 		}
-		final JFileChooser fc = new JFileChooser();
+		final JFileChooser fc = new JFileChooser(appProp.getProperty("LAST_PATH"));
 		try {
-			final String path = appProp.getProperty("LAST_PATH");
-			if(path != null) {
-				fc.setCurrentDirectory(new File(path));
-			}
+//			final String path = appProp.getProperty("LAST_PATH");
+//			if(path != null) {
+//				fc.setCurrentDirectory(new File(path));
+//			}
 			fc.setAcceptAllFileFilterUsed(false);
-			fc.addChoosableFileFilter(new FileNameExtensionFilter(LABELS.getString("filetype_sbk_desc"), Main.BACKUP_FILE_EXT));
+			fc.setFileFilter(new FileNameExtensionFilter(LABELS.getString("filetype_sbk_desc"), Main.BACKUP_FILE_EXT));
 			final String fileName = device.getHostname().replaceAll("[^\\w_-]+", "_") + "." + Main.BACKUP_FILE_EXT;
 			fc.setSelectedFile(new File(fileName));
 			if(fc.showOpenDialog(MainView.this) == JFileChooser.APPROVE_OPTION) {
@@ -414,6 +416,11 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		}
 	});
 	
+	private Action chartAction = new UsnaAction(this, "/images/Stats2.png", "action_chart_tooltip", e -> {
+		int[] devicesInd = Arrays.stream(devicesTable.getSelectedRows()).map(i -> devicesTable.convertRowIndexToModel(i)).toArray();
+		new MeasuresChart(this, model, devicesInd, appProp);
+	});
+	
 	private Action appSettingsAction = new UsnaAction(this, "/images/Gear.png", "action_appsettings_tooltip", e -> {
 		if(details.isSelected()) {
 			detailedView(false);
@@ -440,18 +447,18 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 	});
 	
 	private Action csvExportAction = new UsnaAction(this, "/images/Table.png", "action_cvs_tooltip", e -> {
-		final JFileChooser fc = new JFileChooser();
-		final String path = appProp.getProperty("LAST_PATH");
-		if(path != null) {
-			fc.setCurrentDirectory(new File(path));
-		}
-		fc.addChoosableFileFilter(new FileNameExtensionFilter(LABELS.getString("filetype_csv_desc"), "csv"));
+		final JFileChooser fc = new JFileChooser(appProp.getProperty("LAST_PATH"));
+//		final String path = appProp.getProperty("LAST_PATH");
+//		if(path != null) {
+//			fc.setCurrentDirectory(new File(path));
+//		}
+		fc.setFileFilter(new FileNameExtensionFilter(LABELS.getString("filetype_csv_desc"), "csv"));
 		if(fc.showSaveDialog(MainView.this) == JFileChooser.APPROVE_OPTION) {
 			File out = fc.getSelectedFile();
 			if(out.getName().contains(".") == false) {
 				out = new File(out.getParentFile(), out.getName() + ".csv");
 			}
-			try (FileWriter w = new FileWriter(out)) {
+			try (BufferedWriter w = Files.newBufferedWriter(out.toPath())) {
 				devicesTable.csvExport(w, appProp.getProperty(DialogAppSettings.PROP_CSV_SEPARATOR, DialogAppSettings.PROP_CSV_SEPARATOR_DEFAULT));
 				JOptionPane.showMessageDialog(MainView.this, LABELS.getString("msgFileSaved"), Main.APP_NAME, JOptionPane.INFORMATION_MESSAGE);
 			} catch (IOException ex) {
@@ -591,6 +598,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		toolBar.add(refreshAction);
 		toolBar.addSeparator();
 		toolBar.add(infoAction);
+		toolBar.add(chartAction);
 		toolBar.add(infoLogAction);
 		toolBar.add(checkListAction);
 		toolBar.add(browseAction);
@@ -684,6 +692,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 				backupAction.setEnabled(selection);
 				restoreAction.setEnabled(singleSelection);
 				settingsAction.setEnabled(selection);
+				chartAction.setEnabled(selection);
 				ShellyAbstractDevice d = null;
 				if(singleSelection) {
 					d = model.get(devicesTable.convertRowIndexToModel(devicesTable.getSelectedRow()));
