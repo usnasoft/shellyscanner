@@ -37,8 +37,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import it.usna.shellyscan.Main;
 import it.usna.shellyscan.controller.UsnaAction;
 import it.usna.shellyscan.model.Devices;
+import it.usna.shellyscan.model.device.BatteryDeviceInterface;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
-import it.usna.shellyscan.model.device.g1.AbstractBatteryDevice;
 import it.usna.swing.dialog.FindReplaceDialog;
 
 public class DialogDeviceInfo extends JDialog {
@@ -116,7 +116,7 @@ public class DialogDeviceInfo extends JDialog {
 		final ObjectMapper mapper = new ObjectMapper();
 		JsonNode storedVal;
 		final boolean preview;
-		if(isJson && device instanceof AbstractBatteryDevice && (storedVal = ((AbstractBatteryDevice)device).getStoredJSON(info)) != null) {
+		if(isJson && device instanceof BatteryDeviceInterface && (storedVal = ((BatteryDeviceInterface)device).getStoredJSON(info)) != null) {
 			String json;
 			try {
 				json = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(storedVal);
@@ -139,8 +139,8 @@ public class DialogDeviceInfo extends JDialog {
 						final String json = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(val);
 						textArea.setForeground(Color.BLACK);
 						textArea.setText(json);
-						if(device instanceof AbstractBatteryDevice) {
-							((AbstractBatteryDevice)device).setStoredJSON(info, val);
+						if(device instanceof BatteryDeviceInterface) {
+							((BatteryDeviceInterface)device).setStoredJSON(info, val);
 						}
 					} else { // log
 //						try (CloseableHttpClient httpClient = HttpClients.createDefault();

@@ -15,7 +15,7 @@ import it.usna.shellyscan.model.device.g1.modules.Actions;
 import it.usna.shellyscan.model.device.modules.InputCommander;
 import it.usna.shellyscan.model.device.modules.InputInterface;
 
-public class Button1 extends AbstractBatteryDevice implements InputCommander {
+public class Button1 extends AbstractBatteryG1Device implements InputCommander {
 	public final static String ID = "SHBTN-2";
 	private final static Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.BAT};
 	private Actions actions = new Actions(this);

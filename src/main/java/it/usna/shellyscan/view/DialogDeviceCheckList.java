@@ -49,9 +49,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 import it.usna.shellyscan.Main;
 import it.usna.shellyscan.controller.UsnaAction;
+import it.usna.shellyscan.model.device.BatteryDeviceInterface;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
-import it.usna.shellyscan.model.device.g1.AbstractBatteryDevice;
 import it.usna.shellyscan.model.device.g1.AbstractG1Device;
 import it.usna.shellyscan.view.util.IPv4Comparator;
 import it.usna.shellyscan.view.util.UtilCollecion;
@@ -260,8 +260,8 @@ public class DialogDeviceCheckList extends JDialog {
 						tModel.setRow(row, g2Row(d, d.getJSON("/rpc/Shelly.GetConfig")));
 					}
 				} catch (Exception e) {
-					if(d instanceof AbstractBatteryDevice) { // G1 only
-						tModel.setRow(row, g1Row(d, ((AbstractBatteryDevice)d).getStoredJSON("/settings")));
+					if(d instanceof BatteryDeviceInterface) { // G1 only
+						tModel.setRow(row, g1Row(d, ((BatteryDeviceInterface)d).getStoredJSON("/settings")));
 					} else {
 						tModel.setRow(row, getStatusIcon(d), UtilCollecion.getExtendedHostName(d), d.getHttpHost().getAddress());
 					}

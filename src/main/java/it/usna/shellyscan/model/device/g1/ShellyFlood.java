@@ -10,7 +10,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 import it.usna.shellyscan.model.device.Meters;
 
-public class ShellyFlood extends AbstractBatteryDevice {
+public class ShellyFlood extends AbstractBatteryG1Device {
 	public final static String ID = "SHWT-1";
 	private final static Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.BAT, Meters.Type.T};
 	private boolean flood;

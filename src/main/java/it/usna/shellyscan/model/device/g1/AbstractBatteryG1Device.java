@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.InetAddress;
+import java.nio.charset.StandardCharsets;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -11,21 +12,25 @@ import org.apache.hc.client5.http.auth.CredentialsProvider;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
-public abstract class AbstractBatteryDevice extends AbstractG1Device {
+import it.usna.shellyscan.model.device.BatteryDeviceInterface;
+
+public abstract class AbstractBatteryG1Device extends AbstractG1Device implements BatteryDeviceInterface {
 	protected JsonNode shelly;
 	protected JsonNode settings;
 	protected JsonNode status;
 	protected JsonNode settingsActions;
 	protected int bat;
 
-	protected AbstractBatteryDevice(InetAddress address, CredentialsProvider credentialsProv) {
+	protected AbstractBatteryG1Device(InetAddress address, CredentialsProvider credentialsProv) {
 		super(address, credentialsProv);
 	}
 	
+	@Override
 	public int getBattery() {
 		return bat;
 	}
 	
+	@Override
 	public JsonNode getStoredJSON(final String command) {
 		if(command.equals("/shelly")) {
 			return shelly;
@@ -39,6 +44,7 @@ public abstract class AbstractBatteryDevice extends AbstractG1Device {
 		return null;
 	}
 	
+	@Override
 	public void setStoredJSON(final String command, JsonNode val) {
 		if(command.equals("/shelly")) {
 			this.shelly = val;
@@ -58,7 +64,7 @@ public abstract class AbstractBatteryDevice extends AbstractG1Device {
 			return super.backup(file);
 		} catch (java.net.ConnectException e) {
 			if(settings != null && settingsActions != null) {
-				try(ZipOutputStream out = new ZipOutputStream(new FileOutputStream(file))) {
+				try(ZipOutputStream out = new ZipOutputStream(new FileOutputStream(file), StandardCharsets.UTF_8)) {
 					out.putNextEntry(new ZipEntry("settings.json"));
 					out.write(settings.toString().getBytes());
 					out.closeEntry();

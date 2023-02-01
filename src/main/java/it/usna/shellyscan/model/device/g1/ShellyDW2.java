@@ -10,7 +10,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 import it.usna.shellyscan.model.device.Meters;
 
-public class ShellyDW2 extends AbstractBatteryDevice {
+public class ShellyDW2 extends AbstractBatteryG1Device {
 	public final static String ID = "SHDW-2";
 	private final static Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.BAT, Meters.Type.T, Meters.Type.L};
 	private boolean open;
