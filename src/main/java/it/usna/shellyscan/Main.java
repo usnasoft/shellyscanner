@@ -302,6 +302,8 @@ public class Main {
 //pro2 - pro2pm
 // V on 2.5
 
+// https://www.eclipse.org/jetty/documentation/jetty-11/programming-guide/index.html
+
 // TODO
 // https://docs.oracle.com/javase/8/docs/api/javax/security/auth/callback/CallbackHandler.html
 // https://www.baeldung.com/java-authentication-authorization-service

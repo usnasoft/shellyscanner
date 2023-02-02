@@ -4,7 +4,9 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.InetAddress;
 import java.net.URL;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import org.apache.hc.client5.http.auth.AuthCache;
 import org.apache.hc.client5.http.auth.CredentialsProvider;
@@ -15,6 +17,9 @@ import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.hc.client5.http.protocol.HttpClientContext;
 import org.apache.hc.core5.http.HttpHost;
+import org.eclipse.jetty.client.HttpClient;
+import org.eclipse.jetty.client.api.ContentResponse;
+import org.eclipse.jetty.http.HttpMethod;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -191,10 +196,26 @@ public class DevicesFactory {
 		}
 	}
 
+	static HttpClient httpClient = new HttpClient();
 	private static JsonNode getDeviceBasicInfo(final InetAddress address) throws IOException {
-		final URL url = new URL("http://" + address.getHostAddress() + "/shelly");
-		ObjectMapper jsonMapper = new ObjectMapper();
-		return jsonMapper.readTree(url);
+		try {
+			httpClient.start();
+			ContentResponse response = httpClient.newRequest("http://" + address.getHostAddress() + "/shelly").send();
+			ObjectMapper jsonMapper = new ObjectMapper();
+			return jsonMapper.readTree(response.getContentAsString());
+		} catch ( ExecutionException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null;
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null;
+		}
+//		final URL url = new URL("http://" + address.getHostAddress() + "/shelly");
+//		ObjectMapper jsonMapper = new ObjectMapper();
+//		return jsonMapper.readTree(url);
+ 
 	}
 
 	private static int testAuthentication(final InetAddress address, CredentialsProvider credsProvider, String testCommand) {
