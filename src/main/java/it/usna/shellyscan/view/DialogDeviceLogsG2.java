@@ -34,6 +34,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import it.usna.shellyscan.Main;
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
+import it.usna.shellyscan.view.util.UtilCollecion;
 import it.usna.swing.dialog.FindReplaceDialog;
 import java.awt.Component;
 import javax.swing.Box;
@@ -42,15 +43,15 @@ import javax.swing.JLabel;
 
 public class DialogDeviceLogsG2 extends JDialog implements ClipboardOwner {
 	private static final long serialVersionUID = 1L;
-//	private final static int SHORTCUT_KEY = Toolkit.getDefaultToolkit().getMenuShortcutKeyMask(); // from 1.10 getMenuShortcutKeyMaskEx
 	private WebSocketClient clientEndPoint = null;
 
 	public DialogDeviceLogsG2(final MainView owner, Devices model, int index) {
 		super(owner, false);
 		AbstractG2Device device = (AbstractG2Device) model.get(index);
-		final String dName = device.getName();
-		setTitle(device.getHostname() + " - " + (dName.length() > 0 ? dName : device.getTypeName()));
+		setTitle(UtilCollecion.getExtendedHostName(device));
 		setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
+		
+		device.postCommand("Sys.SetConfig", "{\"config\": {\"debug\":{\"websocket\":{\"enable\": true}}}");
 
 		JPanel buttonsPanel = new JPanel();
 		getContentPane().add(buttonsPanel, BorderLayout.SOUTH);
@@ -103,7 +104,6 @@ public class DialogDeviceLogsG2 extends JDialog implements ClipboardOwner {
 				setCursor(Cursor.getDefaultCursor());
 			}
 		});
-//		new String[6];
 
 		JButton btnStopLog = new JButton(Main.LABELS.getString("dlgLogG2Deactivate"));
 		buttonsPanel.add(btnStopLog);
@@ -141,7 +141,7 @@ public class DialogDeviceLogsG2 extends JDialog implements ClipboardOwner {
 			final ObjectMapper mapper = new ObjectMapper();
 			clientEndPoint = new org.java_websocket.client.WebSocketClient(new URI("ws://" + device.getHttpHost().getHostName() + "/debug/log")) {
 				@Override
-				public void onMessage( String message ) {
+				public void onMessage(String message) {
 					try {
 						int logLevel = (Integer)comboBox.getSelectedItem();
 						JsonNode msg = mapper.readTree(message);
@@ -173,9 +173,9 @@ public class DialogDeviceLogsG2 extends JDialog implements ClipboardOwner {
 			clientEndPoint.connect();
 		} catch (URISyntaxException e) {
 			textArea.append(e.toString());
-		} finally {
+		} /*finally {
 			clientEndPoint.close();
-		}
+		}*/
 		
 		JScrollPane scrollPane = new JScrollPane(textArea);
 		panel.add(scrollPane);

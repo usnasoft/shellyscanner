@@ -598,8 +598,8 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		toolBar.add(refreshAction);
 		toolBar.addSeparator();
 		toolBar.add(infoAction);
-		toolBar.add(chartAction);
 		toolBar.add(infoLogAction);
+		toolBar.add(chartAction);
 		toolBar.add(checkListAction);
 		toolBar.add(browseAction);
 		toolBar.addSeparator();
