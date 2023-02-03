@@ -17,7 +17,10 @@ import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.hc.client5.http.protocol.HttpClientContext;
 import org.apache.hc.core5.http.HttpHost;
 import org.eclipse.jetty.client.HttpClient;
+import org.eclipse.jetty.client.api.Authentication;
 import org.eclipse.jetty.client.api.ContentResponse;
+import org.eclipse.jetty.client.api.Request;
+import org.eclipse.jetty.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -75,9 +78,9 @@ public class DevicesFactory {
 		try {
 			final JsonNode info = getDeviceBasicInfo(httpClient, address);
 			if("2".equals(info.path("gen").asText())) {
-				return createG2(address, info, name);
+				return createG2(httpClient, address, info, name);
 			} else {
-				return createG1(address, info, name);
+				return createG1(httpClient, address, info, name);
 			}
 		} catch(IOException | TimeoutException | InterruptedException | ExecutionException e) {
 			LOG.error("create", e);
@@ -85,7 +88,7 @@ public class DevicesFactory {
 		}
 	}
 
-	private static ShellyAbstractDevice createG1(final InetAddress address, JsonNode info, String name) {
+	private static ShellyAbstractDevice createG1(HttpClient httpClient, final InetAddress address, JsonNode info, String name) {
 		CredentialsProvider credsProvider = null;
 		try {
 			final boolean auth = info.get("auth").asBoolean();
@@ -105,6 +108,12 @@ public class DevicesFactory {
 							if((user = credentials.getUser()) != null) {
 								lastCredentialsProv = credsProvider = LoginManager.getCredentialsProvider(user, credentials.getPassword().clone());
 							}
+							
+							// TEST ********
+							LoginManager.getCredentialsProvider("http://" + address.getHostAddress(), user, credentials.getPassword());
+							testAuthentication(httpClient, address, null, "/settings");
+							// TEST ********
+							
 							credentials.setMessage(String.format(Main.LABELS.getString("dlgAuthMessageError"), name));
 						} while(user != null && testAuthentication(address, credsProvider, "/settings") != HttpURLConnection.HTTP_OK);
 						credentials.dispose();
@@ -147,7 +156,7 @@ public class DevicesFactory {
 		}
 	}
 
-	private static ShellyAbstractDevice createG2(final InetAddress address, JsonNode info, String name) {
+	private static ShellyAbstractDevice createG2(HttpClient httpClient, final InetAddress address, JsonNode info, String name) {
 		CredentialsProvider credsProvider = null;
 		try {
 			final boolean auth = info.get("auth_en").asBoolean();
@@ -216,6 +225,16 @@ public class DevicesFactory {
 			return HttpURLConnection.HTTP_INTERNAL_ERROR;
 		}
 		// todo https://stackoverflow.com/questions/18108783/apache-httpclient-doesnt-set-basic-authentication-credentials
+	}
+	
+	private static int testAuthentication(HttpClient httpClient, final InetAddress address, Authentication.Result creds, String testCommand) {
+		Request request = httpClient.newRequest("http://" + address.getHostAddress() + testCommand);
+		creds.apply(request);
+		try {
+			return request.send().getStatus();
+		} catch (InterruptedException | ExecutionException | TimeoutException e) {
+			return HttpStatus.INTERNAL_SERVER_ERROR_500;
+		}
 	}
 
 	public static void setCredentialProvider(CredentialsProvider cp) {
