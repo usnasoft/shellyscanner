@@ -3,7 +3,6 @@ package it.usna.shellyscan.model;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.InetAddress;
-import java.net.URL;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -19,7 +18,6 @@ import org.apache.hc.client5.http.protocol.HttpClientContext;
 import org.apache.hc.core5.http.HttpHost;
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.api.ContentResponse;
-import org.eclipse.jetty.http.HttpMethod;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -70,17 +68,18 @@ public class DevicesFactory {
 	private DevicesFactory() {}
 
 	private final static Logger LOG = LoggerFactory.getLogger(DevicesFactory.class);
+	private final static ObjectMapper JSON_MAPPER = new ObjectMapper();
 	private static CredentialsProvider lastCredentialsProv;
 
-	public static ShellyAbstractDevice create(final InetAddress address, String name) {
+	public static ShellyAbstractDevice create(HttpClient httpClient, final InetAddress address, String name) {
 		try {
-			final JsonNode info = getDeviceBasicInfo(address);
+			final JsonNode info = getDeviceBasicInfo(httpClient, address);
 			if("2".equals(info.path("gen").asText())) {
 				return createG2(address, info, name);
 			} else {
 				return createG1(address, info, name);
 			}
-		} catch(IOException e) {
+		} catch(IOException | TimeoutException | InterruptedException | ExecutionException e) {
 			LOG.error("create", e);
 			return new ShellyG1Unmanaged(address, name, null, e); 
 		}
@@ -196,26 +195,9 @@ public class DevicesFactory {
 		}
 	}
 
-	static HttpClient httpClient = new HttpClient();
-	private static JsonNode getDeviceBasicInfo(final InetAddress address) throws IOException {
-		try {
-			httpClient.start();
-			ContentResponse response = httpClient.newRequest("http://" + address.getHostAddress() + "/shelly").send();
-			ObjectMapper jsonMapper = new ObjectMapper();
-			return jsonMapper.readTree(response.getContentAsString());
-		} catch ( ExecutionException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			return null;
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			return null;
-		}
-//		final URL url = new URL("http://" + address.getHostAddress() + "/shelly");
-//		ObjectMapper jsonMapper = new ObjectMapper();
-//		return jsonMapper.readTree(url);
- 
+	private static JsonNode getDeviceBasicInfo(HttpClient httpClient, final InetAddress address) throws IOException, TimeoutException, InterruptedException, ExecutionException {
+		ContentResponse response = httpClient.newRequest("http://" + address.getHostAddress() + "/shelly").send();
+		return JSON_MAPPER.readTree(response./*getContentAsString()*/getContent());
 	}
 
 	private static int testAuthentication(final InetAddress address, CredentialsProvider credsProvider, String testCommand) {

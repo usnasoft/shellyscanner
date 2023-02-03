@@ -1,18 +1,18 @@
 package it.usna.shellyscan.model;
 
 import java.io.IOException;
-import java.net.HttpURLConnection;
 import java.net.InetAddress;
 import java.net.SocketTimeoutException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import javax.jmdns.JmDNS;
 import javax.jmdns.JmmDNS;
@@ -22,6 +22,9 @@ import javax.jmdns.ServiceEvent;
 import javax.jmdns.ServiceInfo;
 import javax.jmdns.ServiceListener;
 
+import org.eclipse.jetty.client.HttpClient;
+import org.eclipse.jetty.client.api.ContentResponse;
+import org.eclipse.jetty.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,9 +35,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
 import it.usna.shellyscan.model.device.ShellyUnmanagedDevice;
-import it.usna.util.UsnaObservable;
 
-public class Devices extends UsnaObservable<Devices.EventType, Integer> {
+public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Integer> {
 	private final static Logger LOG = LoggerFactory.getLogger(Devices.class);
 	public enum EventType {
 		ADD,
@@ -62,6 +64,11 @@ public class Devices extends UsnaObservable<Devices.EventType, Integer> {
 	private int refreshTics = 3; // full refresh every STATUS_TICS refresh
 
 	private ScheduledExecutorService executor = Executors.newScheduledThreadPool(EXECUTOR_POOL_SIZE);
+	private HttpClient httpClient = new HttpClient();
+	
+	public Devices() throws Exception {
+		httpClient.start();
+	}
 
 	public void scannerInit(boolean fullScan, int refreshInterval, int refreshTics) throws IOException {
 		this.refreshInterval = refreshInterval;
@@ -134,14 +141,15 @@ public class Devices extends UsnaObservable<Devices.EventType, Integer> {
 			executor.schedule(() -> {
 				try {
 					if(addr.isReachable(4500)) {
-						Thread.sleep(MULTI_QUERY_DELAY);
+//						Thread.sleep(MULTI_QUERY_DELAY);
 						if(isShelly(addr)) {
+							Thread.sleep(MULTI_QUERY_DELAY);
 							create(addr, addr.getHostAddress());
 						}
 					} else {
 						LOG.trace("no ping {}", addr);
 					}
-				} catch (SocketTimeoutException e) {
+				} catch (TimeoutException e) {
 					LOG.trace("timeout {}", addr);
 				} catch (IOException | InterruptedException e) {
 					LOG.error("ip scan error {} {}", addr, e.toString());
@@ -150,25 +158,20 @@ public class Devices extends UsnaObservable<Devices.EventType, Integer> {
 		}
 	}
 
-	private static boolean isShelly(final InetAddress address) {
-		HttpURLConnection con = null;
+	private boolean isShelly(final InetAddress address) throws TimeoutException {
 		try {
-			con = (HttpURLConnection)new URL("http://" + address.getHostAddress() + "/shelly").openConnection();
-			con.setConnectTimeout(15000);
-			JsonNode shellyNode = new ObjectMapper().readTree(con.getInputStream());
-			int resp = con.getResponseCode();
-			if(resp == HttpURLConnection.HTTP_OK && shellyNode.has("mac")) { // "mac" is common to all shelly devices
+			ContentResponse response = httpClient.newRequest("http://" + address.getHostAddress() + "/shelly").timeout(15, TimeUnit.SECONDS).send();
+			JsonNode shellyNode = new ObjectMapper().readTree(response.getContent());
+			int resp = response.getStatus();
+			if(resp == HttpStatus.OK_200 && shellyNode.has("mac")) { // "mac" is common to all shelly devices
 				return true;
 			} else {
 				LOG.trace("Not Shelly {}, resp {}, node ()", address, resp, shellyNode);
 				return false;
 			}
-//			return con.getResponseCode() == HttpURLConnection.HTTP_OK && shellyNode.has("mac");
-		} catch (/*IO*/Exception e) {
+		} catch (InterruptedException | ExecutionException | IOException e) {
 			LOG.trace("Not Shelly {} - {}", address, e.toString());
 			return false;
-		} finally {
-			con.disconnect();
 		}
 	}
 
@@ -220,9 +223,8 @@ public class Devices extends UsnaObservable<Devices.EventType, Integer> {
 				refreshProcess.get(ind).cancel(true);
 				d.setStatus(Status.READING);
 				executor.schedule(() -> {
-					if(d instanceof ShellyUnmanagedDevice && ((ShellyUnmanagedDevice)d).geException() != null) {// experimental; try to create proper device
+					if(d instanceof ShellyUnmanagedDevice && ((ShellyUnmanagedDevice)d).geException() != null) { // experimental; try to create proper device
 						create(d.getHttpHost().getAddress(), d.getHostname());
-						LOG.error("************************************************");
 					} else {
 						try {
 							d.refreshSettings();
@@ -239,7 +241,7 @@ public class Devices extends UsnaObservable<Devices.EventType, Integer> {
 						} finally {
 							synchronized(devices) {
 								if(refreshProcess.get(ind).isCancelled()) { // in case of many and fast "refresh"
-									refreshProcess.set(ind, schedureRefresh(d, ind, refreshInterval, refreshTics));
+									refreshProcess.set(ind, scheduleRefresh(d, ind, refreshInterval, refreshTics));
 								}
 							}
 							updateViewRow(d, ind);
@@ -276,7 +278,7 @@ public class Devices extends UsnaObservable<Devices.EventType, Integer> {
 			} finally {
 				synchronized(devices) {
 					if(f.isCancelled()) { // in case of many and fast "refresh"
-						refreshProcess.set(ind, schedureRefresh(d, ind, refreshInterval, refreshTics));
+						refreshProcess.set(ind, scheduleRefresh(d, ind, refreshInterval, refreshTics));
 					}
 				}
 			}
@@ -298,7 +300,7 @@ public class Devices extends UsnaObservable<Devices.EventType, Integer> {
 	public void create(InetAddress address, String hostName) {
 		LOG.trace("Creating {} - {}", address, hostName);
 		try {
-			ShellyAbstractDevice d = DevicesFactory.create(address, hostName);
+			ShellyAbstractDevice d = DevicesFactory.create(httpClient, address, hostName);
 			if(Thread.interrupted() == false) {
 				synchronized(devices) {
 					int ind;
@@ -307,13 +309,13 @@ public class Devices extends UsnaObservable<Devices.EventType, Integer> {
 							refreshProcess.get(ind).cancel(true);
 							devices.set(ind, d);
 							fireEvent(EventType.UPDATE, ind);
-							refreshProcess.set(ind, schedureRefresh(d, ind, refreshInterval, refreshTics));
+							refreshProcess.set(ind, scheduleRefresh(d, ind, refreshInterval, refreshTics));
 						}
 					} else {
 						final int idx = devices.size();
 						devices.add(d);
 						fireEvent(EventType.ADD, idx);
-						refreshProcess.add(schedureRefresh(d, idx, refreshInterval, refreshTics));
+						refreshProcess.add(scheduleRefresh(d, idx, refreshInterval, refreshTics));
 					}
 				}
 				LOG.debug("Create {} - {}", address, d);
@@ -323,7 +325,7 @@ public class Devices extends UsnaObservable<Devices.EventType, Integer> {
 		}
 	}
 
-	private ScheduledFuture<?> schedureRefresh(ShellyAbstractDevice d, int idx, final int interval, final int statusTics) {
+	private ScheduledFuture<?> scheduleRefresh(ShellyAbstractDevice d, int idx, final int interval, final int statusTics) {
 		final Runnable refreshRunner = new Runnable() {
 			private final Integer megIdx = Integer.valueOf(idx);
 			private int ticCount = 0;
@@ -331,7 +333,6 @@ public class Devices extends UsnaObservable<Devices.EventType, Integer> {
 			@Override
 			public void run() {
 				try {
-					//TODO if d == generic && status = error -> attempt create 5 times 
 					if(++ticCount >= statusTics) {
 						d.refreshSettings();
 						ticCount = 0;
@@ -394,6 +395,9 @@ public class Devices extends UsnaObservable<Devices.EventType, Integer> {
 				LOG.error("closing JmmDNS", e);
 			}
 		}
+		try {
+			httpClient.stop();
+		} catch (Exception e) {}
 		LOG.debug("Model closed");
 	}
 
