@@ -3,6 +3,7 @@ package it.usna.shellyscan.model;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.InetAddress;
+import java.net.URI;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -18,8 +19,11 @@ import org.apache.hc.client5.http.protocol.HttpClientContext;
 import org.apache.hc.core5.http.HttpHost;
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.api.Authentication;
+import org.eclipse.jetty.client.api.AuthenticationStore;
 import org.eclipse.jetty.client.api.ContentResponse;
 import org.eclipse.jetty.client.api.Request;
+import org.eclipse.jetty.client.util.BasicAuthentication;
+import org.eclipse.jetty.client.util.DigestAuthentication;
 import org.eclipse.jetty.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -110,8 +114,7 @@ public class DevicesFactory {
 							}
 							
 							// TEST ********
-							LoginManager.getCredentialsProvider("http://" + address.getHostAddress(), user, credentials.getPassword());
-							testAuthentication(httpClient, address, null, "/settings");
+							testBasicAuthentication(httpClient, address, user, credentials.getPassword(), "/settings");
 							// TEST ********
 							
 							credentials.setMessage(String.format(Main.LABELS.getString("dlgAuthMessageError"), name));
@@ -176,10 +179,20 @@ public class DevicesFactory {
 						do {
 							credentials.setVisible(true);
 							if((user = credentials.getUser()) != null) {
+								
+								
+								// TEST ********
+								testDigestAuthentication(httpClient, address, LoginManagerG2.LOGIN_USER, credentials.getPassword(), "/rpc/Shelly.GetStatus");
+								// TEST ********
+								
+								
 								// ... .clone(): DialogAuthentication clear password after dispose() call
 								lastCredentialsProv = credsProvider = LoginManager.getCredentialsProvider(LoginManagerG2.LOGIN_USER, credentials.getPassword().clone());
 							}
+							
+							
 							credentials.setMessage(String.format(Main.LABELS.getString("dlgAuthMessageError"), name));
+					
 						} while(user != null && testAuthentication(address, credsProvider, "/rpc/Shelly.GetStatus") != HttpURLConnection.HTTP_OK);
 						testAuthentication(address, credsProvider, "/rpc/Shelly.GetStatus");
 						credentials.dispose();
@@ -227,12 +240,39 @@ public class DevicesFactory {
 		// todo https://stackoverflow.com/questions/18108783/apache-httpclient-doesnt-set-basic-authentication-credentials
 	}
 	
-	private static int testAuthentication(HttpClient httpClient, final InetAddress address, Authentication.Result creds, String testCommand) {
+	private static int testBasicAuthentication(HttpClient httpClient, final InetAddress address, String user, char[] pwd, String testCommand) {
+		URI uri = URI.create("http://" + address.getHostAddress());
+		Authentication.Result creds = new BasicAuthentication.BasicResult(uri, user, new String(pwd));
 		Request request = httpClient.newRequest("http://" + address.getHostAddress() + testCommand);
 		creds.apply(request);
 		try {
-			return request.send().getStatus();
+			int status = request.send().getStatus();
+			if(status == HttpStatus.OK_200) {
+				httpClient.getAuthenticationStore().addAuthentication(new BasicAuthentication(uri, BasicAuthentication.ANY_REALM, user, new String(pwd)));
+				return HttpStatus.OK_200;
+			} else {
+				return status;
+			}
 		} catch (InterruptedException | ExecutionException | TimeoutException e) {
+			return HttpStatus.INTERNAL_SERVER_ERROR_500;
+		}
+	}
+	
+	private static int testDigestAuthentication(HttpClient httpClient, final InetAddress address, String user, char[] pwd, String testCommand) {
+		URI uri = URI.create("http://" + address.getHostAddress() /*+ testCommand*/);
+		DigestAuthentication da = new DigestAuthentication(uri, DigestAuthentication.ANY_REALM, user, new String(pwd));
+		AuthenticationStore aStore = httpClient.getAuthenticationStore();
+		try {
+			aStore.addAuthentication(da);
+			int status = httpClient.newRequest("http://" + address.getHostAddress() + testCommand).send().getStatus();
+			if(status == HttpStatus.OK_200) {
+				return HttpStatus.OK_200;
+			} else {
+				aStore.removeAuthentication(da);
+				return status;
+			}
+		} catch (InterruptedException | TimeoutException | ExecutionException e) {
+			aStore.removeAuthentication(da);
 			return HttpStatus.INTERNAL_SERVER_ERROR_500;
 		}
 	}
