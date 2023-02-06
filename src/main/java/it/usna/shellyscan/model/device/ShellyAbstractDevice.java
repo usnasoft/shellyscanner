@@ -20,6 +20,7 @@ import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.hc.client5.http.protocol.HttpClientContext;
 import org.apache.hc.core5.http.HttpHost;
+import org.eclipse.jetty.client.HttpClient;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -51,12 +52,18 @@ public abstract class ShellyAbstractDevice {
 	protected HttpClientContext clientContext;
 	protected HttpHost httpHost;
 
-	protected ShellyAbstractDevice(InetAddress address, CredentialsProvider credentialsProv) {
+	protected ShellyAbstractDevice(InetAddress address) {
 //		httpHost = new HttpHost(address.getHostAddress()); // new HttpHost(address) too slow (reverse DNS)
 //		httpHost = new HttpHost(address, address.getHostAddress(), 80, HttpHost.DEFAULT_SCHEME_NAME);
 		httpHost = new HttpHost(null, address, address.getHostAddress(), 80);
-		setCredentialsProvider(credentialsProv);
 	}
+
+	public void init(HttpClient httpClient, CredentialsProvider credentialsProv) throws IOException {
+		setCredentialsProvider(credentialsProv);
+		init();
+	}
+	
+	public abstract void init() throws IOException;
 
 	public void setCredentialsProvider(CredentialsProvider credentialsProv) {
 		if(credentialsProv != null) {

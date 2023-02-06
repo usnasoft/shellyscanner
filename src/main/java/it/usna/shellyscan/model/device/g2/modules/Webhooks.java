@@ -25,7 +25,7 @@ public class Webhooks {
 //	private Map<Integer, List<Webhook>> hooks = new HashMap<>();
 	private Map<Integer, Map<String, Webhook>> hooks = new HashMap<>();
 
-	public Webhooks(AbstractG2Device parent) throws IOException {
+	public Webhooks(AbstractG2Device parent) {
 		this.parent = parent;
 	}
 

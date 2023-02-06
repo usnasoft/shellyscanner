@@ -222,30 +222,30 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 				refreshProcess.get(ind).cancel(true);
 				d.setStatus(Status.READING);
 				executor.schedule(() -> {
-					if(d instanceof ShellyUnmanagedDevice && ((ShellyUnmanagedDevice)d).geException() != null) { // experimental; try to create proper device
-						create(d.getHttpHost().getAddress(), d.getHostname());
-					} else {
-						try {
-							d.refreshSettings();
-							Thread.sleep(MULTI_QUERY_DELAY);
-							d.refreshStatus();
-						} catch (RuntimeException e) {
+					//					if(d instanceof ShellyUnmanagedDevice && ((ShellyUnmanagedDevice)d).geException() != null) { // experimental; try to create proper device
+					//						create(d.getHttpHost().getAddress(), d.getHostname());
+					//					} else {
+					try {
+						d.refreshSettings();
+						Thread.sleep(MULTI_QUERY_DELAY);
+						d.refreshStatus();
+					} catch (RuntimeException e) {
+						LOG.error("Unexpected on refresh", e);
+					} catch (IOException | InterruptedException e) {
+						if(d.getStatus() == Status.ERROR) {
 							LOG.error("Unexpected on refresh", e);
-						} catch (IOException | InterruptedException e) {
-							if(d.getStatus() == Status.ERROR) {
-								LOG.error("Unexpected on refresh", e);
-							} else {
-								LOG.debug("refresh {} - {}", d, d.getStatus());
-							}
-						} finally {
-							synchronized(devices) {
-								if(refreshProcess.get(ind).isCancelled()) { // in case of many and fast "refresh"
-									refreshProcess.set(ind, scheduleRefresh(d, ind, refreshInterval, refreshTics));
-								}
-							}
-							updateViewRow(d, ind);
+						} else {
+							LOG.debug("refresh {} - {}", d, d.getStatus());
 						}
+					} finally {
+						synchronized(devices) {
+							if(refreshProcess.get(ind).isCancelled()) { // in case of many and fast "refresh"
+								refreshProcess.set(ind, scheduleRefresh(d, ind, refreshInterval, refreshTics));
+							}
+						}
+						updateViewRow(d, ind);
 					}
+					//					}
 				}, MULTI_QUERY_DELAY, TimeUnit.MILLISECONDS);
 			}
 		}

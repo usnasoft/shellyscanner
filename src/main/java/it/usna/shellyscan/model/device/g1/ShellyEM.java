@@ -5,8 +5,6 @@ import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.hc.client5.http.auth.CredentialsProvider;
-
 import com.fasterxml.jackson.databind.JsonNode;
 
 import it.usna.shellyscan.model.Devices;
@@ -27,12 +25,8 @@ public class ShellyEM extends AbstractG1Device implements RelayCommander {
 	private String meterName[] = new String[2];
 	private Meters meters[];
 
-	public ShellyEM(InetAddress address, CredentialsProvider credentialsProv) throws IOException {
-		super(address, credentialsProv);
-		JsonNode settings = getJSON("/settings");
-		fillOnce(settings);
-		fillSettings(settings);
-		fillStatus(getJSON("/status"));
+	public ShellyEM(InetAddress address) {
+		super(address);
 		
 		class EMMeters extends Meters implements LabelHolder {
 			private int ind;

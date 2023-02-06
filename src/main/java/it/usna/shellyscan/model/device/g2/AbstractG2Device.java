@@ -16,7 +16,6 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
 
-import org.apache.hc.client5.http.auth.CredentialsProvider;
 import org.apache.hc.client5.http.classic.methods.HttpPost;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
@@ -43,8 +42,15 @@ import it.usna.shellyscan.model.device.g2.modules.Webhooks;
 public abstract class AbstractG2Device extends ShellyAbstractDevice {
 	private final static Logger LOG = LoggerFactory.getLogger(AbstractG2Device.class);
 
-	protected AbstractG2Device(InetAddress address, CredentialsProvider credentialsProv) {
-		super(address, credentialsProv);
+	protected AbstractG2Device(InetAddress address) {
+		super(address);
+	}
+	
+	@Override
+	public void init() throws IOException {
+		fillOnce(getJSON("/rpc/Shelly.GetDeviceInfo"));
+		fillSettings(getJSON("/rpc/Shelly.GetConfig"));
+		fillStatus(getJSON("/rpc/Shelly.GetStatus"));
 	}
 	
 	protected void fillOnce(JsonNode device) throws JsonParseException {

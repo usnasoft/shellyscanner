@@ -5,8 +5,6 @@ import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.hc.client5.http.auth.CredentialsProvider;
-
 import com.fasterxml.jackson.databind.JsonNode;
 
 import it.usna.shellyscan.model.Devices;
@@ -26,12 +24,8 @@ public class ShellyRGBW2 extends AbstractG1Device implements RGBWCommander, Whit
 	
 	private final String MODE_COLOR = "color";
 
-	public ShellyRGBW2(InetAddress address, CredentialsProvider credentialsProv) throws IOException {
-		super(address, credentialsProv);
-		JsonNode settings = getJSON("/settings");
-		fillOnce(settings);
-		fillSettings(settings);
-		fillStatus(getJSON("/status"));
+	public ShellyRGBW2(InetAddress address) {
+		super(address);
 	}
 	
 	@Override

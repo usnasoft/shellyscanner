@@ -5,8 +5,6 @@ import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.hc.client5.http.auth.CredentialsProvider;
-
 import com.fasterxml.jackson.databind.JsonNode;
 
 import it.usna.shellyscan.model.Devices;
@@ -22,11 +20,8 @@ public class ShellyPro2 extends AbstractG2Device implements RelayCommander, Inte
 	private Relay relay1 = new Relay(this, 1);
 	private float internalTmp;
 
-	public ShellyPro2(InetAddress address, CredentialsProvider credentialsProv) throws IOException {
-		super(address, credentialsProv);
-		fillOnce(getJSON("/rpc/Shelly.GetDeviceInfo"));
-		fillSettings(getJSON("/rpc/Shelly.GetConfig"));
-		fillStatus(getJSON("/rpc/Shelly.GetStatus"));
+	public ShellyPro2(InetAddress address) {
+		super(address);
 	}
 
 	@Override

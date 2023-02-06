@@ -6,8 +6,6 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.hc.client5.http.auth.CredentialsProvider;
-
 import com.fasterxml.jackson.databind.JsonNode;
 
 import it.usna.shellyscan.model.Devices;
@@ -37,10 +35,9 @@ public class ShellyPlus2PM extends AbstractG2Device implements RelayCommander, R
 
 	private final static String MODE_RELAY = "switch";
 
-	public ShellyPlus2PM(InetAddress address, CredentialsProvider credentialsProv) throws IOException {
-		super(address, credentialsProv);
-		fillOnce(getJSON("/rpc/Shelly.GetDeviceInfo"));
-
+	public ShellyPlus2PM(InetAddress address) {
+		super(address);
+		
 		meters0 = new Meters() {
 			public Type[] getTypes() {
 				return SUPPORTED_MEASURES;
@@ -73,9 +70,6 @@ public class ShellyPlus2PM extends AbstractG2Device implements RelayCommander, R
 				}
 			}
 		};
-		
-		fillSettings(getJSON("/rpc/Shelly.GetConfig"));
-		fillStatus(getJSON("/rpc/Shelly.GetStatus"));
 	}
 
 	@Override

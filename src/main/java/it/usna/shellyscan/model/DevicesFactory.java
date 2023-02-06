@@ -88,7 +88,7 @@ public class DevicesFactory {
 			}
 		} catch(IOException | TimeoutException | InterruptedException | ExecutionException e) {
 			LOG.error("create", e);
-			return new ShellyG1Unmanaged(address, name, null, e); 
+			return new ShellyG1Unmanaged(address, name, e); 
 		}
 	}
 
@@ -124,38 +124,72 @@ public class DevicesFactory {
 				}
 				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			}
+			ShellyAbstractDevice d;
 			switch(info.get("type").asText()) {
-			case Shelly1.ID: return new Shelly1(address, credsProvider);
-			case Shelly1L.ID: return new Shelly1L(address, credsProvider);
-			case Shelly1PM.ID: return new Shelly1PM(address, credsProvider);
-			case Shelly2.ID: return new Shelly2(address, credsProvider);
-			case Shelly25.ID: return new Shelly25(address, credsProvider);
-			case ShellyDimmer.ID: return new ShellyDimmer(address, credsProvider);
-			case ShellyDimmer2.ID: return new ShellyDimmer2(address, credsProvider);
-			case ShellyDUORGB.ID: return new ShellyDUORGB(address, credsProvider);
-			case ShellyDUO.ID: return new ShellyDUO(address, credsProvider);
-			case ShellyBulb.ID: return new ShellyBulb(address, credsProvider);
-			case ShellyRGBW2.ID: return new ShellyRGBW2(address, credsProvider);
-			case ShellyEM.ID: return new ShellyEM(address, credsProvider);
-			case Shelly3EM.ID: return new Shelly3EM(address, credsProvider);
-			case ShellyI3.ID: return new ShellyI3(address, credsProvider);
-			case Button1.ID: return new Button1(address, credsProvider, info);
-			case ShellyPlugS.ID: return new ShellyPlugS(address, credsProvider);
-			case ShellyPlug.ID: return new ShellyPlug(address, credsProvider);
-			case ShellyPlugE.ID: return new ShellyPlugE(address, credsProvider);
-			case ShellyPlugUS.ID: return new ShellyPlugUS(address, credsProvider);
-			case ShellyUNI.ID: return new ShellyUNI(address, credsProvider);
-			case ShellyDW.ID: return new ShellyDW(address, credsProvider, info);
-			case ShellyDW2.ID: return new ShellyDW2(address, credsProvider, info);
-			case ShellyFlood.ID: return new ShellyFlood(address, credsProvider, info);
-			case ShellyHT.ID: return new ShellyHT(address, credsProvider, info);
-			case ShellyMotion.ID: return new ShellyMotion(address, credsProvider);
-			case ShellyTRV.ID: return new ShellyTRV(address, credsProvider);
-			default: return new ShellyG1Unmanaged(address, name, credsProvider);
+			case Shelly1.ID: d = new Shelly1(address);
+			break;
+			case Shelly1L.ID: d = new Shelly1L(address);
+			break;
+			case Shelly1PM.ID: d = new Shelly1PM(address);
+			break;
+			case Shelly2.ID: d = new Shelly2(address);
+			break;
+			case Shelly25.ID: d = new Shelly25(address);
+			break;
+			case ShellyDimmer.ID: d = new ShellyDimmer(address);
+			break;
+			case ShellyDimmer2.ID: d = new ShellyDimmer2(address);
+			break;
+			case ShellyDUORGB.ID: d = new ShellyDUORGB(address);
+			break;
+			case ShellyDUO.ID: d = new ShellyDUO(address);
+			break;
+			case ShellyBulb.ID: d = new ShellyBulb(address);
+			break;
+			case ShellyRGBW2.ID: d = new ShellyRGBW2(address);
+			break;
+			case ShellyEM.ID: d = new ShellyEM(address);
+			break;
+			case Shelly3EM.ID: d = new Shelly3EM(address);
+			break;
+			case ShellyI3.ID: d = new ShellyI3(address);
+			break;
+			case Button1.ID: d = new Button1(address, info);
+			break;
+			case ShellyPlugS.ID: d = new ShellyPlugS(address);
+			break;
+			case ShellyPlug.ID: d = new ShellyPlug(address);
+			break;
+			case ShellyPlugE.ID: d = new ShellyPlugE(address);
+			break;
+			case ShellyPlugUS.ID: d = new ShellyPlugUS(address);
+			break;
+			case ShellyUNI.ID: d = new ShellyUNI(address);
+			break;
+			case ShellyDW.ID: d = new ShellyDW(address, info);
+			break;
+			case ShellyDW2.ID: d = new ShellyDW2(address, info);
+			break;
+			case ShellyFlood.ID: d = new ShellyFlood(address, info);
+			break;
+			case ShellyHT.ID: d = new ShellyHT(address, info);
+			break;
+			case ShellyMotion.ID: d = new ShellyMotion(address);
+			break;
+			case ShellyTRV.ID: d = new ShellyTRV(address);
+			break;
+			default: d = new ShellyG1Unmanaged(address, name);
+			break;
 			}
-		} catch(Exception e) {
-			LOG.warn("create", e);
-			return new ShellyG1Unmanaged(address, name, credsProvider, e); 
+			try {
+				d.init(httpClient, credsProvider);
+			} catch(IOException e) {
+				LOG.warn("create - init", e);
+			}
+			return d;
+		} catch(Exception e) { // really unexpected
+			LOG.error("create", e);
+			return new ShellyG1Unmanaged(address, name, e); 
 		}
 	}
 
@@ -200,20 +234,34 @@ public class DevicesFactory {
 				}
 				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			}
+			ShellyAbstractDevice d;
 			switch(info.get("app").asText()) {
 			// Plus
-			case ShellyPlus1.ID: return new ShellyPlus1(address, credsProvider);
-			case ShellyPlus1PM.ID: return new ShellyPlus1PM(address, credsProvider);
-			case ShellyPlus2PM.ID: return new ShellyPlus2PM(address, credsProvider);
-			case ShellyPlusi4.ID: return new ShellyPlusi4(address, credsProvider);
+			case ShellyPlus1.ID: d = new ShellyPlus1(address);
+			break;
+			case ShellyPlus1PM.ID: d = new ShellyPlus1PM(address);
+			break;
+			case ShellyPlus2PM.ID: d = new ShellyPlus2PM(address);
+			break;
+			case ShellyPlusi4.ID: d = new ShellyPlusi4(address);
+			break;
 			// PRO
-			case ShellyPro2PM.ID: return new ShellyPro2PM(address, credsProvider);
-			case ShellyPro2.ID: return new ShellyPro2(address, credsProvider);
-			default: return new ShellyG2Unmanaged(address, name, credsProvider);
+			case ShellyPro2PM.ID: d = new ShellyPro2PM(address);
+			break;
+			case ShellyPro2.ID: d = new ShellyPro2(address);
+			break;
+			default: d = new ShellyG2Unmanaged(address, name);
+			break;
 			}
-		} catch(Exception e) {
-			LOG.warn("create", e);
-			return new ShellyG2Unmanaged(address, name, credsProvider); 
+			try {
+				d.init(httpClient, credsProvider);
+			} catch(IOException e) {
+				LOG.warn("create - init", e);
+			}
+			return d;
+		} catch(Exception e) { // really unexpected
+			LOG.error("create", e);
+			return new ShellyG2Unmanaged(address, name); 
 		}
 	}
 

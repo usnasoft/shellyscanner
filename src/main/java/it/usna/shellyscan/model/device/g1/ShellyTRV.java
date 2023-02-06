@@ -5,10 +5,6 @@ import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.hc.client5.http.auth.CredentialsProvider;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.fasterxml.jackson.databind.JsonNode;
 
 import it.usna.shellyscan.model.Devices;
@@ -17,25 +13,16 @@ import it.usna.shellyscan.model.device.g1.modules.Thermostat;
 
 public class ShellyTRV extends AbstractG1Device {
 	public final static String ID = "SHTRV-01";
-	private final static Logger LOG = LoggerFactory.getLogger(ShellyTRV.class);
+//	private final static Logger LOG = LoggerFactory.getLogger(ShellyTRV.class);
 	private final static Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.BAT, Meters.Type.T};
 	private Thermostat thermostat = new Thermostat(this);
 	private float measuredTemp;
 	private Meters[] meters;
 	protected int bat;
 
-	public ShellyTRV(InetAddress address, CredentialsProvider credentialsProv) throws IOException {
-		super(address, credentialsProv);
-		JsonNode settings = getJSON("/settings");
-		fillOnce(settings);
-		fillSettings(settings);
-		try {
-			fillStatus(getJSON("/status"));
-		} catch(Exception e) {
-			status = Status.ERROR;
-			LOG.error(getTypeName(), e);
-		}
-
+	public ShellyTRV(InetAddress address) {
+		super(address);
+		
 		meters = new Meters[] {
 				new Meters() {
 					@Override

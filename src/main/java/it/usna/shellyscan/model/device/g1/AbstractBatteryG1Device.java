@@ -8,8 +8,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-import org.apache.hc.client5.http.auth.CredentialsProvider;
-
 import com.fasterxml.jackson.databind.JsonNode;
 
 import it.usna.shellyscan.model.device.BatteryDeviceInterface;
@@ -21,9 +19,18 @@ public abstract class AbstractBatteryG1Device extends AbstractG1Device implement
 	protected JsonNode settingsActions;
 	protected int bat;
 
-	protected AbstractBatteryG1Device(InetAddress address, CredentialsProvider credentialsProv) {
-		super(address, credentialsProv);
+	protected AbstractBatteryG1Device(InetAddress address) {
+		super(address);
 	}
+	
+//	@Override
+//	public void init() throws IOException {
+//		this.settings = getJSON("/settings");
+//		fillOnce(settings);
+//		fillSettings(settings);
+//		this.status = getJSON("/status");
+//		fillStatus(status);
+//	}
 	
 	@Override
 	public int getBattery() {

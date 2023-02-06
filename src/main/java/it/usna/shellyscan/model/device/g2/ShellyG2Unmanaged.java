@@ -4,8 +4,6 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.util.ArrayList;
 
-import org.apache.hc.client5.http.auth.CredentialsProvider;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -15,8 +13,13 @@ public class ShellyG2Unmanaged extends AbstractG2Device implements ShellyUnmanag
 	private String type;
 	private Exception ex;
 
-	public ShellyG2Unmanaged(InetAddress address, String hostname, CredentialsProvider credentialsProv) {
-		super(address, credentialsProv);
+	public ShellyG2Unmanaged(InetAddress address, String hostname) {
+		super(address);
+		this.hostname = hostname;
+	}
+	
+	@Override
+	public void init() throws IOException {
 		try {
 			JsonNode device = getJSON("/rpc/Shelly.GetDeviceInfo");
 			this.type = device.get("app").asText();
@@ -28,13 +31,12 @@ public class ShellyG2Unmanaged extends AbstractG2Device implements ShellyUnmanag
 				status = Status.ERROR;
 			}
 			this.ex = e;
-			this.hostname = hostname;
 			name = "";
 		}
 	}
 	
-	public ShellyG2Unmanaged(InetAddress address, String hostname, CredentialsProvider credentialsProv, Exception e) {
-		super(address, null);
+	public ShellyG2Unmanaged(InetAddress address, String hostname, Exception e) {
+		super(address);
 		this.ex = e;
 		this.hostname = hostname;
 		name = "";

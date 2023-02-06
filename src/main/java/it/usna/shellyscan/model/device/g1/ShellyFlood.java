@@ -4,8 +4,6 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.util.ArrayList;
 
-import org.apache.hc.client5.http.auth.CredentialsProvider;
-
 import com.fasterxml.jackson.databind.JsonNode;
 
 import it.usna.shellyscan.model.device.Meters;
@@ -17,18 +15,13 @@ public class ShellyFlood extends AbstractBatteryG1Device {
 	private float temp;
 	private Meters[] meters;
 
-	public ShellyFlood(InetAddress address, CredentialsProvider credentialsProv, JsonNode shelly) throws IOException {
-		this(address, credentialsProv);
+	public ShellyFlood(InetAddress address, JsonNode shelly) {
+		this(address);
 		this.shelly = shelly;
 	}
 	
-	public ShellyFlood(InetAddress address, CredentialsProvider credentialsProv) throws IOException {
-		super(address, credentialsProv);
-		this.settings = getJSON("/settings");
-		fillOnce(settings);
-		fillSettings(settings);
-		this.status = getJSON("/status");
-		fillStatus(status);
+	public ShellyFlood(InetAddress address) {
+		super(address);
 		
 		meters = new Meters[] {
 				new Meters() {

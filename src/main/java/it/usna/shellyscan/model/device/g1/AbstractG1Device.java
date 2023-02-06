@@ -20,7 +20,6 @@ import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
 
 import org.apache.hc.client5.http.ClientProtocolException;
-import org.apache.hc.client5.http.auth.CredentialsProvider;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
@@ -44,8 +43,17 @@ public abstract class AbstractG1Device extends ShellyAbstractDevice {
 //	private final static JsonPointer RSSI = JsonPointer.valueOf("/wifi_sta/rssi");
 	private final static Logger LOG = LoggerFactory.getLogger(AbstractG1Device.class);
 
-	protected AbstractG1Device(InetAddress address, CredentialsProvider credentialsProv) {
-		super(address, credentialsProv);
+	protected AbstractG1Device(InetAddress address) {
+		super(address);
+	}
+	
+	@Override
+	public void init() throws IOException {
+		JsonNode settings = getJSON("/settings");
+		fillOnce(settings);
+		fillSettings(settings);
+		try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e) {}
+		fillStatus(getJSON("/status"));
 	}
 	
 	protected void fillOnce(JsonNode settings) throws IOException {

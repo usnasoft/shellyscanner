@@ -5,8 +5,6 @@ import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.hc.client5.http.auth.CredentialsProvider;
-
 import com.fasterxml.jackson.databind.JsonNode;
 
 import it.usna.shellyscan.model.Devices;
@@ -17,17 +15,14 @@ import it.usna.shellyscan.model.device.modules.InputInterface;
 
 public class ShellyPlusi4 extends AbstractG2Device implements InputCommander {
 	public final static String ID = "PlusI4";
-	private final Input[] inputs;
-	private final Webhooks webhooks;
+	private Input[] inputs;
+	private Webhooks webhooks;
 
-	public ShellyPlusi4(InetAddress address, CredentialsProvider credentialsProv) throws IOException {
-		super(address, credentialsProv);
+	public ShellyPlusi4(InetAddress address) {
+		super(address);
+		
 		inputs = new Input[] {new Input(), new Input(), new Input(), new Input()};
 		webhooks = new Webhooks(this);
-		
-		fillOnce(getJSON("/rpc/Shelly.GetDeviceInfo"));
-		fillSettings(getJSON("/rpc/Shelly.GetConfig"));
-		fillStatus(getJSON("/rpc/Shelly.GetStatus"));
 	}
 	
 	@Override

@@ -4,8 +4,6 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.util.ArrayList;
 
-import org.apache.hc.client5.http.auth.CredentialsProvider;
-
 import com.fasterxml.jackson.databind.JsonNode;
 
 import it.usna.shellyscan.model.device.Meters;
@@ -17,18 +15,13 @@ public class ShellyHT extends AbstractBatteryG1Device {
 	private int humidity;
 	private Meters[] meters;
 
-	public ShellyHT(InetAddress address, CredentialsProvider credentialsProv, JsonNode shelly) throws IOException {
-		this(address, credentialsProv);
+	public ShellyHT(InetAddress address, JsonNode shelly) {
+		this(address);
 		this.shelly = shelly;
 	}
 	
-	public ShellyHT(InetAddress address, CredentialsProvider credentialsProv) throws IOException {
-		super(address, credentialsProv);
-		this.settings = getJSON("/settings");
-		fillOnce(settings);
-		fillSettings(settings);
-		this.status = getJSON("/status");
-		fillStatus(status);
+	public ShellyHT(InetAddress address) {
+		super(address);
 		
 		meters = new Meters[] {
 				new Meters() {

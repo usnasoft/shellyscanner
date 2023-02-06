@@ -5,8 +5,6 @@ import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.hc.client5.http.auth.CredentialsProvider;
-
 import com.fasterxml.jackson.databind.JsonNode;
 
 import it.usna.shellyscan.model.Devices;
@@ -21,18 +19,13 @@ public class Button1 extends AbstractBatteryG1Device implements InputCommander {
 	private Actions actions = new Actions(this);
 	private Meters[] meters;
 	
-	public Button1(InetAddress address, CredentialsProvider credentialsProv, JsonNode shelly) throws IOException {
-		this(address, credentialsProv);
+	public Button1(InetAddress address, JsonNode shelly) throws IOException {
+		this(address);
 		this.shelly = shelly;
 	}
 	
-	public Button1(InetAddress address, CredentialsProvider credentialsProv) throws IOException {
-		super(address, credentialsProv);
-		this.settings = getJSON("/settings");
-		fillOnce(settings);
-		fillSettings(settings);
-		this.status = getJSON("/status");
-		fillStatus(status);
+	public Button1(InetAddress address) throws IOException {
+		super(address);
 		
 		meters = new Meters[] {
 				new Meters() {
