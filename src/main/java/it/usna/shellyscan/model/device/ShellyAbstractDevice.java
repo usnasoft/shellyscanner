@@ -272,6 +272,6 @@ public abstract class ShellyAbstractDevice {
 
 	@Override
 	public String toString() {
-		return getTypeName() + "-" + name + ": " + httpHost.getHostName() + " (" + hostname + ")";
+		return getTypeName() + "-" + name + ": " + address + " (" + hostname + ")";
 	}
 } //278 - 399 - 316 - 251 - 237
