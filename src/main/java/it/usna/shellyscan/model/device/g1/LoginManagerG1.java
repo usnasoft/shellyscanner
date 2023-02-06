@@ -2,13 +2,22 @@ package it.usna.shellyscan.model.device.g1;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.net.InetAddress;
+import java.net.URI;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
 
 import org.apache.hc.client5.http.auth.AuthScope;
 import org.apache.hc.client5.http.auth.CredentialsProvider;
 import org.apache.hc.client5.http.auth.UsernamePasswordCredentials;
 import org.apache.hc.client5.http.impl.auth.BasicCredentialsProvider;
+import org.eclipse.jetty.client.HttpClient;
+import org.eclipse.jetty.client.api.Authentication;
+import org.eclipse.jetty.client.api.Request;
+import org.eclipse.jetty.client.util.BasicAuthentication;
+import org.eclipse.jetty.http.HttpStatus;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -55,15 +64,6 @@ public class LoginManagerG1 implements LoginManager {
 		}
 		return msg;
 	}
-	
-//	public static String set(AbstractG1Device d, String user, String pwd) {
-//		try {
-//			LoginManagerG1 l = new LoginManagerG1(d, true);
-//			return l.set(user, pwd);
-//		} catch (IOException e) {
-//			return e.getMessage();
-//		}
-//	}
 
 	@Override
 	public String set(String user, char[] pwd) {
@@ -84,6 +84,24 @@ public class LoginManagerG1 implements LoginManager {
 			return msg;
 		} catch (UnsupportedEncodingException e) {
 			return e.getMessage();
+		}
+	}
+	
+	public static int testBasicAuthentication(HttpClient httpClient, final InetAddress address, String user, char[] pwd, String testCommand) {
+		URI uri = URI.create("http://" + address.getHostAddress());
+		Authentication.Result creds = new BasicAuthentication.BasicResult(uri, user, new String(pwd));
+		Request request = httpClient.newRequest("http://" + address.getHostAddress() + testCommand);
+		creds.apply(request);
+		try {
+			int status = request.send().getStatus();
+			if(status == HttpStatus.OK_200) {
+				httpClient.getAuthenticationStore().addAuthentication(new BasicAuthentication(uri, BasicAuthentication.ANY_REALM, user, new String(pwd)));
+				return HttpStatus.OK_200;
+			} else {
+				return status;
+			}
+		} catch (InterruptedException | ExecutionException | TimeoutException e) {
+			return HttpStatus.INTERNAL_SERVER_ERROR_500;
 		}
 	}
 }

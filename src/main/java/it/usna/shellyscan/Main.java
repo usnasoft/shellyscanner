@@ -13,13 +13,11 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.UIManager.LookAndFeelInfo;
 
-import org.apache.hc.client5.http.auth.CredentialsProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.DevicesFactory;
-import it.usna.shellyscan.model.device.LoginManager;
 import it.usna.shellyscan.view.MainView;
 import it.usna.shellyscan.view.appsettings.DialogAppSettings;
 import it.usna.shellyscan.view.util.Msg;
@@ -128,8 +126,8 @@ public class Main {
 					if(lUser != null && lUser.length() > 0) {
 						try {
 							char[] pDecoded = new String(Base64.getDecoder().decode(appProp.getProperty(DialogAppSettings.PROP_LOGIN_PWD).substring(1))).toCharArray();
-							CredentialsProvider cp = LoginManager.getCredentialsProvider(lUser, pDecoded);
-							DevicesFactory.setCredentialProvider(cp);
+//							CredentialsProvider cp = LoginManager.getCredentialsProvider(lUser, pDecoded);
+							DevicesFactory.setCredential(lUser, pDecoded);
 						} catch(RuntimeException e) {}
 					}
 					final int refreshStatusInterval = appProp.getIntProperty(DialogAppSettings.PROP_REFRESH_ITERVAL, DialogAppSettings.PROP_REFRESH_ITERVAL_DEFAULT) * 1000;

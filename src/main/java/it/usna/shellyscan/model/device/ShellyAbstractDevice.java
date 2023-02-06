@@ -38,7 +38,7 @@ public abstract class ShellyAbstractDevice {
 	protected int rssi;
 	protected String ssid;
 	protected int uptime;
-	protected String name;
+	protected String name = "";
 	protected Status status;
 	protected long lastConnection = 0;
 	

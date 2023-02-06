@@ -14,11 +14,8 @@ import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.border.EmptyBorder;
 
-import org.apache.hc.client5.http.auth.CredentialsProvider;
-
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.DevicesFactory;
-import it.usna.shellyscan.model.device.LoginManager;
 import it.usna.shellyscan.view.DevicesTable;
 import it.usna.shellyscan.view.MainView;
 import it.usna.shellyscan.view.chart.MeasuresChart.ChartType;
@@ -129,10 +126,10 @@ public class DialogAppSettings extends JDialog {
 				try {
 					encodedRlp = (char)(rlp.hashCode() % ('Z' - 'A') + 'A') + Base64.getEncoder().encodeToString(new String(rlp).getBytes());
 				} catch(RuntimeException e) {}
-				CredentialsProvider cp = LoginManager.getCredentialsProvider(rlUser, rlp);
-				DevicesFactory.setCredentialProvider(cp);
+//				CredentialsProvider cp = LoginManager.getCredentialsProvider(rlUser, rlp);
+				DevicesFactory.setCredential(rlUser, rlp);
 			} else {
-				DevicesFactory.setCredentialProvider(null);
+				DevicesFactory.setCredential(null, null);
 			}
 			appProp.setProperty(PROP_LOGIN_PWD, encodedRlp);
 			
