@@ -3,11 +3,10 @@ package it.usna.shellyscan.model.device;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
-import java.net.HttpURLConnection;
 import java.net.InetAddress;
-import java.net.SocketException;
-import java.net.SocketTimeoutException;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -21,11 +20,14 @@ import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.hc.client5.http.protocol.HttpClientContext;
 import org.apache.hc.core5.http.HttpHost;
 import org.eclipse.jetty.client.HttpClient;
+import org.eclipse.jetty.client.api.ContentResponse;
+import org.eclipse.jetty.http.HttpStatus;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public abstract class ShellyAbstractDevice {
+	protected final InetAddress address;
 	protected String hostname;
 	protected String mac;
 	protected boolean cloudEnabled;
@@ -40,6 +42,8 @@ public abstract class ShellyAbstractDevice {
 	protected Status status;
 	protected long lastConnection = 0;
 	
+	protected HttpClient httpClient; // org.eclipse.jetty.client.HttpClient
+	
 	protected final ObjectMapper jsonMapper = new ObjectMapper();
 	
 	public enum Status {ON_LINE, OFF_LINE, NOT_LOOGGED, READING, ERROR};
@@ -52,14 +56,17 @@ public abstract class ShellyAbstractDevice {
 	protected HttpClientContext clientContext;
 	protected HttpHost httpHost;
 
-	protected ShellyAbstractDevice(InetAddress address) {
+	protected ShellyAbstractDevice(InetAddress address, String hostname) {
 //		httpHost = new HttpHost(address.getHostAddress()); // new HttpHost(address) too slow (reverse DNS)
 //		httpHost = new HttpHost(address, address.getHostAddress(), 80, HttpHost.DEFAULT_SCHEME_NAME);
 		httpHost = new HttpHost(null, address, address.getHostAddress(), 80);
+		this.address = address;
+		this.hostname = hostname;
 	}
 
 	public void init(HttpClient httpClient, CredentialsProvider credentialsProv) throws IOException {
 		setCredentialsProvider(credentialsProv);
+		this.httpClient = httpClient;
 		init();
 	}
 	
@@ -77,28 +84,55 @@ public abstract class ShellyAbstractDevice {
 		}
 	}
 	
-	public JsonNode getJSON(final String command) throws IOException { //JsonProcessingException extends IOException
-		HttpGet httpget = new HttpGet(command);
-		try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
-			return httpClient.execute(httpHost, httpget, clientContext, response -> {
-				int statusCode = response.getCode();
-				if(statusCode == HttpURLConnection.HTTP_OK) {
-					status = Status.ON_LINE;
-					return jsonMapper.readTree(response.getEntity().getContent());
-				}
-				if(statusCode == HttpURLConnection.HTTP_UNAUTHORIZED) {
-					status = Status.NOT_LOOGGED;
-				} else if(statusCode == HttpURLConnection.HTTP_INTERNAL_ERROR) {
-					status = Status.ERROR;
-				} else {
-					status = Status.OFF_LINE;
-				}
-				throw new IOException("Status-" + statusCode);
-			});
-		}  catch(SocketException | SocketTimeoutException e) {
+//	public JsonNode getJSON(final String command) throws IOException { //JsonProcessingException extends IOException
+//		HttpGet httpget = new HttpGet(command);
+//		try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
+//			return httpClient.execute(httpHost, httpget, clientContext, response -> {
+//				int statusCode = response.getCode();
+//				if(statusCode == HttpURLConnection.HTTP_OK) {
+//					status = Status.ON_LINE;
+//					return jsonMapper.readTree(response.getEntity().getContent());
+//				}
+//				if(statusCode == HttpURLConnection.HTTP_UNAUTHORIZED) {
+//					status = Status.NOT_LOOGGED;
+//				} else if(statusCode == HttpURLConnection.HTTP_INTERNAL_ERROR) {
+//					status = Status.ERROR;
+//				} else {
+//					status = Status.OFF_LINE;
+//				}
+//				throw new IOException("Status-" + statusCode);
+//			});
+//		}  catch(SocketException | SocketTimeoutException e) {
+//			status = Status.OFF_LINE;
+//			throw e;
+//		} catch(/*JsonParseException |*/ IOException | RuntimeException e) {
+//			if(status == Status.ON_LINE || status == Status.READING) {
+//				status = Status.ERROR;
+//			}
+//			throw e;
+//		}
+//	}
+	
+	public JsonNode getJSON(final String command) throws IOException  { //JsonProcessingException extends IOException
+		try {
+			ContentResponse response = httpClient.GET("http://" + address.getHostAddress() + command);
+			int statusCode = response.getStatus();
+			if(statusCode == HttpStatus.OK_200) {
+				status = Status.ON_LINE;
+				return jsonMapper.readTree(response.getContent());
+			}
+			if(statusCode == HttpStatus.UNAUTHORIZED_401) {
+				status = Status.NOT_LOOGGED;
+			} else if(statusCode == HttpStatus.INTERNAL_SERVER_ERROR_500) {
+				status = Status.ERROR;
+			} else {
+				status = Status.OFF_LINE;
+			}
+			throw new IOException("Status-" + statusCode);
+		} catch(InterruptedException | ExecutionException | TimeoutException e) {
 			status = Status.OFF_LINE;
-			throw e;
-		} catch(/*JsonParseException |*/ IOException | RuntimeException e) {
+			throw new IOException(e);
+		} catch (IOException | RuntimeException e) {
 			if(status == Status.ON_LINE || status == Status.READING) {
 				status = Status.ERROR;
 			}
@@ -122,13 +156,13 @@ public abstract class ShellyAbstractDevice {
 		return httpHost;
 	}
 	
+	public InetAddress getAddress() {
+		return address;
+	}
+	
 	public HttpClientContext getClientContext() {
 		return clientContext;
 	}
-
-	//	public String getFw() {
-	//		return fw;
-	//	}
 
 	public boolean getCloudEnabled() {
 		return cloudEnabled;

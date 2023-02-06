@@ -139,7 +139,7 @@ public class DialogDeviceLogsG2 extends JDialog implements ClipboardOwner {
 		panel.setLayout(new BorderLayout(0, 0));
 		try {
 			final ObjectMapper mapper = new ObjectMapper();
-			clientEndPoint = new org.java_websocket.client.WebSocketClient(new URI("ws://" + device.getHttpHost().getHostName() + "/debug/log")) {
+			clientEndPoint = new org.java_websocket.client.WebSocketClient(new URI("ws://" + device.getAddress().getHostAddress() + "/debug/log")) {
 				@Override
 				public void onMessage(String message) {
 					try {

@@ -14,13 +14,13 @@ public class ShellyDW extends AbstractBatteryG1Device {
 	private boolean open;
 	private Meters[] meters;
 	
-	public ShellyDW(InetAddress address, JsonNode shelly) {
-		this(address);
+	public ShellyDW(InetAddress address, JsonNode shelly, String hostname) {
+		super(address, hostname);
 		this.shelly = shelly;
 	}
 
-	public ShellyDW(InetAddress address) {
-		super(address);
+	public ShellyDW(InetAddress address, String hostname) {
+		super(address, hostname);
 		
 		meters = new Meters[] {
 				new Meters() {

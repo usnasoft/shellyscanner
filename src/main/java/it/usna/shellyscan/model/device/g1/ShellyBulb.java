@@ -19,8 +19,8 @@ public class ShellyBulb extends AbstractG1Device implements LightBulbRGBCommande
 	private float power;
 	private Meters[] meters;
 	
-	public ShellyBulb(InetAddress address) {
-		super(address);
+	public ShellyBulb(InetAddress address, String hostname) {
+		super(address, hostname);
 		
 		meters = new Meters[] {
 				new MetersPower() {

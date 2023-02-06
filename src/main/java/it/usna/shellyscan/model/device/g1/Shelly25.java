@@ -30,8 +30,8 @@ public class Shelly25 extends AbstractG1Device implements RelayCommander, Roller
 	
 	private final static String MODE_RELAY = "relay";
 
-	public Shelly25(InetAddress address) {
-		super(address);
+	public Shelly25(InetAddress address, String hostname) {
+		super(address, hostname);
 		
 		meters = new Meters[] {
 				new Meters() {

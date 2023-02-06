@@ -114,7 +114,7 @@ public class DevicesFactory {
 							}
 							
 							// TEST ********
-							testBasicAuthentication(httpClient, address, user, credentials.getPassword(), "/settings");
+//							testBasicAuthentication(httpClient, address, user, credentials.getPassword(), "/settings");
 							// TEST ********
 							
 							credentials.setMessage(String.format(Main.LABELS.getString("dlgAuthMessageError"), name));
@@ -126,57 +126,57 @@ public class DevicesFactory {
 			}
 			ShellyAbstractDevice d;
 			switch(info.get("type").asText()) {
-			case Shelly1.ID: d = new Shelly1(address);
+			case Shelly1.ID: d = new Shelly1(address, name);
 			break;
-			case Shelly1L.ID: d = new Shelly1L(address);
+			case Shelly1L.ID: d = new Shelly1L(address, name);
 			break;
-			case Shelly1PM.ID: d = new Shelly1PM(address);
+			case Shelly1PM.ID: d = new Shelly1PM(address, name);
 			break;
-			case Shelly2.ID: d = new Shelly2(address);
+			case Shelly2.ID: d = new Shelly2(address, name);
 			break;
-			case Shelly25.ID: d = new Shelly25(address);
+			case Shelly25.ID: d = new Shelly25(address, name);
 			break;
-			case ShellyDimmer.ID: d = new ShellyDimmer(address);
+			case ShellyDimmer.ID: d = new ShellyDimmer(address, name);
 			break;
-			case ShellyDimmer2.ID: d = new ShellyDimmer2(address);
+			case ShellyDimmer2.ID: d = new ShellyDimmer2(address, name);
 			break;
-			case ShellyDUORGB.ID: d = new ShellyDUORGB(address);
+			case ShellyDUORGB.ID: d = new ShellyDUORGB(address, name);
 			break;
-			case ShellyDUO.ID: d = new ShellyDUO(address);
+			case ShellyDUO.ID: d = new ShellyDUO(address, name);
 			break;
-			case ShellyBulb.ID: d = new ShellyBulb(address);
+			case ShellyBulb.ID: d = new ShellyBulb(address, name);
 			break;
-			case ShellyRGBW2.ID: d = new ShellyRGBW2(address);
+			case ShellyRGBW2.ID: d = new ShellyRGBW2(address, name);
 			break;
-			case ShellyEM.ID: d = new ShellyEM(address);
+			case ShellyEM.ID: d = new ShellyEM(address, name);
 			break;
-			case Shelly3EM.ID: d = new Shelly3EM(address);
+			case Shelly3EM.ID: d = new Shelly3EM(address, name);
 			break;
-			case ShellyI3.ID: d = new ShellyI3(address);
+			case ShellyI3.ID: d = new ShellyI3(address, name);
 			break;
-			case Button1.ID: d = new Button1(address, info);
+			case Button1.ID: d = new Button1(address, info, name);
 			break;
-			case ShellyPlugS.ID: d = new ShellyPlugS(address);
+			case ShellyPlugS.ID: d = new ShellyPlugS(address, name);
 			break;
-			case ShellyPlug.ID: d = new ShellyPlug(address);
+			case ShellyPlug.ID: d = new ShellyPlug(address, name);
 			break;
-			case ShellyPlugE.ID: d = new ShellyPlugE(address);
+			case ShellyPlugE.ID: d = new ShellyPlugE(address, name);
 			break;
-			case ShellyPlugUS.ID: d = new ShellyPlugUS(address);
+			case ShellyPlugUS.ID: d = new ShellyPlugUS(address, name);
 			break;
-			case ShellyUNI.ID: d = new ShellyUNI(address);
+			case ShellyUNI.ID: d = new ShellyUNI(address, name);
 			break;
-			case ShellyDW.ID: d = new ShellyDW(address, info);
+			case ShellyDW.ID: d = new ShellyDW(address, info, name);
 			break;
-			case ShellyDW2.ID: d = new ShellyDW2(address, info);
+			case ShellyDW2.ID: d = new ShellyDW2(address, info, name);
 			break;
-			case ShellyFlood.ID: d = new ShellyFlood(address, info);
+			case ShellyFlood.ID: d = new ShellyFlood(address, info, name);
 			break;
-			case ShellyHT.ID: d = new ShellyHT(address, info);
+			case ShellyHT.ID: d = new ShellyHT(address, info, name);
 			break;
-			case ShellyMotion.ID: d = new ShellyMotion(address);
+			case ShellyMotion.ID: d = new ShellyMotion(address, name);
 			break;
-			case ShellyTRV.ID: d = new ShellyTRV(address);
+			case ShellyTRV.ID: d = new ShellyTRV(address, name);
 			break;
 			default: d = new ShellyG1Unmanaged(address, name);
 			break;
@@ -237,18 +237,18 @@ public class DevicesFactory {
 			ShellyAbstractDevice d;
 			switch(info.get("app").asText()) {
 			// Plus
-			case ShellyPlus1.ID: d = new ShellyPlus1(address);
+			case ShellyPlus1.ID: d = new ShellyPlus1(address, name);
 			break;
-			case ShellyPlus1PM.ID: d = new ShellyPlus1PM(address);
+			case ShellyPlus1PM.ID: d = new ShellyPlus1PM(address, name);
 			break;
-			case ShellyPlus2PM.ID: d = new ShellyPlus2PM(address);
+			case ShellyPlus2PM.ID: d = new ShellyPlus2PM(address, name);
 			break;
-			case ShellyPlusi4.ID: d = new ShellyPlusi4(address);
+			case ShellyPlusi4.ID: d = new ShellyPlusi4(address, name);
 			break;
 			// PRO
-			case ShellyPro2PM.ID: d = new ShellyPro2PM(address);
+			case ShellyPro2PM.ID: d = new ShellyPro2PM(address, name);
 			break;
-			case ShellyPro2.ID: d = new ShellyPro2(address);
+			case ShellyPro2.ID: d = new ShellyPro2(address, name);
 			break;
 			default: d = new ShellyG2Unmanaged(address, name);
 			break;
@@ -312,7 +312,7 @@ public class DevicesFactory {
 		AuthenticationStore aStore = httpClient.getAuthenticationStore();
 		try {
 			aStore.addAuthentication(da);
-			int status = httpClient.newRequest("http://" + address.getHostAddress() + testCommand).send().getStatus();
+			int status = httpClient.GET("http://" + address.getHostAddress() + testCommand).getStatus();
 			if(status == HttpStatus.OK_200) {
 				return HttpStatus.OK_200;
 			} else {

@@ -19,13 +19,13 @@ public class Button1 extends AbstractBatteryG1Device implements InputCommander {
 	private Actions actions = new Actions(this);
 	private Meters[] meters;
 	
-	public Button1(InetAddress address, JsonNode shelly) throws IOException {
-		this(address);
+	public Button1(InetAddress address, JsonNode shelly, String hostname) {
+		super(address, hostname);
 		this.shelly = shelly;
 	}
 	
-	public Button1(InetAddress address) throws IOException {
-		super(address);
+	public Button1(InetAddress address, String hostname) {
+		super(address, hostname);
 		
 		meters = new Meters[] {
 				new Meters() {

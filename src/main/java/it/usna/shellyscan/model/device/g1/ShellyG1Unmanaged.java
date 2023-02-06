@@ -14,8 +14,7 @@ public class ShellyG1Unmanaged extends AbstractG1Device implements ShellyUnmanag
 	private Exception ex;
 
 	public ShellyG1Unmanaged(InetAddress address, String hostname) {
-		super(address);
-		this.hostname = hostname;
+		super(address, hostname);
 	}
 	
 	@Override
@@ -38,7 +37,7 @@ public class ShellyG1Unmanaged extends AbstractG1Device implements ShellyUnmanag
 	}
 	
 	public ShellyG1Unmanaged(InetAddress address, String hostname, Exception e) {
-		super(address);
+		super(address, hostname);
 		this.ex = e;
 		this.hostname = hostname;
 		name = "";

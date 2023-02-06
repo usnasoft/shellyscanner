@@ -20,8 +20,8 @@ public class ShellyPro2 extends AbstractG2Device implements RelayCommander, Inte
 	private Relay relay1 = new Relay(this, 1);
 	private float internalTmp;
 
-	public ShellyPro2(InetAddress address) {
-		super(address);
+	public ShellyPro2(InetAddress address, String hostname) {
+		super(address, hostname);
 	}
 
 	@Override

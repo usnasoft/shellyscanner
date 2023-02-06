@@ -25,8 +25,8 @@ public class Shelly3EM extends AbstractG1Device implements RelayCommander {
 	private String meterName[] = new String[3];
 	private Meters meters[];
 
-	public Shelly3EM(InetAddress address) {
-		super(address);
+	public Shelly3EM(InetAddress address, String hostname) {
+		super(address, hostname);
 		
 		class EM3Meters extends Meters implements LabelHolder {
 			private int ind;

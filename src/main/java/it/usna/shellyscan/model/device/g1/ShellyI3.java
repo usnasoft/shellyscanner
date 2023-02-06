@@ -16,8 +16,8 @@ public class ShellyI3 extends AbstractG1Device implements InputCommander {
 	public final static String ID = "SHIX3-1";
 	private Actions actions = new Actions(this);
 	
-	public ShellyI3(InetAddress address) {
-		super(address);
+	public ShellyI3(InetAddress address, String hostname) {
+		super(address, hostname);
 	}
 	
 	@Override

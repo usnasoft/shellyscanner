@@ -19,8 +19,8 @@ public abstract class AbstractBatteryG1Device extends AbstractG1Device implement
 	protected JsonNode settingsActions;
 	protected int bat;
 
-	protected AbstractBatteryG1Device(InetAddress address) {
-		super(address);
+	protected AbstractBatteryG1Device(InetAddress address, String hostname) {
+		super(address, hostname);
 	}
 	
 //	@Override

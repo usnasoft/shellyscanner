@@ -22,8 +22,8 @@ public class ShellyDimmer extends AbstractG1Device implements WhiteCommander, In
 	private float power;
 	private Meters[] meters;
 
-	public ShellyDimmer(InetAddress address) {
-		super(address);
+	public ShellyDimmer(InetAddress address, String hostname) {
+		super(address, hostname);
 		
 		meters = new Meters[] {
 				new MetersPower() {

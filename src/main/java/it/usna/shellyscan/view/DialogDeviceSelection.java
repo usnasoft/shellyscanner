@@ -82,7 +82,7 @@ public class DialogDeviceSelection extends JDialog {
 		for(int i = 0; i < model.size(); i++) {
 			ShellyAbstractDevice d = model.get(i);
 //			if(d.getStatus() == ShellyAbstractDevice.Status.ON_LINE) {
-				tModel.addRow(UtilCollecion.getExtendedHostName(d), d.getHttpHost().getAddress());
+				tModel.addRow(UtilCollecion.getExtendedHostName(d), d.getAddress());
 //			}
 		}
 

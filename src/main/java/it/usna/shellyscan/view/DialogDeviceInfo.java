@@ -39,6 +39,7 @@ import it.usna.shellyscan.controller.UsnaAction;
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.BatteryDeviceInterface;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
+import it.usna.shellyscan.view.util.UtilCollecion;
 import it.usna.swing.dialog.FindReplaceDialog;
 
 public class DialogDeviceInfo extends JDialog {
@@ -48,8 +49,7 @@ public class DialogDeviceInfo extends JDialog {
 
 	public DialogDeviceInfo(final MainView owner, boolean json, ShellyAbstractDevice device, String[] infoList) {
 		super(owner, false);
-		final String dName = device.getName();
-		setTitle(device.getHostname() + " - " + (dName.length() > 0 ? dName : device.getTypeName()));
+		setTitle(UtilCollecion.getExtendedHostName(device));
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		this.setSize(530, 650);
 		setLocationRelativeTo(owner);

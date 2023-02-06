@@ -5,7 +5,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
-import java.net.HttpURLConnection;
 import java.net.InetAddress;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -14,16 +13,15 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
 
-import org.apache.hc.client5.http.ClientProtocolException;
-import org.apache.hc.client5.http.classic.methods.HttpGet;
-import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
-import org.apache.hc.client5.http.impl.classic.HttpClients;
-import org.apache.hc.core5.http.io.entity.EntityUtils;
+import org.eclipse.jetty.client.api.ContentResponse;
+import org.eclipse.jetty.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,8 +41,8 @@ public abstract class AbstractG1Device extends ShellyAbstractDevice {
 //	private final static JsonPointer RSSI = JsonPointer.valueOf("/wifi_sta/rssi");
 	private final static Logger LOG = LoggerFactory.getLogger(AbstractG1Device.class);
 
-	protected AbstractG1Device(InetAddress address) {
-		super(address);
+	protected AbstractG1Device(InetAddress address, String hostname) {
+		super(address, hostname);
 	}
 	
 	@Override
@@ -80,51 +78,48 @@ public abstract class AbstractG1Device extends ShellyAbstractDevice {
 		
 		lastConnection = System.currentTimeMillis();
 	}
-
+	
 //	public String sendCommand(final String command) {
 //		HttpGet httpget = new HttpGet(command);
-//		try (CloseableHttpClient httpClient = HttpClients.createDefault(); CloseableHttpResponse response = httpClient.execute(httpHost, httpget, clientContext)) {
-//			int statusCode = response.getCode();
-//			if(statusCode == HttpURLConnection.HTTP_OK) {
-//				status = Status.ON_LINE;
-//			} else if(statusCode == HttpURLConnection.HTTP_UNAUTHORIZED) {
-//				status = Status.NOT_LOOGGED;
-//			} else /*if(statusCode == HttpURLConnection.HTTP_INTERNAL_ERROR)*/ {
-//				status = Status.ERROR;
-//			} /*else {
-//				status = Status.OFF_LINE;
-//			}*/
-////			String ret = new BufferedReader(new InputStreamReader(response.getEntity().getContent())).lines().collect(Collectors.joining("\n"));
-//			String ret = EntityUtils.toString(response.getEntity());
-//			return (ret == null || ret.length() == 0 || ret/*.trim()*/.startsWith("{")) ? null : ret;
+//		try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
+//			return httpClient.execute(httpHost, httpget, clientContext, response -> {
+//				int statusCode = response.getCode();
+//				if(statusCode == HttpURLConnection.HTTP_OK) {
+//					status = Status.ON_LINE;
+//				} else if(statusCode == HttpURLConnection.HTTP_UNAUTHORIZED) {
+//					status = Status.NOT_LOOGGED;
+//				} else /*if(statusCode == HttpURLConnection.HTTP_INTERNAL_ERROR)*/ {
+//					status = Status.ERROR;
+//				} /*else { status = Status.OFF_LINE; }*/
+//				//String ret = new BufferedReader(new InputStreamReader(response.getEntity().getContent())).lines().collect(Collectors.joining("\n"));
+//				String ret = EntityUtils.toString(response.getEntity());
+//				return (ret == null || ret.length() == 0 || ret/*.trim()*/.startsWith("{")) ? null : ret;
+//			});
+//		} catch(ClientProtocolException | RuntimeException e) {
+//			return e.getMessage();
 //		} catch(IOException e) {
 //			status = Status.OFF_LINE;
 //			return "Status-OFFLINE"; //Main.LABELS.getString("err_connection_offline"); //todo
-//		} catch(ParseException | RuntimeException e) {
-//			return e.getMessage();
 //		}
 //	}
 	
 	public String sendCommand(final String command) {
-		HttpGet httpget = new HttpGet(command);
-//		httpget.addHeader("Accept-Charset", StandardCharsets.UTF_8.name());
-		try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
-			return httpClient.execute(httpHost, httpget, clientContext, response -> {
-				int statusCode = response.getCode();
-				if(statusCode == HttpURLConnection.HTTP_OK) {
-					status = Status.ON_LINE;
-				} else if(statusCode == HttpURLConnection.HTTP_UNAUTHORIZED) {
-					status = Status.NOT_LOOGGED;
-				} else /*if(statusCode == HttpURLConnection.HTTP_INTERNAL_ERROR)*/ {
-					status = Status.ERROR;
-				} /*else { status = Status.OFF_LINE; }*/
-				//String ret = new BufferedReader(new InputStreamReader(response.getEntity().getContent())).lines().collect(Collectors.joining("\n"));
-				String ret = EntityUtils.toString(response.getEntity());
-				return (ret == null || ret.length() == 0 || ret/*.trim()*/.startsWith("{")) ? null : ret;
-			});
-		} catch(ClientProtocolException | RuntimeException e) {
+		try {
+			ContentResponse response = httpClient.GET("http://" + address.getHostAddress() + command);
+			int statusCode = response.getStatus();
+			if(statusCode == HttpStatus.OK_200) {
+				status = Status.ON_LINE;
+			}
+			if(statusCode == HttpStatus.UNAUTHORIZED_401) {
+				status = Status.NOT_LOOGGED;
+			} else /*if(statusCode == HttpStatus.INTERNAL_SERVER_ERROR_500)*/ {
+				status = Status.ERROR;
+			}
+			String ret = response.getContentAsString();
+			return (ret == null || ret.length() == 0 || ret/*.trim()*/.startsWith("{")) ? null : ret;
+		} catch(ExecutionException  | RuntimeException e) {
 			return e.getMessage();
-		} catch(IOException e) {
+		} catch (TimeoutException | InterruptedException e) {
 			status = Status.OFF_LINE;
 			return "Status-OFFLINE"; //Main.LABELS.getString("err_connection_offline"); //todo
 		}

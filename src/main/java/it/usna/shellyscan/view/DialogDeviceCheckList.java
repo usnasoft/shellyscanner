@@ -219,7 +219,7 @@ public class DialogDeviceCheckList extends JDialog {
 		btnEdit.addActionListener(ev -> {
 			ShellyAbstractDevice d = devices.get(table.convertRowIndexToModel(table.getSelectedRow()));
 			try {
-				Desktop.getDesktop().browse(new URI(d.getHttpHost().getSchemeName() + "://" + d.getHttpHost().getAddress().getHostAddress()));
+				Desktop.getDesktop().browse(new URI("http://" + d.getAddress().getHostAddress()));
 			} catch (IOException | URISyntaxException e) {
 				Main.errorMsg(e);
 			}
@@ -251,7 +251,7 @@ public class DialogDeviceCheckList extends JDialog {
 	private void fill(UsnaTableModel tModel, List<ShellyAbstractDevice> model) {
 		exeService = Executors.newFixedThreadPool(20);
 		model.forEach(d -> {
-			final int row = tModel.addRow(DevicesTable.UPDATING_BULLET, UtilCollecion.getExtendedHostName(d), d.getHttpHost().getAddress());
+			final int row = tModel.addRow(DevicesTable.UPDATING_BULLET, UtilCollecion.getExtendedHostName(d), d.getAddress());
 			exeService.execute(() -> {
 				try {
 					if(d instanceof AbstractG1Device) {
@@ -263,7 +263,7 @@ public class DialogDeviceCheckList extends JDialog {
 					if(d instanceof BatteryDeviceInterface) { // G1 only
 						tModel.setRow(row, g1Row(d, ((BatteryDeviceInterface)d).getStoredJSON("/settings")));
 					} else {
-						tModel.setRow(row, getStatusIcon(d), UtilCollecion.getExtendedHostName(d), d.getHttpHost().getAddress());
+						tModel.setRow(row, getStatusIcon(d), UtilCollecion.getExtendedHostName(d), d.getAddress());
 					}
 					if(e instanceof /*SocketTimeoutException*/HttpHostConnectException) {
 						LOG.debug("{}", d, e);
@@ -299,7 +299,7 @@ public class DialogDeviceCheckList extends JDialog {
 		} else {
 			wifi2 = "-";
 		}
-		return new Object[] {getStatusIcon(d), UtilCollecion.getExtendedHostName(d), d.getHttpHost().getAddress(), eco, ledOff, debug, "-", "-", roaming, wifi1, wifi2};
+		return new Object[] {getStatusIcon(d), UtilCollecion.getExtendedHostName(d), d.getAddress(), eco, ledOff, debug, "-", "-", roaming, wifi1, wifi2};
 	}
 	
 	private static Object[] g2Row(ShellyAbstractDevice d, JsonNode settings) {
@@ -330,7 +330,7 @@ public class DialogDeviceCheckList extends JDialog {
 		} else {
 			wifi2 = "-";
 		}
-		return new Object[] {getStatusIcon(d), UtilCollecion.getExtendedHostName(d), d.getHttpHost().getAddress(), eco, "-", debug, ble, ap, roaming, wifi1, wifi2};
+		return new Object[] {getStatusIcon(d), UtilCollecion.getExtendedHostName(d), d.getAddress(), eco, "-", debug, ble, ap, roaming, wifi1, wifi2};
 	}
 	
 	private static ImageIcon getStatusIcon(ShellyAbstractDevice d) {

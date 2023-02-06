@@ -20,8 +20,8 @@ public class ShellyDUORGB extends AbstractG1Device implements LightBulbRGBComman
 	private float power;
 	private Meters[] meters;
 	
-	public ShellyDUORGB(InetAddress address) {
-		super(address);
+	public ShellyDUORGB(InetAddress address, String hostname) {
+		super(address, hostname);
 		
 		meters = new Meters[] {
 				new MetersPower() {

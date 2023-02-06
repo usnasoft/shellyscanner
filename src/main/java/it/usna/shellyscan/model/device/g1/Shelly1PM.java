@@ -28,8 +28,8 @@ public class Shelly1PM extends AbstractG1Device implements RelayCommander, Inter
 	private boolean extSwitchRev;
 	private Meters[] meters;
 
-	public Shelly1PM(InetAddress address) {
-		super(address);
+	public Shelly1PM(InetAddress address, String hostname) {
+		super(address, hostname);
 	}
 	
 	@Override

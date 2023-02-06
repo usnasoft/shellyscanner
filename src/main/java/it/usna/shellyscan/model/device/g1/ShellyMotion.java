@@ -17,8 +17,8 @@ public class ShellyMotion extends AbstractG1Device {
 	private boolean motion;
 	protected int bat;
 
-	public ShellyMotion(InetAddress address) {
-		super(address);
+	public ShellyMotion(InetAddress address, String hostname) {
+		super(address, hostname);
 		
 		meters = new Meters[] {
 				new Meters() {
