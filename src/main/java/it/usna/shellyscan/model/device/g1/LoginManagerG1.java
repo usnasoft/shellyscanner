@@ -56,17 +56,11 @@ public class LoginManagerG1 implements LoginManager {
 	public String disable() {
 		String msg = d.sendCommand("/settings/login?enabled=false");
 		if(msg == null) {
-			d.setAuthentication(null);
+//			d.setAuthentication(null);
+			d.setAuthenticationResult(null);
 		}
 		return msg;
 	}
-
-//	@Override
-//	public String set(String user, char[] pwd) {
-//		BasicCredentialsProvider credsProvider = new BasicCredentialsProvider();
-//		credsProvider.setCredentials(/*AuthScope.ANY*/new AuthScope(null, -1), new UsernamePasswordCredentials(user, pwd));
-//		return set(user, pwd, credsProvider);
-//	}
 
 	@Override
 	public String set(String user, char[] pwd) {
@@ -76,8 +70,8 @@ public class LoginManagerG1 implements LoginManager {
 					"&password=" + URLEncoder.encode(new String(pwd), StandardCharsets.UTF_8.toString());
 			String msg = d.sendCommand(cmd);
 			if(msg == null) {
-//				d.setCredentialsProvider(credsProvider);
-				d.setAuthentication(new BasicAuthentication(URI.create("http://" + d.getAddress().getHostAddress()), BasicAuthentication.ANY_REALM, user, new String(pwd)));
+//				d.setAuthentication(new BasicAuthentication(URI.create("http://" + d.getAddress().getHostAddress()), BasicAuthentication.ANY_REALM, user, new String(pwd)));
+				d.setAuthenticationResult(new BasicAuthentication.BasicResult(URI.create("http://" + d.getAddress().getHostAddress()), user, new String(pwd)));
 			}
 			return msg;
 		} catch (UnsupportedEncodingException e) {
@@ -93,7 +87,8 @@ public class LoginManagerG1 implements LoginManager {
 		try {
 			int status = request.send().getStatus();
 			if(status == HttpStatus.OK_200) {
-				httpClient.getAuthenticationStore().addAuthentication(new BasicAuthentication(uri, BasicAuthentication.ANY_REALM, user, new String(pwd)));
+//				httpClient.getAuthenticationStore().addAuthentication(new BasicAuthentication(uri, BasicAuthentication.ANY_REALM, user, new String(pwd)));
+				httpClient.getAuthenticationStore().addAuthenticationResult(creds);
 				return HttpStatus.OK_200;
 			} else {
 				return status;

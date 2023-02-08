@@ -185,7 +185,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		if(JOptionPane.showOptionDialog(
 				MainView.this, LABELS.getString("action_reboot_confirm"), LABELS.getString("action_reboot_tooltip"),
 				JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null,
-				new Object[] {UIManager.getString("OptionPane.yesButtonText"), cancel}, cancel) == 0) {
+				new Object[] {LABELS.getString("action_reboot_name"), cancel}, cancel) == 0) {
 			for(int ind: devicesTable.getSelectedRows()) {
 				int modelRow = devicesTable.convertRowIndexToModel(ind);
 				ShellyAbstractDevice d = model.get(modelRow);

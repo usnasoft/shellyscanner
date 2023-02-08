@@ -10,7 +10,6 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import org.eclipse.jetty.client.HttpClient;
-import org.eclipse.jetty.client.api.Authentication;
 import org.eclipse.jetty.client.api.ContentResponse;
 import org.eclipse.jetty.http.HttpStatus;
 
@@ -70,8 +69,6 @@ public abstract class ShellyAbstractDevice {
 //			clientContext = null;
 //		}
 //	}
-	
-	public abstract void setAuthentication(Authentication auth);
 	
 //	public JsonNode getJSON(final String command) throws IOException { //JsonProcessingException extends IOException
 //		HttpGet httpget = new HttpGet(command);

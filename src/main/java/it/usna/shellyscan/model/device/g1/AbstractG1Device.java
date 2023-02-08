@@ -24,7 +24,6 @@ import java.util.zip.ZipOutputStream;
 import org.eclipse.jetty.client.api.Authentication;
 import org.eclipse.jetty.client.api.AuthenticationStore;
 import org.eclipse.jetty.client.api.ContentResponse;
-import org.eclipse.jetty.client.util.BasicAuthentication;
 import org.eclipse.jetty.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,16 +55,16 @@ public abstract class AbstractG1Device extends ShellyAbstractDevice {
 		try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e) {}
 		fillStatus(getJSON("/status"));
 	}
-	
-	@Override
-	public void setAuthentication(Authentication auth) {
+
+	public void setAuthenticationResult(Authentication.Result auth) {
 		AuthenticationStore store = httpClient.getAuthenticationStore();
-		Authentication ar = store.findAuthentication("Basic", URI.create("http://" + address.getHostAddress()), BasicAuthentication.ANY_REALM);
+//		Authentication ar = store.findAuthentication("Basic", URI.create("http://" + address.getHostAddress()), BasicAuthentication.ANY_REALM);
+		Authentication.Result ar = store.findAuthenticationResult(URI.create("http://" + address.getHostAddress()));
 		if(ar != null) {
-			store.removeAuthentication(ar);
+			store.removeAuthenticationResult(ar);
 		}
 		if(auth != null) {
-			store.addAuthentication(auth);
+			store.addAuthenticationResult(auth);
 		}
 	}
 	

@@ -75,6 +75,13 @@
 			<artifactId>jetty-client</artifactId>
 			<version>9.4.50.v20221201</version>
 		</dependency>
+		<!--
+		<dependency>
+		    <groupId>org.eclipse.jetty.websocket</groupId>
+		    <artifactId>websocket-jetty-client</artifactId>
+		    <version>11.0.13</version>
+		</dependency>
+		-->
 		<dependency>
 			<groupId>org.java-websocket</groupId>
 			<artifactId>Java-WebSocket</artifactId>
