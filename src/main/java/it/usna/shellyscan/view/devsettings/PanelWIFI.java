@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
@@ -314,9 +315,13 @@ public class PanelWIFI extends AbstractSettingsPanel implements UsnaEventListene
 //			}
 //		}
 //	}
-
+	
 	@Override
 	public String showing() throws InterruptedException {
+		return fill(true);
+	}
+
+	private String fill(boolean showExcluded) throws InterruptedException {
 		String exclude = "<html>" + LABELS.getString("dlgExcludedDevicesMsg");
 		int excludeCount = 0;
 		ShellyAbstractDevice d = null;
@@ -375,13 +380,12 @@ public class PanelWIFI extends AbstractSettingsPanel implements UsnaEventListene
 //					e.printStackTrace();
 				}
 			}
-//			if(Thread.interrupted()) {
-//				throw new InterruptedException();
-//			}
-			if(excludeCount == devices.size() && isShowing()) {
-				return LABELS.getString("msgAllDevicesExcluded");
-			} else if (excludeCount > 0 && isShowing()) {
-				Msg.showHtmlMessageDialog(this, exclude, LABELS.getString("dlgExcludedDevicesTitle"), JOptionPane.WARNING_MESSAGE);
+			if(showExcluded) {
+				if(excludeCount == devices.size() && isShowing()) {
+					return LABELS.getString("msgAllDevicesExcluded");
+				} else if (excludeCount > 0 && isShowing()) {
+					Msg.showHtmlMessageDialog(this, exclude, LABELS.getString("dlgExcludedDevicesTitle"), JOptionPane.WARNING_MESSAGE);
+				}
 			}
 			chckbxEnabled.setEnabled(true); // form is active
 			chckbxEnabled.setSelected(enabledGlobal);
@@ -396,7 +400,6 @@ public class PanelWIFI extends AbstractSettingsPanel implements UsnaEventListene
 			textFieldDNS.setText(globalDNS);			
 			setEnabledWIFI(/*chckbxEnabled.isSelected()*/enabledGlobal, /*rdbtnStaticIP.isSelected()*/staticIPGlobal);
 			btnCopy.setEnabled(true);
-//			btnCopyTo.setEnabled(true);
 			return null;
 		} catch (/*IOException |*/ RuntimeException e) {
 			setEnabledWIFI(false, false);
@@ -474,7 +477,8 @@ public class PanelWIFI extends AbstractSettingsPanel implements UsnaEventListene
 				}
 			}
 			try {
-				showing();
+				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+				fill(false);
 			} catch (InterruptedException e) {}
 			return res;
 		}
