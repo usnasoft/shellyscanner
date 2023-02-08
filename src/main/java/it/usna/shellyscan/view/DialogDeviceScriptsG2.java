@@ -264,7 +264,7 @@ public class DialogDeviceScriptsG2 extends JDialog {
 			if(res != null) {
 				Main.errorMsg(res);
 			}
-		} catch (IOException e1) {
+		} catch (/*IO*/Exception e1) {
 			Main.errorMsg(e1);
 		} finally {
 			setCursor(Cursor.getDefaultCursor());

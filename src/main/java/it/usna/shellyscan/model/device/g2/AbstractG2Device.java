@@ -5,6 +5,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetAddress;
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -17,7 +18,10 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
 
+import org.eclipse.jetty.client.api.Authentication;
+import org.eclipse.jetty.client.api.AuthenticationStore;
 import org.eclipse.jetty.client.api.ContentResponse;
+import org.eclipse.jetty.client.util.DigestAuthentication;
 import org.eclipse.jetty.client.util.StringContentProvider;
 import org.eclipse.jetty.http.HttpStatus;
 import org.slf4j.Logger;
@@ -51,6 +55,18 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 		fillOnce(getJSON("/rpc/Shelly.GetDeviceInfo"));
 		fillSettings(getJSON("/rpc/Shelly.GetConfig"));
 		fillStatus(getJSON("/rpc/Shelly.GetStatus"));
+	}
+	
+	@Override
+	public void setAuthentication(Authentication auth) {
+		AuthenticationStore store = httpClient.getAuthenticationStore();
+		Authentication ar = store.findAuthentication("Digest", URI.create("http://" + address.getHostAddress()), DigestAuthentication.ANY_REALM);
+		if(ar != null) {
+			store.removeAuthentication(ar);
+		}
+		if(auth != null) {
+			store.addAuthentication(auth);
+		}
 	}
 	
 	protected void fillOnce(JsonNode device) throws JsonParseException {
@@ -171,7 +187,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 		}	
 	}
 
-//	private JsonNode executeRPC2(final String method, String payload) throws IOException, StreamReadException {
+//	private JsonNode executeRPC(final String method, String payload) throws IOException, StreamReadException {
 //		HttpPost httpPost = new HttpPost("/rpc");
 //		httpPost.setEntity(new StringEntity("{\"id\":1, \"method\":\"" + method + "\", \"params\":" + payload + "}", StandardCharsets.UTF_8));
 //		try (CloseableHttpClient httpClient = HttpClients.createDefault()) {

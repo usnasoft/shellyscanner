@@ -7,9 +7,6 @@ import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.KeyEvent;
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -25,10 +22,6 @@ import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.KeyStroke;
 import javax.swing.text.JTextComponent;
-
-import org.apache.hc.client5.http.classic.methods.HttpGet;
-import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
-import org.apache.hc.client5.http.impl.classic.HttpClients;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -151,16 +144,10 @@ public class DialogDeviceInfo extends JDialog {
 //							textArea.setText("");
 //							br.lines().forEach(l -> textArea.append(l + "\n"));
 //						}
-						try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
-							httpClient.execute(device.getHttpHost(), new HttpGet(info), device.getClientContext(), response -> {
-								try(InputStream in = response.getEntity().getContent(); BufferedReader br = new BufferedReader(new InputStreamReader(in))) {
-									textArea.setForeground(Color.BLACK);
-									textArea.setText("");
-									br.lines().forEach(l -> textArea.append(l + "\n"));
-								}
-								return null;
-							});
-						}
+						textArea.setForeground(Color.BLACK);
+						String log = device.getHttpClient().GET("http://" + device.getAddress().getHostAddress() + info).getContentAsString();
+						textArea.setText(log);
+
 					}
 					textArea.setCaretPosition(0);
 				}

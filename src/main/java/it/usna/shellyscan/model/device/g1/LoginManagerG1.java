@@ -9,10 +9,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
-import org.apache.hc.client5.http.auth.AuthScope;
-import org.apache.hc.client5.http.auth.CredentialsProvider;
-import org.apache.hc.client5.http.auth.UsernamePasswordCredentials;
-import org.apache.hc.client5.http.impl.auth.BasicCredentialsProvider;
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.api.Authentication;
 import org.eclipse.jetty.client.api.Request;
@@ -60,26 +56,28 @@ public class LoginManagerG1 implements LoginManager {
 	public String disable() {
 		String msg = d.sendCommand("/settings/login?enabled=false");
 		if(msg == null) {
-			d.setCredentialsProvider(null);
+			d.setAuthentication(null);
 		}
 		return msg;
 	}
 
+//	@Override
+//	public String set(String user, char[] pwd) {
+//		BasicCredentialsProvider credsProvider = new BasicCredentialsProvider();
+//		credsProvider.setCredentials(/*AuthScope.ANY*/new AuthScope(null, -1), new UsernamePasswordCredentials(user, pwd));
+//		return set(user, pwd, credsProvider);
+//	}
+
 	@Override
 	public String set(String user, char[] pwd) {
-		BasicCredentialsProvider credsProvider = new BasicCredentialsProvider();
-		credsProvider.setCredentials(/*AuthScope.ANY*/new AuthScope(null, -1), new UsernamePasswordCredentials(user, pwd));
-		return set(user, pwd, credsProvider);
-	}
-
-	public String set(String user, char[] pwd, CredentialsProvider credsProvider) {
 		try {
 			String cmd = 
 					"/settings/login?enabled=true&username=" + URLEncoder.encode(user, StandardCharsets.UTF_8.toString()) +
 					"&password=" + URLEncoder.encode(new String(pwd), StandardCharsets.UTF_8.toString());
 			String msg = d.sendCommand(cmd);
 			if(msg == null) {
-				d.setCredentialsProvider(credsProvider);
+//				d.setCredentialsProvider(credsProvider);
+				d.setAuthentication(new BasicAuthentication(URI.create("http://" + d.getAddress().getHostAddress()), BasicAuthentication.ANY_REALM, user, new String(pwd)));
 			}
 			return msg;
 		} catch (UnsupportedEncodingException e) {
@@ -88,7 +86,7 @@ public class LoginManagerG1 implements LoginManager {
 	}
 	
 	public static int testBasicAuthentication(HttpClient httpClient, final InetAddress address, String user, char[] pwd, String testCommand) {
-		URI uri = URI.create("http://" + address.getHostAddress());
+		final URI uri = URI.create("http://" + address.getHostAddress());
 		Authentication.Result creds = new BasicAuthentication.BasicResult(uri, user, new String(pwd));
 		Request request = httpClient.newRequest("http://" + address.getHostAddress() + testCommand);
 		creds.apply(request);

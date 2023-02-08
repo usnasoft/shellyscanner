@@ -17,8 +17,6 @@ import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 
-import org.apache.hc.client5.http.auth.CredentialsProvider;
-
 import it.usna.shellyscan.Main;
 import it.usna.shellyscan.model.device.LoginManager;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
@@ -190,17 +188,17 @@ public class PanelResLogin extends AbstractSettingsPanel {
 		if(enabled && (user.length() == 0 || pwd.length == 0)) {
 			throw new IllegalArgumentException(LABELS.getString("dlgSetMsgObbUser"));
 		}
-		CredentialsProvider credsProvider = null;
-		if(enabled) {
-			credsProvider = LoginManager.getCredentialsProvider(user, pwd);
-		}
+//		CredentialsProvider credsProvider = null;
+//		if(enabled) {
+//			credsProvider = LoginManager.getCredentialsProvider(user, pwd);
+//		}
 		String res = "<html>";
 		for(int i=0; i < devices.size(); i++) {
 			String msg;
 			LoginManager lm = loginModule.get(i);
 			if(lm != null ) {
 				if(enabled) {
-					msg = lm.set(user, pwd, credsProvider);
+					msg = lm.set(user, pwd/*, credsProvider*/);
 				} else {
 					msg = lm.disable();
 				}

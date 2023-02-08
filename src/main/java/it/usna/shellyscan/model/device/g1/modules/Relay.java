@@ -14,7 +14,7 @@ import it.usna.shellyscan.model.device.modules.RelayInterface;
 public class Relay implements RelayInterface {
 	private final AbstractG1Device parent;
 	private final int index;
-	private String name = "";
+	private String name;
 	private boolean isOn;
 	private String source;
 //	private final boolean associatedInput;
@@ -107,7 +107,7 @@ public class Relay implements RelayInterface {
 	
 	@Override
 	public String getLabel() {
-		return name.length() > 0 ? name : parent.getName();
+		return (name != null && name.length() > 0) ? name : parent.getName();
 	}
 	
 	@Override

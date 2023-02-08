@@ -6,7 +6,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import org.apache.hc.client5.http.auth.CredentialsProvider;
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.api.ContentResponse;
 import org.eclipse.jetty.http.HttpStatus;
@@ -80,44 +79,44 @@ public class DevicesFactory {
 	}
 
 	private static ShellyAbstractDevice createG1(HttpClient httpClient, final InetAddress address, JsonNode info, String name) {
-		CredentialsProvider credsProvider = null;
 		try {
 			final boolean auth = info.get("auth").asBoolean();
 			if(auth) {
 				synchronized (DevicesFactory.class) { // white for this in order to authenticate all subsequent
-//					if(lastCredentialsProv != null && testAuthentication(address, lastCredentialsProv, "/settings") == HttpURLConnection.HTTP_OK) {
-//						credsProvider = lastCredentialsProv;
-//					} else {
-//						DialogAuthentication credentials = new DialogAuthentication(
-//								Main.LABELS.getString("dlgAuthTitle"),
-//								Main.LABELS.getString("labelUser"),
-//								Main.LABELS.getString("labelPassword"));
-//						credentials.setMessage(String.format(Main.LABELS.getString("dlgAuthMessage"), name));
-//						String user;
-//						do {
-//							credentials.setVisible(true);
-//							if((user = credentials.getUser()) != null) {
-//								lastCredentialsProv = credsProvider = LoginManager.getCredentialsProvider(user, credentials.getPassword().clone());
-//							}
-//							credentials.setMessage(String.format(Main.LABELS.getString("dlgAuthMessageError"), name));
-//						} while(user != null && testAuthentication(address, credsProvider, "/settings") != HttpURLConnection.HTTP_OK);
-//						credentials.dispose();
-//					}
-				}
-				if(lastUser == null || LoginManagerG1.testBasicAuthentication(httpClient, address, lastUser, lastP, "/settings") != HttpStatus.OK_200) {
-					DialogAuthentication credentials = new DialogAuthentication(
-							Main.LABELS.getString("dlgAuthTitle"),
-							Main.LABELS.getString("labelUser"),
-							Main.LABELS.getString("labelPassword"));
-					credentials.setMessage(String.format(Main.LABELS.getString("dlgAuthMessage"), name));
-					String user;
-					do {
-						credentials.setVisible(true);
-						if((user = credentials.getUser()) != null) {
-							setCredential(user, credentials.getPassword().clone());
-						}
-						credentials.setMessage(String.format(Main.LABELS.getString("dlgAuthMessageError"), name));
-					} while(user != null && LoginManagerG1.testBasicAuthentication(httpClient, address, lastUser, lastP, "/settings") != HttpStatus.OK_200);
+					//					if(lastCredentialsProv != null && testAuthentication(address, lastCredentialsProv, "/settings") == HttpURLConnection.HTTP_OK) {
+					//						credsProvider = lastCredentialsProv;
+					//					} else {
+					//						DialogAuthentication credentials = new DialogAuthentication(
+					//								Main.LABELS.getString("dlgAuthTitle"),
+					//								Main.LABELS.getString("labelUser"),
+					//								Main.LABELS.getString("labelPassword"));
+					//						credentials.setMessage(String.format(Main.LABELS.getString("dlgAuthMessage"), name));
+					//						String user;
+					//						do {
+					//							credentials.setVisible(true);
+					//							if((user = credentials.getUser()) != null) {
+					//								lastCredentialsProv = credsProvider = LoginManager.getCredentialsProvider(user, credentials.getPassword().clone());
+					//							}
+					//							credentials.setMessage(String.format(Main.LABELS.getString("dlgAuthMessageError"), name));
+					//						} while(user != null && testAuthentication(address, credsProvider, "/settings") != HttpURLConnection.HTTP_OK);
+					//						credentials.dispose();
+					//					}
+					if(lastUser == null || LoginManagerG1.testBasicAuthentication(httpClient, address, lastUser, lastP, "/settings") != HttpStatus.OK_200) {
+						DialogAuthentication credentials = new DialogAuthentication(
+								Main.LABELS.getString("dlgAuthTitle"),
+								Main.LABELS.getString("labelUser"),
+								Main.LABELS.getString("labelPassword"));
+						credentials.setMessage(String.format(Main.LABELS.getString("dlgAuthMessage"), name));
+						String user;
+						do {
+							credentials.setVisible(true);
+							if((user = credentials.getUser()) != null) {
+								setCredential(user, credentials.getPassword().clone());
+							}
+							credentials.setMessage(String.format(Main.LABELS.getString("dlgAuthMessageError"), name));
+						} while(user != null && LoginManagerG1.testBasicAuthentication(httpClient, address, lastUser, lastP, "/settings") != HttpStatus.OK_200);
+						credentials.dispose();
+					}
 				}
 				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			}
@@ -179,9 +178,11 @@ public class DevicesFactory {
 			break;
 			}
 			try {
-				d.init(httpClient, credsProvider);
+				d.init(httpClient);
 			} catch(IOException e) {
-				LOG.warn("create - init", e);
+				if("Status-401".equals(e.getMessage()) == false) {
+					LOG.warn("create - init", e);
+				}
 			}
 			return d;
 		} catch(Exception e) { // really unexpected
@@ -191,7 +192,6 @@ public class DevicesFactory {
 	}
 
 	private static ShellyAbstractDevice createG2(HttpClient httpClient, final InetAddress address, JsonNode info, String name) {
-		CredentialsProvider credsProvider = null;
 		try {
 			final boolean auth = info.get("auth_en").asBoolean();
 			if(auth) {
@@ -199,17 +199,19 @@ public class DevicesFactory {
 					if(lastUser == null || LoginManagerG2.testDigestAuthentication(httpClient, address, LoginManagerG2.LOGIN_USER, lastP, "/rpc/Shelly.GetStatus") != HttpStatus.OK_200) {
 						DialogAuthentication credentials = new DialogAuthentication(
 								Main.LABELS.getString("dlgAuthTitle"),
-								Main.LABELS.getString("labelUser"),
+								null,
 								Main.LABELS.getString("labelPassword"));
+						credentials.setUser(LoginManagerG2.LOGIN_USER);
 						credentials.setMessage(String.format(Main.LABELS.getString("dlgAuthMessage"), name));
 						String user;
 						do {
 							credentials.setVisible(true);
 							if((user = credentials.getUser()) != null) {
-								setCredential(user, credentials.getPassword().clone());
+								setCredential(user, credentials.getPassword().clone()); // ... .clone(): DialogAuthentication clear password after dispose() call
 							}
 							credentials.setMessage(String.format(Main.LABELS.getString("dlgAuthMessageError"), name));
 						} while(user != null && LoginManagerG2.testDigestAuthentication(httpClient, address, LoginManagerG2.LOGIN_USER, lastP, "/rpc/Shelly.GetStatus") != HttpStatus.OK_200);
+						credentials.dispose();
 					}
 //					name = info.path("id").asText(name);
 //					if(lastCredentialsProv != null && testAuthentication(address, lastCredentialsProv, "/rpc/Shelly.GetStatus") == HttpURLConnection.HTTP_OK) {
@@ -225,18 +227,8 @@ public class DevicesFactory {
 //						do {
 //							credentials.setVisible(true);
 //							if((user = credentials.getUser()) != null) {
-//								
-//								
-//								// TEST ********
-//								testDigestAuthentication(httpClient, address, LoginManagerG2.LOGIN_USER, credentials.getPassword(), "/rpc/Shelly.GetStatus");
-//								// TEST ********
-//								
-//								
-//								// ... .clone(): DialogAuthentication clear password after dispose() call
 //								lastCredentialsProv = credsProvider = LoginManager.getCredentialsProvider(LoginManagerG2.LOGIN_USER, credentials.getPassword().clone());
 //							}
-//							
-//							
 //							credentials.setMessage(String.format(Main.LABELS.getString("dlgAuthMessageError"), name));
 //					
 //						} while(user != null && testAuthentication(address, credsProvider, "/rpc/Shelly.GetStatus") != HttpURLConnection.HTTP_OK);
@@ -266,9 +258,11 @@ public class DevicesFactory {
 			break;
 			}
 			try {
-				d.init(httpClient, credsProvider);
+				d.init(httpClient);
 			} catch(IOException e) {
-				LOG.warn("create - init", e);
+				if("Status-401".equals(e.getMessage()) == false) {
+					LOG.warn("create - init", e);
+				}
 			}
 			return d;
 		} catch(Exception e) { // really unexpected
@@ -281,29 +275,6 @@ public class DevicesFactory {
 		ContentResponse response = httpClient.newRequest("http://" + address.getHostAddress() + "/shelly").send();
 		return JSON_MAPPER.readTree(response.getContent());
 	}
-
-//	private static int testAuthentication(final InetAddress address, CredentialsProvider credsProvider, String testCommand) {
-//		HttpHost httpHost = new HttpHost(null, address, address.getHostAddress(), 80);
-//		AuthCache authCache = new BasicAuthCache();
-//		authCache.put(httpHost, new BasicScheme());
-//		HttpClientContext context = HttpClientContext.create();
-//		context.setCredentialsProvider(credsProvider);
-//		context.setAuthCache(authCache);
-//
-//		try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
-//			return httpClient.execute(httpHost, new HttpGet(testCommand), context, response -> {
-//				return response.getCode();
-//			});
-//		} catch(IOException | RuntimeException e) {
-//			return HttpURLConnection.HTTP_INTERNAL_ERROR;
-//		}
-//		// todo https://stackoverflow.com/questions/18108783/apache-httpclient-doesnt-set-basic-authentication-credentials
-//	}
-	
-
-//	public static void setCredentialProvider(CredentialsProvider cp) {
-//		DevicesFactory.lastCredentialsProv = cp;
-//	}
 	
 	public static void setCredential(String user, char[] p) {
 		lastUser = user;

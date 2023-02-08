@@ -20,6 +20,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeoutException;
 
 import javax.swing.Action;
 import javax.swing.BorderFactory;
@@ -41,7 +42,6 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableRowSorter;
 
-import org.apache.hc.client5.http.HttpHostConnectException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -259,13 +259,13 @@ public class DialogDeviceCheckList extends JDialog {
 					} else { // G2
 						tModel.setRow(row, g2Row(d, d.getJSON("/rpc/Shelly.GetConfig")));
 					}
-				} catch (Exception e) {
+				} catch (IOException e) {
 					if(d instanceof BatteryDeviceInterface) { // G1 only
 						tModel.setRow(row, g1Row(d, ((BatteryDeviceInterface)d).getStoredJSON("/settings")));
 					} else {
 						tModel.setRow(row, getStatusIcon(d), UtilCollecion.getExtendedHostName(d), d.getAddress());
 					}
-					if(e instanceof /*SocketTimeoutException*/HttpHostConnectException) {
+					if(e.getCause() instanceof TimeoutException) {
 						LOG.debug("{}", d, e);
 					} else {
 						LOG.error("{}", d, e);

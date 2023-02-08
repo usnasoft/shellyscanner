@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
+import java.net.URI;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -20,13 +21,15 @@ import java.util.stream.Collectors;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
 
+import org.eclipse.jetty.client.api.Authentication;
+import org.eclipse.jetty.client.api.AuthenticationStore;
 import org.eclipse.jetty.client.api.ContentResponse;
+import org.eclipse.jetty.client.util.BasicAuthentication;
 import org.eclipse.jetty.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.JsonNode;
-//import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.NullNode;
 
 import it.usna.shellyscan.model.Devices;
@@ -52,6 +55,18 @@ public abstract class AbstractG1Device extends ShellyAbstractDevice {
 		fillSettings(settings);
 		try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e) {}
 		fillStatus(getJSON("/status"));
+	}
+	
+	@Override
+	public void setAuthentication(Authentication auth) {
+		AuthenticationStore store = httpClient.getAuthenticationStore();
+		Authentication ar = store.findAuthentication("Basic", URI.create("http://" + address.getHostAddress()), BasicAuthentication.ANY_REALM);
+		if(ar != null) {
+			store.removeAuthentication(ar);
+		}
+		if(auth != null) {
+			store.addAuthentication(auth);
+		}
 	}
 	
 	protected void fillOnce(JsonNode settings) throws IOException {

@@ -9,10 +9,6 @@ import java.security.NoSuchAlgorithmException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
-import org.apache.hc.client5.http.auth.AuthScope;
-import org.apache.hc.client5.http.auth.CredentialsProvider;
-import org.apache.hc.client5.http.auth.UsernamePasswordCredentials;
-import org.apache.hc.client5.http.impl.auth.BasicCredentialsProvider;
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.api.AuthenticationStore;
 import org.eclipse.jetty.client.util.DigestAuthentication;
@@ -63,7 +59,7 @@ public class LoginManagerG2 implements LoginManager {
 	public String disable() {
 		String msg = d.postCommand("Shelly.SetAuth", "{\"user\":\"" + LOGIN_USER + "\",\"realm\":\"" + realm + "\",\"ha1\":null}");
 		if(msg == null) {
-			d.setCredentialsProvider(null);
+			d.setAuthentication(null);
 		}
 		return msg;
 	}
@@ -77,21 +73,23 @@ public class LoginManagerG2 implements LoginManager {
 //		}
 //	}
 
+//	@Override
+//	public String set(String dummy, char[] pwd) {
+//		BasicCredentialsProvider credsProvider = new BasicCredentialsProvider();
+//		credsProvider.setCredentials(/*AuthScope.ANY*/new AuthScope(null, -1), new UsernamePasswordCredentials(LOGIN_USER, pwd));
+//		return set(null, pwd, credsProvider);
+//	}
+
 	@Override
 	public String set(String dummy, char[] pwd) {
-		BasicCredentialsProvider credsProvider = new BasicCredentialsProvider();
-		credsProvider.setCredentials(/*AuthScope.ANY*/new AuthScope(null, -1), new UsernamePasswordCredentials(LOGIN_USER, pwd));
-		return set(null, pwd, credsProvider);
-	}
-
-	public String set(String dummy, char[] pwd, CredentialsProvider credsProvider) {
 		String ha1 = LOGIN_USER + ":" + realm + ":" + new String(pwd);
 		try {
 			MessageDigest digest = MessageDigest.getInstance("SHA-256");
 			String encodedhash = bytesToHex(digest.digest(ha1.getBytes(StandardCharsets.UTF_8)));
 			String msg = d.postCommand("Shelly.SetAuth", "{\"user\":\"" + LOGIN_USER + "\",\"realm\":\"" + realm + "\",\"ha1\":\"" + encodedhash + "\"}");
 			if(msg == null) {
-				d.setCredentialsProvider(credsProvider);
+//				d.setCredentialsProvider(credsProvider);
+				d.setAuthentication(new DigestAuthentication(URI.create("http://" + d.getAddress().getHostAddress()), DigestAuthentication.ANY_REALM, LOGIN_USER, new String(pwd)));
 			}
 			return msg;
 		} catch (NoSuchAlgorithmException e) {

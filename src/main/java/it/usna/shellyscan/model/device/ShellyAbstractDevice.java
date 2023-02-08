@@ -1,6 +1,5 @@
 package it.usna.shellyscan.model.device;
 
-import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
@@ -10,16 +9,8 @@ import java.util.concurrent.TimeoutException;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-import org.apache.hc.client5.http.auth.AuthCache;
-import org.apache.hc.client5.http.auth.CredentialsProvider;
-import org.apache.hc.client5.http.classic.methods.HttpGet;
-import org.apache.hc.client5.http.impl.auth.BasicAuthCache;
-import org.apache.hc.client5.http.impl.auth.BasicScheme;
-import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
-import org.apache.hc.client5.http.impl.classic.HttpClients;
-import org.apache.hc.client5.http.protocol.HttpClientContext;
-import org.apache.hc.core5.http.HttpHost;
 import org.eclipse.jetty.client.HttpClient;
+import org.eclipse.jetty.client.api.Authentication;
 import org.eclipse.jetty.client.api.ContentResponse;
 import org.eclipse.jetty.http.HttpStatus;
 
@@ -38,7 +29,7 @@ public abstract class ShellyAbstractDevice {
 	protected int rssi;
 	protected String ssid;
 	protected int uptime;
-	protected String name = "";
+	protected String name;
 	protected Status status;
 	protected long lastConnection = 0;
 	
@@ -53,36 +44,34 @@ public abstract class ShellyAbstractDevice {
 		RESTORE_LOGIN, RESTORE_WI_FI1, RESTORE_WI_FI2,  RESTORE_WI_FI_AP, RESTORE_MQTT, RESTORE_OPEN_MQTT,
 		ERR_UNKNOWN};
 	
-	protected HttpClientContext clientContext;
-	protected HttpHost httpHost;
+//	protected HttpClientContext clientContext;
+//	protected HttpHost httpHost;
 
 	protected ShellyAbstractDevice(InetAddress address, String hostname) {
-//		httpHost = new HttpHost(address.getHostAddress()); // new HttpHost(address) too slow (reverse DNS)
-//		httpHost = new HttpHost(address, address.getHostAddress(), 80, HttpHost.DEFAULT_SCHEME_NAME);
-		httpHost = new HttpHost(null, address, address.getHostAddress(), 80);
 		this.address = address;
 		this.hostname = hostname;
 	}
 
-	public void init(HttpClient httpClient, CredentialsProvider credentialsProv) throws IOException {
-		setCredentialsProvider(credentialsProv);
+	public void init(HttpClient httpClient) throws IOException {
 		this.httpClient = httpClient;
 		init();
 	}
 	
 	public abstract void init() throws IOException;
 
-	public void setCredentialsProvider(CredentialsProvider credentialsProv) {
-		if(credentialsProv != null) {
-			AuthCache authCache = new BasicAuthCache();
-			authCache.put(httpHost, new BasicScheme());
-			clientContext = HttpClientContext.create();
-			clientContext.setCredentialsProvider(credentialsProv);
-			clientContext.setAuthCache(authCache);
-		} else {
-			clientContext = null;
-		}
-	}
+//	public void setCredentialsProvider(CredentialsProvider credentialsProv) {
+//		if(credentialsProv != null) {
+//			AuthCache authCache = new BasicAuthCache();
+//			authCache.put(httpHost, new BasicScheme());
+//			clientContext = HttpClientContext.create();
+//			clientContext.setCredentialsProvider(credentialsProv);
+//			clientContext.setAuthCache(authCache);
+//		} else {
+//			clientContext = null;
+//		}
+//	}
+	
+	public abstract void setAuthentication(Authentication auth);
 	
 //	public JsonNode getJSON(final String command) throws IOException { //JsonProcessingException extends IOException
 //		HttpGet httpget = new HttpGet(command);
@@ -152,16 +141,20 @@ public abstract class ShellyAbstractDevice {
 		return mac;
 	}
 	
-	public HttpHost getHttpHost() {
-		return httpHost;
-	}
+//	public HttpHost getHttpHost() {
+//		return httpHost;
+//	}
 	
 	public InetAddress getAddress() {
 		return address;
 	}
 	
-	public HttpClientContext getClientContext() {
-		return clientContext;
+//	public HttpClientContext getClientContext() {
+//		return clientContext;
+//	}
+	
+	public HttpClient getHttpClient() {
+		return httpClient;
 	}
 
 	public boolean getCloudEnabled() {
@@ -197,7 +190,7 @@ public abstract class ShellyAbstractDevice {
 	}
 
 	public String getName() {
-		return name;
+		return name == null ? "" : name;
 	}
 
 	public abstract String getTypeName();
@@ -247,22 +240,36 @@ public abstract class ShellyAbstractDevice {
 	public abstract String restore(final File file, Map<Restore, String> data) throws IOException;
 
 	// used by backup
+//	protected void sectionToStream(String section, String entryName, ZipOutputStream out) throws IOException {
+//		ZipEntry entry = new ZipEntry(entryName);
+//		out.putNextEntry(entry);
+//		try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
+//			httpClient.execute(httpHost, new HttpGet(section), clientContext, response -> {
+//				byte[] buffer = new byte[4096];
+//				int l;
+//				try (BufferedInputStream br = new BufferedInputStream(response.getEntity().getContent())) {
+//					while ((l = br.read(buffer)) >= 0) {
+//						out.write(buffer, 0, l);
+//					}
+//				}
+//				return null;
+//			});
+//		}
+//		out.closeEntry();
+//	}
+	
 	protected void sectionToStream(String section, String entryName, ZipOutputStream out) throws IOException {
 		ZipEntry entry = new ZipEntry(entryName);
 		out.putNextEntry(entry);
-		try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
-			httpClient.execute(httpHost, new HttpGet(section), clientContext, response -> {
-				byte[] buffer = new byte[4096];
-				int l;
-				try (BufferedInputStream br = new BufferedInputStream(response.getEntity().getContent())) {
-					while ((l = br.read(buffer)) >= 0) {
-						out.write(buffer, 0, l);
-					}
-				}
-				return null;
-			});
+		try {
+			ContentResponse response = httpClient.GET("http://" + address.getHostAddress() + section);
+			byte[] buffer = response.getContent();
+			out.write(buffer, 0, buffer.length);
+		} catch (InterruptedException | ExecutionException | TimeoutException e) {
+			throw new IOException(e);
+		} finally {
+			out.closeEntry();
 		}
-		out.closeEntry();
 	}
 
 	@Override
@@ -272,6 +279,6 @@ public abstract class ShellyAbstractDevice {
 
 	@Override
 	public String toString() {
-		return getTypeName() + "-" + name + ": " + address + " (" + hostname + ")";
+		return getTypeName() + "-" + name + ": " + address.getHostAddress() + " (" + hostname + ")";
 	}
 } //278 - 399 - 316 - 251 - 237
