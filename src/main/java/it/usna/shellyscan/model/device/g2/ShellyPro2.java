@@ -19,6 +19,7 @@ public class ShellyPro2 extends AbstractG2Device implements RelayCommander, Inte
 	private Relay relay0 = new Relay(this, 0);
 	private Relay relay1 = new Relay(this, 1);
 	private float internalTmp;
+	private RelayInterface[] relays = new RelayInterface[] {relay0, relay1};
 
 	public ShellyPro2(InetAddress address, String hostname) {
 		super(address, hostname);
@@ -46,7 +47,7 @@ public class ShellyPro2 extends AbstractG2Device implements RelayCommander, Inte
 
 	@Override
 	public RelayInterface[] getRelays() {
-		return new RelayInterface[] {relay0, relay1};
+		return relays;
 	}
 
 	@Override

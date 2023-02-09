@@ -112,17 +112,17 @@ public class ShellyPro2PM extends AbstractG2Device implements RelayCommander, Ro
 		return internalTmp;
 	}
 
-	public float getPower() {
-		return power0;
-	}
-
-	public float getVoltage() {
-		return voltage0;
-	}
-
-	public float getCurrente() {
-		return current0;
-	}
+//	public float getPower() {
+//		return power0;
+//	}
+//
+//	public float getVoltage() {
+//		return voltage0;
+//	}
+//
+//	public float getCurrente() {
+//		return current0;
+//	}
 
 	@Override
 	public Meters[] getMeters() {

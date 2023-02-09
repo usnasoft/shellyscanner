@@ -27,7 +27,7 @@ public class ShellyPro4PM extends AbstractG2Device implements RelayCommander, In
 	private float voltage0, voltage1, voltage2, voltage3;
 	private float current0, current1, current2, current3;
 	private Meters[] meters;
-	RelayInterface[] relays = new RelayInterface[] {relay0, relay1, relay2, relay3};
+	private RelayInterface[] relays = new RelayInterface[] {relay0, relay1, relay2, relay3};
 
 	public ShellyPro4PM(InetAddress address, String hostname) {
 		super(address, hostname);
@@ -117,12 +117,15 @@ public class ShellyPro4PM extends AbstractG2Device implements RelayCommander, In
 
 	@Override
 	public Relay getRelay(int index) {
-		return (index == 0) ? relay0 : relay1;
+		if(index == 0) return relay0;
+		if(index == 1) return relay1;
+		if(index == 2) return relay2;
+		/*if(index == 3)*/ return relay3;
 	}
 
 	@Override
 	public RelayInterface[] getRelays() {
-		return relays;//new RelayInterface[] {relay0, relay1};
+		return relays;
 	}
 
 	@Override
