@@ -16,7 +16,7 @@ import it.usna.shellyscan.model.device.modules.RelayInterface;
 
 public class Shelly3EM extends AbstractG1Device implements RelayCommander {
 	public final static String ID = "SHEM-3";
-	private final static Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.W, Meters.Type.I, Meters.Type.PF, Meters.Type.V};
+	private final static Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.W, Meters.Type.PF, Meters.Type.V, Meters.Type.I};
 	private Relay relay = new Relay(this, 0);
 	private float power[] = new float[3];
 	private float current[] = new float[3];

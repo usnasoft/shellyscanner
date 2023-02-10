@@ -17,7 +17,7 @@ import it.usna.shellyscan.model.device.modules.RelayInterface;
 
 public class ShellyPro4PM extends AbstractG2Device implements RelayCommander, InternalTmpHolder {
 	public final static String ID = "Pro4PM";
-	private final static Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.W, Meters.Type.V, Meters.Type.I};
+	private final static Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.W, Meters.Type.PF, Meters.Type.V, Meters.Type.I};
 	private Relay relay0 = new Relay(this, 0);
 	private Relay relay1 = new Relay(this, 1);
 	private Relay relay2 = new Relay(this, 2);
@@ -26,6 +26,7 @@ public class ShellyPro4PM extends AbstractG2Device implements RelayCommander, In
 	private float power0, power1, power2, power3;
 	private float voltage0, voltage1, voltage2, voltage3;
 	private float current0, current1, current2, current3;
+	private float pf0, pf1, pf2, pf3;
 	private Meters[] meters;
 	private RelayInterface[] relays = new RelayInterface[] {relay0, relay1, relay2, relay3};
 
@@ -44,6 +45,8 @@ public class ShellyPro4PM extends AbstractG2Device implements RelayCommander, In
 							return power0;
 						} else if(t == Meters.Type.I) {
 							return current0;
+						} else if(t == Meters.Type.PF) {
+							return pf0;
 						} else {
 							return voltage0;
 						}
@@ -60,6 +63,8 @@ public class ShellyPro4PM extends AbstractG2Device implements RelayCommander, In
 							return power1;
 						} else if(t == Meters.Type.I) {
 							return current1;
+						} else if(t == Meters.Type.PF) {
+							return pf1;
 						} else {
 							return voltage1;
 						}
@@ -76,6 +81,8 @@ public class ShellyPro4PM extends AbstractG2Device implements RelayCommander, In
 							return power2;
 						} else if(t == Meters.Type.I) {
 							return current2;
+						} else if(t == Meters.Type.PF) {
+							return pf2;
 						} else {
 							return voltage2;
 						}
@@ -92,6 +99,8 @@ public class ShellyPro4PM extends AbstractG2Device implements RelayCommander, In
 							return power3;
 						} else if(t == Meters.Type.I) {
 							return current3;
+						} else if(t == Meters.Type.PF) {
+							return pf3;
 						} else {
 							return voltage3;
 						}
@@ -167,24 +176,28 @@ public class ShellyPro4PM extends AbstractG2Device implements RelayCommander, In
 		power0 = (float)switchStatus0.get("apower").asDouble();
 		voltage0 = (float)switchStatus0.get("voltage").asDouble();
 		current0 = (float)switchStatus0.get("current").asDouble();
+		pf0 = (float)switchStatus0.get("pf").asDouble();
 
 		JsonNode switchStatus1 = status.get("switch:1");
 		relay1.fillStatus(switchStatus1, status.get("input:1"));
 		power1 = (float)switchStatus1.get("apower").asDouble();
 		voltage1 = (float)switchStatus1.get("voltage").asDouble();
 		current1 = (float)switchStatus1.get("current").asDouble();
+		pf1 = (float)switchStatus1.get("pf").asDouble();
 
 		JsonNode switchStatus2 = status.get("switch:2");
 		relay2.fillStatus(switchStatus2, status.get("input:1"));
 		power2 = (float)switchStatus2.get("apower").asDouble();
 		voltage2 = (float)switchStatus2.get("voltage").asDouble();
 		current2 = (float)switchStatus2.get("current").asDouble();
+		pf2 = (float)switchStatus2.get("pf").asDouble();
 
 		JsonNode switchStatus3 = status.get("switch:3");
 		relay3.fillStatus(switchStatus3, status.get("input:1"));
 		power3 = (float)switchStatus3.get("apower").asDouble();
 		voltage3 = (float)switchStatus3.get("voltage").asDouble();
 		current3 = (float)switchStatus3.get("current").asDouble();
+		pf3 = (float)switchStatus3.get("pf").asDouble();
 
 		internalTmp = (float)switchStatus0.path("temperature").path("tC").asDouble();
 	}

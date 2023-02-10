@@ -9,30 +9,48 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.InternalTmpHolder;
+import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.g2.modules.Input;
 import it.usna.shellyscan.model.device.g2.modules.Relay;
 import it.usna.shellyscan.model.device.modules.RelayCommander;
 import it.usna.shellyscan.model.device.modules.RelayInterface;
 
-public class ShellyPlus1 extends AbstractG2Device implements RelayCommander, InternalTmpHolder {
-	public final static String ID = "Plus1";
-//	private final static JsonPointer SW_TEMP_P = JsonPointer.valueOf("/temperature/tC");
+public class ShellyPlusPlugIT extends AbstractG2Device implements RelayCommander, InternalTmpHolder {
+	public final static String ID = "PlusPlugIT";
+	private final static Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.W, Meters.Type.V, Meters.Type.I};
 	private Relay relay = new Relay(this, 0);
 	private float internalTmp;
-	private RelayInterface[] ralayes = new RelayInterface[] {relay};
+	private float power;
+	private float voltage;
+	private float current;
+	private Meters[] meters;
 
-	public ShellyPlus1(InetAddress address, String hostname) {
+	public ShellyPlusPlugIT(InetAddress address, String hostname) {
 		super(address, hostname);
+		
+		meters = new Meters[] {
+				new Meters() {
+					public Type[] getTypes() {
+						return SUPPORTED_MEASURES;
+					}
+
+					@Override
+					public float getValue(Type t) {
+						if(t == Meters.Type.W) {
+							return power;
+						} else if(t == Meters.Type.I) {
+							return current;
+						} else {
+							return voltage;
+						}
+					}
+				}
+		};
 	}
 	
 	@Override
 	public String getTypeName() {
-		return "Shelly +1";
-	}
-	
-	@Override
-	public String getTypeID() {
-		return ID;
+		return "Shelly +Plug IT";
 	}
 	
 	@Override
@@ -41,8 +59,13 @@ public class ShellyPlus1 extends AbstractG2Device implements RelayCommander, Int
 	}
 	
 	@Override
+	public String getTypeID() {
+		return ID;
+	}
+	
+	@Override
 	public RelayInterface[] getRelays() {
-		return ralayes;
+		return new Relay[] {relay};
 	}
 	
 	@Override
@@ -50,20 +73,38 @@ public class ShellyPlus1 extends AbstractG2Device implements RelayCommander, Int
 		return internalTmp;
 	}
 	
+	public float getPower() {
+		return power;
+	}
+	
+	public float getVoltage() {
+		return voltage;
+	}
+	
+	public float getCurrente() {
+		return current;
+	}
+	
+	@Override
+	public Meters[] getMeters() {
+		return meters;
+	}
+	
 	@Override
 	protected void fillSettings(JsonNode configuration) throws IOException {
 		super.fillSettings(configuration);
-		relay.fillSettings(configuration.get("switch:0")/*, configuration.get("input:0")*/);
-//		System.out.println("fill");
+		relay.fillSettings(configuration.get("switch:0"));
 	}
 	
 	@Override
 	protected void fillStatus(JsonNode status) throws IOException {
 		super.fillStatus(status);
 		JsonNode switchStatus = status.get("switch:0");
-		relay.fillStatus(switchStatus, status.get("input:0"));
+		relay.fillStatus(switchStatus);
 		internalTmp = (float)switchStatus.path("temperature").path("tC").asDouble();
-//		System.out.println("status");
+		power = (float)switchStatus.get("apower").asDouble(0);
+		voltage = (float)switchStatus.get("voltage").asDouble(0);
+		current = (float)switchStatus.get("current").asDouble(0);
 	}
 
 	@Override

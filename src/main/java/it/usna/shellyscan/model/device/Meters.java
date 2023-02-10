@@ -8,6 +8,7 @@ public abstract class Meters implements Comparable<Meters> {
 		W, // active power
 		VAR, // reactive power
 		PF, // power factor
+//		PF1, // power factor (1 decimal precision)
 		V, // voltage
 		I, // current
 		BAT, // battery%

@@ -50,7 +50,9 @@ import it.usna.shellyscan.model.device.g2.ShellyG2Unmanaged;
 import it.usna.shellyscan.model.device.g2.ShellyPlus1;
 import it.usna.shellyscan.model.device.g2.ShellyPlus1PM;
 import it.usna.shellyscan.model.device.g2.ShellyPlus2PM;
+import it.usna.shellyscan.model.device.g2.ShellyPlusPlugIT;
 import it.usna.shellyscan.model.device.g2.ShellyPlusi4;
+import it.usna.shellyscan.model.device.g2.ShellyPro1;
 import it.usna.shellyscan.model.device.g2.ShellyPro2;
 import it.usna.shellyscan.model.device.g2.ShellyPro2PM;
 import it.usna.shellyscan.model.device.g2.ShellyPro4PM;
@@ -80,6 +82,7 @@ public class DevicesFactory {
 	}
 
 	private static ShellyAbstractDevice createG1(HttpClient httpClient, final InetAddress address, JsonNode info, String name) {
+		ShellyAbstractDevice d;
 		try {
 			final boolean auth = info.get("auth").asBoolean();
 			if(auth) {
@@ -121,7 +124,7 @@ public class DevicesFactory {
 				}
 				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			}
-			ShellyAbstractDevice d;
+			
 			switch(info.get("type").asText()) {
 			case Shelly1.ID: d = new Shelly1(address, name);
 			break;
@@ -178,21 +181,24 @@ public class DevicesFactory {
 			default: d = new ShellyG1Unmanaged(address, name);
 			break;
 			}
-			try {
-				d.init(httpClient);
-			} catch(IOException e) {
-				if("Status-401".equals(e.getMessage()) == false) {
-					LOG.warn("create - init", e);
-				}
-			}
-			return d;
 		} catch(Exception e) { // really unexpected
 			LOG.error("create", e);
-			return new ShellyG1Unmanaged(address, name, e); 
+			d = new ShellyG1Unmanaged(address, name, e);
 		}
+		try {
+			d.init(httpClient);
+		} catch(IOException e) {
+			if("Status-401".equals(e.getMessage()) == false) {
+				LOG.warn("create - init", e);
+			}
+		} catch(RuntimeException e) {
+			LOG.error("create - init", e);
+		}
+		return d;
 	}
 
 	private static ShellyAbstractDevice createG2(HttpClient httpClient, final InetAddress address, JsonNode info, String name) {
+		ShellyAbstractDevice d;
 		try {
 			final boolean auth = info.get("auth_en").asBoolean();
 			if(auth) {
@@ -239,7 +245,6 @@ public class DevicesFactory {
 				}
 				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			}
-			ShellyAbstractDevice d;
 			switch(info.get("app").asText()) {
 			// Plus
 			case ShellyPlus1.ID: d = new ShellyPlus1(address, name);
@@ -250,7 +255,11 @@ public class DevicesFactory {
 			break;
 			case ShellyPlusi4.ID: d = new ShellyPlusi4(address, name);
 			break;
+			case ShellyPlusPlugIT.ID: d = new ShellyPlusPlugIT(address, name);
+			break;
 			// PRO
+			case ShellyPro1.ID: d = new ShellyPro1(address, name);
+			break;
 			case ShellyPro2PM.ID: d = new ShellyPro2PM(address, name);
 			break;
 			case ShellyPro2.ID: d = new ShellyPro2(address, name);
@@ -260,18 +269,20 @@ public class DevicesFactory {
 			default: d = new ShellyG2Unmanaged(address, name);
 			break;
 			}
-			try {
-				d.init(httpClient);
-			} catch(IOException e) {
-				if("Status-401".equals(e.getMessage()) == false) {
-					LOG.warn("create - init", e);
-				}
-			}
-			return d;
 		} catch(Exception e) { // really unexpected
 			LOG.error("create", e);
-			return new ShellyG2Unmanaged(address, name); 
+			d = new ShellyG2Unmanaged(address, name, e);
 		}
+		try {
+			d.init(httpClient);
+		} catch(IOException e) {
+			if("Status-401".equals(e.getMessage()) == false) {
+				LOG.warn("create - init", e);
+			}
+		} catch(RuntimeException e) {
+			LOG.error("create - init", e);
+		}
+		return d;
 	}
 
 	private static JsonNode getDeviceBasicInfo(HttpClient httpClient, final InetAddress address) throws IOException, TimeoutException, InterruptedException, ExecutionException {

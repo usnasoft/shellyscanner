@@ -14,20 +14,20 @@ import it.usna.shellyscan.model.device.g2.modules.Relay;
 import it.usna.shellyscan.model.device.modules.RelayCommander;
 import it.usna.shellyscan.model.device.modules.RelayInterface;
 
-public class ShellyPlus1 extends AbstractG2Device implements RelayCommander, InternalTmpHolder {
-	public final static String ID = "Plus1";
+public class ShellyPro1 extends AbstractG2Device implements RelayCommander, InternalTmpHolder {
+	public final static String ID = "Pro1";
 //	private final static JsonPointer SW_TEMP_P = JsonPointer.valueOf("/temperature/tC");
 	private Relay relay = new Relay(this, 0);
 	private float internalTmp;
 	private RelayInterface[] ralayes = new RelayInterface[] {relay};
 
-	public ShellyPlus1(InetAddress address, String hostname) {
+	public ShellyPro1(InetAddress address, String hostname) {
 		super(address, hostname);
 	}
 	
 	@Override
 	public String getTypeName() {
-		return "Shelly +1";
+		return "Shelly Pro 1";
 	}
 	
 	@Override
