@@ -18,7 +18,7 @@ import it.usna.shellyscan.model.device.modules.RelayCommander;
 import it.usna.shellyscan.model.device.modules.RelayInterface;
 import it.usna.shellyscan.model.device.modules.RollerCommander;
 
-public class ShellyPro2PM extends AbstractG2Device implements RelayCommander, RollerCommander, InternalTmpHolder {
+public class ShellyPro2PM extends AbstractProDevice implements RelayCommander, RollerCommander, InternalTmpHolder {
 	public final static String ID = "Pro2PM";
 	private boolean modeRelay;
 	private final static Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.W, Meters.Type.V, Meters.Type.I};

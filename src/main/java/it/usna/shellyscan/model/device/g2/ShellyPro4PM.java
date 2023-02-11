@@ -15,7 +15,7 @@ import it.usna.shellyscan.model.device.g2.modules.Relay;
 import it.usna.shellyscan.model.device.modules.RelayCommander;
 import it.usna.shellyscan.model.device.modules.RelayInterface;
 
-public class ShellyPro4PM extends AbstractG2Device implements RelayCommander, InternalTmpHolder {
+public class ShellyPro4PM extends AbstractProDevice implements RelayCommander, InternalTmpHolder {
 	public final static String ID = "Pro4PM";
 	private final static Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.W, Meters.Type.PF, Meters.Type.V, Meters.Type.I};
 	private Relay relay0 = new Relay(this, 0);
@@ -220,6 +220,9 @@ public class ShellyPro4PM extends AbstractG2Device implements RelayCommander, In
 		errors.add(relay2.restore(configuration));
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 		errors.add(relay3.restore(configuration));
+		
+		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+		errors.add(postCommand("Ui.SetConfig", "{\"config\":" + jsonMapper.writeValueAsString(configuration.get("ui")) + "}"));
 	}
 
 	@Override

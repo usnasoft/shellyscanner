@@ -14,7 +14,7 @@ import it.usna.shellyscan.model.device.g2.modules.Relay;
 import it.usna.shellyscan.model.device.modules.RelayCommander;
 import it.usna.shellyscan.model.device.modules.RelayInterface;
 
-public class ShellyPro1 extends AbstractG2Device implements RelayCommander, InternalTmpHolder {
+public class ShellyPro1 extends AbstractProDevice implements RelayCommander, InternalTmpHolder {
 	public final static String ID = "Pro1";
 //	private final static JsonPointer SW_TEMP_P = JsonPointer.valueOf("/temperature/tC");
 	private Relay relay = new Relay(this, 0);

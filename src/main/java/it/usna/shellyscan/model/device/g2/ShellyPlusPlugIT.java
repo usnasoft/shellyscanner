@@ -50,7 +50,7 @@ public class ShellyPlusPlugIT extends AbstractG2Device implements RelayCommander
 	
 	@Override
 	public String getTypeName() {
-		return "Shelly +Plug IT";
+		return "Plug +IT";
 	}
 	
 	@Override

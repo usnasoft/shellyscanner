@@ -214,7 +214,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 			ContentResponse response = httpClient.POST("http://" + address.getHostAddress() + "/rpc")
 					.content(new StringContentProvider("{\"id\":1, \"method\":\"" + method + "\", \"params\":" + payload + "}", StandardCharsets.UTF_8))
 					.send();
-			int statusCode = response.getStatus();
+			int statusCode = response.getStatus(); //response.getContentAsString()
 			if(statusCode == HttpStatus.OK_200) {
 				status = Status.ON_LINE;
 			} else if(statusCode == HttpStatus.UNAUTHORIZED_401) {
@@ -363,7 +363,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 	protected abstract void restore(JsonNode fileConfig, ArrayList<String> errors) throws IOException, InterruptedException;
 	
 	//curl -X POST -d '{"id": 1, "method": "Sys.SetConfig", "params": {"config": {"location": {"tz": "Europe/Sofia"}}}}' http://${SHELLY}/rpc
-	private void restoreCommonConfig(JsonNode config, Map<Restore, String> data, ArrayList<String> errors) throws InterruptedException, IOException {
+	void restoreCommonConfig(JsonNode config, Map<Restore, String> data, ArrayList<String> errors) throws InterruptedException, IOException {
 		JsonNodeFactory factory = new JsonNodeFactory(false);
 		ObjectNode outConfig = factory.objectNode();
 		

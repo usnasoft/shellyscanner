@@ -1,5 +1,7 @@
 package it.usna.shellyscan.view;
 
+import static it.usna.shellyscan.Main.LABELS;
+
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Cursor;
@@ -103,22 +105,22 @@ public class DialogDeviceLogsG2 extends JDialog {
 
 		JButton btnsStopAppRefresh = new JButton(Main.LABELS.getString("dlgLogG2PauseRefresh"));
 		buttonsPanel.add(btnsStopAppRefresh);
-
-		JLabel lblNewLabel = new JLabel(Main.LABELS.getString("dlgLogG2Level"));
-		buttonsPanel.add(lblNewLabel);
-
-		JComboBox<Integer> comboBox = new JComboBox<>();
-		comboBox.addItem(0); // error
-		comboBox.addItem(1); // warn
-		comboBox.addItem(2); // info
-		comboBox.addItem(3); // debug
-		comboBox.addItem(4); // verbose
-		comboBox.setSelectedItem(4);
-		buttonsPanel.add(comboBox);
 		btnsStopAppRefresh.addActionListener(event -> {
 			model.pauseRefresh(index);
 			textArea.append(">>>> " + Main.APP_NAME +" refresh process stopped\n");
 		});
+
+		JLabel lblNewLabel = new JLabel(Main.LABELS.getString("dlgLogG2Level"));
+		buttonsPanel.add(lblNewLabel);
+
+		JComboBox<String> comboBox = new JComboBox<>();
+		comboBox.addItem(LABELS.getString("dlgLogG2Lev0")); // error
+		comboBox.addItem(LABELS.getString("dlgLogG2Lev1")); // warn
+		comboBox.addItem(LABELS.getString("dlgLogG2Lev2")); // info
+		comboBox.addItem(LABELS.getString("dlgLogG2Lev3")); // debug
+		comboBox.addItem(LABELS.getString("dlgLogG2Lev4")); // verbose
+		comboBox.setSelectedIndex(4);
+		buttonsPanel.add(comboBox);
 
 		JPanel panel = new JPanel();
 		panel.setLayout(new BorderLayout(0, 0));
@@ -146,7 +148,7 @@ public class DialogDeviceLogsG2 extends JDialog {
 				@Override
 				public void onWebSocketText(String message) {
 					try {
-						int logLevel = (Integer)comboBox.getSelectedItem();
+						int logLevel = comboBox.getSelectedIndex();
 						JsonNode msg = mapper.readTree(message);
 						int level = msg.get("level").asInt(0);
 						if(level <= logLevel) {
@@ -222,7 +224,7 @@ public class DialogDeviceLogsG2 extends JDialog {
 			}
 		});
 
-		this.setSize(680, 650);
+		this.setSize(700, 650);
 		setLocationRelativeTo(owner);
 		setVisible(true);
 	}

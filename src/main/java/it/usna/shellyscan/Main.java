@@ -304,7 +304,7 @@ public class Main {
 // org.apache.httpcomponents.client5 -> org.eclipse.jetty (https://www.eclipse.org/jetty/documentation/jetty-11/programming-guide/index.html)
 // Riconosciuti i tipi per i dispositivi protetti
 // pro4PM
-// plus plug IT
+// plus plug IT/US
 
 // TODO
 // https://docs.oracle.com/javase/8/docs/api/javax/security/auth/callback/CallbackHandler.html
