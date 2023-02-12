@@ -29,7 +29,7 @@ public class Shelly1 extends AbstractG1Device implements RelayCommander {
 	}
 	
 	@Override
-	public void init() throws IOException {
+	protected void init() throws IOException {
 		JsonNode settings = getJSON("/settings");
 		fillOnce(settings);
 		fillSettings(settings);

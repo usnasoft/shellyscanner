@@ -51,7 +51,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 	}
 	
 	@Override
-	public void init() throws IOException {
+	protected void init() throws IOException {
 		fillOnce(getJSON("/rpc/Shelly.GetDeviceInfo"));
 		fillSettings(getJSON("/rpc/Shelly.GetConfig"));
 		fillStatus(getJSON("/rpc/Shelly.GetStatus"));

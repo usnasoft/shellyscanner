@@ -18,7 +18,7 @@ public class ShellyG1Unmanaged extends AbstractG1Device implements ShellyUnmanag
 	}
 	
 	@Override
-	public void init() {
+	protected void init() {
 		try {
 			// try to retrieve minimal information set
 			JsonNode settings = getJSON("/settings");

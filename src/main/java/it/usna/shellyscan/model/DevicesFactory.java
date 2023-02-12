@@ -54,6 +54,7 @@ import it.usna.shellyscan.model.device.g2.ShellyPlusPlugIT;
 import it.usna.shellyscan.model.device.g2.ShellyPlusPlugUS;
 import it.usna.shellyscan.model.device.g2.ShellyPlusi4;
 import it.usna.shellyscan.model.device.g2.ShellyPro1;
+import it.usna.shellyscan.model.device.g2.ShellyPro1PM;
 import it.usna.shellyscan.model.device.g2.ShellyPro2;
 import it.usna.shellyscan.model.device.g2.ShellyPro2PM;
 import it.usna.shellyscan.model.device.g2.ShellyPro4PM;
@@ -261,6 +262,8 @@ public class DevicesFactory {
 			case ShellyPlusPlugUS.ID: d = new ShellyPlusPlugUS(address, name);
 			break;
 			// PRO
+			case ShellyPro1PM.ID: d = new ShellyPro1PM(address, name);
+			break;
 			case ShellyPro1.ID: d = new ShellyPro1(address, name);
 			break;
 			case ShellyPro2PM.ID: d = new ShellyPro2PM(address, name);

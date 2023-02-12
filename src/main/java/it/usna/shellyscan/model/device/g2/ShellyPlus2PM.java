@@ -21,7 +21,7 @@ import it.usna.shellyscan.model.device.modules.RollerCommander;
 public class ShellyPlus2PM extends AbstractG2Device implements RelayCommander, RollerCommander, InternalTmpHolder {
 	public final static String ID = "Plus2PM";
 	private boolean modeRelay;
-	private final static Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.W, Meters.Type.V, Meters.Type.I};
+	private final static Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.W, Meters.Type.PF, Meters.Type.V, Meters.Type.I};
 	private Relay relay0, relay1;
 	private Roller roller;
 	private float internalTmp;
@@ -29,6 +29,7 @@ public class ShellyPlus2PM extends AbstractG2Device implements RelayCommander, R
 	private float voltage0, voltage1;
 	private float current0, current1;
 	private Meters meters0, meters1;
+	private float pf0, pf1;
 	private Meters[] meters;
 	
 	private final static String MSG_RESTORE_MODE_ERROR = "msgRestorePlus2PMMode";
@@ -49,6 +50,8 @@ public class ShellyPlus2PM extends AbstractG2Device implements RelayCommander, R
 					return power0;
 				} else if(t == Meters.Type.I) {
 					return current0;
+				} else if(t == Meters.Type.PF) {
+					return pf0;
 				} else {
 					return voltage0;
 				}
@@ -65,6 +68,8 @@ public class ShellyPlus2PM extends AbstractG2Device implements RelayCommander, R
 					return power1;
 				} else if(t == Meters.Type.I) {
 					return current1;
+				} else if(t == Meters.Type.PF) {
+					return pf1;
 				} else {
 					return voltage1;
 				}
@@ -161,12 +166,14 @@ public class ShellyPlus2PM extends AbstractG2Device implements RelayCommander, R
 			power0 = (float)switchStatus0.get("apower").asDouble();
 			voltage0 = (float)switchStatus0.get("voltage").asDouble();
 			current0 = (float)switchStatus0.get("current").asDouble();
+			pf0 = (float)switchStatus0.get("pf").asDouble();
 
 			JsonNode switchStatus1 = status.get("switch:1");
 			relay1.fillStatus(switchStatus1, status.get("input:1"));
 			power1 = (float)switchStatus1.get("apower").asDouble();
 			voltage1 = (float)switchStatus1.get("voltage").asDouble();
 			current1 = (float)switchStatus1.get("current").asDouble();
+			pf1 = (float)switchStatus1.get("pf").asDouble();
 
 			internalTmp = (float)switchStatus0.path("temperature").path("tC").asDouble();
 		} else {
@@ -174,6 +181,7 @@ public class ShellyPlus2PM extends AbstractG2Device implements RelayCommander, R
 			power0 = (float)cover.get("apower").asDouble();
 			voltage0 = (float)cover.get("voltage").asDouble();
 			current0 = (float)cover.get("current").asDouble();
+			pf0 = (float)cover.get("pf").asDouble();
 			internalTmp = (float)cover.path("temperature").path("tC").asDouble();
 			roller.fillStatus(cover);
 		}

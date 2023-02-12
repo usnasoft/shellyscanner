@@ -48,7 +48,7 @@ public abstract class AbstractG1Device extends ShellyAbstractDevice {
 	}
 	
 	@Override
-	public void init() throws IOException {
+	protected void init() throws IOException {
 		JsonNode settings = getJSON("/settings");
 		fillOnce(settings);
 		fillSettings(settings);

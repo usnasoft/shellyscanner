@@ -56,7 +56,7 @@ public abstract class ShellyAbstractDevice {
 		init();
 	}
 	
-	public abstract void init() throws IOException;
+	protected abstract void init() throws IOException;
 
 //	public void setCredentialsProvider(CredentialsProvider credentialsProv) {
 //		if(credentialsProv != null) {
