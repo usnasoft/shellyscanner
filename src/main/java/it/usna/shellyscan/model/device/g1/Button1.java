@@ -20,7 +20,7 @@ public class Button1 extends AbstractBatteryG1Device implements InputCommander {
 	private Meters[] meters;
 	
 	public Button1(InetAddress address, JsonNode shelly, String hostname) {
-		super(address, hostname);
+		this(address, hostname);
 		this.shelly = shelly;
 	}
 	

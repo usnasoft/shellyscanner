@@ -30,6 +30,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.KeyStroke;
 
+import org.eclipse.jetty.websocket.api.RemoteEndpoint;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.WebSocketListener;
 import org.eclipse.jetty.websocket.client.WebSocketClient;
@@ -167,7 +168,7 @@ public class DialogDeviceLogsG2 extends JDialog {
 			webSocketClient.start();
 			final Future<Session> session = webSocketClient.connect(wsListener, URI.create("ws://" + device.getAddress().getHostAddress() + "/debug/log"));
 
-
+//			test(webSocketClient, device);
 			btnActivateLog.addActionListener(event -> {
 				try {
 					activateLog(device);
@@ -232,6 +233,42 @@ public class DialogDeviceLogsG2 extends JDialog {
 	private static void activateLog(AbstractG2Device device) {
 		if(device.getDebugMode() != AbstractG2Device.LogMode.SOCKET) {
 			device.postCommand("Sys.SetConfig", "{\"config\": {\"debug\":{\"websocket\":{\"enable\": true}}}");
+		}
+	}
+	
+	private void test(WebSocketClient webSocketClient, AbstractG2Device device) {
+		try {
+			Future<Session> session = webSocketClient.connect(new WebSocketListener() {
+				@Override
+				public void onWebSocketConnect(Session session) {
+					System.out.println(">>>> Open");
+				}
+
+				@Override
+				public void onWebSocketClose(int statusCode, String reason) {
+					System.out.println(">>>> Close: " + reason  + " (" + statusCode + ")");
+				}
+
+				@Override
+				public void onWebSocketError(Throwable cause) {
+					System.out.println("onWebSocketError: " + cause);
+				}
+
+				@Override
+				public void onWebSocketText(String message) {
+					System.out.println(message);
+				}
+
+				@Override
+				public void onWebSocketBinary(byte[] payload, int offset, int length) {}
+			}, URI.create("ws://" + device.getAddress().getHostAddress() + "/rpc"));
+			
+			RemoteEndpoint remote = session.get().getRemote();
+//			remote.sendStringByFuture("{\"id\":2, \"src\":\"user_1\", \"method\":\"Switch.Set\", \"params\":{\"id\":0, \"on\":true}}");
+			remote.sendStringByFuture("{\"id\":2, \"S_Scanner\":\"user\", \"method\":\"Shelly.GetStatus\"}");
+		} catch (IOException | InterruptedException | ExecutionException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 	}
 }

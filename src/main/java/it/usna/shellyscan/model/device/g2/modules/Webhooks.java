@@ -22,7 +22,6 @@ public class Webhooks {
 	public final static String INPUT_DOUBLE_PUSH = "input.button_doublepush";
 	
 	private final AbstractG2Device parent;
-//	private Map<Integer, List<Webhook>> hooks = new HashMap<>();
 	private Map<Integer, Map<String, Webhook>> hooks = new HashMap<>();
 
 	public Webhooks(AbstractG2Device parent) {

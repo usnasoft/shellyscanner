@@ -50,6 +50,7 @@ import it.usna.shellyscan.model.device.g2.ShellyG2Unmanaged;
 import it.usna.shellyscan.model.device.g2.ShellyPlus1;
 import it.usna.shellyscan.model.device.g2.ShellyPlus1PM;
 import it.usna.shellyscan.model.device.g2.ShellyPlus2PM;
+import it.usna.shellyscan.model.device.g2.ShellyPlusHT;
 import it.usna.shellyscan.model.device.g2.ShellyPlusPlugIT;
 import it.usna.shellyscan.model.device.g2.ShellyPlusPlugUS;
 import it.usna.shellyscan.model.device.g2.ShellyPlusi4;
@@ -57,6 +58,7 @@ import it.usna.shellyscan.model.device.g2.ShellyPro1;
 import it.usna.shellyscan.model.device.g2.ShellyPro1PM;
 import it.usna.shellyscan.model.device.g2.ShellyPro2;
 import it.usna.shellyscan.model.device.g2.ShellyPro2PM;
+import it.usna.shellyscan.model.device.g2.ShellyPro3;
 import it.usna.shellyscan.model.device.g2.ShellyPro4PM;
 import it.usna.shellyscan.view.DialogAuthentication;
 
@@ -261,6 +263,8 @@ public class DevicesFactory {
 			break;
 			case ShellyPlusPlugUS.ID: d = new ShellyPlusPlugUS(address, name);
 			break;
+			case ShellyPlusHT.ID: d = new ShellyPlusHT(address, info, name);
+			break;
 			// PRO
 			case ShellyPro1PM.ID: d = new ShellyPro1PM(address, name);
 			break;
@@ -269,6 +273,8 @@ public class DevicesFactory {
 			case ShellyPro2PM.ID: d = new ShellyPro2PM(address, name);
 			break;
 			case ShellyPro2.ID: d = new ShellyPro2(address, name);
+			break;
+			case ShellyPro3.ID: d = new ShellyPro3(address, name);
 			break;
 			case ShellyPro4PM.ID: d = new ShellyPro4PM(address, name);
 			break;

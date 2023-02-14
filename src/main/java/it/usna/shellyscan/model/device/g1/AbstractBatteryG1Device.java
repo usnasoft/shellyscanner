@@ -69,7 +69,7 @@ public abstract class AbstractBatteryG1Device extends AbstractG1Device implement
 	public boolean backup(final File file) throws IOException {
 		try {
 			return super.backup(file);
-		} catch (java.net.ConnectException e) {
+		} catch (/*java.net.ConnectException*/java.net.SocketTimeoutException e) {
 			if(settings != null && settingsActions != null) {
 				try(ZipOutputStream out = new ZipOutputStream(new FileOutputStream(file), StandardCharsets.UTF_8)) {
 					out.putNextEntry(new ZipEntry("settings.json"));

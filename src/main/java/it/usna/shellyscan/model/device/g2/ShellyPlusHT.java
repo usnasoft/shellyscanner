@@ -1,4 +1,4 @@
-package it.usna.shellyscan.model.device.g1;
+package it.usna.shellyscan.model.device.g2;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -8,21 +8,21 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 import it.usna.shellyscan.model.device.Meters;
 
-public class ShellyHT extends AbstractBatteryG1Device {
-	public final static String ID = "SHHT-1";
+public class ShellyPlusHT extends AbstractBatteryG2Device {
+	public final static String ID = "PlusHT";
 	private final static Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.T, Meters.Type.H, Meters.Type.BAT};
 	private float temp;
-	private int humidity;
+	private float humidity;
 	private Meters[] meters;
-
-	public ShellyHT(InetAddress address, JsonNode shelly, String hostname) {
+	
+	public ShellyPlusHT(InetAddress address, JsonNode shelly, String hostname) {
 		this(address, hostname);
 		this.shelly = shelly;
 	}
 	
-	public ShellyHT(InetAddress address, String hostname) {
+	public ShellyPlusHT(InetAddress address, String hostname) {
 		super(address, hostname);
-		
+
 		meters = new Meters[] {
 				new Meters() {
 					@Override
@@ -43,10 +43,10 @@ public class ShellyHT extends AbstractBatteryG1Device {
 				}
 		};
 	}
-	
+
 	@Override
 	public String getTypeName() {
-		return "Shelly H&T";
+		return "Shelly +H&T";
 	}
 	
 	@Override
@@ -64,9 +64,9 @@ public class ShellyHT extends AbstractBatteryG1Device {
 	protected void fillStatus(JsonNode status) throws IOException {
 		super.fillStatus(status);
 		this.status = status;
-		temp = (float)status.get("tmp").get("tC").doubleValue();
-		humidity = status.get("hum").get("value").asInt();
-		bat = status.get("bat").get("value").asInt();
+		temp = (float)status.path("temperature:0").path("tC").asDouble();
+		humidity = (float)status.path("humidity:0").path("rh").asDouble();
+		bat = status.path("devicepower:0").path("battery").path("percent").asInt();
 	}
 
 	public float getTemp() {
@@ -81,13 +81,9 @@ public class ShellyHT extends AbstractBatteryG1Device {
 	public Meters[] getMeters() {
 		return meters;
 	}
-
+	
 	@Override
-	protected void restore(JsonNode settings, ArrayList<String> errors) throws IOException {
-		JsonNode sensors = settings.get("sensors");
-		errors.add(sendCommand("/settings?" +
-				jsonNodeToURLPar(settings, "external_power", "temperature_offset", "humidity_offset") + "&" +
-				jsonNodeToURLPar(sensors, "temperature_threshold", "humidity_threshold") + "&" +
-				"temperature_units=" + sensors.get("temperature_unit").asText())); // temperature_units vs temperature_unit !!!
+	protected void restore(JsonNode fileConfig, ArrayList<String> errors) throws IOException, InterruptedException {
+		// TODO Auto-generated method stub
 	}
 }

@@ -259,13 +259,17 @@ public class DialogDeviceCheckList extends JDialog {
 					} else { // G2
 						tModel.setRow(row, g2Row(d, d.getJSON("/rpc/Shelly.GetConfig")));
 					}
-				} catch (IOException e) {
-					if(d instanceof BatteryDeviceInterface) { // G1 only
-						tModel.setRow(row, g1Row(d, ((BatteryDeviceInterface)d).getStoredJSON("/settings")));
+				} catch (/*IO*/Exception e) {
+					if(d instanceof BatteryDeviceInterface) {
+						if(d instanceof AbstractG1Device) {
+							tModel.setRow(row, g1Row(d, ((BatteryDeviceInterface)d).getStoredJSON("/settings")));
+						} else {
+							tModel.setRow(row, g2Row(d, ((BatteryDeviceInterface)d).getStoredJSON("/rpc/Shelly.GetConfig")));
+						}
 					} else {
 						tModel.setRow(row, getStatusIcon(d), UtilCollecion.getExtendedHostName(d), d.getAddress());
 					}
-					if(e.getCause() instanceof TimeoutException) {
+					if(e.getCause().getCause() instanceof java.net.SocketTimeoutException) {
 						LOG.debug("{}", d, e);
 					} else {
 						LOG.error("{}", d, e);
