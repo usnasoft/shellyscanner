@@ -20,7 +20,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeoutException;
 
 import javax.swing.Action;
 import javax.swing.BorderFactory;
@@ -269,7 +268,7 @@ public class DialogDeviceCheckList extends JDialog {
 					} else {
 						tModel.setRow(row, getStatusIcon(d), UtilCollecion.getExtendedHostName(d), d.getAddress());
 					}
-					if(e.getCause().getCause() instanceof java.net.SocketTimeoutException) {
+					if(/*e.getCause().getCause() instanceof java.net.SocketTimeoutException*/d.getStatus() == Status.OFF_LINE || d.getStatus() == Status.NOT_LOOGGED) {
 						LOG.debug("{}", d, e);
 					} else {
 						LOG.error("{}", d, e);

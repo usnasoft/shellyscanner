@@ -32,12 +32,12 @@ import it.usna.shellyscan.controller.UsnaAction;
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.BatteryDeviceInterface;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
+import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
 import it.usna.shellyscan.view.util.UtilCollecion;
 import it.usna.swing.dialog.FindReplaceDialog;
 
 public class DialogDeviceInfo extends JDialog {
 	private static final long serialVersionUID = 1L;
-//	private final static int SHORTCUT_KEY = Toolkit.getDefaultToolkit().getMenuShortcutKeyMask(); // from 1.10 getMenuShortcutKeyMaskEx
 	private ScheduledExecutorService executor = Executors.newScheduledThreadPool(2); // too many concurrent requests are dangerous (device reboot)
 
 	public DialogDeviceInfo(final MainView owner, boolean json, ShellyAbstractDevice device, String[] infoList) {
@@ -136,14 +136,6 @@ public class DialogDeviceInfo extends JDialog {
 							((BatteryDeviceInterface)device).setStoredJSON(info, val);
 						}
 					} else { // log
-//						try (CloseableHttpClient httpClient = HttpClients.createDefault();
-//								CloseableHttpResponse response = httpClient.execute(device.getHttpHost(), new HttpGet(info), device.getClientContext());
-//								InputStream in = response.getEntity().getContent();
-//								BufferedReader br = new BufferedReader(new InputStreamReader(in))) {
-//							textArea.setForeground(Color.BLACK);
-//							textArea.setText("");
-//							br.lines().forEach(l -> textArea.append(l + "\n"));
-//						}
 						textArea.setForeground(Color.BLACK);
 						String log = device.getHttpClient().GET("http://" + device.getAddress().getHostAddress() + info).getContentAsString();
 						textArea.setText(log);
@@ -151,14 +143,22 @@ public class DialogDeviceInfo extends JDialog {
 					}
 					textArea.setCaretPosition(0);
 				}
-			} catch (java.io.FileNotFoundException e) {
-				textArea.setText(Main.LABELS.getString("msgNotFound") + e.getMessage());
+//			} catch (java.io.FileNotFoundException e) {
+//				textArea.setText(Main.LABELS.getString("msgNotFound") + e.getMessage());
 			} catch (Exception e) {
 				if(Thread.interrupted() == false) {
-					if(preview) {
-						textArea.insert(e.getMessage() + "\n\n", 0);
+					String msg;
+					if(device.getStatus() == Status.OFF_LINE) {
+						msg = "<" + Main.LABELS.getString("Status-OFFLINE") + ">";
+					} else if(device.getStatus() == Status.NOT_LOOGGED) {
+						msg = "<" + Main.LABELS.getString("PROTECTED") + ">";
 					} else {
-						textArea.setText(e.getMessage());
+						msg = e.getMessage();
+					}
+					if(preview) {
+						textArea.insert(msg + "\n\n", 0);
+					} else {
+						textArea.setText(msg);
 					}
 				}
 			}

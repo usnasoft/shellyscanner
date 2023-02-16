@@ -304,6 +304,7 @@ public class Main {
 // org.apache.httpcomponents.client5 -> org.eclipse.jetty (https://www.eclipse.org/jetty/documentation/jetty-11/programming-guide/index.html)
 // Riconosciuti i tipi per i dispositivi protetti
 // pro4PM - pro1 - pro1pm - pro3
+// plus H&T
 // plus plug IT/US
 
 // TODO

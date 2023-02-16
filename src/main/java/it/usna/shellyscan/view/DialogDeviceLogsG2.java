@@ -191,8 +191,7 @@ public class DialogDeviceLogsG2 extends JDialog {
 							session.get().disconnect();
 						}
 					} catch (IOException | InterruptedException | ExecutionException e1) {
-						// TODO Auto-generated catch block
-						e1.printStackTrace();
+						LOG.error("webSocketClient.connect", e1);
 					}
 					device.postCommand("Sys.SetConfig", "{\"config\": {\"debug\":{\"websocket\":{\"enable\": false}}}");
 				} finally {
