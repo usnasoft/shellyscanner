@@ -19,7 +19,6 @@ import javax.swing.JDialog;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
-import javax.swing.JTextArea;
 import javax.swing.KeyStroke;
 import javax.swing.text.JTextComponent;
 
@@ -33,6 +32,7 @@ import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.BatteryDeviceInterface;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
+import it.usna.shellyscan.view.util.UsnaTextPane;
 import it.usna.shellyscan.view.util.UtilCollecion;
 import it.usna.swing.dialog.FindReplaceDialog;
 
@@ -103,7 +103,7 @@ public class DialogDeviceInfo extends JDialog {
 	private JPanel getPanel(String info, boolean isJson, ShellyAbstractDevice device) {
 		JPanel panel = new JPanel();
 		panel.setLayout(new BorderLayout(0, 0));
-		JTextArea textArea = new JTextArea();
+		UsnaTextPane textArea = new UsnaTextPane();
 		textArea.setEditable(false);
 		textArea.setForeground(Color.BLUE);
 		final ObjectMapper mapper = new ObjectMapper();
@@ -135,6 +135,11 @@ public class DialogDeviceInfo extends JDialog {
 						if(device instanceof BatteryDeviceInterface) {
 							((BatteryDeviceInterface)device).setStoredJSON(info, val);
 						}
+						textArea.addMouseListener(new java.awt.event.MouseAdapter() {
+				            public void mousePressed(java.awt.event.MouseEvent evt) {
+//				                formMousePressed(evt);
+				            }
+						});
 					} else { // log
 						textArea.setForeground(Color.BLACK);
 						String log = device.getHttpClient().GET("http://" + device.getAddress().getHostAddress() + info).getContentAsString();
@@ -151,7 +156,7 @@ public class DialogDeviceInfo extends JDialog {
 					if(device.getStatus() == Status.OFF_LINE) {
 						msg = "<" + Main.LABELS.getString("Status-OFFLINE") + ">";
 					} else if(device.getStatus() == Status.NOT_LOOGGED) {
-						msg = "<" + Main.LABELS.getString("PROTECTED") + ">";
+						msg = "<" + Main.LABELS.getString("Status-PROTECTED") + ">";
 					} else {
 						msg = e.getMessage();
 					}

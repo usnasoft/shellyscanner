@@ -83,7 +83,9 @@ public class ShellyPlusHT extends AbstractBatteryG2Device {
 	}
 	
 	@Override
-	protected void restore(JsonNode fileConfig, ArrayList<String> errors) throws IOException, InterruptedException {
-		// TODO Auto-generated method stub
+	protected void restore(JsonNode configuration, ArrayList<String> errors) throws IOException {
+		errors.add(postCommand("HT_UI.SetConfig", "{\"config\":" + jsonMapper.writeValueAsString(configuration.get("ht_ui")) + "}"));
+		errors.add(postCommand("Temperature.SetConfig", "{\"config\":" + jsonMapper.writeValueAsString(configuration.get("temperature:0")) + "}"));
+		errors.add(postCommand("Humidity.SetConfig", "{\"config\":" + jsonMapper.writeValueAsString(configuration.get("humidity:0")) + "}"));
 	}
 }

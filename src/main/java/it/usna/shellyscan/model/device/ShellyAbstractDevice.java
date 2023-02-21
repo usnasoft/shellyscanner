@@ -42,9 +42,6 @@ public abstract class ShellyAbstractDevice {
 	public enum Restore {ERR_RESTORE_HOST, ERR_RESTORE_MODEL, ERR_RESTORE_CONF, ERR_RESTORE_MSG,
 		RESTORE_LOGIN, RESTORE_WI_FI1, RESTORE_WI_FI2,  RESTORE_WI_FI_AP, RESTORE_MQTT, RESTORE_OPEN_MQTT,
 		ERR_UNKNOWN};
-	
-//	protected HttpClientContext clientContext;
-//	protected HttpHost httpHost;
 
 	protected ShellyAbstractDevice(InetAddress address, String hostname) {
 		this.address = address;
@@ -138,17 +135,9 @@ public abstract class ShellyAbstractDevice {
 		return mac;
 	}
 	
-//	public HttpHost getHttpHost() {
-//		return httpHost;
-//	}
-	
 	public InetAddress getAddress() {
 		return address;
 	}
-	
-//	public HttpClientContext getClientContext() {
-//		return clientContext;
-//	}
 	
 	public HttpClient getHttpClient() {
 		return httpClient;

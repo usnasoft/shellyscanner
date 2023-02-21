@@ -3,6 +3,7 @@ package it.usna.shellyscan.view;
 import static it.usna.shellyscan.Main.LABELS;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Toolkit;
@@ -27,8 +28,12 @@ import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
+import javax.swing.JTextPane;
 import javax.swing.KeyStroke;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Style;
+import javax.swing.text.StyleConstants;
+import javax.swing.text.StyledDocument;
 
 import org.eclipse.jetty.websocket.api.RemoteEndpoint;
 import org.eclipse.jetty.websocket.api.Session;
@@ -62,7 +67,10 @@ public class DialogDeviceLogsG2 extends JDialog {
 		JPanel buttonsPanel = new JPanel();
 		getContentPane().add(buttonsPanel, BorderLayout.SOUTH);
 
-		JTextArea textArea = new JTextArea();
+		JTextPane textArea = new JTextPane();
+		StyledDocument document = textArea.getStyledDocument();
+		Style bluStyle = textArea.addStyle("blue", null);
+		StyleConstants.setForeground(bluStyle, Color.BLUE);
 		textArea.setEditable(false);
 
 		final Action findAction = new AbstractAction(Main.LABELS.getString("btnFind")) {
@@ -108,7 +116,9 @@ public class DialogDeviceLogsG2 extends JDialog {
 		buttonsPanel.add(btnsStopAppRefresh);
 		btnsStopAppRefresh.addActionListener(event -> {
 			model.pauseRefresh(index);
-			textArea.append(">>>> " + Main.APP_NAME +" refresh process stopped\n");
+			try {
+				document.insertString(document.getLength(), ">>>> " + Main.APP_NAME +" refresh process stopped\n", bluStyle);
+			} catch (BadLocationException e1) {}
 		});
 
 		JLabel lblNewLabel = new JLabel(Main.LABELS.getString("dlgLogG2Level"));
@@ -133,12 +143,16 @@ public class DialogDeviceLogsG2 extends JDialog {
 
 				@Override
 				public void onWebSocketConnect(Session session) {
-					textArea.append(">>>> Open\n");
+					try {
+						document.insertString(document.getLength(), ">>>> Open\n", bluStyle);
+					} catch (BadLocationException e) {}
 				}
 
 				@Override
 				public void onWebSocketClose(int statusCode, String reason) {
-					textArea.append(">>>> Close: " + reason  + " (" + statusCode + ")\n");
+					try {
+						document.insertString(document.getLength(), ">>>> Close: " + reason  + " (" + statusCode + ")\n", bluStyle);
+					} catch (BadLocationException e) {}
 				}
 
 				@Override
@@ -153,12 +167,17 @@ public class DialogDeviceLogsG2 extends JDialog {
 						JsonNode msg = mapper.readTree(message);
 						int level = msg.get("level").asInt(0);
 						if(level <= logLevel) {
-							textArea.append(msg.get("ts").asLong() + " - L" + level + ": " + msg.get("data").asText().trim() + "\n");
+							try {
+								document.insertString(document.getLength(), msg.get("ts").asLong() + " - L" + level + ": " + msg.get("data").asText().trim() + "\n", null);
+							} catch (BadLocationException e) {}
 						}
 					} catch (JsonProcessingException ex) {
-						textArea.append(">>>> Error: " + ex.toString() + "\n");
+						try {
+							document.insertString(document.getLength(), ">>>> Error: " + ex.toString() + "\n", bluStyle);
+						} catch (BadLocationException e) {}
 					}
-					textArea.setCaretPosition(textArea.getText().length());
+//					textArea.setCaretPosition(textArea.getText().length());
+					textArea.setCaretPosition(document.getLength());
 				}
 
 				@Override
@@ -171,8 +190,8 @@ public class DialogDeviceLogsG2 extends JDialog {
 //			test(webSocketClient, device);
 			btnActivateLog.addActionListener(event -> {
 				try {
-					activateLog(device);
 					setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+					activateLog(device);
 					if(session.get().isOpen() == false) {
 						webSocketClient.connect(wsListener, URI.create("ws://" + device.getAddress().getHostAddress() + "/debug/log"));
 					}
@@ -214,7 +233,6 @@ public class DialogDeviceLogsG2 extends JDialog {
 			}
 			@Override
 			public void windowClosed(WindowEvent e) {
-				//				clientEndPoint.close();
 				try {
 					webSocketClient.stop();
 				} catch (Exception e1) {

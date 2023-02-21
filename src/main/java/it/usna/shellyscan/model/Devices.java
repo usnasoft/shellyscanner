@@ -34,6 +34,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
 import it.usna.shellyscan.model.device.ShellyUnmanagedDevice;
+import it.usna.shellyscan.model.device.g1.AbstractG1Device;
 
 public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Integer> {
 	private final static Logger LOG = LoggerFactory.getLogger(Devices.class);
@@ -335,7 +336,9 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 					if(++ticCount >= statusTics) {
 						d.refreshSettings();
 						ticCount = 0;
-						Thread.sleep(MULTI_QUERY_DELAY);
+						if(d instanceof AbstractG1Device) {
+							Thread.sleep(MULTI_QUERY_DELAY);
+						}
 					}
 					d.refreshStatus();
 				} catch (JsonProcessingException | RuntimeException e) {

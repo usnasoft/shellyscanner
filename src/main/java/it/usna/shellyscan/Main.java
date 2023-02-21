@@ -25,7 +25,7 @@ import it.usna.util.AppProperties;
 
 public class Main {
 	public final static String APP_NAME = "Shelly Scanner";
-	public final static String VERSION = "0.9.1 alpha2";
+	public final static String VERSION = "0.9.3 beta";
 	public final static String ICON = "/images/ShSc24.png";
 	public final static String BACKUP_FILE_EXT = "sbk";
 	
@@ -303,9 +303,18 @@ public class Main {
 //0.9.1
 // org.apache.httpcomponents.client5 -> org.eclipse.jetty (https://www.eclipse.org/jetty/documentation/jetty-11/programming-guide/index.html)
 // Riconosciuti i tipi per i dispositivi protetti
-// pro4PM - pro1 - pro1pm - pro3
-// plus H&T
+// pro4PM (parziale)
+// plus plug IT
+
+//0.9.3
+// org.java-websocket -> org.eclipse.jetty.websocket)
+// Riconosciuti i tipi per i dispositivi protetti
+// pro4PM - pro1 - pro1pm - pro3 (full)
+// pro2 - pro2pm (full)
 // plus plug IT/US
+
+//plus H&T
+
 
 // TODO
 // https://docs.oracle.com/javase/8/docs/api/javax/security/auth/callback/CallbackHandler.html
