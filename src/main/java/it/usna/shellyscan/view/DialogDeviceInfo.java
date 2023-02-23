@@ -19,8 +19,11 @@ import javax.swing.JDialog;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
+import javax.swing.JTextArea;
 import javax.swing.KeyStroke;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
+import javax.swing.text.StyledDocument;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -38,6 +41,7 @@ import it.usna.swing.dialog.FindReplaceDialog;
 
 public class DialogDeviceInfo extends JDialog {
 	private static final long serialVersionUID = 1L;
+//	private final static Style DEF_STYLE = StyleContext.getDefaultStyleContext().getStyle(StyleContext.DEFAULT_STYLE);
 	private ScheduledExecutorService executor = Executors.newScheduledThreadPool(2); // too many concurrent requests are dangerous (device reboot)
 
 	public DialogDeviceInfo(final MainView owner, boolean json, ShellyAbstractDevice device, String[] infoList) {
@@ -96,11 +100,15 @@ public class DialogDeviceInfo extends JDialog {
 		tabbedPane.removeAll();
 		for(String info: infoList) {
 			String name = info.replaceFirst("^/", "").replaceFirst("rpc/", "").replaceFirst("Shelly\\.", "");
-			tabbedPane.add(name, getPanel(info, json, device));
+			if(json) {
+				tabbedPane.add(name, getJsonPanel(info, device));
+			} else {
+				tabbedPane.add(name, getPlainPanel(info, device));
+			}
 		}
 	}
 
-	private JPanel getPanel(String info, boolean isJson, ShellyAbstractDevice device) {
+	private JPanel getJsonPanel(String info, ShellyAbstractDevice device) {
 		JPanel panel = new JPanel();
 		panel.setLayout(new BorderLayout(0, 0));
 		UsnaTextPane textArea = new UsnaTextPane();
@@ -109,7 +117,7 @@ public class DialogDeviceInfo extends JDialog {
 		final ObjectMapper mapper = new ObjectMapper();
 		JsonNode storedVal;
 		final boolean preview;
-		if(isJson && device instanceof BatteryDeviceInterface && (storedVal = ((BatteryDeviceInterface)device).getStoredJSON(info)) != null) {
+		if(device instanceof BatteryDeviceInterface && (storedVal = ((BatteryDeviceInterface)device).getStoredJSON(info)) != null) {
 			String json;
 			try {
 				json = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(storedVal);
@@ -123,33 +131,30 @@ public class DialogDeviceInfo extends JDialog {
 		panel.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 
 		executor.schedule(() -> {
-			//			panel.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 			try {
 				if(Thread.interrupted() == false) {
-					if(isJson) {
-						// Retrive current data
-						JsonNode val = device.getJSON(info);
-						final String json = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(val);
-						textArea.setForeground(Color.BLACK);
-						textArea.setText(json);
-						if(device instanceof BatteryDeviceInterface) {
-							((BatteryDeviceInterface)device).setStoredJSON(info, val);
-						}
-						textArea.addMouseListener(new java.awt.event.MouseAdapter() {
-				            public void mousePressed(java.awt.event.MouseEvent evt) {
-//				                formMousePressed(evt);
-				            }
-						});
-					} else { // log
-						textArea.setForeground(Color.BLACK);
-						String log = device.getHttpClient().GET("http://" + device.getAddress().getHostAddress() + info).getContentAsString();
-						textArea.setText(log);
-
+					// Retrive current data
+					JsonNode val = device.getJSON(info);
+					final String json = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(val);
+					textArea.setForeground(Color.BLACK);
+					textArea.setText(json);
+					if(device instanceof BatteryDeviceInterface) {
+						((BatteryDeviceInterface)device).setStoredJSON(info, val);
 					}
+//					textArea.addCaretListener(e -> {
+//						System.out.println(e.getDot());
+//						try {
+//							StyledDocument doc = textArea.getStyledDocument();
+//							String content = doc.getText(e.getDot(), doc.getLength());
+//							content.indexOf("}\n");
+//							//https://stackoverflow.com/questions/4194310/can-java-string-indexof-handle-a-regular-expression-as-a-parameter
+//						} catch (BadLocationException e1) {
+//							// TODO Auto-generated catch block
+//							e1.printStackTrace();
+//						}
+//					});
 					textArea.setCaretPosition(0);
 				}
-//			} catch (java.io.FileNotFoundException e) {
-//				textArea.setText(Main.LABELS.getString("msgNotFound") + e.getMessage());
 			} catch (Exception e) {
 				if(Thread.interrupted() == false) {
 					String msg;
@@ -171,24 +176,61 @@ public class DialogDeviceInfo extends JDialog {
 		}, Devices.MULTI_QUERY_DELAY, TimeUnit.MILLISECONDS);
 		JScrollPane scrollPane = new JScrollPane(textArea);
 		panel.add(scrollPane);
+		//		final Action topAction = new UsnaAction(e -> {
+		//		scrollPane.getVerticalScrollBar().setValue(0);
+		//		}
+		//				);
+		//		final Action bottomAction = new UsnaAction(e -> 
+		//		scrollPane.getVerticalScrollBar().setValue(Integer.MAX_VALUE)
+		//				);
+		//		final Action downAction = new UsnaAction(e -> {
+		//			JScrollBar sb = scrollPane.getVerticalScrollBar();
+		//			sb.setValue(sb.getValue() + sb.getBlockIncrement());
+		//		});
+		//		textArea.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_HOME, 0), "top_act");
+		//		textArea.getActionMap().put("top_act", topAction);
+		//		textArea.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_END, 0), "bottom_act");
+		//		textArea.getActionMap().put("bottom_act", bottomAction);
+		//		textArea.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, SHORTCUT_KEY), "down_act");
+		//		textArea.getActionMap().put("down_act", downAction);
+		return panel;
+	}
 
-//		final Action topAction = new UsnaAction(e -> {
-//		scrollPane.getVerticalScrollBar().setValue(0);
-//		}
-//				);
-//		final Action bottomAction = new UsnaAction(e -> 
-//		scrollPane.getVerticalScrollBar().setValue(Integer.MAX_VALUE)
-//				);
-//		final Action downAction = new UsnaAction(e -> {
-//			JScrollBar sb = scrollPane.getVerticalScrollBar();
-//			sb.setValue(sb.getValue() + sb.getBlockIncrement());
-//		});
-//		textArea.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_HOME, 0), "top_act");
-//		textArea.getActionMap().put("top_act", topAction);
-//		textArea.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_END, 0), "bottom_act");
-//		textArea.getActionMap().put("bottom_act", bottomAction);
-//		textArea.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, SHORTCUT_KEY), "down_act");
-//		textArea.getActionMap().put("down_act", downAction);
+	private JPanel getPlainPanel(String info, ShellyAbstractDevice device) {
+		JPanel panel = new JPanel();
+		panel.setLayout(new BorderLayout(0, 0));
+		JTextArea textArea = new JTextArea();
+		textArea.setEditable(false);
+		textArea.setForeground(Color.BLUE);
+		textArea.setText(Main.LABELS.getString("lblLoading"));
+
+		panel.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+
+		executor.schedule(() -> {
+			try {
+				if(Thread.interrupted() == false) {
+					textArea.setForeground(Color.BLACK);
+					String log = device.getHttpClient().GET("http://" + device.getAddress().getHostAddress() + info).getContentAsString();
+					textArea.setText(log);
+					textArea.setCaretPosition(0);
+				}
+			} catch (Exception e) {
+				if(Thread.interrupted() == false) {
+					String msg;
+					if(device.getStatus() == Status.OFF_LINE) {
+						msg = "<" + Main.LABELS.getString("Status-OFFLINE") + ">";
+					} else if(device.getStatus() == Status.NOT_LOOGGED) {
+						msg = "<" + Main.LABELS.getString("Status-PROTECTED") + ">";
+					} else {
+						msg = e.getMessage();
+					}
+					textArea.setText(msg);
+				}
+			}
+			panel.setCursor(Cursor.getDefaultCursor());
+		}, Devices.MULTI_QUERY_DELAY, TimeUnit.MILLISECONDS);
+		JScrollPane scrollPane = new JScrollPane(textArea);
+		panel.add(scrollPane);
 		return panel;
 	}
 

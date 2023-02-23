@@ -28,7 +28,6 @@ import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JTextPane;
 import javax.swing.KeyStroke;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Style;
@@ -49,13 +48,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import it.usna.shellyscan.Main;
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
+import it.usna.shellyscan.view.util.UsnaTextPane;
 import it.usna.shellyscan.view.util.UtilCollecion;
 import it.usna.swing.dialog.FindReplaceDialog;
 
 public class DialogDeviceLogsG2 extends JDialog {
 	private static final long serialVersionUID = 1L;
 	private final static Logger LOG = LoggerFactory.getLogger(DialogDeviceLogsG2.class);
-
+	
 	public DialogDeviceLogsG2(final MainView owner, Devices model, int index) {
 		super(owner, false);
 		AbstractG2Device device = (AbstractG2Device) model.get(index);
@@ -67,7 +67,7 @@ public class DialogDeviceLogsG2 extends JDialog {
 		JPanel buttonsPanel = new JPanel();
 		getContentPane().add(buttonsPanel, BorderLayout.SOUTH);
 
-		JTextPane textArea = new JTextPane();
+		UsnaTextPane textArea = new UsnaTextPane();
 		StyledDocument document = textArea.getStyledDocument();
 		Style bluStyle = textArea.addStyle("blue", null);
 		StyleConstants.setForeground(bluStyle, Color.BLUE);
@@ -143,16 +143,12 @@ public class DialogDeviceLogsG2 extends JDialog {
 
 				@Override
 				public void onWebSocketConnect(Session session) {
-					try {
-						document.insertString(document.getLength(), ">>>> Open\n", bluStyle);
-					} catch (BadLocationException e) {}
+					textArea.append(">>>> Open\n", bluStyle);
 				}
 
 				@Override
 				public void onWebSocketClose(int statusCode, String reason) {
-					try {
-						document.insertString(document.getLength(), ">>>> Close: " + reason  + " (" + statusCode + ")\n", bluStyle);
-					} catch (BadLocationException e) {}
+					textArea.append(">>>> Close: " + reason  + " (" + statusCode + ")\n", bluStyle);
 				}
 
 				@Override
@@ -167,17 +163,12 @@ public class DialogDeviceLogsG2 extends JDialog {
 						JsonNode msg = mapper.readTree(message);
 						int level = msg.get("level").asInt(0);
 						if(level <= logLevel) {
-							try {
-								document.insertString(document.getLength(), msg.get("ts").asLong() + " - L" + level + ": " + msg.get("data").asText().trim() + "\n", null);
-							} catch (BadLocationException e) {}
+							textArea.append(msg.get("ts").asLong() + " - L" + level + ": " + msg.get("data").asText().trim() + "\n");
 						}
 					} catch (JsonProcessingException ex) {
-						try {
-							document.insertString(document.getLength(), ">>>> Error: " + ex.toString() + "\n", bluStyle);
-						} catch (BadLocationException e) {}
+						textArea.append(">>>> Error: " + ex.toString() + "\n", bluStyle);
 					}
-//					textArea.setCaretPosition(textArea.getText().length());
-					textArea.setCaretPosition(document.getLength());
+					textArea.setCaretPosition(textArea.getStyledDocument().getLength());
 				}
 
 				@Override
