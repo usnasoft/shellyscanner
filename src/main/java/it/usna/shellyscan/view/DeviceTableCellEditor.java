@@ -29,7 +29,6 @@ import javax.swing.table.TableCellEditor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import it.usna.shellyscan.Main;
 import it.usna.shellyscan.model.device.g1.modules.LightBulbRGB;
 import it.usna.shellyscan.model.device.g1.modules.LightRGBW;
 import it.usna.shellyscan.model.device.g1.modules.LightWhite;
@@ -37,6 +36,7 @@ import it.usna.shellyscan.model.device.g1.modules.Thermostat;
 import it.usna.shellyscan.model.device.modules.InputInterface;
 import it.usna.shellyscan.model.device.modules.RelayInterface;
 import it.usna.shellyscan.model.device.modules.RollerInterface;
+import it.usna.shellyscan.view.util.Msg;
 
 public class DeviceTableCellEditor extends AbstractCellEditor implements TableCellEditor {
 	private static final long serialVersionUID = 1L;
@@ -588,7 +588,7 @@ public class DeviceTableCellEditor extends AbstractCellEditor implements TableCe
 											try {
 												act.execute(type);
 											} catch (IOException ex) {
-												Main.errorMsg(ex);
+												Msg.errorMsg(ex);
 											}
 										}).start();
 										Thread.sleep(200);

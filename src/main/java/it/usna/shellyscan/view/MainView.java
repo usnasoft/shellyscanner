@@ -155,7 +155,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 				model.scan();
 				Thread.sleep(500); // too many call disturb some devices
 			} catch (IOException e1) {
-				Main.errorMsg(e1);
+				Msg.errorMsg(e1);
 			} catch (InterruptedException e1) {
 			} finally {
 //				setEnabled(true);
@@ -209,7 +209,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		try {
 			Desktop.getDesktop().browse(new URI("http://" + d.getAddress().getHostAddress()));
 		} catch (IOException | URISyntaxException e) {
-			Main.errorMsg(e);
+			Msg.errorMsg(e);
 		}
 	});
 	
@@ -273,7 +273,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 					setStatus();
 					Msg.showHtmlMessageDialog(MainView.this, get(), LABELS.getString("titleBackupDone"), JOptionPane.INFORMATION_MESSAGE);
 				} catch (Exception e) {
-					Main.errorMsg(e);
+					Msg.errorMsg(e);
 				} finally {
 					MainView.this.getRootPane().setCursor(Cursor.getDefaultCursor());
 				}
@@ -301,7 +301,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 
 	private Action restoreAction = new ViewSelectedAction("action_restore_name", "action_restore_tooltip", "/images/Upload16.png", "/images/Upload.png", (modelRow, device) -> {
 		if(device.getStatus() == Status.NOT_LOOGGED) {
-			Main.errorMsg(LABELS.getString("msgRestoreLogin"));
+			Msg.errorMsg(LABELS.getString("msgRestoreLogin"));
 			return;
 		}
 		final JFileChooser fc = new JFileChooser(appProp.getProperty("LAST_PATH"));
@@ -324,13 +324,13 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 						LABELS.getString("msgRestoreTitle"), JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE) != JOptionPane.YES_OPTION) {
 					return;
 				} else if(test.containsKey(ShellyAbstractDevice.Restore.ERR_RESTORE_MODEL)) {
-					Main.errorMsg(LABELS.getString("msgRestoreDifferentModel"));
+					Msg.errorMsg(LABELS.getString("msgRestoreDifferentModel"));
 					return;
 				} else if(test.containsKey(ShellyAbstractDevice.Restore.ERR_RESTORE_CONF)) {
-					Main.errorMsg(LABELS.getString("msgRestoreConfigurationError"));
+					Msg.errorMsg(LABELS.getString("msgRestoreConfigurationError"));
 					return;
 				} else if(test.containsKey(ShellyAbstractDevice.Restore.ERR_RESTORE_MSG)) {
-					Main.errorMsg(LABELS.getString(test.get(ShellyAbstractDevice.Restore.ERR_RESTORE_MSG)));
+					Msg.errorMsg(LABELS.getString(test.get(ShellyAbstractDevice.Restore.ERR_RESTORE_MSG)));
 					return;
 				} else {
 					if(test.containsKey(ShellyAbstractDevice.Restore.RESTORE_LOGIN)) {
@@ -408,9 +408,11 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 				update(Devices.EventType.UPDATE, modelRow);
 			}
 		} catch (FileNotFoundException e1) {
-			Main.errorMsg(String.format(LABELS.getString("action_restore_error_file"), fc.getSelectedFile().getName()));
-		} catch (IOException | RuntimeException e1) {
-			Main.errorMsg(e1);
+			Msg.errorMsg(String.format(LABELS.getString("action_restore_error_file"), fc.getSelectedFile().getName()));
+		} catch (IOException e1) {
+			Msg.errorStatusMsg(this, device, e1);
+		} catch (RuntimeException e1) {
+			Msg.errorMsg(e1);
 		} finally {
 			MainView.this.getContentPane().setCursor(Cursor.getDefaultCursor());
 		}
@@ -442,7 +444,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 			devicesTable.clearSelection();
 			devicesTable.print(JTable.PrintMode.FIT_WIDTH);
 		} catch (java.awt.print.PrinterException ex) {
-			Main.errorMsg(ex);
+			Msg.errorMsg(ex);
 		}
 	});
 	
@@ -462,7 +464,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 				devicesTable.csvExport(w, appProp.getProperty(DialogAppSettings.PROP_CSV_SEPARATOR, DialogAppSettings.PROP_CSV_SEPARATOR_DEFAULT));
 				JOptionPane.showMessageDialog(MainView.this, LABELS.getString("msgFileSaved"), Main.APP_NAME, JOptionPane.INFORMATION_MESSAGE);
 			} catch (IOException ex) {
-				Main.errorMsg(ex);
+				Msg.errorMsg(ex);
 			}
 			appProp.setProperty("LAST_PATH", fc.getCurrentDirectory().getPath());
 		}

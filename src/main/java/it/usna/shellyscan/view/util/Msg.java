@@ -5,6 +5,7 @@ import java.awt.Dimension;
 import java.awt.HeadlessException;
 import java.awt.KeyboardFocusManager;
 import java.awt.Window;
+import java.io.IOException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -12,7 +13,15 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import it.usna.shellyscan.Main;
+import it.usna.shellyscan.model.device.ShellyAbstractDevice;
+import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
+
 public class Msg {
+	private final static Logger LOG = LoggerFactory.getLogger(Msg.class);
 	private final static int ROWS_MAX = 35;
 	private final static Pattern PATTERN_BR = Pattern.compile("<br>");
 	
@@ -49,6 +58,33 @@ public class Msg {
 	public static void errorMsg(String msg, String title) {
 		final Window win = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusedWindow();
 		errorMsg(win, msg, title);
+	}
+	
+	public static void errorMsg(String msg) {
+		Msg.errorMsg(msg, Main.LABELS.getString("errorTitle"));
+	}
+	
+	public static void errorMsg(final Throwable t) {
+		if(t instanceof IOException) {
+			LOG.debug("Connection error", t);
+		} else {
+			LOG.error("Unexpected", t);
+		}
+		String message = t.getMessage();
+		if(message == null || message.isEmpty()) {
+			message = t.toString();
+		}
+		errorMsg(message);
+	}
+	
+	public static void errorStatusMsg(Window owner, final ShellyAbstractDevice device, IOException e) {
+		if(device.getStatus() == Status.OFF_LINE) {
+			errorMsg(owner, Main.LABELS.getString("Status-OFFLINE") + ".", Main.LABELS.getString("errorTitle"));
+		} else if(device.getStatus() == Status.NOT_LOOGGED) {
+			errorMsg(owner, Main.LABELS.getString("Status-PROTECTED") + ".", Main.LABELS.getString("errorTitle"));
+		} else {
+			errorMsg(e);
+		}
 	}
 	
 	private static String splitLine(String str, int maxLine) {

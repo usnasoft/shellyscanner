@@ -23,7 +23,6 @@ import java.util.concurrent.Executors;
 
 import javax.swing.Action;
 import javax.swing.BorderFactory;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
@@ -46,13 +45,13 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
-import it.usna.shellyscan.Main;
 import it.usna.shellyscan.controller.UsnaAction;
 import it.usna.shellyscan.model.device.BatteryDeviceInterface;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
 import it.usna.shellyscan.model.device.g1.AbstractG1Device;
 import it.usna.shellyscan.view.util.IPv4Comparator;
+import it.usna.shellyscan.view.util.Msg;
 import it.usna.shellyscan.view.util.UtilCollecion;
 import it.usna.swing.table.ExTooltipTable;
 import it.usna.swing.table.UsnaTableModel;
@@ -220,7 +219,7 @@ public class DialogDeviceCheckList extends JDialog {
 			try {
 				Desktop.getDesktop().browse(new URI("http://" + d.getAddress().getHostAddress()));
 			} catch (IOException | URISyntaxException e) {
-				Main.errorMsg(e);
+				Msg.errorMsg(e);
 			}
 		});
 		panelButtons.add(btnEdit);
@@ -266,7 +265,7 @@ public class DialogDeviceCheckList extends JDialog {
 							tModel.setRow(row, g2Row(d, ((BatteryDeviceInterface)d).getStoredJSON("/rpc/Shelly.GetConfig")));
 						}
 					} else {
-						tModel.setRow(row, getStatusIcon(d), UtilCollecion.getExtendedHostName(d), d.getAddress());
+						tModel.setRow(row, UtilCollecion.getStatusIcon(d), UtilCollecion.getExtendedHostName(d), d.getAddress());
 					}
 					if(/*e.getCause().getCause() instanceof java.net.SocketTimeoutException*/d.getStatus() == Status.OFF_LINE || d.getStatus() == Status.NOT_LOOGGED) {
 						LOG.debug("{}", d, e);
@@ -302,7 +301,7 @@ public class DialogDeviceCheckList extends JDialog {
 		} else {
 			wifi2 = "-";
 		}
-		return new Object[] {getStatusIcon(d), UtilCollecion.getExtendedHostName(d), d.getAddress(), eco, ledOff, debug, "-", "-", roaming, wifi1, wifi2};
+		return new Object[] {UtilCollecion.getStatusIcon(d), UtilCollecion.getExtendedHostName(d), d.getAddress(), eco, ledOff, debug, "-", "-", roaming, wifi1, wifi2};
 	}
 	
 	private static Object[] g2Row(ShellyAbstractDevice d, JsonNode settings) {
@@ -333,21 +332,7 @@ public class DialogDeviceCheckList extends JDialog {
 		} else {
 			wifi2 = "-";
 		}
-		return new Object[] {getStatusIcon(d), UtilCollecion.getExtendedHostName(d), d.getAddress(), eco, "-", debug, ble, ap, roaming, wifi1, wifi2};
-	}
-	
-	private static ImageIcon getStatusIcon(ShellyAbstractDevice d) {
-		if(d.getStatus() == Status.ON_LINE) {
-			return DevicesTable.ONLINE_BULLET;
-		} else if(d.getStatus() == Status.OFF_LINE) {
-			return DevicesTable.OFFLINE_BULLET;
-		} else if(d.getStatus() == Status.READING) {
-			return DevicesTable.UPDATING_BULLET;
-		} else if(d.getStatus() == Status.ERROR) {
-			return DevicesTable.ERROR_BULLET;
-		} else { // Status.NOT_LOOGGED
-			return DevicesTable.LOGIN_BULLET;
-		}
+		return new Object[] {UtilCollecion.getStatusIcon(d), UtilCollecion.getExtendedHostName(d), d.getAddress(), eco, "-", debug, ble, ap, roaming, wifi1, wifi2};
 	}
 
 	private static Boolean boolVal(JsonNode node) {

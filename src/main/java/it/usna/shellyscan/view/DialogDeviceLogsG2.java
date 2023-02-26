@@ -178,7 +178,6 @@ public class DialogDeviceLogsG2 extends JDialog {
 			webSocketClient.start();
 			final Future<Session> session = webSocketClient.connect(wsListener, URI.create("ws://" + device.getAddress().getHostAddress() + "/debug/log"));
 
-//			test(webSocketClient, device);
 			btnActivateLog.addActionListener(event -> {
 				try {
 					setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
@@ -236,6 +235,7 @@ public class DialogDeviceLogsG2 extends JDialog {
 		this.setSize(700, 650);
 		setLocationRelativeTo(owner);
 		setVisible(true);
+		test(webSocketClient, device);
 	}
 
 	private static void activateLog(AbstractG2Device device) {
@@ -264,7 +264,7 @@ public class DialogDeviceLogsG2 extends JDialog {
 
 				@Override
 				public void onWebSocketText(String message) {
-					System.out.println(message);
+					System.out.println("M: " + message);
 				}
 
 				@Override
@@ -273,7 +273,7 @@ public class DialogDeviceLogsG2 extends JDialog {
 			
 			RemoteEndpoint remote = session.get().getRemote();
 //			remote.sendStringByFuture("{\"id\":2, \"src\":\"user_1\", \"method\":\"Switch.Set\", \"params\":{\"id\":0, \"on\":true}}");
-			remote.sendStringByFuture("{\"id\":2, \"S_Scanner\":\"user\", \"method\":\"Shelly.GetStatus\"}");
+			remote.sendStringByFuture("{\"id\":2, \"src\":\"S_Scanner\", \"method\":\"Shelly.GetDeviceInfo\"}");
 		} catch (IOException | InterruptedException | ExecutionException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

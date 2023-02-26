@@ -14,8 +14,7 @@ public class UsnaTextPane extends JTextPane {
 	private final StyledDocument doc;
 	
 	public UsnaTextPane() {
-		this.
-		doc = getStyledDocument();
+		this.doc = getStyledDocument();
 	}
 	
 	public void append(String str) {
@@ -48,5 +47,10 @@ public class UsnaTextPane extends JTextPane {
 		} catch (BadLocationException e) {
 			LOG.error("", e);
 		}
+	}
+	
+	public void setText(String str, Style style) {
+			setText(str);
+			doc.setCharacterAttributes(0, doc.getLength(), style, true);
 	}
 }

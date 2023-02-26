@@ -1,6 +1,8 @@
 package it.usna.shellyscan.model.device.g2;
 
 import java.net.InetAddress;
+import java.util.HashMap;
+import java.util.Map;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -10,7 +12,7 @@ public abstract class AbstractBatteryG2Device extends AbstractG2Device implement
 	protected JsonNode shelly;
 	protected JsonNode settings;
 	protected JsonNode status;
-	protected JsonNode settingsActions;
+	protected Map<String, JsonNode> others = new HashMap<>();
 	protected int bat;
 
 	protected AbstractBatteryG2Device(InetAddress address, String hostname) {
@@ -30,22 +32,21 @@ public abstract class AbstractBatteryG2Device extends AbstractG2Device implement
 			return settings;
 		} else if(command.equals("/rpc/Shelly.GetStatus")) {
 			return status;
-		} else if(command.equals("/rpc/Webhook.List")) {
-			return settingsActions;
+		} else {
+			return others.get(command);
 		}
-		return null;
 	}
 	
 	@Override
 	public void setStoredJSON(final String command, JsonNode val) {
 		if(command.equals("/shelly") || command.equals("/rpc/Shelly.GetDeviceInfo")) {
 			this.shelly = val;
-		} else if(command.equals("/settings")) {
+		} else if(command.equals("/rpc/Shelly.GetConfig")) {
 			this.settings = val;
-		} else if(command.equals("/status")) {
+		} else if(command.equals("/rpc/Shelly.GetStatus")) {
 			this.status = val;
-		} else if(command.equals("/settings/actions")) {
-			this.settingsActions = val;
+		} else {
+			others.put(command, val);
 		}
 		lastConnection = System.currentTimeMillis();
 	}

@@ -14,8 +14,6 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -33,28 +31,28 @@ import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 
-import it.usna.shellyscan.Main;
 import it.usna.shellyscan.model.device.FirmwareManager;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
+import it.usna.shellyscan.view.DevicesTable;
+import it.usna.shellyscan.view.util.Msg;
 import it.usna.shellyscan.view.util.UtilCollecion;
 import it.usna.swing.table.ExTooltipTable;
 import it.usna.swing.table.UsnaTableModel;
 
 public class PanelFWUpdate extends AbstractSettingsPanel {
 	private static final long serialVersionUID = 1L;
-	private final static int COL_CURRENT = 1;
-	private final static int COL_STABLE = 2;
-	private final static int COL_BETA = 3;
+	private final static int COL_STATUS = 0;
+	private final static int COL_CURRENT = 2;
+	private final static int COL_STABLE = 3;
+	private final static int COL_BETA = 4;
 	private ExTooltipTable table;
-	private UsnaTableModel tModel = new UsnaTableModel(LABELS.getString("col_device"), LABELS.getString("dlgSetColCurrentV"), LABELS.getString("dlgSetColLastV"), LABELS.getString("dlgSetColBetaV"));
+	private UsnaTableModel tModel = new UsnaTableModel("", LABELS.getString("col_device"), LABELS.getString("dlgSetColCurrentV"), LABELS.getString("dlgSetColLastV"), LABELS.getString("dlgSetColBetaV"));
 	private List<FirmwareManager> fwModule = new ArrayList<>();
 	
 	private JButton btnUnselectAll = new JButton(LABELS.getString("btn_unselectAll"));
 	private JButton btnSelectStable = new JButton(LABELS.getString("btn_selectAllSta"));
 	private JButton btnSelectBeta = new JButton(LABELS.getString("btn_selectAllbeta"));
 	private JLabel lblCount = new JLabel();
-	
-	private final static Pattern VERSION_PATTERN = Pattern.compile(".*/v?([\\.\\d]+(-beta.*)?)(-|@).*"); // 20210429-100340/v1.10.4-g3f94cd7 - 20211222-144927/0.9.2-beta2-gc538a83 - 20211223-144928/v2.0.5@3f0fcbbe
 	
 	/**
 	 * @wbp.nonvisual location=61,49
@@ -68,11 +66,13 @@ public class PanelFWUpdate extends AbstractSettingsPanel {
 		table = new ExTooltipTable(tModel) {
 			private static final long serialVersionUID = 1L;
 			{
+				getTableHeader().setReorderingAllowed(false);
 				((JCheckBox) getDefaultRenderer(Boolean.class)).setOpaque(true);
 				((JCheckBox) getDefaultRenderer(Boolean.class)).setHorizontalAlignment(JCheckBox.LEFT);
-				TableCellRenderer  fwRendered = new FWCellRendered();
+				TableCellRenderer fwRendered = new FWCellRendered();
 				getColumnModel().getColumn(COL_STABLE).setCellRenderer(fwRendered);
 				getColumnModel().getColumn(COL_BETA).setCellRenderer(fwRendered);
+				columnModel.getColumn(COL_STATUS).setMaxWidth(DevicesTable.ONLINE_BULLET.getIconWidth() + 4);
 			}
 
 			@Override
@@ -84,7 +84,7 @@ public class PanelFWUpdate extends AbstractSettingsPanel {
 			public Component prepareEditor(TableCellEditor editor, int row, int column) {
 				JCheckBox comp = (JCheckBox)super.prepareEditor(editor, row, column);
 				FirmwareManager fw = fwModule.get(table.convertRowIndexToModel(row));
-				comp.setText(getShortVersion(column == COL_STABLE ? fw.newStable() : fw.newBeta()));
+				comp.setText(FirmwareManager.getShortVersion(column == COL_STABLE ? fw.newStable() : fw.newBeta()));
 				comp.setBackground(table.getSelectionBackground());
 				comp.setForeground(table.getSelectionForeground());
 				comp.setHorizontalAlignment(JLabel.LEFT);
@@ -107,15 +107,15 @@ public class PanelFWUpdate extends AbstractSettingsPanel {
 			
 			@Override
 			protected String cellTooltipValue(Object value, boolean noSpace, int row, int column) {
-				if(column == COL_CURRENT) {
-					return fwModule.get(convertRowIndexToModel(row)).current();
-				} else if(column == COL_STABLE) {
-					return fwModule.get(convertRowIndexToModel(row)).newStable();
-				} else if(column == COL_BETA) {
-					return fwModule.get(convertRowIndexToModel(row)).newBeta();
-				} else {
-					return super.cellTooltipValue(value, noSpace, row, column);
+				FirmwareManager fw = fwModule.get(convertRowIndexToModel(row));
+				if(column == COL_CURRENT && fw != null) {
+					return fw.current();
+				} else if(column == COL_STABLE && fw != null) {
+					return fw.newStable();
+				} else if(column == COL_BETA && fw != null) {
+					return fw.newBeta();
 				}
+				return super.cellTooltipValue(value, noSpace, row, column);
 			}
 		};
 
@@ -186,7 +186,7 @@ public class PanelFWUpdate extends AbstractSettingsPanel {
 						try {
 							fw.chech();
 						} catch (IOException e1) {
-							Main.errorMsg(e1);
+							Msg.errorMsg(e1);
 						}
 					});
 					fill();
@@ -207,15 +207,19 @@ public class PanelFWUpdate extends AbstractSettingsPanel {
 				FirmwareManager fu = fwModule.get(i);
 				final String id = UtilCollecion.getExtendedHostName(d);
 				if(fu == null) {
-					tModel.addRow(id, LABELS.getString("labelDevOffLIne"), null, null);
+					tModel.addRow(UtilCollecion.getStatusIcon(d), id, null, null, null);
 				} else if(fu.upadating()) {
-					tModel.addRow(id, getShortVersion(fu.current()), LABELS.getString("labelUpdating"), null);
+					tModel.addRow(UtilCollecion.getStatusIcon(d), id, FirmwareManager.getShortVersion(fu.current()), LABELS.getString("labelUpdating"), null);
 				} else {
 					boolean hasUpdate = fu.newStable() != null;
 					boolean hasBeta = fu.newBeta() != null;
 					globalStable |= hasUpdate;
 					globalBeta |= hasBeta;
-					tModel.addRow(id, getShortVersion(fu.current()), hasUpdate ? Boolean.TRUE : null, hasBeta ? Boolean.FALSE : null);
+					if(fu.isValid()) {
+						tModel.addRow(UtilCollecion.getStatusIcon(d), id, FirmwareManager.getShortVersion(fu.current()), hasUpdate ? Boolean.TRUE : null, hasBeta ? Boolean.FALSE : null);
+					} else {
+						tModel.addRow(UtilCollecion.getStatusIcon(d), id, FirmwareManager.getShortVersion(fu.current()), null, null);
+					}
 				}
 			}
 			btnUnselectAll.setEnabled(globalStable || globalBeta);
@@ -330,11 +334,6 @@ public class PanelFWUpdate extends AbstractSettingsPanel {
 		lblCount.setText(String.format(LABELS.getString("lbl_update_count"), countS, countB));
 		return countS + countB;
 	}
-
-	private static String getShortVersion(String fw) {
-		Matcher m = VERSION_PATTERN.matcher(fw);
-		return m.find() ? m.group(1) : fw;
-	}
 	
 	private class FWCellRendered implements TableCellRenderer {
 		@Override
@@ -348,7 +347,7 @@ public class PanelFWUpdate extends AbstractSettingsPanel {
 					c.setEnabled(true);
 					FirmwareManager fw = fwModule.get(table.convertRowIndexToModel(row));
 					if(fw != null) {
-						c.setText(getShortVersion(column == COL_STABLE ? fw.newStable() : fw.newBeta()));
+						c.setText(FirmwareManager.getShortVersion(column == COL_STABLE ? fw.newStable() : fw.newBeta()));
 					}
 				}
 				return c;

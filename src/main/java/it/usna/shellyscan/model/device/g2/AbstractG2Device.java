@@ -320,15 +320,16 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 		try (   ZipFile in = new ZipFile(file, StandardCharsets.UTF_8);
 				InputStream isDevInfo = in.getInputStream(in.getEntry("Shelly.GetDeviceInfo.json"));
 				InputStream isConfig = in.getInputStream(in.getEntry("Shelly.GetConfig.json"));
-				InputStream isSchedule = in.getInputStream(in.getEntry("Schedule.List.json"));
 				InputStream isWebhook = in.getInputStream(in.getEntry("Webhook.List.json")) ) {
 			final ArrayList<String> errors = new ArrayList<>();
 			JsonNode config = jsonMapper.readTree(isConfig);
 			restore(config, errors);
 			restoreCommonConfig(config, data, errors);
-			restoreSchedule(jsonMapper.readTree(isSchedule), errors);
+			try (InputStream isSchedule = in.getInputStream(in.getEntry("Schedule.List.json"))) { // some devices do not have Schedule.List +H&T
+				restoreSchedule(jsonMapper.readTree(isSchedule), errors);
+			} catch(Exception e) {}
 			Webhooks.restore(this, jsonMapper.readTree(isWebhook), errors);
-			
+
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			JsonNode devInfo = jsonMapper.readTree(isDevInfo);
 			LoginManagerG2 lm = new LoginManagerG2(this, true);

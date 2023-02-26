@@ -13,7 +13,6 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 
-import it.usna.shellyscan.Main;
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.WIFIManager;
@@ -42,7 +41,7 @@ public class DialogDeviceSettings extends JDialog {
 		borderLayout.setVgap(5);
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 
-		this.setSize(590, 420);
+		this.setSize(610, 420);
 		setLocationRelativeTo(owner);
 
 		JPanel panel_1 = new JPanel();
@@ -158,7 +157,7 @@ public class DialogDeviceSettings extends JDialog {
 			return true;
 		} catch(Exception e) {
 //			e.printStackTrace();
-			Main.errorMsg(e.getMessage());
+			Msg.errorMsg(e.getMessage());
 			return false;
 		} finally {
 			setCursor(Cursor.getDefaultCursor());

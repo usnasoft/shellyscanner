@@ -40,6 +40,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import it.usna.shellyscan.Main;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.g2.modules.Script;
+import it.usna.shellyscan.view.util.Msg;
 import it.usna.shellyscan.view.util.UtilCollecion;
 import it.usna.swing.table.ExTooltipTable;
 import it.usna.swing.table.UsnaTableModel;
@@ -132,7 +133,7 @@ public class DialogDeviceScriptsG2 extends JDialog {
 					model.remove(mRow);
 					tModel.removeRow(mRow);
 				} catch (IOException e1) {
-					Main.errorMsg(e1);
+					Msg.errorMsg(e1);
 				}
 			}
 		});
@@ -146,7 +147,7 @@ public class DialogDeviceScriptsG2 extends JDialog {
 				model.add(sc);
 				tModel.addRow(new Object [] {sc.getName(), sc.isEnabled(), sc.isRunning() ? YES : NO});
 			} catch (IOException e1) {
-				Main.errorMsg(e1);
+				Msg.errorMsg(e1);
 			}
 		});
 		operationsPanel.add(btnNew);
@@ -161,7 +162,7 @@ public class DialogDeviceScriptsG2 extends JDialog {
 				sc.run();
 				table.setValueAt(sc.isRunning() ? YES : NO, selRow, 2);
 			} catch (IOException e1) {
-				Main.errorMsg(e1);
+				Msg.errorMsg(e1);
 			}
 		});
 
@@ -175,7 +176,7 @@ public class DialogDeviceScriptsG2 extends JDialog {
 				sc.stop();
 				table.setValueAt(sc.isRunning() ? YES : NO, selRow, 2);
 			} catch (IOException e1) {
-				Main.errorMsg(e1);
+				Msg.errorMsg(e1);
 			}
 		});
 
@@ -191,7 +192,7 @@ public class DialogDeviceScriptsG2 extends JDialog {
 				try (FileWriter w = new FileWriter(fc.getSelectedFile())) {
 					w.write(sc.getCode());
 				} catch (IOException e1) {
-					Main.errorMsg(LABELS.getString("msgScrNoCode"));
+					Msg.errorMsg(LABELS.getString("msgScrNoCode"));
 				} finally {
 					setCursor(Cursor.getDefaultCursor());
 				}
@@ -219,7 +220,7 @@ public class DialogDeviceScriptsG2 extends JDialog {
 				tModel.addRow(new Object [] {sc.getName(), sc.isEnabled(), sc.isRunning() ? YES : NO});
 			}
 		} catch (IOException e) {
-			Main.errorMsg(e);
+			Msg.errorMsg(e);
 		}
 
 		ListSelectionListener l = e -> {
@@ -262,10 +263,10 @@ public class DialogDeviceScriptsG2 extends JDialog {
 				res = sc.putCode(code);
 			}
 			if(res != null) {
-				Main.errorMsg(res);
+				Msg.errorMsg(res);
 			}
 		} catch (/*IO*/Exception e1) {
-			Main.errorMsg(e1);
+			Msg.errorMsg(e1);
 		} finally {
 			setCursor(Cursor.getDefaultCursor());
 		}

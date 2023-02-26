@@ -3,7 +3,6 @@ package it.usna.shellyscan;
 import java.awt.Color;
 import java.awt.Cursor;
 import java.io.File;
-import java.io.IOException;
 import java.util.Base64;
 import java.util.ResourceBundle;
 import java.util.regex.Matcher;
@@ -63,7 +62,7 @@ public class Main {
 			try {
 				UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 			} catch (Exception ex) {
-				Main.errorMsg(ex);
+				Msg.errorMsg(ex);
 			}
 		}
 
@@ -141,31 +140,14 @@ public class Main {
 					}
 					view.setCursor(Cursor.getDefaultCursor());
 				} catch (/*IO*/Exception e) {
-					Main.errorMsg(e);
+					Msg.errorMsg(e);
 					System.exit(1);
 				}
 			});
 		} catch (Throwable ex) {
-			Main.errorMsg(ex);
+			Msg.errorMsg(ex);
 			System.exit(1);
 		}
-	}
-
-	public static void errorMsg(final Throwable t) {
-		if(t instanceof IOException) {
-			LOG.debug("Connection error", t);
-		} else {
-			LOG.error("Unexpected", t);
-		}
-		String message = t.getMessage();
-		if(message == null || message.isEmpty()) {
-			message = t.toString();
-		}
-		errorMsg(message);
-	}
-
-	public static void errorMsg(String msg) {
-		Msg.errorMsg(msg, LABELS.getString("errorTitle"));
 	}
 }
 
@@ -309,6 +291,7 @@ public class Main {
 //0.9.3
 // org.java-websocket -> org.eclipse.jetty.websocket)
 // Riconosciuti i tipi per i dispositivi protetti
+// Recover generic - error
 // pro4PM - pro1 - pro1pm - pro3 (full)
 // pro2 - pro2pm (full)
 // plus plug IT/US

@@ -1,8 +1,13 @@
 package it.usna.shellyscan.model.device.g2;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.InetAddress;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -55,6 +60,14 @@ public class ShellyPlusHT extends AbstractBatteryG2Device {
 	}
 	
 	@Override
+	/**
+	 * No scripts, No Schedule
+	 */
+	public String[] getInfoRequests() {
+		return new String[] {"/rpc/Shelly.GetDeviceInfo", "/rpc/Shelly.GetConfig", "/rpc/Shelly.GetStatus", "/rpc/Shelly.CheckForUpdate", "/rpc/Webhook.List"};
+	}
+	
+	@Override
 	protected void fillSettings(JsonNode settings) throws IOException {
 		super.fillSettings(settings);
 		this.settings = settings;
@@ -80,6 +93,36 @@ public class ShellyPlusHT extends AbstractBatteryG2Device {
 	@Override
 	public Meters[] getMeters() {
 		return meters;
+	}
+	
+	@Override
+	/**
+	 * No scripts, No Schedule
+	 */
+	public boolean backup(final File file) throws IOException {
+		try(ZipOutputStream out = new ZipOutputStream(new FileOutputStream(file), StandardCharsets.UTF_8)) {
+			sectionToStream("/rpc/Shelly.GetDeviceInfo", "Shelly.GetDeviceInfo.json", out);
+			sectionToStream("/rpc/Shelly.GetConfig", "Shelly.GetConfig.json", out);
+			sectionToStream("/rpc/Webhook.List", "Webhook.List.json", out);
+		} catch(Exception e) {
+			if(getStatus() != Status.ON_LINE && getStoredJSON("/rpc/Shelly.GetDeviceInfo") != null && getStoredJSON("/rpc/Shelly.GetConfig") != null && getStoredJSON("/rpc/Webhook.List") != null) {
+				try(ZipOutputStream out = new ZipOutputStream(new FileOutputStream(file), StandardCharsets.UTF_8)) {
+					out.putNextEntry(new ZipEntry("Shelly.GetDeviceInfo.json"));
+					out.write(getStoredJSON("/rpc/Shelly.GetDeviceInfo").toString().getBytes());
+					out.closeEntry();
+					out.putNextEntry(new ZipEntry("Shelly.GetConfig.json"));
+					out.write(getStoredJSON("/rpc/Shelly.GetConfig").toString().getBytes());
+					out.closeEntry();
+					out.putNextEntry(new ZipEntry("Webhook.List.json"));
+					out.write(getStoredJSON("/rpc/Webhook.List").toString().getBytes());
+					out.closeEntry();
+				}
+				return false;
+			} else {
+				throw e;
+			}
+		}
+		return true;
 	}
 	
 	@Override

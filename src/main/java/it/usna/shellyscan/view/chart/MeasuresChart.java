@@ -58,6 +58,7 @@ import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
 import it.usna.shellyscan.view.MainView;
 import it.usna.shellyscan.view.appsettings.DialogAppSettings;
+import it.usna.shellyscan.view.util.Msg;
 import it.usna.shellyscan.view.util.UtilCollecion;
 import it.usna.util.AppProperties;
 import it.usna.util.UsnaEventListener;  
@@ -240,7 +241,7 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 					JOptionPane.showMessageDialog(this, LABELS.getString("msgFileSaved"), Main.APP_NAME, JOptionPane.INFORMATION_MESSAGE);
 				}
 			} catch (IOException ex) {
-				Main.errorMsg(ex);
+				Msg.errorMsg(ex);
 			} finally {
 				setCursor(Cursor.getDefaultCursor());
 			}
