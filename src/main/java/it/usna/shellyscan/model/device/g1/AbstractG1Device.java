@@ -162,7 +162,7 @@ public abstract class AbstractG1Device extends ShellyAbstractDevice {
 	}
 	
 	@Override
-	public FirmwareManager getFWManager() throws IOException {
+	public FirmwareManager getFWManager() {
 		return new FirmwareManagerG1(this);
 	}
 	

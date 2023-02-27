@@ -5,7 +5,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public interface FirmwareManager {
-	final static Pattern VERSION_PATTERN = Pattern.compile(".*/v?([\\.\\d]+(-beta.*)?)(-|@).*"); // 20210429-100340/v1.10.4-g3f94cd7 - 20211222-144927/0.9.2-beta2-gc538a83 - 20211223-144928/v2.0.5@3f0fcbbe
+	final static Pattern VERSION_PATTERN = Pattern.compile(".*/v?([\\.\\d]+(-beta.*)?)(-|@).*");
+	//e.g.: 20210429-100340/v1.10.4-g3f94cd7 - 20211222-144927/0.9.2-beta2-gc538a83 - 20211223-144928/v2.0.5@3f0fcbbe
 	
 	void chech() throws IOException;
 	
@@ -22,7 +23,11 @@ public interface FirmwareManager {
 	boolean isValid();
 	
 	static String getShortVersion(String fw) {
-		Matcher m = VERSION_PATTERN.matcher(fw);
-		return m.find() ? m.group(1) : fw;
+		if(fw == null) {
+			return null;
+		} else {
+			Matcher m = VERSION_PATTERN.matcher(fw);
+			return m.find() ? m.group(1) : fw;
+		}
 	}
 }

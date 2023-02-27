@@ -181,8 +181,11 @@ public class PanelFWUpdate extends AbstractSettingsPanel {
 			btnSelectBeta.setEnabled(false);
 			exeService.execute(() -> {
 				setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+				for(int i = 0; i < devices.size(); i++) {
+					tModel.setValueAt(DevicesTable.UPDATING_BULLET, i, COL_STATUS);
+				}
 				try {
-					fwModule.parallelStream().filter(fw-> fw != null).forEach(fw -> {
+					fwModule.parallelStream()./*filter(fw-> fw != null).*/forEach(fw -> {
 						try {
 							fw.chech();
 						} catch (IOException e1) {
@@ -206,20 +209,20 @@ public class PanelFWUpdate extends AbstractSettingsPanel {
 				ShellyAbstractDevice d = devices.get(i);
 				FirmwareManager fu = fwModule.get(i);
 				final String id = UtilCollecion.getExtendedHostName(d);
-				if(fu == null) {
-					tModel.addRow(UtilCollecion.getStatusIcon(d), id, null, null, null);
-				} else if(fu.upadating()) {
-					tModel.addRow(UtilCollecion.getStatusIcon(d), id, FirmwareManager.getShortVersion(fu.current()), LABELS.getString("labelUpdating"), null);
+				/*if(fu == null) {
+					tModel.addRow(DevicesTable.getStatusIcon(d), id, null, null, null);
+				} else*/ if(fu.upadating()) {
+					tModel.addRow(DevicesTable.getStatusIcon(d), id, FirmwareManager.getShortVersion(fu.current()), LABELS.getString("labelUpdating"), null);
 				} else {
 					boolean hasUpdate = fu.newStable() != null;
 					boolean hasBeta = fu.newBeta() != null;
 					globalStable |= hasUpdate;
 					globalBeta |= hasBeta;
-					if(fu.isValid()) {
-						tModel.addRow(UtilCollecion.getStatusIcon(d), id, FirmwareManager.getShortVersion(fu.current()), hasUpdate ? Boolean.TRUE : null, hasBeta ? Boolean.FALSE : null);
-					} else {
-						tModel.addRow(UtilCollecion.getStatusIcon(d), id, FirmwareManager.getShortVersion(fu.current()), null, null);
-					}
+//					if(fu.isValid()) {
+						tModel.addRow(DevicesTable.getStatusIcon(d), id, FirmwareManager.getShortVersion(fu.current()), hasUpdate ? Boolean.TRUE : null, hasBeta ? Boolean.FALSE : null);
+//					} else {
+//						tModel.addRow(DevicesTable.getStatusIcon(d), id, FirmwareManager.getShortVersion(fu.current()), null, null);
+//					}
 				}
 			}
 			btnUnselectAll.setEnabled(globalStable || globalBeta);
@@ -278,12 +281,12 @@ public class PanelFWUpdate extends AbstractSettingsPanel {
 		@Override
 		public Void call() {
 			final ShellyAbstractDevice d = devices.get(index);
-			try {
+//			try {
 				FirmwareManager fm = d.getFWManager();
 				fwModule.set(index, fm);
-			} catch (IOException e) {
-				fwModule.set(index, null);
-			}
+//			} catch (IOException e) {
+//				fwModule.set(index, null);
+//			}
 			return null;
 		}
 	}
@@ -357,4 +360,4 @@ public class PanelFWUpdate extends AbstractSettingsPanel {
 		}
 	}
 }
-// 346 - 358
+// 346 - 363

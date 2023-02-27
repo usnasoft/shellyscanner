@@ -265,7 +265,7 @@ public class DialogDeviceCheckList extends JDialog {
 							tModel.setRow(row, g2Row(d, ((BatteryDeviceInterface)d).getStoredJSON("/rpc/Shelly.GetConfig")));
 						}
 					} else {
-						tModel.setRow(row, UtilCollecion.getStatusIcon(d), UtilCollecion.getExtendedHostName(d), d.getAddress());
+						tModel.setRow(row, DevicesTable.getStatusIcon(d), UtilCollecion.getExtendedHostName(d), d.getAddress());
 					}
 					if(/*e.getCause().getCause() instanceof java.net.SocketTimeoutException*/d.getStatus() == Status.OFF_LINE || d.getStatus() == Status.NOT_LOOGGED) {
 						LOG.debug("{}", d, e);
@@ -301,7 +301,7 @@ public class DialogDeviceCheckList extends JDialog {
 		} else {
 			wifi2 = "-";
 		}
-		return new Object[] {UtilCollecion.getStatusIcon(d), UtilCollecion.getExtendedHostName(d), d.getAddress(), eco, ledOff, debug, "-", "-", roaming, wifi1, wifi2};
+		return new Object[] {DevicesTable.getStatusIcon(d), UtilCollecion.getExtendedHostName(d), d.getAddress(), eco, ledOff, debug, "-", "-", roaming, wifi1, wifi2};
 	}
 	
 	private static Object[] g2Row(ShellyAbstractDevice d, JsonNode settings) {
@@ -332,7 +332,7 @@ public class DialogDeviceCheckList extends JDialog {
 		} else {
 			wifi2 = "-";
 		}
-		return new Object[] {UtilCollecion.getStatusIcon(d), UtilCollecion.getExtendedHostName(d), d.getAddress(), eco, "-", debug, ble, ap, roaming, wifi1, wifi2};
+		return new Object[] {DevicesTable.getStatusIcon(d), UtilCollecion.getExtendedHostName(d), d.getAddress(), eco, "-", debug, ble, ap, roaming, wifi1, wifi2};
 	}
 
 	private static Boolean boolVal(JsonNode node) {

@@ -17,17 +17,17 @@ public class FirmwareManagerG2 implements FirmwareManager {
 	private boolean updating;
 	private boolean valid;
 	
-	public FirmwareManagerG2(AbstractG2Device d) throws IOException {
+	public FirmwareManagerG2(AbstractG2Device d) /*throws IOException*/ {
 		this.d = d;
 		try {
 			init();
-		} catch(IOException e) {
+		} catch(/*IO*/Exception e) {
 			JsonNode shelly;
 			if(d instanceof BatteryDeviceInterface && (shelly = ((BatteryDeviceInterface)d).getStoredJSON("/shelly")) != null) {
 				current = shelly.path("fw_id").asText();
-			} else {
+			} /*else {
 				throw e;
-			}
+			}*/
 		}
 	}
 
@@ -48,6 +48,7 @@ public class FirmwareManagerG2 implements FirmwareManager {
 	@Override
 	public void chech() {
 		updating = false;
+		current = stable = beta = null;
 		try {
 			init();
 		} catch (IOException e) {}

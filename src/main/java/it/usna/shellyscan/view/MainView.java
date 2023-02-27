@@ -237,10 +237,6 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 	private Action backupAction = new UsnaAction(this, "action_back_name", "action_back_tooltip", "/images/Download16.png", "/images/Download.png", e -> {
 		int[] ind = devicesTable.getSelectedRows();
 		final JFileChooser fc = new JFileChooser(appProp.getProperty("LAST_PATH"));
-//		final String path = appProp.getProperty("LAST_PATH");
-//		if(path != null) {
-//			fc.setCurrentDirectory(new File(path));
-//		}
 
 		class BackWorker extends SwingWorker<String, Object> {
 			@Override
@@ -306,10 +302,6 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		}
 		final JFileChooser fc = new JFileChooser(appProp.getProperty("LAST_PATH"));
 		try {
-//			final String path = appProp.getProperty("LAST_PATH");
-//			if(path != null) {
-//				fc.setCurrentDirectory(new File(path));
-//			}
 			fc.setAcceptAllFileFilterUsed(false);
 			fc.setFileFilter(new FileNameExtensionFilter(LABELS.getString("filetype_sbk_desc"), Main.BACKUP_FILE_EXT));
 			final String fileName = device.getHostname().replaceAll("[^\\w_-]+", "_") + "." + Main.BACKUP_FILE_EXT;
@@ -450,10 +442,6 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 	
 	private Action csvExportAction = new UsnaAction(this, "/images/Table.png", "action_cvs_tooltip", e -> {
 		final JFileChooser fc = new JFileChooser(appProp.getProperty("LAST_PATH"));
-//		final String path = appProp.getProperty("LAST_PATH");
-//		if(path != null) {
-//			fc.setCurrentDirectory(new File(path));
-//		}
 		fc.setFileFilter(new FileNameExtensionFilter(LABELS.getString("filetype_csv_desc"), "csv"));
 		if(fc.showSaveDialog(MainView.this) == JFileChooser.APPROVE_OPTION) {
 			File out = fc.getSelectedFile();
@@ -791,4 +779,4 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 			statusLabel.setText(String.format(LABELS.getString("scanning_end"), model.size()));
 		}
 	}
-} //557 - 614 - 620 - 669 - 705 - 727 - 699 - 760
+} //557 - 614 - 620 - 669 - 705 - 727 - 699 - 760 - 782

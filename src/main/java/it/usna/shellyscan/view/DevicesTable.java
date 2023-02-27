@@ -407,22 +407,7 @@ public class DevicesTable extends ExTooltipTable {
 	
 	private static Object[] generateRow(ShellyAbstractDevice d, final Object row[]) {
 		try {
-			if(d.getStatus() == Status.ON_LINE) {
-				row[DevicesTable.COL_STATUS_IDX] = ONLINE_BULLET;
-			} else if(d.getStatus() == Status.OFF_LINE) {
-				long lastOnline = d.getLastTime();
-				if(lastOnline > 0) {
-					row[DevicesTable.COL_STATUS_IDX] = new ImageIcon(OFFLINEIMG, String.format(LABELS.getString("labelDevOffLIneTime"), LocalDateTime.ofInstant(Instant.ofEpochMilli(lastOnline), TimeZone.getDefault().toZoneId())));
-				} else {
-					row[DevicesTable.COL_STATUS_IDX] = OFFLINE_BULLET;
-				}
-			} else if(d.getStatus() == Status.READING) {
-				row[DevicesTable.COL_STATUS_IDX] = UPDATING_BULLET;
-			} else if(d.getStatus() == Status.ERROR) {
-				row[DevicesTable.COL_STATUS_IDX] = ERROR_BULLET;
-			} else { // Status.NOT_LOOGGED
-				row[DevicesTable.COL_STATUS_IDX] = LOGIN_BULLET;
-			}
+			row[DevicesTable.COL_STATUS_IDX] = getStatusIcon(d);
 			row[DevicesTable.COL_TYPE] = d.getTypeName() + " (" + d.getHostname() + ")";
 			row[DevicesTable.COL_NAME] = d.getName();
 			row[DevicesTable.COL_MAC_IDX] = d.getMacAddress();
@@ -487,4 +472,23 @@ public class DevicesTable extends ExTooltipTable {
 		}
 		return row;
 	}
-} // 462 - 472
+	
+	public static ImageIcon getStatusIcon(ShellyAbstractDevice d) {
+		if(d.getStatus() == Status.ON_LINE) {
+			return ONLINE_BULLET;
+		} else if(d.getStatus() == Status.OFF_LINE) {
+			long lastOnline = d.getLastTime();
+			if(lastOnline > 0) {
+				return new ImageIcon(OFFLINEIMG, String.format(LABELS.getString("labelDevOffLIneTime"), LocalDateTime.ofInstant(Instant.ofEpochMilli(lastOnline), TimeZone.getDefault().toZoneId())));
+			} else {
+				return OFFLINE_BULLET;
+			}
+		} else if(d.getStatus() == Status.READING) {
+			return UPDATING_BULLET;
+		} else if(d.getStatus() == Status.ERROR) {
+			return ERROR_BULLET;
+		} else { // Status.NOT_LOOGGED
+			return LOGIN_BULLET;
+		}
+	}
+} // 462 - 472 - 494

@@ -17,17 +17,17 @@ public class FirmwareManagerG1 implements FirmwareManager {
 	private boolean updating;
 	private boolean valid;
 	
-	public FirmwareManagerG1(AbstractG1Device d) throws IOException {
+	public FirmwareManagerG1(AbstractG1Device d) /*throws IOException*/ {
 		this.d = d;
 		try {
 			init();
-		} catch(IOException e) {
+		} catch(/*IO*/Exception e) {
 			JsonNode shelly;
 			if(d instanceof BatteryDeviceInterface && (shelly = ((BatteryDeviceInterface)d).getStoredJSON("/shelly")) != null) {
 				current = shelly.path("fw").asText();
-			} else {
+			} /*else {
 				throw e;
-			}
+			}*/
 		}
 	}
 	
@@ -44,6 +44,7 @@ public class FirmwareManagerG1 implements FirmwareManager {
 
 	@Override
 	public void chech() {
+		current = stable = beta = null;
 		d.sendCommand("/ota/check");
 		try {
 			init();

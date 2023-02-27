@@ -211,7 +211,7 @@ public abstract class ShellyAbstractDevice {
 	
 	public abstract void refreshStatus() throws IOException;
 	
-	public abstract FirmwareManager getFWManager() throws IOException;
+	public abstract FirmwareManager getFWManager();
 	
 	public abstract WIFIManager getWIFIManager(WIFIManager.Network net) throws IOException;
 	

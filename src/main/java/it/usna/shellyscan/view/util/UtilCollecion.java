@@ -1,12 +1,8 @@
 package it.usna.shellyscan.view.util;
 
-import javax.swing.ImageIcon;
-
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
-import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
 import it.usna.shellyscan.model.device.modules.RelayCommander;
 import it.usna.shellyscan.model.device.modules.RelayInterface;
-import it.usna.shellyscan.view.DevicesTable;
 
 public class UtilCollecion {
 	private UtilCollecion() {}
@@ -42,19 +38,5 @@ public class UtilCollecion {
 	public static String getExtendedHostName(ShellyAbstractDevice d) {
 		final String dName = d.getName();
 		return d.getHostname() + " - " + (dName != null && dName.length() > 0 ? dName : d.getTypeName());
-	}
-	
-	public static ImageIcon getStatusIcon(ShellyAbstractDevice d) {
-		if(d.getStatus() == Status.ON_LINE) {
-			return DevicesTable.ONLINE_BULLET;
-		} else if(d.getStatus() == Status.OFF_LINE) {
-			return DevicesTable.OFFLINE_BULLET;
-		} else if(d.getStatus() == Status.READING) {
-			return DevicesTable.UPDATING_BULLET;
-		} else if(d.getStatus() == Status.ERROR) {
-			return DevicesTable.ERROR_BULLET;
-		} else { // Status.NOT_LOOGGED
-			return DevicesTable.LOGIN_BULLET;
-		}
 	}
 }
