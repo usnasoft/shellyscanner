@@ -1,7 +1,5 @@
 package it.usna.shellyscan.model.device.g1;
 
-import java.io.IOException;
-
 import com.fasterxml.jackson.databind.JsonNode;
 
 import it.usna.shellyscan.model.device.BatteryDeviceInterface;
@@ -19,20 +17,12 @@ public class FirmwareManagerG1 implements FirmwareManager {
 	
 	public FirmwareManagerG1(AbstractG1Device d) /*throws IOException*/ {
 		this.d = d;
-		try {
-			init();
-		} catch(/*IO*/Exception e) {
-			JsonNode shelly;
-			if(d instanceof BatteryDeviceInterface && (shelly = ((BatteryDeviceInterface)d).getStoredJSON("/shelly")) != null) {
-				current = shelly.path("fw").asText();
-			} /*else {
-				throw e;
-			}*/
-		}
+		init();
 	}
 	
-	private void init() throws IOException {
+	private void init() {
 		valid = false;
+		try {
 		JsonNode node = d.getJSON("/ota");
 		updating = STATUS_UPDATING.equals(node.get("status").asText());
 		current = node.get("old_version").asText();
@@ -40,15 +30,21 @@ public class FirmwareManagerG1 implements FirmwareManager {
 		boolean hasBeta = node.has("beta_version") && node.get("beta_version").asText().equals(current) == false;
 		beta = hasBeta ? node.get("beta_version").asText() : null;
 		valid = true;
+		} catch(/*IO*/Exception e) {
+			valid = false;
+			current = stable = beta = null;
+			JsonNode shelly;
+			if(d instanceof BatteryDeviceInterface && (shelly = ((BatteryDeviceInterface)d).getStoredJSON("/shelly")) != null) {
+				current = shelly.path("fw").asText();
+			}
+		}
 	}
 
 	@Override
 	public void chech() {
 		current = stable = beta = null;
 		d.sendCommand("/ota/check");
-		try {
-			init();
-		} catch (IOException e) {}
+		init();
 	}
 	
 	@Override

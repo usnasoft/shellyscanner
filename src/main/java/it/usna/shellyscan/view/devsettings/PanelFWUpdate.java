@@ -127,6 +127,8 @@ public class PanelFWUpdate extends AbstractSettingsPanel {
 		add(panel, BorderLayout.SOUTH);
 		panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
 		
+		panel.add(Box.createHorizontalStrut(2));
+		
 		btnUnselectAll.setBorder(BorderFactory.createEmptyBorder(4, 7, 4, 7));
 		panel.add(btnUnselectAll);
 		btnUnselectAll.addActionListener(event -> {
@@ -175,7 +177,11 @@ public class PanelFWUpdate extends AbstractSettingsPanel {
 		JButton btnCheck = new JButton(LABELS.getString("btn_check"));
 		btnCheck.setBorder(BorderFactory.createEmptyBorder(4, 7, 4, 7));
 		panel.add(btnCheck);
+		
+		panel.add(Box.createHorizontalStrut(2));
+		
 		btnCheck.addActionListener(event -> {
+			btnCheck.setEnabled(false);
 			btnUnselectAll.setEnabled(false);
 			btnSelectStable.setEnabled(false);
 			btnSelectBeta.setEnabled(false);
@@ -193,6 +199,7 @@ public class PanelFWUpdate extends AbstractSettingsPanel {
 						}
 					});
 					fill();
+					btnCheck.setEnabled(true);
 				} finally {
 					setCursor(Cursor.getDefaultCursor());
 				}
@@ -209,9 +216,7 @@ public class PanelFWUpdate extends AbstractSettingsPanel {
 				ShellyAbstractDevice d = devices.get(i);
 				FirmwareManager fu = fwModule.get(i);
 				final String id = UtilCollecion.getExtendedHostName(d);
-				/*if(fu == null) {
-					tModel.addRow(DevicesTable.getStatusIcon(d), id, null, null, null);
-				} else*/ if(fu.upadating()) {
+				if(fu.upadating()) {
 					tModel.addRow(DevicesTable.getStatusIcon(d), id, FirmwareManager.getShortVersion(fu.current()), LABELS.getString("labelUpdating"), null);
 				} else {
 					boolean hasUpdate = fu.newStable() != null;
@@ -220,8 +225,6 @@ public class PanelFWUpdate extends AbstractSettingsPanel {
 					globalBeta |= hasBeta;
 //					if(fu.isValid()) {
 						tModel.addRow(DevicesTable.getStatusIcon(d), id, FirmwareManager.getShortVersion(fu.current()), hasUpdate ? Boolean.TRUE : null, hasBeta ? Boolean.FALSE : null);
-//					} else {
-//						tModel.addRow(DevicesTable.getStatusIcon(d), id, FirmwareManager.getShortVersion(fu.current()), null, null);
 //					}
 				}
 			}
@@ -281,12 +284,8 @@ public class PanelFWUpdate extends AbstractSettingsPanel {
 		@Override
 		public Void call() {
 			final ShellyAbstractDevice d = devices.get(index);
-//			try {
-				FirmwareManager fm = d.getFWManager();
-				fwModule.set(index, fm);
-//			} catch (IOException e) {
-//				fwModule.set(index, null);
-//			}
+			FirmwareManager fm = d.getFWManager();
+			fwModule.set(index, fm);
 			return null;
 		}
 	}
@@ -360,4 +359,4 @@ public class PanelFWUpdate extends AbstractSettingsPanel {
 		}
 	}
 }
-// 346 - 363
+// 346 - 362

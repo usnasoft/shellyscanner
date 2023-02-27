@@ -234,7 +234,7 @@ public class DialogDeviceCheckList extends JDialog {
 		    }
 		});
 
-		setSize(750, 420);
+		setSize(790, 420);
 		setVisible(true);
 		setLocationRelativeTo(owner);
 		table.columnsWidthAdapt();

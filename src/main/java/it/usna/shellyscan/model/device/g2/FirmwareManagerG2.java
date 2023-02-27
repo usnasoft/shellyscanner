@@ -1,7 +1,5 @@
 package it.usna.shellyscan.model.device.g2;
 
-import java.io.IOException;
-
 import com.fasterxml.jackson.databind.JsonNode;
 
 import it.usna.shellyscan.model.device.BatteryDeviceInterface;
@@ -19,39 +17,32 @@ public class FirmwareManagerG2 implements FirmwareManager {
 	
 	public FirmwareManagerG2(AbstractG2Device d) /*throws IOException*/ {
 		this.d = d;
+		init();
+	}
+
+	private void init() {
 		try {
-			init();
+			JsonNode node = d.getJSON("/rpc/Shelly.GetDeviceInfo");
+			current = node.get("fw_id").asText();
+			node = d.getJSON("/rpc/Shelly.CheckForUpdate");
+			stable = node.at("/stable/build_id").asText(null);
+			beta = node.at("/beta/build_id").asText(null);
+			//		updating = STATUS_UPDATING.equals(node.get("status").asText());
+			valid = true;
 		} catch(/*IO*/Exception e) {
+			valid = false;
+			current = stable = beta = null;
 			JsonNode shelly;
 			if(d instanceof BatteryDeviceInterface && (shelly = ((BatteryDeviceInterface)d).getStoredJSON("/shelly")) != null) {
 				current = shelly.path("fw_id").asText();
-			} /*else {
-				throw e;
-			}*/
+			}
 		}
-	}
-
-	private void init() throws IOException {
-		valid = false;
-		JsonNode node = d.getJSON("/rpc/Shelly.GetDeviceInfo");
-		current = node.get("fw_id").asText();
-//		try {
-//			Thread.sleep(Devices.MULTI_QUERY_DELAY);
-//		} catch (InterruptedException e) {}
-		node = d.getJSON("/rpc/Shelly.CheckForUpdate");
-		stable = node.at("/stable/build_id").asText(null);
-		beta = node.at("/beta/build_id").asText(null);
-//		updating = STATUS_UPDATING.equals(node.get("status").asText());
-		valid = true;
 	}
 
 	@Override
 	public void chech() {
 		updating = false;
-		current = stable = beta = null;
-		try {
-			init();
-		} catch (IOException e) {}
+		init();
 	}
 	
 	@Override
