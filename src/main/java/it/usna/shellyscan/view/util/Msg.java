@@ -2,7 +2,6 @@ package it.usna.shellyscan.view.util;
 
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.HeadlessException;
 import java.awt.KeyboardFocusManager;
 import java.awt.Window;
 import java.io.IOException;
@@ -25,34 +24,42 @@ public class Msg {
 	private final static int ROWS_MAX = 35;
 	private final static Pattern PATTERN_BR = Pattern.compile("<br>");
 	
-	public static void showHtmlMessageDialog(Component parentComponent, CharSequence message, String title, int messageType, final int rowsMax) throws HeadlessException {
-		int rows = 1;
-		Matcher m = PATTERN_BR.matcher(message);
-		while(m.find()) rows++;
-		if(rows <= rowsMax) {
-			JOptionPane.showMessageDialog(parentComponent, message, title, messageType);
-		} else {
-			JScrollPane scrollPane = new JScrollPane(new JLabel(message.toString()));
-			Dimension d = scrollPane.getPreferredSize();
-			d.height = parentComponent.getGraphics().getFontMetrics().getHeight() * rowsMax;
-			d.width += scrollPane.getVerticalScrollBar().getPreferredSize().width;
-			scrollPane.setPreferredSize(d);
-			JOptionPane.showMessageDialog(parentComponent, scrollPane, title, messageType);
+	public static void showHtmlMessageDialog(Component parentComponent, CharSequence message, String title, int messageType, final int rowsMax) {
+		try {
+			int rows = 1;
+			Matcher m = PATTERN_BR.matcher(message);
+			while(m.find()) rows++;
+			if(rows <= rowsMax) {
+				JOptionPane.showMessageDialog(parentComponent, message, title, messageType);
+			} else {
+				JScrollPane scrollPane = new JScrollPane(new JLabel(message.toString()));
+				Dimension d = scrollPane.getPreferredSize();
+				d.height = parentComponent.getGraphics().getFontMetrics().getHeight() * rowsMax;
+				d.width += scrollPane.getVerticalScrollBar().getPreferredSize().width;
+				scrollPane.setPreferredSize(d);
+				JOptionPane.showMessageDialog(parentComponent, scrollPane, title, messageType);
+			}
+		} catch(RuntimeException e) { // HeadlessException
+			LOG.error(message.toString(), e);
 		}
 	}
 	
-	public static void showHtmlMessageDialog(Component parentComponent, CharSequence message, String title, int messageType) throws HeadlessException {
+	public static void showHtmlMessageDialog(Component parentComponent, CharSequence message, String title, int messageType) {
 		showHtmlMessageDialog(parentComponent, message, title, messageType, ROWS_MAX);
 	}
 	
 	// Errors
-	public static void errorMsg(Window owner, String msg, String title) {
-		if((msg == null || msg.isEmpty())) {
-			msg = "Error";
-		} else if(msg.startsWith("<html>") == false) {
-			msg = splitLine(msg, 128);
+	public static void errorMsg(Window owner, String msg, String title) /*throws HeadlessException*/ {
+		try {
+			if((msg == null || msg.isEmpty())) {
+				msg = "Error";
+			} else if(msg.startsWith("<html>") == false) {
+				msg = splitLine(msg, 128);
+			}
+			JOptionPane.showMessageDialog(owner, msg, title, JOptionPane.ERROR_MESSAGE);
+		} catch(RuntimeException e) { // HeadlessException
+			LOG.error(msg, e);
 		}
-		JOptionPane.showMessageDialog(owner, msg, title, JOptionPane.ERROR_MESSAGE);
 	}
 	
 	public static void errorMsg(String msg, String title) {

@@ -50,7 +50,7 @@ public class UsnaTextPane extends JTextPane {
 	}
 	
 	public void setText(String str, Style style) {
-			setText(str);
-			doc.setCharacterAttributes(0, doc.getLength(), style, true);
+		setText(str);
+		doc.setCharacterAttributes(0, doc.getLength(), style, true);
 	}
 }

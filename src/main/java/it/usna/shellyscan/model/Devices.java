@@ -34,7 +34,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
 import it.usna.shellyscan.model.device.ShellyUnmanagedDevice;
-import it.usna.shellyscan.model.device.g1.AbstractG1Device;
 
 public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Integer> {
 	private final static Logger LOG = LoggerFactory.getLogger(Devices.class);
@@ -175,7 +174,7 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 		}
 	}
 
-	public void scan() throws IOException {
+	public void rescan() throws IOException {
 		//LOG.trace("Q {}", ((ScheduledThreadPoolExecutor)executor).getQueue().size());
 		//		synchronized(devices) {
 		LOG.trace("rescan");
@@ -260,7 +259,6 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 		final ShellyAbstractDevice d = devices.get(ind);
 		final ScheduledFuture<?> f = refreshProcess.get(ind);
 		f.cancel(true);
-		//if(d.getStatus() != Status.OFF_LINE) {
 		d.setStatus(Status.READING);
 		updateViewRow(d, ind);
 		executor.execute/*submit*/(() -> {
@@ -284,7 +282,6 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 			}
 			updateViewRow(d, ind);
 		});
-		//}
 	}
 
 	private void updateViewRow(final ShellyAbstractDevice d, int ind) {
@@ -336,9 +333,7 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 					if(++ticCount >= statusTics) {
 						d.refreshSettings();
 						ticCount = 0;
-						if(d instanceof AbstractG1Device) {
-							Thread.sleep(MULTI_QUERY_DELAY);
-						}
+						Thread.sleep(MULTI_QUERY_DELAY);
 					}
 					d.refreshStatus();
 				} catch (JsonProcessingException | RuntimeException e) {

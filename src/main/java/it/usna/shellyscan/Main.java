@@ -295,11 +295,14 @@ public class Main {
 // pro4PM - pro1 - pro1pm - pro3 (full)
 // pro2 - pro2pm (full)
 // plus plug IT/US
+// device info
 
 //plus H&T
+//rebootRequired
 
 
 // TODO
+// extender WiFi.ListAPClients
 // https://docs.oracle.com/javase/8/docs/api/javax/security/auth/callback/CallbackHandler.html
 // https://www.baeldung.com/java-authentication-authorization-service
 // archivio (additivo) dispositivi collegati opzionalmente caricabile (con eventuale default da settings)

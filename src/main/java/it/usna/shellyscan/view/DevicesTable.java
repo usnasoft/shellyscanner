@@ -51,6 +51,7 @@ import it.usna.shellyscan.model.device.g1.ShellyMotion;
 import it.usna.shellyscan.model.device.g1.ShellyTRV;
 import it.usna.shellyscan.model.device.g1.modules.LightBulbRGBCommander;
 import it.usna.shellyscan.model.device.g1.modules.Thermostat;
+import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.modules.DeviceModule;
 import it.usna.shellyscan.model.device.modules.InputCommander;
 import it.usna.shellyscan.model.device.modules.RGBWCommander;
@@ -66,6 +67,7 @@ import it.usna.swing.table.UsnaTableModel;
 public class DevicesTable extends ExTooltipTable {
 	private final static URL OFFLINEIMG = MainView.class.getResource("/images/bullet_stop.png");
 	public final static ImageIcon ONLINE_BULLET = new ImageIcon(MainView.class.getResource("/images/bullet_yes.png"), LABELS.getString("labelDevOnLIne"));
+	public final static ImageIcon ONLINE_BULLET_REBOOT = new ImageIcon(MainView.class.getResource("/images/bullet_yes_reboot.png"), LABELS.getString("labelDevOnLIneReboot"));
 	public final static ImageIcon OFFLINE_BULLET = new ImageIcon(OFFLINEIMG, LABELS.getString("labelDevOffLIne"));
 	public final static ImageIcon LOGIN_BULLET = new ImageIcon(MainView.class.getResource("/images/bullet_star_yellow.png"), LABELS.getString("labelDevNotLogged"));
 	public final static ImageIcon UPDATING_BULLET = new ImageIcon(MainView.class.getResource("/images/bullet_refresh.png"), LABELS.getString("labelDevUpdating"));
@@ -381,8 +383,7 @@ public class DevicesTable extends ExTooltipTable {
 //			rowH.set(modelRowIndex, thisH);
 //		}
 		int thisH = callVal.getPreferredSize().height;
-		int currentH = getRowHeight(rowIndex);
-		if(currentH < thisH) {
+		if(getRowHeight(rowIndex) < thisH) {
 			setRowHeight(rowIndex, thisH);
 		}
 	}
@@ -475,7 +476,11 @@ public class DevicesTable extends ExTooltipTable {
 	
 	public static ImageIcon getStatusIcon(ShellyAbstractDevice d) {
 		if(d.getStatus() == Status.ON_LINE) {
-			return ONLINE_BULLET;
+//			if(d instanceof AbstractG2Device && ((AbstractG2Device)d).rebootRequired()) {
+//				return ONLINE_BULLET_REBOOT;
+//			} else {
+				return ONLINE_BULLET;
+//			}
 		} else if(d.getStatus() == Status.OFF_LINE) {
 			long lastOnline = d.getLastTime();
 			if(lastOnline > 0) {
@@ -491,4 +496,4 @@ public class DevicesTable extends ExTooltipTable {
 			return LOGIN_BULLET;
 		}
 	}
-} // 462 - 472 - 494
+} // 462 - 472 - 493

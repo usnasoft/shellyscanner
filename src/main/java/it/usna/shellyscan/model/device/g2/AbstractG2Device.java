@@ -45,6 +45,7 @@ import it.usna.shellyscan.model.device.g2.modules.Webhooks;
 
 public abstract class AbstractG2Device extends ShellyAbstractDevice {
 	private final static Logger LOG = LoggerFactory.getLogger(AbstractG2Device.class);
+	private boolean rebootRequired = false;
 
 	protected AbstractG2Device(InetAddress address, String hostname) {
 		super(address, hostname);
@@ -97,7 +98,9 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 		JsonNode wifiNode = status.get("wifi");
 		this.rssi = wifiNode.path("rssi").asInt();
 		this.ssid = wifiNode.path("ssid").asText();
-		this.uptime = status.get("sys").get("uptime").asInt();
+		JsonNode sysNode = status.get("sys");
+		this.uptime = sysNode.get("uptime").asInt();
+		this.rebootRequired = sysNode.path("restart_required").asBoolean();
 		this.mqttConnected = status.path("mqtt").path("connected").asBoolean();
 		
 		lastConnection = System.currentTimeMillis();
@@ -124,9 +127,9 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 		getJSON("/rpc/Shelly.Reboot");
 	}
 	
-	public boolean needReboot() throws IOException {
-		JsonNode sysStatus = getJSON("/rpc/Sys.GetStatus");
-		return sysStatus.path("restart_required").asBoolean(false);
+	public boolean rebootRequired() {
+//		return getJSON("/rpc/Sys.GetStatus").path("restart_required").asBoolean(false);
+		return rebootRequired;
 	}
 	
 	@Override
@@ -162,7 +165,10 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 		try {
 			final JsonNode resp = executeRPC(method, payload);
 			JsonNode error;
-			if((error = resp.get("error")) == null) {
+			if((error = resp.get("error")) == null) { // todo {"id":1,"src":"shellyplusi4-xxx","result":{"restart_required":true}}
+				if(resp.path("result").path("restart_required").asBoolean(false)) {
+					rebootRequired = true;
+				}
 				return null;
 			} else {
 				return error.path("message").asText("Generic error");

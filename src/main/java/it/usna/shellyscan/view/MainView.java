@@ -152,7 +152,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 			MainView.this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 			try {
 //				setEnabled(false);
-				model.scan();
+				model.rescan();
 				Thread.sleep(500); // too many call disturb some devices
 			} catch (IOException e1) {
 				Msg.errorMsg(e1);
@@ -766,6 +766,8 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 				} else if(mesgType == Devices.EventType.CLEAR) {
 					tModel.clear();
 				}
+			} catch (IndexOutOfBoundsException ex) {
+				LOG.debug("Unexpected", ex); // rescan/shutdown
 			} catch (Throwable ex) {
 				LOG.error("Unexpected", ex);
 			}

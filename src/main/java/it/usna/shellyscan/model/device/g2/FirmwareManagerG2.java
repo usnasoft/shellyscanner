@@ -27,7 +27,6 @@ public class FirmwareManagerG2 implements FirmwareManager {
 			node = d.getJSON("/rpc/Shelly.CheckForUpdate");
 			stable = node.at("/stable/build_id").asText(null);
 			beta = node.at("/beta/build_id").asText(null);
-			//		updating = STATUS_UPDATING.equals(node.get("status").asText());
 			valid = true;
 		} catch(/*IO*/Exception e) {
 			valid = false;
