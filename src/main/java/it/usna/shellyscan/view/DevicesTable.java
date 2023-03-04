@@ -476,11 +476,11 @@ public class DevicesTable extends ExTooltipTable {
 	
 	public static ImageIcon getStatusIcon(ShellyAbstractDevice d) {
 		if(d.getStatus() == Status.ON_LINE) {
-//			if(d instanceof AbstractG2Device && ((AbstractG2Device)d).rebootRequired()) {
-//				return ONLINE_BULLET_REBOOT;
-//			} else {
+			if(d instanceof AbstractG2Device && ((AbstractG2Device)d).rebootRequired()) {
+				return ONLINE_BULLET_REBOOT;
+			} else {
 				return ONLINE_BULLET;
-//			}
+			}
 		} else if(d.getStatus() == Status.OFF_LINE) {
 			long lastOnline = d.getLastTime();
 			if(lastOnline > 0) {

@@ -235,7 +235,7 @@ public class DialogDeviceLogsG2 extends JDialog {
 		this.setSize(700, 650);
 		setLocationRelativeTo(owner);
 		setVisible(true);
-//		test(webSocketClient, device);
+		test(webSocketClient, device);
 	}
 
 	private static void activateLog(AbstractG2Device device) {

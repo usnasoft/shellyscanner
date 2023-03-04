@@ -264,10 +264,10 @@ public class DevicesFactory {
 			break;
 			case ShellyPlusPlugUS.ID: d = new ShellyPlusPlugUS(address, name);
 			break;
-//			case ShellyPlusWallDimmer.ID: d = new ShellyPlusWallDimmer(address, name);
-//			break;
-//			case ShellyPlusHT.ID: d = new ShellyPlusHT(address, info, name);
-//			break;
+			case ShellyPlusWallDimmer.ID: d = new ShellyPlusWallDimmer(address, name);
+			break;
+			case ShellyPlusHT.ID: d = new ShellyPlusHT(address, info, name);
+			break;
 			// PRO
 			case ShellyPro1PM.ID: d = new ShellyPro1PM(address, name);
 			break;
