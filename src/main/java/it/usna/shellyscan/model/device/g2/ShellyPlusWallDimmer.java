@@ -7,9 +7,12 @@ import java.util.ArrayList;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import it.usna.shellyscan.model.device.g2.modules.Input;
+import it.usna.shellyscan.model.device.g2.modules.LightWhite;
+import it.usna.shellyscan.model.device.modules.WhiteCommander;
 
-public class ShellyPlusWallDimmer extends AbstractG2Device {
+public class ShellyPlusWallDimmer extends AbstractG2Device implements WhiteCommander {
 	public final static String ID = "PlusWallDimmer";
+	private LightWhite light = new LightWhite(this, 0);
 
 	public ShellyPlusWallDimmer(InetAddress address, String hostname) {
 		super(address, hostname);
@@ -25,36 +28,38 @@ public class ShellyPlusWallDimmer extends AbstractG2Device {
 		return ID;
 	}
 	
-//	@Override
-//	public Relay getRelay(int index) {
-//		return relay;
-//	}
-//	
-//	@Override
-//	public RelayInterface[] getRelays() {
-//		return ralayes;
-//	}
+	@Override
+	protected void fillSettings(JsonNode configuration) throws IOException {
+		super.fillSettings(configuration);
+		light.fillSettings(configuration.get("light:0"));
+	}
 	
-//	@Override
-//	protected void fillSettings(JsonNode configuration) throws IOException {
-//		super.fillSettings(configuration);
-//		relay.fillSettings(configuration.get("switch:0")/*, configuration.get("input:0")*/);
-////		System.out.println("fill");
-//	}
-	
-//	@Override
-//	protected void fillStatus(JsonNode status) throws IOException {
-//		super.fillStatus(status);
-////		JsonNode switchStatus = status.get("switch:0");
-////		relay.fillStatus(switchStatus, status.get("input:0"));
-//		internalTmp = (float)switchStatus.path("temperature").path("tC").asDouble();
-//	}
+	@Override
+	protected void fillStatus(JsonNode status) throws IOException {
+		super.fillStatus(status);
+		light.fillStatus(status.get("light:0"));
+	}
 
 	@Override
 	protected void restore(JsonNode configuration, ArrayList<String> errors) throws IOException, InterruptedException {
 		errors.add(Input.restore(this, configuration, "0"));
 //		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 //		errors.add(relay.restore(configuration));
+	}
+
+	@Override
+	public LightWhite getWhite(int index) {
+		return light;
+	}
+
+	@Override
+	public LightWhite[] getWhites() {
+		return new LightWhite[] {light};
+	}
+
+	@Override
+	public int getWhiteCount() {
+		return 1;
 	}
 	
 //	@Override
