@@ -24,6 +24,7 @@ import javax.jmdns.ServiceListener;
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.api.ContentResponse;
 import org.eclipse.jetty.http.HttpStatus;
+import org.eclipse.jetty.websocket.client.WebSocketClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -64,9 +65,11 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 
 	private ScheduledExecutorService executor = Executors.newScheduledThreadPool(EXECUTOR_POOL_SIZE);
 	private HttpClient httpClient = new HttpClient();
+	private WebSocketClient webSocketClient = new WebSocketClient(httpClient);
 	
 	public Devices() throws Exception {
 		httpClient.start();
+		webSocketClient.start();
 	}
 
 	public void scannerInit(boolean fullScan, int refreshInterval, int refreshTics) throws IOException {
@@ -352,6 +355,10 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 	public HttpClient getHttpClient() {
 		return httpClient;
 	}
+	
+	public WebSocketClient getWebSocketClient() {
+		return webSocketClient;
+	}
 
 	public ShellyAbstractDevice get(int ind) {
 		return devices.get(ind);
@@ -397,8 +404,15 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 			}
 		}
 		try {
+			webSocketClient.stop();
+		} catch (Exception e) {
+			LOG.error("webSocketClient.stop", e);
+		}
+		try {
 			httpClient.stop();
-		} catch (Exception e) {}
+		} catch (Exception e) {
+			LOG.error("httpClient.stop", e);
+		}
 		LOG.debug("Model closed");
 	}
 

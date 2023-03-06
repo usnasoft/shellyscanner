@@ -55,7 +55,7 @@ import it.usna.swing.dialog.FindReplaceDialog;
 public class DialogDeviceLogsG2 extends JDialog {
 	private static final long serialVersionUID = 1L;
 	private final static Logger LOG = LoggerFactory.getLogger(DialogDeviceLogsG2.class);
-	
+
 	public DialogDeviceLogsG2(final MainView owner, Devices model, int index) {
 		super(owner, false);
 		AbstractG2Device device = (AbstractG2Device) model.get(index);
@@ -89,7 +89,7 @@ public class DialogDeviceLogsG2 extends JDialog {
 		JButton jButtonCopyAll = new JButton(Main.LABELS.getString("btnCopyAll"));
 		jButtonCopyAll.addActionListener(event -> {
 			final String cp = textArea.getText();
-			if(cp != null && cp.length() > 0) {
+			if (cp != null && cp.length() > 0) {
 				final Clipboard cb = Toolkit.getDefaultToolkit().getSystemClipboard();
 				StringSelection selection = new StringSelection(cp);
 				cb.setContents(selection, selection);
@@ -117,7 +117,7 @@ public class DialogDeviceLogsG2 extends JDialog {
 		btnsStopAppRefresh.addActionListener(event -> {
 			model.pauseRefresh(index);
 			try {
-				document.insertString(document.getLength(), ">>>> " + Main.APP_NAME +" refresh process stopped\n", bluStyle);
+				document.insertString(document.getLength(), ">>>> " + Main.APP_NAME + " refresh process stopped\n", bluStyle);
 			} catch (BadLocationException e1) {}
 		});
 
@@ -133,10 +133,9 @@ public class DialogDeviceLogsG2 extends JDialog {
 		comboBox.setSelectedIndex(4);
 		buttonsPanel.add(comboBox);
 
-		JPanel panel = new JPanel();
-		panel.setLayout(new BorderLayout(0, 0));
+		JPanel panel = new JPanel(new BorderLayout(/*0, 0*/));
 
-		WebSocketClient webSocketClient = new WebSocketClient(model.getHttpClient());
+		WebSocketClient webSocketClient = model.getWebSocketClient(); // new WebSocketClient(model.getHttpClient());
 		try {
 			WebSocketListener wsListener = new WebSocketListener() {
 				private final ObjectMapper mapper = new ObjectMapper();
@@ -148,7 +147,7 @@ public class DialogDeviceLogsG2 extends JDialog {
 
 				@Override
 				public void onWebSocketClose(int statusCode, String reason) {
-					textArea.append(">>>> Close: " + reason  + " (" + statusCode + ")\n", bluStyle);
+					textArea.append(">>>> Close: " + reason + " (" + statusCode + ")\n", bluStyle);
 				}
 
 				@Override
@@ -162,7 +161,7 @@ public class DialogDeviceLogsG2 extends JDialog {
 						int logLevel = comboBox.getSelectedIndex();
 						JsonNode msg = mapper.readTree(message);
 						int level = msg.get("level").asInt(0);
-						if(level <= logLevel) {
+						if (level <= logLevel) {
 							textArea.append(msg.get("ts").asLong() + " - L" + level + ": " + msg.get("data").asText().trim() + "\n");
 						}
 					} catch (JsonProcessingException ex) {
@@ -175,14 +174,14 @@ public class DialogDeviceLogsG2 extends JDialog {
 				public void onWebSocketBinary(byte[] payload, int offset, int length) {}
 			};
 
-			webSocketClient.start();
+//			webSocketClient.start();
 			final Future<Session> session = webSocketClient.connect(wsListener, URI.create("ws://" + device.getAddress().getHostAddress() + "/debug/log"));
 
 			btnActivateLog.addActionListener(event -> {
 				try {
 					setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 					activateLog(device);
-					if(session.get().isOpen() == false) {
+					if (session.get().isOpen() == false) {
 						webSocketClient.connect(wsListener, URI.create("ws://" + device.getAddress().getHostAddress() + "/debug/log"));
 					}
 				} catch (Exception e1) {
@@ -196,7 +195,7 @@ public class DialogDeviceLogsG2 extends JDialog {
 				try {
 					setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 					try {
-						if(session.get().isOpen()) {
+						if (session.get().isOpen()) {
 							session.get().disconnect();
 						}
 					} catch (IOException | InterruptedException | ExecutionException e1) {
@@ -207,43 +206,49 @@ public class DialogDeviceLogsG2 extends JDialog {
 					setCursor(Cursor.getDefaultCursor());
 				}
 			});
-		} catch(Exception e) {
+
+			JScrollPane scrollPane = new JScrollPane(textArea);
+			panel.add(scrollPane);
+
+			getContentPane().add(panel, BorderLayout.CENTER);
+
+			addWindowListener(new WindowAdapter() {
+				@Override
+				public void windowClosing(WindowEvent e) {
+					dispose();
+				}
+
+				@Override
+				public void windowClosed(WindowEvent e) {
+					try {
+						session.get().disconnect();
+					} catch (Exception e1) {
+						LOG.error("webSocketClient.disconnect", e1);
+					}
+//				try {
+//					webSocketClient.stop();
+//				} catch (Exception e1) {
+//					LOG.error("webSocketClient.stop", e1);
+//				}
+					model.refresh(index, false);
+				}
+			});
+
+			this.setSize(700, 650);
+			setLocationRelativeTo(owner);
+			setVisible(true);
+			test(webSocketClient, device);
+		} catch (Exception e) {
 			LOG.error("webSocketClient.start", e);
 		}
-
-		JScrollPane scrollPane = new JScrollPane(textArea);
-		panel.add(scrollPane);
-
-		getContentPane().add(panel, BorderLayout.CENTER);
-
-		addWindowListener(new WindowAdapter() {
-			@Override
-			public void windowClosing(WindowEvent e) {
-				dispose();
-			}
-			@Override
-			public void windowClosed(WindowEvent e) {
-				try {
-					webSocketClient.stop();
-				} catch (Exception e1) {
-					LOG.error("webSocketClient.stop", e1);
-				}
-				model.refresh(index, false);
-			}
-		});
-
-		this.setSize(700, 650);
-		setLocationRelativeTo(owner);
-		setVisible(true);
-		test(webSocketClient, device);
 	}
 
 	private static void activateLog(AbstractG2Device device) {
-		if(device.getDebugMode() != AbstractG2Device.LogMode.SOCKET) {
+		if (device.getDebugMode() != AbstractG2Device.LogMode.SOCKET) {
 			device.postCommand("Sys.SetConfig", "{\"config\": {\"debug\":{\"websocket\":{\"enable\": true}}}");
 		}
 	}
-	
+
 	private void test(WebSocketClient webSocketClient, AbstractG2Device device) {
 		try {
 			Future<Session> session = webSocketClient.connect(new WebSocketListener() {
@@ -254,7 +259,7 @@ public class DialogDeviceLogsG2 extends JDialog {
 
 				@Override
 				public void onWebSocketClose(int statusCode, String reason) {
-					System.out.println(">>>> Close: " + reason  + " (" + statusCode + ")");
+					System.out.println(">>>> Close: " + reason + " (" + statusCode + ")");
 				}
 
 				@Override
@@ -268,14 +273,14 @@ public class DialogDeviceLogsG2 extends JDialog {
 				}
 
 				@Override
-				public void onWebSocketBinary(byte[] payload, int offset, int length) {}
+				public void onWebSocketBinary(byte[] payload, int offset, int length) {
+				}
 			}, URI.create("ws://" + device.getAddress().getHostAddress() + "/rpc"));
-			
+
 			RemoteEndpoint remote = session.get().getRemote();
 //			remote.sendStringByFuture("{\"id\":2, \"src\":\"user_1\", \"method\":\"Switch.Set\", \"params\":{\"id\":0, \"on\":true}}");
 			remote.sendStringByFuture("{\"id\":2, \"src\":\"S_Scanner\", \"method\":\"Shelly.GetDeviceInfo\"}");
 		} catch (IOException | InterruptedException | ExecutionException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
