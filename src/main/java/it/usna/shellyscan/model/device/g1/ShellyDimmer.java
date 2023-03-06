@@ -19,6 +19,7 @@ public class ShellyDimmer extends AbstractG1Device implements WhiteCommander, In
 	private float internalTmp;
 	private boolean calibrated;
 	private LightWhite light = new LightWhite(this, "/light/", 0);
+	private LightWhite[] lightArray = new LightWhite[] {light};
 	private float power;
 	private Meters[] meters;
 
@@ -57,7 +58,7 @@ public class ShellyDimmer extends AbstractG1Device implements WhiteCommander, In
 	
 	@Override
 	public LightWhite[] getWhites() {
-		return new LightWhite[] {light};
+		return lightArray;
 	}
 
 	@Override

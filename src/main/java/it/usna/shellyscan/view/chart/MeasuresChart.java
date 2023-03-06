@@ -225,10 +225,6 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 			try {
 				setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 				final JFileChooser fc = new JFileChooser(appProp.getProperty("LAST_PATH"));
-//				final String path = appProp.getProperty("LAST_PATH");
-//				if(path != null) {
-//					fc.setCurrentDirectory(new File(path));
-//				}
 				fc.setFileFilter(new FileNameExtensionFilter(LABELS.getString("filetype_csv_desc"), "csv"));
 				if(fc.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
 					File out = fc.getSelectedFile();

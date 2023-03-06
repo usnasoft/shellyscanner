@@ -17,6 +17,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public abstract class ShellyAbstractDevice {
+	protected HttpClient httpClient;
 	protected final InetAddress address;
 	protected String hostname;
 	protected String mac;
@@ -31,9 +32,7 @@ public abstract class ShellyAbstractDevice {
 	protected String name;
 	protected Status status;
 	protected long lastConnection = 0;
-	
-	protected HttpClient httpClient; // org.eclipse.jetty.client.HttpClient
-	
+
 	protected final ObjectMapper jsonMapper = new ObjectMapper();
 	
 	public enum Status {ON_LINE, OFF_LINE, NOT_LOOGGED, READING, ERROR};
@@ -54,47 +53,6 @@ public abstract class ShellyAbstractDevice {
 	}
 	
 	protected abstract void init() throws IOException;
-
-//	public void setCredentialsProvider(CredentialsProvider credentialsProv) {
-//		if(credentialsProv != null) {
-//			AuthCache authCache = new BasicAuthCache();
-//			authCache.put(httpHost, new BasicScheme());
-//			clientContext = HttpClientContext.create();
-//			clientContext.setCredentialsProvider(credentialsProv);
-//			clientContext.setAuthCache(authCache);
-//		} else {
-//			clientContext = null;
-//		}
-//	}
-	
-//	public JsonNode getJSON(final String command) throws IOException { //JsonProcessingException extends IOException
-//		HttpGet httpget = new HttpGet(command);
-//		try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
-//			return httpClient.execute(httpHost, httpget, clientContext, response -> {
-//				int statusCode = response.getCode();
-//				if(statusCode == HttpURLConnection.HTTP_OK) {
-//					status = Status.ON_LINE;
-//					return jsonMapper.readTree(response.getEntity().getContent());
-//				}
-//				if(statusCode == HttpURLConnection.HTTP_UNAUTHORIZED) {
-//					status = Status.NOT_LOOGGED;
-//				} else if(statusCode == HttpURLConnection.HTTP_INTERNAL_ERROR) {
-//					status = Status.ERROR;
-//				} else {
-//					status = Status.OFF_LINE;
-//				}
-//				throw new IOException("Status-" + statusCode);
-//			});
-//		}  catch(SocketException | SocketTimeoutException e) {
-//			status = Status.OFF_LINE;
-//			throw e;
-//		} catch(/*JsonParseException |*/ IOException | RuntimeException e) {
-//			if(status == Status.ON_LINE || status == Status.READING) {
-//				status = Status.ERROR;
-//			}
-//			throw e;
-//		}
-//	}
 	
 	public JsonNode getJSON(final String command) throws IOException  { //JsonProcessingException extends IOException
 		try {
@@ -225,25 +183,6 @@ public abstract class ShellyAbstractDevice {
 	
 	public abstract String restore(final File file, Map<Restore, String> data) throws IOException;
 
-	// used by backup
-//	protected void sectionToStream(String section, String entryName, ZipOutputStream out) throws IOException {
-//		ZipEntry entry = new ZipEntry(entryName);
-//		out.putNextEntry(entry);
-//		try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
-//			httpClient.execute(httpHost, new HttpGet(section), clientContext, response -> {
-//				byte[] buffer = new byte[4096];
-//				int l;
-//				try (BufferedInputStream br = new BufferedInputStream(response.getEntity().getContent())) {
-//					while ((l = br.read(buffer)) >= 0) {
-//						out.write(buffer, 0, l);
-//					}
-//				}
-//				return null;
-//			});
-//		}
-//		out.closeEntry();
-//	}
-	
 	protected void sectionToStream(String section, String entryName, ZipOutputStream out) throws IOException {
 		ZipEntry entry = new ZipEntry(entryName);
 		out.putNextEntry(entry);
@@ -267,4 +206,4 @@ public abstract class ShellyAbstractDevice {
 	public String toString() {
 		return getTypeName() + "-" + name + ": " + address.getHostAddress() + " (" + hostname + ")";
 	}
-} //278 - 399 - 316 - 251 - 237
+} //278 - 399 - 316 - 251 - 237 - 209
