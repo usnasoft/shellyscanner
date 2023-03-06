@@ -3,21 +3,23 @@ package it.usna.shellyscan.model.device.g2.modules;
 import java.io.IOException;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
-import it.usna.shellyscan.model.device.modules.LightWhiteInterface;
+import it.usna.shellyscan.model.device.modules.WhiteInterface;
 
 /**
  * Used by wall dimmer
  */
-public class LightWhite implements LightWhiteInterface {
+public class LightWhite implements WhiteInterface {
 	private final AbstractG2Device parent;
 	private String name;
 	private boolean isOn;
 	private int brightness; // Brightness, 1..100 - seems wrong: 0 seems valid for RGBW2, not for dimmer
 	private String source;
 	private int index;
-	private boolean inputIsOn;
+//	private boolean inputIsOn;
 //	public final static int MIN_BRIGHTNESS = 0;
 	
 	public LightWhite(AbstractG2Device parent, int index) {
@@ -61,9 +63,9 @@ public class LightWhite implements LightWhiteInterface {
 		return isOn;
 	}
 	
-	public boolean isInputOn() {
-		return inputIsOn;
-	}
+//	public boolean isInputOn() {
+//		return inputIsOn;
+//	}
 
 	@Override
 	public void setBrightness(int b) throws IOException {
@@ -83,22 +85,15 @@ public class LightWhite implements LightWhiteInterface {
 		return source;
 	}
 	
-//	public String restore(JsonNode data) throws IOException { //lights
-//		((ObjectNode)data).remove("ison");
-////		((ObjectNode)data).remove("has_timer"); // not a parameter
-////		((ObjectNode)data).remove("mode"); // duplicated (settings)
-//
-//		Iterator<Entry<String, JsonNode>> pars = data.fields();
-//		if(pars.hasNext()) {
-//			String command = "/settings" + prefix + "?" + AbstractG1Device.jsonEntryToURLPar(pars.next());
-//			while(pars.hasNext()) {
-//				command += "&" + AbstractG1Device.jsonEntryToURLPar(pars.next());
-//			}
-////			System.out.println(command);
-//			return parent.sendCommand(command);
-//		}
-//		return null;
-//	}
+	public String restore(JsonNode config) throws IOException {
+		JsonNodeFactory factory = new JsonNodeFactory(false);
+		ObjectNode out = factory.objectNode();
+		out.put("id", index);
+		ObjectNode light = (ObjectNode)config.get("light:" + index).deepCopy();
+		light.remove("id");
+		out.set("config", light);
+		return parent.postCommand("Light.SetConfig", out);
+	}
 	
 	@Override
 	public String getLabel() {

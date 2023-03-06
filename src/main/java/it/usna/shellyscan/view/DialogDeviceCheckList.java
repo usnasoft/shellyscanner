@@ -64,7 +64,6 @@ public class DialogDeviceCheckList extends JDialog {
 	private final static int COL_STATUS = 0;
 	private final static int COL_NAME = 1;
 	private final static int COL_IP = 2;
-//	private final 
 	private ExecutorService exeService /*= Executors.newFixedThreadPool(20)*/;
 
 	public DialogDeviceCheckList(final Window owner, final List<ShellyAbstractDevice> devices, final Boolean ipSort) {
@@ -75,14 +74,14 @@ public class DialogDeviceCheckList extends JDialog {
 
 		UsnaTableModel tModel = new UsnaTableModel("",
 				LABELS.getString("col_device"), LABELS.getString("col_ip"), LABELS.getString("col_eco"), LABELS.getString("col_ledoff"), LABELS.getString("col_logs"),
-				LABELS.getString("col_blt"), LABELS.getString("col_AP"), LABELS.getString("col_roaming"), LABELS.getString("col_wifi1"), LABELS.getString("col_wifi2"));
+				LABELS.getString("col_blt"), LABELS.getString("col_AP"), LABELS.getString("col_roaming"), LABELS.getString("col_wifi1"), LABELS.getString("col_wifi2"), LABELS.getString("col_extender"));
 		
 		ExTooltipTable table = new ExTooltipTable(tModel, true) {
 			private static final long serialVersionUID = 1L;
 			{
 				columnModel.getColumn(COL_STATUS).setMaxWidth(DevicesTable.ONLINE_BULLET.getIconWidth() + 4);
 				setHeadersTooltip(LABELS.getString("col_status_exp"), null, null, LABELS.getString("col_eco_tooltip"), LABELS.getString("col_ledoff_tooltip"), LABELS.getString("col_logs_tooltip"), 
-						LABELS.getString("col_blt_tooltip"), LABELS.getString("col_AP_tooltip"), LABELS.getString("col_roaming_tooltip"), LABELS.getString("col_wifi1_tooltip"), LABELS.getString("col_wifi2_tooltip"));
+						LABELS.getString("col_blt_tooltip"), LABELS.getString("col_AP_tooltip"), LABELS.getString("col_roaming_tooltip"), LABELS.getString("col_wifi1_tooltip"), LABELS.getString("col_wifi2_tooltip"), LABELS.getString("col_extender_tooltip"));
 
 				columnModel.getColumn(COL_IP).setCellRenderer(new DefaultTableCellRenderer() {
 					private static final long serialVersionUID = 1L;
@@ -234,7 +233,7 @@ public class DialogDeviceCheckList extends JDialog {
 		    }
 		});
 
-		setSize(790, 420);
+		setSize(800, 420);
 		setVisible(true);
 		setLocationRelativeTo(owner);
 		table.columnsWidthAdapt();
@@ -255,14 +254,14 @@ public class DialogDeviceCheckList extends JDialog {
 					if(d instanceof AbstractG1Device) {
 						tModel.setRow(row, g1Row(d, d.getJSON("/settings")));
 					} else { // G2
-						tModel.setRow(row, g2Row(d, d.getJSON("/rpc/Shelly.GetConfig")));
+						tModel.setRow(row, g2Row(d, d.getJSON("/rpc/Shelly.GetConfig"), d.getJSON("/rpc/Shelly.GetStatus")));
 					}
 				} catch (/*IO*/Exception e) {
 					if(d instanceof BatteryDeviceInterface) {
 						if(d instanceof AbstractG1Device) {
 							tModel.setRow(row, g1Row(d, ((BatteryDeviceInterface)d).getStoredJSON("/settings")));
 						} else {
-							tModel.setRow(row, g2Row(d, ((BatteryDeviceInterface)d).getStoredJSON("/rpc/Shelly.GetConfig")));
+							tModel.setRow(row, g2Row(d, ((BatteryDeviceInterface)d).getStoredJSON("/rpc/Shelly.GetConfig"), null));
 						}
 					} else {
 						tModel.setRow(row, DevicesTable.getStatusIcon(d), UtilCollecion.getExtendedHostName(d), d.getAddress());
@@ -301,10 +300,10 @@ public class DialogDeviceCheckList extends JDialog {
 		} else {
 			wifi2 = "-";
 		}
-		return new Object[] {DevicesTable.getStatusIcon(d), UtilCollecion.getExtendedHostName(d), d.getAddress(), eco, ledOff, debug, "-", "-", roaming, wifi1, wifi2};
+		return new Object[] {DevicesTable.getStatusIcon(d), UtilCollecion.getExtendedHostName(d), d.getAddress(), eco, ledOff, debug, "-", "-", roaming, wifi1, wifi2, "-"};
 	}
 	
-	private static Object[] g2Row(ShellyAbstractDevice d, JsonNode settings) {
+	private static Object[] g2Row(ShellyAbstractDevice d, JsonNode settings, JsonNode status) {
 		Boolean eco = boolVal(settings.at("/sys/device/eco_mode"));
 		Object ap = boolVal(settings.at("/wifi/ap/enable"));
 		if(ap != null && ap == Boolean.TRUE && settings.at("/wifi/ap/is_open").asBoolean(true) == false) {
@@ -332,7 +331,9 @@ public class DialogDeviceCheckList extends JDialog {
 		} else {
 			wifi2 = "-";
 		}
-		return new Object[] {DevicesTable.getStatusIcon(d), UtilCollecion.getExtendedHostName(d), d.getAddress(), eco, "-", debug, ble, ap, roaming, wifi1, wifi2};
+		JsonNode extClient;
+		String extender = (status == null || (extClient = status.at("/wifi/ap_client_count")).isMissingNode()) ? "-" : extClient.asInt() + "";
+		return new Object[] {DevicesTable.getStatusIcon(d), UtilCollecion.getExtendedHostName(d), d.getAddress(), eco, "-", debug, ble, ap, roaming, wifi1, wifi2, extender};
 	}
 
 	private static Boolean boolVal(JsonNode node) {

@@ -33,7 +33,7 @@ import it.usna.shellyscan.model.device.g1.modules.LightBulbRGB;
 import it.usna.shellyscan.model.device.g1.modules.LightRGBW;
 import it.usna.shellyscan.model.device.g1.modules.Thermostat;
 import it.usna.shellyscan.model.device.modules.InputInterface;
-import it.usna.shellyscan.model.device.modules.LightWhiteInterface;
+import it.usna.shellyscan.model.device.modules.WhiteInterface;
 import it.usna.shellyscan.model.device.modules.RelayInterface;
 import it.usna.shellyscan.model.device.modules.RollerInterface;
 import it.usna.shellyscan.view.util.Msg;
@@ -86,9 +86,9 @@ public class DeviceTableCellEditor extends AbstractCellEditor implements TableCe
 		lightPanel.add(lightButton, BorderLayout.EAST);
 		lightButton.setBorder(DevicesCommandCellRenderer.BUTTON_BORDERS);
 		lightButton.addActionListener(e -> {
-			if(edited != null && edited instanceof LightWhiteInterface) {
+			if(edited != null && edited instanceof WhiteInterface) {
 				try {
-					((LightWhiteInterface)edited).toggle();
+					((WhiteInterface)edited).toggle();
 				} catch (IOException ex) {
 					LOG.error("lightButton", ex);
 				}
@@ -97,12 +97,12 @@ public class DeviceTableCellEditor extends AbstractCellEditor implements TableCe
 		});
 		lightPanel.add(lightBrightness, BorderLayout.SOUTH);
 		lightBrightness.addChangeListener(e -> {
-			if(edited != null && edited instanceof LightWhiteInterface) {
+			if(edited != null && edited instanceof WhiteInterface) {
 				if(lightBrightness.getValueIsAdjusting()) {
-					lightLabel.setText(((LightWhiteInterface)edited).getLabel() + " " + lightBrightness.getValue() + "%");
+					lightLabel.setText(((WhiteInterface)edited).getLabel() + " " + lightBrightness.getValue() + "%");
 				} else {
 					try {
-						((LightWhiteInterface)edited).setBrightness(lightBrightness.getValue());
+						((WhiteInterface)edited).setBrightness(lightBrightness.getValue());
 					} catch (IOException ex) {
 						LOG.error("lightBrightness", ex);
 					}
@@ -311,10 +311,10 @@ public class DeviceTableCellEditor extends AbstractCellEditor implements TableCe
 		editLightWhiteButton.setBorder(BorderFactory.createEmptyBorder(0, 3, 0, 3));
 		editLightWhiteButton.setContentAreaFilled(false);
 		editLightWhiteButton.addChangeListener(e -> {
-				if(edited != null && edited instanceof LightWhiteInterface[]) {
+				if(edited != null && edited instanceof WhiteInterface[]) {
 					final Window win = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusedWindow();
 					win.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-					new DialogEditLightsArray(win, (LightWhiteInterface[])edited);
+					new DialogEditLightsArray(win, (WhiteInterface[])edited);
 					cancelCellEditing();
 					win.setCursor(Cursor.getDefaultCursor());
 				}
@@ -382,14 +382,14 @@ public class DeviceTableCellEditor extends AbstractCellEditor implements TableCe
 			return getRelaysPanel((RelayInterface[]) value, table.getSelectionForeground());
 		} else if(value instanceof RollerInterface) {
 			return getRollerPanel((RollerInterface) value);
-		} else if(value instanceof LightWhiteInterface) {
-			return getLightPanel((LightWhiteInterface)value);
+		} else if(value instanceof WhiteInterface) {
+			return getLightPanel((WhiteInterface)value);
 		} else if(value instanceof LightBulbRGB) { // RGBW Bulbs
 			return getLightRGBWPanel((LightBulbRGB)value);
 		} else if(value instanceof LightRGBW) { // RGBW2 (color mode)
 			return getRGBWColorPanel((LightRGBW)value);
-		} else if(value instanceof LightWhiteInterface[]) { // RGBW2 (white mode)
-			return getRGBWWhitePanel((LightWhiteInterface[])value, table.getSelectionForeground());
+		} else if(value instanceof WhiteInterface[]) { // RGBW2 (white mode)
+			return getRGBWWhitePanel((WhiteInterface[])value, table.getSelectionForeground());
 		} else if(value instanceof InputInterface[]) {
 			return getActionsPanel((InputInterface[])value, table);
 		} else if(value instanceof Thermostat) {
@@ -459,7 +459,7 @@ public class DeviceTableCellEditor extends AbstractCellEditor implements TableCe
 		return rollerPanel;
 	}
 	
-	private Component getLightPanel(LightWhiteInterface light) { // single
+	private Component getLightPanel(WhiteInterface light) { // single
 		lightLabel.setText(light.getLabel() + " " + light.getBrightness() + "%");
 		lightBrightness.setValue(light.getBrightness());
 		if(light.isOn()) {
@@ -504,10 +504,10 @@ public class DeviceTableCellEditor extends AbstractCellEditor implements TableCe
 		return colorRGBPanel;
 	}
 	
-	private Component getRGBWWhitePanel(LightWhiteInterface[] lights, Color selColor) {
+	private Component getRGBWWhitePanel(WhiteInterface[] lights, Color selColor) {
 		stackedPanel.removeAll();
 		for(int i = 0; i < lights.length;) {
-			LightWhiteInterface light = lights[i];
+			WhiteInterface light = lights[i];
 			JLabel relayLabel = new JLabel(light.getLabel());
 			relayLabel.setForeground(selColor);
 			JPanel relayPanel = new JPanel(new BorderLayout());

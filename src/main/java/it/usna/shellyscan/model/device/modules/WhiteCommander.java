@@ -2,9 +2,9 @@ package it.usna.shellyscan.model.device.modules;
 
 public interface WhiteCommander {
 	
-	LightWhiteInterface getWhite(int index);
+	WhiteInterface getWhite(int index);
 	
-	LightWhiteInterface[] getWhites();
+	WhiteInterface[] getWhites();
 	
 	int getWhiteCount();
 }

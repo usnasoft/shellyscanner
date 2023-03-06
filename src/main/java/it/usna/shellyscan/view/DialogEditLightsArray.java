@@ -24,7 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import it.usna.shellyscan.model.Devices;
-import it.usna.shellyscan.model.device.modules.LightWhiteInterface;
+import it.usna.shellyscan.model.device.modules.WhiteInterface;
 
 public class DialogEditLightsArray extends JDialog {
 	private static final long serialVersionUID = 1L;
@@ -33,7 +33,7 @@ public class DialogEditLightsArray extends JDialog {
 	private JSlider sliders[];
 	private final static Logger LOG = LoggerFactory.getLogger(DialogEditLightsArray.class);
 
-	public DialogEditLightsArray(final Window owner, LightWhiteInterface[] lights) {
+	public DialogEditLightsArray(final Window owner, WhiteInterface[] lights) {
 		super(owner, LABELS.getString("dlgELATitle"), Dialog.ModalityType.MODELESS);
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		getContentPane().setLayout(new BorderLayout(0, 5));
@@ -50,7 +50,7 @@ public class DialogEditLightsArray extends JDialog {
 		setVisible(true);
 	}
 	
-	private JPanel northPanel(LightWhiteInterface[] lights) {
+	private JPanel northPanel(WhiteInterface[] lights) {
 		JPanel panel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
 		panel.setBackground(Color.LIGHT_GRAY);
 		JButton offButton = new JButton(new ImageIcon(DialogEditLightsArray.class.getResource("/images/Standby24.png"))/*, light.isOn()*/);
@@ -66,7 +66,7 @@ public class DialogEditLightsArray extends JDialog {
 		panel.add(onButton);
 		offButton.addActionListener(e -> {
 			try {
-				for(LightWhiteInterface l: lights) {
+				for(WhiteInterface l: lights) {
 					l.change(false);
 					adjust(lights);
 					TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
@@ -77,7 +77,7 @@ public class DialogEditLightsArray extends JDialog {
 		});
 		onButton.addActionListener(e -> {
 			try {
-				for(LightWhiteInterface l: lights) {
+				for(WhiteInterface l: lights) {
 					l.change(true);
 					adjust(lights);
 					TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
@@ -89,18 +89,18 @@ public class DialogEditLightsArray extends JDialog {
 		return panel;
 	}
 	
-	private JPanel commandPanel(LightWhiteInterface[] lights) {
+	private JPanel commandPanel(WhiteInterface[] lights) {
 		JPanel stackedPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
 		BoxLayout stackedPanelLO = new BoxLayout(stackedPanel, BoxLayout.Y_AXIS);
 		stackedPanel.setLayout(stackedPanelLO);
 		stackedPanel.setBorder(BorderFactory.createEmptyBorder(0, 8, 10, 8));
 
 		for(int i = 0; i < lights.length; i++) {
-			final LightWhiteInterface light = lights[i];
+			final WhiteInterface light = lights[i];
 			final JPanel lp = new JPanel(new BorderLayout(10, 0));
 			final JLabel label = new JLabel();
 			final JToggleButton switchButton = new JToggleButton(new ImageIcon(DialogEditRGB.class.getResource("/images/Standby24.png")));
-			final JSlider brightness = new JSlider(/*LightWhite.MIN_BRIGHTNESS*/0, LightWhiteInterface.MAX_BRIGHTNESS, light.getBrightness()); // 0 seems valid for RGBW2, not for dimmer
+			final JSlider brightness = new JSlider(/*LightWhite.MIN_BRIGHTNESS*/0, WhiteInterface.MAX_BRIGHTNESS, light.getBrightness()); // 0 seems valid for RGBW2, not for dimmer
 			labels[i] = label;
 			buttons[i] = switchButton;
 			sliders[i] = brightness;
@@ -139,13 +139,13 @@ public class DialogEditLightsArray extends JDialog {
 		return stackedPanel;
 	}
 	
-	private static void adjust(LightWhiteInterface light, JLabel label, JToggleButton button, JSlider brightness) {
+	private static void adjust(WhiteInterface light, JLabel label, JToggleButton button, JSlider brightness) {
 		label.setText(light.getLabel() + " " + light.getBrightness() + "%");
 		button.setSelected(light.isOn());
 		brightness.setValue(light.getBrightness());
 	}
 	
-	private void adjust(LightWhiteInterface[] lights) {
+	private void adjust(WhiteInterface[] lights) {
 		for(int i = 0; i < lights.length; i++) {
 			adjust(lights[i], labels[i], buttons[i], sliders[i]);
 		}

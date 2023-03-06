@@ -282,7 +282,7 @@ public class Main {
 // pro2 - pro2pm
 // V on 2.5
 
-//0.9.1
+//0.9.1 (alpha only)
 // org.apache.httpcomponents.client5 -> org.eclipse.jetty (https://www.eclipse.org/jetty/documentation/jetty-11/programming-guide/index.html)
 // Riconosciuti i tipi per i dispositivi protetti
 // pro4PM (parziale)
@@ -298,11 +298,16 @@ public class Main {
 // device info
 // Enhanced FW update dialog
 
-//0.9.x
+//0.9.4
 //plus H&T
 //rebootRequired
+//checklist: number of devices connected to range extender
+//extender WiFi.ListAPClients
+
 
 // TODO
+// {"src":"shellyplus2pm-485519a2bb1c","dst":"S_Scanner","method":"NotifyStatus","params":{"ts":1678127726.89,"wifi":{"ap_client_count":0}}}
+// {"src":"shellyplus2pm-485519a2bb1c","dst":"S_Scanner","method":"NotifyStatus","params":{"ts":1678127810.93,"wifi":{"ap_client_count":1}}}
 // extender WiFi.ListAPClients
 // https://docs.oracle.com/javase/8/docs/api/javax/security/auth/callback/CallbackHandler.html
 // https://www.baeldung.com/java-authentication-authorization-service
@@ -313,4 +318,5 @@ public class Main {
 // bottone resume refresh (log)
 // gestione "reading": se stato online leggo uptime, se uptime diverso dal precedente memorizzo il timestamp else Quando il time stamp corrente - memorizzato > intervallo * 3 modifico lo stato - si, ma dove?
 // suspended process (dispositivi a batteria)
+
 // backup non interattivo (scan ip - parametri su cli)

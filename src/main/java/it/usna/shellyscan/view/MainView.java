@@ -611,9 +611,10 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 			private static final long serialVersionUID = 1L;
 			@Override
 			protected void doPopup(MouseEvent evt) {
-				final int r, c;
-				if((r = devicesTable.rowAtPoint(evt.getPoint())) >= 0 && (c = devicesTable.columnAtPoint(evt.getPoint())) >= 0) {
-					devicesTable.changeSelection(r, c, false, false);
+				final int r;
+				if((r = devicesTable.rowAtPoint(evt.getPoint())) >= 0 /*&& (c = devicesTable.columnAtPoint(evt.getPoint())) >= 0*/) {
+//					devicesTable.changeSelection(r, c, false, false);
+					devicesTable.setRowSelectionInterval(r, r); // add
 					final int modelRow = devicesTable.convertRowIndexToModel(r);
 					loginAction.setEnabled(model.get(modelRow).getStatus() == Status.NOT_LOOGGED);
 					show(devicesTable, evt.getX(), evt.getY());

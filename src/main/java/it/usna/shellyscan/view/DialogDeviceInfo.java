@@ -41,7 +41,7 @@ import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.BatteryDeviceInterface;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
-import it.usna.shellyscan.model.device.g1.AbstractG1Device;
+import it.usna.shellyscan.model.device.g2.AbstractBatteryG2Device;
 import it.usna.shellyscan.view.util.UsnaTextPane;
 import it.usna.shellyscan.view.util.UtilCollecion;
 import it.usna.swing.dialog.FindReplaceDialog;
@@ -58,7 +58,8 @@ public class DialogDeviceInfo extends JDialog {
 		this.setSize(530, 650);
 		setLocationRelativeTo(owner);
 		
-		executor = Executors.newScheduledThreadPool(device instanceof AbstractG1Device ? 2 : 10); // too many concurrent requests are dangerous (device reboot)
+		// too many concurrent requests are dangerous (device reboot - G1) or cause websocket disconnection (G2)
+		executor = Executors.newScheduledThreadPool(device instanceof AbstractBatteryG2Device ? 10 : 2);
 
 		JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
 		getContentPane().add(tabbedPane, BorderLayout.CENTER);
@@ -148,7 +149,7 @@ public class DialogDeviceInfo extends JDialog {
 				if (Thread.interrupted() == false) {
 					// Retrive current data
 					JsonNode val = device.getJSON(info);
-					final String json = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(val);
+					final String json = val.isNull() ? "" : mapper.writerWithDefaultPrettyPrinter().writeValueAsString(val);
 					textArea.setForeground(Color.BLACK);
 					textArea.setText(json, DEF_STYLE);
 					if (device instanceof BatteryDeviceInterface) {

@@ -8,12 +8,12 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import it.usna.shellyscan.model.device.g1.AbstractG1Device;
-import it.usna.shellyscan.model.device.modules.LightWhiteInterface;
+import it.usna.shellyscan.model.device.modules.WhiteInterface;
 
 /**
  * Used by RGBW2 (white mode), Dimmer 1/2
  */
-public class LightWhite implements LightWhiteInterface {
+public class LightWhite implements WhiteInterface {
 	private final AbstractG1Device parent;
 	private String name;
 	private boolean isOn;

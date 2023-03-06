@@ -2,7 +2,7 @@ package it.usna.shellyscan.model.device.modules;
 
 import java.io.IOException;
 
-public interface LightWhiteInterface extends DeviceModule {
+public interface WhiteInterface extends DeviceModule {
 //	public final static int MIN_BRIGHTNESS = 0;
 	public final static int MAX_BRIGHTNESS = 100;
 

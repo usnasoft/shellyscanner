@@ -6,13 +6,13 @@ import java.util.ArrayList;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
-import it.usna.shellyscan.model.device.g2.modules.Input;
 import it.usna.shellyscan.model.device.g2.modules.LightWhite;
 import it.usna.shellyscan.model.device.modules.WhiteCommander;
 
 public class ShellyPlusWallDimmer extends AbstractG2Device implements WhiteCommander {
 	public final static String ID = "PlusWallDimmer";
 	private LightWhite light = new LightWhite(this, 0);
+	private LightWhite[] lightArray = new LightWhite[] {light};
 
 	public ShellyPlusWallDimmer(InetAddress address, String hostname) {
 		super(address, hostname);
@@ -42,9 +42,8 @@ public class ShellyPlusWallDimmer extends AbstractG2Device implements WhiteComma
 
 	@Override
 	protected void restore(JsonNode configuration, ArrayList<String> errors) throws IOException, InterruptedException {
-		errors.add(Input.restore(this, configuration, "0"));
-//		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-//		errors.add(relay.restore(configuration));
+		errors.add(light.restore(configuration));
+		errors.add(postCommand("WD_UI.SetConfig", "{\"config\":" + jsonMapper.writeValueAsString(configuration.get("wd_ui")) + "}"));
 	}
 
 	@Override
@@ -54,7 +53,7 @@ public class ShellyPlusWallDimmer extends AbstractG2Device implements WhiteComma
 
 	@Override
 	public LightWhite[] getWhites() {
-		return new LightWhite[] {light};
+		return lightArray;
 	}
 
 	@Override

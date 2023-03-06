@@ -25,7 +25,7 @@ import it.usna.shellyscan.model.device.g1.modules.LightBulbRGB;
 import it.usna.shellyscan.model.device.g1.modules.LightRGBW;
 import it.usna.shellyscan.model.device.g1.modules.Thermostat;
 import it.usna.shellyscan.model.device.modules.InputInterface;
-import it.usna.shellyscan.model.device.modules.LightWhiteInterface;
+import it.usna.shellyscan.model.device.modules.WhiteInterface;
 import it.usna.shellyscan.model.device.modules.RelayInterface;
 import it.usna.shellyscan.model.device.modules.RollerInterface;
 
@@ -220,8 +220,8 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 			rollerLabel.setText(labelText);
 			rollerLabel.setForeground(foregroundColor);
 			ret = rollerPanel;
-		} else if(value instanceof LightWhiteInterface) { // Dimmer
-			LightWhiteInterface light = (LightWhiteInterface)value;
+		} else if(value instanceof WhiteInterface) { // Dimmer
+			WhiteInterface light = (WhiteInterface)value;
 			if(light.isOn()) {
 				lightButton.setText(LABEL_ON);
 				lightButton.setBackground(BUTTON_ON_BG_COLOR);
@@ -265,9 +265,9 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 			colorRGBWhiteLabel.setForeground(foregroundColor);
 			colorRGBWhiteLabel.setText(Main.LABELS.getString("labelShortWhite") + " " + color.getWhite() + "% ");
 			ret = colorRGBPanel;
-		} else if(value instanceof LightWhiteInterface[]) { // RGBW2 white
+		} else if(value instanceof WhiteInterface[]) { // RGBW2 white
 			stackedPanel.removeAll();
-			LightWhiteInterface[] lights = (LightWhiteInterface[]) value;
+			WhiteInterface[] lights = (WhiteInterface[]) value;
 			for(int i = 0; i < lights.length;) {
 				JLabel relayLabel = new JLabel(lights[i].getLabel());
 				JPanel relayPanel = new JPanel(new BorderLayout());

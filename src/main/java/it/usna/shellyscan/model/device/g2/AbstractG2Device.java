@@ -119,7 +119,9 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 	
 	@Override
 	public String[] getInfoRequests() {
-		return new String[] {"/rpc/Shelly.GetDeviceInfo", "/rpc/Shelly.GetConfig", "/rpc/Shelly.GetStatus", "/rpc/Shelly.CheckForUpdate", "/rpc/Schedule.List", "/rpc/Webhook.List", "/rpc/Script.List"/*, "/rpc/Sys.GetStatus"*/};
+		return new String[] {
+				"/rpc/Shelly.GetDeviceInfo", "/rpc/Shelly.GetConfig", "/rpc/Shelly.GetStatus",
+				"/rpc/Shelly.CheckForUpdate", "/rpc/Schedule.List", "/rpc/Webhook.List", "/rpc/Script.List", "/rpc/WiFi.ListAPClients"/*, "/rpc/Sys.GetStatus"*/};
 	}
 	
 	@Override
