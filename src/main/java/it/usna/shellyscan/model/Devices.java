@@ -352,9 +352,9 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 		return executor.scheduleWithFixedDelay(refreshRunner, interval + idx, interval, TimeUnit.MILLISECONDS);
 	}
 	
-	public HttpClient getHttpClient() {
-		return httpClient;
-	}
+//	public HttpClient getHttpClient() {
+//		return httpClient;
+//	}
 	
 	public WebSocketClient getWebSocketClient() {
 		return webSocketClient;

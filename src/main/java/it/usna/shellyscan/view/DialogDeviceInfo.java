@@ -216,7 +216,7 @@ public class DialogDeviceInfo extends JDialog {
 			try {
 				if (Thread.interrupted() == false) {
 					textArea.setForeground(Color.BLACK);
-					String log = device.getHttpClient().GET("http://" + device.getAddress().getHostAddress() + info).getContentAsString();
+					String log = device.getAsString(info);
 					textArea.setText(log);
 					textArea.setCaretPosition(0);
 				}

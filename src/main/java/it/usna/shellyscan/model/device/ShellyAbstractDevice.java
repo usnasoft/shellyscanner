@@ -33,6 +33,7 @@ public abstract class ShellyAbstractDevice {
 	protected Status status;
 	protected long lastConnection = 0;
 
+	protected final String uriPrefix;
 	protected final ObjectMapper jsonMapper = new ObjectMapper();
 	
 	public enum Status {ON_LINE, OFF_LINE, NOT_LOOGGED, READING, ERROR};
@@ -45,6 +46,7 @@ public abstract class ShellyAbstractDevice {
 	protected ShellyAbstractDevice(InetAddress address, String hostname) {
 		this.address = address;
 		this.hostname = hostname;
+		this.uriPrefix = "http://" + address.getHostAddress();
 	}
 
 	public void init(HttpClient httpClient) throws IOException {
@@ -56,7 +58,7 @@ public abstract class ShellyAbstractDevice {
 	
 	public JsonNode getJSON(final String command) throws IOException  { //JsonProcessingException extends IOException
 		try {
-			ContentResponse response = httpClient.GET("http://" + address.getHostAddress() + command);
+			ContentResponse response = httpClient.GET(uriPrefix + command);
 			int statusCode = response.getStatus();
 			if(statusCode == HttpStatus.OK_200) {
 				status = Status.ON_LINE;
@@ -80,6 +82,20 @@ public abstract class ShellyAbstractDevice {
 			throw e;
 		}
 	}
+	
+	public String getAsString(final String command) throws IOException {
+		try {
+			return httpClient.GET(uriPrefix + command).getContentAsString();
+		} catch(InterruptedException | ExecutionException | TimeoutException e) {
+			status = Status.OFF_LINE;
+			throw new IOException(e);
+		} catch (RuntimeException e) {
+			if(status == Status.ON_LINE || status == Status.READING) {
+				status = Status.ERROR;
+			}
+			throw e;
+		}
+	}
 
 	public String getHostname() {
 		return hostname;
@@ -97,9 +113,9 @@ public abstract class ShellyAbstractDevice {
 		return address;
 	}
 	
-	public HttpClient getHttpClient() {
-		return httpClient;
-	}
+//	public HttpClient getHttpClient() {
+//		return httpClient;
+//	}
 
 	public boolean getCloudEnabled() {
 		return cloudEnabled;
