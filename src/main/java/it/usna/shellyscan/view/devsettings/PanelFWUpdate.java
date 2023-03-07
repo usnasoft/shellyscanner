@@ -7,10 +7,12 @@ import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.FontMetrics;
 import java.io.IOException;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -31,10 +33,17 @@ import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 
+import org.eclipse.jetty.websocket.api.Session;
+import org.eclipse.jetty.websocket.api.WebSocketListener;
+import org.eclipse.jetty.websocket.client.WebSocketClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.FirmwareManager;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
+import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.view.DevicesTable;
-import it.usna.shellyscan.view.util.Msg;
 import it.usna.shellyscan.view.util.UtilCollecion;
 import it.usna.swing.table.ExTooltipTable;
 import it.usna.swing.table.UsnaTableModel;
@@ -54,12 +63,14 @@ public class PanelFWUpdate extends AbstractSettingsPanel {
 	private JButton btnSelectBeta = new JButton(LABELS.getString("btn_selectAllbeta"));
 	private JLabel lblCount = new JLabel();
 	
+	private final static Logger LOG = LoggerFactory.getLogger(PanelFWUpdate.class);
+	
 	/**
 	 * @wbp.nonvisual location=61,49
 	 */
 	private ExecutorService exeService = Executors.newFixedThreadPool(25);
 	private List<Future<Void>> retriveFutures;
-	public PanelFWUpdate(List<ShellyAbstractDevice> devices) {
+	public PanelFWUpdate(List<ShellyAbstractDevice> devices, final Devices model) {
 		super(devices);
 		setLayout(new BorderLayout(0, 0));
 
@@ -191,13 +202,7 @@ public class PanelFWUpdate extends AbstractSettingsPanel {
 					tModel.setValueAt(DevicesTable.UPDATING_BULLET, i, COL_STATUS);
 				}
 				try {
-					fwModule.parallelStream()./*filter(fw-> fw != null).*/forEach(fw -> {
-						try {
-							fw.chech();
-						} catch (IOException e1) {
-							Msg.errorMsg(e1);
-						}
-					});
+					fwModule.parallelStream()./*filter(fw-> fw != null).*/forEach(fw -> fw.chech());
 					fill();
 					btnCheck.setEnabled(true);
 				} finally {
@@ -205,6 +210,8 @@ public class PanelFWUpdate extends AbstractSettingsPanel {
 				}
 			});
 		});
+		
+		WebSocketClient webSocketClient = model.getWebSocketClient();
 	}
 
 	private void fill() {
@@ -356,6 +363,35 @@ public class PanelFWUpdate extends AbstractSettingsPanel {
 			} else {
 				return table.getDefaultRenderer(String.class).getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 			}
+		}
+	}
+	
+	private Future<Session> wsEventListener(WebSocketClient webSocketClient, AbstractG2Device device) {
+		try {
+			Future<Session> session = webSocketClient.connect(new WebSocketListener() {
+				@Override
+				public void onWebSocketConnect(Session session) {}
+
+				@Override
+				public void onWebSocketClose(int statusCode, String reason) {}
+
+				@Override
+				public void onWebSocketError(Throwable cause) {}
+
+				@Override
+				public void onWebSocketText(String message) {
+					System.out.println("M: " + message);
+				}
+
+				@Override
+				public void onWebSocketBinary(byte[] payload, int offset, int length) {}
+			}, URI.create("ws://" + device.getAddress().getHostAddress() + "/rpc"));
+
+			session.get().getRemote().sendStringByFuture("{\"id\":2, \"src\":\"S_Scanner\", \"method\":\"Shelly.GetDeviceInfo\"}");
+			return session;
+		} catch (IOException | InterruptedException | ExecutionException e) {
+			LOG.error("", e);
+			return null;
 		}
 	}
 }

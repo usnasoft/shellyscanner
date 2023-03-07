@@ -65,11 +65,11 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 
 	private ScheduledExecutorService executor = Executors.newScheduledThreadPool(EXECUTOR_POOL_SIZE);
 	private HttpClient httpClient = new HttpClient();
-	private WebSocketClient webSocketClient = new WebSocketClient(httpClient);
+	private WebSocketClient wsClient = new WebSocketClient(httpClient);
 	
 	public Devices() throws Exception {
 		httpClient.start();
-		webSocketClient.start();
+		wsClient.start();
 	}
 
 	public void scannerInit(boolean fullScan, int refreshInterval, int refreshTics) throws IOException {
@@ -300,7 +300,7 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 	public void create(InetAddress address, String hostName) {
 		LOG.trace("Creating {} - {}", address, hostName);
 		try {
-			ShellyAbstractDevice d = DevicesFactory.create(httpClient, address, hostName);
+			ShellyAbstractDevice d = DevicesFactory.create(httpClient, wsClient, address, hostName);
 			if(Thread.interrupted() == false) {
 				synchronized(devices) {
 					int ind;
@@ -357,7 +357,7 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 //	}
 	
 	public WebSocketClient getWebSocketClient() {
-		return webSocketClient;
+		return wsClient;
 	}
 
 	public ShellyAbstractDevice get(int ind) {
@@ -404,7 +404,7 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 			}
 		}
 		try {
-			webSocketClient.stop();
+			wsClient.stop();
 		} catch (Exception e) {
 			LOG.error("webSocketClient.stop", e);
 		}

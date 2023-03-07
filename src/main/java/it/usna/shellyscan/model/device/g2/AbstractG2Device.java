@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
@@ -18,12 +19,16 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
 
+import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.api.Authentication;
 import org.eclipse.jetty.client.api.AuthenticationStore;
 import org.eclipse.jetty.client.api.ContentResponse;
 import org.eclipse.jetty.client.util.DigestAuthentication;
 import org.eclipse.jetty.client.util.StringContentProvider;
 import org.eclipse.jetty.http.HttpStatus;
+import org.eclipse.jetty.websocket.api.Session;
+import org.eclipse.jetty.websocket.api.WebSocketListener;
+import org.eclipse.jetty.websocket.client.WebSocketClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,13 +50,21 @@ import it.usna.shellyscan.model.device.g2.modules.Webhooks;
 
 public abstract class AbstractG2Device extends ShellyAbstractDevice {
 	private final static Logger LOG = LoggerFactory.getLogger(AbstractG2Device.class);
+	private WebSocketClient wsClient;
 	private boolean rebootRequired = false;
+	
 
-	protected AbstractG2Device(InetAddress address, String hostname) {
+	protected AbstractG2Device(InetAddress address, /*int port,*/ String hostname) {
 		super(address, hostname);
 	}
 	
-	@Override
+	public void init(HttpClient httpClient, WebSocketClient wsClient) throws IOException {
+		this.httpClient = httpClient;
+		this.wsClient = wsClient;
+		init();
+	}
+	
+//	@Override
 	protected void init() throws IOException {
 		fillOnce(getJSON("/rpc/Shelly.GetDeviceInfo"));
 		fillSettings(getJSON("/rpc/Shelly.GetConfig"));
@@ -60,7 +73,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 
 	public void setAuthentication(Authentication auth) {
 		AuthenticationStore store = httpClient.getAuthenticationStore();
-		Authentication ar = store.findAuthentication("Digest", URI.create("http://" + address.getHostAddress()), DigestAuthentication.ANY_REALM);
+		Authentication ar = store.findAuthentication("Digest", URI.create(uriPrefix), DigestAuthentication.ANY_REALM);
 		if(ar != null) {
 			store.removeAuthentication(ar);
 		}
@@ -130,8 +143,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 	}
 	
 	public boolean rebootRequired() {
-//		return getJSON("/rpc/Sys.GetStatus").path("restart_required").asBoolean(false);
-		return rebootRequired;
+		return rebootRequired; //return getJSON("/rpc/Sys.GetStatus").path("restart_required").asBoolean(false);
 	}
 	
 	@Override
@@ -219,7 +231,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 	
 	private JsonNode executeRPC(final String method, String payload) throws IOException, StreamReadException { // StreamReadException extends ... IOException
 		try {
-			ContentResponse response = httpClient.POST("http://" + address.getHostAddress() + "/rpc")
+			ContentResponse response = httpClient.POST(uriPrefix + "/rpc")
 					.content(new StringContentProvider("{\"id\":1, \"method\":\"" + method + "\", \"params\":" + payload + "}", StandardCharsets.UTF_8))
 					.send();
 			int statusCode = response.getStatus(); //response.getContentAsString()
@@ -235,6 +247,10 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 			status = Status.OFF_LINE;
 			throw new IOException(e);
 		}
+	}
+	
+	public Future<Session> connectWebSocketClient(WebSocketListener listener) throws IOException {
+		return wsClient.connect(listener, URI.create("ws://" + address.getHostAddress() + "/rpc"));
 	}
 		
 	@Override
@@ -420,17 +436,4 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 			errors.add(postCommand("Schedule.Create", thisSc));
 		}
 	}
-	
-//	private static void put(ObjectNode out, JsonNode origin, String ... keyes) {
-//		for(String key: keyes) {
-//			JsonNode val = origin.get(key);
-//			if(val.isInt() || val.isLong()) {
-//				out.put(key, val.asLong());
-//			} else if(val.isBoolean()) {
-//				out.put(key, val.asBoolean());
-//			} else {
-//				out.put(key, val.asText());
-//			}	
-//		}
-//	}
 }

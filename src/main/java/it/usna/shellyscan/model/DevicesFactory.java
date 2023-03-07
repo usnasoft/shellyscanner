@@ -9,6 +9,7 @@ import java.util.concurrent.TimeoutException;
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.api.ContentResponse;
 import org.eclipse.jetty.http.HttpStatus;
+import org.eclipse.jetty.websocket.client.WebSocketClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,6 +18,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import it.usna.shellyscan.Main;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
+import it.usna.shellyscan.model.device.g1.AbstractG1Device;
 import it.usna.shellyscan.model.device.g1.Button1;
 import it.usna.shellyscan.model.device.g1.LoginManagerG1;
 import it.usna.shellyscan.model.device.g1.Shelly1;
@@ -45,6 +47,7 @@ import it.usna.shellyscan.model.device.g1.ShellyPlugUS;
 import it.usna.shellyscan.model.device.g1.ShellyRGBW2;
 import it.usna.shellyscan.model.device.g1.ShellyTRV;
 import it.usna.shellyscan.model.device.g1.ShellyUNI;
+import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.g2.LoginManagerG2;
 import it.usna.shellyscan.model.device.g2.ShellyG2Unmanaged;
 import it.usna.shellyscan.model.device.g2.ShellyPlus1;
@@ -72,11 +75,11 @@ public class DevicesFactory {
 	private static String lastUser;
 	private static char[] lastP;
 
-	public static ShellyAbstractDevice create(HttpClient httpClient, final InetAddress address, String name) {
+	public static ShellyAbstractDevice create(HttpClient httpClient, WebSocketClient wsClient, final InetAddress address, String name) {
 		try {
 			final JsonNode info = getDeviceBasicInfo(httpClient, address);
 			if("2".equals(info.path("gen").asText())) {
-				return createG2(httpClient, address, info, name);
+				return createG2(httpClient, wsClient, address, info, name);
 			} else {
 				return createG1(httpClient, address, info, name);
 			}
@@ -87,7 +90,7 @@ public class DevicesFactory {
 	}
 
 	private static ShellyAbstractDevice createG1(HttpClient httpClient, final InetAddress address, JsonNode info, String name) {
-		ShellyAbstractDevice d;
+		AbstractG1Device d;
 		try {
 			final boolean auth = info.get("auth").asBoolean();
 			if(auth) {
@@ -202,8 +205,8 @@ public class DevicesFactory {
 		return d;
 	}
 
-	private static ShellyAbstractDevice createG2(HttpClient httpClient, final InetAddress address, JsonNode info, String name) {
-		ShellyAbstractDevice d;
+	private static ShellyAbstractDevice createG2(HttpClient httpClient, WebSocketClient wsClient, final InetAddress address, JsonNode info, String name) {
+		AbstractG2Device d;
 		try {
 			final boolean auth = info.get("auth_en").asBoolean();
 			if(auth) {
@@ -289,7 +292,7 @@ public class DevicesFactory {
 			d = new ShellyG2Unmanaged(address, name, e);
 		}
 		try {
-			d.init(httpClient);
+			d.init(httpClient, wsClient);
 		} catch(IOException e) {
 			if("Status-401".equals(e.getMessage()) == false) {
 				LOG.warn("create - init", e);
@@ -304,7 +307,7 @@ public class DevicesFactory {
 		ContentResponse response = httpClient.newRequest("http://" + address.getHostAddress() + "/shelly").send();
 		return JSON_MAPPER.readTree(response.getContent());
 	}
-	
+
 	public static void setCredential(String user, char[] p) {
 		lastUser = user;
 		lastP = p;

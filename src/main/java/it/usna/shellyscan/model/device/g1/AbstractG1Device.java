@@ -21,6 +21,7 @@ import java.util.stream.Collectors;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
 
+import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.api.Authentication;
 import org.eclipse.jetty.client.api.AuthenticationStore;
 import org.eclipse.jetty.client.api.ContentResponse;
@@ -47,7 +48,12 @@ public abstract class AbstractG1Device extends ShellyAbstractDevice {
 		super(address, hostname);
 	}
 	
-	@Override
+	public void init(HttpClient httpClient) throws IOException {
+		this.httpClient = httpClient;
+		init();
+	}
+	
+//	@Override
 	protected void init() throws IOException {
 		JsonNode settings = getJSON("/settings");
 		fillOnce(settings);
@@ -59,7 +65,7 @@ public abstract class AbstractG1Device extends ShellyAbstractDevice {
 	public void setAuthenticationResult(Authentication.Result auth) {
 		AuthenticationStore store = httpClient.getAuthenticationStore();
 //		Authentication ar = store.findAuthentication("Basic", URI.create("http://" + address.getHostAddress()), BasicAuthentication.ANY_REALM);
-		Authentication.Result ar = store.findAuthenticationResult(URI.create("http://" + address.getHostAddress()));
+		Authentication.Result ar = store.findAuthenticationResult(URI.create(uriPrefix));
 		if(ar != null) {
 			store.removeAuthenticationResult(ar);
 		}
@@ -119,7 +125,7 @@ public abstract class AbstractG1Device extends ShellyAbstractDevice {
 	
 	public String sendCommand(final String command) {
 		try {
-			ContentResponse response = httpClient.GET("http://" + address.getHostAddress() + command);
+			ContentResponse response = httpClient.GET(uriPrefix + command);
 			int statusCode = response.getStatus();
 			if(statusCode == HttpStatus.OK_200) {
 				status = Status.ON_LINE;

@@ -49,12 +49,12 @@ public abstract class ShellyAbstractDevice {
 		this.uriPrefix = "http://" + address.getHostAddress();
 	}
 
-	public void init(HttpClient httpClient) throws IOException {
-		this.httpClient = httpClient;
-		init();
-	}
+//	public void init(HttpClient httpClient) throws IOException {
+//		this.httpClient = httpClient;
+//		init();
+//	}
 	
-	protected abstract void init() throws IOException;
+//	protected abstract void init() throws IOException;
 	
 	public JsonNode getJSON(final String command) throws IOException  { //JsonProcessingException extends IOException
 		try {
@@ -203,7 +203,7 @@ public abstract class ShellyAbstractDevice {
 		ZipEntry entry = new ZipEntry(entryName);
 		out.putNextEntry(entry);
 		try {
-			ContentResponse response = httpClient.GET("http://" + address.getHostAddress() + section);
+			ContentResponse response = httpClient.GET(uriPrefix + section);
 			byte[] buffer = response.getContent();
 			out.write(buffer, 0, buffer.length);
 		} catch (InterruptedException | ExecutionException | TimeoutException e) {
