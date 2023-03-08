@@ -356,9 +356,9 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 //		return httpClient;
 //	}
 	
-	public WebSocketClient getWebSocketClient() {
-		return wsClient;
-	}
+//	public WebSocketClient getWebSocketClient() {
+//		return wsClient;
+//	}
 
 	public ShellyAbstractDevice get(int ind) {
 		return devices.get(ind);

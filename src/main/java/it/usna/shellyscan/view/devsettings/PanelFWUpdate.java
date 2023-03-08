@@ -7,7 +7,6 @@ import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.FontMetrics;
 import java.io.IOException;
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -35,9 +34,6 @@ import javax.swing.table.TableColumn;
 
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.WebSocketListener;
-import org.eclipse.jetty.websocket.client.WebSocketClient;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.FirmwareManager;
@@ -63,7 +59,7 @@ public class PanelFWUpdate extends AbstractSettingsPanel {
 	private JButton btnSelectBeta = new JButton(LABELS.getString("btn_selectAllbeta"));
 	private JLabel lblCount = new JLabel();
 	
-	private final static Logger LOG = LoggerFactory.getLogger(PanelFWUpdate.class);
+//	private final static Logger LOG = LoggerFactory.getLogger(PanelFWUpdate.class);
 	
 	/**
 	 * @wbp.nonvisual location=61,49
@@ -210,8 +206,6 @@ public class PanelFWUpdate extends AbstractSettingsPanel {
 				}
 			});
 		});
-		
-		WebSocketClient webSocketClient = model.getWebSocketClient();
 	}
 
 	private void fill() {
@@ -366,33 +360,32 @@ public class PanelFWUpdate extends AbstractSettingsPanel {
 		}
 	}
 	
-	private Future<Session> wsEventListener(WebSocketClient webSocketClient, AbstractG2Device device) {
-		try {
-			Future<Session> session = webSocketClient.connect(new WebSocketListener() {
-				@Override
-				public void onWebSocketConnect(Session session) {}
+	private Future<Session> wsEventListener(AbstractG2Device device) throws IOException, InterruptedException, ExecutionException {
+		return device.connectWebSocketClient(new WebSocketListener() {
+			@Override
+			public void onWebSocketConnect(Session session) {
+				System.out.println(">>>> Open");
+			}
 
-				@Override
-				public void onWebSocketClose(int statusCode, String reason) {}
+			@Override
+			public void onWebSocketClose(int statusCode, String reason) {
+				System.out.println(">>>> Close: " + reason + " (" + statusCode + ")");
+			}
 
-				@Override
-				public void onWebSocketError(Throwable cause) {}
+			@Override
+			public void onWebSocketError(Throwable cause) {
+				System.out.println("onWebSocketError: " + cause);
+			}
 
-				@Override
-				public void onWebSocketText(String message) {
-					System.out.println("M: " + message);
-				}
+			@Override
+			public void onWebSocketText(String message) {
+				System.out.println(device + ": " + message);
+			}
 
-				@Override
-				public void onWebSocketBinary(byte[] payload, int offset, int length) {}
-			}, URI.create("ws://" + device.getAddress().getHostAddress() + "/rpc"));
-
-			session.get().getRemote().sendStringByFuture("{\"id\":2, \"src\":\"S_Scanner\", \"method\":\"Shelly.GetDeviceInfo\"}");
-			return session;
-		} catch (IOException | InterruptedException | ExecutionException e) {
-			LOG.error("", e);
-			return null;
-		}
+			@Override
+			public void onWebSocketBinary(byte[] payload, int offset, int length) {
+			}
+		}, true);
 	}
 }
 // 346 - 362

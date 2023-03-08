@@ -14,7 +14,6 @@ import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.IOException;
-import java.net.URI;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
@@ -34,10 +33,8 @@ import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 
-import org.eclipse.jetty.websocket.api.RemoteEndpoint;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.WebSocketListener;
-import org.eclipse.jetty.websocket.client.WebSocketClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,6 +52,7 @@ import it.usna.swing.dialog.FindReplaceDialog;
 public class DialogDeviceLogsG2 extends JDialog {
 	private static final long serialVersionUID = 1L;
 	private final static Logger LOG = LoggerFactory.getLogger(DialogDeviceLogsG2.class);
+	private Future<Session> wsSession;
 
 	public DialogDeviceLogsG2(final MainView owner, Devices model, int index) {
 		super(owner, false);
@@ -135,7 +133,7 @@ public class DialogDeviceLogsG2 extends JDialog {
 
 		JPanel panel = new JPanel(new BorderLayout(/*0, 0*/));
 
-		WebSocketClient webSocketClient = model.getWebSocketClient(); // new WebSocketClient(model.getHttpClient());
+//		WebSocketClient webSocketClient = model.getWebSocketClient(); // new WebSocketClient(model.getHttpClient());
 		try {
 			WebSocketListener wsListener = new WebSocketListener() {
 				private final ObjectMapper mapper = new ObjectMapper();
@@ -173,16 +171,18 @@ public class DialogDeviceLogsG2 extends JDialog {
 				@Override
 				public void onWebSocketBinary(byte[] payload, int offset, int length) {}
 			};
+			wsSession = device.connectWebSocketClient(wsListener, false);
 
 //			webSocketClient.start();
-			final Future<Session> session = webSocketClient.connect(wsListener, URI.create("ws://" + device.getAddress().getHostAddress() + "/debug/log"));
+//			final Future<Session> session = webSocketClient.connect(wsListener, URI.create("ws://" + device.getAddress().getHostAddress() + "/debug/log"));
 
 			btnActivateLog.addActionListener(event -> {
 				try {
 					setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 					activateLog(device);
-					if (session.get().isOpen() == false) {
-						webSocketClient.connect(wsListener, URI.create("ws://" + device.getAddress().getHostAddress() + "/debug/log"));
+					if (wsSession.get().isOpen() == false) {
+//						webSocketClient.connect(wsListener, URI.create("ws://" + device.getAddress().getHostAddress() + "/debug/log"));
+						wsSession = device.connectWebSocketClient(wsListener, false);
 					}
 				} catch (Exception e1) {
 					LOG.error("webSocketClient.connect", e1);
@@ -195,10 +195,11 @@ public class DialogDeviceLogsG2 extends JDialog {
 				try {
 					setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 					try {
-						if (session.get().isOpen()) {
-							session.get().disconnect();
+						if (wsSession.get().isOpen()) {
+//							session.get().disconnect();
+							wsSession.get().close();
 						}
-					} catch (IOException | InterruptedException | ExecutionException e1) {
+					} catch (/*IOException |*/ InterruptedException | ExecutionException e1) {
 						LOG.error("webSocketClient.connect", e1);
 					}
 					device.postCommand("Sys.SetConfig", "{\"config\": {\"debug\":{\"websocket\":{\"enable\": false}}}");
@@ -221,7 +222,7 @@ public class DialogDeviceLogsG2 extends JDialog {
 				@Override
 				public void windowClosed(WindowEvent e) {
 					try {
-						session.get().disconnect();
+						wsSession.get().disconnect();
 					} catch (Exception e1) {
 						LOG.error("webSocketClient.disconnect", e1);
 					}
@@ -237,7 +238,7 @@ public class DialogDeviceLogsG2 extends JDialog {
 			this.setSize(700, 650);
 			setLocationRelativeTo(owner);
 			setVisible(true);
-			test(webSocketClient, device);
+			test(device);
 		} catch (Exception e) {
 			LOG.error("webSocketClient.start", e);
 		}
@@ -249,9 +250,9 @@ public class DialogDeviceLogsG2 extends JDialog {
 		}
 	}
 
-	private void test(WebSocketClient webSocketClient, AbstractG2Device device) {
+	private void test(AbstractG2Device device) {
 		try {
-			Future<Session> session = webSocketClient.connect(new WebSocketListener() {
+			/*Future<Session> session =*/ device.connectWebSocketClient(new WebSocketListener() {
 				@Override
 				public void onWebSocketConnect(Session session) {
 					System.out.println(">>>> Open");
@@ -275,11 +276,11 @@ public class DialogDeviceLogsG2 extends JDialog {
 				@Override
 				public void onWebSocketBinary(byte[] payload, int offset, int length) {
 				}
-			}, URI.create("ws://" + device.getAddress().getHostAddress() + "/rpc"));
+			}, true);
 
-			RemoteEndpoint remote = session.get().getRemote();
+//			RemoteEndpoint remote = session.get().getRemote();
 //			remote.sendStringByFuture("{\"id\":2, \"src\":\"user_1\", \"method\":\"Switch.Set\", \"params\":{\"id\":0, \"on\":true}}");
-			remote.sendStringByFuture("{\"id\":2, \"src\":\"S_Scanner\", \"method\":\"Shelly.GetDeviceInfo\"}");
+//			remote.sendStringByFuture("{\"id\":2, \"src\":\"S_Scanner\", \"method\":\"Shelly.GetDeviceInfo\"}");
 		} catch (IOException | InterruptedException | ExecutionException e) {
 			e.printStackTrace();
 		}

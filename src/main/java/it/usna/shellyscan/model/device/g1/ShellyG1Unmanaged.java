@@ -3,10 +3,12 @@ package it.usna.shellyscan.model.device.g1;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.ArrayList;
+import java.util.concurrent.TimeUnit;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 
+import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.ShellyUnmanagedDevice;
 
 public class ShellyG1Unmanaged extends AbstractG1Device implements ShellyUnmanagedDevice {
@@ -18,14 +20,14 @@ public class ShellyG1Unmanaged extends AbstractG1Device implements ShellyUnmanag
 	}
 	
 	@Override
-	protected void init() {
+	protected void init() { // try to retrieve minimal information set
 		try {
-			// try to retrieve minimal information set
 			JsonNode settings = getJSON("/settings");
 			JsonNode deviceNode = settings.get("device");
 			this.type = deviceNode.get("type").asText();
 			fillOnce(settings);
 			fillSettings(settings);
+			try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e) {}
 			fillStatus(getJSON("/status"));
 		} catch (/*IO*/Exception e) {
 			if(status != Status.NOT_LOOGGED) {

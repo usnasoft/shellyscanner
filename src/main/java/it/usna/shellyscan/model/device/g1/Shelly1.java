@@ -33,6 +33,7 @@ public class Shelly1 extends AbstractG1Device implements RelayCommander {
 		JsonNode settings = getJSON("/settings");
 		fillOnce(settings);
 		fillSettings(settings);
+		try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e) {}
 		JsonNode status = getJSON("/status");
 		fillStatus(getJSON("/status"));
 
