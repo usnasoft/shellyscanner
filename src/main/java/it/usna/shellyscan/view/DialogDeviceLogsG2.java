@@ -52,6 +52,7 @@ import it.usna.swing.dialog.FindReplaceDialog;
 public class DialogDeviceLogsG2 extends JDialog {
 	private static final long serialVersionUID = 1L;
 	private final static Logger LOG = LoggerFactory.getLogger(DialogDeviceLogsG2.class);
+	private boolean logWasActive;
 	private Future<Session> wsSession;
 
 	public DialogDeviceLogsG2(final MainView owner, Devices model, int index) {
@@ -60,6 +61,7 @@ public class DialogDeviceLogsG2 extends JDialog {
 		setTitle(UtilCollecion.getExtendedHostName(device));
 		setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
 
+		logWasActive = device.getDebugMode() == AbstractG2Device.LogMode.SOCKET;
 		activateLog(device);
 
 		JPanel buttonsPanel = new JPanel();
@@ -131,9 +133,8 @@ public class DialogDeviceLogsG2 extends JDialog {
 		comboBox.setSelectedIndex(4);
 		buttonsPanel.add(comboBox);
 
-		JPanel panel = new JPanel(new BorderLayout(/*0, 0*/));
+		JPanel panel = new JPanel(new BorderLayout());
 
-//		WebSocketClient webSocketClient = model.getWebSocketClient(); // new WebSocketClient(model.getHttpClient());
 		try {
 			WebSocketListener wsListener = new WebSocketListener() {
 				private final ObjectMapper mapper = new ObjectMapper();
@@ -171,18 +172,13 @@ public class DialogDeviceLogsG2 extends JDialog {
 				@Override
 				public void onWebSocketBinary(byte[] payload, int offset, int length) {}
 			};
-			wsSession = device.connectWebSocketClient(wsListener, false);
-
-//			webSocketClient.start();
-//			final Future<Session> session = webSocketClient.connect(wsListener, URI.create("ws://" + device.getAddress().getHostAddress() + "/debug/log"));
+			wsSession = device.connectWebSocketClient("/debug/log", wsListener, false);
 
 			btnActivateLog.addActionListener(event -> {
 				try {
 					setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-					activateLog(device);
 					if (wsSession.get().isOpen() == false) {
-//						webSocketClient.connect(wsListener, URI.create("ws://" + device.getAddress().getHostAddress() + "/debug/log"));
-						wsSession = device.connectWebSocketClient(wsListener, false);
+						wsSession = device.connectWebSocketClient("/debug/log", wsListener, false);
 					}
 				} catch (Exception e1) {
 					LOG.error("webSocketClient.connect", e1);
@@ -196,13 +192,11 @@ public class DialogDeviceLogsG2 extends JDialog {
 					setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 					try {
 						if (wsSession.get().isOpen()) {
-//							session.get().disconnect();
-							wsSession.get().close();
+							wsSession.get().disconnect();
 						}
-					} catch (/*IOException |*/ InterruptedException | ExecutionException e1) {
+					} catch (IOException | InterruptedException | ExecutionException e1) {
 						LOG.error("webSocketClient.connect", e1);
 					}
-					device.postCommand("Sys.SetConfig", "{\"config\": {\"debug\":{\"websocket\":{\"enable\": false}}}");
 				} finally {
 					setCursor(Cursor.getDefaultCursor());
 				}
@@ -226,11 +220,9 @@ public class DialogDeviceLogsG2 extends JDialog {
 					} catch (Exception e1) {
 						LOG.error("webSocketClient.disconnect", e1);
 					}
-//				try {
-//					webSocketClient.stop();
-//				} catch (Exception e1) {
-//					LOG.error("webSocketClient.stop", e1);
-//				}
+					if(logWasActive == false) {
+						device.postCommand("Sys.SetConfig", "{\"config\": {\"debug\":{\"websocket\":{\"enable\": false}}}");
+					}
 					model.refresh(index, false);
 				}
 			});

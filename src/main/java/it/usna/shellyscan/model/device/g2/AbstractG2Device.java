@@ -249,9 +249,13 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 		}
 	}
 	
-	public Future<Session> connectWebSocketClient(WebSocketListener listener, boolean start) throws IOException, InterruptedException, ExecutionException {
-		final Future<Session> s = wsClient.connect(listener, URI.create("ws://" + address.getHostAddress() + "/rpc"));
-		if(start) {
+	public Future<Session> connectWebSocketClient(WebSocketListener listener, boolean activate) throws IOException, InterruptedException, ExecutionException {
+		return connectWebSocketClient("/rpc", listener, activate);
+	}
+	
+	public Future<Session> connectWebSocketClient(String cmd, WebSocketListener listener, boolean activate) throws IOException, InterruptedException, ExecutionException {
+		final Future<Session> s = wsClient.connect(listener, URI.create("ws://" + address.getHostAddress() + cmd));
+		if(activate) {
 			s.get().getRemote().sendStringByFuture("{\"id\":2, \"src\":\"S_Scanner\", \"method\":\"Shelly.GetDeviceInfo\"}");
 		}
 		return s;

@@ -361,7 +361,7 @@ public class PanelFWUpdate extends AbstractSettingsPanel {
 	}
 	
 	private Future<Session> wsEventListener(AbstractG2Device device) throws IOException, InterruptedException, ExecutionException {
-		return device.connectWebSocketClient(new WebSocketListener() {
+		return device.connectWebSocketClient("/rpc", new WebSocketListener() {
 			@Override
 			public void onWebSocketConnect(Session session) {
 				System.out.println(">>>> Open");
