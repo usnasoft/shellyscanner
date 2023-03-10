@@ -172,13 +172,13 @@ public class DialogDeviceLogsG2 extends JDialog {
 				@Override
 				public void onWebSocketBinary(byte[] payload, int offset, int length) {}
 			};
-			wsSession = device.connectWebSocketClient("/debug/log", wsListener, false);
+			wsSession = device.connectWebSocketLogs(wsListener);
 
 			btnActivateLog.addActionListener(event -> {
 				try {
 					setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 					if (wsSession.get().isOpen() == false) {
-						wsSession = device.connectWebSocketClient("/debug/log", wsListener, false);
+						wsSession = device.connectWebSocketLogs(wsListener);
 					}
 				} catch (Exception e1) {
 					LOG.error("webSocketClient.connect", e1);
@@ -230,7 +230,6 @@ public class DialogDeviceLogsG2 extends JDialog {
 			this.setSize(700, 650);
 			setLocationRelativeTo(owner);
 			setVisible(true);
-			test(device);
 		} catch (Exception e) {
 			LOG.error("webSocketClient.start", e);
 		}
@@ -239,42 +238,6 @@ public class DialogDeviceLogsG2 extends JDialog {
 	private static void activateLog(AbstractG2Device device) {
 		if (device.getDebugMode() != AbstractG2Device.LogMode.SOCKET) {
 			device.postCommand("Sys.SetConfig", "{\"config\": {\"debug\":{\"websocket\":{\"enable\": true}}}");
-		}
-	}
-
-	private void test(AbstractG2Device device) {
-		try {
-			/*Future<Session> session =*/ device.connectWebSocketClient(new WebSocketListener() {
-				@Override
-				public void onWebSocketConnect(Session session) {
-					System.out.println(">>>> Open");
-				}
-
-				@Override
-				public void onWebSocketClose(int statusCode, String reason) {
-					System.out.println(">>>> Close: " + reason + " (" + statusCode + ")");
-				}
-
-				@Override
-				public void onWebSocketError(Throwable cause) {
-					System.out.println("onWebSocketError: " + cause);
-				}
-
-				@Override
-				public void onWebSocketText(String message) {
-					System.out.println("M: " + message);
-				}
-
-				@Override
-				public void onWebSocketBinary(byte[] payload, int offset, int length) {
-				}
-			}, true);
-
-//			RemoteEndpoint remote = session.get().getRemote();
-//			remote.sendStringByFuture("{\"id\":2, \"src\":\"user_1\", \"method\":\"Switch.Set\", \"params\":{\"id\":0, \"on\":true}}");
-//			remote.sendStringByFuture("{\"id\":2, \"src\":\"S_Scanner\", \"method\":\"Shelly.GetDeviceInfo\"}");
-		} catch (IOException | InterruptedException | ExecutionException e) {
-			e.printStackTrace();
 		}
 	}
 }

@@ -33,12 +33,16 @@ import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 
 import org.eclipse.jetty.websocket.api.Session;
-import org.eclipse.jetty.websocket.api.WebSocketListener;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.fasterxml.jackson.databind.JsonNode;
 
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.FirmwareManager;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
+import it.usna.shellyscan.model.device.g2.WebSocketDeviceListener;
 import it.usna.shellyscan.view.DevicesTable;
 import it.usna.shellyscan.view.util.UtilCollecion;
 import it.usna.swing.table.ExTooltipTable;
@@ -53,13 +57,14 @@ public class PanelFWUpdate extends AbstractSettingsPanel {
 	private ExTooltipTable table;
 	private UsnaTableModel tModel = new UsnaTableModel("", LABELS.getString("col_device"), LABELS.getString("dlgSetColCurrentV"), LABELS.getString("dlgSetColLastV"), LABELS.getString("dlgSetColBetaV"));
 	private List<FirmwareManager> fwModule = new ArrayList<>();
+	private List<Future<Session>> wsSession = new ArrayList<>();
 	
 	private JButton btnUnselectAll = new JButton(LABELS.getString("btn_unselectAll"));
 	private JButton btnSelectStable = new JButton(LABELS.getString("btn_selectAllSta"));
 	private JButton btnSelectBeta = new JButton(LABELS.getString("btn_selectAllbeta"));
 	private JLabel lblCount = new JLabel();
 	
-//	private final static Logger LOG = LoggerFactory.getLogger(PanelFWUpdate.class);
+	private final static Logger LOG = LoggerFactory.getLogger(PanelFWUpdate.class);
 	
 	/**
 	 * @wbp.nonvisual location=61,49
@@ -244,11 +249,12 @@ public class PanelFWUpdate extends AbstractSettingsPanel {
 		btnSelectBeta.setEnabled(false);
 		final int size = devices.size();
 		fwModule = Arrays.asList(new FirmwareManager[size]);
+		wsSession = Arrays.asList(new Future[size]);
 		tModel.clear();
 		try {
 			List<Callable<Void>> calls = new ArrayList<>();
 			for(int i = 0; i < size; i++) {
-				calls.add(new GetFWManagerCaller(devices, fwModule, i));
+				calls.add(new GetFWManagerCaller(devices, /*fwModule,*/ i));
 			}
 			retriveFutures = exeService.invokeAll(calls);
 			fill();
@@ -269,24 +275,40 @@ public class PanelFWUpdate extends AbstractSettingsPanel {
 		if(retriveFutures != null) {
 			retriveFutures.forEach(f -> f.cancel(true));
 		}
+		if(wsSession != null) {
+			wsSession.parallelStream().filter(f -> f != null).forEach(f -> {
+				try {
+					f.get().close();
+				} catch (InterruptedException | ExecutionException e) {
+					LOG.error("ws: ", e);
+				}
+			});
+		}
 	}
 	
-	private static class GetFWManagerCaller implements Callable<Void> {
+	private class GetFWManagerCaller implements Callable<Void> {
 		private final int index;
-		private final List<FirmwareManager> fwModule;
+//		private final List<FirmwareManager> fwModule;
 		private final List<ShellyAbstractDevice> devices;
 		
-		private GetFWManagerCaller(List<ShellyAbstractDevice> devices, List<FirmwareManager> fwModule, int index) {
+		private GetFWManagerCaller(List<ShellyAbstractDevice> devices/*, List<FirmwareManager> fwModule*/, int index) {
 			this.index = index;
-			this.fwModule = fwModule;
+//			this.fwModule = fwModule;
 			this.devices = devices;
 		}
 
 		@Override
 		public Void call() {
 			final ShellyAbstractDevice d = devices.get(index);
-			FirmwareManager fm = d.getFWManager();
-			fwModule.set(index, fm);
+//			FirmwareManager fm = d.getFWManager();
+			fwModule.set(index, d.getFWManager());
+			if(d instanceof AbstractG2Device) {
+				try {
+					wsSession.set(index, wsEventListener(index, (AbstractG2Device)d));
+				} catch (IOException | InterruptedException | ExecutionException e) {
+					LOG.error("ws: ", e);
+				}
+			}
 			return null;
 		}
 	}
@@ -360,36 +382,14 @@ public class PanelFWUpdate extends AbstractSettingsPanel {
 		}
 	}
 	
-	private Future<Session> wsEventListener(AbstractG2Device device) throws IOException, InterruptedException, ExecutionException {
-		return device.connectWebSocketClient("/rpc", new WebSocketListener() {
-			@Override
-			public void onWebSocketConnect(Session session) {
-				System.out.println(">>>> Open");
-			}
-
-			@Override
-			public void onWebSocketClose(int statusCode, String reason) {
-				System.out.println(">>>> Close: " + reason + " (" + statusCode + ")");
-			}
-
-			@Override
-			public void onWebSocketError(Throwable cause) {
-				System.out.println("onWebSocketError: " + cause);
-			}
-
-			@Override
-			public void onWebSocketText(String message) {
-				System.out.println(device + ": " + message);
-			}
-
-			@Override
-			public void onWebSocketBinary(byte[] payload, int offset, int length) {
-			}
-		}, true);
+	private Future<Session> wsEventListener(int index, AbstractG2Device device) throws IOException, InterruptedException, ExecutionException {
+		return device.connectWebSocketClient
+				(new WebSocketDeviceListener(json -> json.path("method").asText().equals(WebSocketDeviceListener.NOTIFY_STATUS)) {
+					@Override
+					public void onMessage(JsonNode msg) {
+						System.out.println(index + "-M: " + msg);
+					}
+				});
 	}
 }
 // 346 - 362
-
-//{"src":"shellyplusi4-a8032ab1fe78","dst":"S_Scanner","method":"NotifyEvent","params":{"ts":1677696108.45,"events":[{"component":"sys", "event":"ota_progress", "msg":"Waiting for data", "progress_percent":99, "ts":1677696108.45}]}}
-//{"src":"shellyplusi4-a8032ab1fe78","dst":"S_Scanner","method":"NotifyEvent","params":{"ts":1677696109.49,"events":[{"component":"sys", "event":"ota_success", "msg":"Update applied, rebooting", "ts":1677696109.49}]}}
-//{"src":"shellyplusi4-a8032ab1fe78","dst":"S_Scanner","method":"NotifyEvent","params":{"ts":1677696109.57,"events":[{"component":"sys", "event":"scheduled_restart", "time_ms": 435, "ts":1677696109.57}]}}
