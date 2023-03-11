@@ -280,7 +280,7 @@ public class PanelFWUpdate extends AbstractSettingsPanel {
 				try {
 					f.get().close();
 				} catch (InterruptedException | ExecutionException e) {
-					LOG.error("ws: ", e);
+					LOG.error("ws-close", e);
 				}
 			});
 		}
@@ -302,13 +302,13 @@ public class PanelFWUpdate extends AbstractSettingsPanel {
 			final ShellyAbstractDevice d = devices.get(index);
 //			FirmwareManager fm = d.getFWManager();
 			fwModule.set(index, d.getFWManager());
-			if(d instanceof AbstractG2Device) {
-				try {
-					wsSession.set(index, wsEventListener(index, (AbstractG2Device)d));
-				} catch (IOException | InterruptedException | ExecutionException e) {
-					LOG.error("ws: ", e);
-				}
-			}
+//			if(d instanceof AbstractG2Device) {
+//				try {
+//					wsSession.set(index, wsEventListener(index, (AbstractG2Device)d));
+//				} catch (IOException | InterruptedException | ExecutionException e) {
+//					LOG.error("ws: ", e);
+//				}
+//			}
 			return null;
 		}
 	}

@@ -24,7 +24,7 @@ import it.usna.util.AppProperties;
 
 public class Main {
 	public final static String APP_NAME = "Shelly Scanner";
-	public final static String VERSION = "0.9.x alpha";
+	public final static String VERSION = "0.9.5 alpha";
 	public final static String ICON = "/images/ShSc24.png";
 	public final static String BACKUP_FILE_EXT = "sbk";
 	
@@ -298,8 +298,9 @@ public class Main {
 // device info
 // Enhanced FW update dialog
 
-//0.9.4
+//0.9.5
 //plus H&T
+//wall dimmer
 //rebootRequired
 //checklist: number of devices connected to range extender
 //extender WiFi.ListAPClients
