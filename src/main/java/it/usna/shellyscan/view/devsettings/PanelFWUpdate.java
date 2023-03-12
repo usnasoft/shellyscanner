@@ -9,6 +9,7 @@ import java.awt.FontMetrics;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -56,8 +57,8 @@ public class PanelFWUpdate extends AbstractSettingsPanel {
 	private final static int COL_BETA = 4;
 	private ExTooltipTable table;
 	private UsnaTableModel tModel = new UsnaTableModel("", LABELS.getString("col_device"), LABELS.getString("dlgSetColCurrentV"), LABELS.getString("dlgSetColLastV"), LABELS.getString("dlgSetColBetaV"));
-	private List<FirmwareManager> fwModule = new ArrayList<>();
-	private List<Future<Session>> wsSession = new ArrayList<>();
+	private List<FirmwareManager> fwModule;// = new ArrayList<>();
+	private List<Future<Session>> wsSession;// = new ArrayList<>();
 	
 	private JButton btnUnselectAll = new JButton(LABELS.getString("btn_unselectAll"));
 	private JButton btnSelectStable = new JButton(LABELS.getString("btn_selectAllSta"));
@@ -249,7 +250,8 @@ public class PanelFWUpdate extends AbstractSettingsPanel {
 		btnSelectBeta.setEnabled(false);
 		final int size = devices.size();
 		fwModule = Arrays.asList(new FirmwareManager[size]);
-		wsSession = Arrays.asList(new Future[size]);
+		wsSession = new ArrayList<>(Collections.nCopies(size, (Future<Session>)null));
+
 		tModel.clear();
 		try {
 			List<Callable<Void>> calls = new ArrayList<>();
@@ -302,13 +304,13 @@ public class PanelFWUpdate extends AbstractSettingsPanel {
 			final ShellyAbstractDevice d = devices.get(index);
 //			FirmwareManager fm = d.getFWManager();
 			fwModule.set(index, d.getFWManager());
-//			if(d instanceof AbstractG2Device) {
-//				try {
-//					wsSession.set(index, wsEventListener(index, (AbstractG2Device)d));
-//				} catch (IOException | InterruptedException | ExecutionException e) {
-//					LOG.error("ws: ", e);
-//				}
-//			}
+			if(d instanceof AbstractG2Device) {
+				try {
+					wsSession.set(index, wsEventListener(index, (AbstractG2Device)d));
+				} catch (IOException | InterruptedException | ExecutionException e) {
+					LOG.error("ws: ", e);
+				}
+			}
 			return null;
 		}
 	}
@@ -384,7 +386,7 @@ public class PanelFWUpdate extends AbstractSettingsPanel {
 	
 	private Future<Session> wsEventListener(int index, AbstractG2Device device) throws IOException, InterruptedException, ExecutionException {
 		return device.connectWebSocketClient
-				(new WebSocketDeviceListener(json -> json.path("method").asText().equals(WebSocketDeviceListener.NOTIFY_STATUS)) {
+				(new WebSocketDeviceListener(/*json -> json.path("method").asText().equals(WebSocketDeviceListener.NOTIFY_STATUS)*/) {
 					@Override
 					public void onMessage(JsonNode msg) {
 						System.out.println(index + "-M: " + msg);

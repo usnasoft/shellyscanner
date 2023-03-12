@@ -23,7 +23,6 @@ public class WebSocketDeviceListener extends WebSocketAdapter {
 	private final static Logger LOG = LoggerFactory.getLogger(PanelFWUpdate.class);
 	
 	public WebSocketDeviceListener() {
-		
 	}
 	
 	public WebSocketDeviceListener(Predicate<JsonNode> condition) {
@@ -63,7 +62,11 @@ public class WebSocketDeviceListener extends WebSocketAdapter {
 	}
 	
 	public void onMessage(JsonNode msg) {
-		System.out.println("M: " + msg);
+		LOG.debug("M: {}", msg);
+	}
+	
+	public void setNotifyCondition(Predicate<JsonNode> condition) {
+		this.notifyCondition = condition;
 	}
 }
 

@@ -38,13 +38,12 @@ import org.eclipse.jetty.websocket.api.WebSocketListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import it.usna.shellyscan.Main;
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
+import it.usna.shellyscan.model.device.g2.WebSocketDeviceListener;
 import it.usna.shellyscan.view.util.UsnaTextPane;
 import it.usna.shellyscan.view.util.UtilCollecion;
 import it.usna.swing.dialog.FindReplaceDialog;
@@ -62,7 +61,7 @@ public class DialogDeviceLogsG2 extends JDialog {
 		setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
 
 		logWasActive = device.getDebugMode() == AbstractG2Device.LogMode.SOCKET;
-		activateLog(device);
+		activateLog(device, true);
 
 		JPanel buttonsPanel = new JPanel();
 		getContentPane().add(buttonsPanel, BorderLayout.SOUTH);
@@ -136,9 +135,7 @@ public class DialogDeviceLogsG2 extends JDialog {
 		JPanel panel = new JPanel(new BorderLayout());
 
 		try {
-			WebSocketListener wsListener = new WebSocketListener() {
-				private final ObjectMapper mapper = new ObjectMapper();
-
+			WebSocketListener wsListener = new WebSocketDeviceListener() {
 				@Override
 				public void onWebSocketConnect(Session session) {
 					textArea.append(">>>> Open\n", bluStyle);
@@ -150,27 +147,14 @@ public class DialogDeviceLogsG2 extends JDialog {
 				}
 
 				@Override
-				public void onWebSocketError(Throwable cause) {
-					LOG.warn("onWebSocketError: {}", cause.toString());
-				}
-
-				@Override
-				public void onWebSocketText(String message) {
-					try {
-						int logLevel = comboBox.getSelectedIndex();
-						JsonNode msg = mapper.readTree(message);
-						int level = msg.get("level").asInt(0);
-						if (level <= logLevel) {
-							textArea.append(msg.get("ts").asLong() + " - L" + level + ": " + msg.get("data").asText().trim() + "\n");
-						}
-					} catch (JsonProcessingException ex) {
-						textArea.append(">>>> Error: " + ex.toString() + "\n", bluStyle);
+				public void onMessage(JsonNode msg) {
+					int logLevel = comboBox.getSelectedIndex();
+					int level = msg.get("level").asInt(0);
+					if (level <= logLevel) {
+						textArea.append(msg.get("ts").asLong() + " - L" + level + ": " + msg.get("data").asText().trim() + "\n");
 					}
 					textArea.setCaretPosition(textArea.getStyledDocument().getLength());
 				}
-
-				@Override
-				public void onWebSocketBinary(byte[] payload, int offset, int length) {}
 			};
 			wsSession = device.connectWebSocketLogs(wsListener);
 
@@ -220,9 +204,7 @@ public class DialogDeviceLogsG2 extends JDialog {
 					} catch (Exception e1) {
 						LOG.error("webSocketClient.disconnect", e1);
 					}
-					if(logWasActive == false) {
-						device.postCommand("Sys.SetConfig", "{\"config\": {\"debug\":{\"websocket\":{\"enable\": false}}}");
-					}
+					activateLog(device, logWasActive);
 					model.refresh(index, false);
 				}
 			});
@@ -235,9 +217,9 @@ public class DialogDeviceLogsG2 extends JDialog {
 		}
 	}
 
-	private static void activateLog(AbstractG2Device device) {
-		if (device.getDebugMode() != AbstractG2Device.LogMode.SOCKET) {
-			device.postCommand("Sys.SetConfig", "{\"config\": {\"debug\":{\"websocket\":{\"enable\": true}}}");
-		}
+	private static void activateLog(AbstractG2Device device, boolean active) {
+//		if (device.getDebugMode() != AbstractG2Device.LogMode.SOCKET) {
+			device.postCommand("Sys.SetConfig", "{\"config\": {\"debug\":{\"websocket\":{\"enable\": " + (active ? "true" : "false") + "}}}");
+//		}
 	}
 }

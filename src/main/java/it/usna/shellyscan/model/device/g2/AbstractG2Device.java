@@ -145,6 +145,10 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 	public boolean rebootRequired() {
 		return rebootRequired; //return getJSON("/rpc/Sys.GetStatus").path("restart_required").asBoolean(false);
 	}
+
+//	public void setDebugMode(LogMode mode, boolean active) {
+//		postCommand("Sys.SetConfig", "{\"config\": {\"debug\":{\"websocket\":{\"enable\": " + (active ? "true" : "false") + "}}}");
+//	}
 	
 	@Override
 	public FirmwareManager getFWManager() {
