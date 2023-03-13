@@ -66,15 +66,17 @@ public abstract class ShellyAbstractDevice {
 			}
 			if(statusCode == HttpStatus.UNAUTHORIZED_401) {
 				status = Status.NOT_LOOGGED;
+				throw new IOException("Status-" + statusCode);
 			} else if(statusCode == HttpStatus.INTERNAL_SERVER_ERROR_500) {
 				status = Status.ERROR;
+				throw new IOException("Status-" + statusCode);
 			} else {
 				status = Status.OFF_LINE;
+				throw new DeviceOfflineException("Status-" + statusCode);
 			}
-			throw new IOException("Status-" + statusCode);
 		} catch(InterruptedException | ExecutionException | TimeoutException e) {
 			status = Status.OFF_LINE;
-			throw new IOException(e);
+			throw new DeviceOfflineException(e);
 		} catch (IOException | RuntimeException e) {
 			if(status == Status.ON_LINE || status == Status.READING) {
 				status = Status.ERROR;
@@ -88,7 +90,7 @@ public abstract class ShellyAbstractDevice {
 			return httpClient.GET(uriPrefix + command).getContentAsString();
 		} catch(InterruptedException | ExecutionException | TimeoutException e) {
 			status = Status.OFF_LINE;
-			throw new IOException(e);
+			throw new DeviceOfflineException(e);
 		} catch (RuntimeException e) {
 			if(status == Status.ON_LINE || status == Status.READING) {
 				status = Status.ERROR;

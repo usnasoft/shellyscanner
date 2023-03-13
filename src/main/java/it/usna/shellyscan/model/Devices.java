@@ -258,6 +258,7 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 		refreshProcess.get(ind).cancel(true);
 	}
 
+	// Before reboot disable refresh process
 	public void reboot(int ind) {
 		final ShellyAbstractDevice d = devices.get(ind);
 		final ScheduledFuture<?> f = refreshProcess.get(ind);
@@ -334,7 +335,7 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 			public void run() {
 				try {
 					if(++ticCount >= statusTics) {
-						d.refreshSettings();
+						d.refreshSettings(); // if device is offline ticCount never goes to 0 -> full refresh if unsleep again
 						ticCount = 0;
 						Thread.sleep(MULTI_QUERY_DELAY);
 					}
@@ -351,14 +352,6 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 		};
 		return executor.scheduleWithFixedDelay(refreshRunner, interval + idx, interval, TimeUnit.MILLISECONDS);
 	}
-	
-//	public HttpClient getHttpClient() {
-//		return httpClient;
-//	}
-	
-//	public WebSocketClient getWebSocketClient() {
-//		return wsClient;
-//	}
 
 	public ShellyAbstractDevice get(int ind) {
 		return devices.get(ind);

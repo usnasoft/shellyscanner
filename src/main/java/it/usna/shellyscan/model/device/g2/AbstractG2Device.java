@@ -40,6 +40,7 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import it.usna.shellyscan.model.Devices;
+import it.usna.shellyscan.model.device.DeviceOfflineException;
 import it.usna.shellyscan.model.device.FirmwareManager;
 import it.usna.shellyscan.model.device.LoginManager;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
@@ -249,7 +250,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 			return jsonMapper.readTree(response.getContent());
 		} catch(InterruptedException | ExecutionException | TimeoutException e) {
 			status = Status.OFF_LINE;
-			throw new IOException(e);
+			throw new DeviceOfflineException(e);
 		}
 	}
 	
