@@ -24,7 +24,7 @@ import it.usna.util.AppProperties;
 
 public class Main {
 	public final static String APP_NAME = "Shelly Scanner";
-	public final static String VERSION = "0.9.5 alpha";
+	public final static String VERSION = "0.9.5 beta";
 	public final static String ICON = "/images/ShSc24.png";
 	public final static String BACKUP_FILE_EXT = "sbk";
 	
@@ -299,17 +299,17 @@ public class Main {
 // Enhanced FW update dialog
 
 //0.9.5
-//plus H&T
-//wall dimmer
-//rebootRequired
-//checklist: number of devices connected to range extender
-//extender WiFi.ListAPClients
+// plus H&T
+// wall dimmer
+// Shelly Smoke
+// rebootRequired
+// checklist: number of devices connected to range extender
+// extender WiFi.ListAPClients
 
 
 // TODO
 // {"src":"shellyplus2pm-485519a2bb1c","dst":"S_Scanner","method":"NotifyStatus","params":{"ts":1678127726.89,"wifi":{"ap_client_count":0}}}
 // {"src":"shellyplus2pm-485519a2bb1c","dst":"S_Scanner","method":"NotifyStatus","params":{"ts":1678127810.93,"wifi":{"ap_client_count":1}}}
-// extender WiFi.ListAPClients
 // https://docs.oracle.com/javase/8/docs/api/javax/security/auth/callback/CallbackHandler.html
 // https://www.baeldung.com/java-authentication-authorization-service
 // archivio (additivo) dispositivi collegati opzionalmente caricabile (con eventuale default da settings)

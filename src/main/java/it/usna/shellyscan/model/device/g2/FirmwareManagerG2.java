@@ -70,6 +70,10 @@ public class FirmwareManagerG2 implements FirmwareManager {
 		return updating;
 	}
 
+	public void upadating(boolean upd) {
+		updating = upd;
+	}
+
 	@Override
 	public boolean isValid() {
 		return valid;

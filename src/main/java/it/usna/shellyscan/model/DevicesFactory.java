@@ -56,6 +56,7 @@ import it.usna.shellyscan.model.device.g2.ShellyPlus2PM;
 import it.usna.shellyscan.model.device.g2.ShellyPlusHT;
 import it.usna.shellyscan.model.device.g2.ShellyPlusPlugIT;
 import it.usna.shellyscan.model.device.g2.ShellyPlusPlugUS;
+import it.usna.shellyscan.model.device.g2.ShellyPlusSmoke;
 import it.usna.shellyscan.model.device.g2.ShellyPlusWallDimmer;
 import it.usna.shellyscan.model.device.g2.ShellyPlusi4;
 import it.usna.shellyscan.model.device.g2.ShellyPro1;
@@ -270,6 +271,8 @@ public class DevicesFactory {
 			case ShellyPlusWallDimmer.ID: d = new ShellyPlusWallDimmer(address, name);
 			break;
 			case ShellyPlusHT.ID: d = new ShellyPlusHT(address, info, name);
+			break;
+			case ShellyPlusSmoke.ID: d = new ShellyPlusSmoke(address, info, name);
 			break;
 			// PRO
 			case ShellyPro1PM.ID: d = new ShellyPro1PM(address, name);

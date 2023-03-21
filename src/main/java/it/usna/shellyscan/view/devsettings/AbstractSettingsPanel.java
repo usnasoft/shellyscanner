@@ -14,6 +14,15 @@ public abstract class AbstractSettingsPanel extends JPanel {
 		this.devices = devices;
 	}
 	
+	protected int getIndex(ShellyAbstractDevice device) {
+		for(int i = 0; i < devices.size(); i++) {
+			if(devices.get(i) == device) {
+				return i;
+			}
+		}
+		return -1;
+	}
+	
 	public abstract String showing() throws InterruptedException;
 	
 	public void hiding() {}
