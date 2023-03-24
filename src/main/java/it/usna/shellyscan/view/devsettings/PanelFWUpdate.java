@@ -205,13 +205,16 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 			exeService.execute(() -> {
 				setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 				for(int i = 0; i < devices.size(); i++) {
-					tModel.setValueAt(DevicesTable.UPDATING_BULLET, i, COL_STATUS);
+					try {
+						tModel.setValueAt(DevicesTable.UPDATING_BULLET, i, COL_STATUS);
+					} catch(Exception e) {/* while fill() */}
 				}
 				try {
 					devicesFWData.parallelStream().forEach(dd -> dd.fwModule.chech());
 					fill();
-					btnCheck.setEnabled(true);
+				} catch(Exception e) {/* while fill() */
 				} finally {
+					btnCheck.setEnabled(true);
 					setCursor(Cursor.getDefaultCursor());
 				}
 			});
@@ -236,7 +239,7 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 //		boolean globalStable = false;
 //		boolean globalBeta = false;
 		if(fw.upadating()) {
-			return new Object[] {DevicesTable.getStatusIcon(d), UtilCollecion.getExtendedHostName(d), FirmwareManager.getShortVersion(fw.current()), LABELS.getString("labelUpdating"), null}; // DevicesTable.UPDATING_BULLET
+			return new Object[] {DevicesTable.UPDATING_BULLET, UtilCollecion.getExtendedHostName(d), FirmwareManager.getShortVersion(fw.current()), LABELS.getString("labelUpdating"), null}; // DevicesTable.UPDATING_BULLET
 		} else {
 			boolean hasUpdate = fw.newStable() != null;
 			boolean hasBeta = fw.newBeta() != null;
@@ -253,12 +256,13 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 		lblCount.setText("");
 		final int size = devices.size();
 		devicesFWData = Stream.generate(DeviceFirmware::new).limit(size).collect(Collectors.toList());
+//		devicesFWData = Stream.generate(DeviceFirmware::new).limit(size).toArray(DeviceFirmware[]::new);
 
 		tModel.clear();
 		try {
 			List<Callable<Void>> calls = new ArrayList<>();
 			for(int i = 0; i < size; i++) {
-				calls.add(new GetFWManagerCaller(devices, /*fwModule,*/ i));
+				calls.add(new GetFWManagerCaller(devices, i));
 			}
 			retriveFutures = exeService.invokeAll(calls);
 			fill();
@@ -327,12 +331,14 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 				Object update = tModel.getValueAt(i, COL_STABLE);
 				Object beta = tModel.getValueAt(i, COL_BETA);
 				if(update instanceof Boolean && ((Boolean)update) == Boolean.TRUE) {
+					devicesFWData.get(i).uptime = devices.get(i).getUptime();
 					String msg = devicesFWData.get(i).fwModule.update(true);
 					if(msg != null && LABELS.containsKey(msg)) {
 						msg = LABELS.getString(msg);
 					}
 					res += UtilCollecion.getFullName(devices.get(i)) + " - " + ((msg == null) ? LABELS.getString("labelUpdating") : LABELS.getString("labelError") + ": " + msg) + "\n";
 				} else if(beta instanceof Boolean && ((Boolean)beta) == Boolean.TRUE) {
+					devicesFWData.get(i).uptime = devices.get(i).getUptime();
 					String msg = devicesFWData.get(i).fwModule.update(false);
 					if(msg != null && LABELS.containsKey(msg)) {
 						msg = LABELS.getString(msg);
@@ -422,7 +428,8 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 	private static class DeviceFirmware {
 		private FirmwareManager fwModule;
 		private Future<Session> wsSession;
-		private long rebootTime = Long.MAX_VALUE;
+		private long rebootTime = Long.MAX_VALUE; // g2
+		private int uptime = 0; // g1
 	}
 
 	@Override
@@ -435,9 +442,10 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 					if(index >= 0 && device.getStatus() != ShellyAbstractDevice.Status.ERROR) {
 						if(device.getStatus() != ShellyAbstractDevice.Status.ON_LINE) {
 							tModel.setValueAt(DevicesTable.getStatusIcon(device), index, COL_STATUS);
-						} else if(tModel.getValueAt(index, COL_STATUS) == DevicesTable.OFFLINE_BULLET || System.currentTimeMillis() - devicesFWData.get(index).rebootTime > 3000L) {
-							// ON_LINE from OFF_LINE (hopefully g1) or after 3 seconds since reboot (reboot completed - g2)
-							devicesFWData.get(index).rebootTime = Long.MAX_VALUE;
+						} else if(device.getUptime() < devicesFWData.get(index).uptime || System.currentTimeMillis() - devicesFWData.get(index).rebootTime > 2500L) {
+							// starting uptime bigger than now (g1 - not 100% sure) or after 2.5 seconds since reboot (reboot completed - g2)
+							devicesFWData.get(index).rebootTime = Long.MAX_VALUE; // reset
+							devicesFWData.get(index).uptime = 0; // reset
 							tModel.setValueAt(DevicesTable.ONLINE_BULLET, index, COL_STATUS);
 							devicesFWData.get(index).fwModule.chech();
 							tModel.setRow(index, createRow(index));
@@ -454,7 +462,7 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 		}
 	}
 }
-// 346 - 362 - 457
+// 346 - 362 - 446
 
 //{"src":"shellyplusi4-a8032ab1fe78","dst":"S_Scanner","method":"NotifyEvent","params":{"ts":1677696108.45,"events":[{"component":"sys", "event":"ota_progress", "msg":"Waiting for data", "progress_percent":99, "ts":1677696108.45}]}}
 //{"src":"shellyplusi4-a8032ab1fe78","dst":"S_Scanner","method":"NotifyEvent","params":{"ts":1677696109.49,"events":[{"component":"sys", "event":"ota_success", "msg":"Update applied, rebooting", "ts":1677696109.49}]}}

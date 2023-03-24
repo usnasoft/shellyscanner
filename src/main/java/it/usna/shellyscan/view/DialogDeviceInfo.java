@@ -59,7 +59,7 @@ public class DialogDeviceInfo extends JDialog {
 		setLocationRelativeTo(owner);
 		
 		// too many concurrent requests are dangerous (device reboot - G1) or cause websocket disconnection (G2)
-		executor = Executors.newScheduledThreadPool(device instanceof AbstractBatteryG2Device ? 10 : 2);
+		executor = Executors.newScheduledThreadPool(device instanceof AbstractBatteryG2Device ? 5 : 2);
 
 		JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
 		getContentPane().add(tabbedPane, BorderLayout.CENTER);

@@ -129,8 +129,7 @@ public abstract class AbstractG1Device extends ShellyAbstractDevice {
 			int statusCode = response.getStatus();
 			if(statusCode == HttpStatus.OK_200) {
 				status = Status.ON_LINE;
-			}
-			if(statusCode == HttpStatus.UNAUTHORIZED_401) {
+			} else if(statusCode == HttpStatus.UNAUTHORIZED_401) {
 				status = Status.NOT_LOOGGED;
 			} else /*if(statusCode == HttpStatus.INTERNAL_SERVER_ERROR_500)*/ {
 				status = Status.ERROR;
