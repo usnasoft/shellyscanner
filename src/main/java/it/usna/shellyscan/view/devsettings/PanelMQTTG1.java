@@ -16,7 +16,6 @@ import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
-import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -30,7 +29,6 @@ import javax.swing.SwingConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.g1.MQTTManagerG1;
 import it.usna.shellyscan.view.DialogDeviceSelection;
@@ -69,9 +67,8 @@ public class PanelMQTTG1 extends AbstractSettingsPanel implements UsnaEventListe
 	private JButton btnCopy = new JButton(LABELS.getString("btnCopyFrom"));
 	private DialogDeviceSelection selDialog = null;
 
-	public PanelMQTTG1(JDialog owner, List<ShellyAbstractDevice> devices, final Devices model) {
-		super(devices);
-		//		this.setSize(800, 800);
+	public PanelMQTTG1(DialogDeviceSettings owner) {
+		super(owner);
 		JPanel contentPanel = new JPanel();
 		contentPanel.setBorder(BorderFactory.createEmptyBorder(6, 6, 2, 6));
 		GridBagLayout gridBagLayout = new GridBagLayout();
@@ -105,7 +102,7 @@ public class PanelMQTTG1 extends AbstractSettingsPanel implements UsnaEventListe
 		gbc_btnCopy.gridx = 4;
 		gbc_btnCopy.gridy = 0;
 		contentPanel.add(btnCopy, gbc_btnCopy);
-		btnCopy.addActionListener(e -> selDialog = new DialogDeviceSelection(owner, this, model));
+		btnCopy.addActionListener(e -> selDialog = new DialogDeviceSelection(owner, this, parent.getModel()));
 
 		JLabel lblNewLabel_1 = new JLabel(LABELS.getString("dlgSetServer"));
 		GridBagConstraints gbc_lblNewLabel_1 = new GridBagConstraints();
@@ -375,8 +372,8 @@ public class PanelMQTTG1 extends AbstractSettingsPanel implements UsnaEventListe
 		scrollPane.setViewportView(contentPanel);
 		add(scrollPane, BorderLayout.CENTER);
 
-		chckbxDefaultPrefix.addItemListener(event -> textFieldID.setEnabled(event.getStateChange() != java.awt.event.ItemEvent.SELECTED && devices.size() == 1));
-		chckbxEnabled.addItemListener(event -> setEnabledMQTT(event.getStateChange() == java.awt.event.ItemEvent.SELECTED, devices.size() == 1));
+		chckbxDefaultPrefix.addItemListener(event -> textFieldID.setEnabled(event.getStateChange() != java.awt.event.ItemEvent.SELECTED && owner.getLocalSize() == 1));
+		chckbxEnabled.addItemListener(event -> setEnabledMQTT(event.getStateChange() == java.awt.event.ItemEvent.SELECTED, owner.getLocalSize() == 1));
 		chckbxNoPWD.addItemListener(event -> setPasswordRequired(event.getStateChange() == java.awt.event.ItemEvent.DESELECTED));
 	}
 
@@ -442,9 +439,9 @@ public class PanelMQTTG1 extends AbstractSettingsPanel implements UsnaEventListe
 			int updatePerGlobal = 0;
 			boolean noPwdGlobal = false;
 			boolean first = true;
-			for(int i = 0; i < devices.size(); i++) {
+			for(int i = 0; i < parent.getLocalSize(); i++) {
 				try {
-					d = devices.get(i);
+					d = parent.getLocalDevice(i);
 					MQTTManagerG1 mqttm = (MQTTManagerG1)d.getMQTTManager();
 					if(Thread.interrupted()) {
 						throw new InterruptedException();
@@ -498,7 +495,7 @@ public class PanelMQTTG1 extends AbstractSettingsPanel implements UsnaEventListe
 //			if(Thread.interrupted()) {
 //				throw new InterruptedException();
 //			}
-			if(excludeCount == devices.size()) {
+			if(excludeCount == parent.getLocalSize()) {
 				return LABELS.getString("msgAllDevicesExcluded");
 			} else if (excludeCount > 0) {
 				Msg.showHtmlMessageDialog(this, exclude, LABELS.getString("dlgExcludedDevicesTitle"), JOptionPane.WARNING_MESSAGE);
@@ -535,7 +532,7 @@ public class PanelMQTTG1 extends AbstractSettingsPanel implements UsnaEventListe
 			}
 			textFieldUpdatePeriod.setValue(updatePerGlobal >= 0 ? updatePerGlobal : null);
 
-			setEnabledMQTT(enabledGlobal, devices.size() == 1);
+			setEnabledMQTT(enabledGlobal, parent.getLocalSize() == 1);
 			btnCopy.setEnabled(true);
 			return null;
 		} catch (RuntimeException e) {
@@ -567,7 +564,7 @@ public class PanelMQTTG1 extends AbstractSettingsPanel implements UsnaEventListe
 			}
 		}
 		String res = "<html>";
-		for(int i=0; i < devices.size(); i++) {
+		for(int i=0; i < parent.getLocalSize(); i++) {
 			String msg;
 			MQTTManagerG1 mqttM = mqttModule.get(i);
 			if(mqttM != null) {
@@ -577,7 +574,7 @@ public class PanelMQTTG1 extends AbstractSettingsPanel implements UsnaEventListe
 					String prefix ;
 					if(chckbxDefaultPrefix.isSelected()) {
 						prefix = null;
-					} else if(devices.size() > 1) {
+					} else if(parent.getLocalSize() > 1) {
 						prefix = "";
 					} else {
 						prefix = textFieldID.getText();
@@ -595,9 +592,9 @@ public class PanelMQTTG1 extends AbstractSettingsPanel implements UsnaEventListe
 					msg = mqttM.disable();
 				}
 				if(msg != null) {
-					res += String.format(LABELS.getString("dlgSetMultiMsgFail"), devices.get(i).getHostname()) + " (" + msg + ")<br>";
+					res += String.format(LABELS.getString("dlgSetMultiMsgFail"), parent.getLocalDevice(i).getHostname()) + " (" + msg + ")<br>";
 				} else {
-					res += String.format(LABELS.getString("dlgSetMultiMsgOk"), devices.get(i).getHostname()) + "<br>";
+					res += String.format(LABELS.getString("dlgSetMultiMsgOk"), parent.getLocalDevice(i).getHostname()) + "<br>";
 				}
 			}
 		}
@@ -629,5 +626,4 @@ public class PanelMQTTG1 extends AbstractSettingsPanel implements UsnaEventListe
 			}
 		}
 	}
-}
-//634
+} //629

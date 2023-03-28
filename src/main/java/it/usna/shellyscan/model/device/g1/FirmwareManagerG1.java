@@ -1,7 +1,10 @@
 package it.usna.shellyscan.model.device.g1;
 
+import java.util.concurrent.TimeUnit;
+
 import com.fasterxml.jackson.databind.JsonNode;
 
+import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.BatteryDeviceInterface;
 import it.usna.shellyscan.model.device.FirmwareManager;
 
@@ -17,19 +20,20 @@ public class FirmwareManagerG1 implements FirmwareManager {
 	
 	public FirmwareManagerG1(AbstractG1Device d) /*throws IOException*/ {
 		this.d = d;
-		init();
+//		init();
+		chech();
 	}
 	
 	private void init() {
 		valid = false;
 		try {
-		JsonNode node = d.getJSON("/ota");
-		updating = STATUS_UPDATING.equals(node.get("status").asText());
-		current = node.get("old_version").asText();
-		stable = node.get("has_update").asBoolean() ? node.get("new_version").asText() : null;
-		boolean hasBeta = node.has("beta_version") && node.get("beta_version").asText().equals(current) == false;
-		beta = hasBeta ? node.get("beta_version").asText() : null;
-		valid = true;
+			JsonNode node = d.getJSON("/ota");
+			updating = STATUS_UPDATING.equals(node.get("status").asText());
+			current = node.get("old_version").asText();
+			stable = node.get("has_update").asBoolean() ? node.get("new_version").asText() : null;
+			boolean hasBeta = node.has("beta_version") && node.get("beta_version").asText().equals(current) == false;
+			beta = hasBeta ? node.get("beta_version").asText() : null;
+			valid = true;
 		} catch(/*IO*/Exception e) {
 			valid = false;
 			current = stable = beta = null;
@@ -44,6 +48,7 @@ public class FirmwareManagerG1 implements FirmwareManager {
 	public void chech() {
 		current = stable = beta = null;
 		d.sendCommand("/ota/check");
+		try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e) {}
 		init();
 	}
 	

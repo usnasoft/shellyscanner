@@ -15,7 +15,6 @@ import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
-import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPasswordField;
@@ -57,8 +56,8 @@ public class PanelWIFI extends AbstractSettingsPanel implements UsnaEventListene
 //	private JButton btnCopyTo;
 	private DialogDeviceSelection selDialog = null;
 
-	public PanelWIFI(JDialog owner, WIFIManager.Network net, List<ShellyAbstractDevice> devices, final Devices model) {
-		super(devices);
+	public PanelWIFI(DialogDeviceSettings owner, WIFIManager.Network net) {
+		super(owner);
 		this.netModule = net;
 		setBorder(BorderFactory.createEmptyBorder(6, 6, 2, 6));
 		GridBagLayout gridBagLayout = new GridBagLayout();
@@ -99,7 +98,7 @@ public class PanelWIFI extends AbstractSettingsPanel implements UsnaEventListene
 		gbc_btnCopy.gridx = 4;
 		gbc_btnCopy.gridy = 0;
 		add(btnCopy, gbc_btnCopy);
-		btnCopy.addActionListener(e -> selDialog = new DialogDeviceSelection(owner, this, model));
+		btnCopy.addActionListener(e -> selDialog = new DialogDeviceSelection(owner, this, parent.getModel()));
 
 		JLabel lblNewLabel_1 = new JLabel(LABELS.getString("dlgSetSSID"));
 		GridBagConstraints gbc_lblNewLabel_1 = new GridBagConstraints();
@@ -265,13 +264,13 @@ public class PanelWIFI extends AbstractSettingsPanel implements UsnaEventListene
 		textFieldPwd.setEnabled(enabled);
 		chckbxShowPwd.setEnabled(enabled);
 		rdbtnDHCP.setEnabled(enabled /*&& devices.size() == 1*/);
-		rdbtnStaticIP.setEnabled(enabled && (staticIP == Boolean.TRUE || devices.size() == 1));
+		rdbtnStaticIP.setEnabled(enabled && (staticIP == Boolean.TRUE || parent.getLocalSize() == 1));
 		rdbtnDhcpNoChange.setEnabled(enabled);
 		setEnabledStaticIP((staticIP == null || staticIP) && enabled);
 	}
 
 	private void setEnabledStaticIP(Boolean staticIP) {
-		textFieldStaticIP.setEnabled(staticIP == Boolean.TRUE && devices.size() == 1);
+		textFieldStaticIP.setEnabled(staticIP == Boolean.TRUE && parent.getLocalSize() == 1);
 		textFieldNetmask.setEnabled(staticIP == null || staticIP == Boolean.TRUE);
 		textFieldGateway.setEnabled(staticIP == null || staticIP == Boolean.TRUE);
 		textFieldDNS.setEnabled(staticIP == null || staticIP == Boolean.TRUE);
@@ -340,8 +339,8 @@ public class PanelWIFI extends AbstractSettingsPanel implements UsnaEventListene
 			String globalGW = "";
 			String globalDNS = "";
 			boolean first = true;
-			for(int i = 0; i < devices.size(); i++) {
-				d = devices.get(i);
+			for(int i = 0; i < parent.getLocalSize(); i++) {
+				d = parent.getLocalDevice(i);
 				try {
 					WIFIManager sta = d.getWIFIManager(netModule);
 					if(Thread.interrupted()) {
@@ -381,7 +380,7 @@ public class PanelWIFI extends AbstractSettingsPanel implements UsnaEventListene
 				}
 			}
 			if(showExcluded) {
-				if(excludeCount == devices.size() && isShowing()) {
+				if(excludeCount == parent.getLocalSize() && isShowing()) {
 					return LABELS.getString("msgAllDevicesExcluded");
 				} else if (excludeCount > 0 && isShowing()) {
 					Msg.showHtmlMessageDialog(this, exclude, LABELS.getString("dlgExcludedDevicesTitle"), JOptionPane.WARNING_MESSAGE);
@@ -438,7 +437,7 @@ public class PanelWIFI extends AbstractSettingsPanel implements UsnaEventListene
 			if(dns.isEmpty() == false && dns.matches(IPV4_REGEX) == false) {
 				throw new IllegalArgumentException(LABELS.getString("dlgSetMsgWrongDNS"));
 			}
-			if(dhcp == false && devices.size() == 1 && ip.isEmpty()) {
+			if(dhcp == false && parent.getLocalSize() == 1 && ip.isEmpty()) {
 				throw new IllegalArgumentException(LABELS.getString("dlgSetMsgObbStaticIP"));
 			}
 			if((dhcp == false || noChange) && (netmask.isEmpty() || gw.isEmpty())) {
@@ -450,7 +449,7 @@ public class PanelWIFI extends AbstractSettingsPanel implements UsnaEventListene
 		}
 		if(JOptionPane.showConfirmDialog(this, LABELS.getString("dlgSetConfirmWIFI"), LABELS.getString("dlgSetWIFI"), JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE) == JOptionPane.YES_OPTION) {
 			String res = "<html>";
-			for(int i = 0; i < devices.size(); i++) {
+			for(int i = 0; i < parent.getLocalSize(); i++) {
 				WIFIManager wfManager = fwModule.get(i);
 				if(wfManager != null) { // wfManager == null excluded device
 					String msg = null;
@@ -470,9 +469,9 @@ public class PanelWIFI extends AbstractSettingsPanel implements UsnaEventListene
 						msg = wfManager.disable();
 					}
 					if(msg != null) {
-						res += String.format(LABELS.getString("dlgSetMultiMsgFail"), devices.get(i).getHostname()) + " (" + msg + ")<br>";
+						res += String.format(LABELS.getString("dlgSetMultiMsgFail"), parent.getLocalDevice(i).getHostname()) + " (" + msg + ")<br>";
 					} else {
-						res += String.format(LABELS.getString("dlgSetMultiMsgOk"), devices.get(i).getHostname()) + "<br>";
+						res += String.format(LABELS.getString("dlgSetMultiMsgOk"), parent.getLocalDevice(i).getHostname()) + "<br>";
 					}
 				}
 			}
@@ -493,7 +492,7 @@ public class PanelWIFI extends AbstractSettingsPanel implements UsnaEventListene
 				chckbxEnabled.setSelected(m.isEnabled());
 				textFieldSSID.setText(m.getSSID());
 				if(m.isStaticIP()) {
-					if(devices.size() == 1) {
+					if(parent.getLocalSize() == 1) {
 						rdbtnStaticIP.setSelected(true);
 					} else if(rdbtnDhcpNoChange.isVisible()) {
 						rdbtnDhcpNoChange.setSelected(true);

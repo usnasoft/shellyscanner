@@ -36,7 +36,7 @@ public class MQTTManagerG1 implements MQTTManager {
 		}
 	}
 
-	private void init( ) throws IOException {
+	private void init() throws IOException {
 		JsonNode settings = d.getJSON("/settings").get("mqtt");
 		this.enabled = settings.get("enable").asBoolean();
 		this. server = settings.path("server").asText("");

@@ -59,7 +59,6 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 	private final static int COL_CURRENT = 2;
 	private final static int COL_STABLE = 3;
 	private final static int COL_BETA = 4;
-	private final Devices model;
 	private ExTooltipTable table;
 	private UsnaTableModel tModel = new UsnaTableModel("", LABELS.getString("col_device"), LABELS.getString("dlgSetColCurrentV"), LABELS.getString("dlgSetColLastV"), LABELS.getString("dlgSetColBetaV"));
 	private List<DeviceFirmware> devicesFWData;
@@ -77,9 +76,8 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 	/**
 	 * @wbp.nonvisual location=61,49
 	 */
-	public PanelFWUpdate(List<ShellyAbstractDevice> devices, final Devices model) {
-		super(devices);
-		this.model = model;
+	public PanelFWUpdate(DialogDeviceSettings parent) {
+		super(parent);
 		setLayout(new BorderLayout(0, 0));
 
 		table = new ExTooltipTable(tModel) {
@@ -204,7 +202,7 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 			btnCheck.setEnabled(false);
 			exeService.execute(() -> {
 				setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-				for(int i = 0; i < devices.size(); i++) {
+				for(int i = 0; i < parent.getLocalSize(); i++) {
 					try {
 						tModel.setValueAt(DevicesTable.UPDATING_BULLET, i, COL_STATUS);
 					} catch(Exception e) {/* while fill() */}
@@ -223,7 +221,7 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 
 	private void fill() {
 		tModel.clear();
-		for(int i = 0; i < devices.size(); i++) {
+		for(int i = 0; i < parent.getLocalSize(); i++) {
 			if(Thread.interrupted() == false) {
 				tModel.addRow(createRow(i));
 			}
@@ -234,7 +232,7 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 	}
 	
 	private Object[] createRow(int index) {
-		ShellyAbstractDevice d = devices.get(index);
+		ShellyAbstractDevice d = parent.getLocalDevice(index);
 		FirmwareManager fw = devicesFWData.get(index).fwModule;
 //		boolean globalStable = false;
 //		boolean globalBeta = false;
@@ -245,16 +243,14 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 			boolean hasBeta = fw.newBeta() != null;
 //			globalStable |= hasUpdate;
 //			globalBeta |= hasBeta;
-//			if(fu.isValid()) {
 			return new Object[] {DevicesTable.getStatusIcon(d), UtilCollecion.getExtendedHostName(d), FirmwareManager.getShortVersion(fw.current()), hasUpdate ? Boolean.TRUE : null, hasBeta ? Boolean.FALSE : null};
-//			}
 		}
 	}
 
 	@Override
 	public String showing() throws InterruptedException {
 		lblCount.setText("");
-		final int size = devices.size();
+		final int size = parent.getLocalSize();
 		devicesFWData = Stream.generate(DeviceFirmware::new).limit(size).collect(Collectors.toList());
 //		devicesFWData = Stream.generate(DeviceFirmware::new).limit(size).toArray(DeviceFirmware[]::new);
 
@@ -262,11 +258,11 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 		try {
 			List<Callable<Void>> calls = new ArrayList<>();
 			for(int i = 0; i < size; i++) {
-				calls.add(new GetFWManagerCaller(devices, i));
+				calls.add(new GetFWManagerCaller(i));
 			}
 			retriveFutures = exeService.invokeAll(calls);
 			fill();
-			model.addListener(this);
+			parent.getModel().addListener(this);
 
 			table.columnsWidthAdapt();
 			final FontMetrics fm = getGraphics().getFontMetrics();
@@ -282,7 +278,7 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 	}
 
 	public void hiding() {
-		model.removeListener(this);
+		parent.getModel().removeListener(this);
 		if(retriveFutures != null) {
 			retriveFutures.forEach(f -> f.cancel(true));
 		}
@@ -297,17 +293,19 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 	
 	private class GetFWManagerCaller implements Callable<Void> {
 		private final int index;
-		private final List<ShellyAbstractDevice> devices;
 		
-		private GetFWManagerCaller(List<ShellyAbstractDevice> devices, int index) {
+		private GetFWManagerCaller(int index) {
 			this.index = index;
-			this.devices = devices;
 		}
-
+		
 		@Override
 		public Void call() {
-			final ShellyAbstractDevice d = devices.get(index);
-			devicesFWData.get(index).fwModule = d.getFWManager();
+			final ShellyAbstractDevice d = parent.getLocalDevice(index);
+			FirmwareManager fm = d.getFWManager();
+			devicesFWData.get(index).fwModule = fm;
+			if(fm.upadating()) {
+				devicesFWData.get(index).uptime = d.getUptime();
+			}
 			
 			if(d instanceof AbstractG2Device) {
 				try {
@@ -327,23 +325,24 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 				String.format(LABELS.getString("dlgSetConfirmUpdate"), count), LABELS.getString("dlgSetFWUpdate"),
 				JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION) {
 			String res = "";
-			for(int i = 0; i < devices.size(); i++) {
+			for(int i = 0; i < parent.getLocalSize(); i++) {
 				Object update = tModel.getValueAt(i, COL_STABLE);
 				Object beta = tModel.getValueAt(i, COL_BETA);
+				DeviceFirmware fwInfo = devicesFWData.get(i);
 				if(update instanceof Boolean && ((Boolean)update) == Boolean.TRUE) {
-					devicesFWData.get(i).uptime = devices.get(i).getUptime();
-					String msg = devicesFWData.get(i).fwModule.update(true);
+					fwInfo.uptime = parent.getLocalDevice(i).getUptime();
+					String msg = fwInfo.fwModule.update(true);
 					if(msg != null && LABELS.containsKey(msg)) {
 						msg = LABELS.getString(msg);
 					}
-					res += UtilCollecion.getFullName(devices.get(i)) + " - " + ((msg == null) ? LABELS.getString("labelUpdating") : LABELS.getString("labelError") + ": " + msg) + "\n";
+					res += UtilCollecion.getFullName(parent.getLocalDevice(i)) + " - " + ((msg == null) ? LABELS.getString("labelUpdating") : LABELS.getString("labelError") + ": " + msg) + "\n";
 				} else if(beta instanceof Boolean && ((Boolean)beta) == Boolean.TRUE) {
-					devicesFWData.get(i).uptime = devices.get(i).getUptime();
-					String msg = devicesFWData.get(i).fwModule.update(false);
+					fwInfo.uptime = parent.getLocalDevice(i).getUptime();
+					String msg = fwInfo.fwModule.update(false);
 					if(msg != null && LABELS.containsKey(msg)) {
 						msg = LABELS.getString(msg);
 					}
-					res += UtilCollecion.getFullName(devices.get(i)) + " - " + ((msg == null) ? LABELS.getString("labelUpdatingBeta") : LABELS.getString("labelError") + ": " + msg) + "\n";
+					res += UtilCollecion.getFullName(parent.getLocalDevice(i)) + " - " + ((msg == null) ? LABELS.getString("labelUpdatingBeta") : LABELS.getString("labelError") + ": " + msg) + "\n";
 				}
 			}
 			fill();
@@ -437,21 +436,23 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 		if(mesgType == Devices.EventType.UPDATE) {
 			SwingUtilities.invokeLater(() -> {
 				try {
-					final ShellyAbstractDevice device = model.get(pos);
-					final int index = getIndex(device);
+					final ShellyAbstractDevice device = parent.getModel().get(pos);
+					final int index = parent.getLocalIndex(pos);
 					if(index >= 0 && device.getStatus() != ShellyAbstractDevice.Status.ERROR) {
+						DeviceFirmware fwInfo = devicesFWData.get(index);
 						if(device.getStatus() != ShellyAbstractDevice.Status.ON_LINE) {
 							tModel.setValueAt(DevicesTable.getStatusIcon(device), index, COL_STATUS);
-						} else if(device.getUptime() < devicesFWData.get(index).uptime || System.currentTimeMillis() - devicesFWData.get(index).rebootTime > 2500L) {
+						} else if(device.getUptime() < fwInfo.uptime || System.currentTimeMillis() - fwInfo.rebootTime > 2500L) {
 							// starting uptime bigger than now (g1 - not 100% sure) or after 2.5 seconds since reboot (reboot completed - g2)
-							devicesFWData.get(index).rebootTime = Long.MAX_VALUE; // reset
-							devicesFWData.get(index).uptime = 0; // reset
+							fwInfo.rebootTime = Long.MAX_VALUE; // reset
+							fwInfo.uptime = 0; // reset
 							tModel.setValueAt(DevicesTable.ONLINE_BULLET, index, COL_STATUS);
-							devicesFWData.get(index).fwModule.chech();
+//							fwInfo.fwModule.chech();
+							fwInfo.fwModule = device.getFWManager();
 							tModel.setRow(index, createRow(index));
 							countSelection();
-							if(device instanceof AbstractG2Device && devicesFWData.get(index).wsSession.get().isOpen() == false) { // should be (closed on reboot)
-								devicesFWData.get(index).wsSession = wsEventListener(index, (AbstractG2Device)device);
+							if(device instanceof AbstractG2Device && fwInfo.wsSession.get().isOpen() == false) { // should be (closed on reboot)
+								fwInfo.wsSession = wsEventListener(index, (AbstractG2Device)device);
 							}
 						}
 					}
@@ -461,8 +462,10 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 			});
 		}
 	}
-}
-// 346 - 362 - 446
+} // 346 - 362 - 465
+
+// todo al reboot il dispositivo nel modello cambia, quello della lista locale non e' piu' lo stesso e non viene aggiornato
+// sostituire tutto oppure mantenere solo i riferimenti (indici) e lavorare con unico modello (preferibile)
 
 //{"src":"shellyplusi4-a8032ab1fe78","dst":"S_Scanner","method":"NotifyEvent","params":{"ts":1677696108.45,"events":[{"component":"sys", "event":"ota_progress", "msg":"Waiting for data", "progress_percent":99, "ts":1677696108.45}]}}
 //{"src":"shellyplusi4-a8032ab1fe78","dst":"S_Scanner","method":"NotifyEvent","params":{"ts":1677696109.49,"events":[{"component":"sys", "event":"ota_success", "msg":"Update applied, rebooting", "ts":1677696109.49}]}}

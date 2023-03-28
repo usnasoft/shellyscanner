@@ -24,7 +24,7 @@ import it.usna.util.AppProperties;
 
 public class Main {
 	public final static String APP_NAME = "Shelly Scanner";
-	public final static String VERSION = "0.9.5 beta";
+	public final static String VERSION = "0.9.5 beta2";
 	public final static String ICON = "/images/ShSc24.png";
 	public final static String BACKUP_FILE_EXT = "sbk";
 	
@@ -313,9 +313,6 @@ public class Main {
 // https://docs.oracle.com/javase/8/docs/api/javax/security/auth/callback/CallbackHandler.html
 // https://www.baeldung.com/java-authentication-authorization-service
 // archivio (additivo) dispositivi collegati opzionalmente caricabile (con eventuale default da settings)
-// 2.5 ottimizzazione array ralay 2.5
-// global settings: wi-fi 2 (chiedere se il dispositivo e' connesso a questo)
-// global settings: wi-fi 1 (chiedere se il dispositivo e' connesso a questo)
 // bottone resume refresh (log)
 // gestione "reading": se stato online leggo uptime, se uptime diverso dal precedente memorizzo il timestamp else Quando il time stamp corrente - memorizzato > intervallo * 3 modifico lo stato - si, ma dove?
 // suspended process (dispositivi a batteria)

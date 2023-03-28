@@ -458,9 +458,9 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		}
 	});
 
-	private Action settingsAction = new UsnaAction(this, "/images/Tool.png", "action_general_conf_tooltip", e -> {
-		List<ShellyAbstractDevice> devices = Arrays.stream(devicesTable.getSelectedRows()).mapToObj(i -> model.get(devicesTable.convertRowIndexToModel(i))).collect(Collectors.toList());
-		new DialogDeviceSettings(MainView.this, model, devices);
+	private Action devicesSettingsAction = new UsnaAction(this, "/images/Tool.png", "action_general_conf_tooltip", e -> {
+		int[] devicesInd = Arrays.stream(devicesTable.getSelectedRows()).map(i -> devicesTable.convertRowIndexToModel(i)).toArray();
+		new DialogDeviceSettings(MainView.this, model, devicesInd);
 	});
 	
 	private Action eraseFilterAction = new UsnaAction(this, "/images/erase-9-16.png", null, e -> {
@@ -596,7 +596,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		toolBar.add(backupAction);
 		toolBar.add(restoreAction);
 		toolBar.addSeparator();
-		toolBar.add(settingsAction);
+		toolBar.add(devicesSettingsAction);
 		toolBar.add(scriptManagerAction);
 		toolBar.add(rebootAction);
 		toolBar.add(Box.createHorizontalGlue());
@@ -682,7 +682,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 				browseAction.setEnabled(selection && Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE));
 				backupAction.setEnabled(selection);
 				restoreAction.setEnabled(singleSelection);
-				settingsAction.setEnabled(selection);
+				devicesSettingsAction.setEnabled(selection);
 				chartAction.setEnabled(selection);
 				ShellyAbstractDevice d = null;
 				if(singleSelection) {
