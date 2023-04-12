@@ -21,8 +21,8 @@ public class ShellyPlus1 extends AbstractG2Device implements RelayCommander, Int
 	private float internalTmp;
 	private RelayInterface[] ralayes = new RelayInterface[] {relay};
 
-	public ShellyPlus1(InetAddress address, String hostname) {
-		super(address, hostname);
+	public ShellyPlus1(InetAddress address, int port, String hostname) {
+		super(address, port, hostname);
 	}
 	
 	@Override

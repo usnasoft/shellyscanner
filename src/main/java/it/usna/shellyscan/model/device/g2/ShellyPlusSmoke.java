@@ -13,13 +13,13 @@ public class ShellyPlusSmoke extends AbstractBatteryG2Device {
 	private Meters[] meters;
 	private boolean alarm;
 	
-	public ShellyPlusSmoke(InetAddress address, JsonNode shelly, String hostname) {
-		this(address, hostname);
+	public ShellyPlusSmoke(InetAddress address, int port, JsonNode shelly, String hostname) {
+		this(address, port, hostname);
 		this.shelly = shelly;
 	}
 	
-	protected ShellyPlusSmoke(InetAddress address, String hostname) {
-		super(address, hostname);
+	protected ShellyPlusSmoke(InetAddress address, int port, String hostname) {
+		super(address, port, hostname);
 		
 		meters = new Meters[] {
 				new Meters() {

@@ -207,7 +207,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 	
 	private Action browseAction = new ViewSelectedAction("action_web_name", "action_web_tooltip", "/images/Computer16.png", "/images/Computer.png", (i, d) -> {
 		try {
-			Desktop.getDesktop().browse(new URI("http://" + d.getAddress().getHostAddress()));
+			Desktop.getDesktop().browse(new URI("http://" + d.getAddress().getHostAddress() + ":" + d.getPort()));
 		} catch (IOException | URISyntaxException e) {
 			Msg.errorMsg(e);
 		}
@@ -232,7 +232,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 	});
 	
 	private Action loginAction = new ViewSelectedAction("action_nema_login", null, "/images/Key16.png", null,
-			(i, d) -> model.create(d.getAddress(), d.getHostname()) );
+			(i, d) -> model.create(d.getAddress(), 80, null, d.getHostname()) );
 
 	private Action backupAction = new UsnaAction(this, "action_back_name", "action_back_tooltip", "/images/Download16.png", "/images/Download.png", e -> {
 		int[] ind = devicesTable.getSelectedRows();

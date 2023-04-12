@@ -25,8 +25,8 @@ public class ShellyPlusPlugIT extends AbstractG2Device implements RelayCommander
 	private float current;
 	private Meters[] meters;
 
-	public ShellyPlusPlugIT(InetAddress address, String hostname) {
-		super(address, hostname);
+	public ShellyPlusPlugIT(InetAddress address, int port, String hostname) {
+		super(address, port, hostname);
 		
 		meters = new Meters[] {
 				new Meters() {

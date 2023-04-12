@@ -9,8 +9,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
-import javax.swing.UIManager.LookAndFeelInfo;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,11 +18,12 @@ import it.usna.shellyscan.model.DevicesFactory;
 import it.usna.shellyscan.view.MainView;
 import it.usna.shellyscan.view.appsettings.DialogAppSettings;
 import it.usna.shellyscan.view.util.Msg;
+import it.usna.swing.UsnaSwingUtils;
 import it.usna.util.AppProperties;
 
 public class Main {
 	public final static String APP_NAME = "Shelly Scanner";
-	public final static String VERSION = "0.9.5";
+	public final static String VERSION = "0.9.6";
 	public final static String ICON = "/images/ShSc24.png";
 	public final static String BACKUP_FILE_EXT = "sbk";
 	
@@ -44,27 +43,18 @@ public class Main {
 
 	public static void main(final String ... args) {
 		LOG.info(APP_NAME + " " + VERSION);
-
 		//		Package mainPackage = Main.class.getPackage();
 		//		String version = mainPackage.getImplementationVersion();
+		
+//		UsnaSwingUtils.initializeFontSize(1.2f);
 		try {
-			for (LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
-				if ("Nimbus".equals(info.getName())) {
-					UIManager.setLookAndFeel(info.getClassName());
-					
-//					UIManager.put("Table.background", new ColorUIResource(TAB_LINE1));
-//					UIManager.put("Table.alternateRowColor", TAB_LINE2);
-//					UIManager.getLookAndFeelDefaults().put("Table:\"Table.cellRenderer\".background", new ColorUIResource(TAB_LINE1));
-					break;
-				}
-			}
+			UsnaSwingUtils.setLookAndFeel(UsnaSwingUtils.LF_NMBUS);
 		} catch (Exception e) {
-			try {
-				UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-			} catch (Exception ex) {
-				Msg.errorMsg(ex);
-			}
+			Msg.errorMsg(e);
 		}
+//		UIManager.put("Table.background", new ColorUIResource(TAB_LINE1));
+//		UIManager.put("Table.alternateRowColor", TAB_LINE2);
+//		UIManager.getLookAndFeelDefaults().put("Table:\"Table.cellRenderer\".background", new ColorUIResource(TAB_LINE1));
 
 		try {
 			appProp.load(true);
@@ -306,6 +296,9 @@ public class Main {
 // checklist: number of devices connected to range extender
 // extender WiFi.ListAPClients
 
+//0.9.5
+// range extender connectet devices
+// todo login e tutti i posti in cui prendo l'indirizzo (servira' anche la porta)
 
 // TODO
 // {"src":"shellyplus2pm-485519a2bb1c","dst":"S_Scanner","method":"NotifyStatus","params":{"ts":1678127726.89,"wifi":{"ap_client_count":0}}}

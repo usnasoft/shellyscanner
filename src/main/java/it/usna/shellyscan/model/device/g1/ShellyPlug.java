@@ -20,8 +20,8 @@ public class ShellyPlug extends AbstractG1Device implements RelayCommander {
 	private float power;
 	private Meters[] meters;
 
-	public ShellyPlug(InetAddress address, String hostname) {
-		super(address, hostname);
+	public ShellyPlug(InetAddress address, int port, String hostname) {
+		super(address, port, hostname);
 		
 		meters = new Meters[] {
 				new MetersPower() {

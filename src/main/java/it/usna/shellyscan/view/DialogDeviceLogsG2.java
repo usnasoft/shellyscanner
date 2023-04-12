@@ -205,7 +205,7 @@ public class DialogDeviceLogsG2 extends JDialog {
 						LOG.error("webSocketClient.disconnect", e1);
 					}
 					activateLog(device, logWasActive);
-					model.refresh(index, false);
+//					model.refresh(index, false);
 				}
 			});
 

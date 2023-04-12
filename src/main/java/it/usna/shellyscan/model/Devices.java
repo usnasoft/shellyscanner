@@ -35,9 +35,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
 import it.usna.shellyscan.model.device.ShellyUnmanagedDevice;
+import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 
 public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Integer> {
 	private final static Logger LOG = LoggerFactory.getLogger(Devices.class);
+	private final static ObjectMapper JSON_MAPPER = new ObjectMapper();
+	
 	public enum EventType {
 		ADD,
 		UPDATE,
@@ -47,7 +50,7 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 	};
 
 	private final static int EXECUTOR_POOL_SIZE = 128;
-	public final static long MULTI_QUERY_DELAY = 50;
+	public final static long MULTI_QUERY_DELAY = 59;
 
 	private JmmDNS jd;
 	private Set<JmDNS> bjServices = new HashSet<>();
@@ -144,9 +147,10 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 				try {
 					if(addr.isReachable(4500)) {
 //						Thread.sleep(MULTI_QUERY_DELAY);
-						if(isShelly(addr)) {
+						JsonNode info = isShelly(addr, 80);
+						if(info != null) {
 							Thread.sleep(MULTI_QUERY_DELAY);
-							create(addr, addr.getHostAddress());
+							create(addr, 80, info, addr.getHostAddress());
 						}
 					} else {
 						LOG.trace("no ping {}", addr);
@@ -160,20 +164,21 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 		}
 	}
 
-	private boolean isShelly(final InetAddress address) throws TimeoutException {
+	private JsonNode isShelly(final InetAddress address, int port) throws TimeoutException {
 		try {
-			ContentResponse response = httpClient.newRequest("http://" + address.getHostAddress() + "/shelly").timeout(15, TimeUnit.SECONDS).send();
-			JsonNode shellyNode = new ObjectMapper().readTree(response.getContent());
+//			ContentResponse response = httpClient.newRequest(/*"http://" +*/ address.getHostAddress() + "/shelly", port).timeout(15, TimeUnit.SECONDS).send();
+			ContentResponse response = httpClient.newRequest("http://" + address.getHostAddress() + ":" + port + "/shelly").timeout(15, TimeUnit.SECONDS).send();
+			JsonNode shellyNode = JSON_MAPPER.readTree(response.getContent());
 			int resp = response.getStatus();
 			if(resp == HttpStatus.OK_200 && shellyNode.has("mac")) { // "mac" is common to all shelly devices
-				return true;
+				return shellyNode;
 			} else {
 				LOG.trace("Not Shelly {}, resp {}, node ()", address, resp, shellyNode);
-				return false;
+				return null;
 			}
 		} catch (InterruptedException | ExecutionException | IOException e) {
 			LOG.trace("Not Shelly {} - {}", address, e.toString());
-			return false;
+			return null;
 		}
 	}
 
@@ -206,7 +211,7 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 				for (ServiceInfo info: serviceInfos) {
 					final String name = info.getName();
 					if(name.startsWith("shelly") || name.startsWith("Shelly")) { // ShellyBulbDuo-xxx
-						executor.execute(() -> create(info.getInetAddresses()[0], name));
+						executor.execute(() -> create(info.getInetAddresses()[0], 80, null, name));
 					}
 				}
 			}
@@ -226,7 +231,7 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 				d.setStatus(Status.READING);
 				executor.schedule(() -> {
 					if(d instanceof ShellyUnmanagedDevice && ((ShellyUnmanagedDevice)d).geException() != null) { // experimental; try to create proper device
-						create(d.getAddress(), d.getHostname());
+						create(d.getAddress(), d.getPort(), null, d.getHostname());
 					} else {
 						try {
 							d.refreshSettings();
@@ -298,10 +303,10 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 		}
 	}
 
-	public void create(InetAddress address, String hostName) {
+	public void create(InetAddress address, int port, JsonNode info, String hostName) {
 		LOG.trace("Creating {} - {}", address, hostName);
 		try {
-			ShellyAbstractDevice d = DevicesFactory.create(httpClient, wsClient, address, hostName);
+			ShellyAbstractDevice d = DevicesFactory.create(httpClient, wsClient, address, port, info, hostName);
 			if(Thread.interrupted() == false) {
 				synchronized(devices) {
 					int ind;
@@ -320,6 +325,26 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 					}
 				}
 				LOG.debug("Create {} - {}", address, d);
+			}
+
+			if(d instanceof AbstractG2Device && ((AbstractG2Device)d).isExtender()) {
+				((AbstractG2Device)d).getRangeExtenderManager().getPorts().forEach(p -> {
+					try {
+						executor.execute(() -> {
+							try {
+								JsonNode infoEx = isShelly(address, p);
+								if(infoEx != null) {
+									create(d.getAddress(), p, infoEx, d.getHostname() + "-EXT"); // fillOnce will later correct hostname
+//									System.out.println(p);
+								}
+							} catch (TimeoutException e) {
+								LOG.trace("timeout {}:{}", d.getAddress(), p);
+							}
+						});
+					} catch(Exception e) {
+						LOG.error("Unexpected-add-ext: {}; host: {}:{}", address, hostName, p, e);
+					}
+				});
 			}
 		} catch(Exception e) {
 			LOG.error("Unexpected-add: {}; host: {}", address, hostName, e);
@@ -433,9 +458,10 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 		@Override
 		public void serviceResolved(ServiceEvent event) {
 			ServiceInfo info = event.getInfo();
+//			System.out.println(info.getPort());
 			final String name = info.getName();
 			if(name.startsWith("shelly") || name.startsWith("Shelly")) {
-				executor.execute(() -> create(info.getInetAddresses()[0], name));
+				executor.execute(() -> create(info.getInetAddresses()[0], 80, null, name));
 			}
 		}
 	}

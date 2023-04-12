@@ -27,8 +27,8 @@ public class ShellyPro1PM extends AbstractProDevice implements RelayCommander, I
 	private Meters[] meters;
 	private RelayInterface[] relays = new RelayInterface[] {relay0};
 
-	public ShellyPro1PM(InetAddress address, String hostname) {
-		super(address, hostname);
+	public ShellyPro1PM(InetAddress address, int port, String hostname) {
+		super(address, port, hostname);
 
 		meters = new Meters[] {
 				new Meters() {

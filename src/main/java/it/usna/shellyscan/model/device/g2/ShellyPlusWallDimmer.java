@@ -14,8 +14,8 @@ public class ShellyPlusWallDimmer extends AbstractG2Device implements WhiteComma
 	private LightWhite light = new LightWhite(this, 0);
 	private LightWhite[] lightArray = new LightWhite[] {light};
 
-	public ShellyPlusWallDimmer(InetAddress address, String hostname) {
-		super(address, hostname);
+	public ShellyPlusWallDimmer(InetAddress address, int port, String hostname) {
+		super(address, port, hostname);
 	}
 	
 	@Override

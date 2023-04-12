@@ -19,6 +19,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public abstract class ShellyAbstractDevice {
 	protected HttpClient httpClient;
 	protected final InetAddress address;
+	protected int port;
 	protected String hostname;
 	protected String mac;
 	protected boolean cloudEnabled;
@@ -43,10 +44,15 @@ public abstract class ShellyAbstractDevice {
 		RESTORE_LOGIN, RESTORE_WI_FI1, RESTORE_WI_FI2,  RESTORE_WI_FI_AP, RESTORE_MQTT, RESTORE_OPEN_MQTT,
 		ERR_UNKNOWN};
 
-	protected ShellyAbstractDevice(InetAddress address, String hostname) {
+	protected ShellyAbstractDevice(InetAddress address, int port, String hostname) {
 		this.address = address;
+		this.port = port;
 		this.hostname = hostname;
-		this.uriPrefix = "http://" + address.getHostAddress();
+		if(port == 80) {
+			this.uriPrefix = "http://" + address.getHostAddress();
+		} else {
+			this.uriPrefix = "http://" + address.getHostAddress() + ":" + port;
+		}
 	}
 
 //	public void init(HttpClient httpClient) throws IOException {
@@ -113,6 +119,10 @@ public abstract class ShellyAbstractDevice {
 	
 	public InetAddress getAddress() {
 		return address;
+	}
+	
+	public int getPort() {
+		return port;
 	}
 	
 //	public HttpClient getHttpClient() {

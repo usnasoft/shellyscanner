@@ -19,8 +19,8 @@ public class ShellyDUO extends AbstractG1Device implements WhiteCommander {
 	private float power;
 	private Meters[] meters;
 
-	public ShellyDUO(InetAddress address, String hostname) {
-		super(address, hostname);
+	public ShellyDUO(InetAddress address, int port, String hostname) {
+		super(address, port, hostname);
 		
 		meters = new Meters[] {
 				new MetersPower() {

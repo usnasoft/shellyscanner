@@ -311,7 +311,7 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 				try {
 					devicesFWData.get(index).wsSession = wsEventListener(index, (AbstractG2Device)d);
 				} catch (IOException | InterruptedException | ExecutionException e) {
-					LOG.error("ws: ", e);
+					LOG.debug("PanelFWUpdate ws", e);
 				}
 			}
 			return null;
@@ -397,31 +397,30 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 	}
 	
 	private Future<Session> wsEventListener(int index, AbstractG2Device d) throws IOException, InterruptedException, ExecutionException {
-		return d.connectWebSocketClient
-				(new WebSocketDeviceListener(json -> json.path("method").asText().equals(WebSocketDeviceListener.NOTIFY_EVENT)) {
-					@Override
-					public void onMessage(JsonNode msg) {
-						try {
-							for(JsonNode event: msg.path("params").path("events")) {
-								String eventType = event.path("event").asText();
-								if(eventType.equals("ota_progress")) { // dowloading
-									((FirmwareManagerG2)devicesFWData.get(index).fwModule).upadating(true);
-									int progress = event.path("progress_percent").asInt();
-									tModel.setValueAt(String.format(Main.LABELS.getString("lbl_downloading"), progress), index, COL_STABLE);
-									tModel.setValueAt(DevicesTable.UPDATING_BULLET, index, COL_STATUS);
-									break;
-								} else if(/*eventType.equals("ota_success") ||*/ eventType.equals("scheduled_restart")) { // rebooting
-									tModel.setValueAt(DevicesTable.OFFLINE_BULLET, index, COL_STATUS);
-									tModel.setValueAt(LABELS.getString("lbl_rebooting"), index, COL_STABLE);
-									devicesFWData.get(index).rebootTime = System.currentTimeMillis();
-								}
-							}
-						} catch(Exception e) {
-							LOG.debug("onMessage" + msg, e);
+		return d.connectWebSocketClient(new WebSocketDeviceListener(json -> json.path("method").asText().equals(WebSocketDeviceListener.NOTIFY_EVENT)) {
+			@Override
+			public void onMessage(JsonNode msg) {
+				try {
+					for(JsonNode event: msg.path("params").path("events")) {
+						String eventType = event.path("event").asText();
+						if(eventType.equals("ota_progress")) { // dowloading
+							((FirmwareManagerG2)devicesFWData.get(index).fwModule).upadating(true);
+							int progress = event.path("progress_percent").asInt();
+							tModel.setValueAt(String.format(Main.LABELS.getString("lbl_downloading"), progress), index, COL_STABLE);
+							tModel.setValueAt(DevicesTable.UPDATING_BULLET, index, COL_STATUS);
+							break;
+						} else if(/*eventType.equals("ota_success") ||*/ eventType.equals("scheduled_restart")) { // rebooting
+							tModel.setValueAt(DevicesTable.OFFLINE_BULLET, index, COL_STATUS);
+							tModel.setValueAt(LABELS.getString("lbl_rebooting"), index, COL_STABLE);
+							devicesFWData.get(index).rebootTime = System.currentTimeMillis();
 						}
-//						System.out.println(index + "-M: " + msg);
 					}
-				});
+				} catch(Exception e) {
+					LOG.debug("onMessage" + msg, e);
+				}
+				//System.out.println(index + "-M: " + msg);
+			}
+		});
 	}
 	
 	private static class DeviceFirmware {
@@ -462,10 +461,7 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 			});
 		}
 	}
-} // 346 - 362 - 465
-
-// todo al reboot il dispositivo nel modello cambia, quello della lista locale non e' piu' lo stesso e non viene aggiornato
-// sostituire tutto oppure mantenere solo i riferimenti (indici) e lavorare con unico modello (preferibile)
+} // 346 - 362 - 464
 
 //{"src":"shellyplusi4-a8032ab1fe78","dst":"S_Scanner","method":"NotifyEvent","params":{"ts":1677696108.45,"events":[{"component":"sys", "event":"ota_progress", "msg":"Waiting for data", "progress_percent":99, "ts":1677696108.45}]}}
 //{"src":"shellyplusi4-a8032ab1fe78","dst":"S_Scanner","method":"NotifyEvent","params":{"ts":1677696109.49,"events":[{"component":"sys", "event":"ota_success", "msg":"Update applied, rebooting", "ts":1677696109.49}]}}

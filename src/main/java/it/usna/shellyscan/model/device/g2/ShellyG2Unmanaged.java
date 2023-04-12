@@ -13,8 +13,8 @@ public class ShellyG2Unmanaged extends AbstractG2Device implements ShellyUnmanag
 	private String type;
 	private Exception ex;
 
-	public ShellyG2Unmanaged(InetAddress address, String hostname) {
-		super(address, hostname);
+	public ShellyG2Unmanaged(InetAddress address, int port, String hostname) {
+		super(address, port, hostname);
 	}
 	
 	@Override
@@ -34,8 +34,8 @@ public class ShellyG2Unmanaged extends AbstractG2Device implements ShellyUnmanag
 		}
 	}
 	
-	public ShellyG2Unmanaged(InetAddress address, String hostname, Exception e) {
-		super(address, hostname);
+	public ShellyG2Unmanaged(InetAddress address, int port, String hostname, Exception e) {
+		super(address, port, hostname);
 		this.ex = e;
 		this.hostname = hostname;
 		name = "";

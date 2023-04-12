@@ -53,10 +53,11 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 	private final static Logger LOG = LoggerFactory.getLogger(AbstractG2Device.class);
 	private WebSocketClient wsClient;
 	private boolean rebootRequired = false;
+	private boolean rangeExtender;
 	
 
-	protected AbstractG2Device(InetAddress address, /*int port,*/ String hostname) {
-		super(address, hostname);
+	protected AbstractG2Device(InetAddress address, int port, String hostname) {
+		super(address, port, hostname);
 	}
 	
 	public void init(HttpClient httpClient, WebSocketClient wsClient) throws IOException {
@@ -105,6 +106,8 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 		
 		this.cloudEnabled = config.path("cloud").path("enable").asBoolean();
 		this.mqttEnabled = config.path("mqtt").path("enable").asBoolean();
+		
+		this.rangeExtender = config.path("wifi").get("ap").path("range_extender").path("enable").asBoolean();
 	}
 	
 	protected void fillStatus(JsonNode status) throws IOException {
@@ -146,6 +149,10 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 	public boolean rebootRequired() {
 		return rebootRequired; //return getJSON("/rpc/Sys.GetStatus").path("restart_required").asBoolean(false);
 	}
+	
+	public boolean isExtender() {
+		return rangeExtender;
+	}
 
 //	public void setDebugMode(LogMode mode, boolean active) {
 //		postCommand("Sys.SetConfig", "{\"config\": {\"debug\":{\"websocket\":{\"enable\": " + (active ? "true" : "false") + "}}}");
@@ -159,6 +166,10 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 	@Override
 	public WIFIManager getWIFIManager(WIFIManager.Network net) throws IOException {
 		return new WIFIManagerG2(this, net);
+	}
+
+	public RangeExtenderManager getRangeExtenderManager() throws IOException {
+		return new RangeExtenderManager(this);
 	}
 	
 	@Override
@@ -255,13 +266,13 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 	}
 	
 	public Future<Session> connectWebSocketClient(WebSocketListener listener/*, boolean activate*/) throws IOException, InterruptedException, ExecutionException {
-		final Future<Session> s = wsClient.connect(listener, URI.create("ws://" + address.getHostAddress() + "/rpc"));
+		final Future<Session> s = wsClient.connect(listener, URI.create("ws://" + address.getHostAddress() + ":" + port + "/rpc"));
 		s.get().getRemote().sendStringByFuture("{\"id\":2, \"src\":\"S_Scanner\", \"method\":\"Shelly.GetDeviceInfo\"}");
 		return s;
 	}
 	
 	public Future<Session> connectWebSocketLogs(WebSocketListener listener) throws IOException, InterruptedException, ExecutionException {
-		return wsClient.connect(listener, URI.create("ws://" + address.getHostAddress() + "/debug/log"));
+		return wsClient.connect(listener, URI.create("ws://" + address.getHostAddress() + ":" + port + "/debug/log"));
 	}
 		
 	@Override

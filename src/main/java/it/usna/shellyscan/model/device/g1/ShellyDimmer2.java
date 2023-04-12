@@ -5,8 +5,8 @@ import java.net.InetAddress;
 public class ShellyDimmer2 extends ShellyDimmer {
 	public final static String ID = "SHDM-2";
 
-	public ShellyDimmer2(InetAddress address, String hostname) {
-		super(address, hostname);
+	public ShellyDimmer2(InetAddress address, int port, String hostname) {
+		super(address, port, hostname);
 	}
 	
 	@Override

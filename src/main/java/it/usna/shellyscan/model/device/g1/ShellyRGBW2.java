@@ -24,8 +24,8 @@ public class ShellyRGBW2 extends AbstractG1Device implements RGBWCommander, Whit
 	
 	private final String MODE_COLOR = "color";
 
-	public ShellyRGBW2(InetAddress address, String hostname) {
-		super(address, hostname);
+	public ShellyRGBW2(InetAddress address, int port, String hostname) {
+		super(address, port, hostname);
 	}
 	
 	@Override

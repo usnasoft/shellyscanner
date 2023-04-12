@@ -21,8 +21,8 @@ public class ShellyPro2 extends AbstractProDevice implements RelayCommander, Int
 	private float internalTmp;
 	private RelayInterface[] relays = new RelayInterface[] {relay0, relay1};
 
-	public ShellyPro2(InetAddress address, String hostname) {
-		super(address, hostname);
+	public ShellyPro2(InetAddress address, int port, String hostname) {
+		super(address, port, hostname);
 	}
 
 	@Override

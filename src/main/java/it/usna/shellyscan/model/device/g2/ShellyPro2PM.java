@@ -36,8 +36,8 @@ public class ShellyPro2PM extends AbstractProDevice implements RelayCommander, R
 
 	private final static String MODE_RELAY = "switch";
 
-	public ShellyPro2PM(InetAddress address, String hostname) {
-		super(address, hostname);
+	public ShellyPro2PM(InetAddress address, int port, String hostname) {
+		super(address, port, hostname);
 		
 		meters0 = new Meters() {
 			public Type[] getTypes() {

@@ -59,7 +59,6 @@ import it.usna.shellyscan.model.device.modules.RGBWCommander;
 import it.usna.shellyscan.model.device.modules.RelayCommander;
 import it.usna.shellyscan.model.device.modules.RollerCommander;
 import it.usna.shellyscan.model.device.modules.WhiteCommander;
-import it.usna.shellyscan.view.util.IPv4Comparator;
 import it.usna.swing.ArrayTableCellRenderer;
 import it.usna.swing.DecimalTableCellRenderer;
 import it.usna.swing.table.ExTooltipTable;
@@ -103,13 +102,13 @@ public class DevicesTable extends ExTooltipTable {
 	public DevicesTable(TableModel tm) {
 		super(tm, true);
 		columnModel.getColumn(COL_STATUS_IDX).setMaxWidth(ONLINE_BULLET.getIconWidth() + 4);
-		columnModel.getColumn(COL_IP_IDX).setCellRenderer(new DefaultTableCellRenderer() {
-			private static final long serialVersionUID = 1L;
-			@Override
-			public void setValue(Object value) {
-		        setText(((InetAddress)value).getHostAddress());
-		    }
-		});
+//		columnModel.getColumn(COL_IP_IDX).setCellRenderer(new DefaultTableCellRenderer() {
+//			private static final long serialVersionUID = 1L;
+//			@Override
+//			public void setValue(Object value) {
+//		        setText(((InetAddress)value).getHostAddress());
+//		    }
+//		});
 		columnModel.getColumn(COL_MEASURES_IDX).setCellRenderer(new DeviceMetersCellRenderer());
 		columnModel.getColumn(COL_INT_TEMP).setCellRenderer(new DecimalTableCellRenderer(2));
 		DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
@@ -123,7 +122,7 @@ public class DevicesTable extends ExTooltipTable {
 		colCommand.setCellEditor(new DeviceTableCellEditor(this));
 
 		TableRowSorter<?> sorter = (TableRowSorter<?>)getRowSorter();
-		sorter.setComparator(COL_IP_IDX, new IPv4Comparator());
+//		sorter.setComparator(COL_IP_IDX, new IPv4Comparator());
 		
 		sorter.setComparator(COL_COMMAND_IDX, (o1, o2) -> {
 			final String s1, s2;
@@ -413,7 +412,7 @@ public class DevicesTable extends ExTooltipTable {
 			row[DevicesTable.COL_TYPE] = d.getTypeName() + " (" + d.getHostname() + ")";
 			row[DevicesTable.COL_NAME] = d.getName();
 			row[DevicesTable.COL_MAC_IDX] = d.getMacAddress();
-			row[DevicesTable.COL_IP_IDX] = d.getAddress()/*.getHostName()*/; //"d.getHttpHost().getAddress().getHostAddress()";
+			row[DevicesTable.COL_IP_IDX] = /*d.getAddress()*/new InetAddressAndPort(d.getAddress(), d.getPort());
 			row[DevicesTable.COL_SSID_IDX] = d.getSSID();
 			if(d.getStatus() != Status.NOT_LOOGGED && d.getStatus() != Status.ERROR /*&&(d instanceof ShellyUnmanagedDevice == false || ((ShellyUnmanagedDevice)d).geException() == null)*/) {
 				row[DevicesTable.COL_RSSI_IDX] = d.getRssi();

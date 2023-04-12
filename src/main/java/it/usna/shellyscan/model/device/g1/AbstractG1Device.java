@@ -44,8 +44,8 @@ public abstract class AbstractG1Device extends ShellyAbstractDevice {
 //	private final static JsonPointer RSSI = JsonPointer.valueOf("/wifi_sta/rssi");
 	private final static Logger LOG = LoggerFactory.getLogger(AbstractG1Device.class);
 
-	protected AbstractG1Device(InetAddress address, String hostname) {
-		super(address, hostname);
+	protected AbstractG1Device(InetAddress address, int port, String hostname) {
+		super(address, port, hostname); // TODO
 	}
 	
 	public void init(HttpClient httpClient) throws IOException {

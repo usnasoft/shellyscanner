@@ -15,13 +15,13 @@ public class ShellyPlusHT extends AbstractBatteryG2Device {
 	private float humidity;
 	private Meters[] meters;
 	
-	public ShellyPlusHT(InetAddress address, JsonNode shelly, String hostname) {
-		this(address, hostname);
+	public ShellyPlusHT(InetAddress address, int port, JsonNode shelly, String hostname) {
+		this(address, port, hostname);
 		this.shelly = shelly;
 	}
 	
-	public ShellyPlusHT(InetAddress address, String hostname) {
-		super(address, hostname);
+	public ShellyPlusHT(InetAddress address, int port, String hostname) {
+		super(address, port, hostname);
 
 		meters = new Meters[] {
 				new Meters() {

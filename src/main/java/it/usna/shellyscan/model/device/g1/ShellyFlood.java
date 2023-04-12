@@ -15,13 +15,13 @@ public class ShellyFlood extends AbstractBatteryG1Device {
 	private float temp;
 	private Meters[] meters;
 
-	public ShellyFlood(InetAddress address, JsonNode shelly, String hostname) {
-		this(address, hostname);
+	public ShellyFlood(InetAddress address, int port, JsonNode shelly, String hostname) {
+		this(address, port, hostname);
 		this.shelly = shelly;
 	}
 	
-	public ShellyFlood(InetAddress address, String hostname) {
-		super(address, hostname);
+	public ShellyFlood(InetAddress address, int port, String hostname) {
+		super(address, port, hostname);
 		
 		meters = new Meters[] {
 				new Meters() {

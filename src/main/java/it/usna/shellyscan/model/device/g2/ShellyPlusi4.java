@@ -18,8 +18,8 @@ public class ShellyPlusi4 extends AbstractG2Device implements InputCommander {
 	private Input[] inputs;
 	private Webhooks webhooks;
 
-	public ShellyPlusi4(InetAddress address, String hostname) {
-		super(address, hostname);
+	public ShellyPlusi4(InetAddress address, int port, String hostname) {
+		super(address, port, hostname);
 		
 		inputs = new Input[] {new Input(), new Input(), new Input(), new Input()};
 		webhooks = new Webhooks(this);

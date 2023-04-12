@@ -21,8 +21,8 @@ public abstract class AbstractBatteryG2Device extends AbstractG2Device implement
 	protected Map<String, JsonNode> others = new HashMap<>();
 	protected int bat;
 
-	protected AbstractBatteryG2Device(InetAddress address, String hostname) {
-		super(address, hostname);
+	protected AbstractBatteryG2Device(InetAddress address, int port, String hostname) {
+		super(address, port, hostname);
 	}
 	
 	@Override

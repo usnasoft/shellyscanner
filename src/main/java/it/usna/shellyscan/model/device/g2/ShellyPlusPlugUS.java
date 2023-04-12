@@ -5,8 +5,8 @@ import java.net.InetAddress;
 public class ShellyPlusPlugUS extends ShellyPlusPlugIT {
 	public final static String ID = "PlugUS";
 
-	public ShellyPlusPlugUS(InetAddress address, String hostname) {
-		super(address, hostname);
+	public ShellyPlusPlugUS(InetAddress address, int port, String hostname) {
+		super(address, port, hostname);
 	}
 
 	@Override

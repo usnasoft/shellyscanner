@@ -13,8 +13,8 @@ import it.usna.shellyscan.model.Devices;
 
 public abstract class AbstractProDevice extends AbstractG2Device {
 
-	protected AbstractProDevice(InetAddress address, String hostname) {
-		super(address, hostname);
+	protected AbstractProDevice(InetAddress address, int port, String hostname) {
+		super(address, port, hostname);
 	}
 	
 	void restoreCommonConfig(JsonNode config, Map<Restore, String> data, ArrayList<String> errors) throws InterruptedException, IOException {

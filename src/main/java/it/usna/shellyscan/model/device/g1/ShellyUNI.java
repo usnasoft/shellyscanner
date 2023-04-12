@@ -21,8 +21,8 @@ public class ShellyUNI extends AbstractG1Device implements RelayCommander {
 	private float voltage;
 	private Meters[] meters;
 
-	public ShellyUNI(InetAddress address, String hostname) {
-		super(address, hostname);
+	public ShellyUNI(InetAddress address, int port, String hostname) {
+		super(address, port, hostname);
 		
 		meters = new Meters[] {
 				new Meters() {

@@ -28,8 +28,8 @@ public class ShellyPlus1PM extends AbstractG2Device implements RelayCommander, I
 	private Meters[] meters;
 	private RelayInterface[] relays = new RelayInterface[] {relay};
 
-	public ShellyPlus1PM(InetAddress address, String hostname) {
-		super(address, hostname);
+	public ShellyPlus1PM(InetAddress address, int port, String hostname) {
+		super(address, port, hostname);
 		
 		meters = new Meters[] {
 				new Meters() {

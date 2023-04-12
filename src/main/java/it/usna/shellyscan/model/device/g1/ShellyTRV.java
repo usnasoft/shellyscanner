@@ -20,8 +20,8 @@ public class ShellyTRV extends AbstractG1Device {
 	private Meters[] meters;
 	protected int bat;
 
-	public ShellyTRV(InetAddress address, String hostname) {
-		super(address, hostname);
+	public ShellyTRV(InetAddress address, int port, String hostname) {
+		super(address, port, hostname);
 		
 		meters = new Meters[] {
 				new Meters() {

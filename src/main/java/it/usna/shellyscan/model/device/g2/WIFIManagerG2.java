@@ -20,6 +20,7 @@ public class WIFIManagerG2 implements WIFIManager {
 	private String dns;
 	
 	public WIFIManagerG2(AbstractG2Device d, Network network) throws IOException {
+		this.d = d;
 		if(network == Network.PRIMARY) {
 			net = "sta";
 		} else if(network == Network.SECONDARY) {
@@ -27,7 +28,6 @@ public class WIFIManagerG2 implements WIFIManager {
 		} else {
 			net = "err";
 		}
-		this.d = d;
 		init();
 	}
 	
@@ -134,6 +134,31 @@ public class WIFIManagerG2 implements WIFIManager {
 		return d.postCommand("Wifi.SetConfig", config);
 	}
 	
+	public static Network currentConnection(AbstractG2Device d) throws IOException {
+		JsonNode settings = d.getJSON("/rpc/Shelly.GetConfig").get("wifi");
+		JsonNode sta;
+		if((sta = settings.get("sta")).get("enable").asBoolean() && sta.get("ssid").asText("").equals(d.getSSID())) {
+			return Network.PRIMARY;
+		} else if((sta = settings.get("sta1")).get("enable").asBoolean() && sta.get("ssid").asText("").equals(d.getSSID())) {
+			return Network.SECONDARY;
+		} else if(settings.get("ap").get("enable").asBoolean()) {
+			return Network.AP;
+		} else {
+			return null; // ethernet
+		}
+	}
+
+	public String restore(JsonNode wifi, String pwd) {
+		if(wifi.get("enable").asBoolean()) {
+			if(wifi.get("ipv4mode").asText().equals("static")) {
+				return set(wifi.get("ssid").asText(), pwd, wifi.get("ip").asText(), wifi.get("netmask").asText(""), wifi.get("gw").asText(""), wifi.get("nameserver").asText(""));
+			} else {
+				return set(wifi.get("ssid").asText(), pwd);
+			}
+		} else {
+			return disable();
+		}
+	}
 	
 	// restore /wifi/ap & /wifi/roam
 	public static String restoreAP_roam(AbstractG2Device d, JsonNode wifi, String pwd) {
@@ -160,28 +185,5 @@ public class WIFIManagerG2 implements WIFIManager {
 		ObjectNode outConfig = factory.objectNode();
 		outConfig.set("config", outWifi);
 		return d.postCommand("WiFi.SetConfig", outConfig);
-	}
-	
-	public static Network currentConnection(AbstractG2Device d) throws IOException {
-		JsonNode settings = d.getJSON("/rpc/Shelly.GetConfig").get("wifi");
-		JsonNode sta;
-		if((sta = settings.get("sta")).get("enable").asBoolean() && sta.get("ssid").asText("").equals(d.getSSID())) {
-			return Network.PRIMARY;
-		} else if((sta = settings.get("sta1")).get("enable").asBoolean() && sta.get("ssid").asText("").equals(d.getSSID())) {
-			return Network.SECONDARY;
-		}
-		return Network.AP;
-	}
-	
-	public String restore(JsonNode wifi, String pwd) {
-		if(wifi.get("enable").asBoolean()) {
-			if(wifi.get("ipv4mode").asText().equals("static")) {
-				return set(wifi.get("ssid").asText(), pwd, wifi.get("ip").asText(), wifi.get("netmask").asText(""), wifi.get("gw").asText(""), wifi.get("nameserver").asText(""));
-			} else {
-				return set(wifi.get("ssid").asText(), pwd);
-			}
-		} else {
-			return disable();
-		}
 	}
 }
