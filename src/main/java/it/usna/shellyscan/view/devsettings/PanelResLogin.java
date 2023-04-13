@@ -32,11 +32,12 @@ public class PanelResLogin extends AbstractSettingsPanel {
 	private JPasswordField textFieldPwd;
 	private JCheckBox chckbxShowPwd;
 	private char pwdEchoChar;
-	private Gen types;
+	private final Gen types;
 	private List<LoginManager> loginModule = new ArrayList<>();
 
 	public PanelResLogin(DialogDeviceSettings parent, Gen types) {
 		super(parent);
+		this.types = types;
 		setBorder(BorderFactory.createEmptyBorder(6, 6, 2, 6));
 		GridBagLayout gridBagLayout = new GridBagLayout();
 		gridBagLayout.columnWidths = new int[] {0, 0};

@@ -13,11 +13,6 @@ public class ShellyDW extends AbstractBatteryG1Device {
 	private final static Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.BAT};
 	private boolean open;
 	private Meters[] meters;
-	
-	public ShellyDW(InetAddress address, int port, JsonNode shelly, String hostname) {
-		this(address, port, hostname);
-		this.shelly = shelly;
-	}
 
 	public ShellyDW(InetAddress address, int port, String hostname) {
 		super(address, port, hostname);

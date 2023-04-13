@@ -48,15 +48,16 @@ public abstract class AbstractG1Device extends ShellyAbstractDevice {
 		super(address, port, hostname); // TODO
 	}
 	
-	public void init(HttpClient httpClient) throws IOException {
+	public void init(HttpClient httpClient, JsonNode shelly) throws IOException {
 		this.httpClient = httpClient;
+		this.mac = shelly.get("mac").asText();
 		init();
 	}
 	
-//	@Override
 	protected void init() throws IOException {
 		JsonNode settings = getJSON("/settings");
-		fillOnce(settings);
+		this.hostname = settings.get("device").get("hostname").asText("");
+//		fillOnce(settings);
 		fillSettings(settings);
 		try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e) {}
 		fillStatus(getJSON("/status"));
@@ -74,11 +75,11 @@ public abstract class AbstractG1Device extends ShellyAbstractDevice {
 		}
 	}
 	
-	protected void fillOnce(JsonNode settings) throws IOException {
-		JsonNode deviceNode = settings.get("device");
-		this.hostname = deviceNode.get("hostname").asText("");
-		this.mac = deviceNode.get("mac").asText();
-	}
+//	private final void fillOnce(JsonNode settings) {
+////		JsonNode deviceNode = settings.get("device");
+//		this.hostname = settings.get("device").get("hostname").asText("");
+////		this.mac = deviceNode.get("mac").asText();
+//	}
 	
 	protected void fillSettings(JsonNode settings) throws IOException {
 		this.name = settings.path("name").asText("");

@@ -32,7 +32,6 @@ import org.eclipse.jetty.websocket.client.WebSocketClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.exc.StreamReadException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -51,7 +50,7 @@ import it.usna.shellyscan.model.device.g2.modules.Webhooks;
 
 public abstract class AbstractG2Device extends ShellyAbstractDevice {
 	private final static Logger LOG = LoggerFactory.getLogger(AbstractG2Device.class);
-	private WebSocketClient wsClient;
+	protected WebSocketClient wsClient;
 	private boolean rebootRequired = false;
 	private boolean rangeExtender;
 	
@@ -60,15 +59,18 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 		super(address, port, hostname);
 	}
 	
-	public void init(HttpClient httpClient, WebSocketClient wsClient) throws IOException {
+	public void init(HttpClient httpClient, WebSocketClient wsClient, JsonNode devInfo) throws IOException {
 		this.httpClient = httpClient;
 		this.wsClient = wsClient;
-		init();
+		init(devInfo);
 	}
 	
-//	@Override
-	protected void init() throws IOException {
-		fillOnce(getJSON("/rpc/Shelly.GetDeviceInfo"));
+	protected void init(JsonNode devInfo) throws IOException {
+//		fillOnce(devInfo/*getJSON("/rpc/Shelly.GetDeviceInfo")*/);
+		// fillOnce
+		this.hostname = devInfo.get("id").asText("");
+		this.mac = devInfo.get("mac").asText();
+		
 		fillSettings(getJSON("/rpc/Shelly.GetConfig"));
 		fillStatus(getJSON("/rpc/Shelly.GetStatus"));
 	}
@@ -84,10 +86,10 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 		}
 	}
 	
-	protected void fillOnce(JsonNode device) throws JsonParseException {
-		this.hostname = device.get("id").asText("");
-		this.mac = device.get("mac").asText();
-	}
+//	protected void fillOnce(JsonNode devInfo) throws JsonParseException {
+//		this.hostname = devInfo.get("id").asText("");
+//		this.mac = devInfo.get("mac").asText();
+//	}
 	
 	protected void fillSettings(JsonNode config) throws IOException {
 		JsonNode sysNode = config.get("sys");

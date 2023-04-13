@@ -8,6 +8,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import org.eclipse.jetty.client.HttpClient;
+
 import com.fasterxml.jackson.databind.JsonNode;
 
 import it.usna.shellyscan.model.device.BatteryDeviceInterface;
@@ -21,6 +23,14 @@ public abstract class AbstractBatteryG1Device extends AbstractG1Device implement
 
 	protected AbstractBatteryG1Device(InetAddress address, int port, String hostname) {
 		super(address, port, hostname);
+	}
+	
+	@Override
+	public final void init(HttpClient httpClient, JsonNode shelly) throws IOException {
+		this.httpClient = httpClient;
+		this.mac = shelly.get("mac").asText();
+		this.shelly = shelly;
+		init();
 	}
 	
 //	@Override

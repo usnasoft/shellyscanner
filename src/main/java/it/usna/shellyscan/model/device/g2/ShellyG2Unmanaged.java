@@ -17,23 +17,6 @@ public class ShellyG2Unmanaged extends AbstractG2Device implements ShellyUnmanag
 		super(address, port, hostname);
 	}
 	
-	@Override
-	public void init() throws IOException {
-		try {
-			JsonNode device = getJSON("/rpc/Shelly.GetDeviceInfo");
-			this.type = device.get("app").asText();
-			fillOnce(device);
-			fillSettings(getJSON("/rpc/Shelly.GetConfig"));
-			fillStatus(getJSON("/rpc/Shelly.GetStatus"));
-		} catch (/*IO*/Exception e) {
-			if(status != Status.NOT_LOOGGED) {
-				status = Status.ERROR;
-			}
-			this.ex = e;
-			name = "";
-		}
-	}
-	
 	public ShellyG2Unmanaged(InetAddress address, int port, String hostname, Exception e) {
 		super(address, port, hostname);
 		this.ex = e;
@@ -45,6 +28,26 @@ public class ShellyG2Unmanaged extends AbstractG2Device implements ShellyUnmanag
 			status = Status.OFF_LINE;
 		} else {
 			status = Status.ERROR;
+		}
+	}
+	
+	@Override
+	protected void init(JsonNode devInfo) throws IOException {
+		try {
+//			JsonNode device = getJSON("/rpc/Shelly.GetDeviceInfo");
+			this.type = devInfo.get("app").asText();
+			this.hostname = devInfo.get("id").asText("");
+			this.mac = devInfo.get("mac").asText();
+			
+//			fillOnce(device);
+			fillSettings(getJSON("/rpc/Shelly.GetConfig"));
+			fillStatus(getJSON("/rpc/Shelly.GetStatus"));
+		} catch (/*IO*/Exception e) {
+			if(status != Status.NOT_LOOGGED) {
+				status = Status.ERROR;
+			}
+			this.ex = e;
+			name = "";
 		}
 	}
 	

@@ -99,7 +99,7 @@ public class DevicesFactory {
 			final boolean auth = info.get("auth").asBoolean();
 			if(auth) {
 				synchronized (DevicesFactory.class) { // white for this in order to authenticate all subsequent
-					if(lastUser == null || LoginManagerG1.testBasicAuthentication(httpClient, address, lastUser, lastP, "/settings") != HttpStatus.OK_200) {
+					if(lastUser == null || LoginManagerG1.testBasicAuthentication(httpClient, address, port, lastUser, lastP, "/settings") != HttpStatus.OK_200) {
 						DialogAuthentication credentials = new DialogAuthentication(
 								Main.LABELS.getString("dlgAuthTitle"),
 								Main.LABELS.getString("labelUser"),
@@ -112,7 +112,7 @@ public class DevicesFactory {
 								setCredential(user, credentials.getPassword().clone());
 							}
 							credentials.setMessage(String.format(Main.LABELS.getString("dlgAuthMessageError"), name));
-						} while(user != null && LoginManagerG1.testBasicAuthentication(httpClient, address, lastUser, lastP, "/settings") != HttpStatus.OK_200);
+						} while(user != null && LoginManagerG1.testBasicAuthentication(httpClient, address, port, lastUser, lastP, "/settings") != HttpStatus.OK_200);
 						credentials.dispose();
 					}
 				}
@@ -148,7 +148,7 @@ public class DevicesFactory {
 			break;
 			case ShellyI3.ID: d = new ShellyI3(address, port, name);
 			break;
-			case Button1.ID: d = new Button1(address, port, info, name);
+			case Button1.ID: d = new Button1(address, port, name);
 			break;
 			case ShellyPlugS.ID: d = new ShellyPlugS(address, port, name);
 			break;
@@ -160,13 +160,13 @@ public class DevicesFactory {
 			break;
 			case ShellyUNI.ID: d = new ShellyUNI(address, port, name);
 			break;
-			case ShellyDW.ID: d = new ShellyDW(address, port, info, name);
+			case ShellyDW.ID: d = new ShellyDW(address, port, name);
 			break;
-			case ShellyDW2.ID: d = new ShellyDW2(address, port, info, name);
+			case ShellyDW2.ID: d = new ShellyDW2(address, port, name);
 			break;
-			case ShellyFlood.ID: d = new ShellyFlood(address, port, info, name);
+			case ShellyFlood.ID: d = new ShellyFlood(address, port, name);
 			break;
-			case ShellyHT.ID: d = new ShellyHT(address, port, info, name);
+			case ShellyHT.ID: d = new ShellyHT(address, port, name);
 			break;
 			case ShellyMotion.ID: d = new ShellyMotion(address, port, name);
 			break;
@@ -180,7 +180,7 @@ public class DevicesFactory {
 			d = new ShellyG1Unmanaged(address, port, name, e);
 		}
 		try {
-			d.init(httpClient);
+			d.init(httpClient, info);
 		} catch(IOException e) {
 			if("Status-401".equals(e.getMessage()) == false) {
 				LOG.warn("create - init", e);
@@ -197,7 +197,7 @@ public class DevicesFactory {
 			final boolean auth = info.get("auth_en").asBoolean();
 			if(auth) {
 				synchronized (DevicesFactory.class) { // white for this in order to authenticate all subsequent
-					if(lastUser == null || LoginManagerG2.testDigestAuthentication(httpClient, address, LoginManagerG2.LOGIN_USER, lastP, "/rpc/Shelly.GetStatus") != HttpStatus.OK_200) {
+					if(lastUser == null || LoginManagerG2.testDigestAuthentication(httpClient, address, port, LoginManagerG2.LOGIN_USER, lastP, "/rpc/Shelly.GetStatus") != HttpStatus.OK_200) {
 						DialogAuthentication credentials = new DialogAuthentication(
 								Main.LABELS.getString("dlgAuthTitle"),
 								null,
@@ -211,7 +211,7 @@ public class DevicesFactory {
 								setCredential(user, credentials.getPassword().clone()); // ... .clone(): DialogAuthentication clear password after dispose() call
 							}
 							credentials.setMessage(String.format(Main.LABELS.getString("dlgAuthMessageError"), name));
-						} while(user != null && LoginManagerG2.testDigestAuthentication(httpClient, address, LoginManagerG2.LOGIN_USER, lastP, "/rpc/Shelly.GetStatus") != HttpStatus.OK_200);
+						} while(user != null && LoginManagerG2.testDigestAuthentication(httpClient, address, port, LoginManagerG2.LOGIN_USER, lastP, "/rpc/Shelly.GetStatus") != HttpStatus.OK_200);
 						credentials.dispose();
 					}
 				}
@@ -233,9 +233,9 @@ public class DevicesFactory {
 			break;
 			case ShellyPlusWallDimmer.ID: d = new ShellyPlusWallDimmer(address, port, name);
 			break;
-			case ShellyPlusHT.ID: d = new ShellyPlusHT(address, port, info, name);
+			case ShellyPlusHT.ID: d = new ShellyPlusHT(address, port, name);
 			break;
-			case ShellyPlusSmoke.ID: d = new ShellyPlusSmoke(address, port, info, name);
+			case ShellyPlusSmoke.ID: d = new ShellyPlusSmoke(address, port, name);
 			break;
 			// PRO
 			case ShellyPro1PM.ID: d = new ShellyPro1PM(address, port, name);
@@ -258,7 +258,7 @@ public class DevicesFactory {
 			d = new ShellyG2Unmanaged(address, port, name, e);
 		}
 		try {
-			d.init(httpClient, wsClient);
+			d.init(httpClient, wsClient, info);
 		} catch(IOException e) {
 			if("Status-401".equals(e.getMessage()) == false) {
 				LOG.warn("create - init", e);

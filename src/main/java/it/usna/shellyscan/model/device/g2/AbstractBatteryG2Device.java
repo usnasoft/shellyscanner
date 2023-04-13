@@ -10,6 +10,9 @@ import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import org.eclipse.jetty.client.HttpClient;
+import org.eclipse.jetty.websocket.client.WebSocketClient;
+
 import com.fasterxml.jackson.databind.JsonNode;
 
 import it.usna.shellyscan.model.device.BatteryDeviceInterface;
@@ -23,6 +26,14 @@ public abstract class AbstractBatteryG2Device extends AbstractG2Device implement
 
 	protected AbstractBatteryG2Device(InetAddress address, int port, String hostname) {
 		super(address, port, hostname);
+	}
+	
+	@Override
+	public void init(HttpClient httpClient, WebSocketClient wsClient, JsonNode devInfo) throws IOException {
+		this.shelly = devInfo;
+		this.httpClient = httpClient;
+		this.wsClient = wsClient;
+		init(devInfo);
 	}
 	
 	@Override

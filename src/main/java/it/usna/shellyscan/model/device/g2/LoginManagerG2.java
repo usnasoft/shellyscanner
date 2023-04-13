@@ -89,7 +89,7 @@ public class LoginManagerG2 implements LoginManager {
 			String msg = d.postCommand("Shelly.SetAuth", "{\"user\":\"" + LOGIN_USER + "\",\"realm\":\"" + realm + "\",\"ha1\":\"" + encodedhash + "\"}");
 			if(msg == null) {
 //				d.setCredentialsProvider(credsProvider);
-				d.setAuthentication(new DigestAuthentication(URI.create("http://" + d.getAddress().getHostAddress()), DigestAuthentication.ANY_REALM, LOGIN_USER, new String(pwd)));
+				d.setAuthentication(new DigestAuthentication(URI.create("http://" + d.getAddress().getHostAddress() + ":" + d.getPort()), DigestAuthentication.ANY_REALM, LOGIN_USER, new String(pwd)));
 			}
 			return msg;
 		} catch (NoSuchAlgorithmException e) {
@@ -105,13 +105,13 @@ public class LoginManagerG2 implements LoginManager {
 	   return sb.toString();
 	}
 	
-	public static int testDigestAuthentication(HttpClient httpClient, final InetAddress address, String user, char[] pwd, String testCommand) {
-		URI uri = URI.create("http://" + address.getHostAddress() /*+ testCommand*/);
+	public static int testDigestAuthentication(HttpClient httpClient, final InetAddress address, int port, String user, char[] pwd, String testCommand) {
+		URI uri = URI.create("http://" + address.getHostAddress() + ":" + port/*+ testCommand*/);
 		DigestAuthentication da = new DigestAuthentication(uri, DigestAuthentication.ANY_REALM, user, new String(pwd));
 		AuthenticationStore aStore = httpClient.getAuthenticationStore();
 		try {
 			aStore.addAuthentication(da);
-			int status = httpClient.GET("http://" + address.getHostAddress() + testCommand).getStatus();
+			int status = httpClient.GET("http://" + address.getHostAddress() + ":" + port + testCommand).getStatus();
 			if(status == HttpStatus.OK_200) {
 				return HttpStatus.OK_200;
 			} else {

@@ -31,7 +31,8 @@ public class Shelly1 extends AbstractG1Device implements RelayCommander {
 	@Override
 	protected void init() throws IOException {
 		JsonNode settings = getJSON("/settings");
-		fillOnce(settings);
+		this.hostname = settings.get("device").get("hostname").asText("");
+//		fillOnce(settings);
 		fillSettings(settings);
 		try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e) {}
 		JsonNode status = getJSON("/status");

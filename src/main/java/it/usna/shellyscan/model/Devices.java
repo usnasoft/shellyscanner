@@ -337,8 +337,8 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 									create(d.getAddress(), p, infoEx, d.getHostname() + "-EXT"); // fillOnce will later correct hostname
 //									System.out.println(p);
 								}
-							} catch (TimeoutException e) {
-								LOG.trace("timeout {}:{}", d.getAddress(), p);
+							} catch (TimeoutException | RuntimeException e) {
+								LOG.debug("timeout {}:{}", d.getAddress(), p, e);
 							}
 						});
 					} catch(Exception e) {

@@ -296,9 +296,11 @@ public class Main {
 // checklist: number of devices connected to range extender
 // extender WiFi.ListAPClients
 
-//0.9.5
+//0.9.6
 // range extender connectet devices
-// todo login e tutti i posti in cui prendo l'indirizzo (servira' anche la porta)
+// corretto errore pannello restricted login
+// prestazioni (info letto solo una volta)
+// todo info si "init" in G1 equals con mac
 
 // TODO
 // {"src":"shellyplus2pm-485519a2bb1c","dst":"S_Scanner","method":"NotifyStatus","params":{"ts":1678127726.89,"wifi":{"ap_client_count":0}}}

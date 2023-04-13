@@ -3,6 +3,7 @@ package it.usna.shellyscan.model.device;
 import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
+import java.net.SocketTimeoutException;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
@@ -54,13 +55,6 @@ public abstract class ShellyAbstractDevice {
 			this.uriPrefix = "http://" + address.getHostAddress() + ":" + port;
 		}
 	}
-
-//	public void init(HttpClient httpClient) throws IOException {
-//		this.httpClient = httpClient;
-//		init();
-//	}
-	
-//	protected abstract void init() throws IOException;
 	
 	public JsonNode getJSON(final String command) throws IOException  { //JsonProcessingException extends IOException
 		try {
@@ -80,7 +74,7 @@ public abstract class ShellyAbstractDevice {
 				status = Status.OFF_LINE;
 				throw new DeviceOfflineException("Status-" + statusCode);
 			}
-		} catch(InterruptedException | ExecutionException | TimeoutException e) {
+		} catch(InterruptedException | ExecutionException | TimeoutException | SocketTimeoutException e) {
 			status = Status.OFF_LINE;
 			throw new DeviceOfflineException(e);
 		} catch (IOException | RuntimeException e) {
@@ -124,10 +118,6 @@ public abstract class ShellyAbstractDevice {
 	public int getPort() {
 		return port;
 	}
-	
-//	public HttpClient getHttpClient() {
-//		return httpClient;
-//	}
 
 	public boolean getCloudEnabled() {
 		return cloudEnabled;
@@ -227,7 +217,8 @@ public abstract class ShellyAbstractDevice {
 
 	@Override
 	public boolean equals(Object o) {
-		return (o instanceof ShellyAbstractDevice) ? hostname.equalsIgnoreCase(((ShellyAbstractDevice)o).hostname) : false; // equalsIgnoreCase for some devices hostname registered in not == to Shelly.GetDeviceInfo/id
+//		return (o instanceof ShellyAbstractDevice) ? hostname.equalsIgnoreCase(((ShellyAbstractDevice)o).hostname) : false; // equalsIgnoreCase for some devices hostname registered in not == to Shelly.GetDeviceInfo/id
+		return o instanceof ShellyAbstractDevice && mac.equals(((ShellyAbstractDevice)o).mac);
 	}
 
 	@Override

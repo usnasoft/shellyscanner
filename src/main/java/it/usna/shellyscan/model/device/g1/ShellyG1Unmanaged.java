@@ -23,9 +23,9 @@ public class ShellyG1Unmanaged extends AbstractG1Device implements ShellyUnmanag
 	protected void init() { // try to retrieve minimal information set
 		try {
 			JsonNode settings = getJSON("/settings");
-			JsonNode deviceNode = settings.get("device");
-			this.type = deviceNode.get("type").asText();
-			fillOnce(settings);
+			this.hostname = settings.get("device").get("hostname").asText("");
+			this.type = settings.get("device").get("type").asText();
+//			fillOnce(settings);
 			fillSettings(settings);
 			try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e) {}
 			fillStatus(getJSON("/status"));

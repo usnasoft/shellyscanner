@@ -15,11 +15,6 @@ public class ShellyDW2 extends AbstractBatteryG1Device {
 	private float temp;
 	private int lux;
 	private Meters[] meters;
-
-	public ShellyDW2(InetAddress address, int port, JsonNode shelly, String hostname) {
-		this(address, port, hostname);
-		this.shelly = shelly;
-	}
 	
 	public ShellyDW2(InetAddress address, int port, String hostname) {
 		super(address, port, hostname);

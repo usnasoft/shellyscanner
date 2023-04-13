@@ -71,7 +71,7 @@ public class LoginManagerG1 implements LoginManager {
 			String msg = d.sendCommand(cmd);
 			if(msg == null) {
 //				d.setAuthentication(new BasicAuthentication(URI.create("http://" + d.getAddress().getHostAddress()), BasicAuthentication.ANY_REALM, user, new String(pwd)));
-				d.setAuthenticationResult(new BasicAuthentication.BasicResult(URI.create("http://" + d.getAddress().getHostAddress()), user, new String(pwd)));
+				d.setAuthenticationResult(new BasicAuthentication.BasicResult(URI.create("http://" + d.getAddress().getHostAddress()  + ":" + d.getPort()), user, new String(pwd)));
 			}
 			return msg;
 		} catch (UnsupportedEncodingException e) {
@@ -79,10 +79,10 @@ public class LoginManagerG1 implements LoginManager {
 		}
 	}
 	
-	public static int testBasicAuthentication(HttpClient httpClient, final InetAddress address, String user, char[] pwd, String testCommand) {
-		final URI uri = URI.create("http://" + address.getHostAddress());
+	public static int testBasicAuthentication(HttpClient httpClient, final InetAddress address, int port, String user, char[] pwd, String testCommand) {
+		final URI uri = URI.create("http://" + address.getHostAddress() + ":" + port);
 		Authentication.Result creds = new BasicAuthentication.BasicResult(uri, user, new String(pwd));
-		Request request = httpClient.newRequest("http://" + address.getHostAddress() + testCommand);
+		Request request = httpClient.newRequest("http://" + address.getHostAddress() + ":" + port + testCommand);
 		creds.apply(request);
 		try {
 			int status = request.send().getStatus();
