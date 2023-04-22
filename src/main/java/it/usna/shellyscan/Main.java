@@ -23,7 +23,7 @@ import it.usna.util.AppProperties;
 
 public class Main {
 	public final static String APP_NAME = "Shelly Scanner";
-	public final static String VERSION = "0.9.6 alpha";
+	public final static String VERSION = "0.9.6 beta";
 	public final static String ICON = "/images/ShSc24.png";
 	public final static String BACKUP_FILE_EXT = "sbk";
 	
@@ -300,7 +300,6 @@ public class Main {
 // range extender connectet devices
 // corretto errore pannello restricted login
 // prestazioni (info letto solo una volta)
-// todo inetaddr:port ovunque
 
 // TODO
 // {"src":"shellyplus2pm-485519a2bb1c","dst":"S_Scanner","method":"NotifyStatus","params":{"ts":1678127726.89,"wifi":{"ap_client_count":0}}}
@@ -308,7 +307,6 @@ public class Main {
 // https://docs.oracle.com/javase/8/docs/api/javax/security/auth/callback/CallbackHandler.html
 // https://www.baeldung.com/java-authentication-authorization-service
 // archivio (additivo) dispositivi collegati opzionalmente caricabile (con eventuale default da settings)
-// bottone resume refresh (log)
 // gestione "reading": se stato online leggo uptime, se uptime diverso dal precedente memorizzo il timestamp else Quando il time stamp corrente - memorizzato > intervallo * 3 modifico lo stato - si, ma dove?
 // suspended process (dispositivi a batteria)
 

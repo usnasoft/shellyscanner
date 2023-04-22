@@ -36,9 +36,9 @@ public class ShellyG2Unmanaged extends AbstractG2Device implements ShellyUnmanag
 		try {
 //			JsonNode device = getJSON("/rpc/Shelly.GetDeviceInfo");
 			this.type = devInfo.get("app").asText();
-			this.hostname = devInfo.get("id").asText("");
 			this.mac = devInfo.get("mac").asText();
-			
+			this.hostname = devInfo.get("id").asText("");
+
 //			fillOnce(device);
 			fillSettings(getJSON("/rpc/Shelly.GetConfig"));
 			fillStatus(getJSON("/rpc/Shelly.GetStatus"));

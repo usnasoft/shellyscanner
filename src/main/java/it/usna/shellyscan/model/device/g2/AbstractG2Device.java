@@ -109,7 +109,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 		this.cloudEnabled = config.path("cloud").path("enable").asBoolean();
 		this.mqttEnabled = config.path("mqtt").path("enable").asBoolean();
 		
-		this.rangeExtender = config.path("wifi").get("ap").path("range_extender").path("enable").asBoolean();
+		this.rangeExtender = config.get("wifi").get("ap").path("range_extender").path("enable").asBoolean();
 	}
 	
 	protected void fillStatus(JsonNode status) throws IOException {

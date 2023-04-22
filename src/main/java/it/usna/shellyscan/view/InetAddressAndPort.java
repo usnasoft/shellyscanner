@@ -2,13 +2,20 @@ package it.usna.shellyscan.view;
 
 import java.net.InetAddress;
 
+import it.usna.shellyscan.model.device.ShellyAbstractDevice;
+
 public class InetAddressAndPort implements Comparable<InetAddressAndPort> {
 	private InetAddress address;
 	private int port;
 
-	public InetAddressAndPort(InetAddress address, int port) {
-		this.address = address;
-		this.port = port;
+//	public InetAddressAndPort(InetAddress address, int port) {
+//		this.address = address;
+//		this.port = port;
+//	}
+	
+	public InetAddressAndPort(ShellyAbstractDevice d) {
+		this.address = d.getAddress();
+		this.port = d.getPort();
 	}
 
 	@Override
@@ -23,6 +30,15 @@ public class InetAddressAndPort implements Comparable<InetAddressAndPort> {
 		return port - o2.port;
 	}
 	
+	public static String toString(ShellyAbstractDevice d) {
+		if(d.getPort() == 80) {
+			return d.getAddress().getHostAddress();
+		} else {
+			return d.getAddress().getHostAddress() + ":" + d.getPort();
+		}
+	}
+	
+	@Override
 	public String toString() {
 		if(port == 80) {
 			return address.getHostAddress();

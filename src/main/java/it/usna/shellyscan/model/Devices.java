@@ -46,7 +46,7 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 		UPDATE,
 		REMOVE,
 		READY, // Model is ready
-		CLEAR
+		CLEAR // Clear model
 	};
 
 	private final static int EXECUTOR_POOL_SIZE = 128;
@@ -184,7 +184,7 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 
 	public void rescan() throws IOException {
 		//LOG.trace("Q {}", ((ScheduledThreadPoolExecutor)executor).getQueue().size());
-		//		synchronized(devices) {
+		//synchronized(devices) {
 		LOG.trace("rescan");
 		clear();
 		fireEvent(EventType.CLEAR);
@@ -220,7 +220,7 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 		}
 		LOG.debug("end scan");
 		fireEvent(EventType.READY);
-		//		}
+		//}
 	}
 
 	public void refresh(int ind, boolean force) {
@@ -307,7 +307,7 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 		LOG.trace("Creating {} - {}", address, hostName);
 		try {
 			ShellyAbstractDevice d = DevicesFactory.create(httpClient, wsClient, address, port, info, hostName);
-			if(Thread.interrupted() == false) {
+			if(/*d != null &&*/ Thread.interrupted() == false) {
 				synchronized(devices) {
 					int ind;
 					if((ind = devices.indexOf(d)) >= 0) {
@@ -325,26 +325,25 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 					}
 				}
 				LOG.debug("Create {} - {}", address, d);
-			}
 
-			if(d instanceof AbstractG2Device && ((AbstractG2Device)d).isExtender()) {
-				((AbstractG2Device)d).getRangeExtenderManager().getPorts().forEach(p -> {
-					try {
-						executor.execute(() -> {
-							try {
-								JsonNode infoEx = isShelly(address, p);
-								if(infoEx != null) {
-									create(d.getAddress(), p, infoEx, d.getHostname() + "-EXT"); // fillOnce will later correct hostname
-//									System.out.println(p);
+				if(d instanceof AbstractG2Device && (((AbstractG2Device)d).isExtender() || d.getStatus() == Status.NOT_LOOGGED)) {
+					((AbstractG2Device)d).getRangeExtenderManager().getPorts().forEach(p -> {
+						try {
+							executor.execute(() -> {
+								try {
+									JsonNode infoEx = isShelly(address, p);
+									if(infoEx != null) {
+										create(d.getAddress(), p, infoEx, d.getHostname() + "-EX" + ":" + p); // fillOnce will later correct hostname
+									}
+								} catch (TimeoutException | RuntimeException e) {
+									LOG.debug("timeout {}:{}", d.getAddress(), p, e);
 								}
-							} catch (TimeoutException | RuntimeException e) {
-								LOG.debug("timeout {}:{}", d.getAddress(), p, e);
-							}
-						});
-					} catch(Exception e) {
-						LOG.error("Unexpected-add-ext: {}; host: {}:{}", address, hostName, p, e);
-					}
-				});
+							});
+						} catch(RuntimeException e) {
+							LOG.error("Unexpected-add-ext: {}; host: {}:{}", address, hostName, p, e);
+						}
+					});
+				}
 			}
 		} catch(Exception e) {
 			LOG.error("Unexpected-add: {}; host: {}", address, hostName, e);

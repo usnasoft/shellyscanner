@@ -27,13 +27,11 @@ import javax.swing.ListSelectionModel;
 import javax.swing.RowFilter;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableRowSorter;
 
 import it.usna.shellyscan.controller.UsnaAction;
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
-import it.usna.shellyscan.view.util.IPv4Comparator;
 import it.usna.shellyscan.view.util.UtilCollecion;
 import it.usna.swing.table.ExTooltipTable;
 import it.usna.swing.table.UsnaTableModel;
@@ -54,14 +52,14 @@ public class DialogDeviceSelection extends JDialog {
 		ExTooltipTable table = new ExTooltipTable(tModel, true) {
 			private static final long serialVersionUID = 1L;
 			{
-				columnModel.getColumn(1).setCellRenderer(new DefaultTableCellRenderer() {
-					private static final long serialVersionUID = 1L;
-					@Override
-					public void setValue(Object value) {
-						setText(((InetAddress)value).getHostAddress());
-					}
-				});
-				((TableRowSorter<?>)getRowSorter()).setComparator(1, new IPv4Comparator());
+//				columnModel.getColumn(1).setCellRenderer(new DefaultTableCellRenderer() {
+//					private static final long serialVersionUID = 1L;
+//					@Override
+//					public void setValue(Object value) {
+//						setText(((InetAddress)value).getHostAddress());
+//					}
+//				});
+//				((TableRowSorter<?>)getRowSorter()).setComparator(1, new IPv4Comparator());
 				sortByColumn(1, true);
 			}
 
@@ -82,7 +80,7 @@ public class DialogDeviceSelection extends JDialog {
 		for(int i = 0; i < model.size(); i++) {
 			ShellyAbstractDevice d = model.get(i);
 //			if(d.getStatus() == ShellyAbstractDevice.Status.ON_LINE) {
-				tModel.addRow(UtilCollecion.getExtendedHostName(d), d.getAddress());
+				tModel.addRow(UtilCollecion.getExtendedHostName(d), new InetAddressAndPort(d));
 //			}
 		}
 
@@ -172,7 +170,7 @@ public class DialogDeviceSelection extends JDialog {
 		    }
 		});
 
-		setSize(400, 400);
+		setSize(450, 400);
 		setVisible(true);
 		setLocationRelativeTo(owner);
 		table.columnsWidthAdapt();

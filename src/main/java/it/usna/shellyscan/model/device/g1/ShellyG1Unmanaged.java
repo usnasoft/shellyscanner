@@ -14,11 +14,30 @@ import it.usna.shellyscan.model.device.ShellyUnmanagedDevice;
 public class ShellyG1Unmanaged extends AbstractG1Device implements ShellyUnmanagedDevice {
 	private String type;
 	private Exception ex;
-
+	
 	public ShellyG1Unmanaged(InetAddress address, int port, String hostname) {
 		super(address, port, hostname);
 	}
+
+//	public ShellyG1Unmanaged(InetAddress address, int port, String hostname, Exception e) {
+//		this(address, port, hostname, null, e);
+//	}
 	
+	public ShellyG1Unmanaged(InetAddress address, int port, String hostname/*, HttpClient httpClient*/, Exception e) {
+		super(address, port, hostname);
+//		this.httpClient = httpClient;
+		this.ex = e;
+		this.hostname = hostname;
+		name = "";
+		if(e instanceof IOException && "Status-401".equals(e.getMessage())) {
+			status = Status.NOT_LOOGGED;
+		} else if(e instanceof IOException && e instanceof JsonProcessingException == false) { // JsonProcessingException extends IOException
+			status = Status.OFF_LINE;
+		} else {
+			status = Status.ERROR;
+		}
+	}
+
 	@Override
 	protected void init() { // try to retrieve minimal information set
 		try {
@@ -35,20 +54,6 @@ public class ShellyG1Unmanaged extends AbstractG1Device implements ShellyUnmanag
 			}
 			this.ex = e;
 			name = "";
-		}
-	}
-	
-	public ShellyG1Unmanaged(InetAddress address, int port, String hostname, Exception e) {
-		super(address, port, hostname);
-		this.ex = e;
-		this.hostname = hostname;
-		name = "";
-		if(e instanceof IOException && "Status-401".equals(e.getMessage())) {
-			status = Status.NOT_LOOGGED;
-		} else if(e instanceof IOException && e instanceof JsonProcessingException == false) { // JsonProcessingException extends IOException
-			status = Status.OFF_LINE;
-		} else {
-			status = Status.ERROR;
 		}
 	}
 	

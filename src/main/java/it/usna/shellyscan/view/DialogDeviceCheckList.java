@@ -50,7 +50,6 @@ import it.usna.shellyscan.model.device.BatteryDeviceInterface;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
 import it.usna.shellyscan.model.device.g1.AbstractG1Device;
-import it.usna.shellyscan.view.util.IPv4Comparator;
 import it.usna.shellyscan.view.util.Msg;
 import it.usna.shellyscan.view.util.UtilCollecion;
 import it.usna.swing.table.ExTooltipTable;
@@ -83,13 +82,13 @@ public class DialogDeviceCheckList extends JDialog {
 				setHeadersTooltip(LABELS.getString("col_status_exp"), null, null, LABELS.getString("col_eco_tooltip"), LABELS.getString("col_ledoff_tooltip"), LABELS.getString("col_logs_tooltip"), 
 						LABELS.getString("col_blt_tooltip"), LABELS.getString("col_AP_tooltip"), LABELS.getString("col_roaming_tooltip"), LABELS.getString("col_wifi1_tooltip"), LABELS.getString("col_wifi2_tooltip"), LABELS.getString("col_extender_tooltip"));
 
-				columnModel.getColumn(COL_IP).setCellRenderer(new DefaultTableCellRenderer() {
-					private static final long serialVersionUID = 1L;
-					@Override
-					public void setValue(Object value) {
-						setText(((InetAddress)value).getHostAddress());
-					}
-				});
+//				columnModel.getColumn(COL_IP).setCellRenderer(new DefaultTableCellRenderer() {
+//					private static final long serialVersionUID = 1L;
+//					@Override
+//					public void setValue(Object value) {
+//						setText(((InetAddress)value).getHostAddress());
+//					}
+//				});
 				TableCellRenderer rendTrueOk = new CheckRenderer(true);
 				TableCellRenderer rendFalseOk = new CheckRenderer(false);
 				columnModel.getColumn(3).setCellRenderer(rendTrueOk); // eco
@@ -103,7 +102,7 @@ public class DialogDeviceCheckList extends JDialog {
 
 				TableRowSorter<?> rowSorter = ((TableRowSorter<?>)getRowSorter());
 				Comparator<?> oc = (o1, o2) -> {return o1 == null ? -1 : o1.toString().compareTo(o2.toString());};
-				rowSorter.setComparator(COL_IP, new IPv4Comparator());
+//				rowSorter.setComparator(COL_IP, new IPv4Comparator());
 				rowSorter.setComparator(3, oc);
 				rowSorter.setComparator(4, oc);
 				rowSorter.setComparator(5, oc);
@@ -248,7 +247,7 @@ public class DialogDeviceCheckList extends JDialog {
 	private void fill(UsnaTableModel tModel, List<ShellyAbstractDevice> model) {
 		exeService = Executors.newFixedThreadPool(20);
 		model.forEach(d -> {
-			final int row = tModel.addRow(DevicesTable.UPDATING_BULLET, UtilCollecion.getExtendedHostName(d), d.getAddress());
+			final int row = tModel.addRow(DevicesTable.UPDATING_BULLET, UtilCollecion.getExtendedHostName(d), new InetAddressAndPort(d));
 			exeService.execute(() -> {
 				try {
 					if(d instanceof AbstractG1Device) {
@@ -264,7 +263,7 @@ public class DialogDeviceCheckList extends JDialog {
 							tModel.setRow(row, g2Row(d, ((BatteryDeviceInterface)d).getStoredJSON("/rpc/Shelly.GetConfig"), null));
 						}
 					} else {
-						tModel.setRow(row, DevicesTable.getStatusIcon(d), UtilCollecion.getExtendedHostName(d), d.getAddress());
+						tModel.setRow(row, DevicesTable.getStatusIcon(d), UtilCollecion.getExtendedHostName(d), new InetAddressAndPort(d));
 					}
 					if(/*e.getCause().getCause() instanceof java.net.SocketTimeoutException*/d.getStatus() == Status.OFF_LINE || d.getStatus() == Status.NOT_LOOGGED) {
 						LOG.debug("{}", d, e);
@@ -300,7 +299,7 @@ public class DialogDeviceCheckList extends JDialog {
 		} else {
 			wifi2 = "-";
 		}
-		return new Object[] {DevicesTable.getStatusIcon(d), UtilCollecion.getExtendedHostName(d), d.getAddress(), eco, ledOff, debug, "-", "-", roaming, wifi1, wifi2, "-"};
+		return new Object[] {DevicesTable.getStatusIcon(d), UtilCollecion.getExtendedHostName(d), new InetAddressAndPort(d), eco, ledOff, debug, "-", "-", roaming, wifi1, wifi2, "-"};
 	}
 	
 	private static Object[] g2Row(ShellyAbstractDevice d, JsonNode settings, JsonNode status) {
@@ -333,7 +332,7 @@ public class DialogDeviceCheckList extends JDialog {
 		}
 		JsonNode extClient;
 		String extender = (status == null || (extClient = status.at("/wifi/ap_client_count")).isMissingNode()) ? "-" : extClient.asInt() + "";
-		return new Object[] {DevicesTable.getStatusIcon(d), UtilCollecion.getExtendedHostName(d), d.getAddress(), eco, "-", debug, ble, ap, roaming, wifi1, wifi2, extender};
+		return new Object[] {DevicesTable.getStatusIcon(d), UtilCollecion.getExtendedHostName(d), new InetAddressAndPort(d), eco, "-", debug, ble, ap, roaming, wifi1, wifi2, extender};
 	}
 
 	private static Boolean boolVal(JsonNode node) {

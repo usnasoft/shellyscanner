@@ -412,7 +412,7 @@ public class DevicesTable extends ExTooltipTable {
 			row[DevicesTable.COL_TYPE] = d.getTypeName() + " (" + d.getHostname() + ")";
 			row[DevicesTable.COL_NAME] = d.getName();
 			row[DevicesTable.COL_MAC_IDX] = d.getMacAddress();
-			row[DevicesTable.COL_IP_IDX] = /*d.getAddress()*/new InetAddressAndPort(d.getAddress(), d.getPort());
+			row[DevicesTable.COL_IP_IDX] = /*d.getAddress()*/new InetAddressAndPort(d);
 			row[DevicesTable.COL_SSID_IDX] = d.getSSID();
 			if(d.getStatus() != Status.NOT_LOOGGED && d.getStatus() != Status.ERROR /*&&(d instanceof ShellyUnmanagedDevice == false || ((ShellyUnmanagedDevice)d).geException() == null)*/) {
 				row[DevicesTable.COL_RSSI_IDX] = d.getRssi();

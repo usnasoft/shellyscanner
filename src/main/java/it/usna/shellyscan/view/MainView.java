@@ -207,7 +207,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 	
 	private Action browseAction = new ViewSelectedAction("action_web_name", "action_web_tooltip", "/images/Computer16.png", "/images/Computer.png", (i, d) -> {
 		try {
-			Desktop.getDesktop().browse(new URI("http://" + d.getAddress().getHostAddress() + ":" + d.getPort()));
+			Desktop.getDesktop().browse(new URI("http://" + InetAddressAndPort.toString(d)));
 		} catch (IOException | URISyntaxException e) {
 			Msg.errorMsg(e);
 		}
@@ -474,11 +474,6 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		StringSelection ss = new StringSelection(d.getHostname());
 		Toolkit.getDefaultToolkit().getSystemClipboard().setContents(ss, ss);
 	});
-	
-//	private Action copyMacAction = new ViewSelectedAction("action_copy_mac", null, "/images/Clipboard_Copy_16.png", null, (i, d) -> {
-//		StringSelection ss = new StringSelection(d.getMacAddress());
-//		Toolkit.getDefaultToolkit().getSystemClipboard().setContents(ss, ss);
-//	});
 
 	public MainView(final Devices model, final AppProperties appProp) {
 		this.model = model;

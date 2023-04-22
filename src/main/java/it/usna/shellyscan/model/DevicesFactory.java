@@ -81,9 +81,12 @@ public class DevicesFactory {
 				ContentResponse response = httpClient.newRequest("http://" + address.getHostAddress() + ":" + port + "/shelly").send();
 				info = JSON_MAPPER.readTree(response.getContent());
 				Thread.sleep(Devices.MULTI_QUERY_DELAY);
-			} catch(IOException | TimeoutException | InterruptedException | ExecutionException e) {
+			} catch(IOException | TimeoutException | InterruptedException | ExecutionException e) { // SocketTimeoutException extends IOException
 				LOG.error("create", e);
-				return new ShellyG1Unmanaged(address, port, name, e); 
+				ShellyAbstractDevice d = new ShellyG1Unmanaged(address, port, name, /*httpClient,*/ e); // no mac available (info) -> try to desume from hostname
+				d.setHttpClient(httpClient);
+				d.setMacAddress(name.substring(Math.max(name.length() - 12, 0), name.length()).toUpperCase());
+				return d; // null
 			}
 		}
 		if("2".equals(info.path("gen").asText())) {

@@ -56,6 +56,10 @@ public abstract class ShellyAbstractDevice {
 		}
 	}
 	
+	public void setHttpClient(HttpClient httpClient) {
+		this.httpClient = httpClient;
+	}
+	
 	public JsonNode getJSON(final String command) throws IOException  { //JsonProcessingException extends IOException
 		try {
 			ContentResponse response = httpClient.GET(uriPrefix + command);
@@ -109,6 +113,10 @@ public abstract class ShellyAbstractDevice {
 	
 	public String getMacAddress() {
 		return mac;
+	}
+	
+	public void setMacAddress(String mac) {
+		this.mac = mac;
 	}
 	
 	public InetAddress getAddress() {
@@ -217,12 +225,15 @@ public abstract class ShellyAbstractDevice {
 
 	@Override
 	public boolean equals(Object o) {
-//		return (o instanceof ShellyAbstractDevice) ? hostname.equalsIgnoreCase(((ShellyAbstractDevice)o).hostname) : false; // equalsIgnoreCase for some devices hostname registered in not == to Shelly.GetDeviceInfo/id
-		return o instanceof ShellyAbstractDevice && mac.equals(((ShellyAbstractDevice)o).mac);
+//		if(mac != null && ((ShellyAbstractDevice)o).mac != null) {
+			return /*o instanceof ShellyAbstractDevice &&*/ mac.equals(((ShellyAbstractDevice)o).mac);
+//		} else {
+//			return (hostname == ((ShellyAbstractDevice)o).hostname) || hostname.equalsIgnoreCase(((ShellyAbstractDevice)o).hostname); // equalsIgnoreCase for some devices hostname registered in not == to Shelly.GetDeviceInfo/id
+//		} // hostname == ((ShellyAbstractDevice)o).hostname) -> both null
 	}
 
 	@Override
 	public String toString() {
 		return getTypeName() + "-" + name + ": " + address.getHostAddress() + " (" + hostname + ")";
 	}
-} //278 - 399 - 316 - 251 - 237 - 209
+} //278 - 399 - 316 - 251 - 237 - 231
