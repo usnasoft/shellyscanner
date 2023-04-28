@@ -83,10 +83,10 @@ public class DevicesFactory {
 				Thread.sleep(Devices.MULTI_QUERY_DELAY);
 			} catch(IOException | TimeoutException | InterruptedException | ExecutionException e) { // SocketTimeoutException extends IOException
 				LOG.error("create", e);
-				ShellyAbstractDevice d = new ShellyG1Unmanaged(address, port, name, /*httpClient,*/ e); // no mac available (info) -> try to desume from hostname
+				ShellyAbstractDevice d = new ShellyG1Unmanaged(address, port, name, e); // no mac available (info) -> try to desume from hostname
 				d.setHttpClient(httpClient);
 				d.setMacAddress(name.substring(Math.max(name.length() - 12, 0), name.length()).toUpperCase());
-				return d; // null
+				return d;
 			}
 		}
 		if("2".equals(info.path("gen").asText())) {
@@ -101,7 +101,7 @@ public class DevicesFactory {
 		try {
 			final boolean auth = info.get("auth").asBoolean();
 			if(auth) {
-				synchronized (DevicesFactory.class) { // white for this in order to authenticate all subsequent
+				synchronized (DevicesFactory.class) { // white for this in order to authenticate next protected devices
 					if(lastUser == null || LoginManagerG1.testBasicAuthentication(httpClient, address, port, lastUser, lastP, "/settings") != HttpStatus.OK_200) {
 						DialogAuthentication credentials = new DialogAuthentication(
 								Main.LABELS.getString("dlgAuthTitle"),

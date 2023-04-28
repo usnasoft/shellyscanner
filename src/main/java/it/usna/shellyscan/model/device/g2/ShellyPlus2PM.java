@@ -125,7 +125,7 @@ public class ShellyPlus2PM extends AbstractG2Device implements RelayCommander, R
 		return voltage0;
 	}
 
-	public float getCurrente() {
+	public float getCurrent() {
 		return current0;
 	}
 

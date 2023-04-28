@@ -89,7 +89,7 @@ public abstract class ShellyAbstractDevice {
 		}
 	}
 	
-	public String getAsString(final String command) throws IOException {
+	public String getJSONAsString(final String command) throws IOException {
 		try {
 			return httpClient.GET(uriPrefix + command).getContentAsString();
 		} catch(InterruptedException | ExecutionException | TimeoutException e) {
@@ -226,7 +226,7 @@ public abstract class ShellyAbstractDevice {
 	@Override
 	public boolean equals(Object o) {
 //		if(mac != null && ((ShellyAbstractDevice)o).mac != null) {
-			return /*o instanceof ShellyAbstractDevice &&*/ mac.equals(((ShellyAbstractDevice)o).mac);
+		return o != null && mac.equals(((ShellyAbstractDevice)o).mac);
 //		} else {
 //			return (hostname == ((ShellyAbstractDevice)o).hostname) || hostname.equalsIgnoreCase(((ShellyAbstractDevice)o).hostname); // equalsIgnoreCase for some devices hostname registered in not == to Shelly.GetDeviceInfo/id
 //		} // hostname == ((ShellyAbstractDevice)o).hostname) -> both null

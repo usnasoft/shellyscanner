@@ -26,7 +26,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
-import java.util.stream.Collectors;
 
 import javax.swing.Action;
 import javax.swing.BorderFactory;
@@ -197,9 +196,10 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 	});
 	
 	private Action checkListAction = new UsnaAction(this, "/images/Ok.png", "action_checklist_tooltip", e -> {
-		List<ShellyAbstractDevice> devices = Arrays.stream(devicesTable.getSelectedRows()).mapToObj(i -> model.get(devicesTable.convertRowIndexToModel(i))).collect(Collectors.toList());
+		int[] devicesInd = Arrays.stream(devicesTable.getSelectedRows()).map(i -> devicesTable.convertRowIndexToModel(i)).toArray();
+//		List<ShellyAbstractDevice> devices = Arrays.stream(devicesTable.getSelectedRows()).mapToObj(i -> model.get(devicesTable.convertRowIndexToModel(i))).collect(Collectors.toList());
 		List<? extends RowSorter.SortKey> k = devicesTable.getRowSorter().getSortKeys();
-		new DialogDeviceCheckList(this, devices, k.get(0).getColumn() == DevicesTable.COL_IP_IDX ? k.get(0).getSortOrder() == SortOrder.ASCENDING : null);
+		new DialogDeviceCheckList(this, /*devices,*/ model, devicesInd, k.get(0).getColumn() == DevicesTable.COL_IP_IDX ? k.get(0).getSortOrder() == SortOrder.ASCENDING : null);
 		try {
 			Thread.sleep(250); // too many call disturb some devices at least (2.5)
 		} catch (InterruptedException e1) {}

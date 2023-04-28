@@ -101,7 +101,6 @@ public class DialogDeviceInfo extends JDialog {
 		buttonsPanel.add(jButtonClose);
 
 		setVisible(true);
-
 		fill(tabbedPane, json, device, infoList);
 	}
 
@@ -216,7 +215,7 @@ public class DialogDeviceInfo extends JDialog {
 			try {
 				if (Thread.interrupted() == false) {
 					textArea.setForeground(Color.BLACK);
-					String log = device.getAsString(info);
+					String log = device.getJSONAsString(info);
 					textArea.setText(log);
 					textArea.setCaretPosition(0);
 				}

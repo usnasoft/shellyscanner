@@ -18,7 +18,7 @@ import it.usna.shellyscan.model.device.modules.RelayInterface;
 public class ShellyPro1PM extends AbstractProDevice implements RelayCommander, InternalTmpHolder {
 	public final static String ID = "Pro1PM";
 	private final static Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.W, Meters.Type.PF, Meters.Type.V, Meters.Type.I};
-	private Relay relay0= new Relay(this, 0);
+	private Relay relay0 = new Relay(this, 0);
 	private float internalTmp;
 	private float power0;
 	private float voltage0;
@@ -90,7 +90,7 @@ public class ShellyPro1PM extends AbstractProDevice implements RelayCommander, I
 	//		return voltage0;
 	//	}
 	//
-	//	public float getCurrente() {
+	//	public float getCurrent() {
 	//		return current0;
 	//	}
 

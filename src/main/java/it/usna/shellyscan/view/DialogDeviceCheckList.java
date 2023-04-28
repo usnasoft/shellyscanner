@@ -13,11 +13,9 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
-import java.net.InetAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Comparator;
-import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -34,6 +32,7 @@ import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.RowFilter;
+import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -46,6 +45,8 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import it.usna.shellyscan.controller.UsnaAction;
+import it.usna.shellyscan.model.Devices;
+import it.usna.shellyscan.model.Devices.EventType;
 import it.usna.shellyscan.model.device.BatteryDeviceInterface;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
@@ -54,8 +55,9 @@ import it.usna.shellyscan.view.util.Msg;
 import it.usna.shellyscan.view.util.UtilCollecion;
 import it.usna.swing.table.ExTooltipTable;
 import it.usna.swing.table.UsnaTableModel;
+import it.usna.util.UsnaEventListener;
 
-public class DialogDeviceCheckList extends JDialog {
+public class DialogDeviceCheckList extends JDialog implements UsnaEventListener<Devices.EventType, Integer> {
 	private static final long serialVersionUID = 1L;
 	private final static Logger LOG = LoggerFactory.getLogger(AbstractG1Device.class);
 	private final static String TRUE = LABELS.getString("true_yn");
@@ -63,15 +65,22 @@ public class DialogDeviceCheckList extends JDialog {
 	private final static int COL_STATUS = 0;
 	private final static int COL_NAME = 1;
 	private final static int COL_IP = 2;
+	
+	private Devices appModel;
+	private int[] devicesInd;
+	private UsnaTableModel tModel;
 	private ExecutorService exeService /*= Executors.newFixedThreadPool(20)*/;
 
-	public DialogDeviceCheckList(final Window owner, final List<ShellyAbstractDevice> devices, final Boolean ipSort) {
+	public DialogDeviceCheckList(final Window owner, /*final List<ShellyAbstractDevice> devices,*/ Devices appModel, int[] devicesInd, final Boolean ipSort) {
 		super(owner, LABELS.getString("dlgChecklistTitle"));
+		this.appModel = appModel;
+		this.devicesInd = devicesInd;
+
 		BorderLayout borderLayout = (BorderLayout) getContentPane().getLayout();
 		borderLayout.setVgap(2);
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 
-		UsnaTableModel tModel = new UsnaTableModel("",
+		tModel = new UsnaTableModel("",
 				LABELS.getString("col_device"), LABELS.getString("col_ip"), LABELS.getString("col_eco"), LABELS.getString("col_ledoff"), LABELS.getString("col_logs"),
 				LABELS.getString("col_blt"), LABELS.getString("col_AP"), LABELS.getString("col_roaming"), LABELS.getString("col_wifi1"), LABELS.getString("col_wifi2"), LABELS.getString("col_extender"));
 		
@@ -82,13 +91,6 @@ public class DialogDeviceCheckList extends JDialog {
 				setHeadersTooltip(LABELS.getString("col_status_exp"), null, null, LABELS.getString("col_eco_tooltip"), LABELS.getString("col_ledoff_tooltip"), LABELS.getString("col_logs_tooltip"), 
 						LABELS.getString("col_blt_tooltip"), LABELS.getString("col_AP_tooltip"), LABELS.getString("col_roaming_tooltip"), LABELS.getString("col_wifi1_tooltip"), LABELS.getString("col_wifi2_tooltip"), LABELS.getString("col_extender_tooltip"));
 
-//				columnModel.getColumn(COL_IP).setCellRenderer(new DefaultTableCellRenderer() {
-//					private static final long serialVersionUID = 1L;
-//					@Override
-//					public void setValue(Object value) {
-//						setText(((InetAddress)value).getHostAddress());
-//					}
-//				});
 				TableCellRenderer rendTrueOk = new CheckRenderer(true);
 				TableCellRenderer rendFalseOk = new CheckRenderer(false);
 				columnModel.getColumn(3).setCellRenderer(rendTrueOk); // eco
@@ -101,8 +103,7 @@ public class DialogDeviceCheckList extends JDialog {
 				columnModel.getColumn(10).setCellRenderer(rendTrueOk); // wifi2 null -> "-"
 
 				TableRowSorter<?> rowSorter = ((TableRowSorter<?>)getRowSorter());
-				Comparator<?> oc = (o1, o2) -> {return o1 == null ? -1 : o1.toString().compareTo(o2.toString());};
-//				rowSorter.setComparator(COL_IP, new IPv4Comparator());
+				Comparator<?> oc = (o1, o2) -> { return o1 == null ? -1 : o1.toString().compareTo(o2.toString()); };
 				rowSorter.setComparator(3, oc);
 				rowSorter.setComparator(4, oc);
 				rowSorter.setComparator(5, oc);
@@ -115,21 +116,21 @@ public class DialogDeviceCheckList extends JDialog {
 				rowSorter.setSortsOnUpdates(true);
 			}
 
-			@Override
-			protected String cellTooltipValue(Object value, boolean cellTooSmall, int row, int column) {
-				if(cellTooSmall && value instanceof InetAddress) {
-					return ((InetAddress)value).getHostAddress();
-				} else {
-					return super.cellTooltipValue(value, cellTooSmall, row, column);
-				}
-			}
+//			@Override
+//			protected String cellTooltipValue(Object value, boolean cellTooSmall, int row, int column) {
+//				if(cellTooSmall && value instanceof InetAddress) {
+//					return ((InetAddress)value).getHostAddress();
+//				} else {
+//					return super.cellTooltipValue(value, cellTooSmall, row, column);
+//				}
+//			}
 		};
 
 		JScrollPane scrollPane = new JScrollPane();
 		scrollPane.setViewportView(table);
 		getContentPane().add(scrollPane, BorderLayout.CENTER);
 
-		fill(tModel, devices);
+		fill(tModel/*, devices*/);
 
 		table.setRowHeight(table.getRowHeight() + 2);
 		table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -203,7 +204,7 @@ public class DialogDeviceCheckList extends JDialog {
 		btnRefresh.addActionListener(e -> {
 			tModel.clear();
 			exeService.shutdownNow();
-			fill(tModel, devices);
+			fill(tModel/*, devices*/);
 			try {
 				Thread.sleep(250); // too many call disturb some devices at least (2.5)
 			} catch (InterruptedException e1) {}
@@ -213,7 +214,8 @@ public class DialogDeviceCheckList extends JDialog {
 		JButton btnEdit = new JButton(LABELS.getString("edit"));
 		btnEdit.setEnabled(false);
 		btnEdit.addActionListener(ev -> {
-			ShellyAbstractDevice d = devices.get(table.convertRowIndexToModel(table.getSelectedRow()));
+//			ShellyAbstractDevice d = devices.get(table.convertRowIndexToModel(table.getSelectedRow()));
+			ShellyAbstractDevice d = getLocalDevice(table.convertRowIndexToModel(table.getSelectedRow()));
 			try {
 				Desktop.getDesktop().browse(new URI("http://" + d.getAddress().getHostAddress()));
 			} catch (IOException | URISyntaxException e) {
@@ -236,17 +238,22 @@ public class DialogDeviceCheckList extends JDialog {
 		setVisible(true);
 		setLocationRelativeTo(owner);
 		table.columnsWidthAdapt();
+		
+		appModel.addListener(this);
 	}
 
 	@Override
 	public void dispose() {
+		appModel.removeListener(this);
 		exeService.shutdownNow();
 		super.dispose();
 	}
 	
-	private void fill(UsnaTableModel tModel, List<ShellyAbstractDevice> model) {
+	private void fill(UsnaTableModel tModel/*, List<ShellyAbstractDevice> model*/) {
 		exeService = Executors.newFixedThreadPool(20);
-		model.forEach(d -> {
+		for (int devicesInd : devicesInd) {
+			ShellyAbstractDevice d = appModel.get(devicesInd);
+			//		model.forEach(d -> {
 			final int row = tModel.addRow(DevicesTable.UPDATING_BULLET, UtilCollecion.getExtendedHostName(d), new InetAddressAndPort(d));
 			exeService.execute(() -> {
 				try {
@@ -272,7 +279,8 @@ public class DialogDeviceCheckList extends JDialog {
 					}
 				}
 			});
-		});
+		}
+		//		});
 	}
 	
 	private static Object[] g1Row(ShellyAbstractDevice d, JsonNode settings) {
@@ -370,6 +378,29 @@ public class DialogDeviceCheckList extends JDialog {
 				}
 			}
 			return ret;
+		}
+	}
+	
+	private ShellyAbstractDevice getLocalDevice(int index) {
+		return appModel.get(devicesInd[index]);
+	}
+	
+	private int getLocalIndex(int ind) {
+		for(int i = 0; i < devicesInd.length; i++) {
+			if(devicesInd[i] == ind) {
+				return i;
+			}
+		}
+		return -1;
+	}
+	
+	@Override
+	public void update(EventType mesgType, Integer pos) {
+		if(mesgType == Devices.EventType.CLEAR) {
+			SwingUtilities.invokeLater(() -> dispose()); // devicesInd changes
+		} else if(mesgType == Devices.EventType.UPDATE) {
+			final int index = getLocalIndex(pos);
+			tModel.setValueAt(DevicesTable.getStatusIcon(appModel.get(pos)), index, COL_STATUS);
 		}
 	}
 }

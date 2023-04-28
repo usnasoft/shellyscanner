@@ -150,7 +150,7 @@ public class ShellyPro4PM extends AbstractProDevice implements RelayCommander, I
 	//		return voltage0;
 	//	}
 	//
-	//	public float getCurrente() {
+	//	public float getCurrent() {
 	//		return current0;
 	//	}
 

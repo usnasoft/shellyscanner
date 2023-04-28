@@ -81,7 +81,7 @@ public class ShellyPlusPlugIT extends AbstractG2Device implements RelayCommander
 		return voltage;
 	}
 	
-	public float getCurrente() {
+	public float getCurrent() {
 		return current;
 	}
 	

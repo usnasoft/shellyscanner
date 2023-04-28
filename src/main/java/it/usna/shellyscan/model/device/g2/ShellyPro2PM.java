@@ -125,7 +125,7 @@ public class ShellyPro2PM extends AbstractProDevice implements RelayCommander, R
 //		return voltage0;
 //	}
 //
-//	public float getCurrente() {
+//	public float getCurrent() {
 //		return current0;
 //	}
 

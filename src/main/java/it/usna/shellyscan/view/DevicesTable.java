@@ -12,7 +12,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.io.BufferedWriter;
 import java.io.IOException;
-import java.net.InetAddress;
 import java.net.URL;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -122,7 +121,6 @@ public class DevicesTable extends ExTooltipTable {
 		colCommand.setCellEditor(new DeviceTableCellEditor(this));
 
 		TableRowSorter<?> sorter = (TableRowSorter<?>)getRowSorter();
-//		sorter.setComparator(COL_IP_IDX, new IPv4Comparator());
 		
 		sorter.setComparator(COL_COMMAND_IDX, (o1, o2) -> {
 			final String s1, s2;
@@ -282,17 +280,17 @@ public class DevicesTable extends ExTooltipTable {
 		return null;
 	}
 
-	@Override
-	protected String cellTooltipValue(Object value, boolean cellTooSmall, int row, int column) {
-		if(cellTooSmall) {
-			if(value == null) return "";
-			else if(value instanceof InetAddress) return ((InetAddress)value).getHostAddress();
-			else if(value instanceof Object[]) return Arrays.stream((Object[])value).map(v -> v.toString()).collect(Collectors.joining(" + "));
-			else return value.toString();
-		} else {
-			return null;
-		}
-	}
+//	@Override
+//	protected String cellTooltipValue(Object value, boolean cellTooSmall, int row, int column) {
+//		if(cellTooSmall) {
+//			if(value == null) return "";
+//			else if(value instanceof InetAddress) return ((InetAddress)value).getHostAddress();
+//			else if(value instanceof Object[]) return Arrays.stream((Object[])value).map(v -> v.toString()).collect(Collectors.joining(" + "));
+//			else return value.toString();
+//		} else {
+//			return null;
+//		}
+//	}
 
 	@Override
 	public Point getToolTipLocation(final MouseEvent evt) {
