@@ -186,4 +186,8 @@ public class WIFIManagerG2 implements WIFIManager {
 		outConfig.set("config", outWifi);
 		return d.postCommand("WiFi.SetConfig", outConfig);
 	}
+	
+	public static String enableAP(AbstractG2Device d, boolean enable) {
+		return d.postCommand("WiFi.SetConfig", "{\"config\":{\"ap\":{\"enable\":" + enable + "}}}");
+	}
 }

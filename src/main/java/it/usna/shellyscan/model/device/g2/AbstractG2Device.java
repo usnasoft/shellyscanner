@@ -51,7 +51,7 @@ import it.usna.shellyscan.model.device.g2.modules.Webhooks;
 public abstract class AbstractG2Device extends ShellyAbstractDevice {
 	private final static Logger LOG = LoggerFactory.getLogger(AbstractG2Device.class);
 	protected WebSocketClient wsClient;
-	private boolean rebootRequired = false;
+//	private boolean rebootRequired = false;
 	private boolean rangeExtender;
 	
 
@@ -148,6 +148,11 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 		getJSON("/rpc/Shelly.Reboot");
 	}
 	
+	@Override
+	public void setEcoMode(boolean eco) {
+		postCommand("Sys.SetConfig", "{\"config\":{\"device\":{\"eco_mode\":" + eco + "}}}");
+	}
+	
 	public boolean rebootRequired() {
 		return rebootRequired; //return getJSON("/rpc/Sys.GetStatus").path("restart_required").asBoolean(false);
 	}
@@ -155,10 +160,6 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 	public boolean isExtender() {
 		return rangeExtender;
 	}
-
-//	public void setDebugMode(LogMode mode, boolean active) {
-//		postCommand("Sys.SetConfig", "{\"config\": {\"debug\":{\"websocket\":{\"enable\": " + (active ? "true" : "false") + "}}}");
-//	}
 	
 	@Override
 	public FirmwareManager getFWManager() {
@@ -186,8 +187,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 	
 	public String postCommand(final String method, JsonNode payload) {
 		try {
-			String pl = jsonMapper.writeValueAsString(payload);
-			return postCommand(method, pl);
+			return postCommand(method, jsonMapper.writeValueAsString(payload));
 		} catch (JsonProcessingException e) {
 			return e.toString();
 		}
@@ -200,6 +200,9 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 			if((error = resp.get("error")) == null) { // todo {"id":1,"src":"shellyplusi4-xxx","result":{"restart_required":true}}
 				if(resp.path("result").path("restart_required").asBoolean(false)) {
 					rebootRequired = true;
+				}
+				if(status == Status.NOT_LOOGGED) {
+					return "Status-PROTECTED";
 				}
 				return null;
 			} else {
@@ -223,29 +226,6 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 			throw new IOException(error.path("code") + ": " + error.path("message").asText("Generic error"));
 		}	
 	}
-
-//	private JsonNode executeRPC(final String method, String payload) throws IOException, StreamReadException {
-//		HttpPost httpPost = new HttpPost("/rpc");
-//		httpPost.setEntity(new StringEntity("{\"id\":1, \"method\":\"" + method + "\", \"params\":" + payload + "}", StandardCharsets.UTF_8));
-//		try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
-//			return httpClient.execute(httpHost, httpPost, clientContext, response -> {
-//				int statusCode = response./*getStatusLine().getStatusCode()*/getCode();
-//				if(statusCode == HttpURLConnection.HTTP_OK) {
-//					status = Status.ON_LINE;
-//				} else if(statusCode == HttpURLConnection.HTTP_UNAUTHORIZED) {
-//					status = Status.NOT_LOOGGED;
-//				} else /*if(statusCode == HttpURLConnection.HTTP_INTERNAL_ERROR || statusCode == HttpURLConnection.HTTP_BAD_REQUEST)*/ {
-//					status = Status.ERROR;
-//				}
-//				return jsonMapper.readTree(response.getEntity().getContent());
-//			});
-//		} catch(StreamReadException e) { // StreamReadException extends ... IOException
-//			throw e;
-//		} catch(IOException e) { // java.net.SocketTimeoutException
-//			status = Status.OFF_LINE;
-//			throw e;
-//		}
-//	}
 	
 	private JsonNode executeRPC(final String method, String payload) throws IOException, StreamReadException { // StreamReadException extends ... IOException
 		try {

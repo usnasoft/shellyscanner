@@ -15,9 +15,9 @@ import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Comparator;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import javax.swing.Action;
 import javax.swing.BorderFactory;
@@ -32,6 +32,7 @@ import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.RowFilter;
+import javax.swing.SortOrder;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -51,8 +52,12 @@ import it.usna.shellyscan.model.device.BatteryDeviceInterface;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
 import it.usna.shellyscan.model.device.g1.AbstractG1Device;
+import it.usna.shellyscan.model.device.g2.AbstractG2Device;
+import it.usna.shellyscan.model.device.g2.RangeExtenderManager;
+import it.usna.shellyscan.model.device.g2.WIFIManagerG2;
 import it.usna.shellyscan.view.util.Msg;
 import it.usna.shellyscan.view.util.UtilCollecion;
+import it.usna.swing.UsnaPopupMenu;
 import it.usna.swing.table.ExTooltipTable;
 import it.usna.swing.table.UsnaTableModel;
 import it.usna.util.UsnaEventListener;
@@ -65,13 +70,17 @@ public class DialogDeviceCheckList extends JDialog implements UsnaEventListener<
 	private final static int COL_STATUS = 0;
 	private final static int COL_NAME = 1;
 	private final static int COL_IP = 2;
+	private final static int COL_ECO = 3;
+	private final static int COL_AP = 7;
+	private final static int COL_EXTENDER = 11;
 	
 	private Devices appModel;
 	private int[] devicesInd;
+	private ExTooltipTable table;
 	private UsnaTableModel tModel;
 	private ExecutorService exeService /*= Executors.newFixedThreadPool(20)*/;
 
-	public DialogDeviceCheckList(final Window owner, /*final List<ShellyAbstractDevice> devices,*/ Devices appModel, int[] devicesInd, final Boolean ipSort) {
+	public DialogDeviceCheckList(final Window owner, Devices appModel, int[] devicesInd, final SortOrder ipSort) {
 		super(owner, LABELS.getString("dlgChecklistTitle"));
 		this.appModel = appModel;
 		this.devicesInd = devicesInd;
@@ -82,9 +91,20 @@ public class DialogDeviceCheckList extends JDialog implements UsnaEventListener<
 
 		tModel = new UsnaTableModel("",
 				LABELS.getString("col_device"), LABELS.getString("col_ip"), LABELS.getString("col_eco"), LABELS.getString("col_ledoff"), LABELS.getString("col_logs"),
-				LABELS.getString("col_blt"), LABELS.getString("col_AP"), LABELS.getString("col_roaming"), LABELS.getString("col_wifi1"), LABELS.getString("col_wifi2"), LABELS.getString("col_extender"));
+				LABELS.getString("col_blt"), LABELS.getString("col_AP"), LABELS.getString("col_roaming"), LABELS.getString("col_wifi1"), LABELS.getString("col_wifi2"), LABELS.getString("col_extender")) {
+			private static final long serialVersionUID = 1L;
+
+			@Override
+			public Class<?> getColumnClass(final int c) {
+				if(c == COL_IP) {
+					return InetAddressAndPort.class;
+				} else {
+					return super.getColumnClass(c);
+				}
+			}
+		};
 		
-		ExTooltipTable table = new ExTooltipTable(tModel, true) {
+		table = new ExTooltipTable(tModel, true) {
 			private static final long serialVersionUID = 1L;
 			{
 				columnModel.getColumn(COL_STATUS).setMaxWidth(DevicesTable.ONLINE_BULLET.getIconWidth() + 4);
@@ -93,46 +113,33 @@ public class DialogDeviceCheckList extends JDialog implements UsnaEventListener<
 
 				TableCellRenderer rendTrueOk = new CheckRenderer(true);
 				TableCellRenderer rendFalseOk = new CheckRenderer(false);
-				columnModel.getColumn(3).setCellRenderer(rendTrueOk); // eco
+				columnModel.getColumn(COL_ECO).setCellRenderer(rendTrueOk);
 				columnModel.getColumn(4).setCellRenderer(rendTrueOk); // led
 				columnModel.getColumn(5).setCellRenderer(rendFalseOk); // logs
 				columnModel.getColumn(6).setCellRenderer(rendFalseOk); // bluetooth
-				columnModel.getColumn(7).setCellRenderer(rendFalseOk); // AP
+				columnModel.getColumn(COL_AP).setCellRenderer(rendFalseOk);
 				columnModel.getColumn(8).setCellRenderer(rendFalseOk); // roaming
 				columnModel.getColumn(9).setCellRenderer(rendTrueOk); // wifi1 null -> "-"
 				columnModel.getColumn(10).setCellRenderer(rendTrueOk); // wifi2 null -> "-"
+				columnModel.getColumn(11).setCellRenderer(rendTrueOk); // extender null -> "-"
 
 				TableRowSorter<?> rowSorter = ((TableRowSorter<?>)getRowSorter());
-				Comparator<?> oc = (o1, o2) -> { return o1 == null ? -1 : o1.toString().compareTo(o2.toString()); };
-				rowSorter.setComparator(3, oc);
-				rowSorter.setComparator(4, oc);
-				rowSorter.setComparator(5, oc);
-				rowSorter.setComparator(6, oc);
-				rowSorter.setComparator(7, oc);
-
-				if(ipSort != null) {
+//				Comparator<?> oc = (o1, o2) -> { return o1 == null ? -1 : o1.toString().compareTo(o2.toString()); };
+				rowSorter.setSortsOnUpdates(true);
+				
+				if(ipSort != SortOrder.UNSORTED) {
 					sortByColumn(COL_IP, ipSort);
 				}
-				rowSorter.setSortsOnUpdates(true);
 			}
-
-//			@Override
-//			protected String cellTooltipValue(Object value, boolean cellTooSmall, int row, int column) {
-//				if(cellTooSmall && value instanceof InetAddress) {
-//					return ((InetAddress)value).getHostAddress();
-//				} else {
-//					return super.cellTooltipValue(value, cellTooSmall, row, column);
-//				}
-//			}
 		};
+
+		fill();
 
 		JScrollPane scrollPane = new JScrollPane();
 		scrollPane.setViewportView(table);
 		getContentPane().add(scrollPane, BorderLayout.CENTER);
 
-		fill(tModel/*, devices*/);
-
-		table.setRowHeight(table.getRowHeight() + 2);
+		table.setRowHeight(table.getRowHeight() + 3);
 		table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
 		JPanel panelBottom = new JPanel(new BorderLayout(0, 0));
@@ -204,35 +211,48 @@ public class DialogDeviceCheckList extends JDialog implements UsnaEventListener<
 		btnRefresh.addActionListener(e -> {
 			tModel.clear();
 			exeService.shutdownNow();
-			fill(tModel/*, devices*/);
+			fill();
 			try {
 				Thread.sleep(250); // too many call disturb some devices at least (2.5)
 			} catch (InterruptedException e1) {}
 		});
 		panelButtons.add(btnRefresh);
 		
-		JButton btnEdit = new JButton(LABELS.getString("edit"));
-		btnEdit.setEnabled(false);
-		btnEdit.addActionListener(ev -> {
-//			ShellyAbstractDevice d = devices.get(table.convertRowIndexToModel(table.getSelectedRow()));
-			ShellyAbstractDevice d = getLocalDevice(table.convertRowIndexToModel(table.getSelectedRow()));
-			try {
-				Desktop.getDesktop().browse(new URI("http://" + d.getAddress().getHostAddress()));
-			} catch (IOException | URISyntaxException e) {
-				Msg.errorMsg(e);
-			}
-		});
+		browseAction.setEnabled(false);
+		JButton btnEdit = new JButton(/*LABELS.getString("edit")*/browseAction);
 		panelButtons.add(btnEdit);
 		
-		table.getSelectionModel().addListSelectionListener(l -> btnEdit.setEnabled(table.getSelectedRow() >= 0));
+		table.getSelectionModel().addListSelectionListener(l -> {
+			boolean sel = table.getSelectedRow() >= 0;
+			browseAction.setEnabled(sel);
+			rebootAction.setEnabled(sel);
+		});
 		
 		table.addMouseListener(new MouseAdapter() {
 		    public void mousePressed(MouseEvent evt) {
 		        if (evt.getClickCount() == 2 && table.getSelectedRow() != -1) {
-		        	btnEdit.doClick();
+		        	browseAction.actionPerformed(null);
 		        }
 		    }
 		});
+
+		UsnaPopupMenu tablePopup = new UsnaPopupMenu(ecoModeAction, apModeAction, rangeExtenderAction, null, browseAction, rebootAction) {
+			private static final long serialVersionUID = 1L;
+			@Override
+			protected void doPopup(MouseEvent evt) {
+				final int r;
+				if((r = table.rowAtPoint(evt.getPoint())) >= 0) {
+					table.setRowSelectionInterval(r, r);
+					ShellyAbstractDevice d = getLocalDevice(table.getSelectedModelRow());
+					Boolean eco = (Boolean)tModel.getValueAt(table.convertRowIndexToModel(r), COL_ECO);
+					ecoModeAction.setEnabled(eco != null);
+					apModeAction.setEnabled(d instanceof AbstractG2Device);
+					rangeExtenderAction.setEnabled(d instanceof AbstractG2Device);
+					show(table, evt.getX(), evt.getY());
+				}
+			}
+		};
+		table.addMouseListener(tablePopup.getMouseListener());
 
 		setSize(800, 420);
 		setVisible(true);
@@ -241,6 +261,47 @@ public class DialogDeviceCheckList extends JDialog implements UsnaEventListener<
 		
 		appModel.addListener(this);
 	}
+	
+	private Action ecoModeAction = new UsnaAction(this, "setEcoMode_action", e -> {
+		int localRow = table.getSelectedModelRow();
+		Boolean eco = (Boolean)tModel.getValueAt(localRow, COL_ECO);
+		ShellyAbstractDevice d = getLocalDevice(localRow);
+		d.setEcoMode(! eco);
+		try {TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);} catch (InterruptedException e1) {}
+		updateRow(d, localRow);
+	});
+	
+	private Action rebootAction = new UsnaAction(this, "action_reboot_tooltip"/*"Reboot"*/, e -> {
+		int localRow = table.getSelectedModelRow();
+		tModel.setValueAt(DevicesTable.UPDATING_BULLET, localRow, COL_STATUS);
+		appModel.reboot(devicesInd[localRow]);
+	});
+	
+	private Action apModeAction = new UsnaAction(this, "setAPMode_action", e -> {
+		int localRow = table.getSelectedModelRow();
+		Object ap = tModel.getValueAt(localRow, COL_AP);
+		AbstractG2Device d = (AbstractG2Device)getLocalDevice(localRow);
+		WIFIManagerG2.enableAP(d, ! ((ap instanceof Boolean && ap == Boolean.TRUE) || (ap instanceof String && TRUE.equals(ap))));
+		try {TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);} catch (InterruptedException e1) {}
+		updateRow(d, localRow);
+	});
+	
+	private Action rangeExtenderAction = new UsnaAction(this, "setExtender_action", e -> {
+		int localRow = table.getSelectedModelRow();
+		Object ext = tModel.getValueAt(localRow, COL_EXTENDER);
+		AbstractG2Device d = (AbstractG2Device)getLocalDevice(localRow);
+		RangeExtenderManager.enable(d, "-".equals(ext));
+		try {TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);} catch (InterruptedException e1) {}
+		updateRow(d, localRow);
+	});
+	
+	private Action browseAction = new UsnaAction(this, "edit", e -> {
+		try {
+			Desktop.getDesktop().browse(new URI("http://" + InetAddressAndPort.toString(getLocalDevice(table.convertRowIndexToModel(table.getSelectedRow())))));
+		} catch (IOException | URISyntaxException ex) {
+			Msg.errorMsg(ex);
+		}
+	});
 
 	@Override
 	public void dispose() {
@@ -249,38 +310,40 @@ public class DialogDeviceCheckList extends JDialog implements UsnaEventListener<
 		super.dispose();
 	}
 	
-	private void fill(UsnaTableModel tModel/*, List<ShellyAbstractDevice> model*/) {
+	private void fill() {
 		exeService = Executors.newFixedThreadPool(20);
 		for (int devicesInd : devicesInd) {
 			ShellyAbstractDevice d = appModel.get(devicesInd);
-			//		model.forEach(d -> {
 			final int row = tModel.addRow(DevicesTable.UPDATING_BULLET, UtilCollecion.getExtendedHostName(d), new InetAddressAndPort(d));
-			exeService.execute(() -> {
-				try {
-					if(d instanceof AbstractG1Device) {
-						tModel.setRow(row, g1Row(d, d.getJSON("/settings")));
-					} else { // G2
-						tModel.setRow(row, g2Row(d, d.getJSON("/rpc/Shelly.GetConfig"), d.getJSON("/rpc/Shelly.GetStatus")));
-					}
-				} catch (/*IO*/Exception e) {
-					if(d instanceof BatteryDeviceInterface) {
-						if(d instanceof AbstractG1Device) {
-							tModel.setRow(row, g1Row(d, ((BatteryDeviceInterface)d).getStoredJSON("/settings")));
-						} else {
-							tModel.setRow(row, g2Row(d, ((BatteryDeviceInterface)d).getStoredJSON("/rpc/Shelly.GetConfig"), null));
-						}
-					} else {
-						tModel.setRow(row, DevicesTable.getStatusIcon(d), UtilCollecion.getExtendedHostName(d), new InetAddressAndPort(d));
-					}
-					if(/*e.getCause().getCause() instanceof java.net.SocketTimeoutException*/d.getStatus() == Status.OFF_LINE || d.getStatus() == Status.NOT_LOOGGED) {
-						LOG.debug("{}", d, e);
-					} else {
-						LOG.error("{}", d, e);
-					}
-				}
-			});
+			updateRow(d, row);
 		}
-		//		});
+	}
+	
+	private void updateRow(ShellyAbstractDevice d, int row) {
+		exeService.execute(() -> {
+			try {
+				if(d instanceof AbstractG1Device) {
+					tModel.setRow(row, g1Row(d, d.getJSON("/settings")));
+				} else { // G2
+					tModel.setRow(row, g2Row(d, d.getJSON("/rpc/Shelly.GetConfig"), d.getJSON("/rpc/Shelly.GetStatus")));
+				}
+			} catch (/*IO*/Exception e) {
+				if(d instanceof BatteryDeviceInterface) {
+					if(d instanceof AbstractG1Device) {
+						tModel.setRow(row, g1Row(d, ((BatteryDeviceInterface)d).getStoredJSON("/settings")));
+					} else {
+						tModel.setRow(row, g2Row(d, ((BatteryDeviceInterface)d).getStoredJSON("/rpc/Shelly.GetConfig"), null));
+					}
+				} else {
+					tModel.setRow(row, DevicesTable.getStatusIcon(d), UtilCollecion.getExtendedHostName(d), new InetAddressAndPort(d));
+				}
+				if(d.getStatus() == Status.OFF_LINE || d.getStatus() == Status.NOT_LOOGGED) {
+//					LOG.debug("{}", d, e);
+				} else {
+					LOG.error("{}", d, e);
+				}
+			}
+		});
 	}
 	
 	private static Object[] g1Row(ShellyAbstractDevice d, JsonNode settings) {
@@ -381,8 +444,8 @@ public class DialogDeviceCheckList extends JDialog implements UsnaEventListener<
 		}
 	}
 	
-	private ShellyAbstractDevice getLocalDevice(int index) {
-		return appModel.get(devicesInd[index]);
+	private ShellyAbstractDevice getLocalDevice(int ind) {
+		return appModel.get(devicesInd[ind]);
 	}
 	
 	private int getLocalIndex(int ind) {
@@ -399,8 +462,12 @@ public class DialogDeviceCheckList extends JDialog implements UsnaEventListener<
 		if(mesgType == Devices.EventType.CLEAR) {
 			SwingUtilities.invokeLater(() -> dispose()); // devicesInd changes
 		} else if(mesgType == Devices.EventType.UPDATE) {
-			final int index = getLocalIndex(pos);
-			tModel.setValueAt(DevicesTable.getStatusIcon(appModel.get(pos)), index, COL_STATUS);
+			try {
+				final int index = getLocalIndex(pos);
+				if(index >= 0) {
+					tModel.setValueAt(DevicesTable.getStatusIcon(appModel.get(pos)), index, COL_STATUS);
+				}
+			} catch(RuntimeException e) {} // on "refresh" table row could non exists
 		}
 	}
 }

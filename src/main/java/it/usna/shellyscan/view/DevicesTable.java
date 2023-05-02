@@ -50,7 +50,6 @@ import it.usna.shellyscan.model.device.g1.ShellyMotion;
 import it.usna.shellyscan.model.device.g1.ShellyTRV;
 import it.usna.shellyscan.model.device.g1.modules.LightBulbRGBCommander;
 import it.usna.shellyscan.model.device.g1.modules.Thermostat;
-import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.g2.ShellyPlusSmoke;
 import it.usna.shellyscan.model.device.modules.DeviceModule;
 import it.usna.shellyscan.model.device.modules.InputCommander;
@@ -101,13 +100,6 @@ public class DevicesTable extends ExTooltipTable {
 	public DevicesTable(TableModel tm) {
 		super(tm, true);
 		columnModel.getColumn(COL_STATUS_IDX).setMaxWidth(ONLINE_BULLET.getIconWidth() + 4);
-//		columnModel.getColumn(COL_IP_IDX).setCellRenderer(new DefaultTableCellRenderer() {
-//			private static final long serialVersionUID = 1L;
-//			@Override
-//			public void setValue(Object value) {
-//		        setText(((InetAddress)value).getHostAddress());
-//		    }
-//		});
 		columnModel.getColumn(COL_MEASURES_IDX).setCellRenderer(new DeviceMetersCellRenderer());
 		columnModel.getColumn(COL_INT_TEMP).setCellRenderer(new DecimalTableCellRenderer(2));
 		DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
@@ -279,18 +271,6 @@ public class DevicesTable extends ExTooltipTable {
 		}
 		return null;
 	}
-
-//	@Override
-//	protected String cellTooltipValue(Object value, boolean cellTooSmall, int row, int column) {
-//		if(cellTooSmall) {
-//			if(value == null) return "";
-//			else if(value instanceof InetAddress) return ((InetAddress)value).getHostAddress();
-//			else if(value instanceof Object[]) return Arrays.stream((Object[])value).map(v -> v.toString()).collect(Collectors.joining(" + "));
-//			else return value.toString();
-//		} else {
-//			return null;
-//		}
-//	}
 
 	@Override
 	public Point getToolTipLocation(final MouseEvent evt) {
@@ -474,9 +454,13 @@ public class DevicesTable extends ExTooltipTable {
 		return row;
 	}
 	
+	public int[] getSelectedModelRows() {
+		return Arrays.stream(getSelectedRows()).map(i -> convertRowIndexToModel(i)).toArray();
+	}
+	
 	public static ImageIcon getStatusIcon(ShellyAbstractDevice d) {
 		if(d.getStatus() == Status.ON_LINE) {
-			if(d instanceof AbstractG2Device && ((AbstractG2Device)d).rebootRequired()) {
+			if(/*d instanceof AbstractG2Device && ((AbstractG2Device)d).rebootRequired()*/ d.rebootRequired()) {
 				return ONLINE_BULLET_REBOOT;
 			} else {
 				return ONLINE_BULLET;

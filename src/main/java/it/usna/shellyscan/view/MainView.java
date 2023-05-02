@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -196,10 +195,8 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 	});
 	
 	private Action checkListAction = new UsnaAction(this, "/images/Ok.png", "action_checklist_tooltip", e -> {
-		int[] devicesInd = Arrays.stream(devicesTable.getSelectedRows()).map(i -> devicesTable.convertRowIndexToModel(i)).toArray();
-//		List<ShellyAbstractDevice> devices = Arrays.stream(devicesTable.getSelectedRows()).mapToObj(i -> model.get(devicesTable.convertRowIndexToModel(i))).collect(Collectors.toList());
 		List<? extends RowSorter.SortKey> k = devicesTable.getRowSorter().getSortKeys();
-		new DialogDeviceCheckList(this, /*devices,*/ model, devicesInd, k.get(0).getColumn() == DevicesTable.COL_IP_IDX ? k.get(0).getSortOrder() == SortOrder.ASCENDING : null);
+		new DialogDeviceCheckList(this, model, devicesTable.getSelectedModelRows(), k.get(0).getColumn() == DevicesTable.COL_IP_IDX ? k.get(0).getSortOrder() : SortOrder.UNSORTED);
 		try {
 			Thread.sleep(250); // too many call disturb some devices at least (2.5)
 		} catch (InterruptedException e1) {}
@@ -411,8 +408,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 	});
 	
 	private Action chartAction = new UsnaAction(this, "/images/Stats2.png", "action_chart_tooltip", e -> {
-		int[] devicesInd = Arrays.stream(devicesTable.getSelectedRows()).map(i -> devicesTable.convertRowIndexToModel(i)).toArray();
-		new MeasuresChart(this, model, devicesInd, appProp);
+		new MeasuresChart(this, model, devicesTable.getSelectedModelRows(), appProp);
 	});
 	
 	private Action appSettingsAction = new UsnaAction(this, "/images/Gear.png", "action_appsettings_tooltip", e -> {
@@ -459,8 +455,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 	});
 
 	private Action devicesSettingsAction = new UsnaAction(this, "/images/Tool.png", "action_general_conf_tooltip", e -> {
-		int[] devicesInd = Arrays.stream(devicesTable.getSelectedRows()).map(i -> devicesTable.convertRowIndexToModel(i)).toArray();
-		new DialogDeviceSettings(MainView.this, model, devicesInd);
+		new DialogDeviceSettings(MainView.this, model, devicesTable.getSelectedModelRows());
 	});
 	
 	private Action eraseFilterAction = new UsnaAction(this, "/images/erase-9-16.png", null, e -> {
@@ -562,7 +557,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		JScrollPane scrollPane = new JScrollPane();
 		getContentPane().add(scrollPane, BorderLayout.CENTER);
 		devicesTable = new DevicesTable(tModel);
-		devicesTable.sortByColumn(DevicesTable.COL_IP_IDX, true);
+		devicesTable.sortByColumn(DevicesTable.COL_IP_IDX, SortOrder.ASCENDING);
 		devicesTable.loadColPos(appProp, "TAB");
 		if(appProp.get("TAB.COL_P") == null) {
 			devicesTable.hideColumn(DevicesTable.COL_MAC_IDX);
@@ -602,7 +597,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		toolBar.add(appSettingsAction);
 		toolBar.add(aboutAction);
 		
-		UsnaPopupMenu tablePopup = new UsnaPopupMenu(infoAction, browseAction, backupAction, restoreAction, copyHostAction, /*copyMacAction,*/ loginAction) {
+		UsnaPopupMenu tablePopup = new UsnaPopupMenu(infoAction, browseAction, backupAction, restoreAction, copyHostAction, loginAction) {
 			private static final long serialVersionUID = 1L;
 			@Override
 			protected void doPopup(MouseEvent evt) {

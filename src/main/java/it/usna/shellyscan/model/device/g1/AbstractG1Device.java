@@ -41,7 +41,6 @@ import it.usna.shellyscan.model.device.WIFIManager.Network;
 import it.usna.shellyscan.model.device.g1.modules.Actions;
 
 public abstract class AbstractG1Device extends ShellyAbstractDevice {
-//	private final static JsonPointer RSSI = JsonPointer.valueOf("/wifi_sta/rssi");
 	private final static Logger LOG = LoggerFactory.getLogger(AbstractG1Device.class);
 
 	protected AbstractG1Device(InetAddress address, int port, String hostname) {
@@ -100,30 +99,6 @@ public abstract class AbstractG1Device extends ShellyAbstractDevice {
 		lastConnection = System.currentTimeMillis();
 	}
 	
-//	public String sendCommand(final String command) {
-//		HttpGet httpget = new HttpGet(command);
-//		try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
-//			return httpClient.execute(httpHost, httpget, clientContext, response -> {
-//				int statusCode = response.getCode();
-//				if(statusCode == HttpURLConnection.HTTP_OK) {
-//					status = Status.ON_LINE;
-//				} else if(statusCode == HttpURLConnection.HTTP_UNAUTHORIZED) {
-//					status = Status.NOT_LOOGGED;
-//				} else /*if(statusCode == HttpURLConnection.HTTP_INTERNAL_ERROR)*/ {
-//					status = Status.ERROR;
-//				} /*else { status = Status.OFF_LINE; }*/
-//				//String ret = new BufferedReader(new InputStreamReader(response.getEntity().getContent())).lines().collect(Collectors.joining("\n"));
-//				String ret = EntityUtils.toString(response.getEntity());
-//				return (ret == null || ret.length() == 0 || ret/*.trim()*/.startsWith("{")) ? null : ret;
-//			});
-//		} catch(ClientProtocolException | RuntimeException e) {
-//			return e.getMessage();
-//		} catch(IOException e) {
-//			status = Status.OFF_LINE;
-//			return "Status-OFFLINE"; //Main.LABELS.getString("err_connection_offline"); //todo
-//		}
-//	}
-	
 	public String sendCommand(final String command) {
 		try {
 			ContentResponse response = httpClient.GET(uriPrefix + command);
@@ -157,15 +132,26 @@ public abstract class AbstractG1Device extends ShellyAbstractDevice {
 	
 	@Override
 	public String[] getInfoRequests() {
-		// "settings/ap", "settings/sta", "settings/login", "settings/cloud" found into "settings"; "/ota" found into "status"
-		return new String[] {"/shelly", "/settings", "/settings/actions", "/status"};
+		return new String[] {"/shelly", "/settings", "/settings/actions", "/status"}; // "settings/ap", "settings/sta", "settings/login", "settings/cloud" into "settings"; "/ota" into "status"
 	}
 	
 	@Override
-	public void reboot() throws IOException {
-		getJSON("/reboot");
-//		status = Status.READING; // here; getJSON("/reboot") put the device on-line
+	public void reboot() /*throws IOException*/ {
+		if(sendCommand("/reboot") == null) {
+			rebootRequired = false;
+		}
 	}
+	
+	@Override
+	public void setEcoMode(boolean eco) {
+		if(sendCommand("/settings?eco_mode_enabled=" + eco) == null) {
+			rebootRequired = true;
+		}
+	}
+	
+//	public void setDebugMode(LogMode mode) {
+//		sendCommand("/settings?debug_enable=" + (mode != LogMode.NO));
+//	}
 	
 	@Override
 	public FirmwareManager getFWManager() {

@@ -33,6 +33,7 @@ public abstract class ShellyAbstractDevice {
 	protected int uptime;
 	protected String name;
 	protected Status status;
+	protected boolean rebootRequired = false;
 	protected long lastConnection = 0;
 
 	protected final String uriPrefix;
@@ -162,6 +163,10 @@ public abstract class ShellyAbstractDevice {
 	public String getName() {
 		return name == null ? "" : name;
 	}
+	
+	public boolean rebootRequired() {
+		return rebootRequired; //return getJSON("/rpc/Sys.GetStatus").path("restart_required").asBoolean(false);
+	}
 
 	public abstract String getTypeName();
 	
@@ -190,6 +195,8 @@ public abstract class ShellyAbstractDevice {
 	public abstract String getTypeID();
 
 	public abstract void reboot() throws IOException;
+	
+	public abstract void setEcoMode(boolean eco);
 	
 	public abstract void refreshSettings() throws IOException;
 	

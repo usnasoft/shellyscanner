@@ -8,7 +8,6 @@ import java.awt.Window;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.net.InetAddress;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -25,6 +24,7 @@ import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.RowFilter;
+import javax.swing.SortOrder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.table.TableRowSorter;
@@ -49,29 +49,7 @@ public class DialogDeviceSelection extends JDialog {
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		
 		UsnaTableModel tModel = new UsnaTableModel(LABELS.getString("col_device"), LABELS.getString("col_ip"));
-		ExTooltipTable table = new ExTooltipTable(tModel, true) {
-			private static final long serialVersionUID = 1L;
-			{
-//				columnModel.getColumn(1).setCellRenderer(new DefaultTableCellRenderer() {
-//					private static final long serialVersionUID = 1L;
-//					@Override
-//					public void setValue(Object value) {
-//						setText(((InetAddress)value).getHostAddress());
-//					}
-//				});
-//				((TableRowSorter<?>)getRowSorter()).setComparator(1, new IPv4Comparator());
-				sortByColumn(1, true);
-			}
-
-			@Override
-			protected String cellTooltipValue(Object value, boolean cellTooSmall, int row, int column) {
-				if(cellTooSmall && value instanceof InetAddress) {
-					return ((InetAddress)value).getHostAddress();
-				} else {
-					return super.cellTooltipValue(value, cellTooSmall, row, column);
-				}
-			}
-		};
+		ExTooltipTable table = new ExTooltipTable(tModel, true);
 
 		JScrollPane scrollPane = new JScrollPane();
 		scrollPane.setViewportView(table);
@@ -83,6 +61,7 @@ public class DialogDeviceSelection extends JDialog {
 				tModel.addRow(UtilCollecion.getExtendedHostName(d), new InetAddressAndPort(d));
 //			}
 		}
+		table.sortByColumn(1, SortOrder.ASCENDING);
 
 		table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		
@@ -153,7 +132,7 @@ public class DialogDeviceSelection extends JDialog {
 				updateTaskFuture = exeService.submit(() -> {
 					setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 					try {
-						listener.update(model.get(table.convertRowIndexToModel(table.getSelectedRow())), updateTaskFuture);
+						listener.update(model.get(table.getSelectedModelRow()), updateTaskFuture);
 					} finally {
 						setCursor(Cursor.getDefaultCursor());
 					}
