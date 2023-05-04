@@ -44,7 +44,7 @@ public abstract class AbstractG1Device extends ShellyAbstractDevice {
 	private final static Logger LOG = LoggerFactory.getLogger(AbstractG1Device.class);
 
 	protected AbstractG1Device(InetAddress address, int port, String hostname) {
-		super(address, port, hostname); // TODO
+		super(address, port, hostname);
 	}
 	
 	public void init(HttpClient httpClient, JsonNode shelly) throws IOException {
@@ -147,6 +147,11 @@ public abstract class AbstractG1Device extends ShellyAbstractDevice {
 		if(sendCommand("/settings?eco_mode_enabled=" + eco) == null) {
 			rebootRequired = true;
 		}
+	}
+	
+	/** not all devices accept this command */
+	public void setLEDMode(boolean on) {
+		sendCommand("/settings?led_status_disable=" + on);
 	}
 	
 //	public void setDebugMode(LogMode mode) {

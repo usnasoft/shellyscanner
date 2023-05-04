@@ -153,6 +153,10 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 		postCommand("Sys.SetConfig", "{\"config\":{\"device\":{\"eco_mode\":" + eco + "}}}");
 	}
 	
+	public void setBLEMode(boolean ble) {
+		postCommand("BLE.SetConfig", "{\"config\":{\"enable\":" + ble + "}}");
+	}
+	
 	public boolean rebootRequired() {
 		return rebootRequired; //return getJSON("/rpc/Sys.GetStatus").path("restart_required").asBoolean(false);
 	}
