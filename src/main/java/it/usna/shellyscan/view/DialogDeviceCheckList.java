@@ -488,7 +488,7 @@ public class DialogDeviceCheckList extends JDialog implements UsnaEventListener<
 		} else if(mesgType == Devices.EventType.UPDATE) {
 			try {
 				final int index = getLocalIndex(pos);
-				if(index >= 0) {
+				if(index >= 0 && tModel.getValueAt(index, COL_STATUS) != DevicesTable.UPDATING_BULLET) {
 					tModel.setValueAt(DevicesTable.getStatusIcon(appModel.get(pos)), index, COL_STATUS);
 				}
 			} catch(RuntimeException e) {} // on "refresh" table row could non exists

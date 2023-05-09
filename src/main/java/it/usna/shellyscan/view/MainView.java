@@ -12,6 +12,7 @@ import java.awt.datatransfer.StringSelection;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.BufferedWriter;
@@ -24,7 +25,6 @@ import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.BiConsumer;
 
 import javax.swing.Action;
 import javax.swing.BorderFactory;
@@ -64,7 +64,9 @@ import org.slf4j.LoggerFactory;
 
 import it.usna.mvc.singlewindow.MainWindow;
 import it.usna.shellyscan.Main;
+import it.usna.shellyscan.controller.SelectionAction;
 import it.usna.shellyscan.controller.UsnaAction;
+import it.usna.shellyscan.controller.UsnaSelectedAction;
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice.Restore;
@@ -89,7 +91,6 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 	private JLabel statusLabel = new JLabel();
 	private JTextField textFieldFilter;
 	private Devices model;
-	private DevicesTable devicesTable;
 	private UsnaTableModel tModel = new UsnaTableModel(
 			"",
 			LABELS.getString("col_device"),
@@ -106,40 +107,19 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 			LABELS.getString("col_debug"),
 			LABELS.getString("col_source"),
 			LABELS.getString("col_relay"));
+	private DevicesTable devicesTable = new DevicesTable(tModel);
 	
 	private JToggleButton details;
 	private AppProperties unextendedProp = new AppProperties();
 
-	private class ViewSelectedAction extends UsnaAction {
-		private static final long serialVersionUID = 1L;
-		
-		public ViewSelectedAction(String nameId, String tooltipId, String smallIcon, String largeIcon, BiConsumer<Integer, ShellyAbstractDevice> c) {
-			this(largeIcon, tooltipId, c);
-			putValue(NAME, LABELS.getString(nameId));
-			if(smallIcon != null) {
-				putValue(SMALL_ICON, new ImageIcon(getClass().getResource(smallIcon)));
-			}
-		}
+	private Action infoAction = new UsnaSelectedAction(this, devicesTable, "action_info_name", "action_info_tooltip", "/images/Bubble3_16.png", "/images/Bubble3.png",
+			(i) -> new DialogDeviceInfo(MainView.this, true, model.get(i), model.get(i).getInfoRequests()) );
 
-		public ViewSelectedAction(String icon, String tooltipId, BiConsumer<Integer, ShellyAbstractDevice> c) {
-			super(MainView.this, icon, tooltipId, null);
-			onActionPerformed = e -> {
-				for(int ind: devicesTable.getSelectedRows()) {
-					int modelRow = devicesTable.convertRowIndexToModel(ind);
-					c.accept(modelRow, model.get(modelRow));
-				}
-			};
-		}
-	}
-
-	private Action infoAction = new ViewSelectedAction("action_info_name", "action_info_tooltip", "/images/Bubble3_16.png", "/images/Bubble3.png",
-			(i, d) -> new DialogDeviceInfo(MainView.this, true, d, d.getInfoRequests()) );
-
-	private Action infoLogAction = new ViewSelectedAction("/images/Document2.png", "action_info_log_tooltip", (i, d) -> {
-		if(d instanceof AbstractG2Device) {
+	private Action infoLogAction = new UsnaSelectedAction(this, devicesTable, "/images/Document2.png", "action_info_log_tooltip", i -> {
+		if(model.get(i) instanceof AbstractG2Device) {
 			new DialogDeviceLogsG2(MainView.this, model, i);
 		} else {
-			new DialogDeviceInfo(MainView.this, false, d, new String[]{"/debug/log", "/debug/log1"});
+			new DialogDeviceInfo(MainView.this, false, model.get(i), new String[]{"/debug/log", "/debug/log1"});
 		}
 	});
 
@@ -202,9 +182,9 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		} catch (InterruptedException e1) {}
 	});
 	
-	private Action browseAction = new ViewSelectedAction("action_web_name", "action_web_tooltip", "/images/Computer16.png", "/images/Computer.png", (i, d) -> {
+	private Action browseAction = new UsnaSelectedAction(this, devicesTable, "action_web_name", "action_web_tooltip", "/images/Computer16.png", "/images/Computer.png", i -> {
 		try {
-			Desktop.getDesktop().browse(new URI("http://" + InetAddressAndPort.toString(d)));
+			Desktop.getDesktop().browse(new URI("http://" + InetAddressAndPort.toString(model.get(i))));
 		} catch (IOException | URISyntaxException e) {
 			Msg.errorMsg(e);
 		}
@@ -228,8 +208,8 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		JOptionPane.showMessageDialog(MainView.this, ep, Main.APP_NAME, JOptionPane.INFORMATION_MESSAGE, new ImageIcon(Main.class.getResource("/images/ShSc.png")));
 	});
 	
-	private Action loginAction = new ViewSelectedAction("action_nema_login", null, "/images/Key16.png", null,
-			(i, d) -> model.create(d.getAddress(), d.getPort(), null, d.getHostname()) );
+	private Action loginAction = new UsnaSelectedAction(this, devicesTable, "action_nema_login", null, "/images/Key16.png", null,
+			i -> model.create(model.get(i).getAddress(), model.get(i).getPort(), null, model.get(i).getHostname()) );
 
 	private Action backupAction = new UsnaAction(this, "action_back_name", "action_back_tooltip", "/images/Download16.png", "/images/Download.png", e -> {
 		int[] ind = devicesTable.getSelectedRows();
@@ -292,7 +272,8 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		}
 	});
 
-	private Action restoreAction = new ViewSelectedAction("action_restore_name", "action_restore_tooltip", "/images/Upload16.png", "/images/Upload.png", (modelRow, device) -> {
+	private Action restoreAction = new UsnaSelectedAction(this, devicesTable, "action_restore_name", "action_restore_tooltip", "/images/Upload16.png", "/images/Upload.png", modelRow -> {
+		ShellyAbstractDevice device = model.get(modelRow);
 		if(device.getStatus() == Status.NOT_LOOGGED) {
 			Msg.errorMsg(LABELS.getString("msgRestoreLogin"));
 			return;
@@ -419,8 +400,8 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		new DialogAppSettings(MainView.this, devicesTable, model, appProp);
 	});
 	
-	private Action scriptManagerAction = new ViewSelectedAction("/images/Movie.png", "action_script_tooltip", (i, d) -> {
-		new DialogDeviceScriptsG2(MainView.this, (AbstractG2Device)d);
+	private Action scriptManagerAction = new UsnaSelectedAction(this, devicesTable, "/images/Movie.png", "action_script_tooltip", i -> {
+		new DialogDeviceScriptsG2(MainView.this, (AbstractG2Device)model.get(i));
 	});
 	
 	private Action detailedViewAction = new UsnaAction(this, "/images/Plus.png", "action_show_detail_tooltip", e -> {
@@ -465,8 +446,8 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		setStatus();
 	});
 	
-	private Action copyHostAction = new ViewSelectedAction("action_copy_hostname", null, "/images/Clipboard_Copy_16.png", null, (i, d) -> {
-		StringSelection ss = new StringSelection(d.getHostname());
+	private Action copyHostAction = new UsnaSelectedAction(this, devicesTable, "action_copy_hostname", null, "/images/Clipboard_Copy_16.png", null, i -> {
+		StringSelection ss = new StringSelection(model.get(i).getHostname());
 		Toolkit.getDefaultToolkit().getSystemClipboard().setContents(ss, ss);
 	});
 
@@ -532,23 +513,35 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		eraseFilterButton.getActionMap().put("find_erase", eraseFilterAction);
 		statusButtonPanel.add(eraseFilterButton);
 
-		JButton btnSelectAll = new JButton(new UsnaAction(null, "labelSelectAll", null, "/images/list_unordered.png", null, e -> devicesTable.selectAll()));
+		Action selectAll = new UsnaAction(null, "labelSelectAll", null, "/images/list_unordered.png", null, e -> devicesTable.selectAll());
+		Action selectOnLine = new SelectionAction(devicesTable, "labelSelectOnLine", null, "/images/list_online.png", i -> model.get(i).getStatus() == Status.ON_LINE);
+		
+		JButton btnSelectAll = new JButton(selectAll);
 		btnSelectAll.setBorder(BorderFactory.createEmptyBorder(2, 7, 2, 8));
 		statusButtonPanel.add(btnSelectAll);
 		
-		JButton btnSelectOnline = new JButton(new UsnaAction(null, "labelSelectOnLine", null, "/images/list_online.png", null, e -> {
-			devicesTable.clearSelection();
-			for(int i = 0; i < model.size(); i++) {
-				int row = devicesTable.convertRowIndexToView(i);
-				if(row >= 0 && model.get(i).getStatus() == Status.ON_LINE) {
-					devicesTable.addRowSelectionInterval(row, row);
-				}
-			}
-		}));
+		JButton btnSelectOnline = new JButton(selectOnLine);
 		btnSelectOnline.setBorder(BorderFactory.createEmptyBorder(2, 7, 2, 8));
 		statusButtonPanel.add(btnSelectOnline);
 		
+		JButton btnSelectCombo = new JButton(new ImageIcon(MainView.class.getResource("/images/Arrow16down.png")));
+		btnSelectCombo.setContentAreaFilled(false);
+		btnSelectCombo.setBorder(BorderFactory.createEmptyBorder(2, 1, 2, 1));
+		statusButtonPanel.add(btnSelectCombo);
+		
 		statusPanel.add(statusButtonPanel, BorderLayout.EAST);
+
+		UsnaPopupMenu selectionPopup = new UsnaPopupMenu(selectAll, selectOnLine,
+				new SelectionAction(devicesTable, "labelSelectOnLineReboot", null, /*"/images/bullet_yes_reboot.png"*/null, i -> model.get(i).getStatus() == Status.ON_LINE && model.get(i).rebootRequired()),
+				new SelectionAction(devicesTable, "labelSelectG1", null, null, i -> model.get(i) instanceof AbstractG1Device),
+				new SelectionAction(devicesTable, "labelSelectG2", null, null, i -> model.get(i) instanceof AbstractG2Device)
+				);
+		MouseListener popupListener = selectionPopup.getMouseListener();
+		btnSelectCombo.addMouseListener(popupListener);
+		btnSelectOnline.addMouseListener(popupListener);
+		btnSelectAll.addMouseListener(popupListener);
+		;
+		btnSelectCombo.addActionListener(e -> selectionPopup.show(btnSelectCombo, 0, 0));
 		
 		statusPanel.setBackground(Main.STATUS_LINE);
 		getContentPane().add(statusPanel, BorderLayout.SOUTH);
@@ -556,7 +549,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		// Table
 		JScrollPane scrollPane = new JScrollPane();
 		getContentPane().add(scrollPane, BorderLayout.CENTER);
-		devicesTable = new DevicesTable(tModel);
+//		devicesTable = new DevicesTable(tModel);
 		devicesTable.sortByColumn(DevicesTable.COL_IP_IDX, SortOrder.ASCENDING);
 		devicesTable.loadColPos(appProp, "TAB");
 		if(appProp.get("TAB.COL_P") == null) {
@@ -765,7 +758,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		});
 	}
 	
-	private void setStatus() {
+	private synchronized void setStatus() {
 		if(textFieldFilter.getText().length() > 0) {
 			statusLabel.setText(String.format(LABELS.getString("filter_status"), model.size(), devicesTable.getRowCount()));
 		} else {

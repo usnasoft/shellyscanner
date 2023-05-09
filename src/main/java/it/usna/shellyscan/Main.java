@@ -23,7 +23,7 @@ import it.usna.util.AppProperties;
 
 public class Main {
 	public final static String APP_NAME = "Shelly Scanner";
-	public final static String VERSION = "0.9.6";
+	public final static String VERSION = "0.9.7 alpha";
 	public final static String ICON = "/images/ShSc24.png";
 	public final static String BACKUP_FILE_EXT = "sbk";
 	
@@ -300,6 +300,9 @@ public class Main {
 // range extender connectet devices
 // corretto errore pannello restricted login
 // prestazioni (info letto solo una volta)
+
+//0.9.7
+// new selectors
 
 // TODO
 // {"src":"shellyplus2pm-485519a2bb1c","dst":"S_Scanner","method":"NotifyStatus","params":{"ts":1678127726.89,"wifi":{"ap_client_count":0}}}

@@ -185,13 +185,6 @@ public class DevicesTable extends ExTooltipTable {
 		Object val = getValueAt(row, column);
 		return val instanceof DeviceModule || val instanceof DeviceModule[];
 	}
-	
-//	@Override
-//	public Component prepareEditor(TableCellEditor renderer, int row, int column) {
-//		Component comp = super.prepareEditor(renderer, row, column);
-//		computeRowHeigth(row, comp);
-//		return comp;
-//	}
 
 	@Override
 	public Component prepareRenderer(TableCellRenderer renderer, int row, int column) {
@@ -452,10 +445,6 @@ public class DevicesTable extends ExTooltipTable {
 			LOG.error("", e);
 		}
 		return row;
-	}
-	
-	public int[] getSelectedModelRows() {
-		return Arrays.stream(getSelectedRows()).map(i -> convertRowIndexToModel(i)).toArray();
 	}
 	
 	public static ImageIcon getStatusIcon(ShellyAbstractDevice d) {

@@ -232,11 +232,7 @@ public abstract class ShellyAbstractDevice {
 
 	@Override
 	public boolean equals(Object o) {
-//		if(mac != null && ((ShellyAbstractDevice)o).mac != null) {
 		return o != null && mac.equals(((ShellyAbstractDevice)o).mac);
-//		} else {
-//			return (hostname == ((ShellyAbstractDevice)o).hostname) || hostname.equalsIgnoreCase(((ShellyAbstractDevice)o).hostname); // equalsIgnoreCase for some devices hostname registered in not == to Shelly.GetDeviceInfo/id
-//		} // hostname == ((ShellyAbstractDevice)o).hostname) -> both null
 	}
 
 	@Override

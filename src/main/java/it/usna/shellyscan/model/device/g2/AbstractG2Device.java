@@ -153,6 +153,10 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 		postCommand("Sys.SetConfig", "{\"config\":{\"device\":{\"eco_mode\":" + eco + "}}}");
 	}
 	
+//	public void setDebugMode(LogMode mode) {
+//		postCommand("Sys.SetConfig", "{\"config\": {\"debug\":{\"websocket\":{\"enable\": " + (LogMode.SOCKET == mode ? "true" : "false") + "}}}");
+//	}
+	
 	public void setBLEMode(boolean ble) {
 		postCommand("BLE.SetConfig", "{\"config\":{\"enable\":" + ble + "}}");
 	}

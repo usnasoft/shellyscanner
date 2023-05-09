@@ -10,6 +10,9 @@ import java.awt.event.ActionListener;
 import javax.swing.AbstractAction;
 import javax.swing.ImageIcon;
 
+/**
+ * javax.swing.AbstractAction with resourced attributes (label and icons)
+ */
 public class UsnaAction extends AbstractAction {
 	private static final long serialVersionUID = 1L;
 	protected ActionListener onActionPerformed;

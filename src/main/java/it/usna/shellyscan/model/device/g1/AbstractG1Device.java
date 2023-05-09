@@ -154,9 +154,9 @@ public abstract class AbstractG1Device extends ShellyAbstractDevice {
 		sendCommand("/settings?led_status_disable=" + on);
 	}
 	
-//	public void setDebugMode(LogMode mode) {
-//		sendCommand("/settings?debug_enable=" + (mode != LogMode.NO));
-//	}
+	public void setDebugMode(LogMode mode) {
+		sendCommand("/settings?debug_enable=" + (mode != LogMode.NO));
+	}
 	
 	@Override
 	public FirmwareManager getFWManager() {
