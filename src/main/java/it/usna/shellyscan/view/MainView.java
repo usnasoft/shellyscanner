@@ -524,9 +524,9 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		btnSelectOnline.setBorder(BorderFactory.createEmptyBorder(2, 7, 2, 8));
 		statusButtonPanel.add(btnSelectOnline);
 		
-		JButton btnSelectCombo = new JButton(new ImageIcon(MainView.class.getResource("/images/Arrow16down.png")));
+		JButton btnSelectCombo = new JButton(new ImageIcon(MainView.class.getResource("/images/expand-more.png")));
 		btnSelectCombo.setContentAreaFilled(false);
-		btnSelectCombo.setBorder(BorderFactory.createEmptyBorder(2, 1, 2, 1));
+		btnSelectCombo.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 2));
 		statusButtonPanel.add(btnSelectCombo);
 		
 		statusPanel.add(statusButtonPanel, BorderLayout.EAST);
