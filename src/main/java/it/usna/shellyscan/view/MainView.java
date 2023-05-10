@@ -540,7 +540,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		btnSelectCombo.addMouseListener(popupListener);
 		btnSelectOnline.addMouseListener(popupListener);
 		btnSelectAll.addMouseListener(popupListener);
-		;
+
 		btnSelectCombo.addActionListener(e -> selectionPopup.show(btnSelectCombo, 0, 0));
 		
 		statusPanel.setBackground(Main.STATUS_LINE);
@@ -608,7 +608,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		
 		devicesTable.addMouseListener(new MouseAdapter() {
 		    public void mousePressed(MouseEvent evt) {
-		        if (evt.getClickCount() == 2 && devicesTable.getSelectedRow() != -1 && devicesTable.isCellEditable(devicesTable.getSelectedRow(), devicesTable.getSelectedColumn()) == false) {
+		        if (evt.getClickCount() == 2 && devicesTable.getSelectedRow() >= 0 && devicesTable.isCellEditable(devicesTable.getSelectedRow(), devicesTable.getSelectedColumn()) == false) {
 		        	if(appProp.getProperty(DialogAppSettings.PROP_DCLICK_ACTION, DialogAppSettings.PROP_DCLICK_ACTION_DEFAULT).equals("DET")) {
 		        		infoAction.actionPerformed(null);
 		        	} else {
