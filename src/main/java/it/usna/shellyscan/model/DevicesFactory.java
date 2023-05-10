@@ -40,6 +40,7 @@ import it.usna.shellyscan.model.device.g1.ShellyG1Unmanaged;
 import it.usna.shellyscan.model.device.g1.ShellyHT;
 import it.usna.shellyscan.model.device.g1.ShellyI3;
 import it.usna.shellyscan.model.device.g1.ShellyMotion;
+import it.usna.shellyscan.model.device.g1.ShellyMotion2;
 import it.usna.shellyscan.model.device.g1.ShellyPlug;
 import it.usna.shellyscan.model.device.g1.ShellyPlugE;
 import it.usna.shellyscan.model.device.g1.ShellyPlugS;
@@ -172,6 +173,8 @@ public class DevicesFactory {
 			case ShellyHT.ID: d = new ShellyHT(address, port, name);
 			break;
 			case ShellyMotion.ID: d = new ShellyMotion(address, port, name);
+			break;
+			case ShellyMotion2.ID: d = new ShellyMotion2(address, port, name);
 			break;
 			case ShellyTRV.ID: d = new ShellyTRV(address, port, name);
 			break;
