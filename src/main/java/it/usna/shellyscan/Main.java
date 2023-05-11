@@ -304,6 +304,8 @@ public class Main {
 
 //0.9.7
 // new selectors
+// motion 2
+// checklist
 
 // TODO
 // {"src":"shellyplus2pm-485519a2bb1c","dst":"S_Scanner","method":"NotifyStatus","params":{"ts":1678127726.89,"wifi":{"ap_client_count":0}}}
