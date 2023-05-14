@@ -49,6 +49,7 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import it.usna.shellyscan.controller.UsnaAction;
+import it.usna.shellyscan.controller.UsnaSelectedAction;
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.Devices.EventType;
 import it.usna.shellyscan.model.device.BatteryDeviceInterface;
@@ -135,6 +136,59 @@ public class DialogDeviceCheckList extends JDialog implements UsnaEventListener<
 				}
 			}
 		};
+		
+		Action ecoModeAction = new UsnaSelectedAction(this, table, "setEcoMode_action", localRow -> {
+			Boolean eco = (Boolean)tModel.getValueAt(localRow, COL_ECO);
+			ShellyAbstractDevice d = getLocalDevice(localRow);
+			d.setEcoMode(! eco);
+			try {TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);} catch (InterruptedException e1) {}
+			updateRow(d, localRow);
+		});
+		
+		Action ledAction = new UsnaSelectedAction(this, table, "setLED_action", localRow -> {
+			Boolean led = (Boolean)tModel.getValueAt(localRow, COL_LED);
+			AbstractG1Device d = (AbstractG1Device)getLocalDevice(localRow);
+			d.setLEDMode(! led);
+			try {TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);} catch (InterruptedException e1) {}
+			updateRow(d, localRow);
+		});
+		
+		Action bleAction = new UsnaSelectedAction(this, table, "setBLE_action", localRow -> {
+			Boolean ble = (Boolean)tModel.getValueAt(localRow, COL_BLE);
+			AbstractG2Device d = (AbstractG2Device)getLocalDevice(localRow);
+			d.setBLEMode(! ble);
+			try {TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);} catch (InterruptedException e1) {}
+			updateRow(d, localRow);
+		});
+
+		Action apModeAction = new UsnaSelectedAction(this, table, "setAPMode_action", localRow -> {
+			Object ap = tModel.getValueAt(localRow, COL_AP);
+			AbstractG2Device d = (AbstractG2Device)getLocalDevice(localRow);
+			WIFIManagerG2.enableAP(d, ! ((ap instanceof Boolean && ap == Boolean.TRUE) || (ap instanceof String && TRUE.equals(ap))));
+			try {TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);} catch (InterruptedException e1) {}
+			updateRow(d, localRow);
+		});
+		
+		Action rangeExtenderAction = new UsnaSelectedAction(this, table, "setExtender_action", localRow -> {
+			Object ext = tModel.getValueAt(localRow, COL_EXTENDER);
+			AbstractG2Device d = (AbstractG2Device)getLocalDevice(localRow);
+			RangeExtenderManager.enable(d, "-".equals(ext));
+			try {TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);} catch (InterruptedException e1) {}
+			updateRow(d, localRow);
+		});
+		
+		Action rebootAction = new UsnaSelectedAction(this, table, "action_reboot_tooltip", i -> {
+			tModel.setValueAt(DevicesTable.UPDATING_BULLET, i, COL_STATUS);
+			appModel.reboot(devicesInd[i]);
+		});
+		
+		Action browseAction = new UsnaSelectedAction(this, table, "edit", i -> {
+			try {
+				Desktop.getDesktop().browse(new URI("http://" + InetAddressAndPort.toString(getLocalDevice(i))));
+			} catch (IOException | URISyntaxException ex) {
+				Msg.errorMsg(ex);
+			}
+		});
 
 		fill();
 
@@ -292,64 +346,7 @@ public class DialogDeviceCheckList extends JDialog implements UsnaEventListener<
 		appModel.addListener(this);
 	}
 	
-	private Action ecoModeAction = new UsnaAction(this, "setEcoMode_action", e -> {
-		int localRow = table.getSelectedModelRow();
-		Boolean eco = (Boolean)tModel.getValueAt(localRow, COL_ECO);
-		ShellyAbstractDevice d = getLocalDevice(localRow);
-		d.setEcoMode(! eco);
-		try {TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);} catch (InterruptedException e1) {}
-		updateRow(d, localRow);
-	});
-	
-	private Action ledAction = new UsnaAction(this, "setLED_action", e -> {
-		int localRow = table.getSelectedModelRow();
-		Boolean led = (Boolean)tModel.getValueAt(localRow, COL_LED);
-		AbstractG1Device d = (AbstractG1Device)getLocalDevice(localRow);
-		d.setLEDMode(! led);
-		try {TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);} catch (InterruptedException e1) {}
-		updateRow(d, localRow);
-	});
-	
-	private Action bleAction = new UsnaAction(this, "setBLE_action", e -> {
-		int localRow = table.getSelectedModelRow();
-		Boolean ble = (Boolean)tModel.getValueAt(localRow, COL_BLE);
-		AbstractG2Device d = (AbstractG2Device)getLocalDevice(localRow);
-		d.setBLEMode(! ble);
-		try {TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);} catch (InterruptedException e1) {}
-		updateRow(d, localRow);
-	});
 
-	private Action apModeAction = new UsnaAction(this, "setAPMode_action", e -> {
-		int localRow = table.getSelectedModelRow();
-		Object ap = tModel.getValueAt(localRow, COL_AP);
-		AbstractG2Device d = (AbstractG2Device)getLocalDevice(localRow);
-		WIFIManagerG2.enableAP(d, ! ((ap instanceof Boolean && ap == Boolean.TRUE) || (ap instanceof String && TRUE.equals(ap))));
-		try {TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);} catch (InterruptedException e1) {}
-		updateRow(d, localRow);
-	});
-	
-	private Action rangeExtenderAction = new UsnaAction(this, "setExtender_action", e -> {
-		int localRow = table.getSelectedModelRow();
-		Object ext = tModel.getValueAt(localRow, COL_EXTENDER);
-		AbstractG2Device d = (AbstractG2Device)getLocalDevice(localRow);
-		RangeExtenderManager.enable(d, "-".equals(ext));
-		try {TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);} catch (InterruptedException e1) {}
-		updateRow(d, localRow);
-	});
-	
-	private Action rebootAction = new UsnaAction(this, "action_reboot_tooltip", e -> {
-		int localRow = table.getSelectedModelRow();
-		tModel.setValueAt(DevicesTable.UPDATING_BULLET, localRow, COL_STATUS);
-		appModel.reboot(devicesInd[localRow]);
-	});
-	
-	private Action browseAction = new UsnaAction(this, "edit", e -> {
-		try {
-			Desktop.getDesktop().browse(new URI("http://" + InetAddressAndPort.toString(getLocalDevice(table.getSelectedModelRow()))));
-		} catch (IOException | URISyntaxException ex) {
-			Msg.errorMsg(ex);
-		}
-	});
 
 	@Override
 	public void dispose() {

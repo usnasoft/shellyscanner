@@ -19,6 +19,11 @@ public class UsnaSelectedAction extends UsnaAction {
 			putValue(SMALL_ICON, new ImageIcon(getClass().getResource(smallIcon)));
 		}
 	}
+	
+	public UsnaSelectedAction(Window w, ExTooltipTable table, String nameId, Consumer<Integer> c) {
+		this(w, table, null, null, c);
+		putValue(NAME, LABELS.getString(nameId));
+	}
 
 	public UsnaSelectedAction(Window w, ExTooltipTable table, String icon, String tooltipId, Consumer<Integer> c) {
 		super(w, icon, tooltipId, null);
