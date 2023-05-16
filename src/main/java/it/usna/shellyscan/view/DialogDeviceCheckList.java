@@ -201,13 +201,18 @@ public class DialogDeviceCheckList extends JDialog implements UsnaEventListener<
 		
 		table.addMouseListener(new MouseAdapter() {
 		    public void mousePressed(MouseEvent evt) {
-		        if (evt.getClickCount() == 2 && table.getSelectedRow() != -1) {
+		        if (evt.getClickCount() == 2 /*&& table.getSelectedRow() != -1*/) {
 		        	browseAction.actionPerformed(null);
 		        }
 		    }
 		});
 		
 		table.getSelectionModel().addListSelectionListener(e -> {
+//			boolean ecoEn, ledEn, bleEn, apEn, extEn;
+//			ecoEn = ledEn = bleEn = apEn = extEn = false;
+//			int rows[] = table.getSelectedRows();
+//			for(int row: rows) {
+//			}
 			int modelRow = table.getSelectedModelRow();
 			if(modelRow >= 0) {
 				ShellyAbstractDevice d = getLocalDevice(modelRow);
@@ -249,14 +254,10 @@ public class DialogDeviceCheckList extends JDialog implements UsnaEventListener<
 		getContentPane().add(panelBottom, BorderLayout.SOUTH);
 
 		// Find panel
-		JPanel panelFind = new JPanel();
-		FlowLayout flowLayout_1 = (FlowLayout) panelFind.getLayout();
-		flowLayout_1.setVgap(0);
+		JPanel panelFind = new JPanel(new FlowLayout(FlowLayout.RIGHT, 5, 0));
 		panelBottom.add(panelFind, BorderLayout.EAST);
 
-		JLabel label = new JLabel(LABELS.getString("lblFilter"));
-		panelFind.add(label);
-
+		panelFind.add(new JLabel(LABELS.getString("lblFilter")));
 		JTextField textFieldFilter = new JTextField();
 		textFieldFilter.setColumns(20);
 		textFieldFilter.setBorder(BorderFactory.createEmptyBorder(2, 1, 2, 1));
@@ -321,13 +322,13 @@ public class DialogDeviceCheckList extends JDialog implements UsnaEventListener<
 		panelButtons.add(btnRefresh);
 		
 		browseAction.setEnabled(false);
-		JButton btnExecute = new JButton(/*LABELS.getString("edit")*/browseAction);
+		JButton btnExecute = new JButton(browseAction);
 		
 		panelButtons.add(Box.createHorizontalStrut(24));
 		
 		JButton btnSelectCombo = new JButton(new ImageIcon(MainView.class.getResource("/images/expand-more.png")));
 		btnSelectCombo.setContentAreaFilled(false);
-		btnSelectCombo.setBorder(BorderFactory.createEmptyBorder(1, 0, 1, /*2*/0));
+		btnSelectCombo.setBorder(BorderFactory.createEmptyBorder(1, 1, 1, 1));
 		panelButtons.add(btnSelectCombo);
 		UsnaPopupMenu actionSelectionPopup = new UsnaPopupMenu(Arrays.stream(tablePopup.getComponents()).map(c -> c instanceof JMenuItem ? ((JMenuItem)c).getAction().toString() : null).toArray()) {
 			private static final long serialVersionUID = 1L;
@@ -339,14 +340,12 @@ public class DialogDeviceCheckList extends JDialog implements UsnaEventListener<
 		btnSelectCombo.addActionListener(e -> actionSelectionPopup.show(btnSelectCombo, 0, 0));
 		panelButtons.add(btnExecute);
 
-		setSize(800, 420);
+		setSize(820, 420);
 		setVisible(true);
 		setLocationRelativeTo(owner);
 		table.columnsWidthAdapt();
 		appModel.addListener(this);
 	}
-	
-
 
 	@Override
 	public void dispose() {
