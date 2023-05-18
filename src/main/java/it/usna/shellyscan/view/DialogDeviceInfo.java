@@ -8,7 +8,6 @@ import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -250,7 +249,7 @@ public class DialogDeviceInfo extends JDialog {
 		try {
 			String str = doc.getText(0, doc.getLength());
 			doc.setCharacterAttributes(0, str.length(), DEF_STYLE, true);
-			List<Integer> start = new ArrayList<>();
+			ArrayList<Integer> start = new ArrayList<>();
 			int index = 0;
 			int startIndent = 0;
 			Matcher matcher = DELIMITERS_PATTERN.matcher(str);

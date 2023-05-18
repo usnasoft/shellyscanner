@@ -39,7 +39,7 @@ public abstract class ShellyAbstractDevice {
 	protected final String uriPrefix;
 	protected final ObjectMapper jsonMapper = new ObjectMapper();
 	
-	public enum Status {ON_LINE, OFF_LINE, NOT_LOOGGED, READING, ERROR};
+	public enum Status {ON_LINE, OFF_LINE, NOT_LOOGGED, READING, ERROR, GHOST}; // GHOST not detected (in store)
 	public enum LogMode {NO, FILE, MQTT, SOCKET, UDP};
 
 	public enum Restore {ERR_RESTORE_HOST, ERR_RESTORE_MODEL, ERR_RESTORE_CONF, ERR_RESTORE_MSG,

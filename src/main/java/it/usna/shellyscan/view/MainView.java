@@ -68,6 +68,7 @@ import it.usna.shellyscan.controller.SelectionAction;
 import it.usna.shellyscan.controller.UsnaAction;
 import it.usna.shellyscan.controller.UsnaSelectedAction;
 import it.usna.shellyscan.model.Devices;
+import it.usna.shellyscan.model.DevicesStore;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice.Restore;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
@@ -719,6 +720,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 	}
 
 	private void storeProperties() {
+		DevicesStore.store(model);
 		if(details.isSelected()) {
 			detailedView(false);
 		}

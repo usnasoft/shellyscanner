@@ -54,6 +54,7 @@ import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.Devices.EventType;
 import it.usna.shellyscan.model.device.BatteryDeviceInterface;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
+import it.usna.shellyscan.model.device.ShellyAbstractDevice.LogMode;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
 import it.usna.shellyscan.model.device.g1.AbstractG1Device;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
@@ -76,6 +77,7 @@ public class DialogDeviceCheckList extends JDialog implements UsnaEventListener<
 	private final static int COL_IP = 2;
 	private final static int COL_ECO = 3;
 	private final static int COL_LED = 4;
+	private final static int COL_LOGS = 5;
 	private final static int COL_BLE = 6;
 	private final static int COL_AP = 7;
 	private final static int COL_EXTENDER = 11;
@@ -121,7 +123,7 @@ public class DialogDeviceCheckList extends JDialog implements UsnaEventListener<
 				TableCellRenderer rendFalseOk = new CheckRenderer(false);
 				columnModel.getColumn(COL_ECO).setCellRenderer(rendTrueOk);
 				columnModel.getColumn(COL_LED).setCellRenderer(rendTrueOk);
-				columnModel.getColumn(5).setCellRenderer(rendFalseOk); // logs
+				columnModel.getColumn(COL_LOGS).setCellRenderer(rendFalseOk);
 				columnModel.getColumn(COL_BLE).setCellRenderer(rendFalseOk);
 				columnModel.getColumn(COL_AP).setCellRenderer(rendFalseOk);
 				columnModel.getColumn(8).setCellRenderer(rendFalseOk); // roaming
@@ -145,7 +147,7 @@ public class DialogDeviceCheckList extends JDialog implements UsnaEventListener<
 			updateRow(d, localRow);
 		});
 		
-		Action ledAction = new UsnaSelectedAction(this, table, "setLED_action", localRow -> {
+		Action ledAction = new UsnaSelectedAction(this, table, "setLED_action", localRow -> { // AbstractG1Device
 			Boolean led = (Boolean)tModel.getValueAt(localRow, COL_LED);
 			AbstractG1Device d = (AbstractG1Device)getLocalDevice(localRow);
 			d.setLEDMode(! led);
@@ -153,7 +155,15 @@ public class DialogDeviceCheckList extends JDialog implements UsnaEventListener<
 			updateRow(d, localRow);
 		});
 		
-		Action bleAction = new UsnaSelectedAction(this, table, "setBLE_action", localRow -> {
+		Action logsAction = new UsnaSelectedAction(this, table, "setLogs_action", localRow -> { // AbstractG1Device
+			Boolean logs = (Boolean)tModel.getValueAt(localRow, COL_LOGS);
+			AbstractG1Device d = (AbstractG1Device)getLocalDevice(localRow);
+			d.setDebugMode(logs? LogMode.NO : LogMode.FILE);
+			try {TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);} catch (InterruptedException e1) {}
+			updateRow(d, localRow);
+		});
+		
+		Action bleAction = new UsnaSelectedAction(this, table, "setBLE_action", localRow -> { // AbstractG2Device
 			Boolean ble = (Boolean)tModel.getValueAt(localRow, COL_BLE);
 			AbstractG2Device d = (AbstractG2Device)getLocalDevice(localRow);
 			d.setBLEMode(! ble);
@@ -161,7 +171,7 @@ public class DialogDeviceCheckList extends JDialog implements UsnaEventListener<
 			updateRow(d, localRow);
 		});
 
-		Action apModeAction = new UsnaSelectedAction(this, table, "setAPMode_action", localRow -> {
+		Action apModeAction = new UsnaSelectedAction(this, table, "setAPMode_action", localRow -> { // AbstractG2Device
 			Object ap = tModel.getValueAt(localRow, COL_AP);
 			AbstractG2Device d = (AbstractG2Device)getLocalDevice(localRow);
 			WIFIManagerG2.enableAP(d, ! ((ap instanceof Boolean && ap == Boolean.TRUE) || (ap instanceof String && TRUE.equals(ap))));
@@ -169,7 +179,7 @@ public class DialogDeviceCheckList extends JDialog implements UsnaEventListener<
 			updateRow(d, localRow);
 		});
 		
-		Action rangeExtenderAction = new UsnaSelectedAction(this, table, "setExtender_action", localRow -> {
+		Action rangeExtenderAction = new UsnaSelectedAction(this, table, "setExtender_action", localRow -> { // AbstractG2Device
 			Object ext = tModel.getValueAt(localRow, COL_EXTENDER);
 			AbstractG2Device d = (AbstractG2Device)getLocalDevice(localRow);
 			RangeExtenderManager.enable(d, "-".equals(ext));
@@ -220,6 +230,8 @@ public class DialogDeviceCheckList extends JDialog implements UsnaEventListener<
 				ecoModeAction.setEnabled(eco instanceof Boolean);
 				Object led = tModel.getValueAt(modelRow, COL_LED);
 				ledAction.setEnabled(led instanceof Boolean);
+				Object logs = (Boolean)tModel.getValueAt(modelRow, COL_LOGS);
+				logsAction.setEnabled(logs instanceof Boolean);
 				Object ble = tModel.getValueAt(modelRow, COL_BLE);
 				bleAction.setEnabled(ble instanceof Boolean);
 				apModeAction.setEnabled(d instanceof AbstractG2Device);
@@ -229,6 +241,7 @@ public class DialogDeviceCheckList extends JDialog implements UsnaEventListener<
 			} else {
 				ecoModeAction.setEnabled(false);
 				ledAction.setEnabled(false);
+				logsAction.setEnabled(false);
 				bleAction.setEnabled(false);
 				apModeAction.setEnabled(false);
 				rangeExtenderAction.setEnabled(false);
@@ -237,7 +250,7 @@ public class DialogDeviceCheckList extends JDialog implements UsnaEventListener<
 			}
 		});
 		
-		UsnaPopupMenu tablePopup = new UsnaPopupMenu(ecoModeAction, ledAction, bleAction, apModeAction, rangeExtenderAction, null, browseAction, rebootAction) {
+		UsnaPopupMenu tablePopup = new UsnaPopupMenu(ecoModeAction, ledAction, logsAction, bleAction, apModeAction, rangeExtenderAction, null, browseAction, rebootAction) {
 			private static final long serialVersionUID = 1L;
 			@Override
 			protected void doPopup(MouseEvent evt) {
