@@ -720,7 +720,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 	}
 
 	private void storeProperties() {
-//		DevicesStore.store(model);
+		DevicesStore.store(model);
 		if(details.isSelected()) {
 			detailedView(false);
 		}
