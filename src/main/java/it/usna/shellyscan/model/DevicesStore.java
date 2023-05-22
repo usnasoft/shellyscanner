@@ -3,6 +3,8 @@ package it.usna.shellyscan.model;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Writer;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -18,6 +20,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
+import it.usna.shellyscan.model.device.GhostDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 
 public class DevicesStore {
@@ -32,33 +35,34 @@ public class DevicesStore {
 	private final static String ADDRESS = "ip";
 	private final static String PORT = "port";
 	private final static String SSID = "ssid";
-	
+
 	public static void store(Devices model) {
 		final JsonNodeFactory factory = new JsonNodeFactory(false);
 		final ObjectNode root = factory.objectNode();
 		root.put("ver", VERSION);
 		root.put("time", System.currentTimeMillis());
 		final ArrayNode array = factory.arrayNode();
-		for(int i = 0; i < model.size(); i++) {
+		for (int i = 0; i < model.size(); i++) {
 			ShellyAbstractDevice dev = model.get(i);
 			ObjectNode jsonDev = factory.objectNode();
 			jsonDev.put(TYPE_ID, dev.getTypeID());
 			jsonDev.put(TYPE_NAME, dev.getTypeName());
 			jsonDev.put(HOSTNAME, dev.getHostname());
 			jsonDev.put(MAC, dev.getMacAddress());
-			jsonDev.put(ADDRESS, dev.getAddress().toString());
+//			jsonDev.put(ADDRESS, dev.getAddress().toString());//dev.getAddress().
+			jsonDev.put(ADDRESS, dev.getAddress().getAddress());
 			jsonDev.put(PORT, dev.getPort());
 			jsonDev.put(NAME, dev.getName());
 			jsonDev.put(SSID, dev.getSSID());
 			array.add(jsonDev);
 		}
 		root.set("dev", array);
-		
+
 		Path storeFile = Paths.get(System.getProperty("user.home"), "ShellyStore.arc");
 		try (Writer w = Files.newBufferedWriter(storeFile, StandardCharsets.UTF_8)) {
 			w.write(root.toString());
 		} catch (IOException e) {
-			LOG.error("Archive store", e); 
+			LOG.error("Archive store", e);
 		}
 		try {
 			System.out.println(JSON_MAPPER.writerWithDefaultPrettyPrinter().writeValueAsString(root));
@@ -67,15 +71,32 @@ public class DevicesStore {
 			e.printStackTrace();
 		}
 	}
-	
-	public void read(Devices model) {
+
+	public static void read(Devices model) {
 		Path storeFile = Paths.get(System.getProperty("user.home"), "ShellyStore.arc");
 		try (BufferedReader r = Files.newBufferedReader(storeFile, StandardCharsets.UTF_8)) {
 			final JsonNode arc = JSON_MAPPER.readTree(r);
-			final ArrayNode array = (ArrayNode)arc.get("dev");
+			final ArrayNode array = (ArrayNode) arc.get("dev");
 			System.out.println(JSON_MAPPER.writerWithDefaultPrettyPrinter().writeValueAsString(array));
+			array.forEach(el -> {
+				try {
+					JsonNode addressArr = el.get(ADDRESS);
+					InetAddress ip = InetAddress.getByAddress(new byte[] { (byte)addressArr.get(1).asInt(), (byte)addressArr.get(1).asInt(), (byte)addressArr.get(1).asInt(), (byte)addressArr.get(1).asInt() });
+					GhostDevice device = new GhostDevice(
+							ip, el.get(PORT).asInt(),
+							el.get(ADDRESS).asText(),
+							el.get(MAC).asText(),
+							el.get(SSID).asText(),
+							el.get(TYPE_NAME).asText(),
+							el.get(TYPE_ID).asText());
+					
+					System.out.println(device);
+				} catch (UnknownHostException e) {
+					LOG.error("Archive read", e);
+				}
+			});
 		} catch (IOException e) {
-			LOG.error("Archive read", e); 
+			LOG.error("Archive read", e);
 		}
 	}
 }

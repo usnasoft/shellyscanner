@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.DevicesFactory;
+import it.usna.shellyscan.model.DevicesStore;
 import it.usna.shellyscan.view.MainView;
 import it.usna.shellyscan.view.appsettings.DialogAppSettings;
 import it.usna.shellyscan.view.util.Msg;
@@ -63,6 +64,9 @@ public class Main {
 				appProp.remove("TAB.COL_P");
 			}
 			final Devices model = new Devices();
+			
+			DevicesStore.read(model); // todo
+			
 			final MainView view = new MainView(model, appProp);
 			SwingUtilities.invokeLater(() -> {
 				view.setVisible(true);
