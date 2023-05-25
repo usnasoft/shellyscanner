@@ -9,11 +9,12 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -25,7 +26,7 @@ import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 
 public class DevicesStore {
 	private final static Logger LOG = LoggerFactory.getLogger(DevicesStore.class);
-	private final static int VERSION = 1;
+	private final static int FORMAT_VERSION = 0;
 	private final static ObjectMapper JSON_MAPPER = new ObjectMapper();
 	private final static String TYPE_ID = "tid";
 	private final static String TYPE_NAME = "tn";
@@ -39,7 +40,7 @@ public class DevicesStore {
 	public static void store(Devices model) {
 		final JsonNodeFactory factory = new JsonNodeFactory(false);
 		final ObjectNode root = factory.objectNode();
-		root.put("ver", VERSION);
+		root.put("ver", FORMAT_VERSION);
 		root.put("time", System.currentTimeMillis());
 		final ArrayNode array = factory.arrayNode();
 		for (int i = 0; i < model.size(); i++) {
@@ -49,8 +50,7 @@ public class DevicesStore {
 			jsonDev.put(TYPE_NAME, dev.getTypeName());
 			jsonDev.put(HOSTNAME, dev.getHostname());
 			jsonDev.put(MAC, dev.getMacAddress());
-//			jsonDev.put(ADDRESS, dev.getAddress().toString());//dev.getAddress().
-			jsonDev.put(ADDRESS, dev.getAddress().getAddress());
+			jsonDev.put(ADDRESS, dev.getAddress().getHostAddress());
 			jsonDev.put(PORT, dev.getPort());
 			jsonDev.put(NAME, dev.getName());
 			jsonDev.put(SSID, dev.getSSID());
@@ -61,42 +61,43 @@ public class DevicesStore {
 		Path storeFile = Paths.get(System.getProperty("user.home"), "ShellyStore.arc");
 		try (Writer w = Files.newBufferedWriter(storeFile, StandardCharsets.UTF_8)) {
 			w.write(root.toString());
+//			System.out.println(JSON_MAPPER.writerWithDefaultPrettyPrinter().writeValueAsString(root));
 		} catch (IOException e) {
 			LOG.error("Archive store", e);
 		}
-		try {
-			System.out.println(JSON_MAPPER.writerWithDefaultPrettyPrinter().writeValueAsString(root));
-		} catch (JsonProcessingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 	}
 
-	public static void read(Devices model) {
+	public static List<GhostDevice> read() {
+		List<GhostDevice> list = new ArrayList<>();
 		Path storeFile = Paths.get(System.getProperty("user.home"), "ShellyStore.arc");
 		try (BufferedReader r = Files.newBufferedReader(storeFile, StandardCharsets.UTF_8)) {
 			final JsonNode arc = JSON_MAPPER.readTree(r);
-			final ArrayNode array = (ArrayNode) arc.get("dev");
-			System.out.println(JSON_MAPPER.writerWithDefaultPrettyPrinter().writeValueAsString(array));
-			array.forEach(el -> {
-				try {
-					JsonNode addressArr = el.get(ADDRESS);
-					InetAddress ip = InetAddress.getByAddress(new byte[] { (byte)addressArr.get(1).asInt(), (byte)addressArr.get(1).asInt(), (byte)addressArr.get(1).asInt(), (byte)addressArr.get(1).asInt() });
-					GhostDevice device = new GhostDevice(
-							ip, el.get(PORT).asInt(),
-							el.get(ADDRESS).asText(),
-							el.get(MAC).asText(),
-							el.get(SSID).asText(),
-							el.get(TYPE_NAME).asText(),
-							el.get(TYPE_ID).asText());
-					
-					System.out.println(device);
-				} catch (UnknownHostException e) {
-					LOG.error("Archive read", e);
-				}
-			});
+			if(arc.path("ver").asInt() == FORMAT_VERSION) {
+				final ArrayNode array = (ArrayNode) arc.get("dev");
+//System.out.println(JSON_MAPPER.writerWithDefaultPrettyPrinter().writeValueAsString(array));
+				array.forEach(el -> {
+					try {
+						GhostDevice device = new GhostDevice(
+								InetAddress.getByName(el.get(ADDRESS).asText()),
+								el.get(PORT).asInt(),
+								el.get(HOSTNAME).asText(),
+								el.get(MAC).asText(),
+								el.get(SSID).asText(),
+								el.get(TYPE_NAME).asText(),
+								el.get(TYPE_ID).asText(),
+								el.get(NAME).asText());
+						list.add(device);
+						System.out.println(device);
+					} catch (UnknownHostException | RuntimeException e) {
+						LOG.error("Archive read", e);
+					}
+				});
+			} else {
+				LOG.info("Archive version is %; " + FORMAT_VERSION + " expected", arc.path("ver").asInt());
+			}
 		} catch (IOException e) {
 			LOG.error("Archive read", e);
 		}
+		return list;
 	}
 }

@@ -11,12 +11,13 @@ public class GhostDevice extends ShellyAbstractDevice {
 	private String typeID;
 	
 	public GhostDevice(InetAddress address, int port, String hostname,
-			String mac, String ssid, String typeName, String typeID) {
+			String mac, String ssid, String typeName, String typeID, String name) {
 		super(address, port, hostname);
 		this.mac = mac;
 		this.ssid = ssid;
 		this.typeName = typeName;
 		this.typeID = typeID;
+		this.name = name;
 	}
 
 	private GhostDevice(InetAddress address, int port, String hostname) {

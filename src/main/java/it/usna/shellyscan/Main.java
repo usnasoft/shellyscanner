@@ -15,7 +15,6 @@ import org.slf4j.LoggerFactory;
 
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.DevicesFactory;
-import it.usna.shellyscan.model.DevicesStore;
 import it.usna.shellyscan.view.MainView;
 import it.usna.shellyscan.view.appsettings.DialogAppSettings;
 import it.usna.shellyscan.view.util.Msg;
@@ -64,8 +63,7 @@ public class Main {
 				appProp.remove("TAB.COL_P");
 			}
 			final Devices model = new Devices();
-			
-			DevicesStore.read(model); // todo
+//			model.load();
 			
 			final MainView view = new MainView(model, appProp);
 			SwingUtilities.invokeLater(() -> {
@@ -106,7 +104,6 @@ public class Main {
 									LOG.info("Wrong format; example: -ipscan 192.168.1.1-254");
 								}
 //							} else if(args[i].equals("-p")) {
-								
 							} else {
 								LOG.info("Unknown parameter: {}", args[i]);
 							}

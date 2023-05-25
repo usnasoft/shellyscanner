@@ -32,6 +32,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import it.usna.shellyscan.model.device.GhostDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
 import it.usna.shellyscan.model.device.ShellyUnmanagedDevice;
@@ -394,6 +395,15 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 		}
 		return -1;
 	}
+	
+	public void load() {
+		List<GhostDevice> ghosts = DevicesStore.read();
+		ghosts.forEach(d -> {
+			devices.add(d);
+			refreshProcess.add(null);
+			fireEvent(EventType.ADD, devices.size() - 1);
+		});
+	}
 
 	private void clear() {
 		executor.shutdownNow(); // full clean instead of refreshProcess.forEach(f -> f.cancel(true));
@@ -406,6 +416,7 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 		LOG.trace("Model closing");
 		removeListeners();
 		executor.shutdownNow();
+		DevicesStore.store(this);
 		bjServices.parallelStream().forEach(dns -> {
 			try {
 				dns.close();
