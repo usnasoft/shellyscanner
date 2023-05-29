@@ -745,6 +745,9 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 					setStatus();
 				} else if(mesgType == Devices.EventType.REMOVE) {
 					tModel.setValueAt(DevicesTable.OFFLINE_BULLET, msgBody, DevicesTable.COL_STATUS_IDX);
+				} else if(mesgType == Devices.EventType.SUBSTITUTE) {
+					devicesTable.updateRow(model.get(msgBody), msgBody);
+					devicesTable.columnsWidthAdapt();
 				} else if(mesgType == Devices.EventType.READY) {
 					setStatus();
 					rescanAction.setEnabled(true);

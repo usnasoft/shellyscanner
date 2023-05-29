@@ -45,6 +45,7 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 	public enum EventType {
 		ADD,
 		UPDATE,
+		SUBSTITUTE,
 		REMOVE,
 		READY, // Model is ready
 		CLEAR // Clear model
@@ -313,9 +314,11 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 					int ind;
 					if((ind = devices.indexOf(d)) >= 0) {
 						if(d instanceof ShellyUnmanagedDevice == false || devices.get(ind) instanceof ShellyUnmanagedDevice) { // Do not replace device if was recocnized and now is not
-							refreshProcess.get(ind).cancel(true);
+							if(refreshProcess.get(ind) != null) {
+								refreshProcess.get(ind).cancel(true);
+							}
 							devices.set(ind, d);
-							fireEvent(EventType.UPDATE, ind);
+							fireEvent(EventType.SUBSTITUTE, ind);
 							refreshProcess.set(ind, scheduleRefresh(d, ind, refreshInterval, refreshTics));
 						}
 					} else {
@@ -399,9 +402,10 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 	public void load() {
 		List<GhostDevice> ghosts = DevicesStore.read();
 		ghosts.forEach(d -> {
+			final int idx = devices.size();
 			devices.add(d);
+			fireEvent(EventType.ADD, idx);
 			refreshProcess.add(null);
-			fireEvent(EventType.ADD, devices.size() - 1);
 		});
 	}
 
@@ -416,7 +420,8 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 		LOG.trace("Model closing");
 		removeListeners();
 		executor.shutdownNow();
-		DevicesStore.store(this);
+		//todo
+//		DevicesStore.store(this);
 		bjServices.parallelStream().forEach(dns -> {
 			try {
 				dns.close();

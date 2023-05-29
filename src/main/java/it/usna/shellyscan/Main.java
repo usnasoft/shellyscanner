@@ -63,11 +63,11 @@ public class Main {
 				appProp.remove("TAB.COL_P");
 			}
 			final Devices model = new Devices();
-//			model.load();
-			
 			final MainView view = new MainView(model, appProp);
 			SwingUtilities.invokeLater(() -> {
 				view.setVisible(true);
+				//todo
+//				model.load();
 				view.requestFocus(); // remove random focus on toolbar button
 				try {
 					view.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
