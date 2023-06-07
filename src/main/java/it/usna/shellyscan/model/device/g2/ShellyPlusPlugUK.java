@@ -3,17 +3,21 @@ package it.usna.shellyscan.model.device.g2;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.ArrayList;
+import java.util.concurrent.TimeUnit;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
+import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.InternalTmpHolder;
 import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.g2.modules.Relay;
 import it.usna.shellyscan.model.device.modules.RelayCommander;
 import it.usna.shellyscan.model.device.modules.RelayInterface;
 
-public class ShellyPlusPlugIT extends AbstractG2Device implements RelayCommander, InternalTmpHolder {
-	public final static String ID = "PlusPlugIT";
+public class ShellyPlusPlugUK extends AbstractG2Device implements RelayCommander, InternalTmpHolder {
+	public final static String ID = "PlusPlugUK";
 	private final static Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.W, Meters.Type.V, Meters.Type.I};
 	private Relay relay = new Relay(this, 0);
 	private float internalTmp;
@@ -22,7 +26,7 @@ public class ShellyPlusPlugIT extends AbstractG2Device implements RelayCommander
 	private float current;
 	private Meters[] meters;
 
-	public ShellyPlusPlugIT(InetAddress address, int port, String hostname) {
+	public ShellyPlusPlugUK(InetAddress address, int port, String hostname) {
 		super(address, port, hostname);
 		
 		meters = new Meters[] {
@@ -47,7 +51,7 @@ public class ShellyPlusPlugIT extends AbstractG2Device implements RelayCommander
 	
 	@Override
 	public String getTypeName() {
-		return "Plug +IT";
+		return "Plug +UK";
 	}
 	
 	@Override
@@ -106,6 +110,12 @@ public class ShellyPlusPlugIT extends AbstractG2Device implements RelayCommander
 
 	@Override
 	protected void restore(JsonNode configuration, ArrayList<String> errors) throws IOException, InterruptedException {
+//		ObjectNode ui = (ObjectNode)configuration.get("pluguk_ui").deepCopy();
+//		ObjectNode out = new JsonNodeFactory(false).objectNode();
+//		out.set("config", ui);
+//		errors.add(postCommand("PLUGUK_UI.SetConfig", out));
+//		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+		
 		errors.add(relay.restore(configuration));
 	}
 	
@@ -114,3 +124,14 @@ public class ShellyPlusPlugIT extends AbstractG2Device implements RelayCommander
 		return super.toString() + " Relay: " + relay;
 	}
 }
+
+//public static String restore(AbstractG2Device parent, JsonNode config, String index) {
+//	JsonNodeFactory factory = new JsonNodeFactory(false);
+//	ObjectNode out = factory.objectNode();
+//	out.put("id", index);
+//
+//	ObjectNode input = (ObjectNode)config.get("input:" + index).deepCopy();
+//	input.remove("id");
+//	out.set("config", input);
+//	return parent.postCommand("Input.SetConfig", out);
+//}
