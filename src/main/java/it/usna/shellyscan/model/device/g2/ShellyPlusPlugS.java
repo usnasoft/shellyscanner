@@ -110,7 +110,7 @@ public class ShellyPlusPlugS extends AbstractG2Device implements RelayCommander,
 
 	@Override
 	protected void restore(JsonNode configuration, ArrayList<String> errors) throws IOException, InterruptedException {
-		ObjectNode ui = (ObjectNode)configuration.get("plugs_ui").deepCopy();
+		JsonNode ui = configuration.get("plugs_ui").deepCopy();
 		ObjectNode out = new JsonNodeFactory(false).objectNode();
 		out.set("config", ui);
 		errors.add(postCommand("PLUGS_UI.SetConfig", out));
@@ -124,14 +124,3 @@ public class ShellyPlusPlugS extends AbstractG2Device implements RelayCommander,
 		return super.toString() + " Relay: " + relay;
 	}
 }
-
-//public static String restore(AbstractG2Device parent, JsonNode config, String index) {
-//	JsonNodeFactory factory = new JsonNodeFactory(false);
-//	ObjectNode out = factory.objectNode();
-//	out.put("id", index);
-//
-//	ObjectNode input = (ObjectNode)config.get("input:" + index).deepCopy();
-//	input.remove("id");
-//	out.set("config", input);
-//	return parent.postCommand("Input.SetConfig", out);
-//}
