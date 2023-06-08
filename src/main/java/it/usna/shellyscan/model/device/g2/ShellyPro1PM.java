@@ -54,7 +54,7 @@ public class ShellyPro1PM extends AbstractProDevice implements RelayCommander, I
 
 	@Override
 	public String getTypeName() {
-		return "Shelly Pro 4PM";
+		return "Shelly Pro 1PM";
 	}
 
 	@Override
