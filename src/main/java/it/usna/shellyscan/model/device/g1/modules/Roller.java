@@ -84,6 +84,7 @@ public class Roller implements RollerInterface {
 		((ObjectNode)data).remove("is_valid");
 		((ObjectNode)data).remove("safety_switch");
 		((ObjectNode)data).remove("is_valid");
+//		((ObjectNode)data).remove("positioning");
 		Iterator<Entry<String, JsonNode>> pars = data.fields();
 		if(pars.hasNext()) {
 			String command = "/settings/roller/" + index + "?" + AbstractG1Device.jsonEntryToURLPar(pars.next());
