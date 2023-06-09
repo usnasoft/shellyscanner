@@ -1,0 +1,179 @@
+// https://www.softicons.com/web-icons/web-grey-buttons-by-axialis-team
+// https://www.softicons.com/web-icons/circular-icons-by-pro-theme-design/
+// https://www.veryicon.com/
+// https://www.iconbolt.com/
+
+//-D"org.slf4j.simpleLogger.log.it.usna=debug" -D"org.slf4j.simpleLogger.showDateTime=true"
+
+//color weel https://stackoverflow.com/questions/36252778/how-to-draw-a-rgb-color-wheel-in-java
+
+//0.5.5
+// aggiunto Plug
+// riscontro "restricted login" e "wi-fi bu" come per backup
+// errore cloud per alcuni dispositivi (motion)
+
+//0.6.0
+//stato dispositivi (on-line, off-line, login, reading, error)
+//colonna "nome"
+//doppio click "Full device info" (non su command)
+//login al singolo dispositivi protetto
+//edit fine rgbw
+//duo
+//i3
+//print table
+
+//0.6.1
+//flood
+
+//0.7.0
+//refresh parallelo continuo
+//shelly 2, UNI
+//export CSV
+
+//0.7.2
+//nome colonna stato (csv)
+//restore mqtt (no pwd)
+//doppia scheda di rete (Luk McFagnan)
+//settings
+// -localscan
+//supporto parziale plus
+//flag "defaul" su mqtt prefix
+
+//0.7.3
+//separazione fill status - file settings (che potrebbe essere chiamato meno)
+//ShellyBulb
+//supporto parziale
+
+//0.7.4
+//script G2
+//filtro per nome
+//selezione colonne
+//posizione colonne
+//3EM
+
+//0.8.0
+// miglioramenti fw update
+// copy hostname
+// copy mac address
+// copy cell
+// col SSID
+//colonna misure
+
+//0.8.1
+// addon temperatura 1, 1PM
+// colonna MAC
+// sliders migliorati
+// --- alpha2
+// errore MQTT settings G1 multipli
+// errore poco frequente restore null -> "null"
+// restore restricted login
+// restore wi-fi2
+// link a manuale e download da [?]
+
+//0.8.2
+//add column - MQTT enabled
+//add column - source
+//default tabella non tutte le colonne
+//optionally allow users to write credentials on application settings
+//full scan default
+//DialogDeviceInfo refresh
+//+2PM
+//restore + improved
+//backup progress
+//detailed info improvement for battery operated devices (some stored info shows when offline; experimental only on button 1)
+
+//0.8.3
+//Motion
+//lettura conf disp batteria
+//conservare i parametri della tabella ed eventualmente ripristinarli su cancel (dialog app settings)
+//esclusione dei dispositivi non pertinenti/offline sui settaggi globali
+//backup con stored data
+//global settings "enable" disabilitato durante "show()
+
+//0.8.4 beta
+// H&T
+// i4 (parziale)
+// miglioramento restore (delay)
+// [+] detailed view
+//--- beta2
+// sistemata altezza righe al ritorno dalla vista dettagliata
+
+//0.8.5
+// i4
+// IP scan
+// sort IP
+// Ottimizzazione // final ObjectMapper mapper = new ObjectMapper(); condiviso
+// bug: mqtt no pwd
+
+//0.8.6
+// stato input
+// fw update - selection buttons / counters
+// mqtt -copy 
+// wifi2 - copy
+// ^S combo change selection
+
+//0.8.7
+// fw update su tre colonne
+// wi-fi 1
+// restore script da backup
+// mqtt status: connected
+// chk table (blt, eco mode, led, AP, logs, ...)
+// mqtt specific G2 settings
+
+//0.8.8
+// TRV
+// ultima connessione (tooltip off-line)
+// edit rgbw2 white
+
+//0.9.0
+// charts
+// pro2 - pro2pm
+// V on 2.5
+
+//0.9.1 (alpha only)
+// org.apache.httpcomponents.client5 -> org.eclipse.jetty (https://www.eclipse.org/jetty/documentation/jetty-11/programming-guide/index.html)
+// Riconosciuti i tipi per i dispositivi protetti
+// pro4PM (parziale)
+// plus plug IT
+
+//0.9.3
+// org.java-websocket -> org.eclipse.jetty.websocket)
+// Riconosciuti i tipi per i dispositivi protetti
+// Recover generic - error
+// pro4PM - pro1 - pro1pm - pro3 (full)
+// pro2 - pro2pm (full)
+// plus plug IT/US
+// device info
+// Enhanced FW update dialog
+
+//0.9.5
+// plus H&T
+// wall dimmer
+// Shelly Smoke
+// rebootRequired
+// checklist: number of devices connected to range extender
+// extender WiFi.ListAPClients
+
+//0.9.6
+// range extender connectet devices
+// corretto errore pannello restricted login
+// prestazioni (info letto solo una volta)
+
+//0.9.7
+// new selectors
+// motion 2, plug plus S - UK
+// checklist
+// fix restore +IT +US
+// fix export csv charts
+// Shelly Pro 1PM (was 4pm) - pull request
+
+// TODO
+// {"src":"shellyplus2pm-485519a2bb1c","dst":"S_Scanner","method":"NotifyStatus","params":{"ts":1678127726.89,"wifi":{"ap_client_count":0}}}
+// {"src":"shellyplus2pm-485519a2bb1c","dst":"S_Scanner","method":"NotifyStatus","params":{"ts":1678127810.93,"wifi":{"ap_client_count":1}}}
+// https://docs.oracle.com/javase/8/docs/api/javax/security/auth/callback/CallbackHandler.html
+// https://www.baeldung.com/java-authentication-authorization-service
+// archivio (additivo) dispositivi collegati opzionalmente caricabile (con eventuale default da settings)
+// gestione "reading": se stato online leggo uptime, se uptime diverso dal precedente memorizzo il timestamp else Quando il time stamp corrente - memorizzato > intervallo * 3 modifico lo stato - si, ma dove?
+// suspended process (dispositivi a batteria)
+
+// backup non interattivo (scan ip - parametri su cli)
