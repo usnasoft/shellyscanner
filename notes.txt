@@ -155,7 +155,7 @@
 // extender WiFi.ListAPClients
 
 //0.9.6
-// range extender connectet devices
+// range extender connected devices
 // corretto errore pannello restricted login
 // prestazioni (info letto solo una volta)
 
