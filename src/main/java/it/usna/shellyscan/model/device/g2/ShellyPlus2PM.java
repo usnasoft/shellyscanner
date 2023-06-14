@@ -219,14 +219,8 @@ public class ShellyPlus2PM extends AbstractG2Device implements RelayCommander, R
 	
 	@Override
 	public String[] getInfoRequests() {
-		if(addOn != null) {
-			return new String[] {
-					"/rpc/Shelly.GetDeviceInfo", "/rpc/Shelly.GetConfig", "/rpc/Shelly.GetStatus",
-					"/rpc/Shelly.CheckForUpdate", "/rpc/Schedule.List", "/rpc/Webhook.List", "/rpc/Script.List", "/rpc/WiFi.ListAPClients",
-					"/rpc/SensorAddon.GetPeripherals"};
-		} else {
-			return super.getInfoRequests();
-		}
+		final String[] cmd = super.getInfoRequests();
+		return (addOn != null) ? SensorAddOn.getInfoRequests(cmd) : cmd;
 	}
 	
 	@Override

@@ -1,6 +1,7 @@
 package it.usna.shellyscan.model.device.g2.modules;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 
 import org.slf4j.Logger;
@@ -37,7 +38,7 @@ public class SensorAddOn extends Meters {
 		return supported;
 	}
 	
-	public void fillStatus(JsonNode status) /*throws IOException*/ {
+	public void fillStatus(JsonNode status) {
 		try {
 			if(extID != null) {
 				extOn = status.path(extID).get("state").asBoolean();
@@ -58,6 +59,12 @@ public class SensorAddOn extends Meters {
 		} else {
 			return 0; // todo
 		}
+	}
+	
+	public static String[] getInfoRequests(String [] cmd) {
+		ArrayList<String> tmp = new ArrayList<>(Arrays.asList(cmd));
+		tmp.add("/rpc/SensorAddon.GetPeripherals");
+		return tmp.toArray(new String[tmp.size()]);
 	}
 }
 

@@ -91,7 +91,6 @@ public class Roller implements RollerInterface {
 			while(pars.hasNext()) {
 				command += "&" + AbstractG1Device.jsonEntryToURLPar(pars.next());
 			}
-//			System.out.println(command);
 			return parent.sendCommand(command);
 		}
 		return null;

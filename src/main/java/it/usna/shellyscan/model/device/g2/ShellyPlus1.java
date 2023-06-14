@@ -11,6 +11,7 @@ import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.InternalTmpHolder;
 import it.usna.shellyscan.model.device.g2.modules.Input;
 import it.usna.shellyscan.model.device.g2.modules.Relay;
+import it.usna.shellyscan.model.device.g2.modules.SensorAddOn;
 import it.usna.shellyscan.model.device.modules.RelayCommander;
 import it.usna.shellyscan.model.device.modules.RelayInterface;
 
@@ -20,9 +21,23 @@ public class ShellyPlus1 extends AbstractG2Device implements RelayCommander, Int
 	private Relay relay = new Relay(this, 0);
 	private float internalTmp;
 	private RelayInterface[] ralayes = new RelayInterface[] {relay};
+	private SensorAddOn addOn;
 
 	public ShellyPlus1(InetAddress address, int port, String hostname) {
 		super(address, port, hostname);
+	}
+	
+	@Override
+	protected void init(JsonNode devInfo) throws IOException {
+		final JsonNode config = getJSON("/rpc/Shelly.GetConfig");
+		if(SensorAddOn.ADDON_TYPE.equals(config.get("sys").get("device").path("addon_type").asText())) {
+			addOn = new SensorAddOn(getJSON("/rpc/SensorAddon.GetPeripherals"));
+		}
+		// default init(...)
+		this.hostname = devInfo.get("id").asText("");
+		this.mac = devInfo.get("mac").asText();
+		fillSettings(config);
+		fillStatus(getJSON("/rpc/Shelly.GetStatus"));
 	}
 	
 	@Override
@@ -54,7 +69,6 @@ public class ShellyPlus1 extends AbstractG2Device implements RelayCommander, Int
 	protected void fillSettings(JsonNode configuration) throws IOException {
 		super.fillSettings(configuration);
 		relay.fillSettings(configuration.get("switch:0")/*, configuration.get("input:0")*/);
-//		System.out.println("fill");
 	}
 	
 	@Override
@@ -63,7 +77,12 @@ public class ShellyPlus1 extends AbstractG2Device implements RelayCommander, Int
 		JsonNode switchStatus = status.get("switch:0");
 		relay.fillStatus(switchStatus, status.get("input:0"));
 		internalTmp = (float)switchStatus.path("temperature").path("tC").asDouble();
-//		System.out.println("status");
+	}
+	
+	@Override
+	public String[] getInfoRequests() {
+		final String[] cmd = super.getInfoRequests();
+		return (addOn != null) ? SensorAddOn.getInfoRequests(cmd) : cmd;
 	}
 
 	@Override

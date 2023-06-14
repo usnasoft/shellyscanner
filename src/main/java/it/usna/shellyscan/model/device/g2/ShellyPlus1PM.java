@@ -12,6 +12,7 @@ import it.usna.shellyscan.model.device.InternalTmpHolder;
 import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.g2.modules.Input;
 import it.usna.shellyscan.model.device.g2.modules.Relay;
+import it.usna.shellyscan.model.device.g2.modules.SensorAddOn;
 import it.usna.shellyscan.model.device.modules.RelayCommander;
 import it.usna.shellyscan.model.device.modules.RelayInterface;
 
@@ -27,9 +28,18 @@ public class ShellyPlus1PM extends AbstractG2Device implements RelayCommander, I
 	private float pf;
 	private Meters[] meters;
 	private RelayInterface[] relays = new RelayInterface[] {relay};
+	private SensorAddOn addOn;
 
 	public ShellyPlus1PM(InetAddress address, int port, String hostname) {
 		super(address, port, hostname);
+	}
+	
+	@Override
+	protected void init(JsonNode devInfo) throws IOException {
+		final JsonNode config = getJSON("/rpc/Shelly.GetConfig");
+		if(SensorAddOn.ADDON_TYPE.equals(config.get("sys").get("device").path("addon_type").asText())) {
+			addOn = new SensorAddOn(getJSON("/rpc/SensorAddon.GetPeripherals"));
+		}
 		
 		meters = new Meters[] {
 				new Meters() {
@@ -51,6 +61,12 @@ public class ShellyPlus1PM extends AbstractG2Device implements RelayCommander, I
 					}
 				}
 		};
+		
+		// default init(...)
+		this.hostname = devInfo.get("id").asText("");
+		this.mac = devInfo.get("mac").asText();
+		fillSettings(config);
+		fillStatus(getJSON("/rpc/Shelly.GetStatus"));
 	}
 	
 	@Override
@@ -111,6 +127,12 @@ public class ShellyPlus1PM extends AbstractG2Device implements RelayCommander, I
 		voltage = (float)switchStatus.get("voltage").asDouble(0);
 		current = (float)switchStatus.get("current").asDouble(0);
 		pf = (float)switchStatus.get("pf").asDouble();
+	}
+	
+	@Override
+	public String[] getInfoRequests() {
+		final String[] cmd = super.getInfoRequests();
+		return (addOn != null) ? SensorAddOn.getInfoRequests(cmd) : cmd;
 	}
 
 	@Override

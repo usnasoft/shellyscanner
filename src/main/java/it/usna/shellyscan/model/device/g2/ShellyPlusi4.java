@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.g2.modules.Input;
+import it.usna.shellyscan.model.device.g2.modules.SensorAddOn;
 import it.usna.shellyscan.model.device.g2.modules.Webhooks;
 import it.usna.shellyscan.model.device.modules.InputCommander;
 import it.usna.shellyscan.model.device.modules.InputInterface;
@@ -17,12 +18,26 @@ public class ShellyPlusi4 extends AbstractG2Device implements InputCommander {
 	public final static String ID = "PlusI4";
 	private Input[] inputs;
 	private Webhooks webhooks;
+	private SensorAddOn addOn;
 
 	public ShellyPlusi4(InetAddress address, int port, String hostname) {
 		super(address, port, hostname);
 		
 		inputs = new Input[] {new Input(), new Input(), new Input(), new Input()};
 		webhooks = new Webhooks(this);
+	}
+	
+	@Override
+	protected void init(JsonNode devInfo) throws IOException {
+		final JsonNode config = getJSON("/rpc/Shelly.GetConfig");
+		if(SensorAddOn.ADDON_TYPE.equals(config.get("sys").get("device").path("addon_type").asText())) {
+			addOn = new SensorAddOn(getJSON("/rpc/SensorAddon.GetPeripherals"));
+		}
+		// default init(...)
+		this.hostname = devInfo.get("id").asText("");
+		this.mac = devInfo.get("mac").asText();
+		fillSettings(config);
+		fillStatus(getJSON("/rpc/Shelly.GetStatus"));
 	}
 	
 	@Override
@@ -58,6 +73,12 @@ public class ShellyPlusi4 extends AbstractG2Device implements InputCommander {
 		inputs[2].fillStatus(status.get("input:2"));
 		inputs[3].fillStatus(status.get("input:3"));
 	}
+	
+	@Override
+	public String[] getInfoRequests() {
+		final String[] cmd = super.getInfoRequests();
+		return (addOn != null) ? SensorAddOn.getInfoRequests(cmd) : cmd;
+	}
 
 	@Override
 	protected void restore(JsonNode configuration, ArrayList<String> errors) throws IOException, InterruptedException {
@@ -79,9 +100,4 @@ public class ShellyPlusi4 extends AbstractG2Device implements InputCommander {
 	public InputInterface[] getActionsGroups() {
 		return inputs;
 	}
-	
-//	@Override
-//	public String toString() {
-//		return super.toString();
-//	}
 }
