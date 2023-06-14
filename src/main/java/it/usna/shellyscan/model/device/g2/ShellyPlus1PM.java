@@ -14,7 +14,6 @@ import it.usna.shellyscan.model.device.g2.modules.Input;
 import it.usna.shellyscan.model.device.g2.modules.Relay;
 import it.usna.shellyscan.model.device.g2.modules.SensorAddOn;
 import it.usna.shellyscan.model.device.modules.RelayCommander;
-import it.usna.shellyscan.model.device.modules.RelayInterface;
 
 public class ShellyPlus1PM extends AbstractG2Device implements RelayCommander, InternalTmpHolder {
 	public final static String ID = "Plus1PM";
@@ -26,8 +25,8 @@ public class ShellyPlus1PM extends AbstractG2Device implements RelayCommander, I
 	private float voltage;
 	private float current;
 	private float pf;
+	private Relay[] relays = new Relay[] {relay};
 	private Meters[] meters;
-	private RelayInterface[] relays = new RelayInterface[] {relay};
 	private SensorAddOn addOn;
 
 	public ShellyPlus1PM(InetAddress address, int port, String hostname) {
@@ -36,31 +35,32 @@ public class ShellyPlus1PM extends AbstractG2Device implements RelayCommander, I
 	
 	@Override
 	protected void init(JsonNode devInfo) throws IOException {
+		Meters m0 = new Meters() {
+			public Type[] getTypes() {
+				return SUPPORTED_MEASURES;
+			}
+
+			@Override
+			public float getValue(Type t) {
+				if(t == Meters.Type.W) {
+					return power;
+				} else if(t == Meters.Type.I) {
+					return current;
+				} else if(t == Meters.Type.PF) {
+					return pf;
+				} else {
+					return voltage;
+				}
+			}
+		};
+		
 		final JsonNode config = getJSON("/rpc/Shelly.GetConfig");
 		if(SensorAddOn.ADDON_TYPE.equals(config.get("sys").get("device").path("addon_type").asText())) {
 			addOn = new SensorAddOn(getJSON("/rpc/SensorAddon.GetPeripherals"));
+			meters = new Meters[] {m0, addOn};
+		} else {
+			meters = new Meters[] {m0};
 		}
-		
-		meters = new Meters[] {
-				new Meters() {
-					public Type[] getTypes() {
-						return SUPPORTED_MEASURES;
-					}
-
-					@Override
-					public float getValue(Type t) {
-						if(t == Meters.Type.W) {
-							return power;
-						} else if(t == Meters.Type.I) {
-							return current;
-						} else if(t == Meters.Type.PF) {
-							return pf;
-						} else {
-							return voltage;
-						}
-					}
-				}
-		};
 		
 		// default init(...)
 		this.hostname = devInfo.get("id").asText("");
@@ -85,7 +85,7 @@ public class ShellyPlus1PM extends AbstractG2Device implements RelayCommander, I
 	}
 	
 	@Override
-	public RelayInterface[] getRelays() {
+	public Relay[] getRelays() {
 		return relays;
 	}
 	
@@ -127,6 +127,9 @@ public class ShellyPlus1PM extends AbstractG2Device implements RelayCommander, I
 		voltage = (float)switchStatus.get("voltage").asDouble(0);
 		current = (float)switchStatus.get("current").asDouble(0);
 		pf = (float)switchStatus.get("pf").asDouble();
+		if(addOn != null) {
+			addOn.fillStatus(status);
+		}
 	}
 	
 	@Override

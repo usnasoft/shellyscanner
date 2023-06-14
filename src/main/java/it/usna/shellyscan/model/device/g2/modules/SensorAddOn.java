@@ -21,15 +21,30 @@ public class SensorAddOn extends Meters {
 	private String extID = null;
 	private boolean extOn;
 	
+	private String analogID = null;
+	private float analog;
+	
+	private String voltmeterID = null;
+	private float volt;
+	
 	public SensorAddOn(JsonNode peripherals) {
 		ArrayList<Meters.Type> types = new ArrayList<>();
-	
+
 		Iterator<String> digIn = ((ObjectNode)peripherals.get("digital_in")).fieldNames();
 		if(digIn.hasNext()) {
 			extID = digIn.next();
 			types.add(Meters.Type.EXS);
 		}
-		
+		Iterator<String> analogIn = ((ObjectNode)peripherals.get("analog_in")).fieldNames();
+		if(analogIn.hasNext()) {
+			analogID = digIn.next();
+			types.add(Meters.Type.PERC);
+		}
+		Iterator<String> voltIn = ((ObjectNode)peripherals.get("voltmeter")).fieldNames();
+		if(voltIn.hasNext()) {
+			voltmeterID = digIn.next();
+			types.add(Meters.Type.V);
+		}
 		supported = types.toArray(new Meters.Type[types.size()]);
 	}
 	
@@ -43,28 +58,46 @@ public class SensorAddOn extends Meters {
 			if(extID != null) {
 				extOn = status.path(extID).get("state").asBoolean();
 			}
+			if(analogID != null) {
+				analog = status.path(analogID).get("percent").floatValue();
+			}
+			if(voltmeterID != null) {
+				volt = status.path(voltmeterID).get("voltage").floatValue();
+			}
 		} catch (RuntimeException e) {
-			LOG.warn("Configuration changed?", e);
+			LOG.warn("Add-on configuration changed?", e);
 		}
 	}
 	
 	public boolean isDigitalInputOn() {
 		return extOn;
 	}
+	
+	public float getAnalog() {
+		return analog;
+	}
+	
+	public float getVoltage() {
+		return volt;
+	}
 
 	@Override
 	public float getValue(Type t) {
 		if(t == Meters.Type.EXS) {
-			return extOn ? 1 : 0;
+			return extOn ? 1f : 0f;
+		} else if(t == Meters.Type.PERC) {
+			return analog;
+		} else if(t == Meters.Type.V) {
+			return volt;
 		} else {
 			return 0; // todo
 		}
 	}
 	
 	public static String[] getInfoRequests(String [] cmd) {
-		ArrayList<String> tmp = new ArrayList<>(Arrays.asList(cmd));
-		tmp.add("/rpc/SensorAddon.GetPeripherals");
-		return tmp.toArray(new String[tmp.size()]);
+		String[] newArray = Arrays.copyOf(cmd, cmd.length + 1);
+		newArray[cmd.length] = "/rpc/SensorAddon.GetPeripherals";
+		return newArray;
 	}
 }
 

@@ -8,6 +8,7 @@ import java.util.concurrent.TimeUnit;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import it.usna.shellyscan.model.Devices;
+import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.g2.modules.Input;
 import it.usna.shellyscan.model.device.g2.modules.SensorAddOn;
 import it.usna.shellyscan.model.device.g2.modules.Webhooks;
@@ -18,11 +19,11 @@ public class ShellyPlusi4 extends AbstractG2Device implements InputCommander {
 	public final static String ID = "PlusI4";
 	private Input[] inputs;
 	private Webhooks webhooks;
+	private Meters[] meters;
 	private SensorAddOn addOn;
 
 	public ShellyPlusi4(InetAddress address, int port, String hostname) {
 		super(address, port, hostname);
-		
 		inputs = new Input[] {new Input(), new Input(), new Input(), new Input()};
 		webhooks = new Webhooks(this);
 	}
@@ -32,6 +33,7 @@ public class ShellyPlusi4 extends AbstractG2Device implements InputCommander {
 		final JsonNode config = getJSON("/rpc/Shelly.GetConfig");
 		if(SensorAddOn.ADDON_TYPE.equals(config.get("sys").get("device").path("addon_type").asText())) {
 			addOn = new SensorAddOn(getJSON("/rpc/SensorAddon.GetPeripherals"));
+			meters = new Meters[] {addOn};
 		}
 		// default init(...)
 		this.hostname = devInfo.get("id").asText("");
@@ -48,6 +50,11 @@ public class ShellyPlusi4 extends AbstractG2Device implements InputCommander {
 	@Override
 	public String getTypeID() {
 		return ID;
+	}
+	
+	@Override
+	public Meters[] getMeters() {
+		return meters;
 	}
 
 	@Override
@@ -72,6 +79,9 @@ public class ShellyPlusi4 extends AbstractG2Device implements InputCommander {
 		inputs[1].fillStatus(status.get("input:1"));
 		inputs[2].fillStatus(status.get("input:2"));
 		inputs[3].fillStatus(status.get("input:3"));
+		if(addOn != null) {
+			addOn.fillStatus(status);
+		}
 	}
 	
 	@Override

@@ -17,7 +17,8 @@ public abstract class Meters implements Comparable<Meters> {
 		L, // lux
 		TX1, // temperature (celsius)
 		TX2, // temperature (celsius)
-		EXS // ext switch status
+		EXS, // ext switch status
+		PERC // 0-100
 	};
 	protected static NumberFormat NF = NumberFormat.getNumberInstance(Locale.ENGLISH);
 	static {

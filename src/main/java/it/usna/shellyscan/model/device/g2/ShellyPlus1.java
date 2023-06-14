@@ -9,18 +9,19 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.InternalTmpHolder;
+import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.g2.modules.Input;
 import it.usna.shellyscan.model.device.g2.modules.Relay;
 import it.usna.shellyscan.model.device.g2.modules.SensorAddOn;
 import it.usna.shellyscan.model.device.modules.RelayCommander;
-import it.usna.shellyscan.model.device.modules.RelayInterface;
 
 public class ShellyPlus1 extends AbstractG2Device implements RelayCommander, InternalTmpHolder {
 	public final static String ID = "Plus1";
 //	private final static JsonPointer SW_TEMP_P = JsonPointer.valueOf("/temperature/tC");
 	private Relay relay = new Relay(this, 0);
+	private Relay[] ralayes = new Relay[] {relay};
 	private float internalTmp;
-	private RelayInterface[] ralayes = new RelayInterface[] {relay};
+	private Meters[] meters;
 	private SensorAddOn addOn;
 
 	public ShellyPlus1(InetAddress address, int port, String hostname) {
@@ -32,6 +33,7 @@ public class ShellyPlus1 extends AbstractG2Device implements RelayCommander, Int
 		final JsonNode config = getJSON("/rpc/Shelly.GetConfig");
 		if(SensorAddOn.ADDON_TYPE.equals(config.get("sys").get("device").path("addon_type").asText())) {
 			addOn = new SensorAddOn(getJSON("/rpc/SensorAddon.GetPeripherals"));
+			meters = new Meters[] {addOn};
 		}
 		// default init(...)
 		this.hostname = devInfo.get("id").asText("");
@@ -56,13 +58,18 @@ public class ShellyPlus1 extends AbstractG2Device implements RelayCommander, Int
 	}
 	
 	@Override
-	public RelayInterface[] getRelays() {
+	public Relay[] getRelays() {
 		return ralayes;
 	}
 	
 	@Override
 	public float getInternalTmp() {
 		return internalTmp;
+	}
+	
+	@Override
+	public Meters[] getMeters() {
+		return meters;
 	}
 	
 	@Override
@@ -77,6 +84,9 @@ public class ShellyPlus1 extends AbstractG2Device implements RelayCommander, Int
 		JsonNode switchStatus = status.get("switch:0");
 		relay.fillStatus(switchStatus, status.get("input:0"));
 		internalTmp = (float)switchStatus.path("temperature").path("tC").asDouble();
+		if(addOn != null) {
+			addOn.fillStatus(status);
+		}
 	}
 	
 	@Override

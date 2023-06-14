@@ -16,7 +16,6 @@ import it.usna.shellyscan.model.device.g2.modules.Relay;
 import it.usna.shellyscan.model.device.g2.modules.Roller;
 import it.usna.shellyscan.model.device.g2.modules.SensorAddOn;
 import it.usna.shellyscan.model.device.modules.RelayCommander;
-import it.usna.shellyscan.model.device.modules.RelayInterface;
 import it.usna.shellyscan.model.device.modules.RollerCommander;
 
 public class ShellyPlus2PM extends AbstractG2Device implements RelayCommander, RollerCommander, InternalTmpHolder {
@@ -86,17 +85,6 @@ public class ShellyPlus2PM extends AbstractG2Device implements RelayCommander, R
 			}
 		};
 		
-//		if(addOn != null && addOn.getTypes().length > 0) {
-//			metersAddOn = new Meters() {
-//				public Type[] getTypes() {
-//					return addOn.getTypes();
-//				}
-//				public float getValue(Type t) {
-//					return addOn.isDigitalInputOn() ? 1 : 0;
-//				}
-//			};
-//		}
-		
 		// default init(...)
 		this.hostname = devInfo.get("id").asText("");
 		this.mac = devInfo.get("mac").asText();
@@ -130,8 +118,8 @@ public class ShellyPlus2PM extends AbstractG2Device implements RelayCommander, R
 	}
 
 	@Override
-	public RelayInterface[] getRelays() {
-		return new RelayInterface[] {relay0, relay1};
+	public Relay[] getRelays() {
+		return new Relay[] {relay0, relay1};
 	}
 
 	@Override
