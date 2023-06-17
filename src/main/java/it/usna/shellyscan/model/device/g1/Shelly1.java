@@ -9,93 +9,105 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.Meters;
+import it.usna.shellyscan.model.device.MetersPower;
 import it.usna.shellyscan.model.device.g1.modules.Relay;
 import it.usna.shellyscan.model.device.modules.RelayCommander;
 import it.usna.shellyscan.model.device.modules.RelayInterface;
 
 public class Shelly1 extends AbstractG1Device implements RelayCommander {
 	public final static String ID = "SHSW-1";
-	private final static Meters.Type[] SUPPORTED_MEASURES_H = new Meters.Type[] {Meters.Type.T, Meters.Type.H};
-	private final static Meters.Type[] MEASURES_EXT_SWITCH = new Meters.Type[] {Meters.Type.EXS};
+	private final static Meters.Type[] SUPPORTED_MEASURES_H = new Meters.Type[] { Meters.Type.T, Meters.Type.H };
+	private final static Meters.Type[] MEASURES_EXT_SWITCH = new Meters.Type[] { Meters.Type.EXS };
 	private Relay relay = new Relay(this, 0);
 	private float extT0, extT1, extT2;// = new float[3];
 	private int humidity;
 	private int extSwitchStatus;
 	private boolean extSwitchRev;
 	private Meters[] meters = null;
-	
+
 	public Shelly1(InetAddress address, int port, String hostname) {
 		super(address, port, hostname);
 	}
-	
+
 	@Override
 	protected void init() throws IOException {
 		JsonNode settings = getJSON("/settings");
 		this.hostname = settings.get("device").get("hostname").asText("");
-//		fillOnce(settings);
+		// fillOnce(settings);
 		fillSettings(settings);
 		try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e) {}
 		JsonNode status = getJSON("/status");
 		fillStatus(getJSON("/status"));
 
+		ArrayList<Meters> m = new ArrayList<>(2);
 		JsonNode extTNode;
-		if(settings.path("ext_humidity").size() > 0) {
-			meters = new Meters[] {
-					new Meters() {
-						@Override
-						public Type[] getTypes() {
-							return SUPPORTED_MEASURES_H;
-						}
+		if (settings.path("ext_humidity").size() > 0) {
+			m.add(new Meters() {
+				@Override
+				public Type[] getTypes() {
+					return SUPPORTED_MEASURES_H;
+				}
 
-						@Override
-						public float getValue(Type t) {
-							return (t == Type.T) ? extT0 : humidity;
-						}
-					}
-			};
-		} else if((extTNode = settings.path("ext_temperature")).size() > 0) {
+				@Override
+				public float getValue(Type t) {
+					return (t == Type.T) ? extT0 : humidity;
+				}
+			});
+		} else if ((extTNode = settings.path("ext_temperature")).size() > 0) {
 			final ArrayList<Meters.Type> tt = new ArrayList<>(3);
-			if(extTNode.has("0")) tt.add(Meters.Type.T);
-			if(extTNode.has("1")) tt.add(Meters.Type.TX1);
-			if(extTNode.has("2")) tt.add(Meters.Type.TX2);
+			if (extTNode.has("0"))
+				tt.add(Meters.Type.T);
+			if (extTNode.has("1"))
+				tt.add(Meters.Type.TX1);
+			if (extTNode.has("2"))
+				tt.add(Meters.Type.TX2);
 			final Meters.Type[] mTypes = tt.toArray(new Meters.Type[tt.size()]);
-			meters = new Meters[] {
-					new Meters() {
-						@Override
-						public Type[] getTypes() {
-							return mTypes;
-						}
+			m.add(new Meters() {
+				@Override
+				public Type[] getTypes() {
+					return mTypes;
+				}
 
-						@Override
-						public float getValue(Type t) {
-							if(t == Type.T) {
-								return extT0;
-							} else if(t == Type.TX1) {
-								return extT1;
-							} else {
-								return extT2;
-							}
-						}
-					}//ext_switch_reverse
-			};
-		} else if(status.path("ext_switch").size() > 0) { // status
-			meters = new Meters[] {
-					new Meters() {
-						@Override
-						public Type[] getTypes() {
-							return MEASURES_EXT_SWITCH;
-						}
-
-						@Override
-						public float getValue(Type t) {
-							if(extSwitchRev) {
-								return extSwitchStatus == 0 ? 1 : 0;
-							} else {
-								return extSwitchStatus;
-							}
-						}
+				@Override
+				public float getValue(Type t) {
+					if (t == Type.T) {
+						return extT0;
+					} else if (t == Type.TX1) {
+						return extT1;
+					} else {
+						return extT2;
 					}
-			};
+				}// ext_switch_reverse
+			});
+		} else if (status.path("ext_switch").size() > 0) { // status
+			m.add(new Meters() {
+				@Override
+				public Type[] getTypes() {
+					return MEASURES_EXT_SWITCH;
+				}
+
+				@Override
+				public float getValue(Type t) {
+					if (extSwitchRev) {
+						return extSwitchStatus == 0 ? 1f : 0f;
+					} else {
+						return extSwitchStatus;
+					}
+				}
+			});
+		}
+		float pow = settings.get("relays").get(0).get("power").floatValue();
+		if (pow > 0f) {
+			m.add(new MetersPower() {
+				@Override
+				public float getValue(Type t) {
+					return relay.isOn() ? pow : 0f;
+				}
+			});
+		}
+		
+		if(m.size() > 0) {
+			meters = m.toArray(new Meters[m.size()]);
 		}
 	}
 
@@ -121,7 +133,7 @@ public class Shelly1 extends AbstractG1Device implements RelayCommander {
 
 	@Override
 	public RelayInterface[] getRelays() {
-		return new RelayInterface[] {relay};
+		return new RelayInterface[] { relay };
 	}
 
 	@Override
@@ -137,20 +149,24 @@ public class Shelly1 extends AbstractG1Device implements RelayCommander {
 		relay.fillStatus(status.get("relays").get(0), status.get("inputs").get(0));
 
 		JsonNode extTNode = status.path("ext_temperature");
-		if(extTNode.size() > 0) {
-			extT0 = (float)extTNode.path("0").path("tC").asDouble();
-			extT1 = (float)extTNode.path("1").path("tC").asDouble();
-			extT2 = (float)extTNode.path("2").path("tC").asDouble();
+		if (extTNode.size() > 0) {
+			extT0 = (float) extTNode.path("0").path("tC").asDouble();
+			extT1 = (float) extTNode.path("1").path("tC").asDouble();
+			extT2 = (float) extTNode.path("2").path("tC").asDouble();
 		}
 		JsonNode extHNode = status.path("ext_humidity");
-		if(extHNode.size() > 0) {
+		if (extHNode.size() > 0) {
 			humidity = extHNode.path("0").path("hum").asInt();
 		}
-		
+
 		JsonNode extSwitchNode = status.path("ext_switch");
-		if(extSwitchNode.size() > 0) {
+		if (extSwitchNode.size() > 0) {
 			extSwitchStatus = extSwitchNode.path("0").path("input").asInt();
 		}
+	}
+
+	public String setPower(float power) {
+		return sendCommand("/settings/power/0?power=" + power);
 	}
 
 	@Override
@@ -158,17 +174,21 @@ public class Shelly1 extends AbstractG1Device implements RelayCommander {
 		errors.add(sendCommand("/settings?" + jsonNodeToURLPar(settings, "longpush_time", "factory_reset_from_switch",
 				"wifirecovery_reboot_enabled", "ext_switch_enable", "ext_switch_reverse"/*, "eco_mode_enabled"*/) +
 				"&ext_sensors_temperature_unit=" + settings.path("ext_sensors").path("temperature_unit")));
-		
+
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 		errors.add(relay.restore(settings.get("relays").get(0)));
+		
+		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); // Shelly 1 specific
+		errors.add(setPower(settings.get("relays").get(0).get("power").floatValue()));
 
-//		errors.add(sendCommand("/settings?ext_sensors_temperature_unit=" + settings.path("ext_sensors").path("temperature_unit")));
-		for(int i = 0; i < 3; i++) {
+		// errors.add(sendCommand("/settings?ext_sensors_temperature_unit=" +
+		// settings.path("ext_sensors").path("temperature_unit")));
+		for (int i = 0; i < 3; i++) {
 			JsonNode extT = settings.path("ext_temperature").path(i + "");
-//			if(extT.isEmpty() == false) {
+			// if(extT.isEmpty() == false) {
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			errors.add(sendCommand("/settings/ext_temperature/" + i + "?" + jsonEntryIteratorToURLPar(extT.fields())));
-//			}
+			// }
 		}
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 		errors.add(sendCommand("/settings/ext_humidity/0?" + jsonEntryIteratorToURLPar(settings.path("ext_humidity").path("0").fields())));

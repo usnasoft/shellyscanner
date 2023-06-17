@@ -17,6 +17,8 @@ public abstract class Meters implements Comparable<Meters> {
 		L, // lux
 		TX1, // temperature (celsius)
 		TX2, // temperature (celsius)
+		TX3, // temperature (celsius)
+		TX4, // temperature (celsius)
 		EXS, // ext switch status
 		PERC // 0-100
 	};

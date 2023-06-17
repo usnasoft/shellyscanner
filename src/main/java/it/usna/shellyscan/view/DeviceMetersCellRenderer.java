@@ -31,6 +31,7 @@ public class DeviceMetersCellRenderer extends DefaultTableCellRenderer {
 	private final static Border FOCUS_BORDER = UIManager.getBorder("Table.focusCellHighlightBorder");
 	private final static Font LABEL_FONT = new Font("Tahoma", Font.BOLD, 11);
 	private final Object[] singleArrayObj = new Object[1];
+	private final static MessageFormat SWITCH_FORMATTER = new MessageFormat(Main.LABELS.getString("METER_VAL_EXS"), Locale.ENGLISH);
 	
 	private final static JLabel EMPTY = new JLabel();
 	private final static GridBagConstraints GBC_FILLER = new GridBagConstraints();
@@ -76,7 +77,7 @@ public class DeviceMetersCellRenderer extends DefaultTableCellRenderer {
 					float metValue = m.getValue(t);
 					if(t == Meters.Type.EXS) {
 						singleArrayObj[0] = metValue;
-						val = new JLabel(MessageFormat.format(Main.LABELS.getString("METER_VAL_EXS"), singleArrayObj));
+						val = new JLabel(SWITCH_FORMATTER.format(singleArrayObj));
 					} else {
 						val = new JLabel(String.format(Locale.ENGLISH, Main.LABELS.getString("METER_VAL_" + t), metValue));
 						if(metValue == 0f) {

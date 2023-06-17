@@ -13,6 +13,7 @@ import java.awt.event.MouseEvent;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.net.URL;
+import java.text.MessageFormat;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.Arrays;
@@ -63,6 +64,7 @@ import it.usna.swing.table.ExTooltipTable;
 import it.usna.swing.table.UsnaTableModel;
 
 public class DevicesTable extends ExTooltipTable {
+	private static final long serialVersionUID = 1L;
 	private final static URL OFFLINEIMG = MainView.class.getResource("/images/bullet_stop.png");
 	public final static ImageIcon ONLINE_BULLET = new ImageIcon(MainView.class.getResource("/images/bullet_yes.png"), LABELS.getString("labelDevOnLIne"));
 	public final static ImageIcon ONLINE_BULLET_REBOOT = new ImageIcon(MainView.class.getResource("/images/bullet_yes_reboot.png"), LABELS.getString("labelDevOnLIneReboot"));
@@ -75,8 +77,8 @@ public class DevicesTable extends ExTooltipTable {
 	private final static String FALSE = LABELS.getString("false_yn");
 	private final static String YES = LABELS.getString("true_yna");
 	private final static String NO = LABELS.getString("false_yna");
+	private final static MessageFormat SWITCH_FORMATTER = new MessageFormat(Main.LABELS.getString("METER_VAL_EXS"), Locale.ENGLISH); // tooltip
 	
-	private static final long serialVersionUID = 1L;
 	// model columns indexes
 	final static int COL_STATUS_IDX = 0;
 	final static int COL_TYPE = 1;
@@ -252,7 +254,11 @@ public class DevicesTable extends ExTooltipTable {
 							tt += "<td><b>" + ((LabelHolder)m).getLabel() + "</b>&nbsp;</td>";
 						}
 						for(Meters.Type t: m.getTypes()) {
-							tt += "<td><i>" +  LABELS.getString("METER_LBL_" + t) + "</i>&nbsp;</td><td align='right'>" + String.format(Locale.ENGLISH, LABELS.getString("METER_VAL_" + t), m.getValue(t)) + "&nbsp;</td>";
+							if(t == Meters.Type.EXS) {
+								tt += "<td><i>" +  LABELS.getString("METER_LBL_" + t) + "</i>&nbsp;</td><td align='right'>" + SWITCH_FORMATTER.format(new Object [] {m.getValue(t)}) + "&nbsp;</td>";
+							} else {
+								tt += "<td><i>" +  LABELS.getString("METER_LBL_" + t) + "</i>&nbsp;</td><td align='right'>" + String.format(Locale.ENGLISH, LABELS.getString("METER_VAL_" + t), m.getValue(t)) + "&nbsp;</td>";
+							}
 						}
 						tt += "</tr>";
 					}
