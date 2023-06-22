@@ -3,6 +3,7 @@ package it.usna.shellyscan.model.device.g2;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.ArrayList;
+import java.util.Map;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -41,7 +42,8 @@ public class ShellyPlusWallDimmer extends AbstractG2Device implements WhiteComma
 	}
 
 	@Override
-	protected void restore(JsonNode configuration, ArrayList<String> errors) throws IOException, InterruptedException {
+	protected void restore(Map<String, JsonNode> backupJsons, ArrayList<String> errors) throws IOException, InterruptedException {
+		JsonNode configuration = backupJsons.get("Shelly.GetConfig.json");
 		errors.add(light.restore(configuration));
 		errors.add(postCommand("WD_UI.SetConfig", "{\"config\":" + jsonMapper.writeValueAsString(configuration.get("wd_ui")) + "}"));
 	}

@@ -45,7 +45,7 @@ public class ShellyPlus2PM extends AbstractG2Device implements RelayCommander, R
 	protected void init(JsonNode devInfo) throws IOException {
 		final JsonNode config = getJSON("/rpc/Shelly.GetConfig");
 		if(SensorAddOn.ADDON_TYPE.equals(config.get("sys").get("device").path("addon_type").asText())) {
-			addOn = new SensorAddOn(getJSON("/rpc/SensorAddon.GetPeripherals"));
+			addOn = new SensorAddOn(this);
 		}
 		
 		meters0 = new Meters() {
@@ -220,7 +220,8 @@ public class ShellyPlus2PM extends AbstractG2Device implements RelayCommander, R
 	}
 
 	@Override
-	protected void restore(JsonNode configuration, ArrayList<String> errors) throws IOException, InterruptedException {
+	protected void restore(Map<String, JsonNode> backupJsons, ArrayList<String> errors) throws IOException, InterruptedException {
+		JsonNode configuration = backupJsons.get("Shelly.GetConfig.json");
 		final boolean backModeRelay = MODE_RELAY.equals(configuration.get("sys").get("device").get("profile").asText());
 		errors.add(Input.restore(this,configuration, "0"));
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);

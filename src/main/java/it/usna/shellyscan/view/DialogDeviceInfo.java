@@ -214,7 +214,7 @@ public class DialogDeviceInfo extends JDialog {
 			try {
 				if (Thread.interrupted() == false) {
 					textArea.setForeground(Color.BLACK);
-					String log = device.getJSONAsString(info);
+					String log = device.httpGetAsString(info);
 					textArea.setText(log);
 					textArea.setCaretPosition(0);
 				}

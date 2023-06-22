@@ -1,5 +1,6 @@
 package it.usna.shellyscan.model.device.g2.modules;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -11,6 +12,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import it.usna.shellyscan.model.device.Meters;
+import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 
 public class SensorAddOn extends Meters {
 	private final static Logger LOG = LoggerFactory.getLogger(Meters.class);
@@ -33,8 +35,9 @@ public class SensorAddOn extends Meters {
 	private String voltmeterID;
 	private float volt;
 	
-	public SensorAddOn(JsonNode peripherals) {
+	public SensorAddOn(AbstractG2Device d) throws IOException {
 		try {
+			JsonNode peripherals = d.getJSON("/rpc/SensorAddon.GetPeripherals");
 			ArrayList<Meters.Type> types = new ArrayList<>();
 			
 			ObjectNode dht22Node = ((ObjectNode)peripherals.get("dht22"));
@@ -80,6 +83,7 @@ public class SensorAddOn extends Meters {
 			}
 			supported = types.toArray(new Type[types.size()]);
 		} catch (RuntimeException e) {
+			supported = new Type[0];
 			LOG.error("Add-on init error", e);
 		}
 	}
@@ -168,6 +172,7 @@ public class SensorAddOn extends Meters {
 		case T: return extT0;
 		case TX1: return extT1;
 		case TX2: return extT2;
+		case TX3: return extT3;
 		case TX4: return extT4;
 		case H: return humidity;
 		default: return 0;
@@ -179,6 +184,14 @@ public class SensorAddOn extends Meters {
 		newArray[cmd.length] = "/rpc/SensorAddon.GetPeripherals";
 		return newArray;
 	}
+	
+	public static void enable(AbstractG2Device d, boolean enable) {
+		d.postCommand("Sys.SetConfig", "{\"config\":{\"device\":{\"addon_type\":" + (enable ? "\"sensor\"" : "null") + "}}}");
+	}
+	
+//	public static String restore(AbstractG2Device d, JsonNode config) {
+//		return null;
+//	}
 }
 
 // https://shelly-api-docs.shelly.cloud/gen2/Addons/ShellySensorAddon/

@@ -3,6 +3,7 @@ package it.usna.shellyscan.model.device.g2;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -56,7 +57,7 @@ public class ShellyPlus1PM extends AbstractG2Device implements RelayCommander, I
 		
 		final JsonNode config = getJSON("/rpc/Shelly.GetConfig");
 		if(SensorAddOn.ADDON_TYPE.equals(config.get("sys").get("device").path("addon_type").asText())) {
-			addOn = new SensorAddOn(getJSON("/rpc/SensorAddon.GetPeripherals"));
+			addOn = new SensorAddOn(this);
 			meters = new Meters[] {m0, addOn};
 		} else {
 			meters = new Meters[] {m0};
@@ -139,7 +140,8 @@ public class ShellyPlus1PM extends AbstractG2Device implements RelayCommander, I
 	}
 
 	@Override
-	protected void restore(JsonNode configuration, ArrayList<String> errors) throws IOException, InterruptedException {
+	protected void restore(Map<String, JsonNode> backupJsons, ArrayList<String> errors) throws IOException, InterruptedException {
+		JsonNode configuration = backupJsons.get("Shelly.GetConfig.json");
 		errors.add(Input.restore(this, configuration, "0"));
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 		errors.add(relay.restore(configuration));

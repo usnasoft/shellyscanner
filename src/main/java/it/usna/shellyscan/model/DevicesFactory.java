@@ -86,7 +86,7 @@ public class DevicesFactory {
 				Thread.sleep(Devices.MULTI_QUERY_DELAY);
 			} catch(IOException | TimeoutException | InterruptedException | ExecutionException e) { // SocketTimeoutException extends IOException
 				LOG.error("create", e);
-				ShellyAbstractDevice d = new ShellyG1Unmanaged(address, port, name, e); // no mac available (info) -> try to desume from hostname
+				ShellyG1Unmanaged d = new ShellyG1Unmanaged(address, port, name, e); // no mac available (info) -> try to desume from hostname
 				d.setHttpClient(httpClient);
 				d.setMacAddress(name.substring(Math.max(name.length() - 12, 0), name.length()).toUpperCase());
 				return d;
