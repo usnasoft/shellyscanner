@@ -68,6 +68,7 @@ import it.usna.shellyscan.controller.SelectionAction;
 import it.usna.shellyscan.controller.UsnaAction;
 import it.usna.shellyscan.controller.UsnaSelectedAction;
 import it.usna.shellyscan.model.Devices;
+import it.usna.shellyscan.model.DevicesStore;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice.Restore;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
@@ -208,7 +209,10 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		JOptionPane.showMessageDialog(MainView.this, ep, Main.APP_NAME, JOptionPane.INFORMATION_MESSAGE, new ImageIcon(Main.class.getResource("/images/ShSc.png")));
 	});
 	
-	private Action loginAction = new UsnaSelectedAction(this, devicesTable, "action_nema_login", null, "/images/Key16.png", null,
+	private Action loginAction = new UsnaSelectedAction(this, devicesTable, "action_name_login", null, "/images/Key16.png", null,
+			i -> model.create(model.get(i).getAddress(), model.get(i).getPort(), null, model.get(i).getHostname()) );
+	
+	private Action reloadAction = new UsnaSelectedAction(this, devicesTable, "action_name_reload", null, "/images/Loop16.png", null,
 			i -> model.create(model.get(i).getAddress(), model.get(i).getPort(), null, model.get(i).getHostname()) );
 
 	private Action backupAction = new UsnaAction(this, "action_back_name", "action_back_tooltip", "/images/Download16.png", "/images/Download.png", e -> {
@@ -405,7 +409,9 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 	});
 	
 	private Action detailedViewAction = new UsnaAction(this, "/images/Plus.png", "action_show_detail_tooltip", e -> {
-		detailedView(((JToggleButton)e.getSource()).isSelected());
+		SwingUtilities.invokeLater(() -> {
+			detailedView(((JToggleButton)e.getSource()).isSelected());
+		});
 	});
 	
 	private Action printAction = new UsnaAction(this, "/images/Printer.png", "action_print_tooltip", e -> {
@@ -524,9 +530,9 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		btnSelectOnline.setBorder(BorderFactory.createEmptyBorder(2, 7, 2, 8));
 		statusButtonPanel.add(btnSelectOnline);
 		
-		JButton btnSelectCombo = new JButton(new ImageIcon(MainView.class.getResource("/images/Arrow16down.png")));
+		JButton btnSelectCombo = new JButton(new ImageIcon(MainView.class.getResource("/images/expand-more.png")));
 		btnSelectCombo.setContentAreaFilled(false);
-		btnSelectCombo.setBorder(BorderFactory.createEmptyBorder(2, 1, 2, 1));
+		btnSelectCombo.setBorder(BorderFactory.createEmptyBorder(1, 0, 1, 2));
 		statusButtonPanel.add(btnSelectCombo);
 		
 		statusPanel.add(statusButtonPanel, BorderLayout.EAST);
@@ -540,7 +546,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		btnSelectCombo.addMouseListener(popupListener);
 		btnSelectOnline.addMouseListener(popupListener);
 		btnSelectAll.addMouseListener(popupListener);
-		;
+
 		btnSelectCombo.addActionListener(e -> selectionPopup.show(btnSelectCombo, 0, 0));
 		
 		statusPanel.setBackground(Main.STATUS_LINE);
@@ -590,16 +596,17 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		toolBar.add(appSettingsAction);
 		toolBar.add(aboutAction);
 		
-		UsnaPopupMenu tablePopup = new UsnaPopupMenu(infoAction, browseAction, backupAction, restoreAction, copyHostAction, loginAction) {
+		UsnaPopupMenu tablePopup = new UsnaPopupMenu(infoAction, browseAction, backupAction, restoreAction, copyHostAction, reloadAction, loginAction) {
 			private static final long serialVersionUID = 1L;
 			@Override
 			protected void doPopup(MouseEvent evt) {
 				final int r;
-				if((r = devicesTable.rowAtPoint(evt.getPoint())) >= 0 /*&& (c = devicesTable.columnAtPoint(evt.getPoint())) >= 0*/) {
+				if((r = devicesTable.rowAtPoint(evt.getPoint())) >= 0) {
 //					devicesTable.changeSelection(r, c, false, false);
 					devicesTable.setRowSelectionInterval(r, r); // add
-					final int modelRow = devicesTable.convertRowIndexToModel(r);
-					loginAction.setEnabled(model.get(modelRow).getStatus() == Status.NOT_LOOGGED);
+					boolean notLogged = model.get(devicesTable.convertRowIndexToModel(r)).getStatus() == Status.NOT_LOOGGED;
+					loginAction.setEnabled(notLogged);
+					reloadAction.setEnabled(notLogged == false);
 					show(devicesTable, evt.getX(), evt.getY());
 				}
 			}
@@ -608,7 +615,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		
 		devicesTable.addMouseListener(new MouseAdapter() {
 		    public void mousePressed(MouseEvent evt) {
-		        if (evt.getClickCount() == 2 && devicesTable.getSelectedRow() != -1 && devicesTable.isCellEditable(devicesTable.getSelectedRow(), devicesTable.getSelectedColumn()) == false) {
+		        if (evt.getClickCount() == 2 && devicesTable.getSelectedRow() >= 0 && devicesTable.isCellEditable(devicesTable.getSelectedRow(), devicesTable.getSelectedColumn()) == false) {
 		        	if(appProp.getProperty(DialogAppSettings.PROP_DCLICK_ACTION, DialogAppSettings.PROP_DCLICK_ACTION_DEFAULT).equals("DET")) {
 		        		infoAction.actionPerformed(null);
 		        	} else {
@@ -685,28 +692,30 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 			if(tModel.getRowCount() > 0) { // no device found yet: maybe it will adapt later while maximized
 				devicesTable.saveColWidth(unextendedProp, "");
 			}
-			String detScreenMode = appProp.getProperty(DialogAppSettings.PROP_DETAILED_VIEW_SCREEN, DialogAppSettings.PROP_DETAILED_VIEW_SCREEN_DEFAULT);
-			if(detScreenMode.equals(DialogAppSettings.PROP_DETAILED_VIEW_SCREEN_FULL) && getExtendedState() != JFrame.MAXIMIZED_BOTH) {
-				setExtendedState(JFrame.MAXIMIZED_BOTH);
-			} else if(detScreenMode.equals(DialogAppSettings.PROP_DETAILED_VIEW_SCREEN_HORIZONTAL) && getExtendedState() != JFrame.MAXIMIZED_BOTH) {
-				setExtendedState(JFrame.MAXIMIZED_HORIZ);
-			} else if(detScreenMode.equals(DialogAppSettings.PROP_DETAILED_VIEW_SCREEN_ESTIMATE) && getExtendedState() != JFrame.MAXIMIZED_BOTH) {
-				Rectangle screen = getCurrentScreenBounds();
-				int visible = devicesTable.getColumnCount();
-				int total = tModel.getColumnCount();
-				Rectangle current = this.getBounds();
-				current.width = current.width * total / visible;
-				if(current.x + current.width > screen.x + screen.width) { // out of right margin
-					current.x = screen.x + screen.width - current.width;
-				}
-				if(current.x < screen.x) { // too wide; larger than screen
-					setExtendedState(JFrame.MAXIMIZED_HORIZ);
-				} else {
-					setBounds(current);
-				}
-			} // else size unchanged
-			for(int i = 0; i < tModel.getColumnCount(); i++) {
+			final int visible = devicesTable.getColumnCount();
+			final int total = tModel.getColumnCount();
+			for(int i = 0; i < total; i++) {
 				devicesTable.showColumn(i, -1);
+			}
+			String detScreenMode = appProp.getProperty(DialogAppSettings.PROP_DETAILED_VIEW_SCREEN, DialogAppSettings.PROP_DETAILED_VIEW_SCREEN_DEFAULT);
+			if(getExtendedState() != JFrame.MAXIMIZED_BOTH) {
+				if(detScreenMode.equals(DialogAppSettings.PROP_DETAILED_VIEW_SCREEN_FULL)) {
+					setExtendedState(JFrame.MAXIMIZED_BOTH);
+				} else if(detScreenMode.equals(DialogAppSettings.PROP_DETAILED_VIEW_SCREEN_HORIZONTAL)) {
+					setExtendedState(JFrame.MAXIMIZED_HORIZ);
+				} else if(detScreenMode.equals(DialogAppSettings.PROP_DETAILED_VIEW_SCREEN_ESTIMATE)) {
+					Rectangle screen = getCurrentScreenBounds();
+					Rectangle current = this.getBounds();
+					current.width = current.width * total / visible;
+					if(current.x + current.width > screen.x + screen.width) { // out of right margin
+						current.x = screen.x + screen.width - current.width;
+					}
+					if(current.x < screen.x) { // too wide; larger than screen
+						setExtendedState(JFrame.MAXIMIZED_HORIZ);
+					} else {
+						setBounds(current);
+					}
+				} // else size unchanged
 			}
 			devicesTable.columnsWidthAdapt();
 		} else {
@@ -719,6 +728,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 	}
 
 	private void storeProperties() {
+		DevicesStore.store(model);
 		if(details.isSelected()) {
 			detailedView(false);
 		}
@@ -743,6 +753,9 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 					setStatus();
 				} else if(mesgType == Devices.EventType.REMOVE) {
 					tModel.setValueAt(DevicesTable.OFFLINE_BULLET, msgBody, DevicesTable.COL_STATUS_IDX);
+				} else if(mesgType == Devices.EventType.SUBSTITUTE) {
+					devicesTable.updateRow(model.get(msgBody), msgBody);
+					devicesTable.columnsWidthAdapt();
 				} else if(mesgType == Devices.EventType.READY) {
 					setStatus();
 					rescanAction.setEnabled(true);

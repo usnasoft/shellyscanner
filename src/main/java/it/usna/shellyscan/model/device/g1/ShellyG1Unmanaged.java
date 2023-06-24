@@ -5,6 +5,8 @@ import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
+import org.eclipse.jetty.client.HttpClient;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -55,6 +57,10 @@ public class ShellyG1Unmanaged extends AbstractG1Device implements ShellyUnmanag
 			this.ex = e;
 			name = "";
 		}
+	}
+
+	public void setHttpClient(HttpClient httpClient) {
+		this.httpClient = httpClient;
 	}
 	
 	public String getTypeName() {

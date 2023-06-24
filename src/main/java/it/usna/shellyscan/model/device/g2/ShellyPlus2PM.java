@@ -14,8 +14,8 @@ import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.g2.modules.Input;
 import it.usna.shellyscan.model.device.g2.modules.Relay;
 import it.usna.shellyscan.model.device.g2.modules.Roller;
+import it.usna.shellyscan.model.device.g2.modules.SensorAddOn;
 import it.usna.shellyscan.model.device.modules.RelayCommander;
-import it.usna.shellyscan.model.device.modules.RelayInterface;
 import it.usna.shellyscan.model.device.modules.RollerCommander;
 
 public class ShellyPlus2PM extends AbstractG2Device implements RelayCommander, RollerCommander, InternalTmpHolder {
@@ -31,6 +31,7 @@ public class ShellyPlus2PM extends AbstractG2Device implements RelayCommander, R
 	private Meters meters0, meters1;
 	private float pf0, pf1;
 	private Meters[] meters;
+	private SensorAddOn addOn;
 	
 	private final static String MSG_RESTORE_MODE_ERROR = "msgRestorePlus2PMMode";
 
@@ -38,6 +39,14 @@ public class ShellyPlus2PM extends AbstractG2Device implements RelayCommander, R
 
 	public ShellyPlus2PM(InetAddress address, int port, String hostname) {
 		super(address, port, hostname);
+	}
+	
+	@Override
+	protected void init(JsonNode devInfo) throws IOException {
+		final JsonNode config = getJSON("/rpc/Shelly.GetConfig");
+		if(SensorAddOn.ADDON_TYPE.equals(config.get("sys").get("device").path("addon_type").asText())) {
+			addOn = new SensorAddOn(this);
+		}
 		
 		meters0 = new Meters() {
 			public Type[] getTypes() {
@@ -75,6 +84,12 @@ public class ShellyPlus2PM extends AbstractG2Device implements RelayCommander, R
 				}
 			}
 		};
+		
+		// default init(...)
+		this.hostname = devInfo.get("id").asText("");
+		this.mac = devInfo.get("mac").asText();
+		fillSettings(config);
+		fillStatus(getJSON("/rpc/Shelly.GetStatus"));
 	}
 
 	@Override
@@ -103,8 +118,8 @@ public class ShellyPlus2PM extends AbstractG2Device implements RelayCommander, R
 	}
 
 	@Override
-	public RelayInterface[] getRelays() {
-		return new RelayInterface[] {relay0, relay1};
+	public Relay[] getRelays() {
+		return new Relay[] {relay0, relay1};
 	}
 
 	@Override
@@ -142,7 +157,7 @@ public class ShellyPlus2PM extends AbstractG2Device implements RelayCommander, R
 			if(relay0 == null /*|| relay1 == null*/) {
 				relay0 = new Relay(this, 0);
 				relay1 = new Relay(this, 1);
-				meters = new Meters[] {meters0, meters1};
+				meters = (addOn == null) ? new Meters[] {meters0, meters1} : new Meters[] {meters0, meters1, addOn};
 				roller = null; // modeRelay change
 			}
 			relay0.fillSettings(configuration.get("switch:0"));
@@ -150,7 +165,7 @@ public class ShellyPlus2PM extends AbstractG2Device implements RelayCommander, R
 		} else {
 			if(roller == null) {
 				roller = new Roller(this, 0);
-				meters = new Meters[] {meters0};
+				meters = (addOn == null) ? new Meters[] {meters0} : new Meters[] {meters0, addOn};
 				relay0 = relay1 = null; // modeRelay change
 			}
 			roller.fillSettings(configuration.get("cover:0"));
@@ -185,6 +200,15 @@ public class ShellyPlus2PM extends AbstractG2Device implements RelayCommander, R
 			internalTmp = (float)cover.path("temperature").path("tC").asDouble();
 			roller.fillStatus(cover);
 		}
+		if(addOn != null) {
+			addOn.fillStatus(status);
+		}
+	}
+	
+	@Override
+	public String[] getInfoRequests() {
+		final String[] cmd = super.getInfoRequests();
+		return (addOn != null) ? SensorAddOn.getInfoRequests(cmd) : cmd;
 	}
 	
 	@Override
@@ -196,7 +220,8 @@ public class ShellyPlus2PM extends AbstractG2Device implements RelayCommander, R
 	}
 
 	@Override
-	protected void restore(JsonNode configuration, ArrayList<String> errors) throws IOException, InterruptedException {
+	protected void restore(Map<String, JsonNode> backupJsons, ArrayList<String> errors) throws IOException, InterruptedException {
+		JsonNode configuration = backupJsons.get("Shelly.GetConfig.json");
 		final boolean backModeRelay = MODE_RELAY.equals(configuration.get("sys").get("device").get("profile").asText());
 		errors.add(Input.restore(this,configuration, "0"));
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);

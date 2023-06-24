@@ -32,6 +32,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import it.usna.shellyscan.model.device.GhostDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
 import it.usna.shellyscan.model.device.ShellyUnmanagedDevice;
@@ -44,6 +45,7 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 	public enum EventType {
 		ADD,
 		UPDATE,
+		SUBSTITUTE,
 		REMOVE,
 		READY, // Model is ready
 		CLEAR // Clear model
@@ -312,9 +314,11 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 					int ind;
 					if((ind = devices.indexOf(d)) >= 0) {
 						if(d instanceof ShellyUnmanagedDevice == false || devices.get(ind) instanceof ShellyUnmanagedDevice) { // Do not replace device if was recocnized and now is not
-							refreshProcess.get(ind).cancel(true);
+							if(refreshProcess.get(ind) != null) {
+								refreshProcess.get(ind).cancel(true);
+							}
 							devices.set(ind, d);
-							fireEvent(EventType.UPDATE, ind);
+							fireEvent(EventType.SUBSTITUTE, ind);
 							refreshProcess.set(ind, scheduleRefresh(d, ind, refreshInterval, refreshTics));
 						}
 					} else {
@@ -394,6 +398,16 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 		}
 		return -1;
 	}
+	
+	public void load() {
+		List<GhostDevice> ghosts = DevicesStore.read();
+		ghosts.forEach(d -> {
+			final int idx = devices.size();
+			devices.add(d);
+			fireEvent(EventType.ADD, idx);
+			refreshProcess.add(null);
+		});
+	}
 
 	private void clear() {
 		executor.shutdownNow(); // full clean instead of refreshProcess.forEach(f -> f.cancel(true));
@@ -406,6 +420,8 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 		LOG.trace("Model closing");
 		removeListeners();
 		executor.shutdownNow();
+		//todo
+//		DevicesStore.store(this);
 		bjServices.parallelStream().forEach(dns -> {
 			try {
 				dns.close();

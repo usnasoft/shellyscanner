@@ -3,6 +3,7 @@ package it.usna.shellyscan.model.device.g2;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.ArrayList;
+import java.util.Map;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -69,7 +70,7 @@ public class ShellyG2Unmanaged extends AbstractG2Device implements ShellyUnmanag
 	}
 	
 	@Override
-	protected void restore(JsonNode settings, ArrayList<String> errors) throws IOException {
+	protected void restore(Map<String, JsonNode> backupJsons, ArrayList<String> errors) throws IOException {
 		// basic restore? not in case of error
 	}
 	

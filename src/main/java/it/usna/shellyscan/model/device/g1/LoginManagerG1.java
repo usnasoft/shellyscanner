@@ -89,10 +89,8 @@ public class LoginManagerG1 implements LoginManager {
 			if(status == HttpStatus.OK_200) {
 //				httpClient.getAuthenticationStore().addAuthentication(new BasicAuthentication(uri, BasicAuthentication.ANY_REALM, user, new String(pwd)));
 				httpClient.getAuthenticationStore().addAuthenticationResult(creds);
-				return HttpStatus.OK_200;
-			} else {
-				return status;
 			}
+			return status;
 		} catch (InterruptedException | ExecutionException | TimeoutException e) {
 			return HttpStatus.INTERNAL_SERVER_ERROR_500;
 		}

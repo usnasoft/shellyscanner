@@ -276,10 +276,14 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			sectionToStream("/rpc/Webhook.List", "Webhook.List.json", out);
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-			sectionToStream("/rpc/Script.List", "Script.List.json", out);
+			final byte[] scripts = sectionToStream("/rpc/Script.List", "Script.List.json", out);
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+			try { // On device with active sensor add-on
+				sectionToStream("/rpc/SensorAddon.GetPeripherals", "SensorAddon.GetPeripherals.json", out);
+				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+			} catch(Exception e) {}
 			// Scripts
-			JsonNode scrList = getJSON("/rpc/Script.List").get("scripts");
+			JsonNode scrList = jsonMapper.readTree(scripts).get("scripts");
 			for(JsonNode scr: scrList) {
 				try {
 					Script script = new Script(this, scr);
@@ -288,6 +292,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 					out.putNextEntry(entry);
 					out.write(code, 0, code.length);
 				} catch(IOException e) {}
+				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			}
 		} catch(InterruptedException e) {
 			LOG.error("", e);
@@ -353,25 +358,30 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 	
 	@Override
 	public final String restore(final File file, Map<Restore, String> data) throws IOException {
-		try (   ZipFile in = new ZipFile(file, StandardCharsets.UTF_8);
-				InputStream isDevInfo = in.getInputStream(in.getEntry("Shelly.GetDeviceInfo.json"));
-				InputStream isConfig = in.getInputStream(in.getEntry("Shelly.GetConfig.json"));
-				InputStream isWebhook = in.getInputStream(in.getEntry("Webhook.List.json")) ) {
+		try (ZipFile in = new ZipFile(file, StandardCharsets.UTF_8)) {
+			final Map<String, JsonNode> backupJsons = in.stream().filter(entry -> entry.getName().endsWith(".json")).collect(Collectors.toMap(ZipEntry::getName, entry -> {
+				try (InputStream is = in.getInputStream(entry)) {
+					return jsonMapper.readTree(is);
+				} catch (IOException e) {
+					throw new RuntimeException(e);
+				}
+			}));
+			
 			final ArrayList<String> errors = new ArrayList<>();
-			JsonNode config = jsonMapper.readTree(isConfig);
-			restore(config, errors);
+			JsonNode config = backupJsons.get("Shelly.GetConfig.json");
+			restore(backupJsons, errors);
 			restoreCommonConfig(config, data, errors);
-			try (InputStream isSchedule = in.getInputStream(in.getEntry("Schedule.List.json"))) { // some devices do not have Schedule.List +H&T
-				restoreSchedule(jsonMapper.readTree(isSchedule), errors);
-			} catch(Exception e) {}
-			Webhooks.restore(this, jsonMapper.readTree(isWebhook), errors);
+			JsonNode schedule = backupJsons.get("Schedule.List.json");
+			if(schedule != null) {  // some devices do not have Schedule.List +H&T
+				restoreSchedule(schedule, errors);
+			}
+			Webhooks.restore(this, backupJsons.get("Webhook.List.json"), errors);
 
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-			JsonNode devInfo = jsonMapper.readTree(isDevInfo);
 			LoginManagerG2 lm = new LoginManagerG2(this, true);
 			if(data.containsKey(Restore.RESTORE_LOGIN)) {
 				errors.add(lm.set(null, data.get(Restore.RESTORE_LOGIN).toCharArray()));
-			} else if(devInfo.path("auth_en").asBoolean() == false) {
+			} else if(backupJsons.get("Shelly.GetDeviceInfo.json").path("auth_en").asBoolean() == false) {
 				errors.add(lm.disable());
 			}
 			
@@ -392,12 +402,15 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 			}
 			return errors.stream().filter(s-> s != null && s.length() > 0).collect(Collectors.joining("; "));
 		} catch(RuntimeException | InterruptedException e) {
+			if(e.getCause() instanceof IOException) {
+				throw (IOException)e.getCause();
+			} 
 			LOG.error("restore", e);
 			return Restore.ERR_UNKNOWN.toString();
 		}
 	}
 	
-	protected abstract void restore(JsonNode fileConfig, ArrayList<String> errors) throws IOException, InterruptedException;
+	protected abstract void restore(Map<String, JsonNode> backupJsons, ArrayList<String> errors) throws IOException, InterruptedException;
 	
 	//curl -X POST -d '{"id": 1, "method": "Sys.SetConfig", "params": {"config": {"location": {"tz": "Europe/Sofia"}}}}' http://${SHELLY}/rpc
 	void restoreCommonConfig(JsonNode config, Map<Restore, String> data, ArrayList<String> errors) throws InterruptedException, IOException {
@@ -448,4 +461,4 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 			errors.add(postCommand("Schedule.Create", thisSc));
 		}
 	}
-}
+} // 458

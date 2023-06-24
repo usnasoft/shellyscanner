@@ -13,6 +13,7 @@ import java.awt.event.MouseEvent;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.net.URL;
+import java.text.MessageFormat;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.Arrays;
@@ -63,6 +64,7 @@ import it.usna.swing.table.ExTooltipTable;
 import it.usna.swing.table.UsnaTableModel;
 
 public class DevicesTable extends ExTooltipTable {
+	private static final long serialVersionUID = 1L;
 	private final static URL OFFLINEIMG = MainView.class.getResource("/images/bullet_stop.png");
 	public final static ImageIcon ONLINE_BULLET = new ImageIcon(MainView.class.getResource("/images/bullet_yes.png"), LABELS.getString("labelDevOnLIne"));
 	public final static ImageIcon ONLINE_BULLET_REBOOT = new ImageIcon(MainView.class.getResource("/images/bullet_yes_reboot.png"), LABELS.getString("labelDevOnLIneReboot"));
@@ -70,12 +72,13 @@ public class DevicesTable extends ExTooltipTable {
 	public final static ImageIcon LOGIN_BULLET = new ImageIcon(MainView.class.getResource("/images/bullet_star_yellow.png"), LABELS.getString("labelDevNotLogged"));
 	public final static ImageIcon UPDATING_BULLET = new ImageIcon(MainView.class.getResource("/images/bullet_refresh.png"), LABELS.getString("labelDevUpdating"));
 	public final static ImageIcon ERROR_BULLET = new ImageIcon(MainView.class.getResource("/images/bullet_error.png"), LABELS.getString("labelDevError"));
+	public final static ImageIcon GHOST_BULLET = new ImageIcon(MainView.class.getResource("/images/bullet_ghost.png"), LABELS.getString("labelDevGhost"));
 	private final static String TRUE = LABELS.getString("true_yn");
 	private final static String FALSE = LABELS.getString("false_yn");
 	private final static String YES = LABELS.getString("true_yna");
 	private final static String NO = LABELS.getString("false_yna");
+	private final static MessageFormat SWITCH_FORMATTER = new MessageFormat(Main.LABELS.getString("METER_VAL_EXS"), Locale.ENGLISH); // tooltip
 	
-	private static final long serialVersionUID = 1L;
 	// model columns indexes
 	final static int COL_STATUS_IDX = 0;
 	final static int COL_TYPE = 1;
@@ -251,7 +254,11 @@ public class DevicesTable extends ExTooltipTable {
 							tt += "<td><b>" + ((LabelHolder)m).getLabel() + "</b>&nbsp;</td>";
 						}
 						for(Meters.Type t: m.getTypes()) {
-							tt += "<td><i>" +  LABELS.getString("METER_LBL_" + t) + "</i>&nbsp;</td><td align='right'>" + String.format(Locale.ENGLISH, LABELS.getString("METER_VAL_" + t), m.getValue(t)) + "&nbsp;</td>";
+							if(t == Meters.Type.EXS) {
+								tt += "<td><i>" +  LABELS.getString("METER_LBL_" + t) + "</i>&nbsp;</td><td align='right'>" + SWITCH_FORMATTER.format(new Object [] {m.getValue(t)}) + "&nbsp;</td>";
+							} else {
+								tt += "<td><i>" +  LABELS.getString("METER_LBL_" + t) + "</i>&nbsp;</td><td align='right'>" + String.format(Locale.ENGLISH, LABELS.getString("METER_VAL_" + t), m.getValue(t)) + "&nbsp;</td>";
+							}
 						}
 						tt += "</tr>";
 					}
@@ -385,7 +392,8 @@ public class DevicesTable extends ExTooltipTable {
 			row[DevicesTable.COL_MAC_IDX] = d.getMacAddress();
 			row[DevicesTable.COL_IP_IDX] = /*d.getAddress()*/new InetAddressAndPort(d);
 			row[DevicesTable.COL_SSID_IDX] = d.getSSID();
-			if(d.getStatus() != Status.NOT_LOOGGED && d.getStatus() != Status.ERROR /*&&(d instanceof ShellyUnmanagedDevice == false || ((ShellyUnmanagedDevice)d).geException() == null)*/) {
+			Status status = d.getStatus();
+			if(status != Status.NOT_LOOGGED && status != Status.ERROR && status != Status.GHOST /*&&(d instanceof ShellyUnmanagedDevice == false || ((ShellyUnmanagedDevice)d).geException() == null)*/) {
 				row[DevicesTable.COL_RSSI_IDX] = d.getRssi();
 				row[DevicesTable.COL_CLOUD] = (d.getCloudEnabled() ? TRUE : FALSE) + " " + (d.getCloudConnected() ? TRUE : FALSE);
 				row[DevicesTable.COL_MQTT] = (d.getMQTTEnabled() ? TRUE : FALSE) + " " + (d.getMQTTConnected() ? TRUE : FALSE);
@@ -463,6 +471,8 @@ public class DevicesTable extends ExTooltipTable {
 			}
 		} else if(d.getStatus() == Status.READING) {
 			return UPDATING_BULLET;
+		} else if(d.getStatus() == Status.GHOST) {
+			return GHOST_BULLET;
 		} else if(d.getStatus() == Status.ERROR) {
 			return ERROR_BULLET;
 		} else { // Status.NOT_LOOGGED

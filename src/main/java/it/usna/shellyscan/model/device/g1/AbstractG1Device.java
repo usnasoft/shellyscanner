@@ -155,7 +155,11 @@ public abstract class AbstractG1Device extends ShellyAbstractDevice {
 	}
 	
 	public void setDebugMode(LogMode mode) {
-		sendCommand("/settings?debug_enable=" + (mode != LogMode.NO));
+		try {
+			this.debugEnabled = getJSON("/settings?debug_enable=" + (mode != LogMode.NO)).path("debug_enable").asBoolean(false) ? LogMode.FILE : LogMode.NO;
+		} catch (IOException e) {
+			LOG.warn("setDebugMode:" + mode, e);
+		}
 	}
 	
 	@Override

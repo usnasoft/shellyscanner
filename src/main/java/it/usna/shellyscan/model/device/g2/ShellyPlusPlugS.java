@@ -7,72 +7,52 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.InternalTmpHolder;
 import it.usna.shellyscan.model.device.Meters;
-import it.usna.shellyscan.model.device.g2.modules.Input;
 import it.usna.shellyscan.model.device.g2.modules.Relay;
-import it.usna.shellyscan.model.device.g2.modules.SensorAddOn;
 import it.usna.shellyscan.model.device.modules.RelayCommander;
+import it.usna.shellyscan.model.device.modules.RelayInterface;
 
-public class ShellyPlus1PM extends AbstractG2Device implements RelayCommander, InternalTmpHolder {
-	public final static String ID = "Plus1PM";
-//	private final static JsonPointer SW_TEMP_P = JsonPointer.valueOf("/temperature/tC");
-	private final static Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.W, Meters.Type.PF, Meters.Type.V, Meters.Type.I};
+public class ShellyPlusPlugS extends AbstractG2Device implements RelayCommander, InternalTmpHolder {
+	public final static String ID = "PlusPlugS";
+	private final static Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.W, Meters.Type.V, Meters.Type.I};
 	private Relay relay = new Relay(this, 0);
 	private float internalTmp;
 	private float power;
 	private float voltage;
 	private float current;
-	private float pf;
-	private Relay[] relays = new Relay[] {relay};
 	private Meters[] meters;
-	private SensorAddOn addOn;
 
-	public ShellyPlus1PM(InetAddress address, int port, String hostname) {
+	public ShellyPlusPlugS(InetAddress address, int port, String hostname) {
 		super(address, port, hostname);
-	}
-	
-	@Override
-	protected void init(JsonNode devInfo) throws IOException {
-		Meters m0 = new Meters() {
-			public Type[] getTypes() {
-				return SUPPORTED_MEASURES;
-			}
+		
+		meters = new Meters[] {
+				new Meters() {
+					public Type[] getTypes() {
+						return SUPPORTED_MEASURES;
+					}
 
-			@Override
-			public float getValue(Type t) {
-				if(t == Meters.Type.W) {
-					return power;
-				} else if(t == Meters.Type.I) {
-					return current;
-				} else if(t == Meters.Type.PF) {
-					return pf;
-				} else {
-					return voltage;
+					@Override
+					public float getValue(Type t) {
+						if(t == Meters.Type.W) {
+							return power;
+						} else if(t == Meters.Type.I) {
+							return current;
+						} else {
+							return voltage;
+						}
+					}
 				}
-			}
 		};
-		
-		final JsonNode config = getJSON("/rpc/Shelly.GetConfig");
-		if(SensorAddOn.ADDON_TYPE.equals(config.get("sys").get("device").path("addon_type").asText())) {
-			addOn = new SensorAddOn(this);
-			meters = new Meters[] {m0, addOn};
-		} else {
-			meters = new Meters[] {m0};
-		}
-		
-		// default init(...)
-		this.hostname = devInfo.get("id").asText("");
-		this.mac = devInfo.get("mac").asText();
-		fillSettings(config);
-		fillStatus(getJSON("/rpc/Shelly.GetStatus"));
 	}
 	
 	@Override
 	public String getTypeName() {
-		return "Shelly +1PM";
+		return "Plug +S";
 	}
 	
 	@Override
@@ -86,8 +66,8 @@ public class ShellyPlus1PM extends AbstractG2Device implements RelayCommander, I
 	}
 	
 	@Override
-	public Relay[] getRelays() {
-		return relays;
+	public RelayInterface[] getRelays() {
+		return new Relay[] {relay};
 	}
 	
 	@Override
@@ -122,28 +102,22 @@ public class ShellyPlus1PM extends AbstractG2Device implements RelayCommander, I
 	protected void fillStatus(JsonNode status) throws IOException {
 		super.fillStatus(status);
 		JsonNode switchStatus = status.get("switch:0");
-		relay.fillStatus(switchStatus, status.get("input:0"));
+		relay.fillStatus(switchStatus);
 		internalTmp = (float)switchStatus.path("temperature").path("tC").asDouble();
 		power = (float)switchStatus.get("apower").asDouble(0);
 		voltage = (float)switchStatus.get("voltage").asDouble(0);
 		current = (float)switchStatus.get("current").asDouble(0);
-		pf = (float)switchStatus.get("pf").asDouble();
-		if(addOn != null) {
-			addOn.fillStatus(status);
-		}
-	}
-	
-	@Override
-	public String[] getInfoRequests() {
-		final String[] cmd = super.getInfoRequests();
-		return (addOn != null) ? SensorAddOn.getInfoRequests(cmd) : cmd;
 	}
 
 	@Override
 	protected void restore(Map<String, JsonNode> backupJsons, ArrayList<String> errors) throws IOException, InterruptedException {
 		JsonNode configuration = backupJsons.get("Shelly.GetConfig.json");
-		errors.add(Input.restore(this, configuration, "0"));
+		JsonNode ui = configuration.get("plugs_ui").deepCopy();
+		ObjectNode out = new JsonNodeFactory(false).objectNode();
+		out.set("config", ui);
+		errors.add(postCommand("PLUGS_UI.SetConfig", out));
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+		
 		errors.add(relay.restore(configuration));
 	}
 	

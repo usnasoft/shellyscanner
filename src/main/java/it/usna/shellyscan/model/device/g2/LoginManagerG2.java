@@ -112,12 +112,10 @@ public class LoginManagerG2 implements LoginManager {
 		try {
 			aStore.addAuthentication(da);
 			int status = httpClient.GET("http://" + address.getHostAddress() + ":" + port + testCommand).getStatus();
-			if(status == HttpStatus.OK_200) {
-				return HttpStatus.OK_200;
-			} else {
+			if(status != HttpStatus.OK_200) {
 				aStore.removeAuthentication(da);
-				return status;
 			}
+			return status;
 		} catch (InterruptedException | TimeoutException | ExecutionException e) {
 			aStore.removeAuthentication(da);
 			return HttpStatus.INTERNAL_SERVER_ERROR_500;

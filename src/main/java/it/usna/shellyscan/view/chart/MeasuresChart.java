@@ -232,7 +232,7 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 						out = new File(out.getParentFile(), out.getName() + ".csv");
 					}
 					TimeChartsExporter exp = new TimeChartsExporter(dataset);
-					exp.exportAsCSV(out, appProp.getProperty(DialogAppSettings.PROP_CSV_SEPARATOR), btnPause.isSelected() ? (DateRange)xAxis.getRange() : null);
+					exp.exportAsCSV(out, appProp.getProperty(DialogAppSettings.PROP_CSV_SEPARATOR, DialogAppSettings.PROP_CSV_SEPARATOR_DEFAULT), btnPause.isSelected() ? (DateRange)xAxis.getRange() : null);
 					appProp.setProperty("LAST_PATH", fc.getCurrentDirectory().getPath());
 					JOptionPane.showMessageDialog(this, LABELS.getString("msgFileSaved"), Main.APP_NAME, JOptionPane.INFORMATION_MESSAGE);
 				}

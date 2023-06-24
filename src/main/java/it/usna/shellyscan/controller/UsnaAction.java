@@ -65,4 +65,9 @@ public class UsnaAction extends AbstractAction {
 			}
 		}
 	}
+	
+	@Override
+	public String toString() {
+		return (String)getValue(NAME);
+	}
 }

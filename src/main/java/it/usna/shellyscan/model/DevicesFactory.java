@@ -40,6 +40,7 @@ import it.usna.shellyscan.model.device.g1.ShellyG1Unmanaged;
 import it.usna.shellyscan.model.device.g1.ShellyHT;
 import it.usna.shellyscan.model.device.g1.ShellyI3;
 import it.usna.shellyscan.model.device.g1.ShellyMotion;
+import it.usna.shellyscan.model.device.g1.ShellyMotion2;
 import it.usna.shellyscan.model.device.g1.ShellyPlug;
 import it.usna.shellyscan.model.device.g1.ShellyPlugE;
 import it.usna.shellyscan.model.device.g1.ShellyPlugS;
@@ -55,6 +56,8 @@ import it.usna.shellyscan.model.device.g2.ShellyPlus1PM;
 import it.usna.shellyscan.model.device.g2.ShellyPlus2PM;
 import it.usna.shellyscan.model.device.g2.ShellyPlusHT;
 import it.usna.shellyscan.model.device.g2.ShellyPlusPlugIT;
+import it.usna.shellyscan.model.device.g2.ShellyPlusPlugS;
+import it.usna.shellyscan.model.device.g2.ShellyPlusPlugUK;
 import it.usna.shellyscan.model.device.g2.ShellyPlusPlugUS;
 import it.usna.shellyscan.model.device.g2.ShellyPlusSmoke;
 import it.usna.shellyscan.model.device.g2.ShellyPlusWallDimmer;
@@ -83,7 +86,7 @@ public class DevicesFactory {
 				Thread.sleep(Devices.MULTI_QUERY_DELAY);
 			} catch(IOException | TimeoutException | InterruptedException | ExecutionException e) { // SocketTimeoutException extends IOException
 				LOG.error("create", e);
-				ShellyAbstractDevice d = new ShellyG1Unmanaged(address, port, name, e); // no mac available (info) -> try to desume from hostname
+				ShellyG1Unmanaged d = new ShellyG1Unmanaged(address, port, name, e); // no mac available (info) -> try to desume from hostname
 				d.setHttpClient(httpClient);
 				d.setMacAddress(name.substring(Math.max(name.length() - 12, 0), name.length()).toUpperCase());
 				return d;
@@ -173,6 +176,8 @@ public class DevicesFactory {
 			break;
 			case ShellyMotion.ID: d = new ShellyMotion(address, port, name);
 			break;
+			case ShellyMotion2.ID: d = new ShellyMotion2(address, port, name);
+			break;
 			case ShellyTRV.ID: d = new ShellyTRV(address, port, name);
 			break;
 			default: d = new ShellyG1Unmanaged(address, port, name);
@@ -229,6 +234,10 @@ public class DevicesFactory {
 			case ShellyPlus2PM.ID: d = new ShellyPlus2PM(address, port, name);
 			break;
 			case ShellyPlusi4.ID: d = new ShellyPlusi4(address, port, name);
+			break;
+			case ShellyPlusPlugS.ID: d = new ShellyPlusPlugS(address, port, name);
+			break;
+			case ShellyPlusPlugUK.ID: d = new ShellyPlusPlugUK(address, port, name);
 			break;
 			case ShellyPlusPlugIT.ID: d = new ShellyPlusPlugIT(address, port, name);
 			break;

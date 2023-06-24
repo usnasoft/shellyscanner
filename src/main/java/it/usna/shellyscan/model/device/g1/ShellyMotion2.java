@@ -8,15 +8,15 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 import it.usna.shellyscan.model.device.Meters;
 
-public class ShellyMotion extends AbstractG1Device {
-	public final static String ID = "SHMOS-01";
+public class ShellyMotion2 extends AbstractG1Device {
+	public final static String ID = "SHMOS-02";
 	private final static Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.BAT, Meters.Type.L};
 	private int lux;
 	private Meters[] meters;
 	private boolean motion;
 	protected int bat;
 
-	public ShellyMotion(InetAddress address, int port, String hostname) {
+	public ShellyMotion2(InetAddress address, int port, String hostname) {
 		super(address, port, hostname);
 		
 		meters = new Meters[] {
@@ -40,7 +40,7 @@ public class ShellyMotion extends AbstractG1Device {
 	
 	@Override
 	public String getTypeName() {
-		return "Motion";
+		return "Motion 2";
 	}
 	
 	@Override
@@ -51,16 +51,11 @@ public class ShellyMotion extends AbstractG1Device {
 	public boolean motion() {
 		return motion;
 	}
-	
+
 	@Override
 	public Meters[] getMeters() {
 		return meters;
 	}
-	
-//	@Override
-//	protected void fillSettings(JsonNode settings) throws IOException {
-//		super.fillSettings(settings);
-//	}
 	
 	@Override
 	protected void fillStatus(JsonNode status) throws IOException {

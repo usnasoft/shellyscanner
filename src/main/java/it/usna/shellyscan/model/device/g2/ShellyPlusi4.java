@@ -3,12 +3,15 @@ package it.usna.shellyscan.model.device.g2;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
 import it.usna.shellyscan.model.Devices;
+import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.g2.modules.Input;
+import it.usna.shellyscan.model.device.g2.modules.SensorAddOn;
 import it.usna.shellyscan.model.device.g2.modules.Webhooks;
 import it.usna.shellyscan.model.device.modules.InputCommander;
 import it.usna.shellyscan.model.device.modules.InputInterface;
@@ -17,12 +20,27 @@ public class ShellyPlusi4 extends AbstractG2Device implements InputCommander {
 	public final static String ID = "PlusI4";
 	private Input[] inputs;
 	private Webhooks webhooks;
+	private Meters[] meters;
+	private SensorAddOn addOn;
 
 	public ShellyPlusi4(InetAddress address, int port, String hostname) {
 		super(address, port, hostname);
-		
 		inputs = new Input[] {new Input(), new Input(), new Input(), new Input()};
 		webhooks = new Webhooks(this);
+	}
+	
+	@Override
+	protected void init(JsonNode devInfo) throws IOException {
+		final JsonNode config = getJSON("/rpc/Shelly.GetConfig");
+		if(SensorAddOn.ADDON_TYPE.equals(config.get("sys").get("device").path("addon_type").asText())) {
+			addOn = new SensorAddOn(this);
+			meters = new Meters[] {addOn};
+		}
+		// default init(...)
+		this.hostname = devInfo.get("id").asText("");
+		this.mac = devInfo.get("mac").asText();
+		fillSettings(config);
+		fillStatus(getJSON("/rpc/Shelly.GetStatus"));
 	}
 	
 	@Override
@@ -33,6 +51,11 @@ public class ShellyPlusi4 extends AbstractG2Device implements InputCommander {
 	@Override
 	public String getTypeID() {
 		return ID;
+	}
+	
+	@Override
+	public Meters[] getMeters() {
+		return meters;
 	}
 
 	@Override
@@ -57,10 +80,20 @@ public class ShellyPlusi4 extends AbstractG2Device implements InputCommander {
 		inputs[1].fillStatus(status.get("input:1"));
 		inputs[2].fillStatus(status.get("input:2"));
 		inputs[3].fillStatus(status.get("input:3"));
+		if(addOn != null) {
+			addOn.fillStatus(status);
+		}
+	}
+	
+	@Override
+	public String[] getInfoRequests() {
+		final String[] cmd = super.getInfoRequests();
+		return (addOn != null) ? SensorAddOn.getInfoRequests(cmd) : cmd;
 	}
 
 	@Override
-	protected void restore(JsonNode configuration, ArrayList<String> errors) throws IOException, InterruptedException {
+	protected void restore(Map<String, JsonNode> backupJsons, ArrayList<String> errors) throws IOException, InterruptedException {
+		JsonNode configuration = backupJsons.get("Shelly.GetConfig.json");
 		errors.add(Input.restore(this, configuration, "0"));
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 		errors.add(Input.restore(this, configuration, "1"));
@@ -79,9 +112,4 @@ public class ShellyPlusi4 extends AbstractG2Device implements InputCommander {
 	public InputInterface[] getActionsGroups() {
 		return inputs;
 	}
-	
-//	@Override
-//	public String toString() {
-//		return super.toString();
-//	}
 }

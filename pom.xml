@@ -2,7 +2,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>it.usna</groupId>
 	<artifactId>shellyscan</artifactId>
-	<version>0.9.7</version>
+	<version>0.9.8</version>
 	<name>shellyscan</name>
 	<packaging>jar</packaging>
 
@@ -92,7 +92,7 @@
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-databind</artifactId>
-			<version>2.14.2</version>
+			<version>2.15.1</version>
 		</dependency>
 		<dependency>
 			<groupId>org.jmdns</groupId>

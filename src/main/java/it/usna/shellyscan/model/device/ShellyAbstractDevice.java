@@ -39,7 +39,7 @@ public abstract class ShellyAbstractDevice {
 	protected final String uriPrefix;
 	protected final ObjectMapper jsonMapper = new ObjectMapper();
 	
-	public enum Status {ON_LINE, OFF_LINE, NOT_LOOGGED, READING, ERROR};
+	public enum Status {ON_LINE, OFF_LINE, NOT_LOOGGED, READING, ERROR, GHOST}; // GHOST not detected (in store)
 	public enum LogMode {NO, FILE, MQTT, SOCKET, UDP};
 
 	public enum Restore {ERR_RESTORE_HOST, ERR_RESTORE_MODEL, ERR_RESTORE_CONF, ERR_RESTORE_MSG,
@@ -55,10 +55,6 @@ public abstract class ShellyAbstractDevice {
 		} else {
 			this.uriPrefix = "http://" + address.getHostAddress() + ":" + port;
 		}
-	}
-	
-	public void setHttpClient(HttpClient httpClient) {
-		this.httpClient = httpClient;
 	}
 	
 	public JsonNode getJSON(final String command) throws IOException  { //JsonProcessingException extends IOException
@@ -90,7 +86,7 @@ public abstract class ShellyAbstractDevice {
 		}
 	}
 	
-	public String getJSONAsString(final String command) throws IOException {
+	public String httpGetAsString(final String command) throws IOException {
 		try {
 			return httpClient.GET(uriPrefix + command).getContentAsString();
 		} catch(InterruptedException | ExecutionException | TimeoutException e) {
@@ -216,17 +212,26 @@ public abstract class ShellyAbstractDevice {
 	
 	public abstract String restore(final File file, Map<Restore, String> data) throws IOException;
 
-	protected void sectionToStream(String section, String entryName, ZipOutputStream out) throws IOException {
-		ZipEntry entry = new ZipEntry(entryName);
-		out.putNextEntry(entry);
+	/**
+	 * @param section call whose returned json must be stored
+	 * @param entryName ZipEntry name
+	 * @param out zip file
+	 * @throws IOException on error or response.getStatus() != HttpStatus.OK_200
+	 */
+	protected byte[] sectionToStream(String section, String entryName, ZipOutputStream out) throws IOException {
 		try {
 			ContentResponse response = httpClient.GET(uriPrefix + section);
+			if(response.getStatus() != HttpStatus.OK_200) {
+				throw new IOException(response.getReason());
+			}
+			ZipEntry entry = new ZipEntry(entryName);
+			out.putNextEntry(entry);
 			byte[] buffer = response.getContent();
 			out.write(buffer, 0, buffer.length);
+			out.closeEntry();
+			return buffer;
 		} catch (InterruptedException | ExecutionException | TimeoutException e) {
 			throw new IOException(e);
-		} finally {
-			out.closeEntry();
 		}
 	}
 
@@ -239,4 +244,4 @@ public abstract class ShellyAbstractDevice {
 	public String toString() {
 		return getTypeName() + "-" + name + ": " + address.getHostAddress() + " (" + hostname + ")";
 	}
-} //278 - 399 - 316 - 251 - 237 - 231
+} //278 - 399 - 316 - 251 - 237 - 231 - 247

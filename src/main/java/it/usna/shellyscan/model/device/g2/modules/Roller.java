@@ -82,7 +82,7 @@ public class Roller implements RollerInterface {
 		return source;
 	}
 	
-	public String restore(JsonNode config) throws IOException {
+	public String restore(JsonNode config) {
 		JsonNodeFactory factory = new JsonNodeFactory(false);
 		ObjectNode out = factory.objectNode();
 		out.put("id", index);

@@ -3,6 +3,7 @@ package it.usna.shellyscan.model.device.g2;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.ArrayList;
+import java.util.Map;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -83,7 +84,8 @@ public class ShellyPlusHT extends AbstractBatteryG2Device {
 	}
 	
 	@Override
-	protected void restore(JsonNode configuration, ArrayList<String> errors) throws IOException {
+	protected void restore(Map<String, JsonNode> backupJsons, ArrayList<String> errors) throws IOException {
+		JsonNode configuration = backupJsons.get("Shelly.GetConfig.json");
 		errors.add(postCommand("HT_UI.SetConfig", "{\"config\":" + jsonMapper.writeValueAsString(configuration.get("ht_ui")) + "}"));
 		errors.add(postCommand("Temperature.SetConfig", "{\"config\":" + jsonMapper.writeValueAsString(configuration.get("temperature:0")) + "}"));
 		errors.add(postCommand("Humidity.SetConfig", "{\"config\":" + jsonMapper.writeValueAsString(configuration.get("humidity:0")) + "}"));
