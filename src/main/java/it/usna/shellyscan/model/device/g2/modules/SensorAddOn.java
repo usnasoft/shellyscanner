@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,7 +18,7 @@ import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 
 public class SensorAddOn extends Meters {
 	private final static Logger LOG = LoggerFactory.getLogger(Meters.class);
-	
+	public final static String BACKUP_FILE = "SensorAddon.GetPeripherals.json";
 	public final static String ADDON_TYPE = "sensor";
 	private Type[] supported;
 	
@@ -185,13 +187,38 @@ public class SensorAddOn extends Meters {
 		return newArray;
 	}
 	
-	public static void enable(AbstractG2Device d, boolean enable) {
-		d.postCommand("Sys.SetConfig", "{\"config\":{\"device\":{\"addon_type\":" + (enable ? "\"sensor\"" : "null") + "}}}");
+	public static String enable(AbstractG2Device d, boolean enable) {
+		return d.postCommand("Sys.SetConfig", "{\"config\":{\"device\":{\"addon_type\":" + (enable ? "\"sensor\"" : "null") + "}}}");
 	}
 	
-//	public static String restore(AbstractG2Device d, JsonNode config) {
-//		return null;
-//	}
+	public static <T extends AbstractG2Device & SensorAddOnHolder> String restore(T d, Map<String, JsonNode> backupJsons) {
+		SensorAddOn addOn = d.getSensorAddOn();
+		JsonNode bu = backupJsons.get(BACKUP_FILE);
+		if(bu == null && addOn != null) {
+			return enable(d, false);
+		} else if(bu !=  null) {
+			if(addOn == null) {
+				enable(d, true);
+			} else {
+				Iterator<Entry<String, JsonNode>> nodes = bu.fields();
+				while(nodes.hasNext()) {
+					Map.Entry<String, JsonNode> entry = (Map.Entry<String, JsonNode>) nodes.next();
+					if(entry.getValue() != null && entry.getValue().isEmpty() == false) {
+						System.out.println(entry.getKey());
+					}
+				}
+//				Iterator<JsonNode> i = bu.elements();
+//				while(i.hasNext()) {
+//					ObjectNode node = (ObjectNode)i.next();node.c
+//					System.out.println(node);
+////					 d.postCommand("SensorAddon.AddPeripheral", "{\"type\":\"" + "\"}");
+//				}
+				// todo
+//				curl -X POST -d '{"id":1,"method":"SensorAddon.AddPeripheral","params":{"type":"digital_in","attrs":{"cid":100}}}'
+			}
+		}
+		return null;
+	}
 }
 
 // https://shelly-api-docs.shelly.cloud/gen2/Addons/ShellySensorAddon/

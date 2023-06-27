@@ -46,12 +46,12 @@ import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.WIFIManager;
 import it.usna.shellyscan.model.device.WIFIManager.Network;
 import it.usna.shellyscan.model.device.g2.modules.Script;
+import it.usna.shellyscan.model.device.g2.modules.SensorAddOn;
 import it.usna.shellyscan.model.device.g2.modules.Webhooks;
 
 public abstract class AbstractG2Device extends ShellyAbstractDevice {
 	private final static Logger LOG = LoggerFactory.getLogger(AbstractG2Device.class);
 	protected WebSocketClient wsClient;
-//	private boolean rebootRequired = false;
 	private boolean rangeExtender;
 	
 
@@ -66,7 +66,6 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 	}
 	
 	protected void init(JsonNode devInfo) throws IOException {
-//		fillOnce(devInfo/*getJSON("/rpc/Shelly.GetDeviceInfo")*/);
 		// fillOnce
 		this.hostname = devInfo.get("id").asText("");
 		this.mac = devInfo.get("mac").asText();
@@ -85,11 +84,6 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 			store.addAuthentication(auth);
 		}
 	}
-	
-//	protected void fillOnce(JsonNode devInfo) throws JsonParseException {
-//		this.hostname = devInfo.get("id").asText("");
-//		this.mac = devInfo.get("mac").asText();
-//	}
 	
 	protected void fillSettings(JsonNode config) throws IOException {
 		JsonNode sysNode = config.get("sys");
@@ -139,8 +133,8 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 	@Override
 	public String[] getInfoRequests() {
 		return new String[] {
-				"/rpc/Shelly.GetDeviceInfo", "/rpc/Shelly.GetConfig", "/rpc/Shelly.GetStatus",
-				"/rpc/Shelly.CheckForUpdate", "/rpc/Schedule.List", "/rpc/Webhook.List", "/rpc/Script.List", "/rpc/WiFi.ListAPClients"/*, "/rpc/Sys.GetStatus"*/};
+				"/rpc/Shelly.GetDeviceInfo", "/rpc/Shelly.GetConfig", "/rpc/Shelly.GetStatus", "/rpc/Shelly.CheckForUpdate", "/rpc/Schedule.List", "/rpc/Webhook.List",
+				"/rpc/Script.List", "/rpc/WiFi.ListAPClients" /*, "/rpc/Sys.GetStatus"*/, "/rpc/KVS.List"};
 	}
 	
 	@Override
@@ -201,6 +195,9 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 		}
 	}
 
+	/**
+	 * return null if ok or error description in case of error
+	 */
 	public String postCommand(final String method, String payload) {
 		try {
 			final JsonNode resp = executeRPC(method, payload);
@@ -279,7 +276,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 			final byte[] scripts = sectionToStream("/rpc/Script.List", "Script.List.json", out);
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			try { // On device with active sensor add-on
-				sectionToStream("/rpc/SensorAddon.GetPeripherals", "SensorAddon.GetPeripherals.json", out);
+				sectionToStream("/rpc/SensorAddon.GetPeripherals", SensorAddOn.BACKUP_FILE, out);
 				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			} catch(Exception e) {}
 			// Scripts
@@ -461,4 +458,4 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 			errors.add(postCommand("Schedule.Create", thisSc));
 		}
 	}
-} // 458
+} // 457

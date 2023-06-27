@@ -171,6 +171,7 @@
 // add-on gen 2
 // Power shown on Shelly 1 (if edited: IP/settings/power/0?power=x)
 // reload - contextual menu
+// /rpc/KVS.List
 
 // TODO
 // {"src":"shellyplus2pm-485519a2bb1c","dst":"S_Scanner","method":"NotifyStatus","params":{"ts":1678127726.89,"wifi":{"ap_client_count":0}}}

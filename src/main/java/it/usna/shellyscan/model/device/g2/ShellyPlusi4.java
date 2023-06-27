@@ -12,11 +12,12 @@ import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.g2.modules.Input;
 import it.usna.shellyscan.model.device.g2.modules.SensorAddOn;
+import it.usna.shellyscan.model.device.g2.modules.SensorAddOnHolder;
 import it.usna.shellyscan.model.device.g2.modules.Webhooks;
 import it.usna.shellyscan.model.device.modules.InputCommander;
 import it.usna.shellyscan.model.device.modules.InputInterface;
 
-public class ShellyPlusi4 extends AbstractG2Device implements InputCommander {
+public class ShellyPlusi4 extends AbstractG2Device implements InputCommander, SensorAddOnHolder {
 	public final static String ID = "PlusI4";
 	private Input[] inputs;
 	private Webhooks webhooks;
@@ -101,6 +102,9 @@ public class ShellyPlusi4 extends AbstractG2Device implements InputCommander {
 		errors.add(Input.restore(this, configuration, "2"));
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 		errors.add(Input.restore(this, configuration, "3"));
+		
+		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+		errors.add(SensorAddOn.restore(this, backupJsons));
 	}
 	
 	@Override
@@ -111,5 +115,10 @@ public class ShellyPlusi4 extends AbstractG2Device implements InputCommander {
 	@Override
 	public InputInterface[] getActionsGroups() {
 		return inputs;
+	}
+
+	@Override
+	public SensorAddOn getSensorAddOn() {
+		return addOn;
 	}
 }

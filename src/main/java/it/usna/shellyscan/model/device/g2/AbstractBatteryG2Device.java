@@ -73,7 +73,7 @@ public abstract class AbstractBatteryG2Device extends AbstractG2Device implement
 	 * No scripts, No Schedule
 	 */
 	public String[] getInfoRequests() {
-		return new String[] {"/rpc/Shelly.GetDeviceInfo", "/rpc/Shelly.GetConfig", "/rpc/Shelly.GetStatus", "/rpc/Shelly.CheckForUpdate", "/rpc/Webhook.List"};
+		return new String[] {"/rpc/Shelly.GetDeviceInfo", "/rpc/Shelly.GetConfig", "/rpc/Shelly.GetStatus", "/rpc/Shelly.CheckForUpdate", "/rpc/Webhook.List", "/rpc/KVS.List"};
 	}
 	
 	@Override
