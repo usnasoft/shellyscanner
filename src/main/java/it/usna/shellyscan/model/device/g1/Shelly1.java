@@ -96,7 +96,7 @@ public class Shelly1 extends AbstractG1Device implements RelayCommander {
 				}
 			});
 		}
-		float pow = settings.get("relays").get(0).get("power").floatValue();
+		float pow = settings.get("relays").get(0).path("power").floatValue();
 		if (pow > 0f) {
 			m.add(new MetersPower() {
 				@Override

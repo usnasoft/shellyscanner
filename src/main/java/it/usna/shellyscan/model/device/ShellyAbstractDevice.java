@@ -208,9 +208,9 @@ public abstract class ShellyAbstractDevice {
 
 	public abstract boolean backup(final File file) throws IOException; // false: use of stored data; cound not connect to device
 	
-	public abstract Map<Restore, String> restoreCheck(final File file) throws IOException;
+	public abstract Map<Restore, String> restoreCheck(/*final File file*/Map<String, JsonNode> backupJsons) throws IOException;
 	
-	public abstract String restore(final File file, Map<Restore, String> data) throws IOException;
+	public abstract String restore(/*final File file*/Map<String, JsonNode> backupJsons, Map<Restore, String> data) throws IOException;
 
 	/**
 	 * @param section call whose returned json must be stored

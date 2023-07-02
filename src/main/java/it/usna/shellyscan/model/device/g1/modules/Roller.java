@@ -84,16 +84,16 @@ public class Roller implements RollerInterface {
 		((ObjectNode)data).remove("is_valid");
 		((ObjectNode)data).remove("safety_switch");
 		((ObjectNode)data).remove("is_valid");
-//		((ObjectNode)data).remove("positioning");
+		// probably logs
+		((ObjectNode)data).remove("safety_mode");
+		((ObjectNode)data).remove("safety_action");
+		((ObjectNode)data).remove("safety_allowed_on_trigger");
+		
+		((ObjectNode)data).remove("positioning"); // not useful (calibration must be performed manually)
+
 		Iterator<Entry<String, JsonNode>> pars = data.fields();
-		if(pars.hasNext()) {
-			String command = "/settings/roller/" + index + "?" + AbstractG1Device.jsonEntryToURLPar(pars.next());
-			while(pars.hasNext()) {
-				command += "&" + AbstractG1Device.jsonEntryToURLPar(pars.next());
-			}
-			return parent.sendCommand(command);
-		}
-		return null;
+		String command = "/settings/roller/" + index + "?" + AbstractG1Device.jsonEntryIteratorToURLPar(pars);
+		return parent.sendCommand(command);
 	}
 	
 	@Override

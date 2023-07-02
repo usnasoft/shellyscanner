@@ -49,7 +49,7 @@ public class Relay implements RelayInterface {
 	
 	public void fillStatus(JsonNode relay, JsonNode inputs) throws IOException {
 		isOn = relay.get("ison").asBoolean();
-		source = relay.get("source").asText("-");
+		source = relay.path("source").asText("-"); //old fw miss "source"
 		inputIsOn = inputs.path("input").asBoolean();
 	}
 	

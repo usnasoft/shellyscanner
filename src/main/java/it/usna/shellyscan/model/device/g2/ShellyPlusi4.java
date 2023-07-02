@@ -104,7 +104,7 @@ public class ShellyPlusi4 extends AbstractG2Device implements InputCommander, Se
 		errors.add(Input.restore(this, configuration, "3"));
 		
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-		errors.add(SensorAddOn.restore(this, backupJsons));
+		SensorAddOn.restore(this, backupJsons, errors);
 	}
 	
 	@Override

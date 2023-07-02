@@ -62,6 +62,8 @@ import javax.swing.text.html.HTMLDocument;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.databind.JsonNode;
+
 import it.usna.mvc.singlewindow.MainWindow;
 import it.usna.shellyscan.Main;
 import it.usna.shellyscan.controller.SelectionAction;
@@ -78,6 +80,7 @@ import it.usna.shellyscan.view.appsettings.DialogAppSettings;
 import it.usna.shellyscan.view.chart.MeasuresChart;
 import it.usna.shellyscan.view.devsettings.DialogDeviceSettings;
 import it.usna.shellyscan.view.util.Msg;
+import it.usna.shellyscan.view.util.UtilCollecion;
 import it.usna.swing.UsnaPopupMenu;
 import it.usna.swing.table.UsnaTableModel;
 import it.usna.util.AppProperties;
@@ -290,7 +293,8 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 			fc.setSelectedFile(new File(fileName));
 			if(fc.showOpenDialog(MainView.this) == JFileChooser.APPROVE_OPTION) {
 				MainView.this.getContentPane().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-				Map<Restore, String> test = device.restoreCheck(fc.getSelectedFile());
+				final Map<String, JsonNode> backupJsons = UtilCollecion.readBackupFile(fc.getSelectedFile());
+				Map<Restore, String> test = device.restoreCheck(/*fc.getSelectedFile()*/backupJsons);
 				MainView.this.getContentPane().setCursor(Cursor.getDefaultCursor());
 				Map<Restore, String> resData = new HashMap<>();
 				if(test.containsKey(ShellyAbstractDevice.Restore.ERR_RESTORE_HOST) &&
@@ -369,7 +373,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 					}
 				}
 				MainView.this.getContentPane().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-				final String ret = device.restore(fc.getSelectedFile(), resData);
+				final String ret = device.restore(/*fc.getSelectedFile()*/backupJsons, resData);
 				
 				if(ret == null || ret.length() == 0) {
 					JOptionPane.showMessageDialog(MainView.this, LABELS.getString("msgRestoreSuccess"), device.getHostname(), JOptionPane.INFORMATION_MESSAGE);

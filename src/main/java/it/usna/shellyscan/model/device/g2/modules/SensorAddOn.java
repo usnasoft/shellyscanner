@@ -18,7 +18,7 @@ import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 
 public class SensorAddOn extends Meters {
 	private final static Logger LOG = LoggerFactory.getLogger(Meters.class);
-	public final static String BACKUP_FILE = "SensorAddon.GetPeripherals.json";
+	public final static String BACKUP_SECTION = "SensorAddon.GetPeripherals.json";
 	public final static String ADDON_TYPE = "sensor";
 	private Type[] supported;
 	
@@ -191,35 +191,41 @@ public class SensorAddOn extends Meters {
 		return d.postCommand("Sys.SetConfig", "{\"config\":{\"device\":{\"addon_type\":" + (enable ? "\"sensor\"" : "null") + "}}}");
 	}
 	
-	public static <T extends AbstractG2Device & SensorAddOnHolder> String restore(T d, Map<String, JsonNode> backupJsons) {
+	public static String addSensor(AbstractG2Device d, String type, String id) {
+//		curl -X POST -d '{"id":1,"method":"SensorAddon.AddPeripheral","params":{"type":"digital_in","attrs":{"cid":100}}}'
+		return d.postCommand("SensorAddon.AddPeripheral", "{\"type\":\"" + type + "\",\"attrs\":{\"cid\":" + id + "}}");
+	}
+	
+	public static <T extends AbstractG2Device & SensorAddOnHolder> void restore(T d, Map<String, JsonNode> backupJsons, ArrayList<String> errors) {
 		SensorAddOn addOn = d.getSensorAddOn();
-		JsonNode bu = backupJsons.get(BACKUP_FILE);
-		if(bu == null && addOn != null) {
-			return enable(d, false);
-		} else if(bu !=  null) {
-			if(addOn == null) {
-				enable(d, true);
-			} else {
-				Iterator<Entry<String, JsonNode>> nodes = bu.fields();
+		JsonNode backupAddOn = backupJsons.get(BACKUP_SECTION);
+		if(backupAddOn == null && addOn != null) {
+			errors.add(enable(d, false));
+		} else if(backupAddOn != null) {
+			if(addOn == null || addOn.getTypes().length == 0) { // no sensor defined -> go no
+				if(addOn == null) {
+					enable(d, true);
+				}
+				Iterator<Entry<String, JsonNode>> nodes = backupAddOn.fields();
 				while(nodes.hasNext()) {
 					Map.Entry<String, JsonNode> entry = (Map.Entry<String, JsonNode>) nodes.next();
 					if(entry.getValue() != null && entry.getValue().isEmpty() == false) {
-						System.out.println(entry.getKey());
+						String sensor = entry.getKey();
+//						System.out.println(sensor);
+						
+						Iterator<Entry<String, JsonNode>> id = entry.getValue().fields();
+//						while(id.hasNext()) {
+							String input = id.next().getKey();
+//							System.out.println(id.next().getKey());
+							errors.add(addSensor(d, sensor, input.split(":")[1]));
+//						}
 					}
 				}
-//				Iterator<JsonNode> i = bu.elements();
-//				while(i.hasNext()) {
-//					ObjectNode node = (ObjectNode)i.next();node.c
-//					System.out.println(node);
-////					 d.postCommand("SensorAddon.AddPeripheral", "{\"type\":\"" + "\"}");
-//				}
-				// todo
-//				curl -X POST -d '{"id":1,"method":"SensorAddon.AddPeripheral","params":{"type":"digital_in","attrs":{"cid":100}}}'
 			}
 		}
-		return null;
 	}
 }
 
-// https://shelly-api-docs.shelly.cloud/gen2/Addons/ShellySensorAddon/
+// update
 // https://kb.shelly.cloud/knowledge-base/shelly-plus-add-on
+// https://shelly-api-docs.shelly.cloud/gen2/Addons/ShellySensorAddon

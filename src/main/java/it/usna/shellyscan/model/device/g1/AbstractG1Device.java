@@ -3,7 +3,6 @@ package it.usna.shellyscan.model.device.g1;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.net.URI;
@@ -18,7 +17,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
-import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
 
 import org.eclipse.jetty.client.HttpClient;
@@ -195,12 +193,13 @@ public abstract class AbstractG1Device extends ShellyAbstractDevice {
 	}
 	
 	@Override
-	public Map<Restore, String> restoreCheck(final File file) throws IOException {
+	public Map<Restore, String> restoreCheck(/*final File file*/Map<String, JsonNode> backupJsons) throws IOException {
 		HashMap<Restore, String> res = new HashMap<>();
-		try (   ZipFile in = new ZipFile(file);
+		try /*(   ZipFile in = new ZipFile(file);
 				InputStream isSettings = in.getInputStream(in.getEntry("settings.json"));
-				) {
-			JsonNode settings = jsonMapper.readTree(isSettings);
+				)*/ {
+			JsonNode settings = backupJsons.get("settings.json");
+//			JsonNode settings = jsonMapper.readTree(isSettings);
 			final String fileHostname = settings.get("device").get("hostname").asText("");
 			final String fileType = settings.get("device").get("type").asText();
 			if(fileType.length() > 0 && fileType.equals(this.getTypeID()) == false) {
@@ -232,16 +231,21 @@ public abstract class AbstractG1Device extends ShellyAbstractDevice {
 	}
 	
 	@Override
-	public final String restore(final File file, Map<Restore, String> data) throws IOException {
-		try (   ZipFile in = new ZipFile(file, StandardCharsets.UTF_8);
+	public final String restore(/*final File file*/Map<String, JsonNode> backupJsons, Map<Restore, String> data) throws IOException {
+		try /*(   ZipFile in = new ZipFile(file, StandardCharsets.UTF_8);
 				InputStream isSettings = in.getInputStream(in.getEntry("settings.json"));
-				InputStream isActions = in.getInputStream(in.getEntry("actions.json")) ) {
-			JsonNode settings = jsonMapper.readTree(isSettings);
+				InputStream isActions = in.getInputStream(in.getEntry("actions.json")) )*/ {
+//			JsonNode settings = jsonMapper.readTree(isSettings);
+//			JsonNode actions = jsonMapper.readTree(isActions);
 			final ArrayList<String> errors = new ArrayList<>();
+			JsonNode settings = backupJsons.get("settings.json");
+			JsonNode actions = backupJsons.get("actions.json");
+			
+			
 			restore(settings, errors);
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			restoreCommons(settings, data, errors);
-			JsonNode actions = jsonMapper.readTree(isActions);
+
 			Actions.restore(this, actions, errors);
 
 			JsonNode roam = settings.path("ap_roaming");
@@ -263,7 +267,11 @@ public abstract class AbstractG1Device extends ShellyAbstractDevice {
 				WIFIManagerG1 wm1 = new WIFIManagerG1(this, Network.PRIMARY, true);
 				errors.add(wm1.restore(settings.path("wifi_sta"), data.get(Restore.RESTORE_WI_FI1)));
 			}
-			return errors.stream().filter(s-> s != null && s.length() > 0).collect(Collectors.joining("; "));
+			final String ret = errors.stream().filter(s-> s != null && s.length() > 0).collect(Collectors.joining("; "));
+			if(ret.length() > 0) {
+				LOG.error("Restore error {} {}", this, errors);
+			}
+			return ret;
 		} catch(RuntimeException | InterruptedException e) {
 			LOG.error("restore", e);
 			return Restore.ERR_UNKNOWN.toString();

@@ -3,7 +3,6 @@ package it.usna.shellyscan.model.device.g2;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
@@ -16,7 +15,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
 
 import org.eclipse.jetty.client.HttpClient;
@@ -276,7 +274,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 			final byte[] scripts = sectionToStream("/rpc/Script.List", "Script.List.json", out);
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			try { // On device with active sensor add-on
-				sectionToStream("/rpc/SensorAddon.GetPeripherals", SensorAddOn.BACKUP_FILE, out);
+				sectionToStream("/rpc/SensorAddon.GetPeripherals", SensorAddOn.BACKUP_SECTION, out);
 				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			} catch(Exception e) {}
 			// Scripts
@@ -298,14 +296,16 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 	}
 
 	@Override
-	public Map<Restore, String> restoreCheck(final File file) throws IOException {
+	public Map<Restore, String> restoreCheck(/*final File file*/Map<String, JsonNode> backupJsons) throws IOException {
 		HashMap<Restore, String> res = new HashMap<>();
-		try (   ZipFile in = new ZipFile(file, StandardCharsets.UTF_8);
+		try /*(   ZipFile in = new ZipFile(file, StandardCharsets.UTF_8);
 				InputStream isDevInfo = in.getInputStream(in.getEntry("Shelly.GetDeviceInfo.json"));
 				InputStream isConfig = in.getInputStream(in.getEntry("Shelly.GetConfig.json"));
-				) {
-			JsonNode devInfo = jsonMapper.readTree(isDevInfo);
-			JsonNode config = jsonMapper.readTree(isConfig);
+				)*/ {
+//			JsonNode devInfo = jsonMapper.readTree(isDevInfo);
+//			JsonNode config = jsonMapper.readTree(isConfig);
+			JsonNode devInfo = backupJsons.get("Shelly.GetDeviceInfo.json");
+			JsonNode config = backupJsons.get("Shelly.GetConfig.json");
 			final String fileHostname = devInfo.get("id").asText("");
 			final String fileType = devInfo.get("app").asText();
 			if(this.getTypeID().equals(fileType) == false) {
@@ -354,16 +354,15 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 	public void restoreCheck(JsonNode devInfo, Map<Restore, String> res) throws IOException {}
 	
 	@Override
-	public final String restore(final File file, Map<Restore, String> data) throws IOException {
-		try (ZipFile in = new ZipFile(file, StandardCharsets.UTF_8)) {
-			final Map<String, JsonNode> backupJsons = in.stream().filter(entry -> entry.getName().endsWith(".json")).collect(Collectors.toMap(ZipEntry::getName, entry -> {
+	public final String restore(/*final File file*/Map<String, JsonNode> backupJsons, Map<Restore, String> data) throws IOException {
+		try /*(ZipFile in = new ZipFile(file, StandardCharsets.UTF_8))*/ {
+			/*final Map<String, JsonNode> backupJsons = in.stream().filter(entry -> entry.getName().endsWith(".json")).collect(Collectors.toMap(ZipEntry::getName, entry -> {
 				try (InputStream is = in.getInputStream(entry)) {
 					return jsonMapper.readTree(is);
 				} catch (IOException e) {
 					throw new RuntimeException(e);
 				}
-			}));
-			
+			}));*/
 			final ArrayList<String> errors = new ArrayList<>();
 			JsonNode config = backupJsons.get("Shelly.GetConfig.json");
 			restore(backupJsons, errors);
@@ -397,11 +396,15 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 				errors.add(WIFIManagerG2.restoreAP_roam(this, config.get("wifi"), data.get(Restore.RESTORE_WI_FI_AP)));
 			}
-			return errors.stream().filter(s-> s != null && s.length() > 0).collect(Collectors.joining("; "));
+			final String ret = errors.stream().filter(s-> s != null && s.length() > 0).collect(Collectors.joining("; "));
+			if(ret.length() > 0) {
+				LOG.error("Restore error {} {}", this, errors);
+			}
+			return ret;
 		} catch(RuntimeException | InterruptedException e) {
-			if(e.getCause() instanceof IOException) {
-				throw (IOException)e.getCause();
-			} 
+//			if(e.getCause() instanceof IOException) {
+//				throw (IOException)e.getCause();
+//			} 
 			LOG.error("restore", e);
 			return Restore.ERR_UNKNOWN.toString();
 		}

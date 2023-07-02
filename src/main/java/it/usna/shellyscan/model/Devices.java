@@ -370,6 +370,7 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 					d.refreshStatus();
 				} catch (JsonProcessingException | RuntimeException e) {
 					LOG.trace("Unexpected-refresh: {}", d, e);
+					d.setStatus(Status.ERROR);
 				} catch (IOException | InterruptedException e) {}
 				synchronized(devices) {
 					if(devices.size() > idx && d == devices.get(idx) && Thread.interrupted() == false) { // underlying model unchanged (on rescan)
