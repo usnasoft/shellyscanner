@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,7 +14,9 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
+import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.Meters;
+import it.usna.shellyscan.model.device.ShellyAbstractDevice.Restore;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 
 public class SensorAddOn extends Meters {
@@ -36,6 +39,8 @@ public class SensorAddOn extends Meters {
 	
 	private String voltmeterID;
 	private float volt;
+	
+	public final static String MSG_RESTORE_ERROR = "msgRestoreSensorAddOn";
 	
 	public SensorAddOn(AbstractG2Device d) throws IOException {
 		try {
@@ -60,8 +65,13 @@ public class SensorAddOn extends Meters {
 			if(ds18b20Node.size() > 0) {
 				Iterator<String> temp = ds18b20Node.fieldNames();
 				for(int i = 0; temp.hasNext(); i++) {
-					if(i == 0) extT0ID = temp.next();
-					else if(i == 1) extT1ID = temp.next();
+					if(i == 0) {
+						extT0ID = temp.next();
+						types.add(Type.T);
+					} else if(i == 1) {
+						extT1ID = temp.next();
+						types.add(Type.TX1);
+					}
 					else if(i == 2) extT2ID = temp.next();
 					else if(i == 3) extT3ID = temp.next();
 					else if(i == 4) extT4ID = temp.next();
@@ -107,22 +117,22 @@ public class SensorAddOn extends Meters {
 				volt = status.path(voltmeterID).get("voltage").floatValue();
 			}
 			if(extT0ID != null) {
-				volt = status.path(extT0ID).get("tC").floatValue();
+				extT0 = status.path(extT0ID).get("tC").floatValue();
 			}
 			if(extT1ID != null) {
-				volt = status.path(extT1ID).get("tC").floatValue();
+				extT1 = status.path(extT1ID).get("tC").floatValue();
 			}
 			if(extT2ID != null) {
-				volt = status.path(extT2ID).get("tC").floatValue();
+				extT2 = status.path(extT2ID).get("tC").floatValue();
 			}
 			if(extT3ID != null) {
-				volt = status.path(extT3ID).get("tC").floatValue();
+				extT3 = status.path(extT3ID).get("tC").floatValue();
 			}
 			if(extT4ID != null) {
-				volt = status.path(extT4ID).get("tC").floatValue();
+				extT4 = status.path(extT4ID).get("tC").floatValue();
 			}
 			if(humidityID != null) {
-				volt = status.path(humidityID).get("rh").floatValue();
+				humidity = (int)status.path(humidityID).get("rh").floatValue();
 			}
 		} catch (RuntimeException e) {
 			LOG.warn("Add-on configuration changed?", e);
@@ -196,7 +206,18 @@ public class SensorAddOn extends Meters {
 		return d.postCommand("SensorAddon.AddPeripheral", "{\"type\":\"" + type + "\",\"attrs\":{\"cid\":" + id + "}}");
 	}
 	
-	public static <T extends AbstractG2Device & SensorAddOnHolder> void restore(T d, Map<String, JsonNode> backupJsons, ArrayList<String> errors) {
+	public static String addSensor(AbstractG2Device d, String type, String id, String addr) {
+//		curl -X POST -d '{"id":1,"method":"SensorAddon.AddPeripheral","params":{"type":"ds18b20","attrs":{"cid":101,"addr":"11:22:33:44:55:66:77:88"}}}'
+		return d.postCommand("SensorAddon.AddPeripheral", "{\"type\":\"" + type + "\",\"attrs\":{\"cid\":" + id + ",\"addr\":\"" + addr + "\"}}");
+	}
+	
+	public static <T extends AbstractG2Device & SensorAddOnHolder> boolean restoreCheck(T d, Map<String, JsonNode> backupJsons, Map<Restore, String> res) {
+		SensorAddOn addOn = d.getSensorAddOn();
+		JsonNode backupAddOn = backupJsons.get(BACKUP_SECTION);
+		return addOn == null || addOn.getTypes().length == 0 || backupAddOn == null || backupAddOn.size() == 0;
+	}
+	
+	public static <T extends AbstractG2Device & SensorAddOnHolder> void restore(T d, Map<String, JsonNode> backupJsons, ArrayList<String> errors) throws InterruptedException {
 		SensorAddOn addOn = d.getSensorAddOn();
 		JsonNode backupAddOn = backupJsons.get(BACKUP_SECTION);
 		if(backupAddOn == null && addOn != null) {
@@ -211,14 +232,20 @@ public class SensorAddOn extends Meters {
 					Map.Entry<String, JsonNode> entry = (Map.Entry<String, JsonNode>) nodes.next();
 					if(entry.getValue() != null && entry.getValue().isEmpty() == false) {
 						String sensor = entry.getKey();
-//						System.out.println(sensor);
-						
+						//System.out.println(sensor);
 						Iterator<Entry<String, JsonNode>> id = entry.getValue().fields();
-//						while(id.hasNext()) {
-							String input = id.next().getKey();
-//							System.out.println(id.next().getKey());
-							errors.add(addSensor(d, sensor, input.split(":")[1]));
-//						}
+						while(id.hasNext()) {
+							Entry<String, JsonNode> input = id.next();
+							String inputKey = input.getKey();
+							JsonNode inputValue = input.getValue();
+							//System.out.println(id.next().getKey());
+							TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+							if(inputValue.has("addr")) {
+								errors.add(addSensor(d, sensor, inputKey.split(":")[1], inputValue.get("addr").asText()));
+							} else {
+								errors.add(addSensor(d, sensor, inputKey.split(":")[1]));
+							}
+						}
 					}
 				}
 			}

@@ -15,10 +15,11 @@ import it.usna.shellyscan.model.device.g2.modules.Input;
 import it.usna.shellyscan.model.device.g2.modules.Relay;
 import it.usna.shellyscan.model.device.g2.modules.Roller;
 import it.usna.shellyscan.model.device.g2.modules.SensorAddOn;
+import it.usna.shellyscan.model.device.g2.modules.SensorAddOnHolder;
 import it.usna.shellyscan.model.device.modules.RelayCommander;
 import it.usna.shellyscan.model.device.modules.RollerCommander;
 
-public class ShellyPlus2PM extends AbstractG2Device implements RelayCommander, RollerCommander, InternalTmpHolder {
+public class ShellyPlus2PM extends AbstractG2Device implements RelayCommander, RollerCommander, InternalTmpHolder, SensorAddOnHolder {
 	public final static String ID = "Plus2PM";
 	private boolean modeRelay;
 	private final static Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.W, Meters.Type.PF, Meters.Type.V, Meters.Type.I};
@@ -212,7 +213,8 @@ public class ShellyPlus2PM extends AbstractG2Device implements RelayCommander, R
 	}
 	
 	@Override
-	public void restoreCheck(JsonNode devInfo, Map<Restore, String> res) throws IOException {
+	public void restoreCheck(Map<String, JsonNode> backupJsons, Map<Restore, String> res) throws IOException {
+		JsonNode devInfo = backupJsons.get("Shelly.GetDeviceInfo.json");
 		boolean backModeRelay = MODE_RELAY.equals(devInfo.get("profile").asText());
 		if(backModeRelay != modeRelay) {
 			res.put(Restore.ERR_RESTORE_MSG, MSG_RESTORE_MODE_ERROR);
@@ -234,6 +236,14 @@ public class ShellyPlus2PM extends AbstractG2Device implements RelayCommander, R
 		} else {
 			errors.add(roller.restore(configuration));
 		}
+		
+		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+		SensorAddOn.restore(this, backupJsons, errors);
+	}
+	
+	@Override
+	public SensorAddOn getSensorAddOn() {
+		return addOn;
 	}
 
 	@Override

@@ -71,6 +71,10 @@ public class Msg {
 		Msg.errorMsg(msg, Main.LABELS.getString("errorTitle"));
 	}
 	
+	public static void errorMsg(Window owner, String msg) {
+		Msg.errorMsg(owner, msg, Main.LABELS.getString("errorTitle"));
+	}
+	
 	public static void errorMsg(final Throwable t) {
 		if(t instanceof IOException) {
 			LOG.debug("Connection error", t);

@@ -14,9 +14,10 @@ import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.g2.modules.Input;
 import it.usna.shellyscan.model.device.g2.modules.Relay;
 import it.usna.shellyscan.model.device.g2.modules.SensorAddOn;
+import it.usna.shellyscan.model.device.g2.modules.SensorAddOnHolder;
 import it.usna.shellyscan.model.device.modules.RelayCommander;
 
-public class ShellyPlus1 extends AbstractG2Device implements RelayCommander, InternalTmpHolder {
+public class ShellyPlus1 extends AbstractG2Device implements RelayCommander, InternalTmpHolder, SensorAddOnHolder {
 	public final static String ID = "Plus1";
 //	private final static JsonPointer SW_TEMP_P = JsonPointer.valueOf("/temperature/tC");
 	private Relay relay = new Relay(this, 0);
@@ -102,6 +103,14 @@ public class ShellyPlus1 extends AbstractG2Device implements RelayCommander, Int
 		errors.add(Input.restore(this, configuration, "0"));
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 		errors.add(relay.restore(configuration));
+		
+		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+		SensorAddOn.restore(this, backupJsons, errors);
+	}
+
+	@Override
+	public SensorAddOn getSensorAddOn() {
+		return addOn;
 	}
 	
 	@Override

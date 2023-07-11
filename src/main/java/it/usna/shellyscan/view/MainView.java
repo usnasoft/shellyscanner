@@ -70,7 +70,6 @@ import it.usna.shellyscan.controller.SelectionAction;
 import it.usna.shellyscan.controller.UsnaAction;
 import it.usna.shellyscan.controller.UsnaSelectedAction;
 import it.usna.shellyscan.model.Devices;
-import it.usna.shellyscan.model.DevicesStore;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice.Restore;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
@@ -302,15 +301,18 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 						LABELS.getString("msgRestoreTitle"), JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE) != JOptionPane.YES_OPTION) {
 					return;
 				} else if(test.containsKey(ShellyAbstractDevice.Restore.ERR_RESTORE_MODEL)) {
-					Msg.errorMsg(LABELS.getString("msgRestoreDifferentModel"));
+					Msg.errorMsg(MainView.this, LABELS.getString("msgRestoreDifferentModel"));
 					return;
 				} else if(test.containsKey(ShellyAbstractDevice.Restore.ERR_RESTORE_CONF)) {
-					Msg.errorMsg(LABELS.getString("msgRestoreConfigurationError"));
+					Msg.errorMsg(MainView.this, LABELS.getString("msgRestoreConfigurationError"));
 					return;
 				} else if(test.containsKey(ShellyAbstractDevice.Restore.ERR_RESTORE_MSG)) {
-					Msg.errorMsg(LABELS.getString(test.get(ShellyAbstractDevice.Restore.ERR_RESTORE_MSG)));
+					Msg.errorMsg(MainView.this, LABELS.getString(test.get(ShellyAbstractDevice.Restore.ERR_RESTORE_MSG)));
 					return;
 				} else {
+					if(test.containsKey(ShellyAbstractDevice.Restore.WARN_RESTORE_MSG)) {
+						Msg.errorMsg(MainView.this, LABELS.getString(test.get(ShellyAbstractDevice.Restore.WARN_RESTORE_MSG)));
+					}
 					if(test.containsKey(ShellyAbstractDevice.Restore.RESTORE_LOGIN)) {
 						DialogAuthentication credentials = new DialogAuthentication(MainView.this,
 								LABELS.getString("dlgAuthTitle"), device instanceof AbstractG1Device ? LABELS.getString("labelUser") : null,
@@ -732,7 +734,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 	}
 
 	private void storeProperties() {
-		DevicesStore.store(model);
+//		DevicesStore.store(model);
 		if(details.isSelected()) {
 			detailedView(false);
 		}

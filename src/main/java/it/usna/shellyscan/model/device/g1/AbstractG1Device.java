@@ -193,7 +193,7 @@ public abstract class AbstractG1Device extends ShellyAbstractDevice {
 	}
 	
 	@Override
-	public Map<Restore, String> restoreCheck(/*final File file*/Map<String, JsonNode> backupJsons) throws IOException {
+	public Map<Restore, String> restoreCheck(Map<String, JsonNode> backupJsons) throws IOException {
 		HashMap<Restore, String> res = new HashMap<>();
 		try /*(   ZipFile in = new ZipFile(file);
 				InputStream isSettings = in.getInputStream(in.getEntry("settings.json"));

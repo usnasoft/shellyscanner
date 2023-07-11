@@ -342,7 +342,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 					res.put(Restore.RESTORE_MQTT, config.at("/mqtt/user").asText());
 				}
 				// device specific
-				restoreCheck(devInfo, res);
+				restoreCheck(backupJsons, res);
 			}
 		} catch(RuntimeException e) {
 			LOG.error("restoreCheck", e);
@@ -351,18 +351,11 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 		return res;
 	}
 	
-	public void restoreCheck(JsonNode devInfo, Map<Restore, String> res) throws IOException {}
+	public void restoreCheck(Map<String, JsonNode> backupJsons, Map<Restore, String> res) throws IOException {}
 	
 	@Override
-	public final String restore(/*final File file*/Map<String, JsonNode> backupJsons, Map<Restore, String> data) throws IOException {
-		try /*(ZipFile in = new ZipFile(file, StandardCharsets.UTF_8))*/ {
-			/*final Map<String, JsonNode> backupJsons = in.stream().filter(entry -> entry.getName().endsWith(".json")).collect(Collectors.toMap(ZipEntry::getName, entry -> {
-				try (InputStream is = in.getInputStream(entry)) {
-					return jsonMapper.readTree(is);
-				} catch (IOException e) {
-					throw new RuntimeException(e);
-				}
-			}));*/
+	public final String restore(Map<String, JsonNode> backupJsons, Map<Restore, String> data) throws IOException {
+		try {
 			final ArrayList<String> errors = new ArrayList<>();
 			JsonNode config = backupJsons.get("Shelly.GetConfig.json");
 			restore(backupJsons, errors);
@@ -402,9 +395,6 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 			}
 			return ret;
 		} catch(RuntimeException | InterruptedException e) {
-//			if(e.getCause() instanceof IOException) {
-//				throw (IOException)e.getCause();
-//			} 
 			LOG.error("restore", e);
 			return Restore.ERR_UNKNOWN.toString();
 		}

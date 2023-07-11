@@ -91,6 +91,13 @@ public class ShellyPlusi4 extends AbstractG2Device implements InputCommander, Se
 		final String[] cmd = super.getInfoRequests();
 		return (addOn != null) ? SensorAddOn.getInfoRequests(cmd) : cmd;
 	}
+	
+	@Override
+	public void restoreCheck(Map<String, JsonNode> backupJsons, Map<Restore, String> res) {
+		if(SensorAddOn.restoreCheck(this, backupJsons, res) ==  false) {
+			res.put(Restore.WARN_RESTORE_MSG, SensorAddOn.MSG_RESTORE_ERROR);
+		}
+	}
 
 	@Override
 	protected void restore(Map<String, JsonNode> backupJsons, ArrayList<String> errors) throws IOException, InterruptedException {
