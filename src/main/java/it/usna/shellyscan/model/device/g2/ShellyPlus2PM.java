@@ -179,26 +179,26 @@ public class ShellyPlus2PM extends AbstractG2Device implements RelayCommander, R
 		if(modeRelay) {
 			JsonNode switchStatus0 = status.get("switch:0");
 			relay0.fillStatus(switchStatus0, status.get("input:0"));
-			power0 = (float)switchStatus0.get("apower").asDouble();
-			voltage0 = (float)switchStatus0.get("voltage").asDouble();
-			current0 = (float)switchStatus0.get("current").asDouble();
-			pf0 = (float)switchStatus0.get("pf").asDouble();
+			power0 = switchStatus0.get("apower").floatValue();
+			voltage0 = switchStatus0.get("voltage").floatValue();
+			current0 = switchStatus0.get("current").floatValue();
+			pf0 = switchStatus0.get("pf").floatValue();
 
 			JsonNode switchStatus1 = status.get("switch:1");
 			relay1.fillStatus(switchStatus1, status.get("input:1"));
-			power1 = (float)switchStatus1.get("apower").asDouble();
-			voltage1 = (float)switchStatus1.get("voltage").asDouble();
-			current1 = (float)switchStatus1.get("current").asDouble();
-			pf1 = (float)switchStatus1.get("pf").asDouble();
+			power1 = switchStatus1.get("apower").floatValue();
+			voltage1 = switchStatus1.get("voltage").floatValue();
+			current1 = switchStatus1.get("current").floatValue();
+			pf1 = switchStatus1.get("pf").floatValue();
 
-			internalTmp = (float)switchStatus0.path("temperature").path("tC").asDouble();
+			internalTmp = (float)switchStatus0.path("temperature").path("tC").floatValue();
 		} else {
 			JsonNode cover = status.get("cover:0");
-			power0 = (float)cover.get("apower").asDouble();
-			voltage0 = (float)cover.get("voltage").asDouble();
-			current0 = (float)cover.get("current").asDouble();
-			pf0 = (float)cover.get("pf").asDouble();
-			internalTmp = (float)cover.path("temperature").path("tC").asDouble();
+			power0 = cover.get("apower").floatValue();
+			voltage0 = cover.get("voltage").floatValue();
+			current0 = cover.get("current").floatValue();
+			pf0 = cover.get("pf").floatValue();
+			internalTmp = cover.path("temperature").path("tC").floatValue();
 			roller.fillStatus(cover);
 		}
 		if(addOn != null) {

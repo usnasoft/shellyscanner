@@ -124,11 +124,11 @@ public class ShellyPlus1PM extends AbstractG2Device implements RelayCommander, I
 		super.fillStatus(status);
 		JsonNode switchStatus = status.get("switch:0");
 		relay.fillStatus(switchStatus, status.get("input:0"));
-		internalTmp = (float)switchStatus.path("temperature").path("tC").asDouble();
-		power = (float)switchStatus.get("apower").asDouble(0);
-		voltage = (float)switchStatus.get("voltage").asDouble(0);
-		current = (float)switchStatus.get("current").asDouble(0);
-		pf = (float)switchStatus.get("pf").asDouble();
+		internalTmp = switchStatus.path("temperature").path("tC").floatValue();
+		power = switchStatus.get("apower").floatValue();
+		voltage = switchStatus.get("voltage").floatValue();
+		current = switchStatus.get("current").floatValue();
+		pf = switchStatus.get("pf").floatValue();
 		if(addOn != null) {
 			addOn.fillStatus(status);
 		}

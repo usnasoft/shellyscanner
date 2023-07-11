@@ -107,10 +107,10 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 	protected void fillStatus(JsonNode status) throws IOException {
 		this.cloudConnected = status.path("cloud").path("connected").asBoolean();
 		JsonNode wifiNode = status.get("wifi");
-		this.rssi = wifiNode.path("rssi").asInt();
+		this.rssi = wifiNode.path("rssi").intValue();
 		this.ssid = wifiNode.path("ssid").asText();
 		JsonNode sysNode = status.get("sys");
-		this.uptime = sysNode.get("uptime").asInt();
+		this.uptime = sysNode.get("uptime").intValue();
 		this.rebootRequired = sysNode.path("restart_required").asBoolean();
 		this.mqttConnected = status.path("mqtt").path("connected").asBoolean();
 		

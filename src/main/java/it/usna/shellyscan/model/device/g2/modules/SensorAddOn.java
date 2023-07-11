@@ -132,7 +132,7 @@ public class SensorAddOn extends Meters {
 				extT4 = status.path(extT4ID).get("tC").floatValue();
 			}
 			if(humidityID != null) {
-				humidity = (int)status.path(humidityID).get("rh").floatValue();
+				humidity = status.path(humidityID).get("rh").intValue();
 			}
 		} catch (RuntimeException e) {
 			LOG.warn("Add-on configuration changed?", e);
