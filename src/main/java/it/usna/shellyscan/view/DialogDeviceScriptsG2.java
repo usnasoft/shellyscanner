@@ -192,7 +192,7 @@ public class DialogDeviceScriptsG2 extends JDialog {
 				try (FileWriter w = new FileWriter(fc.getSelectedFile())) {
 					w.write(sc.getCode());
 				} catch (IOException e1) {
-					Msg.errorMsg(LABELS.getString("msgScrNoCode"));
+					Msg.errorMsg(DialogDeviceScriptsG2.this, LABELS.getString("msgScrNoCode"));
 				} finally {
 					setCursor(Cursor.getDefaultCursor());
 				}
@@ -263,7 +263,7 @@ public class DialogDeviceScriptsG2 extends JDialog {
 				res = sc.putCode(code);
 			}
 			if(res != null) {
-				Msg.errorMsg(res);
+				Msg.errorMsg(this, res);
 			}
 		} catch (/*IO*/Exception e1) {
 			Msg.errorMsg(e1);

@@ -59,9 +59,9 @@ public class ShellyHT extends AbstractBatteryG1Device {
 	protected void fillStatus(JsonNode status) throws IOException {
 		super.fillStatus(status);
 		this.status = status;
-		temp = (float)status.get("tmp").get("tC").doubleValue();
-		humidity = status.get("hum").get("value").asInt();
-		bat = status.get("bat").get("value").asInt();
+		temp = status.get("tmp").get("tC").floatValue();
+		humidity = status.get("hum").get("value").intValue();
+		bat = status.get("bat").get("value").intValue();
 	}
 
 	public float getTemp() {

@@ -68,7 +68,7 @@ public class ShellyPlusSmoke extends AbstractBatteryG2Device {
 	protected void fillStatus(JsonNode status) throws IOException {
 		super.fillStatus(status);
 		this.status = status;
-		bat = status.path("devicepower:0").path("battery").path("percent").asInt();
+		bat = status.path("devicepower:0").path("battery").path("percent").intValue();
 		alarm = status.path("smoke:0").path("alarm").asBoolean();
 	}
 

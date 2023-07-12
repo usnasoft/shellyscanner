@@ -33,7 +33,7 @@ public class LightWhite implements WhiteInterface {
 	
 	public void fillStatus(JsonNode statusWhite) {
 		isOn = statusWhite.get("output").asBoolean();
-		brightness = statusWhite.get("brightness").asInt();
+		brightness = statusWhite.get("brightness").intValue();
 		source = statusWhite.get("source").asText("-");
 	}
 	

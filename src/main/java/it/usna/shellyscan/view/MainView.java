@@ -281,7 +281,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 	private Action restoreAction = new UsnaSelectedAction(this, devicesTable, "action_restore_name", "action_restore_tooltip", "/images/Upload16.png", "/images/Upload.png", modelRow -> {
 		ShellyAbstractDevice device = model.get(modelRow);
 		if(device.getStatus() == Status.NOT_LOOGGED) {
-			Msg.errorMsg(LABELS.getString("msgRestoreLogin"));
+			Msg.errorMsg(MainView.this, LABELS.getString("msgRestoreLogin"));
 			return;
 		}
 		final JFileChooser fc = new JFileChooser(appProp.getProperty("LAST_PATH"));
@@ -311,7 +311,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 					return;
 				} else {
 					if(test.containsKey(ShellyAbstractDevice.Restore.WARN_RESTORE_MSG)) {
-						Msg.errorMsg(MainView.this, LABELS.getString(test.get(ShellyAbstractDevice.Restore.WARN_RESTORE_MSG)));
+						Msg.warningMsg(MainView.this, LABELS.getString(test.get(ShellyAbstractDevice.Restore.WARN_RESTORE_MSG)));
 					}
 					if(test.containsKey(ShellyAbstractDevice.Restore.RESTORE_LOGIN)) {
 						DialogAuthentication credentials = new DialogAuthentication(MainView.this,
@@ -388,7 +388,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 				update(Devices.EventType.UPDATE, modelRow);
 			}
 		} catch (FileNotFoundException e1) {
-			Msg.errorMsg(String.format(LABELS.getString("action_restore_error_file"), fc.getSelectedFile().getName()));
+			Msg.errorMsg(MainView.this, String.format(LABELS.getString("action_restore_error_file"), fc.getSelectedFile().getName()));
 		} catch (IOException e1) {
 			Msg.errorStatusMsg(this, device, e1);
 		} catch (RuntimeException e1) {

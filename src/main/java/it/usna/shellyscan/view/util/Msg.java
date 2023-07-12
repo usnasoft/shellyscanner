@@ -21,7 +21,7 @@ import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
 
 public class Msg {
 	private final static Logger LOG = LoggerFactory.getLogger(Msg.class);
-	private final static int ROWS_MAX = 35;
+	private final static int DEF_ROWS_MAX = 35;
 	private final static Pattern PATTERN_BR = Pattern.compile("<br>");
 	
 	public static void showHtmlMessageDialog(Component parentComponent, CharSequence message, String title, int messageType, final int rowsMax) {
@@ -40,39 +40,42 @@ public class Msg {
 				JOptionPane.showMessageDialog(parentComponent, scrollPane, title, messageType);
 			}
 		} catch(RuntimeException e) { // HeadlessException
-			LOG.error(message.toString(), e);
+			LOG.error(title + "-" + message.toString(), e);
 		}
 	}
 	
 	public static void showHtmlMessageDialog(Component parentComponent, CharSequence message, String title, int messageType) {
-		showHtmlMessageDialog(parentComponent, message, title, messageType, ROWS_MAX);
+		showHtmlMessageDialog(parentComponent, message, title, messageType, DEF_ROWS_MAX);
 	}
 	
-	// Errors
-	public static void errorMsg(Window owner, String msg, String title) /*throws HeadlessException*/ {
+	public static void showMsg(Window owner, String msg, String title, int type) /*throws HeadlessException*/ {
 		try {
 			if((msg == null || msg.isEmpty())) {
-				msg = "Error";
+				if(title == null || title.isEmpty()) {
+					msg = Main.LABELS.getString("errorTitle");
+				} else {
+					msg = title;
+				}
 			} else if(msg.startsWith("<html>") == false) {
 				msg = splitLine(msg, 128);
 			}
-			JOptionPane.showMessageDialog(owner, msg, title, JOptionPane.ERROR_MESSAGE);
+			JOptionPane.showMessageDialog(owner, msg, title, type);
 		} catch(RuntimeException e) { // HeadlessException
-			LOG.error(msg, e);
+			LOG.error(title + "-" + msg, e);
 		}
 	}
 	
-	public static void errorMsg(String msg, String title) {
-		final Window win = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusedWindow();
-		errorMsg(win, msg, title);
-	}
+//	private static void errorMsg(String msg, String title) {
+//		final Window win = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusedWindow();
+//		showMsg(win, msg, title, JOptionPane.ERROR_MESSAGE);
+//	}
 	
-	public static void errorMsg(String msg) {
-		Msg.errorMsg(msg, Main.LABELS.getString("errorTitle"));
-	}
+//	public static void errorMsg(String msg) {
+//		Msg.errorMsg(msg, Main.LABELS.getString("errorTitle"));
+//	}
 	
 	public static void errorMsg(Window owner, String msg) {
-		Msg.errorMsg(owner, msg, Main.LABELS.getString("errorTitle"));
+		showMsg(owner, msg, Main.LABELS.getString("errorTitle"), JOptionPane.ERROR_MESSAGE);
 	}
 	
 	public static void errorMsg(final Throwable t) {
@@ -81,18 +84,23 @@ public class Msg {
 		} else {
 			LOG.error("Unexpected", t);
 		}
-		String message = t.getMessage();
-		if(message == null || message.isEmpty()) {
-			message = t.toString();
+		String msg = t.getMessage();
+		if(msg == null || msg.isEmpty()) {
+			msg = t.toString();
 		}
-		errorMsg(message);
+		final Window win = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusedWindow();
+		errorMsg(win, msg);
+	}
+	
+	public static void warningMsg(Window owner, String msg) {
+		showMsg(owner, msg, Main.LABELS.getString("warningTitle"), JOptionPane.WARNING_MESSAGE);
 	}
 	
 	public static void errorStatusMsg(Window owner, final ShellyAbstractDevice device, IOException e) {
 		if(device.getStatus() == Status.OFF_LINE) {
-			errorMsg(owner, Main.LABELS.getString("Status-OFFLINE") + ".", Main.LABELS.getString("errorTitle"));
+			showMsg(owner, Main.LABELS.getString("Status-OFFLINE") + ".", Main.LABELS.getString("errorTitle"), JOptionPane.ERROR_MESSAGE);
 		} else if(device.getStatus() == Status.NOT_LOOGGED) {
-			errorMsg(owner, Main.LABELS.getString("Status-PROTECTED") + ".", Main.LABELS.getString("errorTitle"));
+			showMsg(owner, Main.LABELS.getString("Status-PROTECTED") + ".", Main.LABELS.getString("errorTitle"), JOptionPane.ERROR_MESSAGE);
 		} else {
 			errorMsg(e);
 		}

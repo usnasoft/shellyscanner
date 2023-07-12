@@ -66,8 +66,8 @@ public class ShellyMotion extends AbstractG1Device {
 	protected void fillStatus(JsonNode status) throws IOException {
 		super.fillStatus(status);
 		motion = status.get("sensor").get("motion").asBoolean();
-		bat = status.get("bat").get("value").asInt();
-		lux = status.get("lux").get("value").asInt();
+		bat = status.get("bat").get("value").intValue();
+		lux = status.get("lux").get("value").intValue();
 	}
 
 	@Override
