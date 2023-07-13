@@ -169,18 +169,17 @@
 
 //0.9.8
 // add-on gen 2
+// bug fix for plus 1PM
 // Power shown on Shelly 1 (if edited: IP/settings/power/0?power=x)
 // reload - contextual menu
 // /rpc/KVS.List
 // BLE - OBS
 
 // TODO
-// {"src":"shellyplus2pm-485519a2bb1c","dst":"S_Scanner","method":"NotifyStatus","params":{"ts":1678127726.89,"wifi":{"ap_client_count":0}}}
-// {"src":"shellyplus2pm-485519a2bb1c","dst":"S_Scanner","method":"NotifyStatus","params":{"ts":1678127810.93,"wifi":{"ap_client_count":1}}}
-// https://docs.oracle.com/javase/8/docs/api/javax/security/auth/callback/CallbackHandler.html
 // https://www.baeldung.com/java-authentication-authorization-service
 // archivio (additivo) dispositivi collegati opzionalmente caricabile (con eventuale default da settings)
 // gestione "reading": se stato online leggo uptime, se uptime diverso dal precedente memorizzo il timestamp else Quando il time stamp corrente - memorizzato > intervallo * 3 modifico lo stato - si, ma dove?
 // suspended process (dispositivi a batteria)
+// https://docs.oracle.com/javase/8/docs/api/javax/security/auth/callback/CallbackHandler.html
 
 // backup non interattivo (scan ip - parametri su cli)

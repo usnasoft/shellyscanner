@@ -19,34 +19,40 @@ import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice.Restore;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 
+/**
+ * Sensor add-on model<br>
+ * See:<br>
+ * https://kb.shelly.cloud/knowledge-base/shelly-plus-add-on
+ * https://shelly-api-docs.shelly.cloud/gen2/Addons/ShellySensorAddon
+ * @author usna
+ */
 public class SensorAddOn extends Meters {
 	private final static Logger LOG = LoggerFactory.getLogger(Meters.class);
 	public final static String BACKUP_SECTION = "SensorAddon.GetPeripherals.json";
+	public final static String MSG_RESTORE_ERROR = "msgRestoreSensorAddOn";
 	public final static String ADDON_TYPE = "sensor";
 	private Type[] supported;
-	
+
 	private String extT0ID, extT1ID, extT2ID, extT3ID, extT4ID;
 	private float extT0, extT1, extT2, extT3, extT4;
-	
+
 	private String humidityID;
 	private int humidity;
-	
+
 	private String switchID;
 	private boolean switchOn;
-	
+
 	private String analogID;
 	private float analog;
-	
+
 	private String voltmeterID;
 	private float volt;
-	
-	public final static String MSG_RESTORE_ERROR = "msgRestoreSensorAddOn";
-	
+
 	public SensorAddOn(AbstractG2Device d) throws IOException {
 		try {
 			JsonNode peripherals = d.getJSON("/rpc/SensorAddon.GetPeripherals");
 			ArrayList<Meters.Type> types = new ArrayList<>();
-			
+
 			ObjectNode dht22Node = ((ObjectNode)peripherals.get("dht22"));
 			if(dht22Node.size() > 0) {
 				Iterator<String> dht22 = dht22Node.fieldNames();
@@ -71,13 +77,19 @@ public class SensorAddOn extends Meters {
 					} else if(i == 1) {
 						extT1ID = temp.next();
 						types.add(Type.TX1);
+					} else if(i == 2) {
+						extT2ID = temp.next();
+						types.add(Type.TX2);
+					} else if(i == 3) {
+						extT3ID = temp.next();
+						types.add(Type.TX3);
+					} else if(i == 4) {
+						extT4ID = temp.next();
+						types.add(Type.TX4);
 					}
-					else if(i == 2) extT2ID = temp.next();
-					else if(i == 3) extT3ID = temp.next();
-					else if(i == 4) extT4ID = temp.next();
 				}
 			}
-			
+
 			Iterator<String> digIn = ((ObjectNode)peripherals.get("digital_in")).fieldNames();
 			if(digIn.hasNext()) {
 				switchID = digIn.next();
@@ -99,12 +111,12 @@ public class SensorAddOn extends Meters {
 			LOG.error("Add-on init error", e);
 		}
 	}
-	
+
 	@Override
 	public Type[] getTypes() {
 		return supported;
 	}
-	
+
 	public void fillStatus(JsonNode status) {
 		try {
 			if(switchID != null) {
@@ -138,39 +150,39 @@ public class SensorAddOn extends Meters {
 			LOG.warn("Add-on configuration changed?", e);
 		}
 	}
-	
+
 	public boolean isDigitalInputOn() {
 		return switchOn;
 	}
-	
+
 	public float getAnalog() {
 		return analog;
 	}
-	
+
 	public float getVoltage() {
 		return volt;
 	}
-	
+
 	public float getTemp0() {
 		return extT0;
 	}
-	
+
 	public float getTemp1() {
 		return extT1;
 	}
-	
+
 	public float getTemp2() {
 		return extT2;
 	}
-	
+
 	public float getTemp3() {
 		return extT3;
 	}
-	
+
 	public float getTemp4() {
 		return extT4;
 	}
-	
+
 	public float gethumidity() {
 		return humidity;
 	}
@@ -190,33 +202,33 @@ public class SensorAddOn extends Meters {
 		default: return 0;
 		}
 	}
-	
+
 	public static String[] getInfoRequests(String [] cmd) {
 		String[] newArray = Arrays.copyOf(cmd, cmd.length + 1);
 		newArray[cmd.length] = "/rpc/SensorAddon.GetPeripherals";
 		return newArray;
 	}
-	
+
 	public static String enable(AbstractG2Device d, boolean enable) {
 		return d.postCommand("Sys.SetConfig", "{\"config\":{\"device\":{\"addon_type\":" + (enable ? "\"sensor\"" : "null") + "}}}");
 	}
-	
+
 	public static String addSensor(AbstractG2Device d, String type, String id) {
-//		curl -X POST -d '{"id":1,"method":"SensorAddon.AddPeripheral","params":{"type":"digital_in","attrs":{"cid":100}}}'
+		// curl -X POST -d '{"id":1,"method":"SensorAddon.AddPeripheral","params":{"type":"digital_in","attrs":{"cid":100}}}'
 		return d.postCommand("SensorAddon.AddPeripheral", "{\"type\":\"" + type + "\",\"attrs\":{\"cid\":" + id + "}}");
 	}
-	
+
 	public static String addSensor(AbstractG2Device d, String type, String id, String addr) {
-//		curl -X POST -d '{"id":1,"method":"SensorAddon.AddPeripheral","params":{"type":"ds18b20","attrs":{"cid":101,"addr":"11:22:33:44:55:66:77:88"}}}'
+		// curl -X POST -d '{"id":1,"method":"SensorAddon.AddPeripheral","params":{"type":"ds18b20","attrs":{"cid":101,"addr":"11:22:33:44:55:66:77:88"}}}'
 		return d.postCommand("SensorAddon.AddPeripheral", "{\"type\":\"" + type + "\",\"attrs\":{\"cid\":" + id + ",\"addr\":\"" + addr + "\"}}");
 	}
-	
+
 	public static <T extends AbstractG2Device & SensorAddOnHolder> boolean restoreCheck(T d, Map<String, JsonNode> backupJsons, Map<Restore, String> res) {
 		SensorAddOn addOn = d.getSensorAddOn();
 		JsonNode backupAddOn = backupJsons.get(BACKUP_SECTION);
 		return addOn == null || addOn.getTypes().length == 0 || backupAddOn == null || backupAddOn.size() == 0;
 	}
-	
+
 	public static <T extends AbstractG2Device & SensorAddOnHolder> void restore(T d, Map<String, JsonNode> backupJsons, ArrayList<String> errors) throws InterruptedException {
 		SensorAddOn addOn = d.getSensorAddOn();
 		JsonNode backupAddOn = backupJsons.get(BACKUP_SECTION);
@@ -252,7 +264,3 @@ public class SensorAddOn extends Meters {
 		}
 	}
 }
-
-// update
-// https://kb.shelly.cloud/knowledge-base/shelly-plus-add-on
-// https://shelly-api-docs.shelly.cloud/gen2/Addons/ShellySensorAddon

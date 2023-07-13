@@ -219,6 +219,9 @@ public class ShellyPlus2PM extends AbstractG2Device implements RelayCommander, R
 		if(backModeRelay != modeRelay) {
 			res.put(Restore.ERR_RESTORE_MSG, MSG_RESTORE_MODE_ERROR);
 		}
+		if(SensorAddOn.restoreCheck(this, backupJsons, res) == false) {
+			res.put(Restore.WARN_RESTORE_MSG, SensorAddOn.MSG_RESTORE_ERROR);
+		}
 	}
 
 	@Override

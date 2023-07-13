@@ -20,13 +20,13 @@ import it.usna.shellyscan.model.device.modules.RelayCommander;
 public class ShellyPlus1PM extends AbstractG2Device implements RelayCommander, InternalTmpHolder, SensorAddOnHolder {
 	public final static String ID = "Plus1PM";
 //	private final static JsonPointer SW_TEMP_P = JsonPointer.valueOf("/temperature/tC");
-	private final static Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.W, Meters.Type.PF, Meters.Type.V, Meters.Type.I};
+	private final static Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.W, /*Meters.Type.PF,*/ Meters.Type.V, Meters.Type.I};
 	private Relay relay = new Relay(this, 0);
 	private float internalTmp;
 	private float power;
 	private float voltage;
 	private float current;
-	private float pf;
+//	private float pf;
 	private Relay[] relays = new Relay[] {relay};
 	private Meters[] meters;
 	private SensorAddOn addOn;
@@ -48,8 +48,8 @@ public class ShellyPlus1PM extends AbstractG2Device implements RelayCommander, I
 					return power;
 				} else if(t == Meters.Type.I) {
 					return current;
-				} else if(t == Meters.Type.PF) {
-					return pf;
+//				} else if(t == Meters.Type.PF) {
+//					return pf;
 				} else {
 					return voltage;
 				}
@@ -128,7 +128,7 @@ public class ShellyPlus1PM extends AbstractG2Device implements RelayCommander, I
 		power = switchStatus.get("apower").floatValue();
 		voltage = switchStatus.get("voltage").floatValue();
 		current = switchStatus.get("current").floatValue();
-		pf = switchStatus.get("pf").floatValue();
+//		pf = switchStatus.path("pf").floatValue();
 		if(addOn != null) {
 			addOn.fillStatus(status);
 		}
@@ -138,6 +138,13 @@ public class ShellyPlus1PM extends AbstractG2Device implements RelayCommander, I
 	public String[] getInfoRequests() {
 		final String[] cmd = super.getInfoRequests();
 		return (addOn != null) ? SensorAddOn.getInfoRequests(cmd) : cmd;
+	}
+	
+	@Override
+	public void restoreCheck(Map<String, JsonNode> backupJsons, Map<Restore, String> res) {
+		if(SensorAddOn.restoreCheck(this, backupJsons, res) == false) {
+			res.put(Restore.WARN_RESTORE_MSG, SensorAddOn.MSG_RESTORE_ERROR);
+		}
 	}
 
 	@Override
