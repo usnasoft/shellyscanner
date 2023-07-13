@@ -23,7 +23,7 @@ import it.usna.util.AppProperties;
 
 public class Main {
 	public final static String APP_NAME = "Shelly Scanner";
-	public final static String VERSION = "0.9.8";
+	public final static String VERSION = "0.9.9 alpha";
 	public final static String ICON = "/images/ShSc24.png";
 	public final static String BACKUP_FILE_EXT = "sbk";
 	
@@ -67,7 +67,7 @@ public class Main {
 			SwingUtilities.invokeLater(() -> {
 				view.setVisible(true);
 				//todo
-//				model.load();
+				model.load();
 				view.requestFocus(); // remove random focus on toolbar button
 				try {
 					view.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));

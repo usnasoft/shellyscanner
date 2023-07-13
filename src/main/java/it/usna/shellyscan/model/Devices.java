@@ -409,6 +409,10 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 			refreshProcess.add(null);
 		});
 	}
+	
+	public void store() {
+		DevicesStore.store(this);
+	}
 
 	private void clear() {
 		executor.shutdownNow(); // full clean instead of refreshProcess.forEach(f -> f.cancel(true));

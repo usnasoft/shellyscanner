@@ -39,6 +39,8 @@ import javax.swing.SortOrder;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableRowSorter;
@@ -217,12 +219,7 @@ public class DialogDeviceCheckList extends JDialog implements UsnaEventListener<
 		    }
 		});
 		
-		table.getSelectionModel().addListSelectionListener(e -> {
-//			boolean ecoEn, ledEn, bleEn, apEn, extEn;
-//			ecoEn = ledEn = bleEn = apEn = extEn = false;
-//			int rows[] = table.getSelectedRows();
-//			for(int row: rows) {
-//			}
+		ListSelectionListener selListener = e -> {
 			int modelRow = table.getSelectedModelRow();
 			if(modelRow >= 0) {
 				ShellyAbstractDevice d = getLocalDevice(modelRow);
@@ -248,7 +245,9 @@ public class DialogDeviceCheckList extends JDialog implements UsnaEventListener<
 				browseAction.setEnabled(false);
 				rebootAction.setEnabled(false);
 			}
-		});
+		};
+		table.getSelectionModel().addListSelectionListener(selListener);
+		selListener.valueChanged(new ListSelectionEvent(table.getSelectionModel(), -1, -1, false));
 		
 		UsnaPopupMenu tablePopup = new UsnaPopupMenu(ecoModeAction, ledAction, logsAction, bleAction, apModeAction, rangeExtenderAction, null, browseAction, rebootAction) {
 			private static final long serialVersionUID = 1L;
@@ -334,7 +333,6 @@ public class DialogDeviceCheckList extends JDialog implements UsnaEventListener<
 		});
 		panelButtons.add(btnRefresh);
 		
-		browseAction.setEnabled(false);
 		JButton btnExecute = new JButton(browseAction);
 		
 		panelButtons.add(Box.createHorizontalStrut(24));
