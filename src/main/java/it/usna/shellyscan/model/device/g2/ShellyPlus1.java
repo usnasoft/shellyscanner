@@ -14,9 +14,10 @@ import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.g2.modules.Input;
 import it.usna.shellyscan.model.device.g2.modules.Relay;
 import it.usna.shellyscan.model.device.g2.modules.SensorAddOn;
+import it.usna.shellyscan.model.device.g2.modules.SensorAddOnHolder;
 import it.usna.shellyscan.model.device.modules.RelayCommander;
 
-public class ShellyPlus1 extends AbstractG2Device implements RelayCommander, InternalTmpHolder {
+public class ShellyPlus1 extends AbstractG2Device implements RelayCommander, InternalTmpHolder, SensorAddOnHolder {
 	public final static String ID = "Plus1";
 //	private final static JsonPointer SW_TEMP_P = JsonPointer.valueOf("/temperature/tC");
 	private Relay relay = new Relay(this, 0);
@@ -84,7 +85,7 @@ public class ShellyPlus1 extends AbstractG2Device implements RelayCommander, Int
 		super.fillStatus(status);
 		JsonNode switchStatus = status.get("switch:0");
 		relay.fillStatus(switchStatus, status.get("input:0"));
-		internalTmp = (float)switchStatus.path("temperature").path("tC").asDouble();
+		internalTmp = switchStatus.path("temperature").path("tC").floatValue();
 		if(addOn != null) {
 			addOn.fillStatus(status);
 		}
@@ -95,6 +96,13 @@ public class ShellyPlus1 extends AbstractG2Device implements RelayCommander, Int
 		final String[] cmd = super.getInfoRequests();
 		return (addOn != null) ? SensorAddOn.getInfoRequests(cmd) : cmd;
 	}
+	
+	@Override
+	public void restoreCheck(Map<String, JsonNode> backupJsons, Map<Restore, String> res) {
+		if(SensorAddOn.restoreCheck(this, backupJsons, res) == false) {
+			res.put(Restore.WARN_RESTORE_MSG, SensorAddOn.MSG_RESTORE_ERROR);
+		}
+	}
 
 	@Override
 	protected void restore(Map<String, JsonNode> backupJsons, ArrayList<String> errors) throws IOException, InterruptedException {
@@ -102,6 +110,14 @@ public class ShellyPlus1 extends AbstractG2Device implements RelayCommander, Int
 		errors.add(Input.restore(this, configuration, "0"));
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 		errors.add(relay.restore(configuration));
+		
+		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+		SensorAddOn.restore(this, backupJsons, errors);
+	}
+
+	@Override
+	public SensorAddOn getSensorAddOn() {
+		return addOn;
 	}
 	
 	@Override

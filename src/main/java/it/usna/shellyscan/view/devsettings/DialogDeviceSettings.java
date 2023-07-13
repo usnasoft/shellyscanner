@@ -167,7 +167,7 @@ public class DialogDeviceSettings extends JDialog implements UsnaEventListener<D
 			return true;
 		} catch(Exception e) {
 //			e.printStackTrace();
-			Msg.errorMsg(e.getMessage());
+			Msg.errorMsg(this, e.getMessage());
 			return false;
 		} finally {
 			setCursor(Cursor.getDefaultCursor());

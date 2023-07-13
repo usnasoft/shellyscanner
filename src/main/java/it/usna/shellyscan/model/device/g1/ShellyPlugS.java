@@ -80,8 +80,8 @@ public class ShellyPlugS extends AbstractG1Device implements RelayCommander, Int
 		super.fillStatus(status);
 		relay.fillStatus(status.get("relays").get(0));
 //		internalTmp = (float)status.get("tmp").get("tC").asDouble();
-		internalTmp = (float)status.get("temperature").asDouble();
-		power = (float)status.get("meters").get(0).get("power").asDouble(0);
+		internalTmp = status.get("temperature").floatValue();
+		power = status.get("meters").get(0).get("power").floatValue();
 	}
 	
 	@Override

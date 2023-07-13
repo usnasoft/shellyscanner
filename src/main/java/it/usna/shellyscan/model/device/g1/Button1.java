@@ -58,7 +58,7 @@ public class Button1 extends AbstractBatteryG1Device implements InputCommander {
 	protected void fillStatus(JsonNode status) throws IOException {
 		super.fillStatus(status);
 		this.status = status;
-		bat = status.get("bat").get("value").asInt();
+		bat = status.get("bat").get("value").intValue();
 	}
 	
 	@Override

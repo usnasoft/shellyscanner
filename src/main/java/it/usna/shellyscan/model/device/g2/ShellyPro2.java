@@ -73,7 +73,7 @@ public class ShellyPro2 extends AbstractProDevice implements RelayCommander, Int
 		JsonNode switchStatus1 = status.get("switch:1");
 		relay1.fillStatus(switchStatus1, status.get("input:1"));
 
-		internalTmp = (float)switchStatus0.path("temperature").path("tC").asDouble();
+		internalTmp = switchStatus0.path("temperature").path("tC").floatValue();
 	}
 
 	@Override

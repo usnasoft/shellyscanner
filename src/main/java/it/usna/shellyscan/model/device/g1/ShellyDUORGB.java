@@ -72,7 +72,7 @@ public class ShellyDUORGB extends AbstractG1Device implements LightBulbRGBComman
 	protected void fillStatus(JsonNode status) throws IOException {
 		super.fillStatus(status);
 		light.fillStatus(status.get("lights").get(0));
-		power = (float)status.get("meters").get(0).get("power").asDouble(0);
+		power = status.get("meters").get(0).get("power").floatValue();
 	}
 
 	@Override

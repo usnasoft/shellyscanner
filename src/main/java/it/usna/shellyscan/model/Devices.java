@@ -311,8 +311,8 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 			ShellyAbstractDevice d = DevicesFactory.create(httpClient, wsClient, address, port, info, hostName);
 			if(/*d != null &&*/ Thread.interrupted() == false) {
 				synchronized(devices) {
-					int ind;
-					if((ind = devices.indexOf(d)) >= 0) {
+					int ind = devices.indexOf(d);
+					if(ind >= 0) {
 						if(d instanceof ShellyUnmanagedDevice == false || devices.get(ind) instanceof ShellyUnmanagedDevice) { // Do not replace device if was recocnized and now is not
 							if(refreshProcess.get(ind) != null) {
 								refreshProcess.get(ind).cancel(true);
@@ -370,6 +370,7 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 					d.refreshStatus();
 				} catch (JsonProcessingException | RuntimeException e) {
 					LOG.trace("Unexpected-refresh: {}", d, e);
+					d.setStatus(Status.ERROR);
 				} catch (IOException | InterruptedException e) {}
 				synchronized(devices) {
 					if(devices.size() > idx && d == devices.get(idx) && Thread.interrupted() == false) { // underlying model unchanged (on rescan)

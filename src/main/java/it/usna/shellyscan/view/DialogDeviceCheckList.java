@@ -437,7 +437,10 @@ public class DialogDeviceCheckList extends JDialog implements UsnaEventListener<
 			ap = TRUE; // AP active but protected with pwd
 		}
 		Object debug = (d.getDebugMode() == ShellyAbstractDevice.LogMode.NO) ? Boolean.FALSE : LABELS.getString("debug" + d.getDebugMode());
-		Boolean ble = boolVal(settings.at("/ble/enable"));
+		Object ble = boolVal(settings.at("/ble/enable"));
+		if(ble == Boolean.TRUE && boolVal(settings.at("/ble/observer/enable")) == Boolean.TRUE) {
+			ble = "OBS"; // used as observer
+		}
 		String roaming;
 		if(settings.at("/wifi/roam").isMissingNode()) {
 			roaming = "-";

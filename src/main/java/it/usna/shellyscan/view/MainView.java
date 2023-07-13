@@ -62,13 +62,14 @@ import javax.swing.text.html.HTMLDocument;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.databind.JsonNode;
+
 import it.usna.mvc.singlewindow.MainWindow;
 import it.usna.shellyscan.Main;
 import it.usna.shellyscan.controller.SelectionAction;
 import it.usna.shellyscan.controller.UsnaAction;
 import it.usna.shellyscan.controller.UsnaSelectedAction;
 import it.usna.shellyscan.model.Devices;
-import it.usna.shellyscan.model.DevicesStore;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice.Restore;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
@@ -78,6 +79,7 @@ import it.usna.shellyscan.view.appsettings.DialogAppSettings;
 import it.usna.shellyscan.view.chart.MeasuresChart;
 import it.usna.shellyscan.view.devsettings.DialogDeviceSettings;
 import it.usna.shellyscan.view.util.Msg;
+import it.usna.shellyscan.view.util.UtilCollecion;
 import it.usna.swing.UsnaPopupMenu;
 import it.usna.swing.table.UsnaTableModel;
 import it.usna.util.AppProperties;
@@ -279,7 +281,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 	private Action restoreAction = new UsnaSelectedAction(this, devicesTable, "action_restore_name", "action_restore_tooltip", "/images/Upload16.png", "/images/Upload.png", modelRow -> {
 		ShellyAbstractDevice device = model.get(modelRow);
 		if(device.getStatus() == Status.NOT_LOOGGED) {
-			Msg.errorMsg(LABELS.getString("msgRestoreLogin"));
+			Msg.errorMsg(MainView.this, LABELS.getString("msgRestoreLogin"));
 			return;
 		}
 		final JFileChooser fc = new JFileChooser(appProp.getProperty("LAST_PATH"));
@@ -290,7 +292,8 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 			fc.setSelectedFile(new File(fileName));
 			if(fc.showOpenDialog(MainView.this) == JFileChooser.APPROVE_OPTION) {
 				MainView.this.getContentPane().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-				Map<Restore, String> test = device.restoreCheck(fc.getSelectedFile());
+				final Map<String, JsonNode> backupJsons = UtilCollecion.readBackupFile(fc.getSelectedFile());
+				Map<Restore, String> test = device.restoreCheck(/*fc.getSelectedFile()*/backupJsons);
 				MainView.this.getContentPane().setCursor(Cursor.getDefaultCursor());
 				Map<Restore, String> resData = new HashMap<>();
 				if(test.containsKey(ShellyAbstractDevice.Restore.ERR_RESTORE_HOST) &&
@@ -298,15 +301,18 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 						LABELS.getString("msgRestoreTitle"), JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE) != JOptionPane.YES_OPTION) {
 					return;
 				} else if(test.containsKey(ShellyAbstractDevice.Restore.ERR_RESTORE_MODEL)) {
-					Msg.errorMsg(LABELS.getString("msgRestoreDifferentModel"));
+					Msg.errorMsg(MainView.this, LABELS.getString("msgRestoreDifferentModel"));
 					return;
 				} else if(test.containsKey(ShellyAbstractDevice.Restore.ERR_RESTORE_CONF)) {
-					Msg.errorMsg(LABELS.getString("msgRestoreConfigurationError"));
+					Msg.errorMsg(MainView.this, LABELS.getString("msgRestoreConfigurationError"));
 					return;
 				} else if(test.containsKey(ShellyAbstractDevice.Restore.ERR_RESTORE_MSG)) {
-					Msg.errorMsg(LABELS.getString(test.get(ShellyAbstractDevice.Restore.ERR_RESTORE_MSG)));
+					Msg.errorMsg(MainView.this, LABELS.getString(test.get(ShellyAbstractDevice.Restore.ERR_RESTORE_MSG)));
 					return;
 				} else {
+					if(test.containsKey(ShellyAbstractDevice.Restore.WARN_RESTORE_MSG)) {
+						Msg.warningMsg(MainView.this, LABELS.getString(test.get(ShellyAbstractDevice.Restore.WARN_RESTORE_MSG)));
+					}
 					if(test.containsKey(ShellyAbstractDevice.Restore.RESTORE_LOGIN)) {
 						DialogAuthentication credentials = new DialogAuthentication(MainView.this,
 								LABELS.getString("dlgAuthTitle"), device instanceof AbstractG1Device ? LABELS.getString("labelUser") : null,
@@ -369,7 +375,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 					}
 				}
 				MainView.this.getContentPane().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-				final String ret = device.restore(fc.getSelectedFile(), resData);
+				final String ret = device.restore(/*fc.getSelectedFile()*/backupJsons, resData);
 				
 				if(ret == null || ret.length() == 0) {
 					JOptionPane.showMessageDialog(MainView.this, LABELS.getString("msgRestoreSuccess"), device.getHostname(), JOptionPane.INFORMATION_MESSAGE);
@@ -382,7 +388,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 				update(Devices.EventType.UPDATE, modelRow);
 			}
 		} catch (FileNotFoundException e1) {
-			Msg.errorMsg(String.format(LABELS.getString("action_restore_error_file"), fc.getSelectedFile().getName()));
+			Msg.errorMsg(MainView.this, String.format(LABELS.getString("action_restore_error_file"), fc.getSelectedFile().getName()));
 		} catch (IOException e1) {
 			Msg.errorStatusMsg(this, device, e1);
 		} catch (RuntimeException e1) {
@@ -728,7 +734,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 	}
 
 	private void storeProperties() {
-		DevicesStore.store(model);
+//		DevicesStore.store(model);
 		if(details.isSelected()) {
 			detailedView(false);
 		}

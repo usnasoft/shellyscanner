@@ -12,11 +12,12 @@ import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.g2.modules.Input;
 import it.usna.shellyscan.model.device.g2.modules.SensorAddOn;
+import it.usna.shellyscan.model.device.g2.modules.SensorAddOnHolder;
 import it.usna.shellyscan.model.device.g2.modules.Webhooks;
 import it.usna.shellyscan.model.device.modules.InputCommander;
 import it.usna.shellyscan.model.device.modules.InputInterface;
 
-public class ShellyPlusi4 extends AbstractG2Device implements InputCommander {
+public class ShellyPlusi4 extends AbstractG2Device implements InputCommander, SensorAddOnHolder {
 	public final static String ID = "PlusI4";
 	private Input[] inputs;
 	private Webhooks webhooks;
@@ -90,6 +91,13 @@ public class ShellyPlusi4 extends AbstractG2Device implements InputCommander {
 		final String[] cmd = super.getInfoRequests();
 		return (addOn != null) ? SensorAddOn.getInfoRequests(cmd) : cmd;
 	}
+	
+	@Override
+	public void restoreCheck(Map<String, JsonNode> backupJsons, Map<Restore, String> res) {
+		if(SensorAddOn.restoreCheck(this, backupJsons, res) == false) {
+			res.put(Restore.WARN_RESTORE_MSG, SensorAddOn.MSG_RESTORE_ERROR);
+		}
+	}
 
 	@Override
 	protected void restore(Map<String, JsonNode> backupJsons, ArrayList<String> errors) throws IOException, InterruptedException {
@@ -101,6 +109,9 @@ public class ShellyPlusi4 extends AbstractG2Device implements InputCommander {
 		errors.add(Input.restore(this, configuration, "2"));
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 		errors.add(Input.restore(this, configuration, "3"));
+		
+		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+		SensorAddOn.restore(this, backupJsons, errors);
 	}
 	
 	@Override
@@ -111,5 +122,10 @@ public class ShellyPlusi4 extends AbstractG2Device implements InputCommander {
 	@Override
 	public InputInterface[] getActionsGroups() {
 		return inputs;
+	}
+
+	@Override
+	public SensorAddOn getSensorAddOn() {
+		return addOn;
 	}
 }

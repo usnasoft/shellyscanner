@@ -29,7 +29,7 @@ public class ShellyPlusPlugUK extends AbstractG2Device implements RelayCommander
 
 	public ShellyPlusPlugUK(InetAddress address, int port, String hostname) {
 		super(address, port, hostname);
-		
+
 		meters = new Meters[] {
 				new Meters() {
 					public Type[] getTypes() {
@@ -104,9 +104,9 @@ public class ShellyPlusPlugUK extends AbstractG2Device implements RelayCommander
 		JsonNode switchStatus = status.get("switch:0");
 		relay.fillStatus(switchStatus);
 		internalTmp = (float)switchStatus.path("temperature").path("tC").asDouble();
-		power = (float)switchStatus.get("apower").asDouble(0);
-		voltage = (float)switchStatus.get("voltage").asDouble(0);
-		current = (float)switchStatus.get("current").asDouble(0);
+		power = switchStatus.get("apower").floatValue();
+		voltage = switchStatus.get("voltage").floatValue();
+		current = switchStatus.get("current").floatValue();
 	}
 
 	@Override

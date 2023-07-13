@@ -42,7 +42,7 @@ public abstract class ShellyAbstractDevice {
 	public enum Status {ON_LINE, OFF_LINE, NOT_LOOGGED, READING, ERROR, GHOST}; // GHOST not detected (in store)
 	public enum LogMode {NO, FILE, MQTT, SOCKET, UDP};
 
-	public enum Restore {ERR_RESTORE_HOST, ERR_RESTORE_MODEL, ERR_RESTORE_CONF, ERR_RESTORE_MSG,
+	public enum Restore {ERR_RESTORE_HOST, ERR_RESTORE_MODEL, ERR_RESTORE_CONF, ERR_RESTORE_MSG, WARN_RESTORE_MSG,
 		RESTORE_LOGIN, RESTORE_WI_FI1, RESTORE_WI_FI2,  RESTORE_WI_FI_AP, RESTORE_MQTT, RESTORE_OPEN_MQTT,
 		ERR_UNKNOWN};
 
@@ -208,9 +208,9 @@ public abstract class ShellyAbstractDevice {
 
 	public abstract boolean backup(final File file) throws IOException; // false: use of stored data; cound not connect to device
 	
-	public abstract Map<Restore, String> restoreCheck(final File file) throws IOException;
+	public abstract Map<Restore, String> restoreCheck(Map<String, JsonNode> backupJsons) throws IOException;
 	
-	public abstract String restore(final File file, Map<Restore, String> data) throws IOException;
+	public abstract String restore(Map<String, JsonNode> backupJsons, Map<Restore, String> data) throws IOException;
 
 	/**
 	 * @param section call whose returned json must be stored

@@ -4,6 +4,8 @@ import java.io.File;
 import java.net.InetAddress;
 import java.util.Map;
 
+import com.fasterxml.jackson.databind.JsonNode;
+
 import it.usna.shellyscan.model.device.WIFIManager.Network;
 
 public class GhostDevice extends ShellyAbstractDevice {
@@ -90,12 +92,12 @@ public class GhostDevice extends ShellyAbstractDevice {
 	}
 
 	@Override
-	public Map<Restore, String> restoreCheck(File file) {
+	public Map<Restore, String> restoreCheck(/*File file*/Map<String, JsonNode> backupJsons) {
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
-	public String restore(File file, Map<Restore, String> data) {
+	public String restore(/*File file*/Map<String, JsonNode> backupJsons, Map<Restore, String> data) {
 		throw new UnsupportedOperationException();
 	}
 	

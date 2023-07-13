@@ -14,18 +14,19 @@ import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.g2.modules.Input;
 import it.usna.shellyscan.model.device.g2.modules.Relay;
 import it.usna.shellyscan.model.device.g2.modules.SensorAddOn;
+import it.usna.shellyscan.model.device.g2.modules.SensorAddOnHolder;
 import it.usna.shellyscan.model.device.modules.RelayCommander;
 
-public class ShellyPlus1PM extends AbstractG2Device implements RelayCommander, InternalTmpHolder {
+public class ShellyPlus1PM extends AbstractG2Device implements RelayCommander, InternalTmpHolder, SensorAddOnHolder {
 	public final static String ID = "Plus1PM";
 //	private final static JsonPointer SW_TEMP_P = JsonPointer.valueOf("/temperature/tC");
-	private final static Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.W, Meters.Type.PF, Meters.Type.V, Meters.Type.I};
+	private final static Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.W, /*Meters.Type.PF,*/ Meters.Type.V, Meters.Type.I};
 	private Relay relay = new Relay(this, 0);
 	private float internalTmp;
 	private float power;
 	private float voltage;
 	private float current;
-	private float pf;
+//	private float pf;
 	private Relay[] relays = new Relay[] {relay};
 	private Meters[] meters;
 	private SensorAddOn addOn;
@@ -47,8 +48,8 @@ public class ShellyPlus1PM extends AbstractG2Device implements RelayCommander, I
 					return power;
 				} else if(t == Meters.Type.I) {
 					return current;
-				} else if(t == Meters.Type.PF) {
-					return pf;
+//				} else if(t == Meters.Type.PF) {
+//					return pf;
 				} else {
 					return voltage;
 				}
@@ -123,11 +124,11 @@ public class ShellyPlus1PM extends AbstractG2Device implements RelayCommander, I
 		super.fillStatus(status);
 		JsonNode switchStatus = status.get("switch:0");
 		relay.fillStatus(switchStatus, status.get("input:0"));
-		internalTmp = (float)switchStatus.path("temperature").path("tC").asDouble();
-		power = (float)switchStatus.get("apower").asDouble(0);
-		voltage = (float)switchStatus.get("voltage").asDouble(0);
-		current = (float)switchStatus.get("current").asDouble(0);
-		pf = (float)switchStatus.get("pf").asDouble();
+		internalTmp = switchStatus.path("temperature").path("tC").floatValue();
+		power = switchStatus.get("apower").floatValue();
+		voltage = switchStatus.get("voltage").floatValue();
+		current = switchStatus.get("current").floatValue();
+//		pf = switchStatus.path("pf").floatValue();
 		if(addOn != null) {
 			addOn.fillStatus(status);
 		}
@@ -138,6 +139,13 @@ public class ShellyPlus1PM extends AbstractG2Device implements RelayCommander, I
 		final String[] cmd = super.getInfoRequests();
 		return (addOn != null) ? SensorAddOn.getInfoRequests(cmd) : cmd;
 	}
+	
+	@Override
+	public void restoreCheck(Map<String, JsonNode> backupJsons, Map<Restore, String> res) {
+		if(SensorAddOn.restoreCheck(this, backupJsons, res) == false) {
+			res.put(Restore.WARN_RESTORE_MSG, SensorAddOn.MSG_RESTORE_ERROR);
+		}
+	}
 
 	@Override
 	protected void restore(Map<String, JsonNode> backupJsons, ArrayList<String> errors) throws IOException, InterruptedException {
@@ -145,6 +153,14 @@ public class ShellyPlus1PM extends AbstractG2Device implements RelayCommander, I
 		errors.add(Input.restore(this, configuration, "0"));
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 		errors.add(relay.restore(configuration));
+		
+		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+		SensorAddOn.restore(this, backupJsons, errors);
+	}
+	
+	@Override
+	public SensorAddOn getSensorAddOn() {
+		return addOn;
 	}
 	
 	@Override

@@ -132,11 +132,11 @@ public class Shelly25 extends AbstractG1Device implements RelayCommander, Roller
 	protected void fillStatus(JsonNode status) throws IOException {
 		super.fillStatus(status);
 //		internalTmp = (float)status.get("tmp").get("tC").asDouble();
-		internalTmp = (float)status.get("temperature").asDouble();
+		internalTmp = status.get("temperature").floatValue();
 		final JsonNode meters = status.get("meters");
-		power0 = (float)meters.get(0).get("power").asDouble(0);
-		power1 = (float)meters.get(1).get("power").asDouble(0);
-		voltage = (float)status.path("voltage").asDouble();
+		power0 = meters.get(0).get("power").floatValue();
+		power1 = meters.get(1).get("power").floatValue();
+		voltage = status.path("voltage").floatValue();
 		if(modeRelay) {
 			JsonNode ralaysStatus = status.get("relays");
 			JsonNode ralaysInputs = status.get("inputs");

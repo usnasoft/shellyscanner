@@ -46,14 +46,14 @@ public class LightBulbRGB implements DeviceModule {
 		modeColor = "color".equals(statuslight.get("mode").asText());
 		source = statuslight.get("source").asText("-");
 //		if(modeColor) {
-			red = statuslight.get("red").asInt();
-			green = statuslight.get("green").asInt();
-			blue = statuslight.get("blue").asInt();
-			gain = statuslight.get("gain").asInt();
+			red = statuslight.get("red").intValue();
+			green = statuslight.get("green").intValue();
+			blue = statuslight.get("blue").intValue();
+			gain = statuslight.get("gain").intValue();
 //		} else {
 //			white = statuslight.get("white").asInt();
-			temp = statuslight.get("temp").asInt();
-			brightness = statuslight.get("brightness").asInt();
+			temp = statuslight.get("temp").intValue();
+			brightness = statuslight.get("brightness").intValue();
 //		}
 	}
 

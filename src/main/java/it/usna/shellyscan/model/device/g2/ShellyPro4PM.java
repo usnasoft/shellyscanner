@@ -174,33 +174,33 @@ public class ShellyPro4PM extends AbstractProDevice implements RelayCommander, I
 		super.fillStatus(status);
 		JsonNode switchStatus0 = status.get("switch:0");
 		relay0.fillStatus(switchStatus0, status.get("input:0"));
-		power0 = (float)switchStatus0.get("apower").asDouble();
-		voltage0 = (float)switchStatus0.get("voltage").asDouble();
-		current0 = (float)switchStatus0.get("current").asDouble();
-		pf0 = (float)switchStatus0.get("pf").asDouble();
+		power0 = switchStatus0.get("apower").floatValue();
+		voltage0 = switchStatus0.get("voltage").floatValue();
+		current0 = switchStatus0.get("current").floatValue();
+		pf0 = switchStatus0.get("pf").floatValue();
 
 		JsonNode switchStatus1 = status.get("switch:1");
 		relay1.fillStatus(switchStatus1, status.get("input:1"));
-		power1 = (float)switchStatus1.get("apower").asDouble();
-		voltage1 = (float)switchStatus1.get("voltage").asDouble();
-		current1 = (float)switchStatus1.get("current").asDouble();
-		pf1 = (float)switchStatus1.get("pf").asDouble();
+		power1 = switchStatus1.get("apower").floatValue();
+		voltage1 = switchStatus1.get("voltage").floatValue();
+		current1 = switchStatus1.get("current").floatValue();
+		pf1 = switchStatus1.get("pf").floatValue();
 
 		JsonNode switchStatus2 = status.get("switch:2");
 		relay2.fillStatus(switchStatus2, status.get("input:1"));
-		power2 = (float)switchStatus2.get("apower").asDouble();
-		voltage2 = (float)switchStatus2.get("voltage").asDouble();
-		current2 = (float)switchStatus2.get("current").asDouble();
-		pf2 = (float)switchStatus2.get("pf").asDouble();
+		power2 = switchStatus2.get("apower").floatValue();
+		voltage2 = switchStatus2.get("voltage").floatValue();
+		current2 = switchStatus2.get("current").floatValue();
+		pf2 = switchStatus2.get("pf").floatValue();
 
 		JsonNode switchStatus3 = status.get("switch:3");
 		relay3.fillStatus(switchStatus3, status.get("input:1"));
-		power3 = (float)switchStatus3.get("apower").asDouble();
-		voltage3 = (float)switchStatus3.get("voltage").asDouble();
-		current3 = (float)switchStatus3.get("current").asDouble();
-		pf3 = (float)switchStatus3.get("pf").asDouble();
+		power3 = switchStatus3.get("apower").floatValue();
+		voltage3 = switchStatus3.get("voltage").floatValue();
+		current3 = switchStatus3.get("current").floatValue();
+		pf3 = switchStatus3.get("pf").floatValue();
 
-		internalTmp = (float)switchStatus0.path("temperature").path("tC").asDouble();
+		internalTmp = switchStatus0.path("temperature").path("tC").floatValue();
 	}
 
 	@Override
