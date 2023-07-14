@@ -202,7 +202,7 @@ public class DevicesTable extends ExTooltipTable {
 			comp.setBackground(getSelectionBackground());
 //			comp.setForeground(getSelectionForeground());
 		}
-		computeRowHeigth(row, comp);
+		computeRowHeight(row, comp);
 		return comp;
 	}
 
@@ -344,7 +344,7 @@ public class DevicesTable extends ExTooltipTable {
 
 	// adapt row height
 //	private ArrayList<Integer> rowH = new ArrayList<>();
-	private void computeRowHeigth(int rowIndex, Component callVal) {
+	private void computeRowHeight(int rowIndex, Component callVal) {
 //		int modelRowIndex = convertRowIndexToModel(rowIndex);
 //		int currentH;
 //		if(modelRowIndex >= rowH.size()) {
