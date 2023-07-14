@@ -1,12 +1,14 @@
 package it.usna.shellyscan.model;
 
 import java.io.BufferedReader;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.Writer;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -95,6 +97,8 @@ public class DevicesStore {
 			} else {
 				LOG.info("Archive version is %; " + FORMAT_VERSION + " expected", arc.path("ver").asInt());
 			}
+		} catch(FileNotFoundException | NoSuchFileException e) {
+			// first run?
 		} catch (IOException e) {
 			LOG.error("Archive read", e);
 		}
