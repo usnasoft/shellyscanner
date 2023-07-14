@@ -137,6 +137,7 @@ public class Main {
 			});
 		} catch (Throwable ex) {
 			Msg.errorMsg(ex);
+			LOG.error("Init error", ex);
 			System.exit(1);
 		}
 	}
