@@ -16,6 +16,7 @@ import java.net.URL;
 import java.text.MessageFormat;
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.TimeZone;
@@ -62,6 +63,7 @@ import it.usna.swing.ArrayTableCellRenderer;
 import it.usna.swing.DecimalTableCellRenderer;
 import it.usna.swing.table.ExTooltipTable;
 import it.usna.swing.table.UsnaTableModel;
+import it.usna.util.AppProperties;
 
 public class DevicesTable extends ExTooltipTable {
 	private static final long serialVersionUID = 1L;
@@ -82,19 +84,20 @@ public class DevicesTable extends ExTooltipTable {
 	// model columns indexes
 	final static int COL_STATUS_IDX = 0;
 	final static int COL_TYPE = 1;
-	final static int COL_NAME = 2;
-	final static int COL_MAC_IDX = 3;
-	final static int COL_IP_IDX = 4;
-	final static int COL_SSID_IDX = 5;
-	final static int COL_RSSI_IDX = 6;
-	final static int COL_CLOUD = 7;
-	final static int COL_MQTT = 8;
-	final static int COL_UPTIME_IDX = 9;
-	final static int COL_INT_TEMP = 10;
-	final static int COL_MEASURES_IDX = 11;
-	final static int COL_DEBUG = 12;
-	final static int COL_SOURCE_IDX = 13;
-	final static int COL_COMMAND_IDX = 14;
+	final static int COL_DEVICE = 2;
+	final static int COL_NAME = 3;
+	final static int COL_MAC_IDX = 4;
+	final static int COL_IP_IDX = 5;
+	final static int COL_SSID_IDX = 6;
+	final static int COL_RSSI_IDX = 7;
+	final static int COL_CLOUD = 8;
+	final static int COL_MQTT = 9;
+	final static int COL_UPTIME_IDX = 10;
+	final static int COL_INT_TEMP = 11;
+	final static int COL_MEASURES_IDX = 12;
+	final static int COL_DEBUG = 13;
+	final static int COL_SOURCE_IDX = 14;
+	final static int COL_COMMAND_IDX = 15;
 
 	private boolean adaptTooltipLocation = false;
 	
@@ -276,6 +279,15 @@ public class DevicesTable extends ExTooltipTable {
 	public Point getToolTipLocation(final MouseEvent evt) {
 		return (adaptTooltipLocation) ? super.getToolTipLocation(evt) : null;
 	}
+	
+	public void loadColPos(final AppProperties appProp) {
+		if(appProp.get("TAB." + COL_POSITION_PROP) == null) {
+			hideColumn(COL_MAC_IDX);
+			hideColumn(COL_SSID_IDX);
+		} else {
+			loadColPos(appProp, "TAB");
+		}
+	}
 
 	@Override
 	public void columnsWidthAdapt() {
@@ -328,8 +340,19 @@ public class DevicesTable extends ExTooltipTable {
 	public void setRowFilter(String filter, int ... cols) {
 		TableRowSorter<?> sorter = (TableRowSorter<?>)getRowSorter();
 		if(filter.length() > 0) {
-			filter = filter.replace("\\E", "\\e");
-			sorter.setRowFilter(RowFilter.regexFilter("(?i).*\\Q" + filter + "\\E.*", cols));
+			RowFilter<TableModel, Integer> regexFilter = RowFilter.regexFilter("(?i).*\\Q" + filter.replace("\\E", "\\e") + "\\E.*", cols);
+			ArrayList<RowFilter<TableModel, Integer>> filters = new ArrayList<>();
+			filters.add(regexFilter); // verificare funzionamento IP
+//			if(cols.length > 1) {
+//				filters.add(new RowFilter<TableModel, Integer>() {
+//					@Override
+//					public boolean include(Entry<? extends TableModel, ? extends Integer> entry) {
+//						Object val = entry.getValue(COL_COMMAND_IDX);
+//						return (val instanceof LabelHolder) && ((LabelHolder)val).getLabel().toUpperCase().contains(filter.toUpperCase());
+//					}
+//				});
+//			}
+			sorter.setRowFilter(RowFilter.orFilter(filters));
 		} else {
 			sorter.setRowFilter(null);
 		}
@@ -387,7 +410,8 @@ public class DevicesTable extends ExTooltipTable {
 	private static Object[] generateRow(ShellyAbstractDevice d, final Object row[]) {
 		try {
 			row[DevicesTable.COL_STATUS_IDX] = getStatusIcon(d);
-			row[DevicesTable.COL_TYPE] = d.getTypeName() + " (" + d.getHostname() + ")";
+			row[DevicesTable.COL_TYPE] = d.getTypeName();
+			row[DevicesTable.COL_DEVICE] = /*d.getTypeName() + " (" +*/ d.getHostname() /*+ ")"*/;
 			row[DevicesTable.COL_NAME] = d.getName();
 			row[DevicesTable.COL_MAC_IDX] = d.getMacAddress();
 			row[DevicesTable.COL_IP_IDX] = /*d.getAddress()*/new InetAddressAndPort(d);
@@ -457,11 +481,7 @@ public class DevicesTable extends ExTooltipTable {
 	
 	public static ImageIcon getStatusIcon(ShellyAbstractDevice d) {
 		if(d.getStatus() == Status.ON_LINE) {
-			if(/*d instanceof AbstractG2Device && ((AbstractG2Device)d).rebootRequired()*/ d.rebootRequired()) {
-				return ONLINE_BULLET_REBOOT;
-			} else {
-				return ONLINE_BULLET;
-			}
+			return d.rebootRequired() ? ONLINE_BULLET_REBOOT : ONLINE_BULLET;
 		} else if(d.getStatus() == Status.OFF_LINE) {
 			long lastOnline = d.getLastTime();
 			if(lastOnline > 0) {
@@ -479,4 +499,4 @@ public class DevicesTable extends ExTooltipTable {
 			return LOGIN_BULLET;
 		}
 	}
-} // 462 - 472 - 493
+} // 462 - 472 - 490

@@ -32,7 +32,7 @@ public class Main {
 	public static Color TAB_LINE1 = new Color(240, 240, 240);
 	public static Color TAB_LINE2 = new Color(160, 180, 255)/*Color.lightGray*/;
 	public static Color STATUS_LINE = new Color(200, 220, 255);
-	public final static String TAB_VERSION = "3"; // on change reset table settings
+	public final static String TAB_VERSION = "4"; // on change reset table settings
 
 	private final static String PROP_FILE = System.getProperty("user.home") + File.separator + ".shellyScanner";
 	private final static AppProperties appProp = new AppProperties(PROP_FILE);

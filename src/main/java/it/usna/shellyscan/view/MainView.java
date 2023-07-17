@@ -96,6 +96,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 	private Devices model;
 	private UsnaTableModel tModel = new UsnaTableModel(
 			"",
+			LABELS.getString("col_type"),
 			LABELS.getString("col_device"),
 			LABELS.getString("col_device_name"),
 			LABELS.getString("col_mac"),
@@ -490,7 +491,8 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		textFieldFilter.setColumns(16);
 		
 		JComboBox<String> comboFilterCol = new JComboBox<>();
-		comboFilterCol.addItem(LABELS.getString("col_device") + " - " + LABELS.getString("col_device_name"));
+		comboFilterCol.addItem(LABELS.getString("lblFilterFull"));
+		comboFilterCol.addItem(LABELS.getString("col_type"));
 		comboFilterCol.addItem(LABELS.getString("col_device"));
 		comboFilterCol.addItem(LABELS.getString("col_device_name"));
 		comboFilterCol.addActionListener(event -> {
@@ -563,11 +565,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		getContentPane().add(scrollPane, BorderLayout.CENTER);
 //		devicesTable = new DevicesTable(tModel);
 		devicesTable.sortByColumn(DevicesTable.COL_IP_IDX, SortOrder.ASCENDING);
-		devicesTable.loadColPos(appProp, "TAB");
-		if(appProp.get("TAB.COL_P") == null) {
-			devicesTable.hideColumn(DevicesTable.COL_MAC_IDX);
-			devicesTable.hideColumn(DevicesTable.COL_SSID_IDX);
-		}
+		devicesTable.loadColPos(appProp);
 		
 		scrollPane.setViewportView(devicesTable);
 		scrollPane.getViewport().setBackground(Main.BG_COLOR);
@@ -660,8 +658,9 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 	private void setColFilter(JComboBox<?> combo) {
 		int sel = combo.getSelectedIndex();
 		final int[] cols;
-		if(sel == 0) cols = new int[] {DevicesTable.COL_TYPE, DevicesTable.COL_NAME};
+		if(sel == 0) cols = new int[] {DevicesTable.COL_TYPE, DevicesTable.COL_DEVICE, DevicesTable.COL_NAME, DevicesTable.COL_IP_IDX/*, DevicesTable.COL_COMMAND_IDX*/};
 		else if(sel == 1) cols = new int[] {DevicesTable.COL_TYPE};
+		else if(sel == 2) cols = new int[] {DevicesTable.COL_DEVICE};
 		else cols = new int[] {DevicesTable.COL_NAME};
 		devicesTable.setRowFilter(textFieldFilter.getText(), cols);
 	}
