@@ -40,6 +40,7 @@ public class DevicesStore {
 	private final static String SSID = "ssid";
 
 	public static void store(Devices model) {
+		LOG.trace("storing archive");
 		final JsonNodeFactory factory = new JsonNodeFactory(false);
 		final ObjectNode root = factory.objectNode();
 		root.put("ver", FORMAT_VERSION);
@@ -70,26 +71,18 @@ public class DevicesStore {
 	}
 
 	public static List<GhostDevice> read() {
+		LOG.trace("reading archive");
 		List<GhostDevice> list = new ArrayList<>();
 		Path storeFile = Paths.get(System.getProperty("user.home"), "ShellyStore.arc");
 		try (BufferedReader r = Files.newBufferedReader(storeFile, StandardCharsets.UTF_8)) {
 			final JsonNode arc = JSON_MAPPER.readTree(r);
 			if(arc.path("ver").asInt() == FORMAT_VERSION) {
 				final ArrayNode array = (ArrayNode) arc.get("dev");
-//System.out.println(JSON_MAPPER.writerWithDefaultPrettyPrinter().writeValueAsString(array));
 				array.forEach(el -> {
 					try {
-						GhostDevice device = new GhostDevice(
-								InetAddress.getByName(el.get(ADDRESS).asText()),
-								el.get(PORT).asInt(),
-								el.get(HOSTNAME).asText(),
-								el.get(MAC).asText(),
-								el.get(SSID).asText(),
-								el.get(TYPE_NAME).asText(),
-								el.get(TYPE_ID).asText(),
-								el.get(NAME).asText());
-						list.add(device);
-						System.out.println(device);
+						list.add(new GhostDevice(
+								InetAddress.getByName(el.get(ADDRESS).asText()), el.get(PORT).asInt(), el.get(HOSTNAME).asText(), el.get(MAC).asText(),
+								el.get(SSID).asText(), el.get(TYPE_NAME).asText(), el.get(TYPE_ID).asText(), el.get(NAME).asText()));
 					} catch (UnknownHostException | RuntimeException e) {
 						LOG.error("Archive read", e);
 					}
@@ -101,6 +94,17 @@ public class DevicesStore {
 			// first run?
 		} catch (IOException e) {
 			LOG.error("Archive read", e);
+		}
+		return list;
+	}
+	
+	public static List<GhostDevice> toGhosts(Devices model) {
+		List<GhostDevice> list = new ArrayList<>(model.size());
+		for(int i= 0; i < model.size(); i++) {
+			ShellyAbstractDevice d = model.get(i);
+			list.add(new GhostDevice(
+					d.getAddress(), d.getPort(), d.getHostname(), d.getMacAddress(),
+					d.getSSID(), d.getTypeName(), d.getTypeID(), d.getName()));
 		}
 		return list;
 	}

@@ -284,6 +284,7 @@ public class DevicesTable extends ExTooltipTable {
 		if(appProp.get("TAB." + COL_POSITION_PROP) == null) {
 			hideColumn(COL_MAC_IDX);
 			hideColumn(COL_SSID_IDX);
+			hideColumn(COL_DEBUG);
 		} else {
 			loadColPos(appProp, "TAB");
 		}
@@ -342,16 +343,28 @@ public class DevicesTable extends ExTooltipTable {
 		if(filter.length() > 0) {
 			RowFilter<TableModel, Integer> regexFilter = RowFilter.regexFilter("(?i).*\\Q" + filter.replace("\\E", "\\e") + "\\E.*", cols);
 			ArrayList<RowFilter<TableModel, Integer>> filters = new ArrayList<>();
-			filters.add(regexFilter); // verificare funzionamento IP
-//			if(cols.length > 1) {
-//				filters.add(new RowFilter<TableModel, Integer>() {
-//					@Override
-//					public boolean include(Entry<? extends TableModel, ? extends Integer> entry) {
-//						Object val = entry.getValue(COL_COMMAND_IDX);
-//						return (val instanceof LabelHolder) && ((LabelHolder)val).getLabel().toUpperCase().contains(filter.toUpperCase());
-//					}
-//				});
-//			}
+			filters.add(regexFilter);
+			if(cols.length > 1) {
+				filters.add(new RowFilter<TableModel, Integer>() {
+					@Override
+					public boolean include(Entry<? extends TableModel, ? extends Integer> entry) {
+						Object val = entry.getValue(COL_COMMAND_IDX);
+						if(val instanceof String) {
+							return ((String)val).toUpperCase().contains(filter.toUpperCase());
+						} else if(val instanceof LabelHolder) {
+							return ((LabelHolder)val).getLabel().toUpperCase().contains(filter.toUpperCase());
+						} else if(val instanceof LabelHolder[]) {
+							for(LabelHolder lh: (LabelHolder[])val) {
+								if(lh.getLabel().toUpperCase().contains(filter.toUpperCase())) {
+									return true;
+								}
+							}
+							return false;
+						}
+						return false;
+					}
+				});
+			}
 			sorter.setRowFilter(RowFilter.orFilter(filters));
 		} else {
 			sorter.setRowFilter(null);
@@ -434,9 +447,6 @@ public class DevicesTable extends ExTooltipTable {
 					row[DevicesTable.COL_COMMAND_IDX] = command = ((WhiteCommander)d).getWhite(0);
 				} else if(d instanceof LightBulbRGBCommander) {
 					row[DevicesTable.COL_COMMAND_IDX] = command = ((LightBulbRGBCommander)d).getLight(0);
-//					row[DevicesTable.COL_COMMAND_IDX] = new Thermostat((AbstractG1Device)d); // test
-//					row[DevicesTable.COL_COMMAND_IDX] = new LightWhite[] {new LightWhite((AbstractG1Device)d, "", 0), new LightWhite((AbstractG1Device)d, "", 1), new LightWhite((AbstractG1Device)d, "", 2)}; // test
-//					row[DevicesTable.COL_COMMAND_IDX] = new LightRGBW((AbstractG1Device)d, 0); // test
 				} else if(d instanceof RGBWCommander && ((RGBWCommander)d).getColorCount() > 0) {
 					row[DevicesTable.COL_COMMAND_IDX] = command = ((RGBWCommander)d).getColor(0);
 				} else if(d instanceof WhiteCommander && ((WhiteCommander)d).getWhiteCount() > 1) {
@@ -499,4 +509,4 @@ public class DevicesTable extends ExTooltipTable {
 			return LOGIN_BULLET;
 		}
 	}
-} // 462 - 472 - 490
+} // 462 - 472 - 513

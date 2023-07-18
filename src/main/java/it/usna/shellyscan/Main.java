@@ -67,7 +67,7 @@ public class Main {
 			SwingUtilities.invokeLater(() -> {
 				view.setVisible(true);
 				//todo
-				model.load();
+				model.loadFromStore();
 				view.requestFocus(); // remove random focus on toolbar button
 				try {
 					view.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));

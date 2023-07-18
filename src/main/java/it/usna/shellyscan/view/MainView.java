@@ -8,7 +8,6 @@ import java.awt.Desktop;
 import java.awt.FlowLayout;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
-import java.awt.datatransfer.StringSelection;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -70,6 +69,7 @@ import it.usna.shellyscan.controller.SelectionAction;
 import it.usna.shellyscan.controller.UsnaAction;
 import it.usna.shellyscan.controller.UsnaSelectedAction;
 import it.usna.shellyscan.model.Devices;
+import it.usna.shellyscan.model.device.GhostDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice.Restore;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
@@ -151,11 +151,13 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		setEnabled(false);
 		devicesTable.stopCellEditing();
 		for(int i = 0; i < tModel.getRowCount(); i++) {
-			tModel.setValueAt(DevicesTable.UPDATING_BULLET, i, DevicesTable.COL_STATUS_IDX);
-			model.refresh(i, false);
+			if(model.get(i) instanceof GhostDevice == false) {
+				tModel.setValueAt(DevicesTable.UPDATING_BULLET, i, DevicesTable.COL_STATUS_IDX);
+				model.refresh(i, false);
+			}
 		}
 		try {
-			Thread.sleep(250); // too many call disturb some devices at least (2.5)
+			Thread.sleep(250); // too many call disturb some devices expecially gen1
 		} catch (InterruptedException e1) {}
 		devicesTable.resetRowsComputedHeight();
 		setEnabled(true);
@@ -459,10 +461,10 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		setStatus();
 	});
 	
-	private Action copyHostAction = new UsnaSelectedAction(this, devicesTable, "action_copy_hostname", null, "/images/Clipboard_Copy_16.png", null, i -> {
-		StringSelection ss = new StringSelection(model.get(i).getHostname());
-		Toolkit.getDefaultToolkit().getSystemClipboard().setContents(ss, ss);
-	});
+//	private Action copyHostAction = new UsnaSelectedAction(this, devicesTable, "action_copy_hostname", null, "/images/Clipboard_Copy_16.png", null, i -> {
+//		StringSelection ss = new StringSelection(model.get(i).getHostname());
+//		Toolkit.getDefaultToolkit().getSystemClipboard().setContents(ss, ss);
+//	});
 
 	public MainView(final Devices model, final AppProperties appProp) {
 		this.model = model;
@@ -600,7 +602,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		toolBar.add(appSettingsAction);
 		toolBar.add(aboutAction);
 		
-		UsnaPopupMenu tablePopup = new UsnaPopupMenu(infoAction, browseAction, backupAction, restoreAction, copyHostAction, reloadAction, loginAction) {
+		UsnaPopupMenu tablePopup = new UsnaPopupMenu(infoAction, browseAction, backupAction, restoreAction, reloadAction, loginAction) {
 			private static final long serialVersionUID = 1L;
 			@Override
 			protected void doPopup(MouseEvent evt) {
@@ -668,8 +670,17 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 	private void manageActions() {
 		ListSelectionListener l = e -> {
 			if(e.getValueIsAdjusting() == false) {
-				final boolean selection = devicesTable.getSelectedRowCount() > 0;
-				final boolean singleSelection = devicesTable.getSelectedRowCount() == 1;
+				boolean ghost = false;
+				ShellyAbstractDevice d = null;
+				for(int idx: devicesTable.getSelectedRows()) {
+					d = model.get(devicesTable.convertRowIndexToModel(idx));
+					if(d instanceof GhostDevice) {
+						ghost = true;
+						break;
+					}
+				}
+				final boolean selection = devicesTable.getSelectedRowCount() > 0 && ghost == false;
+				final boolean singleSelection = devicesTable.getSelectedRowCount() == 1 && ghost == false;
 				infoAction.setEnabled(singleSelection);
 				infoLogAction.setEnabled(singleSelection);
 				checkListAction.setEnabled(selection);
@@ -679,11 +690,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 				restoreAction.setEnabled(singleSelection);
 				devicesSettingsAction.setEnabled(selection);
 				chartAction.setEnabled(selection);
-				ShellyAbstractDevice d = null;
-				if(singleSelection) {
-					d = model.get(devicesTable.convertRowIndexToModel(devicesTable.getSelectedRow()));
-				}
-				scriptManagerAction.setEnabled(d instanceof AbstractG2Device);
+				scriptManagerAction.setEnabled(singleSelection && d instanceof AbstractG2Device);
 			}
 		};
 		devicesTable.getSelectionModel().addListSelectionListener(l);
@@ -733,7 +740,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 	}
 
 	private void storeProperties() {
-		model.store();
+		model.saveToStore();
 		if(details.isSelected()) {
 			detailedView(false);
 		}

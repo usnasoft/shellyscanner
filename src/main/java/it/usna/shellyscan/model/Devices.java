@@ -168,7 +168,6 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 
 	private JsonNode isShelly(final InetAddress address, int port) throws TimeoutException {
 		try {
-//			ContentResponse response = httpClient.newRequest(/*"http://" +*/ address.getHostAddress() + "/shelly", port).timeout(15, TimeUnit.SECONDS).send();
 			ContentResponse response = httpClient.newRequest("http://" + address.getHostAddress() + ":" + port + "/shelly").timeout(15, TimeUnit.SECONDS).send();
 			JsonNode shellyNode = JSON_MAPPER.readTree(response.getContent());
 			int resp = response.getStatus();
@@ -186,8 +185,8 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 
 	public void rescan() throws IOException {
 		//LOG.trace("Q {}", ((ScheduledThreadPoolExecutor)executor).getQueue().size());
-		//synchronized(devices) {
 		LOG.trace("rescan");
+		List<GhostDevice> ghosts = DevicesStore.toGhosts(this);
 		clear();
 		fireEvent(EventType.CLEAR);
 		if(this.baseScanIP == null) {
@@ -217,12 +216,12 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 					}
 				}
 			}
+			loadGhosts(ghosts);
 		} else {
 			scanByIP();
 		}
 		LOG.debug("end scan");
 		fireEvent(EventType.READY);
-		//}
 	}
 
 	public void refresh(int ind, boolean force) {
@@ -232,7 +231,7 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 				refreshProcess.get(ind).cancel(true);
 				d.setStatus(Status.READING);
 				executor.schedule(() -> {
-					if(d instanceof ShellyUnmanagedDevice && ((ShellyUnmanagedDevice)d).geException() != null) { // experimental; try to create proper device
+					if(d instanceof ShellyUnmanagedDevice && ((ShellyUnmanagedDevice)d).geException() != null) { // try to create proper device
 						create(d.getAddress(), d.getPort(), null, d.getHostname());
 					} else {
 						try {
@@ -390,7 +389,7 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 		return devices.size();
 	}
 
-	private int indexOf(String hostname) {
+	private int indexOfByHostname(String hostname) {
 		//synchronized(devices) {
 		for(int i = 0; i < devices.size(); i++) {
 			if(hostname.equals(devices.get(i).getHostname())) {
@@ -400,17 +399,24 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 		return -1;
 	}
 	
-	public void load() {
-		List<GhostDevice> ghosts = DevicesStore.read();
-		ghosts.forEach(d -> {
-			final int idx = devices.size();
-			devices.add(d);
-			fireEvent(EventType.ADD, idx);
-			refreshProcess.add(null);
-		});
+	public void loadFromStore() {
+		loadGhosts(DevicesStore.read());
 	}
 	
-	public void store() {
+	private void loadGhosts(List<GhostDevice> ghosts) {
+		synchronized(devices) {
+			ghosts.forEach(d -> {
+				if(devices.indexOf(d) < 0) {
+					final int idx = devices.size();
+					devices.add(d);
+					fireEvent(EventType.ADD, idx);
+					refreshProcess.add(null);
+				}
+			});
+		}
+	}
+	
+	public void saveToStore() {
 		DevicesStore.store(this);
 	}
 
@@ -467,7 +473,7 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 			String hostname = event.getInfo().getName();
 			synchronized(devices) {
 				int ind;
-				if((ind = indexOf(hostname)) >= 0) {
+				if((ind = indexOfByHostname(hostname)) >= 0) {
 					devices.get(ind).setStatus(Status.OFF_LINE);
 					fireEvent(EventType.UPDATE, ind);
 				}
