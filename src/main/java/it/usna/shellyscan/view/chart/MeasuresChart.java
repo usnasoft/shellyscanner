@@ -284,7 +284,7 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 		for(int ind: indexes) {
 			final ShellyAbstractDevice d = model.get(ind);
 
-			if(currentType.mType == null) {
+			if(currentType.mType == null) { // device property (INT_TEMP, ...), not from "Meters"
 				TimeSeries s = new TimeSeries(UtilCollecion.getDescName(d));
 				dataset.addSeries(s);
 				seriesMap.put(ind, new TimeSeries[] {s});
@@ -292,9 +292,18 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 				ArrayList<TimeSeries> temp = new ArrayList<>();
 				Meters[] meters = d.getMeters();
 				if(meters != null) {
-					for(int i = 0; i < meters.length; i++) {
-						if(meters[i].hasType(currentType.mType)) {
-							final String sName = UtilCollecion.getDescName(d, i);
+//					for(int i = 0; i < meters.length; i++) {
+//						if(meters[i].hasType(currentType.mType)) {
+//							final String sName = UtilCollecion.getDescName(d, i);
+//							TimeSeries s = new TimeSeries(sName);
+//							temp.add(s);
+//							dataset.addSeries(s);
+//						}
+//					}
+					int i = 0;
+					for(Meters m: meters) {
+						if(m.hasType(currentType.mType)) {
+							final String sName = UtilCollecion.getDescName(d, i++);
 							TimeSeries s = new TimeSeries(sName);
 							temp.add(s);
 							dataset.addSeries(s);

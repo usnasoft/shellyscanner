@@ -10,7 +10,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -39,7 +38,7 @@ public class DevicesStore {
 	private final static String PORT = "port";
 	private final static String SSID = "ssid";
 
-	public static void store(Devices model) {
+	public static void store(Devices model, Path storeFile) {
 		LOG.trace("storing archive");
 		final JsonNodeFactory factory = new JsonNodeFactory(false);
 		final ObjectNode root = factory.objectNode();
@@ -61,7 +60,6 @@ public class DevicesStore {
 		}
 		root.set("dev", array);
 
-		Path storeFile = Paths.get(System.getProperty("user.home"), "ShellyStore.arc");
 		try (Writer w = Files.newBufferedWriter(storeFile, StandardCharsets.UTF_8)) {
 			w.write(root.toString());
 //			System.out.println(JSON_MAPPER.writerWithDefaultPrettyPrinter().writeValueAsString(root));
@@ -70,10 +68,9 @@ public class DevicesStore {
 		}
 	}
 
-	public static List<GhostDevice> read() {
+	public static List<GhostDevice> read(Path storeFile) throws IOException {
 		LOG.trace("reading archive");
 		List<GhostDevice> list = new ArrayList<>();
-		Path storeFile = Paths.get(System.getProperty("user.home"), "ShellyStore.arc");
 		try (BufferedReader r = Files.newBufferedReader(storeFile, StandardCharsets.UTF_8)) {
 			final JsonNode arc = JSON_MAPPER.readTree(r);
 			if(arc.path("ver").asInt() == FORMAT_VERSION) {
@@ -94,6 +91,7 @@ public class DevicesStore {
 			// first run?
 		} catch (IOException e) {
 			LOG.error("Archive read", e);
+			throw e;
 		}
 		return list;
 	}

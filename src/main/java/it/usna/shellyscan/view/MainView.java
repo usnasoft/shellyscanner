@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -134,7 +135,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 			MainView.this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 			try {
 //				setEnabled(false);
-				model.rescan();
+				model.rescan(appProp.getBoolProperty(DialogAppSettings.PROP_USE_ARCHIVE, true));
 				Thread.sleep(500); // too many call disturb some devices
 			} catch (IOException e1) {
 				Msg.errorMsg(e1);
@@ -252,7 +253,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 			@Override
 			protected void done() {
 				try {
-					setStatus();
+					displayStatus();
 					Msg.showHtmlMessageDialog(MainView.this, get(), LABELS.getString("titleBackupDone"), JOptionPane.INFORMATION_MESSAGE);
 				} catch (Exception e) {
 					Msg.errorMsg(e);
@@ -458,7 +459,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		textFieldFilter.setText("");
 		textFieldFilter.requestFocusInWindow();
 		devicesTable.clearSelection();
-		setStatus();
+		displayStatus();
 	});
 	
 //	private Action copyHostAction = new UsnaSelectedAction(this, devicesTable, "action_copy_hostname", null, "/images/Clipboard_Copy_16.png", null, i -> {
@@ -499,7 +500,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		comboFilterCol.addItem(LABELS.getString("col_device_name"));
 		comboFilterCol.addActionListener(event -> {
 			setColFilter(comboFilterCol);
-			setStatus();
+			displayStatus();
 		});
 		statusButtonPanel.add(comboFilterCol);
 		statusButtonPanel.add(textFieldFilter);
@@ -512,13 +513,13 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 			@Override
 			public void removeUpdate(DocumentEvent e) {
 				setColFilter(comboFilterCol);
-				setStatus();
+				displayStatus();
 			}
 			
 			@Override
 			public void insertUpdate(DocumentEvent e) {
 				setColFilter(comboFilterCol);
-				setStatus();
+				displayStatus();
 			}
 		});
 		
@@ -740,7 +741,9 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 	}
 
 	private void storeProperties() {
-		model.saveToStore();
+		if(appProp.getBoolProperty(DialogAppSettings.PROP_USE_ARCHIVE, true)) {
+			model.saveToStore(Paths.get(appProp.getProperty(DialogAppSettings.PROP_ARCHIVE_FILE, Paths.get(System.getProperty("user.home"), "ShellyStore.arc").toString())));
+		}
 		if(details.isSelected()) {
 			detailedView(false);
 		}
@@ -762,14 +765,14 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 					devicesTable.updateRow(model.get(msgBody), msgBody);
 				} else if(mesgType == Devices.EventType.ADD) {
 					devicesTable.addRow(model.get(msgBody));
-					setStatus();
+					displayStatus();
 				} else if(mesgType == Devices.EventType.REMOVE) {
 					tModel.setValueAt(DevicesTable.OFFLINE_BULLET, msgBody, DevicesTable.COL_STATUS_IDX);
 				} else if(mesgType == Devices.EventType.SUBSTITUTE) {
 					devicesTable.updateRow(model.get(msgBody), msgBody);
 					devicesTable.columnsWidthAdapt();
 				} else if(mesgType == Devices.EventType.READY) {
-					setStatus();
+					displayStatus();
 					rescanAction.setEnabled(true);
 					refreshAction.setEnabled(true);
 				} else if(mesgType == Devices.EventType.CLEAR) {
@@ -783,7 +786,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		});
 	}
 	
-	private synchronized void setStatus() {
+	private synchronized void displayStatus() {
 		if(textFieldFilter.getText().length() > 0) {
 			statusLabel.setText(String.format(LABELS.getString("filter_status"), model.size(), devicesTable.getRowCount()));
 		} else {

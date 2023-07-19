@@ -3,6 +3,8 @@ package it.usna.shellyscan;
 import java.awt.Color;
 import java.awt.Cursor;
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.Base64;
 import java.util.ResourceBundle;
 import java.util.regex.Matcher;
@@ -26,6 +28,7 @@ public class Main {
 	public final static String VERSION = "0.9.9 alpha";
 	public final static String ICON = "/images/ShSc24.png";
 	public final static String BACKUP_FILE_EXT = "sbk";
+	public final static String ARCHIVE_FILE_EXT = "arc";
 	
 	public final static ResourceBundle LABELS = ResourceBundle.getBundle("LabelsBundle");
 	public static Color BG_COLOR = new Color(50, 60, 65);
@@ -56,18 +59,28 @@ public class Main {
 //		UIManager.put("Table.alternateRowColor", TAB_LINE2);
 //		UIManager.getLookAndFeelDefaults().put("Table:\"Table.cellRenderer\".background", new ColorUIResource(TAB_LINE1));
 
-		try {
+		try { // in case of error use default configuration
 			appProp.load(true);
-			if(TAB_VERSION.equals(appProp.getProperty("TAB_VER")) == false) {
-				appProp.setProperty("TAB_VER", TAB_VERSION);
-				appProp.remove("TAB.COL_P");
-			}
+		} catch (Exception e) {
+			Msg.errorMsg(e);
+		}
+		if(TAB_VERSION.equals(appProp.getProperty("TAB_VER")) == false) {
+			appProp.setProperty("TAB_VER", TAB_VERSION);
+			appProp.remove("TAB.COL_P");
+		}
+		try {
 			final Devices model = new Devices();
 			final MainView view = new MainView(model, appProp);
 			SwingUtilities.invokeLater(() -> {
 				view.setVisible(true);
-				//todo
-				model.loadFromStore();
+				if(appProp.getBoolProperty(DialogAppSettings.PROP_USE_ARCHIVE, true)) {
+					try {
+						model.loadFromStore(Paths.get(appProp.getProperty(DialogAppSettings.PROP_ARCHIVE_FILE, Paths.get(System.getProperty("user.home"), "ShellyStore.arc").toString())));
+					} catch (IOException e) {
+						appProp.setBoolProperty(DialogAppSettings.PROP_USE_ARCHIVE, false);
+						Msg.errorMsg(e);
+					}
+				}
 				view.requestFocus(); // remove random focus on toolbar button
 				try {
 					view.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
@@ -137,7 +150,7 @@ public class Main {
 			});
 		} catch (Throwable ex) {
 			Msg.errorMsg(ex);
-			LOG.error("Init error", ex);
+			ex.printStackTrace();
 			System.exit(1);
 		}
 	}

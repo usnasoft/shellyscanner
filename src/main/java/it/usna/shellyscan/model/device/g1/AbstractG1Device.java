@@ -195,11 +195,8 @@ public abstract class AbstractG1Device extends ShellyAbstractDevice {
 	@Override
 	public Map<Restore, String> restoreCheck(Map<String, JsonNode> backupJsons) throws IOException {
 		HashMap<Restore, String> res = new HashMap<>();
-		try /*(   ZipFile in = new ZipFile(file);
-				InputStream isSettings = in.getInputStream(in.getEntry("settings.json"));
-				)*/ {
+		try {
 			JsonNode settings = backupJsons.get("settings.json");
-//			JsonNode settings = jsonMapper.readTree(isSettings);
 			final String fileHostname = settings.get("device").get("hostname").asText("");
 			final String fileType = settings.get("device").get("type").asText();
 			if(fileType.length() > 0 && fileType.equals(this.getTypeID()) == false) {
@@ -231,17 +228,12 @@ public abstract class AbstractG1Device extends ShellyAbstractDevice {
 	}
 	
 	@Override
-	public final String restore(/*final File file*/Map<String, JsonNode> backupJsons, Map<Restore, String> data) throws IOException {
-		try /*(   ZipFile in = new ZipFile(file, StandardCharsets.UTF_8);
-				InputStream isSettings = in.getInputStream(in.getEntry("settings.json"));
-				InputStream isActions = in.getInputStream(in.getEntry("actions.json")) )*/ {
-//			JsonNode settings = jsonMapper.readTree(isSettings);
-//			JsonNode actions = jsonMapper.readTree(isActions);
+	public final String restore(Map<String, JsonNode> backupJsons, Map<Restore, String> data) throws IOException {
+		try {
 			final ArrayList<String> errors = new ArrayList<>();
 			JsonNode settings = backupJsons.get("settings.json");
 			JsonNode actions = backupJsons.get("actions.json");
-			
-			
+						
 			restore(settings, errors);
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			restoreCommons(settings, data, errors);

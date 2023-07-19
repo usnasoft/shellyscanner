@@ -2,6 +2,7 @@ package it.usna.shellyscan.model;
 
 import java.io.IOException;
 import java.net.InetAddress;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -183,10 +184,13 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 		}
 	}
 
-	public void rescan() throws IOException {
+	public void rescan(boolean useStore) throws IOException {
 		//LOG.trace("Q {}", ((ScheduledThreadPoolExecutor)executor).getQueue().size());
 		LOG.trace("rescan");
-		List<GhostDevice> ghosts = DevicesStore.toGhosts(this);
+		List<GhostDevice> ghosts = null;
+		if(useStore) {
+			ghosts = DevicesStore.toGhosts(this);
+		}
 		clear();
 		fireEvent(EventType.CLEAR);
 		if(this.baseScanIP == null) {
@@ -216,7 +220,9 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 					}
 				}
 			}
-			loadGhosts(ghosts);
+			if(useStore) {
+				loadGhosts(ghosts);
+			}
 		} else {
 			scanByIP();
 		}
@@ -399,8 +405,8 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 		return -1;
 	}
 	
-	public void loadFromStore() {
-		loadGhosts(DevicesStore.read());
+	public void loadFromStore(Path path) throws IOException {
+		loadGhosts(DevicesStore.read(path));
 	}
 	
 	private void loadGhosts(List<GhostDevice> ghosts) {
@@ -416,8 +422,8 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 		}
 	}
 	
-	public void saveToStore() {
-		DevicesStore.store(this);
+	public void saveToStore(Path path) {
+		DevicesStore.store(this, path);
 	}
 
 	private void clear() {

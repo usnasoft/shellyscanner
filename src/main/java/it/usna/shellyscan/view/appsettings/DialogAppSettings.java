@@ -5,6 +5,7 @@ import static it.usna.shellyscan.Main.LABELS;
 import java.awt.BorderLayout;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.nio.file.Paths;
 import java.util.Base64;
 
 import javax.swing.JButton;
@@ -14,11 +15,15 @@ import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.border.EmptyBorder;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.DevicesFactory;
 import it.usna.shellyscan.view.DevicesTable;
 import it.usna.shellyscan.view.MainView;
 import it.usna.shellyscan.view.chart.MeasuresChart.ChartType;
+import it.usna.shellyscan.view.util.Msg;
 import it.usna.util.AppProperties;
 
 public class DialogAppSettings extends JDialog {
@@ -49,11 +54,16 @@ public class DialogAppSettings extends JDialog {
 	public final static String PROP_REFRESH_CONF = "REFRESH_SETTINGS";
 	public final static int PROP_REFRESH_CONF_DEFAULT = 5;
 	
+	public final static String PROP_USE_ARCHIVE = "USE_ARCHIVE";
+	public final static String PROP_ARCHIVE_FILE = "USE_ARCHIVE_FILENAME";
+	
 	public final static String BASE_SCAN_IP = "BASE_SCAN";
 	public final static String FIRST_SCAN_IP = "FIRST_SCAN";
 	public final static int FIST_SCAN_IP_DEFAULT = 1;
 	public final static String LAST_SCAN_IP = "LAST_SCAN";
 	public final static int LAST_SCAN_IP_DEFAULT = 254;
+	
+	private final static Logger LOG = LoggerFactory.getLogger(DialogAppSettings.class);
 	
 	public DialogAppSettings(final MainView owner, DevicesTable devTable, Devices model, final AppProperties appProp) {
 		super(owner, LABELS.getString("dlgAppSetTitle"), true);
@@ -77,6 +87,10 @@ public class DialogAppSettings extends JDialog {
 		PanelNetwork panelNetwork = new PanelNetwork(appProp);
 		panelNetwork.setBorder(new EmptyBorder(6, 6, 6, 6));
 		tabbedPane.add(LABELS.getString("dlgAppSetTabLANTitle"), panelNetwork);
+		
+		PanelStore panelStore = new PanelStore(appProp);
+		panelStore.setBorder(new EmptyBorder(6, 6, 6, 6));
+		tabbedPane.add(LABELS.getString("dlgAppSetTabStoreTitle"), panelStore);
 		
 		getContentPane().add(tabbedPane, BorderLayout.WEST);
 		
@@ -158,6 +172,22 @@ public class DialogAppSettings extends JDialog {
 				detaildedScreen = PROP_DETAILED_VIEW_SCREEN_HORIZONTAL;
 			}
 			appProp.setProperty(PROP_DETAILED_VIEW_SCREEN, detaildedScreen);
+			
+			// store
+			boolean useStore = panelStore.chckbxUseStore.isSelected();
+			boolean changedUse = appProp.setBoolProperty(PROP_USE_ARCHIVE, useStore);
+			String fileName = panelStore.textFieldStoreFileName.getText();
+			boolean changeArcFile = appProp.changeProperty(PROP_ARCHIVE_FILE, fileName);
+			if(useStore && (changedUse || changeArcFile)) {
+				try {
+					model.loadFromStore(Paths.get(fileName));
+				} catch(Exception e) {
+					appProp.setBoolProperty(PROP_USE_ARCHIVE, false);
+					LOG.error("Archive read", e);
+					Msg.errorMsg(this, String.format(LABELS.getString("dlgAppStoreerrorReadingStore"), fileName));
+				}
+			}
+			
 			dispose();
 		});
 		getContentPane().add(panelCommands, BorderLayout.SOUTH);
