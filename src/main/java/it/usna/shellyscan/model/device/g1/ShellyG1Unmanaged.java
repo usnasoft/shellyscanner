@@ -73,7 +73,7 @@ public class ShellyG1Unmanaged extends AbstractG1Device implements ShellyUnmanag
 	}
 	
 	@Override
-	public Exception geException() {
+	public Exception getException() {
 		return ex;
 	}
 	

@@ -35,7 +35,9 @@ public class ShellyPlusi4 extends AbstractG2Device implements InputCommander, Se
 		final JsonNode config = getJSON("/rpc/Shelly.GetConfig");
 		if(SensorAddOn.ADDON_TYPE.equals(config.get("sys").get("device").path("addon_type").asText())) {
 			addOn = new SensorAddOn(this);
-			meters = new Meters[] {addOn};
+			if(addOn.getTypes().length > 0) {
+				meters = new Meters[] {addOn};
+			}
 		}
 		// default init(...)
 		this.hostname = devInfo.get("id").asText("");

@@ -65,7 +65,7 @@ public class ShellyG2Unmanaged extends AbstractG2Device implements ShellyUnmanag
 	 * @return null if device type is unknown or exception if an error ha occurred on construction 
 	 */
 	@Override
-	public Exception geException() {
+	public Exception getException() {
 		return ex;
 	}
 	

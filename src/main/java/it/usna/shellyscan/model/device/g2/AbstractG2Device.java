@@ -66,7 +66,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 	protected void init(JsonNode devInfo) throws IOException {
 		// fillOnce
 		this.hostname = devInfo.get("id").asText("");
-		this.mac = devInfo.get("mac").asText();
+		this.mac = devInfo.get("mac").asText().toUpperCase();
 		
 		fillSettings(getJSON("/rpc/Shelly.GetConfig"));
 		fillStatus(getJSON("/rpc/Shelly.GetStatus"));
@@ -451,4 +451,4 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 			errors.add(postCommand("Schedule.Create", thisSc));
 		}
 	}
-} // 457
+} // 454

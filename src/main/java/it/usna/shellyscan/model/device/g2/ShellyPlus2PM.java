@@ -158,7 +158,7 @@ public class ShellyPlus2PM extends AbstractG2Device implements RelayCommander, R
 			if(relay0 == null /*|| relay1 == null*/) {
 				relay0 = new Relay(this, 0);
 				relay1 = new Relay(this, 1);
-				meters = (addOn == null) ? new Meters[] {meters0, meters1} : new Meters[] {meters0, meters1, addOn};
+				meters = (addOn == null || addOn.getTypes().length == 0) ? new Meters[] {meters0, meters1} : new Meters[] {meters0, meters1, addOn};
 				roller = null; // modeRelay change
 			}
 			relay0.fillSettings(configuration.get("switch:0"));
@@ -166,7 +166,7 @@ public class ShellyPlus2PM extends AbstractG2Device implements RelayCommander, R
 		} else {
 			if(roller == null) {
 				roller = new Roller(this, 0);
-				meters = (addOn == null) ? new Meters[] {meters0} : new Meters[] {meters0, addOn};
+				meters = (addOn == null || addOn.getTypes().length == 0) ? new Meters[] {meters0} : new Meters[] {meters0, addOn};
 				relay0 = relay1 = null; // modeRelay change
 			}
 			roller.fillSettings(configuration.get("cover:0"));

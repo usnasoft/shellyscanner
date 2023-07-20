@@ -24,10 +24,11 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import it.usna.shellyscan.model.device.GhostDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
+import it.usna.shellyscan.model.device.ShellyUnmanagedDevice;
 
 public class DevicesStore {
 	private final static Logger LOG = LoggerFactory.getLogger(DevicesStore.class);
-	private final static int FORMAT_VERSION = 0;
+	private final static int STORE_VERSION = 0;
 	private final static ObjectMapper JSON_MAPPER = new ObjectMapper();
 	private final static String TYPE_ID = "tid";
 	private final static String TYPE_NAME = "tn";
@@ -42,21 +43,23 @@ public class DevicesStore {
 		LOG.trace("storing archive");
 		final JsonNodeFactory factory = new JsonNodeFactory(false);
 		final ObjectNode root = factory.objectNode();
-		root.put("ver", FORMAT_VERSION);
+		root.put("ver", STORE_VERSION);
 		root.put("time", System.currentTimeMillis());
 		final ArrayNode array = factory.arrayNode();
 		for (int i = 0; i < model.size(); i++) {
 			ShellyAbstractDevice dev = model.get(i);
-			ObjectNode jsonDev = factory.objectNode();
-			jsonDev.put(TYPE_ID, dev.getTypeID());
-			jsonDev.put(TYPE_NAME, dev.getTypeName());
-			jsonDev.put(HOSTNAME, dev.getHostname());
-			jsonDev.put(MAC, dev.getMacAddress());
-			jsonDev.put(ADDRESS, dev.getAddress().getHostAddress());
-			jsonDev.put(PORT, dev.getPort());
-			jsonDev.put(NAME, dev.getName());
-			jsonDev.put(SSID, dev.getSSID());
-			array.add(jsonDev);
+			if(dev instanceof ShellyUnmanagedDevice == false || ((ShellyUnmanagedDevice)dev).getException() == null) {
+				ObjectNode jsonDev = factory.objectNode();
+				jsonDev.put(TYPE_ID, dev.getTypeID());
+				jsonDev.put(TYPE_NAME, dev.getTypeName());
+				jsonDev.put(HOSTNAME, dev.getHostname());
+				jsonDev.put(MAC, dev.getMacAddress());
+				jsonDev.put(ADDRESS, dev.getAddress().getHostAddress());
+				jsonDev.put(PORT, dev.getPort());
+				jsonDev.put(NAME, dev.getName());
+				jsonDev.put(SSID, dev.getSSID());
+				array.add(jsonDev);
+			}
 		}
 		root.set("dev", array);
 
@@ -73,7 +76,7 @@ public class DevicesStore {
 		List<GhostDevice> list = new ArrayList<>();
 		try (BufferedReader r = Files.newBufferedReader(storeFile, StandardCharsets.UTF_8)) {
 			final JsonNode arc = JSON_MAPPER.readTree(r);
-			if(arc.path("ver").asInt() == FORMAT_VERSION) {
+			if(arc.path("ver").asInt() == STORE_VERSION) {
 				final ArrayNode array = (ArrayNode) arc.get("dev");
 				array.forEach(el -> {
 					try {
@@ -85,7 +88,7 @@ public class DevicesStore {
 					}
 				});
 			} else {
-				LOG.info("Archive version is %; " + FORMAT_VERSION + " expected", arc.path("ver").asInt());
+				LOG.info("Archive version is %; " + STORE_VERSION + " expected", arc.path("ver").asInt());
 			}
 		} catch(FileNotFoundException | NoSuchFileException e) {
 			// first run?
@@ -99,10 +102,12 @@ public class DevicesStore {
 	public static List<GhostDevice> toGhosts(Devices model) {
 		List<GhostDevice> list = new ArrayList<>(model.size());
 		for(int i= 0; i < model.size(); i++) {
-			ShellyAbstractDevice d = model.get(i);
-			list.add(new GhostDevice(
-					d.getAddress(), d.getPort(), d.getHostname(), d.getMacAddress(),
-					d.getSSID(), d.getTypeName(), d.getTypeID(), d.getName()));
+			ShellyAbstractDevice dev = model.get(i);
+			if(dev instanceof ShellyUnmanagedDevice == false || ((ShellyUnmanagedDevice)dev).getException() == null) {
+				list.add(new GhostDevice(
+						dev.getAddress(), dev.getPort(), dev.getHostname(), dev.getMacAddress(),
+						dev.getSSID(), dev.getTypeName(), dev.getTypeID(), dev.getName()));
+			}
 		}
 		return list;
 	}

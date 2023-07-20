@@ -59,10 +59,8 @@ public class ShellyPlus1PM extends AbstractG2Device implements RelayCommander, I
 		final JsonNode config = getJSON("/rpc/Shelly.GetConfig");
 		if(SensorAddOn.ADDON_TYPE.equals(config.get("sys").get("device").path("addon_type").asText())) {
 			addOn = new SensorAddOn(this);
-			meters = new Meters[] {m0, addOn};
-		} else {
-			meters = new Meters[] {m0};
 		}
+		meters = (addOn == null || addOn.getTypes().length == 0) ? new Meters[] {m0} : new Meters[] {m0, addOn};
 		
 		// default init(...)
 		this.hostname = devInfo.get("id").asText("");

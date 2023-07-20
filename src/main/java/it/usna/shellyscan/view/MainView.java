@@ -95,7 +95,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 	private JLabel statusLabel = new JLabel();
 	private JTextField textFieldFilter;
 	private Devices model;
-	private UsnaTableModel tModel = new UsnaTableModel(
+	private UsnaTableModel tabModel = new UsnaTableModel(
 			"",
 			LABELS.getString("col_type"),
 			LABELS.getString("col_device"),
@@ -112,7 +112,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 			LABELS.getString("col_debug"),
 			LABELS.getString("col_source"),
 			LABELS.getString("col_relay"));
-	private DevicesTable devicesTable = new DevicesTable(tModel);
+	private DevicesTable devicesTable = new DevicesTable(tabModel);
 	
 	private JToggleButton details;
 	private AppProperties unextendedProp = new AppProperties();
@@ -151,9 +151,9 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 		setEnabled(false);
 		devicesTable.stopCellEditing();
-		for(int i = 0; i < tModel.getRowCount(); i++) {
+		for(int i = 0; i < tabModel.getRowCount(); i++) {
 			if(model.get(i) instanceof GhostDevice == false) {
-				tModel.setValueAt(DevicesTable.UPDATING_BULLET, i, DevicesTable.COL_STATUS_IDX);
+				tabModel.setValueAt(DevicesTable.UPDATING_BULLET, i, DevicesTable.COL_STATUS_IDX);
 				model.refresh(i, false);
 			}
 		}
@@ -175,7 +175,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 				int modelRow = devicesTable.convertRowIndexToModel(ind);
 				ShellyAbstractDevice d = model.get(modelRow);
 				d.setStatus(Status.READING);
-				tModel.setValueAt(DevicesTable.UPDATING_BULLET, modelRow, DevicesTable.COL_STATUS_IDX);
+				tabModel.setValueAt(DevicesTable.UPDATING_BULLET, modelRow, DevicesTable.COL_STATUS_IDX);
 				SwingUtilities.invokeLater(() -> model.reboot(modelRow));
 			}
 		}
@@ -461,6 +461,8 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		devicesTable.clearSelection();
 		displayStatus();
 	});
+
+	private Action eraseGhostAction = new UsnaAction(this, "action_name_delete_ghost", null, "/images/erase-9-16.png", null, e -> model.remove(devicesTable.getSelectedModelRow()));
 	
 //	private Action copyHostAction = new UsnaSelectedAction(this, devicesTable, "action_copy_hostname", null, "/images/Clipboard_Copy_16.png", null, i -> {
 //		StringSelection ss = new StringSelection(model.get(i).getHostname());
@@ -507,8 +509,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		
 		textFieldFilter.getDocument().addDocumentListener(new DocumentListener() {
 			@Override
-			public void changedUpdate(DocumentEvent e) {
-			}
+			public void changedUpdate(DocumentEvent e) {}
 
 			@Override
 			public void removeUpdate(DocumentEvent e) {
@@ -541,12 +542,11 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		btnSelectOnline.setBorder(BorderFactory.createEmptyBorder(2, 7, 2, 8));
 		statusButtonPanel.add(btnSelectOnline);
 		
+		// Selection popup
 		JButton btnSelectCombo = new JButton(new ImageIcon(MainView.class.getResource("/images/expand-more.png")));
 		btnSelectCombo.setContentAreaFilled(false);
 		btnSelectCombo.setBorder(BorderFactory.createEmptyBorder(1, 0, 1, 2));
 		statusButtonPanel.add(btnSelectCombo);
-		
-		statusPanel.add(statusButtonPanel, BorderLayout.EAST);
 
 		UsnaPopupMenu selectionPopup = new UsnaPopupMenu(selectAll, selectOnLine,
 				new SelectionAction(devicesTable, "labelSelectOnLineReboot", null, /*"/images/bullet_yes_reboot.png"*/null, i -> model.get(i).getStatus() == Status.ON_LINE && model.get(i).rebootRequired()),
@@ -560,13 +560,13 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 
 		btnSelectCombo.addActionListener(e -> selectionPopup.show(btnSelectCombo, 0, 0));
 		
+		statusPanel.add(statusButtonPanel, BorderLayout.EAST);
 		statusPanel.setBackground(Main.STATUS_LINE);
 		getContentPane().add(statusPanel, BorderLayout.SOUTH);
 
 		// Table
 		JScrollPane scrollPane = new JScrollPane();
 		getContentPane().add(scrollPane, BorderLayout.CENTER);
-//		devicesTable = new DevicesTable(tModel);
 		devicesTable.sortByColumn(DevicesTable.COL_IP_IDX, SortOrder.ASCENDING);
 		devicesTable.loadColPos(appProp);
 		
@@ -602,30 +602,44 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		toolBar.addSeparator();
 		toolBar.add(appSettingsAction);
 		toolBar.add(aboutAction);
-		
-		UsnaPopupMenu tablePopup = new UsnaPopupMenu(infoAction, browseAction, backupAction, restoreAction, reloadAction, loginAction) {
-			private static final long serialVersionUID = 1L;
+
+		// devices popup
+		UsnaPopupMenu tablePopup = new UsnaPopupMenu(infoAction, browseAction, backupAction, restoreAction, reloadAction, loginAction);
+		UsnaPopupMenu ghostDevPopup = new UsnaPopupMenu(eraseGhostAction);
+
+		devicesTable.addMouseListener(new MouseAdapter() {
 			@Override
-			protected void doPopup(MouseEvent evt) {
+			public void mousePressed(java.awt.event.MouseEvent e) {
+				doPopup(e);
+			}
+			@Override
+			public void mouseReleased(MouseEvent e) {
+				doPopup(e);
+			}
+			private void doPopup(MouseEvent evt) {
 				final int r;
-				if((r = devicesTable.rowAtPoint(evt.getPoint())) >= 0) {
-//					devicesTable.changeSelection(r, c, false, false);
+				if (evt.isPopupTrigger() && (r = devicesTable.rowAtPoint(evt.getPoint())) >= 0) {
 					devicesTable.setRowSelectionInterval(r, r); // add
-					boolean notLogged = model.get(devicesTable.convertRowIndexToModel(r)).getStatus() == Status.NOT_LOOGGED;
-					loginAction.setEnabled(notLogged);
-					reloadAction.setEnabled(notLogged == false);
-					show(devicesTable, evt.getX(), evt.getY());
+					ShellyAbstractDevice d = model.get(devicesTable.convertRowIndexToModel(r));
+					if(d instanceof GhostDevice) {
+						ghostDevPopup.show(devicesTable, evt.getX(), evt.getY());
+					} else {
+						boolean notLogged = d.getStatus() == Status.NOT_LOOGGED;
+						loginAction.setEnabled(notLogged);
+						reloadAction.setEnabled(notLogged == false);
+						tablePopup.show(devicesTable, evt.getX(), evt.getY());
+					}
 				}
 			}
-		};
-		devicesTable.addMouseListener(tablePopup.getMouseListener());
+		});
 		
+		// double click
 		devicesTable.addMouseListener(new MouseAdapter() {
 		    public void mousePressed(MouseEvent evt) {
 		        if (evt.getClickCount() == 2 && devicesTable.getSelectedRow() >= 0 && devicesTable.isCellEditable(devicesTable.getSelectedRow(), devicesTable.getSelectedColumn()) == false) {
-		        	if(appProp.getProperty(DialogAppSettings.PROP_DCLICK_ACTION, DialogAppSettings.PROP_DCLICK_ACTION_DEFAULT).equals("DET")) {
+		        	if(appProp.getProperty(DialogAppSettings.PROP_DCLICK_ACTION, DialogAppSettings.PROP_DCLICK_ACTION_DEFAULT).equals("DET") && infoAction.isEnabled()) {
 		        		infoAction.actionPerformed(null);
-		        	} else {
+		        	} else if(browseAction.isEnabled()) {
 		        		browseAction.actionPerformed(null);
 		        	}
 		        }
@@ -702,11 +716,11 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		if(detailed) {
 			super.storeProperties(unextendedProp);
 			devicesTable.saveColPos(unextendedProp, "");
-			if(tModel.getRowCount() > 0) { // no device found yet: maybe it will adapt later while maximized
+			if(tabModel.getRowCount() > 0) { // no device found yet: maybe it will adapt later while maximized
 				devicesTable.saveColWidth(unextendedProp, "");
 			}
 			final int visible = devicesTable.getColumnCount();
-			final int total = tModel.getColumnCount();
+			final int total = tabModel.getColumnCount();
 			for(int i = 0; i < total; i++) {
 				devicesTable.showColumn(i, -1);
 			}
@@ -766,8 +780,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 				} else if(mesgType == Devices.EventType.ADD) {
 					devicesTable.addRow(model.get(msgBody));
 					displayStatus();
-				} else if(mesgType == Devices.EventType.REMOVE) {
-					tModel.setValueAt(DevicesTable.OFFLINE_BULLET, msgBody, DevicesTable.COL_STATUS_IDX);
+//				} else if(mesgType == Devices.EventType.REMOVE) { tabModel.setValueAt(DevicesTable.OFFLINE_BULLET, msgBody, DevicesTable.COL_STATUS_IDX);
 				} else if(mesgType == Devices.EventType.SUBSTITUTE) {
 					devicesTable.updateRow(model.get(msgBody), msgBody);
 					devicesTable.columnsWidthAdapt();
@@ -776,7 +789,9 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 					rescanAction.setEnabled(true);
 					refreshAction.setEnabled(true);
 				} else if(mesgType == Devices.EventType.CLEAR) {
-					tModel.clear();
+					tabModel.clear();
+				} else if(mesgType == Devices.EventType.DELETE) {
+					tabModel.removeRow(msgBody);
 				}
 			} catch (IndexOutOfBoundsException ex) {
 				LOG.debug("Unexpected", ex); // rescan/shutdown
@@ -793,4 +808,4 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 			statusLabel.setText(String.format(LABELS.getString("scanning_end"), model.size()));
 		}
 	}
-} //557 - 614 - 620 - 669 - 705 - 727 - 699 - 760 - 782
+} //557 - 614 - 620 - 669 - 705 - 727 - 699 - 760 - 782 - 811

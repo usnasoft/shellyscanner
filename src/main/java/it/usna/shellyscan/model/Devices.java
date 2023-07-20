@@ -47,7 +47,8 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 		ADD,
 		UPDATE,
 		SUBSTITUTE,
-		REMOVE,
+		DELETE, // Ghost
+//		REMOVE, // From mDNS
 		READY, // Model is ready
 		CLEAR // Clear model
 	};
@@ -237,7 +238,7 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 				refreshProcess.get(ind).cancel(true);
 				d.setStatus(Status.READING);
 				executor.schedule(() -> {
-					if(d instanceof ShellyUnmanagedDevice && ((ShellyUnmanagedDevice)d).geException() != null) { // try to create proper device
+					if(d instanceof ShellyUnmanagedDevice && ((ShellyUnmanagedDevice)d).getException() != null) { // try to create proper device
 						create(d.getAddress(), d.getPort(), null, d.getHostname());
 					} else {
 						try {
@@ -390,6 +391,15 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 	public ShellyAbstractDevice get(int ind) {
 		return devices.get(ind);
 	}
+	
+	public void remove(int ind) {
+		final ScheduledFuture<?> f = refreshProcess.remove(ind);
+		if(f != null) {
+			f.cancel(true);
+		}
+		devices.remove(ind);
+		fireEvent(EventType.DELETE, ind);
+	}
 
 	public int size() {
 		return devices.size();
@@ -497,4 +507,4 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 			}
 		}
 	}
-} // 197 - 307 - 326 - 418
+} // 197 - 307 - 326 - 418 - 510

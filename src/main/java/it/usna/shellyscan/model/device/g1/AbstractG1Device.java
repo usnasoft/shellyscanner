@@ -47,7 +47,7 @@ public abstract class AbstractG1Device extends ShellyAbstractDevice {
 	
 	public void init(HttpClient httpClient, JsonNode shelly) throws IOException {
 		this.httpClient = httpClient;
-		this.mac = shelly.get("mac").asText();
+		this.mac = shelly.get("mac").asText().toUpperCase();
 		init();
 	}
 	
