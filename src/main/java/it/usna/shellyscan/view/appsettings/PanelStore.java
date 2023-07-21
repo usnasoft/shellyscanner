@@ -12,13 +12,17 @@ import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
+import javax.swing.UIManager;
 import javax.swing.event.ChangeListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 import it.usna.shellyscan.Main;
+import it.usna.shellyscan.model.Devices;
+import it.usna.shellyscan.model.device.GhostDevice;
 import it.usna.util.AppProperties;
 
 public class PanelStore extends JPanel {
@@ -26,7 +30,7 @@ public class PanelStore extends JPanel {
 	JCheckBox chckbxUseStore = new JCheckBox();
 	JTextField textFieldStoreFileName;
 
-	PanelStore(final AppProperties appProp) {
+	PanelStore(final Devices model, final AppProperties appProp) {
 		GridBagLayout gridBagLayout = new GridBagLayout();
 		gridBagLayout.rowHeights = new int[] {0, 0, 1};
 		gridBagLayout.columnWeights = new double[]{1.0, 1.0, 0.0};
@@ -80,20 +84,33 @@ public class PanelStore extends JPanel {
 		gbc_btnFile.gridx = 2;
 		gbc_btnFile.gridy = 1;
 		add(btnFile, gbc_btnFile);
-		
-		JLabel lblNewLabel_1 = new JLabel("");
-		GridBagConstraints gbc_lblNewLabel_1 = new GridBagConstraints();
-		gbc_lblNewLabel_1.weighty = 1.0;
-//		gbc_lblNewLabel_1.insets = new Insets(0, 0, 0, 5);
-		gbc_lblNewLabel_1.gridx = 0;
-		gbc_lblNewLabel_1.gridy = 2;
-		add(lblNewLabel_1, gbc_lblNewLabel_1);
-		
 		btnFile.addActionListener(event -> {
 			final JFileChooser fc = new JFileChooser(Paths.get(textFieldStoreFileName.getText()).getParent().toFile());
 			fc.setFileFilter(new FileNameExtensionFilter(Main.ARCHIVE_FILE_EXT, Main.ARCHIVE_FILE_EXT));
 			if(fc.showSaveDialog(PanelStore.this) == JFileChooser.APPROVE_OPTION) {
 				textFieldStoreFileName.setText(fc.getSelectedFile().getPath());
+			}
+		});
+		
+		JButton btnNewButton = new JButton(LABELS.getString("dlgAppStoreClearButtonLabel"));
+		GridBagConstraints gbc_btnNewButton = new GridBagConstraints();
+		gbc_btnNewButton.weighty = 1.0;
+		gbc_btnNewButton.anchor = GridBagConstraints.NORTHWEST;
+		gbc_btnNewButton.insets = new Insets(0, 0, 10, 15);
+		gbc_btnNewButton.gridx = 1;
+		gbc_btnNewButton.gridy = 2;
+		add(btnNewButton, gbc_btnNewButton);
+		btnNewButton.addActionListener(event -> {
+			final String cancel = UIManager.getString("OptionPane.cancelButtonText");
+			if(JOptionPane.showOptionDialog(
+					PanelStore.this, LABELS.getString("dlgAppStoreDeleteConfirm"), LABELS.getString("warningTitle"),
+					JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE, null,
+					new Object[] {LABELS.getString("dlgOK"), cancel}, cancel) == 0) {
+				for(int i = model.size() - 1; i >= 0; i--) {
+					if(model.get(i) instanceof GhostDevice) {
+						model.remove(i);
+					}
+				}
 			}
 		});
 		

@@ -393,12 +393,14 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 	}
 	
 	public void remove(int ind) {
-		final ScheduledFuture<?> f = refreshProcess.remove(ind);
-		if(f != null) {
-			f.cancel(true);
+		synchronized(devices) {
+			final ScheduledFuture<?> f = refreshProcess.remove(ind);
+			if(f != null) {
+				f.cancel(true);
+			}
+			devices.remove(ind);
+			fireEvent(EventType.DELETE, ind);
 		}
-		devices.remove(ind);
-		fireEvent(EventType.DELETE, ind);
 	}
 
 	public int size() {
@@ -447,8 +449,6 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 		LOG.trace("Model closing");
 		removeListeners();
 		executor.shutdownNow();
-		//todo
-//		DevicesStore.store(this);
 		bjServices.parallelStream().forEach(dns -> {
 			try {
 				dns.close();

@@ -88,7 +88,7 @@ public class DialogAppSettings extends JDialog {
 		panelNetwork.setBorder(new EmptyBorder(6, 6, 6, 6));
 		tabbedPane.add(LABELS.getString("dlgAppSetTabLANTitle"), panelNetwork);
 		
-		PanelStore panelStore = new PanelStore(appProp);
+		PanelStore panelStore = new PanelStore(model, appProp);
 		panelStore.setBorder(new EmptyBorder(6, 6, 6, 6));
 		tabbedPane.add(LABELS.getString("dlgAppSetTabStoreTitle"), panelStore);
 		
