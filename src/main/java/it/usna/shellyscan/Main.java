@@ -75,7 +75,7 @@ public class Main {
 				view.setVisible(true);
 				if(appProp.getBoolProperty(DialogAppSettings.PROP_USE_ARCHIVE, true)) {
 					try {
-						model.loadFromStore(Paths.get(appProp.getProperty(DialogAppSettings.PROP_ARCHIVE_FILE, Paths.get(System.getProperty("user.home"), "ShellyStore.arc").toString())));
+						model.loadFromStore(Paths.get(appProp.getProperty(DialogAppSettings.PROP_ARCHIVE_FILE, DialogAppSettings.PROP_ARCHIVE_FILE_DEFAULT)));
 					} catch (IOException e) {
 						appProp.setBoolProperty(DialogAppSettings.PROP_USE_ARCHIVE, false);
 						Msg.errorMsg(e);

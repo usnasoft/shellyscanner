@@ -175,16 +175,17 @@
 // /rpc/KVS.List
 // BLE - OBS
 
-//0.9.9
+//1.0.0
 // separazione type / hostname
 // filtro full (type, hostname, mac, ip, name, command (LabelHolder)) - name - mac - ip
+// archivio (additivo) dispositivi collegati opzionalmente caricabile
 
 // TODO
-// archivio (additivo) dispositivi collegati opzionalmente caricabile (con eventuale default da settings)
+// backup non interattivo (scan mode - restricted login - parametri su cli)
+// button "verify new version"
 // https://docs.oracle.com/javase/8/docs/api/javax/security/auth/callback/CallbackHandler.html
 // gestione "reading": se stato online leggo uptime, se uptime diverso dal precedente memorizzo il timestamp else Quando il time stamp corrente - memorizzato > intervallo * 3 modifico lo stato - si, ma dove?
 // suspended process (dispositivi a batteria)
 // https://www.baeldung.com/java-authentication-authorization-service
 
 
-// backup non interattivo (scan mode - restricted login - parametri su cli)

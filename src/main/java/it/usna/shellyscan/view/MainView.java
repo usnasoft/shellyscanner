@@ -756,7 +756,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 
 	private void storeProperties() {
 		if(appProp.getBoolProperty(DialogAppSettings.PROP_USE_ARCHIVE, true)) {
-			model.saveToStore(Paths.get(appProp.getProperty(DialogAppSettings.PROP_ARCHIVE_FILE, Paths.get(System.getProperty("user.home"), "ShellyStore.arc").toString())));
+			model.saveToStore(Paths.get(appProp.getProperty(DialogAppSettings.PROP_ARCHIVE_FILE, DialogAppSettings.PROP_ARCHIVE_FILE_DEFAULT)));
 		}
 		if(details.isSelected()) {
 			detailedView(false);

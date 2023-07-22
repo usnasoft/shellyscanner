@@ -56,6 +56,7 @@ public class DialogAppSettings extends JDialog {
 	
 	public final static String PROP_USE_ARCHIVE = "USE_ARCHIVE";
 	public final static String PROP_ARCHIVE_FILE = "USE_ARCHIVE_FILENAME";
+	public final static String PROP_ARCHIVE_FILE_DEFAULT = Paths.get(System.getProperty("user.home"), "ShellyStore.arc").toString();
 	
 	public final static String BASE_SCAN_IP = "BASE_SCAN";
 	public final static String FIRST_SCAN_IP = "FIRST_SCAN";
@@ -180,6 +181,7 @@ public class DialogAppSettings extends JDialog {
 			boolean changeArcFile = appProp.changeProperty(PROP_ARCHIVE_FILE, fileName);
 			if(useStore && (changedUse || changeArcFile)) {
 				try {
+					PanelStore.removeGhosts(model);
 					model.loadFromStore(Paths.get(fileName));
 				} catch(Exception e) {
 					appProp.setBoolProperty(PROP_USE_ARCHIVE, false);

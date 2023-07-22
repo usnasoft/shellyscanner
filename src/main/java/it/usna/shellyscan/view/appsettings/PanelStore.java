@@ -68,7 +68,7 @@ public class PanelStore extends JPanel {
 		gbc_lblStoreFile.gridy = 1;
 		add(lblStoreFile, gbc_lblStoreFile);
 		
-		textFieldStoreFileName = new JTextField(appProp.getProperty(DialogAppSettings.PROP_ARCHIVE_FILE, Paths.get(System.getProperty("user.home"), "ShellyStore.arc").toString()));
+		textFieldStoreFileName = new JTextField(appProp.getProperty(DialogAppSettings.PROP_ARCHIVE_FILE, DialogAppSettings.PROP_ARCHIVE_FILE_DEFAULT));
 		GridBagConstraints gbc_textFieldStoreFileName = new GridBagConstraints();
 		gbc_textFieldStoreFileName.insets = new Insets(0, 0, 5, 5);
 		gbc_textFieldStoreFileName.fill = GridBagConstraints.HORIZONTAL;
@@ -106,11 +106,7 @@ public class PanelStore extends JPanel {
 					PanelStore.this, LABELS.getString("dlgAppStoreDeleteConfirm"), LABELS.getString("warningTitle"),
 					JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE, null,
 					new Object[] {LABELS.getString("dlgOK"), cancel}, cancel) == 0) {
-				for(int i = model.size() - 1; i >= 0; i--) {
-					if(model.get(i) instanceof GhostDevice) {
-						model.remove(i);
-					}
-				}
+				removeGhosts(model);
 			}
 		});
 		
@@ -121,5 +117,13 @@ public class PanelStore extends JPanel {
 
 		chckbxUseStore.addChangeListener(enableListener);
 		enableListener.stateChanged(null);
+	}
+	
+	static void removeGhosts(final Devices model) {
+		for(int i = model.size() - 1; i >= 0; i--) {
+			if(model.get(i) instanceof GhostDevice) {
+				model.remove(i);
+			}
+		}
 	}
 }
