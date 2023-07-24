@@ -98,7 +98,19 @@ public class ShellyUNI extends AbstractG1Device implements RelayCommander {
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 		errors.add(relay1.restore(settings.get("relays").get(1)));
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-		errors.add(sendCommand("/settings/adc/0?range=" + settings.get("adc").get(0).get("range").asText()));
+		JsonNode adc0 = settings.get("adcs").get(0);
+		try {
+			errors.add(sendCommand("/settings/adc/0?range=" + adc0.get("range").asText()));
+			JsonNode relAct = settings.get("relay_actions");
+			if(relAct.size() > 0) {
+				for(int index = 0; index < relAct.size(); index++) {
+					TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+					errors.add(sendCommand("/settings/adc/0/relay_actions." + index + "?" + AbstractG1Device.jsonEntryIteratorToURLPar(relAct.get(index).fields())));
+				}
+			}
+		} catch(Exception e) {
+			e.printStackTrace(); // experimental
+		}
 	}
 
 	@Override
@@ -106,3 +118,29 @@ public class ShellyUNI extends AbstractG1Device implements RelayCommander {
 		return super.toString() + " Relay0: " + relay0 + "; Relay1: " + relay1;
 	}
 }
+
+/*
+...
+"fw": "20230503-102354/v1.13.0-g9aed950",
+...
+"adcs": [
+		{
+			"range": 12,
+			"offset": 0.0,
+			"relay_actions": [
+				{
+					"over_threshold": 0,
+					"over_act": "disabled",
+					"under_threshold": 0,
+					"under_act": "disabled"
+				},
+				{
+					"over_threshold": 0,
+					"over_act": "disabled",
+					"under_threshold": 0,
+					"under_act": "disabled"
+				}
+			]
+		}
+	],
+*/
