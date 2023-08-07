@@ -13,13 +13,14 @@ public class GhostDevice extends ShellyAbstractDevice {
 	private String typeID;
 	
 	public GhostDevice(InetAddress address, int port, String hostname,
-			String mac, String ssid, String typeName, String typeID, String name) {
+			String mac, String ssid, String typeName, String typeID, String name, long lastConnection) {
 		super(address, port, hostname);
 		this.mac = mac;
 		this.ssid = ssid;
 		this.typeName = typeName;
 		this.typeID = typeID;
 		this.name = name;
+		this.lastConnection = lastConnection;
 	}
 
 	private GhostDevice(InetAddress address, int port, String hostname) {
@@ -92,12 +93,12 @@ public class GhostDevice extends ShellyAbstractDevice {
 	}
 
 	@Override
-	public Map<Restore, String> restoreCheck(/*File file*/Map<String, JsonNode> backupJsons) {
+	public Map<Restore, String> restoreCheck(Map<String, JsonNode> backupJsons) {
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
-	public String restore(/*File file*/Map<String, JsonNode> backupJsons, Map<Restore, String> data) {
+	public String restore(Map<String, JsonNode> backupJsons, Map<Restore, String> data) {
 		throw new UnsupportedOperationException();
 	}
 	

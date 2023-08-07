@@ -68,13 +68,14 @@ import it.usna.util.AppProperties;
 public class DevicesTable extends ExTooltipTable {
 	private static final long serialVersionUID = 1L;
 	private final static URL OFFLINEIMG = MainView.class.getResource("/images/bullet_stop.png");
+	private final static URL GHOSTIMG = MainView.class.getResource("/images/bullet_ghost.png");
 	public final static ImageIcon ONLINE_BULLET = new ImageIcon(MainView.class.getResource("/images/bullet_yes.png"), LABELS.getString("labelDevOnLIne"));
 	public final static ImageIcon ONLINE_BULLET_REBOOT = new ImageIcon(MainView.class.getResource("/images/bullet_yes_reboot.png"), LABELS.getString("labelDevOnLIneReboot"));
 	public final static ImageIcon OFFLINE_BULLET = new ImageIcon(OFFLINEIMG, LABELS.getString("labelDevOffLIne"));
 	public final static ImageIcon LOGIN_BULLET = new ImageIcon(MainView.class.getResource("/images/bullet_star_yellow.png"), LABELS.getString("labelDevNotLogged"));
 	public final static ImageIcon UPDATING_BULLET = new ImageIcon(MainView.class.getResource("/images/bullet_refresh.png"), LABELS.getString("labelDevUpdating"));
 	public final static ImageIcon ERROR_BULLET = new ImageIcon(MainView.class.getResource("/images/bullet_error.png"), LABELS.getString("labelDevError"));
-	public final static ImageIcon GHOST_BULLET = new ImageIcon(MainView.class.getResource("/images/bullet_ghost.png"), LABELS.getString("labelDevGhost"));
+//	public final static ImageIcon GHOST_BULLET = new ImageIcon(GHOSTIMG, LABELS.getString("labelDevGhost"));
 	private final static String TRUE = LABELS.getString("true_yn");
 	private final static String FALSE = LABELS.getString("false_yn");
 	private final static String YES = LABELS.getString("true_yna");
@@ -502,7 +503,7 @@ public class DevicesTable extends ExTooltipTable {
 		} else if(d.getStatus() == Status.READING) {
 			return UPDATING_BULLET;
 		} else if(d.getStatus() == Status.GHOST) {
-			return GHOST_BULLET;
+			return new ImageIcon(GHOSTIMG, String.format(LABELS.getString("labelDevGhostTime"), LocalDateTime.ofInstant(Instant.ofEpochMilli(d.getLastTime()), TimeZone.getDefault().toZoneId())));
 		} else if(d.getStatus() == Status.ERROR) {
 			return ERROR_BULLET;
 		} else { // Status.NOT_LOOGGED

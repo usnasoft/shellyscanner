@@ -33,7 +33,6 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
-import javax.swing.JEditorPane;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -53,11 +52,9 @@ import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
-import javax.swing.text.html.HTMLDocument;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -197,23 +194,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		}
 	});
 	
-	private Action aboutAction = new UsnaAction(this, "/images/question.png", null/*"About"*/, e -> {
-		JEditorPane ep = new JEditorPane("text/html", "<html><h1><font color=#00005a>" + Main.APP_NAME + " " + Main.VERSION + " <img src=\"usna16.gif\"></h1></font><p>" + LABELS.getString("aboutApp") + "</html>");
-		ep.setEditable(false);
-		((HTMLDocument)ep.getDocument()).setBase(getClass().getResource("/images/"));
-		ep.addHyperlinkListener(ev -> {
-			try {
-				if(ev.getEventType().equals(HyperlinkEvent.EventType.ACTIVATED)) {
-					if(Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
-						Desktop.getDesktop().browse(new URI(ev.getURL().toString()));
-					} else {
-						JOptionPane.showMessageDialog(this, ev.getURL(), "", JOptionPane.PLAIN_MESSAGE);
-					}
-				}
-			} catch (IOException | URISyntaxException ex) {}
-		});
-		JOptionPane.showMessageDialog(MainView.this, ep, Main.APP_NAME, JOptionPane.INFORMATION_MESSAGE, new ImageIcon(Main.class.getResource("/images/ShSc.png")));
-	});
+	private Action aboutAction = new UsnaAction(this, "/images/question.png", null/*"About"*/, e -> DialogAbout.show(MainView.this));
 	
 	private Action loginAction = new UsnaSelectedAction(this, devicesTable, "action_name_login", null, "/images/Key16.png", null,
 			i -> model.create(model.get(i).getAddress(), model.get(i).getPort(), null, model.get(i).getHostname()) );

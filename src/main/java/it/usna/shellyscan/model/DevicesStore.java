@@ -38,6 +38,7 @@ public class DevicesStore {
 	private final static String ADDRESS = "ip";
 	private final static String PORT = "port";
 	private final static String SSID = "ssid";
+	private final static String LAST_CON = "last";
 
 	public static void store(Devices model, Path storeFile) {
 		LOG.trace("storing archive");
@@ -48,6 +49,7 @@ public class DevicesStore {
 		final ArrayNode array = factory.arrayNode();
 		for (int i = 0; i < model.size(); i++) {
 			ShellyAbstractDevice dev = model.get(i);
+			// do not include into store devices with errors
 			if(dev instanceof ShellyUnmanagedDevice == false || ((ShellyUnmanagedDevice)dev).getException() == null) {
 				ObjectNode jsonDev = factory.objectNode();
 				jsonDev.put(TYPE_ID, dev.getTypeID());
@@ -58,6 +60,7 @@ public class DevicesStore {
 				jsonDev.put(PORT, dev.getPort());
 				jsonDev.put(NAME, dev.getName());
 				jsonDev.put(SSID, dev.getSSID());
+				jsonDev.put(LAST_CON, dev.getLastTime());
 				array.add(jsonDev);
 			}
 		}
@@ -82,7 +85,7 @@ public class DevicesStore {
 					try {
 						list.add(new GhostDevice(
 								InetAddress.getByName(el.get(ADDRESS).asText()), el.get(PORT).asInt(), el.get(HOSTNAME).asText(), el.get(MAC).asText(),
-								el.get(SSID).asText(), el.get(TYPE_NAME).asText(), el.get(TYPE_ID).asText(), el.get(NAME).asText()));
+								el.get(SSID).asText(), el.get(TYPE_NAME).asText(), el.get(TYPE_ID).asText(), el.get(NAME).asText(), el.path(LAST_CON).asLong()));
 					} catch (UnknownHostException | RuntimeException e) {
 						LOG.error("Archive read", e);
 					}
@@ -106,7 +109,7 @@ public class DevicesStore {
 			if(dev instanceof ShellyUnmanagedDevice == false || ((ShellyUnmanagedDevice)dev).getException() == null) {
 				list.add(new GhostDevice(
 						dev.getAddress(), dev.getPort(), dev.getHostname(), dev.getMacAddress(),
-						dev.getSSID(), dev.getTypeName(), dev.getTypeID(), dev.getName()));
+						dev.getSSID(), dev.getTypeName(), dev.getTypeID(), dev.getName(), dev.getLastTime()));
 			}
 		}
 		return list;
