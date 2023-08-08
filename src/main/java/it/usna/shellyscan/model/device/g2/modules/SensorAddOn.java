@@ -264,3 +264,5 @@ public class SensorAddOn extends Meters {
 		}
 	}
 }
+
+//todo Gen2 1.0.0 - Input invert and range_map configuration properties for analog input type

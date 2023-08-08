@@ -119,3 +119,5 @@ public class ShellyPro3 extends AbstractProDevice implements RelayCommander, Int
   "auth_domain" : null
 }
 */
+
+//todo Gen2 1.0.0 - triphase and monophase profiles (EDIT: to be included in next beta), add option to reverse CT direction of measurement for active power and energy
