@@ -1,7 +1,10 @@
 package it.usna.shellyscan.model.device.g2;
 
+import java.util.concurrent.TimeUnit;
+
 import com.fasterxml.jackson.databind.JsonNode;
 
+import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.BatteryDeviceInterface;
 import it.usna.shellyscan.model.device.FirmwareManager;
 
@@ -24,6 +27,7 @@ public class FirmwareManagerG2 implements FirmwareManager {
 		try {
 			JsonNode node = d.getJSON("/rpc/Shelly.GetDeviceInfo");
 			current = node.get("fw_id").asText();
+			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			node = d.getJSON("/rpc/Shelly.CheckForUpdate");
 			stable = node.at("/stable/build_id").asText(null);
 			beta = node.at("/beta/build_id").asText(null);

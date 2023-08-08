@@ -11,8 +11,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import it.usna.shellyscan.view.devsettings.PanelFWUpdate;
-
 public class WebSocketDeviceListener extends WebSocketAdapter {
 	public static String NOTIFY_STATUS = "NotifyStatus";
 	public static String NOTIFY_FULL_STATUS = "NotifyFullStatus";
@@ -20,7 +18,7 @@ public class WebSocketDeviceListener extends WebSocketAdapter {
 	private Predicate<JsonNode> notifyCondition;
 	private final static ObjectMapper JSON_MAPPER = new ObjectMapper();
 	
-	private final static Logger LOG = LoggerFactory.getLogger(PanelFWUpdate.class);
+	private final static Logger LOG = LoggerFactory.getLogger(WebSocketDeviceListener.class);
 	
 	public WebSocketDeviceListener() {
 	}
@@ -31,7 +29,7 @@ public class WebSocketDeviceListener extends WebSocketAdapter {
 	
 	@Override
 	public void onWebSocketConnect(Session session) {
-		LOG.trace("sw-open");
+		LOG.trace("sw-open"); // session.getRemoteAddress()
 	}
 
 	@Override
