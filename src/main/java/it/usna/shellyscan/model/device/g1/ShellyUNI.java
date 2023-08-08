@@ -101,7 +101,7 @@ public class ShellyUNI extends AbstractG1Device implements RelayCommander {
 		JsonNode adc0 = settings.get("adcs").get(0);
 		try {
 			errors.add(sendCommand("/settings/adc/0?range=" + adc0.get("range").asText()));
-			JsonNode relAct = settings.get("relay_actions");
+			JsonNode relAct = adc0.get("relay_actions");
 			if(relAct.size() > 0) {
 				for(int index = 0; index < relAct.size(); index++) {
 					TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);

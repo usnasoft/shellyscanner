@@ -5,10 +5,12 @@ import java.awt.Cursor;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.ResourceBundle;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import javax.swing.SwingUtilities;
 
@@ -22,10 +24,13 @@ import it.usna.shellyscan.view.appsettings.DialogAppSettings;
 import it.usna.shellyscan.view.util.Msg;
 import it.usna.swing.UsnaSwingUtils;
 import it.usna.util.AppProperties;
+import it.usna.util.CLI;
 
 public class Main {
 	public final static String APP_NAME = "Shelly Scanner";
 	public final static String VERSION = "1.0.0 alpha";
+	public final static String VERSION_CODE = "001.000.000r100"; // r0xx alpha; r1xx beta; r2xx stable
+	public final static String REVISION = "2";
 	public final static String ICON = "/images/ShSc24.png";
 	public final static String BACKUP_FILE_EXT = "sbk";
 	public final static String ARCHIVE_FILE_EXT = "arc";
@@ -45,7 +50,7 @@ public class Main {
 	private final static Logger LOG = LoggerFactory.getLogger(Main.class);
 
 	public static void main(final String ... args) {
-		LOG.info(APP_NAME + " " + VERSION);
+		LOG.info(APP_NAME + " " + VERSION + " r." + REVISION);
 		//		Package mainPackage = Main.class.getPackage();
 		//		String version = mainPackage.getImplementationVersion();
 		
@@ -96,34 +101,29 @@ public class Main {
 					} else {
 						fullScan = scanMode.equals("FULL");
 					}
-
-//					try {
-						for(int i = 0; i < args.length; i++) {
-							if(args[i].equals("-fullscan")) {
-								fullScan = true;
-								baseIP = null;
-							} else if(args[i].equals("-localscan")) {
-								fullScan = false;
-								baseIP = null;
-							} else if(args[i].equals("-ipscan")) {
-								try {
-									Matcher m = Pattern.compile(IP_SCAN_PAR_FORMAT).matcher(args[++i]);
-									m.find();
-									baseIP = m.group(1);
-									firstIP = Integer.parseInt(m.group(2));
-									lastIP = Integer.parseInt(m.group(3));
-								} catch (Exception e) {
-									baseIP = null;
-									LOG.info("Wrong format; example: -ipscan 192.168.1.1-254");
-								}
-//							} else if(args[i].equals("-p")) {
-							} else {
-								LOG.info("Unknown parameter: {}", args[i]);
-							}
-						} 
-//					} catch (Exception e) {
-//						LOG.warn("Wrong parmeter at position {}", i + 1);
-//					}
+					CLI cli = new CLI(args);
+					int entryIdx;
+					if(cli.hasEntry("-fullscan", "-fs") >= 0) {
+						fullScan = true;
+						baseIP = null;
+					} else if(cli.hasEntry("-localscan", "-ls") >= 0) {
+						fullScan = false;
+						baseIP = null;
+					} else if((entryIdx = cli.hasEntry("-ipscan", "-ips")) >= 0) {
+						try {
+							Matcher m = Pattern.compile(IP_SCAN_PAR_FORMAT).matcher(cli.getParameter(entryIdx));
+							m.find();
+							baseIP = m.group(1);
+							firstIP = Integer.parseInt(m.group(2));
+							lastIP = Integer.parseInt(m.group(3));
+						} catch (Exception e) {
+							baseIP = null;
+							LOG.info("Wrong format; example: -ipscan 192.168.1.1-254");
+						}
+					} 
+					if(cli.unused().length > 0) {
+						LOG.info("Ignored parameter(s): {}", Arrays.stream(cli.unused()).collect(Collectors.joining("; ")));
+					}
 					
 					String lUser = appProp.getProperty(DialogAppSettings.PROP_LOGIN_USER);
 					if(lUser != null && lUser.length() > 0) {
