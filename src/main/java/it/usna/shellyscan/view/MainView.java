@@ -666,17 +666,16 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 	private void manageActions() {
 		ListSelectionListener l = e -> {
 			if(e.getValueIsAdjusting() == false) {
-				boolean ghost = false;
+				boolean selection = devicesTable.getSelectedRowCount() > 0;
+				boolean singleSelection = devicesTable.getSelectedRowCount() == 1;
 				ShellyAbstractDevice d = null;
 				for(int idx: devicesTable.getSelectedRows()) {
 					d = model.get(devicesTable.convertRowIndexToModel(idx));
 					if(d instanceof GhostDevice) {
-						ghost = true;
+						selection = singleSelection = false; // cannot operate ghost devices
 						break;
 					}
 				}
-				final boolean selection = devicesTable.getSelectedRowCount() > 0 && ghost == false;
-				final boolean singleSelection = devicesTable.getSelectedRowCount() == 1 && ghost == false;
 				infoAction.setEnabled(singleSelection);
 				infoLogAction.setEnabled(singleSelection);
 				checkListAction.setEnabled(selection);
