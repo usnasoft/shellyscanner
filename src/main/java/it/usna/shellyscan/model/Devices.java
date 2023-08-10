@@ -226,6 +226,9 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 			}
 		} else {
 			scanByIP();
+			if(useStore) {
+				loadGhosts(ghosts);
+			}
 		}
 		LOG.debug("end scan");
 		fireEvent(EventType.READY);

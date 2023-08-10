@@ -17,7 +17,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>
-				<version>2.6</version>
+				<version>3.3.0</version>
 				<configuration>
 					<archive>
 						<manifest>
@@ -32,7 +32,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-dependency-plugin</artifactId>
-				<version>2.5.1</version>
+				<version>3.6.0</version>
 				<executions>
 					<execution>
 						<id>copy-dependencies</id>
@@ -104,7 +104,6 @@
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-simple</artifactId>
 			<!-- version>1.7.25</version -->
-			<!-- jmdns 3.5.8 -->
 			<version>2.0.7</version>
 		</dependency>
 		<dependency>

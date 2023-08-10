@@ -4,6 +4,8 @@ import java.awt.Color;
 import java.awt.Cursor;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Base64;
@@ -19,6 +21,7 @@ import org.slf4j.LoggerFactory;
 
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.DevicesFactory;
+import it.usna.shellyscan.model.NonInteractiveDevices;
 import it.usna.shellyscan.view.MainView;
 import it.usna.shellyscan.view.appsettings.DialogAppSettings;
 import it.usna.shellyscan.view.util.Msg;
@@ -28,9 +31,9 @@ import it.usna.util.CLI;
 
 public class Main {
 	public final static String APP_NAME = "Shelly Scanner";
-	public final static String VERSION = "1.0.0 alpha";
-	public final static String VERSION_CODE = "001.000.000r100"; // r0xx alpha; r1xx beta; r2xx stable
-	public final static String REVISION = "2";
+	public final static String VERSION = "1.0.0 beta";
+	public final static String VERSION_CODE = "001.000.000r200"; // r0xx alpha; r1xx beta; r2xx stable
+	public final static String REVISION = "0";
 	public final static String ICON = "/images/ShSc24.png";
 	public final static String BACKUP_FILE_EXT = "sbk";
 	public final static String ARCHIVE_FILE_EXT = "arc";
@@ -55,6 +58,36 @@ public class Main {
 		//		String version = mainPackage.getImplementationVersion();
 		
 //		UsnaSwingUtils.initializeFontSize(1.2f);
+		CLI cli = new CLI(args);
+		int cliIndex = cli.hasEntry("-backup");
+		if(cliIndex >= 0) {
+			String path = cli.getParameter(cliIndex);
+			if(path == null) {
+				System.err.println("mandatory entry after -backup (must be an existing path)");
+				System.exit(1);
+			}
+			Path dirPath = Paths.get(path);
+			if(path == null || Files.exists(dirPath) == false || Files.isDirectory(dirPath) == false) {
+				System.err.println("entry after -backup must be an existing path");
+				System.exit(1);
+			}
+			if(cli.unused().length > 0) {
+				System.err.println("Wrong parameter(s): " + Arrays.stream(cli.unused()).collect(Collectors.joining("; ")));
+				System.exit(1);
+			}
+			try {
+				final NonInteractiveDevices model = new NonInteractiveDevices();
+				model.scannerInit(true);
+				//todo
+				model.rescan();
+				System.out.println(model.size());
+				System.out.println("non interactive backup in: " + path);
+				System.exit(0);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+		
 		try {
 			UsnaSwingUtils.setLookAndFeel(UsnaSwingUtils.LF_NMBUS);
 		} catch (Exception e) {
@@ -101,7 +134,7 @@ public class Main {
 					} else {
 						fullScan = scanMode.equals("FULL");
 					}
-					CLI cli = new CLI(args);
+					
 					int entryIdx;
 					if(cli.hasEntry("-fullscan", "-fs") >= 0) {
 						fullScan = true;
@@ -118,11 +151,11 @@ public class Main {
 							lastIP = Integer.parseInt(m.group(3));
 						} catch (Exception e) {
 							baseIP = null;
-							LOG.info("Wrong format; example: -ipscan 192.168.1.1-254");
+							System.err.println("Wrong format; example: -ipscan 192.168.1.1-254");
 						}
 					} 
 					if(cli.unused().length > 0) {
-						LOG.info("Ignored parameter(s): {}", Arrays.stream(cli.unused()).collect(Collectors.joining("; ")));
+						System.err.println("Ignored parameter(s): " + Arrays.stream(cli.unused()).collect(Collectors.joining("; ")));
 					}
 					
 					String lUser = appProp.getProperty(DialogAppSettings.PROP_LOGIN_USER);
