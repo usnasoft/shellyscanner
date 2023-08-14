@@ -38,6 +38,10 @@ import it.usna.shellyscan.model.device.WIFIManager;
 import it.usna.shellyscan.model.device.WIFIManager.Network;
 import it.usna.shellyscan.model.device.g1.modules.Actions;
 
+/**
+ * Base class for any gen1 Shelly device
+ * usna
+ */
 public abstract class AbstractG1Device extends ShellyAbstractDevice {
 	private final static Logger LOG = LoggerFactory.getLogger(AbstractG1Device.class);
 
