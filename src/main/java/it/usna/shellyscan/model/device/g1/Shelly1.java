@@ -14,12 +14,16 @@ import it.usna.shellyscan.model.device.g1.modules.Relay;
 import it.usna.shellyscan.model.device.modules.RelayCommander;
 import it.usna.shellyscan.model.device.modules.RelayInterface;
 
+/**
+ * Shelly 1 model
+ * usna
+ */
 public class Shelly1 extends AbstractG1Device implements RelayCommander {
 	public final static String ID = "SHSW-1";
 	private final static Meters.Type[] SUPPORTED_MEASURES_H = new Meters.Type[] { Meters.Type.T, Meters.Type.H };
 	private final static Meters.Type[] MEASURES_EXT_SWITCH = new Meters.Type[] { Meters.Type.EXS };
 	private Relay relay = new Relay(this, 0);
-	private float extT0, extT1, extT2;// = new float[3];
+	private float extT0, extT1, extT2;
 	private int humidity;
 	private int extSwitchStatus;
 	private boolean extSwitchRev;
@@ -203,7 +207,7 @@ public class Shelly1 extends AbstractG1Device implements RelayCommander {
 }
 
 /*
-settings:
+settings example with add-on:
 
 "ext_sensors" : {
   "temperature_unit" : "C"
@@ -223,7 +227,7 @@ settings:
 "ext_humidity" : { },
 
 
-satus:
+satus example with add-on:
 
  "ext_sensors" : {
   "temperature_unit" : "C"

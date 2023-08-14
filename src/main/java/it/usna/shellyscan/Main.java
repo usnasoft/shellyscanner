@@ -63,28 +63,28 @@ public class Main {
 		if(cliIndex >= 0) {
 			String path = cli.getParameter(cliIndex);
 			if(path == null) {
-				System.err.println("mandatory entry after -backup (must be an existing path)");
+				System.err.println("mandatory parameter after -backup (must be an existing path)");
 				System.exit(1);
 			}
 			Path dirPath = Paths.get(path);
 			if(path == null || Files.exists(dirPath) == false || Files.isDirectory(dirPath) == false) {
-				System.err.println("entry after -backup must be an existing path");
+				System.err.println("parameter after -backup must be an existing path");
 				System.exit(1);
 			}
 			if(cli.unused().length > 0) {
 				System.err.println("Wrong parameter(s): " + Arrays.stream(cli.unused()).collect(Collectors.joining("; ")));
 				System.exit(1);
 			}
-			try {
-				final NonInteractiveDevices model = new NonInteractiveDevices();
+			try (NonInteractiveDevices model = new NonInteractiveDevices()) {
 				model.scannerInit(true);
 				//todo
-				model.rescan();
-				System.out.println(model.size());
+				model.execute(d -> System.out.println(d));
+//				System.out.println(model.size());
 				System.out.println("non interactive backup in: " + path);
 				System.exit(0);
 			} catch (Exception e) {
 				e.printStackTrace();
+				System.exit(1);
 			}
 		}
 		

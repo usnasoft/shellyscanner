@@ -17,6 +17,10 @@ import org.eclipse.jetty.http.HttpStatus;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+/**
+ * Base class for any device
+ * @author usna
+ */
 public abstract class ShellyAbstractDevice {
 	protected HttpClient httpClient;
 	protected final InetAddress address;

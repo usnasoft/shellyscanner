@@ -7,7 +7,7 @@ import java.net.InetAddress;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -47,6 +47,10 @@ import it.usna.shellyscan.model.device.g2.modules.Script;
 import it.usna.shellyscan.model.device.g2.modules.SensorAddOn;
 import it.usna.shellyscan.model.device.g2.modules.Webhooks;
 
+/**
+ * Base class for any gen2 Shelly device
+ * usna
+ */
 public abstract class AbstractG2Device extends ShellyAbstractDevice {
 	private final static Logger LOG = LoggerFactory.getLogger(AbstractG2Device.class);
 	protected WebSocketClient wsClient;
@@ -64,7 +68,6 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 	}
 	
 	protected void init(JsonNode devInfo) throws IOException {
-		// fillOnce
 		this.hostname = devInfo.get("id").asText("");
 		this.mac = devInfo.get("mac").asText().toUpperCase();
 		
@@ -297,13 +300,8 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 
 	@Override
 	public Map<Restore, String> restoreCheck(/*final File file*/Map<String, JsonNode> backupJsons) throws IOException {
-		HashMap<Restore, String> res = new HashMap<>();
-		try /*(   ZipFile in = new ZipFile(file, StandardCharsets.UTF_8);
-				InputStream isDevInfo = in.getInputStream(in.getEntry("Shelly.GetDeviceInfo.json"));
-				InputStream isConfig = in.getInputStream(in.getEntry("Shelly.GetConfig.json"));
-				)*/ {
-//			JsonNode devInfo = jsonMapper.readTree(isDevInfo);
-//			JsonNode config = jsonMapper.readTree(isConfig);
+		EnumMap<Restore, String> res = new EnumMap<>(Restore.class);
+		try {
 			JsonNode devInfo = backupJsons.get("Shelly.GetDeviceInfo.json");
 			JsonNode config = backupJsons.get("Shelly.GetConfig.json");
 			final String fileHostname = devInfo.get("id").asText("");
@@ -451,4 +449,4 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 			errors.add(postCommand("Schedule.Create", thisSc));
 		}
 	}
-} // 454
+} // 448

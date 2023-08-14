@@ -56,42 +56,10 @@ public class DialogAbout {
 			Window w = SwingUtilities.getWindowAncestor((Component)e.getSource());
 			try {
 				w.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-				URLConnection con = new URL(LABELS.getString("aboutCheckUpdatesPath")).openConnection(); // https://www.usna.it/shellyscanner/last_verion.txt
-				JsonNode updateNode = new ObjectMapper().readTree(con.getInputStream());
-				String msg = "";
-				final JsonNode stable = updateNode.path("stable");
-				if(stable.isNull() == false && stable.path("id").asText().compareTo(Main.VERSION_CODE) > 0) {
-					msg = "\n" + String.format(LABELS.getString("aboutCheckUpdatesYes"), stable.path("version").asText());
-					String note = stable.path("note").asText();
-					if(note.length() > 0) {
-						msg += " - " + note;
-					}
+				String msg = chechForUpdates(w);
+				if(msg != null) {
+					Msg.showMsg(w, msg, title, JOptionPane.INFORMATION_MESSAGE);
 				}
-				final JsonNode dev = updateNode.path("dev");
-				if(dev.isNull() == false && dev.path("id").asText().compareTo(Main.VERSION_CODE) > 0) {
-					msg += "\n" + String.format(LABELS.getString("aboutCheckUpdatesYes"), dev.path("version").asText());
-					String note = dev.path("note").asText();
-					if(note.length() > 0) {
-						msg += " - " + note;
-					}
-				}
-				if(msg.length() > 0) {
-					Object[] options = new Object[] {LABELS.getString("aboutCheckUpdatesDownload"), LABELS.getString("dlgClose")};
-					if(JOptionPane.showOptionDialog(w, msg, title, JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, null) == 0) {
-						try {
-							Desktop.getDesktop().browse(new URI(LABELS.getString("aboutCheckUpdatesDownloadURL")));
-						} catch (IOException | URISyntaxException ex) {
-							JOptionPane.showMessageDialog(w, LABELS.getString("aboutCheckUpdatesDownloadURL"), "", JOptionPane.PLAIN_MESSAGE);
-						}
-					}
-
-				} else {
-					String msgNone = updateNode.path("none").asText();
-					Msg.showMsg(w, msgNone.length() > 0 ? msgNone : LABELS.getString("aboutCheckUpdatesNone"), title, JOptionPane.INFORMATION_MESSAGE);
-				}
-			} catch (IOException ex) {
-				LOG.warn("CheckUpdate", ex);
-				Msg.errorMsg(w, LABELS.getString("aboutCheckUpdatesError"));
 			} finally {
 				w.setCursor(Cursor.getDefaultCursor());
 			}
@@ -107,5 +75,48 @@ public class DialogAbout {
 
 		JOptionPane.showOptionDialog(owner, ep, Main.APP_NAME, JOptionPane.OK_CANCEL_OPTION, JOptionPane.INFORMATION_MESSAGE,
 				new ImageIcon(DialogAbout.class.getResource("/images/ShSc.png")), new Object[] {checkButton, okButton}, okButton);
+	}
+	
+	private static String chechForUpdates(Window w) {
+		try {
+			final String title = LABELS.getString("aboutCheckUpdates") + " - " + Main.VERSION + " r." + Main.REVISION;
+			final URLConnection con = new URL(LABELS.getString("aboutCheckUpdatesPath")).openConnection(); // https://www.usna.it/shellyscanner/last_verion.txt
+			final JsonNode updateNode = new ObjectMapper().readTree(con.getInputStream());
+			String msg = "";
+			final JsonNode stable = updateNode.path("stable");
+			if(stable.isNull() == false && stable.path("id").asText().compareTo(Main.VERSION_CODE) > 0) {
+				msg = "\n" + String.format(LABELS.getString("aboutCheckUpdatesYes"), stable.path("version").asText());
+				String note = stable.path("note").asText();
+				if(note.length() > 0) {
+					msg += " - " + note;
+				}
+			}
+			final JsonNode dev = updateNode.path("dev");
+			if(dev.isNull() == false && dev.path("id").asText().compareTo(Main.VERSION_CODE) > 0) {
+				msg += "\n" + String.format(LABELS.getString("aboutCheckUpdatesYes"), dev.path("version").asText());
+				String note = dev.path("note").asText();
+				if(note.length() > 0) {
+					msg += " - " + note;
+				}
+			}
+			if(msg.length() > 0) {
+				Object[] options = new Object[] {LABELS.getString("aboutCheckUpdatesDownload"), LABELS.getString("dlgClose")};
+				if(JOptionPane.showOptionDialog(w, msg, title, JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, null) == 0) {
+					try {
+						Desktop.getDesktop().browse(new URI(LABELS.getString("aboutCheckUpdatesDownloadURL")));
+					} catch (IOException | URISyntaxException ex) {
+						JOptionPane.showMessageDialog(w, LABELS.getString("aboutCheckUpdatesDownloadURL"), "", JOptionPane.PLAIN_MESSAGE);
+					}
+				}
+				return null;
+			} else {
+				String msgNone = updateNode.path("none").asText();
+				return msgNone.length() > 0 ? msgNone : LABELS.getString("aboutCheckUpdatesNone");
+			}
+		} catch (IOException ex) {
+			LOG.warn("CheckUpdate", ex);
+			Msg.errorMsg(w, LABELS.getString("aboutCheckUpdatesError"));
+			return null;
+		}
 	}
 }

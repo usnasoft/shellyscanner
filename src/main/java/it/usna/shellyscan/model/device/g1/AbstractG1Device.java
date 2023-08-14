@@ -9,7 +9,7 @@ import java.net.URI;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -114,7 +114,7 @@ public abstract class AbstractG1Device extends ShellyAbstractDevice {
 			return e.getMessage();
 		} catch (TimeoutException | InterruptedException e) {
 			status = Status.OFF_LINE;
-			return "Status-OFFLINE"; //Main.LABELS.getString("err_connection_offline"); //todo
+			return "Status-OFFLINE";
 		}
 	}
 
@@ -156,7 +156,7 @@ public abstract class AbstractG1Device extends ShellyAbstractDevice {
 		try {
 			this.debugEnabled = getJSON("/settings?debug_enable=" + (mode != LogMode.NO)).path("debug_enable").asBoolean(false) ? LogMode.FILE : LogMode.NO;
 		} catch (IOException e) {
-			LOG.warn("setDebugMode:" + mode, e);
+			LOG.warn("setDebugMode: {}", mode, e);
 		}
 	}
 	
@@ -187,14 +187,14 @@ public abstract class AbstractG1Device extends ShellyAbstractDevice {
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			sectionToStream("/settings/actions", "actions.json", out);
 		} catch(InterruptedException e) {
-			LOG.error("", e);
+			LOG.error("backup", e);
 		}
 		return true;
 	}
 	
 	@Override
 	public Map<Restore, String> restoreCheck(Map<String, JsonNode> backupJsons) throws IOException {
-		HashMap<Restore, String> res = new HashMap<>();
+		EnumMap<Restore, String> res = new EnumMap<>(Restore.class);
 		try {
 			JsonNode settings = backupJsons.get("settings.json");
 			final String fileHostname = settings.get("device").get("hostname").asText("");
