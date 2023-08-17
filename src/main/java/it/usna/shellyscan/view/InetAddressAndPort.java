@@ -4,9 +4,14 @@ import java.net.InetAddress;
 
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 
+/**
+ * Address and port representation with Comparable<> implementation.<br>
+ * This fits well on TableModel. Port 80 is not shown.<br>
+ * InetAddress is assumed to be Inet4Address
+ */
 public class InetAddressAndPort implements Comparable<InetAddressAndPort> {
-	private InetAddress address;
-	private int port;
+	private final InetAddress address;
+	private final int port;
 
 //	public InetAddressAndPort(InetAddress address, int port) {
 //		this.address = address;
@@ -16,6 +21,8 @@ public class InetAddressAndPort implements Comparable<InetAddressAndPort> {
 	public InetAddressAndPort(ShellyAbstractDevice d) {
 		this.address = d.getAddress();
 		this.port = d.getPort();
+		
+		// InetAddress is not efficient (see java.net.Inet4Address implementation); an initial getAddress() and byte storage could improve performance
 	}
 
 	@Override
@@ -28,6 +35,11 @@ public class InetAddressAndPort implements Comparable<InetAddressAndPort> {
 		if(i1[2] != i2[2]) return (i1[2] & 0xFF) - (i2[2] & 0xFF);
 		if((cmp = (i1[3] & 0xFF) - (i2[3] & 0xFF)) != 0) return cmp;
 		return port - o2.port;
+	}
+	
+	@Override
+	public boolean equals(Object o2) {
+		return o2 != null && o2 instanceof InetAddressAndPort && address.equals(((InetAddressAndPort)o2).address) && port == ((InetAddressAndPort)o2).port;
 	}
 	
 	public static String toString(ShellyAbstractDevice d) {

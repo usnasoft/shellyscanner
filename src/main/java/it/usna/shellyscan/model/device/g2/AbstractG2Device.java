@@ -349,6 +349,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 		return res;
 	}
 	
+	/** device specific */
 	public void restoreCheck(Map<String, JsonNode> backupJsons, Map<Restore, String> res) throws IOException {}
 	
 	@Override
@@ -398,6 +399,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 		}
 	}
 	
+	/** device specific */
 	protected abstract void restore(Map<String, JsonNode> backupJsons, ArrayList<String> errors) throws IOException, InterruptedException;
 	
 	//curl -X POST -d '{"id": 1, "method": "Sys.SetConfig", "params": {"config": {"location": {"tz": "Europe/Sofia"}}}}' http://${SHELLY}/rpc

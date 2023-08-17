@@ -16,10 +16,10 @@ import java.net.URL;
 import java.text.MessageFormat;
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Locale;
-import java.util.TimeZone;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -411,8 +411,9 @@ public class DevicesTable extends ExTooltipTable {
 	}
 	
 	public void updateRow(ShellyAbstractDevice d, int index) {
-		Object[] row = generateRow(d, ((UsnaTableModel)dataModel).getRow(index));
-		((UsnaTableModel)dataModel).setRow(index, row);
+		/*Object[] row =*/ generateRow(d, ((UsnaTableModel)dataModel).getRow(index));
+//		((UsnaTableModel)dataModel).setRow(index, row);
+		((UsnaTableModel)dataModel).fireTableRowsUpdated(index, index);
 		final ListSelectionModel lsm = getSelectionModel(); // allRowsChanged() do not preserve the selected cell; this mess the selection dragging the mouse
 		final int i1 = lsm.getAnchorSelectionIndex();
 //		final int i2 = lsm.getLeadSelectionIndex();
@@ -496,14 +497,14 @@ public class DevicesTable extends ExTooltipTable {
 		} else if(d.getStatus() == Status.OFF_LINE) {
 			long lastOnline = d.getLastTime();
 			if(lastOnline > 0) {
-				return new ImageIcon(OFFLINEIMG, String.format(LABELS.getString("labelDevOffLIneTime"), LocalDateTime.ofInstant(Instant.ofEpochMilli(lastOnline), TimeZone.getDefault().toZoneId())));
+				return new ImageIcon(OFFLINEIMG, String.format(LABELS.getString("labelDevOffLIneTime"), LocalDateTime.ofInstant(Instant.ofEpochMilli(lastOnline), ZoneId.systemDefault())));
 			} else {
 				return OFFLINE_BULLET;
 			}
 		} else if(d.getStatus() == Status.READING) {
 			return UPDATING_BULLET;
 		} else if(d.getStatus() == Status.GHOST) {
-			return new ImageIcon(GHOSTIMG, String.format(LABELS.getString("labelDevGhostTime"), LocalDateTime.ofInstant(Instant.ofEpochMilli(d.getLastTime()), TimeZone.getDefault().toZoneId())));
+			return new ImageIcon(GHOSTIMG, String.format(LABELS.getString("labelDevGhostTime"), LocalDateTime.ofInstant(Instant.ofEpochMilli(d.getLastTime()), ZoneId.systemDefault())));
 		} else if(d.getStatus() == Status.ERROR) {
 			return ERROR_BULLET;
 		} else { // Status.NOT_LOOGGED

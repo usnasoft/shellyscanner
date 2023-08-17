@@ -56,7 +56,7 @@ public class DialogAbout {
 			Window w = SwingUtilities.getWindowAncestor((Component)e.getSource());
 			try {
 				w.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-				String msg = chechForUpdates(w);
+				String msg = chechForUpdates(w, true);
 				if(msg != null) {
 					Msg.showMsg(w, msg, title, JOptionPane.INFORMATION_MESSAGE);
 				}
@@ -77,7 +77,7 @@ public class DialogAbout {
 				new ImageIcon(DialogAbout.class.getResource("/images/ShSc.png")), new Object[] {checkButton, okButton}, okButton);
 	}
 	
-	private static String chechForUpdates(Window w) {
+	private static String chechForUpdates(final Window w, final boolean checkDev) {
 		try {
 			final String title = LABELS.getString("aboutCheckUpdates") + " - " + Main.VERSION + " r." + Main.REVISION;
 			final URLConnection con = new URL(LABELS.getString("aboutCheckUpdatesPath")).openConnection(); // https://www.usna.it/shellyscanner/last_verion.txt
@@ -91,8 +91,8 @@ public class DialogAbout {
 					msg += " - " + note;
 				}
 			}
-			final JsonNode dev = updateNode.path("dev");
-			if(dev.isNull() == false && dev.path("id").asText().compareTo(Main.VERSION_CODE) > 0) {
+			final JsonNode dev;
+			if(checkDev && (dev = updateNode.path("dev")).isNull() == false && dev.path("id").asText().compareTo(Main.VERSION_CODE) > 0) {
 				msg += "\n" + String.format(LABELS.getString("aboutCheckUpdatesYes"), dev.path("version").asText());
 				String note = dev.path("note").asText();
 				if(note.length() > 0) {
