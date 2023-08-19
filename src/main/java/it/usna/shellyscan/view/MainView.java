@@ -414,7 +414,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		}
 	});
 	
-	private Action csvExportAction = new UsnaAction(this, "/images/Table.png", "action_cvs_tooltip", e -> {
+	private Action csvExportAction = new UsnaAction(this, "/images/Table.png", "action_csv_tooltip", e -> {
 		final JFileChooser fc = new JFileChooser(appProp.getProperty("LAST_PATH"));
 		fc.setFileFilter(new FileNameExtensionFilter(LABELS.getString("filetype_csv_desc"), "csv"));
 		if(fc.showSaveDialog(MainView.this) == JFileChooser.APPROVE_OPTION) {

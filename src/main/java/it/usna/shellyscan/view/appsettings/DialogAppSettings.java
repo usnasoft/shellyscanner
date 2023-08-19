@@ -126,7 +126,7 @@ public class DialogAppSettings extends JDialog {
 				JOptionPane.showMessageDialog(this, LABELS.getString("dlgAppSetScanNetworMsg"), LABELS.getString("dlgAppSetTitle"), JOptionPane.WARNING_MESSAGE);
 			}
 
-			// CVS
+			// CSV
 			appProp.setProperty(PROP_CSV_SEPARATOR, panelGUI.csvTextField.getText());
 			
 			// Charts
