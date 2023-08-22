@@ -32,7 +32,7 @@ import it.usna.util.CLI;
 public class Main {
 	public final static String APP_NAME = "Shelly Scanner";
 	public final static String VERSION = "1.0.0 beta";
-	public final static String VERSION_CODE = "001.000.000r200"; // r0xx alpha; r1xx beta; r2xx stable
+	public final static String VERSION_CODE = "001.000.000r100"; // r0xx alpha; r1xx beta; r2xx stable
 	public final static String REVISION = "0";
 	public final static String ICON = "/images/ShSc24.png";
 	public final static String BACKUP_FILE_EXT = "sbk";
@@ -58,9 +58,51 @@ public class Main {
 		//		String version = mainPackage.getImplementationVersion();
 		
 //		UsnaSwingUtils.initializeFontSize(1.2f);
+		try { // in case of error use default configuration
+			appProp.load(true);
+		} catch (Exception e) {
+			Msg.errorMsg(e);
+		}
+		
 		CLI cli = new CLI(args);
-		int cliIndex = cli.hasEntry("-backup");
-		if(cliIndex >= 0) {
+		
+		boolean fullScan = false;
+		byte [] ip = null;
+		int firstIP = 0;
+		int lastIP  = 0;
+		
+		int cliIndex;
+		if(cli.hasEntry("-fullscan", "-fs") >= 0) {
+			fullScan = true;
+		} else if(cli.hasEntry("-localscan", "-ls") >= 0) {
+			fullScan = false;
+		} else if((cliIndex = cli.hasEntry("-ipscan", "-ips")) >= 0) {
+			try {
+				Matcher m = Pattern.compile(IP_SCAN_PAR_FORMAT).matcher(cli.getParameter(cliIndex));
+				m.find();
+				String baseIP = m.group(1);
+				firstIP = Integer.parseInt(m.group(2));
+				lastIP = Integer.parseInt(m.group(3));
+				String ipS[] = baseIP.split("\\.");
+				ip = new byte[] {(byte)Integer.parseInt(ipS[0]), (byte)Integer.parseInt(ipS[1]), (byte)Integer.parseInt(ipS[2]), 0};
+			} catch (Exception e) {
+				System.err.println("Wrong parameter format; example: -ipscan 192.168.1.1-254");
+				System.exit(1);
+			}
+		} else {
+			final String scanMode = appProp.getProperty(DialogAppSettings.PROP_SCAN_MODE, DialogAppSettings.PROP_SCAN_MODE_DEFAULT);
+			if(scanMode.equals("IP")) {
+				String baseIP = appProp.getProperty(DialogAppSettings.BASE_SCAN_IP);
+				firstIP = appProp.getIntProperty(DialogAppSettings.FIRST_SCAN_IP);
+				lastIP = appProp.getIntProperty(DialogAppSettings.LAST_SCAN_IP);
+				String ipS[] = baseIP.split("\\.");
+				ip = new byte[] {(byte)Integer.parseInt(ipS[0]), (byte)Integer.parseInt(ipS[1]), (byte)Integer.parseInt(ipS[2]), 0};
+			} else {
+				fullScan = scanMode.equals("FULL");
+			}
+		}
+		
+		if((cliIndex = cli.hasEntry("-backup")) >= 0) {
 			String path = cli.getParameter(cliIndex);
 			if(path == null) {
 				System.err.println("mandatory parameter after -backup (must be an existing path)");
@@ -71,12 +113,12 @@ public class Main {
 				System.err.println("parameter after -backup must be an existing path");
 				System.exit(1);
 			}
-			if(cli.unused().length > 0) {
-				System.err.println("Wrong parameter(s): " + Arrays.stream(cli.unused()).collect(Collectors.joining("; ")));
-				System.exit(1);
-			}
 			try (NonInteractiveDevices model = new NonInteractiveDevices()) {
-				model.scannerInit(true);
+				if(ip == null) {
+					model.scannerInit(fullScan);
+				} else {
+					model.scannerInit(ip, firstIP, lastIP);
+				}
 				//todo
 				model.execute(d -> System.out.println(d));
 //				System.out.println(model.size());
@@ -86,8 +128,26 @@ public class Main {
 				e.printStackTrace();
 				System.exit(1);
 			}
+		} else if(cli.hasEntry("-list") >= 0) {
+			try (NonInteractiveDevices model = new NonInteractiveDevices()) {
+				if(ip == null) {
+					model.scannerInit(fullScan);
+				} else {
+					model.scannerInit(ip, firstIP, lastIP);
+				}
+				model.execute(d -> System.out.println(d));
+				System.exit(0);
+			} catch (Exception e) {
+				e.printStackTrace();
+				System.exit(1);
+			}
 		}
-		
+		// find unused CLI entries
+		if(cli.unused().length > 0) {
+			System.err.println("Wrong parameter(s): " + Arrays.stream(cli.unused()).collect(Collectors.joining("; ")));
+			System.exit(10);
+		}
+
 		try {
 			UsnaSwingUtils.setLookAndFeel(UsnaSwingUtils.LF_NMBUS);
 		} catch (Exception e) {
@@ -96,12 +156,7 @@ public class Main {
 //		UIManager.put("Table.background", new ColorUIResource(TAB_LINE1));
 //		UIManager.put("Table.alternateRowColor", TAB_LINE2);
 //		UIManager.getLookAndFeelDefaults().put("Table:\"Table.cellRenderer\".background", new ColorUIResource(TAB_LINE1));
-
-		try { // in case of error use default configuration
-			appProp.load(true);
-		} catch (Exception e) {
-			Msg.errorMsg(e);
-		}
+		
 		if(TAB_VERSION.equals(appProp.getProperty("TAB_VER")) == false) {
 			appProp.setProperty("TAB_VER", TAB_VERSION);
 			appProp.remove("TAB.COL_P");
@@ -109,53 +164,24 @@ public class Main {
 		try {
 			final Devices model = new Devices();
 			final MainView view = new MainView(model, appProp);
+			// final values for thread
+			final boolean fullScanx = fullScan;
+			final byte [] ipFin = ip;
+			final int firstIPFin = firstIP;
+			final int lastIPFin = lastIP;
+			
 			SwingUtilities.invokeLater(() -> {
 				view.setVisible(true);
-				if(appProp.getBoolProperty(DialogAppSettings.PROP_USE_ARCHIVE, true)) {
-					try {
-						model.loadFromStore(Paths.get(appProp.getProperty(DialogAppSettings.PROP_ARCHIVE_FILE, DialogAppSettings.PROP_ARCHIVE_FILE_DEFAULT)));
-					} catch (IOException e) {
-						appProp.setBoolProperty(DialogAppSettings.PROP_USE_ARCHIVE, false);
-						Msg.errorMsg(e);
-					}
-				}
-				view.requestFocus(); // remove random focus on toolbar button
 				try {
 					view.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-					final String scanMode = appProp.getProperty(DialogAppSettings.PROP_SCAN_MODE, DialogAppSettings.PROP_SCAN_MODE_DEFAULT);
-					boolean fullScan = false;
-					String baseIP = null;
-					int firstIP = 0;
-					int lastIP  = 0;
-					if(scanMode.equals("IP")) {
-						baseIP = appProp.getProperty(DialogAppSettings.BASE_SCAN_IP);
-						firstIP = appProp.getIntProperty(DialogAppSettings.FIRST_SCAN_IP);
-						lastIP = appProp.getIntProperty(DialogAppSettings.LAST_SCAN_IP);
-					} else {
-						fullScan = scanMode.equals("FULL");
-					}
-					
-					int entryIdx;
-					if(cli.hasEntry("-fullscan", "-fs") >= 0) {
-						fullScan = true;
-						baseIP = null;
-					} else if(cli.hasEntry("-localscan", "-ls") >= 0) {
-						fullScan = false;
-						baseIP = null;
-					} else if((entryIdx = cli.hasEntry("-ipscan", "-ips")) >= 0) {
+					view.requestFocus(); // remove random focus on toolbar button
+					if(appProp.getBoolProperty(DialogAppSettings.PROP_USE_ARCHIVE, true)) {
 						try {
-							Matcher m = Pattern.compile(IP_SCAN_PAR_FORMAT).matcher(cli.getParameter(entryIdx));
-							m.find();
-							baseIP = m.group(1);
-							firstIP = Integer.parseInt(m.group(2));
-							lastIP = Integer.parseInt(m.group(3));
-						} catch (Exception e) {
-							baseIP = null;
-							System.err.println("Wrong format; example: -ipscan 192.168.1.1-254");
+							model.loadFromStore(Paths.get(appProp.getProperty(DialogAppSettings.PROP_ARCHIVE_FILE, DialogAppSettings.PROP_ARCHIVE_FILE_DEFAULT)));
+						} catch (IOException e) {
+							appProp.setBoolProperty(DialogAppSettings.PROP_USE_ARCHIVE, false);
+							Msg.errorMsg(e);
 						}
-					} 
-					if(cli.unused().length > 0) {
-						System.err.println("Ignored parameter(s): " + Arrays.stream(cli.unused()).collect(Collectors.joining("; ")));
 					}
 					
 					String lUser = appProp.getProperty(DialogAppSettings.PROP_LOGIN_USER);
@@ -168,17 +194,16 @@ public class Main {
 					}
 					final int refreshStatusInterval = appProp.getIntProperty(DialogAppSettings.PROP_REFRESH_ITERVAL, DialogAppSettings.PROP_REFRESH_ITERVAL_DEFAULT) * 1000;
 					final int refreshConfigTics = appProp.getIntProperty(DialogAppSettings.PROP_REFRESH_CONF, DialogAppSettings.PROP_REFRESH_CONF_DEFAULT);
-					if(baseIP != null) {
-						String ipS[] = baseIP.split("\\.");
-						byte [] ip = new byte[] {(byte)Integer.parseInt(ipS[0]), (byte)Integer.parseInt(ipS[1]), (byte)Integer.parseInt(ipS[2]), 0};
-						model.scannerInit(ip, firstIP, lastIP, refreshStatusInterval, refreshConfigTics);
+					if(ipFin != null) {
+						model.scannerInit(ipFin, firstIPFin, lastIPFin, refreshStatusInterval, refreshConfigTics);
 					} else {
-						model.scannerInit(fullScan, refreshStatusInterval, refreshConfigTics);
+						model.scannerInit(fullScanx, refreshStatusInterval, refreshConfigTics);
 					}
-					view.setCursor(Cursor.getDefaultCursor());
 				} catch (/*IO*/Exception e) {
 					Msg.errorMsg(e);
 					System.exit(1);
+				} finally {
+					view.setCursor(Cursor.getDefaultCursor());
 				}
 			});
 		} catch (Throwable ex) {

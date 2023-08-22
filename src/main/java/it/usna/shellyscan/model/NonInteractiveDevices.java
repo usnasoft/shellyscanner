@@ -70,13 +70,13 @@ public class NonInteractiveDevices implements Closeable {
 				LOG.debug("{} {}", dns.getName(), dns.getInetAddress());
 			}
 		} else {
-			final JmDNS dns = JmDNS.create(/*network == null ? InetAddress.getLocalHost() : network*//*InetAddress.getLocalHost()*/null, null);
+			final JmDNS dns = JmDNS.create(null, null);
 			bjServices.add(dns);
 			LOG.debug("Local scan: {} {}", dns.getName(), dns.getInetAddress());
 		}
 	}
 
-	public void scannerInit(final byte[] ip, int first, final int last, int refreshInterval, int refreshTics) throws IOException {
+	public void scannerInit(final byte[] ip, int first, final int last) throws IOException {
 		this.baseScanIP = ip;
 		this.lowerIP = first;
 		this.higherIP = last;
@@ -127,8 +127,8 @@ public class NonInteractiveDevices implements Closeable {
 	}
 
 	public void execute(Consumer<ShellyAbstractDevice> c) throws IOException {
-		LOG.trace("rescan");
-		clear();
+		LOG.trace("scan");
+//		clear();
 		if(this.baseScanIP == null) {
 			for(JmDNS bonjourService: bjServices) {
 				LOG.debug("scanning: {} {}", bonjourService.getName(), bonjourService.getInetAddress());
@@ -199,11 +199,11 @@ public class NonInteractiveDevices implements Closeable {
 //		return devices.size();
 //	}
 
-	private void clear() {
-//		executor.shutdownNow(); // full clean instead of refreshProcess.forEach(f -> f.cancel(true));
-//		executor = Executors.newScheduledThreadPool(EXECUTOR_POOL_SIZE);
-		devices.clear();
-	}
+//	private void clear() {
+////		executor.shutdownNow(); // full clean instead of refreshProcess.forEach(f -> f.cancel(true));
+////		executor = Executors.newScheduledThreadPool(EXECUTOR_POOL_SIZE);
+//		devices.clear();
+//	}
 
 	@Override
 	public void close() {
