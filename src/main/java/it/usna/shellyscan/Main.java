@@ -54,11 +54,9 @@ public class Main {
 
 	public static void main(final String ... args) {
 		LOG.info(APP_NAME + " " + VERSION + " r." + REVISION);
-		//		Package mainPackage = Main.class.getPackage();
-		//		String version = mainPackage.getImplementationVersion();
 		
 //		UsnaSwingUtils.initializeFontSize(1.2f);
-		try { // in case of error use default configuration
+		try { // in case of error or no file (true) use default configuration
 			appProp.load(true);
 		} catch (Exception e) {
 			Msg.errorMsg(e);
@@ -67,7 +65,7 @@ public class Main {
 		CLI cli = new CLI(args);
 		
 		boolean fullScan = false;
-		byte [] ip = null;
+		byte [] baseIP = null;
 		int firstIP = 0;
 		int lastIP  = 0;
 		
@@ -80,11 +78,11 @@ public class Main {
 			try {
 				Matcher m = Pattern.compile(IP_SCAN_PAR_FORMAT).matcher(cli.getParameter(cliIndex));
 				m.find();
-				String baseIP = m.group(1);
+				String baseIPPar = m.group(1);
 				firstIP = Integer.parseInt(m.group(2));
 				lastIP = Integer.parseInt(m.group(3));
-				String ipS[] = baseIP.split("\\.");
-				ip = new byte[] {(byte)Integer.parseInt(ipS[0]), (byte)Integer.parseInt(ipS[1]), (byte)Integer.parseInt(ipS[2]), 0};
+				String ipS[] = baseIPPar.split("\\.");
+				baseIP = new byte[] {(byte)Integer.parseInt(ipS[0]), (byte)Integer.parseInt(ipS[1]), (byte)Integer.parseInt(ipS[2]), 0};
 			} catch (Exception e) {
 				System.err.println("Wrong parameter format; example: -ipscan 192.168.1.1-254");
 				System.exit(1);
@@ -92,11 +90,11 @@ public class Main {
 		} else {
 			final String scanMode = appProp.getProperty(DialogAppSettings.PROP_SCAN_MODE, DialogAppSettings.PROP_SCAN_MODE_DEFAULT);
 			if(scanMode.equals("IP")) {
-				String baseIP = appProp.getProperty(DialogAppSettings.BASE_SCAN_IP);
+				String baseIPPar = appProp.getProperty(DialogAppSettings.BASE_SCAN_IP);
 				firstIP = appProp.getIntProperty(DialogAppSettings.FIRST_SCAN_IP);
 				lastIP = appProp.getIntProperty(DialogAppSettings.LAST_SCAN_IP);
-				String ipS[] = baseIP.split("\\.");
-				ip = new byte[] {(byte)Integer.parseInt(ipS[0]), (byte)Integer.parseInt(ipS[1]), (byte)Integer.parseInt(ipS[2]), 0};
+				String ipS[] = baseIPPar.split("\\.");
+				baseIP = new byte[] {(byte)Integer.parseInt(ipS[0]), (byte)Integer.parseInt(ipS[1]), (byte)Integer.parseInt(ipS[2]), 0};
 			} else {
 				fullScan = scanMode.equals("FULL");
 			}
@@ -114,10 +112,10 @@ public class Main {
 				System.exit(1);
 			}
 			try (NonInteractiveDevices model = new NonInteractiveDevices()) {
-				if(ip == null) {
+				if(baseIP == null) {
 					model.scannerInit(fullScan);
 				} else {
-					model.scannerInit(ip, firstIP, lastIP);
+					model.scannerInit(baseIP, firstIP, lastIP);
 				}
 				//todo
 				model.execute(d -> System.out.println(d));
@@ -130,10 +128,10 @@ public class Main {
 			}
 		} else if(cli.hasEntry("-list") >= 0) {
 			try (NonInteractiveDevices model = new NonInteractiveDevices()) {
-				if(ip == null) {
+				if(baseIP == null) {
 					model.scannerInit(fullScan);
 				} else {
-					model.scannerInit(ip, firstIP, lastIP);
+					model.scannerInit(baseIP, firstIP, lastIP);
 				}
 				model.execute(d -> System.out.println(d));
 				System.exit(0);
@@ -142,14 +140,15 @@ public class Main {
 				System.exit(1);
 			}
 		}
-		// find unused CLI entries
+		// look for unused CLI entries
 		if(cli.unused().length > 0) {
 			System.err.println("Wrong parameter(s): " + Arrays.stream(cli.unused()).collect(Collectors.joining("; ")));
 			System.exit(10);
 		}
 
+		// Go interactive
 		try {
-			UsnaSwingUtils.setLookAndFeel(UsnaSwingUtils.LF_NMBUS);
+			UsnaSwingUtils.setLookAndFeel(UsnaSwingUtils.LF_NIMBUS);
 		} catch (Exception e) {
 			Msg.errorMsg(e);
 		}
@@ -166,7 +165,7 @@ public class Main {
 			final MainView view = new MainView(model, appProp);
 			// final values for thread
 			final boolean fullScanx = fullScan;
-			final byte [] ipFin = ip;
+			final byte [] ipFin = baseIP;
 			final int firstIPFin = firstIP;
 			final int lastIPFin = lastIP;
 			
@@ -188,7 +187,6 @@ public class Main {
 					if(lUser != null && lUser.length() > 0) {
 						try {
 							char[] pDecoded = new String(Base64.getDecoder().decode(appProp.getProperty(DialogAppSettings.PROP_LOGIN_PWD).substring(1))).toCharArray();
-//							CredentialsProvider cp = LoginManager.getCredentialsProvider(lUser, pDecoded);
 							DevicesFactory.setCredential(lUser, pDecoded);
 						} catch(RuntimeException e) {}
 					}

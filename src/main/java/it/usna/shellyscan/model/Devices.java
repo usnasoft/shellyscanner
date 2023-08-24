@@ -87,7 +87,7 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 			jd = JmmDNS.Factory.getInstance();
 			for(JmDNS dns: jd.getDNS()) {
 				bjServices.add(dns);
-				LOG.debug("{} {}", dns.getName(), dns.getInetAddress());
+				LOG.debug("Full scan {} {}", dns.getName(), dns.getInetAddress());
 				dns.addServiceListener(SERVICE_TYPE1, dnsListener);
 //				dns.addServiceListener(SERVICE_TYPE2, dnsListener);
 			}
@@ -128,7 +128,7 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 		this.higherIP = last;
 		this.refreshInterval = refreshInterval;
 		this.refreshTics = refreshTics;
-		LOG.debug("ip scan: {} {} {}", ip, first, last);
+		LOG.debug("IP scan: {} {} {}", ip, first, last);
 		scanByIP();
 		fireEvent(EventType.READY);
 	}
@@ -162,7 +162,7 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 				} catch (TimeoutException e) {
 					LOG.trace("timeout {}", addr);
 				} catch (IOException | InterruptedException e) {
-					LOG.error("ip scan error {} {}", addr, e.toString());
+					LOG.error("IP scan error {} {}", addr, e.toString());
 				}
 			}, dalay, TimeUnit.MILLISECONDS);
 		}

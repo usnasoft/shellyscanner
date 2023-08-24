@@ -38,9 +38,7 @@ public class NonInteractiveDevices implements Closeable {
 	private final static Logger LOG = LoggerFactory.getLogger(NonInteractiveDevices.class);
 	private final static ObjectMapper JSON_MAPPER = new ObjectMapper();
 
-
 //	private final static int EXECUTOR_POOL_SIZE = 64;
-	public final static long MULTI_QUERY_DELAY = 59;
 
 	private JmmDNS jd;
 	private Set<JmDNS> bjServices = new HashSet<>();
@@ -67,7 +65,7 @@ public class NonInteractiveDevices implements Closeable {
 			jd = JmmDNS.Factory.getInstance();
 			for(JmDNS dns: jd.getDNS()) {
 				bjServices.add(dns);
-				LOG.debug("{} {}", dns.getName(), dns.getInetAddress());
+				LOG.debug("Full scan {} {}", dns.getName(), dns.getInetAddress());
 			}
 		} else {
 			final JmDNS dns = JmDNS.create(null, null);
@@ -80,7 +78,7 @@ public class NonInteractiveDevices implements Closeable {
 		this.baseScanIP = ip;
 		this.lowerIP = first;
 		this.higherIP = last;
-		LOG.debug("ip scan: {} {} {}", ip, first, last);
+		LOG.debug("IP scan: {} {} {}", ip, first, last);
 //		scanByIP();
 	}
 
