@@ -22,7 +22,7 @@ import org.eclipse.jetty.client.api.Authentication;
 import org.eclipse.jetty.client.api.AuthenticationStore;
 import org.eclipse.jetty.client.api.ContentResponse;
 import org.eclipse.jetty.client.util.DigestAuthentication;
-import org.eclipse.jetty.client.util.StringContentProvider;
+import org.eclipse.jetty.client.util.StringRequestContent;
 import org.eclipse.jetty.http.HttpStatus;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.WebSocketListener;
@@ -235,8 +235,11 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 	
 	private JsonNode executeRPC(final String method, String payload) throws IOException, StreamReadException { // StreamReadException extends ... IOException
 		try {
-			ContentResponse response = httpClient.POST(uriPrefix + "/rpc")
-					.content(new StringContentProvider("{\"id\":1, \"method\":\"" + method + "\", \"params\":" + payload + "}", StandardCharsets.UTF_8))
+//			ContentResponse response = httpClient.POST(uriPrefix + "/rpc")
+//					.content(new StringRequestContent("{\"id\":1, \"method\":\"" + method + "\", \"params\":" + payload + "}", StandardCharsets.UTF_8))
+//					.send();
+			ContentResponse response = httpClient.POST("http://domain.com/upload")
+					.body(new StringRequestContent("text/plain", "{\"id\":1, \"method\":\"" + method + "\", \"params\":" + payload + "}", StandardCharsets.UTF_8))
 					.send();
 			int statusCode = response.getStatus(); //response.getContentAsString()
 			if(statusCode == HttpStatus.OK_200) {
@@ -255,7 +258,8 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 	
 	public Future<Session> connectWebSocketClient(WebSocketListener listener/*, boolean activate*/) throws IOException, InterruptedException, ExecutionException {
 		final Future<Session> s = wsClient.connect(listener, URI.create("ws://" + address.getHostAddress() + ":" + port + "/rpc")); // this also do upgrade
-		s.get().getRemote().sendStringByFuture("{\"id\":2, \"src\":\"S_Scanner\", \"method\":\"Shelly.GetDeviceInfo\"}");
+		s.get().getRemote().sendString("{\"id\":2, \"src\":\"S_Scanner\", \"method\":\"Shelly.GetDeviceInfo\"}");
+//		s.get().getRemote().sendStringByFuture("{\"id\":2, \"src\":\"S_Scanner\", \"method\":\"Shelly.GetDeviceInfo\"}");
 		return s;
 	}
 	

@@ -307,8 +307,10 @@ public class DevicesTable extends ExTooltipTable {
 							width = Math.max(width, ((Icon)val).getIconWidth());
 						} else if(val instanceof Object[]) {
 							for(Object v: (Object[])val) {
-								int w = SwingUtilities.computeStringWidth(fm, v.toString());
-								width = Math.max(width, w);
+								if(v != null) {
+									int w = SwingUtilities.computeStringWidth(fm, v.toString());
+									width = Math.max(width, w);
+								}
 							}
 						} else {
 							width = Math.max(width, SwingUtilities.computeStringWidth(fm, val.toString()));

@@ -178,7 +178,7 @@ public class DialogDeviceLogsG2 extends JDialog {
 						if (wsSession.get().isOpen()) {
 							wsSession.get().disconnect();
 						}
-					} catch (IOException | InterruptedException | ExecutionException e1) {
+					} catch (/*IOException |*/ InterruptedException | ExecutionException e1) {
 						LOG.error("webSocketClient.connect", e1);
 					}
 				} finally {

@@ -67,7 +67,7 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 //	private final static String SERVICE_TYPE2 = "_shelly._tcp.local.";
 	private final List<ShellyAbstractDevice> devices = new ArrayList<>();
 	private final List<ScheduledFuture<?>> refreshProcess = new ArrayList<>();
-	private int refreshInterval = 1000;
+	private int refreshInterval = 2000;
 	private int refreshTics = 3; // full refresh every STATUS_TICS refresh
 
 	private ScheduledExecutorService executor = Executors.newScheduledThreadPool(EXECUTOR_POOL_SIZE);
@@ -77,6 +77,7 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 	public Devices() throws Exception {
 		httpClient.start();
 		wsClient.start();
+//		httpClient.setConnectTimeout(10000);
 	}
 
 	public void scannerInit(boolean fullScan, int refreshInterval, int refreshTics) throws IOException {
