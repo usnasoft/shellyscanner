@@ -63,7 +63,7 @@ import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.g2.RangeExtenderManager;
 import it.usna.shellyscan.model.device.g2.WIFIManagerG2;
 import it.usna.shellyscan.view.util.Msg;
-import it.usna.shellyscan.view.util.UtilCollecion;
+import it.usna.shellyscan.view.util.UtilmMiscellaneous;
 import it.usna.swing.UsnaPopupMenu;
 import it.usna.swing.table.ExTooltipTable;
 import it.usna.swing.table.UsnaTableModel;
@@ -369,7 +369,7 @@ public class DialogDeviceCheckList extends JDialog implements UsnaEventListener<
 		exeService = Executors.newFixedThreadPool(20);
 		for (int devicesInd : devicesInd) {
 			ShellyAbstractDevice d = appModel.get(devicesInd);
-			final int row = tModel.addRow(DevicesTable.UPDATING_BULLET, UtilCollecion.getExtendedHostName(d), new InetAddressAndPort(d));
+			final int row = tModel.addRow(DevicesTable.UPDATING_BULLET, UtilmMiscellaneous.getExtendedHostName(d), new InetAddressAndPort(d));
 			updateRow(d, row);
 		}
 	}
@@ -390,7 +390,7 @@ public class DialogDeviceCheckList extends JDialog implements UsnaEventListener<
 						tModel.setRow(row, g2Row(d, ((BatteryDeviceInterface)d).getStoredJSON("/rpc/Shelly.GetConfig"), null));
 					}
 				} else {
-					tModel.setRow(row, DevicesTable.getStatusIcon(d), UtilCollecion.getExtendedHostName(d), new InetAddressAndPort(d));
+					tModel.setRow(row, DevicesTable.getStatusIcon(d), UtilmMiscellaneous.getExtendedHostName(d), new InetAddressAndPort(d));
 				}
 				if(d.getStatus() == Status.OFF_LINE || d.getStatus() == Status.NOT_LOOGGED) {
 //					LOG.debug("{}", d, e);
@@ -425,7 +425,7 @@ public class DialogDeviceCheckList extends JDialog implements UsnaEventListener<
 		} else {
 			wifi2 = "-";
 		}
-		return new Object[] {DevicesTable.getStatusIcon(d), UtilCollecion.getExtendedHostName(d), new InetAddressAndPort(d), eco, ledOff, debug, "-", "-", roaming, wifi1, wifi2, "-"};
+		return new Object[] {DevicesTable.getStatusIcon(d), UtilmMiscellaneous.getExtendedHostName(d), new InetAddressAndPort(d), eco, ledOff, debug, "-", "-", roaming, wifi1, wifi2, "-"};
 	}
 	
 	private static Object[] g2Row(ShellyAbstractDevice d, JsonNode settings, JsonNode status) {
@@ -461,7 +461,7 @@ public class DialogDeviceCheckList extends JDialog implements UsnaEventListener<
 		}
 		JsonNode extClient;
 		String extender = (status == null || (extClient = status.at("/wifi/ap_client_count")).isMissingNode()) ? "-" : extClient.asInt() + "";
-		return new Object[] {DevicesTable.getStatusIcon(d), UtilCollecion.getExtendedHostName(d), new InetAddressAndPort(d), eco, "-", debug, ble, ap, roaming, wifi1, wifi2, extender};
+		return new Object[] {DevicesTable.getStatusIcon(d), UtilmMiscellaneous.getExtendedHostName(d), new InetAddressAndPort(d), eco, "-", debug, ble, ap, roaming, wifi1, wifi2, extender};
 	}
 
 	private static Boolean boolVal(JsonNode node) {

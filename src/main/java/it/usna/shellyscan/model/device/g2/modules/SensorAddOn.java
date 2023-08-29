@@ -232,6 +232,8 @@ public class SensorAddOn extends Meters {
 	public static <T extends AbstractG2Device & SensorAddOnHolder> void restore(T d, Map<String, JsonNode> backupJsons, ArrayList<String> errors) throws InterruptedException {
 		SensorAddOn addOn = d.getSensorAddOn();
 		JsonNode backupAddOn = backupJsons.get(BACKUP_SECTION);
+		//todo errors.add(Input.restore(this, configuration, "0"));
+		JsonNode backupConfig = backupJsons.get("Shelly.GetConfig.json");
 		if(backupAddOn == null && addOn != null) {
 			errors.add(enable(d, false));
 		} else if(backupAddOn != null) {

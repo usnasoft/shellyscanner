@@ -77,7 +77,7 @@ import it.usna.shellyscan.view.appsettings.DialogAppSettings;
 import it.usna.shellyscan.view.chart.MeasuresChart;
 import it.usna.shellyscan.view.devsettings.DialogDeviceSettings;
 import it.usna.shellyscan.view.util.Msg;
-import it.usna.shellyscan.view.util.UtilCollecion;
+import it.usna.shellyscan.view.util.UtilmMiscellaneous;
 import it.usna.swing.UsnaPopupMenu;
 import it.usna.swing.table.UsnaTableModel;
 import it.usna.util.AppProperties;
@@ -277,7 +277,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 			fc.setSelectedFile(new File(fileName));
 			if(fc.showOpenDialog(MainView.this) == JFileChooser.APPROVE_OPTION) {
 				MainView.this.getContentPane().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-				final Map<String, JsonNode> backupJsons = UtilCollecion.readBackupFile(fc.getSelectedFile());
+				final Map<String, JsonNode> backupJsons = UtilmMiscellaneous.readBackupFile(fc.getSelectedFile());
 				Map<Restore, String> test = device.restoreCheck(/*fc.getSelectedFile()*/backupJsons);
 				MainView.this.getContentPane().setCursor(Cursor.getDefaultCursor());
 				Map<Restore, String> resData = new HashMap<>();

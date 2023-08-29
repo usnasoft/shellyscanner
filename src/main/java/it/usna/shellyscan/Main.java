@@ -127,6 +127,7 @@ public class Main {
 				System.exit(1);
 			}
 		} else if(cli.hasEntry("-list") >= 0) {
+			LOG.info("Scanning ...");
 			try (NonInteractiveDevices model = new NonInteractiveDevices()) {
 				if(baseIP == null) {
 					model.scannerInit(fullScan);
@@ -134,6 +135,7 @@ public class Main {
 					model.scannerInit(baseIP, firstIP, lastIP);
 				}
 				model.execute(d -> System.out.println(d));
+				LOG.info("List end");
 				System.exit(0);
 			} catch (Exception e) {
 				e.printStackTrace();

@@ -28,7 +28,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
-import it.usna.shellyscan.model.device.ShellyUnmanagedDevice;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 
 /**
@@ -82,7 +81,7 @@ public class NonInteractiveDevices implements Closeable {
 //		scanByIP();
 	}
 
-	private void scanByIP() throws IOException {
+	private void scanByIP(Consumer<ShellyAbstractDevice> c) throws IOException {
 		for(/*int dalay = 0,*/ int ip4 = lowerIP; ip4 <= higherIP; /*dalay +=4,*/ ip4++) {
 			baseScanIP[3] = (byte)ip4;
 			final InetAddress addr = InetAddress.getByAddress(baseScanIP);
@@ -93,7 +92,7 @@ public class NonInteractiveDevices implements Closeable {
 						JsonNode info = isShelly(addr, 80);
 						if(info != null) {
 //							Thread.sleep(MULTI_QUERY_DELAY);
-							create(addr, 80, info, addr.getHostAddress());
+							create(addr, 80, info, addr.getHostAddress(), c);
 						}
 					} else {
 						LOG.trace("no ping {}", addr);
@@ -135,54 +134,41 @@ public class NonInteractiveDevices implements Closeable {
 					final String name = info.getName();
 					if(name.startsWith("shelly") || name.startsWith("Shelly")) { // ShellyBulbDuo-xxx
 //						executor.execute(() -> create(info.getInetAddresses()[0], 80, null, name));
-						create(info.getInetAddresses()[0], 80, null, name);
+						create(info.getInetAddresses()[0], 80, null, name, c);
 					}
 				}
 			}
 		} else {
-			scanByIP();
-		}
-		for(ShellyAbstractDevice d: devices ) {
-			c.accept(d);
+			scanByIP(c);
 		}
 		LOG.debug("end scan");
 	}
 
-	private void create(InetAddress address, int port, JsonNode info, String hostName) {
+	private void create(InetAddress address, int port, JsonNode info, String hostName, Consumer<ShellyAbstractDevice> c) {
 		LOG.trace("Creating {} - {}", address, hostName);
 		try {
 			ShellyAbstractDevice d = DevicesFactory.create(httpClient, wsClient, address, port, info, hostName);
-			if(/*d != null &&*/ Thread.interrupted() == false) {
-				synchronized(devices) {
-					int ind = devices.indexOf(d);
-					if(ind >= 0) {
-						if(d instanceof ShellyUnmanagedDevice == false || devices.get(ind) instanceof ShellyUnmanagedDevice) { // Do not replace device if was recocnized and now is not
-							devices.set(ind, d);
-						}
-					} else {
-						devices.add(d);
-					}
-				}
-				LOG.debug("Create {} - {}", address, d);
+			devices.add(d);
+			c.accept(d);
+			LOG.debug("Create {} - {}", address, d);
 
-				if(d instanceof AbstractG2Device && (((AbstractG2Device)d).isExtender() || d.getStatus() == Status.NOT_LOOGGED)) {
-					((AbstractG2Device)d).getRangeExtenderManager().getPorts().forEach(p -> {
+			if(d instanceof AbstractG2Device && (((AbstractG2Device)d).isExtender() || d.getStatus() == Status.NOT_LOOGGED)) {
+				((AbstractG2Device)d).getRangeExtenderManager().getPorts().forEach(p -> {
+					try {
+						//							executor.execute(() -> {
 						try {
-//							executor.execute(() -> {
-								try {
-									JsonNode infoEx = isShelly(address, p);
-									if(infoEx != null) {
-										create(d.getAddress(), p, infoEx, d.getHostname() + "-EX" + ":" + p); // fillOnce will later correct hostname
-									}
-								} catch (TimeoutException | RuntimeException e) {
-									LOG.debug("timeout {}:{}", d.getAddress(), p, e);
-								}
-//							});
-						} catch(RuntimeException e) {
-							LOG.error("Unexpected-add-ext: {}; host: {}:{}", address, hostName, p, e);
+							JsonNode infoEx = isShelly(address, p);
+							if(infoEx != null) {
+								create(d.getAddress(), p, infoEx, d.getHostname() + "-EX" + ":" + p, c); // fillOnce will later correct hostname
+							}
+						} catch (TimeoutException | RuntimeException e) {
+							LOG.debug("timeout {}:{}", d.getAddress(), p, e);
 						}
-					});
-				}
+						//							});
+					} catch(RuntimeException e) {
+						LOG.error("Unexpected-add-ext: {}; host: {}:{}", address, hostName, p, e);
+					}
+				});
 			}
 		} catch(Exception e) {
 			LOG.error("Unexpected-add: {}; host: {}", address, hostName, e);

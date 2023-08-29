@@ -48,7 +48,7 @@ import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.g2.FirmwareManagerG2;
 import it.usna.shellyscan.model.device.g2.WebSocketDeviceListener;
 import it.usna.shellyscan.view.DevicesTable;
-import it.usna.shellyscan.view.util.UtilCollecion;
+import it.usna.shellyscan.view.util.UtilmMiscellaneous;
 import it.usna.swing.table.ExTooltipTable;
 import it.usna.swing.table.UsnaTableModel;
 import it.usna.util.UsnaEventListener;
@@ -237,13 +237,13 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 //		boolean globalStable = false;
 //		boolean globalBeta = false;
 		if(fw.upadating()) {
-			return new Object[] {DevicesTable.UPDATING_BULLET, UtilCollecion.getExtendedHostName(d), FirmwareManager.getShortVersion(fw.current()), LABELS.getString("labelUpdating"), null}; // DevicesTable.UPDATING_BULLET
+			return new Object[] {DevicesTable.UPDATING_BULLET, UtilmMiscellaneous.getExtendedHostName(d), FirmwareManager.getShortVersion(fw.current()), LABELS.getString("labelUpdating"), null}; // DevicesTable.UPDATING_BULLET
 		} else {
 			boolean hasUpdate = fw.newStable() != null;
 			boolean hasBeta = fw.newBeta() != null;
 //			globalStable |= hasUpdate;
 //			globalBeta |= hasBeta;
-			return new Object[] {DevicesTable.getStatusIcon(d), UtilCollecion.getExtendedHostName(d), FirmwareManager.getShortVersion(fw.current()), hasUpdate ? Boolean.TRUE : null, hasBeta ? Boolean.FALSE : null};
+			return new Object[] {DevicesTable.getStatusIcon(d), UtilmMiscellaneous.getExtendedHostName(d), FirmwareManager.getShortVersion(fw.current()), hasUpdate ? Boolean.TRUE : null, hasBeta ? Boolean.FALSE : null};
 		}
 	}
 
@@ -335,14 +335,14 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 					if(msg != null && LABELS.containsKey(msg)) {
 						msg = LABELS.getString(msg);
 					}
-					res += UtilCollecion.getFullName(parent.getLocalDevice(i)) + " - " + ((msg == null) ? LABELS.getString("labelUpdating") : LABELS.getString("labelError") + ": " + msg) + "\n";
+					res += UtilmMiscellaneous.getFullName(parent.getLocalDevice(i)) + " - " + ((msg == null) ? LABELS.getString("labelUpdating") : LABELS.getString("labelError") + ": " + msg) + "\n";
 				} else if(beta instanceof Boolean && ((Boolean)beta) == Boolean.TRUE) {
 					fwInfo.uptime = parent.getLocalDevice(i).getUptime();
 					String msg = fwInfo.fwModule.update(false);
 					if(msg != null && LABELS.containsKey(msg)) {
 						msg = LABELS.getString(msg);
 					}
-					res += UtilCollecion.getFullName(parent.getLocalDevice(i)) + " - " + ((msg == null) ? LABELS.getString("labelUpdatingBeta") : LABELS.getString("labelError") + ": " + msg) + "\n";
+					res += UtilmMiscellaneous.getFullName(parent.getLocalDevice(i)) + " - " + ((msg == null) ? LABELS.getString("labelUpdatingBeta") : LABELS.getString("labelError") + ": " + msg) + "\n";
 				}
 			}
 			fill();

@@ -34,7 +34,7 @@ import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.g2.MQTTManagerG2;
 import it.usna.shellyscan.view.DialogDeviceSelection;
 import it.usna.shellyscan.view.util.Msg;
-import it.usna.shellyscan.view.util.UtilCollecion;
+import it.usna.shellyscan.view.util.UtilmMiscellaneous;
 import it.usna.util.UsnaEventListener;
 
 public class PanelMQTTG2 extends AbstractSettingsPanel implements UsnaEventListener<ShellyAbstractDevice, Future<?>> {
@@ -364,7 +364,7 @@ public class PanelMQTTG2 extends AbstractSettingsPanel implements UsnaEventListe
 					mqttModule.add(mqttm);
 				} catch(IOException | RuntimeException e) {
 					mqttModule.add(null);
-					exclude += "<br>" + UtilCollecion.getFullName(d);
+					exclude += "<br>" + UtilmMiscellaneous.getFullName(d);
 					excludeCount++;
 				}
 			}
@@ -409,7 +409,7 @@ public class PanelMQTTG2 extends AbstractSettingsPanel implements UsnaEventListe
 			btnCopy.setEnabled(true);
 			return null;
 		} catch (RuntimeException e) {
-			return UtilCollecion.getFullName(d) + ": " + e.getMessage();
+			return UtilmMiscellaneous.getFullName(d) + ": " + e.getMessage();
 		}
 	}
 	

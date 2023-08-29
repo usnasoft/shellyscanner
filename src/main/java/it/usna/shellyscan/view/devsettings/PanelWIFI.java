@@ -29,7 +29,7 @@ import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.WIFIManager;
 import it.usna.shellyscan.view.DialogDeviceSelection;
 import it.usna.shellyscan.view.util.Msg;
-import it.usna.shellyscan.view.util.UtilCollecion;
+import it.usna.shellyscan.view.util.UtilmMiscellaneous;
 import it.usna.util.UsnaEventListener;
 
 public class PanelWIFI extends AbstractSettingsPanel implements UsnaEventListener<ShellyAbstractDevice, Future<?>> {
@@ -374,7 +374,7 @@ public class PanelWIFI extends AbstractSettingsPanel implements UsnaEventListene
 					fwModule.add(sta);
 				} catch(IOException | RuntimeException e) {
 					fwModule.add(null);
-					exclude += "<br>" + UtilCollecion.getFullName(d);
+					exclude += "<br>" + UtilmMiscellaneous.getFullName(d);
 					excludeCount++;
 //					e.printStackTrace();
 				}
@@ -403,7 +403,7 @@ public class PanelWIFI extends AbstractSettingsPanel implements UsnaEventListene
 		} catch (/*IOException |*/ RuntimeException e) {
 			setEnabledWIFI(false, false);
 			LOG.error("WI-FI showing", e);
-			return UtilCollecion.getFullName(d) + ": " + e.getMessage();
+			return UtilmMiscellaneous.getFullName(d) + ": " + e.getMessage();
 		}
 	}
 	

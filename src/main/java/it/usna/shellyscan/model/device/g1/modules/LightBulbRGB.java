@@ -17,7 +17,7 @@ import it.usna.shellyscan.model.device.modules.DeviceModule;
 public class LightBulbRGB implements DeviceModule {
 	private final AbstractG1Device parent;
 	private final int index;
-	private String name;
+	private String name = "";
 	private boolean isOn;
 	private boolean modeColor;
 	private int red; // 0..255

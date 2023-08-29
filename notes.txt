@@ -5,6 +5,8 @@
 
 //-D"org.slf4j.simpleLogger.log.it.usna=debug" -D"org.slf4j.simpleLogger.showDateTime=true"
 
+//https://eclipse.dev/jetty/documentation/jetty-9/index.html
+
 //color weel https://stackoverflow.com/questions/36252778/how-to-draw-a-rgb-color-wheel-in-java
 
 //0.5.5

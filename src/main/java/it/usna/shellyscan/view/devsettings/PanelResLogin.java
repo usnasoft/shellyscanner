@@ -23,7 +23,7 @@ import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.g2.LoginManagerG2;
 import it.usna.shellyscan.view.devsettings.DialogDeviceSettings.Gen;
 import it.usna.shellyscan.view.util.Msg;
-import it.usna.shellyscan.view.util.UtilCollecion;
+import it.usna.shellyscan.view.util.UtilmMiscellaneous;
 
 public class PanelResLogin extends AbstractSettingsPanel {
 	private static final long serialVersionUID = 1L;
@@ -154,7 +154,7 @@ public class PanelResLogin extends AbstractSettingsPanel {
 					loginModule.add(lm);
 				} catch(IOException | RuntimeException e) {
 					loginModule.add(null);
-					exclude += "<br>" + UtilCollecion.getFullName(d);
+					exclude += "<br>" + UtilmMiscellaneous.getFullName(d);
 					excludeCount++;
 				}
 			}
@@ -175,7 +175,7 @@ public class PanelResLogin extends AbstractSettingsPanel {
 			return null;
 		} catch (RuntimeException e) {
 //			e.printStackTrace();
-			return /*getExtendedName(d)*/UtilCollecion.getFullName(d) + ": " + e.getMessage();
+			return /*getExtendedName(d)*/UtilmMiscellaneous.getFullName(d) + ": " + e.getMessage();
 		}
 	}
 

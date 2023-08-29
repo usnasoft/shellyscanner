@@ -37,6 +37,10 @@ public class ShellyPlus1PM extends AbstractG2Device implements RelayCommander, I
 	
 	@Override
 	protected void init(JsonNode devInfo) throws IOException {
+		this.hostname = devInfo.get("id").asText("");
+		this.mac = devInfo.get("mac").asText();
+		final JsonNode config = getJSON("/rpc/Shelly.GetConfig");
+		
 		Meters m0 = new Meters() {
 			public Type[] getTypes() {
 				return SUPPORTED_MEASURES;
@@ -55,16 +59,12 @@ public class ShellyPlus1PM extends AbstractG2Device implements RelayCommander, I
 				}
 			}
 		};
-		
-		final JsonNode config = getJSON("/rpc/Shelly.GetConfig");
+
 		if(SensorAddOn.ADDON_TYPE.equals(config.get("sys").get("device").path("addon_type").asText())) {
 			addOn = new SensorAddOn(this);
 		}
 		meters = (addOn == null || addOn.getTypes().length == 0) ? new Meters[] {m0} : new Meters[] {m0, addOn};
 		
-		// default init(...)
-		this.hostname = devInfo.get("id").asText("");
-		this.mac = devInfo.get("mac").asText();
 		fillSettings(config);
 		fillStatus(getJSON("/rpc/Shelly.GetStatus"));
 	}

@@ -32,7 +32,7 @@ import javax.swing.table.TableRowSorter;
 import it.usna.shellyscan.controller.UsnaAction;
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
-import it.usna.shellyscan.view.util.UtilCollecion;
+import it.usna.shellyscan.view.util.UtilmMiscellaneous;
 import it.usna.swing.table.ExTooltipTable;
 import it.usna.swing.table.UsnaTableModel;
 import it.usna.util.UsnaEventListener;
@@ -58,7 +58,7 @@ public class DialogDeviceSelection extends JDialog {
 		for(int i = 0; i < model.size(); i++) {
 			ShellyAbstractDevice d = model.get(i);
 //			if(d.getStatus() == ShellyAbstractDevice.Status.ON_LINE) {
-				tModel.addRow(UtilCollecion.getExtendedHostName(d), new InetAddressAndPort(d));
+				tModel.addRow(UtilmMiscellaneous.getExtendedHostName(d), new InetAddressAndPort(d));
 //			}
 		}
 		table.sortByColumn(1, SortOrder.ASCENDING);

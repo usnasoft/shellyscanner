@@ -105,9 +105,9 @@ public class LoginManagerG2 implements LoginManager {
 	   return sb.toString();
 	}
 	
-	public static int testDigestAuthentication(HttpClient httpClient, final InetAddress address, int port, String user, char[] pwd, String testCommand) {
+	public static int testDigestAuthentication(HttpClient httpClient, final InetAddress address, int port, /*String user,*/ char[] pwd, String testCommand) {
 		URI uri = URI.create("http://" + address.getHostAddress() + ":" + port/*+ testCommand*/);
-		DigestAuthentication da = new DigestAuthentication(uri, DigestAuthentication.ANY_REALM, user, new String(pwd));
+		DigestAuthentication da = new DigestAuthentication(uri, DigestAuthentication.ANY_REALM, LOGIN_USER, new String(pwd));
 		AuthenticationStore aStore = httpClient.getAuthenticationStore();
 		try {
 			aStore.addAuthentication(da);

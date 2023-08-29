@@ -86,11 +86,11 @@ public class ShellyPro3 extends AbstractProDevice implements RelayCommander, Int
 	@Override
 	protected void restore(Map<String, JsonNode> backupJsons, ArrayList<String> errors) throws IOException, InterruptedException {
 		JsonNode configuration = backupJsons.get("Shelly.GetConfig.json");
-		errors.add(Input.restore(this,configuration, "0"));
+		errors.add(Input.restore(this, configuration, "0"));
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-		errors.add(Input.restore(this,configuration, "1"));
+		errors.add(Input.restore(this, configuration, "1"));
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-		errors.add(Input.restore(this,configuration, "2"));
+		errors.add(Input.restore(this, configuration, "2"));
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 		errors.add(relay0.restore(configuration));
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
@@ -104,20 +104,5 @@ public class ShellyPro3 extends AbstractProDevice implements RelayCommander, Int
 		return super.toString() + " Relay0: " + relay0 + "; Relay1: " + relay1;
 	}
 }
-
-/*
-{
-  "name" : null,
-  "id" : "shellypro2-xxx",
-  "mac" : "xxx",
-  "model" : "SPSW-202XE16EU",
-  "gen" : 2,
-  "fw_id" : "20221206-143405/0.12.0-gafc2404",
-  "ver" : "0.12.0",
-  "app" : "Pro2",
-  "auth_en" : false,
-  "auth_domain" : null
-}
-*/
 
 //todo Gen2 1.0.0 - triphase and monophase profiles (EDIT: to be included in next beta), add option to reverse CT direction of measurement for active power and energy
