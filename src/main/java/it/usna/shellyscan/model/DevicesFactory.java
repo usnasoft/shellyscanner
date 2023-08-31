@@ -81,11 +81,11 @@ public class DevicesFactory {
 	public static ShellyAbstractDevice create(HttpClient httpClient, WebSocketClient wsClient, final InetAddress address, int port, JsonNode info, String name) {
 		if(info == null) {
 			try {
-				ContentResponse response = httpClient.newRequest("http://" + address.getHostAddress() + ":" + port + "/shelly").send();
+				ContentResponse response = httpClient.GET("http://" + address.getHostAddress() + ":" + port + "/shelly");
 				info = JSON_MAPPER.readTree(response.getContent());
 				Thread.sleep(Devices.MULTI_QUERY_DELAY);
 			} catch(IOException | TimeoutException | InterruptedException | ExecutionException e) { // SocketTimeoutException extends IOException
-				LOG.error("create", e);
+				LOG.error("create {}:{}", address, port, e);
 				ShellyG1Unmanaged d = new ShellyG1Unmanaged(address, port, name, e); // no mac available (info) -> try to desume from hostname
 				d.setHttpClient(httpClient);
 				d.setMacAddress(name.substring(Math.max(name.length() - 12, 0), name.length()).toUpperCase());
@@ -98,6 +98,29 @@ public class DevicesFactory {
 			return createG1(httpClient, address, port, info, name);
 		}
 	}
+	
+//	public static ShellyAbstractDevice create2(HttpClient httpClient, WebSocketClient wsClient, final InetAddress address, int port, JsonNode info, String name) {
+//		if(info == null) {
+//			try {
+//				httpClient.newRequest("http://" + address.getHostAddress() + ":" + port + "/shelly").send(response -> {
+//					
+//				});
+//				info = JSON_MAPPER.readTree(response.getContent());
+//				Thread.sleep(Devices.MULTI_QUERY_DELAY);
+//			} catch(IOException | TimeoutException | InterruptedException | ExecutionException e) { // SocketTimeoutException extends IOException
+//				LOG.error("create", e);
+//				ShellyG1Unmanaged d = new ShellyG1Unmanaged(address, port, name, e); // no mac available (info) -> try to desume from hostname
+//				d.setHttpClient(httpClient);
+//				d.setMacAddress(name.substring(Math.max(name.length() - 12, 0), name.length()).toUpperCase());
+//				return d;
+//			}
+//		}
+//		if("2".equals(info.path("gen").asText())) {
+//			return createG2(httpClient, wsClient, address, port, info, name);
+//		} else {
+//			return createG1(httpClient, address, port, info, name);
+//		}
+//	}
 
 	private static ShellyAbstractDevice createG1(HttpClient httpClient, final InetAddress address, int port, JsonNode info, String name) {
 		AbstractG1Device d;

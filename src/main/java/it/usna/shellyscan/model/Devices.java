@@ -75,9 +75,12 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 	private WebSocketClient wsClient = new WebSocketClient(httpClient);
 	
 	public Devices() throws Exception {
+		httpClient.setDestinationIdleTimeout(300_000);
+		httpClient.setMaxConnectionsPerDestination(8);
+//		httpClient.setConnectBlocking(false);
 		httpClient.start();
+		
 		wsClient.start();
-//		httpClient.setConnectTimeout(10000);
 	}
 
 	public void scannerInit(boolean fullScan, int refreshInterval, int refreshTics) throws IOException {
@@ -150,7 +153,7 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 			final InetAddress addr = InetAddress.getByAddress(baseScanIP);
 			executor.schedule(() -> {
 				try {
-					if(addr.isReachable(4500)) {
+					if(addr.isReachable(5_000)) {
 //						Thread.sleep(MULTI_QUERY_DELAY);
 						JsonNode info = isShelly(addr, 80);
 						if(info != null) {
@@ -323,7 +326,7 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 				synchronized(devices) {
 					int ind = devices.indexOf(d);
 					if(ind >= 0) {
-						if(d instanceof ShellyUnmanagedDevice == false || devices.get(ind) instanceof ShellyUnmanagedDevice) { // Do not replace device if was recocnized and now is not
+						if(d instanceof ShellyUnmanagedDevice == false || devices.get(ind) instanceof ShellyUnmanagedDevice || devices.get(ind) instanceof GhostDevice) { // Do not replace device if was recocnized and now is not
 							if(refreshProcess.get(ind) != null) {
 								refreshProcess.get(ind).cancel(true);
 							}
@@ -507,7 +510,8 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 //			System.out.println(info.getPort());
 			final String name = info.getName();
 			if(name.startsWith("shelly") || name.startsWith("Shelly")) {
-				executor.execute(() -> create(info.getInetAddresses()[0], 80, null, name));
+				//executor.execute(() -> create(info.getInetAddresses()[0], 80, null, name));
+				create(info.getInetAddresses()[0], 80, null, name);
 			}
 		}
 	}

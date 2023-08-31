@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.InetAddress;
+import java.net.SocketTimeoutException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -250,7 +251,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 				status = Status.ERROR;
 			}
 			return jsonMapper.readTree(response.getContent());
-		} catch(InterruptedException | ExecutionException | TimeoutException e) {
+		} catch(InterruptedException | ExecutionException | TimeoutException | SocketTimeoutException e) {
 			status = Status.OFF_LINE;
 			throw new DeviceOfflineException(e);
 		}

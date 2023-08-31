@@ -85,8 +85,9 @@ import it.usna.util.UsnaEventListener;
 
 public class MainView extends MainWindow implements UsnaEventListener<Devices.EventType, Integer> {
 	private static final long serialVersionUID = 1L;
-	public final static int SHORTCUT_KEY = Toolkit.getDefaultToolkit().getMenuShortcutKeyMask(); // from 1.10 getMenuShortcutKeyMaskEx
+	public final static int SHORTCUT_KEY = Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx();
 	private final static Logger LOG = LoggerFactory.getLogger(MainWindow.class);
+	private ListSelectionListener tableSelectionListener;
 
 	private AppProperties appProp;
 	private JLabel statusLabel = new JLabel();
@@ -650,7 +651,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		rescanAction.setEnabled(false);
 		refreshAction.setEnabled(false);
 		statusLabel.setText(LABELS.getString("scanning_start"));
-		manageActions();
+		manageRowsSelection();
 	}
 	
 	private void setColFilter(JComboBox<?> combo) {
@@ -663,8 +664,8 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		devicesTable.setRowFilter(textFieldFilter.getText(), cols);
 	}
 	
-	private void manageActions() {
-		ListSelectionListener l = e -> {
+	private void manageRowsSelection() {
+		tableSelectionListener = e -> {
 			if(e.getValueIsAdjusting() == false) {
 				boolean selection = devicesTable.getSelectedRowCount() > 0;
 				boolean singleSelection = devicesTable.getSelectedRowCount() == 1;
@@ -686,10 +687,12 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 				devicesSettingsAction.setEnabled(selection);
 				chartAction.setEnabled(selection);
 				scriptManagerAction.setEnabled(singleSelection && d instanceof AbstractG2Device);
+				
+				displayStatus();
 			}
 		};
-		devicesTable.getSelectionModel().addListSelectionListener(l);
-		l.valueChanged(new ListSelectionEvent(devicesTable.getSelectionModel(), -1, -1, false));
+		devicesTable.getSelectionModel().addListSelectionListener(tableSelectionListener);
+		tableSelectionListener.valueChanged(new ListSelectionEvent(devicesTable, -1, -1, false));
 	}
 	
 	private void detailedView(boolean detailed) {
@@ -764,6 +767,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 				} else if(mesgType == Devices.EventType.SUBSTITUTE) {
 					devicesTable.updateRow(model.get(msgBody), msgBody);
 					devicesTable.columnsWidthAdapt();
+					tableSelectionListener.valueChanged(new ListSelectionEvent(devicesTable, -1, -1, false));
 				} else if(mesgType == Devices.EventType.READY) {
 					displayStatus();
 					rescanAction.setEnabled(true);
@@ -783,9 +787,9 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 	
 	private synchronized void displayStatus() {
 		if(textFieldFilter.getText().length() > 0) {
-			statusLabel.setText(String.format(LABELS.getString("filter_status"), model.size(), devicesTable.getRowCount()));
+			statusLabel.setText(String.format(LABELS.getString("filter_status"), model.size(), devicesTable.getRowCount(), devicesTable.getSelectedRowCount()));
 		} else {
-			statusLabel.setText(String.format(LABELS.getString("scanning_end"), model.size()));
+			statusLabel.setText(String.format(LABELS.getString("scanning_end"), model.size(), devicesTable.getSelectedRowCount()));
 		}
 	}
 } //557 - 614 - 620 - 669 - 705 - 727 - 699 - 760 - 782 - 811

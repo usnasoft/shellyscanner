@@ -311,7 +311,7 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 				try {
 					devicesFWData.get(index).wsSession = wsEventListener(index, (AbstractG2Device)d);
 				} catch (IOException | InterruptedException | ExecutionException e) {
-					LOG.debug("PanelFWUpdate ws", e);
+					LOG.debug("PanelFWUpdate ws: {}", d, e);
 				}
 			}
 			return null;

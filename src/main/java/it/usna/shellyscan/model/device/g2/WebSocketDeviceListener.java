@@ -39,7 +39,7 @@ public class WebSocketDeviceListener extends WebSocketAdapter {
 
 	@Override
 	public void onWebSocketError(Throwable cause) {
-		LOG.warn("sw-error", cause);
+		LOG.debug("sw-error", cause);
 	}
 
 	@Override

@@ -13,7 +13,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
@@ -194,16 +193,16 @@ public class DialogDeviceLogsG2 extends JDialog {
 			addWindowListener(new WindowAdapter() {
 				@Override
 				public void windowClosing(WindowEvent e) {
-					dispose();
-				}
-
-				@Override
-				public void windowClosed(WindowEvent e) {
 					try {
 						wsSession.get().disconnect();
 					} catch (Exception e1) {
 						LOG.error("webSocketClient.disconnect", e1);
 					}
+					dispose();
+				}
+
+				@Override
+				public void windowClosed(WindowEvent e) {
 					activateLog(device, logWasActive);
 //					model.refresh(index, false);
 				}
