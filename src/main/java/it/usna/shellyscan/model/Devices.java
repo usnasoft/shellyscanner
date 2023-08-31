@@ -75,7 +75,7 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 	private WebSocketClient wsClient = new WebSocketClient(httpClient);
 	
 	public Devices() throws Exception {
-		httpClient.setDestinationIdleTimeout(300_000);
+		httpClient.setDestinationIdleTimeout(300_000); // 5 min
 		httpClient.setMaxConnectionsPerDestination(8);
 //		httpClient.setConnectBlocking(false);
 		httpClient.start();
@@ -318,6 +318,7 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 		}
 	}
 
+	// info is not null for: extender connected devices or scan by IP
 	public void create(InetAddress address, int port, JsonNode info, String hostName) {
 		LOG.trace("Creating {} - {}", address, hostName);
 		try {
@@ -343,7 +344,7 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 				}
 				LOG.debug("Create {} - {}", address, d);
 
-				if(d instanceof AbstractG2Device && (((AbstractG2Device)d).isExtender() || d.getStatus() == Status.NOT_LOOGGED)) {
+				if(/*port == 80 &&*/ d instanceof AbstractG2Device && (((AbstractG2Device)d).isExtender() || d.getStatus() == Status.NOT_LOOGGED)) {
 					((AbstractG2Device)d).getRangeExtenderManager().getPorts().forEach(p -> {
 						try {
 							executor.execute(() -> {

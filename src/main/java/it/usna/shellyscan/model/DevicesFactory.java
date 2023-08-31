@@ -8,6 +8,8 @@ import java.util.concurrent.TimeoutException;
 
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.api.ContentResponse;
+import org.eclipse.jetty.client.api.Result;
+import org.eclipse.jetty.client.util.BufferingResponseListener;
 import org.eclipse.jetty.http.HttpStatus;
 import org.eclipse.jetty.websocket.client.WebSocketClient;
 import org.slf4j.Logger;
@@ -99,35 +101,37 @@ public class DevicesFactory {
 		}
 	}
 	
-//	public static ShellyAbstractDevice create2(HttpClient httpClient, WebSocketClient wsClient, final InetAddress address, int port, JsonNode info, String name) {
-//		if(info == null) {
-//			try {
-//				httpClient.newRequest("http://" + address.getHostAddress() + ":" + port + "/shelly").send(response -> {
-//					
-//				});
-//				info = JSON_MAPPER.readTree(response.getContent());
-//				Thread.sleep(Devices.MULTI_QUERY_DELAY);
-//			} catch(IOException | TimeoutException | InterruptedException | ExecutionException e) { // SocketTimeoutException extends IOException
-//				LOG.error("create", e);
-//				ShellyG1Unmanaged d = new ShellyG1Unmanaged(address, port, name, e); // no mac available (info) -> try to desume from hostname
-//				d.setHttpClient(httpClient);
-//				d.setMacAddress(name.substring(Math.max(name.length() - 12, 0), name.length()).toUpperCase());
-//				return d;
-//			}
-//		}
-//		if("2".equals(info.path("gen").asText())) {
-//			return createG2(httpClient, wsClient, address, port, info, name);
-//		} else {
-//			return createG1(httpClient, address, port, info, name);
-//		}
-//	}
+	// todo
+	public static void create(HttpClient httpClient, WebSocketClient wsClient, final InetAddress address, int port, String name) {
+		httpClient.newRequest("http://" + address.getHostAddress() + ":" + port + "/shelly").send(new BufferingResponseListener() {
+			@Override
+			public void onComplete(Result result) {
+				try {
+					JsonNode info = JSON_MAPPER.readTree(getContent());
+					Thread.sleep(Devices.MULTI_QUERY_DELAY);
+					if("2".equals(info.path("gen").asText())) {
+						/*return*/ LOG.debug ( createG2(httpClient, wsClient, address, port, info, name).toString() );
+					} else {
+						/*return*/ LOG.debug ( DevicesFactory.createG1(httpClient, address, port, info, name).toString() );
+					}
+					LOG.debug("creat " + address);
+				} catch(IOException | InterruptedException e) { // SocketTimeoutException extends IOException
+					LOG.error("create {}:{}", address, port, e);
+					ShellyG1Unmanaged d = new ShellyG1Unmanaged(address, port, name, e); // no mac available (info) -> try to desume from hostname
+					d.setHttpClient(httpClient);
+					d.setMacAddress(name.substring(Math.max(name.length() - 12, 0), name.length()).toUpperCase());
+					LOG.debug ( d.toString() );
+				}
+			};
+		});
+	}
 
 	private static ShellyAbstractDevice createG1(HttpClient httpClient, final InetAddress address, int port, JsonNode info, String name) {
 		AbstractG1Device d;
 		try {
 			final boolean auth = info.get("auth").asBoolean();
 			if(auth) {
-				synchronized (DevicesFactory.class) { // white for this in order to authenticate next protected devices
+				synchronized (DevicesFactory.class) { // wait for this in order to authenticate next protected devices
 					if(lastUser == null || LoginManagerG1.testBasicAuthentication(httpClient, address, port, lastUser, lastP, "/settings") != HttpStatus.OK_200) {
 						DialogAuthentication credentials = new DialogAuthentication(
 								Main.LABELS.getString("dlgAuthTitle"),
@@ -148,64 +152,37 @@ public class DevicesFactory {
 				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			}
 			
-			switch(info.get("type").asText()) {
-			case Shelly1.ID: d = new Shelly1(address, port, name);
-			break;
-			case Shelly1L.ID: d = new Shelly1L(address, port, name);
-			break;
-			case Shelly1PM.ID: d = new Shelly1PM(address, port, name);
-			break;
-			case Shelly2.ID: d = new Shelly2(address, port, name);
-			break;
-			case Shelly25.ID: d = new Shelly25(address, port, name);
-			break;
-			case ShellyDimmer.ID: d = new ShellyDimmer(address, port, name);
-			break;
-			case ShellyDimmer2.ID: d = new ShellyDimmer2(address, port, name);
-			break;
-			case ShellyDUORGB.ID: d = new ShellyDUORGB(address, port, name);
-			break;
-			case ShellyDUO.ID: d = new ShellyDUO(address, port, name);
-			break;
-			case ShellyBulb.ID: d = new ShellyBulb(address, port, name);
-			break;
-			case ShellyRGBW2.ID: d = new ShellyRGBW2(address, port, name);
-			break;
-			case ShellyEM.ID: d = new ShellyEM(address, port, name);
-			break;
-			case Shelly3EM.ID: d = new Shelly3EM(address, port, name);
-			break;
-			case ShellyI3.ID: d = new ShellyI3(address, port, name);
-			break;
-			case Button1.ID: d = new Button1(address, port, name);
-			break;
-			case ShellyPlugS.ID: d = new ShellyPlugS(address, port, name);
-			break;
-			case ShellyPlug.ID: d = new ShellyPlug(address, port, name);
-			break;
-			case ShellyPlugE.ID: d = new ShellyPlugE(address, port, name);
-			break;
-			case ShellyPlugUS.ID: d = new ShellyPlugUS(address, port, name);
-			break;
-			case ShellyUNI.ID: d = new ShellyUNI(address, port, name);
-			break;
-			case ShellyDW.ID: d = new ShellyDW(address, port, name);
-			break;
-			case ShellyDW2.ID: d = new ShellyDW2(address, port, name);
-			break;
-			case ShellyFlood.ID: d = new ShellyFlood(address, port, name);
-			break;
-			case ShellyHT.ID: d = new ShellyHT(address, port, name);
-			break;
-			case ShellyMotion.ID: d = new ShellyMotion(address, port, name);
-			break;
-			case ShellyMotion2.ID: d = new ShellyMotion2(address, port, name);
-			break;
-			case ShellyTRV.ID: d = new ShellyTRV(address, port, name);
-			break;
-			default: d = new ShellyG1Unmanaged(address, port, name);
-			break;
-			}
+			d = switch(info.get("type").asText()) {
+				case Shelly1.ID -> new Shelly1(address, port, name);
+				case Shelly1L.ID -> new Shelly1L(address, port, name);
+				case Shelly1PM.ID -> new Shelly1PM(address, port, name);
+				case Shelly2.ID -> new Shelly2(address, port, name);
+				case Shelly25.ID -> new Shelly25(address, port, name);
+				case ShellyDimmer.ID -> new ShellyDimmer(address, port, name);
+				case ShellyDimmer2.ID -> new ShellyDimmer2(address, port, name);
+				case ShellyDUORGB.ID -> new ShellyDUORGB(address, port, name);
+				case ShellyDUO.ID -> new ShellyDUO(address, port, name);
+				case ShellyBulb.ID -> new ShellyBulb(address, port, name);
+				case ShellyRGBW2.ID -> new ShellyRGBW2(address, port, name);
+				case ShellyEM.ID -> new ShellyEM(address, port, name);
+				case Shelly3EM.ID -> new Shelly3EM(address, port, name);
+				case ShellyI3.ID -> new ShellyI3(address, port, name);
+				case Button1.ID -> new Button1(address, port, name);
+				case ShellyPlugS.ID -> new ShellyPlugS(address, port, name);
+				case ShellyPlug.ID -> new ShellyPlug(address, port, name);
+				case ShellyPlugE.ID -> new ShellyPlugE(address, port, name);
+				case ShellyPlugUS.ID -> new ShellyPlugUS(address, port, name);
+				case ShellyUNI.ID -> new ShellyUNI(address, port, name);
+				// Battery
+				case ShellyDW.ID -> new ShellyDW(address, port, name);
+				case ShellyDW2.ID -> new ShellyDW2(address, port, name);
+				case ShellyFlood.ID -> new ShellyFlood(address, port, name);
+				case ShellyHT.ID -> new ShellyHT(address, port, name);
+				case ShellyMotion.ID -> new ShellyMotion(address, port, name);
+				case ShellyMotion2.ID -> new ShellyMotion2(address, port, name);
+				case ShellyTRV.ID -> new ShellyTRV(address, port, name);
+				default -> new ShellyG1Unmanaged(address, port, name);
+			};
 		} catch(Exception e) { // really unexpected
 			LOG.error("create", e);
 			d = new ShellyG1Unmanaged(address, port, name, e);
@@ -227,7 +204,7 @@ public class DevicesFactory {
 		try {
 			final boolean auth = info.get("auth_en").asBoolean();
 			if(auth) {
-				synchronized (DevicesFactory.class) { // white for this in order to authenticate all subsequent
+				synchronized (DevicesFactory.class) { // wait for this in order to authenticate all subsequent
 					if(lastUser == null || LoginManagerG2.testDigestAuthentication(httpClient, address, port, /*LoginManagerG2.LOGIN_USER,*/ lastP, "/rpc/Shelly.GetStatus") != HttpStatus.OK_200) {
 						DialogAuthentication credentials = new DialogAuthentication(
 								Main.LABELS.getString("dlgAuthTitle"),
@@ -248,46 +225,28 @@ public class DevicesFactory {
 				}
 				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			}
-			switch(info.get("app").asText()) {
-			// Plus
-			case ShellyPlus1.ID: d = new ShellyPlus1(address, port, name);
-			break;
-			case ShellyPlus1PM.ID: d = new ShellyPlus1PM(address, port, name);
-			break;
-			case ShellyPlus2PM.ID: d = new ShellyPlus2PM(address, port, name);
-			break;
-			case ShellyPlusi4.ID: d = new ShellyPlusi4(address, port, name);
-			break;
-			case ShellyPlusPlugS.ID: d = new ShellyPlusPlugS(address, port, name);
-			break;
-			case ShellyPlusPlugUK.ID: d = new ShellyPlusPlugUK(address, port, name);
-			break;
-			case ShellyPlusPlugIT.ID: d = new ShellyPlusPlugIT(address, port, name);
-			break;
-			case ShellyPlusPlugUS.ID: d = new ShellyPlusPlugUS(address, port, name);
-			break;
-			case ShellyPlusWallDimmer.ID: d = new ShellyPlusWallDimmer(address, port, name);
-			break;
-			case ShellyPlusHT.ID: d = new ShellyPlusHT(address, port, name);
-			break;
-			case ShellyPlusSmoke.ID: d = new ShellyPlusSmoke(address, port, name);
-			break;
-			// PRO
-			case ShellyPro1PM.ID: d = new ShellyPro1PM(address, port, name);
-			break;
-			case ShellyPro1.ID: d = new ShellyPro1(address, port, name);
-			break;
-			case ShellyPro2PM.ID: d = new ShellyPro2PM(address, port, name);
-			break;
-			case ShellyPro2.ID: d = new ShellyPro2(address, port, name);
-			break;
-			case ShellyPro3.ID: d = new ShellyPro3(address, port, name);
-			break;
-			case ShellyPro4PM.ID: d = new ShellyPro4PM(address, port, name);
-			break;
-			default: d = new ShellyG2Unmanaged(address, port, name);
-			break;
-			}
+			d = switch(info.get("app").asText()) {
+				// Plus
+				case ShellyPlus1.ID -> new ShellyPlus1(address, port, name);
+				case ShellyPlus1PM.ID -> new ShellyPlus1PM(address, port, name);
+				case ShellyPlus2PM.ID -> new ShellyPlus2PM(address, port, name);
+				case ShellyPlusi4.ID -> new ShellyPlusi4(address, port, name);
+				case ShellyPlusPlugS.ID -> new ShellyPlusPlugS(address, port, name);
+				case ShellyPlusPlugUK.ID -> new ShellyPlusPlugUK(address, port, name);
+				case ShellyPlusPlugIT.ID -> new ShellyPlusPlugIT(address, port, name);
+				case ShellyPlusPlugUS.ID -> new ShellyPlusPlugUS(address, port, name);
+				case ShellyPlusWallDimmer.ID -> new ShellyPlusWallDimmer(address, port, name);
+				case ShellyPlusHT.ID -> new ShellyPlusHT(address, port, name);
+				case ShellyPlusSmoke.ID -> new ShellyPlusSmoke(address, port, name);
+				// PRO
+				case ShellyPro1PM.ID -> new ShellyPro1PM(address, port, name);
+				case ShellyPro1.ID -> new ShellyPro1(address, port, name);
+				case ShellyPro2PM.ID -> new ShellyPro2PM(address, port, name);
+				case ShellyPro2.ID -> new ShellyPro2(address, port, name);
+				case ShellyPro3.ID -> new ShellyPro3(address, port, name);
+				case ShellyPro4PM.ID -> new ShellyPro4PM(address, port, name);
+				default -> new ShellyG2Unmanaged(address, port, name);
+			};
 		} catch(Exception e) { // really unexpected
 			LOG.error("create", e);
 			d = new ShellyG2Unmanaged(address, port, name, e);

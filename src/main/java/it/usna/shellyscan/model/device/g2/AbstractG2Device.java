@@ -236,11 +236,8 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 	
 	private JsonNode executeRPC(final String method, String payload) throws IOException, StreamReadException { // StreamReadException extends ... IOException
 		try {
-//			ContentResponse response = httpClient.POST(uriPrefix + "/rpc")
-//					.content(new StringRequestContent("{\"id\":1, \"method\":\"" + method + "\", \"params\":" + payload + "}", StandardCharsets.UTF_8))
-//					.send();
-			ContentResponse response = httpClient.POST("http://domain.com/upload")
-					.body(new StringRequestContent("text/plain", "{\"id\":1, \"method\":\"" + method + "\", \"params\":" + payload + "}", StandardCharsets.UTF_8))
+			ContentResponse response = httpClient.POST(uriPrefix + "/rpc")
+					.body(new StringRequestContent("application/json", "{\"id\":1, \"method\":\"" + method + "\", \"params\":" + payload + "}", StandardCharsets.UTF_8))
 					.send();
 			int statusCode = response.getStatus(); //response.getContentAsString()
 			if(statusCode == HttpStatus.OK_200) {
