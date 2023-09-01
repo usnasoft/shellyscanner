@@ -24,6 +24,8 @@ import javax.jmdns.ServiceListener;
 
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.api.ContentResponse;
+import org.eclipse.jetty.client.api.Result;
+import org.eclipse.jetty.client.util.BufferingResponseListener;
 import org.eclipse.jetty.http.HttpStatus;
 import org.eclipse.jetty.websocket.client.WebSocketClient;
 import org.slf4j.Logger;
@@ -245,7 +247,7 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 				refreshProcess.get(ind).cancel(true);
 				d.setStatus(Status.READING);
 				executor.schedule(() -> {
-					if(d instanceof ShellyUnmanagedDevice && ((ShellyUnmanagedDevice)d).getException() != null) { // try to create proper device
+					if(d instanceof ShellyUnmanagedDevice unmanaged && unmanaged.getException() != null) { // try to create proper device
 						create(d.getAddress(), d.getPort(), null, d.getHostname());
 					} else {
 						try {
@@ -317,41 +319,68 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 			}
 		}
 	}
+	
+	public void create(InetAddress address, int port, String hostName) {
+		LOG.trace("getting info (/shelly) {}:{} - {}", address, port, hostName);
+		try {
+			httpClient.newRequest("http://" + address.getHostAddress() + ":" + port + "/shelly").send(new BufferingResponseListener() {
+				@Override
+				public void onComplete(Result result) {
+					try {
+						if(result.isSucceeded()) {
+//							JsonNode info = JSON_MAPPER.readTree(getContent());
+							create(address, port, JSON_MAPPER.readTree(getContent()), hostName);
+						} else {
+							newDevice(DevicesFactory.createWithError(httpClient, address, port, hostName, result.getResponseFailure()));
+						}
+					} catch(IOException e) { // SocketTimeoutException extends IOException
+						newDevice(DevicesFactory.createWithError(httpClient, address, port, hostName, e));
+					}
+				}
+			});
+		} catch(Exception e) {
+			LOG.error("Unexpected-add: {}; host: {}", address, hostName, e);
+		}
+	}
 
 	// info is not null for: extender connected devices or scan by IP
-	public void create(InetAddress address, int port, JsonNode info, String hostName) {
-		LOG.trace("Creating {} - {}", address, hostName);
+	/**
+	 * Create a device JsonNode info (/shelly) given
+	 */
+	/*private*/public void create(InetAddress address, int port, JsonNode info, String hostName) {
+		LOG.trace("Creating {}:{} - {}", address, port, hostName);
 		try {
 			ShellyAbstractDevice d = DevicesFactory.create(httpClient, wsClient, address, port, info, hostName);
 			if(/*d != null &&*/ Thread.interrupted() == false) {
-				synchronized(devices) {
-					int ind = devices.indexOf(d);
-					if(ind >= 0) {
-						if(d instanceof ShellyUnmanagedDevice == false || devices.get(ind) instanceof ShellyUnmanagedDevice || devices.get(ind) instanceof GhostDevice) { // Do not replace device if was recocnized and now is not
-							if(refreshProcess.get(ind) != null) {
-								refreshProcess.get(ind).cancel(true);
-							}
-							devices.set(ind, d);
-							fireEvent(EventType.SUBSTITUTE, ind);
-							refreshProcess.set(ind, scheduleRefresh(d, ind, refreshInterval, refreshTics));
-						}
-					} else {
-						final int idx = devices.size();
-						devices.add(d);
-						fireEvent(EventType.ADD, idx);
-						refreshProcess.add(scheduleRefresh(d, idx, refreshInterval, refreshTics));
-					}
-				}
-				LOG.debug("Create {} - {}", address, d);
+//				synchronized(devices) {
+//					int ind = devices.indexOf(d);
+//					if(ind >= 0) {
+//						if(d instanceof ShellyUnmanagedDevice == false || devices.get(ind) instanceof ShellyUnmanagedDevice || devices.get(ind) instanceof GhostDevice) { // Do not replace device if was recocnized and now is not
+//							if(refreshProcess.get(ind) != null) {
+//								refreshProcess.get(ind).cancel(true);
+//							}
+//							devices.set(ind, d);
+//							fireEvent(EventType.SUBSTITUTE, ind);
+//							refreshProcess.set(ind, scheduleRefresh(d, ind, refreshInterval, refreshTics));
+//						}
+//					} else {
+//						final int idx = devices.size();
+//						devices.add(d);
+//						fireEvent(EventType.ADD, idx);
+//						refreshProcess.add(scheduleRefresh(d, idx, refreshInterval, refreshTics));
+//					}
+//				}
+				newDevice(d);
+				LOG.debug("Create {}:{} - {}", address, port, d);
 
-				if(/*port == 80 &&*/ d instanceof AbstractG2Device && (((AbstractG2Device)d).isExtender() || d.getStatus() == Status.NOT_LOOGGED)) {
-					((AbstractG2Device)d).getRangeExtenderManager().getPorts().forEach(p -> {
+				if(/*port == 80 &&*/ d instanceof AbstractG2Device gen2 && (gen2.isExtender() || gen2.getStatus() == Status.NOT_LOOGGED)) {
+					gen2.getRangeExtenderManager().getPorts().forEach(p -> {
 						try {
 							executor.execute(() -> {
 								try {
 									JsonNode infoEx = isShelly(address, p);
 									if(infoEx != null) {
-										create(d.getAddress(), p, infoEx, d.getHostname() + "-EX" + ":" + p); // fillOnce will later correct hostname
+										create(d.getAddress(), p, infoEx, d.getHostname() + "-EX" + ":" + p); // device will later correct hostname
 									}
 								} catch (TimeoutException | RuntimeException e) {
 									LOG.debug("timeout {}:{}", d.getAddress(), p, e);
@@ -364,7 +393,29 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 				}
 			}
 		} catch(Exception e) {
-			LOG.error("Unexpected-add: {}; host: {}", address, hostName, e);
+			LOG.error("Unexpected-add: {}:{}; host: {}", address, port, hostName, e);
+		}
+	}
+	
+	// Add or update (existace tested by mac address) a device
+	private void newDevice(ShellyAbstractDevice d) {
+		synchronized(devices) {
+			int ind = devices.indexOf(d);
+			if(ind >= 0) {
+				if(d instanceof ShellyUnmanagedDevice == false || devices.get(ind) instanceof ShellyUnmanagedDevice || devices.get(ind) instanceof GhostDevice) { // Do not replace device if was recocnized and now is not
+					if(refreshProcess.get(ind) != null) {
+						refreshProcess.get(ind).cancel(true);
+					}
+					devices.set(ind, d);
+					fireEvent(EventType.SUBSTITUTE, ind);
+					refreshProcess.set(ind, scheduleRefresh(d, ind, refreshInterval, refreshTics));
+				}
+			} else {
+				final int idx = devices.size();
+				devices.add(d);
+				fireEvent(EventType.ADD, idx);
+				refreshProcess.add(scheduleRefresh(d, idx, refreshInterval, refreshTics));
+			}
 		}
 	}
 
@@ -512,7 +563,8 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 			final String name = info.getName();
 			if(name.startsWith("shelly") || name.startsWith("Shelly")) {
 				//executor.execute(() -> create(info.getInetAddresses()[0], 80, null, name));
-				create(info.getInetAddresses()[0], 80, null, name);
+//				create(info.getInetAddresses()[0], 80, null, name);
+				create(info.getInetAddresses()[0], 80, name);
 			}
 		}
 	}

@@ -12,13 +12,13 @@ import it.usna.shellyscan.model.device.ShellyUnmanagedDevice;
 
 public class ShellyG2Unmanaged extends AbstractG2Device implements ShellyUnmanagedDevice {
 	private String type;
-	private Exception ex;
+	private Throwable ex;
 
 	public ShellyG2Unmanaged(InetAddress address, int port, String hostname) {
 		super(address, port, hostname);
 	}
 	
-	public ShellyG2Unmanaged(InetAddress address, int port, String hostname, Exception e) {
+	public ShellyG2Unmanaged(InetAddress address, int port, String hostname, Throwable e) {
 		super(address, port, hostname);
 		this.ex = e;
 		this.hostname = hostname;
@@ -65,7 +65,7 @@ public class ShellyG2Unmanaged extends AbstractG2Device implements ShellyUnmanag
 	 * @return null if device type is unknown or exception if an error ha occurred on construction 
 	 */
 	@Override
-	public Exception getException() {
+	public Throwable getException() {
 		return ex;
 	}
 	

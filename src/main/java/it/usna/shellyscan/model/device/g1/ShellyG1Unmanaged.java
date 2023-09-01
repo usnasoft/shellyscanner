@@ -15,7 +15,7 @@ import it.usna.shellyscan.model.device.ShellyUnmanagedDevice;
 
 public class ShellyG1Unmanaged extends AbstractG1Device implements ShellyUnmanagedDevice {
 	private String type;
-	private Exception ex;
+	private Throwable ex;
 	
 	public ShellyG1Unmanaged(InetAddress address, int port, String hostname) {
 		super(address, port, hostname);
@@ -25,7 +25,7 @@ public class ShellyG1Unmanaged extends AbstractG1Device implements ShellyUnmanag
 //		this(address, port, hostname, null, e);
 //	}
 	
-	public ShellyG1Unmanaged(InetAddress address, int port, String hostname/*, HttpClient httpClient*/, Exception e) {
+	public ShellyG1Unmanaged(InetAddress address, int port, String hostname/*, HttpClient httpClient*/, Throwable e) {
 		super(address, port, hostname);
 //		this.httpClient = httpClient;
 		this.ex = e;
@@ -73,7 +73,7 @@ public class ShellyG1Unmanaged extends AbstractG1Device implements ShellyUnmanag
 	}
 	
 	@Override
-	public Exception getException() {
+	public Throwable getException() {
 		return ex;
 	}
 	
