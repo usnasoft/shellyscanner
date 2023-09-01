@@ -152,7 +152,7 @@ public class NonInteractiveDevices implements Closeable {
 			c.accept(d);
 			LOG.debug("Create {} - {}", address, d);
 
-			if(d instanceof AbstractG2Device && (((AbstractG2Device)d).isExtender() || d.getStatus() == Status.NOT_LOOGGED)) {
+			if(d instanceof AbstractG2Device gen2 && (gen2.isExtender() || d.getStatus() == Status.NOT_LOOGGED)) {
 				((AbstractG2Device)d).getRangeExtenderManager().getPorts().forEach(p -> {
 					try {
 						//							executor.execute(() -> {

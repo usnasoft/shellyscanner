@@ -125,19 +125,19 @@ public class DevicesTable extends ExTooltipTable {
 			final String s1, s2;
 			if(o1 == null) {
 				s1 = "";
-			} else if (o1 instanceof DeviceModule[]) {
-				s1 = ((DeviceModule[])o1)[0].getLabel();
-			} else if (o1 instanceof DeviceModule) {
-				s1 = ((DeviceModule)o1).getLabel();
+			} else if (o1 instanceof DeviceModule[] dmArray) {
+				s1 = dmArray[0].getLabel();
+			} else if (o1 instanceof DeviceModule dm) {
+				s1 = dm.getLabel();
 			} else {
 				s1 = o1.toString();
 			}
 			if(o2 == null) {
 				s2 = "";
-			} else if (o2 instanceof DeviceModule[]) {
-				s2 = ((DeviceModule[])o2)[0].getLabel();
-			} else if (o1 instanceof DeviceModule) {
-				s2 = ((DeviceModule)o2).getLabel();
+			} else if (o2 instanceof DeviceModule[] dmArray) {
+				s2 = dmArray[0].getLabel();
+			} else if (o1 instanceof DeviceModule dm) {
+				s2 = dm.getLabel();
 			} else {
 				s2 = o2.toString();
 			}
@@ -234,14 +234,14 @@ public class DevicesTable extends ExTooltipTable {
 				int mm = (int)(s / 60);
 				s = s % 60;
 				return String.format(LABELS.getString("col_uptime_tooltip"), gg, hh, mm, s);
-			} else if (value instanceof ImageIcon) {
+			} else if (value instanceof ImageIcon icon) {
 				adaptTooltipLocation = false;
-				return ((ImageIcon)value).getDescription();
-			} else if(value instanceof DeviceModule[] && isColumnVisible(COL_SOURCE_IDX) == false && ((DeviceModule[])value).length > 0 && ((DeviceModule[])value)[0].getLastSource() != null) {
+				return icon.getDescription();
+			} else if(value instanceof DeviceModule[] dmArray && isColumnVisible(COL_SOURCE_IDX) == false && dmArray.length > 0 && dmArray[0].getLastSource() != null) {
 				adaptTooltipLocation = false;
-				return Arrays.stream((DeviceModule[])value).
+				return Arrays.stream(dmArray).
 						map(rel -> String.format(LABELS.getString("col_last_source_tooltip"), rel, rel.getLastSource())).collect(Collectors.joining("<br>", "<html>", "</html>"));
-			} else if(value instanceof DeviceModule && isColumnVisible(COL_SOURCE_IDX) == false && (ret = ((DeviceModule)value).getLastSource()) != null) {
+			} else if(value instanceof DeviceModule dm && isColumnVisible(COL_SOURCE_IDX) == false && (ret = dm.getLastSource()) != null) {
 				adaptTooltipLocation = false;
 				return "<html>" + String.format(LABELS.getString("col_last_source_tooltip"), value, ret) + "</html>";
 			} else if(value instanceof Thermostat) {
@@ -443,40 +443,39 @@ public class DevicesTable extends ExTooltipTable {
 				row[DevicesTable.COL_MEASURES_IDX] = d.getMeters();
 				row[DevicesTable.COL_DEBUG] = LABELS.getString("debug" + d.getDebugMode());
 				Object command = null;
-				if(d instanceof RelayCommander && ((RelayCommander)d).getRelayCount() > 0) {
-					row[DevicesTable.COL_COMMAND_IDX] = command = ((RelayCommander)d).getRelays();
-				} else if(d instanceof RollerCommander && ((RollerCommander)d).getRollerCount() > 0) {
-					row[DevicesTable.COL_COMMAND_IDX] = command = ((RollerCommander)d).getRoller(0);
-				} else if(d instanceof WhiteCommander && ((WhiteCommander)d).getWhiteCount() == 1) { // dimmer
-					row[DevicesTable.COL_COMMAND_IDX] = command = ((WhiteCommander)d).getWhite(0);
-				} else if(d instanceof LightBulbRGBCommander) {
-					row[DevicesTable.COL_COMMAND_IDX] = command = ((LightBulbRGBCommander)d).getLight(0);
-				} else if(d instanceof RGBWCommander && ((RGBWCommander)d).getColorCount() > 0) {
-					row[DevicesTable.COL_COMMAND_IDX] = command = ((RGBWCommander)d).getColor(0);
-				} else if(d instanceof WhiteCommander && ((WhiteCommander)d).getWhiteCount() > 1) {
-					row[DevicesTable.COL_COMMAND_IDX] = command = ((WhiteCommander)d).getWhites();
-				} else if(d instanceof InputCommander) {
-					row[DevicesTable.COL_COMMAND_IDX] = ((InputCommander)d).getActionsGroups();
-				} else if(d instanceof ShellyDW) {
-					row[DevicesTable.COL_COMMAND_IDX] = LABELS.getString("lableStatusOpen") + ": " + (((ShellyDW)d).isOpen() ? YES : NO);
-				} else if(d instanceof ShellyFlood) {
-					row[DevicesTable.COL_COMMAND_IDX] = LABELS.getString("lableStatusFlood") + ": " + (((ShellyFlood)d).flood() ? YES : NO);
-				} else if(d instanceof ShellyMotion) {
-					row[DevicesTable.COL_COMMAND_IDX] = String.format(LABELS.getString("lableStatusMotion"), ((ShellyMotion)d).motion() ? YES : NO);
-				} else if(d instanceof ShellyPlusSmoke) {
-					row[DevicesTable.COL_COMMAND_IDX] = String.format(LABELS.getString("lableStatusSmoke"), ((ShellyPlusSmoke)d).getAlarm() ? YES : NO);
-				} else if(d instanceof ShellyTRV) {
-					Thermostat thermostat = ((ShellyTRV)d).getThermostat();
+				if(d instanceof RelayCommander rc && rc.getRelayCount() > 0) {
+					row[DevicesTable.COL_COMMAND_IDX] = command = rc.getRelays();
+				} else if(d instanceof RollerCommander rc && rc.getRollerCount() > 0) {
+					row[DevicesTable.COL_COMMAND_IDX] = command = rc.getRoller(0);
+				} else if(d instanceof WhiteCommander wc && wc.getWhiteCount() == 1) { // dimmer
+					row[DevicesTable.COL_COMMAND_IDX] = command = wc.getWhite(0);
+				} else if(d instanceof LightBulbRGBCommander lbc) {
+					row[DevicesTable.COL_COMMAND_IDX] = command = lbc.getLight(0);
+				} else if(d instanceof RGBWCommander rgbwc && rgbwc.getColorCount() > 0) {
+					row[DevicesTable.COL_COMMAND_IDX] = command = rgbwc.getColor(0);
+				} else if(d instanceof WhiteCommander wc && wc.getWhiteCount() > 1) {
+					row[DevicesTable.COL_COMMAND_IDX] = command = wc.getWhites();
+				} else if(d instanceof InputCommander ic) {
+					row[DevicesTable.COL_COMMAND_IDX] = ic.getActionsGroups();
+				} else if(d instanceof ShellyDW dw) {
+					row[DevicesTable.COL_COMMAND_IDX] = LABELS.getString("lableStatusOpen") + ": " + (dw.isOpen() ? YES : NO);
+				} else if(d instanceof ShellyFlood flood) {
+					row[DevicesTable.COL_COMMAND_IDX] = LABELS.getString("lableStatusFlood") + ": " + (flood.flood() ? YES : NO);
+				} else if(d instanceof ShellyMotion motion) {
+					row[DevicesTable.COL_COMMAND_IDX] = String.format(LABELS.getString("lableStatusMotion"), motion.motion() ? YES : NO);
+				} else if(d instanceof ShellyPlusSmoke smoke) {
+					row[DevicesTable.COL_COMMAND_IDX] = String.format(LABELS.getString("lableStatusSmoke"), smoke.getAlarm() ? YES : NO);
+				} else if(d instanceof ShellyTRV trv) {
+					Thermostat thermostat = trv.getThermostat();
 					if(thermostat.isAutoTemp()) {
 						row[DevicesTable.COL_COMMAND_IDX] = thermostat;
 					} else {
 						row[DevicesTable.COL_COMMAND_IDX] = String.format(LABELS.getString("lableStatusTRV"), thermostat.getPosition());
 					}
 				}
-				if(command instanceof DeviceModule) {
-					row[DevicesTable.COL_SOURCE_IDX] = ((DeviceModule)command).getLastSource();
-				} else if(command instanceof DeviceModule[]) {
-					DeviceModule[] m = ((DeviceModule[])command);
+				if(command instanceof DeviceModule dm) {
+					row[DevicesTable.COL_SOURCE_IDX] = dm.getLastSource();
+				} else if(command instanceof DeviceModule[] m) {
 					String res[] = new String[m.length];
 					for(int i = 0; i < m.length; i++) {
 						res[i] = m[i].getLastSource();

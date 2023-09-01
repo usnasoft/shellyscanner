@@ -450,8 +450,8 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 							fwInfo.fwModule = device.getFWManager();
 							tModel.setRow(index, createRow(index));
 							countSelection();
-							if(device instanceof AbstractG2Device && fwInfo.wsSession.get().isOpen() == false) { // should be (closed on reboot)
-								fwInfo.wsSession = wsEventListener(index, (AbstractG2Device)device);
+							if(device instanceof AbstractG2Device gen2 && fwInfo.wsSession.get().isOpen() == false) { // should be (closed on reboot)
+								fwInfo.wsSession = wsEventListener(index, gen2);
 							}
 						}
 					}

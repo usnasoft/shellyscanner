@@ -338,8 +338,8 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 						if(d.getStatus() == Status.ON_LINE) {
 							final Millisecond timestamp = new Millisecond(new Date(d.getLastTime()));
 							Meters[] m;
-							if(currentType == ChartType.INT_TEMP && d instanceof InternalTmpHolder) {
-								ts[0].addOrUpdate(timestamp, ((InternalTmpHolder)d).getInternalTmp());
+							if(currentType == ChartType.INT_TEMP && d instanceof InternalTmpHolder tempH) {
+								ts[0].addOrUpdate(timestamp, tempH.getInternalTmp());
 							} else if(currentType == ChartType.RSSI) {
 								ts[0].addOrUpdate(timestamp, d.getRssi());
 							} else if(/*currentType.mType != null &&*/ (m = d.getMeters()) != null) {

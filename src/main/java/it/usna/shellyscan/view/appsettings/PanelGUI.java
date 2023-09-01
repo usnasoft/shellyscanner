@@ -244,8 +244,8 @@ public class PanelGUI extends JPanel {
 		btnRestoreColumns.addActionListener(event -> {
 			devTable.restoreColumns();
 			for(Component c: columnsPanel.getComponents()) {
-				if(c instanceof JCheckBox) {
-					((JCheckBox)c).setSelected(true);
+				if(c instanceof JCheckBox box) {
+					box.setSelected(true);
 				}
 			}
 			devTable.columnsWidthAdapt();

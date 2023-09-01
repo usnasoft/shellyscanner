@@ -86,9 +86,9 @@ public class DeviceTableCellEditor extends AbstractCellEditor implements TableCe
 		lightPanel.add(lightButton, BorderLayout.EAST);
 		lightButton.setBorder(DevicesCommandCellRenderer.BUTTON_BORDERS);
 		lightButton.addActionListener(e -> {
-			if(edited != null && edited instanceof WhiteInterface) {
+			if(edited != null && edited instanceof WhiteInterface wi) {
 				try {
-					((WhiteInterface)edited).toggle();
+					wi.toggle();
 				} catch (IOException ex) {
 					LOG.error("lightButton", ex);
 				}
@@ -97,12 +97,12 @@ public class DeviceTableCellEditor extends AbstractCellEditor implements TableCe
 		});
 		lightPanel.add(lightBrightness, BorderLayout.SOUTH);
 		lightBrightness.addChangeListener(e -> {
-			if(edited != null && edited instanceof WhiteInterface) {
+			if(edited != null && edited instanceof WhiteInterface wi) {
 				if(lightBrightness.getValueIsAdjusting()) {
-					lightLabel.setText(((WhiteInterface)edited).getLabel() + " " + lightBrightness.getValue() + "%");
+					lightLabel.setText(wi.getLabel() + " " + lightBrightness.getValue() + "%");
 				} else {
 					try {
-						((WhiteInterface)edited).setBrightness(lightBrightness.getValue());
+						wi.setBrightness(lightBrightness.getValue());
 					} catch (IOException ex) {
 						LOG.error("lightBrightness", ex);
 					}
@@ -378,22 +378,22 @@ public class DeviceTableCellEditor extends AbstractCellEditor implements TableCe
 
 	@Override
 	public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
-		if(value instanceof RelayInterface[]) {
-			return getRelaysPanel((RelayInterface[]) value, table.getSelectionForeground());
-		} else if(value instanceof RollerInterface) {
-			return getRollerPanel((RollerInterface) value);
-		} else if(value instanceof WhiteInterface) {
-			return getLightPanel((WhiteInterface)value);
-		} else if(value instanceof LightBulbRGB) { // RGBW Bulbs
-			return getLightRGBWPanel((LightBulbRGB)value);
-		} else if(value instanceof LightRGBW) { // RGBW2 (color mode)
-			return getRGBWColorPanel((LightRGBW)value);
-		} else if(value instanceof WhiteInterface[]) { // RGBW2 (white mode)
-			return getRGBWWhitePanel((WhiteInterface[])value, table.getSelectionForeground());
-		} else if(value instanceof InputInterface[]) {
-			return getActionsPanel((InputInterface[])value, table);
-		} else if(value instanceof Thermostat) {
-			return getThermostatPanel((Thermostat)value);
+		if(value instanceof RelayInterface[] riArray) {
+			return getRelaysPanel(riArray, table.getSelectionForeground());
+		} else if(value instanceof RollerInterface ri) {
+			return getRollerPanel(ri);
+		} else if(value instanceof WhiteInterface wi) {
+			return getLightPanel(wi);
+		} else if(value instanceof LightBulbRGB bulb) { // RGBW Bulbs
+			return getLightRGBWPanel(bulb);
+		} else if(value instanceof LightRGBW light) { // RGBW2 (color mode)
+			return getRGBWColorPanel(light);
+		} else if(value instanceof WhiteInterface[] wiArray) { // RGBW2 (white mode)
+			return getRGBWWhitePanel(wiArray, table.getSelectionForeground());
+		} else if(value instanceof InputInterface[] inputArray) {
+			return getActionsPanel(inputArray, table);
+		} else if(value instanceof Thermostat th) {
+			return getThermostatPanel(th);
 		}
 		return null;
 	}

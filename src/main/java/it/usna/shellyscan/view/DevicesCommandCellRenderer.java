@@ -174,9 +174,9 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 //		try {
 		final JComponent ret;
 		final Color foregroundColor = isSelected ? table.getSelectionForeground() : table.getForeground();
-		if(value instanceof RelayInterface[]) {
+		if(value instanceof RelayInterface[] riArray) {
 			stackedPanel.removeAll();
-			for(RelayInterface rel: (RelayInterface[]) value) { // 1, 1PM, EM, 2.5
+			for(RelayInterface rel: riArray) { // 1, 1PM, EM, 2.5
 				JLabel relayLabel = new JLabel(rel.getLabel());
 				JPanel relayPanel = new JPanel(new BorderLayout());
 				JButton relayButton = new JButton();
@@ -206,8 +206,7 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 				stackedPanel.add(relayPanel);
 			}
 			ret = stackedPanel;
-		} else if(value instanceof RollerInterface) { // 2.5
-			RollerInterface roller = (RollerInterface)value;
+		} else if(value instanceof RollerInterface roller) { // 2.5
 			String labelText;
 			if(roller.isCalibrated()) {
 				labelText = roller.getLabel() + " " + roller.getPosition() + "%";
@@ -220,8 +219,7 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 			rollerLabel.setText(labelText);
 			rollerLabel.setForeground(foregroundColor);
 			ret = rollerPanel;
-		} else if(value instanceof WhiteInterface) { // Dimmer
-			WhiteInterface light = (WhiteInterface)value;
+		} else if(value instanceof WhiteInterface light) { // Dimmer
 			if(light.isOn()) {
 				lightButton.setText(LABEL_ON);
 				lightButton.setBackground(BUTTON_ON_BG_COLOR);
@@ -233,8 +231,7 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 			lightLabel.setText(light.getLabel() + " " + light.getBrightness() + "%");
 			lightLabel.setForeground(foregroundColor);
 			ret = lightPanel;
-		} else if(value instanceof LightBulbRGB) { // RGBW Bulbs
-			LightBulbRGB light = (LightBulbRGB)value;
+		} else if(value instanceof LightBulbRGB light) { // RGBW Bulbs
 			if(light.isOn()) {
 				lightRGBBulbButton.setText(LABEL_ON);
 				lightRGBBulbButton.setBackground(BUTTON_ON_BG_COLOR);
@@ -247,8 +244,7 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 			lightRGBBulbLabel.setText(light.getLabel() + " " + slider + "%");
 			lightRGBBulbLabel.setForeground(foregroundColor);
 			ret = lightRGBBulbPanel;
-		} else if(value instanceof LightRGBW) { // RGBW2 color
-			LightRGBW color = (LightRGBW)value;
+		} else if(value instanceof LightRGBW color) { // RGBW2 color
 			if(color.isOn()) {
 				colorRGBButton.setText(LABEL_ON);
 				colorRGBButton.setBackground(BUTTON_ON_BG_COLOR);
@@ -265,9 +261,8 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 			colorRGBWhiteLabel.setForeground(foregroundColor);
 			colorRGBWhiteLabel.setText(Main.LABELS.getString("labelShortWhite") + " " + color.getWhite() + "% ");
 			ret = colorRGBPanel;
-		} else if(value instanceof WhiteInterface[]) { // RGBW2 white
+		} else if(value instanceof WhiteInterface[] lights) { // RGBW2 white
 			stackedPanel.removeAll();
-			WhiteInterface[] lights = (WhiteInterface[]) value;
 			for(int i = 0; i < lights.length;) {
 				JLabel relayLabel = new JLabel(lights[i].getLabel());
 				JPanel relayPanel = new JPanel(new BorderLayout());
@@ -294,10 +289,9 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 				stackedPanel.add(relayPanel);
 			}
 			ret = stackedPanel;
-		} else if(value instanceof InputInterface[]) { // Button1 - I3 - I4
-			ret = actionButtonsPanel((InputInterface[])value, foregroundColor);
-		} else if(value instanceof Thermostat) {
-			Thermostat thermostat = (Thermostat)value;
+		} else if(value instanceof InputInterface[] inputs) { // Button1 - I3 - I4
+			ret = actionButtonsPanel(inputs, foregroundColor);
+		} else if(value instanceof Thermostat thermostat) {
 			thermSlider.setValue((int)(thermostat.getTargetTemp() * 2));
 			thermProfileLabel.setText(thermostat.getCurrentProfile() + " " + thermostat.getTargetTemp() + "°C");
 			thermProfileLabel.setEnabled(thermostat.isScheduleActive());
