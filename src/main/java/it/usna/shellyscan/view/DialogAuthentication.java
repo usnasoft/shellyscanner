@@ -122,6 +122,8 @@ public class DialogAuthentication extends JDialog {
 		});
 		buttonsPanel.add(cancelButton);
 		
+		getRootPane().setDefaultButton(okButton);
+		
 		DocumentListener fieldListener = new DocumentListener() {
 			@Override
 			public void changedUpdate(DocumentEvent e) {
