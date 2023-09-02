@@ -198,10 +198,10 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 	private Action aboutAction = new UsnaAction(this, "/images/question.png", null/*"About"*/, e -> DialogAbout.show(MainView.this));
 	
 	private Action loginAction = new UsnaSelectedAction(this, devicesTable, "action_name_login", null, "/images/Key16.png", null,
-			i -> model.create(model.get(i).getAddress(), model.get(i).getPort(), null, model.get(i).getHostname()) );
+			i -> model.create(model.get(i).getAddress(), model.get(i).getPort(), model.get(i).getHostname()) );
 	
 	private Action reloadAction = new UsnaSelectedAction(this, devicesTable, "action_name_reload", null, "/images/Loop16.png", null,
-			i -> model.create(model.get(i).getAddress(), model.get(i).getPort(), null, model.get(i).getHostname()) );
+			i -> model.create(model.get(i).getAddress(), model.get(i).getPort(), model.get(i).getHostname()) );
 
 	private Action backupAction = new UsnaAction(this, "action_back_name", "action_back_tooltip", "/images/Download16.png", "/images/Download.png", e -> {
 		int[] ind = devicesTable.getSelectedRows();

@@ -79,7 +79,6 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 	public Devices() throws Exception {
 		httpClient.setDestinationIdleTimeout(300_000); // 5 min
 		httpClient.setMaxConnectionsPerDestination(8);
-//		httpClient.setConnectBlocking(false);
 		httpClient.start();
 		
 		wsClient.start();
@@ -223,7 +222,7 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 				for (ServiceInfo info: serviceInfos) {
 					final String name = info.getName();
 					if(name.startsWith("shelly") || name.startsWith("Shelly")) { // ShellyBulbDuo-xxx
-						executor.execute(() -> create(info.getInetAddresses()[0], 80, null, name));
+						executor.execute(() -> create(info.getInetAddresses()[0], 80, name));
 					}
 				}
 			}
@@ -248,7 +247,7 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 				d.setStatus(Status.READING);
 				executor.schedule(() -> {
 					if(d instanceof ShellyUnmanagedDevice unmanaged && unmanaged.getException() != null) { // try to create proper device
-						create(d.getAddress(), d.getPort(), null, d.getHostname());
+						create(d.getAddress(), d.getPort(), d.getHostname());
 					} else {
 						try {
 							d.refreshSettings();
@@ -328,7 +327,6 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 				public void onComplete(Result result) {
 					try {
 						if(result.isSucceeded()) {
-//							JsonNode info = JSON_MAPPER.readTree(getContent());
 							create(address, port, JSON_MAPPER.readTree(getContent()), hostName);
 						} else {
 							newDevice(DevicesFactory.createWithError(httpClient, address, port, hostName, result.getResponseFailure()));
@@ -343,33 +341,14 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 		}
 	}
 
-	// info is not null for: extender connected devices or scan by IP
 	/**
 	 * Create a device JsonNode info (/shelly) given
 	 */
-	/*private*/public void create(InetAddress address, int port, JsonNode info, String hostName) {
+	private void create(InetAddress address, int port, JsonNode info, String hostName) {
 		LOG.trace("Creating {}:{} - {}", address, port, hostName);
 		try {
 			ShellyAbstractDevice d = DevicesFactory.create(httpClient, wsClient, address, port, info, hostName);
 			if(/*d != null &&*/ Thread.interrupted() == false) {
-//				synchronized(devices) {
-//					int ind = devices.indexOf(d);
-//					if(ind >= 0) {
-//						if(d instanceof ShellyUnmanagedDevice == false || devices.get(ind) instanceof ShellyUnmanagedDevice || devices.get(ind) instanceof GhostDevice) { // Do not replace device if was recocnized and now is not
-//							if(refreshProcess.get(ind) != null) {
-//								refreshProcess.get(ind).cancel(true);
-//							}
-//							devices.set(ind, d);
-//							fireEvent(EventType.SUBSTITUTE, ind);
-//							refreshProcess.set(ind, scheduleRefresh(d, ind, refreshInterval, refreshTics));
-//						}
-//					} else {
-//						final int idx = devices.size();
-//						devices.add(d);
-//						fireEvent(EventType.ADD, idx);
-//						refreshProcess.add(scheduleRefresh(d, idx, refreshInterval, refreshTics));
-//					}
-//				}
 				newDevice(d);
 				LOG.debug("Create {}:{} - {}", address, port, d);
 
@@ -559,11 +538,9 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 		@Override
 		public void serviceResolved(ServiceEvent event) {
 			ServiceInfo info = event.getInfo();
-//			System.out.println(info.getPort());
 			final String name = info.getName();
 			if(name.startsWith("shelly") || name.startsWith("Shelly")) {
 				//executor.execute(() -> create(info.getInetAddresses()[0], 80, null, name));
-//				create(info.getInetAddresses()[0], 80, null, name);
 				create(info.getInetAddresses()[0], 80, name);
 			}
 		}

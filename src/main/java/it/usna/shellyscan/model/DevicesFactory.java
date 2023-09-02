@@ -2,19 +2,15 @@ package it.usna.shellyscan.model;
 
 import java.io.IOException;
 import java.net.InetAddress;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 import org.eclipse.jetty.client.HttpClient;
-import org.eclipse.jetty.client.api.ContentResponse;
 import org.eclipse.jetty.http.HttpStatus;
 import org.eclipse.jetty.websocket.client.WebSocketClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import it.usna.shellyscan.Main;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
@@ -74,38 +70,38 @@ public class DevicesFactory {
 	private DevicesFactory() {}
 
 	private final static Logger LOG = LoggerFactory.getLogger(DevicesFactory.class);
-	private final static ObjectMapper JSON_MAPPER = new ObjectMapper();
+//	private final static ObjectMapper JSON_MAPPER = new ObjectMapper();
 	private static String lastUser;
 	private static char[] lastP;
 	
-	public static ShellyAbstractDevice create(HttpClient httpClient, WebSocketClient wsClient, final InetAddress address, int port, JsonNode info, String name) {
-		if(info == null) {
-			try {
-				ContentResponse response = httpClient.GET("http://" + address.getHostAddress() + ":" + port + "/shelly");
-				info = JSON_MAPPER.readTree(response.getContent());
-				Thread.sleep(Devices.MULTI_QUERY_DELAY);
-			} catch(IOException | TimeoutException | InterruptedException | ExecutionException e) { // SocketTimeoutException extends IOException
-				LOG.error("create {}:{}", address, port, e);
-				ShellyG1Unmanaged d = new ShellyG1Unmanaged(address, port, name, e); // no mac available (info) -> try to desume from hostname
-				d.setHttpClient(httpClient);
-				d.setMacAddress(name.substring(Math.max(name.length() - 12, 0), name.length()).toUpperCase());
-				return d;
-			}
-		}
-		if("2".equals(info.path("gen").asText())) {
-			return createG2(httpClient, wsClient, address, port, info, name);
-		} else {
-			return createG1(httpClient, address, port, info, name);
-		}
-	}
-	
 //	public static ShellyAbstractDevice create(HttpClient httpClient, WebSocketClient wsClient, final InetAddress address, int port, JsonNode info, String name) {
+//		if(info == null) {
+//			try {
+//				ContentResponse response = httpClient.GET("http://" + address.getHostAddress() + ":" + port + "/shelly");
+//				info = JSON_MAPPER.readTree(response.getContent());
+//				Thread.sleep(Devices.MULTI_QUERY_DELAY);
+//			} catch(IOException | TimeoutException | InterruptedException | ExecutionException e) { // SocketTimeoutException extends IOException
+//				LOG.error("create {}:{}", address, port, e);
+//				ShellyG1Unmanaged d = new ShellyG1Unmanaged(address, port, name, e); // no mac available (info) -> try to desume from hostname
+//				d.setHttpClient(httpClient);
+//				d.setMacAddress(name.substring(Math.max(name.length() - 12, 0), name.length()).toUpperCase());
+//				return d;
+//			}
+//		}
 //		if("2".equals(info.path("gen").asText())) {
 //			return createG2(httpClient, wsClient, address, port, info, name);
 //		} else {
 //			return createG1(httpClient, address, port, info, name);
 //		}
 //	}
+	
+	public static ShellyAbstractDevice create(HttpClient httpClient, WebSocketClient wsClient, final InetAddress address, int port, JsonNode info, String name) {
+		if("2".equals(info.path("gen").asText())) {
+			return createG2(httpClient, wsClient, address, port, info, name);
+		} else {
+			return createG1(httpClient, address, port, info, name);
+		}
+	}
 
 	public static ShellyAbstractDevice createWithError(HttpClient httpClient, final InetAddress address, int port, String name, Throwable e) {
 		LOG.error("create {}:{}", address, port, e);
@@ -114,30 +110,6 @@ public class DevicesFactory {
 		d.setMacAddress(name.substring(Math.max(name.length() - 12, 0), name.length()).toUpperCase());
 		return d;
 	}
-	
-//	public static void create(HttpClient httpClient, WebSocketClient wsClient, final InetAddress address, int port, String name) {
-//		httpClient.newRequest("http://" + address.getHostAddress() + ":" + port + "/shelly").send(new BufferingResponseListener() {
-//			@Override
-//			public void onComplete(Result result) {
-//				try {
-//					JsonNode info = JSON_MAPPER.readTree(getContent());
-//					Thread.sleep(Devices.MULTI_QUERY_DELAY);
-//					if("2".equals(info.path("gen").asText())) {
-//						/*return*/ LOG.debug ( createG2(httpClient, wsClient, address, port, info, name).toString() );
-//					} else {
-//						/*return*/ LOG.debug ( DevicesFactory.createG1(httpClient, address, port, info, name).toString() );
-//					}
-//					LOG.debug("creat " + address);
-//				} catch(IOException | InterruptedException e) { // SocketTimeoutException extends IOException
-//					LOG.error("create {}:{}", address, port, e);
-//					ShellyG1Unmanaged d = new ShellyG1Unmanaged(address, port, name, e); // no mac available (info) -> try to desume from hostname
-//					d.setHttpClient(httpClient);
-//					d.setMacAddress(name.substring(Math.max(name.length() - 12, 0), name.length()).toUpperCase());
-//					LOG.debug ( d.toString() );
-//				}
-//			};
-//		});
-//	}
 
 	private static ShellyAbstractDevice createG1(HttpClient httpClient, final InetAddress address, int port, JsonNode info, String name) {
 		AbstractG1Device d;
