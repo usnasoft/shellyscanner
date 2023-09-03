@@ -24,8 +24,6 @@ import javax.jmdns.ServiceListener;
 
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.api.ContentResponse;
-import org.eclipse.jetty.client.api.Result;
-import org.eclipse.jetty.client.util.BufferingResponseListener;
 import org.eclipse.jetty.http.HttpStatus;
 import org.eclipse.jetty.websocket.client.WebSocketClient;
 import org.slf4j.Logger;
@@ -321,23 +319,31 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 	
 	public void create(InetAddress address, int port, String hostName) {
 		LOG.trace("getting info (/shelly) {}:{} - {}", address, port, hostName);
+//		try {
+//			httpClient.newRequest("http://" + address.getHostAddress() + ":" + port + "/shelly").send(new BufferingResponseListener() {
+//				@Override
+//				public void onComplete(Result result) {
+//					try {
+//						if(result.isSucceeded()) {
+//							create(address, port, JSON_MAPPER.readTree(getContent()), hostName);
+//						} else {
+//							newDevice(DevicesFactory.createWithError(httpClient, address, port, hostName, result.getResponseFailure()));
+//						}
+//					} catch(IOException e) { // SocketTimeoutException extends IOException
+//						newDevice(DevicesFactory.createWithError(httpClient, address, port, hostName, e));
+//					}
+//				}
+//			});
+//		} catch(Exception e) {
+//			LOG.error("Unexpected-add: {}; host: {}", address, hostName, e);
+//		}
 		try {
-			httpClient.newRequest("http://" + address.getHostAddress() + ":" + port + "/shelly").send(new BufferingResponseListener() {
-				@Override
-				public void onComplete(Result result) {
-					try {
-						if(result.isSucceeded()) {
-							create(address, port, JSON_MAPPER.readTree(getContent()), hostName);
-						} else {
-							newDevice(DevicesFactory.createWithError(httpClient, address, port, hostName, result.getResponseFailure()));
-						}
-					} catch(IOException e) { // SocketTimeoutException extends IOException
-						newDevice(DevicesFactory.createWithError(httpClient, address, port, hostName, e));
-					}
-				}
-			});
-		} catch(Exception e) {
-			LOG.error("Unexpected-add: {}; host: {}", address, hostName, e);
+			ContentResponse response = httpClient.GET("http://" + address.getHostAddress() + ":" + port + "/shelly");
+			create(address, port, JSON_MAPPER.readTree(response.getContent()), hostName);
+			Thread.sleep(Devices.MULTI_QUERY_DELAY);
+		} catch(IOException | TimeoutException | InterruptedException | ExecutionException e) { // SocketTimeoutException extends IOException
+			LOG.error("create with error {}:{}", address, port, e);
+			newDevice(DevicesFactory.createWithError(httpClient, address, port, hostName, e));
 		}
 	}
 
@@ -540,8 +546,8 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 			ServiceInfo info = event.getInfo();
 			final String name = info.getName();
 			if(name.startsWith("shelly") || name.startsWith("Shelly")) {
-				//executor.execute(() -> create(info.getInetAddresses()[0], 80, null, name));
-				create(info.getInetAddresses()[0], 80, name);
+				executor.execute(() -> create(info.getInetAddresses()[0], 80, name));
+//				create(info.getInetAddresses()[0], 80, name);
 			}
 		}
 	}

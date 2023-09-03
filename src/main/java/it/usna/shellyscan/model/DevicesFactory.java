@@ -104,7 +104,6 @@ public class DevicesFactory {
 	}
 
 	public static ShellyAbstractDevice createWithError(HttpClient httpClient, final InetAddress address, int port, String name, Throwable e) {
-		LOG.error("create {}:{}", address, port, e);
 		ShellyG1Unmanaged d = new ShellyG1Unmanaged(address, port, name, e); // no mac available (info) -> try to desume from hostname
 		d.setHttpClient(httpClient);
 		d.setMacAddress(name.substring(Math.max(name.length() - 12, 0), name.length()).toUpperCase());
