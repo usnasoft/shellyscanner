@@ -74,6 +74,8 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 	private HttpClient httpClient = new HttpClient();
 	private WebSocketClient wsClient = new WebSocketClient(httpClient);
 	
+	private DevicesStore ghosts = new DevicesStore();
+	
 	public Devices() throws Exception {
 		httpClient.setDestinationIdleTimeout(300_000); // 5 min
 		httpClient.setMaxConnectionsPerDestination(8);
@@ -462,7 +464,7 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 	}
 	
 	public void loadFromStore(Path path) throws IOException {
-		loadGhosts(DevicesStore.read(path));
+		loadGhosts(ghosts.read(path));
 	}
 	
 	private void loadGhosts(List<GhostDevice> ghosts) {
@@ -479,7 +481,7 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 	}
 	
 	public void saveToStore(Path path) {
-		DevicesStore.store(this, path);
+		ghosts.store(this, path);
 	}
 
 	private void clear() {

@@ -12,6 +12,7 @@ import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,6 +25,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import it.usna.shellyscan.model.device.GhostDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
+import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
 import it.usna.shellyscan.model.device.ShellyUnmanagedDevice;
 
 public class DevicesStore {
@@ -39,8 +41,11 @@ public class DevicesStore {
 	private final static String PORT = "port";
 	private final static String SSID = "ssid";
 	private final static String LAST_CON = "last";
+	
+	private final static JsonNodeFactory J_FACTORY = new JsonNodeFactory(false);
+	private List<GhostDevice> ghostsList = new ArrayList<>();
 
-	public static void store(Devices model, Path storeFile) {
+	public void store(Devices model, Path storeFile) {
 		LOG.trace("storing archive");
 		final JsonNodeFactory factory = new JsonNodeFactory(false);
 		final ObjectNode root = factory.objectNode();
@@ -48,20 +53,19 @@ public class DevicesStore {
 		root.put("time", System.currentTimeMillis());
 		final ArrayNode array = factory.arrayNode();
 		for (int i = 0; i < model.size(); i++) {
-			ShellyAbstractDevice dev = model.get(i);
-			// do not include into store devices with errors
-			if(dev instanceof ShellyUnmanagedDevice == false || ((ShellyUnmanagedDevice)dev).getException() == null) {
-				ObjectNode jsonDev = factory.objectNode();
-				jsonDev.put(TYPE_ID, dev.getTypeID());
-				jsonDev.put(TYPE_NAME, dev.getTypeName());
-				jsonDev.put(HOSTNAME, dev.getHostname());
-				jsonDev.put(MAC, dev.getMacAddress());
-				jsonDev.put(ADDRESS, dev.getAddress().getHostAddress());
-				jsonDev.put(PORT, dev.getPort());
-				jsonDev.put(NAME, dev.getName());
-				jsonDev.put(SSID, dev.getSSID());
-				jsonDev.put(LAST_CON, dev.getLastTime());
-				array.add(jsonDev);
+			ShellyAbstractDevice device = model.get(i);
+			// Device with errors or not authenticated -> get information from old store
+			if((device instanceof ShellyUnmanagedDevice ud && ud.getException() != null) || device.getStatus() == Status.NOT_LOOGGED) {
+				Optional<GhostDevice> stored = ghostsList.stream().filter(g -> g.getMacAddress().equals(device.getMacAddress())).findFirst();
+				if(stored.isPresent()) {
+					ObjectNode jsonDev = toJson(stored.get());
+					jsonDev.put(ADDRESS, device.getAddress().getHostAddress());
+					array.add(jsonDev);
+				} else {
+					array.add(toJson(device));
+				}
+			} else {
+				array.add(toJson(device));
 			}
 		}
 		root.set("dev", array);
@@ -73,17 +77,37 @@ public class DevicesStore {
 			LOG.error("Archive store", e);
 		}
 	}
+	
+	private static ObjectNode toJson(ShellyAbstractDevice device) {
+		ObjectNode jsonDev = J_FACTORY.objectNode();
+		jsonDev.put(TYPE_ID, device.getTypeID());
+		jsonDev.put(TYPE_NAME, device.getTypeName());
+		jsonDev.put(HOSTNAME, device.getHostname());
+		jsonDev.put(MAC, device.getMacAddress());
+		jsonDev.put(ADDRESS, device.getAddress().getHostAddress());
+		jsonDev.put(PORT, device.getPort());
+		jsonDev.put(NAME, device.getName());
+		jsonDev.put(SSID, device.getSSID());
+		jsonDev.put(LAST_CON, device.getLastTime());
+		return jsonDev;
+	}
 
-	public static List<GhostDevice> read(Path storeFile) throws IOException {
+	/**
+	 * Read a store file
+	 * @param storeFile
+	 * @return ghosts list 
+	 * @throws IOException
+	 */
+	public List<GhostDevice> read(Path storeFile) throws IOException {
 		LOG.trace("reading archive");
-		List<GhostDevice> list = new ArrayList<>();
+		ghostsList.clear();
 		try (BufferedReader r = Files.newBufferedReader(storeFile, StandardCharsets.UTF_8)) {
 			final JsonNode arc = JSON_MAPPER.readTree(r);
 			if(arc.path("ver").asInt() == STORE_VERSION) {
 				final ArrayNode array = (ArrayNode) arc.get("dev");
 				array.forEach(el -> {
 					try {
-						list.add(new GhostDevice(
+						ghostsList.add(new GhostDevice(
 								InetAddress.getByName(el.get(ADDRESS).asText()), el.get(PORT).asInt(), el.get(HOSTNAME).asText(), el.get(MAC).asText(),
 								el.get(SSID).asText(), el.get(TYPE_NAME).asText(), el.get(TYPE_ID).asText(), el.get(NAME).asText(), el.path(LAST_CON).asLong()));
 					} catch (UnknownHostException | RuntimeException e) {
@@ -99,9 +123,12 @@ public class DevicesStore {
 			LOG.error("Archive read", e);
 			throw e;
 		}
-		return list;
+		return ghostsList;
 	}
 	
+	/**
+	 * Map the full model to a list of ghosts
+	 */
 	public static List<GhostDevice> toGhosts(Devices model) {
 		List<GhostDevice> list = new ArrayList<>(model.size());
 		for(int i= 0; i < model.size(); i++) {
