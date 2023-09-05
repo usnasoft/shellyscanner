@@ -22,8 +22,8 @@ import javax.jmdns.ServiceEvent;
 import javax.jmdns.ServiceInfo;
 import javax.jmdns.ServiceListener;
 
+import org.eclipse.jetty.client.ContentResponse;
 import org.eclipse.jetty.client.HttpClient;
-import org.eclipse.jetty.client.api.ContentResponse;
 import org.eclipse.jetty.http.HttpStatus;
 import org.eclipse.jetty.websocket.client.WebSocketClient;
 import org.slf4j.Logger;
@@ -81,6 +81,10 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 		httpClient.setMaxConnectionsPerDestination(8);
 		httpClient.start();
 		
+//		wsClient.setConnectTimeout(100_000);
+//		wsClient.setIdleTimeout(Duration.ofMinutes(100));
+		wsClient.setStopAtShutdown(true);
+//		wsClient.setInputBufferSize(100_000);
 		wsClient.start();
 	}
 
@@ -511,11 +515,13 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 		}
 		try {
 			wsClient.stop();
+			wsClient.destroy();
 		} catch (Exception e) {
 			LOG.error("webSocketClient.stop", e);
 		}
 		try {
 			httpClient.stop();
+			httpClient.destroy();
 		} catch (Exception e) {
 			LOG.error("httpClient.stop", e);
 		}

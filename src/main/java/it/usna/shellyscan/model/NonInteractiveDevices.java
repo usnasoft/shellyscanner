@@ -16,8 +16,8 @@ import javax.jmdns.JmDNS;
 import javax.jmdns.JmmDNS;
 import javax.jmdns.ServiceInfo;
 
+import org.eclipse.jetty.client.ContentResponse;
 import org.eclipse.jetty.client.HttpClient;
-import org.eclipse.jetty.client.api.ContentResponse;
 import org.eclipse.jetty.http.HttpStatus;
 import org.eclipse.jetty.websocket.client.WebSocketClient;
 import org.slf4j.Logger;

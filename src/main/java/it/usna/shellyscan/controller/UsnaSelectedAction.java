@@ -35,25 +35,3 @@ public class UsnaSelectedAction extends UsnaAction {
 		};
 	}
 }
-
-//private class ViewSelectedAction extends UsnaAction {
-//private static final long serialVersionUID = 1L;
-//
-//public ViewSelectedAction(String nameId, String tooltipId, String smallIcon, String largeIcon, BiConsumer<Integer, ShellyAbstractDevice> c) {
-//	this(largeIcon, tooltipId, c);
-//	putValue(NAME, LABELS.getString(nameId));
-//	if(smallIcon != null) {
-//		putValue(SMALL_ICON, new ImageIcon(getClass().getResource(smallIcon)));
-//	}
-//}
-//
-//public ViewSelectedAction(String icon, String tooltipId, BiConsumer<Integer, ShellyAbstractDevice> c) {
-//	super(MainView.this, icon, tooltipId, null);
-//	onActionPerformed = e -> {
-//		for(int ind: devicesTable.getSelectedRows()) {
-//			int modelRow = devicesTable.convertRowIndexToModel(ind);
-//			c.accept(modelRow, model.get(modelRow));
-//		}
-//	};
-//}
-//}

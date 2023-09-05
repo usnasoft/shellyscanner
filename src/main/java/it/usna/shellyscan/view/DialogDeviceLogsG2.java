@@ -32,8 +32,9 @@ import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 
+import org.eclipse.jetty.websocket.api.Callback;
 import org.eclipse.jetty.websocket.api.Session;
-import org.eclipse.jetty.websocket.api.WebSocketListener;
+import org.eclipse.jetty.websocket.api.StatusCode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -134,11 +135,11 @@ public class DialogDeviceLogsG2 extends JDialog {
 		JPanel panel = new JPanel(new BorderLayout());
 
 		try {
-			WebSocketListener wsListener = new WebSocketDeviceListener() {
-				@Override
-				public void onWebSocketConnect(Session session) {
-					textArea.append(">>>> Open\n", bluStyle);
-				}
+			WebSocketDeviceListener wsListener = new WebSocketDeviceListener() {
+			    @Override
+			    public void onWebSocketOpen(Session session) {
+			    	textArea.append(">>>> Open\n", bluStyle);
+			    }
 
 				@Override
 				public void onWebSocketClose(int statusCode, String reason) {
@@ -156,6 +157,8 @@ public class DialogDeviceLogsG2 extends JDialog {
 				}
 			};
 			wsSession = device.connectWebSocketLogs(wsListener);
+			
+//			device.connectWebSocketClient(new WebSocketDeviceListener()); // ws test
 
 			btnActivateLog.addActionListener(event -> {
 				try {
@@ -175,10 +178,11 @@ public class DialogDeviceLogsG2 extends JDialog {
 					setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 					try {
 						if (wsSession.get().isOpen()) {
-							wsSession.get().disconnect();
+//							wsSession.get().disconnect();
+							wsSession.get().close(StatusCode.NORMAL, "bye", Callback.NOOP);
 						}
 					} catch (/*IOException |*/ InterruptedException | ExecutionException e1) {
-						LOG.error("webSocketClient.connect", e1);
+						LOG.error("webSocketClient.disconnect", e1);
 					}
 				} finally {
 					setCursor(Cursor.getDefaultCursor());
@@ -194,7 +198,8 @@ public class DialogDeviceLogsG2 extends JDialog {
 				@Override
 				public void windowClosing(WindowEvent e) {
 					try {
-						wsSession.get().disconnect();
+//						wsSession.get().disconnect();
+						wsSession.get().close(StatusCode.NORMAL, "bye", Callback.NOOP);
 					} catch (Exception e1) {
 						LOG.error("webSocketClient.disconnect", e1);
 					}
