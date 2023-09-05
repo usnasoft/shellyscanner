@@ -87,6 +87,10 @@ public class Main {
 				System.err.println("Wrong parameter format; example: -ipscan 192.168.1.1-254");
 				System.exit(1);
 			}
+		} else if((cliIndex = cli.hasEntry("-noscan", "-ns")) >= 0) { // only archive (it's actually an IP scan with firstIP > lastIP)
+			baseIP = new byte[] {127, 0, 0, 1};
+			firstIP = 1;
+			lastIP = 0;
 		} else {
 			final String scanMode = appProp.getProperty(DialogAppSettings.PROP_SCAN_MODE, DialogAppSettings.PROP_SCAN_MODE_DEFAULT);
 			if(scanMode.equals("IP")) {

@@ -227,7 +227,7 @@ public class DialogDeviceCheckList extends JDialog implements UsnaEventListener<
 				ecoModeAction.setEnabled(eco instanceof Boolean);
 				Object led = tModel.getValueAt(modelRow, COL_LED);
 				ledAction.setEnabled(led instanceof Boolean);
-				Object logs = (Boolean)tModel.getValueAt(modelRow, COL_LOGS);
+				Object logs = tModel.getValueAt(modelRow, COL_LOGS);
 				logsAction.setEnabled(logs instanceof Boolean && d instanceof AbstractG1Device);
 				Object ble = tModel.getValueAt(modelRow, COL_BLE);
 				bleAction.setEnabled(ble instanceof Boolean);
