@@ -110,7 +110,7 @@ public class DialogAppSettings extends JDialog {
 				scanMode = "LOCAL";
 			} else if(panelNetwork.fullScanButton.isSelected()) {
 				scanMode = "FULL";
-			} else {
+			} else if(panelNetwork.ipScanButton.isSelected()) {
 				scanMode = "IP";
 				String baseIP = panelNetwork.baseIP.getText();
 				if(baseIP.isEmpty() || baseIP.matches(IPV4_REGEX_3) == false) {
@@ -121,6 +121,8 @@ public class DialogAppSettings extends JDialog {
 				appProp.setProperty(FIRST_SCAN_IP, panelNetwork.firstIP.getText());
 				appProp.setProperty(LAST_SCAN_IP, panelNetwork.lastIP.getText());
 				model.setIPInterval(appProp.getIntProperty(FIRST_SCAN_IP), appProp.getIntProperty(LAST_SCAN_IP));
+			} else { // Offline
+				scanMode = "OFFLINE";
 			}
 			if(appProp.changeProperty(PROP_SCAN_MODE, scanMode)) {
 				JOptionPane.showMessageDialog(this, LABELS.getString("dlgAppSetScanNetworMsg"), LABELS.getString("dlgAppSetTitle"), JOptionPane.WARNING_MESSAGE);

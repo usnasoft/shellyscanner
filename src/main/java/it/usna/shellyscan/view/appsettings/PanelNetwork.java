@@ -2,10 +2,10 @@ package it.usna.shellyscan.view.appsettings;
 
 import static it.usna.shellyscan.Main.LABELS;
 
+import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.GridLayout;
 import java.awt.Insets;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -20,6 +20,7 @@ import javax.swing.JRadioButton;
 import javax.swing.JSeparator;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
+import javax.swing.border.EmptyBorder;
 
 import it.usna.shellyscan.view.IntegerTextFieldPanel;
 import it.usna.util.AppProperties;
@@ -29,6 +30,7 @@ public class PanelNetwork extends JPanel {
 
 	JRadioButton localScanButton;
 	JRadioButton fullScanButton;
+	JRadioButton ipScanButton;
 	JTextField baseIP;
 	IntegerTextFieldPanel firstIP;
 	IntegerTextFieldPanel lastIP;
@@ -60,15 +62,15 @@ public class PanelNetwork extends JPanel {
 
 		ButtonGroup scanModeGroup = new ButtonGroup();
 
-		JPanel panel = new JPanel();
+		JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT, 24, 5));
+		panel.setBorder(new EmptyBorder(0, -24, 0, 0));
 		GridBagConstraints gbc_panel = new GridBagConstraints();
 		gbc_panel.insets = new Insets(0, 0, 10, 5);
 		gbc_panel.anchor = GridBagConstraints.WEST;
-		gbc_panel.gridwidth = 2;
+		gbc_panel.gridwidth = 3;
 		gbc_panel.gridx = 1;
 		gbc_panel.gridy = 0;
 		add(panel, gbc_panel);
-		panel.setLayout(new GridLayout(0, 3, 18, 0));
 
 		localScanButton = new JRadioButton(LABELS.getString("dlgAppSetLocalScan"));
 		panel.add(localScanButton);
@@ -78,9 +80,13 @@ public class PanelNetwork extends JPanel {
 		panel.add(fullScanButton);
 		scanModeGroup.add(fullScanButton);
 
-		JRadioButton ipScanButton = new JRadioButton(LABELS.getString("dlgAppSetIPScan"));
+		ipScanButton = new JRadioButton(LABELS.getString("dlgAppSetIPScan"));
 		panel.add(ipScanButton);
 		scanModeGroup.add(ipScanButton);
+		
+		JRadioButton offlineButton = new JRadioButton(LABELS.getString("dlgAppSetOfflineScan"));
+		panel.add(offlineButton);
+		scanModeGroup.add(offlineButton);
 
 		ipScanButton.addChangeListener(e -> scanByIP(ipScanButton.isSelected()));
 
@@ -156,9 +162,12 @@ public class PanelNetwork extends JPanel {
 		} else if(mode.equals("FULL")) {
 			fullScanButton.setSelected(true);
 			scanByIP(false);
-		} else{
+		} else if(mode.equals("IP")) {
 			ipScanButton.setSelected(true);
 			scanByIP(true);
+		} else { // "OFFLINE"
+			offlineButton.setSelected(true);
+			scanByIP(false);
 		}
 
 		JSeparator separator_1 = new JSeparator();

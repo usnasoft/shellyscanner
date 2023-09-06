@@ -99,6 +99,10 @@ public class Main {
 				lastIP = appProp.getIntProperty(DialogAppSettings.LAST_SCAN_IP);
 				String ipS[] = baseIPPar.split("\\.");
 				baseIP = new byte[] {(byte)Integer.parseInt(ipS[0]), (byte)Integer.parseInt(ipS[1]), (byte)Integer.parseInt(ipS[2]), 0};
+			} else if(scanMode.equals("OFFLINE")) {
+				baseIP = new byte[] {127, 0, 0, 1};
+				firstIP = 1;
+				lastIP = 0;
 			} else {
 				fullScan = scanMode.equals("FULL");
 			}
