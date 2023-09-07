@@ -51,7 +51,6 @@ public class NonInteractiveDevices implements Closeable {
 //	private final static String SERVICE_TYPE2 = "_shelly._tcp.local.";
 	private final List<ShellyAbstractDevice> devices = new ArrayList<>();
 
-	private ScheduledExecutorService executor = Executors.newScheduledThreadPool(EXECUTOR_POOL_SIZE);
 	private HttpClient httpClient = new HttpClient();
 //	private WebSocketClient wsClient = new WebSocketClient(httpClient);
 	
@@ -86,27 +85,34 @@ public class NonInteractiveDevices implements Closeable {
 	}
 
 	private void scanByIP(Consumer<ShellyAbstractDevice> c) throws IOException {
-		for(int dalay = 0, ip4 = lowerIP; ip4 <= higherIP; dalay +=4, ip4++) {
-			baseScanIP[3] = (byte)ip4;
-			final InetAddress addr = InetAddress.getByAddress(baseScanIP);
-			executor.schedule(() -> {
-				try {
-					if(addr.isReachable(5_000)) {
-						Thread.sleep(Devices.MULTI_QUERY_DELAY);
-						JsonNode info = isShelly(addr, 80);
-						if(info != null) {
+		ScheduledExecutorService executor = Executors.newScheduledThreadPool(EXECUTOR_POOL_SIZE);
+		try {
+			for(int dalay = 0, ip4 = lowerIP; ip4 <= higherIP; dalay +=4, ip4++) {
+				baseScanIP[3] = (byte)ip4;
+				final InetAddress addr = InetAddress.getByAddress(baseScanIP);
+				executor.schedule(() -> {
+					try {
+						if(addr.isReachable(5_000)) {
 							Thread.sleep(Devices.MULTI_QUERY_DELAY);
-							create(addr, 80, info, addr.getHostAddress(), c);
+							JsonNode info = isShelly(addr, 80);
+							if(info != null) {
+								Thread.sleep(Devices.MULTI_QUERY_DELAY);
+								create(addr, 80, info, addr.getHostAddress(), c);
+							}
+						} else {
+							LOG.trace("no ping {}", addr);
 						}
-					} else {
-						LOG.trace("no ping {}", addr);
+					} catch (TimeoutException e) {
+						LOG.trace("timeout {}", addr);
+					} catch (IOException | InterruptedException e) {
+						LOG.error("ip scan error {} {}", addr, e.toString());
 					}
-				} catch (TimeoutException e) {
-					LOG.trace("timeout {}", addr);
-				} catch (IOException | InterruptedException e) {
-					LOG.error("ip scan error {} {}", addr, e.toString());
-				}
-			}, dalay, TimeUnit.MILLISECONDS);
+				}, dalay, TimeUnit.MILLISECONDS);
+			}
+			executor.shutdown();
+			executor.awaitTermination(60, TimeUnit.MINUTES);
+		} catch (Exception e) {
+			LOG.error("ip scan error {}", e.toString());
 		}
 	}
 
@@ -187,7 +193,6 @@ public class NonInteractiveDevices implements Closeable {
 	@Override
 	public void close() {
 		LOG.trace("Model closing");
-		executor.shutdownNow();
 		bjServices.parallelStream().forEach(dns -> {
 			try {
 				dns.close();

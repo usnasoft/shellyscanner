@@ -70,6 +70,7 @@ public class Main {
 		int lastIP  = 0;
 		
 		int cliIndex;
+		// Scan mode
 		if(cli.hasEntry("-fullscan", "-full") >= 0) {
 			fullScan = true;
 		} else if(cli.hasEntry("-localscan", "-local") >= 0) {
@@ -108,6 +109,16 @@ public class Main {
 			}
 		}
 		
+		// Credentials (from configuration only)
+		String lUser = appProp.getProperty(DialogAppSettings.PROP_LOGIN_USER);
+		if(lUser != null && lUser.length() > 0) {
+			try {
+				char[] pDecoded = new String(Base64.getDecoder().decode(appProp.getProperty(DialogAppSettings.PROP_LOGIN_PWD).substring(1))).toCharArray();
+				DevicesFactory.setCredential(lUser, pDecoded);
+			} catch(RuntimeException e) {}
+		}
+		
+		// Non interactive commands
 		if((cliIndex = cli.hasEntry("-backup")) >= 0) {
 			String path = cli.getParameter(cliIndex);
 			if(path == null) {
@@ -119,6 +130,12 @@ public class Main {
 				System.err.println("parameter after -backup must be an existing path");
 				System.exit(1);
 			}
+			// look for unused CLI entries
+			if(cli.unused().length > 0) {
+				System.err.println("Wrong parameter(s): " + Arrays.stream(cli.unused()).collect(Collectors.joining("; ")));
+				System.exit(10);
+			}
+			LOG.info("Backup devices in {}", path);
 			try (NonInteractiveDevices model = new NonInteractiveDevices()) {
 				if(baseIP == null) {
 					model.scannerInit(fullScan);
@@ -126,15 +143,21 @@ public class Main {
 					model.scannerInit(baseIP, firstIP, lastIP);
 				}
 				//todo
-				model.execute(d -> System.out.println(d));
-//				System.out.println(model.size());
-				System.out.println("non interactive backup in: " + path);
+				model.execute(d -> {
+					System.out.println(d);
+				});
+				LOG.info("Backup end");
 				System.exit(0);
 			} catch (Exception e) {
 				e.printStackTrace();
 				System.exit(1);
 			}
 		} else if(cli.hasEntry("-list") >= 0) {
+			// look for unused CLI entries
+			if(cli.unused().length > 0) {
+				System.err.println("Wrong parameter(s): " + Arrays.stream(cli.unused()).collect(Collectors.joining("; ")));
+				System.exit(10);
+			}
 			LOG.info("Retriving list ...");
 			try (NonInteractiveDevices model = new NonInteractiveDevices()) {
 				if(baseIP == null) {
@@ -149,11 +172,6 @@ public class Main {
 				e.printStackTrace();
 				System.exit(1);
 			}
-		}
-		// look for unused CLI entries
-		if(cli.unused().length > 0) {
-			System.err.println("Wrong parameter(s): " + Arrays.stream(cli.unused()).collect(Collectors.joining("; ")));
-			System.exit(10);
 		}
 
 		// Go interactive
@@ -191,14 +209,6 @@ public class Main {
 							appProp.setBoolProperty(DialogAppSettings.PROP_USE_ARCHIVE, false);
 							Msg.errorMsg(e);
 						}
-					}
-					
-					String lUser = appProp.getProperty(DialogAppSettings.PROP_LOGIN_USER);
-					if(lUser != null && lUser.length() > 0) {
-						try {
-							char[] pDecoded = new String(Base64.getDecoder().decode(appProp.getProperty(DialogAppSettings.PROP_LOGIN_PWD).substring(1))).toCharArray();
-							DevicesFactory.setCredential(lUser, pDecoded);
-						} catch(RuntimeException e) {}
 					}
 					final int refreshStatusInterval = appProp.getIntProperty(DialogAppSettings.PROP_REFRESH_ITERVAL, DialogAppSettings.PROP_REFRESH_ITERVAL_DEFAULT) * 1000;
 					final int refreshConfigTics = appProp.getIntProperty(DialogAppSettings.PROP_REFRESH_CONF, DialogAppSettings.PROP_REFRESH_CONF_DEFAULT);
