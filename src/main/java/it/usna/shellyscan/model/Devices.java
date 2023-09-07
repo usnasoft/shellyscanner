@@ -214,6 +214,7 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 						LOG.debug("New local scan interface: {} {}", dns.getName(), dns.getInetAddress());
 						bjServices.add(dns);
 						dns.addServiceListener(SERVICE_TYPE1, new MDNSListener());
+//						dns.addServiceListener(SERVICE_TYPE2, new MDNSListener());
 					}
 
 				} catch(Exception e) {
@@ -223,10 +224,11 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 			for(JmDNS bonjourService: bjServices) {
 				LOG.debug("scanning: {} {}", bonjourService.getName(), bonjourService.getInetAddress());
 				final ServiceInfo[] serviceInfos = bonjourService.list(SERVICE_TYPE1);
-				for (ServiceInfo info: serviceInfos) {
-					final String name = info.getName();
+//				final ServiceInfo[] serviceInfos = bonjourService.list(SERVICE_TYPE2);
+				for (ServiceInfo dnsInfo: serviceInfos) {
+					final String name = dnsInfo.getName();
 					if(name.startsWith("shelly") || name.startsWith("Shelly")) { // ShellyBulbDuo-xxx
-						executor.execute(() -> create(info.getInetAddresses()[0], 80, name));
+						executor.execute(() -> create(dnsInfo.getInetAddresses()[0], 80, name));
 					}
 				}
 			}

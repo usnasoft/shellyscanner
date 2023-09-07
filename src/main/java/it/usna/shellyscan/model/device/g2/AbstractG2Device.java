@@ -262,7 +262,6 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 	
 	public Future<Session> connectWebSocketLogs(WebSocketDeviceListener listener) throws IOException, InterruptedException, ExecutionException {
 		final Future<Session> s = wsClient.connect(listener, URI.create("ws://" + address.getHostAddress() + ":" + port + "/debug/log"));
-		s.get().sendText("{\"id\":2, \"src\":\"S_Scanner\", \"method\":\"Shelly.GetDeviceInfo\"}", Callback.NOOP);
 		return s;
 //		return wsClient..connect(listener, URI.create("ws://" + address.getHostAddress() + ":" + port + "/debug/log"));
 	}

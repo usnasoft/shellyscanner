@@ -182,7 +182,7 @@ public class DialogDeviceLogsG2 extends JDialog {
 							wsSession.get().close(StatusCode.NORMAL, "bye", Callback.NOOP);
 						}
 					} catch (/*IOException |*/ InterruptedException | ExecutionException e1) {
-						LOG.error("webSocketClient.disconnect", e1);
+						LOG.error("webSocketClient.close", e1);
 					}
 				} finally {
 					setCursor(Cursor.getDefaultCursor());

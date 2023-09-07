@@ -8,6 +8,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Consumer;
@@ -19,7 +21,6 @@ import javax.jmdns.ServiceInfo;
 import org.eclipse.jetty.client.ContentResponse;
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.http.HttpStatus;
-import org.eclipse.jetty.websocket.client.WebSocketClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,7 +38,7 @@ public class NonInteractiveDevices implements Closeable {
 	private final static Logger LOG = LoggerFactory.getLogger(NonInteractiveDevices.class);
 	private final static ObjectMapper JSON_MAPPER = new ObjectMapper();
 
-//	private final static int EXECUTOR_POOL_SIZE = 64;
+	private final static int EXECUTOR_POOL_SIZE = 64;
 
 	private JmmDNS jd;
 	private Set<JmDNS> bjServices = new HashSet<>();
@@ -50,18 +51,21 @@ public class NonInteractiveDevices implements Closeable {
 //	private final static String SERVICE_TYPE2 = "_shelly._tcp.local.";
 	private final List<ShellyAbstractDevice> devices = new ArrayList<>();
 
-//	private ScheduledExecutorService executor = Executors.newScheduledThreadPool(EXECUTOR_POOL_SIZE);
+	private ScheduledExecutorService executor = Executors.newScheduledThreadPool(EXECUTOR_POOL_SIZE);
 	private HttpClient httpClient = new HttpClient();
-	private WebSocketClient wsClient = new WebSocketClient(httpClient);
+//	private WebSocketClient wsClient = new WebSocketClient(httpClient);
 	
 	public NonInteractiveDevices() throws Exception {
+		httpClient.setDestinationIdleTimeout(300_000); // 5 min
+		httpClient.setMaxConnectionsPerDestination(2);
 		httpClient.start();
-		wsClient.start();
+//		wsClient.start();
 	}
 
 	public void scannerInit(boolean fullScan) throws IOException {
 		if(fullScan) {
 			jd = JmmDNS.Factory.getInstance();
+			try { Thread.sleep(1500); } catch (InterruptedException e) { } // hoping this time is enough to fill list 
 			for(JmDNS dns: jd.getDNS()) {
 				bjServices.add(dns);
 				LOG.debug("Full scan {} {}", dns.getName(), dns.getInetAddress());
@@ -82,16 +86,16 @@ public class NonInteractiveDevices implements Closeable {
 	}
 
 	private void scanByIP(Consumer<ShellyAbstractDevice> c) throws IOException {
-		for(/*int dalay = 0,*/ int ip4 = lowerIP; ip4 <= higherIP; /*dalay +=4,*/ ip4++) {
+		for(int dalay = 0, ip4 = lowerIP; ip4 <= higherIP; dalay +=4, ip4++) {
 			baseScanIP[3] = (byte)ip4;
 			final InetAddress addr = InetAddress.getByAddress(baseScanIP);
-//			executor.schedule(() -> {
+			executor.schedule(() -> {
 				try {
-					if(addr.isReachable(4500)) {
-//						Thread.sleep(MULTI_QUERY_DELAY);
+					if(addr.isReachable(5_000)) {
+						Thread.sleep(Devices.MULTI_QUERY_DELAY);
 						JsonNode info = isShelly(addr, 80);
 						if(info != null) {
-//							Thread.sleep(MULTI_QUERY_DELAY);
+							Thread.sleep(Devices.MULTI_QUERY_DELAY);
 							create(addr, 80, info, addr.getHostAddress(), c);
 						}
 					} else {
@@ -99,10 +103,10 @@ public class NonInteractiveDevices implements Closeable {
 					}
 				} catch (TimeoutException e) {
 					LOG.trace("timeout {}", addr);
-				} catch (IOException /*| InterruptedException*/ e) {
+				} catch (IOException | InterruptedException e) {
 					LOG.error("ip scan error {} {}", addr, e.toString());
 				}
-//			}, dalay, TimeUnit.MILLISECONDS);
+			}, dalay, TimeUnit.MILLISECONDS);
 		}
 	}
 
@@ -125,16 +129,19 @@ public class NonInteractiveDevices implements Closeable {
 
 	public void execute(Consumer<ShellyAbstractDevice> c) throws IOException {
 		LOG.trace("scan");
-//		clear();
 		if(this.baseScanIP == null) {
 			for(JmDNS bonjourService: bjServices) {
 				LOG.debug("scanning: {} {}", bonjourService.getName(), bonjourService.getInetAddress());
 				final ServiceInfo[] serviceInfos = bonjourService.list(SERVICE_TYPE1);
-				for (ServiceInfo info: serviceInfos) {
-					final String name = info.getName();
-					if(name.startsWith("shelly") || name.startsWith("Shelly")) { // ShellyBulbDuo-xxx
-//						executor.execute(() -> create(info.getInetAddresses()[0], 80, null, name));
-						create(info.getInetAddresses()[0], 80, null, name, c);
+				for (ServiceInfo dnsInfo: serviceInfos) {
+					final String name = dnsInfo.getName();
+					try {
+						JsonNode info = isShelly(dnsInfo.getInetAddresses()[0], 80);
+						if(info != null) {
+							create(dnsInfo.getInetAddresses()[0], 80, info, name, c);
+						}
+					} catch (TimeoutException e) {
+						LOG.error("scan", e);
 					}
 				}
 			}
@@ -147,52 +154,40 @@ public class NonInteractiveDevices implements Closeable {
 	private void create(InetAddress address, int port, JsonNode info, String hostName, Consumer<ShellyAbstractDevice> c) {
 		LOG.trace("Creating {} - {}", address, hostName);
 		try {
-			ShellyAbstractDevice d = DevicesFactory.create(httpClient, wsClient, address, port, info, hostName);
-			devices.add(d);
-			c.accept(d);
-			LOG.debug("Create {} - {}", address, d);
+			ShellyAbstractDevice d = DevicesFactory.create(httpClient, /*wsClient*/null, address, port, info, hostName);
+			if(devices.contains(d) == false) {
+				devices.add(d);
+				c.accept(d);
+				LOG.debug("Create {} - {}", address, d);
 
-			if(d instanceof AbstractG2Device gen2 && (gen2.isExtender() || d.getStatus() == Status.NOT_LOOGGED)) {
-				((AbstractG2Device)d).getRangeExtenderManager().getPorts().forEach(p -> {
-					try {
-						//							executor.execute(() -> {
+				if(d instanceof AbstractG2Device gen2 && (gen2.isExtender() || d.getStatus() == Status.NOT_LOOGGED)) {
+					((AbstractG2Device)d).getRangeExtenderManager().getPorts().forEach(p -> {
 						try {
-							JsonNode infoEx = isShelly(address, p);
-							if(infoEx != null) {
-								create(d.getAddress(), p, infoEx, d.getHostname() + "-EX" + ":" + p, c); // fillOnce will later correct hostname
+							//							executor.execute(() -> {
+							try {
+								JsonNode infoEx = isShelly(address, p);
+								if(infoEx != null) {
+									create(d.getAddress(), p, infoEx, d.getHostname() + "-EX" + ":" + p, c); // fillOnce will later correct hostname
+								}
+							} catch (TimeoutException | RuntimeException e) {
+								LOG.debug("timeout {}:{}", d.getAddress(), p, e);
 							}
-						} catch (TimeoutException | RuntimeException e) {
-							LOG.debug("timeout {}:{}", d.getAddress(), p, e);
+							//							});
+						} catch(RuntimeException e) {
+							LOG.error("Unexpected-add-ext: {}; host: {}:{}", address, hostName, p, e);
 						}
-						//							});
-					} catch(RuntimeException e) {
-						LOG.error("Unexpected-add-ext: {}; host: {}:{}", address, hostName, p, e);
-					}
-				});
+					});
+				}
 			}
 		} catch(Exception e) {
 			LOG.error("Unexpected-add: {}; host: {}", address, hostName, e);
 		}
 	}
 
-//	public ShellyAbstractDevice get(int ind) {
-//		return devices.get(ind);
-//	}
-
-//	public int size() {
-//		return devices.size();
-//	}
-
-//	private void clear() {
-////		executor.shutdownNow(); // full clean instead of refreshProcess.forEach(f -> f.cancel(true));
-////		executor = Executors.newScheduledThreadPool(EXECUTOR_POOL_SIZE);
-//		devices.clear();
-//	}
-
 	@Override
 	public void close() {
 		LOG.trace("Model closing");
-//		executor.shutdownNow();
+		executor.shutdownNow();
 		bjServices.parallelStream().forEach(dns -> {
 			try {
 				dns.close();
@@ -207,11 +202,11 @@ public class NonInteractiveDevices implements Closeable {
 				LOG.error("closing JmmDNS", e);
 			}
 		}
-		try {
-			wsClient.stop();
-		} catch (Exception e) {
-			LOG.error("webSocketClient.stop", e);
-		}
+//		try {
+//			wsClient.stop();
+//		} catch (Exception e) {
+//			LOG.error("webSocketClient.stop", e);
+//		}
 		try {
 			httpClient.stop();
 		} catch (Exception e) {

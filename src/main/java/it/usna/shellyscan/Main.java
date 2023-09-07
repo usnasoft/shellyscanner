@@ -70,11 +70,11 @@ public class Main {
 		int lastIP  = 0;
 		
 		int cliIndex;
-		if(cli.hasEntry("-fullscan", "-fs") >= 0) {
+		if(cli.hasEntry("-fullscan", "-full") >= 0) {
 			fullScan = true;
-		} else if(cli.hasEntry("-localscan", "-ls") >= 0) {
+		} else if(cli.hasEntry("-localscan", "-local") >= 0) {
 			fullScan = false;
-		} else if((cliIndex = cli.hasEntry("-ipscan", "-ips")) >= 0) {
+		} else if((cliIndex = cli.hasEntry("-ipscan", "-ip")) >= 0) {
 			try {
 				Matcher m = Pattern.compile(IP_SCAN_PAR_FORMAT).matcher(cli.getParameter(cliIndex));
 				m.find();
@@ -87,7 +87,7 @@ public class Main {
 				System.err.println("Wrong parameter format; example: -ipscan 192.168.1.1-254");
 				System.exit(1);
 			}
-		} else if((cliIndex = cli.hasEntry("-noscan", "-ns")) >= 0) { // only archive (it's actually an IP scan with firstIP > lastIP)
+		} else if((cliIndex = cli.hasEntry("-noscan")) >= 0) { // only archive (it's actually an IP scan with firstIP > lastIP)
 			baseIP = new byte[] {127, 0, 0, 1};
 			firstIP = 1;
 			lastIP = 0;
@@ -135,7 +135,7 @@ public class Main {
 				System.exit(1);
 			}
 		} else if(cli.hasEntry("-list") >= 0) {
-			LOG.info("Scanning ...");
+			LOG.info("Retriving list ...");
 			try (NonInteractiveDevices model = new NonInteractiveDevices()) {
 				if(baseIP == null) {
 					model.scannerInit(fullScan);
