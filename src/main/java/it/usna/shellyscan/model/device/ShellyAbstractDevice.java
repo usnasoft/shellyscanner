@@ -210,7 +210,7 @@ public abstract class ShellyAbstractDevice {
 	
 	public abstract LoginManager getLoginManager() throws IOException;
 
-	public abstract boolean backup(final File file) throws IOException; // false: use of stored data; cound not connect to device
+	public abstract boolean backup(final File file) throws IOException; // false: use of stored data; could not connect to device
 	
 	public abstract Map<Restore, String> restoreCheck(Map<String, JsonNode> backupJsons) throws IOException;
 	

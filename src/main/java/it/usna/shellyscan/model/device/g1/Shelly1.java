@@ -65,7 +65,8 @@ public class Shelly1 extends AbstractG1Device implements RelayCommander {
 				tt.add(Meters.Type.TX1);
 			if (extTNode.has("2"))
 				tt.add(Meters.Type.TX2);
-			final Meters.Type[] mTypes = tt.toArray(new Meters.Type[tt.size()]);
+//			final Meters.Type[] mTypes = tt.toArray(new Meters.Type[tt.size()]);
+			final Meters.Type[] mTypes = tt.toArray(Meters.Type[]::new);
 			m.add(new Meters() {
 				@Override
 				public Type[] getTypes() {
@@ -111,7 +112,8 @@ public class Shelly1 extends AbstractG1Device implements RelayCommander {
 		}
 		
 		if(m.size() > 0) {
-			meters = m.toArray(new Meters[m.size()]);
+//			meters = m.toArray(new Meters[m.size()]);
+			meters = m.toArray(Meters[]::new);
 		}
 	}
 

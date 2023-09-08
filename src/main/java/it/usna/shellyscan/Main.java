@@ -136,15 +136,14 @@ public class Main {
 				System.exit(10);
 			}
 			LOG.info("Backup devices in {}", path);
-			try (NonInteractiveDevices model = new NonInteractiveDevices()) {
-				if(baseIP == null) {
-					model.scannerInit(fullScan);
-				} else {
-					model.scannerInit(baseIP, firstIP, lastIP);
-				}
-				//todo
+			try (NonInteractiveDevices model = (baseIP == null) ? new NonInteractiveDevices(fullScan) : new NonInteractiveDevices(baseIP, firstIP, lastIP)) {
 				model.execute(d -> {
-					System.out.println(d);
+					try {
+						d.backup(new File(dirPath.toFile(), d.getHostname().replaceAll("[^\\w_-]+", "_") + "." + Main.BACKUP_FILE_EXT));
+						System.out.println(d.getHostname() + " success");
+					} catch (Exception e) {
+						System.out.println(d.getHostname() + " error - " + e.toString());
+					}
 				});
 				LOG.info("Backup end");
 				System.exit(0);
@@ -159,12 +158,7 @@ public class Main {
 				System.exit(10);
 			}
 			LOG.info("Retriving list ...");
-			try (NonInteractiveDevices model = new NonInteractiveDevices()) {
-				if(baseIP == null) {
-					model.scannerInit(fullScan);
-				} else {
-					model.scannerInit(baseIP, firstIP, lastIP);
-				}
+			try (NonInteractiveDevices model = (baseIP == null) ? new NonInteractiveDevices(fullScan) : new NonInteractiveDevices(baseIP, firstIP, lastIP)) {
 				model.execute(d -> System.out.println(d));
 				LOG.info("List end");
 				System.exit(0);

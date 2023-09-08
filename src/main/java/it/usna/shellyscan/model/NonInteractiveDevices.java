@@ -54,11 +54,21 @@ public class NonInteractiveDevices implements Closeable {
 	private HttpClient httpClient = new HttpClient();
 //	private WebSocketClient wsClient = new WebSocketClient(httpClient);
 	
-	public NonInteractiveDevices() throws Exception {
+	private NonInteractiveDevices() throws Exception {
 		httpClient.setDestinationIdleTimeout(300_000); // 5 min
 		httpClient.setMaxConnectionsPerDestination(2);
 		httpClient.start();
 //		wsClient.start();
+	}
+	
+	public NonInteractiveDevices(boolean fullScan) throws Exception {
+		this();
+		scannerInit(fullScan);
+	}
+	
+	public NonInteractiveDevices(final byte[] ip, int first, final int last) throws Exception {
+		this();
+		scannerInit(ip, first, last);
 	}
 
 	public void scannerInit(boolean fullScan) throws IOException {

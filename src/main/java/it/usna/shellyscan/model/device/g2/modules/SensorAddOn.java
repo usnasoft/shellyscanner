@@ -105,7 +105,8 @@ public class SensorAddOn extends Meters {
 				voltmeterID = voltIn.next();
 				types.add(Type.V);
 			}
-			supported = types.toArray(new Type[types.size()]);
+			//supported = types.toArray(new Type[types.size()]);
+			supported = types.toArray(Type[]::new);
 		} catch (RuntimeException e) {
 			supported = new Type[0];
 			LOG.error("Add-on init error", e);

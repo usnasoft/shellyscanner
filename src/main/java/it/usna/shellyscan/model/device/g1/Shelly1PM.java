@@ -71,7 +71,8 @@ public class Shelly1PM extends AbstractG1Device implements RelayCommander, Inter
 			if(extTNode.has("0")) tt.add(Meters.Type.T);
 			if(extTNode.has("1")) tt.add(Meters.Type.TX1);
 			if(extTNode.has("2")) tt.add(Meters.Type.TX2);
-			final Meters.Type[] mTypes = tt.toArray(new Meters.Type[tt.size()]);
+			//final Meters.Type[] mTypes = tt.toArray(new Meters.Type[tt.size()]);
+			final Meters.Type[] mTypes = tt.toArray(Meters.Type[]::new);
 			meters = new Meters[] {
 					pMeters,
 					
