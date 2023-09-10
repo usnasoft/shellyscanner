@@ -171,6 +171,9 @@ public class ShellyPlus2PM extends AbstractG2Device implements RelayCommander, R
 			}
 			roller.fillSettings(configuration.get("cover:0"));
 		}
+		if(addOn != null) {
+			addOn.fillSettings(configuration);
+		}
 	}
 
 	@Override

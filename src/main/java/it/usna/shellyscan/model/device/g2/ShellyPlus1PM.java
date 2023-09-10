@@ -115,6 +115,9 @@ public class ShellyPlus1PM extends AbstractG2Device implements RelayCommander, I
 	protected void fillSettings(JsonNode configuration) throws IOException {
 		super.fillSettings(configuration);
 		relay.fillSettings(configuration.get("switch:0"));
+		if(addOn != null) {
+			addOn.fillSettings(configuration);
+		}
 	}
 	
 	@Override

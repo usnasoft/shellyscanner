@@ -35,18 +35,23 @@ public class SensorAddOn extends Meters {
 
 	private String extT0ID, extT1ID, extT2ID, extT3ID, extT4ID;
 	private float extT0, extT1, extT2, extT3, extT4;
+	private String extT0Name, extT1Name, extT2Name, extT3Name, extT4Name;
 
 	private String humidityID;
 	private int humidity;
+	private String humidityName;
 
 	private String switchID;
 	private boolean switchOn;
+	private String switchName;
 
 	private String analogID;
 	private float analog;
+	private String analogName;
 
 	private String voltmeterID;
 	private float volt;
+	private String voltmeterName;
 
 	public SensorAddOn(AbstractG2Device d) throws IOException {
 		try {
@@ -105,7 +110,6 @@ public class SensorAddOn extends Meters {
 				voltmeterID = voltIn.next();
 				types.add(Type.V);
 			}
-			//supported = types.toArray(new Type[types.size()]);
 			supported = types.toArray(Type[]::new);
 		} catch (RuntimeException e) {
 			supported = new Type[0];
@@ -116,6 +120,41 @@ public class SensorAddOn extends Meters {
 	@Override
 	public Type[] getTypes() {
 		return supported;
+	}
+	
+	public void fillSettings(JsonNode configuration) throws IOException {
+		try {
+			JsonNode cnf;
+			if(switchID != null && (cnf = configuration.get(switchID)) != null) {
+				switchName = cnf.path("name").asText();
+			}
+			if(analogID != null && (cnf = configuration.get(analogID)) != null) {
+				analogName = cnf.path("name").asText();
+			}
+			if(voltmeterID != null && (cnf = configuration.get(voltmeterID)) != null) {
+				voltmeterName = cnf.path("name").asText();
+			}
+			if(extT0ID != null && (cnf = configuration.get(extT0ID)) != null) {
+				extT0Name = cnf.path("name").asText();
+			}
+			if(extT1ID != null && (cnf = configuration.get(extT1ID)) != null) {
+				extT1Name = cnf.path("name").asText();
+			}
+			if(extT2ID != null && (cnf = configuration.get(extT2ID)) != null) {
+				extT2Name = cnf.path("name").asText();
+			}
+			if(extT3ID != null && (cnf = configuration.get(extT3ID)) != null) {
+				extT3Name = cnf.path("name").asText();
+			}
+			if(extT4ID != null && (cnf = configuration.get(extT4ID)) != null) {
+				extT4Name = cnf.path("name").asText();
+			}
+			if(humidityID != null && (cnf = configuration.get(humidityID)) != null) {
+				humidityName = cnf.path("name").asText();
+			}
+		} catch (RuntimeException e) {
+			LOG.warn("Settings Add-on configuration changed?", e);
+		}	
 	}
 
 	public void fillStatus(JsonNode status) {
@@ -148,7 +187,7 @@ public class SensorAddOn extends Meters {
 				humidity = status.path(humidityID).get("rh").intValue();
 			}
 		} catch (RuntimeException e) {
-			LOG.warn("Add-on configuration changed?", e);
+			LOG.warn("Status Add-on configuration changed?", e);
 		}
 	}
 
@@ -190,18 +229,33 @@ public class SensorAddOn extends Meters {
 
 	@Override
 	public float getValue(Type t) {
-		switch(t) {
-		case EXS: return switchOn ? 1f : 0f;
-		case PERC: return analog;
-		case V: return volt;
-		case T: return extT0;
-		case TX1: return extT1;
-		case TX2: return extT2;
-		case TX3: return extT3;
-		case TX4: return extT4;
-		case H: return humidity;
-		default: return 0;
-		}
+		return switch(t) {
+		case EXS -> switchOn ? 1f : 0f;
+		case PERC -> analog;
+		case V -> volt;
+		case T -> extT0;
+		case TX1 -> extT1;
+		case TX2 -> extT2;
+		case TX3 -> extT3;
+		case TX4 -> extT4;
+		case H -> humidity;
+		default -> 0;
+		};
+	}
+	
+	public String getName(Type t) {
+		return switch(t) {
+		case EXS -> switchName;
+		case PERC -> analogName;
+		case V -> voltmeterName;
+		case T -> extT0Name;
+		case TX1 -> extT1Name;
+		case TX2 -> extT2Name;
+		case TX3 -> extT3Name;
+		case TX4 -> extT4Name;
+		case H -> humidityName;
+		default -> "";
+		};
 	}
 
 	public static String[] getInfoRequests(String [] cmd) {

@@ -75,6 +75,9 @@ public class ShellyPlusi4 extends AbstractG2Device implements InputCommander, Se
 		inputs[1].associateWH(webhooks.getHooks(1));
 		inputs[2].associateWH(webhooks.getHooks(2));
 		inputs[3].associateWH(webhooks.getHooks(3));
+		if(addOn != null) {
+			addOn.fillSettings(configuration);
+		}
 	}
 	
 	@Override

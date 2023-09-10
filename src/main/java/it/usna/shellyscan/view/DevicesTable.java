@@ -53,6 +53,7 @@ import it.usna.shellyscan.model.device.g1.ShellyTRV;
 import it.usna.shellyscan.model.device.g1.modules.LightBulbRGBCommander;
 import it.usna.shellyscan.model.device.g1.modules.Thermostat;
 import it.usna.shellyscan.model.device.g2.ShellyPlusSmoke;
+import it.usna.shellyscan.model.device.g2.modules.SensorAddOn;
 import it.usna.shellyscan.model.device.modules.DeviceModule;
 import it.usna.shellyscan.model.device.modules.InputCommander;
 import it.usna.shellyscan.model.device.modules.RGBWCommander;
@@ -249,7 +250,7 @@ public class DevicesTable extends ExTooltipTable {
 				return String.format(Locale.ENGLISH, LABELS.getString("col_command_therm_tooltip"), ((Thermostat)value).getCurrentProfile(), ((Thermostat)value).getTargetTemp(), ((Thermostat)value).getPosition());
 			} else if(value instanceof Meters[]) {
 				Component comp = getCellRenderer(r, c).getTableCellRendererComponent(this, value, false, false, r, c);
-				if(Arrays.stream((Meters[])value).anyMatch(m -> m instanceof LabelHolder) || getCellRect(r, c, false).width <= comp.getPreferredSize().width) {
+				if(Arrays.stream((Meters[])value).anyMatch(m -> m instanceof LabelHolder || m instanceof SensorAddOn) || getCellRect(r, c, false).width <= comp.getPreferredSize().width) {
 					adaptTooltipLocation = true;
 					String tt = "<html><table border='0' cellspacing='0' cellpadding='0'>";
 					for(Meters m: (Meters[])value) {
