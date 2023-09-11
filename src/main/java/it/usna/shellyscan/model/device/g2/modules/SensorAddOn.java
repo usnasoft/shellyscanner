@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import it.usna.shellyscan.model.Devices;
@@ -126,31 +127,31 @@ public class SensorAddOn extends Meters {
 		try {
 			JsonNode cnf;
 			if(switchID != null && (cnf = configuration.get(switchID)) != null) {
-				switchName = cnf.path("name").asText();
+				switchName = cnf.path("name").textValue();
 			}
 			if(analogID != null && (cnf = configuration.get(analogID)) != null) {
-				analogName = cnf.path("name").asText();
+				analogName = cnf.path("name").textValue();
 			}
 			if(voltmeterID != null && (cnf = configuration.get(voltmeterID)) != null) {
-				voltmeterName = cnf.path("name").asText();
+				voltmeterName = cnf.path("name").textValue();
 			}
 			if(extT0ID != null && (cnf = configuration.get(extT0ID)) != null) {
-				extT0Name = cnf.path("name").asText();
+				extT0Name = cnf.path("name").textValue();
 			}
 			if(extT1ID != null && (cnf = configuration.get(extT1ID)) != null) {
-				extT1Name = cnf.path("name").asText();
+				extT1Name = cnf.path("name").textValue();
 			}
 			if(extT2ID != null && (cnf = configuration.get(extT2ID)) != null) {
-				extT2Name = cnf.path("name").asText();
+				extT2Name = cnf.path("name").textValue();
 			}
 			if(extT3ID != null && (cnf = configuration.get(extT3ID)) != null) {
-				extT3Name = cnf.path("name").asText();
+				extT3Name = cnf.path("name").textValue();
 			}
 			if(extT4ID != null && (cnf = configuration.get(extT4ID)) != null) {
-				extT4Name = cnf.path("name").asText();
+				extT4Name = cnf.path("name").textValue();
 			}
 			if(humidityID != null && (cnf = configuration.get(humidityID)) != null) {
-				humidityName = cnf.path("name").asText();
+				humidityName = cnf.path("name").textValue();
 			}
 		} catch (RuntimeException e) {
 			LOG.warn("Settings Add-on configuration changed?", e);
@@ -288,7 +289,6 @@ public class SensorAddOn extends Meters {
 		SensorAddOn addOn = d.getSensorAddOn();
 		JsonNode backupAddOn = backupJsons.get(BACKUP_SECTION);
 		//todo errors.add(Input.restore(this, configuration, "0"));
-		JsonNode backupConfig = backupJsons.get("Shelly.GetConfig.json");
 		if(backupAddOn == null && addOn != null) {
 			errors.add(enable(d, false));
 		} else if(backupAddOn != null) {
@@ -296,6 +296,7 @@ public class SensorAddOn extends Meters {
 				if(addOn == null) {
 					enable(d, true);
 				}
+				JsonNode backupConfig = backupJsons.get("Shelly.GetConfig.json");
 				Iterator<Entry<String, JsonNode>> nodes = backupAddOn.fields();
 				while(nodes.hasNext()) {
 					Map.Entry<String, JsonNode> entry = (Map.Entry<String, JsonNode>) nodes.next();
@@ -309,11 +310,15 @@ public class SensorAddOn extends Meters {
 							JsonNode inputValue = input.getValue();
 							//System.out.println(id.next().getKey());
 							TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+							String typeIdx[] = inputKey.split(":");
 							if(inputValue.has("addr")) {
-								errors.add(addSensor(d, sensor, inputKey.split(":")[1], inputValue.get("addr").asText()));
+								errors.add(addSensor(d, sensor, typeIdx[1], inputValue.get("addr").asText()));
 							} else {
-								errors.add(addSensor(d, sensor, inputKey.split(":")[1]));
+								errors.add(addSensor(d, sensor, typeIdx[1]));
 							}
+//							if("input".equals(typeIdx[0])) {
+//								Input.restore(d, backupConfig, typeIdx[1]);
+//							}
 						}
 					}
 				}

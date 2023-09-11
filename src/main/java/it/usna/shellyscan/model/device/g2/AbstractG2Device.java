@@ -204,7 +204,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 		try {
 			final JsonNode resp = executeRPC(method, payload);
 			JsonNode error;
-			if((error = resp.get("error")) == null) { // todo {"id":1,"src":"shellyplusi4-xxx","result":{"restart_required":true}}
+			if((error = resp.get("error")) == null) { // {"id":1,"src":"shellyplusi4-xxx","result":{"restart_required":true}}
 				if(resp.path("result").path("restart_required").asBoolean(false)) {
 					rebootRequired = true;
 				}
