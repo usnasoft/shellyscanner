@@ -248,21 +248,33 @@ public class DevicesTable extends ExTooltipTable {
 			} else if(value instanceof Thermostat) {
 				adaptTooltipLocation = false;
 				return String.format(Locale.ENGLISH, LABELS.getString("col_command_therm_tooltip"), ((Thermostat)value).getCurrentProfile(), ((Thermostat)value).getTargetTemp(), ((Thermostat)value).getPosition());
-			} else if(value instanceof Meters[]) {
+			} else if(value instanceof Meters[] meters) {
 				Component comp = getCellRenderer(r, c).getTableCellRendererComponent(this, value, false, false, r, c);
-				if(Arrays.stream((Meters[])value).anyMatch(m -> m instanceof LabelHolder || m instanceof SensorAddOn) || getCellRect(r, c, false).width <= comp.getPreferredSize().width) {
+				if(Arrays.stream(meters).anyMatch(m -> m instanceof LabelHolder || m instanceof SensorAddOn) || getCellRect(r, c, false).width <= comp.getPreferredSize().width) {
 					adaptTooltipLocation = true;
 					String tt = "<html><table border='0' cellspacing='0' cellpadding='0'>";
-					for(Meters m: (Meters[])value) {
+					for(Meters m: meters) {
 						tt += "<tr>";
-						if(m instanceof LabelHolder) {
-							tt += "<td><b>" + ((LabelHolder)m).getLabel() + "</b>&nbsp;</td>";
-						}
-						for(Meters.Type t: m.getTypes()) {
-							if(t == Meters.Type.EXS) {
-								tt += "<td><i>" +  LABELS.getString("METER_LBL_" + t) + "</i>&nbsp;</td><td align='right'>" + SWITCH_FORMATTER.format(new Object [] {m.getValue(t)}) + "&nbsp;</td>";
-							} else {
-								tt += "<td><i>" +  LABELS.getString("METER_LBL_" + t) + "</i>&nbsp;</td><td align='right'>" + String.format(Locale.ENGLISH, LABELS.getString("METER_VAL_" + t), m.getValue(t)) + "&nbsp;</td>";
+						if(m instanceof SensorAddOn) {
+							for(Meters.Type t: m.getTypes()) {
+								final String name = ((SensorAddOn)m).getName(t);
+								final String tLabel = (name != null && name.length() > 0) ? " (" + name + ")": "";
+								if(t == Meters.Type.EXS) {
+									tt += "<td><i>" + LABELS.getString("METER_LBL_" + t) + tLabel + "</i>&nbsp;</td><td align='right'>" + SWITCH_FORMATTER.format(new Object [] {m.getValue(t)}) + "&nbsp;</td>";
+								} else {
+									tt += "<td><i>" + LABELS.getString("METER_LBL_" + t) + tLabel + "</i>&nbsp;</td><td align='right'>" + String.format(Locale.ENGLISH, LABELS.getString("METER_VAL_" + t), m.getValue(t)) + "&nbsp;</td>";
+								}
+							}
+						} else {
+							if(m instanceof LabelHolder) {
+								tt += "<td><b>" + ((LabelHolder)m).getLabel() + "</b>&nbsp;</td>";
+							}
+							for(Meters.Type t: m.getTypes()) {
+								if(t == Meters.Type.EXS) {
+									tt += "<td><i>" + LABELS.getString("METER_LBL_" + t) + "</i>&nbsp;</td><td align='right'>" + SWITCH_FORMATTER.format(new Object [] {m.getValue(t)}) + "&nbsp;</td>";
+								} else {
+									tt += "<td><i>" + LABELS.getString("METER_LBL_" + t) + "</i>&nbsp;</td><td align='right'>" + String.format(Locale.ENGLISH, LABELS.getString("METER_VAL_" + t), m.getValue(t)) + "&nbsp;</td>";
+								}
 							}
 						}
 						tt += "</tr>";
@@ -414,8 +426,7 @@ public class DevicesTable extends ExTooltipTable {
 	}
 	
 	public void updateRow(ShellyAbstractDevice d, int index) {
-		/*Object[] row =*/ generateRow(d, ((UsnaTableModel)dataModel).getRow(index));
-//		((UsnaTableModel)dataModel).setRow(index, row);
+		generateRow(d, ((UsnaTableModel)dataModel).getRow(index));
 		((UsnaTableModel)dataModel).fireTableRowsUpdated(index, index);
 		final ListSelectionModel lsm = getSelectionModel(); // allRowsChanged() do not preserve the selected cell; this mess the selection dragging the mouse
 		final int i1 = lsm.getAnchorSelectionIndex();
