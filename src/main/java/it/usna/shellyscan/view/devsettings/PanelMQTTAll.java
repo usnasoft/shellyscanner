@@ -31,7 +31,7 @@ import it.usna.shellyscan.model.device.MQTTManager;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.view.DialogDeviceSelection;
 import it.usna.shellyscan.view.util.Msg;
-import it.usna.shellyscan.view.util.UtilmMiscellaneous;
+import it.usna.shellyscan.view.util.UtilMiscellaneous;
 import it.usna.util.UsnaEventListener;
 
 //https://shelly-api-docs.shelly.cloud/gen2/Components/SystemComponents/Mqtt
@@ -273,7 +273,7 @@ public class PanelMQTTAll extends AbstractSettingsPanel implements UsnaEventList
 					mqttModule.add(mqttm);
 				} catch(IOException | RuntimeException e) {
 					mqttModule.add(null);
-					exclude += "<br>" + UtilmMiscellaneous.getFullName(d);
+					exclude += "<br>" + UtilMiscellaneous.getFullName(d);
 					excludeCount++;
 				}
 			}
@@ -296,7 +296,7 @@ public class PanelMQTTAll extends AbstractSettingsPanel implements UsnaEventList
 			btnCopy.setEnabled(true);
 			return null;
 		} catch (RuntimeException e) {
-			return UtilmMiscellaneous.getFullName(d) + ": " + e.getMessage();
+			return UtilMiscellaneous.getFullName(d) + ": " + e.getMessage();
 		}
 	}
 	

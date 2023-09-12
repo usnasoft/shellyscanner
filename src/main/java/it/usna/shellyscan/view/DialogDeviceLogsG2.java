@@ -45,7 +45,7 @@ import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.g2.WebSocketDeviceListener;
 import it.usna.shellyscan.view.util.UsnaTextPane;
-import it.usna.shellyscan.view.util.UtilmMiscellaneous;
+import it.usna.shellyscan.view.util.UtilMiscellaneous;
 import it.usna.swing.dialog.FindReplaceDialog;
 
 public class DialogDeviceLogsG2 extends JDialog {
@@ -57,7 +57,7 @@ public class DialogDeviceLogsG2 extends JDialog {
 	public DialogDeviceLogsG2(final MainView owner, Devices model, int index) {
 		super(owner, false);
 		AbstractG2Device device = (AbstractG2Device) model.get(index);
-		setTitle(UtilmMiscellaneous.getExtendedHostName(device));
+		setTitle(UtilMiscellaneous.getExtendedHostName(device));
 		setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
 
 		logWasActive = device.getDebugMode() == AbstractG2Device.LogMode.SOCKET;

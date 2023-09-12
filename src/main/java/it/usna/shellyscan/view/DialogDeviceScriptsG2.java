@@ -41,7 +41,7 @@ import it.usna.shellyscan.Main;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.g2.modules.Script;
 import it.usna.shellyscan.view.util.Msg;
-import it.usna.shellyscan.view.util.UtilmMiscellaneous;
+import it.usna.shellyscan.view.util.UtilMiscellaneous;
 import it.usna.swing.table.ExTooltipTable;
 import it.usna.swing.table.UsnaTableModel;
 import it.usna.util.IOFile;
@@ -57,7 +57,7 @@ public class DialogDeviceScriptsG2 extends JDialog {
 
 	public DialogDeviceScriptsG2(final MainView owner, AbstractG2Device device) {
 		super(owner, false);
-		setTitle(String.format(LABELS.getString("dlgScriptTitle"), UtilmMiscellaneous.getExtendedHostName(device)));
+		setTitle(String.format(LABELS.getString("dlgScriptTitle"), UtilMiscellaneous.getExtendedHostName(device)));
 		setDefaultCloseOperation(/*DO_NOTHING_ON_CLOSE*/DISPOSE_ON_CLOSE);
 
 		JPanel buttonsPanel = new JPanel();

@@ -184,6 +184,7 @@
 // button "verify new version"
 // java 17
 // offline scan mode
+// add-on names
 // Shelly +2PM reboot after enabled restricted login to see logs
 
 // TODO

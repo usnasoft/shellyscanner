@@ -12,7 +12,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import it.usna.shellyscan.model.Devices;
@@ -22,9 +21,8 @@ import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 
 /**
  * Sensor add-on model<br>
- * See:<br>
- * https://kb.shelly.cloud/knowledge-base/shelly-plus-add-on
- * https://shelly-api-docs.shelly.cloud/gen2/Addons/ShellySensorAddon
+ * @see https://kb.shelly.cloud/knowledge-base/shelly-plus-add-on
+ * @see https://shelly-api-docs.shelly.cloud/gen2/Addons/ShellySensorAddon
  * @author usna
  */
 public class SensorAddOn extends Meters {
@@ -296,7 +294,7 @@ public class SensorAddOn extends Meters {
 				if(addOn == null) {
 					enable(d, true);
 				}
-				JsonNode backupConfig = backupJsons.get("Shelly.GetConfig.json");
+//				JsonNode backupConfig = backupJsons.get("Shelly.GetConfig.json");
 				Iterator<Entry<String, JsonNode>> nodes = backupAddOn.fields();
 				while(nodes.hasNext()) {
 					Map.Entry<String, JsonNode> entry = (Map.Entry<String, JsonNode>) nodes.next();
@@ -316,8 +314,10 @@ public class SensorAddOn extends Meters {
 							} else {
 								errors.add(addSensor(d, sensor, typeIdx[1]));
 							}
+							// device should reboot before
 //							if("input".equals(typeIdx[0])) {
-//								Input.restore(d, backupConfig, typeIdx[1]);
+//								TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+//								errors.add(Input.restore(d, backupConfig, typeIdx[1]));
 //							}
 						}
 					}

@@ -77,7 +77,7 @@ import it.usna.shellyscan.view.appsettings.DialogAppSettings;
 import it.usna.shellyscan.view.chart.MeasuresChart;
 import it.usna.shellyscan.view.devsettings.DialogDeviceSettings;
 import it.usna.shellyscan.view.util.Msg;
-import it.usna.shellyscan.view.util.UtilmMiscellaneous;
+import it.usna.shellyscan.view.util.UtilMiscellaneous;
 import it.usna.swing.UsnaPopupMenu;
 import it.usna.swing.table.UsnaTableModel;
 import it.usna.util.AppProperties;
@@ -183,7 +183,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		List<? extends RowSorter.SortKey> k = devicesTable.getRowSorter().getSortKeys();
 		new DialogDeviceCheckList(this, model, devicesTable.getSelectedModelRows(), k.get(0).getColumn() == DevicesTable.COL_IP_IDX ? k.get(0).getSortOrder() : SortOrder.UNSORTED);
 		try {
-			Thread.sleep(250); // too many call disturb some devices at least (2.5)
+			Thread.sleep(250); // too many call disturb some devices (especially gen1)
 		} catch (InterruptedException e1) {}
 	});
 	
@@ -278,8 +278,8 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 			fc.setSelectedFile(new File(fileName));
 			if(fc.showOpenDialog(MainView.this) == JFileChooser.APPROVE_OPTION) {
 				MainView.this.getContentPane().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-				final Map<String, JsonNode> backupJsons = UtilmMiscellaneous.readBackupFile(fc.getSelectedFile());
-				Map<Restore, String> test = device.restoreCheck(/*fc.getSelectedFile()*/backupJsons);
+				final Map<String, JsonNode> backupJsons = UtilMiscellaneous.readBackupFile(fc.getSelectedFile());
+				Map<Restore, String> test = device.restoreCheck(backupJsons);
 				MainView.this.getContentPane().setCursor(Cursor.getDefaultCursor());
 				Map<Restore, String> resData = new HashMap<>();
 				if(test.containsKey(ShellyAbstractDevice.Restore.ERR_RESTORE_HOST) &&
@@ -361,17 +361,27 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 					}
 				}
 				MainView.this.getContentPane().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-				final String ret = device.restore(/*fc.getSelectedFile()*/backupJsons, resData);
-				
-				if(ret == null || ret.length() == 0) {
-					JOptionPane.showMessageDialog(MainView.this, LABELS.getString("msgRestoreSuccess"), device.getHostname(), JOptionPane.INFORMATION_MESSAGE);
-				} else {
-					JOptionPane.showMessageDialog(MainView.this, (ret.equals(Restore.ERR_UNKNOWN.toString())) ? LABELS.getString("labelError") : ret, device.getHostname(), JOptionPane.ERROR_MESSAGE);
-				}
+				final String ret = device.restore(backupJsons, resData);
 				appProp.setProperty("LAST_PATH", fc.getCurrentDirectory().getCanonicalPath());
 				device.refreshSettings();
 				device.refreshStatus();
 				update(Devices.EventType.UPDATE, modelRow);
+				
+				if(ret == null || ret.length() == 0) {
+					if(device.rebootRequired())	{
+						String ok = LABELS.getString("dlgOK");
+						if(JOptionPane.showOptionDialog(MainView.this, LABELS.getString("msgRestoreSuccess"), device.getHostname(),
+								JOptionPane.OK_CANCEL_OPTION, JOptionPane.INFORMATION_MESSAGE, null, new Object[] {ok, LABELS.getString("action_reboot_name")}, ok) == 1) {
+							device.setStatus(Status.READING);
+							tabModel.setValueAt(DevicesTable.UPDATING_BULLET, modelRow, DevicesTable.COL_STATUS_IDX);
+							SwingUtilities.invokeLater(() -> model.reboot(modelRow));
+						}
+					} else {
+						JOptionPane.showMessageDialog(MainView.this, LABELS.getString("msgRestoreSuccess"), device.getHostname(), JOptionPane.INFORMATION_MESSAGE);
+					}
+				} else {
+					JOptionPane.showMessageDialog(MainView.this, (ret.equals(Restore.ERR_UNKNOWN.toString())) ? LABELS.getString("labelError") : ret, device.getHostname(), JOptionPane.ERROR_MESSAGE);
+				}
 			}
 		} catch (FileNotFoundException e1) {
 			Msg.errorMsg(MainView.this, String.format(LABELS.getString("action_restore_error_file"), fc.getSelectedFile().getName()));
@@ -792,4 +802,4 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 			statusLabel.setText(String.format(LABELS.getString("scanning_end"), model.size(), devicesTable.getSelectedRowCount()));
 		}
 	}
-} //557 - 614 - 620 - 669 - 705 - 727 - 699 - 760 - 782 - 811
+} //557 - 614 - 620 - 669 - 705 - 727 - 699 - 760 - 782 - 811 - 805

@@ -34,7 +34,7 @@ import it.usna.shellyscan.model.device.g1.MQTTManagerG1;
 import it.usna.shellyscan.view.DialogDeviceSelection;
 import it.usna.shellyscan.view.IntegerTextFieldPanel;
 import it.usna.shellyscan.view.util.Msg;
-import it.usna.shellyscan.view.util.UtilmMiscellaneous;
+import it.usna.shellyscan.view.util.UtilMiscellaneous;
 import it.usna.util.UsnaEventListener;
 
 //https://shelly-api-docs.shelly.cloud/gen1/#settings
@@ -488,7 +488,7 @@ public class PanelMQTTG1 extends AbstractSettingsPanel implements UsnaEventListe
 					mqttModule.add(mqttm);
 				} catch(IOException | RuntimeException e) {
 					mqttModule.add(null);
-					exclude += "<br>" + UtilmMiscellaneous.getFullName(d);
+					exclude += "<br>" + UtilMiscellaneous.getFullName(d);
 					excludeCount++;
 				}
 			}
@@ -536,7 +536,7 @@ public class PanelMQTTG1 extends AbstractSettingsPanel implements UsnaEventListe
 			btnCopy.setEnabled(true);
 			return null;
 		} catch (RuntimeException e) {
-			return UtilmMiscellaneous.getFullName(d) + ": " + e.getMessage();
+			return UtilMiscellaneous.getFullName(d) + ": " + e.getMessage();
 		}
 	}
 	

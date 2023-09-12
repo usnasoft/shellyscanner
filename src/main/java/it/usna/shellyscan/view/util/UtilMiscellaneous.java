@@ -16,8 +16,8 @@ import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.modules.RelayCommander;
 import it.usna.shellyscan.model.device.modules.RelayInterface;
 
-public class UtilmMiscellaneous {
-	private UtilmMiscellaneous() {}
+public class UtilMiscellaneous {
+	private UtilMiscellaneous() {}
 	
 	public static String getDescName(ShellyAbstractDevice d) {
 		final String dName = d.getName();

@@ -59,7 +59,7 @@ import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
 import it.usna.shellyscan.view.MainView;
 import it.usna.shellyscan.view.appsettings.DialogAppSettings;
 import it.usna.shellyscan.view.util.Msg;
-import it.usna.shellyscan.view.util.UtilmMiscellaneous;
+import it.usna.shellyscan.view.util.UtilMiscellaneous;
 import it.usna.util.AppProperties;
 import it.usna.util.UsnaEventListener;  
 
@@ -110,7 +110,7 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 	private ChartType currentType;
 
 	public MeasuresChart(JFrame owner, final Devices model, int[] ind, AppProperties appProp) {  
-		setTitle(LABELS.getString("dlgChartsTitle") + " - " + (ind.length == 1 ? UtilmMiscellaneous.getDescName(model.get(ind[0])) : ind.length));
+		setTitle(LABELS.getString("dlgChartsTitle") + " - " + (ind.length == 1 ? UtilMiscellaneous.getDescName(model.get(ind[0])) : ind.length));
 		setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 		setIconImage(Toolkit.getDefaultToolkit().createImage(getClass().getResource(Main.ICON)));
 		this.model = model;
@@ -285,7 +285,7 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 			final ShellyAbstractDevice d = model.get(ind);
 
 			if(currentType.mType == null) { // device property (INT_TEMP, ...), not from "Meters"
-				TimeSeries s = new TimeSeries(UtilmMiscellaneous.getDescName(d));
+				TimeSeries s = new TimeSeries(UtilMiscellaneous.getDescName(d));
 				dataset.addSeries(s);
 				seriesMap.put(ind, new TimeSeries[] {s});
 			} else {
@@ -303,7 +303,7 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 					int i = 0;
 					for(Meters m: meters) {
 						if(m.hasType(currentType.mType)) {
-							final String sName = UtilmMiscellaneous.getDescName(d, i++);
+							final String sName = UtilMiscellaneous.getDescName(d, i++);
 							TimeSeries s = new TimeSeries(sName);
 							temp.add(s);
 							dataset.addSeries(s);
@@ -311,7 +311,7 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 					}
 				}
 				if(temp.size() == 0) {
-					dataset.addSeries(new TimeSeries(UtilmMiscellaneous.getDescName(d))); // legend
+					dataset.addSeries(new TimeSeries(UtilMiscellaneous.getDescName(d))); // legend
 				}
 				seriesMap.put(ind, temp.toArray(new TimeSeries[temp.size()]));
 			}

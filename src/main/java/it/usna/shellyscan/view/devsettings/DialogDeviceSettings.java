@@ -21,7 +21,7 @@ import it.usna.shellyscan.model.device.g1.AbstractG1Device;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.view.MainView;
 import it.usna.shellyscan.view.util.Msg;
-import it.usna.shellyscan.view.util.UtilmMiscellaneous;
+import it.usna.shellyscan.view.util.UtilMiscellaneous;
 import it.usna.util.UsnaEventListener;
 
 public class DialogDeviceSettings extends JDialog implements UsnaEventListener<Devices.EventType, Integer> {
@@ -44,7 +44,7 @@ public class DialogDeviceSettings extends JDialog implements UsnaEventListener<D
 		this.devicesInd = devicesInd;
 		model.addListener(this);
 
-		setTitle(LABELS.getString("dlgSetTitle") + " - " + (devicesInd.length == 1 ? UtilmMiscellaneous.getDescName(getLocalDevice(0)) : devicesInd.length));
+		setTitle(LABELS.getString("dlgSetTitle") + " - " + (devicesInd.length == 1 ? UtilMiscellaneous.getDescName(getLocalDevice(0)) : devicesInd.length));
 		
 		BorderLayout borderLayout = (BorderLayout) getContentPane().getLayout();
 		borderLayout.setVgap(5);
