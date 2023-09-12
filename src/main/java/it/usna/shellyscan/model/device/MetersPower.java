@@ -1,7 +1,7 @@
 package it.usna.shellyscan.model.device;
 
 public abstract class MetersPower extends Meters {
-	private final static Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.W};
+	private final static Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Type.W};
 	
 	@Override
 	public Type[] getTypes() {
@@ -10,6 +10,6 @@ public abstract class MetersPower extends Meters {
 	
 	@Override
 	public String toString() {
-		return Type.W + "=" + NF.format(getValue(null));
+		return Type.W + "=" + NF.format(getValue(Type.W));
 	}
 }

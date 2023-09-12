@@ -31,8 +31,8 @@ import it.usna.util.CLI;
 
 public class Main {
 	public final static String APP_NAME = "Shelly Scanner";
-	public final static String VERSION = "1.0.0 beta";
-	public final static String VERSION_CODE = "001.000.000r100"; // r0xx alpha; r1xx beta; r2xx stable
+	public final static String VERSION = "1.0.0";
+	public final static String VERSION_CODE = "001.000.000r200"; // r0xx alpha; r1xx beta; r2xx stable
 	public final static String REVISION = "0";
 	public final static String ICON = "/images/ShSc24.png";
 	public final static String BACKUP_FILE_EXT = "sbk";
@@ -79,10 +79,10 @@ public class Main {
 			try {
 				Matcher m = Pattern.compile(IP_SCAN_PAR_FORMAT).matcher(cli.getParameter(cliIndex));
 				m.find();
-				String baseIPPar = m.group(1);
+				final String baseIPPar = m.group(1);
+				String ipS[] = baseIPPar.split("\\.");
 				firstIP = Integer.parseInt(m.group(2));
 				lastIP = Integer.parseInt(m.group(3));
-				String ipS[] = baseIPPar.split("\\.");
 				baseIP = new byte[] {(byte)Integer.parseInt(ipS[0]), (byte)Integer.parseInt(ipS[1]), (byte)Integer.parseInt(ipS[2]), 0};
 			} catch (Exception e) {
 				System.err.println("Wrong parameter format; example: -ipscan 192.168.1.1-254");
@@ -95,10 +95,10 @@ public class Main {
 		} else {
 			final String scanMode = appProp.getProperty(DialogAppSettings.PROP_SCAN_MODE, DialogAppSettings.PROP_SCAN_MODE_DEFAULT);
 			if(scanMode.equals("IP")) {
-				String baseIPPar = appProp.getProperty(DialogAppSettings.BASE_SCAN_IP);
+				final String baseIPPar = appProp.getProperty(DialogAppSettings.BASE_SCAN_IP);
+				String ipS[] = baseIPPar.split("\\.");
 				firstIP = appProp.getIntProperty(DialogAppSettings.FIRST_SCAN_IP);
 				lastIP = appProp.getIntProperty(DialogAppSettings.LAST_SCAN_IP);
-				String ipS[] = baseIPPar.split("\\.");
 				baseIP = new byte[] {(byte)Integer.parseInt(ipS[0]), (byte)Integer.parseInt(ipS[1]), (byte)Integer.parseInt(ipS[2]), 0};
 			} else if(scanMode.equals("OFFLINE")) {
 				baseIP = new byte[] {127, 0, 0, 1};

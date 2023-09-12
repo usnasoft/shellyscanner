@@ -313,7 +313,7 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 				if(temp.size() == 0) {
 					dataset.addSeries(new TimeSeries(UtilMiscellaneous.getDescName(d))); // legend
 				}
-				seriesMap.put(ind, temp.toArray(new TimeSeries[temp.size()]));
+				seriesMap.put(ind, temp.toArray(TimeSeries[]::new));
 			}
 			update(Devices.EventType.UPDATE, ind);
 		}

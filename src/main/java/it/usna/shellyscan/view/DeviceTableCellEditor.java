@@ -389,7 +389,7 @@ public class DeviceTableCellEditor extends AbstractCellEditor implements TableCe
 		} else if(value instanceof LightRGBW light) { // RGBW2 (color mode)
 			return getRGBWColorPanel(light);
 		} else if(value instanceof WhiteInterface[] wiArray) { // RGBW2 (white mode)
-			return getRGBWWhitePanel(wiArray, table.getSelectionForeground());
+			return getRGBWWhitePanel(wiArray, table);
 		} else if(value instanceof InputInterface[] inputArray) {
 			return getActionsPanel(inputArray, table);
 		} else if(value instanceof Thermostat th) {
@@ -504,8 +504,9 @@ public class DeviceTableCellEditor extends AbstractCellEditor implements TableCe
 		return colorRGBPanel;
 	}
 	
-	private Component getRGBWWhitePanel(WhiteInterface[] lights, Color selColor) {
+	private Component getRGBWWhitePanel(WhiteInterface[] lights, JTable table) {
 		stackedPanel.removeAll();
+		Color selColor = table.getSelectionForeground();
 		for(int i = 0; i < lights.length;) {
 			WhiteInterface light = lights[i];
 			JLabel relayLabel = new JLabel(light.getLabel());
@@ -559,13 +560,15 @@ public class DeviceTableCellEditor extends AbstractCellEditor implements TableCe
 	
 	private Component getActionsPanel(final InputInterface[] inputs, JTable table) {
 		stackedPanel.removeAll();
+		Color selBackground = table.getSelectionBackground();
+		Color selForeground = table.getSelectionForeground();
 		for(InputInterface act: inputs) {
 			if(act.enabled()) {
 				JPanel actionsPanel = new JPanel(new BorderLayout());
 				String label = act.getLabel();
 				JLabel actionsLabel = new JLabel(label.isEmpty() ? "-" : label);
-				actionsPanel.setBackground(table.getSelectionBackground());
-				actionsLabel.setForeground(table.getSelectionForeground());
+				actionsPanel.setBackground(selBackground);
+				actionsLabel.setForeground(selForeground);
 				actionsPanel.add(actionsLabel, BorderLayout.CENTER);
 				JPanel actionsSouthPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
 				int numSupported = act.getTypesCount();
