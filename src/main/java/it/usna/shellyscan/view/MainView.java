@@ -760,7 +760,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 			appProp.store(false);
 		} catch (IOException | RuntimeException ex) {
 			LOG.error("Unexpected", ex);
-			JOptionPane.showMessageDialog(this, "Error on exit", LABELS.getString("errorTitle"), JOptionPane.ERROR_MESSAGE);
+			Msg.errorMsg(this, "Error on exit");
 		}
 	}
 
