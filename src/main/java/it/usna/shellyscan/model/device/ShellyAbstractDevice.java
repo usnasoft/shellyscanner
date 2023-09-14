@@ -238,6 +238,11 @@ public abstract class ShellyAbstractDevice {
 			throw new IOException(e);
 		}
 	}
+	
+	@Override
+	public int hashCode() {
+		return mac.hashCode();
+	}
 
 	@Override
 	public boolean equals(Object o) {

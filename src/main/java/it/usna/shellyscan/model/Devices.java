@@ -285,11 +285,10 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 		refreshProcess.get(ind).cancel(true);
 	}
 
-	// Before reboot disable refresh process
 	public void reboot(int ind) {
 		final ShellyAbstractDevice d = devices.get(ind);
 		final ScheduledFuture<?> f = refreshProcess.get(ind);
-		f.cancel(true);
+		f.cancel(true); // Before reboot disable refresh process
 		d.setStatus(Status.READING);
 		updateViewRow(d, ind);
 		executor.execute/*submit*/(() -> {
@@ -327,24 +326,6 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 	
 	public void create(InetAddress address, int port, String hostName) {
 		LOG.trace("getting info (/shelly) {}:{} - {}", address, port, hostName);
-//		try {
-//			httpClient.newRequest("http://" + address.getHostAddress() + ":" + port + "/shelly").send(new BufferingResponseListener() {
-//				@Override
-//				public void onComplete(Result result) {
-//					try {
-//						if(result.isSucceeded()) {
-//							create(address, port, JSON_MAPPER.readTree(getContent()), hostName);
-//						} else {
-//							newDevice(DevicesFactory.createWithError(httpClient, address, port, hostName, result.getResponseFailure()));
-//						}
-//					} catch(IOException e) { // SocketTimeoutException extends IOException
-//						newDevice(DevicesFactory.createWithError(httpClient, address, port, hostName, e));
-//					}
-//				}
-//			});
-//		} catch(Exception e) {
-//			LOG.error("Unexpected-add: {}; host: {}", address, hostName, e);
-//		}
 		try {
 			ContentResponse response = httpClient.GET("http://" + address.getHostAddress() + ":" + port + "/shelly");
 			create(address, port, JSON_MAPPER.readTree(response.getContent()), hostName);
@@ -501,7 +482,7 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 		LOG.trace("Model closing");
 		removeListeners();
 		executor.shutdownNow();
-		bjServices.parallelStream().forEach(dns -> {
+		bjServices.stream().forEach(dns -> {
 			try {
 				dns.close();
 			} catch (IOException e) {
@@ -557,8 +538,7 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 			final String name = info.getName();
 			if(name.startsWith("shelly") || name.startsWith("Shelly")) {
 				executor.execute(() -> create(info.getInetAddresses()[0], 80, name));
-//				create(info.getInetAddresses()[0], 80, name);
 			}
 		}
 	}
-} // 197 - 307 - 326 - 418 - 510
+} // 197 - 307 - 326 - 418 - 510 - 544

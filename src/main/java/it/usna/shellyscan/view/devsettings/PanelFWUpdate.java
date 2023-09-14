@@ -220,7 +220,7 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 					} catch(Exception e) {/* while fill() */}
 				}
 				try {
-					devicesFWData.parallelStream().forEach(dd -> dd.fwModule.chech());
+					devicesFWData.stream().forEach(dd -> dd.fwModule.chech());
 					fill();
 				} catch(Exception e) {/* while fill() */
 				} finally {
@@ -288,7 +288,7 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 		if(retriveFutures != null) {
 			retriveFutures.forEach(f -> f.cancel(true));
 		}
-		devicesFWData.parallelStream().map(dd -> dd.wsSession).filter(f -> f != null).forEach(f -> {
+		devicesFWData.stream().map(dd -> dd.wsSession).filter(f -> f != null).forEach(f -> {
 			try {
 				f.get().close();
 			} catch (InterruptedException | ExecutionException e) {

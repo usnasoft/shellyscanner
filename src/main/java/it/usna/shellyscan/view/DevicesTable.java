@@ -440,10 +440,10 @@ public class DevicesTable extends ExTooltipTable {
 		try {
 			row[DevicesTable.COL_STATUS_IDX] = getStatusIcon(d);
 			row[DevicesTable.COL_TYPE] = d.getTypeName();
-			row[DevicesTable.COL_DEVICE] = /*d.getTypeName() + " (" +*/ d.getHostname() /*+ ")"*/;
+			row[DevicesTable.COL_DEVICE] = d.getHostname();
 			row[DevicesTable.COL_NAME] = d.getName();
 			row[DevicesTable.COL_MAC_IDX] = d.getMacAddress();
-			row[DevicesTable.COL_IP_IDX] = /*d.getAddress()*/new InetAddressAndPort(d);
+			row[DevicesTable.COL_IP_IDX] = new InetAddressAndPort(d);
 			row[DevicesTable.COL_SSID_IDX] = d.getSSID();
 			Status status = d.getStatus();
 			if(status != Status.NOT_LOOGGED && status != Status.ERROR && status != Status.GHOST /*&&(d instanceof ShellyUnmanagedDevice == false || ((ShellyUnmanagedDevice)d).geException() == null)*/) {
@@ -492,6 +492,7 @@ public class DevicesTable extends ExTooltipTable {
 					for(int i = 0; i < m.length; i++) {
 						res[i] = m[i].getLastSource();
 					}
+//					Arrays.setAll(res, i -> m[i].getLastSource()); // slower for 2 elements
 					row[DevicesTable.COL_SOURCE_IDX] = res;
 				}
 			} else {

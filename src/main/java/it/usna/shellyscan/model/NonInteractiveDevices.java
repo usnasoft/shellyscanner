@@ -74,7 +74,7 @@ public class NonInteractiveDevices implements Closeable {
 	public void scannerInit(boolean fullScan) throws IOException {
 		if(fullScan) {
 			jd = JmmDNS.Factory.getInstance();
-			try { Thread.sleep(1500); } catch (InterruptedException e) { } // hoping this time is enough to fill list 
+			try { Thread.sleep(2000); } catch (InterruptedException e) { } // hoping this time is enough to fill list 
 			for(JmDNS dns: jd.getDNS()) {
 				bjServices.add(dns);
 				LOG.debug("Full scan {} {}", dns.getName(), dns.getInetAddress());
@@ -203,7 +203,7 @@ public class NonInteractiveDevices implements Closeable {
 	@Override
 	public void close() {
 		LOG.trace("Model closing");
-		bjServices.parallelStream().forEach(dns -> {
+		bjServices.stream().forEach(dns -> {
 			try {
 				dns.close();
 			} catch (IOException e) {
