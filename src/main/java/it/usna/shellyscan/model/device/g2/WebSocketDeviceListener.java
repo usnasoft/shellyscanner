@@ -43,7 +43,9 @@ public class WebSocketDeviceListener implements Session.Listener.AutoDemanding {
 
 	@Override
 	public void onWebSocketError(Throwable cause) {
-		LOG.debug("ws-error", cause);
+		if(cause instanceof java.nio.channels.ClosedChannelException == false) {
+			LOG.debug("ws-error", cause);
+		}
 	}
 
 	@Override
