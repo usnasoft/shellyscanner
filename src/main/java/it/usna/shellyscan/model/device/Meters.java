@@ -15,11 +15,11 @@ public abstract class Meters implements Comparable<Meters> {
 		T, // temperature (celsius)
 		H, // humidity %
 		L, // lux
-		TX1, // temperature (celsius)
-		TX2, // temperature (celsius)
-		TX3, // temperature (celsius)
-		TX4, // temperature (celsius)
-		EXS, // ext switch status
+		T1, // temperature (celsius)
+		T2, // temperature (celsius)
+		T3, // temperature (celsius)
+		T4, // temperature (celsius)
+		EX, // ext switch status
 		PERC // 0-100
 	};
 	protected static NumberFormat NF = NumberFormat.getNumberInstance(Locale.ENGLISH);

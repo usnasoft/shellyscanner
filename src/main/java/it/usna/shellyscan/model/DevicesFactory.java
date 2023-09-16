@@ -70,30 +70,8 @@ public class DevicesFactory {
 	private DevicesFactory() {}
 
 	private final static Logger LOG = LoggerFactory.getLogger(DevicesFactory.class);
-//	private final static ObjectMapper JSON_MAPPER = new ObjectMapper();
 	private static String lastUser;
 	private static char[] lastP;
-	
-//	public static ShellyAbstractDevice create(HttpClient httpClient, WebSocketClient wsClient, final InetAddress address, int port, JsonNode info, String name) {
-//		if(info == null) {
-//			try {
-//				ContentResponse response = httpClient.GET("http://" + address.getHostAddress() + ":" + port + "/shelly");
-//				info = JSON_MAPPER.readTree(response.getContent());
-//				Thread.sleep(Devices.MULTI_QUERY_DELAY);
-//			} catch(IOException | TimeoutException | InterruptedException | ExecutionException e) { // SocketTimeoutException extends IOException
-//				LOG.error("create {}:{}", address, port, e);
-//				ShellyG1Unmanaged d = new ShellyG1Unmanaged(address, port, name, e); // no mac available (info) -> try to desume from hostname
-//				d.setHttpClient(httpClient);
-//				d.setMacAddress(name.substring(Math.max(name.length() - 12, 0), name.length()).toUpperCase());
-//				return d;
-//			}
-//		}
-//		if("2".equals(info.path("gen").asText())) {
-//			return createG2(httpClient, wsClient, address, port, info, name);
-//		} else {
-//			return createG1(httpClient, address, port, info, name);
-//		}
-//	}
 	
 	public static ShellyAbstractDevice create(HttpClient httpClient, WebSocketClient wsClient, final InetAddress address, int port, JsonNode info, String name) {
 		if("2".equals(info.path("gen").asText())) {
@@ -179,7 +157,7 @@ public class DevicesFactory {
 				LOG.warn("create - init", e);
 			}
 		} catch(RuntimeException e) {
-			LOG.error("create - init", e);
+			LOG.error("create - init {}:{}", address, port, e);
 		}
 		return d;
 	}
@@ -243,15 +221,10 @@ public class DevicesFactory {
 				LOG.warn("create - init", e);
 			}
 		} catch(RuntimeException e) {
-			LOG.error("create - init", e);
+			LOG.error("create - init {}:{}", address, port, e);
 		}
 		return d;
 	}
-
-//	private static JsonNode getDeviceBasicInfo(HttpClient httpClient, final InetAddress address, final int port) throws IOException, TimeoutException, InterruptedException, ExecutionException {
-//		ContentResponse response = httpClient.newRequest("http://" + address.getHostAddress() + ":" + port + "/shelly").send();
-//		return JSON_MAPPER.readTree(response.getContent());
-//	}
 
 	public static void setCredential(String user, char[] p) {
 		lastUser = user;

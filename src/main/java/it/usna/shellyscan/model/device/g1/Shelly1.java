@@ -21,7 +21,7 @@ import it.usna.shellyscan.model.device.modules.RelayInterface;
 public class Shelly1 extends AbstractG1Device implements RelayCommander {
 	public final static String ID = "SHSW-1";
 	private final static Meters.Type[] SUPPORTED_MEASURES_H = new Meters.Type[] { Meters.Type.T, Meters.Type.H };
-	private final static Meters.Type[] MEASURES_EXT_SWITCH = new Meters.Type[] { Meters.Type.EXS };
+	private final static Meters.Type[] MEASURES_EXT_SWITCH = new Meters.Type[] { Meters.Type.EX };
 	private Relay relay = new Relay(this, 0);
 	private float extT0, extT1, extT2;
 	private int humidity;
@@ -62,9 +62,9 @@ public class Shelly1 extends AbstractG1Device implements RelayCommander {
 			if (extTNode.has("0"))
 				tt.add(Meters.Type.T);
 			if (extTNode.has("1"))
-				tt.add(Meters.Type.TX1);
+				tt.add(Meters.Type.T1);
 			if (extTNode.has("2"))
-				tt.add(Meters.Type.TX2);
+				tt.add(Meters.Type.T2);
 //			final Meters.Type[] mTypes = tt.toArray(new Meters.Type[tt.size()]);
 			final Meters.Type[] mTypes = tt.toArray(Meters.Type[]::new);
 			m.add(new Meters() {
@@ -77,7 +77,7 @@ public class Shelly1 extends AbstractG1Device implements RelayCommander {
 				public float getValue(Type t) {
 					if (t == Type.T) {
 						return extT0;
-					} else if (t == Type.TX1) {
+					} else if (t == Type.T1) {
 						return extT1;
 					} else {
 						return extT2;

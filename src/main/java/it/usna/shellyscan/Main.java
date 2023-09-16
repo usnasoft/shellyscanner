@@ -31,7 +31,7 @@ import it.usna.util.CLI;
 
 public class Main {
 	public final static String APP_NAME = "Shelly Scanner";
-	public final static String VERSION = "1.0.1beta";
+	public final static String VERSION = "1.0.1alpha";
 	public final static String VERSION_CODE = "001.000.001r000"; // r0xx alpha; r1xx beta; r2xx stable
 	public final static String REVISION = "0";
 	public final static String ICON = "/images/ShSc24.png";

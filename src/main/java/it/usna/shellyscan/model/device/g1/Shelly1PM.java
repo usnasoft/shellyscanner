@@ -17,7 +17,7 @@ import it.usna.shellyscan.model.device.modules.RelayCommander;
 public class Shelly1PM extends AbstractG1Device implements RelayCommander, InternalTmpHolder {
 	public final static String ID = "SHSW-PM";
 	private final static Meters.Type[] SUPPORTED_MEASURES_H = new Meters.Type[] {Meters.Type.T, Meters.Type.H};
-	private final static Meters.Type[] MEASURES_EXT_SWITCH = new Meters.Type[] {Meters.Type.EXS};
+	private final static Meters.Type[] MEASURES_EXT_SWITCH = new Meters.Type[] {Meters.Type.EX};
 	private Relay relay = new Relay(this, 0);
 	private Relay[] relayArray = new Relay[] {relay};
 	private float internalTmp;
@@ -69,8 +69,8 @@ public class Shelly1PM extends AbstractG1Device implements RelayCommander, Inter
 		} else if((extTNode = settings.path("ext_temperature")).size() > 0) {
 			final ArrayList<Meters.Type> tt = new ArrayList<>(3);
 			if(extTNode.has("0")) tt.add(Meters.Type.T);
-			if(extTNode.has("1")) tt.add(Meters.Type.TX1);
-			if(extTNode.has("2")) tt.add(Meters.Type.TX2);
+			if(extTNode.has("1")) tt.add(Meters.Type.T1);
+			if(extTNode.has("2")) tt.add(Meters.Type.T2);
 			//final Meters.Type[] mTypes = tt.toArray(new Meters.Type[tt.size()]);
 			final Meters.Type[] mTypes = tt.toArray(Meters.Type[]::new);
 			meters = new Meters[] {
@@ -86,7 +86,7 @@ public class Shelly1PM extends AbstractG1Device implements RelayCommander, Inter
 						public float getValue(Type t) {
 							if(t == Type.T) {
 								return extT0;
-							} else if(t == Type.TX1) {
+							} else if(t == Type.T1) {
 								return extT1;
 							} else {
 								return extT2;

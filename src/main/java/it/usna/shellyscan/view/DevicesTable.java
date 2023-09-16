@@ -81,7 +81,7 @@ public class DevicesTable extends ExTooltipTable {
 	private final static String FALSE = LABELS.getString("false_yn");
 	private final static String YES = LABELS.getString("true_yna");
 	private final static String NO = LABELS.getString("false_yna");
-	private final static MessageFormat SWITCH_FORMATTER = new MessageFormat(Main.LABELS.getString("METER_VAL_EXS"), Locale.ENGLISH); // tooltip
+	private final static MessageFormat SWITCH_FORMATTER = new MessageFormat(Main.LABELS.getString("METER_VAL_EX"), Locale.ENGLISH); // tooltip
 	
 	// model columns indexes
 	final static int COL_STATUS_IDX = 0;
@@ -259,7 +259,7 @@ public class DevicesTable extends ExTooltipTable {
 							for(Meters.Type t: m.getTypes()) {
 								final String name = ((SensorAddOn)m).getName(t);
 								final String tLabel = (name != null && name.length() > 0) ? " (" + name + ")": "";
-								if(t == Meters.Type.EXS) {
+								if(t == Meters.Type.EX) {
 									tt += "<td><i>" + LABELS.getString("METER_LBL_" + t) + tLabel + "</i>&nbsp;</td><td align='right'>" + SWITCH_FORMATTER.format(new Object [] {m.getValue(t)}) + "&nbsp;</td>";
 								} else {
 									tt += "<td><i>" + LABELS.getString("METER_LBL_" + t) + tLabel + "</i>&nbsp;</td><td align='right'>" + String.format(Locale.ENGLISH, LABELS.getString("METER_VAL_" + t), m.getValue(t)) + "&nbsp;</td>";
@@ -270,7 +270,7 @@ public class DevicesTable extends ExTooltipTable {
 								tt += "<td><b>" + ((LabelHolder)m).getLabel() + "</b>&nbsp;</td>";
 							}
 							for(Meters.Type t: m.getTypes()) {
-								if(t == Meters.Type.EXS) {
+								if(t == Meters.Type.EX) {
 									tt += "<td><i>" + LABELS.getString("METER_LBL_" + t) + "</i>&nbsp;</td><td align='right'>" + SWITCH_FORMATTER.format(new Object [] {m.getValue(t)}) + "&nbsp;</td>";
 								} else {
 									tt += "<td><i>" + LABELS.getString("METER_LBL_" + t) + "</i>&nbsp;</td><td align='right'>" + String.format(Locale.ENGLISH, LABELS.getString("METER_VAL_" + t), m.getValue(t)) + "&nbsp;</td>";

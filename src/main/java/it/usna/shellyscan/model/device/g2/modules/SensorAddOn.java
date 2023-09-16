@@ -80,16 +80,16 @@ public class SensorAddOn extends Meters {
 						types.add(Type.T);
 					} else if(i == 1) {
 						extT1ID = temp.next();
-						types.add(Type.TX1);
+						types.add(Type.T1);
 					} else if(i == 2) {
 						extT2ID = temp.next();
-						types.add(Type.TX2);
+						types.add(Type.T2);
 					} else if(i == 3) {
 						extT3ID = temp.next();
-						types.add(Type.TX3);
+						types.add(Type.T3);
 					} else if(i == 4) {
 						extT4ID = temp.next();
-						types.add(Type.TX4);
+						types.add(Type.T4);
 					}
 				}
 			}
@@ -97,7 +97,7 @@ public class SensorAddOn extends Meters {
 			Iterator<String> digIn = ((ObjectNode)peripherals.get("digital_in")).fieldNames();
 			if(digIn.hasNext()) {
 				switchID = digIn.next();
-				types.add(Type.EXS);
+				types.add(Type.EX);
 			}
 			Iterator<String> analogIn = ((ObjectNode)peripherals.get("analog_in")).fieldNames();
 			if(analogIn.hasNext()) {
@@ -229,14 +229,14 @@ public class SensorAddOn extends Meters {
 	@Override
 	public float getValue(Type t) {
 		return switch(t) {
-		case EXS -> switchOn ? 1f : 0f;
+		case EX -> switchOn ? 1f : 0f;
 		case PERC -> analog;
 		case V -> volt;
 		case T -> extT0;
-		case TX1 -> extT1;
-		case TX2 -> extT2;
-		case TX3 -> extT3;
-		case TX4 -> extT4;
+		case T1 -> extT1;
+		case T2 -> extT2;
+		case T3 -> extT3;
+		case T4 -> extT4;
 		case H -> humidity;
 		default -> 0;
 		};
@@ -244,14 +244,14 @@ public class SensorAddOn extends Meters {
 	
 	public String getName(Type t) {
 		return switch(t) {
-		case EXS -> switchName;
+		case EX -> switchName;
 		case PERC -> analogName;
 		case V -> voltmeterName;
 		case T -> extT0Name;
-		case TX1 -> extT1Name;
-		case TX2 -> extT2Name;
-		case TX3 -> extT3Name;
-		case TX4 -> extT4Name;
+		case T1 -> extT1Name;
+		case T2 -> extT2Name;
+		case T3 -> extT3Name;
+		case T4 -> extT4Name;
 		case H -> humidityName;
 		default -> "";
 		};
@@ -325,6 +325,19 @@ public class SensorAddOn extends Meters {
 			}
 		}
 	}
+	
+//	@Override
+//	public String toString() {
+//		if(supported.length > 0) {
+//			String res = supported[0] + ":" + NF.format(getValue(supported[0]));
+//			for(int i = 1; i < supported.length; i++) {
+//				res += " " + supported[i] + ":" + NF.format(getValue(supported[i]));
+//			}
+//			return res;
+//		} else {
+//			return "";
+//		}
+//	}
 }
 
-//todo Gen2 1.0.0 - Input invert and range_map configuration properties for analog input type
+//todo Gen2 fw 1.0.0 - Input invert and range_map configuration properties for analog input type
