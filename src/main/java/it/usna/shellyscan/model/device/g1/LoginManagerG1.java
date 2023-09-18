@@ -87,7 +87,6 @@ public class LoginManagerG1 implements LoginManager {
 		try {
 			int status = request.send().getStatus();
 			if(status == HttpStatus.OK_200) {
-//				httpClient.getAuthenticationStore().addAuthentication(new BasicAuthentication(uri, BasicAuthentication.ANY_REALM, user, new String(pwd)));
 				httpClient.getAuthenticationStore().addAuthenticationResult(creds);
 			}
 			return status;

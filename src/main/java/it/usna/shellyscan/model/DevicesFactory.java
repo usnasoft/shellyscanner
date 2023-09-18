@@ -168,7 +168,7 @@ public class DevicesFactory {
 			final boolean auth = info.get("auth_en").asBoolean();
 			if(auth) {
 				synchronized (DevicesFactory.class) { // wait for this in order to authenticate all subsequent
-					if(lastUser == null || LoginManagerG2.testDigestAuthentication(httpClient, address, port, /*LoginManagerG2.LOGIN_USER,*/ lastP, "/rpc/Shelly.GetStatus") != HttpStatus.OK_200) {
+					if(lastUser == null || LoginManagerG2.testDigestAuthentication(httpClient, address, port, lastP, "/rpc/Shelly.GetStatus") != HttpStatus.OK_200) {
 						DialogAuthentication credentials = new DialogAuthentication(
 								Main.LABELS.getString("dlgAuthTitle"),
 								null,
@@ -182,9 +182,12 @@ public class DevicesFactory {
 								setCredential(user, credentials.getPassword().clone()); // ... .clone(): DialogAuthentication clear password after dispose() call
 							}
 							credentials.setMessage(String.format(Main.LABELS.getString("dlgAuthMessageError"), name));
-						} while(user != null && LoginManagerG2.testDigestAuthentication(httpClient, address, port, /*LoginManagerG2.LOGIN_USER,*/ lastP, "/rpc/Shelly.GetStatus") != HttpStatus.OK_200);
+						} while(user != null && LoginManagerG2.testDigestAuthentication(httpClient, address, port, lastP, "/rpc/Shelly.GetStatus") != HttpStatus.OK_200);
 						credentials.dispose();
 					}
+//					URI uri = URI.create("http://" + address.getHostAddress() + ":" + port/*+ testCommand*/);
+//					Authentication.Result creds = new BasicAuthentication.BasicResult(uri, "admin", new String( "1234"));
+//					httpClient.getAuthenticationStore().addAuthenticationResult(creds);
 				}
 				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			}

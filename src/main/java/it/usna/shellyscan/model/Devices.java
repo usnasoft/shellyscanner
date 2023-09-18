@@ -229,7 +229,7 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 				for (ServiceInfo dnsInfo: serviceInfos) {
 					final String name = dnsInfo.getName();
 					if(name.startsWith("shelly") || name.startsWith("Shelly")) { // ShellyBulbDuo-xxx
-						executor.execute(() -> create(dnsInfo.getInetAddresses()[0], 80, name));
+						executor.execute(() -> create(dnsInfo.getInetAddresses()[0], 80, name, true));
 					}
 				}
 			}
@@ -254,7 +254,7 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 				d.setStatus(Status.READING);
 				executor.schedule(() -> {
 					if(d instanceof ShellyUnmanagedDevice unmanaged && unmanaged.getException() != null) { // try to create proper device
-						create(d.getAddress(), d.getPort(), d.getHostname());
+						create(d.getAddress(), d.getPort(), d.getHostname(), true);
 					} else {
 						try {
 							d.refreshSettings();
@@ -325,16 +325,17 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 		}
 	}
 	
-	public void create(InetAddress address, int port, String hostName) {
+	public void create(InetAddress address, int port, String hostName, boolean force) {
 		LOG.trace("getting info (/shelly) {}:{} - {}", address, port, hostName);
 		try {
 			ContentResponse response = httpClient.newRequest("http://" + address.getHostAddress() + ":" + port + "/shelly").timeout(30, TimeUnit.SECONDS).method(HttpMethod.GET).send();
-//			ContentResponse response = httpClient.GET("http://" + address.getHostAddress() + ":" + port + "/shelly");
 			create(address, port, JSON_MAPPER.readTree(response.getContent()), hostName);
 			Thread.sleep(Devices.MULTI_QUERY_DELAY);
 		} catch(IOException | TimeoutException | InterruptedException | ExecutionException e) { // SocketTimeoutException extends IOException
-			LOG.error("create with error {}:{}", address, port, e);
-			newDevice(DevicesFactory.createWithError(httpClient, address, port, hostName, e));
+			if(force) {
+				LOG.error("create with error {}:{}", address, port, e);
+				newDevice(DevicesFactory.createWithError(httpClient, address, port, hostName, e));
+			}
 		}
 	}
 
@@ -539,7 +540,7 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 			ServiceInfo info = event.getInfo();
 			final String name = info.getName();
 			if(name.startsWith("shelly") || name.startsWith("Shelly")) {
-				executor.execute(() -> create(info.getInetAddresses()[0], 80, name));
+				executor.execute(() -> create(info.getInetAddresses()[0], 80, name, true));
 			}
 		}
 	}
