@@ -122,19 +122,19 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 	});
 
 	private Action rescanAction = new UsnaAction(null, "/images/73-radar.png", "action_scan_tooltip", e -> {
-		statusLabel.setText(LABELS.getString("scanning_start"));
 		devicesTable.clearSelection();
+		reserveStatusLine(true);
+		setStatus(LABELS.getString("scanning_start"));
 		SwingUtilities.invokeLater(() -> {
 			MainView.this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 			try {
-//				setEnabled(false);
 				model.rescan(appProp.getBoolProperty(DialogAppSettings.PROP_USE_ARCHIVE, true));
 				Thread.sleep(500); // too many call disturb some devices
 			} catch (IOException e1) {
 				Msg.errorMsg(e1);
 			} catch (InterruptedException e1) {
 			} finally {
-//				setEnabled(true);
+				reserveStatusLine(false);
 				MainView.this.setCursor(Cursor.getDefaultCursor());
 			}
 		});
@@ -634,4 +634,4 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 			}
 		}
 	}
-} //557 - 614 - 620 - 669 - 705 - 727 - 699 - 760 - 782 - 811 - 805 -638
+} //557 - 614 - 620 - 669 - 705 - 727 - 699 - 760 - 782 - 811 - 805 - 637
