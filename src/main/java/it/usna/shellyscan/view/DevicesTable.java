@@ -84,7 +84,7 @@ public class DevicesTable extends ExTooltipTable {
 	private final static MessageFormat SWITCH_FORMATTER = new MessageFormat(Main.LABELS.getString("METER_VAL_EX"), Locale.ENGLISH); // tooltip
 	
 	// model columns indexes
-	final static int COL_STATUS_IDX = 0;
+	public final static int COL_STATUS_IDX = 0;
 	final static int COL_TYPE = 1;
 	final static int COL_DEVICE = 2;
 	final static int COL_NAME = 3;

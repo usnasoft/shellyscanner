@@ -180,7 +180,7 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 
 	private JsonNode isShelly(final InetAddress address, int port) throws TimeoutException {
 		try {
-			ContentResponse response = httpClient.newRequest("http://" + address.getHostAddress() + ":" + port + "/shelly").timeout(15, TimeUnit.SECONDS).method(HttpMethod.GET).send();
+			ContentResponse response = httpClient.newRequest("http://" + address.getHostAddress() + ":" + port + "/shelly").timeout(30, TimeUnit.SECONDS).method(HttpMethod.GET).send();
 			JsonNode shellyNode = JSON_MAPPER.readTree(response.getContent());
 			int resp = response.getStatus();
 			if(resp == HttpStatus.OK_200 && shellyNode.has("mac")) { // "mac" is common to all shelly devices
@@ -328,7 +328,7 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 	public void create(InetAddress address, int port, String hostName, boolean force) {
 		LOG.trace("getting info (/shelly) {}:{} - {}", address, port, hostName);
 		try {
-			ContentResponse response = httpClient.newRequest("http://" + address.getHostAddress() + ":" + port + "/shelly").timeout(30, TimeUnit.SECONDS).method(HttpMethod.GET).send();
+			ContentResponse response = httpClient.newRequest("http://" + address.getHostAddress() + ":" + port + "/shelly").timeout(60, TimeUnit.SECONDS).method(HttpMethod.GET).send();
 			create(address, port, JSON_MAPPER.readTree(response.getContent()), hostName);
 			Thread.sleep(Devices.MULTI_QUERY_DELAY);
 		} catch(IOException | TimeoutException | InterruptedException | ExecutionException e) { // SocketTimeoutException extends IOException

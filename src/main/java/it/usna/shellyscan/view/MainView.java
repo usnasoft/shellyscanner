@@ -16,15 +16,12 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import javax.swing.Action;
 import javax.swing.BorderFactory;
@@ -47,7 +44,6 @@ import javax.swing.KeyStroke;
 import javax.swing.RowSorter;
 import javax.swing.SortOrder;
 import javax.swing.SwingUtilities;
-import javax.swing.SwingWorker;
 import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.DocumentEvent;
@@ -59,17 +55,16 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
 import it.usna.mvc.singlewindow.MainWindow;
 import it.usna.shellyscan.Main;
+import it.usna.shellyscan.controller.BackupAction;
+import it.usna.shellyscan.controller.RestoreAction;
 import it.usna.shellyscan.controller.SelectionAction;
 import it.usna.shellyscan.controller.UsnaAction;
 import it.usna.shellyscan.controller.UsnaSelectedAction;
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.GhostDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
-import it.usna.shellyscan.model.device.ShellyAbstractDevice.Restore;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
 import it.usna.shellyscan.model.device.g1.AbstractG1Device;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
@@ -77,7 +72,6 @@ import it.usna.shellyscan.view.appsettings.DialogAppSettings;
 import it.usna.shellyscan.view.chart.MeasuresChart;
 import it.usna.shellyscan.view.devsettings.DialogDeviceSettings;
 import it.usna.shellyscan.view.util.Msg;
-import it.usna.shellyscan.view.util.UtilMiscellaneous;
 import it.usna.swing.UsnaPopupMenu;
 import it.usna.swing.table.UsnaTableModel;
 import it.usna.util.AppProperties;
@@ -91,6 +85,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 
 	private AppProperties appProp;
 	private JLabel statusLabel = new JLabel();
+	private boolean statusLineReserved = false;
 	private JTextField textFieldFilter;
 	private Devices model;
 	private UsnaTableModel tabModel = new UsnaTableModel(
@@ -203,196 +198,9 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 	private Action reloadAction = new UsnaSelectedAction(this, devicesTable, "action_name_reload", null, "/images/Loop16.png", null,
 			i -> model.create(model.get(i).getAddress(), model.get(i).getPort(), model.get(i).getHostname(), false) );
 
-	private Action backupAction = new UsnaAction(this, "action_back_name", "action_back_tooltip", "/images/Download16.png", "/images/Download.png", e -> {
-		int[] ind = devicesTable.getSelectedRows();
-		final JFileChooser fc = new JFileChooser(appProp.getProperty("LAST_PATH"));
+	private Action backupAction;
 
-		class BackWorker extends SwingWorker<String, Object> {
-			@Override
-			protected String doInBackground() {
-				MainView.this.getRootPane().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-				String res = "<html>";
-				for(int j = 0; j < ind.length; j++) {
-					ShellyAbstractDevice d = model.get(devicesTable.convertRowIndexToModel(ind[j]));
-					String hostName = d.getHostname();
-					statusLabel.setText(String.format(LABELS.getString("statusBackup"), j + 1, ind.length, hostName));
-					try {
-						final boolean connected;
-						if(ind.length > 1) {
-							connected = d.backup(new File(fc.getSelectedFile(), hostName.replaceAll("[^\\w_-]+", "_") + "." + Main.BACKUP_FILE_EXT));
-						} else {
-							connected = d.backup(fc.getSelectedFile());
-						}
-						res += String.format(LABELS.getString(connected ? "dlgSetMultiMsgOk" : "dlgSetMultiMsgStored"), hostName) + "<br>";
-					} catch (IOException | RuntimeException e1) {
-						res += String.format(LABELS.getString("dlgSetMultiMsgFail"), hostName) + "<br>";
-						LOG.debug("{}", d.getHostname(), e1);
-					}
-				}
-				return res;
-			}
-
-			@Override
-			protected void done() {
-				try {
-					displayStatus();
-					Msg.showHtmlMessageDialog(MainView.this, get(), LABELS.getString("titleBackupDone"), JOptionPane.INFORMATION_MESSAGE);
-				} catch (Exception e) {
-					Msg.errorMsg(e);
-				} finally {
-					MainView.this.getRootPane().setCursor(Cursor.getDefaultCursor());
-				}
-			}
-		}
-		
-		if(ind.length > 1) {
-			fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-			if(fc.showSaveDialog(MainView.this) == JFileChooser.APPROVE_OPTION) {
-				new BackWorker().execute();
-				appProp.setProperty("LAST_PATH", fc.getSelectedFile().getPath());
-			}
-		} else if(ind.length == 1) {
-			fc.setAcceptAllFileFilterUsed(false);
-			fc.setFileFilter(new FileNameExtensionFilter(LABELS.getString("filetype_sbk_desc"), Main.BACKUP_FILE_EXT));
-			ShellyAbstractDevice device = model.get(devicesTable.convertRowIndexToModel(ind[0]));
-			String fileName = device.getHostname().replaceAll("[^\\w_-]+", "_") + ".sbk";
-			fc.setSelectedFile(new File(fileName));
-			if(fc.showSaveDialog(MainView.this) == JFileChooser.APPROVE_OPTION) {
-				new BackWorker().execute();
-				appProp.setProperty("LAST_PATH", fc.getCurrentDirectory().getPath());
-			}
-		}
-	});
-
-	private Action restoreAction = new UsnaSelectedAction(this, devicesTable, "action_restore_name", "action_restore_tooltip", "/images/Upload16.png", "/images/Upload.png", modelRow -> {
-		ShellyAbstractDevice device = model.get(modelRow);
-		if(device.getStatus() == Status.NOT_LOOGGED) {
-			Msg.errorMsg(MainView.this, LABELS.getString("msgRestoreLogin"));
-			return;
-		}
-		final JFileChooser fc = new JFileChooser(appProp.getProperty("LAST_PATH"));
-		try {
-			fc.setAcceptAllFileFilterUsed(false);
-			fc.setFileFilter(new FileNameExtensionFilter(LABELS.getString("filetype_sbk_desc"), Main.BACKUP_FILE_EXT));
-			final String fileName = device.getHostname().replaceAll("[^\\w_-]+", "_") + "." + Main.BACKUP_FILE_EXT;
-			fc.setSelectedFile(new File(fileName));
-			if(fc.showOpenDialog(MainView.this) == JFileChooser.APPROVE_OPTION) {
-				MainView.this.getContentPane().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-				final Map<String, JsonNode> backupJsons = UtilMiscellaneous.readBackupFile(fc.getSelectedFile());
-				Map<Restore, String> test = device.restoreCheck(backupJsons);
-				MainView.this.getContentPane().setCursor(Cursor.getDefaultCursor());
-				Map<Restore, String> resData = new HashMap<>();
-				if(test.containsKey(ShellyAbstractDevice.Restore.ERR_RESTORE_HOST) &&
-						JOptionPane.showConfirmDialog(MainView.this, LABELS.getString("msgRestoreDifferent"),
-						LABELS.getString("msgRestoreTitle"), JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE) != JOptionPane.YES_OPTION) {
-					return;
-				} else if(test.containsKey(ShellyAbstractDevice.Restore.ERR_RESTORE_MODEL)) {
-					Msg.errorMsg(MainView.this, LABELS.getString("msgRestoreDifferentModel"));
-					return;
-				} else if(test.containsKey(ShellyAbstractDevice.Restore.ERR_RESTORE_CONF)) {
-					Msg.errorMsg(MainView.this, LABELS.getString("msgRestoreConfigurationError"));
-					return;
-				} else if(test.containsKey(ShellyAbstractDevice.Restore.ERR_RESTORE_MSG)) {
-					Msg.errorMsg(MainView.this, LABELS.getString(test.get(ShellyAbstractDevice.Restore.ERR_RESTORE_MSG)));
-					return;
-				} else {
-					if(test.containsKey(ShellyAbstractDevice.Restore.WARN_RESTORE_MSG)) {
-						Msg.warningMsg(MainView.this, LABELS.getString(test.get(ShellyAbstractDevice.Restore.WARN_RESTORE_MSG)));
-					}
-					if(test.containsKey(ShellyAbstractDevice.Restore.RESTORE_LOGIN)) {
-						DialogAuthentication credentials = new DialogAuthentication(MainView.this,
-								LABELS.getString("dlgAuthTitle"), device instanceof AbstractG1Device ? LABELS.getString("labelUser") : null,
-										LABELS.getString("labelPassword"), LABELS.getString("labelConfPassword"));
-						credentials.setUser(test.get(ShellyAbstractDevice.Restore.RESTORE_LOGIN));
-						credentials.setMessage(LABELS.getString("msgRestoreEnterLogin"));
-						credentials.editableUser(false);
-						credentials.setVisible(true);
-						if(credentials.getUser() != null) {
-							resData.put(ShellyAbstractDevice.Restore.RESTORE_LOGIN, new String(credentials.getPassword()));
-						}
-						credentials.dispose();
-					}
-					if(test.containsKey(ShellyAbstractDevice.Restore.RESTORE_WI_FI1)) {
-						DialogAuthentication credentials = new DialogAuthentication(MainView.this,
-								LABELS.getString("dlgSetWIFI"), LABELS.getString("dlgSetSSID"), LABELS.getString("labelPassword"), LABELS.getString("labelConfPassword"));
-						credentials.setUser(test.get(ShellyAbstractDevice.Restore.RESTORE_WI_FI1));
-						credentials.setMessage(LABELS.getString("msgRestoreEnterWIFI1"));
-						credentials.editableUser(false);
-						credentials.setVisible(true);
-						if(credentials.getUser() != null) {
-							resData.put(ShellyAbstractDevice.Restore.RESTORE_WI_FI1, new String(credentials.getPassword()));
-						}
-						credentials.dispose();
-					}
-					if(test.containsKey(ShellyAbstractDevice.Restore.RESTORE_WI_FI2)) {
-						DialogAuthentication credentials = new DialogAuthentication(MainView.this,
-								LABELS.getString("dlgSetWIFIBackup"), LABELS.getString("dlgSetSSID"), LABELS.getString("labelPassword"), LABELS.getString("labelConfPassword"));
-						credentials.setUser(test.get(ShellyAbstractDevice.Restore.RESTORE_WI_FI2));
-						credentials.setMessage(LABELS.getString("msgRestoreEnterWIFI2"));
-						credentials.editableUser(false);
-						credentials.setVisible(true);
-						if(credentials.getUser() != null) {
-							resData.put(ShellyAbstractDevice.Restore.RESTORE_WI_FI2, new String(credentials.getPassword()));
-						}
-						credentials.dispose();
-					}
-					if(test.containsKey(ShellyAbstractDevice.Restore.RESTORE_WI_FI_AP)) {
-						DialogAuthentication credentials = new DialogAuthentication(MainView.this,
-								LABELS.getString("dlgSetWIFI_AP"), null, LABELS.getString("labelPassword"), LABELS.getString("labelConfPassword"));
-						credentials.setUser(test.get(ShellyAbstractDevice.Restore.RESTORE_WI_FI_AP));
-						credentials.setMessage(LABELS.getString("msgRestoreEnterWIFI_AP"));
-						credentials.setVisible(true);
-						if(credentials.getUser() != null) {
-							resData.put(ShellyAbstractDevice.Restore.RESTORE_WI_FI_AP, new String(credentials.getPassword()));
-						}
-						credentials.dispose();
-					}
-					if(test.containsKey(ShellyAbstractDevice.Restore.RESTORE_MQTT)) {
-						DialogAuthentication credentials = new DialogAuthentication(MainView.this,
-								LABELS.getString("dlgSetMQTT"), LABELS.getString("labelUser"), LABELS.getString("labelPassword") /*,LABELS.getString("labelConfPassword")*/);
-						credentials.setUser(test.get(ShellyAbstractDevice.Restore.RESTORE_MQTT));
-						credentials.setMessage(LABELS.getString("msgRestoreEnterMQTT"));
-						credentials.editableUser(false);
-						credentials.setVisible(true);
-						if(credentials.getUser() != null) {
-							resData.put(ShellyAbstractDevice.Restore.RESTORE_MQTT, new String(credentials.getPassword()));
-						}
-						credentials.dispose();
-					}
-				}
-				MainView.this.getContentPane().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-				final String ret = device.restore(backupJsons, resData);
-				appProp.setProperty("LAST_PATH", fc.getCurrentDirectory().getCanonicalPath());
-				device.refreshSettings();
-				device.refreshStatus();
-				update(Devices.EventType.UPDATE, modelRow);
-				
-				if(ret == null || ret.length() == 0) {
-					if(device.rebootRequired())	{
-						String ok = LABELS.getString("dlgOK");
-						if(JOptionPane.showOptionDialog(MainView.this, LABELS.getString("msgRestoreSuccess"), device.getHostname(),
-								JOptionPane.OK_CANCEL_OPTION, JOptionPane.INFORMATION_MESSAGE, null, new Object[] {ok, LABELS.getString("action_reboot_name")}, ok) == 1) {
-							device.setStatus(Status.READING);
-							tabModel.setValueAt(DevicesTable.UPDATING_BULLET, modelRow, DevicesTable.COL_STATUS_IDX);
-							SwingUtilities.invokeLater(() -> model.reboot(modelRow));
-						}
-					} else {
-						JOptionPane.showMessageDialog(MainView.this, LABELS.getString("msgRestoreSuccess"), device.getHostname(), JOptionPane.INFORMATION_MESSAGE);
-					}
-				} else {
-					JOptionPane.showMessageDialog(MainView.this, (ret.equals(Restore.ERR_UNKNOWN.toString())) ? LABELS.getString("labelError") : ret, device.getHostname(), JOptionPane.ERROR_MESSAGE);
-				}
-			}
-		} catch (FileNotFoundException e1) {
-			Msg.errorMsg(MainView.this, String.format(LABELS.getString("action_restore_error_file"), fc.getSelectedFile().getName()));
-		} catch (IOException e1) {
-			Msg.errorStatusMsg(this, device, e1);
-		} catch (RuntimeException e1) {
-			Msg.errorMsg(e1);
-		} finally {
-			MainView.this.getContentPane().setCursor(Cursor.getDefaultCursor());
-		}
-	});
+	private Action restoreAction;
 	
 	private Action chartAction = new UsnaAction(this, "/images/Stats2.png", "action_chart_tooltip", e -> {
 		new MeasuresChart(this, model, devicesTable.getSelectedModelRows(), appProp);
@@ -416,10 +224,8 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		});
 	});
 	
-	private Action notesAction = new UsnaAction(this, "/images/Write2.png", "action_notes_tooltip", e -> {
-		SwingUtilities.invokeLater(() -> {
-			detailedView(((JToggleButton)e.getSource()).isSelected());
-		});
+	private Action notesAction = new UsnaSelectedAction(this, devicesTable, "/images/Write2.png", "action_notes_tooltip", i -> {
+		new NotesEditor(MainView.this, model.get(i));
 	});
 	
 	private Action printAction = new UsnaAction(this, "/images/Printer.png", "action_print_tooltip", e -> {
@@ -460,7 +266,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		displayStatus();
 	});
 
-	private Action eraseGhostAction = new UsnaAction(this, "action_name_delete_ghost", null, "/images/erase-9-16.png", null, e -> model.remove(devicesTable.getSelectedModelRow()));
+	private Action eraseGhostAction = new UsnaAction(this, "action_name_delete_ghost", null, "/images/Minus16.png", null, e -> model.remove(devicesTable.getSelectedModelRow()));
 	
 //	private Action copyHostAction = new UsnaSelectedAction(this, devicesTable, "action_copy_hostname", null, "/images/Clipboard_Copy_16.png", null, i -> {
 //		StringSelection ss = new StringSelection(model.get(i).getHostname());
@@ -471,6 +277,9 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		this.model = model;
 		this.appProp = appProp;
 		model.addListener(this);
+		
+		backupAction = new BackupAction(this, devicesTable, appProp, model);
+		restoreAction = new RestoreAction(this, devicesTable, appProp, model);
 
 		BorderLayout borderLayout = (BorderLayout) getContentPane().getLayout();
 		borderLayout.setHgap(2);
@@ -685,26 +494,27 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 	private void manageRowsSelection() {
 		tableSelectionListener = e -> {
 			if(e.getValueIsAdjusting() == false) {
-				boolean selection = devicesTable.getSelectedRowCount() > 0;
-				boolean singleSelection = devicesTable.getSelectedRowCount() == 1;
+				boolean singleSelection, singleSelectionNoGhost;
+				singleSelection = singleSelectionNoGhost = devicesTable.getSelectedRowCount() == 1;
+				boolean selectionNoGhost = devicesTable.getSelectedRowCount() > 0;
 				ShellyAbstractDevice d = null;
 				for(int idx: devicesTable.getSelectedRows()) {
 					d = model.get(devicesTable.convertRowIndexToModel(idx));
 					if(d instanceof GhostDevice) {
-						selection = singleSelection = false; // cannot operate ghost devices
+						selectionNoGhost = singleSelectionNoGhost = false; // cannot operate ghost devices
 						break;
 					}
 				}
-				infoAction.setEnabled(singleSelection);
-				infoLogAction.setEnabled(singleSelection);
-				checkListAction.setEnabled(selection);
-				rebootAction.setEnabled(selection);
-				browseAction.setEnabled(selection && Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE));
-				backupAction.setEnabled(selection);
-				restoreAction.setEnabled(singleSelection);
-				devicesSettingsAction.setEnabled(selection);
-				chartAction.setEnabled(selection);
-				scriptManagerAction.setEnabled(singleSelection && d instanceof AbstractG2Device);
+				infoAction.setEnabled(singleSelectionNoGhost);
+				infoLogAction.setEnabled(singleSelectionNoGhost);
+				checkListAction.setEnabled(selectionNoGhost);
+				rebootAction.setEnabled(selectionNoGhost);
+				browseAction.setEnabled(selectionNoGhost && Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE));
+				backupAction.setEnabled(selectionNoGhost);
+				restoreAction.setEnabled(singleSelectionNoGhost);
+				devicesSettingsAction.setEnabled(selectionNoGhost);
+				chartAction.setEnabled(selectionNoGhost);
+				scriptManagerAction.setEnabled(singleSelectionNoGhost && d instanceof AbstractG2Device);
 				notesAction.setEnabled(singleSelection);
 				
 				displayStatus();
@@ -804,11 +614,24 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		});
 	}
 	
-	private synchronized void displayStatus() {
-		if(textFieldFilter.getText().length() > 0) {
-			statusLabel.setText(String.format(LABELS.getString("filter_status"), model.size(), devicesTable.getRowCount(), devicesTable.getSelectedRowCount()));
-		} else {
-			statusLabel.setText(String.format(LABELS.getString("scanning_end"), model.size(), devicesTable.getSelectedRowCount()));
+	public void reserveStatusLine(boolean r) {
+		statusLineReserved = r;
+		if(r == false) {
+			displayStatus();
 		}
 	}
-} //557 - 614 - 620 - 669 - 705 - 727 - 699 - 760 - 782 - 811 - 805
+	
+	public void setStatus(String status) {
+		statusLabel.setText(status);
+	}
+	
+	private synchronized void displayStatus() {
+		if(statusLineReserved == false) {
+			if(textFieldFilter.getText().length() > 0) {
+				statusLabel.setText(String.format(LABELS.getString("filter_status"), model.size(), devicesTable.getRowCount(), devicesTable.getSelectedRowCount()));
+			} else {
+				statusLabel.setText(String.format(LABELS.getString("scanning_end"), model.size(), devicesTable.getSelectedRowCount()));
+			}
+		}
+	}
+} //557 - 614 - 620 - 669 - 705 - 727 - 699 - 760 - 782 - 811 - 805 -638

@@ -34,14 +34,30 @@ public class UsnaAction extends AbstractAction {
 	}
 
 	public UsnaAction(Window w, String nameId, String tooltipId, String smallIcon, String largeIcon, final ActionListener a) {
-		this(w, largeIcon, tooltipId, a);
+		this(w, nameId, tooltipId, smallIcon, largeIcon);
+		this.onActionPerformed = a;
+	}
+
+	public UsnaAction(Window w, String icon, String tooltipId, final ActionListener a) {
+		this(w, icon, tooltipId);
+		this.onActionPerformed = a;
+	}
+	
+	/**
+	 * This constructor must be followed by a setActionListener call
+	 */
+	protected UsnaAction(Window w, String nameId, String tooltipId, String smallIcon, String largeIcon) {
+		this(w, largeIcon, tooltipId);
 		putValue(NAME, LABELS.getString(nameId));
 		if(smallIcon != null) {
 			putValue(SMALL_ICON, new ImageIcon(UsnaAction.class.getResource(smallIcon)));
 		}
 	}
-
-	public UsnaAction(Window w, String icon, String tooltipId, final ActionListener a) {
+	
+	/**
+	 * This constructor must be followed by a setActionListener call
+	 */
+	protected UsnaAction(Window w, String icon, String tooltipId) {
 		this.w = w;
 		if(icon != null) {
 			putValue(LARGE_ICON_KEY, new ImageIcon(UsnaAction.class.getResource(icon)));
@@ -49,7 +65,10 @@ public class UsnaAction extends AbstractAction {
 		if(tooltipId != null) {
 			putValue(SHORT_DESCRIPTION, LABELS.getString(tooltipId));
 		}
-		this.onActionPerformed = a;
+	}
+	
+	protected void setActionListener(ActionListener a) {
+		onActionPerformed = a;
 	}
 
 	@Override
