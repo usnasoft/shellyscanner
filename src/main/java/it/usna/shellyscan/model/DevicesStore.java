@@ -12,7 +12,6 @@ import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,31 +40,37 @@ public class DevicesStore {
 	private final static String PORT = "port";
 	private final static String SSID = "ssid";
 	private final static String LAST_CON = "last";
+	private final static String USER_NOTE = "note";
 	
 	private final static JsonNodeFactory J_FACTORY = new JsonNodeFactory(false);
 	private List<GhostDevice> ghostsList = new ArrayList<>();
 
 	public void store(Devices model, Path storeFile) {
 		LOG.trace("storing archive");
-		final JsonNodeFactory factory = new JsonNodeFactory(false);
-		final ObjectNode root = factory.objectNode();
+		final ObjectNode root = J_FACTORY.objectNode();
 		root.put("ver", STORE_VERSION);
 		root.put("time", System.currentTimeMillis());
-		final ArrayNode array = factory.arrayNode();
+		final ArrayNode array = J_FACTORY.arrayNode();
 		for (int i = 0; i < model.size(); i++) {
 			ShellyAbstractDevice device = model.get(i);
+			GhostDevice stored = getStoredGhost(device);
 			// Device with errors or not authenticated -> get information from old store
 			if((device instanceof ShellyUnmanagedDevice ud && ud.getException() != null) || device.getStatus() == Status.NOT_LOOGGED) {
-				Optional<GhostDevice> stored = ghostsList.stream().filter(g -> g.getMacAddress().equals(device.getMacAddress())).findFirst();
-				if(stored.isPresent()) {
-					ObjectNode jsonDev = toJson(stored.get());
+//				Optional<GhostDevice> stored = ghostsList.stream().filter(g -> g.getMacAddress().equals(device.getMacAddress())).findFirst();
+				if(stored != null) {
+					ObjectNode jsonDev = toJson(stored);
+					jsonDev.put(USER_NOTE, stored.getNote());
 					jsonDev.put(ADDRESS, device.getAddress().getHostAddress());
 					array.add(jsonDev);
 				} else {
 					array.add(toJson(device));
 				}
 			} else {
-				array.add(toJson(device));
+				ObjectNode jsonDev = toJson(device);
+				if(stored != null) {
+					jsonDev.put(USER_NOTE, stored.getNote());
+				}
+				array.add(jsonDev);
 			}
 		}
 		root.set("dev", array);
@@ -109,13 +114,14 @@ public class DevicesStore {
 					try {
 						ghostsList.add(new GhostDevice(
 								InetAddress.getByName(el.get(ADDRESS).asText()), el.get(PORT).asInt(), el.get(HOSTNAME).asText(), el.get(MAC).asText(),
-								el.get(SSID).asText(), el.get(TYPE_NAME).asText(), el.get(TYPE_ID).asText(), el.get(NAME).asText(), el.path(LAST_CON).asLong()));
+								el.get(SSID).asText(), el.get(TYPE_NAME).asText(), el.get(TYPE_ID).asText(), el.get(NAME).asText(), el.path(LAST_CON).asLong(),
+								el.path(USER_NOTE).asText()));
 					} catch (UnknownHostException | RuntimeException e) {
 						LOG.error("Archive read", e);
 					}
 				});
 			} else {
-				LOG.info("Archive version is %; " + STORE_VERSION + " expected", arc.path("ver").asInt());
+				LOG.info("Archive version is {}; " + STORE_VERSION + " expected", arc.path("ver").asText());
 			}
 		} catch(FileNotFoundException | NoSuchFileException e) {
 			// first run?
@@ -134,11 +140,47 @@ public class DevicesStore {
 		for(int i= 0; i < model.size(); i++) {
 			ShellyAbstractDevice dev = model.get(i);
 			if(dev instanceof ShellyUnmanagedDevice == false || ((ShellyUnmanagedDevice)dev).getException() == null) {
-				list.add(new GhostDevice(
-						dev.getAddress(), dev.getPort(), dev.getHostname(), dev.getMacAddress(),
-						dev.getSSID(), dev.getTypeName(), dev.getTypeID(), dev.getName(), dev.getLastTime()));
+				list.add(toGhost(dev));
 			}
 		}
 		return list;
 	}
+	
+	private static GhostDevice toGhost(ShellyAbstractDevice dev) {
+		return new GhostDevice(
+				dev.getAddress(), dev.getPort(), dev.getHostname(), dev.getMacAddress(),
+				dev.getSSID(), dev.getTypeName(), dev.getTypeID(), dev.getName(), dev.getLastTime(), "");
+	}
+	
+	private GhostDevice getStoredGhost(ShellyAbstractDevice d) {
+		int ind = ghostsList.indexOf(d);
+		return ind >= 0 ? ghostsList.get(ind) : null;
+	}
+	
+	public GhostDevice getGhost(ShellyAbstractDevice d) {
+		int ind = ghostsList.indexOf(d);
+		if(ind >= 0) {
+			return ghostsList.get(ind);
+		} else {
+			GhostDevice ghost = toGhost(d);
+			ghostsList.add(ghost);
+			return ghost;
+		}
+	}
+	
+//	public String getNote(ShellyAbstractDevice d) {
+//		int ind = ghostsList.indexOf(d);
+//		return ind >= 0 ? ghostsList.get(ind).getNote() : "";
+//	}
+//	
+//	public void setNote(ShellyAbstractDevice d, String note) {
+//		int ind = ghostsList.indexOf(d);
+//		if(ind >= 0) {
+//			ghostsList.get(ind).setNote(note);
+//		} else {
+//			GhostDevice ghost = toGhost(d);
+//			ghostsList.add(ghost);
+//			ghostsList.get(ind).setNote(note);
+//		}
+//	}
 }

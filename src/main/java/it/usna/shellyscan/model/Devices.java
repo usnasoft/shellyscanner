@@ -470,6 +470,18 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 		}
 	}
 	
+//	public String getNote(ShellyAbstractDevice d) {
+//		return ghosts.getNote(d);
+//	}
+//	
+//	public void setNote(ShellyAbstractDevice d, String note) {
+//		ghosts.setNote(d, note);
+//	}
+	
+	public GhostDevice getGhost(int modelIdx) {
+		return ghosts.getGhost(devices.get(modelIdx));
+	}
+	
 	public void saveToStore(Path path) {
 		ghosts.store(this, path);
 	}

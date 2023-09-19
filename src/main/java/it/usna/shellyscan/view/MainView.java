@@ -225,7 +225,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 	});
 	
 	private Action notesAction = new UsnaSelectedAction(this, devicesTable, "/images/Write2.png", "action_notes_tooltip", i -> {
-		new NotesEditor(MainView.this, model.get(i));
+		new NotesEditor(MainView.this, model.getGhost(i));
 	});
 	
 	private Action printAction = new UsnaAction(this, "/images/Printer.png", "action_print_tooltip", e -> {

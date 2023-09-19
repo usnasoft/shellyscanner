@@ -18,20 +18,20 @@ import javax.swing.text.DefaultEditorKit;
 import javax.swing.undo.UndoManager;
 
 import it.usna.shellyscan.controller.UsnaAction;
-import it.usna.shellyscan.model.device.ShellyAbstractDevice;
+import it.usna.shellyscan.model.device.GhostDevice;
 import it.usna.shellyscan.view.util.UtilMiscellaneous;
 import it.usna.swing.dialog.FindReplaceDialog;
 
 public class NotesEditor extends JDialog {
 	private static final long serialVersionUID = 1L;
 	
-	public NotesEditor(Window owner, ShellyAbstractDevice device) {
-		super(owner, LABELS.getString("action_notes_tooltip") + " - " + UtilMiscellaneous.getFullName(device));
+	public NotesEditor(Window owner, GhostDevice ghost) {
+		super(owner, LABELS.getString("action_notes_tooltip") + " - " + UtilMiscellaneous.getFullName(ghost));
 		
 		JScrollPane scrollPane = new JScrollPane();
 		getContentPane().add(scrollPane, BorderLayout.CENTER);
 		
-		JTextArea textArea = new JTextArea();
+		JTextArea textArea = new JTextArea(ghost.getNote());
 		scrollPane.setViewportView(textArea);
 		
 		UndoManager manager = new UndoManager();
@@ -68,6 +68,7 @@ public class NotesEditor extends JDialog {
 		textArea.getActionMap().put("redo_usna", redoAction);
 		
 		JToolBar toolBar = new JToolBar();
+		toolBar.setFloatable(false);
 		getContentPane().add(toolBar, BorderLayout.NORTH);
 		toolBar.add(cutAction);
 		toolBar.add(copyAction);
@@ -80,6 +81,7 @@ public class NotesEditor extends JDialog {
 		
 		setSize(550, 400);
 		setVisible(true);
+		textArea.requestFocus();
 		setLocationRelativeTo(owner);
 	}
 }

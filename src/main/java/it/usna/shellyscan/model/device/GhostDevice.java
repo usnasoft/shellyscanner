@@ -11,9 +11,11 @@ import it.usna.shellyscan.model.device.WIFIManager.Network;
 public class GhostDevice extends ShellyAbstractDevice {
 	private String typeName;
 	private String typeID;
+	private String note;
 	
 	public GhostDevice(InetAddress address, int port, String hostname,
-			String mac, String ssid, String typeName, String typeID, String name, long lastConnection) {
+			String mac, String ssid, String typeName, String typeID, String name, long lastConnection,
+			String note) {
 		super(address, port, hostname);
 		this.mac = mac;
 		this.ssid = ssid;
@@ -21,11 +23,12 @@ public class GhostDevice extends ShellyAbstractDevice {
 		this.typeID = typeID;
 		this.name = name;
 		this.lastConnection = lastConnection;
+		this.note = note;
 	}
 
-	private GhostDevice(InetAddress address, int port, String hostname) {
-		super(address, port, hostname);
-	}
+//	private GhostDevice(InetAddress address, int port, String hostname) {
+//		super(address, port, hostname);
+//	}
 
 	@Override
 	public String getTypeName() {
@@ -40,6 +43,14 @@ public class GhostDevice extends ShellyAbstractDevice {
 	@Override
 	public String getTypeID() {
 		return typeID;
+	}
+	
+	public String getNote() {
+		return note;
+	}
+	
+	public void setNote(String note) {
+		this.note = note;
 	}
 	
 	@Override
