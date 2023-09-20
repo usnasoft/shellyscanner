@@ -185,10 +185,6 @@ public abstract class ShellyAbstractDevice {
 	public long getLastTime() {
 		return lastConnection;
 	}
-	
-//	public LocalDateTime getLastTimestamp() {
-//		return LocalDateTime.ofInstant(Instant.ofEpochMilli(lastConnection), TimeZone.getDefault().toZoneId());
-//	}
 
 	public abstract String[] getInfoRequests();
 

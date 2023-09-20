@@ -45,7 +45,7 @@ public class DevicesStore {
 	private final static JsonNodeFactory J_FACTORY = new JsonNodeFactory(false);
 	private List<GhostDevice> ghostsList = new ArrayList<>();
 
-	public void store(Devices model, Path storeFile) {
+	public void store(Devices model, Path storeFile) throws IOException {
 		LOG.trace("storing archive");
 		final ObjectNode root = J_FACTORY.objectNode();
 		root.put("ver", STORE_VERSION);
@@ -56,7 +56,6 @@ public class DevicesStore {
 			GhostDevice stored = getStoredGhost(device);
 			// Device with errors or not authenticated -> get information from old store
 			if((device instanceof ShellyUnmanagedDevice ud && ud.getException() != null) || device.getStatus() == Status.NOT_LOOGGED) {
-//				Optional<GhostDevice> stored = ghostsList.stream().filter(g -> g.getMacAddress().equals(device.getMacAddress())).findFirst();
 				if(stored != null) {
 					ObjectNode jsonDev = toJson(stored);
 					jsonDev.put(USER_NOTE, stored.getNote());
@@ -78,8 +77,6 @@ public class DevicesStore {
 		try (Writer w = Files.newBufferedWriter(storeFile, StandardCharsets.UTF_8)) {
 			w.write(root.toString());
 //			System.out.println(JSON_MAPPER.writerWithDefaultPrettyPrinter().writeValueAsString(root));
-		} catch (IOException e) {
-			LOG.error("Archive store", e);
 		}
 	}
 	

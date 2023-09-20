@@ -82,6 +82,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 	public final static int SHORTCUT_KEY = Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx();
 	private final static Logger LOG = LoggerFactory.getLogger(MainWindow.class);
 	private ListSelectionListener tableSelectionListener;
+	private boolean browserSupported = Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE);
 
 	private AppProperties appProp;
 	private JLabel statusLabel = new JLabel();
@@ -509,13 +510,13 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 				infoLogAction.setEnabled(singleSelectionNoGhost);
 				checkListAction.setEnabled(selectionNoGhost);
 				rebootAction.setEnabled(selectionNoGhost);
-				browseAction.setEnabled(selectionNoGhost && Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE));
+				browseAction.setEnabled(selectionNoGhost && browserSupported);
 				backupAction.setEnabled(selectionNoGhost);
 				restoreAction.setEnabled(singleSelectionNoGhost);
 				devicesSettingsAction.setEnabled(selectionNoGhost);
 				chartAction.setEnabled(selectionNoGhost);
 				scriptManagerAction.setEnabled(singleSelectionNoGhost && d instanceof AbstractG2Device);
-				notesAction.setEnabled(singleSelection);
+				notesAction.setEnabled(singleSelection && appProp.getBoolProperty(DialogAppSettings.PROP_USE_ARCHIVE, true));
 				
 				displayStatus();
 			}
@@ -568,7 +569,12 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 
 	private void storeProperties() {
 		if(appProp.getBoolProperty(DialogAppSettings.PROP_USE_ARCHIVE, true)) {
-			model.saveToStore(Paths.get(appProp.getProperty(DialogAppSettings.PROP_ARCHIVE_FILE, DialogAppSettings.PROP_ARCHIVE_FILE_DEFAULT)));
+			try {
+				model.saveToStore(Paths.get(appProp.getProperty(DialogAppSettings.PROP_ARCHIVE_FILE, DialogAppSettings.PROP_ARCHIVE_FILE_DEFAULT)));
+			} catch (IOException | RuntimeException ex) {
+				LOG.error("Unexpected", ex);
+				Msg.errorMsg(this, "Error storing archive");
+			}
 		}
 		if(details.isSelected()) {
 			detailedView(false);
@@ -614,14 +620,14 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		});
 	}
 	
-	public void reserveStatusLine(boolean r) {
+	public synchronized void reserveStatusLine(boolean r) {
 		statusLineReserved = r;
 		if(r == false) {
 			displayStatus();
 		}
 	}
 	
-	public void setStatus(String status) {
+	public synchronized void setStatus(String status) {
 		statusLabel.setText(status);
 	}
 	
@@ -634,4 +640,4 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 			}
 		}
 	}
-} //557 - 614 - 620 - 669 - 705 - 727 - 699 - 760 - 782 - 811 - 805 - 637
+} //557 - 614 - 620 - 669 - 705 - 727 - 699 - 760 - 782 - 811 - 805 - 643

@@ -3,6 +3,7 @@ package it.usna.shellyscan.view;
 import static it.usna.shellyscan.Main.LABELS;
 
 import java.awt.BorderLayout;
+import java.awt.FlowLayout;
 import java.awt.Window;
 import java.awt.event.KeyEvent;
 
@@ -10,6 +11,7 @@ import javax.swing.Action;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
+import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JToolBar;
@@ -21,12 +23,17 @@ import it.usna.shellyscan.controller.UsnaAction;
 import it.usna.shellyscan.model.device.GhostDevice;
 import it.usna.shellyscan.view.util.UtilMiscellaneous;
 import it.usna.swing.dialog.FindReplaceDialog;
+import javax.swing.JButton;
 
+/**
+ * A small text editor where "load" and "save" relies on GhostDevice notes
+ * @author usna
+ */
 public class NotesEditor extends JDialog {
 	private static final long serialVersionUID = 1L;
 	
 	public NotesEditor(Window owner, GhostDevice ghost) {
-		super(owner, LABELS.getString("action_notes_tooltip") + " - " + UtilMiscellaneous.getFullName(ghost));
+		super(owner, LABELS.getString("action_notes_tooltip") + " - " + UtilMiscellaneous.getDescName(ghost));
 		
 		JScrollPane scrollPane = new JScrollPane();
 		getContentPane().add(scrollPane, BorderLayout.CENTER);
@@ -34,6 +41,7 @@ public class NotesEditor extends JDialog {
 		JTextArea textArea = new JTextArea(ghost.getNote());
 		scrollPane.setViewportView(textArea);
 		
+		// actions
 		UndoManager manager = new UndoManager();
 		textArea.getDocument().addUndoableEditListener(manager);
 		
@@ -49,12 +57,6 @@ public class NotesEditor extends JDialog {
 		pasteAction.putValue(Action.SHORT_DESCRIPTION, LABELS.getString("btnPaste"));
 		pasteAction.putValue(Action.SMALL_ICON, new ImageIcon(NotesEditor.class.getResource("/images/Clipboard Paste_16.png")));
 		
-		Action findAction = new UsnaAction(this, "/images/Search_16.png", "btnFind", e -> {
-			FindReplaceDialog f = new FindReplaceDialog(NotesEditor.this, textArea, true);
-			f.setLocationRelativeTo(NotesEditor.this);
-			f.setVisible(true);
-		});
-		
 		Action undoAction = new UsnaAction(this, "/images/Undo_16.png", "btnUndo", e -> {
 			try {manager.undo();} catch(RuntimeException ex) {}
 		});
@@ -67,6 +69,15 @@ public class NotesEditor extends JDialog {
 		textArea.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_Y, MainView.SHORTCUT_KEY), "redo_usna");
 		textArea.getActionMap().put("redo_usna", redoAction);
 		
+		Action findAction = new UsnaAction(this, "/images/Search_16.png", "btnFind", e -> {
+			FindReplaceDialog f = new FindReplaceDialog(NotesEditor.this, textArea, true);
+			f.setLocationRelativeTo(NotesEditor.this);
+			f.setVisible(true);
+		});
+		textArea.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_F, MainView.SHORTCUT_KEY), "find_usna");
+		textArea.getActionMap().put("find_usna", findAction);
+		
+		// toolbar
 		JToolBar toolBar = new JToolBar();
 		toolBar.setFloatable(false);
 		getContentPane().add(toolBar, BorderLayout.NORTH);
@@ -78,6 +89,21 @@ public class NotesEditor extends JDialog {
 		toolBar.add(redoAction);
 		toolBar.addSeparator();
 		toolBar.add(findAction);
+
+		// bottom buttons
+		JPanel buttonsPanel = new JPanel(new FlowLayout());
+		getContentPane().add(buttonsPanel, BorderLayout.SOUTH);
+		
+		JButton okButton = new JButton(LABELS.getString("dlgSave"));
+		okButton.addActionListener(e -> {
+			ghost.setNote(textArea.getText());
+			dispose();
+		});
+		buttonsPanel.add(okButton);
+		
+		JButton closeButton = new JButton(LABELS.getString("dlgClose"));
+		closeButton.addActionListener(e -> dispose());
+		buttonsPanel.add(closeButton);
 		
 		setSize(550, 400);
 		setVisible(true);
