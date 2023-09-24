@@ -213,7 +213,7 @@ public class Main {
 					} else {
 						model.scannerInit(fullScanx, refreshStatusInterval, refreshConfigTics);
 					}
-//					UpplicationUpdateCHK.chechForUpdates(view, true, "000");
+					UpplicationUpdateCHK.chechForUpdates(view, true, appProp);
 				} catch (/*IO*/Exception e) {
 					Msg.errorMsg(e);
 					System.exit(1);

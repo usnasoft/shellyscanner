@@ -24,8 +24,10 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import it.usna.shellyscan.Main;
+import it.usna.util.AppProperties;
 
 public class UpplicationUpdateCHK {
+	private final static String IGNORE = "IGNORE_VERION_DOWNLOAD";
 	private final static Logger LOG = LoggerFactory.getLogger(UpplicationUpdateCHK.class);
 	
 	public static void chechForUpdates(final Window w, final boolean checkDev) {
@@ -54,15 +56,16 @@ public class UpplicationUpdateCHK {
 		}
 	}
 	
-	public static String chechForUpdates(final Window w, final boolean checkDev, final String ignoreRel) {
+	/**
+	 * This call manages (read/write) IGNORE_VERION_DOWNLOAD parameter
+	 */
+	public static void chechForUpdates(final Window w, final boolean checkDev, final AppProperties appProp) {
 		w.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-		final String title = LABELS.getString("aboutCheckUpdates") + " - " + Main.VERSION + " r." + Main.REVISION;
 		try {
+			final String title = LABELS.getString("aboutCheckUpdates") + " - " + Main.VERSION + " r." + Main.REVISION;
+			String ignoreRel = appProp.getProperty(IGNORE, "000");
 			List<Release> rel = remoteChech(checkDev, ignoreRel);
-			if(rel.size() == 0) {
-				Msg.showMsg(w, LABELS.getString("aboutCheckUpdatesNone"), title, JOptionPane.INFORMATION_MESSAGE);
-				return null;
-			} else {
+			if(rel.size() > 0) {
 				String msg = rel.stream().map(r -> r.msg()).collect(Collectors.joining("\n"));
 				Object[] options = new Object[] {LABELS.getString("aboutCheckUpdatesDownload"), LABELS.getString("aboutCheckUpdatesSkip"), LABELS.getString("dlgClose")};
 				int choice = JOptionPane.showOptionDialog(w, msg, title, JOptionPane.OK_CANCEL_OPTION, JOptionPane.INFORMATION_MESSAGE, null, options, null);
@@ -73,14 +76,12 @@ public class UpplicationUpdateCHK {
 						Msg.errorMsg(w, LABELS.getString("aboutCheckUpdatesDownloadURL"));
 					}
 				} else if(choice == 1) { // skip
-					return rel.stream().map(r -> r.relId()).collect(Collectors.maxBy(String.CASE_INSENSITIVE_ORDER)).get(); // new ignore
+					appProp.setProperty(IGNORE,
+							rel.stream().map(r -> r.relId()).collect(Collectors.maxBy(String.CASE_INSENSITIVE_ORDER)).get()); // new ignore
 				}
-				return null;
 			}
 		} catch(IOException e) {
 			LOG.warn("CheckUpdate", e);
-			Msg.errorMsg(w, LABELS.getString("aboutCheckUpdatesError"));
-			return null;
 		} finally {
 			w.setCursor(Cursor.getDefaultCursor());
 		}
@@ -112,15 +113,7 @@ public class UpplicationUpdateCHK {
 		return rel;
 	}
 	
-//	public record UpdateCHK(String dev, String devId, String stable, String stableId, String none) {
-//		public List<String> /*String[]*/ getUpdates() {
-////			return List.of(dev, stable);
-////			return new String[] {dev, stable};
-//			return Arrays.asList(dev, stable);
-//		}
-//	}
-	
-	public record Release(String msg, String relId) {}
+	private record Release(String msg, String relId) {}
 }
 
 /*
@@ -131,5 +124,3 @@ public class UpplicationUpdateCHK {
 
 stable & dev are optional; note fields are optional 
 */
-	
-	//
