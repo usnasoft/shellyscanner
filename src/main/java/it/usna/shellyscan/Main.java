@@ -18,6 +18,7 @@ import javax.swing.SwingUtilities;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.simple.SimpleLogger;
 
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.DevicesFactory;
@@ -51,12 +52,13 @@ public class Main {
 
 	private final static String IP_SCAN_PAR_FORMAT = "^((?:(?:0|1\\d?\\d?|2[0-4]?\\d?|25[0-5]?|[3-9]\\d?)\\.){2}(?:0|1\\d?\\d?|2[0-4]?\\d?|25[0-5]?|[3-9]\\d?))\\.(0|1\\d?\\d?|2[0-4]?\\d?|25[0-5]?|[3-9]\\d?)-(0|1\\d?\\d?|2[0-4]?\\d?|25[0-5]?|[3-9]\\d?)$";
 
-	private final static Logger LOG = LoggerFactory.getLogger(Main.class);
-
 	public static void main(final String ... args) {
+//		System.setProperty(SimpleLogger.DEFAULT_LOG_LEVEL_KEY, "error");
+		System.setProperty(SimpleLogger.SHOW_DATE_TIME_KEY, "true");
+		final Logger LOG = LoggerFactory.getLogger(Main.class);
+
 		LOG.info(APP_NAME + " " + VERSION + " r." + REVISION);
 		System.setProperty("java.net.preferIPv4Stack" , "true");
-		
 //		UsnaSwingUtils.initializeFontSize(1.2f);
 		try { // in case of error or no file (true) use default configuration
 			appProp.load(true);
