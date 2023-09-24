@@ -25,6 +25,7 @@ import it.usna.shellyscan.model.NonInteractiveDevices;
 import it.usna.shellyscan.view.MainView;
 import it.usna.shellyscan.view.appsettings.DialogAppSettings;
 import it.usna.shellyscan.view.util.Msg;
+import it.usna.shellyscan.view.util.UpplicationUpdateCHK;
 import it.usna.swing.UsnaSwingUtils;
 import it.usna.util.AppProperties;
 import it.usna.util.CLI;
@@ -32,7 +33,7 @@ import it.usna.util.CLI;
 public class Main {
 	public final static String APP_NAME = "Shelly Scanner";
 	public final static String VERSION = "1.0.1alpha";
-	public final static String VERSION_CODE = "001.000.001r000"; // r0xx alpha; r1xx beta; r2xx stable
+	public final static String VERSION_CODE = "000.000.001r000"; // r0xx alpha; r1xx beta; r2xx stable
 	public final static String REVISION = "0";
 	public final static String ICON = "/images/ShSc24.png";
 	public final static String BACKUP_FILE_EXT = "sbk";
@@ -54,6 +55,7 @@ public class Main {
 
 	public static void main(final String ... args) {
 		LOG.info(APP_NAME + " " + VERSION + " r." + REVISION);
+		System.setProperty("java.net.preferIPv4Stack" , "true");
 		
 //		UsnaSwingUtils.initializeFontSize(1.2f);
 		try { // in case of error or no file (true) use default configuration
@@ -211,6 +213,7 @@ public class Main {
 					} else {
 						model.scannerInit(fullScanx, refreshStatusInterval, refreshConfigTics);
 					}
+//					UpplicationUpdateCHK.chechForUpdates(view, true, "000");
 				} catch (/*IO*/Exception e) {
 					Msg.errorMsg(e);
 					System.exit(1);

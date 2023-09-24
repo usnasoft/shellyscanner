@@ -2,6 +2,7 @@ package it.usna.shellyscan.model;
 
 import java.io.IOException;
 import java.net.InetAddress;
+import java.net.NetworkInterface;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -123,7 +124,10 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 				}
 			});
 		} else {
-			final JmDNS dns = JmDNS.create(/*network == null ? InetAddress.getLocalHost() : network*//*InetAddress.getLocalHost()*/null, null);
+			if(LOG.isTraceEnabled()) {
+				LOG.trace("Creating JmDNS on: {}; interface: {}", InetAddress.getLocalHost(), NetworkInterface.getByInetAddress(InetAddress.getLocalHost()).getInterfaceAddresses());
+			}
+			final JmDNS dns = JmDNS.create(/*network == null ? InetAddress.getLocalHost() : network*/InetAddress.getLocalHost(), null);
 			bjServices.add(dns);
 			LOG.debug("Local scan: {} {}", dns.getName(), dns.getInetAddress());
 			dns.addServiceListener(SERVICE_TYPE1, dnsListener);
