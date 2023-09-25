@@ -37,6 +37,10 @@ public class DialogAppSettings extends JDialog {
 	public final static String PROP_SCAN_MODE_DEFAULT = "FULL";
 	public final static String PROP_DCLICK_ACTION = "DCLICK_ACTION";
 	public final static String PROP_DCLICK_ACTION_DEFAULT = "DET";
+	
+	public final static String PROP_UPDATECHK_ACTION = "UPDATE_CHK";
+	public final static String PROP_UPDATECHK_ACTION_DEFAULT = "STABLE";
+	
 	public final static String PROP_CHARTS_START = "CHART_DEF";
 	
 	public final static String PROP_DETAILED_VIEW_SCREEN = "DETAIL_SCREEN";
@@ -164,17 +168,24 @@ public class DialogAppSettings extends JDialog {
 			}
 			
 			// Detailed view
-			String detaildedScreen;
 			if(panelGUI.rdbtnDetailedViewFull.isSelected()) {
-				detaildedScreen = PROP_DETAILED_VIEW_SCREEN_FULL;
+				appProp.setProperty(PROP_DETAILED_VIEW_SCREEN, PROP_DETAILED_VIEW_SCREEN_FULL);
 			} else if(panelGUI.rdbtnDetailedViewAsIs.isSelected()) {
-				detaildedScreen = PROP_DETAILED_VIEW_SCREEN_AS_IS;
+				appProp.setProperty(PROP_DETAILED_VIEW_SCREEN, PROP_DETAILED_VIEW_SCREEN_AS_IS);
 			} else if(panelGUI.rdbtnNDetailedViewEstimate.isSelected()) {
-				detaildedScreen = PROP_DETAILED_VIEW_SCREEN_ESTIMATE;
+				appProp.setProperty(PROP_DETAILED_VIEW_SCREEN, PROP_DETAILED_VIEW_SCREEN_ESTIMATE);
 			} else {
-				detaildedScreen = PROP_DETAILED_VIEW_SCREEN_HORIZONTAL;
+				appProp.setProperty(PROP_DETAILED_VIEW_SCREEN, PROP_DETAILED_VIEW_SCREEN_HORIZONTAL);
 			}
-			appProp.setProperty(PROP_DETAILED_VIEW_SCREEN, detaildedScreen);
+			
+			// Check for new Shelly Scanner release
+			if(panelGUI.updNoCHK.isSelected()) {
+				appProp.setProperty(PROP_UPDATECHK_ACTION, "NEVER");
+			} else if(panelGUI.updStableCHK.isSelected()) {
+				appProp.setProperty(PROP_UPDATECHK_ACTION, "STABLE");
+			} else { // updBetaCHK
+				appProp.setProperty(PROP_UPDATECHK_ACTION, "BETA");
+			}
 			
 			// store
 			boolean useStore = panelStore.chckbxUseStore.isSelected();

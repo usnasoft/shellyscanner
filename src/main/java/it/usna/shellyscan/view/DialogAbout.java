@@ -45,7 +45,7 @@ public class DialogAbout {
 		JButton checkButton = new JButton(new UsnaAction("aboutCheckUpdates", e -> {
 //			String title = LABELS.getString("aboutCheckUpdates") + " - " + Main.VERSION + " r." + Main.REVISION;
 			Window w = SwingUtilities.getWindowAncestor((Component)e.getSource());
-			UpplicationUpdateCHK.chechForUpdates(w, true);
+			UpplicationUpdateCHK.chechForUpdates(w);
 //			try {
 //				w.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 ////				String msg = chechForUpdates(w, true);
