@@ -12,7 +12,6 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -94,6 +93,9 @@ public class UpplicationUpdateCHK {
 	private static List<Release> remoteChech(final boolean checkDev, final String ignoreRel) throws MalformedURLException, IOException {
 		List<Release> rel = new ArrayList<>(2);
 		final URLConnection con = new URL(LABELS.getString("aboutCheckUpdatesPath")).openConnection(); // http://www.usna.it/shellyscanner/last_verion.txt
+		
+		con.getContentType();
+		
 		final JsonNode updateNode = new ObjectMapper().readTree(con.getInputStream());
 		final JsonNode stable = updateNode.path("stable");
 		String id = null;

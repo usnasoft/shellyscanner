@@ -88,6 +88,8 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 		wsClient.setStopAtShutdown(true);
 //		wsClient.setInputBufferSize(100_000);
 		wsClient.start();
+		
+//		httpClient.newRequest("http://www.usna.it/shellyscanner/last_version.txt").timeout(30, TimeUnit.SECONDS).method(HttpMethod.GET).send().getContentAsString();
 	}
 
 	public void scannerInit(boolean fullScan, int refreshInterval, int refreshTics) throws IOException {
