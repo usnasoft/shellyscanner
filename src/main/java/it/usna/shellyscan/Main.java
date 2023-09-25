@@ -215,7 +215,6 @@ public class Main {
 					} else {
 						model.scannerInit(fullScanx, refreshStatusInterval, refreshConfigTics);
 					}
-					UpplicationUpdateCHK.chechForUpdates(view, appProp);
 				} catch (/*IO*/Exception e) {
 					Msg.errorMsg(e);
 					System.exit(1);
@@ -223,6 +222,7 @@ public class Main {
 					view.setCursor(Cursor.getDefaultCursor());
 				}
 			});
+			new Thread(() -> UpplicationUpdateCHK.chechForUpdates(view, appProp)).start();
 		} catch (Throwable ex) {
 			Msg.errorMsg(ex);
 			ex.printStackTrace();

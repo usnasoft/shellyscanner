@@ -88,8 +88,6 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 		wsClient.setStopAtShutdown(true);
 //		wsClient.setInputBufferSize(100_000);
 		wsClient.start();
-		
-//		httpClient.newRequest("http://www.usna.it/shellyscanner/last_version.txt").timeout(30, TimeUnit.SECONDS).method(HttpMethod.GET).send().getContentAsString();
 	}
 
 	public void scannerInit(boolean fullScan, int refreshInterval, int refreshTics) throws IOException {
@@ -165,7 +163,7 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 			final InetAddress addr = InetAddress.getByAddress(baseScanIP);
 			executor.schedule(() -> {
 				try {
-					if(addr.isReachable(5_000)) {
+					if(addr.isReachable(10_000)) {
 //						Thread.sleep(MULTI_QUERY_DELAY);
 						JsonNode info = isShelly(addr, 80);
 						if(info != null) {
@@ -186,7 +184,7 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 
 	private JsonNode isShelly(final InetAddress address, int port) throws TimeoutException {
 		try {
-			ContentResponse response = httpClient.newRequest("http://" + address.getHostAddress() + ":" + port + "/shelly").timeout(30, TimeUnit.SECONDS).method(HttpMethod.GET).send();
+			ContentResponse response = httpClient.newRequest("http://" + address.getHostAddress() + ":" + port + "/shelly").timeout(80, TimeUnit.SECONDS).method(HttpMethod.GET).send();
 			JsonNode shellyNode = JSON_MAPPER.readTree(response.getContent());
 			int resp = response.getStatus();
 			if(resp == HttpStatus.OK_200 && shellyNode.has("mac")) { // "mac" is common to all shelly devices
@@ -334,7 +332,7 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 	public void create(InetAddress address, int port, String hostName, boolean force) {
 		LOG.trace("getting info (/shelly) {}:{} - {}", address, port, hostName);
 		try {
-			ContentResponse response = httpClient.newRequest("http://" + address.getHostAddress() + ":" + port + "/shelly").timeout(60, TimeUnit.SECONDS).method(HttpMethod.GET).send();
+			ContentResponse response = httpClient.newRequest("http://" + address.getHostAddress() + ":" + port + "/shelly").timeout(80, TimeUnit.SECONDS).method(HttpMethod.GET).send();
 			create(address, port, JSON_MAPPER.readTree(response.getContent()), hostName);
 			Thread.sleep(Devices.MULTI_QUERY_DELAY);
 		} catch(IOException | TimeoutException | InterruptedException | ExecutionException e) { // SocketTimeoutException extends IOException
