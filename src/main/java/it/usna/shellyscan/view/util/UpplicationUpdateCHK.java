@@ -93,9 +93,6 @@ public class UpplicationUpdateCHK {
 	private static List<Release> remoteChech(final boolean checkDev, final String ignoreRel) throws MalformedURLException, IOException {
 		List<Release> rel = new ArrayList<>(2);
 		final URLConnection con = new URL(LABELS.getString("aboutCheckUpdatesPath")).openConnection(); // http://www.usna.it/shellyscanner/last_verion.txt
-		
-		con.getContentType();
-		
 		final JsonNode updateNode = new ObjectMapper().readTree(con.getInputStream());
 		final JsonNode stable = updateNode.path("stable");
 		String id = null;
@@ -128,5 +125,5 @@ public class UpplicationUpdateCHK {
 "dev": {"id": "001.000.000r100", "version": "1.0.0 beta", "note": "beta version"},
 }
 
-stable & dev are optional; note fields are optional 
+"stable" & "dev" are optional; "note" fields are optional 
 */
