@@ -134,6 +134,8 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 //			dns.addServiceListener(SERVICE_TYPE2, dnsListener);
 		}
 		fireEvent(EventType.READY);
+		
+		executor.schedule(() -> ghostsReconnect(), 90, TimeUnit.SECONDS);
 	}
 
 	public void scannerInit(final byte[] ip, int first, final int last, int refreshInterval, int refreshTics) throws IOException {
@@ -428,6 +430,22 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 		return executor.scheduleWithFixedDelay(refreshRunner, interval + idx, interval, TimeUnit.MILLISECONDS);
 	}
 
+	public void ghostsReconnect() {
+		LOG.debug("starting ghosts reconnect");
+		int dalay = 0;
+		for(int i = 0; i <= devices.size(); i++) {
+			ShellyAbstractDevice d = devices.get(i);
+			if(d instanceof GhostDevice g && g.isBattery() == false) {
+				executor.schedule(() -> {
+					try {
+						create(d.getAddress(), 80, d.getAddress().getHostAddress(), false);
+					} catch (RuntimeException e) {/*LOG.trace("ghosts reload {}", d.getAddress());*/}
+				}, dalay, TimeUnit.MILLISECONDS);
+				dalay +=4;
+			}
+		}
+	}
+
 	public ShellyAbstractDevice get(int ind) {
 		return devices.get(ind);
 	}
@@ -473,14 +491,6 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 			});
 		}
 	}
-	
-//	public String getNote(ShellyAbstractDevice d) {
-//		return ghosts.getNote(d);
-//	}
-//	
-//	public void setNote(ShellyAbstractDevice d, String note) {
-//		ghosts.setNote(d, note);
-//	}
 	
 	public GhostDevice getGhost(int modelIdx) {
 		return ghosts.getGhost(devices.get(modelIdx));
@@ -560,4 +570,4 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 			}
 		}
 	}
-} // 197 - 307 - 326 - 418 - 510 - 544
+} // 197 - 307 - 326 - 418 - 510 - 544 - 573

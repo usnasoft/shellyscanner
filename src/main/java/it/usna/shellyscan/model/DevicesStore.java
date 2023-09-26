@@ -22,6 +22,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
+import it.usna.shellyscan.model.device.BatteryDeviceInterface;
 import it.usna.shellyscan.model.device.GhostDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
@@ -39,11 +40,12 @@ public class DevicesStore {
 	private final static String ADDRESS = "ip";
 	private final static String PORT = "port";
 	private final static String SSID = "ssid";
+	private final static String BATTERY = "bat";
 	private final static String LAST_CON = "last";
 	private final static String USER_NOTE = "note";
 	
 	private final static JsonNodeFactory J_FACTORY = new JsonNodeFactory(false);
-	private List<GhostDevice> ghostsList = new ArrayList<>();
+	private final List<GhostDevice> ghostsList = new ArrayList<>();
 
 	public void store(Devices model, Path storeFile) throws IOException {
 		LOG.trace("storing archive");
@@ -91,6 +93,7 @@ public class DevicesStore {
 		jsonDev.put(NAME, device.getName());
 		jsonDev.put(SSID, device.getSSID());
 		jsonDev.put(LAST_CON, device.getLastTime());
+		jsonDev.put(BATTERY, device instanceof BatteryDeviceInterface  || (device instanceof GhostDevice g && g.isBattery()));
 		return jsonDev;
 	}
 
@@ -112,6 +115,7 @@ public class DevicesStore {
 						ghostsList.add(new GhostDevice(
 								InetAddress.getByName(el.get(ADDRESS).asText()), el.get(PORT).asInt(), el.get(HOSTNAME).asText(), el.get(MAC).asText(),
 								el.get(SSID).asText(), el.get(TYPE_NAME).asText(), el.get(TYPE_ID).asText(), el.get(NAME).asText(), el.path(LAST_CON).asLong(),
+								el.path(BATTERY).asBoolean(false),
 								el.path(USER_NOTE).asText()));
 					} catch (UnknownHostException | RuntimeException e) {
 						LOG.error("Archive read", e);
@@ -130,7 +134,7 @@ public class DevicesStore {
 	}
 	
 	/**
-	 * Map the full model to a list of ghosts
+	 * Map the full model to a list of ghosts - ignore notes
 	 */
 	public static List<GhostDevice> toGhosts(Devices model) {
 		List<GhostDevice> list = new ArrayList<>(model.size());
@@ -146,7 +150,9 @@ public class DevicesStore {
 	private static GhostDevice toGhost(ShellyAbstractDevice dev) {
 		return new GhostDevice(
 				dev.getAddress(), dev.getPort(), dev.getHostname(), dev.getMacAddress(),
-				dev.getSSID(), dev.getTypeName(), dev.getTypeID(), dev.getName(), dev.getLastTime(), "");
+				dev.getSSID(), dev.getTypeName(), dev.getTypeID(), dev.getName(), dev.getLastTime(),
+				dev instanceof BatteryDeviceInterface || (dev instanceof GhostDevice g && g.isBattery()),
+				"");
 	}
 	
 	private GhostDevice getStoredGhost(ShellyAbstractDevice d) {
@@ -154,6 +160,11 @@ public class DevicesStore {
 		return ind >= 0 ? ghostsList.get(ind) : null;
 	}
 	
+	/**
+	 * getCorresponding ghost or generate a new one
+	 * @param d
+	 * @return
+	 */
 	public GhostDevice getGhost(ShellyAbstractDevice d) {
 		int ind = ghostsList.indexOf(d);
 		if(ind >= 0) {
