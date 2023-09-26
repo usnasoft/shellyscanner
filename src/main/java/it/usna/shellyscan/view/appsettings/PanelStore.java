@@ -32,7 +32,7 @@ public class PanelStore extends JPanel {
 
 	PanelStore(final Devices model, final AppProperties appProp) {
 		GridBagLayout gridBagLayout = new GridBagLayout();
-		gridBagLayout.rowHeights = new int[] {0, 0, 1};
+		gridBagLayout.rowHeights = new int[] {0, 0, 0, 30};
 		gridBagLayout.columnWeights = new double[]{1.0, 1.0, 0.0};
 		gridBagLayout.columnWidths = new int[]{0, 10, 0};
 		setLayout(gridBagLayout);
@@ -94,12 +94,31 @@ public class PanelStore extends JPanel {
 		
 		JButton btnNewButton = new JButton(LABELS.getString("dlgAppStoreClearButtonLabel"));
 		GridBagConstraints gbc_btnNewButton = new GridBagConstraints();
-		gbc_btnNewButton.weighty = 1.0;
 		gbc_btnNewButton.anchor = GridBagConstraints.NORTHWEST;
 		gbc_btnNewButton.insets = new Insets(0, 0, 10, 15);
 		gbc_btnNewButton.gridx = 1;
 		gbc_btnNewButton.gridy = 2;
 		add(btnNewButton, gbc_btnNewButton);
+		
+		JLabel lblNewLabel_1 = new JLabel(LABELS.getString("dlgAppStoreAutoReload"));
+		lblNewLabel_1.setFont(new Font("Tahoma", Font.BOLD, 11));
+		GridBagConstraints gbc_lblNewLabel_1 = new GridBagConstraints();
+		gbc_lblNewLabel_1.weighty = 1.0;
+		gbc_lblNewLabel_1.anchor = GridBagConstraints.NORTHWEST;
+		gbc_lblNewLabel_1.insets = new Insets(0, 0, 10, 15);
+		gbc_lblNewLabel_1.gridx = 0;
+		gbc_lblNewLabel_1.gridy = 3;
+		add(lblNewLabel_1, gbc_lblNewLabel_1);
+		
+		JCheckBox chckbxNewCheckBox = new JCheckBox(LABELS.getString("dlgAppStoreAutoRetooltip"));
+		chckbxNewCheckBox.setVerticalTextPosition(SwingConstants.TOP);
+		GridBagConstraints gbc_chckbxNewCheckBox = new GridBagConstraints();
+		gbc_chckbxNewCheckBox.gridwidth = 2;
+		gbc_chckbxNewCheckBox.anchor = GridBagConstraints.NORTHWEST;
+		gbc_chckbxNewCheckBox.insets = new Insets(0, 0, 0, 5);
+		gbc_chckbxNewCheckBox.gridx = 1;
+		gbc_chckbxNewCheckBox.gridy = 3;
+		add(chckbxNewCheckBox, gbc_chckbxNewCheckBox);
 		btnNewButton.addActionListener(event -> {
 			final String cancel = UIManager.getString("OptionPane.cancelButtonText");
 			if(JOptionPane.showOptionDialog(
