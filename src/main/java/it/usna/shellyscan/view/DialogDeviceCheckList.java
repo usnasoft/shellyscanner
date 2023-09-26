@@ -404,7 +404,7 @@ public class DialogDeviceCheckList extends JDialog implements UsnaEventListener<
 	private static Object[] g1Row(ShellyAbstractDevice d, JsonNode settings) {
 		Boolean eco = boolVal(settings.path("eco_mode_enabled"));
 		Boolean ledOff = boolVal(settings.path("led_status_disable"));
-		boolean debug = d.getDebugMode() != ShellyAbstractDevice.LogMode.NO;
+		Object debug = d.getDebugMode() == LogMode.UNDEFINED ? "-" : d.getDebugMode() != LogMode.NO;
 		String roaming;
 		if(settings.path("ap_roaming").isMissingNode()) {
 			roaming = "-";
@@ -434,7 +434,7 @@ public class DialogDeviceCheckList extends JDialog implements UsnaEventListener<
 		if(ap != null && ap == Boolean.TRUE && settings.at("/wifi/ap/is_open").asBoolean(true) == false) {
 			ap = TRUE; // AP active but protected with pwd
 		}
-		Object debug = (d.getDebugMode() == ShellyAbstractDevice.LogMode.NO) ? Boolean.FALSE : LABELS.getString("debug" + d.getDebugMode());
+		Object debug = (d.getDebugMode() == LogMode.NO) ? Boolean.FALSE : LABELS.getString("debug" + d.getDebugMode());
 		Object ble = boolVal(settings.at("/ble/enable"));
 		if(ble == Boolean.TRUE && boolVal(settings.at("/ble/observer/enable")) == Boolean.TRUE) {
 			ble = "OBS"; // used as observer

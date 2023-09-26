@@ -102,21 +102,21 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 			this.debugEnabled = LogMode.NO;
 		}
 		
-		this.cloudEnabled = config.path("cloud").path("enable").asBoolean();
-		this.mqttEnabled = config.path("mqtt").path("enable").asBoolean();
+		this.cloudEnabled = config.path("cloud").path("enable").booleanValue();
+		this.mqttEnabled = config.path("mqtt").path("enable").booleanValue();
 		
-		this.rangeExtender = config.get("wifi").get("ap").path("range_extender").path("enable").asBoolean();
+		this.rangeExtender = config.get("wifi").get("ap").path("range_extender").path("enable").booleanValue();
 	}
 	
 	protected void fillStatus(JsonNode status) throws IOException {
-		this.cloudConnected = status.path("cloud").path("connected").asBoolean();
+		this.cloudConnected = status.path("cloud").path("connected").booleanValue();
 		JsonNode wifiNode = status.get("wifi");
 		this.rssi = wifiNode.path("rssi").intValue();
 		this.ssid = wifiNode.path("ssid").asText();
 		JsonNode sysNode = status.get("sys");
 		this.uptime = sysNode.get("uptime").intValue();
-		this.rebootRequired = sysNode.path("restart_required").asBoolean();
-		this.mqttConnected = status.path("mqtt").path("connected").asBoolean();
+		this.rebootRequired = sysNode.path("restart_required").booleanValue();
+		this.mqttConnected = status.path("mqtt").path("connected").booleanValue();
 		
 		lastConnection = System.currentTimeMillis();
 	}
@@ -263,7 +263,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 	public Future<Session> connectWebSocketLogs(WebSocketDeviceListener listener) throws IOException, InterruptedException, ExecutionException {
 		final Future<Session> s = wsClient.connect(listener, URI.create("ws://" + address.getHostAddress() + ":" + port + "/debug/log"));
 		return s;
-//		return wsClient..connect(listener, URI.create("ws://" + address.getHostAddress() + ":" + port + "/debug/log"));
+//		return wsClient.connect(listener, URI.create("ws://" + address.getHostAddress() + ":" + port + "/debug/log"));
 	}
 		
 	@Override
@@ -302,7 +302,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 	}
 
 	@Override
-	public Map<Restore, String> restoreCheck(/*final File file*/Map<String, JsonNode> backupJsons) throws IOException {
+	public Map<Restore, String> restoreCheck(Map<String, JsonNode> backupJsons) throws IOException {
 		EnumMap<Restore, String> res = new EnumMap<>(Restore.class);
 		try {
 			JsonNode devInfo = backupJsons.get("Shelly.GetDeviceInfo.json");

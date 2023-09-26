@@ -76,27 +76,26 @@ public abstract class AbstractG1Device extends ShellyAbstractDevice {
 		}
 	}
 	
-//	private final void fillOnce(JsonNode settings) {
-////		JsonNode deviceNode = settings.get("device");
-//		this.hostname = settings.get("device").get("hostname").asText("");
-////		this.mac = deviceNode.get("mac").asText();
-//	}
-	
 	protected void fillSettings(JsonNode settings) throws IOException {
 		this.name = settings.path("name").asText("");
-		this.debugEnabled = settings.path("debug_enable").asBoolean(false) ? LogMode.FILE : LogMode.NO; // missing in flood (20201128-102432/v1.9.2@e83f7025)
-		this.mqttEnabled = settings.path("mqtt").path("enable").asBoolean();
+		JsonNode dubugNode;
+		if((dubugNode = settings.get("debug_enable")) != null) {
+			this.debugEnabled = dubugNode.booleanValue() ? LogMode.FILE : LogMode.NO; // missing in flood (20201128-102432/v1.9.2@e83f7025)
+		} else {
+			this.debugEnabled = LogMode.UNDEFINED;
+		}
+		this.mqttEnabled = settings.path("mqtt").path("enable").booleanValue();
 	}
 
 	protected void fillStatus(JsonNode status) throws IOException {
 		final JsonNode cloud = status.get("cloud");
-		this.cloudEnabled = cloud.get("enabled").asBoolean();
-		this.cloudConnected = cloud.get("connected").asBoolean();
+		this.cloudEnabled = cloud.get("enabled").booleanValue();
+		this.cloudConnected = cloud.get("connected").booleanValue();
 		final JsonNode wifi = status.path("wifi_sta");
 		this.rssi = wifi.path("rssi").asInt(0);
 		this.ssid = wifi.path("ssid").asText("");
 		this.uptime = status.get("uptime").asInt();
-		this.mqttConnected = status.path("mqtt").path("connected").asBoolean();
+		this.mqttConnected = status.path("mqtt").path("connected").booleanValue();
 		
 		lastConnection = System.currentTimeMillis();
 	}

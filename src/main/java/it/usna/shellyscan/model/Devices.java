@@ -430,15 +430,14 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 		return executor.scheduleWithFixedDelay(refreshRunner, interval + idx, interval, TimeUnit.MILLISECONDS);
 	}
 
-	public void ghostsReconnect() {
-		LOG.debug("starting ghosts reconnect");
+	private void ghostsReconnect() {
+		LOG.debug("Starting ghosts reconnect");
 		int dalay = 0;
-		for(int i = 0; i <= devices.size(); i++) {
-			ShellyAbstractDevice d = devices.get(i);
-			if(d instanceof GhostDevice g && g.isBattery() == false) {
+		for(int i = 0; i < devices.size(); i++) {
+			if(devices.get(i) instanceof GhostDevice g && g.isBattery() == false && g.getPort() == 80) {
 				executor.schedule(() -> {
 					try {
-						create(d.getAddress(), 80, d.getAddress().getHostAddress(), false);
+						create(g.getAddress(), 80, g.getAddress().getHostAddress(), false);
 					} catch (RuntimeException e) {/*LOG.trace("ghosts reload {}", d.getAddress());*/}
 				}, dalay, TimeUnit.MILLISECONDS);
 				dalay +=4;
@@ -570,4 +569,4 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 			}
 		}
 	}
-} // 197 - 307 - 326 - 418 - 510 - 544 - 573
+} // 197 - 307 - 326 - 418 - 510 - 544 - 572
