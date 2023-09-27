@@ -90,7 +90,7 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 		wsClient.start();
 	}
 
-	public void scannerInit(boolean fullScan, int refreshInterval, int refreshTics) throws IOException {
+	public void scannerInit(boolean fullScan, int refreshInterval, int refreshTics, boolean autorelod) throws IOException {
 		this.refreshInterval = refreshInterval;
 		this.refreshTics = refreshTics;
 		final MDNSListener dnsListener = new MDNSListener();
@@ -135,7 +135,9 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 		}
 		fireEvent(EventType.READY);
 		
-		executor.schedule(() -> ghostsReconnect(), 90, TimeUnit.SECONDS);
+		if(autorelod) {
+			executor.schedule(() -> ghostsReconnect(), 45, TimeUnit.SECONDS);
+		}
 	}
 
 	public void scannerInit(final byte[] ip, int first, final int last, int refreshInterval, int refreshTics) throws IOException {
@@ -569,4 +571,4 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 			}
 		}
 	}
-} // 197 - 307 - 326 - 418 - 510 - 544 - 572
+} // 197 - 307 - 326 - 418 - 510 - 544 - 574

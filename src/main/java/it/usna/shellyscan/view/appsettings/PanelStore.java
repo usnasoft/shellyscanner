@@ -29,6 +29,7 @@ public class PanelStore extends JPanel {
 	private static final long serialVersionUID = 1L;
 	JCheckBox chckbxUseStore = new JCheckBox();
 	JTextField textFieldStoreFileName;
+	JCheckBox autoReloadCheckBox;
 
 	PanelStore(final Devices model, final AppProperties appProp) {
 		GridBagLayout gridBagLayout = new GridBagLayout();
@@ -55,7 +56,6 @@ public class PanelStore extends JPanel {
 		gbc_chckbxUseStore.gridx = 1;
 		gbc_chckbxUseStore.gridy = 0;
 		add(chckbxUseStore, gbc_chckbxUseStore);
-
 		chckbxUseStore.setSelected(appProp.getBoolProperty(DialogAppSettings.PROP_USE_ARCHIVE, true));
 		
 		JLabel lblStoreFile = new JLabel(LABELS.getString("dlgAppStoreFileLabel"));
@@ -110,15 +110,15 @@ public class PanelStore extends JPanel {
 		gbc_lblNewLabel_1.gridy = 3;
 		add(lblNewLabel_1, gbc_lblNewLabel_1);
 		
-		JCheckBox chckbxNewCheckBox = new JCheckBox(LABELS.getString("dlgAppStoreAutoRetooltip"));
-		chckbxNewCheckBox.setVerticalTextPosition(SwingConstants.TOP);
+		autoReloadCheckBox = new JCheckBox(LABELS.getString("dlgAppStoreAutoRetooltip"));
+		autoReloadCheckBox.setVerticalTextPosition(SwingConstants.TOP);
 		GridBagConstraints gbc_chckbxNewCheckBox = new GridBagConstraints();
 		gbc_chckbxNewCheckBox.gridwidth = 2;
 		gbc_chckbxNewCheckBox.anchor = GridBagConstraints.NORTHWEST;
 		gbc_chckbxNewCheckBox.insets = new Insets(0, 0, 0, 5);
 		gbc_chckbxNewCheckBox.gridx = 1;
 		gbc_chckbxNewCheckBox.gridy = 3;
-		add(chckbxNewCheckBox, gbc_chckbxNewCheckBox);
+		add(autoReloadCheckBox, gbc_chckbxNewCheckBox);
 		btnNewButton.addActionListener(event -> {
 			final String cancel = UIManager.getString("OptionPane.cancelButtonText");
 			if(JOptionPane.showOptionDialog(
@@ -128,6 +128,7 @@ public class PanelStore extends JPanel {
 				removeGhosts(model);
 			}
 		});
+		autoReloadCheckBox.setSelected(appProp.getBoolProperty(DialogAppSettings.PROP_AUTORELOAD_ARCHIVE, false));
 		
 		ChangeListener enableListener = e -> {
 			textFieldStoreFileName.setEnabled(chckbxUseStore.isSelected());

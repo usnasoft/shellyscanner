@@ -200,7 +200,8 @@ public class Main {
 				try {
 					view.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 					view.requestFocus(); // remove random focus on toolbar button
-					if(appProp.getBoolProperty(DialogAppSettings.PROP_USE_ARCHIVE, true)) {
+					boolean useArchive = appProp.getBoolProperty(DialogAppSettings.PROP_USE_ARCHIVE, true);
+					if(useArchive) {
 						try {
 							model.loadFromStore(Paths.get(appProp.getProperty(DialogAppSettings.PROP_ARCHIVE_FILE, DialogAppSettings.PROP_ARCHIVE_FILE_DEFAULT)));
 						} catch (IOException e) {
@@ -213,7 +214,7 @@ public class Main {
 					if(ipFin != null) {
 						model.scannerInit(ipFin, firstIPFin, lastIPFin, refreshStatusInterval, refreshConfigTics);
 					} else {
-						model.scannerInit(fullScanx, refreshStatusInterval, refreshConfigTics);
+						model.scannerInit(fullScanx, refreshStatusInterval, refreshConfigTics, appProp.getBoolProperty(DialogAppSettings.PROP_AUTORELOAD_ARCHIVE , false) && useArchive);
 					}
 				} catch (/*IO*/Exception e) {
 					Msg.errorMsg(e);

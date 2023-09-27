@@ -61,6 +61,7 @@ public class DialogAppSettings extends JDialog {
 	public final static String PROP_USE_ARCHIVE = "USE_ARCHIVE";
 	public final static String PROP_ARCHIVE_FILE = "USE_ARCHIVE_FILENAME";
 	public final static String PROP_ARCHIVE_FILE_DEFAULT = Paths.get(System.getProperty("user.home"), "ShellyStore.arc").toString();
+	public final static String PROP_AUTORELOAD_ARCHIVE = "AUTORELOAD";
 	
 	public final static String BASE_SCAN_IP = "BASE_SCAN";
 	public final static String FIRST_SCAN_IP = "FIRST_SCAN";
@@ -202,6 +203,8 @@ public class DialogAppSettings extends JDialog {
 					Msg.errorMsg(this, String.format(LABELS.getString("dlgAppStoreerrorReadingStore"), fileName));
 				}
 			}
+			boolean autoReload = panelStore.autoReloadCheckBox.isSelected();
+			appProp.setBoolProperty(PROP_AUTORELOAD_ARCHIVE, autoReload);
 			
 			dispose();
 		});
