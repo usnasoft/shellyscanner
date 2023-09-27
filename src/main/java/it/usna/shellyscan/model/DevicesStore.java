@@ -175,20 +175,4 @@ public class DevicesStore {
 			return ghost;
 		}
 	}
-	
-//	public String getNote(ShellyAbstractDevice d) {
-//		int ind = ghostsList.indexOf(d);
-//		return ind >= 0 ? ghostsList.get(ind).getNote() : "";
-//	}
-//	
-//	public void setNote(ShellyAbstractDevice d, String note) {
-//		int ind = ghostsList.indexOf(d);
-//		if(ind >= 0) {
-//			ghostsList.get(ind).setNote(note);
-//		} else {
-//			GhostDevice ghost = toGhost(d);
-//			ghostsList.add(ghost);
-//			ghostsList.get(ind).setNote(note);
-//		}
-//	}
 }

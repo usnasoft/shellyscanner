@@ -33,9 +33,9 @@ public class PanelStore extends JPanel {
 
 	PanelStore(final Devices model, final AppProperties appProp) {
 		GridBagLayout gridBagLayout = new GridBagLayout();
-		gridBagLayout.rowHeights = new int[] {0, 0, 0, 30};
-		gridBagLayout.columnWeights = new double[]{1.0, 1.0, 0.0};
-		gridBagLayout.columnWidths = new int[]{0, 10, 0};
+		gridBagLayout.rowHeights = new int[] {0, 0, 0, 3};
+		gridBagLayout.columnWeights = new double[]{0.2, 1.0, 0.0};
+//		gridBagLayout.columnWidths = new int[]{0, 10, 0};
 		setLayout(gridBagLayout);
 
 		JLabel lblNewLabel = new JLabel(LABELS.getString("dlgAppStoreUseLabel"));
