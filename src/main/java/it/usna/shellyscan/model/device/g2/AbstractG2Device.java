@@ -136,7 +136,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 	public String[] getInfoRequests() {
 		return new String[] {
 				"/rpc/Shelly.GetDeviceInfo", "/rpc/Shelly.GetConfig", "/rpc/Shelly.GetStatus", "/rpc/Shelly.CheckForUpdate", "/rpc/Schedule.List", "/rpc/Webhook.List",
-				"/rpc/Script.List", "/rpc/WiFi.ListAPClients" /*, "/rpc/Sys.GetStatus"*/, "/rpc/KVS.List"};
+				"/rpc/Script.List", "/rpc/WiFi.ListAPClients" /*, "/rpc/Sys.GetStatus",*/ /*"/rpc/KVS.List"*/, "/rpc/KVS.GetMany"};
 	}
 	
 	@Override
@@ -276,6 +276,10 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 			sectionToStream("/rpc/Schedule.List", "Schedule.List.json", out);
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			sectionToStream("/rpc/Webhook.List", "Webhook.List.json", out);
+			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+//			sectionToStream("/rpc/KVS.List", "KVS.List.json", out);
+//			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+			sectionToStream("/rpc/KVS.GetMany", "KVS.GetMany.json", out);
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			final byte[] scripts = sectionToStream("/rpc/Script.List", "Script.List.json", out);
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
@@ -454,4 +458,4 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 			errors.add(postCommand("Schedule.Create", thisSc));
 		}
 	}
-} // 448
+} // 461
