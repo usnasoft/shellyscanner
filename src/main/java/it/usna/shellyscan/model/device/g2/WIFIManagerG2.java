@@ -94,23 +94,21 @@ public class WIFIManagerG2 implements WIFIManager {
 
 	@Override
 	public String set(String ssid, String pwd) {
-		JsonNodeFactory factory = new JsonNodeFactory(false);
-		ObjectNode pars = factory.objectNode();
+		ObjectNode pars = JsonNodeFactory.instance.objectNode();
 		pars.put("ssid", ssid);
 		pars.put("pass", pwd);
 		pars.put("enable", true);
 		pars.put("ipv4mode", "dhcp");
-		ObjectNode network = factory.objectNode();
+		ObjectNode network = JsonNodeFactory.instance.objectNode();
 		network.set(net, pars);
-		ObjectNode config = factory.objectNode();
+		ObjectNode config = JsonNodeFactory.instance.objectNode();
 		config.set("config", network);
 		return d.postCommand("Wifi.SetConfig", config);
 	}
 
 	@Override
 	public String set(String ssid, String pwd, String ip, String netmask, String gw, String dns) {
-		JsonNodeFactory factory = new JsonNodeFactory(false);
-		ObjectNode pars = factory.objectNode();
+		ObjectNode pars = JsonNodeFactory.instance.objectNode();
 		pars.put("ssid", ssid);
 		pars.put("pass", pwd);
 		pars.put("enable", true);
@@ -127,9 +125,9 @@ public class WIFIManagerG2 implements WIFIManager {
 		} else {
 			pars.putNull("nameserver");
 		}
-		ObjectNode network = factory.objectNode();
+		ObjectNode network = JsonNodeFactory.instance.objectNode();
 		network.set(net, pars);
-		ObjectNode config = factory.objectNode();
+		ObjectNode config = JsonNodeFactory.instance.objectNode();
 		config.set("config", network);
 		return d.postCommand("Wifi.SetConfig", config);
 	}
@@ -162,9 +160,8 @@ public class WIFIManagerG2 implements WIFIManager {
 	
 	// restore /wifi/ap & /wifi/roam
 	public static String restoreAP_roam(AbstractG2Device d, JsonNode wifi, String pwd) {
-		JsonNodeFactory factory = new JsonNodeFactory(false);
-		ObjectNode outWifi = factory.objectNode();
-		ObjectNode outAP = factory.objectNode();
+		ObjectNode outWifi = JsonNodeFactory.instance.objectNode();
+		ObjectNode outAP = JsonNodeFactory.instance.objectNode();
 		
 		JsonNode enable = wifi.at("/ap/enable");
 		outAP.put("enable", enable.asBoolean());
@@ -182,7 +179,7 @@ public class WIFIManagerG2 implements WIFIManager {
 			outWifi.set("roam", roam.deepCopy());
 		}
 		
-		ObjectNode outConfig = factory.objectNode();
+		ObjectNode outConfig = JsonNodeFactory.instance.objectNode();
 		outConfig.set("config", outWifi);
 		return d.postCommand("WiFi.SetConfig", outConfig);
 	}

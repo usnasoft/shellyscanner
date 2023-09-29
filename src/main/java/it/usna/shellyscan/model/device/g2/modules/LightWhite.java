@@ -86,8 +86,7 @@ public class LightWhite implements WhiteInterface {
 	}
 	
 	public String restore(JsonNode config) {
-		JsonNodeFactory factory = new JsonNodeFactory(false);
-		ObjectNode out = factory.objectNode();
+		ObjectNode out = JsonNodeFactory.instance.objectNode();
 		out.put("id", index);
 		ObjectNode light = (ObjectNode)config.get("light:" + index).deepCopy();
 		light.remove("id");

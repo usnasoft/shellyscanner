@@ -73,8 +73,7 @@ public class Input implements InputInterface {
 	}
 	
 	public static String restore(AbstractG2Device parent, JsonNode config, String index) {
-		JsonNodeFactory factory = new JsonNodeFactory(false);
-		ObjectNode out = factory.objectNode();
+		ObjectNode out = JsonNodeFactory.instance.objectNode();
 		out.put("id", index);
 
 		ObjectNode input = (ObjectNode)config.get("input:" + index).deepCopy();

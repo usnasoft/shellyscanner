@@ -12,6 +12,7 @@ import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,16 +44,17 @@ public class DevicesStore {
 	private final static String BATTERY = "bat";
 	private final static String LAST_CON = "last";
 	private final static String USER_NOTE = "note";
+
+	private final Pattern MAC_PATTERN = Pattern.compile("^[A-F0-9]{12}$");
 	
-	private final static JsonNodeFactory J_FACTORY = new JsonNodeFactory(false);
 	private final List<GhostDevice> ghostsList = new ArrayList<>();
 
 	public void store(Devices model, Path storeFile) throws IOException {
 		LOG.trace("storing archive");
-		final ObjectNode root = J_FACTORY.objectNode();
+		final ObjectNode root = JsonNodeFactory.instance.objectNode();
 		root.put("ver", STORE_VERSION);
 		root.put("time", System.currentTimeMillis());
-		final ArrayNode array = J_FACTORY.arrayNode();
+		final ArrayNode toBeStored = JsonNodeFactory.instance.arrayNode();
 		for (int i = 0; i < model.size(); i++) {
 			ShellyAbstractDevice device = model.get(i);
 			GhostDevice stored = getStoredGhost(device);
@@ -62,19 +64,19 @@ public class DevicesStore {
 					ObjectNode jsonDev = toJson(stored);
 					jsonDev.put(USER_NOTE, stored.getNote());
 					jsonDev.put(ADDRESS, device.getAddress().getHostAddress());
-					array.add(jsonDev);
-				} else {
-					array.add(toJson(device));
+					toBeStored.add(jsonDev);
+				} else if(MAC_PATTERN.matcher(device.getMacAddress()).matches()) {
+					toBeStored.add(toJson(device));
 				}
 			} else {
 				ObjectNode jsonDev = toJson(device);
 				if(stored != null) {
 					jsonDev.put(USER_NOTE, stored.getNote());
 				}
-				array.add(jsonDev);
+				toBeStored.add(jsonDev);
 			}
 		}
-		root.set("dev", array);
+		root.set("dev", toBeStored);
 
 		try (Writer w = Files.newBufferedWriter(storeFile, StandardCharsets.UTF_8)) {
 			w.write(root.toString());
@@ -83,7 +85,7 @@ public class DevicesStore {
 	}
 	
 	private static ObjectNode toJson(ShellyAbstractDevice device) {
-		ObjectNode jsonDev = J_FACTORY.objectNode();
+		ObjectNode jsonDev = JsonNodeFactory.instance.objectNode();
 		jsonDev.put(TYPE_ID, device.getTypeID());
 		jsonDev.put(TYPE_NAME, device.getTypeName());
 		jsonDev.put(HOSTNAME, device.getHostname());
