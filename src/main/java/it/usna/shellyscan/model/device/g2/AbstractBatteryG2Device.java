@@ -7,17 +7,22 @@ import java.net.InetAddress;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.websocket.client.WebSocketClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
+import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.BatteryDeviceInterface;
 
 public abstract class AbstractBatteryG2Device extends AbstractG2Device implements BatteryDeviceInterface {
+	private final static Logger LOG = LoggerFactory.getLogger(AbstractBatteryG2Device.class);
 	protected JsonNode shelly;
 	protected JsonNode settings;
 	protected JsonNode status;
@@ -73,7 +78,7 @@ public abstract class AbstractBatteryG2Device extends AbstractG2Device implement
 	 * No scripts, No Schedule
 	 */
 	public String[] getInfoRequests() {
-		return new String[] {"/rpc/Shelly.GetDeviceInfo", "/rpc/Shelly.GetConfig", "/rpc/Shelly.GetStatus", "/rpc/Shelly.CheckForUpdate", "/rpc/Webhook.List", "/rpc/KVS.List"};
+		return new String[] {"/rpc/Shelly.GetDeviceInfo", "/rpc/Shelly.GetConfig", "/rpc/Shelly.GetStatus", "/rpc/Shelly.CheckForUpdate", "/rpc/Webhook.List", "/rpc/KVS.GetMany"};
 	}
 	
 	@Override
@@ -83,10 +88,16 @@ public abstract class AbstractBatteryG2Device extends AbstractG2Device implement
 	public boolean backup(final File file) throws IOException {
 		try(ZipOutputStream out = new ZipOutputStream(new FileOutputStream(file), StandardCharsets.UTF_8)) {
 			sectionToStream("/rpc/Shelly.GetDeviceInfo", "Shelly.GetDeviceInfo.json", out);
+			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			sectionToStream("/rpc/Shelly.GetConfig", "Shelly.GetConfig.json", out);
+			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			sectionToStream("/rpc/Webhook.List", "Webhook.List.json", out);
+			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+			sectionToStream("/rpc/KVS.GetMany", "KVS.GetMany.json", out);
+		} catch(InterruptedException e) {
+			LOG.error("backup", e);
 		} catch(Exception e) {
-			if(getStatus() != Status.ON_LINE && getStoredJSON("/rpc/Shelly.GetDeviceInfo") != null && getStoredJSON("/rpc/Shelly.GetConfig") != null && getStoredJSON("/rpc/Webhook.List") != null) {
+			if(getStatus() != Status.ON_LINE && getStoredJSON("/rpc/Shelly.GetDeviceInfo") != null && getStoredJSON("/rpc/Shelly.GetConfig") != null && getStoredJSON("/rpc/Webhook.List") != null && getStoredJSON("/rpc/KVS.GetMany") != null) {
 				try(ZipOutputStream out = new ZipOutputStream(new FileOutputStream(file), StandardCharsets.UTF_8)) {
 					out.putNextEntry(new ZipEntry("Shelly.GetDeviceInfo.json"));
 					out.write(getStoredJSON("/rpc/Shelly.GetDeviceInfo").toString().getBytes());
@@ -96,6 +107,9 @@ public abstract class AbstractBatteryG2Device extends AbstractG2Device implement
 					out.closeEntry();
 					out.putNextEntry(new ZipEntry("Webhook.List.json"));
 					out.write(getStoredJSON("/rpc/Webhook.List").toString().getBytes());
+					out.closeEntry();
+					out.putNextEntry(new ZipEntry("KVS.GetMany.json"));
+					out.write(getStoredJSON("/rpc/KVS.GetMany").toString().getBytes());
 					out.closeEntry();
 				}
 				return false;

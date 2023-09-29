@@ -34,7 +34,7 @@ import it.usna.util.CLI;
 public class Main {
 	public final static String APP_NAME = "Shelly Scanner";
 	public final static String VERSION = "1.0.1alpha";
-	public final static String VERSION_CODE = "000.000.001r000"; // r0xx alpha; r1xx beta; r2xx stable
+	public final static String VERSION_CODE = "001.000.001r000"; // r0xx alpha; r1xx beta; r2xx stable
 	public final static String REVISION = "0";
 	public final static String ICON = "/images/ShSc24.png";
 	public final static String BACKUP_FILE_EXT = "sbk";
@@ -54,6 +54,7 @@ public class Main {
 
 	public static void main(final String ... args) {
 //		System.setProperty(SimpleLogger.DEFAULT_LOG_LEVEL_KEY, "error");
+		System.setProperty(SimpleLogger.LOG_KEY_PREFIX + "javax.jmdns", "warn");
 		System.setProperty(SimpleLogger.SHOW_DATE_TIME_KEY, "true");
 		final Logger LOG = LoggerFactory.getLogger(Main.class);
 

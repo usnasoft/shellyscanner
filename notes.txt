@@ -191,6 +191,7 @@
 //1.0.1
 // reload ghosts
 // notes
+// KVS restore (gen2)
 // timeouts tuning
 // releases auto check
 // optionally automatic reload for ghost devices (not battery operated) after 90 seconds the application has started (to be sure any timeout has expired and mDNS notified for any known device). This last idea is thanks to discussions with you.

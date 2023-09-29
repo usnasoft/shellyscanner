@@ -9,7 +9,9 @@ import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.EnumMap;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -300,7 +302,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			}
 		} catch(InterruptedException e) {
-			LOG.error("", e);
+			LOG.error("backup", e);
 		}
 		return true;
 	}
@@ -370,16 +372,12 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 			if(schedule != null) {  // some devices do not have Schedule.List +H&T
 				restoreSchedule(schedule, errors);
 			}
+			JsonNode kvs = backupJsons.get("KVS.GetMany.json");
+			if(kvs != null) {
+				restoreKVS(kvs, errors);
+			}
 			Webhooks.restore(this, backupJsons.get("Webhook.List.json"), errors);
 
-			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-			LoginManagerG2 lm = new LoginManagerG2(this, true);
-			if(data.containsKey(Restore.RESTORE_LOGIN)) {
-				errors.add(lm.set(null, data.get(Restore.RESTORE_LOGIN).toCharArray()));
-			} else if(backupJsons.get("Shelly.GetDeviceInfo.json").path("auth_en").asBoolean() == false) {
-				errors.add(lm.disable());
-			}
-			
 			Network currentConnection = WIFIManagerG2.currentConnection(this);
 			if((data.containsKey(Restore.RESTORE_WI_FI2) || config.at("/wifi/sta1/is_open").asBoolean() || config.at("/wifi/sta1/enable").asBoolean() == false) && currentConnection != Network.SECONDARY) {
 				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
@@ -394,6 +392,13 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 			if((data.containsKey(Restore.RESTORE_WI_FI_AP) || config.at("/wifi/ap/is_open").asBoolean() || config.at("/wifi/ap/enable").asBoolean() == false) && currentConnection != Network.AP) {
 				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 				errors.add(WIFIManagerG2.restoreAP_roam(this, config.get("wifi"), data.get(Restore.RESTORE_WI_FI_AP)));
+			}
+			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+			LoginManagerG2 lm = new LoginManagerG2(this, true);
+			if(data.containsKey(Restore.RESTORE_LOGIN)) {
+				errors.add(lm.set(null, data.get(Restore.RESTORE_LOGIN).toCharArray()));
+			} else if(backupJsons.get("Shelly.GetDeviceInfo.json").path("auth_en").asBoolean() == false) {
+				errors.add(lm.disable());
 			}
 			final String ret = errors.stream().filter(s-> s != null && s.length() > 0).collect(Collectors.joining("; "));
 			if(ret.length() > 0) {
@@ -411,8 +416,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 	
 	//curl -X POST -d '{"id": 1, "method": "Sys.SetConfig", "params": {"config": {"location": {"tz": "Europe/Sofia"}}}}' http://${SHELLY}/rpc
 	void restoreCommonConfig(JsonNode config, Map<Restore, String> data, ArrayList<String> errors) throws InterruptedException, IOException {
-		JsonNodeFactory factory = new JsonNodeFactory(false);
-		ObjectNode outConfig = factory.objectNode();
+		ObjectNode outConfig = JsonNodeFactory.instance.objectNode();
 		
 		// BLE.SetConfig
 		outConfig.set("config", config.get("ble").deepCopy());
@@ -420,7 +424,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 		errors.add(postCommand("BLE.SetConfig", outConfig));
 		
 		// Cloud.SetConfig
-		ObjectNode outCloud = factory.objectNode(); // Cloud // https://shelly-api-docs.shelly.cloud/gen2/Components/SystemComponents/Cloud#cloudsetconfig-example
+		ObjectNode outCloud = JsonNodeFactory.instance.objectNode(); // Cloud // https://shelly-api-docs.shelly.cloud/gen2/Components/SystemComponents/Cloud#cloudsetconfig-example
 		outCloud.put("enable", config.at("/cloud/enable").asBoolean());
 		outConfig.set("config", outCloud);
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
@@ -430,9 +434,9 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 		JsonNode sys = config.get("sys");
 		
 		JsonNode name = sys.at("/device/name"); // Device name
-		ObjectNode outDevice = factory.objectNode();
+		ObjectNode outDevice = JsonNodeFactory.instance.objectNode();
 		outDevice.put("name", name.asText("")); // does not appreciate null
-		ObjectNode outSys = factory.objectNode();
+		ObjectNode outSys = JsonNodeFactory.instance.objectNode();
 		outSys.set("device", outDevice);
 		
 		outSys.set("sntp", sys.get("sntp").deepCopy());
@@ -448,6 +452,18 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 			errors.add(mqttM.restore(mqtt, data.get(Restore.RESTORE_MQTT)));
 		}
 	}
+
+	private void restoreKVS(JsonNode kvsMany, ArrayList<String> errors) throws InterruptedException {
+		ObjectNode out = JsonNodeFactory.instance.objectNode();
+		Iterator<Entry<String, JsonNode>> fields = kvsMany.get("items").fields();
+		while(fields.hasNext()) {
+			Entry<String, JsonNode> entry = fields.next();
+			out.put("key", entry.getKey());
+			out.put("value", entry.getValue().get("value").asText());
+			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+			errors.add(postCommand("KVS.Set", out));
+		}
+	}
 	
 	private void restoreSchedule(JsonNode schedule, ArrayList<String> errors) throws InterruptedException {
 		errors.add(postCommand("Schedule.DeleteAll", "{}"));
@@ -458,4 +474,4 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 			errors.add(postCommand("Schedule.Create", thisSc));
 		}
 	}
-} // 461
+} // 477
