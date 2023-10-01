@@ -3,6 +3,7 @@ package it.usna.shellyscan.view.scripts;
 import static it.usna.shellyscan.Main.LABELS;
 
 import java.awt.BorderLayout;
+import java.awt.Cursor;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.Toolkit;
@@ -26,12 +27,12 @@ import it.usna.shellyscan.view.BasicEditorPanel;
 public class ScriptEditor extends JFrame {
 	private static final long serialVersionUID = 1L;
 	
-	public ScriptEditor(Window owner, Script scipt) throws IOException {
+	public ScriptEditor(Window owner, Script script) throws IOException {
 //		super(owner, LABELS.getString("dlgScriptEditorTitle") + " - " + scipt.getName());
-		super(LABELS.getString("dlgScriptEditorTitle") + " - " + scipt.getName());
+		super(LABELS.getString("dlgScriptEditorTitle") + " - " + script.getName());
 		setIconImage(Toolkit.getDefaultToolkit().createImage(getClass().getResource(Main.ICON)));
 		
-		BasicEditorPanel editor = new BasicEditorPanel(this, scipt.getCode());
+		BasicEditorPanel editor = new BasicEditorPanel(this, script.getCode());
 		getContentPane().add(editor);
 
 		// bottom buttons
@@ -42,7 +43,14 @@ public class ScriptEditor extends JFrame {
 		getContentPane().add(southPanel, BorderLayout.SOUTH);
 		
 		JButton saveButton = new JButton(LABELS.getString("btnUpload"));
-		saveButton.addActionListener(e -> scipt.putCode(editor.getText()));
+		saveButton.addActionListener(e -> {
+			try {
+				ScriptEditor.this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+				script.putCode(editor.getText());
+			} finally {
+				ScriptEditor.this.setCursor(Cursor.getDefaultCursor());
+			}
+		});
 		buttonsPanel.add(saveButton);
 		
 		JButton closeButton = new JButton(LABELS.getString("dlgClose"));
