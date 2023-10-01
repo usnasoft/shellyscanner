@@ -4,12 +4,14 @@ import static it.usna.shellyscan.Main.LABELS;
 
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
+import java.awt.Toolkit;
 import java.awt.Window;
 
 import javax.swing.JButton;
-import javax.swing.JDialog;
+import javax.swing.JFrame;
 import javax.swing.JPanel;
 
+import it.usna.shellyscan.Main;
 import it.usna.shellyscan.model.device.GhostDevice;
 import it.usna.shellyscan.view.util.UtilMiscellaneous;
 
@@ -17,11 +19,13 @@ import it.usna.shellyscan.view.util.UtilMiscellaneous;
  * A small text editor where "load" and "save" relies on GhostDevice notes
  * @author usna
  */
-public class NotesEditor extends JDialog {
+public class NotesEditor extends JFrame {
 	private static final long serialVersionUID = 1L;
 	
 	public NotesEditor(Window owner, GhostDevice ghost) {
-		super(owner, LABELS.getString("action_notes_tooltip") + " - " + UtilMiscellaneous.getDescName(ghost));
+//		super(owner, LABELS.getString("action_notes_tooltip") + " - " + UtilMiscellaneous.getDescName(ghost));
+		super(LABELS.getString("action_notes_tooltip") + " - " + UtilMiscellaneous.getDescName(ghost));
+		setIconImage(Toolkit.getDefaultToolkit().createImage(getClass().getResource(Main.ICON)));
 		
 		BasicEditorPanel editor = new BasicEditorPanel(this, ghost.getNote());
 		getContentPane().add(editor);

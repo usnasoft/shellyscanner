@@ -5,6 +5,7 @@ import java.io.IOException;
 import com.fasterxml.jackson.core.io.JsonStringEncoder;
 import com.fasterxml.jackson.databind.JsonNode;
 
+import it.usna.shellyscan.model.device.DeviceOfflineException;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 
 public class Script {
@@ -70,7 +71,14 @@ public class Script {
 	//		}
 
 	public String getCode() throws IOException {
-		return device.getJSON("/rpc/Script.GetCode?id=" + id).get("data").asText();
+		try {
+			return device.getJSON("/rpc/Script.GetCode?id=" + id).get("data").asText();
+		} catch(IOException e) {
+			if(e instanceof DeviceOfflineException) {
+				throw e;
+			}
+			return "";
+		}
 	}
 
 	public String putCode(String code) {

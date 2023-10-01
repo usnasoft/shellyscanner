@@ -14,6 +14,8 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
+import javax.swing.event.CaretListener;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultEditorKit;
 import javax.swing.undo.UndoManager;
 
@@ -43,29 +45,29 @@ public class BasicEditorPanel extends JPanel {
 		
 		Action cutAction = new DefaultEditorKit.CutAction();
 		cutAction.putValue(Action.SHORT_DESCRIPTION, LABELS.getString("btnCut"));
-		cutAction.putValue(Action.SMALL_ICON, new ImageIcon(BasicEditorPanel.class.getResource("/images/Clipboard Cut_16.png")));
+		cutAction.putValue(Action.SMALL_ICON, new ImageIcon(BasicEditorPanel.class.getResource("/images/Clipboard_Cut24.png")));
 		
 		Action copyAction = new DefaultEditorKit.CopyAction();
 		copyAction.putValue(Action.SHORT_DESCRIPTION, LABELS.getString("btnCopy"));
-		copyAction.putValue(Action.SMALL_ICON, new ImageIcon(BasicEditorPanel.class.getResource("/images/Clipboard_Copy_16.png")));
+		copyAction.putValue(Action.SMALL_ICON, new ImageIcon(BasicEditorPanel.class.getResource("/images/Clipboard_Copy24.png")));
 
 		Action pasteAction = new DefaultEditorKit.PasteAction();
 		pasteAction.putValue(Action.SHORT_DESCRIPTION, LABELS.getString("btnPaste"));
-		pasteAction.putValue(Action.SMALL_ICON, new ImageIcon(BasicEditorPanel.class.getResource("/images/Clipboard Paste_16.png")));
+		pasteAction.putValue(Action.SMALL_ICON, new ImageIcon(BasicEditorPanel.class.getResource("/images/Clipboard_Paste24.png")));
 		
-		Action undoAction = new UsnaAction(null, "/images/Undo_16.png", "btnUndo", e -> {
+		Action undoAction = new UsnaAction(null, "/images/Undo24.png", "btnUndo", e -> {
 			try {manager.undo();} catch(RuntimeException ex) {}
 		});
 		textArea.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_Z, MainView.SHORTCUT_KEY), "undo_usna");
 		textArea.getActionMap().put("undo_usna", undoAction);
 		
-		Action redoAction = new UsnaAction(null, "/images/Redo_16.png", "btnRedo", e -> {
+		Action redoAction = new UsnaAction(null, "/images/Redo24.png", "btnRedo", e -> {
 			try {manager.redo();} catch(RuntimeException ex) {}
 		});
 		textArea.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_Y, MainView.SHORTCUT_KEY), "redo_usna");
 		textArea.getActionMap().put("redo_usna", redoAction);
 		
-		Action findAction = new UsnaAction(null, "/images/Search_16.png", "btnFind", e -> {
+		Action findAction = new UsnaAction(null, "/images/Search24.png", "btnFind", e -> {
 			FindReplaceDialog f = new FindReplaceDialog(owner, textArea, true);
 			f.setLocationRelativeTo(BasicEditorPanel.this);
 			f.setVisible(true);
@@ -85,6 +87,29 @@ public class BasicEditorPanel extends JPanel {
 		toolBar.add(redoAction);
 		toolBar.addSeparator();
 		toolBar.add(findAction);
+	}
+	
+	public void addCaretListener(CaretListener listener) {
+		textArea.addCaretListener(listener);
+	}
+	
+	public int getCaretRow() {
+		try {
+			int caretpos = textArea.getCaretPosition();
+			return textArea.getLineOfOffset(caretpos) + 1;
+		} catch (BadLocationException e1) {
+			return 0;
+		}
+	}
+	
+	public int getCaretColumn() {
+		try {
+			int caretpos = textArea.getCaretPosition();
+			int row = textArea.getLineOfOffset(caretpos);
+			return caretpos - textArea.getLineStartOffset(row) + 1;
+		} catch (BadLocationException e1) {
+			return 0;
+		}
 	}
 	
 	public String getText() {

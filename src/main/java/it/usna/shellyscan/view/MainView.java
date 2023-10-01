@@ -71,6 +71,7 @@ import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.view.appsettings.DialogAppSettings;
 import it.usna.shellyscan.view.chart.MeasuresChart;
 import it.usna.shellyscan.view.devsettings.DialogDeviceSettings;
+import it.usna.shellyscan.view.scripts.DialogDeviceScriptsG2;
 import it.usna.shellyscan.view.util.Msg;
 import it.usna.swing.UsnaPopupMenu;
 import it.usna.swing.table.UsnaTableModel;
