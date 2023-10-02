@@ -13,6 +13,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.time.Duration;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
@@ -157,8 +158,7 @@ public class DialogDeviceLogsG2 extends JDialog {
 				}
 			};
 			wsSession = device.connectWebSocketLogs(wsListener);
-			
-//			device.connectWebSocketClient(new WebSocketDeviceListener()); // ws test
+			wsSession.get().setIdleTimeout(Duration.ofMinutes(30));
 
 			btnActivateLog.addActionListener(event -> {
 				try {
@@ -209,7 +209,6 @@ public class DialogDeviceLogsG2 extends JDialog {
 				@Override
 				public void windowClosed(WindowEvent e) {
 					activateLog(device, logWasActive);
-//					model.refresh(index, false);
 				}
 			});
 

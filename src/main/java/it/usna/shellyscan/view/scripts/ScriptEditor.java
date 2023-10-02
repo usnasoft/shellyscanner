@@ -19,6 +19,7 @@ import javax.swing.SwingConstants;
 import it.usna.shellyscan.Main;
 import it.usna.shellyscan.model.device.g2.modules.Script;
 import it.usna.shellyscan.view.BasicEditorPanel;
+import it.usna.shellyscan.view.util.Msg;
 
 /**
  * A small text editor where "load" and "save" relies on "scipts" notes
@@ -46,7 +47,10 @@ public class ScriptEditor extends JFrame {
 		saveButton.addActionListener(e -> {
 			try {
 				ScriptEditor.this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-				script.putCode(editor.getText());
+				String res = script.putCode(editor.getText());
+				if(res != null) {
+					Msg.errorMsg(this, res);
+				}
 			} finally {
 				ScriptEditor.this.setCursor(Cursor.getDefaultCursor());
 			}
