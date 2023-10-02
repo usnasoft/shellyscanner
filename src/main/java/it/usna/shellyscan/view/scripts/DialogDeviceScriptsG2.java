@@ -193,6 +193,7 @@ public class DialogDeviceScriptsG2 extends JDialog {
 			if(fc.showOpenDialog(DialogDeviceScriptsG2.this) == JFileChooser.APPROVE_OPTION) {
 				setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 				loadCodeFromFile(fc.getSelectedFile(), sc);
+				setCursor(Cursor.getDefaultCursor());
 			}
 		});
 		

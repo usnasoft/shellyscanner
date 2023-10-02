@@ -56,6 +56,8 @@ public class Msg {
 				} else {
 					msg = title;
 				}
+			} else if(Main.LABELS.containsKey(msg)) {
+				msg = Main.LABELS.getString(msg);
 			} else if(msg.startsWith("<html>") == false) {
 				msg = splitLine(msg, 128);
 			}

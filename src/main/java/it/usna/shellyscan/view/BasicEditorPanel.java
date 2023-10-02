@@ -29,7 +29,7 @@ import it.usna.swing.dialog.FindReplaceDialog;
 public class BasicEditorPanel extends JPanel {
 	private static final long serialVersionUID = 1L;
 	
-	private JTextArea textArea = new JTextArea();
+	protected JTextArea textArea = new JTextArea();
 	private Action cutAction;
 	private Action copyAction;
 	private Action pasteAction;
