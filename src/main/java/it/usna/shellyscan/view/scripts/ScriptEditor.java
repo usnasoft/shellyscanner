@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.util.stream.Collectors;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
@@ -43,37 +44,42 @@ public class ScriptEditor extends JFrame {
 	private static final long serialVersionUID = 1L;
 	
 	public ScriptEditor(Window owner, Script script) throws IOException {
-//		super(owner, LABELS.getString("dlgScriptEditorTitle") + " - " + scipt.getName());
 		super(LABELS.getString("dlgScriptEditorTitle") + " - " + script.getName());
 		setIconImage(Toolkit.getDefaultToolkit().createImage(getClass().getResource(Main.ICON)));
-		
 
-		
 		BasicEditorPanel editor = new BasicEditorPanel(this, script.getCode()) {
 			private static final long serialVersionUID = 1L;
-
+			private File path = null;
 						
 			protected JToolBar createToolbar(JToolBar toolBar) {
-				UsnaAction openAction = new UsnaAction(ScriptEditor.this, "/images/folder-3-24.png", "btnFind", e -> {
-					final JFileChooser fc = new JFileChooser();
+				UsnaAction openAction = new UsnaAction(ScriptEditor.this, "/images/Open24.png", "dlgOpen", e -> {
+					final JFileChooser fc = new JFileChooser(path);
+					fc.addChoosableFileFilter(new FileNameExtensionFilter(LABELS.getString("filetype_js_desc"), DialogDeviceScriptsG2.FILE_EXTENSION));
 					fc.addChoosableFileFilter(new FileNameExtensionFilter(LABELS.getString("filetype_sbk_desc"), Main.BACKUP_FILE_EXT));
 					if(fc.showOpenDialog(ScriptEditor.this) == JFileChooser.APPROVE_OPTION) {
-						textArea.setText(loadCodeFromFile(fc.getSelectedFile()));
+						String text = loadCodeFromFile(fc.getSelectedFile());
+						if(text != null) {
+							textArea.setText(text);
+						}
+						path = fc.getSelectedFile().getParentFile();
 					}
 				});
-				UsnaAction saveAction = new UsnaAction(null, "/images/save-24.png", "btnFind", e -> {
-//					FindReplaceDialog f = new FindReplaceDialog(owner, textArea, true);
-//					f.setLocationRelativeTo(ScriptEditor.this);
-//					f.setVisible(true);
-				});
-				UsnaAction saveAsAction = new UsnaAction(null, "/images/save-as-24.png", "btnFind", e -> {
-//					FindReplaceDialog f = new FindReplaceDialog(owner, textArea, true);
-//					f.setLocationRelativeTo(ScriptEditor.this);
-//					f.setVisible(true);
+				UsnaAction saveAsAction = new UsnaAction(ScriptEditor.this, "/images/Save24.png", "dlgSave", e -> {
+					final JFileChooser fc = new JFileChooser(path);
+					fc.addChoosableFileFilter(new FileNameExtensionFilter(LABELS.getString("filetype_js_desc"), DialogDeviceScriptsG2.FILE_EXTENSION));
+					if(fc.showSaveDialog(ScriptEditor.this) == JFileChooser.APPROVE_OPTION) {
+						try {
+							Path toSave = IOFile.addExtension(fc.getSelectedFile().toPath(), DialogDeviceScriptsG2.FILE_EXTENSION);
+							IOFile.writeFile(toSave, textArea.getText());
+							JOptionPane.showMessageDialog(ScriptEditor.this, LABELS.getString("msgFileSaved"), LABELS.getString("dlgScriptEditorTitle"), JOptionPane.INFORMATION_MESSAGE);
+						} catch (IOException e1) {
+							Msg.errorMsg(e1);
+						}
+						path = fc.getSelectedFile().getParentFile();
+					}
 				});
 				
 				toolBar.add(openAction);
-				toolBar.add(saveAction);
 				toolBar.add(saveAsAction);
 				toolBar.addSeparator();
 				return super.createToolbar(toolBar);
@@ -143,6 +149,6 @@ public class ScriptEditor extends JFrame {
 		} finally {
 			setCursor(Cursor.getDefaultCursor());
 		}
-		return "";
+		return null;
 	}
 }

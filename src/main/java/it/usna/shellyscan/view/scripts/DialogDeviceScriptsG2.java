@@ -55,9 +55,8 @@ import it.usna.util.IOFile;
 
 public class DialogDeviceScriptsG2 extends JDialog {
 	private static final long serialVersionUID = 1L;
-	private static final int BUTTON_MARGIN_H = 12;
-	private static final int BUTTON_MARGIN_V = 0;
-	private final static Border BUTTON_BORDERS = BorderFactory.createEmptyBorder(BUTTON_MARGIN_V, BUTTON_MARGIN_H, BUTTON_MARGIN_V, BUTTON_MARGIN_H);
+	public final static String FILE_EXTENSION = "js";
+	private final static Border BUTTON_BORDERS = BorderFactory.createEmptyBorder(0, 12, 0, 12);
 	private final ExTooltipTable table;
 
 	private final ArrayList<Script> scripts = new ArrayList<>();
@@ -97,7 +96,7 @@ public class DialogDeviceScriptsG2 extends JDialog {
 
 			@Override
 			public boolean isCellEditable(final int row, final int column) {
-				return true /*convertColumnIndexToModel(column) != 2*/;
+				return true;
 			}
 
 			@Override
@@ -169,6 +168,7 @@ public class DialogDeviceScriptsG2 extends JDialog {
 			final int mRow = table.convertRowIndexToModel(table.getSelectedRow());
 			final Script sc = scripts.get(mRow);
 			final JFileChooser fc = new JFileChooser();
+			fc.addChoosableFileFilter(new FileNameExtensionFilter(LABELS.getString("filetype_js_desc"), DialogDeviceScriptsG2.FILE_EXTENSION));
 			fc.setSelectedFile(new File(sc.getName()));
 			if(fc.showSaveDialog(DialogDeviceScriptsG2.this) == JFileChooser.APPROVE_OPTION) {
 				setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
@@ -188,6 +188,7 @@ public class DialogDeviceScriptsG2 extends JDialog {
 			final int mRow = table.convertRowIndexToModel(table.getSelectedRow());
 			final Script sc = scripts.get(mRow);
 			final JFileChooser fc = new JFileChooser();
+			fc.addChoosableFileFilter(new FileNameExtensionFilter(LABELS.getString("filetype_js_desc"), DialogDeviceScriptsG2.FILE_EXTENSION));
 			fc.addChoosableFileFilter(new FileNameExtensionFilter(LABELS.getString("filetype_sbk_desc"), Main.BACKUP_FILE_EXT));
 			fc.setSelectedFile(new File(sc.getName()));
 			if(fc.showOpenDialog(DialogDeviceScriptsG2.this) == JFileChooser.APPROVE_OPTION) {
@@ -218,7 +219,7 @@ public class DialogDeviceScriptsG2 extends JDialog {
 			TableColumnModel columnModel = table.getColumnModel();
 			columnModel.getColumn(0).setPreferredWidth(3000);
 			columnModel.getColumn(1).setPreferredWidth(500);
-			columnModel.getColumn(2).setPreferredWidth(1000);
+			columnModel.getColumn(2).setPreferredWidth(500);
 		} catch (IOException e) {
 			Msg.errorMsg(e);
 		}
@@ -233,8 +234,7 @@ public class DialogDeviceScriptsG2 extends JDialog {
 		table.getSelectionModel().addListSelectionListener(l);
 		l.valueChanged(null);
 
-		this.setSize(490, 320);
-
+		setSize(490, 320);
 		setLocationRelativeTo(owner);
 		setVisible(true);
 	}
@@ -357,4 +357,4 @@ public class DialogDeviceScriptsG2 extends JDialog {
 			return b;
 		}
 	}
-} // 274
+} // 274 - 360

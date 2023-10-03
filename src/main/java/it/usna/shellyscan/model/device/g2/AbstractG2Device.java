@@ -433,9 +433,12 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 		// Sys.SetConfig
 		JsonNode sys = config.get("sys");
 		
-		JsonNode name = sys.at("/device/name"); // Device name
 		ObjectNode outDevice = JsonNodeFactory.instance.objectNode();
-		outDevice.put("name", name.asText("")); // does not appreciate null
+		outDevice.put("name", sys.at("/device/name").asText("")); // does not appreciate null
+		JsonNode ecoMode = sys.at("/device/eco_mode");
+		if(ecoMode.isNull() == false) {
+			outDevice.put("eco_mode", ecoMode.asBoolean());
+		}
 		ObjectNode outSys = JsonNodeFactory.instance.objectNode();
 		outSys.set("device", outDevice);
 		

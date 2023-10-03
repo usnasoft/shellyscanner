@@ -285,7 +285,7 @@ public abstract class AbstractG1Device extends ShellyAbstractDevice {
 		errors.add(sendCommand("/settings/cloud?enabled=" + settings.get("cloud").get("enabled").asText()));
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 		errors.add(sendCommand("/settings?" + jsonNodeToURLPar(settings,
-				"name", "discoverable", "timezone", "lat", "lng", "tzautodetect", "tz_utc_offset", /*"tz_dst",*/ "tz_dst_auto", "tz_dst_auto", "allow_cross_origin")));
+				"name", "discoverable", "timezone", "lat", "lng", "tzautodetect", "tz_utc_offset", /*"tz_dst",*/ "tz_dst_auto", "tz_dst_auto", "allow_cross_origin", "eco_mode_enabled")));
 
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 		LoginManagerG1 lm = new LoginManagerG1(this, true);
@@ -332,7 +332,7 @@ public abstract class AbstractG1Device extends ShellyAbstractDevice {
 		return "";
 	}
 
-	public static String jsonNodeToURLPar(JsonNode jNode, String ...pars) throws UnsupportedEncodingException {
+	public static String jsonNodeToURLPar(JsonNode jNode, String ... pars) throws UnsupportedEncodingException {
 		String res = pars[0] + "=" +  URLEncoder.encode(jNode.get(pars[0]).asText(), StandardCharsets.UTF_8.name());
 		for(int i = 1; i < pars.length; i++) {
 			JsonNode thisNode = jNode.get(pars[i]);
