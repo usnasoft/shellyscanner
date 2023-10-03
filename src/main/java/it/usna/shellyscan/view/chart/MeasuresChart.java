@@ -227,11 +227,8 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 				final JFileChooser fc = new JFileChooser(appProp.getProperty("LAST_PATH"));
 				fc.setFileFilter(new FileNameExtensionFilter(LABELS.getString("filetype_csv_desc"), "csv"));
 				if(fc.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
-					File out = fc.getSelectedFile();
-					if(out.getName().contains(".") == false) {
-						out = new File(out.getParentFile(), out.getName() + ".csv");
-					}
 					TimeChartsExporter exp = new TimeChartsExporter(dataset);
+					File out = fc.getSelectedFile();
 					exp.exportAsCSV(out, appProp.getProperty(DialogAppSettings.PROP_CSV_SEPARATOR, DialogAppSettings.PROP_CSV_SEPARATOR_DEFAULT), btnPause.isSelected() ? (DateRange)xAxis.getRange() : null);
 					appProp.setProperty("LAST_PATH", fc.getCurrentDirectory().getPath());
 					JOptionPane.showMessageDialog(this, LABELS.getString("msgFileSaved"), Main.APP_NAME, JOptionPane.INFORMATION_MESSAGE);

@@ -4,6 +4,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
@@ -15,6 +16,8 @@ import org.jfree.data.time.TimeSeries;
 import org.jfree.data.time.TimeSeriesCollection;
 import org.jfree.data.time.TimeSeriesDataItem;
 
+import it.usna.util.IOFile;
+
 public class TimeChartsExporter {
 	private final TimeSeriesCollection dataset;
 	
@@ -23,7 +26,8 @@ public class TimeChartsExporter {
 	}
 
 	void exportAsCSV(File out, String separator, DateRange range) throws IOException {
-		try (BufferedWriter w = Files.newBufferedWriter(out.toPath())) {
+		Path outPath = IOFile.addExtension(out.toPath(), "csv");
+		try (BufferedWriter w = Files.newBufferedWriter(outPath)) {
 			@SuppressWarnings("unchecked")
 			List<TimeSeries> tsList = dataset.getSeries();
 			for(TimeSeries ts: tsList) {
