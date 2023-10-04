@@ -211,8 +211,8 @@ https://www.iconbolt.com/
 
 finally I found some time to do another restore of one of my UNIs.
 I have proof now, that the following parameters are not restored from the backup:
-Eco Mode
-ADC Offset
+Eco Mode - OK
+ADC Offset - OK
 Temperature Offset
 Humidy Offset
 I checked the settings.json in the backup file, and found that all parameters are correct in the file, but seem to be not restored.

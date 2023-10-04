@@ -100,7 +100,7 @@ public class ShellyUNI extends AbstractG1Device implements RelayCommander {
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 		JsonNode adc0 = settings.get("adcs").get(0);
 		try {
-			errors.add(sendCommand("/settings/adc/0?range=" + adc0.get("range").asText()));
+			errors.add(sendCommand("/settings/adc/0?range=" + adc0.get("range").asText() + "&offset=" + adc0.path("offset").asText()));
 			JsonNode relAct = adc0.get("relay_actions");
 			if(relAct.size() > 0) {
 				for(int index = 0; index < relAct.size(); index++) {
@@ -120,13 +120,174 @@ public class ShellyUNI extends AbstractG1Device implements RelayCommander {
 }
 
 /*
-...
-"fw": "20230503-102354/v1.13.0-g9aed950",
-...
-"adcs": [
+--- settings.json
+{
+	"device": {
+		"type": "SHUNI-1",
+		"mac": "xxx",
+		"hostname": "shellyuni-xxx",
+		"num_outputs": 2
+	},
+	"wifi_ap": {
+		"enabled": false,
+		"ssid": "shellyuni-xxx",
+		"key": ""
+	},
+	"wifi_sta": {
+		"enabled": true,
+		"ssid": "xxx",
+		"ipv4_method": "static",
+		"ip": "192.168.1.8",
+		"gw": "192.168.1.1",
+		"mask": "255.255.255.0",
+		"dns": null
+	},
+	"wifi_sta1": {
+		"enabled": true,
+		"ssid": "ShellyPlus1-xxx",
+		"ipv4_method": "static",
+		"ip": "192.168.33.8",
+		"gw": "192.168.33.1",
+		"mask": "255.255.255.0",
+		"dns": null
+	},
+	"ap_roaming": {
+		"enabled": true,
+		"threshold": -70
+	},
+	"mqtt": {
+		"enable": false,
+		"server": "192.168.33.3:1883",
+		"user": "",
+		"id": "shellyuni-xxx",
+		"reconnect_timeout_max": 60.0,
+		"reconnect_timeout_min": 2.0,
+		"clean_session": true,
+		"keep_alive": 60,
+		"max_qos": 0,
+		"retain": false,
+		"update_period": 30
+	},
+	"coiot": {
+		"enabled": true,
+		"update_period": 15,
+		"peer": ""
+	},
+	"sntp": {
+		"server": "time.google.com",
+		"enabled": true
+	},
+	"login": {
+		"enabled": false,
+		"unprotected": false,
+		"username": "admin"
+	},
+	"pin_code": "",
+	"name": "Briefkastensäule",
+	"fw": "20230913-114521/v1.14.0-gcb84623",
+	"factory_reset_from_switch": true,
+	"pon_wifi_reset": false,
+	"discoverable": false,
+	"build_info": {
+		"build_id": "20230913-114521/v1.14.0-gcb84623",
+		"build_timestamp": "2023-09-13T11:45:21Z",
+		"build_version": "1.0"
+	},
+	"cloud": {
+		"enabled": true,
+		"connected": true
+	},
+	"timezone": "Europe/Vienna",
+	"lat": 48.184502,
+	"lng": 16.330151,
+	"tzautodetect": true,
+	"tz_utc_offset": 7200,
+	"tz_dst": false,
+	"tz_dst_auto": true,
+	"time": "13:22",
+	"unixtime": 1696332128,
+	"debug_enable": false,
+	"allow_cross_origin": false,
+	"actions": {
+		"active": true,
+		"names": [
+			"out_on_url",
+			"out_off_url",
+			"btn_on_url",
+			"btn_off_url",
+			"longpush_url",
+			"shortpush_url",
+			"out_on_url",
+			"out_off_url",
+			"btn_on_url",
+			"btn_off_url",
+			"longpush_url",
+			"shortpush_url",
+			"adc_over_url",
+			"adc_under_url",
+			"report_url",
+			"report_url",
+			"report_url",
+			"ext_temp_over_url",
+			"ext_temp_under_url",
+			"ext_temp_over_url",
+			"ext_temp_under_url",
+			"ext_temp_over_url",
+			"ext_temp_under_url",
+			"ext_temp_over_url",
+			"ext_temp_under_url",
+			"ext_temp_over_url",
+			"ext_temp_under_url",
+			"ext_hum_over_url",
+			"ext_hum_under_url"
+		]
+	},
+	"hwinfo": {
+		"hw_revision": "prod-202101",
+		"batch_id": 0
+	},
+	"mode": "relay",
+	"longpush_time": 5000,
+	"relays": [
+		{
+			"name": "Türöffner [Klingeltaster]",
+			"appliance_type": "General",
+			"ison": false,
+			"has_timer": false,
+			"default_state": "off",
+			"btn_type": "detached",
+			"btn_reverse": 0,
+			"auto_on": 0.0,
+			"auto_off": 1.0,
+			"schedule": false,
+			"schedule_rules": []
+		},
+		{
+			"name": "Beleuchtung [Post]",
+			"appliance_type": "General",
+			"ison": false,
+			"has_timer": false,
+			"default_state": "last",
+			"btn_type": "detached",
+			"btn_reverse": 1,
+			"auto_on": 0.0,
+			"auto_off": 0.0,
+			"schedule": true,
+			"schedule_rules": [
+				"2200-0123-off",
+				"0000ass-0123456-on",
+				"0000asr-0123456-off",
+				"0800-0123456-off",
+				"0000-0123456-off",
+				"0500-02-on",
+				"0600-134-on"
+			]
+		}
+	],
+	"adcs": [
 		{
 			"range": 12,
-			"offset": 0.0,
+			"offset": 0.7,
 			"relay_actions": [
 				{
 					"over_threshold": 0,
@@ -143,4 +304,51 @@ public class ShellyUNI extends AbstractG1Device implements RelayCommander {
 			]
 		}
 	],
+	"ext_sensors": {
+		"temperature_unit": "C"
+	},
+	"ext_temperature": {
+		"0": [
+			{
+				"overtemp_threshold_tC": 0.0,
+				"overtemp_threshold_tF": 32.0,
+				"undertemp_threshold_tC": 0.0,
+				"undertemp_threshold_tF": 32.0,
+				"overtemp_act": "disabled",
+				"undertemp_act": "disabled",
+				"offset_tC": 0.6,
+				"offset_tF": 1.1
+			},
+			{
+				"overtemp_threshold_tC": 0.0,
+				"overtemp_threshold_tF": 32.0,
+				"undertemp_threshold_tC": 0.0,
+				"undertemp_threshold_tF": 32.0,
+				"overtemp_act": "disabled",
+				"undertemp_act": "disabled",
+				"offset_tC": 0.6,
+				"offset_tF": 1.1
+			}
+		]
+	},
+	"ext_humidity": {
+		"0": [
+			{
+				"overhum_threshold": 0.0,
+				"underhum_threshold": 0.0,
+				"overhum_act": "disabled",
+				"underhum_act": "disabled",
+				"offset": -3.0
+			},
+			{
+				"overhum_threshold": 0.0,
+				"underhum_threshold": 0.0,
+				"overhum_act": "disabled",
+				"underhum_act": "disabled",
+				"offset": -3.0
+			}
+		]
+	},
+	"eco_mode_enabled": false
+}
 */
