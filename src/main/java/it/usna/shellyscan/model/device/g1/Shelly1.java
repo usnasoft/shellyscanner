@@ -65,7 +65,6 @@ public class Shelly1 extends AbstractG1Device implements RelayCommander {
 				tt.add(Meters.Type.T1);
 			if (extTNode.has("2"))
 				tt.add(Meters.Type.T2);
-//			final Meters.Type[] mTypes = tt.toArray(new Meters.Type[tt.size()]);
 			final Meters.Type[] mTypes = tt.toArray(Meters.Type[]::new);
 			m.add(new Meters() {
 				@Override
@@ -187,8 +186,6 @@ public class Shelly1 extends AbstractG1Device implements RelayCommander {
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); // Shelly 1 specific
 		errors.add(setPower(settings.get("relays").get(0).get("power").floatValue()));
 
-		// errors.add(sendCommand("/settings?ext_sensors_temperature_unit=" +
-		// settings.path("ext_sensors").path("temperature_unit")));
 		for (int i = 0; i < 3; i++) {
 			JsonNode extT = settings.path("ext_temperature").path(i + "");
 			// if(extT.isEmpty() == false) {
@@ -229,7 +226,7 @@ settings example with add-on:
 "ext_humidity" : { },
 
 
-satus example with add-on:
+status example with add-on:
 
  "ext_sensors" : {
   "temperature_unit" : "C"

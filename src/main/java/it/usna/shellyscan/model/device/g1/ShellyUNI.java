@@ -92,25 +92,38 @@ public class ShellyUNI extends AbstractG1Device implements RelayCommander {
 
 	@Override
 	protected void restore(JsonNode settings, ArrayList<String> errors) throws IOException, InterruptedException {
-		errors.add(sendCommand("/settings?" + jsonNodeToURLPar(settings, "longpush_time", "factory_reset_from_switch")));
+		errors.add(sendCommand("/settings?" + jsonNodeToURLPar(settings, "longpush_time", "factory_reset_from_switch") +
+				"&ext_sensors_temperature_unit=" + settings.path("ext_sensors").path("temperature_unit")));
+
+		// I try ...
+		for (int i = 0; i < 3; i++) {
+			JsonNode extT = settings.path("ext_temperature").path(i + "");
+			if(extT.isNull() == false && extT.get(0) != null) {
+				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+				errors.add(sendCommand("/settings/ext_temperature/" + i + "?" + jsonEntryIteratorToURLPar(extT.get(0).fields())));
+			}
+		}
+		JsonNode hum0 = settings.path("ext_humidity").path("0");
+		if(hum0.isNull() == false && hum0.get(0) != null) {
+			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+			errors.add(sendCommand("/settings/ext_humidity/0?" + jsonEntryIteratorToURLPar(hum0.get(0).fields())));
+		}
+		
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 		errors.add(relay0.restore(settings.get("relays").get(0)));
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 		errors.add(relay1.restore(settings.get("relays").get(1)));
+		
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 		JsonNode adc0 = settings.get("adcs").get(0);
-		try {
-			errors.add(sendCommand("/settings/adc/0?range=" + adc0.get("range").asText() + "&offset=" + adc0.path("offset").asText()));
-			JsonNode relAct = adc0.get("relay_actions");
-			if(relAct.size() > 0) {
-				for(int index = 0; index < relAct.size(); index++) {
-					TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-					errors.add(sendCommand("/settings/adc/0/relay_actions." + index + "?" + AbstractG1Device.jsonEntryIteratorToURLPar(relAct.get(index).fields())));
-				}
+		errors.add(sendCommand("/settings/adc/0?range=" + adc0.get("range").asText() + "&offset=" + adc0.path("offset").asText()));
+		JsonNode relAct = adc0.get("relay_actions");
+//		if(relAct.size() > 0) {
+			for(int index = 0; index < relAct.size(); index++) {
+				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+				errors.add(sendCommand("/settings/adc/0/relay_actions." + index + "?" + AbstractG1Device.jsonEntryIteratorToURLPar(relAct.get(index).fields())));
 			}
-		} catch(Exception e) {
-			e.printStackTrace(); // experimental
-		}
+//		}
 	}
 
 	@Override
@@ -350,5 +363,94 @@ public class ShellyUNI extends AbstractG1Device implements RelayCommander {
 		]
 	},
 	"eco_mode_enabled": false
+}
+
+
+--- status
+{
+    "actions_stats": {
+        "skipped": 0
+    },
+    "adcs": [
+        {
+            "voltage": 12.05
+        }
+    ],
+    "cfg_changed_cnt": 2,
+    "cloud": {
+        "connected": true,
+        "enabled": true
+    },
+    "ext_humidity": {
+        "0": {
+            "hum": 58.7,
+            "hwID": "0505"
+        }
+    },
+    "ext_sensors": {
+        "temperature_unit": "C"
+    },
+    "ext_temperature": {
+        "0": {
+            "hwID": "0505",
+            "tC": 12.8,
+            "tF": 55.04
+        }
+    },
+    "fs_free": 131022,
+    "fs_size": 233681,
+    "has_update": false,
+    "inputs": [
+        {
+            "event": "",
+            "event_cnt": 0,
+            "input": 0
+        },
+        {
+            "event": "",
+            "event_cnt": 1,
+            "input": 0
+        }
+    ],
+    "mac": "xxxxx",
+    "mqtt": {
+        "connected": false
+    },
+    "ram_free": 35244,
+    "ram_total": 50776,
+    "relays": [
+        {
+            "has_timer": false,
+            "ison": false,
+            "source": "input",
+            "timer_duration": 0,
+            "timer_remaining": 0,
+            "timer_started": 0
+        },
+        {
+            "has_timer": false,
+            "ison": true,
+            "source": "schedule",
+            "timer_duration": 0,
+            "timer_remaining": 0,
+            "timer_started": 0
+        }
+    ],
+    "serial": 2311,
+    "time": "20:12",
+    "unixtime": 1696443134,
+    "update": {
+        "has_update": false,
+        "new_version": "20230913-114521/v1.14.0-gcb84623",
+        "old_version": "20230913-114521/v1.14.0-gcb84623",
+        "status": "idle"
+    },
+    "uptime": 110054,
+    "wifi_sta": {
+        "connected": true,
+        "ip": "192.168.33.8",
+        "rssi": -76,
+        "ssid": "ShellyPlus1-xxxx"
+    }
 }
 */

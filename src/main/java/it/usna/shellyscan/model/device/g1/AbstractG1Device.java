@@ -284,12 +284,9 @@ public abstract class AbstractG1Device extends ShellyAbstractDevice {
 	private void restoreCommons(JsonNode settings, Map<Restore, String> data, ArrayList<String> errors) throws InterruptedException, IOException {
 		errors.add(sendCommand("/settings/cloud?enabled=" + settings.get("cloud").get("enabled").asText()));
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-		String settingsCommonPar = jsonNodeToURLPar(settings, "name", "discoverable", "timezone", "lat", "lng", "tzautodetect", "tz_utc_offset", /*"tz_dst",*/ "tz_dst_auto", "tz_dst_auto", "allow_cross_origin");
-		if(settings.has("eco_mode_enabled")) {
-			settingsCommonPar += "&eco_mode_enabled=" + settings.get("eco_mode_enabled");
-		}
-		errors.add(sendCommand("/settings?" + settingsCommonPar));
-
+		errors.add(sendCommand("/settings?" +
+				jsonNodeToURLPar(settings, "name", "discoverable", "timezone", "lat", "lng", "tzautodetect", "tz_utc_offset", /*"tz_dst",*/ "tz_dst_auto", "tz_dst_auto", "allow_cross_origin")));
+		// eco_mode_enabled=" + settings.get("eco_mode_enabled") // no way: device reboot changing this parameter
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 		LoginManagerG1 lm = new LoginManagerG1(this, true);
 		if(data.containsKey(Restore.RESTORE_LOGIN)) {

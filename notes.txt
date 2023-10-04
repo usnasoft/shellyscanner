@@ -197,7 +197,7 @@ https://www.iconbolt.com/
 // releases auto check
 // optionally automatic reload for ghost devices (not battery operated) after 90 seconds the application has started (to be sure any timeout has expired and mDNS notified for any known device). This last idea is thanks to discussions with you.
 ---
-// restore eco_mode
+// restore eco_mode (opzionale per gen1)
 
 // TODO
 //todo Gen2 1.0.0 - triphase and monophase profiles (EDIT: to be included in next beta), add option to reverse CT direction of measurement for active power and energy
