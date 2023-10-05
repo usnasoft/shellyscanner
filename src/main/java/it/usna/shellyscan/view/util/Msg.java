@@ -26,9 +26,9 @@ public class Msg {
 	
 	public static void showHtmlMessageDialog(Component parentComponent, CharSequence message, String title, int messageType, final int rowsMax) {
 		try {
-			int rows = 1;
 			Matcher m = PATTERN_BR.matcher(message);
-			while(m.find()) rows++;
+			int rows = (int)m.results().count();
+//			while(m.find()) rows++;
 			if(rows <= rowsMax) {
 				JOptionPane.showMessageDialog(parentComponent, message, title, messageType);
 			} else {

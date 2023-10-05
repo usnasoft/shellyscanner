@@ -113,7 +113,7 @@ public abstract class AbstractG1Device extends ShellyAbstractDevice {
 			}
 			String ret = response.getContentAsString();
 			return (ret == null || ret.length() == 0 || ret/*.trim()*/.startsWith("{")) ? null : ret;
-		} catch(ExecutionException  | RuntimeException e) {
+		} catch(ExecutionException | RuntimeException e) {
 			return e.getMessage();
 		} catch (TimeoutException | InterruptedException e) {
 			status = Status.OFF_LINE;
@@ -207,7 +207,7 @@ public abstract class AbstractG1Device extends ShellyAbstractDevice {
 			} else {
 				boolean sameHost = fileHostname.equals(this.hostname);
 				if(sameHost == false) {
-					res.put(Restore.ERR_RESTORE_HOST, null);
+					res.put(Restore.ERR_RESTORE_HOST, fileHostname);
 				}
 				if(settings.at("/login/enabled").asBoolean()) {
 					res.put(Restore.RESTORE_LOGIN, settings.at("/login/username").asText());
@@ -262,7 +262,7 @@ public abstract class AbstractG1Device extends ShellyAbstractDevice {
 				WIFIManagerG1 wm1 = new WIFIManagerG1(this, Network.PRIMARY, true);
 				errors.add(wm1.restore(settings.path("wifi_sta"), data.get(Restore.RESTORE_WI_FI1)));
 			}
-			final String ret = errors.stream().filter(s-> s != null && s.length() > 0).collect(Collectors.joining("; "));
+			final String ret = errors.stream().filter(s-> s != null && s.length() > 0).collect(Collectors.joining("\n"));
 			if(ret.length() > 0) {
 				LOG.error("Restore error {} {}", this, errors);
 			}

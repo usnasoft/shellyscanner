@@ -320,7 +320,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 			} else {
 				boolean sameHost = fileHostname.equals(this.hostname);
 				if(sameHost == false) {
-					res.put(Restore.ERR_RESTORE_HOST, null);
+					res.put(Restore.ERR_RESTORE_HOST, fileHostname);
 				}
 				if(devInfo.path("auth_en").asBoolean()) {
 					res.put(Restore.RESTORE_LOGIN, LoginManagerG2.LOGIN_USER);
@@ -400,7 +400,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 			} else if(backupJsons.get("Shelly.GetDeviceInfo.json").path("auth_en").asBoolean() == false) {
 				errors.add(lm.disable());
 			}
-			final String ret = errors.stream().filter(s-> s != null && s.length() > 0).collect(Collectors.joining("; "));
+			final String ret = errors.stream().filter(s-> s != null && s.length() > 0).collect(Collectors.joining("\n"));
 			if(ret.length() > 0) {
 				LOG.error("Restore error {} {}", this, errors);
 			}

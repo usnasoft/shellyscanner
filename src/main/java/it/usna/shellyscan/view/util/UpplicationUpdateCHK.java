@@ -33,7 +33,7 @@ public class UpplicationUpdateCHK {
 	
 	public static void chechForUpdates(final Window w) {
 		w.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-		final String title = LABELS.getString("aboutCheckUpdates") + " - " + Main.VERSION + " r." + Main.REVISION;
+		final String title = LABELS.getString("aboutCheckUpdates") + " - " + Main.VERSION + " r." + Main.VERSION_CODE.substring(Main.VERSION_CODE.length() - 2, Main.VERSION_CODE.length());
 		try {
 			List<Release> rel = remoteChech(true, "000");
 			if(rel.size() == 0) {
@@ -56,7 +56,7 @@ public class UpplicationUpdateCHK {
 			w.setCursor(Cursor.getDefaultCursor());
 		}
 	}
-	
+
 	/**
 	 * This call manages (read/write) IGNORE_VERION_DOWNLOAD parameter
 	 */
@@ -70,7 +70,7 @@ public class UpplicationUpdateCHK {
 				if(rel.size() > 0) {
 					String msg = rel.stream().map(r -> r.msg()).collect(Collectors.joining("\n"));
 					final Object[] options = new Object[] {LABELS.getString("aboutCheckUpdatesDownload"), LABELS.getString("aboutCheckUpdatesSkip"), LABELS.getString("dlgClose")};
-					final String title = LABELS.getString("aboutCheckUpdates") + " - " + Main.VERSION + " r." + Main.REVISION;
+					final String title = LABELS.getString("aboutCheckUpdates") + " - " + Main.VERSION + " r." + Main.VERSION_CODE.substring(Main.VERSION_CODE.length() - 2, Main.VERSION_CODE.length());
 					int choice = JOptionPane.showOptionDialog(w, msg, title, JOptionPane.OK_CANCEL_OPTION, JOptionPane.INFORMATION_MESSAGE, null, options, null);
 					if(choice == 0) { // download
 						try {

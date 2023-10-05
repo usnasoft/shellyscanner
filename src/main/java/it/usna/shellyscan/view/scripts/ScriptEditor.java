@@ -54,7 +54,7 @@ public class ScriptEditor extends JFrame {
 			protected JToolBar createToolbar(JToolBar toolBar) {
 				UsnaAction openAction = new UsnaAction(ScriptEditor.this, "/images/Open24.png", "dlgOpen", e -> {
 					final JFileChooser fc = new JFileChooser(path);
-					fc.addChoosableFileFilter(new FileNameExtensionFilter(LABELS.getString("filetype_js_desc"), DialogDeviceScriptsG2.FILE_EXTENSION));
+					fc.setFileFilter(new FileNameExtensionFilter(LABELS.getString("filetype_js_desc"), DialogDeviceScriptsG2.FILE_EXTENSION));
 					fc.addChoosableFileFilter(new FileNameExtensionFilter(LABELS.getString("filetype_sbk_desc"), Main.BACKUP_FILE_EXT));
 					if(fc.showOpenDialog(ScriptEditor.this) == JFileChooser.APPROVE_OPTION) {
 						String text = loadCodeFromFile(fc.getSelectedFile());
@@ -66,7 +66,7 @@ public class ScriptEditor extends JFrame {
 				});
 				UsnaAction saveAsAction = new UsnaAction(ScriptEditor.this, "/images/Save24.png", "dlgSave", e -> {
 					final JFileChooser fc = new JFileChooser(path);
-					fc.addChoosableFileFilter(new FileNameExtensionFilter(LABELS.getString("filetype_js_desc"), DialogDeviceScriptsG2.FILE_EXTENSION));
+					fc.setFileFilter(new FileNameExtensionFilter(LABELS.getString("filetype_js_desc"), DialogDeviceScriptsG2.FILE_EXTENSION));
 					if(fc.showSaveDialog(ScriptEditor.this) == JFileChooser.APPROVE_OPTION) {
 						try {
 							Path toSave = IOFile.addExtension(fc.getSelectedFile().toPath(), DialogDeviceScriptsG2.FILE_EXTENSION);

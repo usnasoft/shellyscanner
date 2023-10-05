@@ -93,20 +93,22 @@ public class ShellyUNI extends AbstractG1Device implements RelayCommander {
 	@Override
 	protected void restore(JsonNode settings, ArrayList<String> errors) throws IOException, InterruptedException {
 		errors.add(sendCommand("/settings?" + jsonNodeToURLPar(settings, "longpush_time", "factory_reset_from_switch") +
-				"&ext_sensors_temperature_unit=" + settings.path("ext_sensors").path("temperature_unit")));
+				"&ext_sensors_temperature_unit=" + settings.path("ext_sensors").path("temperature_unit").asText()));
 
-		// I try ...
+		// ret.startsWith("[") ... don't ask ... it's an array and return an array
 		for (int i = 0; i < 3; i++) {
 			JsonNode extT = settings.path("ext_temperature").path(i + "");
 			if(extT.isNull() == false && extT.get(0) != null) {
 				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-				errors.add(sendCommand("/settings/ext_temperature/" + i + "?" + jsonEntryIteratorToURLPar(extT.get(0).fields())));
+				String ret = sendCommand("/settings/ext_temperature/" + i + "?" + jsonEntryIteratorToURLPar(extT.get(0).fields()));
+				errors.add((ret != null && ret.startsWith("[") == false) ? null : ret);
 			}
 		}
 		JsonNode hum0 = settings.path("ext_humidity").path("0");
 		if(hum0.isNull() == false && hum0.get(0) != null) {
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-			errors.add(sendCommand("/settings/ext_humidity/0?" + jsonEntryIteratorToURLPar(hum0.get(0).fields())));
+			String ret = sendCommand("/settings/ext_humidity/0?" + jsonEntryIteratorToURLPar(hum0.get(0).fields()));
+			errors.add((ret != null && ret.startsWith("[") == false) ? null : ret);
 		}
 		
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
