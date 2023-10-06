@@ -173,14 +173,14 @@ public class ShellyUNI extends AbstractG1Device implements RelayCommander {
 			if(extT.isNull() == false && extT.get(0) != null) {
 				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 				String ret = sendCommand("/settings/ext_temperature/" + i + "?" + jsonEntryIteratorToURLPar(extT.get(0).fields()));
-				errors.add((ret == null || ret.startsWith("[") == false) ? null : ret);
+				errors.add((ret == null || ret.startsWith("[")) ? null : ret);
 			}
 		}
 		JsonNode hum0 = settings.path("ext_humidity").path("0");
 		if(hum0.isNull() == false && hum0.get(0) != null) {
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			String ret = sendCommand("/settings/ext_humidity/0?" + jsonEntryIteratorToURLPar(hum0.get(0).fields()));
-			errors.add((ret == null || ret.startsWith("[") == false) ? null : ret);
+			errors.add((ret == null || ret.startsWith("[")) ? null : ret);
 		}
 		
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
