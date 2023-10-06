@@ -37,11 +37,10 @@ public class Shelly1 extends AbstractG1Device implements RelayCommander {
 	protected void init() throws IOException {
 		JsonNode settings = getJSON("/settings");
 		this.hostname = settings.get("device").get("hostname").asText("");
-		// fillOnce(settings);
 		fillSettings(settings);
 		try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e) {}
 		JsonNode status = getJSON("/status");
-		fillStatus(getJSON("/status"));
+		fillStatus(status);
 
 		ArrayList<Meters> m = new ArrayList<>(2);
 		JsonNode extTNode;
@@ -111,7 +110,6 @@ public class Shelly1 extends AbstractG1Device implements RelayCommander {
 		}
 		
 		if(m.size() > 0) {
-//			meters = m.toArray(new Meters[m.size()]);
 			meters = m.toArray(Meters[]::new);
 		}
 	}

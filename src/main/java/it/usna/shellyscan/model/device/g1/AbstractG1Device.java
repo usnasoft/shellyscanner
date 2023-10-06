@@ -58,7 +58,6 @@ public abstract class AbstractG1Device extends ShellyAbstractDevice {
 	protected void init() throws IOException {
 		JsonNode settings = getJSON("/settings");
 		this.hostname = settings.get("device").get("hostname").asText("");
-//		fillOnce(settings);
 		fillSettings(settings);
 		try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e) {}
 		fillStatus(getJSON("/status"));
@@ -66,7 +65,6 @@ public abstract class AbstractG1Device extends ShellyAbstractDevice {
 
 	public void setAuthenticationResult(Authentication.Result auth) {
 		AuthenticationStore store = httpClient.getAuthenticationStore();
-//		Authentication ar = store.findAuthentication("Basic", URI.create("http://" + address.getHostAddress()), BasicAuthentication.ANY_REALM);
 		Authentication.Result ar = store.findAuthenticationResult(URI.create(uriPrefix));
 		if(ar != null) {
 			store.removeAuthenticationResult(ar);
