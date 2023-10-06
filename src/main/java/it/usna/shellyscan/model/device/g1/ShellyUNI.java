@@ -55,16 +55,16 @@ public class ShellyUNI extends AbstractG1Device implements RelayCommander {
 					final Meters.Type[] mTypes;
 					{
 						final JsonNode extT = settings.path("ext_temperature");
-						if(extT.get("0") != null)  {
+						if(extT.has("0"))  {
 							tt.add(Meters.Type.T);
 						}
-						if(extT.get("1") != null)  {
+						if(extT.has("1"))  {
 							tt.add(Meters.Type.T1);
 						}
-						if(extT.get("2") != null)  {
+						if(extT.has("2"))  {
 							tt.add(Meters.Type.T2);
 						}
-						if(settings.path("ext_humidity").get(0) != null)  {
+						if(settings.path("ext_humidity").has("0"))  {
 							tt.add(Meters.Type.H);
 						}
 						tt.add(Meters.Type.V);
@@ -157,7 +157,7 @@ public class ShellyUNI extends AbstractG1Device implements RelayCommander {
 			extT2 = (float) extTNode2.path("tC").asDouble();
 		}
 		JsonNode extHNode = status.path("ext_humidity").get("0");
-		if (extHNode.size() > 0) {
+		if (extHNode != null) {
 			humidity = extHNode.path("hum").asInt();
 		}
 	}
