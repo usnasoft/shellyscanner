@@ -7,7 +7,6 @@ import java.awt.Cursor;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.Toolkit;
-import java.awt.Window;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -43,7 +42,7 @@ import it.usna.util.IOFile;
 public class ScriptEditor extends JFrame {
 	private static final long serialVersionUID = 1L;
 	
-	public ScriptEditor(Window owner, Script script) throws IOException {
+	public ScriptEditor(ScriptsPanel owner, Script script) throws IOException {
 		super(LABELS.getString("dlgScriptEditorTitle") + " - " + script.getName());
 		setIconImage(Toolkit.getDefaultToolkit().createImage(getClass().getResource(Main.ICON)));
 

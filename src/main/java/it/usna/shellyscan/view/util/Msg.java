@@ -3,7 +3,6 @@ package it.usna.shellyscan.view.util;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.KeyboardFocusManager;
-import java.awt.Window;
 import java.io.IOException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -48,7 +47,7 @@ public class Msg {
 		showHtmlMessageDialog(parentComponent, message, title, messageType, DEF_ROWS_MAX);
 	}
 	
-	public static void showMsg(Window owner, String msg, String title, int type) /*throws HeadlessException*/ {
+	public static void showMsg(Component owner, String msg, String title, int type) /*throws HeadlessException*/ {
 		try {
 			if((msg == null || msg.isEmpty())) {
 				if(title == null || title.isEmpty()) {
@@ -76,7 +75,7 @@ public class Msg {
 //		Msg.errorMsg(msg, Main.LABELS.getString("errorTitle"));
 //	}
 	
-	public static void errorMsg(Window owner, String msg) {
+	public static void errorMsg(Component owner, String msg) {
 		showMsg(owner, msg, Main.LABELS.getString("errorTitle"), JOptionPane.ERROR_MESSAGE);
 	}
 	
@@ -90,15 +89,15 @@ public class Msg {
 		if(msg == null || msg.isEmpty()) {
 			msg = t.toString();
 		}
-		final Window win = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusedWindow();
+		final Component win = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusedWindow();
 		errorMsg(win, msg);
 	}
 	
-	public static void warningMsg(Window owner, String msg) {
+	public static void warningMsg(Component owner, String msg) {
 		showMsg(owner, msg, Main.LABELS.getString("warningTitle"), JOptionPane.WARNING_MESSAGE);
 	}
 	
-	public static void errorStatusMsg(Window owner, final ShellyAbstractDevice device, IOException e) {
+	public static void errorStatusMsg(Component owner, final ShellyAbstractDevice device, IOException e) {
 		if(device.getStatus() == Status.OFF_LINE) {
 			showMsg(owner, Main.LABELS.getString("Status-OFFLINE") + ".", Main.LABELS.getString("errorTitle"), JOptionPane.ERROR_MESSAGE);
 		} else if(device.getStatus() == Status.NOT_LOOGGED) {
