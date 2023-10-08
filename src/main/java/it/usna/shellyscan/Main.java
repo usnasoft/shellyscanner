@@ -58,7 +58,7 @@ public class Main {
 		final Logger LOG = LoggerFactory.getLogger(Main.class);
 
 		LOG.info(APP_NAME + " " + VERSION_CODE);
-		System.setProperty("java.net.preferIPv4Stack" , "true");
+//		System.setProperty("java.net.preferIPv4Stack" , "true");
 //		UsnaSwingUtils.initializeFontSize(1.2f);
 		try { // in case of error or no file (true) use default configuration
 			appProp.load(true);

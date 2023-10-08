@@ -87,6 +87,7 @@ public class ScriptsPanel extends JPanel {
 				return comp;
 			}
 
+			@Override
 			public void editingStopped(ChangeEvent e) {
 				ScriptsPanel.this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 				try {
