@@ -7,6 +7,9 @@ import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.GridLayout;
 import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Map.Entry;
 
@@ -152,8 +155,18 @@ public class KVSPanel extends JPanel {
 //			}
 //		});
 
-		fillTable(device);
-
+		try {
+			setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+			KVS kvs = new KVS(device);
+			for(KVS.KVItem item: kvs.getItems()) {
+				tModel.addRow(new Object [] {item.key, item.etag, item.value});
+			}
+		} catch (IOException e) {
+			Msg.errorMsg(e);
+		} finally {
+			setCursor(Cursor.getDefaultCursor());
+		}
+		
 //		ListSelectionListener l = e -> {
 //			final boolean selection = table.getSelectedRowCount() > 0;
 //			btnDelete.setEnabled(selection);
@@ -165,22 +178,6 @@ public class KVSPanel extends JPanel {
 //		l.valueChanged(null);
 	}
 	
-	private void fillTable(AbstractG2Device device) {
-		try {
-			setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-			JsonNode kvsItems = device.getJSON("/rpc/KVS.GetMany");
-			Iterator<Entry<String, JsonNode>> fields = kvsItems.path("items").fields();
-			while(fields.hasNext()) {
-				Entry<String, JsonNode> item = fields.next();
-				tModel.addRow(new Object [] {item.getKey(), item.getValue().get("etag").asText(), item.getValue().get("value").asText()});
-			}
-		} catch (IOException e) {
-			Msg.errorMsg(e);
-		} finally {
-			setCursor(Cursor.getDefaultCursor());
-		}
-	}
-	
 	@Override
 	public void setVisible(boolean v) {
 		super.setVisible(v);
@@ -188,22 +185,56 @@ public class KVSPanel extends JPanel {
 			table.columnsWidthAdapt();
 			TableColumn col0 = table.getColumnModel().getColumn(0);
 			col0.setPreferredWidth(col0.getPreferredWidth() * 120 / 100);
-			//			col0.setMinWidth(col0.getPreferredWidth() * 120 / 100);
 			TableColumn col1 = table.getColumnModel().getColumn(1);
 			col1.setPreferredWidth(col1.getPreferredWidth() * 120 / 100);
 			TableColumn col2 = table.getColumnModel().getColumn(2);
 			col2.setPreferredWidth(col2.getPreferredWidth() * 120 / 100);
-			//////			table.wid
-			////			table.getWidth();
 			if(scrollPane.getViewport().getWidth() > table.getPreferredSize().width) {
-				////////				
 				table.setAutoResizeMode(ExTooltipTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS);
-				////////				table.columnsWidthAdapt();
-				//////				table.setAutoResizeMode(ExTooltipTable.AUTO_RESIZE_OFF);
 			} else {
 				table.setAutoResizeMode(ExTooltipTable.AUTO_RESIZE_OFF);
 			}
-			//			
 		}
+	}
+	
+	private class KVS {
+		private final AbstractG2Device device;
+		private ArrayList<KVItem> kvItems = new ArrayList<>();
+		
+		public KVS(AbstractG2Device device) throws IOException {
+			this.device = device;
+			refresh();
+		}
+		
+		public void refresh() throws IOException {
+			kvItems.clear();
+			JsonNode kvsItems = device.getJSON("/rpc/KVS.GetMany");
+			Iterator<Entry<String, JsonNode>> fields = kvsItems.path("items").fields();
+			while(fields.hasNext()) {
+				Entry<String, JsonNode> item = fields.next();
+				kvItems.add(new KVItem(item.getKey(), item.getValue().get("etag").asText(), item.getValue().get("value").asText()));
+			}
+		}
+		
+		public ArrayList<KVItem> getItems() {
+			return kvItems;
+		}
+		
+		public void delete(int index) throws IOException {
+			device.getJSON("/rpc/KVS.Delete?key=" + URLEncoder.encode(kvItems.get(index).key, StandardCharsets.UTF_8.name()));
+		}
+		
+		public void modify(int index, String value) throws IOException {
+			String key = kvItems.get(index).key;
+			JsonNode node = device.getJSON("/rpc/KVS.Set?key=" + URLEncoder.encode(kvItems.get(index).key, StandardCharsets.UTF_8.name()) + "&value=" + URLEncoder.encode(value, StandardCharsets.UTF_8.name()));
+			kvItems.set(index, new KVItem(key, node.get("etag").asText(), value));
+		}
+		
+		public void add(String key, String value) throws IOException {
+			JsonNode node = device.getJSON("/rpc/KVS.Set?key=" + URLEncoder.encode(key, StandardCharsets.UTF_8.name()) + "&value=" + URLEncoder.encode(value, StandardCharsets.UTF_8.name()));
+			kvItems.add(new KVItem(key, node.get("etag").asText(), value));
+		}
+		
+		public record KVItem(String key, String etag, String value) {}
 	}
 }

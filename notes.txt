@@ -189,10 +189,11 @@ https://www.iconbolt.com/
 // Shelly +2PM reboot after enabled restricted login to see logs
 // backup non interattivo
 
-//1.0.1
-// reload ghosts
+1.0.1
 // notes
+// reload ghosts
 // KVS restore (gen2)
+// Scripts and KVS
 // timeouts tuning
 // releases auto check
 // optionally automatic reload for ghost devices (not battery operated) after 90 seconds the application has started (to be sure any timeout has expired and mDNS notified for any known device). This last idea is thanks to discussions with you.
