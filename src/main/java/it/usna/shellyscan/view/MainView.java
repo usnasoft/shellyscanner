@@ -117,7 +117,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 
 	private Action infoLogAction = new UsnaSelectedAction(this, devicesTable, "/images/Document2.png", "action_info_log_tooltip", i -> {
 		if(model.get(i) instanceof AbstractG2Device) {
-			new DialogDeviceLogsG2(MainView.this, model, i);
+			new DialogDeviceLogsG2(MainView.this, model, i, AbstractG2Device.LOG_VERBOSE);
 		} else {
 			new DialogDeviceInfo(MainView.this, false, model.get(i), new String[]{"/debug/log", "/debug/log1"});
 		}

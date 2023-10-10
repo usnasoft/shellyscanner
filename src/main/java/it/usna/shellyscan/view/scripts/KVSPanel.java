@@ -7,20 +7,14 @@ import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.GridLayout;
 import java.io.IOException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.Map.Entry;
 
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
 import javax.swing.table.TableColumn;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
+import it.usna.shellyscan.model.device.g2.modules.KVS;
 import it.usna.shellyscan.view.util.Msg;
 import it.usna.swing.table.ExTooltipTable;
 import it.usna.swing.table.UsnaTableModel;
@@ -28,12 +22,13 @@ import it.usna.swing.table.UsnaTableModel;
 public class KVSPanel extends JPanel {
 	private static final long serialVersionUID = 1L;
 	private final ExTooltipTable table;
-	private final UsnaTableModel tModel =
-			new UsnaTableModel(LABELS.getString("lblKeyColName"), LABELS.getString("lblEtagColName"), LABELS.getString("lblValColName"));
-	JScrollPane scrollPane = null;
+	
+	private JScrollPane scrollPane = null;
 	
 	public KVSPanel(AbstractG2Device device) {
 		setLayout(new BorderLayout(0, 0));
+		
+		final UsnaTableModel tModel = new UsnaTableModel(LABELS.getString("lblKeyColName"), LABELS.getString("lblEtagColName"), LABELS.getString("lblValColName"));
 
 		table = new ExTooltipTable(tModel) {
 			private static final long serialVersionUID = 1L;
@@ -79,7 +74,7 @@ public class KVSPanel extends JPanel {
 //			}
 		};
 		
-		/*JScrollPane*/ scrollPane = new JScrollPane(table, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+		scrollPane = new JScrollPane(table, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		add(scrollPane, BorderLayout.CENTER);
 
 		JPanel operationsPanel = new JPanel();
@@ -159,7 +154,7 @@ public class KVSPanel extends JPanel {
 			setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 			KVS kvs = new KVS(device);
 			for(KVS.KVItem item: kvs.getItems()) {
-				tModel.addRow(new Object [] {item.key, item.etag, item.value});
+				tModel.addRow(new Object [] {item.key(), item.etag(), item.value()});
 			}
 		} catch (IOException e) {
 			Msg.errorMsg(e);
@@ -195,46 +190,5 @@ public class KVSPanel extends JPanel {
 				table.setAutoResizeMode(ExTooltipTable.AUTO_RESIZE_OFF);
 			}
 		}
-	}
-	
-	private class KVS {
-		private final AbstractG2Device device;
-		private ArrayList<KVItem> kvItems = new ArrayList<>();
-		
-		public KVS(AbstractG2Device device) throws IOException {
-			this.device = device;
-			refresh();
-		}
-		
-		public void refresh() throws IOException {
-			kvItems.clear();
-			JsonNode kvsItems = device.getJSON("/rpc/KVS.GetMany");
-			Iterator<Entry<String, JsonNode>> fields = kvsItems.path("items").fields();
-			while(fields.hasNext()) {
-				Entry<String, JsonNode> item = fields.next();
-				kvItems.add(new KVItem(item.getKey(), item.getValue().get("etag").asText(), item.getValue().get("value").asText()));
-			}
-		}
-		
-		public ArrayList<KVItem> getItems() {
-			return kvItems;
-		}
-		
-		public void delete(int index) throws IOException {
-			device.getJSON("/rpc/KVS.Delete?key=" + URLEncoder.encode(kvItems.get(index).key, StandardCharsets.UTF_8.name()));
-		}
-		
-		public void modify(int index, String value) throws IOException {
-			String key = kvItems.get(index).key;
-			JsonNode node = device.getJSON("/rpc/KVS.Set?key=" + URLEncoder.encode(kvItems.get(index).key, StandardCharsets.UTF_8.name()) + "&value=" + URLEncoder.encode(value, StandardCharsets.UTF_8.name()));
-			kvItems.set(index, new KVItem(key, node.get("etag").asText(), value));
-		}
-		
-		public void add(String key, String value) throws IOException {
-			JsonNode node = device.getJSON("/rpc/KVS.Set?key=" + URLEncoder.encode(key, StandardCharsets.UTF_8.name()) + "&value=" + URLEncoder.encode(value, StandardCharsets.UTF_8.name()));
-			kvItems.add(new KVItem(key, node.get("etag").asText(), value));
-		}
-		
-		public record KVItem(String key, String etag, String value) {}
 	}
 }

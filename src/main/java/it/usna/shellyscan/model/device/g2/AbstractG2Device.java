@@ -9,9 +9,7 @@ import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.EnumMap;
-import java.util.Iterator;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -46,6 +44,7 @@ import it.usna.shellyscan.model.device.LoginManager;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.WIFIManager;
 import it.usna.shellyscan.model.device.WIFIManager.Network;
+import it.usna.shellyscan.model.device.g2.modules.KVS;
 import it.usna.shellyscan.model.device.g2.modules.Script;
 import it.usna.shellyscan.model.device.g2.modules.SensorAddOn;
 import it.usna.shellyscan.model.device.g2.modules.Webhooks;
@@ -55,10 +54,11 @@ import it.usna.shellyscan.model.device.g2.modules.Webhooks;
  * usna
  */
 public abstract class AbstractG2Device extends ShellyAbstractDevice {
+	public final static int LOG_VERBOSE = 4;
+	
 	private final static Logger LOG = LoggerFactory.getLogger(AbstractG2Device.class);
 	protected WebSocketClient wsClient;
 	private boolean rangeExtender;
-	
 
 	protected AbstractG2Device(InetAddress address, int port, String hostname) {
 		super(address, port, hostname);
@@ -368,16 +368,22 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 			JsonNode config = backupJsons.get("Shelly.GetConfig.json");
 			restore(backupJsons, errors);
 			restoreCommonConfig(config, data, errors);
+
 			JsonNode schedule = backupJsons.get("Schedule.List.json");
 			if(schedule != null) {  // some devices do not have Schedule.List +H&T
+				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 				restoreSchedule(schedule, errors);
 			}
 			JsonNode kvs = backupJsons.get("KVS.GetMany.json");
 			if(kvs != null) {
-				restoreKVS(kvs, errors);
+				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+				KVS kvStore = new KVS(this);
+				kvStore.restoreKVS(kvs, errors);
 			}
+			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			Webhooks.restore(this, backupJsons.get("Webhook.List.json"), errors);
-
+			
+			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			Network currentConnection = WIFIManagerG2.currentConnection(this);
 			if((data.containsKey(Restore.RESTORE_WI_FI2) || config.at("/wifi/sta1/is_open").asBoolean() || config.at("/wifi/sta1/enable").asBoolean() == false) && currentConnection != Network.SECONDARY) {
 				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
@@ -455,18 +461,6 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 			errors.add(mqttM.restore(mqtt, data.get(Restore.RESTORE_MQTT)));
 		}
 	}
-
-	private void restoreKVS(JsonNode kvsMany, ArrayList<String> errors) throws InterruptedException {
-		ObjectNode out = JsonNodeFactory.instance.objectNode();
-		Iterator<Entry<String, JsonNode>> fields = kvsMany.get("items").fields();
-		while(fields.hasNext()) {
-			Entry<String, JsonNode> entry = fields.next();
-			out.put("key", entry.getKey());
-			out.put("value", entry.getValue().get("value").asText());
-			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-			errors.add(postCommand("KVS.Set", out));
-		}
-	}
 	
 	private void restoreSchedule(JsonNode schedule, ArrayList<String> errors) throws InterruptedException {
 		errors.add(postCommand("Schedule.DeleteAll", "{}"));
@@ -477,4 +471,4 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 			errors.add(postCommand("Schedule.Create", thisSc));
 		}
 	}
-} // 477 - 480
+} // 477 - 474

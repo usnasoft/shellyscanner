@@ -55,13 +55,10 @@ public class ScriptsPanel extends JPanel {
 	private final static Border BUTTON_BORDERS = BorderFactory.createEmptyBorder(0, 12, 0, 12);
 	private final ExTooltipTable table;
 	private final ArrayList<Script> scripts = new ArrayList<>();
-	private final UsnaTableModel tModel = new UsnaTableModel(LABELS.getString("lblScrColName"), LABELS.getString("lblScrColEnabled"), LABELS.getString("lblScrColRunning"));
 
 	public ScriptsPanel(AbstractG2Device device) {
 		setLayout(new BorderLayout(0, 0));
-
-		JScrollPane scrollPane = new JScrollPane();
-		add(scrollPane, BorderLayout.CENTER);
+		final UsnaTableModel tModel = new UsnaTableModel(LABELS.getString("lblScrColName"), LABELS.getString("lblScrColEnabled"), LABELS.getString("lblScrColRunning"));
 
 		table = new ExTooltipTable(tModel) {
 			private static final long serialVersionUID = 1L;
@@ -105,7 +102,8 @@ public class ScriptsPanel extends JPanel {
 				}
 			}
 		};
-		scrollPane.setViewportView(table);
+		JScrollPane scrollPane = new JScrollPane(table, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+		add(scrollPane, BorderLayout.CENTER);
 
 		JPanel operationsPanel = new JPanel();
 		operationsPanel.setLayout(new GridLayout(1, 0, 2, 0));

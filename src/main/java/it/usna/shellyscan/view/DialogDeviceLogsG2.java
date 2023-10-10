@@ -55,9 +55,9 @@ public class DialogDeviceLogsG2 extends JDialog {
 	private boolean logWasActive;
 	private Future<Session> wsSession;
 
-	public DialogDeviceLogsG2(final MainView owner, Devices model, int index) {
+	public DialogDeviceLogsG2(final MainView owner, Devices model, int modelIndex, int initLlogLevel) {
 		super(owner, false);
-		AbstractG2Device device = (AbstractG2Device) model.get(index);
+		AbstractG2Device device = (AbstractG2Device) model.get(modelIndex);
 		setTitle(UtilMiscellaneous.getExtendedHostName(device));
 		setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
 
@@ -115,7 +115,7 @@ public class DialogDeviceLogsG2 extends JDialog {
 		JButton btnsStopAppRefresh = new JButton(Main.LABELS.getString("dlgLogG2PauseRefresh"));
 		buttonsPanel.add(btnsStopAppRefresh);
 		btnsStopAppRefresh.addActionListener(event -> {
-			model.pauseRefresh(index);
+			model.pauseRefresh(modelIndex);
 			try {
 				document.insertString(document.getLength(), ">>>> " + Main.APP_NAME + " refresh process stopped\n", bluStyle);
 			} catch (BadLocationException e1) {}
@@ -130,7 +130,7 @@ public class DialogDeviceLogsG2 extends JDialog {
 		comboBox.addItem(LABELS.getString("dlgLogG2Lev2")); // info
 		comboBox.addItem(LABELS.getString("dlgLogG2Lev3")); // debug
 		comboBox.addItem(LABELS.getString("dlgLogG2Lev4")); // verbose
-		comboBox.setSelectedIndex(4);
+		comboBox.setSelectedIndex(initLlogLevel);
 		buttonsPanel.add(comboBox);
 
 		JPanel panel = new JPanel(new BorderLayout());
