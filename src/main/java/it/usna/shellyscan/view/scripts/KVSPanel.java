@@ -4,17 +4,21 @@ import static it.usna.shellyscan.Main.LABELS;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.GridLayout;
 import java.io.IOException;
 
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
+import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableColumn;
 
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
@@ -54,24 +58,24 @@ public class KVSPanel extends JPanel {
 
 				@Override
 				public boolean isCellEditable(final int row, final int column) {
-					return convertColumnIndexToModel(column) == COL_VALUE;
+					return true;//convertColumnIndexToModel(column) == COL_VALUE;
 				}
 
-//			@Override
-//			public Component prepareEditor(TableCellEditor editor, int row, int column) {
-//				JComponent comp = (JComponent)super.prepareEditor(editor, row, column);
-//				comp.setBackground(table.getSelectionBackground());
-//				comp.setForeground(table.getSelectionForeground());
-//				return comp;
-//			}
-//
+				@Override
+				public Component prepareEditor(TableCellEditor editor, int row, int column) {
+					JComponent comp = (JComponent)super.prepareEditor(editor, row, column);
+					comp.setBackground(table.getSelectionBackground());
+					comp.setForeground(table.getSelectionForeground());
+//					comp.requestFocus();
+					return comp;
+				}
+
 				@Override
 				public void editingStopped(ChangeEvent e) {
 					KVSPanel.this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 					try {
 						final int mRow = convertRowIndexToModel(getEditingRow());
 						if (mRow < kvs.size()) { // existing element -> value
-													// edited
 							KVItem item = kvs.edit(mRow, (String) getCellEditor().getCellEditorValue());
 							tModel.setRow(mRow, item.key(), item.etag(), item.value());
 						} else { // new element -> key edited
@@ -93,6 +97,12 @@ public class KVSPanel extends JPanel {
 						KVSPanel.this.setCursor(Cursor.getDefaultCursor());
 					}
 				}
+				
+				@Override
+				public void editingCanceled(ChangeEvent e) {
+					final int mRow = convertRowIndexToModel(getEditingRow());
+					super.editingCanceled(e);
+				}
 			};
 
 			scrollPane = new JScrollPane(table, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
@@ -105,6 +115,10 @@ public class KVSPanel extends JPanel {
 
 			final JButton btnDelete = new JButton(LABELS.getString("btnDelete"));
 			btnDelete.addActionListener(e -> {
+				TableCellEditor editor = table.getCellEditor();
+				if(editor != null) {
+					editor.cancelCellEditing();
+				}
 				final String cancel = UIManager.getString("OptionPane.cancelButtonText");
 				if (JOptionPane.showOptionDialog(KVSPanel.this, LABELS.getString("msgDeleteConfirm"), LABELS.getString("btnDelete"), JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null,
 						new Object[] { UIManager.getString("OptionPane.yesButtonText"), cancel }, cancel) == 0) {
@@ -121,15 +135,20 @@ public class KVSPanel extends JPanel {
 
 			final JButton btnNew = new JButton(LABELS.getString("btnNew"));
 			btnNew.addActionListener(e -> {
-//			try {
-				int row = tModel.addRow(new Object[] { "key", "", "" });
+				//			try {
+				TableCellEditor editor = table.getCellEditor();
+				if(editor != null) {
+					editor.cancelCellEditing();
+				}
+				int row = tModel.addRow( "key", "", "" );
 				table.editCellAt(row, COL_KEY);
-//			} catch (/*IO*/Exception e1) {
-//				Msg.errorMsg(e1);
-//			}
+				table.getEditorComponent().requestFocus();
+				//			} catch (/*IO*/Exception e1) {
+				//				Msg.errorMsg(e1);
+				//			}
 			});
 			operationsPanel.add(btnNew);
-//
+
 //		JButton btnDownload = new JButton(LABELS.getString("btnDownload"));
 //		operationsPanel.add(btnDownload);
 //		btnDownload.addActionListener(e -> {
