@@ -9,9 +9,11 @@ import java.awt.GridLayout;
 import java.io.IOException;
 
 import javax.swing.JButton;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
+import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.table.TableColumn;
 
@@ -68,18 +70,25 @@ public class KVSPanel extends JPanel {
 					KVSPanel.this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 					try {
 						final int mRow = convertRowIndexToModel(getEditingRow());
-						try {
-							KVItem item;
-							if(mRow < kvs.size()) {
-								item = kvs.edit(mRow, (String)getCellEditor().getCellEditorValue()); // existing element -> value edited
-							} else {
-								item = kvs.add((String)getCellEditor().getCellEditorValue(), ""); // new element -> key edited
-							}
+						if (mRow < kvs.size()) { // existing element -> value
+													// edited
+							KVItem item = kvs.edit(mRow, (String) getCellEditor().getCellEditorValue());
 							tModel.setRow(mRow, item.key(), item.etag(), item.value());
-						} catch (IOException e1) {
-							Msg.errorMsg(e1);
+						} else { // new element -> key edited
+							String key = (String) getCellEditor().getCellEditorValue();
+							if (kvs.getIndex(key) >= 0) {
+								Msg.errorMsg(KVSPanel.this, "msgKVSExisting");
+								tModel.removeRow(mRow);
+							} else if (key.length() > 0) {
+								KVItem item = kvs.add(key, "");
+								tModel.setRow(mRow, key, item.etag(), item.value());
+							} else {
+								tModel.removeRow(mRow);
+							}
 						}
 						super.editingStopped(e);
+					} catch (IOException e1) {
+						Msg.errorMsg(e1);
 					} finally {
 						KVSPanel.this.setCursor(Cursor.getDefaultCursor());
 					}
@@ -94,36 +103,32 @@ public class KVSPanel extends JPanel {
 			operationsPanel.setBackground(Color.WHITE);
 			add(operationsPanel, BorderLayout.SOUTH);
 
-//		JButton btnDelete = new JButton(LABELS.getString("btnDelete"));
-//		btnDelete.addActionListener(e -> {
-//			final String cancel = UIManager.getString("OptionPane.cancelButtonText");
-//			if(JOptionPane.showOptionDialog(
-//					KVSPanel.this, LABELS.getString("msgDeleteConfirm"), LABELS.getString("btnDelete"),
-//					JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null,
-//					new Object[] {UIManager.getString("OptionPane.yesButtonText"), cancel}, cancel) == 0) {
-//				try {
-//					final int mRow = table.convertRowIndexToModel(table.getSelectedRow());
-//					final Script sc = scripts.get(mRow);
-//					sc.delete();
-//					scripts.remove(mRow);
-//					tModel.removeRow(mRow);
-//				} catch (IOException e1) {
-//					Msg.errorMsg(e1);
-//				}
-//			}
-//		});
-//		operationsPanel.add(btnDelete);
-//
-		JButton btnNew = new JButton(LABELS.getString("btnNew"));
-		btnNew.addActionListener(e -> {
+			final JButton btnDelete = new JButton(LABELS.getString("btnDelete"));
+			btnDelete.addActionListener(e -> {
+				final String cancel = UIManager.getString("OptionPane.cancelButtonText");
+				if (JOptionPane.showOptionDialog(KVSPanel.this, LABELS.getString("msgDeleteConfirm"), LABELS.getString("btnDelete"), JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null,
+						new Object[] { UIManager.getString("OptionPane.yesButtonText"), cancel }, cancel) == 0) {
+					try {
+						final int mRow = table.convertRowIndexToModel(table.getSelectedRow());
+						kvs.delete(mRow);
+						tModel.removeRow(mRow);
+					} catch (IOException e1) {
+						Msg.errorMsg(e1);
+					}
+				}
+			});
+			operationsPanel.add(btnDelete);
+
+			final JButton btnNew = new JButton(LABELS.getString("btnNew"));
+			btnNew.addActionListener(e -> {
 //			try {
-				int row = tModel.addRow(new Object [] {"key", "", ""});
+				int row = tModel.addRow(new Object[] { "key", "", "" });
 				table.editCellAt(row, COL_KEY);
 //			} catch (/*IO*/Exception e1) {
 //				Msg.errorMsg(e1);
 //			}
-		});
-		operationsPanel.add(btnNew);
+			});
+			operationsPanel.add(btnNew);
 //
 //		JButton btnDownload = new JButton(LABELS.getString("btnDownload"));
 //		operationsPanel.add(btnDownload);
@@ -160,8 +165,6 @@ public class KVSPanel extends JPanel {
 //				setCursor(Cursor.getDefaultCursor());
 //			}
 //		});
-
-			
 
 			for (KVS.KVItem item : kvs.getItems()) {
 				tModel.addRow(item.key(), item.etag(), item.value());

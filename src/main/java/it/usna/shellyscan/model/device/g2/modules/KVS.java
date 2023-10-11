@@ -60,6 +60,14 @@ public class KVS {
 		return kvItems.size();
 	}
 	
+	public int getIndex(String key) {
+		for(int i = 0; i < kvItems.size(); i++) {
+			if(kvItems.get(i).key.equals(key)) {
+				return i;
+			}
+		}
+		return -1;
+	}
 	/**
 	 * Restore missing or modified values; call refresh() at the end if KVS must still be used
 	 * @param kvsMany
