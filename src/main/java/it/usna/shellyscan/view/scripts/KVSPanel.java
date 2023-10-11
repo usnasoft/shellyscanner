@@ -8,45 +8,52 @@ import java.awt.Cursor;
 import java.awt.GridLayout;
 import java.io.IOException;
 
+import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
+import javax.swing.event.ChangeEvent;
 import javax.swing.table.TableColumn;
 
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.g2.modules.KVS;
+import it.usna.shellyscan.model.device.g2.modules.KVS.KVItem;
 import it.usna.shellyscan.view.util.Msg;
 import it.usna.swing.table.ExTooltipTable;
 import it.usna.swing.table.UsnaTableModel;
 
 public class KVSPanel extends JPanel {
 	private static final long serialVersionUID = 1L;
-	private final ExTooltipTable table;
-	
+	private ExTooltipTable table;
 	private JScrollPane scrollPane = null;
-	
+
+	private static int COL_KEY = 0;
+	private static int COL_VALUE = 2;
+
 	public KVSPanel(AbstractG2Device device) {
 		setLayout(new BorderLayout(0, 0));
-		
-		final UsnaTableModel tModel = new UsnaTableModel(LABELS.getString("lblKeyColName"), LABELS.getString("lblEtagColName"), LABELS.getString("lblValColName"));
 
-		table = new ExTooltipTable(tModel) {
-			private static final long serialVersionUID = 1L;
-			{
+		try {
+			setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+			final KVS kvs = new KVS(device);
+
+			final UsnaTableModel tModel = new UsnaTableModel(LABELS.getString("lblKeyColName"), LABELS.getString("lblEtagColName"), LABELS.getString("lblValColName"));
+
+			table = new ExTooltipTable(tModel) {
+				private static final long serialVersionUID = 1L;
+				{
 //				((JComponent) getDefaultRenderer(Boolean.class)).setOpaque(true);
-				setAutoCreateRowSorter(true);
-				setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+					setAutoCreateRowSorter(true);
+					setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
 //				columnModel.getColumn(2).setCellRenderer(new ButtonCellRenderer());
 //				columnModel.getColumn(2).setCellEditor(new ButtonCellEditor());
-				
-//				setAutoResizeMode(ExTooltipTable.AUTO_RESIZE_OFF);
-			}
+				}
 
-			@Override
-			public boolean isCellEditable(final int row, final int column) {
-				return false;
-			}
+				@Override
+				public boolean isCellEditable(final int row, final int column) {
+					return convertColumnIndexToModel(column) == COL_VALUE;
+				}
 
 //			@Override
 //			public Component prepareEditor(TableCellEditor editor, int row, int column) {
@@ -56,37 +63,42 @@ public class KVSPanel extends JPanel {
 //				return comp;
 //			}
 //
-//			public void editingStopped(ChangeEvent e) {
-//				KVSPanel.this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-//				try {
-//					final int mCol = convertColumnIndexToModel(getEditingColumn());
-//					final int mRow = convertRowIndexToModel(getEditingRow());
-//					final Script sc = scripts.get(mRow);
-//					if(mCol == 0) { // name
-//						sc.setName((String)getCellEditor().getCellEditorValue());
-//					} else if(mCol == 1) { // enabled
-//						sc.setEnabled((Boolean)getCellEditor().getCellEditorValue());
-//					}
-//					super.editingStopped(e);
-//				} finally {
-//					KVSPanel.this.setCursor(Cursor.getDefaultCursor());
-//				}
-//			}
-		};
-		
-		scrollPane = new JScrollPane(table, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-		add(scrollPane, BorderLayout.CENTER);
+				@Override
+				public void editingStopped(ChangeEvent e) {
+					KVSPanel.this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+					try {
+						final int mRow = convertRowIndexToModel(getEditingRow());
+						try {
+							KVItem item;
+							if(mRow < kvs.size()) {
+								item = kvs.edit(mRow, (String)getCellEditor().getCellEditorValue()); // existing element -> value edited
+							} else {
+								item = kvs.add((String)getCellEditor().getCellEditorValue(), ""); // new element -> key edited
+							}
+							tModel.setRow(mRow, item.key(), item.etag(), item.value());
+						} catch (IOException e1) {
+							Msg.errorMsg(e1);
+						}
+						super.editingStopped(e);
+					} finally {
+						KVSPanel.this.setCursor(Cursor.getDefaultCursor());
+					}
+				}
+			};
 
-		JPanel operationsPanel = new JPanel();
-		operationsPanel.setLayout(new GridLayout(1, 0, 2, 0));
-		operationsPanel.setBackground(Color.WHITE);
-		add(operationsPanel, BorderLayout.SOUTH);
+			scrollPane = new JScrollPane(table, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+			add(scrollPane, BorderLayout.CENTER);
+
+			JPanel operationsPanel = new JPanel();
+			operationsPanel.setLayout(new GridLayout(1, 0, 2, 0));
+			operationsPanel.setBackground(Color.WHITE);
+			add(operationsPanel, BorderLayout.SOUTH);
 
 //		JButton btnDelete = new JButton(LABELS.getString("btnDelete"));
 //		btnDelete.addActionListener(e -> {
 //			final String cancel = UIManager.getString("OptionPane.cancelButtonText");
 //			if(JOptionPane.showOptionDialog(
-//					KVSPanel.this, LABELS.getString("msdDeleteConfitm"), LABELS.getString("btnDelete"),
+//					KVSPanel.this, LABELS.getString("msgDeleteConfirm"), LABELS.getString("btnDelete"),
 //					JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null,
 //					new Object[] {UIManager.getString("OptionPane.yesButtonText"), cancel}, cancel) == 0) {
 //				try {
@@ -102,17 +114,16 @@ public class KVSPanel extends JPanel {
 //		});
 //		operationsPanel.add(btnDelete);
 //
-//		JButton btnNew = new JButton(LABELS.getString("btnNew"));
-//		btnNew.addActionListener(e -> {
+		JButton btnNew = new JButton(LABELS.getString("btnNew"));
+		btnNew.addActionListener(e -> {
 //			try {
-//				Script sc = Script.create(device, null);
-//				scripts.add(sc);
-//				tModel.addRow(new Object [] {sc.getName(), sc.isEnabled(), sc.isRunning()});
-//			} catch (IOException e1) {
+				int row = tModel.addRow(new Object [] {"key", "", ""});
+				table.editCellAt(row, COL_KEY);
+//			} catch (/*IO*/Exception e1) {
 //				Msg.errorMsg(e1);
 //			}
-//		});
-//		operationsPanel.add(btnNew);
+		});
+		operationsPanel.add(btnNew);
 //
 //		JButton btnDownload = new JButton(LABELS.getString("btnDownload"));
 //		operationsPanel.add(btnDownload);
@@ -150,18 +161,17 @@ public class KVSPanel extends JPanel {
 //			}
 //		});
 
-		try {
-			setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-			KVS kvs = new KVS(device);
-			for(KVS.KVItem item: kvs.getItems()) {
-				tModel.addRow(new Object [] {item.key(), item.etag(), item.value()});
+			
+
+			for (KVS.KVItem item : kvs.getItems()) {
+				tModel.addRow(item.key(), item.etag(), item.value());
 			}
 		} catch (IOException e) {
 			Msg.errorMsg(e);
 		} finally {
 			setCursor(Cursor.getDefaultCursor());
 		}
-		
+
 //		ListSelectionListener l = e -> {
 //			final boolean selection = table.getSelectedRowCount() > 0;
 //			btnDelete.setEnabled(selection);
@@ -172,11 +182,11 @@ public class KVSPanel extends JPanel {
 //		table.getSelectionModel().addListSelectionListener(l);
 //		l.valueChanged(null);
 	}
-	
+
 	@Override
 	public void setVisible(boolean v) {
 		super.setVisible(v);
-		if(v) {
+		if (v) {
 			table.columnsWidthAdapt();
 			TableColumn col0 = table.getColumnModel().getColumn(0);
 			col0.setPreferredWidth(col0.getPreferredWidth() * 120 / 100);
@@ -184,7 +194,7 @@ public class KVSPanel extends JPanel {
 			col1.setPreferredWidth(col1.getPreferredWidth() * 120 / 100);
 			TableColumn col2 = table.getColumnModel().getColumn(2);
 			col2.setPreferredWidth(col2.getPreferredWidth() * 120 / 100);
-			if(scrollPane.getViewport().getWidth() > table.getPreferredSize().width) {
+			if (scrollPane.getViewport().getWidth() > table.getPreferredSize().width) {
 				table.setAutoResizeMode(ExTooltipTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS);
 			} else {
 				table.setAutoResizeMode(ExTooltipTable.AUTO_RESIZE_OFF);

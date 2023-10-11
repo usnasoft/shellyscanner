@@ -114,7 +114,7 @@ public class ScriptsPanel extends JPanel {
 		btnDelete.addActionListener(e -> {
 			final String cancel = UIManager.getString("OptionPane.cancelButtonText");
 			if(JOptionPane.showOptionDialog(
-					ScriptsPanel.this, LABELS.getString("msdDeleteConfitm"), LABELS.getString("btnDelete"),
+					ScriptsPanel.this, LABELS.getString("msgDeleteConfirm"), LABELS.getString("btnDelete"),
 					JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null,
 					new Object[] {UIManager.getString("OptionPane.yesButtonText"), cancel}, cancel) == 0) {
 				try {

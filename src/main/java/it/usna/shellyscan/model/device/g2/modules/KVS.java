@@ -43,15 +43,21 @@ public class KVS {
 		device.getJSON("/rpc/KVS.Delete?key=" + URLEncoder.encode(kvItems.get(index).key, StandardCharsets.UTF_8.name()));
 	}
 	
-	public void modify(int index, String value) throws IOException {
+	public KVItem edit(int index, String value) throws IOException {
 		String key = kvItems.get(index).key;
 		JsonNode node = device.getJSON("/rpc/KVS.Set?key=" + URLEncoder.encode(kvItems.get(index).key, StandardCharsets.UTF_8.name()) + "&value=" + URLEncoder.encode(value, StandardCharsets.UTF_8.name()));
-		kvItems.set(index, new KVItem(key, node.get("etag").asText(), value));
+		return kvItems.set(index, new KVItem(key, node.get("etag").asText(), value));
 	}
 	
-	public void add(String key, String value) throws IOException {
+	public KVItem add(String key, String value) throws IOException {
 		JsonNode node = device.getJSON("/rpc/KVS.Set?key=" + URLEncoder.encode(key, StandardCharsets.UTF_8.name()) + "&value=" + URLEncoder.encode(value, StandardCharsets.UTF_8.name()));
-		kvItems.add(new KVItem(key, node.get("etag").asText(), value));
+		KVItem item = new KVItem(key, node.get("etag").asText(), value);
+		kvItems.add(item);
+		return item;
+	}
+	
+	public int size() {
+		return kvItems.size();
 	}
 	
 	/**
