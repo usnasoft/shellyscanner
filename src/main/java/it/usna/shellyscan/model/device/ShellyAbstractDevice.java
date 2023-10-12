@@ -75,6 +75,9 @@ public abstract class ShellyAbstractDevice {
 			} else if(statusCode == HttpStatus.INTERNAL_SERVER_ERROR_500) {
 				status = Status.ERROR;
 				throw new IOException("Status-" + statusCode);
+			} else if(statusCode == HttpStatus.NOT_FOUND_404) {
+				status = Status.ERROR;
+				throw new IOException("Status-404");
 			} else {
 				status = Status.OFF_LINE;
 				throw new DeviceOfflineException("Status-" + statusCode);

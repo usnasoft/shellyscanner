@@ -460,6 +460,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		addWindowListener(new WindowAdapter() {
 			@Override
 			public void windowClosing(WindowEvent e) {
+				MainView.this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 				storeProperties();
 				dispose();
 			}

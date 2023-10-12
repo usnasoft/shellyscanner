@@ -39,6 +39,10 @@ public class KVS {
 		return kvItems;
 	}
 	
+	public KVItem get(int index) {
+		return kvItems.get(index);
+	}
+	
 	public void delete(int index) throws IOException {
 		device.getJSON("/rpc/KVS.Delete?key=" + URLEncoder.encode(kvItems.get(index).key, StandardCharsets.UTF_8.name()));
 	}

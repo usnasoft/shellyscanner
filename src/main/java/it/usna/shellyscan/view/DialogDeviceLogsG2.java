@@ -45,6 +45,7 @@ import it.usna.shellyscan.Main;
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.g2.WebSocketDeviceListener;
+import it.usna.shellyscan.view.util.Msg;
 import it.usna.shellyscan.view.util.UsnaTextPane;
 import it.usna.shellyscan.view.util.UtilMiscellaneous;
 import it.usna.swing.dialog.FindReplaceDialog;
@@ -216,7 +217,8 @@ public class DialogDeviceLogsG2 extends JDialog {
 			setLocationRelativeTo(owner);
 			setVisible(true);
 		} catch (Exception e) {
-			LOG.error("webSocketClient.start", e);
+//			LOG.error("webSocketClient.start", e);
+			Msg.errorMsg(e);
 		}
 	}
 

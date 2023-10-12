@@ -8,6 +8,9 @@ import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
+import java.awt.Toolkit;
+import java.awt.datatransfer.StringSelection;
+import java.awt.event.ActionEvent;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileWriter;
@@ -20,6 +23,7 @@ import java.util.stream.Collectors;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 
+import javax.swing.AbstractAction;
 import javax.swing.AbstractCellEditor;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
@@ -43,6 +47,7 @@ import javax.swing.table.TableColumnModel;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import it.usna.shellyscan.Main;
+import it.usna.shellyscan.controller.UsnaAction;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.g2.modules.Script;
 import it.usna.shellyscan.view.util.Msg;
@@ -56,7 +61,7 @@ public class ScriptsPanel extends JPanel {
 	private final ExTooltipTable table;
 	private final ArrayList<Script> scripts = new ArrayList<>();
 
-	public ScriptsPanel(AbstractG2Device device) {
+	public ScriptsPanel(AbstractG2Device device) throws IOException {
 		setLayout(new BorderLayout(0, 0));
 		final UsnaTableModel tModel = new UsnaTableModel(LABELS.getString("lblScrColName"), LABELS.getString("lblScrColEnabled"), LABELS.getString("lblScrColRunning"));
 
@@ -69,6 +74,16 @@ public class ScriptsPanel extends JPanel {
 
 				columnModel.getColumn(2).setCellRenderer(new ButtonCellRenderer());
 				columnModel.getColumn(2).setCellEditor(new ButtonCellEditor());
+				
+				getActionMap().put("copy", new AbstractAction() {
+					private static final long serialVersionUID = 1L;
+					@Override
+					public void actionPerformed(ActionEvent e) {
+						Object cellValue = getValueAt(getSelectedRow(), getSelectedColumn());
+						StringSelection stringSelection = new StringSelection(cellTooltipValue(cellValue, true, 0, 0));
+						Toolkit.getDefaultToolkit().getSystemClipboard().setContents(stringSelection, stringSelection);
+					}
+				});
 			}
 
 			@Override
@@ -110,8 +125,7 @@ public class ScriptsPanel extends JPanel {
 		operationsPanel.setBackground(Color.WHITE);
 		add(operationsPanel, BorderLayout.SOUTH);
 
-		JButton btnDelete = new JButton(LABELS.getString("btnDelete"));
-		btnDelete.addActionListener(e -> {
+		final JButton btnDelete = new JButton(new UsnaAction(this, "btnDelete", e -> {
 			final String cancel = UIManager.getString("OptionPane.cancelButtonText");
 			if(JOptionPane.showOptionDialog(
 					ScriptsPanel.this, LABELS.getString("msgDeleteConfirm"), LABELS.getString("btnDelete"),
@@ -127,24 +141,21 @@ public class ScriptsPanel extends JPanel {
 					Msg.errorMsg(e1);
 				}
 			}
-		});
+		}));
 		operationsPanel.add(btnDelete);
 
-		JButton btnNew = new JButton(LABELS.getString("btnNew"));
-		btnNew.addActionListener(e -> {
+		final JButton btnNew = new JButton(new UsnaAction(this, "btnNew", e -> {
 			try {
 				Script sc = Script.create(device, null);
 				scripts.add(sc);
-				tModel.addRow(new Object [] {sc.getName(), sc.isEnabled(), sc.isRunning()});
+				tModel.addRow(sc.getName(), sc.isEnabled(), sc.isRunning());
 			} catch (IOException e1) {
 				Msg.errorMsg(e1);
 			}
-		});
+		}));
 		operationsPanel.add(btnNew);
 
-		JButton btnDownload = new JButton(LABELS.getString("btnDownload"));
-		operationsPanel.add(btnDownload);
-		btnDownload.addActionListener(e -> {
+		final JButton btnDownload = new JButton(new UsnaAction(this, "btnDownload", e -> {
 			final int mRow = table.convertRowIndexToModel(table.getSelectedRow());
 			final Script sc = scripts.get(mRow);
 			final JFileChooser fc = new JFileChooser();
@@ -160,11 +171,10 @@ public class ScriptsPanel extends JPanel {
 					setCursor(Cursor.getDefaultCursor());
 				}
 			}
-		});
+		}));
+		operationsPanel.add(btnDownload);
 
-		JButton btnUpload = new JButton(LABELS.getString("btnUpload"));
-		operationsPanel.add(btnUpload);
-		btnUpload.addActionListener(e -> {
+		final JButton btnUpload = new JButton(new UsnaAction(this, "btnUpload", e -> {
 			final int mRow = table.convertRowIndexToModel(table.getSelectedRow());
 			final Script sc = scripts.get(mRow);
 			final JFileChooser fc = new JFileChooser();
@@ -176,36 +186,29 @@ public class ScriptsPanel extends JPanel {
 				loadCodeFromFile(fc.getSelectedFile(), sc);
 				setCursor(Cursor.getDefaultCursor());
 			}
-		});
+		}));
+		operationsPanel.add(btnUpload);
 
-		JButton editBtn = new JButton("Edit");
-		operationsPanel.add(editBtn);
-		editBtn.addActionListener(e -> {
-			setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+		final JButton editBtn = new JButton(new UsnaAction(this, "edit2", e -> {
 			try {
 				final int mRow = table.convertRowIndexToModel(table.getSelectedRow());
 				final Script sc = scripts.get(mRow);
 				new ScriptEditor(ScriptsPanel.this, sc);
 			} catch (IOException e1) {
 				Msg.errorMsg(e1);
-			} finally {
-				setCursor(Cursor.getDefaultCursor());
 			}
-		});
+		}));
+		operationsPanel.add(editBtn);
 
-		try {
-			for(JsonNode script: Script.list(device)) {
-				Script sc = new Script(device, script);
-				scripts.add(sc);
-				tModel.addRow(new Object [] {sc.getName(), sc.isEnabled(), sc.isRunning()});
-			}
-			TableColumnModel columnModel = table.getColumnModel();
-			columnModel.getColumn(0).setPreferredWidth(3000);
-			columnModel.getColumn(1).setPreferredWidth(500);
-			columnModel.getColumn(2).setPreferredWidth(500);
-		} catch (IOException e) {
-			Msg.errorMsg(e);
+		for(JsonNode script: Script.list(device)) {
+			Script sc = new Script(device, script);
+			scripts.add(sc);
+			tModel.addRow(sc.getName(), sc.isEnabled(), sc.isRunning());
 		}
+		TableColumnModel columnModel = table.getColumnModel();
+		columnModel.getColumn(0).setPreferredWidth(3000);
+		columnModel.getColumn(1).setPreferredWidth(500);
+		columnModel.getColumn(2).setPreferredWidth(500);
 
 		ListSelectionListener l = e -> {
 			final boolean selection = table.getSelectedRowCount() > 0;
@@ -335,4 +338,4 @@ public class ScriptsPanel extends JPanel {
 			return b;
 		}
 	}
-}
+} //348

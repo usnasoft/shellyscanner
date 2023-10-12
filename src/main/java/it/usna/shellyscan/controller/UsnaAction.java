@@ -2,6 +2,7 @@ package it.usna.shellyscan.controller;
 
 import static it.usna.shellyscan.Main.LABELS;
 
+import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
@@ -16,7 +17,7 @@ import javax.swing.ImageIcon;
 public class UsnaAction extends AbstractAction {
 	private static final long serialVersionUID = 1L;
 	protected ActionListener onActionPerformed;
-	protected Window w;
+	protected Component w;
 	
 	public UsnaAction(final ActionListener a) {
 		this.onActionPerformed = a;
@@ -27,7 +28,7 @@ public class UsnaAction extends AbstractAction {
 		this.onActionPerformed = a;
 	}
 	
-	public UsnaAction(Window w, String nameId, final ActionListener a) {
+	public UsnaAction(Component w, String nameId, final ActionListener a) {
 		this.w = w;
 		putValue(NAME, LABELS.getString(nameId));
 		this.onActionPerformed = a;
