@@ -11,6 +11,7 @@ import javax.swing.JDialog;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 
+import it.usna.shellyscan.controller.UsnaAction;
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.g2.AbstractBatteryG2Device;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
@@ -31,13 +32,12 @@ public class DialogDeviceScriptsG2 extends JDialog {
 			JPanel buttonsPanel = new JPanel();
 			getContentPane().add(buttonsPanel, BorderLayout.SOUTH);
 
-			JButton jButtonClose = new JButton(LABELS.getString("dlgClose"));
-			jButtonClose.addActionListener(event -> dispose());
-
+			JButton jButtonClose = new JButton(new UsnaAction("dlgClose", e -> dispose()));
 			buttonsPanel.add(jButtonClose);
 			
 			JTabbedPane tabs = new JTabbedPane();
 
+			// battery operated devices do not support scripts
 			if(device instanceof AbstractBatteryG2Device == false) {
 				JPanel scriptsPanel = new ScriptsPanel(device);
 				tabs.addTab(LABELS.getString("lblScriptsTab"), scriptsPanel);

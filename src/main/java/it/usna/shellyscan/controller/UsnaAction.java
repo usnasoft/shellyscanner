@@ -16,16 +16,18 @@ import javax.swing.ImageIcon;
  */
 public class UsnaAction extends AbstractAction {
 	private static final long serialVersionUID = 1L;
+	protected final Component w;
 	protected ActionListener onActionPerformed;
-	protected Component w;
 	
 	public UsnaAction(final ActionListener a) {
 		this.onActionPerformed = a;
+		w = null;
 	}
 	
 	public UsnaAction(String nameId, final ActionListener a) {
 		putValue(NAME, LABELS.getString(nameId));
 		this.onActionPerformed = a;
+		w = null;
 	}
 	
 	public UsnaAction(Component w, String nameId, final ActionListener a) {

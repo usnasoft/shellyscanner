@@ -7,12 +7,8 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.GridLayout;
-import java.awt.Toolkit;
-import java.awt.datatransfer.StringSelection;
-import java.awt.event.ActionEvent;
 import java.io.IOException;
 
-import javax.swing.AbstractAction;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JOptionPane;
@@ -54,15 +50,16 @@ public class KVSPanel extends JPanel {
 				setAutoCreateRowSorter(true);
 				setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
-				getActionMap().put("copy", new AbstractAction() {
-					private static final long serialVersionUID = 1L;
-					@Override
-					public void actionPerformed(ActionEvent e) {
-						Object cellValue = getValueAt(getSelectedRow(), getSelectedColumn());
-						StringSelection stringSelection = new StringSelection(cellTooltipValue(cellValue, true, 0, 0));
-						Toolkit.getDefaultToolkit().getSystemClipboard().setContents(stringSelection, stringSelection);
-					}
-				});
+//				getActionMap().put("copy", new AbstractAction() {
+//					private static final long serialVersionUID = 1L;
+//					@Override
+//					public void actionPerformed(ActionEvent e) {
+//						Object cellValue = getValueAt(getSelectedRow(), getSelectedColumn());
+//						StringSelection stringSelection = new StringSelection(cellTooltipValue(cellValue, true, 0, 0));
+//						Toolkit.getDefaultToolkit().getSystemClipboard().setContents(stringSelection, stringSelection);
+//					}
+//				});
+				activateSingleStringCellCopy();
 			}
 
 			@Override
@@ -108,13 +105,8 @@ public class KVSPanel extends JPanel {
 				}
 			}
 
-			//				@Override
+			//				NOT called on "esc"
 			//				public void editingCanceled(ChangeEvent e) {
-			//					final int mRow = convertRowIndexToModel(getEditingRow());
-			//					if (mRow < kvs.size()) {
-			//						tModel.removeRow(mRow);
-			//					}
-			//					super.editingCanceled(e);
 			//				}
 
 			@Override
@@ -154,7 +146,7 @@ public class KVSPanel extends JPanel {
 		}));
 		operationsPanel.add(btnDelete);
 
-		final JButton btnNew = new JButton(new UsnaAction(null, "btnNew", e -> {
+		final JButton btnNew = new JButton(new UsnaAction("btnNew", e -> {
 			TableCellEditor editor = table.getCellEditor();
 			if(editor != null) {
 				editor.cancelCellEditing();
@@ -166,11 +158,9 @@ public class KVSPanel extends JPanel {
 			table.getEditorComponent().requestFocus();
 		}));
 		operationsPanel.add(btnNew);
-		
-		
 
+		// fill table
 		kvs.getItems().stream().forEach(item -> tModel.addRow(item.key(), item.etag(), item.value()));
-
 
 		ListSelectionListener l = e -> {
 			final boolean selection = table.getSelectedRowCount() > 0;

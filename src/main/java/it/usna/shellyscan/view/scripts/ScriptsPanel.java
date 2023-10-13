@@ -8,9 +8,6 @@ import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
-import java.awt.Toolkit;
-import java.awt.datatransfer.StringSelection;
-import java.awt.event.ActionEvent;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileWriter;
@@ -23,7 +20,6 @@ import java.util.stream.Collectors;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 
-import javax.swing.AbstractAction;
 import javax.swing.AbstractCellEditor;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
@@ -75,15 +71,16 @@ public class ScriptsPanel extends JPanel {
 				columnModel.getColumn(2).setCellRenderer(new ButtonCellRenderer());
 				columnModel.getColumn(2).setCellEditor(new ButtonCellEditor());
 				
-				getActionMap().put("copy", new AbstractAction() {
-					private static final long serialVersionUID = 1L;
-					@Override
-					public void actionPerformed(ActionEvent e) {
-						Object cellValue = getValueAt(getSelectedRow(), getSelectedColumn());
-						StringSelection stringSelection = new StringSelection(cellTooltipValue(cellValue, true, 0, 0));
-						Toolkit.getDefaultToolkit().getSystemClipboard().setContents(stringSelection, stringSelection);
-					}
-				});
+//				getActionMap().put("copy", new AbstractAction() {
+//					private static final long serialVersionUID = 1L;
+//					@Override
+//					public void actionPerformed(ActionEvent e) {
+//						Object cellValue = getValueAt(getSelectedRow(), getSelectedColumn());
+//						StringSelection stringSelection = new StringSelection(cellTooltipValue(cellValue, true, 0, 0));
+//						Toolkit.getDefaultToolkit().getSystemClipboard().setContents(stringSelection, stringSelection);
+//					}
+//				});
+				activateSingleStringCellCopy();
 			}
 
 			@Override
@@ -162,14 +159,14 @@ public class ScriptsPanel extends JPanel {
 			fc.setFileFilter(new FileNameExtensionFilter(LABELS.getString("filetype_js_desc"), DialogDeviceScriptsG2.FILE_EXTENSION));
 			fc.setSelectedFile(new File(sc.getName()));
 			if(fc.showSaveDialog(ScriptsPanel.this) == JFileChooser.APPROVE_OPTION) {
-				setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+//				setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 				try (FileWriter w = new FileWriter(fc.getSelectedFile())) {
 					w.write(sc.getCode());
 				} catch (IOException e1) {
 					Msg.errorMsg(ScriptsPanel.this, LABELS.getString("msgScrNoCode"));
-				} finally {
+				} /*finally {
 					setCursor(Cursor.getDefaultCursor());
-				}
+				}*/
 			}
 		}));
 		operationsPanel.add(btnDownload);
@@ -182,9 +179,9 @@ public class ScriptsPanel extends JPanel {
 			fc.addChoosableFileFilter(new FileNameExtensionFilter(LABELS.getString("filetype_sbk_desc"), Main.BACKUP_FILE_EXT));
 			fc.setSelectedFile(new File(sc.getName()));
 			if(fc.showOpenDialog(ScriptsPanel.this) == JFileChooser.APPROVE_OPTION) {
-				setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+//				setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 				loadCodeFromFile(fc.getSelectedFile(), sc);
-				setCursor(Cursor.getDefaultCursor());
+//				setCursor(Cursor.getDefaultCursor());
 			}
 		}));
 		operationsPanel.add(btnUpload);
