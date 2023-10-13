@@ -6,9 +6,6 @@ import java.awt.Component;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Point;
-import java.awt.Toolkit;
-import java.awt.datatransfer.StringSelection;
-import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -23,7 +20,6 @@ import java.util.Locale;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.swing.AbstractAction;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
@@ -168,15 +164,7 @@ public class DevicesTable extends ExTooltipTable {
 			return s1.compareTo(s2);
 		});
 		
-		getActionMap().put("copy", new AbstractAction() {
-			private static final long serialVersionUID = 1L;
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				Object cellValue = getValueAt(getSelectedRow(), getSelectedColumn());
-				StringSelection stringSelection = new StringSelection(cellTooltipValue(cellValue, true, 0, 0));
-				Toolkit.getDefaultToolkit().getSystemClipboard().setContents(stringSelection, stringSelection);
-			}
-		});
+		activateSingleStringCellCopy();
 		
 		String[] headerTips = new String[COL_MQTT + 1];
 		headerTips[COL_STATUS_IDX] = LABELS.getString("col_status_exp");

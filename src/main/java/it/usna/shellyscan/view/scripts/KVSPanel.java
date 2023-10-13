@@ -49,16 +49,6 @@ public class KVSPanel extends JPanel {
 			{
 				setAutoCreateRowSorter(true);
 				setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-
-//				getActionMap().put("copy", new AbstractAction() {
-//					private static final long serialVersionUID = 1L;
-//					@Override
-//					public void actionPerformed(ActionEvent e) {
-//						Object cellValue = getValueAt(getSelectedRow(), getSelectedColumn());
-//						StringSelection stringSelection = new StringSelection(cellTooltipValue(cellValue, true, 0, 0));
-//						Toolkit.getDefaultToolkit().getSystemClipboard().setContents(stringSelection, stringSelection);
-//					}
-//				});
 				activateSingleStringCellCopy();
 			}
 

@@ -71,15 +71,6 @@ public class ScriptsPanel extends JPanel {
 				columnModel.getColumn(2).setCellRenderer(new ButtonCellRenderer());
 				columnModel.getColumn(2).setCellEditor(new ButtonCellEditor());
 				
-//				getActionMap().put("copy", new AbstractAction() {
-//					private static final long serialVersionUID = 1L;
-//					@Override
-//					public void actionPerformed(ActionEvent e) {
-//						Object cellValue = getValueAt(getSelectedRow(), getSelectedColumn());
-//						StringSelection stringSelection = new StringSelection(cellTooltipValue(cellValue, true, 0, 0));
-//						Toolkit.getDefaultToolkit().getSystemClipboard().setContents(stringSelection, stringSelection);
-//					}
-//				});
 				activateSingleStringCellCopy();
 			}
 
