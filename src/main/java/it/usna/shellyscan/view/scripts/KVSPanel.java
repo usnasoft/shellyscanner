@@ -49,7 +49,7 @@ public class KVSPanel extends JPanel {
 			{
 				setAutoCreateRowSorter(true);
 				setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-				activateSingleStringCellCopy();
+				activateSingleCellStringCopy();
 			}
 
 			@Override

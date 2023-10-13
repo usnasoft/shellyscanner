@@ -71,7 +71,7 @@ public class ScriptsPanel extends JPanel {
 				columnModel.getColumn(2).setCellRenderer(new ButtonCellRenderer());
 				columnModel.getColumn(2).setCellEditor(new ButtonCellEditor());
 				
-				activateSingleStringCellCopy();
+				activateSingleCellStringCopy();
 			}
 
 			@Override

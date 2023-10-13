@@ -164,7 +164,7 @@ public class DevicesTable extends ExTooltipTable {
 			return s1.compareTo(s2);
 		});
 		
-		activateSingleStringCellCopy();
+		activateSingleCellStringCopy();
 		
 		String[] headerTips = new String[COL_MQTT + 1];
 		headerTips[COL_STATUS_IDX] = LABELS.getString("col_status_exp");
