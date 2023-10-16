@@ -148,6 +148,18 @@ public class KVSPanel extends JPanel {
 			table.getEditorComponent().requestFocus();
 		}));
 		operationsPanel.add(btnNew);
+		
+//		final JButton btnRefresh = new JButton(new UsnaAction(KVSPanel.this, "labelRefresh", e -> {
+//			kvs = new KVS(device);
+//			TableCellEditor editor = table.getCellEditor();
+//			if(editor != null) {
+//				editor.cancelCellEditing();
+//			}
+//			scrollPane.getHorizontalScrollBar().setValue(0);
+//			tModel.clear();
+//			kvs.getItems().stream().forEach(item -> tModel.addRow(item.key(), item.etag(), item.value()));
+//		}));
+//		operationsPanel.add(btnRefresh);
 
 		// fill table
 		kvs.getItems().stream().forEach(item -> tModel.addRow(item.key(), item.etag(), item.value()));
