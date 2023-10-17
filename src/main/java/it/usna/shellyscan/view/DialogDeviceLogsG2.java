@@ -7,6 +7,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Toolkit;
+import java.awt.Window;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
@@ -56,9 +57,9 @@ public class DialogDeviceLogsG2 extends JDialog {
 	private boolean logWasActive;
 	private Future<Session> wsSession;
 
-	public DialogDeviceLogsG2(final MainView owner, Devices model, int modelIndex, int initLlogLevel) {
-		super(owner, false);
-		AbstractG2Device device = (AbstractG2Device) model.get(modelIndex);
+	public DialogDeviceLogsG2(final Window owner, Devices devicesModel, int modelIndex, int initLlogLevel) {
+		super(owner, ModalityType.MODELESS);
+		AbstractG2Device device = (AbstractG2Device) devicesModel.get(modelIndex);
 		setTitle(UtilMiscellaneous.getExtendedHostName(device));
 		setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
 
@@ -116,7 +117,7 @@ public class DialogDeviceLogsG2 extends JDialog {
 		JButton btnsStopAppRefresh = new JButton(Main.LABELS.getString("dlgLogG2PauseRefresh"));
 		buttonsPanel.add(btnsStopAppRefresh);
 		btnsStopAppRefresh.addActionListener(event -> {
-			model.pauseRefresh(modelIndex);
+			devicesModel.pauseRefresh(modelIndex);
 			try {
 				document.insertString(document.getLength(), ">>>> " + Main.APP_NAME + " refresh process stopped\n", bluStyle);
 			} catch (BadLocationException e1) {}

@@ -217,7 +217,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 	});
 	
 	private Action scriptManagerAction = new UsnaSelectedAction(this, devicesTable, "/images/Movie.png", "action_script_tooltip", i -> {
-		new DialogDeviceScriptsG2(MainView.this, (AbstractG2Device)model.get(i));
+		new DialogDeviceScriptsG2(MainView.this, model, i);
 	});
 	
 	private Action detailedViewAction = new UsnaAction(this, "/images/Plus.png", "action_show_detail_tooltip", e -> {

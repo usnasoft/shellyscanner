@@ -55,6 +55,7 @@ import it.usna.shellyscan.model.device.g2.modules.Webhooks;
  */
 public abstract class AbstractG2Device extends ShellyAbstractDevice {
 	public final static int LOG_VERBOSE = 4;
+	public final static int LOG_WARN = 1;
 	
 	private final static Logger LOG = LoggerFactory.getLogger(AbstractG2Device.class);
 	protected WebSocketClient wsClient;

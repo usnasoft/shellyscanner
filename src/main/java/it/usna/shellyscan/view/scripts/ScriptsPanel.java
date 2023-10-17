@@ -25,6 +25,7 @@ import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
+import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -44,8 +45,10 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 import it.usna.shellyscan.Main;
 import it.usna.shellyscan.controller.UsnaAction;
+import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.g2.modules.Script;
+import it.usna.shellyscan.view.DialogDeviceLogsG2;
 import it.usna.shellyscan.view.util.Msg;
 import it.usna.swing.table.ExTooltipTable;
 import it.usna.swing.table.UsnaTableModel;
@@ -57,7 +60,8 @@ public class ScriptsPanel extends JPanel {
 	private final ExTooltipTable table;
 	private final ArrayList<Script> scripts = new ArrayList<>();
 
-	public ScriptsPanel(AbstractG2Device device) throws IOException {
+	public ScriptsPanel(JDialog owner, Devices devicesModel, int modelIndex) throws IOException {
+		AbstractG2Device device = (AbstractG2Device) devicesModel.get(modelIndex);
 		setLayout(new BorderLayout(0, 0));
 		final UsnaTableModel tModel = new UsnaTableModel(LABELS.getString("lblScrColName"), LABELS.getString("lblScrColEnabled"), LABELS.getString("lblScrColRunning"));
 
@@ -176,6 +180,11 @@ public class ScriptsPanel extends JPanel {
 			}
 		}));
 		operationsPanel.add(btnUpload);
+		
+		final JButton logsBtn = new JButton(new UsnaAction(this, "btnLogs", e -> {
+			new DialogDeviceLogsG2(owner, devicesModel, modelIndex, AbstractG2Device.LOG_WARN);
+		}));
+		operationsPanel.add(logsBtn);
 
 		final JButton editBtn = new JButton(new UsnaAction(this, "edit2", e -> {
 			try {
@@ -326,4 +335,4 @@ public class ScriptsPanel extends JPanel {
 			return b;
 		}
 	}
-} //348
+}

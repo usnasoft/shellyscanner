@@ -23,12 +23,13 @@ public class DialogDeviceScriptsG2 extends JDialog {
 	private static final long serialVersionUID = 1L;
 	public final static String FILE_EXTENSION = "js";
 
-	public DialogDeviceScriptsG2(final MainView owner, AbstractG2Device device) {
+	public DialogDeviceScriptsG2(final MainView owner, Devices model, int modelIndex) {
 		super(owner, false);
 		try {
+			AbstractG2Device device = (AbstractG2Device) model.get(modelIndex);
 			setTitle(String.format(LABELS.getString("dlgScriptTitle"), UtilMiscellaneous.getExtendedHostName(device)));
 			setDefaultCloseOperation(/*DO_NOTHING_ON_CLOSE*/DISPOSE_ON_CLOSE);
-
+			
 			JPanel buttonsPanel = new JPanel();
 			getContentPane().add(buttonsPanel, BorderLayout.SOUTH);
 
@@ -39,7 +40,7 @@ public class DialogDeviceScriptsG2 extends JDialog {
 
 			// battery operated devices do not support scripts
 			if(device instanceof AbstractBatteryG2Device == false) {
-				JPanel scriptsPanel = new ScriptsPanel(device);
+				JPanel scriptsPanel = new ScriptsPanel(this, model, modelIndex);
 				tabs.addTab(LABELS.getString("lblScriptsTab"), scriptsPanel);
 				try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e) {}
 			}
@@ -49,11 +50,11 @@ public class DialogDeviceScriptsG2 extends JDialog {
 
 			getContentPane().add(tabs, BorderLayout.CENTER);
 
-			setSize(500, 380);
+			setSize(600, 360);
 			setLocationRelativeTo(owner);
 			setVisible(true);
 		} catch (IOException e) {
 			Msg.errorMsg(e);
 		}
 	}
-} // 274 - 360 - 59
+}
