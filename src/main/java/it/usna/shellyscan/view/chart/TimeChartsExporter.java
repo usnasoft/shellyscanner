@@ -1,5 +1,7 @@
 package it.usna.shellyscan.view.chart;
 
+import static it.usna.shellyscan.Main.LABELS;
+
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
@@ -25,7 +27,7 @@ public class TimeChartsExporter {
 		this.dataset = dataset;
 	}
 
-	void exportAsCSV(File out, String separator, DateRange range) throws IOException {
+	void exportAsHorizontalCSV(File out/*, String meas*/, String separator, DateRange range) throws IOException {
 		Path outPath = IOFile.addExtension(out.toPath(), "csv");
 		try (BufferedWriter w = Files.newBufferedWriter(outPath)) {
 			@SuppressWarnings("unchecked")
@@ -54,6 +56,64 @@ public class TimeChartsExporter {
 				w.newLine();
 				w.write(valueCollector.build().collect(Collectors.joining(separator)));
 				w.newLine();
+			}
+		}
+	}
+	
+	void exportAsVerticalCSV(File out, String meas, String separator, DateRange range) throws IOException {
+		Path outPath = IOFile.addExtension(out.toPath(), "csv");
+		Stream.Builder<String> firstRowCollector = Stream.builder();
+		Stream.Builder<String> labelRowCollector = Stream.builder();
+		int seriesCount = dataset.getSeriesCount();
+		@SuppressWarnings("unchecked")
+		List<TimeSeries> tsList = dataset.getSeries();
+		try (BufferedWriter w = Files.newBufferedWriter(outPath)) {
+			
+			//head
+			int maxItem = 0;
+			for(int ser = 0; ser < seriesCount; ser++) {
+				TimeSeries ts = tsList.get(ser);
+				if(ser > 0) {
+					firstRowCollector.add("").add("").add("");
+				}
+				firstRowCollector.accept(ts.getKey().toString());
+				if(ser > 0) {
+					labelRowCollector.add("");
+				}
+				labelRowCollector.add(LABELS.getString("cvsLabelUnixtime")).add(LABELS.getString("cvsLabelTime")).add(meas);
+				maxItem = Math.max(maxItem, ts.getItemCount());
+			}
+			w.write(firstRowCollector.build().collect(Collectors.joining(separator)));
+			w.newLine();
+			w.write(labelRowCollector.build().collect(Collectors.joining(separator)));
+			w.newLine();
+			
+			//body
+			for(int i = 0; i < maxItem; i++) {
+				Stream.Builder<String> row = Stream.builder();
+				boolean validRow = false;
+				for(int ser = 0; ser < seriesCount; ser++) {
+					if(ser > 0) {
+						row.add("");
+					}
+					TimeSeries ts = tsList.get(ser);
+					if(i < ts.getItemCount()) {
+						TimeSeriesDataItem di = ts.getDataItem(i);
+						RegularTimePeriod period = di.getPeriod();
+						if(range == null || (period.getFirstMillisecond() >= range.getLowerMillis() && period.getLastMillisecond() <= range.getUpperMillis())) {
+							row.add(period.getFirstMillisecond() + "").add(String.format(Locale.ENGLISH, "%1$tF %1$tT", period.getStart())).add(String.format(Locale.ENGLISH, "%.2f", di.getValue()));
+							validRow = true;
+						} else {
+							row.add("").add("").add("");
+						}
+					} else {
+						row.add("").add("").add("");
+					}
+				}
+				if(validRow) {
+					w.write(row.build().collect(Collectors.joining(separator)));
+					w.newLine();
+				}
 			}
 		}
 	}

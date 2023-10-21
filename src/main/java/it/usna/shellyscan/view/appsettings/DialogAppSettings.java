@@ -42,6 +42,7 @@ public class DialogAppSettings extends JDialog {
 	public final static String PROP_UPDATECHK_ACTION_DEFAULT = "STABLE";
 	
 	public final static String PROP_CHARTS_START = "CHART_DEF";
+	public final static String PROP_CHARTS_EXPORT = "CHART_EXPORT";
 	
 	public final static String PROP_DETAILED_VIEW_SCREEN = "DETAIL_SCREEN";
 	public final static String PROP_DETAILED_VIEW_SCREEN_FULL = "FULL";
@@ -138,6 +139,7 @@ public class DialogAppSettings extends JDialog {
 			
 			// Charts
 			appProp.setProperty(PROP_CHARTS_START, ((ChartType)panelGUI.comboCharts.getSelectedItem()).name());
+			appProp.setProperty(PROP_CHARTS_EXPORT, panelGUI.comboChartsExport.getSelectedIndex() == 0 ? "H" : "V");
 			
 			// Login
 			String rlUser = panelNetwork.userFieldRL.getText();

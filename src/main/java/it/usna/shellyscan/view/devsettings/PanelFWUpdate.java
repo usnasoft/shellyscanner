@@ -43,6 +43,7 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import it.usna.shellyscan.Main;
+import it.usna.shellyscan.controller.UsnaAction;
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.Devices.EventType;
 import it.usna.shellyscan.model.device.FirmwareManager;
@@ -66,9 +67,6 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 	private UsnaTableModel tModel = new UsnaTableModel("", LABELS.getString("col_device"), LABELS.getString("dlgSetColCurrentV"), LABELS.getString("dlgSetColLastV"), LABELS.getString("dlgSetColBetaV"));
 	private List<DeviceFirmware> devicesFWData;
 	
-	private JButton btnUnselectAll = new JButton(LABELS.getString("btn_unselectAll"));
-	private JButton btnSelectStable = new JButton(LABELS.getString("btn_selectAllSta"));
-	private JButton btnSelectBeta = new JButton(LABELS.getString("btn_selectAllbeta"));
 	private JLabel lblCount = new JLabel();
 
 	private ExecutorService exeService = Executors.newFixedThreadPool(25);
@@ -158,9 +156,7 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 		
 		panel.add(Box.createHorizontalStrut(2));
 		
-		btnUnselectAll.setBorder(BorderFactory.createEmptyBorder(4, 7, 4, 7));
-		panel.add(btnUnselectAll);
-		btnUnselectAll.addActionListener(event -> {
+		JButton btnUnselectAll = new JButton(new UsnaAction("btn_unselectAll", event -> {
 			for(int i= 0; i < tModel.getRowCount(); i++) {
 				if(tModel.getValueAt(i, COL_STABLE) instanceof Boolean) {
 					tModel.setValueAt(Boolean.FALSE, i, COL_STABLE);
@@ -170,11 +166,11 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 				}
 			}
 			countSelection();
-		});
+		}));
+		btnUnselectAll.setBorder(BorderFactory.createEmptyBorder(4, 7, 4, 7));
+		panel.add(btnUnselectAll);
 
-		btnSelectStable.setBorder(BorderFactory.createEmptyBorder(4, 7, 4, 7));
-		panel.add(btnSelectStable);
-		btnSelectStable.addActionListener(event -> {
+		JButton btnSelectStable = new JButton(new UsnaAction("btn_selectAllSta", event -> {
 			for(int i= 0; i < tModel.getRowCount(); i++) {
 				if(tModel.getValueAt(i, COL_STABLE) instanceof Boolean) {
 					tModel.setValueAt(Boolean.TRUE, i, COL_STABLE);
@@ -184,11 +180,11 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 				}
 			}
 			countSelection();
-		});
+		}));
+		btnSelectStable.setBorder(BorderFactory.createEmptyBorder(4, 7, 4, 7));
+		panel.add(btnSelectStable);
 		
-		btnSelectBeta.setBorder(BorderFactory.createEmptyBorder(4, 7, 4, 7));
-		panel.add(btnSelectBeta);
-		btnSelectBeta.addActionListener(event -> {
+		JButton btnSelectBeta = new JButton(new UsnaAction("btn_selectAllbeta", event -> {
 			for(int i= 0; i < tModel.getRowCount(); i++) {
 				if(tModel.getValueAt(i, COL_BETA) instanceof Boolean) {
 					tModel.setValueAt(Boolean.TRUE, i, COL_BETA);
@@ -198,19 +194,16 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 				}
 			}
 			countSelection();
-		});
+		}));
+		btnSelectBeta.setBorder(BorderFactory.createEmptyBorder(4, 7, 4, 7));
+		panel.add(btnSelectBeta);
 		
 		panel.add(Box.createHorizontalStrut(12));
 		panel.add(lblCount);
 		panel.add(Box.createHorizontalGlue());
 
-		JButton btnCheck = new JButton(LABELS.getString("btn_check"));
-		btnCheck.setBorder(BorderFactory.createEmptyBorder(4, 7, 4, 7));
-		panel.add(btnCheck);
-		
-		panel.add(Box.createHorizontalStrut(2));
-		
-		btnCheck.addActionListener(event -> {
+		JButton btnCheck = new JButton();
+		btnCheck.setAction(new UsnaAction("btn_check", event -> {
 			btnCheck.setEnabled(false);
 			exeService.execute(() -> {
 				setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
@@ -221,21 +214,27 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 				}
 				try {
 					devicesFWData.stream().forEach(dd -> dd.fwModule.chech());
-					fill();
+					fillTable();
 				} catch(Exception e) {/* while fill() */
 				} finally {
 					btnCheck.setEnabled(true);
 					setCursor(Cursor.getDefaultCursor());
 				}
 			});
-		});
+		}));
+		btnCheck.setBorder(BorderFactory.createEmptyBorder(4, 7, 4, 7));
+		panel.add(btnCheck);
+		
+		panel.add(Box.createHorizontalStrut(2));
+
+//		devicesFWData = Stream.generate(DeviceFirmware::new).limit(parent.getLocalSize()).collect(Collectors.toList());
 	}
 
-	private void fill() {
+	private void fillTable() {
 		tModel.clear();
 		for(int i = 0; i < parent.getLocalSize(); i++) {
 			if(Thread.interrupted() == false) {
-				tModel.addRow(createRow(i));
+				tModel.addRow(createTableRow(i));
 			}
 		}
 		if(Thread.interrupted() == false) {
@@ -243,7 +242,7 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 		}
 	}
 	
-	private Object[] createRow(int index) {
+	private Object[] createTableRow(int index) {
 		ShellyAbstractDevice d = parent.getLocalDevice(index);
 		FirmwareManager fw = devicesFWData.get(index).fwModule;
 		if(fw.upadating()) {
@@ -262,12 +261,12 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 		devicesFWData = Stream.generate(DeviceFirmware::new).limit(size).collect(Collectors.toList());
 		tModel.clear();
 		try {
-			List<Callable<Void>> calls = new ArrayList<>();
+			List<Callable<Void>> calls = new ArrayList<>(size);
 			for(int i = 0; i < size; i++) {
 				calls.add(new GetFWManagerCaller(i));
 			}
 			retriveFutures = exeService.invokeAll(calls);
-			fill();
+			fillTable();
 			parent.getModel().addListener(this);
 
 			table.columnsWidthAdapt();
@@ -313,11 +312,11 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 				devicesFWData.get(index).uptime = d.getUptime();
 			}
 			
-			if(d instanceof AbstractG2Device) {
+			if(d instanceof AbstractG2Device g2) {
 				try {
-					devicesFWData.get(index).wsSession = wsEventListener(index, (AbstractG2Device)d);
+					devicesFWData.get(index).wsSession = wsEventListener(index, g2);
 				} catch (IOException | InterruptedException | ExecutionException e) {
-					LOG.debug("PanelFWUpdate ws: {}", d, e);
+					LOG.debug("PanelFWUpdate ws: {}", g2, e);
 				}
 			}
 			return null;
@@ -351,7 +350,7 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 					res += UtilMiscellaneous.getFullName(parent.getLocalDevice(i)) + " - " + ((msg == null) ? LABELS.getString("labelUpdatingBeta") : LABELS.getString("labelError") + ": " + msg) + "\n";
 				}
 			}
-			fill();
+			fillTable();
 			return res;
 		}
 		return null;
@@ -426,6 +425,7 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 	private static class DeviceFirmware {
 		private FirmwareManager fwModule;
 		private Future<Session> wsSession;
+		// todo - su showing reboot time = Long.MAX_VALUE e System.currentTimeMillis() - fwInfo.rebootTime > 2500L non si puo' verificare
 		private long rebootTime = Long.MAX_VALUE; // g2
 		private int uptime = 0; // g1
 	}
@@ -448,7 +448,7 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 							tModel.setValueAt(DevicesTable.ONLINE_BULLET, index, COL_STATUS);
 //							fwInfo.fwModule.chech();
 							fwInfo.fwModule = device.getFWManager();
-							tModel.setRow(index, createRow(index));
+							tModel.setRow(index, createTableRow(index));
 							countSelection();
 							if(device instanceof AbstractG2Device gen2 && fwInfo.wsSession.get().isOpen() == false) { // should be (closed on reboot)
 								fwInfo.wsSession = wsEventListener(index, gen2);
@@ -461,7 +461,8 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 			});
 		}
 	}
-} // 346 - 362 - 464
+	// todo memorizzare stato precedente; se non "updating" && stato proviene da != online && stato cambiato -> cambiare sempre, device.getFWManager(), createTableRow(...), verificare websocket ...
+} // 346 - 362 - 462
 
 //{"src":"shellyplusi4-a8032ab1fe78","dst":"S_Scanner","method":"NotifyEvent","params":{"ts":1677696108.45,"events":[{"component":"sys", "event":"ota_progress", "msg":"Waiting for data", "progress_percent":99, "ts":1677696108.45}]}}
 //{"src":"shellyplusi4-a8032ab1fe78","dst":"S_Scanner","method":"NotifyEvent","params":{"ts":1677696109.49,"events":[{"component":"sys", "event":"ota_success", "msg":"Update applied, rebooting", "ts":1677696109.49}]}}

@@ -83,6 +83,10 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 		V("dlgChartsVoltageLabel", "dlgChartsVoltageYLabel", Meters.Type.V),
 		I("dlgChartsCurrentLabel", "dlgChartsCurrentYLabel", Meters.Type.I),
 		T("dlgChartsTempLabel", "dlgChartsTempYLabel", Meters.Type.T),
+		T1("dlgChartsTemp1Label", "dlgChartsTempYLabel", Meters.Type.T1),
+		T2("dlgChartsTemp2Label", "dlgChartsTempYLabel", Meters.Type.T2),
+		T3("dlgChartsTemp3Label", "dlgChartsTempYLabel", Meters.Type.T3),
+		T4("dlgChartsTemp4Label", "dlgChartsTempYLabel", Meters.Type.T4),
 		H("dlgChartsHumidityLabel", "dlgChartsHumidityYLabel", Meters.Type.H),
 		LUX("dlgChartsLuxLabel", "dlgChartsLuxYLabel", Meters.Type.L);
 
@@ -229,7 +233,12 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 				if(fc.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
 					TimeChartsExporter exp = new TimeChartsExporter(dataset);
 					File out = fc.getSelectedFile();
-					exp.exportAsCSV(out, appProp.getProperty(DialogAppSettings.PROP_CSV_SEPARATOR, DialogAppSettings.PROP_CSV_SEPARATOR_DEFAULT), btnPause.isSelected() ? (DateRange)xAxis.getRange() : null);
+					DateRange range = btnPause.isSelected() ? (DateRange)xAxis.getRange() : null;
+					if("V".equals(appProp.getProperty(DialogAppSettings.PROP_CHARTS_EXPORT))) {
+						exp.exportAsVerticalCSV(out, currentType.yLabel, appProp.getProperty(DialogAppSettings.PROP_CSV_SEPARATOR, DialogAppSettings.PROP_CSV_SEPARATOR_DEFAULT), range);
+					} else {
+						exp.exportAsHorizontalCSV(out, appProp.getProperty(DialogAppSettings.PROP_CSV_SEPARATOR, DialogAppSettings.PROP_CSV_SEPARATOR_DEFAULT), range);
+					}
 					appProp.setProperty("LAST_PATH", fc.getCurrentDirectory().getPath());
 					JOptionPane.showMessageDialog(this, LABELS.getString("msgFileSaved"), Main.APP_NAME, JOptionPane.INFORMATION_MESSAGE);
 				}
@@ -289,14 +298,6 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 				ArrayList<TimeSeries> temp = new ArrayList<>();
 				Meters[] meters = d.getMeters();
 				if(meters != null) {
-//					for(int i = 0; i < meters.length; i++) {
-//						if(meters[i].hasType(currentType.mType)) {
-//							final String sName = UtilCollecion.getDescName(d, i);
-//							TimeSeries s = new TimeSeries(sName);
-//							temp.add(s);
-//							dataset.addSeries(s);
-//						}
-//					}
 					int i = 0;
 					for(Meters m: meters) {
 						if(m.hasType(currentType.mType)) {

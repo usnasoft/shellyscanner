@@ -34,11 +34,12 @@ public class PanelGUI extends JPanel {
 	JRadioButton detailsButton, webUIButton;
 	JRadioButton rdbtnDetailedViewFull, rdbtnDetailedViewAsIs, rdbtnNDetailedViewEstimate, rdbtnDetailedViewHorizontal;
 	JComboBox<ChartType> comboCharts = new JComboBox<>();
+	JComboBox<String> comboChartsExport = new JComboBox<>();
 	
 	PanelGUI(DevicesTable devTable, final AppProperties appProp) {
 		GridBagLayout gridBagLayout = new GridBagLayout();
 		gridBagLayout.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
-		gridBagLayout.columnWeights = new double[]{0.0, 1.0, 1.0, 2.0};
+		gridBagLayout.columnWeights = new double[]{0.0, 1.0, 1.0, 1.0};
 		gridBagLayout.columnWidths = new int[]{0, 0, 0, 0};
 //		gridBagLayout.rowHeights = new int[]{0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 //		gridBagLayout.columnWeights = new double[]{0.0, 1.0, Double.MIN_VALUE};
@@ -257,6 +258,26 @@ public class PanelGUI extends JPanel {
 		try {
 			comboCharts.setSelectedItem(ChartType.valueOf(appProp.getProperty(DialogAppSettings.PROP_CHARTS_START)));
 		} catch(RuntimeException e) {}
+		
+		JLabel lblNewLabel_3 = new JLabel(LABELS.getString("dlgAppLblChartsExportMode"));
+		lblNewLabel_3.setFont(new Font("Tahoma", Font.BOLD, 11));
+		GridBagConstraints gbc_lblNewLabel_3 = new GridBagConstraints();
+		gbc_lblNewLabel_3.anchor = GridBagConstraints.EAST;
+		gbc_lblNewLabel_3.insets = new Insets(0, 0, 5, 15);
+		gbc_lblNewLabel_3.gridx = 2;
+		gbc_lblNewLabel_3.gridy = 9;
+		add(lblNewLabel_3, gbc_lblNewLabel_3);
+		
+		GridBagConstraints gbc_comboChartsExport = new GridBagConstraints();
+		
+		gbc_comboChartsExport.insets = new Insets(0, 0, 5, 0);
+		gbc_comboChartsExport.fill = GridBagConstraints.HORIZONTAL;
+		gbc_comboChartsExport.gridx = 3;
+		gbc_comboChartsExport.gridy = 9;
+		add(comboChartsExport, gbc_comboChartsExport);
+		comboChartsExport.addItem(LABELS.getString("dlgAppLblChartsExportHorizontal"));
+		comboChartsExport.addItem(LABELS.getString("dlgAppLblChartsExportVertical"));
+		comboChartsExport.setSelectedIndex("V".equals(appProp.getProperty(DialogAppSettings.PROP_CHARTS_EXPORT)) ? 1 : 0);
 
 		JSeparator separator_4 = new JSeparator();
 		GridBagConstraints gbc_separator_4 = new GridBagConstraints();
@@ -271,7 +292,7 @@ public class PanelGUI extends JPanel {
 		lblNewLabel_2.setFont(new Font("Tahoma", Font.BOLD, 11));
 		GridBagConstraints gbc_lblNewLabel_2 = new GridBagConstraints();
 		gbc_lblNewLabel_2.anchor = GridBagConstraints.WEST;
-		gbc_lblNewLabel_2.insets = new Insets(0, 0, 0, 5);
+		gbc_lblNewLabel_2.insets = new Insets(0, 0, 5, 5);
 		gbc_lblNewLabel_2.gridx = 0;
 		gbc_lblNewLabel_2.gridy = 11;
 		add(lblNewLabel_2, gbc_lblNewLabel_2);

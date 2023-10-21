@@ -105,24 +105,6 @@ public class DialogDeviceSettings extends JDialog implements UsnaEventListener<D
 		}
 		super.dispose();
 	}
-	
-//	static Gen getTypes(List<ShellyAbstractDevice> devices) {
-//		Gen r = null;
-//		for(ShellyAbstractDevice d: devices) {
-//			if(r == null) {
-//				r = d instanceof AbstractG2Device ? Gen.G2 : Gen.G1;
-//			} else if(d instanceof AbstractG2Device) {
-//				if(r != Gen.G2) {
-//					return Gen.ALL;
-//				}
-//			} else if(d instanceof AbstractG1Device) {
-//				if(r != Gen.G1) {
-//					return Gen.ALL;
-//				}
-//			}
-//		}
-//		return r;
-//	}
 
 	private synchronized void showCurrent() {
 		if(showCurrentThread != null) {
@@ -220,4 +202,4 @@ public class DialogDeviceSettings extends JDialog implements UsnaEventListener<D
 			SwingUtilities.invokeLater(() -> dispose()); // devicesInd changes
 		}
 	}
-} // 166 - 223
+} // 166 - 205

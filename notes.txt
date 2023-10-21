@@ -190,7 +190,7 @@ https://www.iconbolt.com/
 // backup non interattivo
 
 1.0.1
-// notes
+// devices notes
 // reload ghosts
 // KVS restore (gen2)
 // Scripts and KVS
@@ -198,9 +198,9 @@ https://www.iconbolt.com/
 // releases auto check
 // optionally automatic reload for ghost devices (not battery operated) after 90 seconds the application has started (to be sure any timeout has expired and mDNS notified for any known device). This last idea is thanks to discussions with you.
 // UNI measures/restore
-todo: add logs to scripts
+// vertical charts export
 ---
-// restore eco_mode (opzionale per gen1)
+// todo? restore eco_mode (opzionale per gen1)
 
 // TODO
 //todo Gen2 1.0.0 - triphase and monophase profiles (EDIT: to be included in next beta), add option to reverse CT direction of measurement for active power and energy
