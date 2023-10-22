@@ -48,6 +48,7 @@ import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.Devices.EventType;
 import it.usna.shellyscan.model.device.FirmwareManager;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
+import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.g2.FirmwareManagerG2;
 import it.usna.shellyscan.model.device.g2.WebSocketDeviceListener;
@@ -226,8 +227,6 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 		panel.add(btnCheck);
 		
 		panel.add(Box.createHorizontalStrut(2));
-
-//		devicesFWData = Stream.generate(DeviceFirmware::new).limit(parent.getLocalSize()).collect(Collectors.toList());
 	}
 
 	private void fillTable() {
@@ -306,17 +305,19 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 		@Override
 		public Void call() {
 			final ShellyAbstractDevice d = parent.getLocalDevice(index);
+			DeviceFirmware fwData = devicesFWData.get(index);
 			FirmwareManager fm = d.getFWManager();
-			devicesFWData.get(index).fwModule = fm;
+			fwData.fwModule = fm;
+			fwData.status = d.getStatus();
 			if(fm.upadating()) {
-				devicesFWData.get(index).uptime = d.getUptime();
+				fwData.uptime = d.getUptime();
 			}
 			
-			if(d instanceof AbstractG2Device g2) {
+			if(d instanceof AbstractG2Device) {
 				try {
-					devicesFWData.get(index).wsSession = wsEventListener(index, g2);
+					fwData.wsSession = wsEventListener(index, (AbstractG2Device)d);
 				} catch (IOException | InterruptedException | ExecutionException e) {
-					LOG.debug("PanelFWUpdate ws: {}", g2, e);
+					LOG.debug("PanelFWUpdate ws: {}", d, e);
 				}
 			}
 			return null;
@@ -428,6 +429,11 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 		// todo - su showing reboot time = Long.MAX_VALUE e System.currentTimeMillis() - fwInfo.rebootTime > 2500L non si puo' verificare
 		private long rebootTime = Long.MAX_VALUE; // g2
 		private int uptime = 0; // g1
+		private ShellyAbstractDevice.Status status;
+		
+//		public void init(ShellyAbstractDevice d) {
+//			
+//		}
 	}
 
 	@Override
@@ -436,23 +442,42 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 			SwingUtilities.invokeLater(() -> {
 				try {
 					final ShellyAbstractDevice device = parent.getModel().get(pos);
+					ShellyAbstractDevice.Status newStatus = device.getStatus();
 					final int index = parent.getLocalIndex(pos);
-					if(index >= 0 && device.getStatus() != ShellyAbstractDevice.Status.ERROR) {
+					if(index >= 0 && newStatus != ShellyAbstractDevice.Status.ERROR) {
 						DeviceFirmware fwInfo = devicesFWData.get(index);
-						if(device.getStatus() != ShellyAbstractDevice.Status.ON_LINE) {
-							tModel.setValueAt(DevicesTable.getStatusIcon(device), index, COL_STATUS);
-						} else if(device.getUptime() < fwInfo.uptime || System.currentTimeMillis() - fwInfo.rebootTime > 2500L) {
-							// starting uptime bigger than now (g1 - not 100% sure) or after 2.5 seconds since reboot (reboot completed - g2)
-							fwInfo.rebootTime = Long.MAX_VALUE; // reset
-							fwInfo.uptime = 0; // reset
-							tModel.setValueAt(DevicesTable.ONLINE_BULLET, index, COL_STATUS);
-//							fwInfo.fwModule.chech();
-							fwInfo.fwModule = device.getFWManager();
-							tModel.setRow(index, createTableRow(index));
-							countSelection();
-							if(device instanceof AbstractG2Device gen2 && fwInfo.wsSession.get().isOpen() == false) { // should be (closed on reboot)
-								fwInfo.wsSession = wsEventListener(index, gen2);
+//						if(device.getStatus() != ShellyAbstractDevice.Status.ON_LINE) {
+//							tModel.setValueAt(DevicesTable.getStatusIcon(device), index, COL_STATUS);
+//						} else if(device.getUptime() < fwInfo.uptime || System.currentTimeMillis() - fwInfo.rebootTime > 2500L) {
+//							// starting uptime bigger than now (g1 - not 100% sure) or after 2.5 seconds since reboot (reboot completed - g2)
+//							fwInfo.rebootTime = Long.MAX_VALUE; // reset
+//							fwInfo.uptime = 0; // reset
+//							tModel.setValueAt(DevicesTable.ONLINE_BULLET, index, COL_STATUS);
+////							fwInfo.fwModule.chech();
+//							fwInfo.fwModule = device.getFWManager();
+//							tModel.setRow(index, createTableRow(index));
+//							countSelection();
+//							if(device instanceof AbstractG2Device gen2 && fwInfo.wsSession.get().isOpen() == false) { // should be (closed on reboot)
+//								fwInfo.wsSession = wsEventListener(index, gen2);
+//							}
+//						}
+						
+						// memorizzare stato precedente; se non "updating" && stato proviene da != online && stato cambiato -> cambiare sempre, device.getFWManager(), createTableRow(...), verificare websocket ...
+						if(newStatus != fwInfo.status) {
+							//							if(fwInfo.fwModule.upadating() == false) {
+							if(newStatus == Status.ON_LINE) {
+								tModel.setValueAt(DevicesTable.ONLINE_BULLET, index, COL_STATUS);
+								fwInfo.fwModule = device.getFWManager();
+								tModel.setRow(index, createTableRow(index));
+								countSelection();
+								if(device instanceof AbstractG2Device gen2 && fwInfo.wsSession.get().isOpen() == false) { // should be (closed on reboot)
+									fwInfo.wsSession = wsEventListener(index, gen2);
+								}
+							} else if(fwInfo.fwModule.upadating() == false) {
+								tModel.setValueAt(DevicesTable.getStatusIcon(device), index, COL_STATUS);
 							}
+							//							}
+							fwInfo.status = newStatus;
 						}
 					}
 				} catch (Throwable ex) {
