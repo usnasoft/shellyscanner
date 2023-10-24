@@ -366,10 +366,10 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 		for(int i = 0; i < tModel.getRowCount(); i++) {
 			Object update = tModel.getValueAt(i, COL_STABLE);
 			Object beta = tModel.getValueAt(i, COL_BETA);
-			if(update instanceof Boolean && update == Boolean.TRUE) {
+			if(/*update instanceof Boolean &&*/ update == Boolean.TRUE) {
 				countS++;
 			}
-			if(beta instanceof Boolean && beta == Boolean.TRUE) {
+			if(/*beta instanceof Boolean &&*/ beta == Boolean.TRUE) {
 				countB++;
 			}
 		}
@@ -409,19 +409,21 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 						if(eventType.equals("ota_progress")) { // dowloading
 							((FirmwareManagerG2)devicesFWData.get(index).fwModule).upadating(true);
 							int progress = event.path("progress_percent").asInt();
-							tModel.setValueAt(String.format(Main.LABELS.getString("lbl_downloading"), progress), index, COL_STABLE);
 							tModel.setValueAt(DevicesTable.UPDATING_BULLET, index, COL_STATUS);
+							tModel.setValueAt(String.format(Main.LABELS.getString("lbl_downloading"), progress), index, COL_STABLE);
+							tModel.setValueAt(null, index, COL_BETA);
 							break;
 						} else if(/*eventType.equals("ota_success") ||*/ eventType.equals("scheduled_restart")) { // rebooting
 							tModel.setValueAt(DevicesTable.OFFLINE_BULLET, index, COL_STATUS);
 							tModel.setValueAt(LABELS.getString("lbl_rebooting"), index, COL_STABLE);
+							tModel.setValueAt(null, index, COL_BETA);
 							devicesFWData.get(index).rebootTime = System.currentTimeMillis();
+							break;
 						}
 					}
 				} catch(Exception e) {
 					LOG.debug("onMessage" + msg, e);
 				}
-				//System.out.println(index + "-M: " + msg);
 			}
 		});
 	}
@@ -471,7 +473,7 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 			});
 		}
 	}
-} // 346 - 362 - 462 - 474
+} // 346 - 362 - 462 - 476
 
 //{"src":"shellyplusi4-a8032ab1fe78","dst":"S_Scanner","method":"NotifyEvent","params":{"ts":1677696108.45,"events":[{"component":"sys", "event":"ota_progress", "msg":"Waiting for data", "progress_percent":99, "ts":1677696108.45}]}}
 //{"src":"shellyplusi4-a8032ab1fe78","dst":"S_Scanner","method":"NotifyEvent","params":{"ts":1677696109.49,"events":[{"component":"sys", "event":"ota_success", "msg":"Update applied, rebooting", "ts":1677696109.49}]}}
