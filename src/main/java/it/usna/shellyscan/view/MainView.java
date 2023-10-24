@@ -433,6 +433,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 					devicesTable.setRowSelectionInterval(r, r); // add
 					ShellyAbstractDevice d = model.get(devicesTable.convertRowIndexToModel(r));
 					if(d instanceof GhostDevice) {
+						reloadAction.setEnabled(true);
 						ghostDevPopup.show(devicesTable, evt.getX(), evt.getY());
 					} else {
 						boolean notLogged = d.getStatus() == Status.NOT_LOOGGED;
