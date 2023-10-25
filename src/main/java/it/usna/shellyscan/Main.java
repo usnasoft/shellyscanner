@@ -224,6 +224,13 @@ public class Main {
 				}
 			});
 			new Thread(() -> UpplicationUpdateCHK.chechForUpdates(view, appProp)).start();
+			
+			if(cli.hasEntry("graphs") >= 0) {
+				
+			}
+			if(cli.unused().length > 0) {
+				System.err.println("Ignored parameter(s): " + Arrays.stream(cli.unused()).collect(Collectors.joining("; ")));
+			}
 		} catch (Throwable ex) {
 			Msg.errorMsg(ex);
 			ex.printStackTrace();
