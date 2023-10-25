@@ -3,7 +3,6 @@ package it.usna.shellyscan.view.chart;
 import static it.usna.shellyscan.Main.LABELS;
 
 import java.awt.BorderLayout;
-import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Toolkit;
@@ -18,6 +17,7 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
+import javax.swing.Box;
 import javax.swing.GrayFilter;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -50,6 +50,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import it.usna.shellyscan.Main;
+import it.usna.shellyscan.controller.UsnaAction;
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.Devices.EventType;
 import it.usna.shellyscan.model.device.InternalTmpHolder;
@@ -154,15 +155,14 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 		commandPanel.add(eastCommandPanel, BorderLayout.EAST);
 		mainPanel.add(commandPanel, BorderLayout.SOUTH);
 
-		JButton btnClear = new JButton(LABELS.getString("dlgChartsBtnClear"));
-		btnClear.addActionListener(e -> initDataSet(plot.getRangeAxis(), dataset, model, ind));
-		JButton btnClose = new JButton(LABELS.getString("dlgClose"));
-		btnClose.addActionListener(e -> dispose());
+		JButton btnClear = new JButton(new UsnaAction("dlgChartsBtnClear", e -> initDataSet(plot.getRangeAxis(), dataset, model, ind)));
+		JButton btnClose = new JButton(new UsnaAction("dlgClose", e -> dispose()));
 		eastCommandPanel.add(btnClear);
 		eastCommandPanel.add(btnClose);
+		
+		ValueAxis xAxis = plot.getDomainAxis();
 
 		JComboBox<String> rangeCombo = new JComboBox<>();
-		ValueAxis xAxis = plot.getDomainAxis();
 		rangeCombo.addItem(LABELS.getString("dlgChartsRangeAuto"));
 		rangeCombo.addItem(LABELS.getString("dlgChartsRange1min"));
 		rangeCombo.addItem(LABELS.getString("dlgChartsRange5min"));
@@ -178,12 +178,7 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 		for(ChartType t: ChartType.values()) {
 			typeCombo.addItem(t);
 		}
-
 		westCommandPanel.add(typeCombo);
-
-		JButton btnDownload = new JButton(new ImageIcon(MeasuresChart.class.getResource("/images/DownloadEmpty16.png")));
-		btnDownload.setPreferredSize(new Dimension(33, 28));
-		btnDownload.setToolTipText(LABELS.getString("dlgChartsCSVTooltip"));
 
 		JToggleButton btnPause = new JToggleButton(new ImageIcon(MeasuresChart.class.getResource("/images/Pause16.png")));
 		btnPause.setSelectedIcon(new ImageIcon(MeasuresChart.class.getResource("/images/Play16.png")));
@@ -204,30 +199,10 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 		btnMarks.setRolloverEnabled(false);
 		btnMarks.setPreferredSize(new Dimension(33, 28));
 		btnMarks.setToolTipText(LABELS.getString("dlgChartsMarkersTooltip"));
-		btnMarks.addActionListener(e ->  {
-			renderer.setDefaultShapesVisible(btnMarks.isSelected());
-		});
+		btnMarks.addActionListener(e -> renderer.setDefaultShapesVisible(btnMarks.isSelected()));
 
-		westCommandPanel.add(btnMarks);
-		westCommandPanel.add(btnPause);
-		westCommandPanel.add(btnDownload);
-
-		rangeCombo.addActionListener(e -> {
-			btnPause.setSelected(false);
-			setRange(xAxis, rangeCombo.getSelectedIndex());
-		});
-		
-		typeCombo.addActionListener(e -> {
-			currentType = (ChartType)typeCombo.getSelectedItem();
-			initDataSet(plot.getRangeAxis(), dataset, model, ind);
-			btnPause.setSelected(false);
-			xAxis.setAutoRange(true);
-//			setRange(xAxis, rangeCombo.getSelectedIndex());
-		});
-
-		btnDownload.addActionListener(e -> {
+		JButton btnDownload = new JButton(new UsnaAction(MeasuresChart.this, "/images/DownloadEmpty16.png", "dlgChartsCSVTooltip", e -> {
 			try {
-				setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 				final JFileChooser fc = new JFileChooser(appProp.getProperty("LAST_PATH"));
 				fc.setFileFilter(new FileNameExtensionFilter(LABELS.getString("filetype_csv_desc"), "csv"));
 				if(fc.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
@@ -244,9 +219,30 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 				}
 			} catch (IOException ex) {
 				Msg.errorMsg(ex);
-			} finally {
-				setCursor(Cursor.getDefaultCursor());
 			}
+		}));
+		btnDownload.setPreferredSize(new Dimension(33, 28));
+		
+		JButton btnCopy = new JButton(new UsnaAction(null, "/images/Toolbar-Copy16.png", "btnCopy", e -> chartPanel.doCopy()));
+		btnCopy.setPreferredSize(new Dimension(33, 28));
+		
+		westCommandPanel.add(btnMarks);
+		westCommandPanel.add(btnPause);
+		westCommandPanel.add(Box.createHorizontalStrut(20));
+		westCommandPanel.add(btnDownload);
+		westCommandPanel.add(btnCopy);
+
+		rangeCombo.addActionListener(e -> {
+			btnPause.setSelected(false);
+			setRange(xAxis, rangeCombo.getSelectedIndex());
+		});
+		
+		typeCombo.addActionListener(e -> {
+			currentType = (ChartType)typeCombo.getSelectedItem();
+			initDataSet(plot.getRangeAxis(), dataset, model, ind);
+			btnPause.setSelected(false);
+			xAxis.setAutoRange(true);
+//			setRange(xAxis, rangeCombo.getSelectedIndex());
 		});
 
 		try {
@@ -262,9 +258,7 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 			int selected = rangeCombo.getSelectedIndex();
 			rangeCombo.setSelectedIndex(++selected >= rangeCombo.getItemCount() ? 0 : selected);
 		} , KeyStroke.getKeyStroke(KeyEvent.VK_R, MainView.SHORTCUT_KEY), JComponent.WHEN_IN_FOCUSED_WINDOW);
-
 		getRootPane().registerKeyboardAction(e -> btnPause.doClick(), KeyStroke.getKeyStroke(KeyEvent.VK_P, MainView.SHORTCUT_KEY), JComponent.WHEN_IN_FOCUSED_WINDOW);
-		
 		getRootPane().registerKeyboardAction(e -> chartPanel.doCopy(), KeyStroke.getKeyStroke(KeyEvent.VK_C, MainView.SHORTCUT_KEY), JComponent.WHEN_IN_FOCUSED_WINDOW);
 
 		model.addListener(this);
