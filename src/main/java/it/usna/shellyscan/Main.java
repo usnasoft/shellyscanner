@@ -25,6 +25,7 @@ import it.usna.shellyscan.model.DevicesFactory;
 import it.usna.shellyscan.model.NonInteractiveDevices;
 import it.usna.shellyscan.view.MainView;
 import it.usna.shellyscan.view.appsettings.DialogAppSettings;
+import it.usna.shellyscan.view.chart.MeasuresChart;
 import it.usna.shellyscan.view.util.Msg;
 import it.usna.shellyscan.view.util.UpplicationUpdateCHK;
 import it.usna.swing.UsnaSwingUtils;
@@ -33,8 +34,8 @@ import it.usna.util.CLI;
 
 public class Main {
 	public final static String APP_NAME = "Shelly Scanner";
-	public final static String VERSION = "1.0.1 beta";
-	public final static String VERSION_CODE = "001.000.001r101"; // r0xx alpha; r1xx beta; r2xx stable
+	public final static String VERSION = "1.0.1";
+	public final static String VERSION_CODE = "001.000.001r200"; // r0xx alpha; r1xx beta; r2xx stable
 	public final static String ICON = "/images/ShSc24.png";
 	public final static String BACKUP_FILE_EXT = "sbk";
 	public final static String ARCHIVE_FILE_EXT = "arc";
@@ -224,10 +225,8 @@ public class Main {
 				}
 			});
 			new Thread(() -> UpplicationUpdateCHK.chechForUpdates(view, appProp)).start();
-			
-			if(cli.hasEntry("graphs") >= 0) {
-				
-			}
+
+			MeasuresChart.setDoOutStream(cli.hasEntry("-graphs") >= 0);
 			if(cli.unused().length > 0) {
 				System.err.println("Ignored parameter(s): " + Arrays.stream(cli.unused()).collect(Collectors.joining("; ")));
 			}

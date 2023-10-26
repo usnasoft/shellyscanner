@@ -68,13 +68,15 @@ import it.usna.util.UsnaEventListener;
 public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.EventType, Integer> {
 	private static final long serialVersionUID = 1L;
 	private final static Logger LOG = LoggerFactory.getLogger(MeasuresChart.class);
-	protected static NumberFormat NF = NumberFormat.getNumberInstance(Locale.ENGLISH);
+	private final static NumberFormat NF = NumberFormat.getNumberInstance(Locale.ENGLISH);
 	static {
 		NF.setMaximumFractionDigits(2);
 		NF.setMinimumFractionDigits(2);
 	}
 	private final Devices model;
 	private final Map<Integer, TimeSeries[]> seriesMap = new HashMap<>();
+	
+	private static boolean outStream = false;
 
 	public enum ChartType {
 		INT_TEMP("dlgChartsIntTempLabel", "dlgChartsIntTempYLabel"),
@@ -332,12 +334,21 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 							Meters[] m;
 							if(currentType == ChartType.INT_TEMP && d instanceof InternalTmpHolder tempH) {
 								ts[0].addOrUpdate(timestamp, tempH.getInternalTmp());
+								if(outStream) {
+									System.out.println("graph_out->" + ts[0].getKey() + ":" + currentType + ":" + timestamp.getFirstMillisecond() + ":" + tempH.getInternalTmp());
+								}
 							} else if(currentType == ChartType.RSSI) {
 								ts[0].addOrUpdate(timestamp, d.getRssi());
+								if(outStream) {
+									System.out.println("graph_out->" + ts[0].getKey() + ":" + currentType + ":" + timestamp.getFirstMillisecond() + ":" + d.getRssi());
+								}
 							} else if(/*currentType.mType != null &&*/ (m = d.getMeters()) != null) {
 								for(int i = 0; i < m.length; i++) {
 									if(m[i].hasType(currentType.mType)) {
 										ts[i].addOrUpdate(timestamp, m[i].getValue(currentType.mType));
+										if(outStream) {
+											System.out.println("graph_data->" + ts[i].getKey() + ":" + currentType + ":" + timestamp.getFirstMillisecond() + ":" + m[i].getValue(currentType.mType));
+										}
 									}
 								}
 							}
@@ -350,5 +361,9 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 		} else if(mesgType == Devices.EventType.CLEAR) {
 			SwingUtilities.invokeLater(() -> dispose());
 		}
-	}  
+	}
+	
+	public static void setDoOutStream(boolean stream) {
+		outStream = stream;
+	}
 }
