@@ -2,9 +2,9 @@
 <launch4jConfig>
   <dontWrapJar>false</dontWrapJar>
   <headerType>gui</headerType>
-  <jar>C:\Users\Administrator\git\shellyscanner\target\ShellyScan_1_0_0_sj.jar</jar>
+  <jar>C:\Users\Administrator\Desktop\ShellyScan_1_0_1_sj.jar</jar>
   <outfile>C:\Users\Administrator\Desktop\SSExe\ShellyScanner.exe</outfile>
-  <errTitle>Please install java JRE 17 or above on your computer</errTitle>
+  <errTitle>Please install java JRE 17 or above</errTitle>
   <cmdLine></cmdLine>
   <chdir>.</chdir>
   <priority>normal</priority>
@@ -13,16 +13,17 @@
   <stayAlive>false</stayAlive>
   <restartOnCrash>false</restartOnCrash>
   <manifest></manifest>
-  <icon>C:\Users\Administrator\git\shellyscanner\SSExe\ShSc.ico</icon>
+  <icon>C:\Users\Administrator\Desktop\SSExe\ShSc.ico</icon>
   <jre>
     <path>%JAVA_HOME%;%PATH%</path>
     <requiresJdk>false</requiresJdk>
     <requires64Bit>false</requires64Bit>
     <minVersion>17</minVersion>
     <maxVersion></maxVersion>
+    <opt>-Djava.net.preferIPv4Stack=true</opt>
   </jre>
   <splash>
-    <file>C:\Users\Administrator\git\shellyscanner\SSExe\ShSc.bmp</file>
+    <file>C:\Users\Administrator\Desktop\SSExe\ShSc.bmp</file>
     <waitForWindow>true</waitForWindow>
     <timeout>60</timeout>
     <timeoutErr>true</timeoutErr>
