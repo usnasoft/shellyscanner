@@ -247,11 +247,7 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 //			setRange(xAxis, rangeCombo.getSelectedIndex());
 		});
 
-		try {
-			this.currentType = ChartType.valueOf(appProp.getProperty(DialogAppSettings.PROP_CHARTS_START));
-		} catch (Exception e) {
-			this.currentType = ChartType.INT_TEMP;
-		}
+		this.currentType = ChartType.valueOf(appProp.getProperty(DialogAppSettings.PROP_CHARTS_START, ChartType.INT_TEMP.name()));
 		typeCombo.setSelectedItem(currentType);
 
 		initDataSet(plot.getRangeAxis(), dataset, model, ind);
