@@ -25,7 +25,9 @@ import it.usna.shellyscan.view.util.UpplicationUpdateCHK;
 public class DialogAbout {
 	
 	public static void show(JFrame owner) {
-		JEditorPane ep = new JEditorPane("text/html", "<html><h1><font color=#00005a>" + Main.APP_NAME + " " + Main.VERSION + " <img src=\"usna16.gif\"></h1></font><p>" + LABELS.getString("aboutApp") + "</html>");
+		final String build = Main.VERSION_CODE.substring(Main.VERSION_CODE.length() - 2, Main.VERSION_CODE.length());
+		JEditorPane ep = new JEditorPane("text/html", "<html><h1><font color=#00005a>" + Main.APP_NAME + " " + Main.VERSION +
+				("00".equals(build) ? "" : " r." + build) + " <img src=\"usna16.gif\"></h1></font><p>" + LABELS.getString("aboutApp") + "</html>");
 		ep.setEditable(false);
 		((HTMLDocument)ep.getDocument()).setBase(DialogAbout.class.getResource("/images/"));
 		ep.addHyperlinkListener(ev -> {

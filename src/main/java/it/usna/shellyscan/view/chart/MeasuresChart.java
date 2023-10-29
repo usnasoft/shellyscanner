@@ -228,9 +228,10 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 		JButton btnCopy = new JButton(new UsnaAction(null, "/images/Toolbar-Copy16.png", "btnCopy", e -> chartPanel.doCopy()));
 		btnCopy.setPreferredSize(new Dimension(33, 28));
 		
+		westCommandPanel.add(Box.createHorizontalStrut(20));
 		westCommandPanel.add(btnMarks);
 		westCommandPanel.add(btnPause);
-		westCommandPanel.add(Box.createHorizontalStrut(30));
+		westCommandPanel.add(Box.createHorizontalStrut(20));
 		westCommandPanel.add(btnDownload);
 		westCommandPanel.add(btnCopy);
 
