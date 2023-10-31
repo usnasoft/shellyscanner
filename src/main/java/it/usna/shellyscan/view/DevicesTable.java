@@ -96,6 +96,9 @@ public class DevicesTable extends ExTooltipTable {
 	final static int COL_DEBUG = 13;
 	final static int COL_SOURCE_IDX = 14;
 	final static int COL_COMMAND_IDX = 15;
+	
+	public final static String STORE_PREFIX = "TAB";
+	public final static String STORE_EXT_PREFIX = "TAB_EXT";
 
 	private boolean adaptTooltipLocation = false;
 	
@@ -288,7 +291,7 @@ public class DevicesTable extends ExTooltipTable {
 			hideColumn(COL_SSID_IDX);
 			hideColumn(COL_DEBUG);
 		} else {
-			loadColPos(appProp, "TAB");
+			loadColPos(appProp, STORE_PREFIX);
 		}
 	}
 

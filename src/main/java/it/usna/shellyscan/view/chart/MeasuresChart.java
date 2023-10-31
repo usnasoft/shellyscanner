@@ -228,10 +228,10 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 		JButton btnCopy = new JButton(new UsnaAction(null, "/images/Toolbar-Copy16.png", "btnCopy", e -> chartPanel.doCopy()));
 		btnCopy.setPreferredSize(new Dimension(33, 28));
 		
-		westCommandPanel.add(Box.createHorizontalStrut(20));
+		westCommandPanel.add(Box.createHorizontalStrut(10));
 		westCommandPanel.add(btnMarks);
 		westCommandPanel.add(btnPause);
-		westCommandPanel.add(Box.createHorizontalStrut(20));
+		westCommandPanel.add(Box.createHorizontalStrut(10));
 		westCommandPanel.add(btnDownload);
 		westCommandPanel.add(btnCopy);
 
@@ -283,7 +283,7 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 		for(int ind: indexes) {
 			final ShellyAbstractDevice d = model.get(ind);
 
-			if(currentType.mType == null) { // device property (INT_TEMP, ...), not from "Meters"
+			if(currentType.mType == null) { // device property (INT_TEMP & RSSI), not from "Meters"
 				TimeSeries s = new TimeSeries(UtilMiscellaneous.getDescName(d));
 				dataset.addSeries(s);
 				seriesMap.put(ind, new TimeSeries[] {s});
@@ -294,8 +294,7 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 					int i = 0;
 					for(Meters m: meters) {
 						if(m.hasType(currentType.mType)) {
-							final String sName = UtilMiscellaneous.getDescName(d, i++);
-							TimeSeries s = new TimeSeries(sName);
+							TimeSeries s = new TimeSeries(UtilMiscellaneous.getDescName(d, i++));
 							temp.add(s);
 							dataset.addSeries(s);
 						}

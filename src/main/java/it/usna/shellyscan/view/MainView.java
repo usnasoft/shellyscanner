@@ -110,7 +110,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 	private DevicesTable devicesTable = new DevicesTable(tabModel);
 	
 	private JToggleButton details;
-	private AppProperties unextendedProp = new AppProperties();
+	private AppProperties temporaryProp = new AppProperties();
 
 	private Action infoAction = new UsnaSelectedAction(this, devicesTable, "action_info_name", "action_info_tooltip", "/images/Bubble3_16.png", "/images/Bubble3.png",
 			(i) -> new DialogDeviceInfo(MainView.this, true, model.get(i), model.get(i).getInfoRequests()) );
@@ -209,11 +209,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 	});
 	
 	private Action appSettingsAction = new UsnaAction(this, "/images/Gear.png", "action_appsettings_tooltip", e -> {
-		if(details.isSelected()) {
-			detailedView(false);
-			details.setSelected(false);
-		}
-		new DialogAppSettings(MainView.this, devicesTable, model, appProp);
+		new DialogAppSettings(MainView.this, devicesTable, model, details.isSelected(), appProp);
 	});
 	
 	private Action scriptManagerAction = new UsnaSelectedAction(this, devicesTable, "/images/Movie.png", "action_script_tooltip", i -> {
@@ -221,9 +217,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 	});
 	
 	private Action detailedViewAction = new UsnaAction(this, "/images/Plus.png", "action_show_detail_tooltip", e -> {
-		SwingUtilities.invokeLater(() -> {
-			detailedView(((JToggleButton)e.getSource()).isSelected());
-		});
+		SwingUtilities.invokeLater(() -> detailedView(((JToggleButton)e.getSource()).isSelected()) );
 	});
 	
 	private Action notesAction = new UsnaSelectedAction(this, devicesTable, "/images/Write2.png", "action_notes_tooltip", i -> {
@@ -528,18 +522,22 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		tableSelectionListener.valueChanged(new ListSelectionEvent(devicesTable, -1, -1, false));
 	}
 	
-	private void detailedView(boolean detailed) {
+	public void detailedView(boolean detailed) {
 		if(detailed) {
-			super.storeProperties(unextendedProp);
-			devicesTable.saveColPos(unextendedProp, "");
+			details.setSelected(true);
+			// store normal view preferences
+			super.storeProperties(appProp);
+			devicesTable.saveColPos(appProp, DevicesTable.STORE_PREFIX);
 			if(tabModel.getRowCount() > 0) { // no device found yet: maybe it will adapt later while maximized
-				devicesTable.saveColWidth(unextendedProp, "");
+				devicesTable.saveColWidth(temporaryProp, DevicesTable.STORE_PREFIX);
 			}
 			final int visible = devicesTable.getColumnCount();
-			final int total = tabModel.getColumnCount();
-			for(int i = 0; i < total; i++) {
-				devicesTable.showColumn(i, -1);
-			}
+//			for(int i = 0; i < tabModel.getColumnCount(); i++) { devicesTable.showColumn(i, -1); } // try to preserve normal view position
+			// load extended view preferences
+			devicesTable.restoreColumns();
+			devicesTable.resetRowsComputedHeight();
+			devicesTable.loadColPos(appProp, DevicesTable.STORE_EXT_PREFIX);
+			
 			String detScreenMode = appProp.getProperty(DialogAppSettings.PROP_DETAILED_VIEW_SCREEN, DialogAppSettings.PROP_DETAILED_VIEW_SCREEN_DEFAULT);
 			if(getExtendedState() != JFrame.MAXIMIZED_BOTH) {
 				if(detScreenMode.equals(DialogAppSettings.PROP_DETAILED_VIEW_SCREEN_FULL)) {
@@ -549,7 +547,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 				} else if(detScreenMode.equals(DialogAppSettings.PROP_DETAILED_VIEW_SCREEN_ESTIMATE)) {
 					Rectangle screen = getCurrentScreenBounds();
 					Rectangle current = this.getBounds();
-					current.width = current.width * total / visible;
+					current.width = current.width * /*total*/tabModel.getColumnCount() / visible;
 					if(current.x + current.width > screen.x + screen.width) { // out of right margin
 						current.x = screen.x + screen.width - current.width;
 					}
@@ -562,11 +560,15 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 			}
 			devicesTable.columnsWidthAdapt();
 		} else {
+			details.setSelected(false);
+			// store extended view preferences
+			devicesTable.saveColPos(appProp, DevicesTable.STORE_EXT_PREFIX);
+			// load normal view preferences
 			devicesTable.restoreColumns();
 			devicesTable.resetRowsComputedHeight();
-			devicesTable.loadColPos(unextendedProp, "");
-			devicesTable.loadColWidth(unextendedProp, "");
-			super.loadProperties(unextendedProp);
+			devicesTable.loadColPos(appProp, DevicesTable.STORE_PREFIX);
+			devicesTable.loadColWidth(temporaryProp, DevicesTable.STORE_PREFIX);
+			super.loadProperties(appProp);
 		}
 	}
 
@@ -579,11 +581,12 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 				Msg.errorMsg(this, "Error storing archive");
 			}
 		}
-		if(details.isSelected()) {
-			detailedView(false);
+		if(details.isSelected()) { // else -> normal view values stored on detailedView(true)
+			devicesTable.saveColPos(appProp, DevicesTable.STORE_EXT_PREFIX);
+		} else {
+			devicesTable.saveColPos(appProp, DevicesTable.STORE_PREFIX);
+			super.storeProperties(appProp);
 		}
-		devicesTable.saveColPos(appProp, "TAB");
-		storeProperties(appProp);
 		try {
 			appProp.store(false);
 		} catch (IOException | RuntimeException ex) {

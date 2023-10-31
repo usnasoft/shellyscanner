@@ -72,8 +72,12 @@ public class DialogAppSettings extends JDialog {
 	
 	private final static Logger LOG = LoggerFactory.getLogger(DialogAppSettings.class);
 	
-	public DialogAppSettings(final MainView owner, DevicesTable devTable, Devices model, final AppProperties appProp) {
-		super(owner, LABELS.getString("dlgAppSetTitle"), true);
+	public DialogAppSettings(final MainView mainView, DevicesTable devTable, Devices model, final boolean detailedMode, final AppProperties appProp) {
+		super(mainView, LABELS.getString("dlgAppSetTitle"), true);
+
+		if(detailedMode) {
+			mainView.detailedView(false);
+		}
 
 		final AppProperties tempProp = new AppProperties();
 		devTable.saveColPos(tempProp, "");
@@ -221,7 +225,7 @@ public class DialogAppSettings extends JDialog {
 		});
 		
 		pack();
-		setLocationRelativeTo(owner);
+		setLocationRelativeTo(mainView);
 		setVisible(true);
 	}
 	
