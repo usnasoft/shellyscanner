@@ -286,12 +286,10 @@ public class DevicesTable extends ExTooltipTable {
 	}
 	
 	public void loadColPos(final AppProperties appProp) {
-		if(appProp.get("TAB." + COL_POSITION_PROP) == null) {
+		if(loadColPos(appProp, STORE_PREFIX) == false) {
 			hideColumn(COL_MAC_IDX);
 			hideColumn(COL_SSID_IDX);
 			hideColumn(COL_DEBUG);
-		} else {
-			loadColPos(appProp, STORE_PREFIX);
 		}
 	}
 

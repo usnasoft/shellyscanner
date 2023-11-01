@@ -113,7 +113,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 	private AppProperties temporaryProp = new AppProperties();
 
 	private Action infoAction = new UsnaSelectedAction(this, devicesTable, "action_info_name", "action_info_tooltip", "/images/Bubble3_16.png", "/images/Bubble3.png",
-			(i) -> new DialogDeviceInfo(MainView.this, true, model.get(i), model.get(i).getInfoRequests()) );
+			i -> new DialogDeviceInfo(MainView.this, true, model.get(i), model.get(i).getInfoRequests()) );
 
 	private Action infoLogAction = new UsnaSelectedAction(this, devicesTable, "/images/Document2.png", "action_info_log_tooltip", i -> {
 		if(model.get(i) instanceof AbstractG2Device) {
@@ -204,25 +204,20 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 
 	private Action restoreAction;
 	
-	private Action chartAction = new UsnaAction(this, "/images/Stats2.png", "action_chart_tooltip", e -> {
-		new MeasuresChart(this, model, devicesTable.getSelectedModelRows(), appProp);
-	});
+	private Action chartAction = new UsnaAction(this, "/images/Stats2.png", "action_chart_tooltip",
+			e -> new MeasuresChart(this, model, devicesTable.getSelectedModelRows(), appProp) );
 	
-	private Action appSettingsAction = new UsnaAction(this, "/images/Gear.png", "action_appsettings_tooltip", e -> {
-		new DialogAppSettings(MainView.this, devicesTable, model, details.isSelected(), appProp);
-	});
+	private Action appSettingsAction = new UsnaAction(this, "/images/Gear.png", "action_appsettings_tooltip",
+			e -> new DialogAppSettings(MainView.this, devicesTable, model, details.isSelected(), appProp) );
 	
-	private Action scriptManagerAction = new UsnaSelectedAction(this, devicesTable, "/images/Movie.png", "action_script_tooltip", i -> {
-		new DialogDeviceScriptsG2(MainView.this, model, i);
-	});
+	private Action scriptManagerAction = new UsnaSelectedAction(this, devicesTable, "/images/Movie.png", "action_script_tooltip",
+			i -> new DialogDeviceScriptsG2(MainView.this, model, i) );
 	
-	private Action detailedViewAction = new UsnaAction(this, "/images/Plus.png", "action_show_detail_tooltip", e -> {
-		SwingUtilities.invokeLater(() -> detailedView(((JToggleButton)e.getSource()).isSelected()) );
-	});
+	private Action detailedViewAction = new UsnaAction(this, "/images/Plus.png", "action_show_detail_tooltip",
+			e -> SwingUtilities.invokeLater(() -> detailedView(((JToggleButton)e.getSource()).isSelected()) ) );
 	
-	private Action notesAction = new UsnaSelectedAction(this, devicesTable, "/images/Write2.png", "action_notes_tooltip", i -> {
-		new NotesEditor(MainView.this, model.getGhost(i));
-	});
+	private Action notesAction = new UsnaSelectedAction(this, devicesTable, "/images/Write2.png", "action_notes_tooltip",
+			i -> new NotesEditor(MainView.this, model.getGhost(i)) );
 	
 	private Action printAction = new UsnaAction(this, "/images/Printer.png", "action_print_tooltip", e -> {
 		try {
@@ -523,14 +518,12 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 	}
 	
 	public void detailedView(boolean detailed) {
+		details.setSelected(detailed);
 		if(detailed) {
-			details.setSelected(true);
 			// store normal view preferences
 			super.storeProperties(appProp);
 			devicesTable.saveColPos(appProp, DevicesTable.STORE_PREFIX);
-			if(tabModel.getRowCount() > 0) { // no device found yet: maybe it will adapt later while maximized
-				devicesTable.saveColWidth(temporaryProp, DevicesTable.STORE_PREFIX);
-			}
+			devicesTable.saveColWidth(temporaryProp, DevicesTable.STORE_PREFIX);
 			final int visible = devicesTable.getColumnCount();
 //			for(int i = 0; i < tabModel.getColumnCount(); i++) { devicesTable.showColumn(i, -1); } // try to preserve normal view position
 			// load extended view preferences
@@ -558,16 +551,20 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 					}
 				} // else size unchanged
 			}
-			devicesTable.columnsWidthAdapt();
+			if(devicesTable.loadColWidth(temporaryProp, DevicesTable.STORE_EXT_PREFIX) == false) { // SUBSTITUTE || ADD || ...
+				devicesTable.columnsWidthAdapt();
+			}
 		} else {
-			details.setSelected(false);
 			// store extended view preferences
 			devicesTable.saveColPos(appProp, DevicesTable.STORE_EXT_PREFIX);
+			devicesTable.saveColWidth(temporaryProp, DevicesTable.STORE_EXT_PREFIX);
 			// load normal view preferences
 			devicesTable.restoreColumns();
 			devicesTable.resetRowsComputedHeight();
 			devicesTable.loadColPos(appProp, DevicesTable.STORE_PREFIX);
-			devicesTable.loadColWidth(temporaryProp, DevicesTable.STORE_PREFIX);
+			if(devicesTable.loadColWidth(temporaryProp, DevicesTable.STORE_PREFIX) == false) { // SUBSTITUTE || ADD || ...
+				devicesTable.columnsWidthAdapt();
+			}
 			super.loadProperties(appProp);
 		}
 	}

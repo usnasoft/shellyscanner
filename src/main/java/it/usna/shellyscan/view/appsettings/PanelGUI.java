@@ -322,8 +322,9 @@ public class PanelGUI extends JPanel {
 		for(int col = 0; col < devTable.getModel().getColumnCount(); col++) {
 			columnsPanel.add(generateCheckbox(devTable, col));
 		}
-		JButton btnRestoreColumns = new JButton(LABELS.getString("dlgAppSetLblReset"));
-		btnRestoreColumns.addActionListener(event -> {
+		JButton btnAllColumns = new JButton(LABELS.getString("dlgAppSetLblAll"));
+		btnAllColumns.setBorder(new EmptyBorder(3, 15, 3, 15));
+		btnAllColumns.addActionListener(event -> {
 			devTable.restoreColumns();
 			for(Component c: columnsPanel.getComponents()) {
 				if(c instanceof JCheckBox box) {
@@ -332,16 +333,16 @@ public class PanelGUI extends JPanel {
 			}
 			devTable.columnsWidthAdapt();
 		});
-		JPanel resetPanel = new JPanel(new BorderLayout());
-		resetPanel.add(btnRestoreColumns, BorderLayout.WEST);
-		columnsPanel.add(resetPanel);
-		btnRestoreColumns.setBorder(new EmptyBorder(3, 15, 3, 15));
+		JPanel allButtonPanel = new JPanel(new BorderLayout());
+		allButtonPanel.add(btnAllColumns, BorderLayout.WEST);
+		columnsPanel.add(allButtonPanel);
 		return columnsPanel;
 	}
 	
 	private static JCheckBox generateCheckbox(DevicesTable devTable, int col)  {
 		String name = devTable.getModel().getColumnName(col);
 		JCheckBox chk = new JCheckBox(name.length() > 0 ? name : LABELS.getString("col_status_exp"), devTable.isColumnVisible(col));
+//		chk.setName("C" + col);
 		chk.addActionListener(e -> { //	chk.addItemListener(e -> { // questo fa scattare l'evento su setSelected(...) io non voglio
 			if(viewCol == null) {
 				viewCol = new int[devTable.getModel().getColumnCount()];

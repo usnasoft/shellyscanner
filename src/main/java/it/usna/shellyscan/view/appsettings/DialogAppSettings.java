@@ -80,20 +80,22 @@ public class DialogAppSettings extends JDialog {
 		}
 
 		final AppProperties tempProp = new AppProperties();
-		devTable.saveColPos(tempProp, "");
-		devTable.saveColWidth(tempProp, "");
+		devTable.saveColPos(tempProp, DevicesTable.STORE_PREFIX);
+		devTable.saveColWidth(tempProp, DevicesTable.STORE_PREFIX);
 		
 		BorderLayout borderLayout = new BorderLayout();
 		borderLayout.setVgap(5);
 		getContentPane().setLayout(borderLayout);
-//		((JComponent)getContentPane()).setBorder(BorderFactory.createEmptyBorder(6, 6, 0, 6));
 
 		JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
-		
-//		PanelNetwork panelNetwork = new PanelNetwork(appProp);
+
 		PanelGUI panelGUI = new PanelGUI(devTable, appProp);
 		panelGUI.setBorder(new EmptyBorder(6, 6, 6, 6));
 		tabbedPane.add(LABELS.getString("dlgAppSetTabGuiTitle"), panelGUI);
+		
+		PanelExtendedView panelExtView = new PanelExtendedView(devTable, appProp);
+		panelExtView.setBorder(new EmptyBorder(6, 6, 6, 6));
+		tabbedPane.add(LABELS.getString("dlgAppSetTabExtViewTitle"), panelExtView);
 		
 		PanelNetwork panelNetwork = new PanelNetwork(appProp);
 		panelNetwork.setBorder(new EmptyBorder(6, 6, 6, 6));
@@ -103,6 +105,10 @@ public class DialogAppSettings extends JDialog {
 		panelStore.setBorder(new EmptyBorder(6, 6, 6, 6));
 		tabbedPane.add(LABELS.getString("dlgAppSetTabStoreTitle"), panelStore);
 		
+		tabbedPane.addChangeListener(e -> {
+
+		});
+		
 		getContentPane().add(tabbedPane, BorderLayout.WEST);
 		
 		JPanel panelCommands = new JPanel();
@@ -110,9 +116,7 @@ public class DialogAppSettings extends JDialog {
 		JButton btnOKButton = new JButton(LABELS.getString("dlgOK"));
 		panelCommands.add(btnOKButton);
 		panelCommands.add(btnClose);
-		btnClose.addActionListener(event -> {
-			dispose(devTable, tempProp);
-		});
+		btnClose.addActionListener(event -> revertAndDispose(devTable, tempProp));
 		btnOKButton.addActionListener(event -> {
 			// Scan mode
 			String scanMode;
@@ -220,7 +224,7 @@ public class DialogAppSettings extends JDialog {
 		addWindowListener(new WindowAdapter() {
 			@Override
 			public void windowClosing(WindowEvent e) {
-				dispose(devTable, tempProp);
+				revertAndDispose(devTable, tempProp);
 			}
 		});
 		
@@ -229,10 +233,10 @@ public class DialogAppSettings extends JDialog {
 		setVisible(true);
 	}
 	
-	private void dispose(DevicesTable devTable, final AppProperties tempProp) {
+	private void revertAndDispose(DevicesTable devTable, final AppProperties tempProp) {
 		devTable.restoreColumns();
-		devTable.loadColPos(tempProp, "");
-		devTable.loadColWidth(tempProp, "");
+		devTable.loadColPos(tempProp, DevicesTable.STORE_PREFIX);
+		devTable.loadColWidth(tempProp, DevicesTable.STORE_PREFIX);
 		dispose();
 	}
 }
