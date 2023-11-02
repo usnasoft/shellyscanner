@@ -72,16 +72,12 @@ public class DialogAppSettings extends JDialog {
 	
 	private final static Logger LOG = LoggerFactory.getLogger(DialogAppSettings.class);
 	
-	public DialogAppSettings(final MainView mainView, DevicesTable devTable, Devices model, final boolean detailedMode, final AppProperties appProp) {
+	public DialogAppSettings(final MainView mainView, DevicesTable devTable, Devices model, boolean extendedView, final AppProperties appProp) {
 		super(mainView, LABELS.getString("dlgAppSetTitle"), true);
 
-		if(detailedMode) {
-			mainView.detailedView(false);
-		}
-
 		final AppProperties tempProp = new AppProperties();
-		devTable.saveColPos(tempProp, DevicesTable.STORE_PREFIX);
-		devTable.saveColWidth(tempProp, DevicesTable.STORE_PREFIX);
+		devTable.saveColPos(tempProp, "");
+		devTable.saveColWidth(tempProp, "");
 		
 		BorderLayout borderLayout = new BorderLayout();
 		borderLayout.setVgap(5);
@@ -89,13 +85,9 @@ public class DialogAppSettings extends JDialog {
 
 		JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
 
-		PanelGUI panelGUI = new PanelGUI(devTable, appProp);
+		PanelGUI panelGUI = new PanelGUI(devTable, extendedView, appProp);
 		panelGUI.setBorder(new EmptyBorder(6, 6, 6, 6));
 		tabbedPane.add(LABELS.getString("dlgAppSetTabGuiTitle"), panelGUI);
-		
-		PanelExtendedView panelExtView = new PanelExtendedView(devTable, appProp);
-		panelExtView.setBorder(new EmptyBorder(6, 6, 6, 6));
-		tabbedPane.add(LABELS.getString("dlgAppSetTabExtViewTitle"), panelExtView);
 		
 		PanelNetwork panelNetwork = new PanelNetwork(appProp);
 		panelNetwork.setBorder(new EmptyBorder(6, 6, 6, 6));
@@ -104,10 +96,6 @@ public class DialogAppSettings extends JDialog {
 		PanelStore panelStore = new PanelStore(model, appProp);
 		panelStore.setBorder(new EmptyBorder(6, 6, 6, 6));
 		tabbedPane.add(LABELS.getString("dlgAppSetTabStoreTitle"), panelStore);
-		
-		tabbedPane.addChangeListener(e -> {
-
-		});
 		
 		getContentPane().add(tabbedPane, BorderLayout.WEST);
 		
@@ -235,8 +223,8 @@ public class DialogAppSettings extends JDialog {
 	
 	private void revertAndDispose(DevicesTable devTable, final AppProperties tempProp) {
 		devTable.restoreColumns();
-		devTable.loadColPos(tempProp, DevicesTable.STORE_PREFIX);
-		devTable.loadColWidth(tempProp, DevicesTable.STORE_PREFIX);
+		devTable.loadColPos(tempProp, "");
+		devTable.loadColWidth(tempProp, "");
 		dispose();
 	}
 }

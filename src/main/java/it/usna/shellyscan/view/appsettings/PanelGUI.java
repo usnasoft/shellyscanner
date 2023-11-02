@@ -36,7 +36,7 @@ public class PanelGUI extends JPanel {
 	JComboBox<ChartType> comboCharts = new JComboBox<>();
 	JComboBox<String> comboChartsExport = new JComboBox<>();
 	
-	PanelGUI(DevicesTable devTable, final AppProperties appProp) {
+	PanelGUI(DevicesTable devTable, boolean detailedView, final AppProperties appProp) {
 		GridBagLayout gridBagLayout = new GridBagLayout();
 		gridBagLayout.columnWeights = new double[]{0.1, 0.0, 0.0, 1.0, 0.5};
 		setLayout(gridBagLayout);
@@ -295,7 +295,7 @@ public class PanelGUI extends JPanel {
 		gbc_separator_4.gridy = 10;
 		add(separator_4, gbc_separator_4);
 		
-		JLabel lblNewLabel_2 = new JLabel(LABELS.getString("dlgAppSetLblColums"));
+		JLabel lblNewLabel_2 = new JLabel(LABELS.getString("dlgAppSetLblColums") + " - " + LABELS.getString(detailedView ? "dlgAppSetLblColumsExtended": "dlgAppSetLblColumsDefault"));
 		lblNewLabel_2.setFont(new Font("Tahoma", Font.BOLD, 11));
 		GridBagConstraints gbc_lblNewLabel_2 = new GridBagConstraints();
 		gbc_lblNewLabel_2.anchor = GridBagConstraints.WEST;

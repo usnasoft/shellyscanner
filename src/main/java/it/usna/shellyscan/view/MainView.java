@@ -88,7 +88,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 	private AppProperties appProp;
 	private JLabel statusLabel = new JLabel();
 	private boolean statusLineReserved = false;
-	private JTextField textFieldFilter;
+	private JTextField textFieldFilter = new JTextField();
 	private Devices model;
 	private UsnaTableModel tabModel = new UsnaTableModel(
 			"",
@@ -289,7 +289,6 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		JPanel statusButtonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 2, 0));
 		statusButtonPanel.setOpaque(false);
 		statusButtonPanel.add(new JLabel(LABELS.getString("lblFilter")));
-		textFieldFilter = new JTextField();
 		textFieldFilter.setBorder(BorderFactory.createEmptyBorder(2, 0, 2, 0));
 		textFieldFilter.setColumns(16);
 		
@@ -517,8 +516,8 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		tableSelectionListener.valueChanged(new ListSelectionEvent(devicesTable, -1, -1, false));
 	}
 	
-	public void detailedView(boolean detailed) {
-		details.setSelected(detailed);
+	private void detailedView(boolean detailed) {
+//		details.setSelected(detailed);
 		if(detailed) {
 			// store normal view preferences
 			super.storeProperties(appProp);
@@ -580,6 +579,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		}
 		if(details.isSelected()) { // else -> normal view values stored on detailedView(true)
 			devicesTable.saveColPos(appProp, DevicesTable.STORE_EXT_PREFIX);
+			// no position/size stored for detailed view
 		} else {
 			devicesTable.saveColPos(appProp, DevicesTable.STORE_PREFIX);
 			super.storeProperties(appProp);
@@ -643,4 +643,4 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 			}
 		}
 	}
-} //557 - 614 - 620 - 669 - 705 - 727 - 699 - 760 - 782 - 811 - 805 - 643
+} //557 - 614 - 620 - 669 - 705 - 727 - 699 - 760 - 782 - 811 - 805 - 646
