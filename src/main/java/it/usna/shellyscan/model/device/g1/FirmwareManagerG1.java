@@ -23,32 +23,44 @@ public class FirmwareManagerG1 implements FirmwareManager {
 //		init();
 		chech();
 	}
-	
+
 	private void init() {
 		valid = false;
 		try {
+			d.sendCommand("/ota/check");
+			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			JsonNode node = d.getJSON("/ota");
 			updating = STATUS_UPDATING.equals(node.get("status").asText());
 			current = node.get("old_version").asText();
-			stable = node.get("has_update").asBoolean() ? node.get("new_version").asText() : null;
-			boolean hasBeta = node.has("beta_version") && node.get("beta_version").asText().equals(current) == false;
-			beta = hasBeta ? node.get("beta_version").asText() : null;
+			stable = node.get("has_update").booleanValue() ? node.get("new_version").asText() : null;
+			final JsonNode betaNode = node.get("beta_version");
+			boolean hasBeta = betaNode != null && betaNode.asText().equals(current) == false;
+			beta = hasBeta ? betaNode.asText() : null;
 			valid = true;
 		} catch(/*IO*/Exception e) {
-			valid = false;
+			valid = updating = false;
 			current = stable = beta = null;
-			JsonNode shelly;
-			if(d instanceof BatteryDeviceInterface && (shelly = ((BatteryDeviceInterface)d).getStoredJSON("/shelly")) != null) {
-				current = shelly.path("fw").asText();
+			if(d instanceof BatteryDeviceInterface batteryDevice) {
+				JsonNode node;
+				if((node = (batteryDevice.getStoredJSON("/status"))) != null) {
+					node = node.get("update");
+					current = node.get("old_version").asText();
+					stable = node.get("has_update").booleanValue() ? node.get("new_version").asText() : null;
+					final JsonNode betaNode = node.get("beta_version");
+					boolean hasBeta = betaNode != null && betaNode.asText().equals(current) == false;
+					beta = hasBeta ? betaNode.asText() : null;
+				} else if((node = batteryDevice.getStoredJSON("/shelly")) != null) {
+					current = node.path("fw").asText();
+				}
 			}
 		}
 	}
 
 	@Override
 	public void chech() {
-		current = stable = beta = null;
-		d.sendCommand("/ota/check");
-		try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e) {}
+//		current = stable = beta = null;
+//		d.sendCommand("/ota/check");
+//		try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e) {}
 		init();
 	}
 	

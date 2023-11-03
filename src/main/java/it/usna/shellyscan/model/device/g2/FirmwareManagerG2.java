@@ -32,19 +32,26 @@ public class FirmwareManagerG2 implements FirmwareManager {
 			stable = node.at("/stable/build_id").asText(null);
 			beta = node.at("/beta/build_id").asText(null);
 			valid = true;
+			updating = false;
 		} catch(/*IO*/Exception e) {
-			valid = false;
+			valid = updating = false;
 			current = stable = beta = null;
-			JsonNode shelly;
-			if(d instanceof BatteryDeviceInterface && (shelly = ((BatteryDeviceInterface)d).getStoredJSON("/shelly")) != null) {
-				current = shelly.path("fw_id").asText();
+			JsonNode node;
+			if(d instanceof BatteryDeviceInterface batteryDevice) {
+				if((node = batteryDevice.getStoredJSON("/rpc/Shelly.GetStatus")) != null) {
+					node = node.get("available_updates");
+					stable = node.at("/stable/version").asText(null); // not id
+					beta = node.at("/beta/version").asText(null); // not id
+				}
+				if((node = batteryDevice.getStoredJSON("/shelly")) != null) {
+					current = node.path("fw_id").asText();
+				}
 			}
 		}
 	}
 
 	@Override
 	public void chech() {
-		updating = false;
 		init();
 	}
 	

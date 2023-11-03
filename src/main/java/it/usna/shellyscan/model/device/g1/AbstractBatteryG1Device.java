@@ -33,15 +33,6 @@ public abstract class AbstractBatteryG1Device extends AbstractG1Device implement
 		init();
 	}
 	
-//	@Override
-//	public void init() throws IOException {
-//		this.settings = getJSON("/settings");
-//		fillOnce(settings);
-//		fillSettings(settings);
-//		this.status = getJSON("/status");
-//		fillStatus(status);
-//	}
-	
 	@Override
 	public int getBattery() {
 		return bat;
