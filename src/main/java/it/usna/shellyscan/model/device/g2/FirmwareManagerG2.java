@@ -39,7 +39,7 @@ public class FirmwareManagerG2 implements FirmwareManager {
 			JsonNode node;
 			if(d instanceof BatteryDeviceInterface batteryDevice) {
 				if((node = batteryDevice.getStoredJSON("/rpc/Shelly.GetStatus")) != null) {
-					node = node.get("available_updates");
+					node = node.at("/sys/available_updates");
 					stable = node.at("/stable/version").asText(null); // not id
 					beta = node.at("/beta/version").asText(null); // not id
 				}

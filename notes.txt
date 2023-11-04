@@ -203,6 +203,8 @@ https://www.iconbolt.com/
 
 1.0.2
 // extended view -> store position
+// todo fw updates per off-line battery
+// todo listener sui dettagli (on-line -> get)
 
 ---
 // TODO
