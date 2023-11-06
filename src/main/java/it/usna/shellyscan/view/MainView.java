@@ -11,7 +11,6 @@ import java.awt.Toolkit;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.BufferedWriter;
@@ -21,6 +20,8 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import javax.swing.Action;
@@ -219,6 +220,23 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 	private Action notesAction = new UsnaSelectedAction(this, devicesTable, "/images/Write2.png", "action_notes_tooltip",
 			i -> new NotesEditor(MainView.this, model.getGhost(i)) );
 	
+//	private Action eraseGhostAction = new UsnaAction(this, "action_name_delete_ghost", null, "/images/Minus16.png", null, e -> model.remove(devicesTable.getSelectedModelRow()));
+	private Action eraseGhostAction = new UsnaAction(this, "action_name_delete_ghost", null, "/images/Minus16.png", null, e -> {
+		boolean delete = true;
+		for(int idx: devicesTable.getSelectedRows()) {devicesTable.getSelectionModel().getLeadSelectionIndex();
+			if(model.getGhost(devicesTable.convertRowIndexToModel(idx)).getNote().trim().length() > 0) {
+				delete = JOptionPane.showConfirmDialog(
+					MainView.this, LABELS.getString("action_name_delete_ghost_confirm"), LABELS.getString("action_name_delete_ghost"),
+					JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE) == JOptionPane.OK_OPTION;
+				break;
+			}
+		}
+		if(delete) {
+			Arrays.stream(devicesTable.getSelectedRows()).map(i -> devicesTable.convertRowIndexToModel(i)).boxed().
+			sorted(Collections.reverseOrder()).forEach(i-> model.remove(i));
+		}
+	});
+	
 	private Action printAction = new UsnaAction(this, "/images/Printer.png", "action_print_tooltip", e -> {
 		try {
 			devicesTable.clearSelection();
@@ -257,8 +275,6 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		displayStatus();
 	});
 
-	private Action eraseGhostAction = new UsnaAction(this, "action_name_delete_ghost", null, "/images/Minus16.png", null, e -> model.remove(devicesTable.getSelectedModelRow()));
-	
 //	private Action copyHostAction = new UsnaSelectedAction(this, devicesTable, "action_copy_hostname", null, "/images/Clipboard_Copy_16.png", null, i -> {
 //		StringSelection ss = new StringSelection(model.get(i).getHostname());
 //		Toolkit.getDefaultToolkit().getSystemClipboard().setContents(ss, ss);
@@ -348,12 +364,13 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		UsnaPopupMenu selectionPopup = new UsnaPopupMenu(selectAll, selectOnLine,
 				new SelectionAction(devicesTable, "labelSelectOnLineReboot", null, /*"/images/bullet_yes_reboot.png"*/null, i -> model.get(i).getStatus() == Status.ON_LINE && model.get(i).rebootRequired()),
 				new SelectionAction(devicesTable, "labelSelectG1", null, null, i -> model.get(i) instanceof AbstractG1Device),
-				new SelectionAction(devicesTable, "labelSelectG2", null, null, i -> model.get(i) instanceof AbstractG2Device)
+				new SelectionAction(devicesTable, "labelSelectG2", null, null, i -> model.get(i) instanceof AbstractG2Device),
+				new SelectionAction(devicesTable, "labelSelectGhosts", null, null, i -> model.get(i) instanceof GhostDevice)
 				);
-		MouseListener popupListener = selectionPopup.getMouseListener();
-		btnSelectCombo.addMouseListener(popupListener);
-		btnSelectOnline.addMouseListener(popupListener);
-		btnSelectAll.addMouseListener(popupListener);
+//		MouseListener popupListener = selectionPopup.getMouseListener();
+//		btnSelectCombo.addMouseListener(popupListener);
+//		btnSelectOnline.addMouseListener(popupListener);
+//		btnSelectAll.addMouseListener(popupListener);
 
 		btnSelectCombo.addActionListener(e -> selectionPopup.show(btnSelectCombo, 0, 0));
 		
@@ -418,13 +435,27 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 			private void doPopup(MouseEvent evt) {
 				final int r;
 				if (evt.isPopupTrigger() && (r = devicesTable.rowAtPoint(evt.getPoint())) >= 0) {
-					devicesTable.setRowSelectionInterval(r, r); // add
-					ShellyAbstractDevice d = model.get(devicesTable.convertRowIndexToModel(r));
-					if(d instanceof GhostDevice) {
+					if(devicesTable.isRowSelected(r) == false) {
+						devicesTable.setRowSelectionInterval(r, r);
+					}
+					boolean ghost = false;
+					boolean notGhost = false;
+					boolean notLogged = true;
+					for(int idx: devicesTable.getSelectedRows()) {
+						ShellyAbstractDevice d = model.get(devicesTable.convertRowIndexToModel(idx));
+						if(d instanceof GhostDevice) {
+							ghost = true;
+						} else {
+							notGhost = true;
+							notLogged &= (d.getStatus() == Status.NOT_LOOGGED);
+						}
+					}
+//					ShellyAbstractDevice d = model.get(devicesTable.convertRowIndexToModel(r));
+					if(/*d instanceof GhostDevice*/ghost && notGhost == false) {
 						reloadAction.setEnabled(true);
 						ghostDevPopup.show(devicesTable, evt.getX(), evt.getY());
-					} else {
-						boolean notLogged = d.getStatus() == Status.NOT_LOOGGED;
+					} else if(notGhost && ghost == false) {
+//						boolean notLogged = d.getStatus() == Status.NOT_LOOGGED;
 						loginAction.setEnabled(notLogged);
 						reloadAction.setEnabled(notLogged == false);
 						tablePopup.show(devicesTable, evt.getX(), evt.getY());
@@ -524,7 +555,6 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 			devicesTable.saveColPos(appProp, DevicesTable.STORE_PREFIX);
 			devicesTable.saveColWidth(temporaryProp, DevicesTable.STORE_PREFIX);
 			final int visible = devicesTable.getColumnCount();
-//			for(int i = 0; i < tabModel.getColumnCount(); i++) { devicesTable.showColumn(i, -1); } // try to preserve normal view position
 			// load extended view preferences
 			devicesTable.restoreColumns();
 			devicesTable.resetRowsComputedHeight();
@@ -548,7 +578,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 					} else {
 						setBounds(current);
 					}
-				} // else size unchanged
+				} // else do not change size
 			}
 			if(devicesTable.loadColWidth(temporaryProp, DevicesTable.STORE_EXT_PREFIX) == false) { // SUBSTITUTE || ADD || ...
 				devicesTable.columnsWidthAdapt();
