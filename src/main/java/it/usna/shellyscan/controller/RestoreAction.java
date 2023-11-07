@@ -38,10 +38,10 @@ public class RestoreAction extends UsnaSelectedAction {
 		
 		setConsumer(devicesTable, modelRow -> {
 			ShellyAbstractDevice device = model.get(modelRow);
-			if(device.getStatus() == Status.NOT_LOOGGED) {
-				Msg.errorMsg(mainView, LABELS.getString("msgRestoreLogin"));
-				return;
-			}
+//			if(device.getStatus() == Status.NOT_LOOGGED) {
+//				Msg.errorMsg(mainView, LABELS.getString("msgRestoreLogin"));
+//				return;
+//			}
 			final JFileChooser fc = new JFileChooser(appProp.getProperty("LAST_PATH"));
 			try {
 				fc.setAcceptAllFileFilterUsed(false);

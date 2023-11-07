@@ -22,7 +22,6 @@ import javax.swing.JDialog;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
-import javax.swing.JTextArea;
 import javax.swing.KeyStroke;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Style;
@@ -33,10 +32,12 @@ import javax.swing.text.StyledDocument;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
 
 import it.usna.shellyscan.Main;
 import it.usna.shellyscan.controller.UsnaAction;
 import it.usna.shellyscan.model.Devices;
+import it.usna.shellyscan.model.Devices.EventType;
 import it.usna.shellyscan.model.device.BatteryDeviceInterface;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
@@ -44,14 +45,18 @@ import it.usna.shellyscan.model.device.g2.AbstractBatteryG2Device;
 import it.usna.shellyscan.view.util.UsnaTextPane;
 import it.usna.shellyscan.view.util.UtilMiscellaneous;
 import it.usna.swing.dialog.FindReplaceDialog;
+import it.usna.util.UsnaEventListener;
 
 public class DialogDeviceInfo extends JDialog {
 	private static final long serialVersionUID = 1L;
 	private final static Style DEF_STYLE = StyleContext.getDefaultStyleContext().getStyle(StyleContext.DEFAULT_STYLE);
+	private final static Pattern DELIMITERS_PATTERN = Pattern.compile("(\\{\n)|(\\n\\s*\\})");
 	private ScheduledExecutorService executor;
+	private ArrayList<String> waitForOnline = new ArrayList<>();
 
-	public DialogDeviceInfo(final MainView owner, boolean json, ShellyAbstractDevice device, String[] infoList) {
+	public DialogDeviceInfo(final MainView owner, Devices devicesModel, int modelIndex) {
 		super(owner, false);
+		ShellyAbstractDevice device = devicesModel.get(modelIndex);
 		setTitle(UtilMiscellaneous.getExtendedHostName(device));
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		this.setSize(530, 650);
@@ -68,7 +73,7 @@ public class DialogDeviceInfo extends JDialog {
 
 		JButton btnRefresh = new JButton(new UsnaAction("labelRefresh", e -> {
 			int s = tabbedPane.getSelectedIndex();
-			fill(tabbedPane, json, device, infoList);
+			fill(tabbedPane, devicesModel, device);
 			tabbedPane.setSelectedIndex(s);
 		}));
 
@@ -100,44 +105,54 @@ public class DialogDeviceInfo extends JDialog {
 		buttonsPanel.add(jButtonClose);
 
 		setVisible(true);
-		fill(tabbedPane, json, device, infoList);
+		fill(tabbedPane, devicesModel, device);
 	}
 
-	private void fill(JTabbedPane tabbedPane, boolean json, ShellyAbstractDevice device, String[] infoList) {
+	private void fill(JTabbedPane tabbedPane, Devices devicesModel, ShellyAbstractDevice device) {
 		tabbedPane.removeAll();
-		for (String info : infoList) {
+		waitForOnline.clear();
+		for (String info : device.getInfoRequests()) {
 			String name = info.replaceFirst("^/", "").replaceFirst("rpc/", "").replaceFirst("Shelly\\.", "");
-			if (json) {
-				tabbedPane.add(name, getJsonPanel(info, device));
-			} else {
-				tabbedPane.add(name, getPlainPanel(info, device));
-			}
+			tabbedPane.add(name, getJsonPanel(info, device));
+		}
+		if(waitForOnline.size() > 0) {
+			System.out.println(waitForOnline);
+//			devicesModel.addListener(new UsnaEventListener<Devices.EventType, Integer>() {
+//
+//				@Override
+//				public void update(EventType mesgType, Integer msgBody) {
+//					if(mesgType == EventType.UPDATE && devicesModel.get(msgBody) == device) {
+//
+//					}
+//				}
+//
+//			});
 		}
 	}
 
 	private JPanel getJsonPanel(String info, ShellyAbstractDevice device) {
 		JPanel panel = new JPanel();
 		panel.setLayout(new BorderLayout(0, 0));
-		UsnaTextPane textArea = new UsnaTextPane();
-		Style redStyle = textArea.addStyle("red", null);
+		UsnaTextPane textPane = new UsnaTextPane();
+		Style redStyle = textPane.addStyle("red", null);
 		StyleConstants.setForeground(redStyle, Color.RED);
 		StyleConstants.setBold(redStyle, true);
-		textArea.setEditable(false);
-		textArea.setForeground(Color.BLUE);
-		textArea.addCaretListener(e -> markDelimiters(e.getDot(), textArea.getStyledDocument(), redStyle));
+		textPane.setEditable(false);
+		textPane.setForeground(Color.BLUE);
+		textPane.addCaretListener(e -> markDelimiters(e.getDot(), textPane.getStyledDocument(), redStyle));
 		
-		final ObjectMapper mapper = new ObjectMapper();
+		final ObjectWriter writer = new ObjectMapper().writerWithDefaultPrettyPrinter();
 		JsonNode storedVal;
 		final boolean preview;
 		if (device instanceof BatteryDeviceInterface && (storedVal = ((BatteryDeviceInterface) device).getStoredJSON(info)) != null) {
 			try {
-				String json = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(storedVal);
-				textArea.setText(json, DEF_STYLE);
-				textArea.setCaretPosition(0);
+				String json = writer.writeValueAsString(storedVal);
+				textPane.setText(json, DEF_STYLE);
+				textPane.setCaretPosition(0);
 			} catch (JsonProcessingException e) {}
 			preview = true;
 		} else {
-			textArea.setText(Main.LABELS.getString("lblLoading"));
+			textPane.setText(Main.LABELS.getString("lblLoading"));
 			preview = false;
 		}
 		panel.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
@@ -147,35 +162,37 @@ public class DialogDeviceInfo extends JDialog {
 				if (Thread.interrupted() == false) {
 					// Retrive current data
 					JsonNode val = device.getJSON(info);
-					final String json = val.isNull() ? "" : mapper.writerWithDefaultPrettyPrinter().writeValueAsString(val);
-					textArea.setForeground(Color.BLACK);
-					textArea.setText(json, DEF_STYLE);
+					final String json = val.isNull() ? "" : writer.writeValueAsString(val);
+					textPane.setForeground(Color.BLACK);
+					textPane.setText(json, DEF_STYLE);
 					if (device instanceof BatteryDeviceInterface) {
 						((BatteryDeviceInterface) device).setStoredJSON(info, val);
 					}
 //					textArea.setCaretPosition(0);
-					markDelimiters(0, textArea.getStyledDocument(), redStyle);
+					markDelimiters(0, textPane.getStyledDocument(), redStyle);
 				}
 			} catch (Exception e) {
 				if (Thread.interrupted() == false) {
 					String msg;
 					if (device.getStatus() == Status.OFF_LINE) {
 						msg = "<" + Main.LABELS.getString("Status-OFFLINE") + ">";
+						waitForOnline.add(info);
 					} else if (device.getStatus() == Status.NOT_LOOGGED) {
 						msg = "<" + Main.LABELS.getString("Status-PROTECTED") + ">";
+						waitForOnline.add(info);
 					} else {
 						msg = e.getMessage();
 					}
 					if (preview) {
-						textArea.insert(msg + "\n\n", 0);
+						textPane.insert(msg + "\n\n", 0);
 					} else {
-						textArea.setText(msg);
+						textPane.setText(msg);
 					}
 				}
 			}
 			panel.setCursor(Cursor.getDefaultCursor());
 		}, Devices.MULTI_QUERY_DELAY, TimeUnit.MILLISECONDS);
-		JScrollPane scrollPane = new JScrollPane(textArea);
+		JScrollPane scrollPane = new JScrollPane(textPane);
 		panel.add(scrollPane);
 		// final Action topAction = new UsnaAction(e -> {
 		// scrollPane.getVerticalScrollBar().setValue(0);
@@ -200,51 +217,12 @@ public class DialogDeviceInfo extends JDialog {
 		return panel;
 	}
 
-	private JPanel getPlainPanel(String info, ShellyAbstractDevice device) {
-		JPanel panel = new JPanel();
-		panel.setLayout(new BorderLayout(0, 0));
-		JTextArea textArea = new JTextArea();
-		textArea.setEditable(false);
-		textArea.setForeground(Color.BLUE);
-		textArea.setText(Main.LABELS.getString("lblLoading"));
-
-		panel.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-
-		executor.schedule(() -> {
-			try {
-				if (Thread.interrupted() == false) {
-					textArea.setForeground(Color.BLACK);
-					String log = device.httpGetAsString(info);
-					textArea.setText(log);
-					textArea.setCaretPosition(0);
-				}
-			} catch (Exception e) {
-				if (Thread.interrupted() == false) {
-					String msg;
-					if (device.getStatus() == Status.OFF_LINE) {
-						msg = "<" + Main.LABELS.getString("Status-OFFLINE") + ">";
-					} else if (device.getStatus() == Status.NOT_LOOGGED) {
-						msg = "<" + Main.LABELS.getString("Status-PROTECTED") + ">";
-					} else {
-						msg = e.getMessage();
-					}
-					textArea.setText(msg);
-				}
-			}
-			panel.setCursor(Cursor.getDefaultCursor());
-		}, Devices.MULTI_QUERY_DELAY, TimeUnit.MILLISECONDS);
-		JScrollPane scrollPane = new JScrollPane(textArea);
-		panel.add(scrollPane);
-		return panel;
-	}
-
 	@Override
 	public void dispose() {
 		executor.shutdownNow();
 		super.dispose();
 	}
 	
-	private static Pattern DELIMITERS_PATTERN = Pattern.compile("(\\{\n)|(\\n\\s*\\})");
 	private static void markDelimiters(final int pos, StyledDocument doc, Style style) {
 		try {
 			String str = doc.getText(0, doc.getLength());

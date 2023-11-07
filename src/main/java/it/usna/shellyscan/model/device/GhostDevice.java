@@ -9,9 +9,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import it.usna.shellyscan.model.device.WIFIManager.Network;
 
 public class GhostDevice extends ShellyAbstractDevice {
-	private String typeName;
-	private String typeID;
-	private boolean battery;
+	private final String typeName;
+	private final String typeID;
+	private final boolean battery;
 	private String note;
 	
 	public GhostDevice(InetAddress address, int port, String hostname,
@@ -27,10 +27,6 @@ public class GhostDevice extends ShellyAbstractDevice {
 		this.battery = battery;
 		this.note = note;
 	}
-
-//	private GhostDevice(InetAddress address, int port, String hostname) {
-//		super(address, port, hostname);
-//	}
 
 	@Override
 	public String getTypeName() {

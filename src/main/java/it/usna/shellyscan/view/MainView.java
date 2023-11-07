@@ -114,13 +114,13 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 	private AppProperties temporaryProp = new AppProperties();
 
 	private Action infoAction = new UsnaSelectedAction(this, devicesTable, "action_info_name", "action_info_tooltip", "/images/Bubble3_16.png", "/images/Bubble3.png",
-			i -> new DialogDeviceInfo(MainView.this, true, model.get(i), model.get(i).getInfoRequests()) );
+			i -> new DialogDeviceInfo(MainView.this, model, i) );
 
 	private Action infoLogAction = new UsnaSelectedAction(this, devicesTable, "/images/Document2.png", "action_info_log_tooltip", i -> {
 		if(model.get(i) instanceof AbstractG2Device) {
 			new DialogDeviceLogsG2(MainView.this, model, i, AbstractG2Device.LOG_VERBOSE);
 		} else {
-			new DialogDeviceInfo(MainView.this, false, model.get(i), new String[]{"/debug/log", "/debug/log1"});
+			new DialogDeviceLogsG1(this, model.get(i));
 		}
 	});
 
@@ -383,8 +383,8 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		getContentPane().add(toolBar, BorderLayout.NORTH);
 		details = new JToggleButton(detailedViewAction);
 		details.setSelectedIcon(new ImageIcon(getClass().getResource("/images/Minus.png")));;
-		details.setRolloverIcon(new ImageIcon(getClass().getResource("/images/Plus.png")));
-		details.setRolloverSelectedIcon(new ImageIcon(getClass().getResource("/images/Minus.png")));
+		details.setRolloverIcon(details.getIcon()); // '+'
+		details.setRolloverSelectedIcon(details.getSelectedIcon()); // '-'
 		toolBar.add(rescanAction);
 		toolBar.add(refreshAction);
 		toolBar.addSeparator();
@@ -524,7 +524,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 				rebootAction.setEnabled(selectionNoGhost);
 				browseAction.setEnabled(selectionNoGhost && browserSupported);
 				backupAction.setEnabled(selectionNoGhost);
-				restoreAction.setEnabled(singleSelectionNoGhost);
+				restoreAction.setEnabled(singleSelectionNoGhost && d.getStatus() != Status.NOT_LOOGGED);
 				devicesSettingsAction.setEnabled(selectionNoGhost);
 				chartAction.setEnabled(selectionNoGhost);
 				scriptManagerAction.setEnabled(singleSelectionNoGhost && d instanceof AbstractG2Device);
