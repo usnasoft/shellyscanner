@@ -202,11 +202,12 @@ https://www.iconbolt.com/
 // -graphs
 
 1.0.2
-// extended view -> store position
+// extended view -> store column selection/column position
+// multi selection contextual menu
+// warning delete on notes
 // todo fw updates per off-line battery
 // todo listener sui dettagli (on-line -> get)
-multi contextual
-warning delete on notes
+
 
 ---
 // TODO

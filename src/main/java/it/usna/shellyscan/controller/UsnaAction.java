@@ -88,6 +88,14 @@ public class UsnaAction extends AbstractAction {
 		}
 	}
 	
+	public void setName(String nameId) {
+		putValue(NAME, LABELS.getString(nameId));
+	}
+	
+	public void setSmallIcon(String icon) {
+		putValue(SMALL_ICON, new ImageIcon(UsnaAction.class.getResource(icon)));
+	}
+	
 	@Override
 	public String toString() {
 		return (String)getValue(NAME);

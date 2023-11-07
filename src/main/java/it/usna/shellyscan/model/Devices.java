@@ -50,7 +50,6 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 		UPDATE,
 		SUBSTITUTE,
 		DELETE, // Ghost
-//		REMOVE, // From mDNS
 		READY, // Model is ready
 		CLEAR // Clear model
 	};
@@ -204,7 +203,6 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 	}
 
 	public void rescan(boolean useStore) throws IOException {
-		//LOG.trace("Q {}", ((ScheduledThreadPoolExecutor)executor).getQueue().size());
 		LOG.trace("rescan");
 		List<GhostDevice> ghosts = null;
 		if(useStore) {
@@ -436,10 +434,10 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 		LOG.debug("Starting ghosts reconnect");
 		int dalay = 0;
 		for(int i = 0; i < devices.size(); i++) {
-			if(devices.get(i) instanceof GhostDevice g && g.isBattery() == false && g.getPort() == 80) {
+			if(devices.get(i) instanceof GhostDevice g && g.isBattery() == false && g.getPort() == 80) { // g.getPort() port is (currently) variable
 				executor.schedule(() -> {
 					try {
-						create(g.getAddress(), 80, g.getAddress().getHostAddress(), false);
+						create(g.getAddress(), g.getPort(), g.getAddress().getHostAddress(), false);
 					} catch (RuntimeException e) {/*LOG.trace("ghosts reload {}", d.getAddress());*/}
 				}, dalay, TimeUnit.MILLISECONDS);
 				dalay +=4;

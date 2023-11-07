@@ -195,10 +195,8 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 	
 	private Action aboutAction = new UsnaAction(this, "/images/question.png", null/*"About"*/, e -> DialogAbout.show(MainView.this));
 	
-	private Action loginAction = new UsnaSelectedAction(this, devicesTable, "action_name_login", null, "/images/Key16.png", null,
-			i -> model.create(model.get(i).getAddress(), model.get(i).getPort(), model.get(i).getHostname(), true) );
-	
-	private Action reloadAction = new UsnaSelectedAction(this, devicesTable, "action_name_reload", null, "/images/Loop16.png", null,
+	// also asks for credential if needed (login action)
+	private UsnaAction reloadAction = new UsnaSelectedAction(this, devicesTable, "action_name_reload", null, "/images/Loop16.png", null,
 			i -> model.create(model.get(i).getAddress(), model.get(i).getPort(), model.get(i).getHostname(), false) );
 
 	private Action backupAction;
@@ -217,23 +215,20 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 	private Action detailedViewAction = new UsnaAction(this, "/images/Plus.png", "action_show_detail_tooltip",
 			e -> SwingUtilities.invokeLater(() -> detailedView(((JToggleButton)e.getSource()).isSelected()) ) );
 	
-	private Action notesAction = new UsnaSelectedAction(this, devicesTable, "/images/Write2.png", "action_notes_tooltip",
+	private Action notesAction = new UsnaSelectedAction(this, devicesTable, "action_notes_tooltip", "action_notes_tooltip", "/images/Write2-16.png", "/images/Write2.png",
 			i -> new NotesEditor(MainView.this, model.getGhost(i)) );
 	
-//	private Action eraseGhostAction = new UsnaAction(this, "action_name_delete_ghost", null, "/images/Minus16.png", null, e -> model.remove(devicesTable.getSelectedModelRow()));
 	private Action eraseGhostAction = new UsnaAction(this, "action_name_delete_ghost", null, "/images/Minus16.png", null, e -> {
 		boolean delete = true;
-		for(int idx: devicesTable.getSelectedRows()) {devicesTable.getSelectionModel().getLeadSelectionIndex();
+		for(int idx: devicesTable.getSelectedRows()) {
 			if(model.getGhost(devicesTable.convertRowIndexToModel(idx)).getNote().trim().length() > 0) {
-				delete = JOptionPane.showConfirmDialog(
-					MainView.this, LABELS.getString("action_name_delete_ghost_confirm"), LABELS.getString("action_name_delete_ghost"),
-					JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE) == JOptionPane.OK_OPTION;
+				delete = (JOptionPane.showConfirmDialog(MainView.this, LABELS.getString("action_name_delete_ghost_confirm"), 
+						LABELS.getString("action_name_delete_ghost"), JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE) == JOptionPane.OK_OPTION);
 				break;
 			}
 		}
 		if(delete) {
-			Arrays.stream(devicesTable.getSelectedRows()).map(i -> devicesTable.convertRowIndexToModel(i)).boxed().
-			sorted(Collections.reverseOrder()).forEach(i-> model.remove(i));
+			Arrays.stream(devicesTable.getSelectedRows()).map(i -> devicesTable.convertRowIndexToModel(i)).boxed().sorted(Collections.reverseOrder()).forEach(i-> model.remove(i));
 		}
 	});
 	
@@ -367,10 +362,6 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 				new SelectionAction(devicesTable, "labelSelectG2", null, null, i -> model.get(i) instanceof AbstractG2Device),
 				new SelectionAction(devicesTable, "labelSelectGhosts", null, null, i -> model.get(i) instanceof GhostDevice)
 				);
-//		MouseListener popupListener = selectionPopup.getMouseListener();
-//		btnSelectCombo.addMouseListener(popupListener);
-//		btnSelectOnline.addMouseListener(popupListener);
-//		btnSelectAll.addMouseListener(popupListener);
 
 		btnSelectCombo.addActionListener(e -> selectionPopup.show(btnSelectCombo, 0, 0));
 		
@@ -420,8 +411,8 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		toolBar.add(aboutAction);
 
 		// devices popup
-		UsnaPopupMenu tablePopup = new UsnaPopupMenu(infoAction, browseAction, backupAction, restoreAction, reloadAction, loginAction);
-		UsnaPopupMenu ghostDevPopup = new UsnaPopupMenu(reloadAction, eraseGhostAction);
+		UsnaPopupMenu tablePopup = new UsnaPopupMenu(infoAction, browseAction, backupAction, restoreAction, notesAction, reloadAction/*, loginAction*/);
+		UsnaPopupMenu ghostDevPopup = new UsnaPopupMenu(reloadAction, notesAction, eraseGhostAction);
 
 		devicesTable.addMouseListener(new MouseAdapter() {
 			@Override
@@ -445,19 +436,18 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 						ShellyAbstractDevice d = model.get(devicesTable.convertRowIndexToModel(idx));
 						if(d instanceof GhostDevice) {
 							ghost = true;
+							notLogged = false;
 						} else {
 							notGhost = true;
 							notLogged &= (d.getStatus() == Status.NOT_LOOGGED);
 						}
 					}
-//					ShellyAbstractDevice d = model.get(devicesTable.convertRowIndexToModel(r));
-					if(/*d instanceof GhostDevice*/ghost && notGhost == false) {
+					if(ghost && notGhost == false) {
 						reloadAction.setEnabled(true);
 						ghostDevPopup.show(devicesTable, evt.getX(), evt.getY());
-					} else if(notGhost && ghost == false) {
-//						boolean notLogged = d.getStatus() == Status.NOT_LOOGGED;
-						loginAction.setEnabled(notLogged);
-						reloadAction.setEnabled(notLogged == false);
+					} else {
+						reloadAction.setName(notLogged ? "action_name_login" : "action_name_reload"); // reload and login are actually the same action
+						reloadAction.setSmallIcon(notLogged ? "/images/Key16.png" : "/images/Loop16.png");
 						tablePopup.show(devicesTable, evt.getX(), evt.getY());
 					}
 				}
@@ -631,7 +621,6 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 				} else if(mesgType == Devices.EventType.ADD) {
 					devicesTable.addRow(model.get(msgBody));
 					displayStatus();
-//				} else if(mesgType == Devices.EventType.REMOVE) { tabModel.setValueAt(DevicesTable.OFFLINE_BULLET, msgBody, DevicesTable.COL_STATUS_IDX);
 				} else if(mesgType == Devices.EventType.SUBSTITUTE) {
 					devicesTable.updateRow(model.get(msgBody), msgBody);
 					devicesTable.columnsWidthAdapt();
