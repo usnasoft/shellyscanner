@@ -23,6 +23,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.KeyStroke;
+import javax.swing.SwingUtilities;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
@@ -51,11 +52,14 @@ public class DialogDeviceInfo extends JDialog {
 	private static final long serialVersionUID = 1L;
 	private final static Style DEF_STYLE = StyleContext.getDefaultStyleContext().getStyle(StyleContext.DEFAULT_STYLE);
 	private final static Pattern DELIMITERS_PATTERN = Pattern.compile("(\\{\n)|(\\n\\s*\\})");
+	private final Devices devicesModel;
 	private ScheduledExecutorService executor;
 	private ArrayList<String> waitForOnline = new ArrayList<>();
+	private UsnaEventListener<Devices.EventType, Integer> modelListener; 
 
 	public DialogDeviceInfo(final MainView owner, Devices devicesModel, int modelIndex) {
 		super(owner, false);
+		this.devicesModel = devicesModel;
 		ShellyAbstractDevice device = devicesModel.get(modelIndex);
 		setTitle(UtilMiscellaneous.getExtendedHostName(device));
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
@@ -73,7 +77,7 @@ public class DialogDeviceInfo extends JDialog {
 
 		JButton btnRefresh = new JButton(new UsnaAction("labelRefresh", e -> {
 			int s = tabbedPane.getSelectedIndex();
-			fill(tabbedPane, devicesModel, device);
+			fill(tabbedPane, devicesModel, device, modelIndex);
 			tabbedPane.setSelectedIndex(s);
 		}));
 
@@ -105,28 +109,44 @@ public class DialogDeviceInfo extends JDialog {
 		buttonsPanel.add(jButtonClose);
 
 		setVisible(true);
-		fill(tabbedPane, devicesModel, device);
+		fill(tabbedPane, devicesModel, device, modelIndex);
 	}
 
-	private void fill(JTabbedPane tabbedPane, Devices devicesModel, ShellyAbstractDevice device) {
-		tabbedPane.removeAll();
-		waitForOnline.clear();
-		for (String info : device.getInfoRequests()) {
-			String name = info.replaceFirst("^/", "").replaceFirst("rpc/", "").replaceFirst("Shelly\\.", "");
-			tabbedPane.add(name, getJsonPanel(info, device));
+	private void fill(JTabbedPane tabbedPane, Devices devicesModel, ShellyAbstractDevice device, int index) {
+		if(device.getStatus() != Status.GHOST) {
+			tabbedPane.removeAll();
+			waitForOnline.clear();
+			for (String info : device.getInfoRequests()) {
+				String name = info.replaceFirst("^/", "").replaceFirst("^rpc/", "").replaceFirst("^Shelly\\.", "");
+				tabbedPane.add(name, getJsonPanel(info, device));
+			}
 		}
-		if(waitForOnline.size() > 0) {
-			System.out.println(waitForOnline);
-//			devicesModel.addListener(new UsnaEventListener<Devices.EventType, Integer>() {
-//
+		if(waitForOnline.size() > 0 || device.getStatus() == Status.GHOST) {
+//			modelListener = new UsnaEventListener<>() {
 //				@Override
 //				public void update(EventType mesgType, Integer msgBody) {
-//					if(mesgType == EventType.UPDATE && devicesModel.get(msgBody) == device) {
-//
+//					if(mesgType == EventType.SUBSTITUTE) {
+//						fill(tabbedPane, devicesModel, devicesModel.get(msgBody), index); // even NOT_LOOGGED is useful in this case 
+//						devicesModel.removeListener(modelListener);
+//					} else if(mesgType == EventType.UPDATE && msgBody == index && device.getStatus() == Status.ON_LINE) {
+//						fill(tabbedPane, devicesModel, device, index);
+//						devicesModel.removeListener(modelListener);
 //					}
 //				}
-//
-//			});
+//			};
+			
+			modelListener = (EventType mesgType, Integer msgBody) -> {
+				if(mesgType == EventType.SUBSTITUTE) {
+					fill(tabbedPane, devicesModel, devicesModel.get(msgBody), index); // even NOT_LOOGGED is useful in this case 
+					devicesModel.removeListener(modelListener);
+				} else if(mesgType == EventType.UPDATE && msgBody == index && device.getStatus() == Status.ON_LINE) {
+					fill(tabbedPane, devicesModel, device, index);
+					devicesModel.removeListener(modelListener);
+				} else if(mesgType == Devices.EventType.CLEAR) {
+					SwingUtilities.invokeLater(() -> dispose()); // devicesInd changes
+				}
+			};
+			devicesModel.addListener(modelListener);
 		}
 	}
 
@@ -219,6 +239,7 @@ public class DialogDeviceInfo extends JDialog {
 
 	@Override
 	public void dispose() {
+		devicesModel.removeListener(modelListener);
 		executor.shutdownNow();
 		super.dispose();
 	}
