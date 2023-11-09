@@ -38,10 +38,6 @@ public class RestoreAction extends UsnaSelectedAction {
 		
 		setConsumer(devicesTable, modelRow -> {
 			ShellyAbstractDevice device = model.get(modelRow);
-//			if(device.getStatus() == Status.NOT_LOOGGED) {
-//				Msg.errorMsg(mainView, LABELS.getString("msgRestoreLogin"));
-//				return;
-//			}
 			final JFileChooser fc = new JFileChooser(appProp.getProperty("LAST_PATH"));
 			try {
 				fc.setAcceptAllFileFilterUsed(false);
@@ -136,6 +132,7 @@ public class RestoreAction extends UsnaSelectedAction {
 					final String ret = device.restore(backupJsons, resData);
 					appProp.setProperty("LAST_PATH", fc.getCurrentDirectory().getCanonicalPath());
 					device.refreshSettings();
+					try { Thread.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e) {}
 					device.refreshStatus();
 					mainView.update(Devices.EventType.UPDATE, modelRow);
 					

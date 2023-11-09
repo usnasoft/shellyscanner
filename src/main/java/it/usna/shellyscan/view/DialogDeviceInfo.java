@@ -122,19 +122,15 @@ public class DialogDeviceInfo extends JDialog implements UsnaEventListener<Devic
 	private synchronized void fill() {
 		ShellyAbstractDevice device = devicesModel.get(deviceIndex);
 		try {
-//			if(device.getStatus() != Status.GHOST) {
-				int selected = tabbedPane.getSelectedIndex();
-				tabbedPane.removeAll();
-				for (String info : device.getInfoRequests()) {
-					String name = info.replaceFirst("^/", "").replaceFirst("^rpc/", "").replaceFirst("^Shelly\\.", "");
-					tabbedPane.add(name, getJsonPanel(info, device));
-				}
-				if(selected >= 0) {
-					tabbedPane.setSelectedIndex(selected);
-				}
-//			} else {
-//				pleaseUpdate = true;
-//			}
+			int selected = tabbedPane.getSelectedIndex();
+			tabbedPane.removeAll();
+			for (String info : device.getInfoRequests()) {
+				String name = info.replaceFirst("^/", "").replaceFirst("^rpc/", "").replaceFirst("^Shelly\\.", "");
+				tabbedPane.add(name, getJsonPanel(info, device));
+			}
+			if(selected >= 0) {
+				tabbedPane.setSelectedIndex(selected);
+			}
 		} catch(RuntimeException e) {
 			LOG.error("", e);
 		}
