@@ -10,6 +10,7 @@ import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
@@ -30,11 +31,15 @@ import javax.swing.text.StyleConstants;
 import javax.swing.text.StyleContext;
 import javax.swing.text.StyledDocument;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 
+import it.usna.mvc.singlewindow.MainWindow;
 import it.usna.shellyscan.Main;
 import it.usna.shellyscan.controller.UsnaAction;
 import it.usna.shellyscan.model.Devices;
@@ -48,18 +53,22 @@ import it.usna.shellyscan.view.util.UtilMiscellaneous;
 import it.usna.swing.dialog.FindReplaceDialog;
 import it.usna.util.UsnaEventListener;
 
-public class DialogDeviceInfo extends JDialog {
+public class DialogDeviceInfo extends JDialog implements UsnaEventListener<Devices.EventType, Integer> {
 	private static final long serialVersionUID = 1L;
+	private final static Logger LOG = LoggerFactory.getLogger(MainWindow.class);
 	private final static Style DEF_STYLE = StyleContext.getDefaultStyleContext().getStyle(StyleContext.DEFAULT_STYLE);
 	private final static Pattern DELIMITERS_PATTERN = Pattern.compile("(\\{\n)|(\\n\\s*\\})");
 	private final Devices devicesModel;
-	private ScheduledExecutorService executor;
-	private ArrayList<String> waitForOnline = new ArrayList<>();
-	private UsnaEventListener<Devices.EventType, Integer> modelListener; 
+	private final int deviceIndex;
+	private final ScheduledExecutorService executor;
+	
+	private JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
+	private boolean pleaseUpdate = false;
 
 	public DialogDeviceInfo(final MainView owner, Devices devicesModel, int modelIndex) {
 		super(owner, false);
 		this.devicesModel = devicesModel;
+		this.deviceIndex = modelIndex;
 		ShellyAbstractDevice device = devicesModel.get(modelIndex);
 		setTitle(UtilMiscellaneous.getExtendedHostName(device));
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
@@ -69,16 +78,13 @@ public class DialogDeviceInfo extends JDialog {
 		// too many concurrent requests are dangerous (device reboot - G1) or cause websocket disconnection (G2)
 		executor = Executors.newScheduledThreadPool(device instanceof AbstractBatteryG2Device ? 5 : 2);
 
-		JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
 		getContentPane().add(tabbedPane, BorderLayout.CENTER);
 
 		JPanel buttonsPanel = new JPanel();
 		getContentPane().add(buttonsPanel, BorderLayout.SOUTH);
 
 		JButton btnRefresh = new JButton(new UsnaAction("labelRefresh", e -> {
-			int s = tabbedPane.getSelectedIndex();
-			fill(tabbedPane, devicesModel, device, modelIndex);
-			tabbedPane.setSelectedIndex(s);
+			fill();
 		}));
 
 		final Supplier<JTextComponent> ta = () -> (JTextComponent) ((JScrollPane) ((JPanel) tabbedPane.getSelectedComponent()).getComponent(0)).getViewport().getView();
@@ -109,44 +115,28 @@ public class DialogDeviceInfo extends JDialog {
 		buttonsPanel.add(jButtonClose);
 
 		setVisible(true);
-		fill(tabbedPane, devicesModel, device, modelIndex);
+		fill();
+		devicesModel.addListener(this);
 	}
 
-	private void fill(JTabbedPane tabbedPane, Devices devicesModel, ShellyAbstractDevice device, int index) {
-		if(device.getStatus() != Status.GHOST) {
-			tabbedPane.removeAll();
-			waitForOnline.clear();
-			for (String info : device.getInfoRequests()) {
-				String name = info.replaceFirst("^/", "").replaceFirst("^rpc/", "").replaceFirst("^Shelly\\.", "");
-				tabbedPane.add(name, getJsonPanel(info, device));
-			}
-		}
-		if(waitForOnline.size() > 0 || device.getStatus() == Status.GHOST) {
-//			modelListener = new UsnaEventListener<>() {
-//				@Override
-//				public void update(EventType mesgType, Integer msgBody) {
-//					if(mesgType == EventType.SUBSTITUTE) {
-//						fill(tabbedPane, devicesModel, devicesModel.get(msgBody), index); // even NOT_LOOGGED is useful in this case 
-//						devicesModel.removeListener(modelListener);
-//					} else if(mesgType == EventType.UPDATE && msgBody == index && device.getStatus() == Status.ON_LINE) {
-//						fill(tabbedPane, devicesModel, device, index);
-//						devicesModel.removeListener(modelListener);
-//					}
-//				}
-//			};
-			
-			modelListener = (EventType mesgType, Integer msgBody) -> {
-				if(mesgType == EventType.SUBSTITUTE) {
-					fill(tabbedPane, devicesModel, devicesModel.get(msgBody), index); // even NOT_LOOGGED is useful in this case 
-					devicesModel.removeListener(modelListener);
-				} else if(mesgType == EventType.UPDATE && msgBody == index && device.getStatus() == Status.ON_LINE) {
-					fill(tabbedPane, devicesModel, device, index);
-					devicesModel.removeListener(modelListener);
-				} else if(mesgType == Devices.EventType.CLEAR) {
-					SwingUtilities.invokeLater(() -> dispose()); // devicesInd changes
+	private synchronized void fill() {
+		ShellyAbstractDevice device = devicesModel.get(deviceIndex);
+		try {
+//			if(device.getStatus() != Status.GHOST) {
+				int selected = tabbedPane.getSelectedIndex();
+				tabbedPane.removeAll();
+				for (String info : device.getInfoRequests()) {
+					String name = info.replaceFirst("^/", "").replaceFirst("^rpc/", "").replaceFirst("^Shelly\\.", "");
+					tabbedPane.add(name, getJsonPanel(info, device));
 				}
-			};
-			devicesModel.addListener(modelListener);
+				if(selected >= 0) {
+					tabbedPane.setSelectedIndex(selected);
+				}
+//			} else {
+//				pleaseUpdate = true;
+//			}
+		} catch(RuntimeException e) {
+			LOG.error("", e);
 		}
 	}
 
@@ -188,18 +178,18 @@ public class DialogDeviceInfo extends JDialog {
 					if (device instanceof BatteryDeviceInterface) {
 						((BatteryDeviceInterface) device).setStoredJSON(info, val);
 					}
-//					textArea.setCaretPosition(0);
+//					textPane.setCaretPosition(0);
 					markDelimiters(0, textPane.getStyledDocument(), redStyle);
 				}
 			} catch (Exception e) {
 				if (Thread.interrupted() == false) {
 					String msg;
-					if (device.getStatus() == Status.OFF_LINE) {
+					if (device.getStatus() == Status.OFF_LINE || device.getStatus() == Status.GHOST) {
 						msg = "<" + Main.LABELS.getString("Status-OFFLINE") + ">";
-						waitForOnline.add(info);
+						pleaseUpdate = true;
 					} else if (device.getStatus() == Status.NOT_LOOGGED) {
 						msg = "<" + Main.LABELS.getString("Status-PROTECTED") + ">";
-						waitForOnline.add(info);
+						pleaseUpdate = true;
 					} else {
 						msg = e.getMessage();
 					}
@@ -239,7 +229,7 @@ public class DialogDeviceInfo extends JDialog {
 
 	@Override
 	public void dispose() {
-		devicesModel.removeListener(modelListener);
+		devicesModel.removeListener(this);
 		executor.shutdownNow();
 		super.dispose();
 	}
@@ -271,5 +261,19 @@ public class DialogDeviceInfo extends JDialog {
 				}
 			}
 		} catch(/*BadLocation*/Exception e) {}
+	}
+	
+	@Override
+	public void update(EventType mesgType, Integer msgBody) {
+		SwingUtilities.invokeLater(() -> {
+			if(pleaseUpdate && msgBody != null && msgBody == deviceIndex && ((ScheduledThreadPoolExecutor)executor).getQueue().size() == 0 && (
+					(mesgType == EventType.SUBSTITUTE) ||  (mesgType == EventType.UPDATE && devicesModel.get(deviceIndex).getStatus() == Status.ON_LINE)) ){
+				pleaseUpdate = false;
+				try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e) {}
+				fill();
+			} else if(mesgType == Devices.EventType.CLEAR) {
+				dispose();
+			}
+		});
 	}
 }

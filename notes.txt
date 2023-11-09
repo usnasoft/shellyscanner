@@ -203,10 +203,10 @@ https://www.iconbolt.com/
 
 1.0.2
 // extended view -> store column selection/column position
-// multi selection contextual menu
+// multi-selection contextual menu
 // warning delete on notes
+// device info auto-update on device going to "on line"
 // todo fw updates per off-line battery
-// todo listener sui dettagli (on-line -> get)
 
 
 ---

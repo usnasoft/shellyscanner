@@ -138,12 +138,15 @@ public class DevicesStore {
 	/**
 	 * Map the full model to a list of ghosts - ignore notes
 	 */
-	public static List<GhostDevice> toGhosts(Devices model) {
+	public List<GhostDevice> toGhosts(Devices model) {
 		List<GhostDevice> list = new ArrayList<>(model.size());
+		GhostDevice stored;
 		for(int i= 0; i < model.size(); i++) {
 			ShellyAbstractDevice dev = model.get(i);
 			if(dev instanceof ShellyUnmanagedDevice == false || ((ShellyUnmanagedDevice)dev).getException() == null) {
 				list.add(toGhost(dev));
+			} else if ((stored = getStoredGhost(dev)) != null) {
+				list.add(toGhost(stored));
 			}
 		}
 		return list;

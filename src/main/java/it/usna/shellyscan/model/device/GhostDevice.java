@@ -55,9 +55,13 @@ public class GhostDevice extends ShellyAbstractDevice {
 		this.note = note;
 	}
 	
+	public JsonNode getJSON(final String command) throws DeviceOfflineException {
+		throw new DeviceOfflineException("Status-GHOST");
+	}
+
 	@Override
 	public String[] getInfoRequests() {
-		throw new UnsupportedOperationException();
+		return new String[] {"/shelly"};
 	}
 
 	@Override

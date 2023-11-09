@@ -518,7 +518,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 						break;
 					}
 				}
-				infoAction.setEnabled(singleSelectionNoGhost);
+				infoAction.setEnabled(singleSelection);
 				infoLogAction.setEnabled(singleSelectionNoGhost);
 				checkListAction.setEnabled(selectionNoGhost);
 				rebootAction.setEnabled(selectionNoGhost);

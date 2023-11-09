@@ -75,7 +75,7 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 	private HttpClient httpClient = new HttpClient();
 	private WebSocketClient wsClient = new WebSocketClient(httpClient);
 	
-	private DevicesStore ghosts = new DevicesStore();
+	private DevicesStore ghostsStore = new DevicesStore();
 	
 	public Devices() throws Exception {
 		httpClient.setDestinationIdleTimeout(300_000); // 5 min
@@ -206,7 +206,7 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 		LOG.trace("rescan");
 		List<GhostDevice> ghosts = null;
 		if(useStore) {
-			ghosts = DevicesStore.toGhosts(this);
+			ghosts = ghostsStore.toGhosts(this);
 		}
 		clear();
 		fireEvent(EventType.CLEAR);
@@ -475,7 +475,7 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 	}
 	
 	public void loadFromStore(Path path) throws IOException {
-		loadGhosts(ghosts.read(path));
+		loadGhosts(ghostsStore.read(path));
 	}
 	
 	private void loadGhosts(List<GhostDevice> ghosts) {
@@ -492,11 +492,11 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 	}
 	
 	public GhostDevice getGhost(int modelIdx) {
-		return ghosts.getGhost(devices.get(modelIdx));
+		return ghostsStore.getGhost(devices.get(modelIdx));
 	}
 	
 	public void saveToStore(Path path) throws IOException {
-		ghosts.store(this, path);
+		ghostsStore.store(this, path);
 	}
 
 	private void clear() {
