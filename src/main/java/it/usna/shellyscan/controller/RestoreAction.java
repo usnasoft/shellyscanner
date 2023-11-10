@@ -129,8 +129,8 @@ public class RestoreAction extends UsnaSelectedAction {
 						}
 					}
 					mainView.getContentPane().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-					final String ret = device.restore(backupJsons, resData);
 					appProp.setProperty("LAST_PATH", fc.getCurrentDirectory().getCanonicalPath());
+					final String ret = device.restore(backupJsons, resData);
 					device.refreshSettings();
 					try { Thread.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e) {}
 					device.refreshStatus();
@@ -149,6 +149,17 @@ public class RestoreAction extends UsnaSelectedAction {
 							JOptionPane.showMessageDialog(mainView, LABELS.getString("msgRestoreSuccess"), device.getHostname(), JOptionPane.INFORMATION_MESSAGE);
 						}
 					} else {
+//						if(device.getStatus() == Status.OFF_LINE) {
+//							JOptionPane.showMessageDialog(mainView, "device offline - task queued", device.getHostname(), JOptionPane.ERROR_MESSAGE);
+//							new DeferrableAction("restore", () -> {
+//								final String retx = device.restore(backupJsons, resData);
+//								device.refreshSettings();
+//								try { Thread.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e) {}
+//								device.refreshStatus();
+//								return retx;
+//							});
+//							// todo accodare in apposito container
+//						}
 						JOptionPane.showMessageDialog(mainView, (ret.equals(Restore.ERR_UNKNOWN.toString())) ? LABELS.getString("labelError") : ret, device.getHostname(), JOptionPane.ERROR_MESSAGE);
 					}
 				}

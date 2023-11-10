@@ -187,7 +187,7 @@ public class DialogDeviceInfo extends JDialog implements UsnaEventListener<Devic
 						msg = "<" + Main.LABELS.getString("Status-PROTECTED") + ">";
 						pleaseUpdate = true;
 					} else {
-						msg = e.getMessage();
+						msg = "<" + e.getMessage() + ">";
 					}
 					if (preview) {
 						textPane.insert(msg + "\n\n", 0);
