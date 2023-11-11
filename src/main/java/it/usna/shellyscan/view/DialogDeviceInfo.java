@@ -263,7 +263,7 @@ public class DialogDeviceInfo extends JDialog implements UsnaEventListener<Devic
 	public void update(EventType mesgType, Integer msgBody) {
 		SwingUtilities.invokeLater(() -> {
 			if(pleaseUpdate && msgBody != null && msgBody == deviceIndex && ((ScheduledThreadPoolExecutor)executor).getQueue().size() == 0 && (
-					(mesgType == EventType.SUBSTITUTE) ||  (mesgType == EventType.UPDATE && devicesModel.get(deviceIndex).getStatus() == Status.ON_LINE)) ){
+					mesgType == EventType.SUBSTITUTE || (mesgType == EventType.UPDATE && devicesModel.get(deviceIndex).getStatus() == Status.ON_LINE)) ) {
 				pleaseUpdate = false;
 				try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e) {}
 				fill();

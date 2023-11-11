@@ -1,24 +1,27 @@
 package it.usna.shellyscan.controller;
 
-import java.util.concurrent.Callable;
+import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 
 public class DeferrableAction {
-	public enum Status {WAITING, RUNNING, SUCCESS, FAIL};
-	private String description;
-//	private Task runner;
-	private Callable<?> runner;
+	public enum Status {WAITING, CANCELLED, RUNNING, SUCCESS, FAIL};
+	private final String description;
+//	private final Devices model;
+//	private final int devIndex;
+	private Task<?> runner;
 	private Object retValue;
 	private Status status = Status.WAITING;
 	
-	public DeferrableAction(String description, /*Task*/Callable<?> runner) {
+	public DeferrableAction(/*Devices model, int devIndex,*/ String description, Task<?> runner) {
+//		this.model = model;
+//		this.devIndex = devIndex;
 		this.description = description;
 		this.runner = runner;
 	}
 	
-	public boolean run() {
+	public boolean run(ShellyAbstractDevice device) {
 		try {
 			status = Status.RUNNING;
-			retValue = runner.call();
+			retValue = runner.run(device);
 			status = Status.SUCCESS;
 			return true;
 		} catch(Exception e) {
@@ -40,6 +43,11 @@ public class DeferrableAction {
 //		}
 //	}
 	
+	public void cancel() {
+		close();
+		status = Status.CANCELLED;
+	}
+	
 	public Status getStatus() {
 		return status;
 	}
@@ -52,10 +60,10 @@ public class DeferrableAction {
 		return retValue;
 	}
 	
-//	public interface Task {
-//		Object run() throws Exception;
-//	}
-//	
+	public interface Task<T> {
+		T run(ShellyAbstractDevice dedice) throws Exception;
+	}
+	
 	/**
 	 * Release resources
 	 */
