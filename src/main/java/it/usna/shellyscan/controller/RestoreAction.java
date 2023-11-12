@@ -151,7 +151,7 @@ public class RestoreAction extends UsnaSelectedAction {
 					} else {
 						if(device.getStatus() == Status.OFF_LINE) {
 							JOptionPane.showMessageDialog(mainView, "device offline - task queued", device.getHostname(), JOptionPane.ERROR_MESSAGE);
-							DeferrablesContainer.getInstance(model).addDeferrable(modelRow, new DeferrableAction("restore", dev -> {
+							DeferrablesContainer.getInstance(model).add(modelRow, new DeferrableAction("restore", dev -> {
 								System.out.println("restoring " + dev);
 								final String retx = dev.restore(backupJsons, resData);
 								dev.refreshSettings();

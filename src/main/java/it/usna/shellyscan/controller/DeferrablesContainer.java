@@ -6,6 +6,7 @@ import it.usna.shellyscan.controller.DeferrableAction.Status;
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.Devices.EventType;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
+import it.usna.shellyscan.view.util.UtilMiscellaneous;
 import it.usna.util.UsnaEventListener;
 
 //TODO synchronize
@@ -15,6 +16,7 @@ public class DeferrablesContainer implements UsnaEventListener<Devices.EventType
 	private final Devices model;
 	private ArrayList<Integer> devIdx = new ArrayList<>();
 	private ArrayList<DeferrableAction> deferrables = new ArrayList<>();
+	private ArrayList<String> deviceDesc = new ArrayList<>();
 
 	public static DeferrablesContainer getInstance(Devices model) {
 		if(instance == null) {
@@ -28,24 +30,44 @@ public class DeferrablesContainer implements UsnaEventListener<Devices.EventType
 		this.model = model;
 	};
 
-	public void addDeferrable(int idx, DeferrableAction def) {
-		devIdx.add(idx);
-		deferrables.add(def);
+	public void add(int modelIdx, DeferrableAction def) {
+		synchronized (devIdx) {
+			devIdx.add(modelIdx);
+			deferrables.add(def);
+			deviceDesc.add(UtilMiscellaneous.getDescName(model.get(modelIdx)));
+		}
+	}
+	
+	public void cancel(int index) {
+		synchronized (devIdx) {
+			DeferrableAction def = deferrables.get(index);
+			if(def.getStatus() == Status.WAITING) {
+//				deviceDesc.set(index, UtilMiscellaneous.getDescName(model.get(devIdx.get(index))));
+				devIdx.set(index, null);
+				def.cancel();
+			}
+		}
 	}
 
 	@Override
-	public void update(EventType mesgType, Integer msgBody) {
-		//		SwingUtilities.invokeLater(() -> {
+	public void update(EventType mesgType, Integer modelIdx) {
 		int index;
 		ShellyAbstractDevice device;
 		DeferrableAction deferrable;
 		if((mesgType == EventType.SUBSTITUTE || mesgType == EventType.UPDATE) &&
-				msgBody != null && (index = devIdx.indexOf(msgBody)) >= 0 && (deferrable = deferrables.get(index)).getStatus() == Status.WAITING &&
-				(device = model.get(msgBody)).getStatus() == ShellyAbstractDevice.Status.ON_LINE) {
-			new Thread(() -> deferrable.run(device));
+				(index = devIdx.indexOf(modelIdx)) >= 0 && (deferrable = deferrables.get(index)).getStatus() == Status.WAITING &&
+				(device = model.get(modelIdx)).getStatus() == ShellyAbstractDevice.Status.ON_LINE) {
+			synchronized (devIdx) {
+				new Thread(() -> deferrable.run(device)).run();
+				deviceDesc.set(index, UtilMiscellaneous.getDescName(device)); // could have been changed since add(...)
+				devIdx.set(index, null);
+			}
 		} else if(mesgType == Devices.EventType.CLEAR) {
-			deferrables.forEach(def -> def.cancel());
+			synchronized (devIdx) {
+				for(int i = 0; i < devIdx.size(); i++) {
+					cancel(i);
+				}
+			}
 		}
-		//		});
 	}
 }
