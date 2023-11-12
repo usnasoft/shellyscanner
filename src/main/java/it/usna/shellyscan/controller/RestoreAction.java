@@ -160,8 +160,10 @@ public class RestoreAction extends UsnaSelectedAction {
 								System.out.println("restored");
 								return retx;
 							}));
+						} else {
+							JOptionPane.showMessageDialog(mainView,(ret.equals(Restore.ERR_UNKNOWN.toString())) ? LABELS.getString("labelError") : ret,
+									device.getHostname(), JOptionPane.ERROR_MESSAGE);
 						}
-						JOptionPane.showMessageDialog(mainView, (ret.equals(Restore.ERR_UNKNOWN.toString())) ? LABELS.getString("labelError") : ret, device.getHostname(), JOptionPane.ERROR_MESSAGE);
 					}
 				}
 			} catch (FileNotFoundException e1) {
