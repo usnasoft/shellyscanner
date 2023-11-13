@@ -199,6 +199,8 @@ public class GhostDevice extends ShellyAbstractDevice {
 //		return res;
 //	}
 
+	// no network restore; no addon warning; todo chenck roller/switch profile on restore
+	
 	@Override
 	public String restore(Map<String, JsonNode> backupJsons, Map<Restore, String> data) {
 		throw new UnsupportedOperationException();

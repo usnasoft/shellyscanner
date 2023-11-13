@@ -290,7 +290,7 @@ public class SensorAddOn extends Meters {
 		if(backupAddOn == null && addOn != null) {
 			errors.add(enable(d, false));
 		} else if(backupAddOn != null) {
-			if(addOn == null || addOn.getTypes().length == 0) { // no sensor defined -> go no
+			if(addOn == null || addOn.getTypes().length == 0) { // no sensor defined -> go on
 				if(addOn == null) {
 					enable(d, true);
 				}
