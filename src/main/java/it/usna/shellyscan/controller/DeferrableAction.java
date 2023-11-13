@@ -70,4 +70,9 @@ public class DeferrableAction {
 	public void close() {
 		runner = null;
 	}
+	
+	@Override
+	public String toString() {
+		return description;
+	}
 }

@@ -132,17 +132,21 @@ public class WIFIManagerG2 implements WIFIManager {
 		return d.postCommand("Wifi.SetConfig", config);
 	}
 	
-	public static Network currentConnection(AbstractG2Device d) throws IOException {
-		JsonNode settings = d.getJSON("/rpc/Shelly.GetConfig").get("wifi");
-		JsonNode sta;
-		if((sta = settings.get("sta")).get("enable").asBoolean() && sta.get("ssid").asText("").equals(d.getSSID())) {
-			return Network.PRIMARY;
-		} else if((sta = settings.get("sta1")).get("enable").asBoolean() && sta.get("ssid").asText("").equals(d.getSSID())) {
-			return Network.SECONDARY;
-		} else if(settings.get("ap").get("enable").asBoolean()) {
-			return Network.AP;
-		} else {
-			return null; // ethernet
+	public static Network currentConnection(AbstractG2Device d) {
+		try {
+			JsonNode settings = d.getJSON("/rpc/Shelly.GetConfig").get("wifi");
+			JsonNode sta;
+			if((sta = settings.get("sta")).get("enable").asBoolean() && sta.get("ssid").asText("").equals(d.getSSID())) {
+				return Network.PRIMARY;
+			} else if((sta = settings.get("sta1")).get("enable").asBoolean() && sta.get("ssid").asText("").equals(d.getSSID())) {
+				return Network.SECONDARY;
+			} else if(settings.get("ap").get("enable").asBoolean()) {
+				return Network.AP;
+			} else {
+				return Network.ETHERNET;
+			}
+		} catch(Exception e) {
+			return Network.UNKNOWN;
 		}
 	}
 

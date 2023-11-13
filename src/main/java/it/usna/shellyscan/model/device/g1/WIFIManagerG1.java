@@ -121,15 +121,20 @@ public class WIFIManagerG1 implements WIFIManager {
 		}
 	}
 	
-	public static Network currentConnection(AbstractG1Device d) throws IOException {
-		JsonNode settings = d.getJSON("/settings");
-		JsonNode sta;
-		if((sta = settings.get("wifi_sta")).get("enabled").asBoolean() && sta.get("ssid").asText("").equals(d.getSSID())) {
-			return Network.PRIMARY;
-		} else if((sta = settings.get("wifi_sta1")).get("enabled").asBoolean() && sta.get("ssid").asText("").equals(d.getSSID())) {
-			return Network.SECONDARY;
+	public static Network currentConnection(AbstractG1Device d) {
+		try {
+			JsonNode settings = d.getJSON("/settings");
+			JsonNode sta;
+			if((sta = settings.get("wifi_sta")).get("enabled").asBoolean() && sta.get("ssid").asText("").equals(d.getSSID())) {
+				return Network.PRIMARY;
+			} else if((sta = settings.get("wifi_sta1")).get("enabled").asBoolean() && sta.get("ssid").asText("").equals(d.getSSID())) {
+				return Network.SECONDARY;
+			} else {
+				return Network.AP;
+			}
+		} catch(Exception e) {
+			return Network.UNKNOWN;
 		}
-		return Network.AP;
 	}
 	
 	public String restore(JsonNode sta, String pwd) throws UnsupportedEncodingException {

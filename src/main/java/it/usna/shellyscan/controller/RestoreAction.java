@@ -6,8 +6,13 @@ import java.awt.Cursor;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
@@ -16,6 +21,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import it.usna.shellyscan.Main;
 import it.usna.shellyscan.model.Devices;
@@ -27,7 +33,6 @@ import it.usna.shellyscan.view.DevicesTable;
 import it.usna.shellyscan.view.DialogAuthentication;
 import it.usna.shellyscan.view.MainView;
 import it.usna.shellyscan.view.util.Msg;
-import it.usna.shellyscan.view.util.UtilMiscellaneous;
 import it.usna.util.AppProperties;
 
 public class RestoreAction extends UsnaSelectedAction {
@@ -46,7 +51,7 @@ public class RestoreAction extends UsnaSelectedAction {
 				fc.setSelectedFile(new File(fileName));
 				if(fc.showOpenDialog(mainView) == JFileChooser.APPROVE_OPTION) {
 					mainView.getContentPane().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-					final Map<String, JsonNode> backupJsons = UtilMiscellaneous.readBackupFile(fc.getSelectedFile());
+					final Map<String, JsonNode> backupJsons = readBackupFile(fc.getSelectedFile());
 					Map<Restore, String> test = device.restoreCheck(backupJsons);
 					mainView.getContentPane().setCursor(Cursor.getDefaultCursor());
 					Map<Restore, String> resData = new HashMap<>();
@@ -176,5 +181,24 @@ public class RestoreAction extends UsnaSelectedAction {
 				mainView.getContentPane().setCursor(Cursor.getDefaultCursor());
 			}
 		});
+	}
+	
+	private static Map<String, JsonNode> readBackupFile(final File file) throws IOException {
+		final ObjectMapper jsonMapper = new ObjectMapper();
+		try (ZipFile in = new ZipFile(file, StandardCharsets.UTF_8)) {
+			final Map<String, JsonNode> backupJsons = in.stream().filter(entry -> entry.getName().endsWith(".json")).collect(Collectors.toMap(ZipEntry::getName, entry -> {
+				try (InputStream is = in.getInputStream(entry)) {
+					return jsonMapper.readTree(is);
+				} catch (IOException e) {
+					throw new RuntimeException(e);
+				}
+			}));
+			return backupJsons;
+		} catch(RuntimeException e) {
+			if(e.getCause() instanceof IOException) {
+				throw (IOException)e.getCause();
+			} 
+			throw e;
+		}
 	}
 }

@@ -2,6 +2,9 @@ package it.usna.shellyscan.controller;
 
 import java.util.ArrayList;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import it.usna.shellyscan.controller.DeferrableAction.Status;
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.Devices.EventType;
@@ -12,6 +15,7 @@ import it.usna.util.UsnaEventListener;
 //TODO synchronize
 
 public class DeferrablesContainer implements UsnaEventListener<Devices.EventType, Integer> {
+	private final static Logger LOG = LoggerFactory.getLogger(DeferrablesContainer.class);
 	private static DeferrablesContainer instance;
 	private final Devices model;
 	private ArrayList<Integer> devIdx = new ArrayList<>();
@@ -34,7 +38,9 @@ public class DeferrablesContainer implements UsnaEventListener<Devices.EventType
 		synchronized (devIdx) {
 			devIdx.add(modelIdx);
 			deferrables.add(def);
-			deviceDesc.add(UtilMiscellaneous.getDescName(model.get(modelIdx)));
+			String name = UtilMiscellaneous.getDescName(model.get(modelIdx));
+			deviceDesc.add(name);
+			LOG.trace("Deferrable added: {} - {}", def, name);
 		}
 	}
 	
@@ -59,7 +65,9 @@ public class DeferrablesContainer implements UsnaEventListener<Devices.EventType
 				(device = model.get(modelIdx)).getStatus() == ShellyAbstractDevice.Status.ON_LINE) {
 			synchronized (devIdx) {
 				new Thread(() -> deferrable.run(device)).run();
-				deviceDesc.set(index, UtilMiscellaneous.getDescName(device)); // could have been changed since add(...)
+				String name = UtilMiscellaneous.getDescName(model.get(modelIdx)); // could have been changed since add(...)
+				LOG.trace("Deferrable execution: {} - {}", name, device);
+				deviceDesc.set(index, name);
 				devIdx.set(index, null);
 			}
 		} else if(mesgType == Devices.EventType.CLEAR) {
