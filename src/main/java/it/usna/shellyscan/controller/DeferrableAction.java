@@ -21,7 +21,7 @@ public class DeferrableAction {
 	public boolean run(ShellyAbstractDevice device) {
 		try {
 			status = Status.RUNNING;
-			retValue = runner.run(device);
+			retValue = runner.run(this, device);
 			status = Status.SUCCESS;
 			return true;
 		} catch(Exception e) {
@@ -52,6 +52,10 @@ public class DeferrableAction {
 		return status;
 	}
 	
+	public void setStatus(Status s) {
+		status = s;
+	}
+	
 	public String getDescription() {
 		return description;
 	}
@@ -61,7 +65,7 @@ public class DeferrableAction {
 	}
 	
 	public interface Task<T> {
-		T run(ShellyAbstractDevice dedice) throws Exception;
+		T run(DeferrableAction deferrable, ShellyAbstractDevice device) throws Exception;
 	}
 	
 	/**

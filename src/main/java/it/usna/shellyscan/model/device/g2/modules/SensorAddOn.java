@@ -26,7 +26,7 @@ import it.usna.shellyscan.model.device.g2.AbstractG2Device;
  * @author usna
  */
 public class SensorAddOn extends Meters {
-	private final static Logger LOG = LoggerFactory.getLogger(Meters.class);
+	private final static Logger LOG = LoggerFactory.getLogger(SensorAddOn.class);
 	public final static String BACKUP_SECTION = "SensorAddon.GetPeripherals.json";
 	public final static String MSG_RESTORE_ERROR = "msgRestoreSensorAddOn";
 	public final static String ADDON_TYPE = "sensor";

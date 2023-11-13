@@ -7,6 +7,7 @@ import java.net.SocketTimeoutException;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
+import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -213,7 +214,7 @@ public abstract class ShellyAbstractDevice {
 	
 	public abstract Map<Restore, String> restoreCheck(Map<String, JsonNode> backupJsons) throws IOException;
 	
-	public abstract String restore(Map<String, JsonNode> backupJsons, Map<Restore, String> data) throws IOException;
+	public abstract Stream<String> restore(Map<String, JsonNode> backupJsons, Map<Restore, String> data) throws IOException;
 
 	/**
 	 * @param section call whose returned json must be stored

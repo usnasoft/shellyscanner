@@ -8,6 +8,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.NoSuchFileException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -19,6 +20,9 @@ import javax.swing.JOptionPane;
 import javax.swing.JTable;
 import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileNameExtensionFilter;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -37,6 +41,7 @@ import it.usna.util.AppProperties;
 
 public class RestoreAction extends UsnaSelectedAction {
 	private static final long serialVersionUID = 1L;
+	private final static Logger LOG = LoggerFactory.getLogger(RestoreAction.class);
 
 	public RestoreAction(MainView mainView, JTable devicesTable, AppProperties appProp, Devices model) {
 		super(mainView, "action_restore_name", "action_restore_tooltip", "/images/Upload16.png", "/images/Upload.png");
@@ -135,13 +140,17 @@ public class RestoreAction extends UsnaSelectedAction {
 					}
 					mainView.getContentPane().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 					appProp.setProperty("LAST_PATH", fc.getCurrentDirectory().getCanonicalPath());
-					final String ret = device.restore(backupJsons, resData);
-					device.refreshSettings();
-					try { Thread.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e) {}
-					device.refreshStatus();
-					mainView.update(Devices.EventType.UPDATE, modelRow);
+					final String ret = device.restore(backupJsons, resData).collect(Collectors.joining("\n"));
+					if(ret.length() > 0) {
+						LOG.error("Restore error {} {}", device, ret);
+					}
 					
 					if(ret == null || ret.length() == 0) {
+						try { Thread.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e) {}
+						device.refreshSettings();
+						try { Thread.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e) {}
+						device.refreshStatus();
+						
 						if(device.rebootRequired())	{
 							String ok = LABELS.getString("dlgOK");
 							if(JOptionPane.showOptionDialog(mainView, LABELS.getString("msgRestoreSuccessReboot"), device.getHostname(),
@@ -156,9 +165,11 @@ public class RestoreAction extends UsnaSelectedAction {
 					} else {
 						if(device.getStatus() == Status.OFF_LINE) {
 							JOptionPane.showMessageDialog(mainView, "device offline - task queued", device.getHostname(), JOptionPane.ERROR_MESSAGE);
-							DeferrablesContainer.getInstance(model).add(modelRow, new DeferrableAction("restore", dev -> {
+							DeferrablesContainer.getInstance(model).add(modelRow, new DeferrableAction("restore", (def, dev) -> {
 								System.out.println("restoring " + dev);
-								final String retx = dev.restore(backupJsons, resData);
+								// todo ritorna la lista senza null; se piena attiva FAIL;
+								final String retx = dev.restore(backupJsons, resData).collect(Collectors.joining("\n"));
+								try { Thread.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e) {}
 								dev.refreshSettings();
 								try { Thread.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e) {}
 								dev.refreshStatus();
@@ -170,8 +181,10 @@ public class RestoreAction extends UsnaSelectedAction {
 									device.getHostname(), JOptionPane.ERROR_MESSAGE);
 						}
 					}
+					
+					mainView.update(Devices.EventType.UPDATE, modelRow);
 				}
-			} catch (FileNotFoundException e1) {
+			} catch (FileNotFoundException | NoSuchFileException e1) {
 				Msg.errorMsg(mainView, String.format(LABELS.getString("action_restore_error_file"), fc.getSelectedFile().getName()));
 			} catch (IOException e1) {
 				Msg.errorStatusMsg(mainView, device, e1);

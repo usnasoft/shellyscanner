@@ -16,7 +16,7 @@ import java.util.Map.Entry;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import java.util.zip.ZipOutputStream;
 
 import org.eclipse.jetty.client.Authentication;
@@ -211,11 +211,13 @@ public abstract class AbstractG1Device extends ShellyAbstractDevice {
 					res.put(Restore.RESTORE_LOGIN, settings.at("/login/username").asText());
 				}
 				Network currentConnection = WIFIManagerG1.currentConnection(this);
-				if(settings.at("/wifi_sta/enabled").asBoolean() && (sameHost || settings.at("/wifi_sta/ipv4_method").asText().equals("dhcp")) && currentConnection != Network.PRIMARY) {
-					res.put(Restore.RESTORE_WI_FI1, settings.at("/wifi_sta/ssid").asText());
-				}
-				if(settings.at("/wifi_sta1/enabled").asBoolean() && (sameHost || settings.at("/wifi_sta1/ipv4_method").asText().equals("dhcp")) && currentConnection != Network.SECONDARY) {
-					res.put(Restore.RESTORE_WI_FI2, settings.at("/wifi_sta1/ssid").asText());
+				if(currentConnection != Network.UNKNOWN) {
+					if(settings.at("/wifi_sta/enabled").asBoolean() && (sameHost || settings.at("/wifi_sta/ipv4_method").asText().equals("dhcp")) && currentConnection != Network.PRIMARY) {
+						res.put(Restore.RESTORE_WI_FI1, settings.at("/wifi_sta/ssid").asText());
+					}
+					if(settings.at("/wifi_sta1/enabled").asBoolean() && (sameHost || settings.at("/wifi_sta1/ipv4_method").asText().equals("dhcp")) && currentConnection != Network.SECONDARY) {
+						res.put(Restore.RESTORE_WI_FI2, settings.at("/wifi_sta1/ssid").asText());
+					}
 				}
 				if(settings.at("/mqtt/enable").asBoolean() && settings.at("/mqtt/user").asText("").length() > 0) {
 					res.put(Restore.RESTORE_MQTT, settings.at("/mqtt/user").asText());
@@ -229,7 +231,7 @@ public abstract class AbstractG1Device extends ShellyAbstractDevice {
 	}
 	
 	@Override
-	public final String restore(Map<String, JsonNode> backupJsons, Map<Restore, String> data) throws IOException {
+	public final Stream<String> restore(Map<String, JsonNode> backupJsons, Map<Restore, String> data) throws IOException {
 		try {
 			final ArrayList<String> errors = new ArrayList<>();
 			JsonNode settings = backupJsons.get("settings.json");
@@ -260,14 +262,15 @@ public abstract class AbstractG1Device extends ShellyAbstractDevice {
 				WIFIManagerG1 wm1 = new WIFIManagerG1(this, Network.PRIMARY, true);
 				errors.add(wm1.restore(settings.path("wifi_sta"), data.get(Restore.RESTORE_WI_FI1)));
 			}
-			final String ret = errors.stream().filter(s-> s != null && s.length() > 0).collect(Collectors.joining("\n"));
-			if(ret.length() > 0) {
-				LOG.error("Restore error {} {}", this, errors);
-			}
-			return ret;
+//			final String ret = errors.stream().filter(s-> s != null && s.length() > 0).collect(Collectors.joining("\n"));
+//			if(ret.length() > 0) {
+//				LOG.error("Restore error {} {}", this, errors);
+//			}
+			return errors.stream().filter(s-> s != null && s.length() > 0);
 		} catch(RuntimeException | InterruptedException e) {
 			LOG.error("restore", e);
-			return Restore.ERR_UNKNOWN.toString();
+//			return Restore.ERR_UNKNOWN.toString();
+			return Stream.of(Restore.ERR_UNKNOWN.toString());
 		}
 	}
 

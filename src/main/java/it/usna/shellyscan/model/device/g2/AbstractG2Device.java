@@ -14,7 +14,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -363,7 +363,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 	public void restoreCheck(Map<String, JsonNode> backupJsons, Map<Restore, String> res) throws IOException {}
 	
 	@Override
-	public final String restore(Map<String, JsonNode> backupJsons, Map<Restore, String> data) throws IOException {
+	public final Stream<String> restore(Map<String, JsonNode> backupJsons, Map<Restore, String> data) throws IOException {
 		try {
 			final ArrayList<String> errors = new ArrayList<>();
 			JsonNode config = backupJsons.get("Shelly.GetConfig.json");
@@ -386,19 +386,21 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 			
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			Network currentConnection = WIFIManagerG2.currentConnection(this);
-			if((data.containsKey(Restore.RESTORE_WI_FI2) || config.at("/wifi/sta1/is_open").asBoolean() || config.at("/wifi/sta1/enable").asBoolean() == false) && currentConnection != Network.SECONDARY) {
-				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-				WIFIManagerG2 wm = new WIFIManagerG2(this, Network.SECONDARY, true);
-				errors.add(wm.restore(config.at("/wifi/sta1"), data.get(Restore.RESTORE_WI_FI2)));
-			}
-			if((data.containsKey(Restore.RESTORE_WI_FI1) || config.at("/wifi/sta/is_open").asBoolean() || config.at("/wifi/sta/enable").asBoolean() == false) && currentConnection != Network.PRIMARY) {
-				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-				WIFIManagerG2 wm = new WIFIManagerG2(this, Network.PRIMARY, true);
-				errors.add(wm.restore(config.at("/wifi/sta"), data.get(Restore.RESTORE_WI_FI1)));
-			}
-			if((data.containsKey(Restore.RESTORE_WI_FI_AP) || config.at("/wifi/ap/is_open").asBoolean() || config.at("/wifi/ap/enable").asBoolean() == false) && currentConnection != Network.AP) {
-				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-				errors.add(WIFIManagerG2.restoreAP_roam(this, config.get("wifi"), data.get(Restore.RESTORE_WI_FI_AP)));
+			if(currentConnection != Network.UNKNOWN) {
+				if((data.containsKey(Restore.RESTORE_WI_FI2) || config.at("/wifi/sta1/is_open").asBoolean() || config.at("/wifi/sta1/enable").asBoolean() == false) && currentConnection != Network.SECONDARY) {
+					TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+					WIFIManagerG2 wm = new WIFIManagerG2(this, Network.SECONDARY, true);
+					errors.add(wm.restore(config.at("/wifi/sta1"), data.get(Restore.RESTORE_WI_FI2)));
+				}
+				if((data.containsKey(Restore.RESTORE_WI_FI1) || config.at("/wifi/sta/is_open").asBoolean() || config.at("/wifi/sta/enable").asBoolean() == false) && currentConnection != Network.PRIMARY) {
+					TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+					WIFIManagerG2 wm = new WIFIManagerG2(this, Network.PRIMARY, true);
+					errors.add(wm.restore(config.at("/wifi/sta"), data.get(Restore.RESTORE_WI_FI1)));
+				}
+				if((data.containsKey(Restore.RESTORE_WI_FI_AP) || config.at("/wifi/ap/is_open").asBoolean() || config.at("/wifi/ap/enable").asBoolean() == false) && currentConnection != Network.AP) {
+					TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+					errors.add(WIFIManagerG2.restoreAP_roam(this, config.get("wifi"), data.get(Restore.RESTORE_WI_FI_AP)));
+				}
 			}
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			LoginManagerG2 lm = new LoginManagerG2(this, true);
@@ -407,14 +409,16 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 			} else if(backupJsons.get("Shelly.GetDeviceInfo.json").path("auth_en").asBoolean() == false) {
 				errors.add(lm.disable());
 			}
-			final String ret = errors.stream().filter(s-> s != null && s.length() > 0).collect(Collectors.joining("\n"));
-			if(ret.length() > 0) {
-				LOG.error("Restore error {} {}", this, errors);
-			}
-			return ret;
+//			final String ret = errors.stream().filter(s-> s != null && s.length() > 0).collect(Collectors.joining("\n"));
+//			if(ret.length() > 0) {
+//				LOG.error("Restore error {} {}", this, errors);
+//			}
+			return errors.stream().filter(s-> s != null && s.length() > 0);
 		} catch(RuntimeException | InterruptedException e) {
 			LOG.error("restore", e);
-			return Restore.ERR_UNKNOWN.toString();
+//			Collections.singletonList(Restore.ERR_UNKNOWN.toString()); 77 return stream?
+			return Stream.of(Restore.ERR_UNKNOWN.toString());
+//			return Restore.ERR_UNKNOWN.toString();
 		}
 	}
 	
