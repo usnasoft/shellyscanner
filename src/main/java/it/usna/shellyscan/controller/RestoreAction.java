@@ -140,7 +140,8 @@ public class RestoreAction extends UsnaSelectedAction {
 					}
 					mainView.getContentPane().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 					appProp.setProperty("LAST_PATH", fc.getCurrentDirectory().getCanonicalPath());
-					final String ret = device.restore(backupJsons, resData)
+					final String ret =
+							device.restore(backupJsons, resData)
 							.stream().filter(s-> s != null && s.length() > 0).distinct().collect(Collectors.joining("\n"));
 
 					if(ret == null || ret.length() == 0) {
@@ -164,10 +165,10 @@ public class RestoreAction extends UsnaSelectedAction {
 						LOG.debug("Interactive Restore error {} {}", device, ret);
 						
 						if(device.getStatus() == Status.OFF_LINE) { // if error happened because the device is off-line -> try to queue action in DeferrablesContainer
-							JOptionPane.showMessageDialog(mainView, "device offline - task queued", device.getHostname(), JOptionPane.ERROR_MESSAGE);
-							DeferrablesContainer.getInstance(model).add(modelRow, new DeferrableAction("restore from file", (def, dev) -> {
-								// todo ritorna la lista senza null; se piena attiva FAIL;
-								final String restoreError = dev.restore(backupJsons, resData)
+							JOptionPane.showMessageDialog(mainView, LABELS.getString("msgRestoreQueue"), device.getHostname(), JOptionPane.ERROR_MESSAGE);
+							DeferrablesContainer.getInstance(model).add(modelRow, new DeferrableAction(LABELS.getString("msgRestoreTitle"), (def, dev) -> {
+								final String restoreError =
+										dev.restore(backupJsons, resData)
 										.stream().filter(s-> s != null && s.length() > 0).distinct().collect(Collectors.joining("\n"));
 								if(restoreError.length() > 0) {
 									def.setStatus(DeferrableAction.Status.FAIL);
@@ -178,15 +179,14 @@ public class RestoreAction extends UsnaSelectedAction {
 										dev.refreshSettings();
 										try { Thread.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e) {}
 										dev.refreshStatus();
+										mainView.update(Devices.EventType.UPDATE, modelRow);
 									}
 								} catch(Exception e) {}
-								mainView.update(Devices.EventType.UPDATE, modelRow);
 								return restoreError;
 							}));
 						} else {
 							LOG.error("Restore error {} {}", device, ret);
-							JOptionPane.showMessageDialog(mainView,(ret.equals(Restore.ERR_UNKNOWN.toString())) ? LABELS.getString("labelError") : ret,
-									device.getHostname(), JOptionPane.ERROR_MESSAGE);
+							JOptionPane.showMessageDialog(mainView, (ret.equals(Restore.ERR_UNKNOWN.toString())) ? LABELS.getString("labelError") : ret, device.getHostname(), JOptionPane.ERROR_MESSAGE);
 						}
 					}
 					

@@ -7,7 +7,7 @@ public class DeferrableAction {
 	private final String description;
 //	private final Devices model;
 //	private final int devIndex;
-	private Task runner;
+	private Task task;
 	private String retValue;
 	private Status status = Status.WAITING;
 	
@@ -15,31 +15,19 @@ public class DeferrableAction {
 //		this.model = model;
 //		this.devIndex = devIndex;
 		this.description = description;
-		this.runner = runner;
+		this.task = runner;
 	}
 	
 	public void run(ShellyAbstractDevice device) {
 		try {
 			status = Status.RUNNING;
-			retValue = runner.run(this, device);
+			retValue = task.run(this, device);
 			status = (retValue == null || retValue.length() == 0) ? Status.SUCCESS : Status.FAIL;
 		} catch(Exception e) {
 			this.retValue = e.toString();
 			status = Status.FAIL;
 		}
 	}
-	
-//	public void execute() throws Exception {
-//		try {
-//			status = Status.RUNNING;
-//			runner.run();
-//			status = Status.SUCCESS;
-//		} catch(Exception e) {
-//			this.retValue = e;
-//			status = Status.FAIL;
-//			throw e;
-//		}
-//	}
 	
 	public void cancel() {
 		close();
@@ -70,7 +58,7 @@ public class DeferrableAction {
 	 * Release resources
 	 */
 	public void close() {
-		runner = null;
+		task = null;
 	}
 	
 	@Override
