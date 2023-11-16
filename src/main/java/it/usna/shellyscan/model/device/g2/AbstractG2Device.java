@@ -9,12 +9,12 @@ import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.EnumMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -280,8 +280,6 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			sectionToStream("/rpc/Webhook.List", "Webhook.List.json", out);
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-//			sectionToStream("/rpc/KVS.List", "KVS.List.json", out);
-//			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			sectionToStream("/rpc/KVS.GetMany", "KVS.GetMany.json", out);
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			final byte[] scripts = sectionToStream("/rpc/Script.List", "Script.List.json", out);
@@ -363,11 +361,14 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 	public void restoreCheck(Map<String, JsonNode> backupJsons, Map<Restore, String> res) throws IOException {}
 	
 	@Override
-	public final Stream<String> restore(Map<String, JsonNode> backupJsons, Map<Restore, String> data) throws IOException {
+	public final List<String> restore(Map<String, JsonNode> backupJsons, Map<Restore, String> data) throws IOException {
 		try {
 			final ArrayList<String> errors = new ArrayList<>();
 			JsonNode config = backupJsons.get("Shelly.GetConfig.json");
 			restore(backupJsons, errors);
+			if(status == Status.OFF_LINE) {
+				return errors.size() > 0 ? errors : List.of(Restore.ERR_UNKNOWN.toString());
+			}
 			restoreCommonConfig(config, data, errors);
 
 			JsonNode schedule = backupJsons.get("Schedule.List.json");
@@ -409,16 +410,10 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 			} else if(backupJsons.get("Shelly.GetDeviceInfo.json").path("auth_en").asBoolean() == false) {
 				errors.add(lm.disable());
 			}
-//			final String ret = errors.stream().filter(s-> s != null && s.length() > 0).collect(Collectors.joining("\n"));
-//			if(ret.length() > 0) {
-//				LOG.error("Restore error {} {}", this, errors);
-//			}
-			return errors.stream().filter(s-> s != null && s.length() > 0);
+			return errors/*.stream().filter(s-> s != null && s.length() > 0)*/;
 		} catch(RuntimeException | InterruptedException e) {
 			LOG.error("restore", e);
-//			Collections.singletonList(Restore.ERR_UNKNOWN.toString()); 77 return stream?
-			return Stream.of(Restore.ERR_UNKNOWN.toString());
-//			return Restore.ERR_UNKNOWN.toString();
+			return List.of(Restore.ERR_UNKNOWN.toString());
 		}
 	}
 	

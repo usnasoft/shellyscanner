@@ -4,10 +4,10 @@ import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.SocketTimeoutException;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
-import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -214,7 +214,13 @@ public abstract class ShellyAbstractDevice {
 	
 	public abstract Map<Restore, String> restoreCheck(Map<String, JsonNode> backupJsons) throws IOException;
 	
-	public abstract Stream<String> restore(Map<String, JsonNode> backupJsons, Map<Restore, String> data) throws IOException;
+	/**
+	 * @param backupJsons map of buckup sections (json name-json section)
+	 * @param data value returned by restoreCheck(...)
+	 * @return list of results for any restore section (element is null if section restored successfully)
+	 * @throws IOException
+	 */
+	public abstract List<String> restore(Map<String, JsonNode> backupJsons, Map<Restore, String> data) throws IOException;
 
 	/**
 	 * @param section call whose returned json must be stored

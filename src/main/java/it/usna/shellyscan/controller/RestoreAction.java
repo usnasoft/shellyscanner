@@ -140,11 +140,9 @@ public class RestoreAction extends UsnaSelectedAction {
 					}
 					mainView.getContentPane().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 					appProp.setProperty("LAST_PATH", fc.getCurrentDirectory().getCanonicalPath());
-					final String ret = device.restore(backupJsons, resData).collect(Collectors.joining("\n"));
-					if(ret.length() > 0) {
-						LOG.error("Restore error {} {}", device, ret);
-					}
-					
+					final String ret = device.restore(backupJsons, resData)
+							.stream().filter(s-> s != null && s.length() > 0).distinct().collect(Collectors.joining("\n"));
+
 					if(ret == null || ret.length() == 0) {
 						try { Thread.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e) {}
 						device.refreshSettings();
@@ -163,20 +161,30 @@ public class RestoreAction extends UsnaSelectedAction {
 							JOptionPane.showMessageDialog(mainView, LABELS.getString("msgRestoreSuccess"), device.getHostname(), JOptionPane.INFORMATION_MESSAGE);
 						}
 					} else {
-						if(device.getStatus() == Status.OFF_LINE) {
+						LOG.debug("Interactive Restore error {} {}", device, ret);
+						
+						if(device.getStatus() == Status.OFF_LINE) { // if error happened because the device is off-line -> try to queue action in DeferrablesContainer
 							JOptionPane.showMessageDialog(mainView, "device offline - task queued", device.getHostname(), JOptionPane.ERROR_MESSAGE);
-							DeferrablesContainer.getInstance(model).add(modelRow, new DeferrableAction("restore", (def, dev) -> {
-								System.out.println("restoring " + dev);
+							DeferrablesContainer.getInstance(model).add(modelRow, new DeferrableAction("restore from file", (def, dev) -> {
 								// todo ritorna la lista senza null; se piena attiva FAIL;
-								final String retx = dev.restore(backupJsons, resData).collect(Collectors.joining("\n"));
-								try { Thread.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e) {}
-								dev.refreshSettings();
-								try { Thread.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e) {}
-								dev.refreshStatus();
-								System.out.println("restored");
-								return retx;
+								final String restoreError = dev.restore(backupJsons, resData)
+										.stream().filter(s-> s != null && s.length() > 0).distinct().collect(Collectors.joining("\n"));
+								if(restoreError.length() > 0) {
+									def.setStatus(DeferrableAction.Status.FAIL);
+								}
+								try {
+									if(device.getStatus() != Status.OFF_LINE) {
+										try { Thread.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e) {}
+										dev.refreshSettings();
+										try { Thread.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e) {}
+										dev.refreshStatus();
+									}
+								} catch(Exception e) {}
+								mainView.update(Devices.EventType.UPDATE, modelRow);
+								return restoreError;
 							}));
 						} else {
+							LOG.error("Restore error {} {}", device, ret);
 							JOptionPane.showMessageDialog(mainView,(ret.equals(Restore.ERR_UNKNOWN.toString())) ? LABELS.getString("labelError") : ret,
 									device.getHostname(), JOptionPane.ERROR_MESSAGE);
 						}

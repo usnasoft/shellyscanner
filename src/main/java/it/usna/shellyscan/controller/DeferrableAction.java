@@ -7,27 +7,25 @@ public class DeferrableAction {
 	private final String description;
 //	private final Devices model;
 //	private final int devIndex;
-	private Task<?> runner;
-	private Object retValue;
+	private Task runner;
+	private String retValue;
 	private Status status = Status.WAITING;
 	
-	public DeferrableAction(/*Devices model, int devIndex,*/ String description, Task<?> runner) {
+	public DeferrableAction(/*Devices model, int devIndex,*/ String description, Task runner) {
 //		this.model = model;
 //		this.devIndex = devIndex;
 		this.description = description;
 		this.runner = runner;
 	}
 	
-	public boolean run(ShellyAbstractDevice device) {
+	public void run(ShellyAbstractDevice device) {
 		try {
 			status = Status.RUNNING;
 			retValue = runner.run(this, device);
-			status = Status.SUCCESS;
-			return true;
+			status = (retValue == null || retValue.length() == 0) ? Status.SUCCESS : Status.FAIL;
 		} catch(Exception e) {
-			this.retValue = e;
+			this.retValue = e.toString();
 			status = Status.FAIL;
-			return false;
 		}
 	}
 	
@@ -64,8 +62,8 @@ public class DeferrableAction {
 		return retValue;
 	}
 	
-	public interface Task<T> {
-		T run(DeferrableAction deferrable, ShellyAbstractDevice device) throws Exception;
+	public interface Task{
+		String run(DeferrableAction deferrable, ShellyAbstractDevice device) throws Exception;
 	}
 	
 	/**
@@ -77,6 +75,6 @@ public class DeferrableAction {
 	
 	@Override
 	public String toString() {
-		return description;
+		return description + " : " + status + " : '" + retValue + "'";
 	}
 }

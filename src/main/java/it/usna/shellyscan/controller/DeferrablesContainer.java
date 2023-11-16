@@ -1,6 +1,7 @@
 package it.usna.shellyscan.controller;
 
 import java.util.ArrayList;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,8 +12,6 @@ import it.usna.shellyscan.model.Devices.EventType;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.view.util.UtilMiscellaneous;
 import it.usna.util.UsnaEventListener;
-
-//TODO synchronize
 
 public class DeferrablesContainer implements UsnaEventListener<Devices.EventType, Integer> {
 	private final static Logger LOG = LoggerFactory.getLogger(DeferrablesContainer.class);
@@ -63,6 +62,8 @@ public class DeferrablesContainer implements UsnaEventListener<Devices.EventType
 		if((mesgType == EventType.SUBSTITUTE || mesgType == EventType.UPDATE) &&
 				(index = devIdx.indexOf(modelIdx)) >= 0 && (deferrable = deferrables.get(index)).getStatus() == Status.WAITING &&
 				(device = model.get(modelIdx)).getStatus() == ShellyAbstractDevice.Status.ON_LINE) {
+			
+			LOG.info(this.toString()); // todo remove
 			synchronized (devIdx) {
 				new Thread(() -> deferrable.run(device)).run();
 				String name = UtilMiscellaneous.getDescName(model.get(modelIdx)); // could have been changed since add(...)
@@ -70,6 +71,7 @@ public class DeferrablesContainer implements UsnaEventListener<Devices.EventType
 				deviceDesc.set(index, name);
 				devIdx.set(index, null);
 			}
+			LOG.info(this.toString()); // todo remove
 		} else if(mesgType == Devices.EventType.CLEAR) {
 			synchronized (devIdx) {
 				for(int i = 0; i < devIdx.size(); i++) {
@@ -77,5 +79,10 @@ public class DeferrablesContainer implements UsnaEventListener<Devices.EventType
 				}
 			}
 		}
+	}
+	
+	@Override
+	public String toString() {
+		return "List of deferrables\n" + deferrables.stream().map(d -> d.toString()).collect(Collectors.joining("\n"));
 	}
 }

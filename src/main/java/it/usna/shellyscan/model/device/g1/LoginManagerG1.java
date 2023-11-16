@@ -56,7 +56,6 @@ public class LoginManagerG1 implements LoginManager {
 	public String disable() {
 		String msg = d.sendCommand("/settings/login?enabled=false");
 		if(msg == null) {
-//			d.setAuthentication(null);
 			d.setAuthenticationResult(null);
 		}
 		return msg;

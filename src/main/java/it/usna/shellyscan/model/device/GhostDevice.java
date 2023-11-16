@@ -2,6 +2,7 @@ package it.usna.shellyscan.model.device;
 
 import java.io.File;
 import java.net.InetAddress;
+import java.util.List;
 import java.util.Map;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -202,7 +203,7 @@ public class GhostDevice extends ShellyAbstractDevice {
 	// no network restore; no addon warning; todo chenck roller/switch profile on restore
 	
 	@Override
-	public String restore(Map<String, JsonNode> backupJsons, Map<Restore, String> data) {
+	public List<String> restore(Map<String, JsonNode> backupJsons, Map<Restore, String> data) {
 		throw new UnsupportedOperationException();
 	}
 	
