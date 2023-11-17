@@ -206,6 +206,7 @@ https://www.iconbolt.com/
 // multi-selection contextual menu
 // warning delete on notes
 // device info auto-update on device going to "on line"
+// list_online.png
 // todo fw updates per off-line battery
 
 

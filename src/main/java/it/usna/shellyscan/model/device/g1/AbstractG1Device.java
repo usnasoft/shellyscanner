@@ -31,6 +31,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.NullNode;
 
 import it.usna.shellyscan.model.Devices;
+import it.usna.shellyscan.model.device.BatteryDeviceInterface;
 import it.usna.shellyscan.model.device.FirmwareManager;
 import it.usna.shellyscan.model.device.LoginManager;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
@@ -233,37 +234,38 @@ public abstract class AbstractG1Device extends ShellyAbstractDevice {
 	@Override
 	public final List<String> restore(Map<String, JsonNode> backupJsons, Map<Restore, String> data) throws IOException {
 		try {
+			final long delay = this instanceof BatteryDeviceInterface ? Devices.MULTI_QUERY_DELAY / 2: Devices.MULTI_QUERY_DELAY;
 			final ArrayList<String> errors = new ArrayList<>();
 			JsonNode settings = backupJsons.get("settings.json");
 			JsonNode actions = backupJsons.get("actions.json");
 			LOG.trace("step 1");
 			restore(settings, errors);
 			if(status == Status.OFF_LINE) {
-				return errors.size() > 0 ? errors : List.of(Restore.ERR_UNKNOWN.toString());
+				return errors.size() > 0 ? errors : List.of(Restore.ERR_UNKNOWN.name());
 			}
-			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY / 2);
+			TimeUnit.MILLISECONDS.sleep(delay);
 			LOG.trace("step 2 {}", errors);
-			restoreCommons(settings, data, errors);
+			restoreCommons(settings, delay, data, errors);
 
 			Actions.restore(this, actions, errors);
 			LOG.trace("step 3 {}", errors);
 			JsonNode roam = settings.path("ap_roaming");
 			if(roam.isMissingNode() == false) {
-				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY / 2);
+				TimeUnit.MILLISECONDS.sleep(delay);
 				errors.add(WIFIManagerG1.restoreRoam(this, roam));
 			}
 			LOG.trace("step 4 {}", errors);
-			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY / 2);
+			TimeUnit.MILLISECONDS.sleep(delay);
 			Network currentConnection = WIFIManagerG1.currentConnection(this);
 			JsonNode sta1 = settings.path("wifi_sta1"); // "sta1.isMissingNode() == false": motion doesn't have wi-fi2
 			if(currentConnection != Network.SECONDARY && sta1.isMissingNode() == false && (data.containsKey(Restore.RESTORE_WI_FI2) || sta1.path("enabled").asBoolean() == false)) {
-				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY / 2);
+				TimeUnit.MILLISECONDS.sleep(delay);
 				WIFIManagerG1 wm2 = new WIFIManagerG1(this, Network.SECONDARY, true);
 				errors.add(wm2.restore(settings.path("wifi_sta1"), data.get(Restore.RESTORE_WI_FI2)));
 			}
 			// last - hereafter we loose connection
 			if(currentConnection != Network.PRIMARY && (data.containsKey(Restore.RESTORE_WI_FI1) || settings.at("/wifi_sta/enabled").asBoolean() == false)) {
-				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY / 2);
+				TimeUnit.MILLISECONDS.sleep(delay);
 				WIFIManagerG1 wm1 = new WIFIManagerG1(this, Network.PRIMARY, true);
 				errors.add(wm1.restore(settings.path("wifi_sta"), data.get(Restore.RESTORE_WI_FI1)));
 			}
@@ -271,7 +273,7 @@ public abstract class AbstractG1Device extends ShellyAbstractDevice {
 			return errors;
 		} catch(RuntimeException | InterruptedException e) {
 			LOG.error("restore", e);
-			return List.of(Restore.ERR_UNKNOWN.toString());
+			return List.of(Restore.ERR_UNKNOWN.name());
 		}
 	}
 
@@ -283,14 +285,14 @@ public abstract class AbstractG1Device extends ShellyAbstractDevice {
 	 */
 	protected abstract void restore(JsonNode settings, ArrayList<String> errors) throws IOException, InterruptedException;
 
-	private void restoreCommons(JsonNode settings, Map<Restore, String> data, ArrayList<String> errors) throws InterruptedException, IOException {
+	private void restoreCommons(JsonNode settings, final long delay, Map<Restore, String> data, ArrayList<String> errors) throws InterruptedException, IOException {
 		errors.add(sendCommand("/settings/cloud?enabled=" + settings.get("cloud").get("enabled").asText()));
 //		LOG.trace("step 2.1");
-		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY / 2);
+		TimeUnit.MILLISECONDS.sleep(delay);
 		errors.add(sendCommand("/settings?" +
 				jsonNodeToURLPar(settings, "name", "discoverable", "timezone", "lat", "lng", "tzautodetect", "tz_utc_offset", /*"tz_dst",*/ "tz_dst_auto", "tz_dst_auto", "allow_cross_origin")));
 		// eco_mode_enabled=" + settings.get("eco_mode_enabled") // no way: device reboot changing this parameter
-		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY / 2);
+		TimeUnit.MILLISECONDS.sleep(delay);
 		LoginManagerG1 lm = new LoginManagerG1(this, true);
 //		LOG.trace("step 2.2");
 		if(data.containsKey(Restore.RESTORE_LOGIN)) {
@@ -301,7 +303,7 @@ public abstract class AbstractG1Device extends ShellyAbstractDevice {
 //		LOG.trace("step 2.3");
 		final JsonNode mqtt = settings.get("mqtt");
 		if(data.containsKey(Restore.RESTORE_MQTT) || mqtt.path("enable").asBoolean() == false || mqtt.path("user").asText("").length() == 0) {
-			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY / 2);
+			TimeUnit.MILLISECONDS.sleep(delay);
 			MQTTManagerG1 mqttM = new MQTTManagerG1(this, true);
 			errors.add(mqttM.restore(mqtt, data.get(Restore.RESTORE_MQTT)));
 		}
