@@ -161,33 +161,32 @@ public class RestoreAction extends UsnaSelectedAction {
 						} else {
 							JOptionPane.showMessageDialog(mainView, LABELS.getString("msgRestoreSuccess"), device.getHostname(), JOptionPane.INFORMATION_MESSAGE);
 						}
-					} else {
-						LOG.debug("Interactive Restore error {} {}", device, ret);
-						
-						if(device.getStatus() == Status.OFF_LINE) { // if error happened because the device is off-line -> try to queue action in DeferrablesContainer
-							JOptionPane.showMessageDialog(mainView, LABELS.getString("msgRestoreQueue"), device.getHostname(), JOptionPane.ERROR_MESSAGE);
-							DeferrablesContainer.getInstance(model).add(modelRow, new DeferrableAction(LABELS.getString("msgRestoreTitle"), (def, dev) -> {
-								final String restoreError =
-										dev.restore(backupJsons, resData)
-										.stream().filter(s-> s != null && s.length() > 0).distinct().collect(Collectors.joining("\n"));
-								if(restoreError.length() > 0) {
-									def.setStatus(DeferrableAction.Status.FAIL);
-								}
-								try {
-									if(device.getStatus() != Status.OFF_LINE) {
-										try { Thread.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e) {}
-										dev.refreshSettings();
-										try { Thread.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e) {}
-										dev.refreshStatus();
-										mainView.update(Devices.EventType.UPDATE, modelRow);
-									}
-								} catch(Exception e) {}
-								return restoreError;
-							}));
-						} else {
+					} else {	
+//						if(device.getStatus() == Status.OFF_LINE) { // if error happened because the device is off-line -> try to queue action in DeferrablesContainer
+//							LOG.debug("Interactive Restore error {} {}", device, ret);
+//							JOptionPane.showMessageDialog(mainView, LABELS.getString("msgRestoreQueue"), device.getHostname(), JOptionPane.ERROR_MESSAGE);
+//							DeferrablesContainer.getInstance(model).add(modelRow, new DeferrableAction(LABELS.getString("msgRestoreTitle"), (def, dev) -> {
+//								final String restoreError =
+//										dev.restore(backupJsons, resData)
+//										.stream().filter(s-> s != null && s.length() > 0).distinct().collect(Collectors.joining("\n"));
+//								if(restoreError.length() > 0) {
+//									def.setStatus(DeferrableAction.Status.FAIL);
+//								}
+//								try {
+//									if(device.getStatus() != Status.OFF_LINE) {
+//										try { Thread.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e) {}
+//										dev.refreshSettings();
+//										try { Thread.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e) {}
+//										dev.refreshStatus();
+//										mainView.update(Devices.EventType.UPDATE, modelRow);
+//									}
+//								} catch(Exception e) {}
+//								return restoreError;
+//							}));
+//						} else {
 							LOG.error("Restore error {} {}", device, ret);
 							JOptionPane.showMessageDialog(mainView, (ret.equals(Restore.ERR_UNKNOWN.name())) ? LABELS.getString("labelError") : ret, device.getHostname(), JOptionPane.ERROR_MESSAGE);
-						}
+//						}
 					}
 					
 					mainView.update(Devices.EventType.UPDATE, modelRow);
