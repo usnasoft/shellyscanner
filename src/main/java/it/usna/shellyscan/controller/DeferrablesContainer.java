@@ -43,7 +43,7 @@ public class DeferrablesContainer extends UsnaObservable<DeferrableAction.Status
 			LOG.trace("Deferrable added: {}", newDef);
 		}
 	}
-	
+
 	public void cancel(int index) {
 		synchronized (devIdx) {
 			DeferrableAction def = defer.get(index).def;
@@ -58,21 +58,21 @@ public class DeferrablesContainer extends UsnaObservable<DeferrableAction.Status
 	@Override
 	public void update(EventType mesgType, Integer modelIdx) {
 		int index;
-		ShellyAbstractDevice device;
-		DeferrableAction deferrable;
-		if((mesgType == EventType.SUBSTITUTE || mesgType == EventType.UPDATE) &&
-				(index = devIdx.indexOf(modelIdx)) >= 0 && (deferrable = defer.get(index).def).getStatus() == Status.WAITING &&
-				(device = model.get(modelIdx)).getStatus() == ShellyAbstractDevice.Status.ON_LINE) {
+		if((mesgType == EventType.SUBSTITUTE || mesgType == EventType.UPDATE) && (index = devIdx.indexOf(modelIdx)) >= 0) {
 			synchronized (devIdx) {
-				new Thread(() -> {
-					deferrable.run(device);
-					fireEvent(deferrable.getStatus(), index);
-				}).start();
-				fireEvent(Status.RUNNING, index);
-				String name = UtilMiscellaneous.getDescName(model.get(modelIdx)); // could have been changed since add(...)
-				LOG.trace("Deferrable execution: {}", deferrable);
-				defer.get(index).deviceName = name;
-				devIdx.set(index, null);
+				DeferrableAction deferrable = defer.get(index).def;
+				ShellyAbstractDevice device;
+				if(deferrable.getStatus() == Status.WAITING && (device = model.get(modelIdx)).getStatus() == ShellyAbstractDevice.Status.ON_LINE) {
+					new Thread(() -> {
+						Status s = deferrable.run(device);
+						fireEvent(s, index);
+					}).start();
+					fireEvent(Status.RUNNING, index);
+					String name = UtilMiscellaneous.getDescName(model.get(modelIdx)); // could have been changed since add(...)
+					LOG.trace("Deferrable execution: {}", deferrable);
+					defer.get(index).deviceName = name;
+					devIdx.set(index, null);
+				}
 			}
 			LOG.info(this.toString()); // todo remove
 		} else if(mesgType == Devices.EventType.CLEAR) {
@@ -83,23 +83,23 @@ public class DeferrablesContainer extends UsnaObservable<DeferrableAction.Status
 			}
 		}
 	}
-	
+
 	@Override
 	public String toString() {
 		return "List of deferrables\n" + defer.stream().map(d -> d.toString()).collect(Collectors.joining("\n"));
 	}
-	
+
 	private static class DeferrableRecord { // not a record, is mutable
 		private final DeferrableAction def;
 		private final LocalDateTime time;
 		private String deviceName;
-		
+
 		private DeferrableRecord(DeferrableAction def, String deviceName, LocalDateTime time) {
 			this.def = def;
 			this.deviceName = deviceName;
 			this.time = time;
 		}
-		
+
 		@Override
 		public String toString() {
 			return time + " - " +  def + " - " + deviceName;

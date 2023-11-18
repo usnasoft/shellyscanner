@@ -5,8 +5,6 @@ import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 public class DeferrableAction {
 	public enum Status {WAITING, CANCELLED, RUNNING, SUCCESS, FAIL};
 	private final String description;
-//	private final Devices model;
-//	private final int devIndex;
 	private Task task;
 	private String retValue;
 	private Status status = Status.WAITING;
@@ -18,14 +16,14 @@ public class DeferrableAction {
 		this.task = runner;
 	}
 	
-	public void run(ShellyAbstractDevice device) {
+	public Status run(ShellyAbstractDevice device) {
 		try {
 			status = Status.RUNNING;
 			retValue = task.run(this, device);
-			status = (retValue == null || retValue.length() == 0) ? Status.SUCCESS : Status.FAIL;
+			return (status = (retValue == null || retValue.length() == 0) ? Status.SUCCESS : Status.FAIL);
 		} catch(Exception e) {
 			this.retValue = e.toString();
-			status = Status.FAIL;
+			return (status = Status.FAIL);
 		}
 	}
 	
