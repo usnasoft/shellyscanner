@@ -524,9 +524,9 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 	private void manageRowsSelection() {
 		tableSelectionListener = e -> {
 			if(e.getValueIsAdjusting() == false) {
-				boolean singleSelection, singleSelectionNoGhost;
+				boolean singleSelection, singleSelectionNoGhost, selection, selectionNoGhost;
 				singleSelection = singleSelectionNoGhost = devicesTable.getSelectedRowCount() == 1;
-				boolean selectionNoGhost = devicesTable.getSelectedRowCount() > 0;
+				selection = selectionNoGhost = devicesTable.getSelectedRowCount() > 0;
 				ShellyAbstractDevice d = null;
 				for(int idx: devicesTable.getSelectedRows()) {
 					d = model.get(devicesTable.convertRowIndexToModel(idx));
@@ -540,7 +540,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 				checkListAction.setEnabled(selectionNoGhost);
 				rebootAction.setEnabled(selectionNoGhost);
 				browseAction.setEnabled(selectionNoGhost && browserSupported);
-				backupAction.setEnabled(selectionNoGhost);
+				backupAction.setEnabled(selection);
 				restoreAction.setEnabled(singleSelectionNoGhost && d.getStatus() != Status.NOT_LOOGGED);
 				devicesSettingsAction.setEnabled(selectionNoGhost);
 				chartAction.setEnabled(selectionNoGhost);

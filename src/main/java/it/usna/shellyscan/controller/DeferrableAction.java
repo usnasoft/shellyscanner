@@ -22,7 +22,8 @@ public class DeferrableAction {
 			retValue = task.run(this, device);
 			return (status = (retValue == null || retValue.length() == 0) ? Status.SUCCESS : Status.FAIL);
 		} catch(Exception e) {
-			this.retValue = e.toString();
+			String msg = e.getMessage();
+			this.retValue = msg.length() > 0 ? msg : e.toString();
 			return (status = Status.FAIL);
 		}
 	}
@@ -44,7 +45,7 @@ public class DeferrableAction {
 		return description;
 	}
 	
-	public Object getreturn() {
+	public String getreturn() {
 		return retValue;
 	}
 	

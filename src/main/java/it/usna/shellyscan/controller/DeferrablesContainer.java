@@ -75,7 +75,6 @@ public class DeferrablesContainer extends UsnaObservable<DeferrableAction.Status
 					devIdx.set(index, null);
 				}
 			}
-//			LOG.info(this.toString()); // todo remove
 		} else if(mesgType == Devices.EventType.CLEAR) {
 			synchronized (devIdx) {
 				for(int i = 0; i < devIdx.size(); i++) {

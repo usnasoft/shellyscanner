@@ -58,6 +58,7 @@ public class RestoreAction extends UsnaSelectedAction {
 					mainView.getContentPane().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 					final Map<String, JsonNode> backupJsons = readBackupFile(fc.getSelectedFile());
 					Map<Restore, String> test = device.restoreCheck(backupJsons);
+
 					mainView.getContentPane().setCursor(Cursor.getDefaultCursor());
 					Map<Restore, String> resData = new HashMap<>();
 					if(test.containsKey(Restore.ERR_RESTORE_HOST) &&
@@ -164,7 +165,7 @@ public class RestoreAction extends UsnaSelectedAction {
 					} else {	
 						if(device.getStatus() == Status.OFF_LINE) { // if error happened because the device is off-line -> try to queue action in DeferrablesContainer
 							LOG.debug("Interactive Restore error {} {}", device, ret);
-							JOptionPane.showMessageDialog(mainView, LABELS.getString("msgRestoreQueue"), device.getHostname(), JOptionPane.ERROR_MESSAGE);
+							JOptionPane.showMessageDialog(mainView, LABELS.getString("msgRestoreQueue"), device.getHostname(), JOptionPane.WARNING_MESSAGE);
 							DeferrablesContainer.getInstance(model).add(modelRow, new DeferrableAction(LABELS.getString("action_restore_tooltip"), (def, dev) -> {
 								final String restoreError =
 										dev.restore(backupJsons, resData)
