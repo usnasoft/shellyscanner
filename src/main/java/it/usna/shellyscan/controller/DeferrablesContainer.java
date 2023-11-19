@@ -63,18 +63,19 @@ public class DeferrablesContainer extends UsnaObservable<DeferrableAction.Status
 				DeferrableAction deferrable = defer.get(index).def;
 				ShellyAbstractDevice device;
 				if(deferrable.getStatus() == Status.WAITING && (device = model.get(modelIdx)).getStatus() == ShellyAbstractDevice.Status.ON_LINE) {
+					deferrable.setStatus(Status.RUNNING); // deferrable.run(device) change the status but we need it is changed before fireEvent
 					new Thread(() -> {
-						Status s = deferrable.run(device);
+						final Status s = deferrable.run(device);
 						fireEvent(s, index);
 					}).start();
-					fireEvent(Status.RUNNING, index);
 					String name = UtilMiscellaneous.getDescName(model.get(modelIdx)); // could have been changed since add(...)
+					fireEvent(Status.RUNNING, index);
 					LOG.trace("Deferrable execution: {}", deferrable);
 					defer.get(index).deviceName = name;
 					devIdx.set(index, null);
 				}
 			}
-			LOG.info(this.toString()); // todo remove
+//			LOG.info(this.toString()); // todo remove
 		} else if(mesgType == Devices.EventType.CLEAR) {
 			synchronized (devIdx) {
 				for(int i = 0; i < devIdx.size(); i++) {
@@ -83,13 +84,21 @@ public class DeferrablesContainer extends UsnaObservable<DeferrableAction.Status
 			}
 		}
 	}
+	
+	public int size() {
+		return defer.size();
+	}
+	
+	public DeferrableRecord get(int index) {
+		return defer.get(index);
+	}
 
 	@Override
 	public String toString() {
 		return "List of deferrables\n" + defer.stream().map(d -> d.toString()).collect(Collectors.joining("\n"));
 	}
 
-	private static class DeferrableRecord { // not a record, is mutable
+	public static class DeferrableRecord { // not a record, is mutable
 		private final DeferrableAction def;
 		private final LocalDateTime time;
 		private String deviceName;
@@ -98,6 +107,26 @@ public class DeferrablesContainer extends UsnaObservable<DeferrableAction.Status
 			this.def = def;
 			this.deviceName = deviceName;
 			this.time = time;
+		}
+		
+		public LocalDateTime getTime() {
+			return time;
+		}
+
+		public String getDescription() {
+			return def.getDescription();
+		}
+
+		public Status getStatus() {
+			return def.getStatus();
+		}
+		
+		public Object getRetMsg() {
+			return def.getreturn();
+		}
+
+		public String getDeviceName() {
+			return deviceName;
 		}
 
 		@Override

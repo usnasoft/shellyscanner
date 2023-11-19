@@ -46,7 +46,6 @@ import javax.swing.RowSorter;
 import javax.swing.SortOrder;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
-import javax.swing.border.EmptyBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
@@ -241,6 +240,8 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		}
 	});
 	
+	private DialogDeferrables dialogDeferrables;
+	
 	private Action csvExportAction = new UsnaAction(this, "/images/Table.png", "action_csv_tooltip", e -> {
 		final JFileChooser fc = new JFileChooser(appProp.getProperty("LAST_PATH"));
 		fc.setFileFilter(new FileNameExtensionFilter(LABELS.getString("filetype_csv_desc"), "csv"));
@@ -283,8 +284,8 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		backupAction = new BackupAction(this, devicesTable, appProp, model);
 		restoreAction = new RestoreAction(this, devicesTable, appProp, model);
 
-		BorderLayout borderLayout = (BorderLayout) getContentPane().getLayout();
-		borderLayout.setHgap(2);
+//		BorderLayout borderLayout = (BorderLayout) getContentPane().getLayout();
+//		borderLayout.setHgap(20);
 		loadProperties(appProp);
 
 		setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
@@ -293,13 +294,28 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 
 		// Status bar
 		JPanel statusPanel = new JPanel();
-		statusPanel.setBorder(new EmptyBorder(0, 5, 0, 0));
-		statusPanel.setLayout(new BorderLayout());
-		statusPanel.add(statusLabel, BorderLayout.WEST);
+//		statusPanel.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 0));
+		statusPanel.setLayout(new BorderLayout(6, 0));
+		statusPanel.add(statusLabel, BorderLayout.CENTER);
 		
-		JPanel statusButtonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 2, 0));
-		statusButtonPanel.setOpaque(false);
-		statusButtonPanel.add(new JLabel(LABELS.getString("lblFilter")));
+		JPanel statusLeftPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 2, 0));
+		statusLeftPanel.setOpaque(false);
+		
+		Action showDeferrables = new UsnaAction(this, "/images/deferred_list.png", "labelShowDeferrables", e -> {
+			if(dialogDeferrables == null) { // single dialog
+				dialogDeferrables = new DialogDeferrables(this, model);
+			}
+			dialogDeferrables.setVisible(true);
+			dialogDeferrables.setLocationRelativeTo(this);
+		});
+		JButton btnshowDeferrables = new JButton(showDeferrables);
+		btnshowDeferrables.setBorder(BorderFactory.createEmptyBorder(8, 10, 7, 10));
+		statusLeftPanel.add(btnshowDeferrables);
+		statusPanel.add(statusLeftPanel, BorderLayout.WEST);
+		
+		JPanel statusFilterPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 2, 0));
+		statusFilterPanel.setOpaque(false);
+		statusFilterPanel.add(new JLabel(LABELS.getString("lblFilter")));
 		textFieldFilter.setBorder(BorderFactory.createEmptyBorder(2, 0, 2, 0));
 		textFieldFilter.setColumns(16);
 		
@@ -312,8 +328,8 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 			setColFilter(comboFilterCol);
 			displayStatus();
 		});
-		statusButtonPanel.add(comboFilterCol);
-		statusButtonPanel.add(textFieldFilter);
+		statusFilterPanel.add(comboFilterCol);
+		statusFilterPanel.add(textFieldFilter);
 		
 		textFieldFilter.getDocument().addDocumentListener(new DocumentListener() {
 			@Override
@@ -337,24 +353,24 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		eraseFilterButton.setContentAreaFilled(false);
 		eraseFilterButton.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_E, SHORTCUT_KEY), "find_erase");
 		eraseFilterButton.getActionMap().put("find_erase", eraseFilterAction);
-		statusButtonPanel.add(eraseFilterButton);
+		statusFilterPanel.add(eraseFilterButton);
 
 		Action selectAll = new UsnaAction(null, "labelSelectAll", null, "/images/list_unordered.png", null, e -> devicesTable.selectAll());
 		Action selectOnLine = new SelectionAction(devicesTable, "labelSelectOnLine", null, "/images/list_online.png", i -> model.get(i).getStatus() == Status.ON_LINE);
 		
 		JButton btnSelectAll = new JButton(selectAll);
 		btnSelectAll.setBorder(BorderFactory.createEmptyBorder(2, 7, 2, 8));
-		statusButtonPanel.add(btnSelectAll);
+		statusFilterPanel.add(btnSelectAll);
 		
 		JButton btnSelectOnline = new JButton(selectOnLine);
 		btnSelectOnline.setBorder(BorderFactory.createEmptyBorder(2, 7, 2, 8));
-		statusButtonPanel.add(btnSelectOnline);
+		statusFilterPanel.add(btnSelectOnline);
 		
 		// Selection popup
 		JButton btnSelectCombo = new JButton(new ImageIcon(MainView.class.getResource("/images/expand-more.png")));
 		btnSelectCombo.setContentAreaFilled(false);
-		btnSelectCombo.setBorder(BorderFactory.createEmptyBorder(1, 0, 1, 2));
-		statusButtonPanel.add(btnSelectCombo);
+		btnSelectCombo.setBorder(BorderFactory.createEmptyBorder(1, 0, 1, 3));
+		statusFilterPanel.add(btnSelectCombo);
 
 		UsnaPopupMenu selectionPopup = new UsnaPopupMenu(selectAll, selectOnLine,
 				new SelectionAction(devicesTable, "labelSelectOnLineReboot", null, /*"/images/bullet_yes_reboot.png"*/null, i -> model.get(i).getStatus() == Status.ON_LINE && model.get(i).rebootRequired()),
@@ -365,10 +381,11 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 
 		btnSelectCombo.addActionListener(e -> selectionPopup.show(btnSelectCombo, 0, 0));
 		
-		statusPanel.add(statusButtonPanel, BorderLayout.EAST);
+		statusPanel.add(statusFilterPanel, BorderLayout.EAST);
 		statusPanel.setBackground(Main.STATUS_LINE);
 		getContentPane().add(statusPanel, BorderLayout.SOUTH);
 
+		
 		// Table
 		JScrollPane scrollPane = new JScrollPane();
 		getContentPane().add(scrollPane, BorderLayout.CENTER);

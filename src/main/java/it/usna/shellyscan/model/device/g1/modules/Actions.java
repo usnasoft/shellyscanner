@@ -14,7 +14,6 @@ import java.util.concurrent.TimeUnit;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
-import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.g1.AbstractG1Device;
 import it.usna.shellyscan.model.device.modules.InputInterface;
 
@@ -92,7 +91,7 @@ public class Actions {
 		return inputMap.get(index);
 	}
 	
-	public static void restore(AbstractG1Device parent, JsonNode actions, ArrayList<String> errors) throws IOException, InterruptedException {
+	public static void restore(AbstractG1Device parent, JsonNode actions, long delay, ArrayList<String> errors) throws IOException, InterruptedException {
 		Iterator<Entry<String, JsonNode>> events = actions.get("actions").fields();
 		while(events.hasNext()) {
 			Entry<String, JsonNode> ev = events.next();
@@ -103,7 +102,7 @@ public class Actions {
 				while(pars.hasNext()) {
 					command += "&" + AbstractG1Device.jsonEntryToURLPar(pars.next());
 				}
-				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+				TimeUnit.MILLISECONDS.sleep(delay);
 				errors.add(parent.sendCommand(command));
 			}
 		}

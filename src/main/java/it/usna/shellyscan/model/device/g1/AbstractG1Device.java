@@ -5,6 +5,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
+import java.net.SocketTimeoutException;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -112,11 +113,17 @@ public abstract class AbstractG1Device extends ShellyAbstractDevice {
 			}
 			String ret = response.getContentAsString();
 			return (ret == null || ret.length() == 0 || ret/*.trim()*/.startsWith("{")) ? null : ret;
-		} catch(ExecutionException | RuntimeException e) {
-			return e.getMessage();
-		} catch (TimeoutException | InterruptedException e) {
+		} catch(InterruptedException | TimeoutException e) {
 			status = Status.OFF_LINE;
 			return "Status-OFFLINE";
+		} catch(ExecutionException | RuntimeException e) {
+			if(e.getCause() instanceof SocketTimeoutException) {
+				status = Status.OFF_LINE;
+				return "Status-OFFLINE";
+			} else {
+				LOG.warn("EX", e);
+				return e.getMessage();
+			}
 		}
 	}
 
@@ -247,7 +254,7 @@ public abstract class AbstractG1Device extends ShellyAbstractDevice {
 			LOG.trace("step 2 {}", errors);
 			restoreCommons(settings, delay, data, errors);
 
-			Actions.restore(this, actions, errors);
+			Actions.restore(this, actions, delay, errors);
 			LOG.trace("step 3 {}", errors);
 			JsonNode roam = settings.path("ap_roaming");
 			if(roam.isMissingNode() == false) {

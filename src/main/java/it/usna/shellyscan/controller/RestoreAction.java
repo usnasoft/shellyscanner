@@ -165,7 +165,7 @@ public class RestoreAction extends UsnaSelectedAction {
 						if(device.getStatus() == Status.OFF_LINE) { // if error happened because the device is off-line -> try to queue action in DeferrablesContainer
 							LOG.debug("Interactive Restore error {} {}", device, ret);
 							JOptionPane.showMessageDialog(mainView, LABELS.getString("msgRestoreQueue"), device.getHostname(), JOptionPane.ERROR_MESSAGE);
-							DeferrablesContainer.getInstance(model).add(modelRow, new DeferrableAction(LABELS.getString("msgRestoreTitle"), (def, dev) -> {
+							DeferrablesContainer.getInstance(model).add(modelRow, new DeferrableAction(LABELS.getString("action_restore_tooltip"), (def, dev) -> {
 								final String restoreError =
 										dev.restore(backupJsons, resData)
 										.stream().filter(s-> s != null && s.length() > 0).distinct().collect(Collectors.joining("\n"));
