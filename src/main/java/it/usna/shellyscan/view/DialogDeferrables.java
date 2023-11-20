@@ -75,12 +75,14 @@ public class DialogDeferrables extends JFrame implements UsnaEventListener<Defer
 	}
 
 	@Override
-	public void setVisible(boolean v) {
+	public synchronized void setVisible(boolean v) {
 		super.setVisible(v);
 		if(v) {
 			fill();
 			table.columnsWidthAdapt();
-			deferrables.addListener(this);
+			if(deferrables.hasListener(this) == false) {
+				deferrables.addListener(this);
+			}
 		} else {
 			deferrables.removeListener(this);
 		}

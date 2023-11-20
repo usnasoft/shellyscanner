@@ -45,7 +45,7 @@ public class RestoreAction extends UsnaSelectedAction {
 
 	public RestoreAction(MainView mainView, JTable devicesTable, AppProperties appProp, Devices model) {
 		super(mainView, "action_restore_name", "action_restore_tooltip", "/images/Upload16.png", "/images/Upload.png");
-		
+
 		setConsumer(devicesTable, modelRow -> {
 			ShellyAbstractDevice device = model.get(modelRow);
 			final JFileChooser fc = new JFileChooser(appProp.getProperty("LAST_PATH"));
@@ -63,7 +63,7 @@ public class RestoreAction extends UsnaSelectedAction {
 					Map<Restore, String> resData = new HashMap<>();
 					if(test.containsKey(Restore.ERR_RESTORE_HOST) &&
 							JOptionPane.showConfirmDialog(mainView, String.format(LABELS.getString("msgRestoreDifferent"), test.get(Restore.ERR_RESTORE_HOST)),
-							LABELS.getString("msgRestoreTitle"), JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE) != JOptionPane.YES_OPTION) {
+									LABELS.getString("msgRestoreTitle"), JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE) != JOptionPane.YES_OPTION) {
 						return;
 					} else if(test.containsKey(Restore.ERR_RESTORE_MODEL)) {
 						Msg.errorMsg(mainView, LABELS.getString("msgRestoreDifferentModel"));
@@ -150,7 +150,7 @@ public class RestoreAction extends UsnaSelectedAction {
 						device.refreshSettings();
 						try { Thread.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e) {}
 						device.refreshStatus();
-						
+
 						if(device.rebootRequired())	{
 							String ok = LABELS.getString("dlgOK");
 							if(JOptionPane.showOptionDialog(mainView, LABELS.getString("msgRestoreSuccessReboot"), device.getHostname(),
@@ -165,7 +165,8 @@ public class RestoreAction extends UsnaSelectedAction {
 					} else {	
 						if(device.getStatus() == Status.OFF_LINE) { // if error happened because the device is off-line -> try to queue action in DeferrablesContainer
 							LOG.debug("Interactive Restore error {} {}", device, ret);
-							JOptionPane.showMessageDialog(mainView, LABELS.getString("msgRestoreQueue"), device.getHostname(), JOptionPane.WARNING_MESSAGE);
+							SwingUtilities.invokeLater(() ->
+								JOptionPane.showMessageDialog(mainView, LABELS.getString("msgRestoreQueue"), device.getHostname(), JOptionPane.WARNING_MESSAGE));
 							DeferrablesContainer.getInstance(model).add(modelRow, new DeferrableAction(LABELS.getString("action_restore_tooltip"), (def, dev) -> {
 								final String restoreError =
 										dev.restore(backupJsons, resData)
@@ -189,7 +190,7 @@ public class RestoreAction extends UsnaSelectedAction {
 							JOptionPane.showMessageDialog(mainView, (ret.equals(Restore.ERR_UNKNOWN.name())) ? LABELS.getString("labelError") : ret, device.getHostname(), JOptionPane.ERROR_MESSAGE);
 						}
 					}
-					
+
 					mainView.update(Devices.EventType.UPDATE, modelRow);
 				}
 			} catch (FileNotFoundException | NoSuchFileException e1) {
@@ -203,7 +204,7 @@ public class RestoreAction extends UsnaSelectedAction {
 			}
 		});
 	}
-	
+
 	private static Map<String, JsonNode> readBackupFile(final File file) throws IOException {
 		final ObjectMapper jsonMapper = new ObjectMapper();
 		try (ZipFile in = new ZipFile(file, StandardCharsets.UTF_8)) {
