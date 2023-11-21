@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Map;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import it.usna.shellyscan.model.device.Meters;
 
@@ -82,7 +83,13 @@ public class ShellyPlusHT extends AbstractBatteryG2Device {
 	protected void restore(Map<String, JsonNode> backupJsons, ArrayList<String> errors) throws IOException {
 		JsonNode configuration = backupJsons.get("Shelly.GetConfig.json");
 		errors.add(postCommand("HT_UI.SetConfig", "{\"config\":" + jsonMapper.writeValueAsString(configuration.get("ht_ui")) + "}"));
-		errors.add(postCommand("Temperature.SetConfig", "{\"config\":" + jsonMapper.writeValueAsString(configuration.get("temperature:0")) + "}"));
-		errors.add(postCommand("Humidity.SetConfig", "{\"config\":" + jsonMapper.writeValueAsString(configuration.get("humidity:0")) + "}"));
+		
+		ObjectNode temperatureNode = (ObjectNode)configuration.get("temperature:0");
+		temperatureNode.remove("id");
+		errors.add(postCommand("Temperature.SetConfig", "{\"id\":0,\"config\":" + jsonMapper.writeValueAsString(temperatureNode) + "}"));
+
+		ObjectNode humidityNode = (ObjectNode)configuration.get("humidity:0");
+		humidityNode.remove("id");
+		errors.add(postCommand("Humidity.SetConfig", "{\"id\":0,\"config\":" + jsonMapper.writeValueAsString(humidityNode) + "}"));
 	}
 }
