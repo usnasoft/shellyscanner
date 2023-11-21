@@ -10,6 +10,7 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.NoSuchFileException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
@@ -141,9 +142,7 @@ public class RestoreAction extends UsnaSelectedAction {
 					}
 					mainView.getContentPane().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 					appProp.setProperty("LAST_PATH", fc.getCurrentDirectory().getCanonicalPath());
-					final String ret =
-							device.restore(backupJsons, resData)
-							.stream().filter(s-> s != null && s.length() > 0).distinct().collect(Collectors.joining("\n"));
+					final String ret = erroreMsg(device.restore(backupJsons, resData));
 
 					if(ret == null || ret.length() == 0) {
 						try { Thread.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e) {}
@@ -168,9 +167,7 @@ public class RestoreAction extends UsnaSelectedAction {
 							SwingUtilities.invokeLater(() ->
 								JOptionPane.showMessageDialog(mainView, LABELS.getString("msgRestoreQueue"), device.getHostname(), JOptionPane.WARNING_MESSAGE));
 							DeferrablesContainer.getInstance(model).add(modelRow, new DeferrableAction(LABELS.getString("action_restore_tooltip"), (def, dev) -> {
-								final String restoreError =
-										dev.restore(backupJsons, resData)
-										.stream().filter(s-> s != null && s.length() > 0).distinct().collect(Collectors.joining("\n"));
+								final String restoreError = erroreMsg(dev.restore(backupJsons, resData));
 								if(restoreError.length() > 0) {
 									def.setStatus(DeferrableAction.Status.FAIL);
 								}
@@ -203,6 +200,10 @@ public class RestoreAction extends UsnaSelectedAction {
 				mainView.getContentPane().setCursor(Cursor.getDefaultCursor());
 			}
 		});
+	}
+	
+	private static String erroreMsg(List<String> errors) {
+		return errors.stream().filter(s-> s != null && s.length() > 0).map(s -> LABELS.containsKey(s) ? LABELS.getString(s) : s).distinct().collect(Collectors.joining("\n"));
 	}
 
 	private static Map<String, JsonNode> readBackupFile(final File file) throws IOException {
