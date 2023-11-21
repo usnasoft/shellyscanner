@@ -372,7 +372,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 			if(status == Status.OFF_LINE) {
 				return errors.size() > 0 ? errors : List.of(Restore.ERR_UNKNOWN.toString());
 			}
-			restoreCommonConfig(config, data, errors);
+			restoreCommonConfig(config, delay, data, errors);
 
 			JsonNode schedule = backupJsons.get("Schedule.List.json");
 			if(schedule != null) {  // some devices do not have Schedule.List +H&T
@@ -424,19 +424,19 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 	protected abstract void restore(Map<String, JsonNode> backupJsons, ArrayList<String> errors) throws IOException, InterruptedException;
 
 	// Shelly.GetConfig.json
-	void restoreCommonConfig(JsonNode config, Map<Restore, String> data, ArrayList<String> errors) throws InterruptedException, IOException {
+	void restoreCommonConfig(JsonNode config, final long delay, Map<Restore, String> data, ArrayList<String> errors) throws InterruptedException, IOException {
 		ObjectNode outConfig = JsonNodeFactory.instance.objectNode();
 
 		// BLE.SetConfig
 		outConfig.set("config", config.get("ble").deepCopy());
-		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+		TimeUnit.MILLISECONDS.sleep(delay);
 		errors.add(postCommand("BLE.SetConfig", outConfig));
 
 		// Cloud.SetConfig
 		ObjectNode outCloud = JsonNodeFactory.instance.objectNode(); // Cloud // https://shelly-api-docs.shelly.cloud/gen2/Components/SystemComponents/Cloud#cloudsetconfig-example
 		outCloud.put("enable", config.at("/cloud/enable").asBoolean());
 		outConfig.set("config", outCloud);
-		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+		TimeUnit.MILLISECONDS.sleep(delay);
 		errors.add(postCommand("Cloud.SetConfig", outConfig));
 
 		// Sys.SetConfig
@@ -454,12 +454,12 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 		outSys.set("sntp", sys.get("sntp").deepCopy());
 
 		outConfig.set("config", outSys);
-		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+		TimeUnit.MILLISECONDS.sleep(delay);
 		errors.add(postCommand("Sys.SetConfig", outConfig));
 
 		final JsonNode mqtt = config.path("mqtt");
 		if(data.containsKey(Restore.RESTORE_MQTT) || mqtt.path("enable").asBoolean() == false || mqtt.path("user").asText("").length() == 0) {
-			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+			TimeUnit.MILLISECONDS.sleep(delay);
 			MQTTManagerG2 mqttM = new MQTTManagerG2(this, true);
 			errors.add(mqttM.restore(mqtt, data.get(Restore.RESTORE_MQTT)));
 		}

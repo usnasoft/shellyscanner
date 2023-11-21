@@ -18,8 +18,9 @@ public abstract class AbstractProDevice extends AbstractG2Device {
 	}
 	
 	@Override
-	void restoreCommonConfig(JsonNode config, Map<Restore, String> data, ArrayList<String> errors) throws InterruptedException, IOException {
-		super.restoreCommonConfig(config, data, errors);
+	void restoreCommonConfig(JsonNode config, final long delay, Map<Restore, String> data, ArrayList<String> errors) throws InterruptedException, IOException {
+		super.restoreCommonConfig(config, delay, data, errors);
+		TimeUnit.MILLISECONDS.sleep(delay);
 		errors.add(ethRestore(config.get("eth")));
 	}
 	

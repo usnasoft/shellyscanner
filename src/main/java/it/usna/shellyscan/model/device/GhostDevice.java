@@ -189,7 +189,7 @@ public class GhostDevice extends ShellyAbstractDevice {
 	
 	@Override
 	public List<String> restore(Map<String, JsonNode> backupJsons, Map<Restore, String> data) {
-		throw new UnsupportedOperationException();
+		return List.of("GhostDevice");
 	}
 	
 	@Override

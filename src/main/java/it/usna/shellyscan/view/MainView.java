@@ -83,7 +83,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 	public final static int SHORTCUT_KEY = Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx();
 	private final static Logger LOG = LoggerFactory.getLogger(MainWindow.class);
 	private ListSelectionListener tableSelectionListener;
-	private boolean browserSupported = Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE);
+//	private boolean browserSupported = Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE);
 
 	private AppProperties appProp;
 	private JLabel statusLabel = new JLabel();
@@ -187,7 +187,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 	private Action browseAction = new UsnaSelectedAction(this, devicesTable, "action_web_name", "action_web_tooltip", "/images/Computer16.png", "/images/Computer.png", i -> {
 		try {
 			Desktop.getDesktop().browse(new URI("http://" + InetAddressAndPort.toString(model.get(i))));
-		} catch (IOException | URISyntaxException e) {
+		} catch (IOException | URISyntaxException | UnsupportedOperationException e) {
 			Msg.errorMsg(e);
 		}
 	});
@@ -284,8 +284,6 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		backupAction = new BackupAction(this, devicesTable, appProp, model);
 		restoreAction = new RestoreAction(this, devicesTable, appProp, model);
 
-//		BorderLayout borderLayout = (BorderLayout) getContentPane().getLayout();
-//		borderLayout.setHgap(20);
 		loadProperties(appProp);
 
 		setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
@@ -539,9 +537,9 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 				infoLogAction.setEnabled(singleSelectionNoGhost);
 				checkListAction.setEnabled(selectionNoGhost);
 				rebootAction.setEnabled(selectionNoGhost);
-				browseAction.setEnabled(selectionNoGhost && browserSupported);
+				browseAction.setEnabled(selectionNoGhost /*&& browserSupported*/);
 				backupAction.setEnabled(selection);
-				restoreAction.setEnabled(singleSelectionNoGhost && d.getStatus() != Status.NOT_LOOGGED);
+				restoreAction.setEnabled(singleSelection /*&& d.getStatus() != Status.NOT_LOOGGED*/);
 				devicesSettingsAction.setEnabled(selectionNoGhost);
 				chartAction.setEnabled(selectionNoGhost);
 				scriptManagerAction.setEnabled(singleSelectionNoGhost && d instanceof AbstractG2Device);
