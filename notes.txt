@@ -206,12 +206,14 @@ https://www.iconbolt.com/
 // multi-selection contextual menu
 // warning delete on notes
 // device info auto-update on device going to "on line"
-// list_online.png
+// backup/restore for offline/ghost devices
+// fix restore +H&T
 // todo fw updates per off-line battery
 
 
 ---
 // TODO
+// multi net ip scan
 // todo? restore eco_mode (opzionale per gen1)
 //todo Gen2 1.0.0 - triphase and monophase profiles (EDIT: to be included in next beta), add option to reverse CT direction of measurement for active power and energy
 //todo Gen2 1.0.0 - Input invert and range_map configuration properties for analog input type

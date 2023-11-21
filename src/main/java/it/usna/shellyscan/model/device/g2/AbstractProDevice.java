@@ -20,14 +20,12 @@ public abstract class AbstractProDevice extends AbstractG2Device {
 	@Override
 	void restoreCommonConfig(JsonNode config, final long delay, Map<Restore, String> data, ArrayList<String> errors) throws InterruptedException, IOException {
 		super.restoreCommonConfig(config, delay, data, errors);
-		TimeUnit.MILLISECONDS.sleep(delay);
 		errors.add(ethRestore(config.get("eth")));
 	}
 	
 	private String ethRestore(JsonNode eth) throws JsonProcessingException, InterruptedException {
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 		return postCommand("Eth.SetConfig", "{\"config\":" + jsonMapper.writeValueAsString(eth) + "}");
-//		return postCommand("Eth.SetConfig", eth);
 	}
 }
 
