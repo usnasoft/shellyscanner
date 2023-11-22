@@ -9,9 +9,7 @@ public class DeferrableAction {
 	private String retValue;
 	private Status status = Status.WAITING;
 	
-	public DeferrableAction(/*Devices model, int devIndex,*/ String description, Task runner) {
-//		this.model = model;
-//		this.devIndex = devIndex;
+	public DeferrableAction(String description, Task runner) {
 		this.description = description;
 		this.task = runner;
 	}
@@ -49,10 +47,6 @@ public class DeferrableAction {
 		return retValue;
 	}
 	
-	public interface Task{
-		String run(DeferrableAction deferrable, ShellyAbstractDevice device) throws Exception;
-	}
-	
 	/**
 	 * Release resources
 	 */
@@ -63,5 +57,12 @@ public class DeferrableAction {
 	@Override
 	public String toString() {
 		return description + " : " + status + " : '" + retValue + "'";
+	}
+	
+	/**
+	 * Task definition
+	 */
+	public interface Task {
+		String run(DeferrableAction deferrable, ShellyAbstractDevice device) throws Exception;
 	}
 }

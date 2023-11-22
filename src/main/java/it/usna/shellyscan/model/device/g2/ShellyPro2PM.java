@@ -31,14 +31,12 @@ public class ShellyPro2PM extends AbstractProDevice implements RelayCommander, R
 	private float pf0, pf1;
 	private Meters meters0, meters1;
 	private Meters[] meters;
-	
-	private final static String MSG_RESTORE_MODE_ERROR = "msgRestorePlus2PMMode";
 
 	private final static String MODE_RELAY = "switch";
 
 	public ShellyPro2PM(InetAddress address, int port, String hostname) {
 		super(address, port, hostname);
-		
+
 		meters0 = new Meters() {
 			public Type[] getTypes() {
 				return SUPPORTED_MEASURES;
@@ -117,17 +115,17 @@ public class ShellyPro2PM extends AbstractProDevice implements RelayCommander, R
 		return internalTmp;
 	}
 
-//	public float getPower() {
-//		return power0;
-//	}
-//
-//	public float getVoltage() {
-//		return voltage0;
-//	}
-//
-//	public float getCurrent() {
-//		return current0;
-//	}
+	//	public float getPower() {
+	//		return power0;
+	//	}
+	//
+	//	public float getVoltage() {
+	//		return voltage0;
+	//	}
+	//
+	//	public float getCurrent() {
+	//		return current0;
+	//	}
 
 	@Override
 	public Meters[] getMeters() {
@@ -186,13 +184,13 @@ public class ShellyPro2PM extends AbstractProDevice implements RelayCommander, R
 			roller.fillStatus(cover);
 		}
 	}
-	
+
 	@Override
 	public void restoreCheck(Map<String, JsonNode> backupJsons, Map<Restore, String> res) throws IOException {
 		JsonNode devInfo = backupJsons.get("Shelly.GetDeviceInfo.json");
 		boolean backModeRelay = MODE_RELAY.equals(devInfo.get("profile").asText());
 		if(backModeRelay != modeRelay) {
-			res.put(Restore.ERR_RESTORE_MSG, MSG_RESTORE_MODE_ERROR);
+			res.put(Restore.ERR_RESTORE_MSG, Roller.MSG_RESTORE_MODE_ERROR);
 		}
 	}
 
@@ -200,16 +198,20 @@ public class ShellyPro2PM extends AbstractProDevice implements RelayCommander, R
 	protected void restore(Map<String, JsonNode> backupJsons, ArrayList<String> errors) throws IOException, InterruptedException {
 		JsonNode configuration = backupJsons.get("Shelly.GetConfig.json");
 		final boolean backModeRelay = MODE_RELAY.equals(configuration.get("sys").get("device").get("profile").asText());
-		errors.add(Input.restore(this,configuration, "0"));
-		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-		errors.add(Input.restore(this,configuration, "1"));
-		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-		if(backModeRelay) {
-			errors.add(relay0.restore(configuration));
+		if(backModeRelay == modeRelay) {
+			errors.add(Input.restore(this,configuration, "0"));
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-			errors.add(relay1.restore(configuration));
+			errors.add(Input.restore(this,configuration, "1"));
+			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+			if(backModeRelay) {
+				errors.add(relay0.restore(configuration));
+				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+				errors.add(relay1.restore(configuration));
+			} else {
+				errors.add(roller.restore(configuration));
+			}
 		} else {
-			errors.add(roller.restore(configuration));
+			errors.add(Roller.MSG_RESTORE_MODE_ERROR);
 		}
 	}
 
@@ -237,4 +239,4 @@ public class ShellyPro2PM extends AbstractProDevice implements RelayCommander, R
 "auth_domain" : null,
 "profile" : "switch"
 }
-*/
+ */

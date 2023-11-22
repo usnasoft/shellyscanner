@@ -33,8 +33,6 @@ public class ShellyPlus2PM extends AbstractG2Device implements RelayCommander, R
 	private float pf0, pf1;
 	private Meters[] meters;
 	private SensorAddOn addOn;
-	
-	private final static String MSG_RESTORE_MODE_ERROR = "msgRestorePlus2PMMode";
 
 	private final static String MODE_RELAY = "switch";
 
@@ -220,7 +218,7 @@ public class ShellyPlus2PM extends AbstractG2Device implements RelayCommander, R
 		JsonNode devInfo = backupJsons.get("Shelly.GetDeviceInfo.json");
 		boolean backModeRelay = MODE_RELAY.equals(devInfo.get("profile").asText());
 		if(backModeRelay != modeRelay) {
-			res.put(Restore.ERR_RESTORE_MSG, MSG_RESTORE_MODE_ERROR);
+			res.put(Restore.ERR_RESTORE_MSG, Roller.MSG_RESTORE_MODE_ERROR);
 		}
 		if(SensorAddOn.restoreCheck(this, backupJsons, res) == false) {
 			res.put(Restore.WARN_RESTORE_MSG, SensorAddOn.MSG_RESTORE_ERROR);
@@ -231,18 +229,23 @@ public class ShellyPlus2PM extends AbstractG2Device implements RelayCommander, R
 	protected void restore(Map<String, JsonNode> backupJsons, ArrayList<String> errors) throws IOException, InterruptedException {
 		JsonNode configuration = backupJsons.get("Shelly.GetConfig.json");
 		final boolean backModeRelay = MODE_RELAY.equals(configuration.get("sys").get("device").get("profile").asText());
-		errors.add(Input.restore(this,configuration, "0"));
-		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-		errors.add(Input.restore(this,configuration, "1"));
-		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-		if(backModeRelay) {
-			errors.add(relay0.restore(configuration));
+		if(backModeRelay == modeRelay) {
+			errors.add(Input.restore(this,configuration, "0"));
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-			errors.add(relay1.restore(configuration));
+			errors.add(Input.restore(this,configuration, "1"));
+			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+			if(backModeRelay) {
+				errors.add(relay0.restore(configuration));
+				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+				errors.add(relay1.restore(configuration));
+			} else {
+				errors.add(roller.restore(configuration));
+			}
 		} else {
-			errors.add(roller.restore(configuration));
+			errors.add(Roller.MSG_RESTORE_MODE_ERROR);
 		}
-		
+
+		//TODO
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 		SensorAddOn.restore(this, backupJsons, errors);
 	}
