@@ -197,9 +197,9 @@ public class ShellyPro2PM extends AbstractProDevice implements RelayCommander, R
 	@Override
 	protected void restore(Map<String, JsonNode> backupJsons, ArrayList<String> errors) throws IOException, InterruptedException {
 		JsonNode configuration = backupJsons.get("Shelly.GetConfig.json");
-		final boolean backModeRelay = MODE_RELAY.equals(configuration.get("sys").get("device").get("profile").asText());
+		final boolean backModeRelay = MODE_RELAY.equals(configuration.at("/sys/device/profile").asText());
 		if(backModeRelay == modeRelay) {
-			errors.add(Input.restore(this,configuration, "0"));
+			errors.add(Input.restore(this, configuration, "0"));
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			errors.add(Input.restore(this,configuration, "1"));
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
@@ -211,7 +211,7 @@ public class ShellyPro2PM extends AbstractProDevice implements RelayCommander, R
 				errors.add(roller.restore(configuration));
 			}
 		} else {
-			errors.add(Roller.MSG_RESTORE_MODE_ERROR);
+			errors.add(Roller.MSG_RESTORE_MODE_SYNT_ERROR);
 		}
 	}
 
