@@ -42,7 +42,7 @@ import it.usna.shellyscan.model.device.g1.modules.Actions;
 
 /**
  * Base class for any gen1 Shelly device
- * usna
+ * @author usna
  */
 public abstract class AbstractG1Device extends ShellyAbstractDevice {
 	private final static Logger LOG = LoggerFactory.getLogger(AbstractG1Device.class);
@@ -139,7 +139,7 @@ public abstract class AbstractG1Device extends ShellyAbstractDevice {
 	
 	@Override
 	public String[] getInfoRequests() {
-		return new String[] {"/shelly", "/settings", "/settings/actions", "/status"}; // "settings/ap", "settings/sta", "settings/login", "settings/cloud" into "settings"; "/ota" into "status"
+		return new String[] {"/shelly", "/settings", "/settings/actions", "/status", "/cit/d"}; // "settings/ap", "settings/sta", "settings/login", "settings/cloud" into "settings"; "/ota" into "status"
 	}
 	
 	@Override
@@ -295,9 +295,14 @@ public abstract class AbstractG1Device extends ShellyAbstractDevice {
 	private void restoreCommons(JsonNode settings, final long delay, Map<Restore, String> data, ArrayList<String> errors) throws InterruptedException, IOException {
 		errors.add(sendCommand("/settings/cloud?enabled=" + settings.get("cloud").get("enabled").asText()));
 //		LOG.trace("step 2.1");
+		final String[] settigsRestore;
+		if(settings.get("pon_wifi_reset") == null) {
+			settigsRestore = new String[] {"name", "discoverable", "timezone", "lat", "lng", "tzautodetect", "tz_utc_offset", /*"tz_dst",*/ "tz_dst_auto", "tz_dst_auto", "allow_cross_origin"};
+		} else {
+			settigsRestore = new String[] {"name", "discoverable", "timezone", "lat", "lng", "tzautodetect", "tz_utc_offset", /*"tz_dst",*/ "tz_dst_auto", "tz_dst_auto", "allow_cross_origin", "pon_wifi_reset"};
+		}
 		TimeUnit.MILLISECONDS.sleep(delay);
-		errors.add(sendCommand("/settings?" +
-				jsonNodeToURLPar(settings, "name", "discoverable", "timezone", "lat", "lng", "tzautodetect", "tz_utc_offset", /*"tz_dst",*/ "tz_dst_auto", "tz_dst_auto", "allow_cross_origin")));
+		errors.add(sendCommand("/settings?" + jsonNodeToURLPar(settings, settigsRestore)));
 		// eco_mode_enabled=" + settings.get("eco_mode_enabled") // no way: device reboot changing this parameter
 		TimeUnit.MILLISECONDS.sleep(delay);
 		LoginManagerG1 lm = new LoginManagerG1(this, true);

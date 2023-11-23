@@ -208,6 +208,8 @@ https://www.iconbolt.com/
 // device info auto-update on device going to "on line"
 // backup/restore for offline/ghost devices
 // fix restore +H&T
+// pon_wifi_reset (gen1)
+// CoIoT info (cit/d) in "full device info"
 // todo fw updates per off-line battery
 
 

@@ -10,7 +10,7 @@ import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.modules.RollerInterface;
 
 /**
- * Used by +2PM
+ * Cover - used by +2PM, pro 2PM
  */
 public class Roller implements RollerInterface {
 	public final static String MSG_RESTORE_MODE_ERROR = "msgRestoreCoverMode";
