@@ -284,25 +284,30 @@ public abstract class AbstractG1Device extends ShellyAbstractDevice {
 		}
 	}
 
+	protected abstract void restore(JsonNode settings, ArrayList<String> errors) throws IOException, InterruptedException;
+
 	/**
 	 * tz_dst - intentionally ignored (depends by backup date)
 	 * debug_enable - intentionally ignored
-	 * allow_cross_origin - intentionally ignored
 	 * Return errors List
 	 */
-	protected abstract void restore(JsonNode settings, ArrayList<String> errors) throws IOException, InterruptedException;
-
 	private void restoreCommons(JsonNode settings, final long delay, Map<Restore, String> data, ArrayList<String> errors) throws InterruptedException, IOException {
 		errors.add(sendCommand("/settings/cloud?enabled=" + settings.get("cloud").get("enabled").asText()));
 //		LOG.trace("step 2.1");
 		final String[] settigsRestore;
 		if(settings.get("pon_wifi_reset") == null) {
-			settigsRestore = new String[] {"name", "discoverable", "timezone", "lat", "lng", "tzautodetect", "tz_utc_offset", /*"tz_dst",*/ "tz_dst_auto", "tz_dst_auto", "allow_cross_origin"};
+			settigsRestore = new String[] {"name", "discoverable", "timezone", "lat", "lng", "tzautodetect", "tz_utc_offset", "tz_dst_auto", "tz_dst_auto", "allow_cross_origin"};
 		} else {
-			settigsRestore = new String[] {"name", "discoverable", "timezone", "lat", "lng", "tzautodetect", "tz_utc_offset", /*"tz_dst",*/ "tz_dst_auto", "tz_dst_auto", "allow_cross_origin", "pon_wifi_reset"};
+			settigsRestore = new String[] {"name", "discoverable", "timezone", "lat", "lng", "tzautodetect", "tz_utc_offset", "tz_dst_auto", "tz_dst_auto", "allow_cross_origin", "pon_wifi_reset"};
+		}
+		String coiotSettings = "";
+		if(settings.get("coiot") != null) {
+			coiotSettings = "&coiot_enable=" + settings.at("/coiot/enabled").asText() +
+					"&coiot_update_period=" + settings.at("/coiot/update_period").asText() +
+					"&coiot_peer=" + URLEncoder.encode(settings.at("/coiot/peer").asText(), StandardCharsets.UTF_8.name());
 		}
 		TimeUnit.MILLISECONDS.sleep(delay);
-		errors.add(sendCommand("/settings?" + jsonNodeToURLPar(settings, settigsRestore)));
+		errors.add(sendCommand("/settings?" + jsonNodeToURLPar(settings, settigsRestore) + coiotSettings));
 		// eco_mode_enabled=" + settings.get("eco_mode_enabled") // no way: device reboot changing this parameter
 		TimeUnit.MILLISECONDS.sleep(delay);
 		LoginManagerG1 lm = new LoginManagerG1(this, true);
