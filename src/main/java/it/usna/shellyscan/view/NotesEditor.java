@@ -25,7 +25,7 @@ public class NotesEditor extends JFrame {
 	public NotesEditor(Window owner, GhostDevice ghost) {
 //		super(owner, LABELS.getString("action_notes_tooltip") + " - " + UtilMiscellaneous.getDescName(ghost));
 		super(LABELS.getString("action_notes_tooltip") + " - " + UtilMiscellaneous.getDescName(ghost));
-		setIconImage(Toolkit.getDefaultToolkit().createImage(getClass().getResource(Main.ICON)));
+		setIconImage(Toolkit.getDefaultToolkit().createImage(Main.ICON));
 		
 		BasicEditorPanel editor = new BasicEditorPanel(this, ghost.getNote());
 		getContentPane().add(editor);

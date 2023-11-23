@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.awt.Cursor;
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -36,15 +37,15 @@ public class Main {
 	public final static String APP_NAME = "Shelly Scanner";
 	public final static String VERSION = "1.0.2 alpha";
 	public final static String VERSION_CODE = "001.000.002r001"; // r0xx alpha; r1xx beta; r2xx stable
-	public final static String ICON = "/images/ShSc24.png";
+	public final static URL ICON = Main.class.getResource("/images/ShSc24.png");
 	public final static String BACKUP_FILE_EXT = "sbk";
 	public final static String ARCHIVE_FILE_EXT = "arc";
 	
 	public final static ResourceBundle LABELS = ResourceBundle.getBundle("LabelsBundle");
-	public static Color BG_COLOR = new Color(50, 60, 65);
-	public static Color TAB_LINE1 = new Color(240, 240, 240);
-	public static Color TAB_LINE2 = new Color(160, 180, 255)/*Color.lightGray*/;
-	public static Color STATUS_LINE = new Color(200, 220, 255);
+	public final static Color BG_COLOR = new Color(50, 60, 65);
+	public final static Color TAB_LINE1 = new Color(240, 240, 240);
+	public final static Color TAB_LINE2 = new Color(160, 180, 255)/*Color.lightGray*/;
+	public final static Color STATUS_LINE = new Color(200, 220, 255);
 	public final static String TAB_VERSION = "4"; // on version change reset table settings
 
 	private final static String PROP_FILE = System.getProperty("user.home") + File.separator + ".shellyScanner";

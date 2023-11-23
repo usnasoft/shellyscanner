@@ -44,7 +44,7 @@ public class ScriptEditor extends JFrame {
 	
 	public ScriptEditor(ScriptsPanel owner, Script script) throws IOException {
 		super(LABELS.getString("dlgScriptEditorTitle") + " - " + script.getName());
-		setIconImage(Toolkit.getDefaultToolkit().createImage(getClass().getResource(Main.ICON)));
+		setIconImage(Toolkit.getDefaultToolkit().createImage(Main.ICON));
 
 		BasicEditorPanel editor = new BasicEditorPanel(this, script.getCode()) {
 			private static final long serialVersionUID = 1L;

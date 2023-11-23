@@ -58,7 +58,7 @@ public class DialogAuthentication extends JDialog {
 	}
 	
 	private void init(String userLabelText, String pwdLabelText, String confLabelText, String noPwdLabel) {
-		setIconImage(Toolkit.getDefaultToolkit().createImage(getClass().getResource(Main.ICON)));
+		setIconImage(Toolkit.getDefaultToolkit().createImage(Main.ICON));
 		BorderLayout borderLayout = (BorderLayout) getContentPane().getLayout();
 		borderLayout.setVgap(10);
 		borderLayout.setHgap(5);

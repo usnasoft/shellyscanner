@@ -119,7 +119,7 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 	public MeasuresChart(JFrame owner, final Devices model, int[] ind, AppProperties appProp) {  
 		setTitle(LABELS.getString("dlgChartsTitle") + " - " + (ind.length == 1 ? UtilMiscellaneous.getDescName(model.get(ind[0])) : ind.length));
 		setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-		setIconImage(Toolkit.getDefaultToolkit().createImage(getClass().getResource(Main.ICON)));
+		setIconImage(Toolkit.getDefaultToolkit().createImage(Main.ICON));
 		this.model = model;
 
 		JPanel mainPanel = new JPanel(new BorderLayout());

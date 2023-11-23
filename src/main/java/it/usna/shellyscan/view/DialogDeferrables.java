@@ -34,10 +34,23 @@ public class DialogDeferrables extends JFrame implements UsnaEventListener<Defer
 
 	public DialogDeferrables(Window owner, Devices model) {
 		super(LABELS.getString("labelShowDeferrables"));
-		setIconImage(Toolkit.getDefaultToolkit().createImage(DialogDeferrables.class.getResource(Main.ICON)));
+		setIconImage(Toolkit.getDefaultToolkit().createImage(Main.ICON));
 
 		deferrables = DeferrablesContainer.getInstance(model);
 //		LOG.error("{}", deferrables);
+		
+//		table.getColumnModel().getColumn(3).setCellRenderer(new DefaultTableCellRenderer() {
+//			private static final long serialVersionUID = 1L;
+//
+//			public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+//				Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+//				if(c instanceof JLabel label) {
+//					Status status = deferrables.get(table.convertRowIndexToModel(row)).getStatus();
+//					label.setIcon(new ImageIcon(DialogDeferrables.class.getResource("/images/bullet_yes.png")));
+//				}
+//				return c;
+//			}
+//		});
 
 		JScrollPane scrollPane = new JScrollPane();
 		scrollPane.setViewportView(table);
@@ -100,13 +113,13 @@ public class DialogDeferrables extends JFrame implements UsnaEventListener<Defer
 	}
 	
 	private static Object[] getRow(DeferrableRecord def) {
+		String status = def.getStatus().name();
 		Object retMsg = def.getRetMsg();
 		String msg;
-		String status = def.getStatus().name();
 		if(retMsg != null && (msg = retMsg.toString()).length() > 0) {
 			status += " - " + msg.replace("\n", "; ");
 		}
-		return new String[] {
+		return new Object[] {
 				String.format(LABELS.getString("formatDataTime"), def.getTime()),
 				def.getDeviceName(),
 				def.getDescription(),
