@@ -178,7 +178,7 @@ public class GhostDevice extends ShellyAbstractDevice {
 					res.put(Restore.RESTORE_MQTT, config.at("/mqtt/user").asText());
 				}
 				// device specific
-//				restoreCheck(backupJsons, res); // TODO verificare i casi di utilizzo: no addon warning; todo chenck roller/switch profile on restore ...
+//				restoreCheck(backupJsons, res); // TODO check compatibility with this call
 			}
 		} catch(RuntimeException e) {
 			LOG.error("restoreCheck", e);

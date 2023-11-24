@@ -13,9 +13,12 @@ import it.usna.shellyscan.model.device.MetersPower;
 import it.usna.shellyscan.model.device.g1.modules.LightBulbRGB;
 import it.usna.shellyscan.model.device.g1.modules.LightBulbRGBCommander;
 
+/**
+ * Shelly Shelly DUO RGB model
+ * @author usna
+ */
 public class ShellyDUORGB extends AbstractG1Device implements LightBulbRGBCommander {
 	public final static String ID = "SHCB-1";
-//	private final static Logger LOG = LoggerFactory.getLogger(ShellyDUORGB.class);
 	private LightBulbRGB light = new LightBulbRGB(this, 0);
 	private float power;
 	private Meters[] meters;

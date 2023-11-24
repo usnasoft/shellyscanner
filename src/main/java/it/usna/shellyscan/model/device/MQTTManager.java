@@ -2,15 +2,15 @@ package it.usna.shellyscan.model.device;
 
 public interface MQTTManager {
 	
-	public boolean isEnabled();
+	boolean isEnabled();
 	
-	public String getServer();
+	String getServer();
 	
-	public String getUser();
+	String getUser();
 	
-	public String getPrefix();
+	String getPrefix();
 	
-	public String disable();
+	String disable();
 	
-	public String set(String server, String user, String pwd, String prefix);
+	String set(String server, String user, String pwd, String prefix);
 }

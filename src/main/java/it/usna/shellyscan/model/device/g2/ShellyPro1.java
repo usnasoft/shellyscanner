@@ -15,6 +15,10 @@ import it.usna.shellyscan.model.device.g2.modules.Relay;
 import it.usna.shellyscan.model.device.modules.RelayCommander;
 import it.usna.shellyscan.model.device.modules.RelayInterface;
 
+/**
+ * Shelly Shelly Pro 1 model
+ * @author usna
+ */
 public class ShellyPro1 extends AbstractProDevice implements RelayCommander, InternalTmpHolder {
 	public final static String ID = "Pro1";
 	private Relay relay = new Relay(this, 0);
@@ -54,7 +58,6 @@ public class ShellyPro1 extends AbstractProDevice implements RelayCommander, Int
 	protected void fillSettings(JsonNode configuration) throws IOException {
 		super.fillSettings(configuration);
 		relay.fillSettings(configuration.get("switch:0"));
-//		System.out.println("fill");
 	}
 	
 	@Override
@@ -63,7 +66,6 @@ public class ShellyPro1 extends AbstractProDevice implements RelayCommander, Int
 		JsonNode switchStatus = status.get("switch:0");
 		relay.fillStatus(switchStatus, status.get("input:0"));
 		internalTmp = switchStatus.path("temperature").path("tC").floatValue();
-//		System.out.println("status");
 	}
 
 	@Override

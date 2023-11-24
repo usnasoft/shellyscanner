@@ -16,7 +16,7 @@ import it.usna.shellyscan.model.device.modules.RelayInterface;
 
 /**
  * Shelly 1 model
- * usna
+ * @author usna
  */
 public class Shelly1 extends AbstractG1Device implements RelayCommander {
 	public final static String ID = "SHSW-1";

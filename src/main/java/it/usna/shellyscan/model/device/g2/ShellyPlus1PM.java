@@ -17,9 +17,12 @@ import it.usna.shellyscan.model.device.g2.modules.SensorAddOn;
 import it.usna.shellyscan.model.device.g2.modules.SensorAddOnHolder;
 import it.usna.shellyscan.model.device.modules.RelayCommander;
 
+/**
+ * Shelly Shelly Plus 1PM model
+ * @author usna
+ */
 public class ShellyPlus1PM extends AbstractG2Device implements RelayCommander, InternalTmpHolder, SensorAddOnHolder {
 	public final static String ID = "Plus1PM";
-//	private final static JsonPointer SW_TEMP_P = JsonPointer.valueOf("/temperature/tC");
 	private final static Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.W, /*Meters.Type.PF,*/ Meters.Type.V, Meters.Type.I};
 	private Relay relay = new Relay(this, 0);
 	private float internalTmp;
