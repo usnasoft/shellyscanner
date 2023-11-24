@@ -4,7 +4,6 @@ import static it.usna.shellyscan.Main.LABELS;
 
 import java.awt.BorderLayout;
 import java.awt.Cursor;
-import java.awt.Toolkit;
 import java.awt.Window;
 
 import javax.swing.JButton;
@@ -13,7 +12,6 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
 
-import it.usna.shellyscan.Main;
 import it.usna.shellyscan.controller.DeferrableAction;
 import it.usna.shellyscan.controller.DeferrableAction.Status;
 import it.usna.shellyscan.controller.DeferrablesContainer;
@@ -34,7 +32,7 @@ public class DialogDeferrables extends JFrame implements UsnaEventListener<Defer
 
 	public DialogDeferrables(Window owner, Devices model) {
 		super(LABELS.getString("labelShowDeferrables"));
-		setIconImage(Toolkit.getDefaultToolkit().createImage(Main.ICON));
+		setIconImages(owner.getIconImages());
 
 		deferrables = DeferrablesContainer.getInstance(model);
 //		LOG.error("{}", deferrables);

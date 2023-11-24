@@ -5,7 +5,6 @@ import static it.usna.shellyscan.Main.LABELS;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.Toolkit;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
@@ -116,10 +115,10 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 
 	private ChartType currentType;
 
-	public MeasuresChart(JFrame owner, final Devices model, int[] ind, AppProperties appProp) {  
+	public MeasuresChart(JFrame owner, final Devices model, int[] ind, AppProperties appProp) {
+		setIconImages(owner.getIconImages());
 		setTitle(LABELS.getString("dlgChartsTitle") + " - " + (ind.length == 1 ? UtilMiscellaneous.getDescName(model.get(ind[0])) : ind.length));
 		setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-		setIconImage(Toolkit.getDefaultToolkit().createImage(Main.ICON));
 		this.model = model;
 
 		JPanel mainPanel = new JPanel(new BorderLayout());

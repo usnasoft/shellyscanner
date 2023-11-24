@@ -42,8 +42,9 @@ import it.usna.util.IOFile;
 public class ScriptEditor extends JFrame {
 	private static final long serialVersionUID = 1L;
 	
-	public ScriptEditor(ScriptsPanel owner, Script script) throws IOException {
+	public ScriptEditor(ScriptsPanel originatingPanel, Script script) throws IOException {
 		super(LABELS.getString("dlgScriptEditorTitle") + " - " + script.getName());
+		
 		setIconImage(Toolkit.getDefaultToolkit().createImage(Main.ICON));
 
 		BasicEditorPanel editor = new BasicEditorPanel(this, script.getCode()) {
@@ -123,7 +124,7 @@ public class ScriptEditor extends JFrame {
 		setSize(800, 600);
 		setVisible(true);
 		editor.requestFocus();
-		setLocationRelativeTo(owner);
+		setLocationRelativeTo(originatingPanel);
 	}
 	
 	private String loadCodeFromFile(File in) {

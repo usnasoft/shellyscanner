@@ -4,14 +4,12 @@ import static it.usna.shellyscan.Main.LABELS;
 
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
-import java.awt.Toolkit;
 import java.awt.Window;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
-import it.usna.shellyscan.Main;
 import it.usna.shellyscan.model.device.GhostDevice;
 import it.usna.shellyscan.view.util.UtilMiscellaneous;
 
@@ -25,7 +23,7 @@ public class NotesEditor extends JFrame {
 	public NotesEditor(Window owner, GhostDevice ghost) {
 //		super(owner, LABELS.getString("action_notes_tooltip") + " - " + UtilMiscellaneous.getDescName(ghost));
 		super(LABELS.getString("action_notes_tooltip") + " - " + UtilMiscellaneous.getDescName(ghost));
-		setIconImage(Toolkit.getDefaultToolkit().createImage(Main.ICON));
+		setIconImages(owner.getIconImages());
 		
 		BasicEditorPanel editor = new BasicEditorPanel(this, ghost.getNote());
 		getContentPane().add(editor);
