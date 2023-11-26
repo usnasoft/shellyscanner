@@ -111,11 +111,10 @@ public class DialogDeferrables extends JFrame implements UsnaEventListener<Defer
 	}
 	
 	private static Object[] getRow(DeferrableRecord def) {
-		String status = def.getStatus().name();
-		Object retMsg = def.getRetMsg();
-		String msg;
-		if(retMsg != null && (msg = retMsg.toString()).length() > 0) {
-			status += " - " + msg.replace("\n", "; ");
+		String status = LABELS.getString("defStatus_" + def.getStatus().name());
+		String retMsg = def.getRetMsg();
+		if(retMsg != null && retMsg.length() > 0) {
+			status += " - " + retMsg.replace("\n", "; ");
 		}
 		return new Object[] {
 				String.format(LABELS.getString("formatDataTime"), def.getTime()),

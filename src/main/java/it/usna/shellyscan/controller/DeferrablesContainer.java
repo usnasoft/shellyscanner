@@ -97,7 +97,7 @@ public class DeferrablesContainer extends UsnaObservable<DeferrableAction.Status
 		return "List of deferrables\n" + defer.stream().map(d -> d.toString()).collect(Collectors.joining("\n"));
 	}
 
-	public static class DeferrableRecord { // not a record, is mutable
+	public static class DeferrableRecord { // not a record, deviceName is mutable
 		private final DeferrableAction def;
 		private final LocalDateTime time;
 		private String deviceName;
@@ -120,7 +120,7 @@ public class DeferrablesContainer extends UsnaObservable<DeferrableAction.Status
 			return def.getStatus();
 		}
 		
-		public Object getRetMsg() {
+		public String getRetMsg() {
 			return def.getreturn();
 		}
 
