@@ -210,6 +210,7 @@ https://www.iconbolt.com/
 // fix restore +H&T
 // pon_wifi_reset (gen1)
 // CoIoT info (cit/d) in "full device info"
+// CoIoT restore
 // todo fw updates per off-line battery
 
 

@@ -2,9 +2,10 @@ package it.usna.shellyscan;
 
 import java.awt.Color;
 import java.awt.Cursor;
+import java.awt.Image;
+import java.awt.Toolkit;
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -35,9 +36,9 @@ import it.usna.util.CLI;
 
 public class Main {
 	public final static String APP_NAME = "Shelly Scanner";
-	public final static String VERSION = "1.0.2 alpha";
-	public final static String VERSION_CODE = "001.000.002r001"; // r0xx alpha; r1xx beta; r2xx stable
-	public final static URL ICON = Main.class.getResource("/images/ShSc24.png");
+	public final static String VERSION = "1.0.2 beta";
+	public final static String VERSION_CODE = "001.000.002r100"; // r0xx alpha; r1xx beta; r2xx stable
+	public final static Image ICON = Toolkit.getDefaultToolkit().createImage(Main.class.getResource("/images/ShSc24.png"));
 	public final static String BACKUP_FILE_EXT = "sbk";
 	public final static String ARCHIVE_FILE_EXT = "arc";
 	

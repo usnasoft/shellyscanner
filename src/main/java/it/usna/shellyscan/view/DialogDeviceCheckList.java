@@ -106,11 +106,7 @@ public class DialogDeviceCheckList extends JDialog implements UsnaEventListener<
 
 			@Override
 			public Class<?> getColumnClass(final int c) {
-				if(c == COL_IP) {
-					return InetAddressAndPort.class;
-				} else {
-					return super.getColumnClass(c);
-				}
+				return (c == COL_IP) ? InetAddressAndPort.class : super.getColumnClass(c);
 			}
 		};
 		
@@ -131,7 +127,7 @@ public class DialogDeviceCheckList extends JDialog implements UsnaEventListener<
 				columnModel.getColumn(8).setCellRenderer(rendFalseOk); // roaming
 				columnModel.getColumn(9).setCellRenderer(rendTrueOk); // wifi1 null -> "-"
 				columnModel.getColumn(10).setCellRenderer(rendTrueOk); // wifi2 null -> "-"
-				columnModel.getColumn(11).setCellRenderer(rendTrueOk); // extender null -> "-"
+				columnModel.getColumn(COL_EXTENDER).setCellRenderer(rendTrueOk); // extender null -> "-"
 
 				((TableRowSorter<?>)getRowSorter()).setSortsOnUpdates(true);
 				

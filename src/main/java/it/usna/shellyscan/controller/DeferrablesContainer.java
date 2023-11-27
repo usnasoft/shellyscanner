@@ -7,7 +7,7 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import it.usna.shellyscan.controller.DeferrableAction.Status;
+import it.usna.shellyscan.controller.DeferrableTask.Status;
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.Devices.EventType;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
@@ -15,7 +15,7 @@ import it.usna.shellyscan.view.util.UtilMiscellaneous;
 import it.usna.util.UsnaEventListener;
 import it.usna.util.UsnaObservable;
 
-public class DeferrablesContainer extends UsnaObservable<DeferrableAction.Status, Integer> implements UsnaEventListener<Devices.EventType, Integer> {
+public class DeferrablesContainer extends UsnaObservable<DeferrableTask.Status, Integer> implements UsnaEventListener<Devices.EventType, Integer> {
 	private final static Logger LOG = LoggerFactory.getLogger(DeferrablesContainer.class);
 	private static DeferrablesContainer instance;
 	private final Devices model;
@@ -34,7 +34,7 @@ public class DeferrablesContainer extends UsnaObservable<DeferrableAction.Status
 		this.model = model;
 	};
 
-	public void add(int modelIdx, DeferrableAction def) {
+	public void add(int modelIdx, DeferrableTask def) {
 		synchronized (devIdx) {
 			DeferrableRecord newDef = new DeferrableRecord(def, UtilMiscellaneous.getDescName(model.get(modelIdx)), LocalDateTime.now());
 			devIdx.add(modelIdx);
@@ -46,7 +46,7 @@ public class DeferrablesContainer extends UsnaObservable<DeferrableAction.Status
 
 	public void cancel(int index) {
 		synchronized (devIdx) {
-			DeferrableAction def = defer.get(index).def;
+			DeferrableTask def = defer.get(index).def;
 			if(def.getStatus() == Status.WAITING) {
 				devIdx.set(index, null);
 				def.cancel();
@@ -60,7 +60,7 @@ public class DeferrablesContainer extends UsnaObservable<DeferrableAction.Status
 		int index;
 		if((mesgType == EventType.SUBSTITUTE || mesgType == EventType.UPDATE) && (index = devIdx.indexOf(modelIdx)) >= 0) {
 			synchronized (devIdx) {
-				DeferrableAction deferrable = defer.get(index).def;
+				DeferrableTask deferrable = defer.get(index).def;
 				ShellyAbstractDevice device;
 				if(deferrable.getStatus() == Status.WAITING && (device = model.get(modelIdx)).getStatus() == ShellyAbstractDevice.Status.ON_LINE) {
 					deferrable.setStatus(Status.RUNNING); // deferrable.run(device) change the status but we need it is changed before fireEvent
@@ -98,11 +98,11 @@ public class DeferrablesContainer extends UsnaObservable<DeferrableAction.Status
 	}
 
 	public static class DeferrableRecord { // not a record, deviceName is mutable
-		private final DeferrableAction def;
+		private final DeferrableTask def;
 		private final LocalDateTime time;
 		private String deviceName;
 
-		private DeferrableRecord(DeferrableAction def, String deviceName, LocalDateTime time) {
+		private DeferrableRecord(DeferrableTask def, String deviceName, LocalDateTime time) {
 			this.def = def;
 			this.deviceName = deviceName;
 			this.time = time;

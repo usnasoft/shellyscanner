@@ -2,14 +2,14 @@ package it.usna.shellyscan.controller;
 
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 
-public class DeferrableAction {
+public class DeferrableTask {
 	public enum Status {WAITING, CANCELLED, RUNNING, SUCCESS, FAIL};
 	private final String description;
 	private Task task;
 	private String retValue;
 	private Status status = Status.WAITING;
 	
-	public DeferrableAction(String description, Task runner) {
+	public DeferrableTask(String description, Task runner) {
 		this.description = description;
 		this.task = runner;
 	}
@@ -63,6 +63,6 @@ public class DeferrableAction {
 	 * Task definition
 	 */
 	public interface Task {
-		String run(DeferrableAction deferrable, ShellyAbstractDevice device) throws Exception;
+		String run(DeferrableTask deferrable, ShellyAbstractDevice device) throws Exception;
 	}
 }

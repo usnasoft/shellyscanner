@@ -287,7 +287,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		loadProperties(appProp);
 
 		setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
-		setIconImage(Toolkit.getDefaultToolkit().createImage(Main.ICON));
+		setIconImage(Main.ICON);
 		setTitle(Main.APP_NAME + " v." + Main.VERSION);
 
 		// Status bar

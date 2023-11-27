@@ -166,10 +166,10 @@ public class RestoreAction extends UsnaSelectedAction {
 							LOG.debug("Interactive Restore error {} {}", device, ret);
 							SwingUtilities.invokeLater(() ->
 								JOptionPane.showMessageDialog(mainView, LABELS.getString("msgRestoreQueue"), device.getHostname(), JOptionPane.WARNING_MESSAGE));
-							DeferrablesContainer.getInstance(model).add(modelRow, new DeferrableAction(LABELS.getString("action_restore_tooltip"), (def, dev) -> {
+							DeferrablesContainer.getInstance(model).add(modelRow, new DeferrableTask(LABELS.getString("action_restore_tooltip"), (def, dev) -> {
 								final String restoreError = erroreMsg(dev.restore(backupJsons, resData));
 								if(restoreError.length() > 0) {
-									def.setStatus(DeferrableAction.Status.FAIL);
+									def.setStatus(DeferrableTask.Status.FAIL);
 								}
 								try {
 									if(device.getStatus() != Status.OFF_LINE) {

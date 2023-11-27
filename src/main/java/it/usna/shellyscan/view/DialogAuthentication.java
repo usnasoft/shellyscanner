@@ -5,7 +5,6 @@ import java.awt.Dialog;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.KeyboardFocusManager;
-import java.awt.Toolkit;
 import java.awt.Window;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -58,7 +57,7 @@ public class DialogAuthentication extends JDialog {
 	}
 	
 	private void init(String userLabelText, String pwdLabelText, String confLabelText, String noPwdLabel) {
-		setIconImage(Toolkit.getDefaultToolkit().createImage(Main.ICON));
+		setIconImage(Main.ICON);
 		BorderLayout borderLayout = (BorderLayout) getContentPane().getLayout();
 		borderLayout.setVgap(10);
 		borderLayout.setHgap(5);

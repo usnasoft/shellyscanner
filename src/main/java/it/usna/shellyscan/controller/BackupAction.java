@@ -55,7 +55,7 @@ public class BackupAction extends UsnaAction {
 						} catch (IOException | RuntimeException e1) {
 							if(d.getStatus() == Status.OFF_LINE || d instanceof GhostDevice) { // if error happened because the device is off-line -> try to queue action in DeferrablesContainer
 								LOG.debug("Interactive Backup error {}", d);
-								DeferrablesContainer.getInstance(model).add(modelRow, new DeferrableAction(LABELS.getString("action_back_tooltip"), (def, dev) -> {
+								DeferrablesContainer.getInstance(model).add(modelRow, new DeferrableTask(LABELS.getString("action_back_tooltip"), (def, dev) -> {
 									dev.backup(outFile);
 									return null;
 								}));

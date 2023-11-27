@@ -6,7 +6,6 @@ import java.awt.BorderLayout;
 import java.awt.Cursor;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
-import java.awt.Toolkit;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -45,7 +44,7 @@ public class ScriptEditor extends JFrame {
 	public ScriptEditor(ScriptsPanel originatingPanel, Script script) throws IOException {
 		super(LABELS.getString("dlgScriptEditorTitle") + " - " + script.getName());
 		
-		setIconImage(Toolkit.getDefaultToolkit().createImage(Main.ICON));
+		setIconImage(Main.ICON);
 
 		BasicEditorPanel editor = new BasicEditorPanel(this, script.getCode()) {
 			private static final long serialVersionUID = 1L;
