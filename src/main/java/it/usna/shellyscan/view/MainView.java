@@ -128,7 +128,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		reserveStatusLine(true);
 		setStatus(LABELS.getString("scanning_start"));
 		SwingUtilities.invokeLater(() -> {
-			MainView.this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+			setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 			try {
 				model.rescan(appProp.getBoolProperty(DialogAppSettings.PROP_USE_ARCHIVE, true));
 				Thread.sleep(500); // too many call disturb some devices
@@ -137,7 +137,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 			} catch (InterruptedException e1) {
 			} finally {
 				reserveStatusLine(false);
-				MainView.this.setCursor(Cursor.getDefaultCursor());
+				setCursor(Cursor.getDefaultCursor());
 			}
 		});
 	});
@@ -227,7 +227,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 			}
 		}
 		if(delete) {
-			Arrays.stream(devicesTable.getSelectedRows()).map(i -> devicesTable.convertRowIndexToModel(i)).boxed().sorted(Collections.reverseOrder()).forEach(i-> model.remove(i));
+			Arrays.stream(devicesTable.getSelectedRows()).map(devicesTable::convertRowIndexToModel).boxed().sorted(Collections.reverseOrder()).forEach(i-> model.remove(i));
 		}
 	});
 	

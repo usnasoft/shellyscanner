@@ -94,7 +94,7 @@ public class DeferrablesContainer extends UsnaObservable<DeferrableTask.Status, 
 
 	@Override
 	public String toString() {
-		return "List of deferrables\n" + defer.stream().map(d -> d.toString()).collect(Collectors.joining("\n"));
+		return "List of deferrables\n" + defer.stream().map(DeferrableRecord::toString).collect(Collectors.joining("\n"));
 	}
 
 	public static class DeferrableRecord { // not a record, deviceName is mutable

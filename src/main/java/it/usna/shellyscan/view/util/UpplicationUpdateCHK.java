@@ -39,7 +39,7 @@ public class UpplicationUpdateCHK {
 			if(rel.size() == 0) {
 				Msg.showMsg(w, LABELS.getString("aboutCheckUpdatesNone"), title, JOptionPane.INFORMATION_MESSAGE);
 			} else {	
-				String msg = rel.stream().map(r -> r.msg()).collect(Collectors.joining("\n"));
+				String msg = rel.stream().map(Release::msg).collect(Collectors.joining("\n"));
 				Object[] options = new Object[] {LABELS.getString("aboutCheckUpdatesDownload"), LABELS.getString("dlgClose")};
 				if(JOptionPane.showOptionDialog(w, msg, title, JOptionPane.OK_CANCEL_OPTION, JOptionPane.INFORMATION_MESSAGE, null, options, null) == 0) {
 					try {
@@ -68,7 +68,7 @@ public class UpplicationUpdateCHK {
 				String ignoreRel = appProp.getProperty(IGNORE, "000");
 				List<Release> rel = remoteChech(mode.endsWith("BETA"), ignoreRel);
 				if(rel.size() > 0) {
-					String msg = rel.stream().map(r -> r.msg()).collect(Collectors.joining("\n"));
+					String msg = rel.stream().map(Release::msg).collect(Collectors.joining("\n"));
 					final Object[] options = new Object[] {LABELS.getString("aboutCheckUpdatesDownload"), LABELS.getString("aboutCheckUpdatesSkip"), LABELS.getString("dlgClose")};
 					final String title = LABELS.getString("aboutCheckUpdates") + " - " + Main.VERSION + " r." + Main.VERSION_CODE.substring(Main.VERSION_CODE.length() - 2, Main.VERSION_CODE.length());
 					int choice = JOptionPane.showOptionDialog(w, msg, title, JOptionPane.OK_CANCEL_OPTION, JOptionPane.INFORMATION_MESSAGE, null, options, null);
