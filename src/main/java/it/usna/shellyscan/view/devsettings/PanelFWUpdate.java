@@ -337,19 +337,19 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 				if(update instanceof Boolean && ((Boolean)update) == Boolean.TRUE) {
 					fwInfo.uptime = parent.getLocalDevice(i).getUptime();
 					String msg = fwInfo.fwModule.update(true);
-					if(msg != null && LABELS.containsKey(msg)) {
-						msg = LABELS.getString(msg);
-					}
 					if(msg != null) {
+						if(LABELS.containsKey(msg)) {
+							msg = LABELS.getString(msg);
+						}
 						res += UtilMiscellaneous.getFullName(parent.getLocalDevice(i)) + " - " + LABELS.getString("labelError") + ": " + msg + "\n";
 					}
 				} else if(beta instanceof Boolean && ((Boolean)beta) == Boolean.TRUE) {
 					fwInfo.uptime = parent.getLocalDevice(i).getUptime();
 					String msg = fwInfo.fwModule.update(false);
-					if(msg != null && LABELS.containsKey(msg)) {
-						msg = LABELS.getString(msg);
-					}
 					if(msg != null) {
+						if(LABELS.containsKey(msg)) {
+							msg = LABELS.getString(msg);
+						}
 						res += UtilMiscellaneous.getFullName(parent.getLocalDevice(i)) + " - " + LABELS.getString("labelError") + ": " + msg + "\n";
 					}
 				}
