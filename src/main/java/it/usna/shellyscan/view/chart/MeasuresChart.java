@@ -141,7 +141,7 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 		XYLineAndShapeRenderer renderer = (XYLineAndShapeRenderer)plot.getRenderer();
 		renderer.setDefaultToolTipGenerator(new StandardXYToolTipGenerator("{0}: {1} - {2}", new SimpleDateFormat("HH:mm:ss.SSS"), NF));
 
-		ChartPanel chartPanel = new ChartPanel(chart, false, false, false, false, true);
+		ChartPanel chartPanel = new ChartPanel(chart, false, true, true, false, true);
 		chartPanel.setInitialDelay(0); // tootip
 		chartPanel.setDismissDelay(20_000); // tootip
 		//		chartPanel.setMouseZoomable(true);

@@ -161,13 +161,17 @@ public class DialogDeviceSettings extends JDialog implements UsnaEventListener<D
 		return model.get(devicesInd[index]);
 	}
 	
-	int getLocalIndex(int ind) {
+	int getLocalIndex(int modelIndex) {
 		for(int i = 0; i < devicesInd.length; i++) {
-			if(devicesInd[i] == ind) {
+			if(devicesInd[i] == modelIndex) {
 				return i;
 			}
 		}
 		return -1;
+	}
+	
+	int getModelIndex(int localIndex) {
+		return devicesInd[localIndex];
 	}
 	
 	int getLocalSize() {

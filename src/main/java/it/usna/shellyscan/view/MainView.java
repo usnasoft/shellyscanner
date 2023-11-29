@@ -128,7 +128,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		reserveStatusLine(true);
 		setStatus(LABELS.getString("scanning_start"));
 		SwingUtilities.invokeLater(() -> {
-			MainView.this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+			setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 			try {
 				model.rescan(appProp.getBoolProperty(DialogAppSettings.PROP_USE_ARCHIVE, true));
 				Thread.sleep(500); // too many call disturb some devices
@@ -137,7 +137,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 			} catch (InterruptedException e1) {
 			} finally {
 				reserveStatusLine(false);
-				MainView.this.setCursor(Cursor.getDefaultCursor());
+				setCursor(Cursor.getDefaultCursor());
 			}
 		});
 	});
@@ -227,7 +227,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 			}
 		}
 		if(delete) {
-			Arrays.stream(devicesTable.getSelectedRows()).map(i -> devicesTable.convertRowIndexToModel(i)).boxed().sorted(Collections.reverseOrder()).forEach(i-> model.remove(i));
+			Arrays.stream(devicesTable.getSelectedRows()).map(devicesTable::convertRowIndexToModel).boxed().sorted(Collections.reverseOrder()).forEach(i-> model.remove(i));
 		}
 	});
 	
@@ -301,7 +301,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		
 		Action showDeferrables = new UsnaAction(this, "/images/deferred_list.png", "labelShowDeferrables", e -> {
 			if(dialogDeferrables == null) { // single dialog
-				dialogDeferrables = new DialogDeferrables(this, model);
+				dialogDeferrables = new DialogDeferrables(model);
 			}
 			dialogDeferrables.setVisible(true);
 			dialogDeferrables.setLocationRelativeTo(this);
@@ -512,7 +512,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 	private void setColFilter(JComboBox<?> combo) {
 		int sel = combo.getSelectedIndex();
 		final int[] cols;
-		if(sel == 0) cols = new int[] {DevicesTable.COL_TYPE, DevicesTable.COL_DEVICE, DevicesTable.COL_NAME, DevicesTable.COL_IP_IDX/*, DevicesTable.COL_COMMAND_IDX*/};
+		if(sel == 0) cols = new int[] {DevicesTable.COL_TYPE, DevicesTable.COL_DEVICE, DevicesTable.COL_NAME, DevicesTable.COL_IP_IDX};
 		else if(sel == 1) cols = new int[] {DevicesTable.COL_TYPE};
 		else if(sel == 2) cols = new int[] {DevicesTable.COL_DEVICE};
 		else cols = new int[] {DevicesTable.COL_NAME};
