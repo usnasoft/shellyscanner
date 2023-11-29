@@ -15,6 +15,7 @@ import javax.swing.SwingUtilities;
 
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.Devices.EventType;
+import it.usna.shellyscan.model.device.GhostDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.WIFIManager;
 import it.usna.shellyscan.model.device.g1.AbstractG1Device;
@@ -181,7 +182,9 @@ public class DialogDeviceSettings extends JDialog implements UsnaEventListener<D
 		Gen r = null;
 		for(int index: devicesInd) {
 			ShellyAbstractDevice d =  model.get(index);
-			if(r == null) {
+			if(d instanceof GhostDevice) {
+				return Gen.ALL; // actually unknown
+			} else if(r == null) {
 				r = d instanceof AbstractG2Device ? Gen.G2 : Gen.G1;
 			} else if(d instanceof AbstractG2Device) {
 				if(r != Gen.G2) {

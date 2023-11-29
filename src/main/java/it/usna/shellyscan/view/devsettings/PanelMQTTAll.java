@@ -271,7 +271,7 @@ public class PanelMQTTAll extends AbstractSettingsPanel implements UsnaEventList
 						noPwdGlobal &= user.isEmpty();
 					}
 					mqttModule.add(mqttm);
-				} catch(IOException | RuntimeException e) {
+				} catch(IOException | RuntimeException e) { // UnsupportedOperationException (RuntimeException) for GhostDevice
 					mqttModule.add(null);
 					exclude += "<br>" + UtilMiscellaneous.getFullName(d);
 					excludeCount++;

@@ -152,7 +152,7 @@ public class PanelResLogin extends AbstractSettingsPanel {
 						if(user.equals(userGlobal) == false) userGlobal = "";
 					}
 					loginModule.add(lm);
-				} catch(IOException | RuntimeException e) {
+				} catch(IOException | RuntimeException e) { // UnsupportedOperationException (RuntimeException) for GhostDevice
 					loginModule.add(null);
 					exclude += "<br>" + UtilMiscellaneous.getFullName(d);
 					excludeCount++;

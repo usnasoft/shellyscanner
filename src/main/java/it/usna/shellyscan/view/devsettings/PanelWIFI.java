@@ -372,7 +372,7 @@ public class PanelWIFI extends AbstractSettingsPanel implements UsnaEventListene
 						if(dns.equals(globalDNS) == false) globalDNS = "";
 					}
 					fwModule.add(sta);
-				} catch(IOException | RuntimeException e) {
+				} catch(IOException | RuntimeException e) { // UnsupportedOperationException (RuntimeException) for GhostDevice
 					fwModule.add(null);
 					exclude += "<br>" + UtilMiscellaneous.getFullName(d);
 					excludeCount++;
