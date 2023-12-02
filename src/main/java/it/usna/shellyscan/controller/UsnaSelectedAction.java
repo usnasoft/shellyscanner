@@ -12,10 +12,10 @@ public class UsnaSelectedAction extends UsnaAction {
 	private static final long serialVersionUID = 1L;
 
 	public UsnaSelectedAction(Window w, JTable table, String nameId, String tooltipId, String smallIcon, String largeIcon, Consumer<Integer> c) {
-		this(w, table, largeIcon, tooltipId, c);
+		this(w, table, tooltipId, largeIcon, c);
 		putValue(NAME, LABELS.getString(nameId));
 		if(smallIcon != null) {
-			putValue(SMALL_ICON, new ImageIcon(getClass().getResource(smallIcon)));
+			putValue(SMALL_ICON, new ImageIcon(UsnaSelectedAction.class.getResource(smallIcon)));
 		}
 	}
 	
@@ -24,8 +24,8 @@ public class UsnaSelectedAction extends UsnaAction {
 		putValue(NAME, LABELS.getString(nameId));
 	}
 
-	public UsnaSelectedAction(Window w, JTable table, String icon, String tooltipId, Consumer<Integer> c) {
-		super(w, icon, tooltipId, null);
+	public UsnaSelectedAction(Window w, JTable table, String tooltipId, String icon, Consumer<Integer> c) {
+		super(w, tooltipId, icon, null);
 		setConsumer(table, c);
 	}
 	
@@ -41,7 +41,7 @@ public class UsnaSelectedAction extends UsnaAction {
 		this(w,  largeIcon, tooltipId);
 		putValue(NAME, LABELS.getString(nameId));
 		if(smallIcon != null) {
-			putValue(SMALL_ICON, new ImageIcon(getClass().getResource(smallIcon)));
+			putValue(SMALL_ICON, new ImageIcon(UsnaSelectedAction.class.getResource(smallIcon)));
 		}
 	}
 	
@@ -52,7 +52,7 @@ public class UsnaSelectedAction extends UsnaAction {
 	 * @param tooltipId
 	 */
 	protected UsnaSelectedAction(Window w, String icon, String tooltipId) {
-		super(w, icon, tooltipId, null);
+		super(w, tooltipId, icon, null);
 	}
 	
 	protected void setConsumer(JTable table, Consumer<Integer> c) {

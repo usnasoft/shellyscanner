@@ -23,7 +23,9 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Stream;
 
+import javax.swing.AbstractButton;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -44,6 +46,7 @@ import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
 import javax.swing.RowSorter;
 import javax.swing.SortOrder;
+import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
@@ -115,7 +118,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 	private Action infoAction = new UsnaSelectedAction(this, devicesTable, "action_info_name", "action_info_tooltip", "/images/Bubble3_16.png", "/images/Bubble3.png",
 			i -> new DialogDeviceInfo(MainView.this, model, i) );
 
-	private Action infoLogAction = new UsnaSelectedAction(this, devicesTable, "/images/Document2.png", "action_info_log_tooltip", i -> {
+	private Action infoLogAction = new UsnaSelectedAction(this, devicesTable, "action_info_log_name", "action_info_log_tooltip", null, "/images/Document2.png", i -> {
 		if(model.get(i) instanceof AbstractG2Device) {
 			new DialogDeviceLogsG2(MainView.this, model, i, AbstractG2Device.LOG_VERBOSE);
 		} else {
@@ -123,7 +126,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		}
 	});
 
-	private Action rescanAction = new UsnaAction(null, "/images/73-radar.png", "action_scan_tooltip", e -> {
+	private Action rescanAction = new UsnaAction(null, "action_scan_name", "action_scan_tooltip", null, "/images/73-radar.png", e -> {
 		devicesTable.clearSelection();
 		reserveStatusLine(true);
 		setStatus(LABELS.getString("scanning_start"));
@@ -142,7 +145,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		});
 	});
 
-	private Action refreshAction = new UsnaAction(this, "/images/Refresh.png", "action_refresh_tooltip", e -> {
+	private Action refreshAction = new UsnaAction(this, "action_refresh_name", "action_refresh_tooltip", null, "/images/Refresh.png", e -> {
 		setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 		setEnabled(false);
 		devicesTable.stopCellEditing();
@@ -160,7 +163,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		setCursor(Cursor.getDefaultCursor());
 	});
 	
-	private Action rebootAction = new UsnaAction(this, "/images/nuke.png", "action_reboot_tooltip"/*"Reboot"*/, e -> {
+	private Action rebootAction = new UsnaAction(this, "action_reboot_name", "action_reboot_tooltip", null, "/images/nuke.png", e -> {
 		final String cancel = UIManager.getString("OptionPane.cancelButtonText");
 		if(JOptionPane.showOptionDialog(
 				MainView.this, LABELS.getString("action_reboot_confirm"), LABELS.getString("action_reboot_tooltip"),
@@ -176,7 +179,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		}
 	});
 	
-	private Action checkListAction = new UsnaAction(this, "/images/Ok.png", "action_checklist_tooltip", e -> {
+	private Action checkListAction = new UsnaAction(this, "action_checklist_name", "action_checklist_tooltip", null, "/images/Ok.png", e -> {
 		List<? extends RowSorter.SortKey> k = devicesTable.getRowSorter().getSortKeys();
 		new DialogDeviceCheckList(this, model, devicesTable.getSelectedModelRows(), k.get(0).getColumn() == DevicesTable.COL_IP_IDX ? k.get(0).getSortOrder() : SortOrder.UNSORTED);
 		try {
@@ -192,7 +195,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		}
 	});
 	
-	private Action aboutAction = new UsnaAction(this, "/images/question.png", null/*"About"*/, e -> DialogAbout.show(MainView.this));
+	private Action aboutAction = new UsnaAction(this, "action_about_name", "action_about_name", null, "/images/question.png", e -> DialogAbout.show(MainView.this));
 	
 	// also asks for credential if needed (login action)
 	private UsnaAction reloadAction = new UsnaSelectedAction(this, devicesTable, "action_name_reload", null, "/images/Loop16.png", null,
@@ -202,19 +205,19 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 
 	private Action restoreAction;
 	
-	private Action chartAction = new UsnaAction(this, "/images/Stats2.png", "action_chart_tooltip",
+	private Action chartAction = new UsnaAction(this, "action_chart_name", "action_chart_tooltip", null, "/images/Stats2.png",
 			e -> new MeasuresChart(this, model, devicesTable.getSelectedModelRows(), appProp) );
 	
-	private Action appSettingsAction = new UsnaAction(this, "/images/Gear.png", "action_appsettings_tooltip",
+	private Action appSettingsAction = new UsnaAction(this, "action_appsettings_name", "action_appsettings_tooltip", null, "/images/Gear.png",
 			e -> new DialogAppSettings(MainView.this, devicesTable, model, details.isSelected(), appProp) );
 	
-	private Action scriptManagerAction = new UsnaSelectedAction(this, devicesTable, "/images/Movie.png", "action_script_tooltip",
+	private Action scriptManagerAction = new UsnaSelectedAction(this, devicesTable, "action_script_name", "action_script_tooltip", null, "/images/Movie.png",
 			i -> new DialogDeviceScriptsG2(MainView.this, model, i) );
 	
-	private Action detailedViewAction = new UsnaAction(this, "/images/Plus.png", "action_show_detail_tooltip",
+	private Action detailedViewAction = new UsnaAction(this, "action_show_detail_name", "action_show_detail_tooltip", null, "/images/Plus.png",
 			e -> SwingUtilities.invokeLater(() -> detailedView(((JToggleButton)e.getSource()).isSelected()) ) );
 	
-	private Action notesAction = new UsnaSelectedAction(this, devicesTable, "action_notes_tooltip", "action_notes_tooltip", "/images/Write2-16.png", "/images/Write2.png",
+	private Action notesAction = new UsnaSelectedAction(this, devicesTable, "action_notes_name", "action_notes_tooltip", "/images/Write2-16.png", "/images/Write2.png",
 			i -> new NotesEditor(MainView.this, model.getGhost(i)) );
 	
 	private Action eraseGhostAction = new UsnaAction(this, "action_name_delete_ghost", null, "/images/Minus16.png", null, e -> {
@@ -231,7 +234,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		}
 	});
 	
-	private Action printAction = new UsnaAction(this, "/images/Printer.png", "action_print_tooltip", e -> {
+	private Action printAction = new UsnaAction(this, "action_print_name", "action_print_tooltip", null, "/images/Printer.png", e -> {
 		try {
 			devicesTable.clearSelection();
 			devicesTable.print(JTable.PrintMode.FIT_WIDTH);
@@ -242,7 +245,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 	
 	private DialogDeferrables dialogDeferrables;
 	
-	private Action csvExportAction = new UsnaAction(this, "/images/Table.png", "action_csv_tooltip", e -> {
+	private Action csvExportAction = new UsnaAction(this, "action_csv_name", "action_csv_tooltip", null, "/images/Table.png", e -> {
 		final JFileChooser fc = new JFileChooser(appProp.getProperty("LAST_PATH"));
 		fc.setFileFilter(new FileNameExtensionFilter(LABELS.getString("filetype_csv_desc"), "csv"));
 		if(fc.showSaveDialog(MainView.this) == JFileChooser.APPROVE_OPTION) {
@@ -260,11 +263,11 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		}
 	});
 
-	private Action devicesSettingsAction = new UsnaAction(this, "/images/Tool.png", "action_general_conf_tooltip", e -> {
+	private Action devicesSettingsAction = new UsnaAction(this, "action_general_conf_name", "action_general_conf_tooltip", null, "/images/Tool.png", e -> {
 		new DialogDeviceSettings(MainView.this, model, devicesTable.getSelectedModelRows());
 	});
 	
-	private Action eraseFilterAction = new UsnaAction(this, "/images/erase-9-16.png", null, e -> {
+	private Action eraseFilterAction = new UsnaAction(this, null, "/images/erase-9-16.png", e -> {
 		textFieldFilter.setText("");
 		textFieldFilter.requestFocusInWindow();
 		devicesTable.clearSelection();
@@ -299,7 +302,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		JPanel statusLeftPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 2, 0));
 		statusLeftPanel.setOpaque(false);
 		
-		Action showDeferrables = new UsnaAction(this, "/images/deferred_list.png", "labelShowDeferrables", e -> {
+		Action showDeferrables = new UsnaAction(this, "labelShowDeferrables", "/images/deferred_list.png", e -> {
 			if(dialogDeferrables == null) { // single dialog
 				dialogDeferrables = new DialogDeferrables(model);
 			}
@@ -397,33 +400,39 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		JToolBar toolBar = new JToolBar();
 		getContentPane().add(toolBar, BorderLayout.NORTH);
 		details = new JToggleButton(detailedViewAction);
+		details.setVerticalTextPosition(SwingConstants.BOTTOM);
+		details.setHorizontalTextPosition(SwingConstants.CENTER);
 		details.setSelectedIcon(new ImageIcon(getClass().getResource("/images/Minus.png")));;
 		details.setRolloverIcon(details.getIcon()); // '+'
 		details.setRolloverSelectedIcon(details.getSelectedIcon()); // '-'
-		toolBar.add(rescanAction);
-		toolBar.add(refreshAction);
+		details.setHideActionText(false);
+		
+		toolBar.add(rescanAction).setHideActionText(false);
+		toolBar.add(refreshAction).setHideActionText(false);
 		toolBar.addSeparator();
-		toolBar.add(infoAction);
-		toolBar.add(infoLogAction);
-		toolBar.add(chartAction);
-		toolBar.add(checkListAction);
-		toolBar.add(browseAction);
+		toolBar.add(infoAction).setHideActionText(false);
+		toolBar.add(infoLogAction).setHideActionText(false);
+		toolBar.add(chartAction).setHideActionText(false);
+		toolBar.add(checkListAction).setHideActionText(false);
+		toolBar.add(browseAction).setHideActionText(false);
 		toolBar.addSeparator();
-		toolBar.add(backupAction);
-		toolBar.add(restoreAction);
+		toolBar.add(backupAction).setHideActionText(false);
+		toolBar.add(restoreAction).setHideActionText(false);
 		toolBar.addSeparator();
-		toolBar.add(devicesSettingsAction);
-		toolBar.add(scriptManagerAction);
-		toolBar.add(rebootAction);
+		toolBar.add(devicesSettingsAction).setHideActionText(false);
+		toolBar.add(scriptManagerAction).setHideActionText(false);
+		toolBar.add(rebootAction).setHideActionText(false);
 		toolBar.addSeparator();
-		toolBar.add(notesAction);
+		toolBar.add(notesAction).setHideActionText(false);
 		toolBar.add(Box.createHorizontalGlue());
 		toolBar.add(details);
-		toolBar.add(csvExportAction);
-		toolBar.add(printAction);
+		toolBar.add(csvExportAction).setHideActionText(false);
+		toolBar.add(printAction).setHideActionText(false);
 		toolBar.addSeparator();
-		toolBar.add(appSettingsAction);
-		toolBar.add(aboutAction);
+		toolBar.add(appSettingsAction).setHideActionText(false);
+		toolBar.add(aboutAction).setHideActionText(false);
+		
+		Stream.of(toolBar.getComponents()).filter(c -> c instanceof AbstractButton).forEach(b -> ((AbstractButton)b).setHideActionText(false));
 
 		// devices popup
 		UsnaPopupMenu tablePopup = new UsnaPopupMenu(infoAction, browseAction, backupAction, restoreAction, notesAction, reloadAction/*, loginAction*/);

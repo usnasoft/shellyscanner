@@ -23,7 +23,7 @@ public class SelectionAction extends UsnaAction {
 	}
 
 	public SelectionAction(JTable table, String tooltipId, Predicate<Integer> test) {
-		super(null, null, tooltipId, null);
+		super(null, tooltipId, null, null);
 		onActionPerformed = e -> {
 			ListSelectionModel lsm = table.getSelectionModel();
 			lsm.setValueIsAdjusting(true);

@@ -298,7 +298,7 @@ public class DialogDeviceCheckList extends JDialog implements UsnaEventListener<
 		});
 		getRootPane().registerKeyboardAction(e -> textFieldFilter.requestFocus(), KeyStroke.getKeyStroke(KeyEvent.VK_F, MainView.SHORTCUT_KEY), JComponent.WHEN_IN_FOCUSED_WINDOW);
 
-		final Action eraseFilterAction = new UsnaAction(this, "/images/erase-9-16.png", null, e -> {
+		final Action eraseFilterAction = new UsnaAction(this, null, "/images/erase-9-16.png", e -> {
 			textFieldFilter.setText("");
 			textFieldFilter.requestFocusInWindow();
 			table.clearSelection();

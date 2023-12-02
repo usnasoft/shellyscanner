@@ -58,20 +58,21 @@ public class DeferrablesContainer extends UsnaObservable<DeferrableTask.Status, 
 	@Override
 	public void update(EventType mesgType, Integer modelIdx) {
 		int index;
-		if((mesgType == EventType.SUBSTITUTE || mesgType == EventType.UPDATE) && (index = devIdx.indexOf(modelIdx)) >= 0) {
+		ShellyAbstractDevice device;
+		if((mesgType == EventType.SUBSTITUTE || mesgType == EventType.UPDATE) &&
+				(index = devIdx.indexOf(modelIdx)) >= 0 &&
+				(device = model.get(modelIdx)).getStatus() == ShellyAbstractDevice.Status.ON_LINE) {
 			synchronized (devIdx) {
 				DeferrableTask deferrable = defer.get(index).def;
-				ShellyAbstractDevice device;
-				if(deferrable.getStatus() == Status.WAITING && (device = model.get(modelIdx)).getStatus() == ShellyAbstractDevice.Status.ON_LINE) {
+				if(deferrable.getStatus() == Status.WAITING) {
 					deferrable.setStatus(Status.RUNNING); // deferrable.run(device) change the status but we need it is changed before fireEvent
 					new Thread(() -> {
 						final Status s = deferrable.run(device);
 						fireEvent(s, index);
 					}).start();
-					String name = UtilMiscellaneous.getDescName(model.get(modelIdx)); // could have been changed since add(...)
 					fireEvent(Status.RUNNING, index);
 					LOG.trace("Deferrable execution: {}", deferrable);
-					defer.get(index).deviceName = name;
+					defer.get(index).deviceName = UtilMiscellaneous.getDescName(device); // could have been changed since add(...)
 					devIdx.set(index, null);
 				}
 			}
