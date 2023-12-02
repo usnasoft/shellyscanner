@@ -113,6 +113,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 	private DevicesTable devicesTable = new DevicesTable(tabModel);
 	
 	private JToggleButton details;
+	private JToolBar toolBar = new JToolBar();
 	private AppProperties temporaryProp = new AppProperties();
 
 	private Action infoAction = new UsnaSelectedAction(this, devicesTable, "action_info_name", "action_info_tooltip", "/images/Bubble3_16.png", "/images/Bubble3.png",
@@ -195,7 +196,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		}
 	});
 	
-	private Action aboutAction = new UsnaAction(this, "action_about_name", "action_about_name", null, "/images/question.png", e -> DialogAbout.show(MainView.this));
+	private Action aboutAction = new UsnaAction(this, "action_about_name", "action_about_tooltip", null, "/images/question.png", e -> DialogAbout.show(MainView.this));
 	
 	// also asks for credential if needed (login action)
 	private UsnaAction reloadAction = new UsnaSelectedAction(this, devicesTable, "action_name_reload", null, "/images/Loop16.png", null,
@@ -397,7 +398,6 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		scrollPane.getViewport().setBackground(Main.BG_COLOR);
 
 		// Toolbar
-		JToolBar toolBar = new JToolBar();
 		getContentPane().add(toolBar, BorderLayout.NORTH);
 		details = new JToggleButton(detailedViewAction);
 		details.setVerticalTextPosition(SwingConstants.BOTTOM);
@@ -405,34 +405,33 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		details.setSelectedIcon(new ImageIcon(getClass().getResource("/images/Minus.png")));;
 		details.setRolloverIcon(details.getIcon()); // '+'
 		details.setRolloverSelectedIcon(details.getSelectedIcon()); // '-'
-		details.setHideActionText(false);
 		
-		toolBar.add(rescanAction).setHideActionText(false);
-		toolBar.add(refreshAction).setHideActionText(false);
+		toolBar.add(rescanAction);
+		toolBar.add(refreshAction);
 		toolBar.addSeparator();
-		toolBar.add(infoAction).setHideActionText(false);
-		toolBar.add(infoLogAction).setHideActionText(false);
-		toolBar.add(chartAction).setHideActionText(false);
-		toolBar.add(checkListAction).setHideActionText(false);
-		toolBar.add(browseAction).setHideActionText(false);
+		toolBar.add(infoAction);
+		toolBar.add(infoLogAction);
+		toolBar.add(chartAction);
+		toolBar.add(checkListAction);
+		toolBar.add(browseAction);
 		toolBar.addSeparator();
-		toolBar.add(backupAction).setHideActionText(false);
-		toolBar.add(restoreAction).setHideActionText(false);
+		toolBar.add(backupAction);
+		toolBar.add(restoreAction);
 		toolBar.addSeparator();
-		toolBar.add(devicesSettingsAction).setHideActionText(false);
-		toolBar.add(scriptManagerAction).setHideActionText(false);
-		toolBar.add(rebootAction).setHideActionText(false);
+		toolBar.add(devicesSettingsAction);
+		toolBar.add(scriptManagerAction);
+		toolBar.add(rebootAction);
 		toolBar.addSeparator();
-		toolBar.add(notesAction).setHideActionText(false);
+		toolBar.add(notesAction);
 		toolBar.add(Box.createHorizontalGlue());
 		toolBar.add(details);
-		toolBar.add(csvExportAction).setHideActionText(false);
-		toolBar.add(printAction).setHideActionText(false);
+		toolBar.add(csvExportAction);
+		toolBar.add(printAction);
 		toolBar.addSeparator();
-		toolBar.add(appSettingsAction).setHideActionText(false);
-		toolBar.add(aboutAction).setHideActionText(false);
+		toolBar.add(appSettingsAction);
+		toolBar.add(aboutAction);
 		
-		Stream.of(toolBar.getComponents()).filter(c -> c instanceof AbstractButton).forEach(b -> ((AbstractButton)b).setHideActionText(false));
+		hideCaptions(appProp.getBoolProperty(DialogAppSettings.PROP_TOOLBAR_CAPTIONS, true) == false);
 
 		// devices popup
 		UsnaPopupMenu tablePopup = new UsnaPopupMenu(infoAction, browseAction, backupAction, restoreAction, notesAction, reloadAction/*, loginAction*/);
@@ -516,6 +515,10 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		refreshAction.setEnabled(false);
 		statusLabel.setText(LABELS.getString("scanning_start"));
 		manageRowsSelection();
+	}
+	
+	public void hideCaptions(boolean en) {
+		Stream.of(toolBar.getComponents()).filter(c -> c instanceof AbstractButton).forEach(b -> ((AbstractButton)b).setHideActionText(en));
 	}
 	
 	private void setColFilter(JComboBox<?> combo) {

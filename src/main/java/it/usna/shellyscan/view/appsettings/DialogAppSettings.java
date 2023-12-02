@@ -31,6 +31,7 @@ public class DialogAppSettings extends JDialog {
 	
 	private final static String IPV4_REGEX_3 = "^((0|1\\d?\\d?|2[0-4]?\\d?|25[0-5]?|[3-9]\\d?)\\.){2}(0|1\\d?\\d?|2[0-4]?\\d?|25[0-5]?|[3-9]\\d?)$";
 	
+	public final static String PROP_TOOLBAR_CAPTIONS = "T_CAPTIONS";
 	public final static String PROP_CSV_SEPARATOR = "CSV_SEPARATOR";
 	public final static String PROP_CSV_SEPARATOR_DEFAULT = ",";
 	public final static String PROP_SCAN_MODE = "SCAN_MODE";
@@ -185,6 +186,11 @@ public class DialogAppSettings extends JDialog {
 			} else { // updBetaCHK
 				appProp.setProperty(PROP_UPDATECHK_ACTION, "BETA");
 			}
+			
+			// toolbar
+			boolean captions = panelGUI.chckbxToolbarCaptions.isSelected();
+			appProp.setBoolProperty(PROP_TOOLBAR_CAPTIONS, captions);
+			mainView.hideCaptions(captions == false);
 			
 			// store
 			boolean useStore = panelStore.chckbxUseStore.isSelected();
