@@ -252,10 +252,10 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 		fireEvent(EventType.READY);
 	}
 
-	public void refresh(int ind, boolean force) {
+	public void refresh(final int ind, boolean force) {
 		synchronized(devices) {
 			final ShellyAbstractDevice d = devices.get(ind);
-			if(d.getStatus() != Status.READING || force) {
+			if(d instanceof GhostDevice == false && (d.getStatus() != Status.READING || force)) {
 				refreshProcess.get(ind).cancel(true);
 				d.setStatus(Status.READING);
 				executor.schedule(() -> {

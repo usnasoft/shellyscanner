@@ -14,11 +14,11 @@ import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.BufferedWriter;
-import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collections;
@@ -46,7 +46,6 @@ import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
 import javax.swing.RowSorter;
 import javax.swing.SortOrder;
-import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
@@ -79,6 +78,7 @@ import it.usna.shellyscan.view.util.Msg;
 import it.usna.swing.UsnaPopupMenu;
 import it.usna.swing.table.UsnaTableModel;
 import it.usna.util.AppProperties;
+import it.usna.util.IOFile;
 import it.usna.util.UsnaEventListener;
 
 public class MainView extends MainWindow implements UsnaEventListener<Devices.EventType, Integer> {
@@ -114,6 +114,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 	
 	private JToggleButton details;
 	private JToolBar toolBar = new JToolBar();
+	private DialogDeferrables dialogDeferrables;
 	private AppProperties temporaryProp = new AppProperties();
 
 	private Action infoAction = new UsnaSelectedAction(this, devicesTable, "action_info_name", "action_info_tooltip", "/images/Bubble3_16.png", "/images/Bubble3.png",
@@ -156,9 +157,8 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 				model.refresh(i, false);
 			}
 		}
-		try {
-			Thread.sleep(250); // too many call disturb some devices expecially gen1
-		} catch (InterruptedException e1) {}
+		 // too many call disturb some devices expecially gen1
+		try { Thread.sleep(250); } catch (InterruptedException e1) {}
 		devicesTable.resetRowsComputedHeight();
 		setEnabled(true);
 		setCursor(Cursor.getDefaultCursor());
@@ -183,9 +183,8 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 	private Action checkListAction = new UsnaAction(this, "action_checklist_name", "action_checklist_tooltip", null, "/images/Ok.png", e -> {
 		List<? extends RowSorter.SortKey> k = devicesTable.getRowSorter().getSortKeys();
 		new DialogDeviceCheckList(this, model, devicesTable.getSelectedModelRows(), k.get(0).getColumn() == DevicesTable.COL_IP_IDX ? k.get(0).getSortOrder() : SortOrder.UNSORTED);
-		try {
-			Thread.sleep(250); // too many call disturb some devices (especially gen1)
-		} catch (InterruptedException e1) {}
+		// too many call disturb some devices (especially gen1)
+		try { Thread.sleep(250); } catch (InterruptedException e1) {}
 	});
 	
 	private Action browseAction = new UsnaSelectedAction(this, devicesTable, "action_web_name", "action_web_tooltip", "/images/Computer16.png", "/images/Computer.png", i -> {
@@ -244,18 +243,13 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		}
 	});
 	
-	private DialogDeferrables dialogDeferrables;
-	
 	private Action csvExportAction = new UsnaAction(this, "action_csv_name", "action_csv_tooltip", null, "/images/Table.png", e -> {
 		final JFileChooser fc = new JFileChooser(appProp.getProperty("LAST_PATH"));
 		fc.setFileFilter(new FileNameExtensionFilter(LABELS.getString("filetype_csv_desc"), "csv"));
 		if(fc.showSaveDialog(MainView.this) == JFileChooser.APPROVE_OPTION) {
-			File out = fc.getSelectedFile();
-			if(out.getName().contains(".") == false) {
-				out = new File(out.getParentFile(), out.getName() + ".csv");
-			}
-			try (BufferedWriter w = Files.newBufferedWriter(out.toPath())) {
-				devicesTable.csvExport(w, appProp.getProperty(DialogAppSettings.PROP_CSV_SEPARATOR, DialogAppSettings.PROP_CSV_SEPARATOR_DEFAULT));
+			Path outPath = IOFile.addExtension(fc.getSelectedFile().toPath(), "csv");
+			try (BufferedWriter writer = Files.newBufferedWriter(outPath)) {
+				devicesTable.csvExport(writer, appProp.getProperty(DialogAppSettings.PROP_CSV_SEPARATOR, DialogAppSettings.PROP_CSV_SEPARATOR_DEFAULT));
 				JOptionPane.showMessageDialog(MainView.this, LABELS.getString("msgFileSaved"), Main.APP_NAME, JOptionPane.INFORMATION_MESSAGE);
 			} catch (IOException ex) {
 				Msg.errorMsg(ex);
@@ -296,7 +290,6 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 
 		// Status bar
 		JPanel statusPanel = new JPanel();
-//		statusPanel.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 0));
 		statusPanel.setLayout(new BorderLayout(6, 0));
 		statusPanel.add(statusLabel, BorderLayout.CENTER);
 		
@@ -398,10 +391,10 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		scrollPane.getViewport().setBackground(Main.BG_COLOR);
 
 		// Toolbar
-		getContentPane().add(toolBar, BorderLayout.NORTH);
+		toolBar.setBorder(BorderFactory.createEmptyBorder());
 		details = new JToggleButton(detailedViewAction);
-		details.setVerticalTextPosition(SwingConstants.BOTTOM);
-		details.setHorizontalTextPosition(SwingConstants.CENTER);
+		details.setVerticalTextPosition(JToggleButton.BOTTOM);
+		details.setHorizontalTextPosition(JToggleButton.CENTER);
 		details.setSelectedIcon(new ImageIcon(getClass().getResource("/images/Minus.png")));;
 		details.setRolloverIcon(details.getIcon()); // '+'
 		details.setRolloverSelectedIcon(details.getSelectedIcon()); // '-'
@@ -430,8 +423,8 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		toolBar.addSeparator();
 		toolBar.add(appSettingsAction);
 		toolBar.add(aboutAction);
-		
 		hideCaptions(appProp.getBoolProperty(DialogAppSettings.PROP_TOOLBAR_CAPTIONS, true) == false);
+		getContentPane().add(toolBar, BorderLayout.NORTH);
 
 		// devices popup
 		UsnaPopupMenu tablePopup = new UsnaPopupMenu(infoAction, browseAction, backupAction, restoreAction, notesAction, reloadAction/*, loginAction*/);
