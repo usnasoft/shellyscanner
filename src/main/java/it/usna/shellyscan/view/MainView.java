@@ -545,7 +545,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 				browseAction.setEnabled(selectionNoGhost /*&& browserSupported*/);
 				backupAction.setEnabled(selection);
 				restoreAction.setEnabled(singleSelection /*&& d.getStatus() != Status.NOT_LOOGGED*/);
-				devicesSettingsAction.setEnabled(selectionNoGhost);
+				devicesSettingsAction.setEnabled(selection);
 				chartAction.setEnabled(selectionNoGhost);
 				scriptManagerAction.setEnabled(singleSelectionNoGhost && d instanceof AbstractG2Device);
 				notesAction.setEnabled(singleSelection && appProp.getBoolProperty(DialogAppSettings.PROP_USE_ARCHIVE, true));

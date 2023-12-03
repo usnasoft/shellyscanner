@@ -246,12 +246,16 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 	private Object[] createTableRow(int index) {
 		ShellyAbstractDevice d = parent.getLocalDevice(index);
 		FirmwareManager fw = devicesFWData.get(index).fwModule;
-		if(fw.upadating()) {
-			return new Object[] {DevicesTable.UPDATING_BULLET, UtilMiscellaneous.getExtendedHostName(d), FirmwareManager.getShortVersion(fw.current()), LABELS.getString("labelUpdating"), null}; // DevicesTable.UPDATING_BULLET
+		if(fw != null) {
+			if(fw.upadating()) {
+				return new Object[] {DevicesTable.UPDATING_BULLET, UtilMiscellaneous.getExtendedHostName(d), FirmwareManager.getShortVersion(fw.current()), LABELS.getString("labelUpdating"), null}; // DevicesTable.UPDATING_BULLET
+			} else {
+				Boolean stableCell = (fw != null && fw.newStable() != null) ? Boolean.TRUE : null;
+				Boolean betaCell = (fw != null && fw.newBeta() != null) ? Boolean.FALSE : null;
+				return new Object[] {DevicesTable.getStatusIcon(d), UtilMiscellaneous.getExtendedHostName(d), FirmwareManager.getShortVersion(fw.current()), stableCell, betaCell};
+			}
 		} else {
-			Boolean stableCell = (fw.newStable() != null) ? Boolean.TRUE : null;
-			Boolean betaCell = (fw.newBeta() != null) ? Boolean.FALSE : null;
-			return new Object[] {DevicesTable.getStatusIcon(d), UtilMiscellaneous.getExtendedHostName(d), FirmwareManager.getShortVersion(fw.current()), stableCell, betaCell};
+			return new Object[] {DevicesTable.getStatusIcon(d), UtilMiscellaneous.getExtendedHostName(d)};
 		}
 	}
 
@@ -375,10 +379,10 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 		for(int i = 0; i < tModel.getRowCount(); i++) {
 			Object update = tModel.getValueAt(i, COL_STABLE);
 			Object beta = tModel.getValueAt(i, COL_BETA);
-			if(/*update instanceof Boolean &&*/ update == Boolean.TRUE) {
+			if(update == Boolean.TRUE) {
 				countS++;
 			}
-			if(/*beta instanceof Boolean &&*/ beta == Boolean.TRUE) {
+			if(beta == Boolean.TRUE) {
 				countB++;
 			}
 		}
@@ -447,14 +451,21 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 
 	@Override
 	public void update(EventType mesgType, Integer pos) {
-		if(mesgType == Devices.EventType.UPDATE) {
+		if(mesgType == Devices.EventType.UPDATE /*|| mesgType == Devices.EventType.SUBSTITUTE*/) {
 			SwingUtilities.invokeLater(() -> {
 				try {
 					final ShellyAbstractDevice device = parent.getModel().get(pos);
 					ShellyAbstractDevice.Status newStatus = device.getStatus();
 					final int index = parent.getLocalIndex(pos);
+					
+					DeviceFirmware fwInfo;
+//					if(index >= 0 && newStatus == ShellyAbstractDevice.Status.ON_LINE && (fwInfo = devicesFWData.get(index)) != null) {
+//						calls.add(new GetFWManagerCaller(index));
+//					}
+
+					
 					if(index >= 0 && newStatus != ShellyAbstractDevice.Status.ERROR) {
-						DeviceFirmware fwInfo = devicesFWData.get(index);
+						fwInfo = devicesFWData.get(index);
 						// status changes to ON_LINE -> maybe reboot after fw update
 						// System.currentTimeMillis() - fwInfo.rebootTime > 2500L && status == ON_LINE -> maybe sampling too slow and missed OFF_LINE (gen2)
 						// device.getUptime() < fwInfo.uptime ("apply" time) -> && status == ON_LINE -> maybe sampling too slow and missed OFF_LINE (gen1)
