@@ -43,6 +43,11 @@ public class DeferrablesContainer extends UsnaObservable<DeferrableTask.Status, 
 			LOG.trace("Deferrable added: {}", newDef);
 		}
 	}
+	
+	public DeferrableTask getWaitingDefByModelIndex(int modelIdx) {
+		Integer index = devIdx.indexOf(modelIdx);
+		return index != null ? defer.get(index).def : null;
+	}
 
 	public void cancel(int index) {
 		synchronized (devIdx) {
