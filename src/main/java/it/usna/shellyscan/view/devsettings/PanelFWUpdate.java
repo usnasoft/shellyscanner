@@ -310,21 +310,6 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 
 		@Override
 		public Void call() {
-			//			final ShellyAbstractDevice d = parent.getLocalDevice(index);
-			//			DeviceFirmware fwData = devicesFWData.get(index);
-			//			FirmwareManager fm = d.getFWManager();
-			//			fwData.fwModule = fm;
-			//			fwData.status = d.getStatus();
-			//			if(fm.upadating()) {
-			//				fwData.uptime = d.getUptime();
-			//			}
-			//			if(d instanceof AbstractG2Device) {
-			//				try {
-			//					fwData.wsSession = wsEventListener(index, (AbstractG2Device)d);
-			//				} catch (IOException | InterruptedException | ExecutionException e) {
-			//					LOG.debug("PanelFWUpdate ws: {}", d, e);
-			//				}
-			//			}
 			initDevice(index);
 			return null;
 		}
@@ -379,7 +364,8 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 			if(device.getStatus() == Status.OFF_LINE) {
 				// todo verificare non sia già accodato
 				DeferrablesContainer.getInstance(parent.getModel()).add(parent.getModelIndex(i), new DeferrableTask(LABELS.getString("dlgSetFWUpdate"), (def, dev) -> {
-					return fwInfo.fwModule.update(stable);
+					FirmwareManager fm = dev.getFWManager();
+					return fm.update(stable);
 				}));
 				return UtilMiscellaneous.getFullName(parent.getLocalDevice(i)) + " - " + LABELS.getString("msgFWUpdateQueue") + "\n";
 			} else {
@@ -471,53 +457,53 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 	@Override
 	public void update(EventType mesgType, Integer pos) {
 		if(mesgType == Devices.EventType.UPDATE || mesgType == Devices.EventType.SUBSTITUTE) {
-			//			SwingUtilities.invokeLater(() -> {
-			final ShellyAbstractDevice device = parent.getModel().get(pos);
-			ShellyAbstractDevice.Status newStatus = device.getStatus();
 			final int localIndex = parent.getLocalIndex(pos);
-			
-			if(localIndex >= 0 && newStatus == ShellyAbstractDevice.Status.ON_LINE && devicesFWData.get(localIndex).fwModule == null) {
-				// awakened
-				
-				retriveFutures.set(localIndex, exeService.submit(() -> {
-					initDevice(localIndex);
-					tModel.setRow(localIndex, createTableRow(localIndex));
-				}, null));
-			} else if(localIndex >= 0 && newStatus != ShellyAbstractDevice.Status.ERROR) {
-				// Updating?
-				
-				DeviceFirmware fwInfo = devicesFWData.get(localIndex);
-				// status changes to ON_LINE -> maybe reboot after fw update
-				// System.currentTimeMillis() - fwInfo.rebootTime > 2500L && status == ON_LINE -> maybe sampling too slow and missed OFF_LINE (gen2)
-				// device.getUptime() < fwInfo.uptime ("apply" time) -> && status == ON_LINE -> maybe sampling too slow and missed OFF_LINE (gen1)
-				if(newStatus != fwInfo.status || System.currentTimeMillis() - fwInfo.rebootTime > 3000L || device.getUptime() < fwInfo.uptime) {
-					if(newStatus == Status.ON_LINE) {
-						exeService.submit(() -> {
-							try {
-								tModel.setValueAt(DevicesTable.ONLINE_BULLET, localIndex, COL_STATUS);
-								Thread.sleep(Devices.MULTI_QUERY_DELAY);
-								fwInfo.fwModule = device.getFWManager();
-								tModel.setRow(localIndex, createTableRow(localIndex));
-								countSelection();
-								if(device instanceof AbstractG2Device && fwInfo.wsSession.get().isOpen() == false) { // should be (closed on reboot)
-									fwInfo.wsSession = wsEventListener(localIndex, (AbstractG2Device)device);
+			if(localIndex >= 0) {
+				final ShellyAbstractDevice device = parent.getModel().get(pos);
+				ShellyAbstractDevice.Status newStatus = device.getStatus();
+
+				if(newStatus == ShellyAbstractDevice.Status.ON_LINE && devicesFWData.get(localIndex).fwModule == null) {
+					// awakened
+
+					retriveFutures.set(localIndex, exeService.submit(() -> {
+						initDevice(localIndex);
+						tModel.setRow(localIndex, createTableRow(localIndex));
+					}, null));
+				} else if(newStatus != ShellyAbstractDevice.Status.ERROR) {
+					// Updating?
+
+					DeviceFirmware fwInfo = devicesFWData.get(localIndex);
+					// status changes to ON_LINE -> maybe reboot after fw update
+					// System.currentTimeMillis() - fwInfo.rebootTime > 2500L && status == ON_LINE -> maybe sampling too slow and missed OFF_LINE (gen2)
+					// device.getUptime() < fwInfo.uptime ("apply" time) -> && status == ON_LINE -> maybe sampling too slow and missed OFF_LINE (gen1)
+					if(newStatus != fwInfo.status || System.currentTimeMillis() - fwInfo.rebootTime > 3000L || device.getUptime() < fwInfo.uptime) {
+						if(newStatus == Status.ON_LINE) {
+							exeService.submit(() -> {
+								try {
+									tModel.setValueAt(DevicesTable.ONLINE_BULLET, localIndex, COL_STATUS);
+									Thread.sleep(Devices.MULTI_QUERY_DELAY);
+									fwInfo.fwModule = device.getFWManager();
+									tModel.setRow(localIndex, createTableRow(localIndex));
+									countSelection();
+									if(device instanceof AbstractG2Device && fwInfo.wsSession.get().isOpen() == false) { // should be (closed on reboot)
+										fwInfo.wsSession = wsEventListener(localIndex, (AbstractG2Device)device);
+									}
+									fwInfo.rebootTime = Long.MAX_VALUE; // reset
+									fwInfo.uptime = -1; // reset
+								} catch (Throwable ex) {
+									LOG.error("Unexpected", ex);
 								}
-								fwInfo.rebootTime = Long.MAX_VALUE; // reset
-								fwInfo.uptime = -1; // reset
-							} catch (Throwable ex) {
-								LOG.error("Unexpected", ex);
-							}
-						});
-					} else if(fwInfo.fwModule.upadating() == false) {
-						tModel.setValueAt(DevicesTable.getStatusIcon(device), localIndex, COL_STATUS);
+							});
+						} else if(fwInfo.fwModule.upadating() == false) {
+							tModel.setValueAt(DevicesTable.getStatusIcon(device), localIndex, COL_STATUS);
+						}
+						fwInfo.status = newStatus;
 					}
-					fwInfo.status = newStatus;
 				}
 			}
-			//			});
 		}
 	}
-} // 346 - 362 - 462 - 476
+} // 346 - 362 - 462 - 476 - 506
 
 //{"src":"shellyplusi4-a8032ab1fe78","dst":"S_Scanner","method":"NotifyEvent","params":{"ts":1677696108.45,"events":[{"component":"sys", "event":"ota_progress", "msg":"Waiting for data", "progress_percent":99, "ts":1677696108.45}]}}
 //{"src":"shellyplusi4-a8032ab1fe78","dst":"S_Scanner","method":"NotifyEvent","params":{"ts":1677696109.49,"events":[{"component":"sys", "event":"ota_success", "msg":"Update applied, rebooting", "ts":1677696109.49}]}}

@@ -76,7 +76,11 @@ public class FirmwareManagerG2 implements FirmwareManager {
 	@Override
 	public String update(boolean stable) {
 		updating = true;
-		return d.postCommand("Shelly.Update", stable ? "{\"stage\":\"stable\"}" : "{\"stage\":\"beta\"}");
+		String res = d.postCommand("Shelly.Update", stable ? "{\"stage\":\"stable\"}" : "{\"stage\":\"beta\"}");
+		if(res != null && res.length() > 0) {
+			updating = false;
+		}
+		return res;
 	}
 	
 	@Override

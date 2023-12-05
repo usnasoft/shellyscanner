@@ -282,7 +282,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		backupAction = new BackupAction(this, devicesTable, appProp, model);
 		restoreAction = new RestoreAction(this, devicesTable, appProp, model);
 
-		loadProperties(appProp);
+		loadProperties(appProp, 0.66f, 0.5f);
 
 		setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
 		setIconImage(Main.ICON);

@@ -495,9 +495,9 @@ public class PanelMQTTG1 extends AbstractSettingsPanel implements UsnaEventListe
 //			if(Thread.interrupted()) {
 //				throw new InterruptedException();
 //			}
-			if(excludeCount == parent.getLocalSize()) {
+			if(excludeCount == parent.getLocalSize() && isShowing()) {
 				return LABELS.getString("msgAllDevicesExcluded");
-			} else if (excludeCount > 0) {
+			} else if (excludeCount > 0 && isShowing()) {
 				Msg.showHtmlMessageDialog(this, exclude, LABELS.getString("dlgExcludedDevicesTitle"), JOptionPane.WARNING_MESSAGE);
 			}
 			chckbxEnabled.setEnabled(true); // form is active

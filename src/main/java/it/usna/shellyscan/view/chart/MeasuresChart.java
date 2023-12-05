@@ -89,6 +89,7 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 		T2("dlgChartsTemp2Label", "dlgChartsTempYLabel", Meters.Type.T2),
 		T3("dlgChartsTemp3Label", "dlgChartsTempYLabel", Meters.Type.T3),
 		T4("dlgChartsTemp4Label", "dlgChartsTempYLabel", Meters.Type.T4),
+		T_ALL("dlgChartsTempAllLabel", "dlgChartsTempYLabel"),
 		H("dlgChartsHumidityLabel", "dlgChartsHumidityYLabel", Meters.Type.H),
 		LUX("dlgChartsLuxLabel", "dlgChartsLuxYLabel", Meters.Type.L);
 
@@ -144,8 +145,8 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 		ChartPanel chartPanel = new ChartPanel(chart, false, true, true, false, true);
 		chartPanel.setInitialDelay(0); // tootip
 		chartPanel.setDismissDelay(20_000); // tootip
-		//		chartPanel.setMouseZoomable(true);
-		//		chartPanel.setMouseWheelEnabled(true);
+		//chartPanel.setMouseZoomable(true);
+		//chartPanel.setMouseWheelEnabled(true);
 
 		mainPanel.add(chartPanel, BorderLayout.CENTER);
 
@@ -244,7 +245,7 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 			initDataSet(plot.getRangeAxis(), dataset, model, ind);
 			btnPause.setSelected(false);
 			xAxis.setAutoRange(true);
-			//			setRange(xAxis, rangeCombo.getSelectedIndex());
+			//setRange(xAxis, rangeCombo.getSelectedIndex());
 		});
 
 		this.currentType = ChartType.valueOf(appProp.getProperty(DialogAppSettings.PROP_CHARTS_START, ChartType.INT_TEMP.name()));
@@ -276,18 +277,53 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 		xAxis.setAutoRange(true);
 	}
 
-	private void initDataSet(ValueAxis yAxis, TimeSeriesCollection dataset, final Devices model, int[] indexes) {
+	private void initDataSet(ValueAxis yAxis, TimeSeriesCollection dataset, final Devices model, int[] modelIndexes) {
 		dataset.removeAllSeries();
 		yAxis.setLabel(currentType.yLabel);
-		for(int ind: indexes) {
+		for(int ind: modelIndexes) {
 			final ShellyAbstractDevice d = model.get(ind);
-
-			if(currentType.mType == null) { // device property (INT_TEMP & RSSI), not from "Meters"
+			if(currentType == ChartType.T_ALL) {
+				final ArrayList<TimeSeries> temp = new ArrayList<>(5);
+				final Meters[] meters = d.getMeters();
+				if(meters != null) {
+					for(int i = 0; i < meters.length; i++) {
+						if(meters[i].hasType(Meters.Type.T)) {
+							TimeSeries ts = new TimeSeries(UtilMiscellaneous.getDescName(d));
+							temp.add(ts);
+							dataset.addSeries(ts);
+						}
+						if(meters[i].hasType(Meters.Type.T1)) {
+							TimeSeries ts = new TimeSeries(UtilMiscellaneous.getDescName(d) + "-1");
+							temp.add(ts);
+							dataset.addSeries(ts);
+						}
+						if(meters[i].hasType(Meters.Type.T2)) {
+							TimeSeries ts = new TimeSeries(UtilMiscellaneous.getDescName(d) + "-2");
+							temp.add(ts);
+							dataset.addSeries(ts);
+						}
+						if(meters[i].hasType(Meters.Type.T3)) {
+							TimeSeries ts = new TimeSeries(UtilMiscellaneous.getDescName(d) + "-3");
+							temp.add(ts);
+							dataset.addSeries(ts);
+						}
+						if(meters[i].hasType(Meters.Type.T4)) {
+							TimeSeries ts = new TimeSeries(UtilMiscellaneous.getDescName(d) + "-4");
+							temp.add(ts);
+							dataset.addSeries(ts);
+						}
+					}
+				}
+				if(temp.size() == 0) {
+					dataset.addSeries(new TimeSeries(UtilMiscellaneous.getDescName(d))); // legend
+				}
+				seriesMap.put(ind, temp.toArray(TimeSeries[]::new));
+			} else if(currentType.mType == null) { // device property (INT_TEMP & RSSI), not from "Meters"
 				TimeSeries ts = new TimeSeries(UtilMiscellaneous.getDescName(d));
 				dataset.addSeries(ts);
 				seriesMap.put(ind, new TimeSeries[] {ts});
 			} else {
-				ArrayList<TimeSeries> temp = new ArrayList<>();
+				ArrayList<TimeSeries> temp = new ArrayList<>(5);
 				Meters[] meters = d.getMeters();
 				if(meters != null) {
 					for(int i = 0; i < meters.length; i++) {
@@ -328,23 +364,52 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 							Meters[] m;
 							if(currentType == ChartType.INT_TEMP && d instanceof InternalTmpHolder tempH) {
 								ts[0].addOrUpdate(timestamp, tempH.getInternalTmp());
-								if(outStream) {
-									System.out.println("graph_out->" + d.getHostname() + ":0:" + currentType.name() + ":" + timestamp.getFirstMillisecond() + ":" + tempH.getInternalTmp());
-								}
+								outStream(d, 0, timestamp, tempH.getInternalTmp());
 							} else if(currentType == ChartType.RSSI) {
 								ts[0].addOrUpdate(timestamp, d.getRssi());
-								if(outStream) {
-									System.out.println("graph_out->" + d.getHostname() + ":0:" + currentType.name() + ":" + timestamp.getFirstMillisecond() + ":" + d.getRssi());
+								outStream(d, 0, timestamp, d.getRssi());
+							} else if(currentType == ChartType.T_ALL && (m = d.getMeters()) != null) {
+								int j = 0;
+								for(int i = 0; i < m.length; i++) {
+									if(m[i].hasType(Meters.Type.T)) {
+										float val = m[i].getValue(Meters.Type.T);
+										ts[j].addOrUpdate(timestamp, val);
+										outStream(d, j, timestamp, val);
+										j++;
+									}
+									if(m[i].hasType(Meters.Type.T1)) {
+										float val = m[i].getValue(Meters.Type.T1);
+										ts[j].addOrUpdate(timestamp, val);
+										outStream(d, j, timestamp, val);
+										j++;
+									}
+									if(m[i].hasType(Meters.Type.T2)) {
+										float val = m[i].getValue(Meters.Type.T2);
+										ts[j].addOrUpdate(timestamp, val);
+										outStream(d, j, timestamp, val);
+										j++;
+									}
+									if(m[i].hasType(Meters.Type.T3)) {
+										float val = m[i].getValue(Meters.Type.T3);
+										ts[j].addOrUpdate(timestamp, val);
+										outStream(d, j, timestamp, val);
+										j++;
+									}
+									if(m[i].hasType(Meters.Type.T4)) {
+										float val = m[i].getValue(Meters.Type.T4);
+										ts[j].addOrUpdate(timestamp, val);
+										outStream(d, j, timestamp, val);
+										j++;
+									}
 								}
+
 							} else if(/*currentType.mType != null &&*/ (m = d.getMeters()) != null) {
 								int j = 0;
 								for(int i = 0; i < m.length; i++) {
 									if(m[i].hasType(currentType.mType)) {
-										double val = m[i].getValue(currentType.mType);
+										float val = m[i].getValue(currentType.mType);
 										ts[j].addOrUpdate(timestamp, val);
-										if(outStream) {
-											System.out.println("graph_data->" + d.getHostname() + ":" + j + ":" + currentType.name() + ":" + timestamp.getFirstMillisecond() + ":" + val);
-										}
+										outStream(d, j, timestamp, val);
 										j++;
 									}
 								}
@@ -357,6 +422,12 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 			}
 		} else if(mesgType == Devices.EventType.CLEAR) {
 			SwingUtilities.invokeLater(() -> dispose());
+		}
+	}
+	
+	private void outStream(ShellyAbstractDevice d, int channel, Millisecond timestamp, float val) {
+		if(outStream) {
+			System.out.println("graph_data->" + d.getHostname() + ":" + channel + ":" + currentType.name() + ":" + timestamp.getFirstMillisecond() + ":" + val);
 		}
 	}
 

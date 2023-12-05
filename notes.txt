@@ -211,13 +211,16 @@ https://www.iconbolt.com/
 // pon_wifi_reset (gen1)
 // CoIoT info (cit/d) in "full device info"
 // CoIoT restore
-// todo fw updates per off-line battery
+// fw updates per off-line battery
 // optional captions on toolbar
+// graphs: Temperatures (all)
 
 
 ---
 // TODO
 // optional autoselect on dev conf
+// grafici: tutte le demperatur (addon)
+// grafici: somma valori stesso device
 // multi net ip scan
 // todo? restore eco_mode (opzionale per gen1)
 //todo Gen2 1.0.0 - triphase and monophase profiles (EDIT: to be included in next beta), add option to reverse CT direction of measurement for active power and energy
