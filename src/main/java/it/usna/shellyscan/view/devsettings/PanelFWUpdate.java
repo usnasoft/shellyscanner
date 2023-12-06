@@ -362,11 +362,14 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 		String msg = fwInfo.fwModule.update(stable);
 		if(msg != null) {
 			if(device.getStatus() == Status.OFF_LINE) {
-				// todo verificare non sia già accodato
-				DeferrablesContainer.getInstance(parent.getModel()).add(parent.getModelIndex(i), new DeferrableTask(LABELS.getString("dlgSetFWUpdate"), (def, dev) -> {
-					FirmwareManager fm = dev.getFWManager();
-					return fm.update(stable);
-				}));
+				String taskDescription = LABELS.getString("dlgSetFWUpdate");
+				DeferrablesContainer dc = DeferrablesContainer.getInstance(parent.getModel());
+				if(dc.indexOf(parent.getModelIndex(i), taskDescription) < 0) {
+					dc.add(parent.getModelIndex(i), new DeferrableTask(taskDescription, (def, dev) -> {
+						FirmwareManager fm = dev.getFWManager();
+						return fm.update(stable);
+					}));
+				}
 				return UtilMiscellaneous.getFullName(parent.getLocalDevice(i)) + " - " + LABELS.getString("msgFWUpdateQueue") + "\n";
 			} else {
 				if(LABELS.containsKey(msg)) {
@@ -474,7 +477,7 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 
 					DeviceFirmware fwInfo = devicesFWData.get(localIndex);
 					// status changes to ON_LINE -> maybe reboot after fw update
-					// System.currentTimeMillis() - fwInfo.rebootTime > 2500L && status == ON_LINE -> maybe sampling too slow and missed OFF_LINE (gen2)
+					// System.currentTimeMillis() - fwInfo.rebootTime > 3000L && status == ON_LINE -> maybe sampling too slow and missed OFF_LINE (gen2)
 					// device.getUptime() < fwInfo.uptime ("apply" time) -> && status == ON_LINE -> maybe sampling too slow and missed OFF_LINE (gen1)
 					if(newStatus != fwInfo.status || System.currentTimeMillis() - fwInfo.rebootTime > 3000L || device.getUptime() < fwInfo.uptime) {
 						if(newStatus == Status.ON_LINE) {
@@ -503,7 +506,7 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 			}
 		}
 	}
-} // 346 - 362 - 462 - 476 - 506
+} // 346 - 362 - 462 - 476 - 509
 
 //{"src":"shellyplusi4-a8032ab1fe78","dst":"S_Scanner","method":"NotifyEvent","params":{"ts":1677696108.45,"events":[{"component":"sys", "event":"ota_progress", "msg":"Waiting for data", "progress_percent":99, "ts":1677696108.45}]}}
 //{"src":"shellyplusi4-a8032ab1fe78","dst":"S_Scanner","method":"NotifyEvent","params":{"ts":1677696109.49,"events":[{"component":"sys", "event":"ota_success", "msg":"Update applied, rebooting", "ts":1677696109.49}]}}

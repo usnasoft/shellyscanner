@@ -44,9 +44,27 @@ public class DeferrablesContainer extends UsnaObservable<DeferrableTask.Status, 
 		}
 	}
 	
-	public DeferrableTask getWaitingDefByModelIndex(int modelIdx) {
-		Integer index = devIdx.indexOf(modelIdx);
-		return index != null ? defer.get(index).def : null;
+//	public List<DeferrableTask> getWaitingDefByModelIndex(Integer modelIdx) {
+//		ArrayList<DeferrableTask> res = new ArrayList<>();
+//		synchronized (devIdx) {
+//			for(int i = 0; i < devIdx.size(); i++) {
+//				if(devIdx.get(i).equals(modelIdx)) {
+//					res.add(defer.get(i).def)	;
+//				}
+//			}
+//		}
+//		return res;
+//	}
+	
+	public int indexOf(Integer modelIdx, String description) {
+		synchronized (devIdx) {
+			for(int i = 0; i < devIdx.size(); i++) {
+				if(devIdx.get(i).equals(modelIdx) && defer.get(i).getDescription().equals(description)) {
+					return i;
+				}
+			}
+		}
+		return -1;
 	}
 
 	public void cancel(int index) {
@@ -127,7 +145,7 @@ public class DeferrablesContainer extends UsnaObservable<DeferrableTask.Status, 
 		}
 		
 		public String getRetMsg() {
-			return def.getreturn();
+			return def.getReturn();
 		}
 
 		public String getDeviceName() {
@@ -138,5 +156,5 @@ public class DeferrablesContainer extends UsnaObservable<DeferrableTask.Status, 
 		public String toString() {
 			return time + " - " +  def + " - " + deviceName;
 		}
-	};
+	}
 }
