@@ -208,18 +208,16 @@ https://www.iconbolt.com/
 // device info auto-update on device going to "on line"
 // backup/restore for offline/ghost devices
 // fix restore +H&T
-// pon_wifi_reset (gen1)
+// pon_wifi_reset (gen1) - "power on"
 // CoIoT info (cit/d) in "full device info"
 // CoIoT restore
-// fw updates per off-line battery
+// fw updates per off-line
 // optional captions on toolbar
 // graphs: Temperatures (all)
-
 
 ---
 // TODO
 // optional autoselect on dev conf
-// grafici: tutte le demperatur (addon)
 // grafici: somma valori stesso device
 // multi net ip scan
 // todo? restore eco_mode (opzionale per gen1)

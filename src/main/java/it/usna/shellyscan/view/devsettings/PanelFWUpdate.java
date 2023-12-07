@@ -146,7 +146,7 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 			exeService.schedule(() -> {
 				btnCheck.setEnabled(true);
 				setCursor(Cursor.getDefaultCursor());
-			}, i + 600, TimeUnit.MILLISECONDS);
+			}, i + 1000, TimeUnit.MILLISECONDS);
 		}));
 		btnCheck.setBorder(BorderFactory.createEmptyBorder(4, 7, 4, 7));
 		panel.add(btnCheck);
