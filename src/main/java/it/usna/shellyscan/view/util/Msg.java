@@ -78,8 +78,8 @@ public class Msg {
 	public static void errorMsg(Component owner, String msg) {
 		showMsg(owner, msg, Main.LABELS.getString("errorTitle"), JOptionPane.ERROR_MESSAGE);
 	}
-	
-	public static void errorMsg(final Throwable t) {
+
+	public static void errorMsg(Component owner, final Throwable t) {
 		if(t instanceof IOException) {
 			LOG.debug("Connection error", t);
 		} else {
@@ -89,8 +89,12 @@ public class Msg {
 		if(msg == null || msg.isEmpty()) {
 			msg = t.toString();
 		}
+		errorMsg(owner, msg);
+	}
+	
+	public static void errorMsg(final Throwable t) {
 		final Component win = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusedWindow();
-		errorMsg(win, msg);
+		errorMsg(win, t);
 	}
 	
 	public static void warningMsg(Component owner, String msg) {
@@ -103,7 +107,7 @@ public class Msg {
 		} else if(device.getStatus() == Status.NOT_LOOGGED) {
 			showMsg(owner, Main.LABELS.getString("Status-PROTECTED") + ".", Main.LABELS.getString("errorTitle"), JOptionPane.ERROR_MESSAGE);
 		} else {
-			errorMsg(e);
+			errorMsg(owner, e);
 		}
 	}
 	

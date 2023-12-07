@@ -93,7 +93,7 @@ public class DialogDeferrables extends JFrame implements UsnaEventListener<Defer
 			}
 		});
 
-		setSize(600, 300);
+		setSize(700, 300);
 	}
 
 	@Override
@@ -123,6 +123,9 @@ public class DialogDeferrables extends JFrame implements UsnaEventListener<Defer
 		String status = LABELS.getString("defStatus_" + def.getStatus().name());
 		String retMsg = def.getRetMsg();
 		if(retMsg != null && retMsg.length() > 0) {
+			if(LABELS.containsKey(retMsg)) {
+				retMsg = LABELS.getString(retMsg);
+			}
 			status += " - " + retMsg.replace("\n", "; ");
 		}
 		return new Object[] {

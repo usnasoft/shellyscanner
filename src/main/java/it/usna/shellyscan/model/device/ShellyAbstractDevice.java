@@ -240,8 +240,9 @@ public abstract class ShellyAbstractDevice {
 			out.write(buffer, 0, buffer.length);
 			out.closeEntry();
 			return buffer;
-		} catch (InterruptedException | ExecutionException | TimeoutException e) {
-			throw new IOException(e);
+		} catch (InterruptedException | ExecutionException | TimeoutException | SocketTimeoutException e) {
+			status = Status.OFF_LINE;
+			throw new DeviceOfflineException(e);
 		}
 	}
 	

@@ -59,7 +59,7 @@ public class DeferrablesContainer extends UsnaObservable<DeferrableTask.Status, 
 	public int indexOf(Integer modelIdx, String description) {
 		synchronized (devIdx) {
 			for(int i = 0; i < devIdx.size(); i++) {
-				if(devIdx.get(i).equals(modelIdx) && defer.get(i).getDescription().equals(description)) {
+				if(modelIdx.equals(devIdx.get(i)) && defer.get(i).getDescription().equals(description)) {
 					return i;
 				}
 			}

@@ -3,20 +3,17 @@ package it.usna.shellyscan.view.devsettings;
 import static it.usna.shellyscan.Main.LABELS;
 
 import java.awt.BorderLayout;
-import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.FontMetrics;
-import java.awt.Point;
-import java.awt.Rectangle;
-import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -24,16 +21,11 @@ import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
-import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JTable;
 import javax.swing.SwingUtilities;
-import javax.swing.event.ChangeEvent;
-import javax.swing.table.TableCellEditor;
-import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 
 import org.eclipse.jetty.websocket.api.Session;
@@ -62,17 +54,14 @@ import it.usna.util.UsnaEventListener;
 
 public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventListener<Devices.EventType, Integer> {
 	private static final long serialVersionUID = 1L;
-	private final static int COL_STATUS = 0;
-	private final static int COL_CURRENT = 2;
-	private final static int COL_STABLE = 3;
-	private final static int COL_BETA = 4;
 	private ExTooltipTable table;
 	private UsnaTableModel tModel = new UsnaTableModel("", LABELS.getString("col_device"), LABELS.getString("dlgSetColCurrentV"), LABELS.getString("dlgSetColLastV"), LABELS.getString("dlgSetColBetaV"));
 	private List<DeviceFirmware> devicesFWData;
 
 	private JLabel lblCount = new JLabel();
+	private JButton btnCheck;
 
-	private ExecutorService exeService = Executors.newFixedThreadPool(35);
+	private ScheduledExecutorService exeService = Executors.newScheduledThreadPool(35);
 	private List<Future<Void>> retriveFutures;
 
 	private final static Logger LOG = LoggerFactory.getLogger(PanelFWUpdate.class);
@@ -80,74 +69,8 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 	public PanelFWUpdate(DialogDeviceSettings parent) {
 		super(parent);
 		setLayout(new BorderLayout(0, 0));
-
-		table = new ExTooltipTable(tModel) {
-			private static final long serialVersionUID = 1L;
-			{
-				getTableHeader().setReorderingAllowed(false);
-				((JCheckBox) getDefaultRenderer(Boolean.class)).setOpaque(true);
-				((JCheckBox) getDefaultRenderer(Boolean.class)).setHorizontalAlignment(JCheckBox.LEFT);
-				TableCellRenderer fwRendered = new FWCellRendered();
-				getColumnModel().getColumn(COL_STABLE).setCellRenderer(fwRendered);
-				getColumnModel().getColumn(COL_BETA).setCellRenderer(fwRendered);
-				columnModel.getColumn(COL_STATUS).setMaxWidth(DevicesTable.ONLINE_BULLET.getIconWidth() + 4);
-			}
-
-			@Override
-			public boolean isCellEditable(final int row, final int column) {
-				return getValueAt(row, column) instanceof Boolean;
-			}
-
-			@Override
-			public Component prepareEditor(TableCellEditor editor, int row, int column) {
-				JCheckBox comp = (JCheckBox)super.prepareEditor(editor, row, column);
-				FirmwareManager fw = devicesFWData.get(table.convertRowIndexToModel(row)).fwModule;
-				comp.setText(FirmwareManager.getShortVersion(column == COL_STABLE ? fw.newStable() : fw.newBeta()));
-				comp.setBackground(table.getSelectionBackground());
-				comp.setForeground(table.getSelectionForeground());
-				comp.setHorizontalAlignment(JLabel.LEFT);
-				return comp;
-			}
-
-			@Override
-			public void editingStopped(ChangeEvent e) {
-				final int r = getEditingRow();
-				final int c = getEditingColumn();
-				super.editingStopped(e);
-				if(r >= 0 && c >= 0 && getValueAt(r, c) == Boolean.TRUE) {
-					final int toOff = (c == COL_STABLE) ? COL_BETA : COL_STABLE;
-					if(getValueAt(r, toOff) instanceof Boolean) {
-						setValueAt(Boolean.FALSE, r, toOff);
-					}
-				}
-				countSelection();
-			}
-
-			@Override
-			protected String cellTooltipValue(Object value, boolean cellTooSmall, int row, int column) {
-				FirmwareManager fw = devicesFWData.get(table.convertRowIndexToModel(row)).fwModule;
-				if(column == COL_CURRENT && fw != null) {
-					return fw.current();
-				} else if(column == COL_STABLE && fw != null) {
-					return fw.newStable();
-				} else if(column == COL_BETA && fw != null) {
-					return fw.newBeta();
-				}
-				return super.cellTooltipValue(value, cellTooSmall, row, column);
-			}
-
-			@Override
-			public Point getToolTipLocation(final MouseEvent evt) {
-				final int column = columnAtPoint(evt.getPoint());
-				if(column == COL_STABLE || column == COL_BETA) {
-					final int row = rowAtPoint(evt.getPoint());
-					final Rectangle cellRec = getCellRect(row, column, true);
-					return new Point(cellRec.x + 16, cellRec.y); // +16 -> do not overlap to checkbox
-				} else {
-					return super.getToolTipLocation(evt);
-				}
-			}
-		};
+		
+		table = new FWUpdateTable(tModel, this);
 
 		JScrollPane scrollPane = new JScrollPane();
 		scrollPane.setViewportView(table);
@@ -161,11 +84,11 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 
 		JButton btnUnselectAll = new JButton(new UsnaAction("btn_unselectAll", event -> {
 			for(int i= 0; i < tModel.getRowCount(); i++) {
-				if(tModel.getValueAt(i, COL_STABLE) instanceof Boolean) {
-					tModel.setValueAt(Boolean.FALSE, i, COL_STABLE);
+				if(tModel.getValueAt(i, FWUpdateTable.COL_STABLE) instanceof Boolean) {
+					tModel.setValueAt(Boolean.FALSE, i, FWUpdateTable.COL_STABLE);
 				}
-				if(tModel.getValueAt(i, COL_BETA) instanceof Boolean) {
-					tModel.setValueAt(Boolean.FALSE, i, COL_BETA);
+				if(tModel.getValueAt(i, FWUpdateTable.COL_BETA) instanceof Boolean) {
+					tModel.setValueAt(Boolean.FALSE, i, FWUpdateTable.COL_BETA);
 				}
 			}
 			countSelection();
@@ -175,10 +98,10 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 
 		JButton btnSelectStable = new JButton(new UsnaAction("btn_selectAllSta", event -> {
 			for(int i= 0; i < tModel.getRowCount(); i++) {
-				if(tModel.getValueAt(i, COL_STABLE) instanceof Boolean) {
-					tModel.setValueAt(Boolean.TRUE, i, COL_STABLE);
-					if(tModel.getValueAt(i, COL_BETA) instanceof Boolean) {
-						tModel.setValueAt(Boolean.FALSE, i, COL_BETA);
+				if(tModel.getValueAt(i, FWUpdateTable.COL_STABLE) instanceof Boolean) {
+					tModel.setValueAt(Boolean.TRUE, i, FWUpdateTable.COL_STABLE);
+					if(tModel.getValueAt(i, FWUpdateTable.COL_BETA) instanceof Boolean) {
+						tModel.setValueAt(Boolean.FALSE, i, FWUpdateTable.COL_BETA);
 					}
 				}
 			}
@@ -189,10 +112,10 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 
 		JButton btnSelectBeta = new JButton(new UsnaAction("btn_selectAllbeta", event -> {
 			for(int i= 0; i < tModel.getRowCount(); i++) {
-				if(tModel.getValueAt(i, COL_BETA) instanceof Boolean) {
-					tModel.setValueAt(Boolean.TRUE, i, COL_BETA);
-					if(tModel.getValueAt(i, COL_STABLE) instanceof Boolean) {
-						tModel.setValueAt(Boolean.FALSE, i, COL_STABLE);
+				if(tModel.getValueAt(i, FWUpdateTable.COL_BETA) instanceof Boolean) {
+					tModel.setValueAt(Boolean.TRUE, i, FWUpdateTable.COL_BETA);
+					if(tModel.getValueAt(i, FWUpdateTable.COL_STABLE) instanceof Boolean) {
+						tModel.setValueAt(Boolean.FALSE, i, FWUpdateTable.COL_STABLE);
 					}
 				}
 			}
@@ -205,30 +128,34 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 		panel.add(lblCount);
 		panel.add(Box.createHorizontalGlue());
 
-		JButton btnCheck = new JButton();
-		btnCheck.setAction(new UsnaAction("btn_check", event -> {
+		btnCheck = new JButton(new UsnaAction("btn_check", event -> {
+			setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 			btnCheck.setEnabled(false);
-			exeService.execute(() -> {
-				setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-				for(int i = 0; i < parent.getLocalSize(); i++) {
-					try {
-						tModel.setValueAt(DevicesTable.UPDATING_BULLET, i, COL_STATUS);
-					} catch(Exception e) {/* while fill() */}
+			int i;
+			for(i = 0; i < devicesFWData.size(); i++) {
+				FirmwareManager fwModule = devicesFWData.get(i).fwModule;
+				if(fwModule != null && tModel.getValueAt(i, FWUpdateTable.COL_STATUS) != DevicesTable.UPDATING_BULLET) {
+					tModel.setValueAt(DevicesTable.UPDATING_BULLET, i, FWUpdateTable.COL_STATUS);
+					final int row = i;
+					exeService.schedule(() -> {
+						fwModule.chech();
+						tModel.setRow(row, createTableRow(row));
+					}, i , TimeUnit.MILLISECONDS);
 				}
-				try {
-					devicesFWData.parallelStream().forEach(dd -> dd.fwModule.chech()); // todo verificare parallelStream
-					fillTable();
-				} catch(Exception e) {/* while fill() */
-				} finally {
-					btnCheck.setEnabled(true);
-					setCursor(Cursor.getDefaultCursor());
-				}
-			});
+			}
+			exeService.schedule(() -> {
+				btnCheck.setEnabled(true);
+				setCursor(Cursor.getDefaultCursor());
+			}, i + 600, TimeUnit.MILLISECONDS);
 		}));
 		btnCheck.setBorder(BorderFactory.createEmptyBorder(4, 7, 4, 7));
 		panel.add(btnCheck);
 
 		panel.add(Box.createHorizontalStrut(2));
+	}
+	
+	FirmwareManager getFirmwareManager(int index) {
+		return devicesFWData.get(index).fwModule;
 	}
 
 	private void fillTable() {
@@ -262,6 +189,7 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 	@Override
 	public String showing() throws InterruptedException {
 		lblCount.setText("");
+		btnCheck.setEnabled(false);
 		final int size = parent.getLocalSize();
 		devicesFWData = Stream.generate(DeviceFirmware::new).limit(size).collect(Collectors.toList());
 		tModel.clear();
@@ -276,10 +204,11 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 
 			table.columnsWidthAdapt();
 			final FontMetrics fm = getGraphics().getFontMetrics();
-			TableColumn stableColumn = table.getColumnModel().getColumn(COL_STABLE);
+			TableColumn stableColumn = table.getColumnModel().getColumn(FWUpdateTable.COL_STABLE);
 			stableColumn.setPreferredWidth(Math.max(SwingUtilities.computeStringWidth(fm, "0.12.0"), stableColumn.getPreferredWidth()));
-			TableColumn betaColumn = table.getColumnModel().getColumn(COL_BETA);
+			TableColumn betaColumn = table.getColumnModel().getColumn(FWUpdateTable.COL_BETA);
 			betaColumn.setPreferredWidth(Math.max(SwingUtilities.computeStringWidth(fm, "0.12.0-beta1"), betaColumn.getPreferredWidth()));
+			btnCheck.setEnabled(true);
 			return null;
 		} catch (RuntimeException e) {
 			LOG.warn("showing", e);
@@ -317,16 +246,16 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 
 	private void initDevice(final int index) {
 		final ShellyAbstractDevice d = parent.getLocalDevice(index);
-		DeviceFirmware fwData = devicesFWData.get(index);
+		DeviceFirmware fwInfo = devicesFWData.get(index);
 		FirmwareManager fm = d.getFWManager();
-		fwData.fwModule = fm;
-		fwData.status = d.getStatus();
+		fwInfo.fwModule = fm;
+		fwInfo.status = d.getStatus();
 		if(fm.upadating()) {
-			fwData.uptime = d.getUptime();
+			fwInfo.uptime = d.getUptime();
 		}
 		if(d instanceof AbstractG2Device) {
 			try {
-				fwData.wsSession = wsEventListener(index, (AbstractG2Device)d);
+				fwInfo.wsSession = wsEventListener(index, (AbstractG2Device)d);
 			} catch (IOException | InterruptedException | ExecutionException e) {
 				LOG.debug("PanelFWUpdate ws: {}", d, e);
 			}
@@ -341,8 +270,8 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 				JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION) {
 			String res = "";
 			for(int i = 0; i < parent.getLocalSize(); i++) {
-				Object update = tModel.getValueAt(i, COL_STABLE);
-				Object beta = tModel.getValueAt(i, COL_BETA);
+				Object update = tModel.getValueAt(i, FWUpdateTable.COL_STABLE);
+				Object beta = tModel.getValueAt(i, FWUpdateTable.COL_BETA);
 				if(update instanceof Boolean && ((Boolean)update) == Boolean.TRUE) {
 					res += updateDeviceFW(i, true);
 				} else if(beta instanceof Boolean && ((Boolean)beta) == Boolean.TRUE) {
@@ -377,47 +306,27 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 				}
 				return UtilMiscellaneous.getFullName(parent.getLocalDevice(i)) + " - " + LABELS.getString("labelError") + ": " + msg + "\n";
 			}
-		}
+		} else
+			try {
+				if(fwInfo.wsSession != null && fwInfo.wsSession.get().isOpen() == false) {
+					fwInfo.wsSession = wsEventListener(i, (AbstractG2Device)device);
+					System.out.println("xxxxxx");
+				}
+			} catch (InterruptedException | ExecutionException | IOException e) {}
 		return "";
 	}
 
-	private int countSelection() {
+	int countSelection() {
 		int countS = 0;
 		int countB = 0;
 		for(int i = 0; i < tModel.getRowCount(); i++) {
-			Object update = tModel.getValueAt(i, COL_STABLE);
-			Object beta = tModel.getValueAt(i, COL_BETA);
-			if(update == Boolean.TRUE) {
-				countS++;
-			}
-			if(beta == Boolean.TRUE) {
-				countB++;
-			}
+			Object update = tModel.getValueAt(i, FWUpdateTable.COL_STABLE);
+			Object beta = tModel.getValueAt(i, FWUpdateTable.COL_BETA);
+			if(update == Boolean.TRUE) countS++;
+			if(beta == Boolean.TRUE) countB++;
 		}
 		lblCount.setText(String.format(LABELS.getString("lbl_update_count"), countS, countB));
 		return countS + countB;
-	}
-
-	private class FWCellRendered implements TableCellRenderer {
-		@Override
-		public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-			if(value == null || value instanceof Boolean) {
-				JCheckBox c = (JCheckBox)table.getDefaultRenderer(Boolean.class).getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-				if(value == null) {
-					c.setEnabled(false);
-					c.setText("");
-				} else {
-					c.setEnabled(true);
-					FirmwareManager fw = devicesFWData.get(table.convertRowIndexToModel(row)).fwModule;
-					if(fw != null) {
-						c.setText(FirmwareManager.getShortVersion(column == COL_STABLE ? fw.newStable() : fw.newBeta()));
-					}
-				}
-				return c;
-			} else {
-				return table.getDefaultRenderer(String.class).getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-			}
-		}
 	}
 
 	private Future<Session> wsEventListener(int index, AbstractG2Device d) throws IOException, InterruptedException, ExecutionException {
@@ -430,20 +339,20 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 						if(eventType.equals("ota_progress")) { // dowloading
 							((FirmwareManagerG2)devicesFWData.get(index).fwModule).upadating(true);
 							int progress = event.path("progress_percent").asInt();
-							tModel.setValueAt(DevicesTable.UPDATING_BULLET, index, COL_STATUS);
-							tModel.setValueAt(String.format(Main.LABELS.getString("lbl_downloading"), progress), index, COL_STABLE);
-							tModel.setValueAt(null, index, COL_BETA);
+							tModel.setValueAt(DevicesTable.UPDATING_BULLET, index, FWUpdateTable.COL_STATUS);
+							tModel.setValueAt(String.format(Main.LABELS.getString("lbl_downloading"), progress), index, FWUpdateTable.COL_STABLE);
+							tModel.setValueAt(null, index, FWUpdateTable.COL_BETA);
 							break;
 						} else if(/*eventType.equals("ota_success") ||*/ eventType.equals("scheduled_restart")) { // rebooting
-							tModel.setValueAt(DevicesTable.OFFLINE_BULLET, index, COL_STATUS);
-							tModel.setValueAt(LABELS.getString("lbl_rebooting"), index, COL_STABLE);
-							tModel.setValueAt(null, index, COL_BETA);
+							tModel.setValueAt(DevicesTable.OFFLINE_BULLET, index, FWUpdateTable.COL_STATUS);
+							tModel.setValueAt(LABELS.getString("lbl_rebooting"), index, FWUpdateTable.COL_STABLE);
+							tModel.setValueAt(null, index, FWUpdateTable.COL_BETA);
 							devicesFWData.get(index).rebootTime = System.currentTimeMillis();
 							break;
 						}
 					}
 				} catch(Exception e) {
-					LOG.debug("onMessage" + msg, e);
+					LOG.debug("onMessage {}", msg, e);
 				}
 			}
 		});
@@ -483,7 +392,7 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 						if(newStatus == Status.ON_LINE) {
 							exeService.submit(() -> {
 								try {
-									tModel.setValueAt(DevicesTable.ONLINE_BULLET, localIndex, COL_STATUS);
+									tModel.setValueAt(DevicesTable.ONLINE_BULLET, localIndex, FWUpdateTable.COL_STATUS);
 									Thread.sleep(Devices.MULTI_QUERY_DELAY);
 									fwInfo.fwModule = device.getFWManager();
 									tModel.setRow(localIndex, createTableRow(localIndex));
@@ -498,7 +407,7 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 								}
 							});
 						} else if(fwInfo.fwModule.upadating() == false) {
-							tModel.setValueAt(DevicesTable.getStatusIcon(device), localIndex, COL_STATUS);
+							tModel.setValueAt(DevicesTable.getStatusIcon(device), localIndex, FWUpdateTable.COL_STATUS);
 						}
 						fwInfo.status = newStatus;
 					}
@@ -506,7 +415,7 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 			}
 		}
 	}
-} // 346 - 362 - 462 - 476 - 509
+} // 346 - 362 - 462 - 476 - 509 - 418
 
 //{"src":"shellyplusi4-a8032ab1fe78","dst":"S_Scanner","method":"NotifyEvent","params":{"ts":1677696108.45,"events":[{"component":"sys", "event":"ota_progress", "msg":"Waiting for data", "progress_percent":99, "ts":1677696108.45}]}}
 //{"src":"shellyplusi4-a8032ab1fe78","dst":"S_Scanner","method":"NotifyEvent","params":{"ts":1677696109.49,"events":[{"component":"sys", "event":"ota_success", "msg":"Update applied, rebooting", "ts":1677696109.49}]}}
