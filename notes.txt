@@ -214,13 +214,12 @@ https://www.iconbolt.com/
 // fw updates per off-line
 // optional captions on toolbar
 // graphs: Temperatures (all)
+// graphs: select one from series
 
 ---
 // TODO
-// optional autoselect on dev conf
 // grafici: somma valori stesso device
 // multi net ip scan
-// todo? restore eco_mode (opzionale per gen1)
 //todo Gen2 1.0.0 - triphase and monophase profiles (EDIT: to be included in next beta), add option to reverse CT direction of measurement for active power and energy
 //todo Gen2 1.0.0 - Input invert and range_map configuration properties for analog input type
 //todo Gen2 1.0.0 - Authentication in HTTP client, supporting basic and digest schemes. This enables the HTTP service and webhooks to access password-protected URLs.
