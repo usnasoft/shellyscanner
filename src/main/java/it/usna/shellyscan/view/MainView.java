@@ -304,6 +304,9 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 			dialogDeferrables.setLocationRelativeTo(this);
 		});
 		JButton btnshowDeferrables = new JButton(showDeferrables);
+//		btnshowDeferrables.setText("2");
+//		btnshowDeferrables.setFont(btnshowDeferrables.getFont().deriveFont(Font.BOLD/*, 9f*/));
+//		btnshowDeferrables.setBorder(BorderFactory.createEmptyBorder(3, 10, 3, 10));
 		btnshowDeferrables.setBorder(BorderFactory.createEmptyBorder(8, 10, 7, 10));
 		statusLeftPanel.add(btnshowDeferrables);
 		statusPanel.add(statusLeftPanel, BorderLayout.WEST);
@@ -368,7 +371,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		statusFilterPanel.add(btnSelectCombo);
 
 		UsnaPopupMenu selectionPopup = new UsnaPopupMenu(selectAll, selectOnLine,
-				new SelectionAction(devicesTable, "labelSelectOnLineReboot", null, /*"/images/bullet_yes_reboot.png"*/null, i -> model.get(i).getStatus() == Status.ON_LINE && model.get(i).rebootRequired()),
+				new SelectionAction(devicesTable, "labelSelectOnLineReboot", null, null, i -> model.get(i).getStatus() == Status.ON_LINE && model.get(i).rebootRequired()),
 				new SelectionAction(devicesTable, "labelSelectG1", null, null, i -> model.get(i) instanceof AbstractG1Device),
 				new SelectionAction(devicesTable, "labelSelectG2", null, null, i -> model.get(i) instanceof AbstractG2Device),
 				new SelectionAction(devicesTable, "labelSelectGhosts", null, null, i -> model.get(i) instanceof GhostDevice)
@@ -379,7 +382,6 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		statusPanel.add(statusFilterPanel, BorderLayout.EAST);
 		statusPanel.setBackground(Main.STATUS_LINE);
 		getContentPane().add(statusPanel, BorderLayout.SOUTH);
-
 		
 		// Table
 		JScrollPane scrollPane = new JScrollPane();

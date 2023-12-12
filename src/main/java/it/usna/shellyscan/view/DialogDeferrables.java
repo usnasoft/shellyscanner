@@ -112,7 +112,7 @@ public class DialogDeferrables extends JFrame implements UsnaEventListener<Defer
 		SwingUtilities.invokeLater(() -> {
 			setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 			tModel.clear();
-			for(int i = 0; i < deferrables.size(); i++) {
+			for(int i = 0; i < deferrables.count(); i++) {
 				tModel.addRow(generateRow(deferrables.get(i)));
 			}
 			setCursor(Cursor.getDefaultCursor());
@@ -137,7 +137,7 @@ public class DialogDeferrables extends JFrame implements UsnaEventListener<Defer
 
 	@Override
 	public void update(Status mesgType, Integer msgBody) {
-		if(mesgType == Status.WAITING) {
+		if(mesgType == Status.WAITING) { // added
 			tModel.addRow(generateRow(deferrables.get(msgBody)));
 		} else {
 			tModel.setRow(msgBody, generateRow(deferrables.get(msgBody)));

@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import it.usna.shellyscan.controller.DeferrableTask.Status;
+import it.usna.shellyscan.controller.DeferrableTask.Task;
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.Devices.EventType;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
@@ -34,9 +35,9 @@ public class DeferrablesContainer extends UsnaObservable<DeferrableTask.Status, 
 		this.model = model;
 	};
 
-	public void add(int modelIdx, DeferrableTask def) {
+	public void add(int modelIdx, String decription,  Task task) {
 		synchronized (devIdx) {
-			DeferrableRecord newDef = new DeferrableRecord(def, UtilMiscellaneous.getDescName(model.get(modelIdx)), LocalDateTime.now());
+			DeferrableRecord newDef = new DeferrableRecord(decription, task, UtilMiscellaneous.getDescName(model.get(modelIdx)), LocalDateTime.now());
 			devIdx.add(modelIdx);
 			defer.add(newDef);
 			fireEvent(Status.WAITING, devIdx.size() - 1);
@@ -108,8 +109,14 @@ public class DeferrablesContainer extends UsnaObservable<DeferrableTask.Status, 
 		}
 	}
 	
-	public int size() {
+	public int count() {
 		return defer.size();
+	}
+	
+	public int countWaiting() {
+		synchronized (devIdx) {
+			return (int)defer.stream().filter(def -> def.getStatus() == Status.WAITING).count();
+		}
 	}
 	
 	public DeferrableRecord get(int index) {
@@ -126,8 +133,8 @@ public class DeferrablesContainer extends UsnaObservable<DeferrableTask.Status, 
 		private final LocalDateTime time;
 		private String deviceName;
 
-		private DeferrableRecord(DeferrableTask def, String deviceName, LocalDateTime time) {
-			this.def = def;
+		private DeferrableRecord(String decription, Task task, String deviceName, LocalDateTime time) {
+			this.def = new DeferrableTask(decription, task);
 			this.deviceName = deviceName;
 			this.time = time;
 		}

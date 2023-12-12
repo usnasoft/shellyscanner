@@ -35,7 +35,6 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import it.usna.shellyscan.Main;
-import it.usna.shellyscan.controller.DeferrableTask;
 import it.usna.shellyscan.controller.DeferrablesContainer;
 import it.usna.shellyscan.controller.UsnaAction;
 import it.usna.shellyscan.model.Devices;
@@ -295,10 +294,10 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 				String taskDescription = LABELS.getString("dlgSetFWUpdate");
 				DeferrablesContainer dc = DeferrablesContainer.getInstance(parent.getModel());
 				if(dc.indexOf(parent.getModelIndex(i), taskDescription) < 0) {
-					dc.add(parent.getModelIndex(i), new DeferrableTask(taskDescription, (def, dev) -> {
+					dc.add(parent.getModelIndex(i), taskDescription, (def, dev) -> {
 						FirmwareManager fm = dev.getFWManager();
 						return fm.update(stable);
-					}));
+					});
 				}
 				return UtilMiscellaneous.getFullName(parent.getLocalDevice(i)) + " - " + LABELS.getString("msgFWUpdateQueue") + "\n";
 			} else {

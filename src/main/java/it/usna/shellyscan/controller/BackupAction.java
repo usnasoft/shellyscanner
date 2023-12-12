@@ -58,10 +58,10 @@ public class BackupAction extends UsnaAction {
 								String taskDescription = LABELS.getString("action_back_tooltip");
 								DeferrablesContainer dc = DeferrablesContainer.getInstance(model);
 								if(dc.indexOf(modelRow, taskDescription) < 0) {
-									dc.add(modelRow, new DeferrableTask(taskDescription, (def, dev) -> {
+									dc.add(modelRow, taskDescription, (def, dev) -> {
 										dev.backup(outFile);
 										return null;
-									}));
+									});
 								}
 								res += String.format(LABELS.getString("dlgSetMultiMsgQueue"), hostName) + "<br>";
 							} else {

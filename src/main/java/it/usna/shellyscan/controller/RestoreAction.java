@@ -170,7 +170,7 @@ public class RestoreAction extends UsnaSelectedAction {
 							String taskDescription = LABELS.getString("action_restore_tooltip");
 							DeferrablesContainer dc = DeferrablesContainer.getInstance(model);
 							if(dc.indexOf(modelRow, taskDescription) < 0) {
-								dc.add(modelRow, new DeferrableTask(taskDescription, (def, dev) -> {
+								dc.add(modelRow, taskDescription, (def, dev) -> {
 									final String restoreError = erroreMsg(dev.restore(backupJsons, resData));
 									if(restoreError.length() > 0) {
 										def.setStatus(DeferrableTask.Status.FAIL);
@@ -185,7 +185,7 @@ public class RestoreAction extends UsnaSelectedAction {
 										}
 									} catch(Exception e) {}
 									return restoreError;
-								}));
+								});
 							}
 						} else {
 							LOG.error("Restore error {} {}", device, ret);
