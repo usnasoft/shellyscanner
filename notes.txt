@@ -215,10 +215,13 @@ https://www.iconbolt.com/
 // optional captions on toolbar
 // graphs: Temperatures (all)
 // graphs: select one from series
+// graphs: sum W
+
+colori bottone GUI deferred - numero waiting
+graphs: in pausa consentire scorrimento
 
 ---
 // TODO
-// grafici: somma valori stesso device
 // multi net ip scan
 //todo Gen2 1.0.0 - triphase and monophase profiles (EDIT: to be included in next beta), add option to reverse CT direction of measurement for active power and energy
 //todo Gen2 1.0.0 - Input invert and range_map configuration properties for analog input type

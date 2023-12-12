@@ -172,7 +172,7 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 
 	private Object[] createTableRow(int index) {
 		ShellyAbstractDevice d = parent.getLocalDevice(index);
-		FirmwareManager fw = devicesFWData.get(index).fwModule;
+		FirmwareManager fw = getFirmwareManager(index);
 		if(fw != null) {
 			if(fw.upadating()) {
 				return new Object[] {DevicesTable.UPDATING_BULLET, UtilMiscellaneous.getExtendedHostName(d), FirmwareManager.getShortVersion(fw.current()), LABELS.getString("labelUpdating"), null}; // DevicesTable.UPDATING_BULLET
@@ -187,7 +187,7 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 	}
 
 	@Override
-	public String showing() throws InterruptedException {
+	String showing() throws InterruptedException {
 		lblCount.setText("");
 		btnCheck.setEnabled(false);
 		final int size = parent.getLocalSize();
@@ -216,7 +216,8 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 		}
 	}
 
-	public void hiding() {
+	@Override
+	void hiding() {
 		parent.getModel().removeListener(this);
 		if(retriveFutures != null) {
 			retriveFutures.forEach(f -> f.cancel(true));
@@ -263,7 +264,7 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 	}
 
 	@Override
-	public String apply() {
+	String apply() {
 		int count = countSelection();
 		if(count > 0 && JOptionPane.showConfirmDialog(this,
 				String.format(LABELS.getString("dlgSetConfirmUpdate"), count), LABELS.getString("dlgSetFWUpdate"),
@@ -337,7 +338,7 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 					for(JsonNode event: msg.path("params").path("events")) {
 						String eventType = event.path("event").asText();
 						if(eventType.equals("ota_progress")) { // dowloading
-							((FirmwareManagerG2)devicesFWData.get(index).fwModule).upadating(true);
+							((FirmwareManagerG2)getFirmwareManager(index)).upadating(true);
 							int progress = event.path("progress_percent").asInt();
 							tModel.setValueAt(DevicesTable.UPDATING_BULLET, index, FWUpdateTable.COL_STATUS);
 							tModel.setValueAt(String.format(Main.LABELS.getString("lbl_downloading"), progress), index, FWUpdateTable.COL_STABLE);
@@ -375,7 +376,7 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 				ShellyAbstractDevice.Status newStatus = device.getStatus();
 
 				if(newStatus == ShellyAbstractDevice.Status.ON_LINE && devicesFWData.get(localIndex).fwModule == null) {
-					// awakened
+					// Awakened
 
 					retriveFutures.set(localIndex, exeService.submit(() -> {
 						initDevice(localIndex);

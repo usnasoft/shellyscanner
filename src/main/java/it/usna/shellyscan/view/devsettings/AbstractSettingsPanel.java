@@ -10,9 +10,9 @@ public abstract class AbstractSettingsPanel extends JPanel {
 		this.parent = parent;
 	}
 	
-	public abstract String showing() throws InterruptedException;
+	abstract String showing() throws InterruptedException;
 	
-	public void hiding() {}
+	void hiding() {}
 
-	public abstract String apply();
+	abstract String apply();
 }
