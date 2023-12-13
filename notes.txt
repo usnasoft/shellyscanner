@@ -222,6 +222,7 @@ graphs: in pausa consentire scorrimento
 
 ---
 // TODO
+// inclusione massiva
 // multi net ip scan
 //todo Gen2 1.0.0 - triphase and monophase profiles (EDIT: to be included in next beta), add option to reverse CT direction of measurement for active power and energy
 //todo Gen2 1.0.0 - Input invert and range_map configuration properties for analog input type

@@ -100,7 +100,7 @@
 			<groupId>org.jmdns</groupId>
 			<artifactId>jmdns</artifactId>
 			<!-- version>3.5.8</version -->
-			<version>3.5.9-SNAPSHOT</version>
+			<version>3.5.9</version>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
@@ -111,12 +111,12 @@
 		<dependency>
 			<groupId>org.eclipse.jetty</groupId>
 			<artifactId>jetty-client</artifactId>
-			<version>12.0.3</version>
+			<version>12.0.4</version>
 		</dependency>
 		<dependency>
 			<groupId>org.eclipse.jetty.websocket</groupId>
 			<artifactId>jetty-websocket-jetty-client</artifactId>
-			<version>12.0.3</version>
+			<version>12.0.4</version>
 		</dependency>
 		<dependency>
 			<groupId>org.jfree</groupId>
