@@ -60,6 +60,8 @@ import org.slf4j.LoggerFactory;
 import it.usna.mvc.singlewindow.MainWindow;
 import it.usna.shellyscan.Main;
 import it.usna.shellyscan.controller.BackupAction;
+import it.usna.shellyscan.controller.DeferrableTask;
+import it.usna.shellyscan.controller.DeferrablesContainer;
 import it.usna.shellyscan.controller.RestoreAction;
 import it.usna.shellyscan.controller.SelectionAction;
 import it.usna.shellyscan.controller.UsnaAction;
@@ -85,6 +87,9 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 	private static final long serialVersionUID = 1L;
 	public final static int SHORTCUT_KEY = Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx();
 	private final static Logger LOG = LoggerFactory.getLogger(MainWindow.class);
+	private final static ImageIcon DEFERRED_ICON = new ImageIcon(MainView.class.getResource("/images/deferred_list.png"));
+	private final static ImageIcon DEFERRED_ICON_FAIL = new ImageIcon(MainView.class.getResource("/images/deferred_list_fail.png"));
+	private final static ImageIcon DEFERRED_ICON_OK = new ImageIcon(MainView.class.getResource("/images/deferred_list_ok.png"));
 	private ListSelectionListener tableSelectionListener;
 //	private boolean browserSupported = Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE);
 
@@ -93,7 +98,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 	private boolean statusLineReserved = false;
 	private JTextField textFieldFilter = new JTextField();
 	private Devices model;
-	private UsnaTableModel tabModel = new UsnaTableModel(
+	private final UsnaTableModel tabModel = new UsnaTableModel(
 			"",
 			LABELS.getString("col_type"),
 			LABELS.getString("col_device"),
@@ -110,7 +115,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 			LABELS.getString("col_debug"),
 			LABELS.getString("col_source"),
 			LABELS.getString("col_relay"));
-	private DevicesTable devicesTable = new DevicesTable(tabModel);
+	private final DevicesTable devicesTable = new DevicesTable(tabModel);
 	
 	private JToggleButton details;
 	private JToolBar toolBar = new JToolBar();
@@ -138,7 +143,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 				model.rescan(appProp.getBoolProperty(DialogAppSettings.PROP_USE_ARCHIVE, true));
 				Thread.sleep(500); // too many call disturb some devices
 			} catch (IOException e1) {
-				Msg.errorMsg(e1);
+				Msg.errorMsg(this, e1);
 			} catch (InterruptedException e1) {
 			} finally {
 				reserveStatusLine(false);
@@ -148,20 +153,22 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 	});
 
 	private Action refreshAction = new UsnaAction(this, "action_refresh_name", "action_refresh_tooltip", null, "/images/Refresh.png", e -> {
-		setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-		setEnabled(false);
-		devicesTable.stopCellEditing();
-		for(int i = 0; i < tabModel.getRowCount(); i++) {
-			if(model.get(i) instanceof GhostDevice == false) {
-				tabModel.setValueAt(DevicesTable.UPDATING_BULLET, i, DevicesTable.COL_STATUS_IDX);
-				model.refresh(i, false);
+		SwingUtilities.invokeLater(() -> {
+			setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+			setEnabled(false);
+			devicesTable.stopCellEditing();
+			for(int i = 0; i < tabModel.getRowCount(); i++) {
+				if(model.get(i) instanceof GhostDevice == false) {
+					tabModel.setValueAt(DevicesTable.UPDATING_BULLET, i, DevicesTable.COL_STATUS_IDX);
+					model.refresh(i, false);
+				}
 			}
-		}
-		 // too many call disturb some devices expecially gen1
-		try { Thread.sleep(250); } catch (InterruptedException e1) {}
-		devicesTable.resetRowsComputedHeight();
-		setEnabled(true);
-		setCursor(Cursor.getDefaultCursor());
+			// too many call disturb some devices expecially gen1
+			try { Thread.sleep(250); } catch (InterruptedException e1) {}
+			devicesTable.resetRowsComputedHeight();
+			setEnabled(true);
+			setCursor(Cursor.getDefaultCursor());
+		});
 	});
 	
 	private Action rebootAction = new UsnaAction(this, "action_reboot_name", "action_reboot_tooltip", null, "/images/nuke.png", e -> {
@@ -191,7 +198,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		try {
 			Desktop.getDesktop().browse(new URI("http://" + InetAddressAndPort.toString(model.get(i))));
 		} catch (IOException | URISyntaxException | UnsupportedOperationException e) {
-			Msg.errorMsg(e);
+			Msg.errorMsg(this, e);
 		}
 	});
 	
@@ -239,7 +246,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 			devicesTable.clearSelection();
 			devicesTable.print(JTable.PrintMode.FIT_WIDTH);
 		} catch (java.awt.print.PrinterException ex) {
-			Msg.errorMsg(ex);
+			Msg.errorMsg(this, ex);
 		}
 	});
 	
@@ -252,7 +259,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 				devicesTable.csvExport(writer, appProp.getProperty(DialogAppSettings.PROP_CSV_SEPARATOR, DialogAppSettings.PROP_CSV_SEPARATOR_DEFAULT));
 				JOptionPane.showMessageDialog(MainView.this, LABELS.getString("msgFileSaved"), Main.APP_NAME, JOptionPane.INFORMATION_MESSAGE);
 			} catch (IOException ex) {
-				Msg.errorMsg(ex);
+				Msg.errorMsg(this, ex);
 			}
 			appProp.setProperty("LAST_PATH", fc.getCurrentDirectory().getPath());
 		}
@@ -268,11 +275,6 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		devicesTable.clearSelection();
 		displayStatus();
 	});
-
-//	private Action copyHostAction = new UsnaSelectedAction(this, devicesTable, "action_copy_hostname", null, "/images/Clipboard_Copy_16.png", null, i -> {
-//		StringSelection ss = new StringSelection(model.get(i).getHostname());
-//		Toolkit.getDefaultToolkit().getSystemClipboard().setContents(ss, ss);
-//	});
 
 	public MainView(final Devices model, final AppProperties appProp) {
 		this.model = model;
@@ -295,19 +297,18 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		
 		JPanel statusLeftPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 2, 0));
 		statusLeftPanel.setOpaque(false);
-		
-		Action showDeferrables = new UsnaAction(this, "labelShowDeferrables", "/images/deferred_list.png", e -> {
+
+		JButton btnshowDeferrables = new JButton("0", DEFERRED_ICON);
+		btnshowDeferrables.addActionListener(new UsnaAction(this, "labelShowDeferrables", e -> {
 			if(dialogDeferrables == null) { // single dialog
 				dialogDeferrables = new DialogDeferrables(model);
 			}
 			dialogDeferrables.setVisible(true);
 			dialogDeferrables.setLocationRelativeTo(this);
-		});
-		JButton btnshowDeferrables = new JButton(showDeferrables);
-//		btnshowDeferrables.setText("2");
+			btnshowDeferrables.setIcon(DEFERRED_ICON);
+		}));
 //		btnshowDeferrables.setFont(btnshowDeferrables.getFont().deriveFont(Font.BOLD/*, 9f*/));
-//		btnshowDeferrables.setBorder(BorderFactory.createEmptyBorder(3, 10, 3, 10));
-		btnshowDeferrables.setBorder(BorderFactory.createEmptyBorder(8, 10, 7, 10));
+		btnshowDeferrables.setBorder(BorderFactory.createEmptyBorder(4, 10, 3, 10));
 		statusLeftPanel.add(btnshowDeferrables);
 		statusPanel.add(statusLeftPanel, BorderLayout.WEST);
 		
@@ -438,10 +439,10 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 				doPopup(e);
 			}
 			@Override
-			public void mouseReleased(MouseEvent e) {
+			public void mouseReleased(java.awt.event.MouseEvent e) {
 				doPopup(e);
 			}
-			private void doPopup(MouseEvent evt) {
+			private void doPopup(java.awt.event.MouseEvent evt) {
 				final int r;
 				if (evt.isPopupTrigger() && (r = devicesTable.rowAtPoint(evt.getPoint())) >= 0) {
 					if(devicesTable.isRowSelected(r) == false) {
@@ -472,6 +473,22 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 			}
 		});
 		
+		// Deferrables listener
+		DeferrablesContainer.getInstance().addListener(new UsnaEventListener<DeferrableTask.Status, Integer>() {
+			private final DeferrablesContainer dc = DeferrablesContainer.getInstance();
+			@Override
+			public void update(DeferrableTask.Status mesgType, Integer msgBody) {
+				if(mesgType != DeferrableTask.Status.RUNNING) {
+					btnshowDeferrables.setText(dc.countWaiting() + "");
+					if(mesgType == DeferrableTask.Status.FAIL && (dialogDeferrables == null || dialogDeferrables.isVisible() == false)) {
+						btnshowDeferrables.setIcon(DEFERRED_ICON_FAIL);
+					} else if(mesgType == DeferrableTask.Status.SUCCESS && btnshowDeferrables.getIcon() != DEFERRED_ICON_FAIL && (dialogDeferrables == null || dialogDeferrables.isVisible() == false)) {
+						btnshowDeferrables.setIcon(DEFERRED_ICON_OK);
+					}
+				}
+			}
+		});
+		
 		// double click
 		devicesTable.addMouseListener(new MouseAdapter() {
 		    public void mousePressed(MouseEvent evt) {
@@ -489,6 +506,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 			@Override
 			public void windowClosing(WindowEvent e) {
 				MainView.this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+				model.removeListeners(); // before subsequent model.close();
 				storeProperties();
 				dispose();
 			}
@@ -509,7 +527,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		rescanAction.setEnabled(false);
 		refreshAction.setEnabled(false);
 		statusLabel.setText(LABELS.getString("scanning_start"));
-		manageRowsSelection();
+		rowsSelectionManager();
 	}
 	
 	public void hideCaptions(boolean en) {
@@ -526,7 +544,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		devicesTable.setRowFilter(textFieldFilter.getText(), cols);
 	}
 	
-	private void manageRowsSelection() {
+	private void rowsSelectionManager() {
 		tableSelectionListener = e -> {
 			if(e.getValueIsAdjusting() == false) {
 				boolean singleSelection, singleSelectionNoGhost, selection, selectionNoGhost;

@@ -168,7 +168,7 @@ public class RestoreAction extends UsnaSelectedAction {
 							JOptionPane.showMessageDialog(mainView, LABELS.getString("msgRestoreQueue"), device.getHostname(), JOptionPane.WARNING_MESSAGE));
 
 							String taskDescription = LABELS.getString("action_restore_tooltip");
-							DeferrablesContainer dc = DeferrablesContainer.getInstance(model);
+							DeferrablesContainer dc = DeferrablesContainer.getInstance();
 							if(dc.indexOf(modelRow, taskDescription) < 0) {
 								dc.add(modelRow, taskDescription, (def, dev) -> {
 									final String restoreError = erroreMsg(dev.restore(backupJsons, resData));

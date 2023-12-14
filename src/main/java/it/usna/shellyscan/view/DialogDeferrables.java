@@ -35,7 +35,7 @@ public class DialogDeferrables extends JFrame implements UsnaEventListener<Defer
 		super(LABELS.getString("labelShowDeferrables"));
 		setIconImage(Main.ICON);
 
-		deferrables = DeferrablesContainer.getInstance(model);
+		deferrables = DeferrablesContainer.getInstance();
 
 		table.getColumnModel().getColumn(3).setCellRenderer(new DefaultTableCellRenderer() {
 			private static final long serialVersionUID = 1L;

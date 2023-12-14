@@ -56,7 +56,7 @@ public class BackupAction extends UsnaAction {
 								LOG.debug("Interactive Backup error {}", d);
 								
 								String taskDescription = LABELS.getString("action_back_tooltip");
-								DeferrablesContainer dc = DeferrablesContainer.getInstance(model);
+								DeferrablesContainer dc = DeferrablesContainer.getInstance();
 								if(dc.indexOf(modelRow, taskDescription) < 0) {
 									dc.add(modelRow, taskDescription, (def, dev) -> {
 										dev.backup(outFile);

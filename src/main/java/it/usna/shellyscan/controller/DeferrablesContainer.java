@@ -23,12 +23,21 @@ public class DeferrablesContainer extends UsnaObservable<DeferrableTask.Status, 
 	private ArrayList<Integer> devIdx = new ArrayList<>();
 	private ArrayList<DeferrableRecord> defer = new ArrayList<>();
 
-	public static DeferrablesContainer getInstance(Devices model) {
-		if(instance == null) {
-			instance = new DeferrablesContainer(model);
-			model.addListener(instance);
-		}
+//	public static DeferrablesContainer getInstance(Devices model) {
+//		if(instance == null) {
+//			instance = new DeferrablesContainer(model);
+//			model.addListener(instance);
+//		}
+//		return instance; 
+//	}
+
+	public static DeferrablesContainer getInstance() {
 		return instance; 
+	}
+	
+	public static void init(Devices model) {
+		instance = new DeferrablesContainer(model);
+		model.addListener(instance);
 	}
 
 	private DeferrablesContainer(Devices model) {

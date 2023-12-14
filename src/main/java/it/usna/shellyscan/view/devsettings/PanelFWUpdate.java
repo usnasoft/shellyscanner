@@ -292,7 +292,7 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 		if(msg != null) {
 			if(device.getStatus() == Status.OFF_LINE) {
 				String taskDescription = LABELS.getString("dlgSetFWUpdate");
-				DeferrablesContainer dc = DeferrablesContainer.getInstance(parent.getModel());
+				DeferrablesContainer dc = DeferrablesContainer.getInstance();
 				if(dc.indexOf(parent.getModelIndex(i), taskDescription) < 0) {
 					dc.add(parent.getModelIndex(i), taskDescription, (def, dev) -> {
 						FirmwareManager fm = dev.getFWManager();
