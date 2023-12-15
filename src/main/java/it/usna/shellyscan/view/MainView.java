@@ -225,7 +225,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 			e -> SwingUtilities.invokeLater(() -> detailedView(((JToggleButton)e.getSource()).isSelected()) ) );
 	
 	private Action notesAction = new UsnaSelectedAction(this, devicesTable, "action_notes_name", "action_notes_tooltip", "/images/Write2-16.png", "/images/Write2.png",
-			i -> new NotesEditor(MainView.this, model.getGhost(i)) );
+			i -> new NotesEditor(this, model.getGhost(i)) );
 	
 	private Action eraseGhostAction = new UsnaAction(this, "action_name_delete_ghost", null, "/images/Minus16.png", null, e -> {
 		boolean delete = true;
@@ -266,7 +266,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 	});
 
 	private Action devicesSettingsAction = new UsnaAction(this, "action_general_conf_name", "action_general_conf_tooltip", null, "/images/Tool.png", e -> {
-		new DialogDeviceSettings(MainView.this, model, devicesTable.getSelectedModelRows());
+		new DialogDeviceSettings(this, model, devicesTable.getSelectedModelRows());
 	});
 	
 	private Action eraseFilterAction = new UsnaAction(this, null, "/images/erase-9-16.png", e -> {
@@ -301,14 +301,13 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		JButton btnshowDeferrables = new JButton("0", DEFERRED_ICON);
 		btnshowDeferrables.addActionListener(new UsnaAction(this, "labelShowDeferrables", e -> {
 			if(dialogDeferrables == null) { // single dialog
-				dialogDeferrables = new DialogDeferrables(model);
+				dialogDeferrables = new DialogDeferrables();
 			}
 			dialogDeferrables.setVisible(true);
 			dialogDeferrables.setLocationRelativeTo(this);
-			btnshowDeferrables.setIcon(DEFERRED_ICON);
+			btnshowDeferrables.setIcon(DEFERRED_ICON); // reset button icon (not success/fail)
 		}));
-//		btnshowDeferrables.setFont(btnshowDeferrables.getFont().deriveFont(Font.BOLD/*, 9f*/));
-		btnshowDeferrables.setBorder(BorderFactory.createEmptyBorder(4, 10, 3, 10));
+		btnshowDeferrables.setBorder(BorderFactory.createEmptyBorder(4, 9, 3, 7));
 		statusLeftPanel.add(btnshowDeferrables);
 		statusPanel.add(statusLeftPanel, BorderLayout.WEST);
 		
@@ -375,8 +374,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 				new SelectionAction(devicesTable, "labelSelectOnLineReboot", null, null, i -> model.get(i).getStatus() == Status.ON_LINE && model.get(i).rebootRequired()),
 				new SelectionAction(devicesTable, "labelSelectG1", null, null, i -> model.get(i) instanceof AbstractG1Device),
 				new SelectionAction(devicesTable, "labelSelectG2", null, null, i -> model.get(i) instanceof AbstractG2Device),
-				new SelectionAction(devicesTable, "labelSelectGhosts", null, null, i -> model.get(i) instanceof GhostDevice)
-				);
+				new SelectionAction(devicesTable, "labelSelectGhosts", null, null, i -> model.get(i) instanceof GhostDevice) );
 
 		btnSelectCombo.addActionListener(e -> selectionPopup.show(btnSelectCombo, 0, 0));
 		
@@ -433,16 +431,27 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		UsnaPopupMenu tablePopup = new UsnaPopupMenu(infoAction, browseAction, backupAction, restoreAction, notesAction, reloadAction/*, loginAction*/);
 		UsnaPopupMenu ghostDevPopup = new UsnaPopupMenu(reloadAction, notesAction, eraseGhostAction);
 
+		// devices popup & double click
 		devicesTable.addMouseListener(new MouseAdapter() {
 			@Override
-			public void mousePressed(java.awt.event.MouseEvent e) {
-				doPopup(e);
+			public void mousePressed(MouseEvent e) {
+		        if (e.getClickCount() == 2 && devicesTable.getSelectedRow() >= 0 && devicesTable.isCellEditable(devicesTable.getSelectedRow(), devicesTable.getSelectedColumn()) == false) {
+		        	if(appProp.getProperty(DialogAppSettings.PROP_DCLICK_ACTION, DialogAppSettings.PROP_DCLICK_ACTION_DEFAULT).equals("DET") && infoAction.isEnabled()) {
+		        		infoAction.actionPerformed(null);
+		        	} else if(browseAction.isEnabled()) {
+		        		browseAction.actionPerformed(null);
+		        	}
+		        } else {
+		        	doPopup(e);
+		        }
 			}
+
 			@Override
-			public void mouseReleased(java.awt.event.MouseEvent e) {
+			public void mouseReleased(MouseEvent e) {
 				doPopup(e);
 			}
-			private void doPopup(java.awt.event.MouseEvent evt) {
+
+			private void doPopup(MouseEvent evt) {
 				final int r;
 				if (evt.isPopupTrigger() && (r = devicesTable.rowAtPoint(evt.getPoint())) >= 0) {
 					if(devicesTable.isRowSelected(r) == false) {
@@ -474,8 +483,8 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		});
 		
 		// Deferrables listener
-		DeferrablesContainer.getInstance().addListener(new UsnaEventListener<DeferrableTask.Status, Integer>() {
-			private final DeferrablesContainer dc = DeferrablesContainer.getInstance();
+		final DeferrablesContainer dc = DeferrablesContainer.getInstance();
+		dc.addListener(new UsnaEventListener<DeferrableTask.Status, Integer>() {
 			@Override
 			public void update(DeferrableTask.Status mesgType, Integer msgBody) {
 				if(mesgType != DeferrableTask.Status.RUNNING) {
@@ -488,28 +497,16 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 				}
 			}
 		});
-		
-		// double click
-		devicesTable.addMouseListener(new MouseAdapter() {
-		    public void mousePressed(MouseEvent evt) {
-		        if (evt.getClickCount() == 2 && devicesTable.getSelectedRow() >= 0 && devicesTable.isCellEditable(devicesTable.getSelectedRow(), devicesTable.getSelectedColumn()) == false) {
-		        	if(appProp.getProperty(DialogAppSettings.PROP_DCLICK_ACTION, DialogAppSettings.PROP_DCLICK_ACTION_DEFAULT).equals("DET") && infoAction.isEnabled()) {
-		        		infoAction.actionPerformed(null);
-		        	} else if(browseAction.isEnabled()) {
-		        		browseAction.actionPerformed(null);
-		        	}
-		        }
-		    }
-		});
 
 		addWindowListener(new WindowAdapter() {
 			@Override
 			public void windowClosing(WindowEvent e) {
 				MainView.this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-				model.removeListeners(); // before subsequent model.close();
+				model.removeListeners(); // immediate; before subsequent model.close();
 				storeProperties();
 				dispose();
 			}
+			
 			@Override
 			public void windowClosed(WindowEvent e) {
 				model.close();
@@ -554,7 +551,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 				for(int idx: devicesTable.getSelectedRows()) {
 					d = model.get(devicesTable.convertRowIndexToModel(idx));
 					if(d instanceof GhostDevice) {
-						selectionNoGhost = singleSelectionNoGhost = false; // cannot operate ghost devices
+						selectionNoGhost = singleSelectionNoGhost = false;
 						break;
 					}
 				}
@@ -584,7 +581,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 			super.storeProperties(appProp);
 			devicesTable.saveColPos(appProp, DevicesTable.STORE_PREFIX);
 			devicesTable.saveColWidth(temporaryProp, DevicesTable.STORE_PREFIX);
-			final int visible = devicesTable.getColumnCount();
+			final int normColCount = devicesTable.getColumnCount();
 			// load extended view preferences
 			devicesTable.restoreColumns();
 			devicesTable.resetRowsComputedHeight();
@@ -598,8 +595,8 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 					setExtendedState(JFrame.MAXIMIZED_HORIZ);
 				} else if(detScreenMode.equals(DialogAppSettings.PROP_DETAILED_VIEW_SCREEN_ESTIMATE)) {
 					Rectangle screen = getCurrentScreenBounds();
-					Rectangle current = this.getBounds();
-					current.width = current.width * /*total*/tabModel.getColumnCount() / visible;
+					Rectangle current = getBounds();
+					current.width = current.width * devicesTable.getColumnCount() / normColCount;
 					if(current.x + current.width > screen.x + screen.width) { // out of right margin
 						current.x = screen.x + screen.width - current.width;
 					}
@@ -648,7 +645,6 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 			appProp.store(false);
 		} catch (IOException | RuntimeException ex) {
 			LOG.error("Unexpected", ex);
-			Msg.errorMsg(this, "Error on exit");
 		}
 	}
 
@@ -684,9 +680,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 	
 	public synchronized void reserveStatusLine(boolean r) {
 		statusLineReserved = r;
-		if(r == false) {
-			displayStatus();
-		}
+		if(r == false) displayStatus();
 	}
 	
 	public synchronized void setStatus(String status) {
@@ -702,4 +696,4 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 			}
 		}
 	}
-} //557 - 614 - 620 - 669 - 705 - 727 - 699 - 760 - 782 - 811 - 805 - 646
+} //557 - 614 - 620 - 669 - 705 - 727 - 699 - 760 - 782 - 811 - 805 - 646 - 699

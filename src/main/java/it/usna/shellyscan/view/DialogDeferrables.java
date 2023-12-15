@@ -20,7 +20,6 @@ import it.usna.shellyscan.controller.DeferrableTask;
 import it.usna.shellyscan.controller.DeferrableTask.Status;
 import it.usna.shellyscan.controller.DeferrablesContainer;
 import it.usna.shellyscan.controller.DeferrablesContainer.DeferrableRecord;
-import it.usna.shellyscan.model.Devices;
 import it.usna.swing.table.ExTooltipTable;
 import it.usna.swing.table.UsnaTableModel;
 import it.usna.util.UsnaEventListener;
@@ -31,7 +30,7 @@ public class DialogDeferrables extends JFrame implements UsnaEventListener<Defer
 	private final ExTooltipTable table = new ExTooltipTable(tModel);
 	private final DeferrablesContainer deferrables;
 
-	public DialogDeferrables(/*Window owner,*/ Devices model) {
+	public DialogDeferrables(/*Window owner,*/) {
 		super(LABELS.getString("labelShowDeferrables"));
 		setIconImage(Main.ICON);
 

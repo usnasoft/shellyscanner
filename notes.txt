@@ -216,9 +216,9 @@ https://www.iconbolt.com/
 // graphs: Temperatures (all)
 // graphs: select one from series
 // graphs: sum W
+// colori bottone GUI deferred - numero waiting
 
-colori bottone GUI deferred - numero waiting
-graphs: in pausa consentire scorrimento
+// graphs: in pausa consentire scorrimento
 
 ---
 // TODO
