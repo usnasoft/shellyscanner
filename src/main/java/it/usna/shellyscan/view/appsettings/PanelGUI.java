@@ -14,6 +14,7 @@ import java.util.Arrays;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
@@ -22,9 +23,8 @@ import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
 
 import it.usna.shellyscan.view.DevicesTable;
-import it.usna.shellyscan.view.chart.MeasuresChart.ChartType;
+import it.usna.shellyscan.view.chart.ChartType;
 import it.usna.util.AppProperties;
-import javax.swing.JComboBox;
 
 public class PanelGUI extends JPanel {
 	private static final long serialVersionUID = 1L;

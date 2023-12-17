@@ -22,7 +22,7 @@ import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.DevicesFactory;
 import it.usna.shellyscan.view.DevicesTable;
 import it.usna.shellyscan.view.MainView;
-import it.usna.shellyscan.view.chart.MeasuresChart.ChartType;
+import it.usna.shellyscan.view.chart.ChartType;
 import it.usna.shellyscan.view.util.Msg;
 import it.usna.util.AppProperties;
 

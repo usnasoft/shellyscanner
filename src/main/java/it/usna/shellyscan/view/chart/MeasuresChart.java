@@ -37,6 +37,7 @@ import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.axis.ValueAxis;
+import org.jfree.chart.event.ChartChangeEventType;
 import org.jfree.chart.labels.StandardXYToolTipGenerator;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
@@ -78,44 +79,6 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 
 	private JComboBox<String> seriesCombo = new JComboBox<>();
 
-	public enum ChartType {
-		INT_TEMP("dlgChartsIntTempLabel", "dlgChartsIntTempYLabel"),
-		RSSI("dlgChartsRSSILabel", "dlgChartsRSSIYLabel"),
-		P("dlgChartsAPowerLabel", "dlgChartsAPowerYLabel", Meters.Type.W),
-		P_SUM("dlgChartsAPowerSumLabel", "dlgChartsAPowerYLabel"),
-		Q("dlgChartsQPowerLabel", "dlgChartsQPowerYLabel", Meters.Type.VAR),
-		V("dlgChartsVoltageLabel", "dlgChartsVoltageYLabel", Meters.Type.V),
-		I("dlgChartsCurrentLabel", "dlgChartsCurrentYLabel", Meters.Type.I),
-		//		T("dlgChartsTempLabel", "dlgChartsTempYLabel", Meters.Type.T),
-		//		T1("dlgChartsTemp1Label", "dlgChartsTempYLabel", Meters.Type.T1),
-		//		T2("dlgChartsTemp2Label", "dlgChartsTempYLabel", Meters.Type.T2),
-		//		T3("dlgChartsTemp3Label", "dlgChartsTempYLabel", Meters.Type.T3),
-		//		T4("dlgChartsTemp4Label", "dlgChartsTempYLabel", Meters.Type.T4),
-		T_ALL("dlgChartsTempAllLabel", "dlgChartsTempYLabel"),
-		H("dlgChartsHumidityLabel", "dlgChartsHumidityYLabel", Meters.Type.H),
-		LUX("dlgChartsLuxLabel", "dlgChartsLuxYLabel", Meters.Type.L);
-
-		private final String yLabel;
-		private final String label;
-		private Meters.Type mType;
-
-		private ChartType(String labelID, String yLabelID) {
-			this.yLabel = LABELS.getString(yLabelID);
-			this.label = LABELS.getString(labelID);
-		}
-
-		private ChartType(String labelID, String yLabelID, Meters.Type mType) {
-			this.yLabel = LABELS.getString(yLabelID);
-			this.label = LABELS.getString(labelID);
-			this.mType = mType;
-		}
-
-		@Override
-		public String toString() { // combo box
-			return label;
-		}
-	}
-
 	private ChartType currentType;
 
 	public MeasuresChart(JFrame owner, final Devices model, int[] ind, AppProperties appProp) {
@@ -144,13 +107,17 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 		XYLineAndShapeRenderer renderer = (XYLineAndShapeRenderer)plot.getRenderer();
 		renderer.setDefaultToolTipGenerator(new StandardXYToolTipGenerator("{0}: {1} - {2}", new SimpleDateFormat("HH:mm:ss.SSS"), NF));
 
-		ChartPanel chartPanel = new ChartPanel(chart, false, true, true, false, true);
+		ChartPanel chartPanel = new ChartPanel(chart, false, true, true, false /*zoom*/, true);
 		chartPanel.setInitialDelay(0); // tootip
 		chartPanel.setDismissDelay(20_000); // tootip
-		//chartPanel.setMouseZoomable(true);
-		//chartPanel.setMouseWheelEnabled(true);
+//		chartPanel.setMouseZoomable(true);
+//		chartPanel.setMouseWheelEnabled(true);
+		
+//		JScrollPane scrollPane = new JScrollPane();
+//		scrollPane.setViewportView(chartPanel);
 
 		mainPanel.add(chartPanel, BorderLayout.CENTER);
+//		mainPanel.add(scrollPane, BorderLayout.CENTER);
 
 		JPanel commandPanel = new JPanel(new BorderLayout());
 		JPanel westCommandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 0));
@@ -194,6 +161,7 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 				xAxis.setRange(xAxis.getRange());
 			} else {
 				setRange(xAxis, rangeCombo.getSelectedIndex());
+				yAxis.setAutoRange(true); // recover from pan (zoom)
 			}
 		});
 
@@ -229,15 +197,14 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 				Msg.errorMsg(ex);
 			}
 		}));
-		//btnDownload.setPreferredSize(new Dimension(33, 28));
+		btnDownload.setPreferredSize(new Dimension(33, 28));
 
 		JButton btnCopy = new JButton(new UsnaAction(null, "btnCopy", "/images/Toolbar-Copy16.png", e -> chartPanel.doCopy()));
-		//btnCopy.setPreferredSize(new Dimension(33, 28));
+		btnCopy.setPreferredSize(new Dimension(33, 28));
 
 		westCommandPanel.add(new JLabel(LABELS.getString("dlgChartsSeriesLabel")));
 		westCommandPanel.add(seriesCombo);
 
-		//westCommandPanel.add(Box.createHorizontalStrut(10));
 		westCommandPanel.add(btnMarks);
 		westCommandPanel.add(btnPause);
 		westCommandPanel.add(btnDownload);
@@ -246,6 +213,7 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 		rangeCombo.addActionListener(e -> {
 			btnPause.setSelected(false);
 			setRange(xAxis, rangeCombo.getSelectedIndex());
+			yAxis.setAutoRange(true); // recover from pan (zoom)
 		});
 
 		typeCombo.addActionListener(e -> {
@@ -253,13 +221,14 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 			initDataSet(plot.getRangeAxis(), dataset, model, ind);
 			btnPause.setSelected(false);
 			xAxis.setAutoRange(true);
+			yAxis.setAutoRange(true); // recover from pan (zoom)
 			//setRange(xAxis, rangeCombo.getSelectedIndex());
 		});
 
 		seriesCombo.addActionListener(e -> {
 			if(seriesCombo.getItemCount() > 0) {
 				if(seriesCombo.getSelectedIndex() == 0) {
-					for(int i = 0; i < dataset.getSeriesCount(); i++ ) {
+					for(int i = 0; i < dataset.getSeriesCount(); i++) {
 						renderer.setSeriesLinesVisible(i, true);
 						renderer.setSeriesShapesVisible(i, btnMarks.isSelected());
 					}
@@ -276,6 +245,20 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 		typeCombo.setSelectedItem(currentType);
 
 		initDataSet(plot.getRangeAxis(), dataset, model, ind);
+		
+		plot.setDomainPannable(true);
+		// pan event
+		plot.addChangeListener(e -> {
+			if(e.getType() == ChartChangeEventType.GENERAL) {
+				if(xAxis.isAutoRange() && yAxis.isAutoRange() && btnPause.isSelected()) {
+					btnPause.setSelected(false);
+//					System.out.println("xxx");
+				} else if((xAxis.isAutoRange() == false || yAxis.isAutoRange() == false) && btnPause.isSelected() == false) {
+					btnPause.setSelected(true);
+//					System.out.println("yyyy");
+				}
+			}
+		});
 
 		getRootPane().registerKeyboardAction(e -> {
 			int selected = rangeCombo.getSelectedIndex();
@@ -297,7 +280,7 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 		else if(selected == 3) xAxis.setFixedAutoRange(1000 * 15 * 60);
 		else if(selected == 4) xAxis.setFixedAutoRange(1000 * 30 * 60);
 		else if(selected == 5) xAxis.setFixedAutoRange(1000 * 60 * 60);
-		else xAxis.setFixedAutoRange(0); // selected == 0
+		else xAxis.setFixedAutoRange(0); // selected == 0 - auto
 		xAxis.setAutoRange(true);
 	}
 
