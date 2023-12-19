@@ -216,7 +216,7 @@ https://www.iconbolt.com/
 // graphs: Temperatures (all)
 // graphs: select one from series
 // graphs: sum W
-// graphs: zoom
+// graphs: zoom (selection / wheel)
 // status on deferred button + number of waiting
 
 ---

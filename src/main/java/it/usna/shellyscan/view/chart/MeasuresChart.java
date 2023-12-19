@@ -111,8 +111,6 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 		chartPanel.setInitialDelay(0); // tootip
 		chartPanel.setDismissDelay(20_000); // tootip
 //		chartPanel.setMouseZoomable(true);
-//		chartPanel.setMouseWheelEnabled(true);
-		
 //		JScrollPane scrollPane = new JScrollPane();
 //		scrollPane.setViewportView(chartPanel);
 
@@ -159,8 +157,10 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 		btnPause.addActionListener(e ->  {
 			if(btnPause.isSelected()) {
 				xAxis.setRange(xAxis.getRange());
+				chartPanel.setMouseWheelEnabled(true);
 			} else {
 				setRange(xAxis, rangeCombo.getSelectedIndex());
+				chartPanel.setMouseWheelEnabled(false);
 				yAxis.setAutoRange(true); // recover from pan (zoom)
 			}
 		});
@@ -194,7 +194,7 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 					JOptionPane.showMessageDialog(this, LABELS.getString("msgFileSaved"), Main.APP_NAME, JOptionPane.INFORMATION_MESSAGE);
 				}
 			} catch (IOException ex) {
-				Msg.errorMsg(ex);
+				Msg.errorMsg(this, ex);
 			}
 		}));
 		btnDownload.setPreferredSize(new Dimension(33, 28));
@@ -219,15 +219,14 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 		typeCombo.addActionListener(e -> {
 			currentType = (ChartType)typeCombo.getSelectedItem();
 			initDataSet(plot.getRangeAxis(), dataset, model, ind);
-			btnPause.setSelected(false);
+			btnPause.setSelected(false); //setRange(xAxis, rangeCombo.getSelectedIndex());
 			xAxis.setAutoRange(true);
 			yAxis.setAutoRange(true); // recover from pan (zoom)
-			//setRange(xAxis, rangeCombo.getSelectedIndex());
 		});
 
 		seriesCombo.addActionListener(e -> {
 			if(seriesCombo.getItemCount() > 0) {
-				if(seriesCombo.getSelectedIndex() == 0) {
+				if(seriesCombo.getSelectedIndex() == 0) { // All
 					for(int i = 0; i < dataset.getSeriesCount(); i++) {
 						renderer.setSeriesLinesVisible(i, true);
 						renderer.setSeriesShapesVisible(i, btnMarks.isSelected());
@@ -252,9 +251,11 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 			if(e.getType() == ChartChangeEventType.GENERAL) {
 				if(xAxis.isAutoRange() && yAxis.isAutoRange() && btnPause.isSelected()) {
 					btnPause.setSelected(false);
+					chartPanel.setMouseWheelEnabled(false);
 //					System.out.println("xxx");
 				} else if((xAxis.isAutoRange() == false || yAxis.isAutoRange() == false) && btnPause.isSelected() == false) {
 					btnPause.setSelected(true);
+					chartPanel.setMouseWheelEnabled(true);
 //					System.out.println("yyyy");
 				}
 			}
@@ -434,7 +435,7 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 							}
 						}
 					} catch (Throwable ex) {
-						LOG.error("Unexpected", ex);
+						LOG.warn("Unexpected", ex); // possible error on graph type change
 					}
 				});
 			}

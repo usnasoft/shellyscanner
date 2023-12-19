@@ -135,7 +135,7 @@ public class DevicesTable extends ExTooltipTable {
 				s2 = "";
 			} else if (o2 instanceof DeviceModule[] dmArray) {
 				s2 = dmArray[0].getLabel();
-			} else if (o1 instanceof DeviceModule dm) {
+			} else if (o2 instanceof DeviceModule dm) {
 				s2 = dm.getLabel();
 			} else {
 				s2 = o2.toString();
@@ -280,7 +280,7 @@ public class DevicesTable extends ExTooltipTable {
 	}
 	
 	public void loadColPos(final AppProperties appProp) {
-		if(loadColPos(appProp, STORE_PREFIX) == false) { // configure default
+		if(loadColPos(appProp, STORE_PREFIX) == false) { // no configuration -> default
 			hideColumn(COL_MAC_IDX);
 			hideColumn(COL_SSID_IDX);
 			hideColumn(COL_DEBUG);
@@ -295,7 +295,7 @@ public class DevicesTable extends ExTooltipTable {
 			for(int c = 0; c < getColumnCount(); c++) {
 				TableColumn tc = columnModel.getColumn(c);
 				Object val = tc.getHeaderValue();
-				int width = val != null ? SwingUtilities.computeStringWidth(fm, val.toString()) / 2 : 1; // "/2"
+				int width = (val != null) ? SwingUtilities.computeStringWidth(fm, val.toString()) / 2 : 1; // "/2"
 				for(int r = 0; r < getRowCount(); r++) {
 					val = getValueAt(r, c);
 					if(val != null) {
