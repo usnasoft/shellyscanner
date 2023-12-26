@@ -21,7 +21,6 @@ public class NotesEditor extends JFrame {
 	private static final long serialVersionUID = 1L;
 	
 	public NotesEditor(Window owner, GhostDevice ghost) {
-//		super(owner, LABELS.getString("action_notes_tooltip") + " - " + UtilMiscellaneous.getDescName(ghost));
 		super(LABELS.getString("action_notes_tooltip") + " - " + UtilMiscellaneous.getDescName(ghost));
 		setIconImages(owner.getIconImages());
 		

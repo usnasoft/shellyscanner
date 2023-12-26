@@ -224,7 +224,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 	private Action detailedViewAction = new UsnaAction(this, "action_show_detail_name", "action_show_detail_tooltip", null, "/images/Plus.png",
 			e -> SwingUtilities.invokeLater(() -> detailedView(((JToggleButton)e.getSource()).isSelected()) ) );
 	
-	private Action notesAction = new UsnaSelectedAction(this, devicesTable, "action_notes_name", "action_notes_tooltip", "/images/Write2-16.png", "/images/Write2.png",
+	private Action notesAction = new UsnaSelectedAction(null, devicesTable, "action_notes_name", "action_notes_tooltip", "/images/Write2-16.png", "/images/Write2.png",
 			i -> new NotesEditor(this, model.getGhost(i)) );
 	
 	private Action eraseGhostAction = new UsnaAction(this, "action_name_delete_ghost", null, "/images/Minus16.png", null, e -> {
