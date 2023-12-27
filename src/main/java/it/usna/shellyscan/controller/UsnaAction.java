@@ -41,7 +41,7 @@ public class UsnaAction extends AbstractAction {
 		this.onActionPerformed = a;
 	}
 
-	public UsnaAction(Window w, String icon, String tooltipId, final ActionListener a) {
+	public UsnaAction(Window w, String tooltipId, String icon, final ActionListener a) {
 		this(w, icon, tooltipId);
 		this.onActionPerformed = a;
 	}

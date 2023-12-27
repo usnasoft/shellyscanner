@@ -3,6 +3,7 @@ package it.usna.shellyscan.model.device;
 import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
+import java.util.Collections;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
@@ -124,7 +125,7 @@ public class GhostDevice extends ShellyAbstractDevice {
 		} else if(backupJsons.containsKey("Shelly.GetConfig.json")) {
 			return restoreCheckG2(backupJsons);
 		} else {
-			throw new UnsupportedOperationException();
+			return Collections.singletonMap(Restore.ERR_RESTORE_MODEL, null);
 		}
 	}
 	
@@ -178,7 +179,7 @@ public class GhostDevice extends ShellyAbstractDevice {
 					res.put(Restore.RESTORE_MQTT, config.at("/mqtt/user").asText());
 				}
 				// device specific
-//				restoreCheck(backupJsons, res); // TODO check compatibility with this call
+//				restoreCheck(backupJsons, res); // TODO check compatibility with this call for any new device
 			}
 		} catch(RuntimeException e) {
 			LOG.error("restoreCheck", e);

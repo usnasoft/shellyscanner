@@ -14,6 +14,7 @@ import java.util.Arrays;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
@@ -22,9 +23,8 @@ import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
 
 import it.usna.shellyscan.view.DevicesTable;
-import it.usna.shellyscan.view.chart.MeasuresChart.ChartType;
+import it.usna.shellyscan.view.chart.ChartType;
 import it.usna.util.AppProperties;
-import javax.swing.JComboBox;
 
 public class PanelGUI extends JPanel {
 	private static final long serialVersionUID = 1L;
@@ -35,6 +35,7 @@ public class PanelGUI extends JPanel {
 	JRadioButton rdbtnDetailedViewFull, rdbtnDetailedViewAsIs, rdbtnNDetailedViewEstimate, rdbtnDetailedViewHorizontal;
 	JComboBox<ChartType> comboCharts = new JComboBox<>();
 	JComboBox<String> comboChartsExport = new JComboBox<>();
+	JCheckBox chckbxToolbarCaptions = new JCheckBox();
 	
 	PanelGUI(DevicesTable devTable, boolean detailedView, final AppProperties appProp) {
 		GridBagLayout gridBagLayout = new GridBagLayout();
@@ -85,13 +86,39 @@ public class PanelGUI extends JPanel {
 		gbc_separator_1_3.gridy = 1;
 		add(separator_1_3, gbc_separator_1_3);
 		
+		JLabel lblNewLabel_5 = new JLabel(LABELS.getString("dlgAppSetToolbarLabel"));
+		lblNewLabel_5.setFont(new Font("Tahoma", Font.BOLD, 11));
+		GridBagConstraints gbc_lblNewLabel_5 = new GridBagConstraints();
+		gbc_lblNewLabel_5.anchor = GridBagConstraints.WEST;
+		gbc_lblNewLabel_5.insets = new Insets(0, 0, 5, 5);
+		gbc_lblNewLabel_5.gridx = 0;
+		gbc_lblNewLabel_5.gridy = 2;
+		add(lblNewLabel_5, gbc_lblNewLabel_5);
+		
+		GridBagConstraints gbc_chckbxToolbarCaptiosn = new GridBagConstraints();
+		gbc_chckbxToolbarCaptiosn.anchor = GridBagConstraints.WEST;
+		gbc_chckbxToolbarCaptiosn.insets = new Insets(0, 0, 5, 5);
+		gbc_chckbxToolbarCaptiosn.gridx = 1;
+		gbc_chckbxToolbarCaptiosn.gridy = 2;
+		add(chckbxToolbarCaptions, gbc_chckbxToolbarCaptiosn);
+		chckbxToolbarCaptions.setSelected(appProp.getBoolProperty(DialogAppSettings.PROP_TOOLBAR_CAPTIONS, true));
+		
+		JSeparator separator = new JSeparator();
+		GridBagConstraints gbc_separator = new GridBagConstraints();
+		gbc_separator.gridwidth = 5;
+		gbc_separator.fill = GridBagConstraints.HORIZONTAL;
+		gbc_separator.insets = new Insets(0, 0, 5, 0);
+		gbc_separator.gridx = 0;
+		gbc_separator.gridy = 3;
+		add(separator, gbc_separator);
+		
 		JLabel lblNewLabel = new JLabel(LABELS.getString("dlgAppSetUpdateCHKLabel"));
 		lblNewLabel.setFont(new Font("Tahoma", Font.BOLD, 11));
 		GridBagConstraints gbc_lblNewLabel = new GridBagConstraints();
 		gbc_lblNewLabel.anchor = GridBagConstraints.WEST;
 		gbc_lblNewLabel.insets = new Insets(0, 0, 5, 5);
 		gbc_lblNewLabel.gridx = 0;
-		gbc_lblNewLabel.gridy = 2;
+		gbc_lblNewLabel.gridy = 4;
 		add(lblNewLabel, gbc_lblNewLabel);
 		
 		updNoCHK = new JRadioButton(LABELS.getString("dlgAppSetUpdateCHKNever"));
@@ -100,7 +127,7 @@ public class PanelGUI extends JPanel {
 		gbc_rdbtnNewRadioButton.anchor = GridBagConstraints.WEST;
 		gbc_rdbtnNewRadioButton.insets = new Insets(0, 0, 5, 5);
 		gbc_rdbtnNewRadioButton.gridx = 1;
-		gbc_rdbtnNewRadioButton.gridy = 2;
+		gbc_rdbtnNewRadioButton.gridy = 4;
 		add(updNoCHK, gbc_rdbtnNewRadioButton);
 		
 		updStableCHK = new JRadioButton(LABELS.getString("dlgAppSetUpdateCHKStable"));
@@ -108,7 +135,7 @@ public class PanelGUI extends JPanel {
 		gbc_rdbtnNewRadioButton_1.anchor = GridBagConstraints.WEST;
 		gbc_rdbtnNewRadioButton_1.insets = new Insets(0, 0, 5, 5);
 		gbc_rdbtnNewRadioButton_1.gridx = 3;
-		gbc_rdbtnNewRadioButton_1.gridy = 2;
+		gbc_rdbtnNewRadioButton_1.gridy = 4;
 		add(updStableCHK, gbc_rdbtnNewRadioButton_1);
 		
 		updBetaCHK = new JRadioButton(LABELS.getString("dlgAppSetUpdateCHKBeta"));
@@ -116,7 +143,7 @@ public class PanelGUI extends JPanel {
 		gbc_rdbtnNewRadioButton_2.anchor = GridBagConstraints.WEST;
 		gbc_rdbtnNewRadioButton_2.insets = new Insets(0, 0, 5, 0);
 		gbc_rdbtnNewRadioButton_2.gridx = 4;
-		gbc_rdbtnNewRadioButton_2.gridy = 2;
+		gbc_rdbtnNewRadioButton_2.gridy = 4;
 		add(updBetaCHK, gbc_rdbtnNewRadioButton_2);
 
 		ButtonGroup updCHKGroup = new ButtonGroup();
@@ -138,7 +165,7 @@ public class PanelGUI extends JPanel {
 		gbc_separator_1_2.fill = GridBagConstraints.HORIZONTAL;
 		gbc_separator_1_2.gridwidth = 5;
 		gbc_separator_1_2.gridx = 0;
-		gbc_separator_1_2.gridy = 3;
+		gbc_separator_1_2.gridy = 5;
 		add(separator_1_2, gbc_separator_1_2);
 		
 		JLabel lblNewLabel_10 = new JLabel(LABELS.getString("dlgAppSetDetailedViewLabel"));
@@ -147,7 +174,7 @@ public class PanelGUI extends JPanel {
 		gbc_lblNewLabel_10.anchor = GridBagConstraints.WEST;
 		gbc_lblNewLabel_10.insets = new Insets(0, 0, 5, 5);
 		gbc_lblNewLabel_10.gridx = 0;
-		gbc_lblNewLabel_10.gridy = 4;
+		gbc_lblNewLabel_10.gridy = 6;
 		add(lblNewLabel_10, gbc_lblNewLabel_10);
 		
 		rdbtnDetailedViewFull = new JRadioButton(LABELS.getString("dlgAppSetDetailedViewFull"));
@@ -156,7 +183,7 @@ public class PanelGUI extends JPanel {
 		gbc_rdbtnDetailedViewFull.anchor = GridBagConstraints.WEST;
 		gbc_rdbtnDetailedViewFull.insets = new Insets(0, 0, 5, 5);
 		gbc_rdbtnDetailedViewFull.gridx = 1;
-		gbc_rdbtnDetailedViewFull.gridy = 4;
+		gbc_rdbtnDetailedViewFull.gridy = 6;
 		add(rdbtnDetailedViewFull, gbc_rdbtnDetailedViewFull);
 		
 		rdbtnDetailedViewAsIs = new JRadioButton(LABELS.getString("dlgAppSetDetailedAsIs"));
@@ -164,7 +191,7 @@ public class PanelGUI extends JPanel {
 		gbc_rdbtnDetailedViewAsIs.anchor = GridBagConstraints.WEST;
 		gbc_rdbtnDetailedViewAsIs.insets = new Insets(0, 0, 5, 5);
 		gbc_rdbtnDetailedViewAsIs.gridx = 3;
-		gbc_rdbtnDetailedViewAsIs.gridy = 4;
+		gbc_rdbtnDetailedViewAsIs.gridy = 6;
 		add(rdbtnDetailedViewAsIs, gbc_rdbtnDetailedViewAsIs);
 		
 		rdbtnDetailedViewHorizontal = new JRadioButton(LABELS.getString("dlgAppSetDetailedHorizintal"));
@@ -173,7 +200,7 @@ public class PanelGUI extends JPanel {
 		gbc_rdbtnDetailedViewHorizontal.anchor = GridBagConstraints.WEST;
 		gbc_rdbtnDetailedViewHorizontal.insets = new Insets(0, 0, 5, 5);
 		gbc_rdbtnDetailedViewHorizontal.gridx = 1;
-		gbc_rdbtnDetailedViewHorizontal.gridy = 5;
+		gbc_rdbtnDetailedViewHorizontal.gridy = 7;
 		add(rdbtnDetailedViewHorizontal, gbc_rdbtnDetailedViewHorizontal);
 		
 		rdbtnNDetailedViewEstimate = new JRadioButton(LABELS.getString("dlgAppSetDetailedCompute"));
@@ -181,7 +208,7 @@ public class PanelGUI extends JPanel {
 		gbc_rdbtnNDetailedViewEstimate.anchor = GridBagConstraints.WEST;
 		gbc_rdbtnNDetailedViewEstimate.insets = new Insets(0, 0, 5, 5);
 		gbc_rdbtnNDetailedViewEstimate.gridx = 3;
-		gbc_rdbtnNDetailedViewEstimate.gridy = 5;
+		gbc_rdbtnNDetailedViewEstimate.gridy = 7;
 		add(rdbtnNDetailedViewEstimate, gbc_rdbtnNDetailedViewEstimate);
 		
 		ButtonGroup detailedViewGroup = new ButtonGroup();
@@ -206,7 +233,7 @@ public class PanelGUI extends JPanel {
 		gbc_separator_1_1.fill = GridBagConstraints.HORIZONTAL;
 		gbc_separator_1_1.gridwidth = 5;
 		gbc_separator_1_1.gridx = 0;
-		gbc_separator_1_1.gridy = 6;
+		gbc_separator_1_1.gridy = 8;
 		add(separator_1_1, gbc_separator_1_1);
 		
 		JLabel lblNewLabel_1 = new JLabel(LABELS.getString("dlgAppSetCSV"));
@@ -215,7 +242,7 @@ public class PanelGUI extends JPanel {
 		gbc_lblNewLabel_1.anchor = GridBagConstraints.WEST;
 		gbc_lblNewLabel_1.insets = new Insets(0, 0, 5, 5);
 		gbc_lblNewLabel_1.gridx = 0;
-		gbc_lblNewLabel_1.gridy = 7;
+		gbc_lblNewLabel_1.gridy = 9;
 		add(lblNewLabel_1, gbc_lblNewLabel_1);
 		
 		JLabel lblNewLabel_4 = new JLabel(LABELS.getString("dlgAppLblCSVSeparator"));
@@ -223,7 +250,7 @@ public class PanelGUI extends JPanel {
 		gbc_lblNewLabel_4.insets = new Insets(0, 0, 5, 5);
 		gbc_lblNewLabel_4.anchor = GridBagConstraints.EAST;
 		gbc_lblNewLabel_4.gridx = 1;
-		gbc_lblNewLabel_4.gridy = 7;
+		gbc_lblNewLabel_4.gridy = 9;
 		add(lblNewLabel_4, gbc_lblNewLabel_4);
 		
 		csvTextField = new JTextField(appProp.getProperty(DialogAppSettings.PROP_CSV_SEPARATOR, DialogAppSettings.PROP_CSV_SEPARATOR_DEFAULT));
@@ -231,7 +258,7 @@ public class PanelGUI extends JPanel {
 		gbc_csvTextField.anchor = GridBagConstraints.WEST;
 		gbc_csvTextField.insets = new Insets(0, 0, 5, 5);
 		gbc_csvTextField.gridx = 2;
-		gbc_csvTextField.gridy = 7;
+		gbc_csvTextField.gridy = 9;
 		add(csvTextField, gbc_csvTextField);
 		csvTextField.setColumns(2);
 		
@@ -240,7 +267,7 @@ public class PanelGUI extends JPanel {
 		gbc_lblNewLabel_3.anchor = GridBagConstraints.WEST;
 		gbc_lblNewLabel_3.insets = new Insets(0, 0, 5, 5);
 		gbc_lblNewLabel_3.gridx = 3;
-		gbc_lblNewLabel_3.gridy = 7;
+		gbc_lblNewLabel_3.gridy = 9;
 		add(lblNewLabel_3, gbc_lblNewLabel_3);
 		
 		GridBagConstraints gbc_comboChartsExport = new GridBagConstraints();
@@ -248,7 +275,7 @@ public class PanelGUI extends JPanel {
 		gbc_comboChartsExport.insets = new Insets(0, 0, 5, 0);
 		gbc_comboChartsExport.fill = GridBagConstraints.HORIZONTAL;
 		gbc_comboChartsExport.gridx = 4;
-		gbc_comboChartsExport.gridy = 7;
+		gbc_comboChartsExport.gridy = 9;
 		add(comboChartsExport, gbc_comboChartsExport);
 		comboChartsExport.addItem(LABELS.getString("dlgAppLblChartsExportHorizontal"));
 		comboChartsExport.addItem(LABELS.getString("dlgAppLblChartsExportVertical"));
@@ -260,7 +287,7 @@ public class PanelGUI extends JPanel {
 		gbc_separator_3.gridwidth = 5;
 		gbc_separator_3.fill = GridBagConstraints.HORIZONTAL;
 		gbc_separator_3.gridx = 0;
-		gbc_separator_3.gridy = 8;
+		gbc_separator_3.gridy = 10;
 		add(separator_3, gbc_separator_3);
 
 		JLabel lblNewLabel_7 = new JLabel(LABELS.getString("dlgAppSetCharts"));
@@ -269,20 +296,18 @@ public class PanelGUI extends JPanel {
 		gbc_lblNewLabel_7.anchor = GridBagConstraints.WEST;
 		gbc_lblNewLabel_7.insets = new Insets(0, 0, 5, 5);
 		gbc_lblNewLabel_7.gridx = 0;
-		gbc_lblNewLabel_7.gridy = 9;
+		gbc_lblNewLabel_7.gridy = 11;
 		add(lblNewLabel_7, gbc_lblNewLabel_7);
 		for(ChartType t: ChartType.values()) {
 			comboCharts.addItem(t);
 		}
-		try {
-		} catch(RuntimeException e) {}
-		
+
 		GridBagConstraints gbc_comboCharts = new GridBagConstraints();
 		gbc_comboCharts.gridwidth = 2;
 		gbc_comboCharts.insets = new Insets(0, 0, 5, 5);
 		gbc_comboCharts.fill = GridBagConstraints.HORIZONTAL;
 		gbc_comboCharts.gridx = 1;
-		gbc_comboCharts.gridy = 9;
+		gbc_comboCharts.gridy = 11;
 		add(comboCharts, gbc_comboCharts);
 		comboCharts.setSelectedItem(ChartType.valueOf(appProp.getProperty(DialogAppSettings.PROP_CHARTS_START, ChartType.INT_TEMP.name())));
 
@@ -292,7 +317,7 @@ public class PanelGUI extends JPanel {
 		gbc_separator_4.gridwidth = 5;
 		gbc_separator_4.fill = GridBagConstraints.HORIZONTAL;
 		gbc_separator_4.gridx = 0;
-		gbc_separator_4.gridy = 10;
+		gbc_separator_4.gridy = 12;
 		add(separator_4, gbc_separator_4);
 		
 		JLabel lblNewLabel_2 = new JLabel(LABELS.getString("dlgAppSetLblColums") + " - " + LABELS.getString(detailedView ? "dlgAppSetLblColumsExtended": "dlgAppSetLblColumsDefault"));
@@ -301,7 +326,7 @@ public class PanelGUI extends JPanel {
 		gbc_lblNewLabel_2.anchor = GridBagConstraints.WEST;
 		gbc_lblNewLabel_2.insets = new Insets(0, 0, 5, 5);
 		gbc_lblNewLabel_2.gridx = 0;
-		gbc_lblNewLabel_2.gridy = 11;
+		gbc_lblNewLabel_2.gridy = 13;
 		add(lblNewLabel_2, gbc_lblNewLabel_2);
 		
 		JPanel columnsPanel = getColumnsPanel(devTable);
@@ -312,7 +337,7 @@ public class PanelGUI extends JPanel {
 		gbc_panel.gridwidth = 5;
 		gbc_panel.insets = new Insets(0, 10, 0, 5);
 		gbc_panel.gridx = 0;
-		gbc_panel.gridy = 12;
+		gbc_panel.gridy = 14;
 		add(columnsPanel, gbc_panel);
 	}
 	

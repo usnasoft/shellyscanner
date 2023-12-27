@@ -5,7 +5,6 @@ import java.awt.Cursor;
 import java.awt.Image;
 import java.awt.Toolkit;
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -22,6 +21,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.simple.SimpleLogger;
 
+import it.usna.shellyscan.controller.DeferrablesContainer;
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.DevicesFactory;
 import it.usna.shellyscan.model.NonInteractiveDevices;
@@ -36,8 +36,8 @@ import it.usna.util.CLI;
 
 public class Main {
 	public final static String APP_NAME = "Shelly Scanner";
-	public final static String VERSION = "1.0.2 beta";
-	public final static String VERSION_CODE = "001.000.002r100"; // r0xx alpha; r1xx beta; r2xx stable
+	public final static String VERSION = "1.0.2";
+	public final static String VERSION_CODE = "001.000.002r200"; // r0xx alpha; r1xx beta; r2xx stable
 	public final static Image ICON = Toolkit.getDefaultToolkit().createImage(Main.class.getResource("/images/ShSc24.png"));
 	public final static String BACKUP_FILE_EXT = "sbk";
 	public final static String ARCHIVE_FILE_EXT = "arc";
@@ -192,7 +192,9 @@ public class Main {
 		}
 		try {
 			final Devices model = new Devices();
+			DeferrablesContainer.init(model);
 			final MainView view = new MainView(model, appProp);
+
 			// final values for thread
 			final boolean fullScanx = fullScan;
 			final byte [] ipFin = baseIP;
@@ -208,9 +210,9 @@ public class Main {
 					if(useArchive) {
 						try {
 							model.loadFromStore(Paths.get(appProp.getProperty(DialogAppSettings.PROP_ARCHIVE_FILE, DialogAppSettings.PROP_ARCHIVE_FILE_DEFAULT)));
-						} catch (IOException e) {
+						} catch (/*IO*/Exception e) {
 							appProp.setBoolProperty(DialogAppSettings.PROP_USE_ARCHIVE, false);
-							Msg.errorMsg(e);
+							Msg.errorMsg(view, e);
 						}
 					}
 					final int refreshStatusInterval = appProp.getIntProperty(DialogAppSettings.PROP_REFRESH_ITERVAL, DialogAppSettings.PROP_REFRESH_ITERVAL_DEFAULT) * 1000;
@@ -218,7 +220,7 @@ public class Main {
 					if(ipFin != null) {
 						model.scannerInit(ipFin, firstIPFin, lastIPFin, refreshStatusInterval, refreshConfigTics);
 					} else {
-						model.scannerInit(fullScanx, refreshStatusInterval, refreshConfigTics, appProp.getBoolProperty(DialogAppSettings.PROP_AUTORELOAD_ARCHIVE , false) && useArchive);
+						model.scannerInit(fullScanx, refreshStatusInterval, refreshConfigTics, appProp.getBoolProperty(DialogAppSettings.PROP_AUTORELOAD_ARCHIVE, false) && useArchive);
 					}
 				} catch (/*IO*/Exception e) {
 					Msg.errorMsg(e);

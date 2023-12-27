@@ -218,8 +218,8 @@ public class DialogDeviceLogsG2 extends JDialog {
 			setLocationRelativeTo(owner);
 			setVisible(true);
 		} catch (Exception e) {
-//			LOG.error("webSocketClient.start", e);
-			Msg.errorMsg(e);
+//			LOG.error("webSocketClient.start", e); // Msg.errorMsg(...) do log
+			Msg.errorMsg(owner, e);
 		}
 	}
 

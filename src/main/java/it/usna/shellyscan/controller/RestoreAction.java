@@ -145,9 +145,9 @@ public class RestoreAction extends UsnaSelectedAction {
 					final String ret = erroreMsg(device.restore(backupJsons, resData));
 
 					if(ret == null || ret.length() == 0) {
-						try { Thread.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e) {}
+						Thread.sleep(Devices.MULTI_QUERY_DELAY);
 						device.refreshSettings();
-						try { Thread.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e) {}
+						Thread.sleep(Devices.MULTI_QUERY_DELAY);
 						device.refreshStatus();
 
 						if(device.rebootRequired())	{
@@ -165,23 +165,28 @@ public class RestoreAction extends UsnaSelectedAction {
 						if(device.getStatus() == Status.OFF_LINE || device.getStatus() == Status.NOT_LOOGGED || device.getStatus() == Status.GHOST) { // if error happened because the device is off-line -> try to queue action in DeferrablesContainer
 							LOG.debug("Interactive Restore error {} {}", device, ret);
 							SwingUtilities.invokeLater(() ->
-								JOptionPane.showMessageDialog(mainView, LABELS.getString("msgRestoreQueue"), device.getHostname(), JOptionPane.WARNING_MESSAGE));
-							DeferrablesContainer.getInstance(model).add(modelRow, new DeferrableTask(LABELS.getString("action_restore_tooltip"), (def, dev) -> {
-								final String restoreError = erroreMsg(dev.restore(backupJsons, resData));
-								if(restoreError.length() > 0) {
-									def.setStatus(DeferrableTask.Status.FAIL);
-								}
-								try {
-									if(device.getStatus() != Status.OFF_LINE) {
-										try { Thread.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e) {}
-										dev.refreshSettings();
-										try { Thread.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e) {}
-										dev.refreshStatus();
-										mainView.update(Devices.EventType.UPDATE, modelRow);
+							JOptionPane.showMessageDialog(mainView, LABELS.getString("msgRestoreQueue"), device.getHostname(), JOptionPane.WARNING_MESSAGE));
+
+							String taskDescription = LABELS.getString("action_restore_tooltip");
+							DeferrablesContainer dc = DeferrablesContainer.getInstance();
+							if(dc.indexOf(modelRow, taskDescription) < 0) {
+								dc.add(modelRow, taskDescription, (def, dev) -> {
+									final String restoreError = erroreMsg(dev.restore(backupJsons, resData));
+									if(restoreError.length() > 0) {
+										def.setStatus(DeferrableTask.Status.FAIL);
 									}
-								} catch(Exception e) {}
-								return restoreError;
-							}));
+									try {
+										if(device.getStatus() != Status.OFF_LINE) {
+											Thread.sleep(Devices.MULTI_QUERY_DELAY);
+											dev.refreshSettings();
+											Thread.sleep(Devices.MULTI_QUERY_DELAY);
+											dev.refreshStatus();
+											mainView.update(Devices.EventType.UPDATE, modelRow);
+										}
+									} catch(Exception e) {}
+									return restoreError;
+								});
+							}
 						} else {
 							LOG.error("Restore error {} {}", device, ret);
 							JOptionPane.showMessageDialog(mainView, (ret.equals(Restore.ERR_UNKNOWN.name())) ? LABELS.getString("labelError") : ret, device.getHostname(), JOptionPane.ERROR_MESSAGE);
@@ -194,14 +199,14 @@ public class RestoreAction extends UsnaSelectedAction {
 				Msg.errorMsg(mainView, String.format(LABELS.getString("action_restore_error_file"), fc.getSelectedFile().getName()));
 			} catch (IOException e1) {
 				Msg.errorStatusMsg(mainView, device, e1);
-			} catch (RuntimeException e1) {
-				Msg.errorMsg(e1);
+			} catch (InterruptedException | RuntimeException e1) {
+				Msg.errorMsg(mainView, e1);
 			} finally {
 				mainView.getContentPane().setCursor(Cursor.getDefaultCursor());
 			}
 		});
 	}
-	
+
 	private static String erroreMsg(List<String> errors) {
 		return errors.stream().filter(s-> s != null && s.length() > 0).map(s -> LABELS.containsKey(s) ? LABELS.getString(s) : s).distinct().collect(Collectors.joining("\n"));
 	}

@@ -20,7 +20,6 @@ import it.usna.shellyscan.controller.DeferrableTask;
 import it.usna.shellyscan.controller.DeferrableTask.Status;
 import it.usna.shellyscan.controller.DeferrablesContainer;
 import it.usna.shellyscan.controller.DeferrablesContainer.DeferrableRecord;
-import it.usna.shellyscan.model.Devices;
 import it.usna.swing.table.ExTooltipTable;
 import it.usna.swing.table.UsnaTableModel;
 import it.usna.util.UsnaEventListener;
@@ -31,11 +30,11 @@ public class DialogDeferrables extends JFrame implements UsnaEventListener<Defer
 	private final ExTooltipTable table = new ExTooltipTable(tModel);
 	private final DeferrablesContainer deferrables;
 
-	public DialogDeferrables(/*Window owner,*/ Devices model) {
+	public DialogDeferrables(/*Window owner,*/) {
 		super(LABELS.getString("labelShowDeferrables"));
 		setIconImage(Main.ICON);
 
-		deferrables = DeferrablesContainer.getInstance(model);
+		deferrables = DeferrablesContainer.getInstance();
 
 		table.getColumnModel().getColumn(3).setCellRenderer(new DefaultTableCellRenderer() {
 			private static final long serialVersionUID = 1L;
@@ -93,18 +92,16 @@ public class DialogDeferrables extends JFrame implements UsnaEventListener<Defer
 			}
 		});
 
-		setSize(600, 300);
+		setSize(700, 300);
 	}
 
 	@Override
-	public synchronized void setVisible(boolean v) {
+	public void setVisible(boolean v) {
 		super.setVisible(v);
 		if(v) {
 			fill();
 			table.columnsWidthAdapt();
-			if(deferrables.hasListener(this) == false) {
-				deferrables.addListener(this);
-			}
+			deferrables.addUniqueListener(this);
 		} else {
 			deferrables.removeListener(this);
 		}
@@ -114,7 +111,7 @@ public class DialogDeferrables extends JFrame implements UsnaEventListener<Defer
 		SwingUtilities.invokeLater(() -> {
 			setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 			tModel.clear();
-			for(int i = 0; i < deferrables.size(); i++) {
+			for(int i = 0; i < deferrables.count(); i++) {
 				tModel.addRow(generateRow(deferrables.get(i)));
 			}
 			setCursor(Cursor.getDefaultCursor());
@@ -125,6 +122,9 @@ public class DialogDeferrables extends JFrame implements UsnaEventListener<Defer
 		String status = LABELS.getString("defStatus_" + def.getStatus().name());
 		String retMsg = def.getRetMsg();
 		if(retMsg != null && retMsg.length() > 0) {
+			if(LABELS.containsKey(retMsg)) {
+				retMsg = LABELS.getString(retMsg);
+			}
 			status += " - " + retMsg.replace("\n", "; ");
 		}
 		return new Object[] {
@@ -136,7 +136,7 @@ public class DialogDeferrables extends JFrame implements UsnaEventListener<Defer
 
 	@Override
 	public void update(Status mesgType, Integer msgBody) {
-		if(mesgType == Status.WAITING) {
+		if(mesgType == Status.WAITING) { // added
 			tModel.addRow(generateRow(deferrables.get(msgBody)));
 		} else {
 			tModel.setRow(msgBody, generateRow(deferrables.get(msgBody)));

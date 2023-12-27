@@ -77,8 +77,7 @@ public class DialogEditRGB extends JDialog {
 
 		switchButton = new JToggleButton(new ImageIcon(DialogEditRGB.class.getResource("/images/Standby24.png"))/*, light.isOn()*/);
 		switchButton.setSelectedIcon(new ImageIcon(DialogEditRGB.class.getResource("/images/StandbyOn24.png")));
-		switchButton.setRolloverIcon(new ImageIcon(DialogEditRGB.class.getResource("/images/Standby24.png")));
-		switchButton.setRolloverSelectedIcon(new ImageIcon(DialogEditRGB.class.getResource("/images/StandbyOn24.png")));
+		switchButton.setRolloverEnabled(false);
 		switchButton.setContentAreaFilled(false);
 		switchButton.addActionListener(e -> {
 			try {

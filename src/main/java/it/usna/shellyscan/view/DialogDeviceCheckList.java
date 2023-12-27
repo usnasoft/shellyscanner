@@ -100,8 +100,8 @@ public class DialogDeviceCheckList extends JDialog implements UsnaEventListener<
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 
 		tModel = new UsnaTableModel("",
-				LABELS.getString("col_device"), LABELS.getString("col_ip"), LABELS.getString("col_eco"), LABELS.getString("col_ledoff"), LABELS.getString("col_logs"),
-				LABELS.getString("col_blt"), LABELS.getString("col_AP"), LABELS.getString("col_roaming"), LABELS.getString("col_wifi1"), LABELS.getString("col_wifi2"), LABELS.getString("col_extender")) {
+				LABELS.getString("col_device"), LABELS.getString("col_ip"), LABELS.getString("col_eco"), LABELS.getString("col_ledoff"), LABELS.getString("col_logs"), LABELS.getString("col_blt"),
+				LABELS.getString("col_AP"), LABELS.getString("col_roaming"), LABELS.getString("col_wifi1"), LABELS.getString("col_wifi2"), LABELS.getString("col_extender")) {
 			private static final long serialVersionUID = 1L;
 
 			@Override
@@ -114,8 +114,8 @@ public class DialogDeviceCheckList extends JDialog implements UsnaEventListener<
 			private static final long serialVersionUID = 1L;
 			{
 				columnModel.getColumn(COL_STATUS).setMaxWidth(DevicesTable.ONLINE_BULLET.getIconWidth() + 4);
-				setHeadersTooltip(LABELS.getString("col_status_exp"), null, null, LABELS.getString("col_eco_tooltip"), LABELS.getString("col_ledoff_tooltip"), LABELS.getString("col_logs_tooltip"), 
-						LABELS.getString("col_blt_tooltip"), LABELS.getString("col_AP_tooltip"), LABELS.getString("col_roaming_tooltip"), LABELS.getString("col_wifi1_tooltip"), LABELS.getString("col_wifi2_tooltip"), LABELS.getString("col_extender_tooltip"));
+				setHeadersTooltip(LABELS.getString("col_status_exp"), null, null, LABELS.getString("col_eco_tooltip"), LABELS.getString("col_ledoff_tooltip"), LABELS.getString("col_logs_tooltip"), LABELS.getString("col_blt_tooltip"),
+						LABELS.getString("col_AP_tooltip"), LABELS.getString("col_roaming_tooltip"), LABELS.getString("col_wifi1_tooltip"), LABELS.getString("col_wifi2_tooltip"), LABELS.getString("col_extender_tooltip"));
 
 				TableCellRenderer rendTrueOk = new CheckRenderer(true);
 				TableCellRenderer rendFalseOk = new CheckRenderer(false);
@@ -298,7 +298,7 @@ public class DialogDeviceCheckList extends JDialog implements UsnaEventListener<
 		});
 		getRootPane().registerKeyboardAction(e -> textFieldFilter.requestFocus(), KeyStroke.getKeyStroke(KeyEvent.VK_F, MainView.SHORTCUT_KEY), JComponent.WHEN_IN_FOCUSED_WINDOW);
 
-		final Action eraseFilterAction = new UsnaAction(this, "/images/erase-9-16.png", null, e -> {
+		final Action eraseFilterAction = new UsnaAction(this, null, "/images/erase-9-16.png", e -> {
 			textFieldFilter.setText("");
 			textFieldFilter.requestFocusInWindow();
 			table.clearSelection();

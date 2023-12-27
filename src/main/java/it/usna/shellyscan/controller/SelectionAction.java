@@ -2,19 +2,19 @@ package it.usna.shellyscan.controller;
 
 import static it.usna.shellyscan.Main.LABELS;
 
-import java.util.function.Predicate;
+import java.util.function.IntPredicate;
 
 import javax.swing.ImageIcon;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 
 /**
- * Action to select rows in a JTable based on a java.util.function.Predicate<Integer> (Integer is the corresponding model index) criteria
+ * Action to select rows in a JTable based on a java.util.function.IntPredicate (int is the corresponding model index) criteria
  */
 public class SelectionAction extends UsnaAction {
 	private static final long serialVersionUID = 1L;
 
-	public SelectionAction(JTable table, String nameId, String tooltipId, String smallIcon, Predicate<Integer> predicate) {
+	public SelectionAction(JTable table, String nameId, String tooltipId, String smallIcon, IntPredicate predicate) {
 		this(table, tooltipId, predicate);
 		putValue(NAME, LABELS.getString(nameId));
 		if(smallIcon != null) {
@@ -22,8 +22,8 @@ public class SelectionAction extends UsnaAction {
 		}
 	}
 
-	public SelectionAction(JTable table, String tooltipId, Predicate<Integer> test) {
-		super(null, null, tooltipId, null);
+	public SelectionAction(JTable table, String tooltipId, IntPredicate test) {
+		super(null, tooltipId, null, null);
 		onActionPerformed = e -> {
 			ListSelectionModel lsm = table.getSelectionModel();
 			lsm.setValueIsAdjusting(true);

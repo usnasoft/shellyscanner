@@ -82,7 +82,11 @@ public class FirmwareManagerG1 implements FirmwareManager {
 	@Override
 	public String update(boolean stable) {
 		updating = true;
-		return d.sendCommand(stable ? "/ota?update=true" : "/ota?beta=true");
+		String res = d.sendCommand(stable ? "/ota?update=true" : "/ota?beta=true");
+		if(res != null && res.length() > 0) {
+			updating = false;
+		}
+		return res;
 	}
 	
 	@Override

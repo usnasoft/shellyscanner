@@ -12,6 +12,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.SwingUtilities;
+import javax.swing.WindowConstants;
 
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.Devices.EventType;
@@ -41,6 +42,7 @@ public class DialogDeviceSettings extends JDialog implements UsnaEventListener<D
 
 	public DialogDeviceSettings(final MainView owner, Devices model, int[] devicesInd) {
 		super(owner, false);
+		setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 		this.model = model;
 		this.devicesInd = devicesInd;
 		model.addListener(this);
@@ -78,11 +80,15 @@ public class DialogDeviceSettings extends JDialog implements UsnaEventListener<D
 		getContentPane().add(tabbedPane, BorderLayout.CENTER);
 
 		btnClose.addActionListener(event -> dispose());
-		btnOKButton.addActionListener(event -> apply(((AbstractSettingsPanel)tabbedPane.getSelectedComponent()), tabbedPane.getTitleAt(tabbedPane.getSelectedIndex())));
+		btnOKButton.addActionListener(event -> {
+			SwingUtilities.invokeLater(() -> apply(((AbstractSettingsPanel)tabbedPane.getSelectedComponent()), tabbedPane.getTitleAt(tabbedPane.getSelectedIndex())) );
+		});
 		btnApplyClose.addActionListener(event -> {
-			if(apply(((AbstractSettingsPanel)tabbedPane.getSelectedComponent()), tabbedPane.getTitleAt(tabbedPane.getSelectedIndex()))) {
-				btnClose.doClick();
-			}
+			SwingUtilities.invokeLater(() -> {
+				if(apply(((AbstractSettingsPanel)tabbedPane.getSelectedComponent()), tabbedPane.getTitleAt(tabbedPane.getSelectedIndex()))) {
+					btnClose.doClick();
+				}
+			});
 		});
 		panel_1.add(btnOKButton);
 		panel_1.add(btnApplyClose);
@@ -109,10 +115,8 @@ public class DialogDeviceSettings extends JDialog implements UsnaEventListener<D
 
 	private synchronized void showCurrent() {
 		if(showCurrentThread != null) {
-			DialogDeviceSettings.this.setCursor(Cursor.getDefaultCursor());
 			showCurrentThread.interrupt();
 		}
-		setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 		btnOKButton.setEnabled(false);
 		btnApplyClose.setEnabled(false);
 		if(currentPanel != null) {
@@ -120,11 +124,11 @@ public class DialogDeviceSettings extends JDialog implements UsnaEventListener<D
 		}
 		currentPanel = ((AbstractSettingsPanel)tabbedPane.getSelectedComponent());
 		showCurrentThread = new Thread(() -> {
+			setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 			try {
 				btnClose.requestFocus(); // remove focus from form element, it could be disabled now
 				String msg = currentPanel.showing();
 				if(Thread.interrupted() == false) {
-//					DialogDeviceSettings.this.setCursor(Cursor.getDefaultCursor());
 					if(isVisible() && currentPanel.isVisible() && msg != null && msg.length() > 0) {
 						JOptionPane.showMessageDialog(this, msg, LABELS.getString("errorTitle"), JOptionPane.ERROR_MESSAGE);
 					} else { //if(msg == null) { // "" -> panel displayed his own message
@@ -209,4 +213,4 @@ public class DialogDeviceSettings extends JDialog implements UsnaEventListener<D
 			SwingUtilities.invokeLater(() -> dispose()); // devicesInd changes
 		}
 	}
-} // 166 - 205
+}

@@ -1,8 +1,10 @@
 package it.usna.shellyscan.controller;
 
+import java.io.Closeable;
+
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 
-public class DeferrableTask {
+public class DeferrableTask implements Closeable {
 	public enum Status {WAITING, CANCELLED, RUNNING, SUCCESS, FAIL};
 	private final String description;
 	private Task task;
@@ -23,6 +25,8 @@ public class DeferrableTask {
 			String msg = e.getMessage();
 			this.retValue = msg.length() > 0 ? msg : e.toString();
 			return (status = Status.FAIL);
+		} finally {
+			close();
 		}
 	}
 	
@@ -43,13 +47,14 @@ public class DeferrableTask {
 		return description;
 	}
 	
-	public String getreturn() {
+	public String getReturn() {
 		return retValue;
 	}
 	
 	/**
 	 * Release resources
 	 */
+	@Override
 	public void close() {
 		task = null;
 	}

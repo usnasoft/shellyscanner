@@ -16,7 +16,6 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
-import javax.swing.Box;
 import javax.swing.GrayFilter;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -38,6 +37,7 @@ import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.axis.ValueAxis;
+import org.jfree.chart.event.ChartChangeEventType;
 import org.jfree.chart.labels.StandardXYToolTipGenerator;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
@@ -77,41 +77,7 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 
 	private static boolean outStream = false;
 
-	public enum ChartType {
-		INT_TEMP("dlgChartsIntTempLabel", "dlgChartsIntTempYLabel"),
-		RSSI("dlgChartsRSSILabel", "dlgChartsRSSIYLabel"),
-		P("dlgChartsAPowerLabel", "dlgChartsAPowerYLabel", Meters.Type.W),
-		Q("dlgChartsQPowerLabel", "dlgChartsQPowerYLabel", Meters.Type.VAR),
-		V("dlgChartsVoltageLabel", "dlgChartsVoltageYLabel", Meters.Type.V),
-		I("dlgChartsCurrentLabel", "dlgChartsCurrentYLabel", Meters.Type.I),
-		T("dlgChartsTempLabel", "dlgChartsTempYLabel", Meters.Type.T),
-		T1("dlgChartsTemp1Label", "dlgChartsTempYLabel", Meters.Type.T1),
-		T2("dlgChartsTemp2Label", "dlgChartsTempYLabel", Meters.Type.T2),
-		T3("dlgChartsTemp3Label", "dlgChartsTempYLabel", Meters.Type.T3),
-		T4("dlgChartsTemp4Label", "dlgChartsTempYLabel", Meters.Type.T4),
-		H("dlgChartsHumidityLabel", "dlgChartsHumidityYLabel", Meters.Type.H),
-		LUX("dlgChartsLuxLabel", "dlgChartsLuxYLabel", Meters.Type.L);
-
-		private final String yLabel;
-		private final String label;
-		private Meters.Type mType;
-
-		private ChartType(String labelID, String yLabelID) {
-			this.yLabel = LABELS.getString(yLabelID);
-			this.label = LABELS.getString(labelID);
-		}
-
-		private ChartType(String labelID, String yLabelID, Meters.Type mType) {
-			this.yLabel = LABELS.getString(yLabelID);
-			this.label = LABELS.getString(labelID);
-			this.mType = mType;
-		}
-
-		@Override
-		public String toString() { // combo box
-			return label;
-		}
-	}
+	private JComboBox<String> seriesCombo = new JComboBox<>();
 
 	private ChartType currentType;
 
@@ -141,18 +107,20 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 		XYLineAndShapeRenderer renderer = (XYLineAndShapeRenderer)plot.getRenderer();
 		renderer.setDefaultToolTipGenerator(new StandardXYToolTipGenerator("{0}: {1} - {2}", new SimpleDateFormat("HH:mm:ss.SSS"), NF));
 
-		ChartPanel chartPanel = new ChartPanel(chart, false, true, true, false, true);
+		ChartPanel chartPanel = new ChartPanel(chart, false, true, true, false /*zoom*/, true);
 		chartPanel.setInitialDelay(0); // tootip
 		chartPanel.setDismissDelay(20_000); // tootip
-		//		chartPanel.setMouseZoomable(true);
-		//		chartPanel.setMouseWheelEnabled(true);
+//		chartPanel.setMouseZoomable(true);
+//		JScrollPane scrollPane = new JScrollPane();
+//		scrollPane.setViewportView(chartPanel);
 
 		mainPanel.add(chartPanel, BorderLayout.CENTER);
+//		mainPanel.add(scrollPane, BorderLayout.CENTER);
 
 		JPanel commandPanel = new JPanel(new BorderLayout());
-		JPanel westCommandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
+		JPanel westCommandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 0));
 		commandPanel.add(westCommandPanel, BorderLayout.WEST);
-		JPanel eastCommandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
+		JPanel eastCommandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 0));
 		commandPanel.add(eastCommandPanel, BorderLayout.EAST);
 		mainPanel.add(commandPanel, BorderLayout.SOUTH);
 
@@ -189,8 +157,11 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 		btnPause.addActionListener(e ->  {
 			if(btnPause.isSelected()) {
 				xAxis.setRange(xAxis.getRange());
+				chartPanel.setMouseWheelEnabled(true);
 			} else {
 				setRange(xAxis, rangeCombo.getSelectedIndex());
+				chartPanel.setMouseWheelEnabled(false);
+				yAxis.setAutoRange(true); // recover from pan (zoom)
 			}
 		});
 
@@ -200,9 +171,13 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 		btnMarks.setRolloverEnabled(false);
 		btnMarks.setPreferredSize(new Dimension(33, 28));
 		btnMarks.setToolTipText(LABELS.getString("dlgChartsMarkersTooltip"));
-		btnMarks.addActionListener(e -> renderer.setDefaultShapesVisible(btnMarks.isSelected()));
+		btnMarks.addActionListener(e -> {
+			for(int i = 0; i < dataset.getSeriesCount(); i++) {
+				renderer.setSeriesShapesVisible(i, btnMarks.isSelected() && renderer.getSeriesLinesVisible(i)); //renderer.setDefaultShapesVisible(btnMarks.isSelected());
+			}
+		});
 
-		JButton btnDownload = new JButton(new UsnaAction(MeasuresChart.this, "/images/DownloadEmpty16.png", "dlgChartsCSVTooltip", e -> {
+		JButton btnDownload = new JButton(new UsnaAction(MeasuresChart.this, "dlgChartsCSVTooltip", "/images/DownloadEmpty16.png", e -> {
 			try {
 				final JFileChooser fc = new JFileChooser(appProp.getProperty("LAST_PATH"));
 				fc.setFileFilter(new FileNameExtensionFilter(LABELS.getString("filetype_csv_desc"), "csv"));
@@ -219,38 +194,72 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 					JOptionPane.showMessageDialog(this, LABELS.getString("msgFileSaved"), Main.APP_NAME, JOptionPane.INFORMATION_MESSAGE);
 				}
 			} catch (IOException ex) {
-				Msg.errorMsg(ex);
+				Msg.errorMsg(this, ex);
 			}
 		}));
 		btnDownload.setPreferredSize(new Dimension(33, 28));
 
-		JButton btnCopy = new JButton(new UsnaAction(null, "/images/Toolbar-Copy16.png", "btnCopy", e -> chartPanel.doCopy()));
+		JButton btnCopy = new JButton(new UsnaAction(null, "btnCopy", "/images/Toolbar-Copy16.png", e -> chartPanel.doCopy()));
 		btnCopy.setPreferredSize(new Dimension(33, 28));
 
-		westCommandPanel.add(Box.createHorizontalStrut(10));
+		westCommandPanel.add(new JLabel(LABELS.getString("dlgChartsSeriesLabel")));
+		westCommandPanel.add(seriesCombo);
+
 		westCommandPanel.add(btnMarks);
 		westCommandPanel.add(btnPause);
-		westCommandPanel.add(Box.createHorizontalStrut(10));
 		westCommandPanel.add(btnDownload);
 		westCommandPanel.add(btnCopy);
 
 		rangeCombo.addActionListener(e -> {
 			btnPause.setSelected(false);
 			setRange(xAxis, rangeCombo.getSelectedIndex());
+			yAxis.setAutoRange(true); // recover from pan (zoom)
 		});
 
 		typeCombo.addActionListener(e -> {
 			currentType = (ChartType)typeCombo.getSelectedItem();
 			initDataSet(plot.getRangeAxis(), dataset, model, ind);
-			btnPause.setSelected(false);
+			btnPause.setSelected(false); //setRange(xAxis, rangeCombo.getSelectedIndex());
 			xAxis.setAutoRange(true);
-			//			setRange(xAxis, rangeCombo.getSelectedIndex());
+			yAxis.setAutoRange(true); // recover from pan (zoom)
+		});
+
+		seriesCombo.addActionListener(e -> {
+			if(seriesCombo.getItemCount() > 0) {
+				if(seriesCombo.getSelectedIndex() == 0) { // All
+					for(int i = 0; i < dataset.getSeriesCount(); i++) {
+						renderer.setSeriesLinesVisible(i, true);
+						renderer.setSeriesShapesVisible(i, btnMarks.isSelected());
+					}
+				} else {
+					for(int i = 0; i < dataset.getSeriesCount(); i++ ) {
+						renderer.setSeriesLinesVisible(i, seriesCombo.getSelectedIndex() - 1 == i);
+						renderer.setSeriesShapesVisible(i, seriesCombo.getSelectedIndex() - 1 == i && btnMarks.isSelected());
+					}
+				}
+			}
 		});
 
 		this.currentType = ChartType.valueOf(appProp.getProperty(DialogAppSettings.PROP_CHARTS_START, ChartType.INT_TEMP.name()));
 		typeCombo.setSelectedItem(currentType);
 
 		initDataSet(plot.getRangeAxis(), dataset, model, ind);
+		
+		plot.setDomainPannable(true);
+		// pan event
+		plot.addChangeListener(e -> {
+			if(e.getType() == ChartChangeEventType.GENERAL) {
+				if(xAxis.isAutoRange() && yAxis.isAutoRange() && btnPause.isSelected()) {
+					btnPause.setSelected(false);
+					chartPanel.setMouseWheelEnabled(false);
+//					System.out.println("xxx");
+				} else if((xAxis.isAutoRange() == false || yAxis.isAutoRange() == false) && btnPause.isSelected() == false) {
+					btnPause.setSelected(true);
+					chartPanel.setMouseWheelEnabled(true);
+//					System.out.println("yyyy");
+				}
+			}
+		});
 
 		getRootPane().registerKeyboardAction(e -> {
 			int selected = rangeCombo.getSelectedIndex();
@@ -261,7 +270,7 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 
 		model.addListener(this);
 
-		setSize(800, 460);
+		setSize(900, 460);
 		setLocationRelativeTo(owner);
 		setVisible(true);
 	}
@@ -272,22 +281,57 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 		else if(selected == 3) xAxis.setFixedAutoRange(1000 * 15 * 60);
 		else if(selected == 4) xAxis.setFixedAutoRange(1000 * 30 * 60);
 		else if(selected == 5) xAxis.setFixedAutoRange(1000 * 60 * 60);
-		else xAxis.setFixedAutoRange(0); // selected == 0
+		else xAxis.setFixedAutoRange(0); // selected == 0 - auto
 		xAxis.setAutoRange(true);
 	}
 
-	private void initDataSet(ValueAxis yAxis, TimeSeriesCollection dataset, final Devices model, int[] indexes) {
+	private void initDataSet(ValueAxis yAxis, TimeSeriesCollection dataset, final Devices model, int[] modelIndexes) {
 		dataset.removeAllSeries();
 		yAxis.setLabel(currentType.yLabel);
-		for(int ind: indexes) {
+		for(int ind: modelIndexes) {
 			final ShellyAbstractDevice d = model.get(ind);
-
-			if(currentType.mType == null) { // device property (INT_TEMP & RSSI), not from "Meters"
+			if(currentType == ChartType.T_ALL) {
+				final ArrayList<TimeSeries> temp = new ArrayList<>(5);
+				final Meters[] meters = d.getMeters();
+				if(meters != null) {
+					for(int i = 0; i < meters.length; i++) {
+						if(meters[i].hasType(Meters.Type.T)) {
+							TimeSeries ts = new TimeSeries(UtilMiscellaneous.getDescName(d));
+							temp.add(ts);
+							dataset.addSeries(ts);
+						}
+						if(meters[i].hasType(Meters.Type.T1)) {
+							TimeSeries ts = new TimeSeries(UtilMiscellaneous.getDescName(d) + "-1");
+							temp.add(ts);
+							dataset.addSeries(ts);
+						}
+						if(meters[i].hasType(Meters.Type.T2)) {
+							TimeSeries ts = new TimeSeries(UtilMiscellaneous.getDescName(d) + "-2");
+							temp.add(ts);
+							dataset.addSeries(ts);
+						}
+						if(meters[i].hasType(Meters.Type.T3)) {
+							TimeSeries ts = new TimeSeries(UtilMiscellaneous.getDescName(d) + "-3");
+							temp.add(ts);
+							dataset.addSeries(ts);
+						}
+						if(meters[i].hasType(Meters.Type.T4)) {
+							TimeSeries ts = new TimeSeries(UtilMiscellaneous.getDescName(d) + "-4");
+							temp.add(ts);
+							dataset.addSeries(ts);
+						}
+					}
+				}
+				if(temp.size() == 0) {
+					dataset.addSeries(new TimeSeries(UtilMiscellaneous.getDescName(d))); // legend
+				}
+				seriesMap.put(ind, temp.toArray(TimeSeries[]::new));
+			} else if(currentType.mType == null) { // device property (INT_TEMP & RSSI), not from "Meters" or P_SUM
 				TimeSeries ts = new TimeSeries(UtilMiscellaneous.getDescName(d));
 				dataset.addSeries(ts);
 				seriesMap.put(ind, new TimeSeries[] {ts});
 			} else {
-				ArrayList<TimeSeries> temp = new ArrayList<>();
+				ArrayList<TimeSeries> temp = new ArrayList<>(5);
 				Meters[] meters = d.getMeters();
 				if(meters != null) {
 					for(int i = 0; i < meters.length; i++) {
@@ -305,6 +349,13 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 			}
 			update(Devices.EventType.UPDATE, ind);
 		}
+
+		// seriesCombo
+		seriesCombo.removeAllItems();
+		seriesCombo.addItem(LABELS.getString("dlgChartsShowAllSeriesLabel"));
+		for(int i = 0; i < dataset.getSeriesCount(); i++ ) {
+			seriesCombo.addItem(dataset.getSeries(i).getKey().toString());
+		}
 	}
 
 	@Override
@@ -317,46 +368,85 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 	@Override
 	public void update(EventType mesgType, Integer ind) {
 		if(mesgType == Devices.EventType.UPDATE) {
-			TimeSeries ts[];
-			if((ts = seriesMap.get(ind)) != null) {
+			final TimeSeries ts[];
+			final ShellyAbstractDevice d;
+			if((ts = seriesMap.get(ind)) != null && ((d = model.get(ind)).getStatus() == Status.ON_LINE || ts[0].getItemCount() == 0)) { // ts[0].getItemCount() == 0 for battery devices
 				SwingUtilities.invokeLater(() -> {
 					try {
-						// System.out.println(ind);
-						final ShellyAbstractDevice d = model.get(ind);
-						if(d.getStatus() == Status.ON_LINE) {
-							final Millisecond timestamp = new Millisecond(new Date(d.getLastTime()));
-							Meters[] m;
-							if(currentType == ChartType.INT_TEMP && d instanceof InternalTmpHolder tempH) {
-								ts[0].addOrUpdate(timestamp, tempH.getInternalTmp());
-								if(outStream) {
-									System.out.println("graph_out->" + d.getHostname() + ":0:" + currentType.name() + ":" + timestamp.getFirstMillisecond() + ":" + tempH.getInternalTmp());
+						final Millisecond timestamp = new Millisecond(new Date(d.getLastTime()));
+						Meters[] m;
+						if(currentType == ChartType.INT_TEMP && d instanceof InternalTmpHolder tempH) {
+							ts[0].addOrUpdate(timestamp, tempH.getInternalTmp());
+							outStream(d, 0, currentType.name(), timestamp, tempH.getInternalTmp());
+						} else if(currentType == ChartType.RSSI) {
+							ts[0].addOrUpdate(timestamp, d.getRssi());
+							outStream(d, 0, currentType.name(), timestamp, d.getRssi());
+						} else if(currentType == ChartType.T_ALL && (m = d.getMeters()) != null) {
+							int j = 0;
+							for(int i = 0; i < m.length; i++) {
+								if(m[i].hasType(Meters.Type.T)) {
+									float val = m[i].getValue(Meters.Type.T);
+									ts[j++].addOrUpdate(timestamp, val);
+									outStream(d, 0, /*ChartType.T*/"T", timestamp, val);
 								}
-							} else if(currentType == ChartType.RSSI) {
-								ts[0].addOrUpdate(timestamp, d.getRssi());
-								if(outStream) {
-									System.out.println("graph_out->" + d.getHostname() + ":0:" + currentType.name() + ":" + timestamp.getFirstMillisecond() + ":" + d.getRssi());
+								if(m[i].hasType(Meters.Type.T1)) {
+									float val = m[i].getValue(Meters.Type.T1);
+									ts[j++].addOrUpdate(timestamp, val);
+									outStream(d, 0, /*ChartType.T1*/"T1", timestamp, val);
 								}
-							} else if(/*currentType.mType != null &&*/ (m = d.getMeters()) != null) {
-								int j = 0;
-								for(int i = 0; i < m.length; i++) {
-									if(m[i].hasType(currentType.mType)) {
-										double val = m[i].getValue(currentType.mType);
-										ts[j].addOrUpdate(timestamp, val);
-										if(outStream) {
-											System.out.println("graph_data->" + d.getHostname() + ":" + j + ":" + currentType.name() + ":" + timestamp.getFirstMillisecond() + ":" + val);
-										}
-										j++;
-									}
+								if(m[i].hasType(Meters.Type.T2)) {
+									float val = m[i].getValue(Meters.Type.T2);
+									ts[j++].addOrUpdate(timestamp, val);
+									outStream(d, 0, /*ChartType.T2*/"T2", timestamp, val);
+								}
+								if(m[i].hasType(Meters.Type.T3)) {
+									float val = m[i].getValue(Meters.Type.T3);
+									ts[j++].addOrUpdate(timestamp, val);
+									outStream(d, 0, /*ChartType.T3*/"T3", timestamp, val);
+								}
+								if(m[i].hasType(Meters.Type.T4)) {
+									float val = m[i].getValue(Meters.Type.T4);
+									ts[j/*++*/].addOrUpdate(timestamp, val);
+									outStream(d, 0, /*ChartType.T4*/"T4", timestamp, val);
+								}
+							}
+						} else if(currentType == ChartType.P_SUM && (m = d.getMeters()) != null) {
+							boolean exists = false;
+							float sumW = 0;
+							for(int i = 0; i < m.length; i++) {
+								if(m[i].hasType(Meters.Type.W)) {
+									sumW += m[i].getValue(Meters.Type.W);
+									exists = true;
+								}
+							}
+							if(exists) {
+								ts[0].addOrUpdate(timestamp, sumW);
+								outStream(d, 0, currentType.name(), timestamp, sumW);
+							}
+						} else if((m = d.getMeters()) != null) {
+							int j = 0;
+							for(int i = 0; i < m.length; i++) {
+								if(m[i].hasType(currentType.mType)) {
+									float val = m[i].getValue(currentType.mType);
+									ts[j].addOrUpdate(timestamp, val);
+									outStream(d, j, currentType.name(), timestamp, val);
+									j++;
 								}
 							}
 						}
 					} catch (Throwable ex) {
-						LOG.error("Unexpected", ex);
+						LOG.warn("Unexpected", ex); // possible error on graph type change
 					}
 				});
 			}
 		} else if(mesgType == Devices.EventType.CLEAR) {
 			SwingUtilities.invokeLater(() -> dispose());
+		}
+	}
+
+	private static void outStream(ShellyAbstractDevice d, int channel, String type, Millisecond timestamp, float val) {
+		if(outStream) {
+			System.out.println("graph_data->" + d.getHostname() + ":" + channel + ":" + type + ":" + timestamp.getFirstMillisecond() + ":" + val);
 		}
 	}
 

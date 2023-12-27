@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import it.usna.shellyscan.controller.DeferrableTask.Status;
+import it.usna.shellyscan.controller.DeferrableTask.Task;
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.Devices.EventType;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
@@ -22,26 +23,58 @@ public class DeferrablesContainer extends UsnaObservable<DeferrableTask.Status, 
 	private ArrayList<Integer> devIdx = new ArrayList<>();
 	private ArrayList<DeferrableRecord> defer = new ArrayList<>();
 
-	public static DeferrablesContainer getInstance(Devices model) {
-		if(instance == null) {
-			instance = new DeferrablesContainer(model);
-			model.addListener(instance);
-		}
+//	public static DeferrablesContainer getInstance(Devices model) {
+//		if(instance == null) {
+//			instance = new DeferrablesContainer(model);
+//			model.addListener(instance);
+//		}
+//		return instance; 
+//	}
+
+	public static DeferrablesContainer getInstance() {
 		return instance; 
+	}
+	
+	public static void init(Devices model) {
+		instance = new DeferrablesContainer(model);
+		model.addListener(instance);
 	}
 
 	private DeferrablesContainer(Devices model) {
 		this.model = model;
 	};
 
-	public void add(int modelIdx, DeferrableTask def) {
+	public void add(int modelIdx, String decription,  Task task) {
 		synchronized (devIdx) {
-			DeferrableRecord newDef = new DeferrableRecord(def, UtilMiscellaneous.getDescName(model.get(modelIdx)), LocalDateTime.now());
+			DeferrableRecord newDef = new DeferrableRecord(decription, task, UtilMiscellaneous.getDescName(model.get(modelIdx)), LocalDateTime.now());
 			devIdx.add(modelIdx);
 			defer.add(newDef);
 			fireEvent(Status.WAITING, devIdx.size() - 1);
 			LOG.trace("Deferrable added: {}", newDef);
 		}
+	}
+	
+//	public List<DeferrableTask> getWaitingDefByModelIndex(Integer modelIdx) {
+//		ArrayList<DeferrableTask> res = new ArrayList<>();
+//		synchronized (devIdx) {
+//			for(int i = 0; i < devIdx.size(); i++) {
+//				if(devIdx.get(i).equals(modelIdx)) {
+//					res.add(defer.get(i).def)	;
+//				}
+//			}
+//		}
+//		return res;
+//	}
+	
+	public int indexOf(Integer modelIdx, String description) {
+		synchronized (devIdx) {
+			for(int i = 0; i < devIdx.size(); i++) {
+				if(modelIdx.equals(devIdx.get(i)) && defer.get(i).getDescription().equals(description)) {
+					return i;
+				}
+			}
+		}
+		return -1;
 	}
 
 	public void cancel(int index) {
@@ -58,20 +91,21 @@ public class DeferrablesContainer extends UsnaObservable<DeferrableTask.Status, 
 	@Override
 	public void update(EventType mesgType, Integer modelIdx) {
 		int index;
-		if((mesgType == EventType.SUBSTITUTE || mesgType == EventType.UPDATE) && (index = devIdx.indexOf(modelIdx)) >= 0) {
+		ShellyAbstractDevice device;
+		if((mesgType == EventType.SUBSTITUTE || mesgType == EventType.UPDATE) &&
+				(index = devIdx.indexOf(modelIdx)) >= 0 &&
+				(device = model.get(modelIdx)).getStatus() == ShellyAbstractDevice.Status.ON_LINE) {
 			synchronized (devIdx) {
 				DeferrableTask deferrable = defer.get(index).def;
-				ShellyAbstractDevice device;
-				if(deferrable.getStatus() == Status.WAITING && (device = model.get(modelIdx)).getStatus() == ShellyAbstractDevice.Status.ON_LINE) {
+				if(deferrable.getStatus() == Status.WAITING) {
 					deferrable.setStatus(Status.RUNNING); // deferrable.run(device) change the status but we need it is changed before fireEvent
 					new Thread(() -> {
 						final Status s = deferrable.run(device);
 						fireEvent(s, index);
 					}).start();
-					String name = UtilMiscellaneous.getDescName(model.get(modelIdx)); // could have been changed since add(...)
 					fireEvent(Status.RUNNING, index);
 					LOG.trace("Deferrable execution: {}", deferrable);
-					defer.get(index).deviceName = name;
+					defer.get(index).deviceName = UtilMiscellaneous.getDescName(device); // could have been changed since add(...)
 					devIdx.set(index, null);
 				}
 			}
@@ -84,8 +118,14 @@ public class DeferrablesContainer extends UsnaObservable<DeferrableTask.Status, 
 		}
 	}
 	
-	public int size() {
+	public int count() {
 		return defer.size();
+	}
+	
+	public int countWaiting() {
+		synchronized (devIdx) {
+			return (int)defer.stream().filter(def -> def.getStatus() == Status.WAITING).count();
+		}
 	}
 	
 	public DeferrableRecord get(int index) {
@@ -102,8 +142,8 @@ public class DeferrablesContainer extends UsnaObservable<DeferrableTask.Status, 
 		private final LocalDateTime time;
 		private String deviceName;
 
-		private DeferrableRecord(DeferrableTask def, String deviceName, LocalDateTime time) {
-			this.def = def;
+		private DeferrableRecord(String decription, Task task, String deviceName, LocalDateTime time) {
+			this.def = new DeferrableTask(decription, task);
 			this.deviceName = deviceName;
 			this.time = time;
 		}
@@ -121,7 +161,7 @@ public class DeferrablesContainer extends UsnaObservable<DeferrableTask.Status, 
 		}
 		
 		public String getRetMsg() {
-			return def.getreturn();
+			return def.getReturn();
 		}
 
 		public String getDeviceName() {
@@ -132,5 +172,5 @@ public class DeferrablesContainer extends UsnaObservable<DeferrableTask.Status, 
 		public String toString() {
 			return time + " - " +  def + " - " + deviceName;
 		}
-	};
+	}
 }

@@ -61,19 +61,19 @@ public class BasicEditorPanel extends JPanel {
 		pasteAction.putValue(Action.SHORT_DESCRIPTION, LABELS.getString("btnPaste"));
 		pasteAction.putValue(Action.SMALL_ICON, new ImageIcon(BasicEditorPanel.class.getResource("/images/Clipboard_Paste24.png")));
 		
-		undoAction = new UsnaAction(null, "/images/Undo24.png", "btnUndo", e -> {
+		undoAction = new UsnaAction(null, "btnUndo", "/images/Undo24.png", e -> {
 			try {manager.undo();} catch(RuntimeException ex) {}
 		});
 		textArea.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_Z, MainView.SHORTCUT_KEY), "undo_usna");
 		textArea.getActionMap().put("undo_usna", undoAction);
 		
-		redoAction = new UsnaAction(null, "/images/Redo24.png", "btnRedo", e -> {
+		redoAction = new UsnaAction(null, "btnRedo", "/images/Redo24.png", e -> {
 			try {manager.redo();} catch(RuntimeException ex) {}
 		});
 		textArea.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_Y, MainView.SHORTCUT_KEY), "redo_usna");
 		textArea.getActionMap().put("redo_usna", redoAction);
 		
-		findAction = new UsnaAction(null, "/images/Search24.png", "btnFind", e -> {
+		findAction = new UsnaAction(null, "btnFind", "/images/Search24.png", e -> {
 			FindReplaceDialog f = new FindReplaceDialog(owner, textArea, true);
 			f.setLocationRelativeTo(BasicEditorPanel.this);
 			f.setVisible(true);

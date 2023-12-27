@@ -51,7 +51,7 @@ public class ScriptEditor extends JFrame {
 			private File path = null;
 						
 			protected JToolBar createToolbar(JToolBar toolBar) {
-				UsnaAction openAction = new UsnaAction(ScriptEditor.this, "/images/Open24.png", "dlgOpen", e -> {
+				UsnaAction openAction = new UsnaAction(ScriptEditor.this, "dlgOpen", "/images/Open24.png", e -> {
 					final JFileChooser fc = new JFileChooser(path);
 					fc.setFileFilter(new FileNameExtensionFilter(LABELS.getString("filetype_js_desc"), DialogDeviceScriptsG2.FILE_EXTENSION));
 					fc.addChoosableFileFilter(new FileNameExtensionFilter(LABELS.getString("filetype_sbk_desc"), Main.BACKUP_FILE_EXT));
@@ -63,7 +63,7 @@ public class ScriptEditor extends JFrame {
 						path = fc.getSelectedFile().getParentFile();
 					}
 				});
-				UsnaAction saveAsAction = new UsnaAction(ScriptEditor.this, "/images/Save24.png", "dlgSave", e -> {
+				UsnaAction saveAsAction = new UsnaAction(ScriptEditor.this, "dlgSave", "/images/Save24.png", e -> {
 					final JFileChooser fc = new JFileChooser(path);
 					fc.setFileFilter(new FileNameExtensionFilter(LABELS.getString("filetype_js_desc"), DialogDeviceScriptsG2.FILE_EXTENSION));
 					if(fc.showSaveDialog(ScriptEditor.this) == JFileChooser.APPROVE_OPTION) {

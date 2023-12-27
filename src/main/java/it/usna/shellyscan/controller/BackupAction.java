@@ -47,18 +47,22 @@ public class BackupAction extends UsnaAction {
 						final String hostName = d.getHostname();
 						mainView.setStatus(String.format(LABELS.getString("statusBackup"), j + 1, ind.length, hostName));
 						final File outFile = (ind.length > 1) ?
-								new File(fc.getSelectedFile(), hostName.replaceAll("[^\\w_-]+", "_") + "." + Main.BACKUP_FILE_EXT) :
-									fc.getSelectedFile();
+								new File(fc.getSelectedFile(), hostName.replaceAll("[^\\w_-]+", "_") + "." + Main.BACKUP_FILE_EXT) : fc.getSelectedFile();
 						try {
 							final boolean connected = d.backup(outFile);
 							res += String.format(LABELS.getString(connected ? "dlgSetMultiMsgOk" : "dlgSetMultiMsgStored"), hostName) + "<br>";
 						} catch (IOException | RuntimeException e1) {
 							if(d.getStatus() == Status.OFF_LINE || d instanceof GhostDevice) { // if error happened because the device is off-line -> try to queue action in DeferrablesContainer
 								LOG.debug("Interactive Backup error {}", d);
-								DeferrablesContainer.getInstance(model).add(modelRow, new DeferrableTask(LABELS.getString("action_back_tooltip"), (def, dev) -> {
-									dev.backup(outFile);
-									return null;
-								}));
+								
+								String taskDescription = LABELS.getString("action_back_tooltip");
+								DeferrablesContainer dc = DeferrablesContainer.getInstance();
+								if(dc.indexOf(modelRow, taskDescription) < 0) {
+									dc.add(modelRow, taskDescription, (def, dev) -> {
+										dev.backup(outFile);
+										return null;
+									});
+								}
 								res += String.format(LABELS.getString("dlgSetMultiMsgQueue"), hostName) + "<br>";
 							} else {
 								LOG.debug("Backup error {}", d.getHostname(), e1);

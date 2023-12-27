@@ -252,10 +252,10 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 		fireEvent(EventType.READY);
 	}
 
-	public void refresh(int ind, boolean force) {
+	public void refresh(final int ind, boolean force) {
 		synchronized(devices) {
 			final ShellyAbstractDevice d = devices.get(ind);
-			if(d.getStatus() != Status.READING || force) {
+			if(d instanceof GhostDevice == false && (d.getStatus() != Status.READING || force)) {
 				refreshProcess.get(ind).cancel(true);
 				d.setStatus(Status.READING);
 				executor.schedule(() -> {
@@ -440,7 +440,7 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 						create(g.getAddress(), g.getPort(), g.getAddress().getHostAddress(), false);
 					} catch (RuntimeException e) {/*LOG.trace("ghosts reload {}", d.getAddress());*/}
 				}, dalay, TimeUnit.MILLISECONDS);
-				dalay +=4;
+				dalay += 4;
 			}
 		}
 	}
@@ -464,15 +464,15 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 		return devices.size();
 	}
 
-	private int indexOfByHostname(String hostname) {
-		//synchronized(devices) {
-		for(int i = 0; i < devices.size(); i++) {
-			if(hostname.equals(devices.get(i).getHostname())) {
-				return i;
-			}
-		}
-		return -1;
-	}
+//	private int indexOfByHostname(String hostname) {
+//		//synchronized(devices) {
+//		for(int i = 0; i < devices.size(); i++) {
+//			if(hostname.equals(devices.get(i).getHostname())) {
+//				return i;
+//			}
+//		}
+//		return -1;
+//	}
 	
 	public void loadFromStore(Path path) throws IOException {
 		loadGhosts(ghostsStore.read(path));
@@ -550,13 +550,13 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 		@Override
 		public void serviceRemoved(ServiceEvent event) {
 			String hostname = event.getInfo().getName();
-			synchronized(devices) {
-				int ind;
-				if((ind = indexOfByHostname(hostname)) >= 0) {
-					devices.get(ind).setStatus(Status.OFF_LINE);
-					fireEvent(EventType.UPDATE, ind);
-				}
-			}
+//			synchronized(devices) {
+//				int ind = indexOfByHostname(hostname);
+//				if(ind >= 0) {
+//					devices.get(ind).setStatus(Status.OFF_LINE);
+//					fireEvent(EventType.UPDATE, ind);
+//				}
+//			}
 			LOG.debug("Service removed: {} - {}", event.getInfo(), hostname);
 		}
 

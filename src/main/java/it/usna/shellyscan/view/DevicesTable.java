@@ -72,7 +72,6 @@ public class DevicesTable extends ExTooltipTable {
 	public final static ImageIcon LOGIN_BULLET = new ImageIcon(MainView.class.getResource("/images/bullet_star_yellow.png"), LABELS.getString("labelDevNotLogged"));
 	public final static ImageIcon UPDATING_BULLET = new ImageIcon(MainView.class.getResource("/images/bullet_refresh.png"), LABELS.getString("labelDevUpdating"));
 	public final static ImageIcon ERROR_BULLET = new ImageIcon(MainView.class.getResource("/images/bullet_error.png"), LABELS.getString("labelDevError"));
-//	public final static ImageIcon GHOST_BULLET = new ImageIcon(GHOSTIMG, LABELS.getString("labelDevGhost"));
 	private final static String TRUE = LABELS.getString("true_yn");
 	private final static String FALSE = LABELS.getString("false_yn");
 	private final static String YES = LABELS.getString("true_yna");
@@ -136,7 +135,7 @@ public class DevicesTable extends ExTooltipTable {
 				s2 = "";
 			} else if (o2 instanceof DeviceModule[] dmArray) {
 				s2 = dmArray[0].getLabel();
-			} else if (o1 instanceof DeviceModule dm) {
+			} else if (o2 instanceof DeviceModule dm) {
 				s2 = dm.getLabel();
 			} else {
 				s2 = o2.toString();
@@ -189,14 +188,9 @@ public class DevicesTable extends ExTooltipTable {
 	public Component prepareRenderer(TableCellRenderer renderer, int row, int column) {
 		Component comp = super.prepareRenderer(renderer, row, column);
 		if(isRowSelected(row) == false) {
-			if(row % 2 == 0 ) {
-				comp.setBackground(Main.TAB_LINE1);
-			} else {
-				comp.setBackground(Main.TAB_LINE2);
-			}
+			comp.setBackground((row % 2 == 0) ? Main.TAB_LINE1 : Main.TAB_LINE2);
 		} else {
 			comp.setBackground(getSelectionBackground());
-//			comp.setForeground(getSelectionForeground());
 		}
 		computeRowHeight(row, comp);
 		return comp;
@@ -286,7 +280,7 @@ public class DevicesTable extends ExTooltipTable {
 	}
 	
 	public void loadColPos(final AppProperties appProp) {
-		if(loadColPos(appProp, STORE_PREFIX) == false) {
+		if(loadColPos(appProp, STORE_PREFIX) == false) { // no configuration -> default
 			hideColumn(COL_MAC_IDX);
 			hideColumn(COL_SSID_IDX);
 			hideColumn(COL_DEBUG);
@@ -301,7 +295,7 @@ public class DevicesTable extends ExTooltipTable {
 			for(int c = 0; c < getColumnCount(); c++) {
 				TableColumn tc = columnModel.getColumn(c);
 				Object val = tc.getHeaderValue();
-				int width = val != null ? SwingUtilities.computeStringWidth(fm, val.toString()) / 2 : 1; // "/2"
+				int width = (val != null) ? SwingUtilities.computeStringWidth(fm, val.toString()) / 2 : 1; // "/2"
 				for(int r = 0; r < getRowCount(); r++) {
 					val = getValueAt(r, c);
 					if(val != null) {
