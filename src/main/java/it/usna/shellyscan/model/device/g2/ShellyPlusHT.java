@@ -5,6 +5,7 @@ import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Map;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
@@ -80,7 +81,7 @@ public class ShellyPlusHT extends AbstractBatteryG2Device {
 	}
 	
 	@Override
-	protected void restore(Map<String, JsonNode> backupJsons, ArrayList<String> errors) throws IOException {
+	protected void restore(Map<String, JsonNode> backupJsons, ArrayList<String> errors) throws JsonProcessingException {
 		JsonNode configuration = backupJsons.get("Shelly.GetConfig.json");
 		errors.add(postCommand("HT_UI.SetConfig", "{\"config\":" + jsonMapper.writeValueAsString(configuration.get("ht_ui")) + "}"));
 		

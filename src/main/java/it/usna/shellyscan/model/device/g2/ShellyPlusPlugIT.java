@@ -106,7 +106,7 @@ public class ShellyPlusPlugIT extends AbstractG2Device implements RelayCommander
 	}
 
 	@Override
-	protected void restore(Map<String, JsonNode> backupJsons, ArrayList<String> errors) throws IOException, InterruptedException {
+	protected void restore(Map<String, JsonNode> backupJsons, ArrayList<String> errors) throws  InterruptedException {
 		JsonNode configuration = backupJsons.get("Shelly.GetConfig.json");
 		errors.add(relay.restore(configuration));
 	}
