@@ -421,10 +421,10 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 	}
 
 	/** device specific */
-	protected abstract void restore(Map<String, JsonNode> backupJsons, ArrayList<String> errors) throws IOException, InterruptedException;
+	protected abstract void restore(Map<String, JsonNode> backupJsons, List<String> errors) throws IOException, InterruptedException;
 
 	// Shelly.GetConfig.json
-	void restoreCommonConfig(JsonNode config, final long delay, Map<Restore, String> data, ArrayList<String> errors) throws InterruptedException, IOException {
+	void restoreCommonConfig(JsonNode config, final long delay, Map<Restore, String> data, List<String> errors) throws InterruptedException, IOException {
 		ObjectNode outConfig = JsonNodeFactory.instance.objectNode();
 
 		// BLE.SetConfig

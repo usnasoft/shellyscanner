@@ -2,7 +2,7 @@ package it.usna.shellyscan.model.device.g2;
 
 import java.io.IOException;
 import java.net.InetAddress;
-import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -18,7 +18,7 @@ public abstract class AbstractProDevice extends AbstractG2Device {
 	}
 	
 	@Override
-	void restoreCommonConfig(JsonNode config, final long delay, Map<Restore, String> data, ArrayList<String> errors) throws InterruptedException, IOException {
+	void restoreCommonConfig(JsonNode config, final long delay, Map<Restore, String> data, List<String> errors) throws InterruptedException, IOException {
 		super.restoreCommonConfig(config, delay, data, errors);
 		errors.add(ethRestore(config.get("eth")));
 	}

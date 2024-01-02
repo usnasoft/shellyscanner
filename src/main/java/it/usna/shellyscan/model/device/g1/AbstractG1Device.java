@@ -284,7 +284,7 @@ public abstract class AbstractG1Device extends ShellyAbstractDevice {
 		}
 	}
 
-	protected abstract void restore(JsonNode settings, ArrayList<String> errors) throws IOException, InterruptedException;
+	protected abstract void restore(JsonNode settings, List<String> errors) throws IOException, InterruptedException;
 
 	/**
 	 * tz_dst - intentionally ignored (depends by backup date)

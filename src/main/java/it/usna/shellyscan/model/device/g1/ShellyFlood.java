@@ -2,7 +2,7 @@ package it.usna.shellyscan.model.device.g1;
 
 import java.io.IOException;
 import java.net.InetAddress;
-import java.util.ArrayList;
+import java.util.List;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -76,7 +76,7 @@ public class ShellyFlood extends AbstractBatteryG1Device {
 	}
 
 	@Override
-	protected void restore(JsonNode settings, ArrayList<String> errors) throws IOException {
+	protected void restore(JsonNode settings, List<String> errors) throws IOException {
 		JsonNode sensors = settings.get("sensors");
 		errors.add(sendCommand("/settings?" +
 				jsonNodeToURLPar(sensors, "temperature_units", "temperature_threshold")) + "&" +

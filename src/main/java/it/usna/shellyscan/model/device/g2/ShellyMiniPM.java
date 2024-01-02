@@ -2,13 +2,12 @@ package it.usna.shellyscan.model.device.g2;
 
 import java.io.IOException;
 import java.net.InetAddress;
-import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
 import it.usna.shellyscan.model.device.Meters;
-import it.usna.shellyscan.model.device.g2.modules.Input;
 
 /**
  * Shelly Shelly Plus mini PM model
@@ -68,15 +67,14 @@ public class ShellyMiniPM extends AbstractG2Device {
 	@Override
 	protected void fillStatus(JsonNode status) throws IOException {
 		super.fillStatus(status);
-		JsonNode switchStatus = status.get("switch:0");
-		power = switchStatus.get("apower").floatValue();
-		voltage = switchStatus.get("voltage").floatValue();
-		current = switchStatus.get("current").floatValue();
+		JsonNode pm1 = status.get("pm1:0");
+		power = pm1.get("apower").floatValue();
+		voltage = pm1.get("voltage").floatValue();
+		current = pm1.get("current").floatValue();
 	}
 
 	@Override
-	protected void restore(Map<String, JsonNode> backupJsons, ArrayList<String> errors) throws InterruptedException {
-		JsonNode configuration = backupJsons.get("Shelly.GetConfig.json");
-		errors.add(Input.restore(this, configuration, "0"));
+	protected void restore(Map<String, JsonNode> backupJsons, List<String> errors) {
+		// no specific action (missing parameters?)
 	}
 }

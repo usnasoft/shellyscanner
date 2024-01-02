@@ -2,7 +2,7 @@ package it.usna.shellyscan.model.device.g1;
 
 import java.io.IOException;
 import java.net.InetAddress;
-import java.util.ArrayList;
+import java.util.List;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -80,7 +80,7 @@ public class ShellyDW2 extends AbstractBatteryG1Device {
 	}
 	
 	@Override
-	protected void restore(JsonNode settings, ArrayList<String> errors) throws IOException {
+	protected void restore(JsonNode settings, List<String> errors) throws IOException {
 		errors.add(sendCommand("/settings?" +
 				jsonNodeToURLPar(settings, "dark_threshold", "twilight_threshold",
 				"led_status_disable", "lux_wakeup_enable", "tilt_enabled", "vibration_enabled", "vibration_sensitivity", "reverse_open_close", "temperature_offset") + "&" +

@@ -2,7 +2,7 @@ package it.usna.shellyscan.model.device.g1;
 
 import java.io.IOException;
 import java.net.InetAddress;
-import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -89,7 +89,7 @@ public class ShellyTRV extends AbstractG1Device {
 	}
 
 	@Override
-	protected void restore(JsonNode settings, ArrayList<String> errors) throws IOException, InterruptedException {
+	protected void restore(JsonNode settings, List<String> errors) throws IOException, InterruptedException {
 		JsonNode display = settings.path("display");
 		errors.add(sendCommand("/settings?child_lock=" + settings.get("child_lock").asText() +
 				"&display_brightness=" + display.get("brightness").asText() +

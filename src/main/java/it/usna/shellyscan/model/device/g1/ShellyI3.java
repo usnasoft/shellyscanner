@@ -2,7 +2,7 @@ package it.usna.shellyscan.model.device.g1;
 
 import java.io.IOException;
 import java.net.InetAddress;
-import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -43,7 +43,7 @@ public class ShellyI3 extends AbstractG1Device implements InputCommander {
 	}
 
 	@Override
-	protected void restore(JsonNode settings, ArrayList<String> errors) throws IOException, InterruptedException {
+	protected void restore(JsonNode settings, List<String> errors) throws IOException, InterruptedException {
 		final int longpushtimemax = settings.get("longpush_duration_ms").get("max").asInt();
 		final int longpushtimemin = settings.get("longpush_duration_ms").get("min").asInt();
 		final int multipushtime = settings.get("multipush_time_between_pushes_ms").get("max").asInt();

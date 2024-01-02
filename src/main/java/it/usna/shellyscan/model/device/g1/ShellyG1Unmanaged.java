@@ -2,7 +2,7 @@ package it.usna.shellyscan.model.device.g1;
 
 import java.io.IOException;
 import java.net.InetAddress;
-import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import org.eclipse.jetty.client.HttpClient;
@@ -83,7 +83,7 @@ public class ShellyG1Unmanaged extends AbstractG1Device implements ShellyUnmanag
 	}
 	
 	@Override
-	protected void restore(JsonNode settings, ArrayList<String> errors) throws IOException {
+	protected void restore(JsonNode settings, List<String> errors) throws IOException {
 		// basic restore? not in case of error
 	}
 	

@@ -2,7 +2,7 @@ package it.usna.shellyscan.model.device.g2;
 
 import java.io.IOException;
 import java.net.InetAddress;
-import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -81,7 +81,7 @@ public class ShellyPlusHT extends AbstractBatteryG2Device {
 	}
 	
 	@Override
-	protected void restore(Map<String, JsonNode> backupJsons, ArrayList<String> errors) throws JsonProcessingException {
+	protected void restore(Map<String, JsonNode> backupJsons, List<String> errors) throws JsonProcessingException {
 		JsonNode configuration = backupJsons.get("Shelly.GetConfig.json");
 		errors.add(postCommand("HT_UI.SetConfig", "{\"config\":" + jsonMapper.writeValueAsString(configuration.get("ht_ui")) + "}"));
 		
