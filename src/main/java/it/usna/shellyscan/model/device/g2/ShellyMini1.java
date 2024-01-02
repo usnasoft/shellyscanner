@@ -64,7 +64,8 @@ public class ShellyMini1 extends AbstractG2Device implements RelayCommander, Int
 		super.fillStatus(status);
 		JsonNode switchStatus = status.get("switch:0");
 		relay.fillStatus(switchStatus, status.get("input:0"));
-		internalTmp = switchStatus.path("temperature").path("tC").floatValue();
+
+		internalTmp = switchStatus.get("temperature").get("tC").floatValue();
 	}
 
 	@Override

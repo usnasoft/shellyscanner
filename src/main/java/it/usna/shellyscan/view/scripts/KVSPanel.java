@@ -4,13 +4,11 @@ import static it.usna.shellyscan.Main.LABELS;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.GridLayout;
 import java.io.IOException;
 
 import javax.swing.JButton;
-import javax.swing.JComponent;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -59,13 +57,15 @@ public class KVSPanel extends JPanel {
 				return mCol == COL_VALUE || (mCol == COL_KEY && mRow >= kvs.size());
 			}
 
-			@Override
-			public Component prepareEditor(TableCellEditor editor, int row, int column) {
-				JComponent comp = (JComponent)super.prepareEditor(editor, row, column);
-				comp.setBackground(table.getSelectionBackground());
-				comp.setForeground(table.getSelectionForeground());
-				return comp;
-			}
+//			@Override
+//			public Component prepareEditor(TableCellEditor editor, int row, int column) {
+////				JTextComponent comp = (JTextComponent)((DefaultCellEditor)editor).getComponent();
+//				JTextComponent comp = (JTextComponent)super.prepareEditor(editor, row, column);
+//				comp.setForeground(table.getSelectionForeground());
+//				comp.setBackground(table.getSelectionBackground());
+//				comp.setSelectedTextColor(table.getForeground());
+//				return comp;
+//			}
 
 			@Override
 			public void editingStopped(ChangeEvent e) {
@@ -101,10 +101,13 @@ public class KVSPanel extends JPanel {
 
 			@Override
 			public void removeEditor() {
-				final int mRow = convertRowIndexToModel(getEditingRow());
-				super.removeEditor();
-				if (mRow >= kvs.size()) { // new aborted
-					tModel.removeRow(mRow);
+				int edRow = getEditingRow();
+				if(edRow >= 0) {
+					final int mRow = convertRowIndexToModel(edRow);
+					super.removeEditor();
+					if (mRow >= kvs.size()) { // new aborted
+						tModel.removeRow(mRow);
+					}
 				}
 			}
 		};
@@ -118,15 +121,19 @@ public class KVSPanel extends JPanel {
 		add(operationsPanel, BorderLayout.SOUTH);
 
 		final JButton btnDelete = new JButton(new UsnaAction(KVSPanel.this, "btnDelete", e -> {
-			TableCellEditor editor = table.getCellEditor();
-			if(editor != null) {
+			final int mRow = table.convertRowIndexToModel(table.getSelectedRow());
+			final TableCellEditor editor = table.getCellEditor();
+			if(editor != null)  {
+				int edCol = table.convertColumnIndexToModel(table.getEditingColumn());
 				editor.cancelCellEditing();
+				if(edCol == COL_KEY) { // editing key -> new, not yet inserted, item
+					return; // removeEditor() will do tModel.removeRow(...)
+				}
 			}
 			final String cancel = UIManager.getString("OptionPane.cancelButtonText");
 			if (JOptionPane.showOptionDialog(KVSPanel.this, LABELS.getString("msgDeleteConfirm"), LABELS.getString("btnDelete"), JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null,
 					new Object[] { UIManager.getString("OptionPane.yesButtonText"), cancel }, cancel) == 0) {
 				try {
-					final int mRow = table.convertRowIndexToModel(table.getSelectedRow());
 					kvs.delete(mRow);
 					tModel.removeRow(mRow);
 				} catch (IOException e1) {
@@ -139,13 +146,17 @@ public class KVSPanel extends JPanel {
 		final JButton btnNew = new JButton(new UsnaAction("btnNew", e -> {
 			TableCellEditor editor = table.getCellEditor();
 			if(editor != null) {
-				editor.cancelCellEditing();
+				editor.stopCellEditing();
 			}
 			int row = tModel.addRow(LABELS.getString("lblKeyColName").toLowerCase(), "", "");
 			int tabRow = table.convertRowIndexToView(row);
-			table.editCellAt(tabRow, table.convertColumnIndexToView(COL_KEY));
-			table.setRowSelectionInterval(tabRow, tabRow);
+			//				table.setRowSelectionInterval(tabRow, tabRow);
+			//				table./*getEditorComponent().*/requestFocus();
+			int colKey = table.convertColumnIndexToView(COL_KEY);
+			table.changeSelection(tabRow, colKey, false, false);
+			table.editCellAt(tabRow, colKey);
 			table.getEditorComponent().requestFocus();
+
 		}));
 		operationsPanel.add(btnNew);
 		

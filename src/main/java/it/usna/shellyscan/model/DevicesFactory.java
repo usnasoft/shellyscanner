@@ -48,6 +48,8 @@ import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.g2.LoginManagerG2;
 import it.usna.shellyscan.model.device.g2.ShellyG2Unmanaged;
 import it.usna.shellyscan.model.device.g2.ShellyMini1;
+import it.usna.shellyscan.model.device.g2.ShellyMini1PM;
+import it.usna.shellyscan.model.device.g2.ShellyMiniPM;
 import it.usna.shellyscan.model.device.g2.ShellyPlus1;
 import it.usna.shellyscan.model.device.g2.ShellyPlus1PM;
 import it.usna.shellyscan.model.device.g2.ShellyPlus2PM;
@@ -199,12 +201,14 @@ public class DevicesFactory {
 				case ShellyPlus2PM.ID -> new ShellyPlus2PM(address, port, name);
 				case ShellyPlusi4.ID -> new ShellyPlusi4(address, port, name);
 				case ShellyMini1.ID -> new ShellyMini1(address, port, name);
+				case ShellyMini1PM.ID -> new ShellyMini1PM(address, port, name);
+				case ShellyMiniPM.ID -> new ShellyMiniPM(address, port, name);
 				case ShellyPlusPlugS.ID -> new ShellyPlusPlugS(address, port, name);
 				case ShellyPlusPlugUK.ID -> new ShellyPlusPlugUK(address, port, name);
 				case ShellyPlusPlugIT.ID -> new ShellyPlusPlugIT(address, port, name);
 				case ShellyPlusPlugUS.ID -> new ShellyPlusPlugUS(address, port, name);
 				case ShellyPlusWallDimmer.ID -> new ShellyPlusWallDimmer(address, port, name);
-				// Battery
+				// Plus - Battery
 				case ShellyPlusHT.ID -> new ShellyPlusHT(address, port, name);
 				case ShellyPlusSmoke.ID -> new ShellyPlusSmoke(address, port, name);
 				// PRO
