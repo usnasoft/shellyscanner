@@ -324,7 +324,7 @@ public class PanelMQTTAll extends AbstractSettingsPanel implements UsnaEventList
 			}
 		}
 		String res = "<html>";
-		for(int i=0; i < parent.getLocalSize(); i++) {
+		for(int i = 0; i < parent.getLocalSize(); i++) {
 			String msg;
 			MQTTManager mqttM = mqttModule.get(i);
 			if(mqttM != null) {
@@ -364,6 +364,8 @@ public class PanelMQTTAll extends AbstractSettingsPanel implements UsnaEventList
 				textFieldUser.setText(m.getUser());
 			} catch (IOException e) {
 				LOG.error("copy", e);
+			} catch (UnsupportedOperationException e) {
+				LOG.debug("copy", e);
 			}
 		}
 	}

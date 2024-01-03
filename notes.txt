@@ -222,6 +222,8 @@ https://www.iconbolt.com/
 1.0.3
 // bug fix on KVS panel
 // mini1, mini 1pm (partial), mini pm (partial)
+// todo dialog selection con ghosts
+// todo mqtt deferrable (all)
 
 ---
 // TODO

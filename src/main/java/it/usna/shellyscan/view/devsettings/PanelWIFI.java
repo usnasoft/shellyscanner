@@ -507,6 +507,8 @@ public class PanelWIFI extends AbstractSettingsPanel implements UsnaEventListene
 				textFieldDNS.setText(m.getDNS());
 			} catch (IOException e) {
 				LOG.warn("copy", e.toString());
+			} catch (UnsupportedOperationException e) {
+				LOG.debug("copy", e);
 			}
 		}
 	}

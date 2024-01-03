@@ -59,10 +59,10 @@ public class ShellyMiniPM extends AbstractG2Device {
 		return meters;
 	}
 
-	@Override
-	protected void fillSettings(JsonNode configuration) throws IOException {
-		super.fillSettings(configuration);
-	}
+//	@Override
+//	protected void fillSettings(JsonNode configuration) throws IOException {
+//		super.fillSettings(configuration);
+//	}
 
 	@Override
 	protected void fillStatus(JsonNode status) throws IOException {
