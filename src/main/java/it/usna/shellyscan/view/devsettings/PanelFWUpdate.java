@@ -284,11 +284,11 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 		return null;
 	}
 
-	private String updateDeviceFW(int i, boolean stable) {
+	private String updateDeviceFW(int i, boolean toStable) {
 		DeviceFirmware fwInfo = devicesFWData.get(i);
 		ShellyAbstractDevice device = parent.getLocalDevice(i);
 		fwInfo.uptime = device.getUptime();
-		String msg = fwInfo.fwModule.update(stable);
+		String msg = fwInfo.fwModule.update(toStable);
 		if(msg != null) {
 			if(device.getStatus() == Status.OFF_LINE) {
 				String taskDescription = LABELS.getString("dlgSetFWUpdate");
@@ -296,7 +296,7 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 				if(dc.indexOf(parent.getModelIndex(i), taskDescription) < 0) {
 					dc.add(parent.getModelIndex(i), taskDescription, (def, dev) -> {
 						FirmwareManager fm = dev.getFWManager();
-						return fm.update(stable);
+						return fm.update(toStable);
 					});
 				}
 				return UtilMiscellaneous.getFullName(parent.getLocalDevice(i)) + " - " + LABELS.getString("msgFWUpdateQueue") + "\n";
@@ -306,14 +306,14 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 				}
 				return UtilMiscellaneous.getFullName(parent.getLocalDevice(i)) + " - " + LABELS.getString("labelError") + ": " + msg + "\n";
 			}
-		} else
+		} else { // success
 			try {
 				if(fwInfo.wsSession != null && fwInfo.wsSession.get().isOpen() == false) {
 					fwInfo.wsSession = wsEventListener(i, (AbstractG2Device)device);
-					System.out.println("xxxxxx");
 				}
 			} catch (InterruptedException | ExecutionException | IOException e) {}
-		return "";
+			return "";
+		}
 	}
 
 	int countSelection() {

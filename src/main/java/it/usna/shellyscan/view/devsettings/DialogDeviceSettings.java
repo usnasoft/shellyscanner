@@ -18,6 +18,7 @@ import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.Devices.EventType;
 import it.usna.shellyscan.model.device.GhostDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
+import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
 import it.usna.shellyscan.model.device.WIFIManager;
 import it.usna.shellyscan.model.device.g1.AbstractG1Device;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
@@ -27,9 +28,9 @@ import it.usna.shellyscan.view.util.UtilMiscellaneous;
 import it.usna.util.UsnaEventListener;
 
 public class DialogDeviceSettings extends JDialog implements UsnaEventListener<Devices.EventType, Integer> {
-	public enum Gen {G1, G2, ALL};
 	private static final long serialVersionUID = 1L;
-	
+	enum Gen {G1, G2, MIX};
+
 	private JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
 	private JButton btnClose = new JButton(LABELS.getString("dlgClose"));
 	private JButton btnOKButton = new JButton(LABELS.getString("dlgApply"));
@@ -68,12 +69,12 @@ public class DialogDeviceSettings extends JDialog implements UsnaEventListener<D
 		PanelResLogin panelResLogin = new PanelResLogin(this, devTypes);
 		tabbedPane.add(LABELS.getString("dlgSetRestrictedLogin"), panelResLogin);
 		AbstractSettingsPanel panelMQTT;
-		if(devTypes == Gen.G1) {
+		if(devTypes == Gen.MIX || existsOffLine()) { // PanelMQTTMix allows deferred execution
+			panelMQTT = new PanelMQTTMix(this);
+		} else if(devTypes == Gen.G1) {
 			panelMQTT = new PanelMQTTG1(this);
-		} else if(devTypes == Gen.G2) {
+		} else /*if(devTypes == Gen.G2)*/ {
 			panelMQTT = new PanelMQTTG2(this);
-		} else {
-			panelMQTT = new PanelMQTTAll(this);
 		}
 		tabbedPane.add(LABELS.getString("dlgSetMQTT"), panelMQTT);
 
@@ -130,7 +131,7 @@ public class DialogDeviceSettings extends JDialog implements UsnaEventListener<D
 				String msg = currentPanel.showing();
 				if(Thread.interrupted() == false) {
 					if(isVisible() && currentPanel.isVisible() && msg != null && msg.length() > 0) {
-						JOptionPane.showMessageDialog(this, msg, LABELS.getString("errorTitle"), JOptionPane.ERROR_MESSAGE);
+						Msg.errorMsg(this, msg);
 					} else { //if(msg == null) { // "" -> panel displayed his own message
 						btnOKButton.setEnabled(true);
 						btnApplyClose.setEnabled(true);
@@ -153,8 +154,7 @@ public class DialogDeviceSettings extends JDialog implements UsnaEventListener<D
 			}
 			return true;
 		} catch(Exception e) {
-//			e.printStackTrace();
-			Msg.errorMsg(this, e.getMessage());
+			Msg.errorMsg(this, e);
 			return false;
 		} finally {
 			setCursor(Cursor.getDefaultCursor());
@@ -191,20 +191,30 @@ public class DialogDeviceSettings extends JDialog implements UsnaEventListener<D
 		for(int index: devicesInd) {
 			ShellyAbstractDevice d =  model.get(index);
 			if(d instanceof GhostDevice) {
-				return Gen.ALL; // actually unknown
+				return Gen.MIX; // actually unknown
 			} else if(r == null) {
 				r = d instanceof AbstractG2Device ? Gen.G2 : Gen.G1;
 			} else if(d instanceof AbstractG2Device) {
 				if(r != Gen.G2) {
-					return Gen.ALL;
+					return Gen.MIX;
 				}
 			} else if(d instanceof AbstractG1Device) {
 				if(r != Gen.G1) {
-					return Gen.ALL;
+					return Gen.MIX;
 				}
 			}
 		}
 		return r;
+	}
+	
+	private boolean existsOffLine() {
+		for(int index: devicesInd) {
+			ShellyAbstractDevice d =  model.get(index);
+			if(d.getStatus() == Status.OFF_LINE) {
+				return true;
+			}
+		}
+		return false;
 	}
 	
 	@Override
