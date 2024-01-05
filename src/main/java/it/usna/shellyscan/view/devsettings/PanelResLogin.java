@@ -8,7 +8,6 @@ import java.awt.Insets;
 import java.awt.event.ItemEvent;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.JCheckBox;
@@ -25,17 +24,16 @@ import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
 import it.usna.shellyscan.model.device.g2.LoginManagerG2;
 import it.usna.shellyscan.view.devsettings.DialogDeviceSettings.Gen;
-import it.usna.shellyscan.view.util.UtilMiscellaneous;
 
 public class PanelResLogin extends AbstractSettingsPanel {
 	private static final long serialVersionUID = 1L;
 	private JCheckBox chckbxEnabled = new JCheckBox();
-	private JTextField textFieldUser;
-	private JPasswordField textFieldPwd;
+	private JTextField textFieldUser = new JTextField();
+	private JPasswordField textFieldPwd = new JPasswordField();;
 	private JCheckBox chckbxShowPwd;
 	private char pwdEchoChar;
 	private final Gen types;
-	private List<LoginManager> loginModule = new ArrayList<>();
+	private ArrayList<LoginManager> loginModule = new ArrayList<>();
 
 	public PanelResLogin(DialogDeviceSettings parent, Gen types) {
 		super(parent);
@@ -71,7 +69,6 @@ public class PanelResLogin extends AbstractSettingsPanel {
 		gbc_lblNewLabel_1.gridy = 1;
 		add(lblNewLabel_1, gbc_lblNewLabel_1);
 
-		textFieldUser = new JTextField();
 		GridBagConstraints gbc_textFieldSSID = new GridBagConstraints();
 		gbc_textFieldSSID.gridwidth = 3;
 		gbc_textFieldSSID.insets = new Insets(0, 0, 5, 0);
@@ -93,7 +90,6 @@ public class PanelResLogin extends AbstractSettingsPanel {
 		gbc_lblNewLabel_2.gridy = 2;
 		add(lblNewLabel_2, gbc_lblNewLabel_2);
 
-		textFieldPwd = new JPasswordField();
 		pwdEchoChar = textFieldPwd.getEchoChar();
 		GridBagConstraints gbc_textFieldPwd = new GridBagConstraints();
 		gbc_textFieldPwd.gridwidth = 3;
@@ -113,7 +109,7 @@ public class PanelResLogin extends AbstractSettingsPanel {
 		add(chckbxShowPwd, gbc_chckbxNewCheckBox);
 
 		chckbxEnabled.addItemListener(event -> setEnabledLogin(event.getStateChange() == ItemEvent.SELECTED));
-		chckbxShowPwd.addItemListener(e -> textFieldPwd.setEchoChar((e.getStateChange() == ItemEvent.SELECTED) ? '\0' : pwdEchoChar));
+		chckbxShowPwd.addItemListener(event -> textFieldPwd.setEchoChar((event.getStateChange() == ItemEvent.SELECTED) ? '\0' : pwdEchoChar));
 	}
 
 	private void setEnabledLogin(boolean enabled) {
@@ -124,11 +120,9 @@ public class PanelResLogin extends AbstractSettingsPanel {
 
 	@Override
 	public String showing() throws InterruptedException {
-//		String exclude = "<html>" + LABELS.getString("dlgExcludedDevicesMsg");
-//		int excludeCount = 0;
 		loginModule.clear();
-		ShellyAbstractDevice d = null;
-		try {
+//		ShellyAbstractDevice d = null;
+//		try {
 			chckbxEnabled.setEnabled(false);
 			setEnabledLogin(false);
 			boolean enabledGlobal = false;
@@ -136,7 +130,7 @@ public class PanelResLogin extends AbstractSettingsPanel {
 			boolean first = true;
 			for(int i = 0; i < parent.getLocalSize(); i++) {
 				try {
-					d = parent.getLocalDevice(i);
+					ShellyAbstractDevice d = parent.getLocalDevice(i);
 					LoginManager lm = d.getLoginManager();
 					if(Thread.interrupted()) {
 						throw new InterruptedException();
@@ -154,25 +148,18 @@ public class PanelResLogin extends AbstractSettingsPanel {
 					loginModule.add(lm);
 				} catch(IOException | RuntimeException e) { // UnsupportedOperationException (RuntimeException) for GhostDevice
 					loginModule.add(null);
-//					exclude += "<br>" + UtilMiscellaneous.getFullName(d);
-//					excludeCount++;
 				}
 			}
 			chckbxEnabled.setSelected(enabledGlobal);
 			if(types == Gen.G1) {
 				textFieldUser.setText(userGlobal);
 			}
-//			if(excludeCount == parent.getLocalSize() && isShowing()) {
-//				return LABELS.getString("msgAllDevicesExcluded");
-//			} else if (excludeCount > 0 && isShowing()) {
-//				Msg.showHtmlMessageDialog(this, exclude, LABELS.getString("dlgExcludedDevicesTitle"), JOptionPane.WARNING_MESSAGE);
-//			}
 			chckbxEnabled.setEnabled(true); // form is active
 			setEnabledLogin(enabledGlobal);
 			return null;
-		} catch (RuntimeException e) {
-			return UtilMiscellaneous.getFullName(d) + ": " + e.getMessage();
-		}
+//		} catch (RuntimeException e) {
+//			return UtilMiscellaneous.getFullName(d) + ": " + e.getMessage();
+//		}
 	}
 
 	@Override
@@ -196,6 +183,9 @@ public class PanelResLogin extends AbstractSettingsPanel {
 					msg = lm.disable();
 				}
 				if(msg != null) {
+					if(LABELS.containsKey(msg)) {
+						msg = LABELS.getString(msg);
+					}
 					res += String.format(LABELS.getString("dlgSetMultiMsgFail"), device.getHostname()) + " (" + msg + ")<br>";
 				} else {
 					res += String.format(LABELS.getString("dlgSetMultiMsgOk"), device.getHostname()) + "<br>";

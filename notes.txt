@@ -226,6 +226,7 @@ https://www.iconbolt.com/
 
 ---
 // TODO
+// chacklist reset button(5)/power
 // grafico energia
 // inclusione massiva
 // multi net ip scan
