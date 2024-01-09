@@ -15,7 +15,6 @@ import it.usna.shellyscan.model.device.InternalTmpHolder;
 import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.g2.modules.Relay;
 import it.usna.shellyscan.model.device.modules.RelayCommander;
-import it.usna.shellyscan.model.device.modules.RelayInterface;
 
 public class ShellyPlusPlugS extends AbstractG2Device implements RelayCommander, InternalTmpHolder {
 	public final static String ID = "PlusPlugS";
@@ -66,7 +65,7 @@ public class ShellyPlusPlugS extends AbstractG2Device implements RelayCommander,
 	}
 	
 	@Override
-	public RelayInterface[] getRelays() {
+	public Relay[] getRelays() {
 		return new Relay[] {relay};
 	}
 	

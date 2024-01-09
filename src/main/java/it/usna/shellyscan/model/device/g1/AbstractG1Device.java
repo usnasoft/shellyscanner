@@ -117,7 +117,7 @@ public abstract class AbstractG1Device extends ShellyAbstractDevice {
 			status = Status.OFF_LINE;
 			return "Status-OFFLINE";
 		} catch(ExecutionException | RuntimeException e) {
-			if(e.getCause() instanceof SocketTimeoutException) {
+			if(e.getCause() instanceof SocketTimeoutException || e.getCause() instanceof TimeoutException) {
 				status = Status.OFF_LINE;
 				return "Status-OFFLINE";
 			} else {

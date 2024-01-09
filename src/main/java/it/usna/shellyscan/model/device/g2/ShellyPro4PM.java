@@ -15,7 +15,6 @@ import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.g2.modules.Input;
 import it.usna.shellyscan.model.device.g2.modules.Relay;
 import it.usna.shellyscan.model.device.modules.RelayCommander;
-import it.usna.shellyscan.model.device.modules.RelayInterface;
 
 public class ShellyPro4PM extends AbstractProDevice implements RelayCommander, InternalTmpHolder {
 	public final static String ID = "Pro4PM";
@@ -30,7 +29,7 @@ public class ShellyPro4PM extends AbstractProDevice implements RelayCommander, I
 	private float current0, current1, current2, current3;
 	private float pf0, pf1, pf2, pf3;
 	private Meters[] meters;
-	private RelayInterface[] relays = new RelayInterface[] {relay0, relay1, relay2, relay3};
+	private Relay[] relays = new Relay[] {relay0, relay1, relay2, relay3};
 
 	public ShellyPro4PM(InetAddress address, int port, String hostname) {
 		super(address, port, hostname);
@@ -135,7 +134,7 @@ public class ShellyPro4PM extends AbstractProDevice implements RelayCommander, I
 	}
 
 	@Override
-	public RelayInterface[] getRelays() {
+	public Relay[] getRelays() {
 		return relays;
 	}
 

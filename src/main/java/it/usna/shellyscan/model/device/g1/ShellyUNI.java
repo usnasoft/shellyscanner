@@ -12,7 +12,6 @@ import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.g1.modules.Relay;
 import it.usna.shellyscan.model.device.modules.RelayCommander;
-import it.usna.shellyscan.model.device.modules.RelayInterface;
 
 public class ShellyUNI extends AbstractG1Device implements RelayCommander {
 	public final static String ID = "SHUNI-1";
@@ -110,13 +109,13 @@ public class ShellyUNI extends AbstractG1Device implements RelayCommander {
 	}
 	
 	@Override
-	public RelayInterface getRelay(int index) {
+	public Relay getRelay(int index) {
 		return index == 0 ? relay0 : relay1;
 	}
 	
 	@Override
-	public RelayInterface[] getRelays() {
-		return new RelayInterface[] {relay0, relay1};
+	public Relay[] getRelays() {
+		return new Relay[] {relay0, relay1};
 	}
 	
 //	public float getVoltage() {

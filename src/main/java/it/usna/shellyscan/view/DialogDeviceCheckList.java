@@ -524,3 +524,5 @@ public class DialogDeviceCheckList extends JDialog implements UsnaEventListener<
 		}
 	}
 }
+
+// g1  "factory_reset_from_switch" : true, "pon_wifi_reset" : false,

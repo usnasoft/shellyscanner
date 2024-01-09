@@ -15,7 +15,6 @@ import it.usna.shellyscan.model.device.g2.modules.Input;
 import it.usna.shellyscan.model.device.g2.modules.Relay;
 import it.usna.shellyscan.model.device.g2.modules.Roller;
 import it.usna.shellyscan.model.device.modules.RelayCommander;
-import it.usna.shellyscan.model.device.modules.RelayInterface;
 import it.usna.shellyscan.model.device.modules.RollerCommander;
 
 public class ShellyPro2PM extends AbstractProDevice implements RelayCommander, RollerCommander, InternalTmpHolder {
@@ -101,8 +100,8 @@ public class ShellyPro2PM extends AbstractProDevice implements RelayCommander, R
 	}
 
 	@Override
-	public RelayInterface[] getRelays() {
-		return new RelayInterface[] {relay0, relay1};
+	public Relay[] getRelays() {
+		return new Relay[] {relay0, relay1};
 	}
 
 	@Override

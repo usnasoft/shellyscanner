@@ -13,7 +13,6 @@ import it.usna.shellyscan.model.device.MetersPower;
 import it.usna.shellyscan.model.device.g1.modules.Relay;
 import it.usna.shellyscan.model.device.g1.modules.Roller;
 import it.usna.shellyscan.model.device.modules.RelayCommander;
-import it.usna.shellyscan.model.device.modules.RelayInterface;
 import it.usna.shellyscan.model.device.modules.RollerCommander;
 
 public class Shelly2 extends AbstractG1Device implements RelayCommander, RollerCommander {
@@ -60,13 +59,13 @@ public class Shelly2 extends AbstractG1Device implements RelayCommander, RollerC
 	}
 	
 	@Override
-	public RelayInterface getRelay(int index) {
+	public Relay getRelay(int index) {
 		return index == 0 ? relay0 : relay1;
 	}
 	
 	@Override
-	public RelayInterface[] getRelays() {
-		return new RelayInterface[] {relay0, relay1};
+	public Relay[] getRelays() {
+		return new Relay[] {relay0, relay1};
 	}
 	
 	@Override

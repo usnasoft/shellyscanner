@@ -189,7 +189,7 @@ public class RestoreAction extends UsnaSelectedAction {
 							}
 						} else {
 							LOG.error("Restore error {} {}", device, ret);
-							JOptionPane.showMessageDialog(mainView, (ret.equals(Restore.ERR_UNKNOWN.name())) ? LABELS.getString("labelError") : ret, device.getHostname(), JOptionPane.ERROR_MESSAGE);
+							Msg.showMsg(mainView, (ret.equals(Restore.ERR_UNKNOWN.name())) ? LABELS.getString("labelError") : ret, device.getHostname(), JOptionPane.ERROR_MESSAGE);
 						}
 					}
 

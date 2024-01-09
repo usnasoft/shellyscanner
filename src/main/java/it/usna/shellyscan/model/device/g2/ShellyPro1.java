@@ -13,7 +13,6 @@ import it.usna.shellyscan.model.device.InternalTmpHolder;
 import it.usna.shellyscan.model.device.g2.modules.Input;
 import it.usna.shellyscan.model.device.g2.modules.Relay;
 import it.usna.shellyscan.model.device.modules.RelayCommander;
-import it.usna.shellyscan.model.device.modules.RelayInterface;
 
 /**
  * Shelly Shelly Pro 1 model
@@ -23,7 +22,7 @@ public class ShellyPro1 extends AbstractProDevice implements RelayCommander, Int
 	public final static String ID = "Pro1";
 	private Relay relay = new Relay(this, 0);
 	private float internalTmp;
-	private RelayInterface[] ralayes = new RelayInterface[] {relay};
+	private Relay[] ralayes = new Relay[] {relay};
 
 	public ShellyPro1(InetAddress address, int port, String hostname) {
 		super(address, port, hostname);
@@ -45,7 +44,7 @@ public class ShellyPro1 extends AbstractProDevice implements RelayCommander, Int
 	}
 	
 	@Override
-	public RelayInterface[] getRelays() {
+	public Relay[] getRelays() {
 		return ralayes;
 	}
 	
