@@ -3,11 +3,14 @@ package it.usna.shellyscan.view.chart;
 import static it.usna.shellyscan.Main.LABELS;
 
 import java.awt.BorderLayout;
+import java.awt.Desktop;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -118,14 +121,22 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 //		mainPanel.add(scrollPane, BorderLayout.CENTER);
 
 		JPanel commandPanel = new JPanel(new BorderLayout());
-		JPanel westCommandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 0));
+		JPanel westCommandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 3, 0));
 		commandPanel.add(westCommandPanel, BorderLayout.WEST);
-		JPanel eastCommandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 0));
+		JPanel eastCommandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 3, 0));
 		commandPanel.add(eastCommandPanel, BorderLayout.EAST);
 		mainPanel.add(commandPanel, BorderLayout.SOUTH);
 
+		JButton btnHelp = new JButton(new UsnaAction("helpBtnLabel", e -> {
+			try {
+				Desktop.getDesktop().browse(new URI(LABELS.getString("dlgChartsManualUrl")));
+			} catch (IOException | URISyntaxException | UnsupportedOperationException ex) {
+				Msg.errorMsg(this, ex);
+			}
+		}));
 		JButton btnClear = new JButton(new UsnaAction("dlgChartsBtnClear", e -> initDataSet(plot.getRangeAxis(), dataset, model, ind)));
 		JButton btnClose = new JButton(new UsnaAction("dlgClose", e -> dispose()));
+		eastCommandPanel.add(btnHelp);
 		eastCommandPanel.add(btnClear);
 		eastCommandPanel.add(btnClose);
 

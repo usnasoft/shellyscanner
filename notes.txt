@@ -221,8 +221,9 @@ https://www.iconbolt.com/
 
 1.0.3
 // bug fix on KVS panel
-// mini1, mini 1pm (partial), mini pm (partial)
-// todo mqtt deferrable (all)
+// mini 1, mini 1pm (partial), mini pm (partial)
+// mqtt deferrable (all)
+// help on checklist & graphs
 
 ---
 // TODO
