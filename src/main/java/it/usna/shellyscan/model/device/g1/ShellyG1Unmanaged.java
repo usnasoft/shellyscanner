@@ -99,9 +99,9 @@ public class ShellyG1Unmanaged extends AbstractG1Device implements ShellyUnmanag
 	@Override
 	public String toString() {
 		if(ex == null) {
-			return "Shelly (unmanaged) " + type + ": " + super.toString();
+			return "Shelly G1 (unmanaged) " + type + ": " + super.toString();
 		} else {
-			return "Shelly (unmanaged): " + super.toString() + " Error: " + ex.getMessage();
+			return "Shelly G1 (unmanaged): " + super.toString() + " Error: " + ex.getMessage();
 		}
 	}
 }

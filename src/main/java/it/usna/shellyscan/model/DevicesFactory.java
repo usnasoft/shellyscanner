@@ -77,9 +77,10 @@ public class DevicesFactory {
 	private static char[] lastP;
 	
 	public static ShellyAbstractDevice create(HttpClient httpClient, WebSocketClient wsClient, final InetAddress address, int port, JsonNode info, String name) {
-		if("2".equals(info.path("gen").asText())) {
+		final int gen = info.path("gen").intValue();
+		if(gen == 2) {
 			return createG2(httpClient, wsClient, address, port, info, name);
-		} else {
+		} else /*if("0".equals(gen))*/ {
 			return createG1(httpClient, address, port, info, name);
 		}
 	}

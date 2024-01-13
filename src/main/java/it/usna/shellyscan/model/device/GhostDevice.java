@@ -19,17 +19,19 @@ import it.usna.shellyscan.model.device.g2.LoginManagerG2;
 public class GhostDevice extends ShellyAbstractDevice {
 	private final static Logger LOG = LoggerFactory.getLogger(GhostDevice.class);
 	private final String typeName;
+	private final int gen;
 	private final String typeID;
 	private final boolean battery;
 	private String note;
 	
 	public GhostDevice(InetAddress address, int port, String hostname,
-			String mac, String ssid, String typeName, String typeID, String name, long lastConnection, boolean battery,
+			String mac, String ssid, String typeName, String typeID, int gen, String name, long lastConnection, boolean battery,
 			String note) {
 		super(address, port, hostname);
 		this.mac = mac;
 		this.ssid = ssid;
 		this.typeName = typeName;
+		this.gen = gen;
 		this.typeID = typeID;
 		this.name = name;
 		this.lastConnection = lastConnection;
@@ -51,6 +53,10 @@ public class GhostDevice extends ShellyAbstractDevice {
 	public String getTypeID() {
 		return typeID;
 	}
+
+	public int getGeneration() {
+		return gen;
+	}
 	
 	public boolean isBattery() {
 		return battery;
@@ -64,6 +70,7 @@ public class GhostDevice extends ShellyAbstractDevice {
 		this.note = note;
 	}
 	
+	@Override
 	public JsonNode getJSON(final String command) throws DeviceOfflineException {
 		throw new DeviceOfflineException("Status-GHOST");
 	}
