@@ -11,11 +11,11 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import it.usna.shellyscan.model.Devices;
-import it.usna.shellyscan.model.device.ShellyUnmanagedDevice;
+import it.usna.shellyscan.model.device.ShellyUnmanagedDeviceInterface;
 
-public class ShellyG1Unmanaged extends AbstractG1Device implements ShellyUnmanagedDevice {
+public class ShellyG1Unmanaged extends AbstractG1Device implements ShellyUnmanagedDeviceInterface {
 	private String type;
-	private boolean unrecoverable;
+//	private boolean unrecoverable;
 	private Throwable ex;
 	
 	public ShellyG1Unmanaged(InetAddress address, int port, String hostname) {
@@ -41,9 +41,9 @@ public class ShellyG1Unmanaged extends AbstractG1Device implements ShellyUnmanag
 		}
 	}
 	
-	public void setUnrecoverable(boolean unrecoverable) {
-		this.unrecoverable = unrecoverable;
-	}
+//	public void setUnrecoverable(boolean unrecoverable) {
+//		this.unrecoverable = unrecoverable;
+//	}
 
 	@Override
 	protected void init() { // try to retrieve minimal information set
@@ -89,7 +89,7 @@ public class ShellyG1Unmanaged extends AbstractG1Device implements ShellyUnmanag
 	
 	@Override
 	public Status getStatus() {
-		if((status == Status.ON_LINE && ex != null) || unrecoverable) {
+		if((status == Status.ON_LINE && ex != null) /*|| unrecoverable*/) {
 			return Status.ERROR;
 		} else {
 			return status;

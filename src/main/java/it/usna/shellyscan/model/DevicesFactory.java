@@ -14,6 +14,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 import it.usna.shellyscan.Main;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
+import it.usna.shellyscan.model.device.ShellyGenericUnmanaged;
 import it.usna.shellyscan.model.device.g1.AbstractG1Device;
 import it.usna.shellyscan.model.device.g1.Button1;
 import it.usna.shellyscan.model.device.g1.LoginManagerG1;
@@ -80,17 +81,20 @@ public class DevicesFactory {
 		final int gen = info.path("gen").intValue();
 		if(gen == 2) {
 			return createG2(httpClient, wsClient, address, port, info, name);
-		} else /*if("0".equals(gen))*/ {
+		} else if(gen == 0) { // gen1 (info.get("gen") == null)
 			return createG1(httpClient, address, port, info, name);
+		} else {
+			return new ShellyGenericUnmanaged(address, port, name);
 		}
 	}
 
 	public static ShellyAbstractDevice createWithError(HttpClient httpClient, final InetAddress address, int port, String name, Throwable e) {
-		ShellyG1Unmanaged d = new ShellyG1Unmanaged(address, port, name, e); // no mac available (info) -> try to desume from hostname
-		d.setUnrecoverable(true);
-		d.setHttpClient(httpClient);
-		d.setMacAddress(name.substring(Math.max(name.length() - 12, 0), name.length()).toUpperCase());
-		return d;
+		return new ShellyGenericUnmanaged(address, port, name, httpClient, e);
+//		ShellyG1Unmanaged d = new ShellyG1Unmanaged(address, port, name, e); // no mac available (info) -> try to desume from hostname
+//		d.setUnrecoverable(true);
+//		d.setHttpClient(httpClient);
+//		d.setMacAddress(name.substring(Math.max(name.length() - 12, 0), name.length()).toUpperCase());
+//		return d;
 	}
 
 	private static ShellyAbstractDevice createG1(HttpClient httpClient, final InetAddress address, int port, JsonNode info, String name) {

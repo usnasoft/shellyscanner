@@ -8,9 +8,9 @@ import java.util.Map;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 
-import it.usna.shellyscan.model.device.ShellyUnmanagedDevice;
+import it.usna.shellyscan.model.device.ShellyUnmanagedDeviceInterface;
 
-public class ShellyG2Unmanaged extends AbstractG2Device implements ShellyUnmanagedDevice {
+public class ShellyG2Unmanaged extends AbstractG2Device implements ShellyUnmanagedDeviceInterface {
 	private String type;
 	private Throwable ex;
 

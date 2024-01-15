@@ -27,7 +27,7 @@ import it.usna.shellyscan.model.device.BatteryDeviceInterface;
 import it.usna.shellyscan.model.device.GhostDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
-import it.usna.shellyscan.model.device.ShellyUnmanagedDevice;
+import it.usna.shellyscan.model.device.ShellyUnmanagedDeviceInterface;
 import it.usna.shellyscan.model.device.g1.AbstractG1Device;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 
@@ -48,7 +48,7 @@ public class DevicesStore {
 	private final static String LAST_CON = "last";
 	private final static String USER_NOTE = "note";
 
-	private final Pattern MAC_PATTERN = Pattern.compile("^[A-F0-9]{12}$");
+	private final static Pattern MAC_PATTERN = Pattern.compile("^[A-F0-9]{12}$");
 	
 	private final List<GhostDevice> ghostsList = new ArrayList<>();
 
@@ -62,7 +62,7 @@ public class DevicesStore {
 			ShellyAbstractDevice device = model.get(i);
 			GhostDevice stored = getStoredGhost(device);
 			// Device with errors or not authenticated -> get information from old store
-			if((device instanceof ShellyUnmanagedDevice ud && ud.getException() != null) || device.getStatus() == Status.NOT_LOOGGED) {
+			if((device instanceof ShellyUnmanagedDeviceInterface ud && ud.getException() != null) || device.getStatus() == Status.NOT_LOOGGED) {
 				if(stored != null) {
 					ObjectNode jsonDev = toJson(stored);
 					jsonDev.put(USER_NOTE, stored.getNote());
@@ -146,7 +146,7 @@ public class DevicesStore {
 		GhostDevice stored;
 		for(int i= 0; i < model.size(); i++) {
 			ShellyAbstractDevice dev = model.get(i);
-			if(dev instanceof ShellyUnmanagedDevice == false || ((ShellyUnmanagedDevice)dev).getException() == null) {
+			if(dev instanceof ShellyUnmanagedDeviceInterface == false || ((ShellyUnmanagedDeviceInterface)dev).getException() == null) {
 				list.add(toGhost(dev));
 			} else if ((stored = getStoredGhost(dev)) != null) {
 				list.add(toGhost(stored));

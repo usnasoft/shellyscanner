@@ -38,7 +38,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import it.usna.shellyscan.model.device.GhostDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
-import it.usna.shellyscan.model.device.ShellyUnmanagedDevice;
+import it.usna.shellyscan.model.device.ShellyUnmanagedDeviceInterface;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 
 public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Integer> {
@@ -259,7 +259,7 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 				refreshProcess.get(ind).cancel(true);
 				d.setStatus(Status.READING);
 				executor.schedule(() -> {
-					if(d instanceof ShellyUnmanagedDevice unmanaged && unmanaged.getException() != null) { // try to create proper device
+					if(d instanceof ShellyUnmanagedDeviceInterface unmanaged && unmanaged.getException() != null) { // try to create proper device
 						create(d.getAddress(), d.getPort(), d.getHostname(), true);
 					} else {
 						try {
@@ -385,7 +385,7 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 		synchronized(devices) {
 			int ind = devices.indexOf(d);
 			if(ind >= 0) {
-				if(d instanceof ShellyUnmanagedDevice == false || devices.get(ind) instanceof ShellyUnmanagedDevice || devices.get(ind) instanceof GhostDevice) { // Do not replace device if was recocnized and now is not
+				if(d instanceof ShellyUnmanagedDeviceInterface == false || devices.get(ind) instanceof ShellyUnmanagedDeviceInterface || devices.get(ind) instanceof GhostDevice) { // Do not replace device if was recocnized and now is not
 					if(refreshProcess.get(ind) != null) {
 						refreshProcess.get(ind).cancel(true);
 					}
