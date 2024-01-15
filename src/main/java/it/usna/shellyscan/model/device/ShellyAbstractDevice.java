@@ -25,7 +25,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public abstract class ShellyAbstractDevice {
 	protected HttpClient httpClient;
 	protected final InetAddress address;
-	protected int port;
+	protected final int port;
 	protected String hostname;
 	protected String mac;
 	protected boolean cloudEnabled;

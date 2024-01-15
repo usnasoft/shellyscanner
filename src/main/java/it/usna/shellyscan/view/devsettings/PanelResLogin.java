@@ -29,7 +29,7 @@ public class PanelResLogin extends AbstractSettingsPanel {
 	private static final long serialVersionUID = 1L;
 	private JCheckBox chckbxEnabled = new JCheckBox();
 	private JTextField textFieldUser = new JTextField();
-	private JPasswordField textFieldPwd = new JPasswordField();;
+	private JPasswordField textFieldPwd = new JPasswordField();
 	private JCheckBox chckbxShowPwd;
 	private char pwdEchoChar;
 	private final Gen types;

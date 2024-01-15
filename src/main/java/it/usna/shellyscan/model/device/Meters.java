@@ -42,9 +42,9 @@ public abstract class Meters implements Comparable<Meters> {
 	@Override
 	public int compareTo(Meters o) {
 		final Type t0 = getTypes()[0];
-		int v = t0.toString().compareTo(o.getTypes()[0].toString());
+		int v = t0.name().compareTo(o.getTypes()[0].name());
 		if(v == 0) {
-			v = Float.compare(getValue(t0), o.getValue(t0));
+			return Float.compare(getValue(t0), o.getValue(t0));
 		}
 		return v;
 	}

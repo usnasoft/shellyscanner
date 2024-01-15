@@ -6,7 +6,7 @@ package it.usna.shellyscan.model.device;
  */
 public interface ShellyUnmanagedDeviceInterface {
 	/**
-	 * @return null if device type is unknown or exception if an error ha occurred on construction 
+	 * @return null if device type is unknown or an error has occurred on construction 
 	 */
-	public Throwable getException();
+	Throwable getException();
 }

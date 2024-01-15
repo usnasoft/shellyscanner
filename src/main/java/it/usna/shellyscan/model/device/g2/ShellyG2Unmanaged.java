@@ -33,14 +33,12 @@ public class ShellyG2Unmanaged extends AbstractG2Device implements ShellyUnmanag
 	}
 	
 	@Override
-	protected void init(JsonNode devInfo) throws IOException {
+	protected void init(JsonNode devInfo) {
 		try {
-//			JsonNode device = getJSON("/rpc/Shelly.GetDeviceInfo");
 			this.type = devInfo.get("app").asText();
 			this.mac = devInfo.get("mac").asText();
 			this.hostname = devInfo.get("id").asText("");
 
-//			fillOnce(device);
 			fillSettings(getJSON("/rpc/Shelly.GetConfig"));
 			fillStatus(getJSON("/rpc/Shelly.GetStatus"));
 		} catch (/*IO*/Exception e) {
@@ -70,7 +68,7 @@ public class ShellyG2Unmanaged extends AbstractG2Device implements ShellyUnmanag
 	}
 	
 	@Override
-	protected void restore(Map<String, JsonNode> backupJsons, List<String> errors) throws IOException {
+	protected void restore(Map<String, JsonNode> backupJsons, List<String> errors) {
 		// basic restore? not in case of error
 	}
 	

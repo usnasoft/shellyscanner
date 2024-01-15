@@ -21,10 +21,6 @@ public class ShellyG1Unmanaged extends AbstractG1Device implements ShellyUnmanag
 	public ShellyG1Unmanaged(InetAddress address, int port, String hostname) {
 		super(address, port, hostname);
 	}
-
-//	public ShellyG1Unmanaged(InetAddress address, int port, String hostname, Exception e) {
-//		this(address, port, hostname, null, e);
-//	}
 	
 	public ShellyG1Unmanaged(InetAddress address, int port, String hostname/*, HttpClient httpClient*/, Throwable e) {
 		super(address, port, hostname);
@@ -51,7 +47,6 @@ public class ShellyG1Unmanaged extends AbstractG1Device implements ShellyUnmanag
 			JsonNode settings = getJSON("/settings");
 			this.hostname = settings.get("device").get("hostname").asText("");
 			this.type = settings.get("device").get("type").asText();
-//			fillOnce(settings);
 			fillSettings(settings);
 			try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e) {}
 			fillStatus(getJSON("/status"));
@@ -69,7 +64,7 @@ public class ShellyG1Unmanaged extends AbstractG1Device implements ShellyUnmanag
 	}
 	
 	public String getTypeName() {
-		return "Generic";
+		return "Generic G1";
 	}
 	
 	@Override
@@ -83,7 +78,7 @@ public class ShellyG1Unmanaged extends AbstractG1Device implements ShellyUnmanag
 	}
 	
 	@Override
-	protected void restore(JsonNode settings, List<String> errors) throws IOException {
+	protected void restore(JsonNode settings, List<String> errors) {
 		// basic restore? not in case of error
 	}
 	
