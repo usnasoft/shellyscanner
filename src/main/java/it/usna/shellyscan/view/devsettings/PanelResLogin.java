@@ -121,45 +121,40 @@ public class PanelResLogin extends AbstractSettingsPanel {
 	@Override
 	public String showing() throws InterruptedException {
 		loginModule.clear();
-//		ShellyAbstractDevice d = null;
-//		try {
-			chckbxEnabled.setEnabled(false);
-			setEnabledLogin(false);
-			boolean enabledGlobal = false;
-			String userGlobal = "";
-			boolean first = true;
-			for(int i = 0; i < parent.getLocalSize(); i++) {
-				try {
-					ShellyAbstractDevice d = parent.getLocalDevice(i);
-					LoginManager lm = d.getLoginManager();
-					if(Thread.interrupted()) {
-						throw new InterruptedException();
-					}
-					boolean enabled = lm.isEnabled();
-					String user = lm.getUser();
-					if(first) {
-						enabledGlobal = enabled;
-						userGlobal = user;
-						first = false;
-					} else {
-						if(enabled != enabledGlobal) enabledGlobal = false;
-						if(user.equals(userGlobal) == false) userGlobal = "";
-					}
-					loginModule.add(lm);
-				} catch(IOException | RuntimeException e) { // UnsupportedOperationException (RuntimeException) for GhostDevice
-					loginModule.add(null);
+		chckbxEnabled.setEnabled(false);
+		setEnabledLogin(false);
+		boolean enabledGlobal = false;
+		String userGlobal = "";
+		boolean first = true;
+		for(int i = 0; i < parent.getLocalSize(); i++) {
+			try {
+				ShellyAbstractDevice d = parent.getLocalDevice(i);
+				LoginManager lm = d.getLoginManager();
+				if(Thread.interrupted()) {
+					throw new InterruptedException();
 				}
+				boolean enabled = lm.isEnabled();
+				String user = lm.getUser();
+				if(first) {
+					enabledGlobal = enabled;
+					userGlobal = user;
+					first = false;
+				} else {
+					if(enabled != enabledGlobal) enabledGlobal = false;
+					if(user.equals(userGlobal) == false) userGlobal = "";
+				}
+				loginModule.add(lm);
+			} catch(IOException | RuntimeException e) { // UnsupportedOperationException (RuntimeException) for GhostDevice
+				loginModule.add(null);
 			}
-			chckbxEnabled.setSelected(enabledGlobal);
-			if(types == Gen.G1) {
-				textFieldUser.setText(userGlobal);
-			}
-			chckbxEnabled.setEnabled(true); // form is active
-			setEnabledLogin(enabledGlobal);
-			return null;
-//		} catch (RuntimeException e) {
-//			return UtilMiscellaneous.getFullName(d) + ": " + e.getMessage();
-//		}
+		}
+		chckbxEnabled.setSelected(enabledGlobal);
+		if(types == Gen.G1) {
+			textFieldUser.setText(userGlobal);
+		}
+		chckbxEnabled.setEnabled(true); // form is active
+		setEnabledLogin(enabledGlobal);
+		return null;
 	}
 
 	@Override
@@ -215,4 +210,4 @@ public class PanelResLogin extends AbstractSettingsPanel {
 		} catch (InterruptedException e) {}
 		return res;
 	}
-} //216
+} // 213

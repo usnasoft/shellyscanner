@@ -223,6 +223,7 @@ https://www.iconbolt.com/
 // bug fix on KVS panel
 // mini 1, mini 1pm (partial), mini pm (partial)
 // mqtt deferrable (all)
+// login deferrable
 // help on checklist & graphs
 
 ---

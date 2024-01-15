@@ -68,8 +68,8 @@ public class DialogDeviceSettings extends JDialog implements UsnaEventListener<D
 		tabbedPane.add(LABELS.getString("dlgSetWIFIBackup"), panelWIFI2);
 		PanelResLogin panelResLogin = new PanelResLogin(this, devTypes);
 		tabbedPane.add(LABELS.getString("dlgSetRestrictedLogin"), panelResLogin);
-		AbstractSettingsPanel panelMQTT;
-		if(devTypes == Gen.MIX || existsOffLine()) { // PanelMQTTMix allows deferred execution
+		final AbstractSettingsPanel panelMQTT;
+		if(devTypes == Gen.MIX || existsOffLine()) { // PanelMQTTMix allows deferred execution (one day we could implement type specific deferred executions and remove existsOffLine()
 			panelMQTT = new PanelMQTTMix(this);
 		} else if(devTypes == Gen.G1) {
 			panelMQTT = new PanelMQTTG1(this);
@@ -209,8 +209,8 @@ public class DialogDeviceSettings extends JDialog implements UsnaEventListener<D
 	
 	private boolean existsOffLine() {
 		for(int index: devicesInd) {
-			ShellyAbstractDevice d =  model.get(index);
-			if(d.getStatus() == Status.OFF_LINE) {
+			Status status =  model.get(index).getStatus();
+			if(status == Status.GHOST || status == Status.OFF_LINE) {
 				return true;
 			}
 		}
