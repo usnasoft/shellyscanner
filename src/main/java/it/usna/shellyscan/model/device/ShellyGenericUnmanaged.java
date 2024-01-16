@@ -22,8 +22,9 @@ public class ShellyGenericUnmanaged extends ShellyAbstractDevice implements Shel
 	private final static Pattern MAC_PATTERN = Pattern.compile("^[A-F0-9]{12}$");
 	private Throwable ex;
 
-	public ShellyGenericUnmanaged(InetAddress address, int port, String hostname) {
+	public ShellyGenericUnmanaged(InetAddress address, int port, String hostname, HttpClient httpClient) {
 		super(address, port, hostname);
+		this.httpClient = httpClient;
 		if(hostname.length() > 12) {
 			String mac = hostname.substring(Math.max(hostname.length() - 12, 0), hostname.length()).toUpperCase();
 			this.mac = MAC_PATTERN.matcher(mac).matches() ? mac : "";
@@ -35,8 +36,7 @@ public class ShellyGenericUnmanaged extends ShellyAbstractDevice implements Shel
 	}
 	
 	public ShellyGenericUnmanaged(InetAddress address, int port, String hostname, HttpClient httpClient, Throwable e) {
-		this(address, port, hostname);
-		this.httpClient = httpClient;
+		this(address, port, hostname, httpClient);
 		this.ex = e;
 		if(e instanceof IOException && "Status-401".equals(e.getMessage())) {
 			status = Status.NOT_LOOGGED;

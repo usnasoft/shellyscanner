@@ -43,9 +43,7 @@ public class ShellyPro3 extends AbstractProDevice implements RelayCommander, Int
 
 	@Override
 	public Relay getRelay(int index) {
-		if(index == 0) return relay0;
-		else if (index == 1) return relay1;
-		else return relay2;
+		return relays[index];
 	}
 
 	@Override

@@ -239,3 +239,4 @@ https://www.iconbolt.com/
 // gestione "reading": se stato online leggo uptime, se uptime diverso dal precedente memorizzo il timestamp else Quando il time stamp corrente - memorizzato > intervallo * 3 modifico lo stato - si, ma dove?
 // suspended process (dispositivi a batteria)
 // https://www.baeldung.com/java-authentication-authorization-service
+// InetAddressAndPort potrebbe essere dentro ogni device e mantenere direttamente i byte (sarebbe estremamente ottimizzato)

@@ -3,12 +3,13 @@ package it.usna.shellyscan.view;
 import static it.usna.shellyscan.Main.LABELS;
 
 import java.awt.BorderLayout;
-import java.awt.Component;
 import java.awt.Cursor;
 
+import javax.swing.Action;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
@@ -20,6 +21,9 @@ import it.usna.shellyscan.controller.DeferrableTask;
 import it.usna.shellyscan.controller.DeferrableTask.Status;
 import it.usna.shellyscan.controller.DeferrablesContainer;
 import it.usna.shellyscan.controller.DeferrablesContainer.DeferrableRecord;
+import it.usna.shellyscan.controller.UsnaAction;
+import it.usna.shellyscan.controller.UsnaSelectedAction;
+import it.usna.swing.UsnaPopupMenu;
 import it.usna.swing.table.ExTooltipTable;
 import it.usna.swing.table.UsnaTableModel;
 import it.usna.util.UsnaEventListener;
@@ -42,7 +46,7 @@ public class DialogDeferrables extends JFrame implements UsnaEventListener<Defer
 				setIconTextGap(6);
 			}
 
-			public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+			public JLabel getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
 				super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 				Status status = deferrables.get(table.convertRowIndexToModel(row)).getStatus();
 				if(status == Status.SUCCESS) {
@@ -63,34 +67,32 @@ public class DialogDeferrables extends JFrame implements UsnaEventListener<Defer
 		JScrollPane scrollPane = new JScrollPane();
 		scrollPane.setViewportView(table);
 		getContentPane().add(scrollPane, BorderLayout.CENTER);
-
-		JPanel buttonsPanel = new JPanel();
-		JButton abortButton = new JButton(LABELS.getString("btnAbort"));
-		abortButton.addActionListener(e -> {
-			for(int r: table.getSelectedModelRows()) {
-				deferrables.cancel(r);
-			}
-			abortButton.setEnabled(false);
+		
+		Action abortAction = new UsnaSelectedAction(null, table, "btnAbort", row -> {
+			deferrables.cancel(table.convertRowIndexToModel(row));
+			table.clearSelection();
 		});
-		abortButton.setEnabled(false);
-
-		JButton closeButton = new JButton(LABELS.getString("dlgClose"));
-		closeButton.addActionListener(e -> dispose());
-
+		abortAction.setEnabled(false);
+		JButton abortButton = new JButton(abortAction);
+		JButton closeButton = new JButton(new UsnaAction("dlgClose", e -> dispose()));
+		JPanel buttonsPanel = new JPanel();
 		buttonsPanel.add(abortButton);
 		buttonsPanel.add(closeButton);
 
 		getContentPane().add(buttonsPanel, BorderLayout.SOUTH);
 
 		table.getSelectionModel().addListSelectionListener(e -> {
-			abortButton.setEnabled(false);
+			abortAction.setEnabled(false);
 			for(int idx: table.getSelectedRows()) {
 				if(deferrables.get(idx).getStatus() == Status.WAITING) {
-					abortButton.setEnabled(true);
+					abortAction.setEnabled(true);
 					break;
 				}
 			}
 		});
+		
+		UsnaPopupMenu tablePopup = new UsnaPopupMenu(abortAction);
+		table.addMouseListener(tablePopup.getMouseListener());
 
 		setSize(700, 300);
 	}
@@ -119,19 +121,19 @@ public class DialogDeferrables extends JFrame implements UsnaEventListener<Defer
 	}
 
 	private static Object[] generateRow(DeferrableRecord def) {
-		String status = LABELS.getString("defStatus_" + def.getStatus().name());
+		String defStatus = LABELS.getString("defStatus_" + def.getStatus().name());
 		String retMsg = def.getRetMsg();
 		if(retMsg != null && retMsg.length() > 0) {
 			if(LABELS.containsKey(retMsg)) {
 				retMsg = LABELS.getString(retMsg);
 			}
-			status += " - " + retMsg.replace("\n", "; ");
+			defStatus += " - " + retMsg.replace("\n", "; ");
 		}
 		return new Object[] {
 				String.format(LABELS.getString("formatDataTime"), def.getTime()),
 				def.getDeviceName(),
 				def.getDescription(),
-				status};
+				defStatus};
 	}
 
 	@Override

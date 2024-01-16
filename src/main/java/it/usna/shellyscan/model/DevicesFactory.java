@@ -84,7 +84,7 @@ public class DevicesFactory {
 		} else if(gen == 0) { // gen1 (info.get("gen") == null)
 			return createG1(httpClient, address, port, info, name);
 		} else {
-			return new ShellyGenericUnmanaged(address, port, name);
+			return new ShellyGenericUnmanaged(address, port, name, httpClient);
 		}
 	}
 

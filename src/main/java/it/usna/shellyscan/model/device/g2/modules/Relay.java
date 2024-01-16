@@ -27,7 +27,7 @@ public class Relay implements RelayInterface {
 	}
 	
 	public void fillSettings(JsonNode configuration) {
-		name = configuration.get("name").asText("");
+		name = configuration.get("name").asText();
 	}
 	
 //	public void fillSettings(JsonNode configuration, JsonNode inputs) {
@@ -35,13 +35,13 @@ public class Relay implements RelayInterface {
 //		reverse = inputs.get("invert").asBoolean();
 //	}
 	
-	public void fillStatus(JsonNode relay) throws IOException { // Ralay
+	public void fillStatus(JsonNode relay) { // Ralay
 //		JsonNode relay = parent.getJSON("/relay/" + index);
 		isOn = relay.get("output").asBoolean();
 		source = relay.get("source").asText("-");
 	}
 	
-	public void fillStatus(JsonNode relay, JsonNode inputs) throws IOException { // Ralay + Input
+	public void fillStatus(JsonNode relay, JsonNode inputs) { // Ralay + Input
 		isOn = relay.get("output").asBoolean();
 		source = relay.get("source").asText("-");
 		inputIsOn = inputs.get("state").asBoolean();
