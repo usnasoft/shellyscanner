@@ -4,6 +4,7 @@ import static it.usna.shellyscan.Main.LABELS;
 
 import java.awt.BorderLayout;
 import java.awt.Cursor;
+import java.awt.event.MouseEvent;
 
 import javax.swing.Action;
 import javax.swing.ImageIcon;
@@ -91,7 +92,18 @@ public class DialogDeferrables extends JFrame implements UsnaEventListener<Defer
 			}
 		});
 		
-		UsnaPopupMenu tablePopup = new UsnaPopupMenu(abortAction);
+		UsnaPopupMenu tablePopup = new UsnaPopupMenu(abortAction) {
+			private static final long serialVersionUID = 1L;
+
+			@Override
+			protected void doPopup(MouseEvent e) {
+				int r;
+				if((r = table.rowAtPoint(e.getPoint())) >= 0 && table.isRowSelected(r) == false) {
+					table.setRowSelectionInterval(r, r);
+				}
+				show(table, e.getX(), e.getY());
+			}
+		};
 		table.addMouseListener(tablePopup.getMouseListener());
 
 		setSize(700, 300);
