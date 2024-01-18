@@ -18,11 +18,11 @@ import it.usna.shellyscan.model.device.WIFIManager.Network;
  * Generic Shelly device model for unknown generation
  * @author usna
  */
-public class ShellyGenericUnmanaged extends ShellyAbstractDevice implements ShellyUnmanagedDeviceInterface {
+public class ShellyGenericUnmanagedImpl extends ShellyAbstractDevice implements ShellyUnmanagedDeviceInterface {
 	private final static Pattern MAC_PATTERN = Pattern.compile("^[A-F0-9]{12}$");
 	private Throwable ex;
 
-	public ShellyGenericUnmanaged(InetAddress address, int port, String hostname, HttpClient httpClient) {
+	public ShellyGenericUnmanagedImpl(InetAddress address, int port, String hostname, HttpClient httpClient) {
 		super(address, port, hostname);
 		this.httpClient = httpClient;
 		if(hostname.length() > 12) {
@@ -35,7 +35,7 @@ public class ShellyGenericUnmanaged extends ShellyAbstractDevice implements Shel
 		ex = new UnsupportedOperationException("Unmanaged Shelly generation");
 	}
 	
-	public ShellyGenericUnmanaged(InetAddress address, int port, String hostname, HttpClient httpClient, Throwable e) {
+	public ShellyGenericUnmanagedImpl(InetAddress address, int port, String hostname, HttpClient httpClient, Throwable e) {
 		this(address, port, hostname, httpClient);
 		this.ex = e;
 		if(e instanceof IOException && "Status-401".equals(e.getMessage())) {

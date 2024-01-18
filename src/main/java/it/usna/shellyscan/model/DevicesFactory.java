@@ -14,7 +14,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 import it.usna.shellyscan.Main;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
-import it.usna.shellyscan.model.device.ShellyGenericUnmanaged;
+import it.usna.shellyscan.model.device.ShellyGenericUnmanagedImpl;
 import it.usna.shellyscan.model.device.g1.AbstractG1Device;
 import it.usna.shellyscan.model.device.g1.Button1;
 import it.usna.shellyscan.model.device.g1.LoginManagerG1;
@@ -68,6 +68,7 @@ import it.usna.shellyscan.model.device.g2.ShellyPro2;
 import it.usna.shellyscan.model.device.g2.ShellyPro2PM;
 import it.usna.shellyscan.model.device.g2.ShellyPro3;
 import it.usna.shellyscan.model.device.g2.ShellyPro4PM;
+import it.usna.shellyscan.model.device.g3.ShellyG3Unmanaged;
 import it.usna.shellyscan.view.DialogAuthentication;
 
 public class DevicesFactory {
@@ -83,13 +84,15 @@ public class DevicesFactory {
 			return createG2(httpClient, wsClient, address, port, info, name);
 		} else if(gen == 0) { // gen1 (info.get("gen") == null)
 			return createG1(httpClient, address, port, info, name);
+		} else if(gen ==3) { // gen1 (info.get("gen") == null)
+			return createG3(httpClient, wsClient, address, port, info, name);
 		} else {
-			return new ShellyGenericUnmanaged(address, port, name, httpClient);
+			return new ShellyGenericUnmanagedImpl(address, port, name, httpClient);
 		}
 	}
 
 	public static ShellyAbstractDevice createWithError(HttpClient httpClient, final InetAddress address, int port, String name, Throwable e) {
-		return new ShellyGenericUnmanaged(address, port, name, httpClient, e);
+		return new ShellyGenericUnmanagedImpl(address, port, name, httpClient, e);
 //		ShellyG1Unmanaged d = new ShellyG1Unmanaged(address, port, name, e); // no mac available (info) -> try to desume from hostname
 //		d.setUnrecoverable(true);
 //		d.setHttpClient(httpClient);
@@ -104,20 +107,20 @@ public class DevicesFactory {
 			if(auth) {
 				synchronized (DevicesFactory.class) { // wait for this in order to authenticate next protected devices
 					if(lastUser == null || LoginManagerG1.testBasicAuthentication(httpClient, address, port, lastUser, lastP, "/settings") != HttpStatus.OK_200) {
-						DialogAuthentication credentials = new DialogAuthentication(
+						DialogAuthentication credentialsDlg = new DialogAuthentication(
 								Main.LABELS.getString("dlgAuthTitle"),
 								Main.LABELS.getString("labelUser"),
 								Main.LABELS.getString("labelPassword"));
-						credentials.setMessage(String.format(Main.LABELS.getString("dlgAuthMessage"), name));
+						credentialsDlg.setMessage(String.format(Main.LABELS.getString("dlgAuthMessage"), name));
 						String user;
 						do {
-							credentials.setVisible(true);
-							if((user = credentials.getUser()) != null) {
-								setCredential(user, credentials.getPassword().clone());
+							credentialsDlg.setVisible(true);
+							if((user = credentialsDlg.getUser()) != null) {
+								setCredential(user, credentialsDlg.getPassword().clone());
 							}
-							credentials.setMessage(String.format(Main.LABELS.getString("dlgAuthMessageError"), name));
+							credentialsDlg.setMessage(String.format(Main.LABELS.getString("dlgAuthMessageError"), name));
 						} while(user != null && LoginManagerG1.testBasicAuthentication(httpClient, address, port, lastUser, lastP, "/settings") != HttpStatus.OK_200);
-						credentials.dispose();
+						credentialsDlg.dispose();
 					}
 				}
 				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
@@ -177,21 +180,21 @@ public class DevicesFactory {
 			if(auth) {
 				synchronized (DevicesFactory.class) { // wait for this in order to authenticate all subsequent
 					if(lastUser == null || LoginManagerG2.testDigestAuthentication(httpClient, address, port, lastP, "/rpc/Shelly.GetStatus") != HttpStatus.OK_200) {
-						DialogAuthentication credentials = new DialogAuthentication(
+						DialogAuthentication credentialsDlg = new DialogAuthentication(
 								Main.LABELS.getString("dlgAuthTitle"),
-								null,
+								null /*labelUser*/,
 								Main.LABELS.getString("labelPassword"));
-						credentials.setUser(LoginManagerG2.LOGIN_USER);
-						credentials.setMessage(String.format(Main.LABELS.getString("dlgAuthMessage"), name));
+						credentialsDlg.setUser(LoginManagerG2.LOGIN_USER);
+						credentialsDlg.setMessage(String.format(Main.LABELS.getString("dlgAuthMessage"), name));
 						String user;
 						do {
-							credentials.setVisible(true);
-							if((user = credentials.getUser()) != null) {
-								setCredential(user, credentials.getPassword().clone()); // ... .clone(): DialogAuthentication clear password after dispose() call
+							credentialsDlg.setVisible(true);
+							if((user = credentialsDlg.getUser()) != null) {
+								setCredential(user, credentialsDlg.getPassword().clone()); // ... .clone(): DialogAuthentication clear password after dispose() call
 							}
-							credentials.setMessage(String.format(Main.LABELS.getString("dlgAuthMessageError"), name));
+							credentialsDlg.setMessage(String.format(Main.LABELS.getString("dlgAuthMessageError"), name));
 						} while(user != null && LoginManagerG2.testDigestAuthentication(httpClient, address, port, lastP, "/rpc/Shelly.GetStatus") != HttpStatus.OK_200);
-						credentials.dispose();
+						credentialsDlg.dispose();
 					}
 //					URI uri = URI.create("http://" + address.getHostAddress() + ":" + port/*+ testCommand*/);
 //					Authentication.Result creds = new BasicAuthentication.BasicResult(uri, "admin", new String( "1234"));
@@ -240,7 +243,51 @@ public class DevicesFactory {
 		}
 		return d;
 	}
+	
+	private static ShellyAbstractDevice createG3(HttpClient httpClient, WebSocketClient wsClient, final InetAddress address, int port, JsonNode info, String name) {
+		AbstractG2Device d;
+		try {
+			final boolean auth = info.get("auth_en").asBoolean();
+			if(auth) {
+				synchronized (DevicesFactory.class) { // wait for this in order to authenticate all subsequent
+					if(lastUser == null || LoginManagerG2.testDigestAuthentication(httpClient, address, port, lastP, "/rpc/Shelly.GetStatus") != HttpStatus.OK_200) {
+						DialogAuthentication credentialsDlg = new DialogAuthentication(
+								Main.LABELS.getString("dlgAuthTitle"),
+								null /*labelUser*/,
+								Main.LABELS.getString("labelPassword"));
+						credentialsDlg.setUser(LoginManagerG2.LOGIN_USER);
+						credentialsDlg.setMessage(String.format(Main.LABELS.getString("dlgAuthMessage"), name));
+						String user;
+						do {
+							credentialsDlg.setVisible(true);
+							if((user = credentialsDlg.getUser()) != null) {
+								setCredential(user, credentialsDlg.getPassword().clone()); // ... .clone(): DialogAuthentication clear password after dispose() call
+							}
+							credentialsDlg.setMessage(String.format(Main.LABELS.getString("dlgAuthMessageError"), name));
+						} while(user != null && LoginManagerG2.testDigestAuthentication(httpClient, address, port, lastP, "/rpc/Shelly.GetStatus") != HttpStatus.OK_200);
+						credentialsDlg.dispose();
+					}
+				}
+				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+			}
+			d = new ShellyG3Unmanaged(address, port, name);
+		} catch(Exception e) { // really unexpected
+			LOG.error("create", e);
+			d = new ShellyG3Unmanaged(address, port, name, e);
+		}
+		try {
+			d.init(httpClient, wsClient, info);
+		} catch(IOException e) {
+			if("Status-401".equals(e.getMessage()) == false) {
+				LOG.warn("create - init", e);
+			}
+		} catch(RuntimeException e) {
+			LOG.error("create - init {}:{}", address, port, e);
+		}
+		return d;
+	}
 
+	// default credentials
 	public static void setCredential(String user, char[] p) {
 		lastUser = user;
 		lastP = p;
