@@ -6,12 +6,15 @@ import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 
 public class DeferrableTask implements Closeable {
 	public enum Status {WAITING, CANCELLED, RUNNING, SUCCESS, FAIL};
+	public enum Type {FW_UPDATE, RESTORE, BACKUP, MQTT, LOGIN};
+	private final Type type;
 	private final String description;
 	private Task task;
 	private String retValue;
 	private Status status = Status.WAITING;
 	
-	public DeferrableTask(String description, Task runner) {
+	public DeferrableTask(Type type, String description, Task runner) {
+		this.type = type;
 		this.description = description;
 		this.task = runner;
 	}
@@ -20,14 +23,15 @@ public class DeferrableTask implements Closeable {
 		try {
 			status = Status.RUNNING;
 			retValue = task.run(this, device);
-			return (status = (retValue == null || retValue.length() == 0) ? Status.SUCCESS : Status.FAIL);
+			status = (retValue == null || retValue.length() == 0) ? Status.SUCCESS : Status.FAIL;
 		} catch(Exception e) {
 			String msg = e.getMessage();
 			this.retValue = msg.length() > 0 ? msg : e.toString();
-			return (status = Status.FAIL);
+			status = Status.FAIL;
 		} finally {
 			close();
 		}
+		return status;
 	}
 	
 	public void cancel() {
@@ -41,6 +45,10 @@ public class DeferrableTask implements Closeable {
 	
 	public void setStatus(Status s) {
 		status = s;
+	}
+	
+	public Type getType() {
+		return type;
 	}
 	
 	public String getDescription() {
@@ -61,7 +69,7 @@ public class DeferrableTask implements Closeable {
 	
 	@Override
 	public String toString() {
-		return description + " : " + status + " : '" + retValue + "'";
+		return type + " : " + description + " : " + status + " : '" + retValue + "'";
 	}
 	
 	/**

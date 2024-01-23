@@ -27,6 +27,7 @@ import javax.swing.SwingConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import it.usna.shellyscan.controller.DeferrableTask;
 import it.usna.shellyscan.controller.DeferrablesContainer;
 import it.usna.shellyscan.model.device.GhostDevice;
 import it.usna.shellyscan.model.device.MQTTManager;
@@ -349,12 +350,7 @@ public class PanelMQTTMix extends AbstractSettingsPanel implements UsnaEventList
 			} else if(device.getStatus() == Status.OFF_LINE || device instanceof GhostDevice) { // defer
 				res += String.format(LABELS.getString("dlgSetMultiMsgQueue"), device.getHostname()) + "<br>";
 				DeferrablesContainer dc = DeferrablesContainer.getInstance();
-				String taskDescription = LABELS.getString("dlgSetMQTTTaskDesc");
-				int existingIndex = dc.indexOf(parent.getModelIndex(i), taskDescription);
-				if(existingIndex >= 0) {
-					dc.cancel(existingIndex);
-				}
-				dc.add(parent.getModelIndex(i), taskDescription, (def, dev) -> {
+				dc.addOrUpdate(parent.getModelIndex(i), DeferrableTask.Type.MQTT, LABELS.getString(enabled ? "dlgSetMQTTTaskDescEnable" : "dlgSetMQTTTaskDescDisable"), (def, dev) -> {
 					final MQTTManager mqttManager = dev.getMQTTManager();
 					if(enabled) {
 						return mqttManager.set(server, user, pwd, prefix);

@@ -145,6 +145,7 @@ public class DialogDeviceInfo extends JDialog implements UsnaEventListener<Devic
 		StyleConstants.setBold(redStyle, true);
 		textPane.setEditable(false);
 		textPane.setForeground(Color.BLUE);
+//		textPane.setBackground(new Color(254, 253, 222));
 		textPane.addCaretListener(e -> markDelimiters(e.getDot(), textPane.getStyledDocument(), redStyle));
 		
 		final ObjectWriter writer = new ObjectMapper().writerWithDefaultPrettyPrinter();
@@ -170,6 +171,7 @@ public class DialogDeviceInfo extends JDialog implements UsnaEventListener<Devic
 					JsonNode val = device.getJSON(info);
 					final String json = val.isNull() ? "" : writer.writeValueAsString(val);
 					textPane.setForeground(Color.BLACK);
+//					textPane.setBackground(Color.white);
 					textPane.setText(json, DEF_STYLE);
 					if (device instanceof BatteryDeviceInterface) {
 						((BatteryDeviceInterface) device).setStoredJSON(info, val);

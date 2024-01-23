@@ -20,8 +20,7 @@ public class FirmwareManagerG1 implements FirmwareManager {
 	
 	public FirmwareManagerG1(AbstractG1Device d) /*throws IOException*/ {
 		this.d = d;
-//		init();
-		chech();
+		init();
 	}
 
 	private void init() {
@@ -29,11 +28,11 @@ public class FirmwareManagerG1 implements FirmwareManager {
 		try {
 			d.sendCommand("/ota/check");
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-			JsonNode node = d.getJSON("/ota");
-			updating = STATUS_UPDATING.equals(node.get("status").asText());
-			current = node.get("old_version").asText();
-			stable = node.get("has_update").booleanValue() ? node.get("new_version").asText() : null;
-			final JsonNode betaNode = node.get("beta_version");
+			JsonNode otaNode = d.getJSON("/ota");
+			updating = STATUS_UPDATING.equals(otaNode.get("status").asText());
+			current = otaNode.get("old_version").asText();
+			stable = otaNode.get("has_update").booleanValue() ? otaNode.get("new_version").asText() : null;
+			final JsonNode betaNode = otaNode.get("beta_version");
 			boolean hasBeta = betaNode != null && betaNode.asText().equals(current) == false;
 			beta = hasBeta ? betaNode.asText() : null;
 			valid = true;
@@ -41,8 +40,8 @@ public class FirmwareManagerG1 implements FirmwareManager {
 			valid = updating = false;
 			current = stable = beta = null;
 			if(d instanceof BatteryDeviceInterface batteryDevice) {
-				JsonNode node;
-				if((node = (batteryDevice.getStoredJSON("/status"))) != null) {
+				JsonNode node = batteryDevice.getStoredJSON("/status");
+				if(node != null) {
 					node = node.get("update");
 					current = node.get("old_version").asText();
 					stable = node.get("has_update").booleanValue() ? node.get("new_version").asText() : null;
@@ -58,9 +57,6 @@ public class FirmwareManagerG1 implements FirmwareManager {
 
 	@Override
 	public void chech() {
-//		current = stable = beta = null;
-//		d.sendCommand("/ota/check");
-//		try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e) {}
 		init();
 	}
 	

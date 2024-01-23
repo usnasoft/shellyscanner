@@ -167,26 +167,23 @@ public class RestoreAction extends UsnaSelectedAction {
 							SwingUtilities.invokeLater(() ->
 							JOptionPane.showMessageDialog(mainView, LABELS.getString("msgRestoreQueue"), device.getHostname(), JOptionPane.WARNING_MESSAGE));
 
-							String taskDescription = LABELS.getString("action_restore_tooltip");
 							DeferrablesContainer dc = DeferrablesContainer.getInstance();
-							if(dc.indexOf(modelRow, taskDescription) < 0) {
-								dc.add(modelRow, taskDescription, (def, dev) -> {
-									final String restoreError = erroreMsg(dev.restore(backupJsons, resData));
-									if(restoreError.length() > 0) {
-										def.setStatus(DeferrableTask.Status.FAIL);
+							dc.addOrUpdate(modelRow, DeferrableTask.Type.RESTORE, LABELS.getString("action_restore_tooltip"), (def, dev) -> {
+								final String restoreError = erroreMsg(dev.restore(backupJsons, resData));
+								if(restoreError.length() > 0) {
+									def.setStatus(DeferrableTask.Status.FAIL);
+								}
+								try {
+									if(device.getStatus() != Status.OFF_LINE) {
+										Thread.sleep(Devices.MULTI_QUERY_DELAY);
+										dev.refreshSettings();
+										Thread.sleep(Devices.MULTI_QUERY_DELAY);
+										dev.refreshStatus();
+										mainView.update(Devices.EventType.UPDATE, modelRow);
 									}
-									try {
-										if(device.getStatus() != Status.OFF_LINE) {
-											Thread.sleep(Devices.MULTI_QUERY_DELAY);
-											dev.refreshSettings();
-											Thread.sleep(Devices.MULTI_QUERY_DELAY);
-											dev.refreshStatus();
-											mainView.update(Devices.EventType.UPDATE, modelRow);
-										}
-									} catch(Exception e) {}
-									return restoreError;
-								});
-							}
+								} catch(Exception e) {}
+								return restoreError;
+							});
 						} else {
 							LOG.error("Restore error {} {}", device, ret);
 							Msg.showMsg(mainView, (ret.equals(Restore.ERR_UNKNOWN.name())) ? LABELS.getString("labelError") : ret, device.getHostname(), JOptionPane.ERROR_MESSAGE);

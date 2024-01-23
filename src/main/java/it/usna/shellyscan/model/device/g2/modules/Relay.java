@@ -27,13 +27,16 @@ public class Relay implements RelayInterface {
 	}
 	
 	public void fillSettings(JsonNode configuration) {
-		name = configuration.get("name").asText();
+		name = configuration.get("name").asText("");
 	}
 	
-//	public void fillSettings(JsonNode configuration, JsonNode inputs) {
-//		name = configuration.get("name").asText("");
+	public void fillSettings(JsonNode configuration, JsonNode input) {
+		name = configuration.get("name").textValue();
+		if(name == null || name.isEmpty()) {
+			name = input.get("name").asText("");
+		}
 //		reverse = inputs.get("invert").asBoolean();
-//	}
+	}
 	
 	public void fillStatus(JsonNode relay) { // Ralay
 //		JsonNode relay = parent.getJSON("/relay/" + index);
@@ -41,10 +44,10 @@ public class Relay implements RelayInterface {
 		source = relay.get("source").asText("-");
 	}
 	
-	public void fillStatus(JsonNode relay, JsonNode inputs) { // Ralay + Input
+	public void fillStatus(JsonNode relay, JsonNode input) { // Ralay + Input
 		isOn = relay.get("output").asBoolean();
 		source = relay.get("source").asText("-");
-		inputIsOn = inputs.get("state").asBoolean();
+		inputIsOn = input.get("state").asBoolean();
 	}
 	
 	@Override

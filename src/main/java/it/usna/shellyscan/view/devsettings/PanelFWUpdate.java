@@ -35,11 +35,13 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import it.usna.shellyscan.Main;
+import it.usna.shellyscan.controller.DeferrableTask;
 import it.usna.shellyscan.controller.DeferrablesContainer;
 import it.usna.shellyscan.controller.UsnaAction;
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.Devices.EventType;
 import it.usna.shellyscan.model.device.FirmwareManager;
+import it.usna.shellyscan.model.device.GhostDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
@@ -181,7 +183,7 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 				return new Object[] {DevicesTable.getStatusIcon(d), UtilMiscellaneous.getExtendedHostName(d), FirmwareManager.getShortVersion(fw.current()), stableCell, betaCell};
 			}
 		} else {
-			return new Object[] {DevicesTable.getStatusIcon(d), UtilMiscellaneous.getExtendedHostName(d)};
+			return new Object[] {DevicesTable.getStatusIcon(d), UtilMiscellaneous.getExtendedHostName(d), null /*current fw unknown*/, Boolean.FALSE /*any*/};
 		}
 	}
 
@@ -285,35 +287,41 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 	}
 
 	private String updateDeviceFW(int i, boolean toStable) {
-		DeviceFirmware fwInfo = devicesFWData.get(i);
 		ShellyAbstractDevice device = parent.getLocalDevice(i);
-		fwInfo.uptime = device.getUptime();
-		String msg = fwInfo.fwModule.update(toStable);
-		if(msg != null) {
-			if(device.getStatus() == Status.OFF_LINE) {
-				String taskDescription = LABELS.getString("dlgSetFWUpdate");
-				DeferrablesContainer dc = DeferrablesContainer.getInstance();
-				if(dc.indexOf(parent.getModelIndex(i), taskDescription) < 0) {
-					dc.add(parent.getModelIndex(i), taskDescription, (def, dev) -> {
-						FirmwareManager fm = dev.getFWManager();
-						return fm.update(toStable);
-					});
+		if(device instanceof GhostDevice == false) {
+			DeviceFirmware fwInfo = devicesFWData.get(i);
+			fwInfo.uptime = device.getUptime();
+			String msg = fwInfo.fwModule.update(toStable);
+			if(msg != null) {
+				if(device.getStatus() == Status.OFF_LINE) {
+					createDeferrable(parent.getModelIndex(i), toStable);
+					return UtilMiscellaneous.getFullName(device) + " - " + LABELS.getString("msgFWUpdateQueue") + "\n";
+				} else {
+					if(LABELS.containsKey(msg)) {
+						msg = LABELS.getString(msg);
+					}
+					return UtilMiscellaneous.getFullName(device) + " - " + LABELS.getString("labelError") + ": " + msg + "\n";
 				}
-				return UtilMiscellaneous.getFullName(parent.getLocalDevice(i)) + " - " + LABELS.getString("msgFWUpdateQueue") + "\n";
-			} else {
-				if(LABELS.containsKey(msg)) {
-					msg = LABELS.getString(msg);
-				}
-				return UtilMiscellaneous.getFullName(parent.getLocalDevice(i)) + " - " + LABELS.getString("labelError") + ": " + msg + "\n";
+			} else { // success
+				try {
+					if(fwInfo.wsSession != null && fwInfo.wsSession.get().isOpen() == false) {
+						fwInfo.wsSession = wsEventListener(i, (AbstractG2Device)device);
+					}
+				} catch (InterruptedException | ExecutionException | IOException e) {}
+				return "";
 			}
-		} else { // success
-			try {
-				if(fwInfo.wsSession != null && fwInfo.wsSession.get().isOpen() == false) {
-					fwInfo.wsSession = wsEventListener(i, (AbstractG2Device)device);
-				}
-			} catch (InterruptedException | ExecutionException | IOException e) {}
-			return "";
+		} else {
+			createDeferrable(parent.getModelIndex(i), true);
+			return UtilMiscellaneous.getFullName(device) + " - " + LABELS.getString("msgFWUpdateQueue") + "\n";
 		}
+	}
+	
+	private static void createDeferrable(int modelIndex, boolean toStable) {
+		DeferrablesContainer dc = DeferrablesContainer.getInstance();
+		dc.addOrUpdate(modelIndex, DeferrableTask.Type.FW_UPDATE, LABELS.getString(toStable ? "dlgSetFWUpdateStable" : "dlgSetFWUpdateBeta"), (def, dev) -> {
+			FirmwareManager fm = dev.getFWManager();
+			return fm.update(toStable);
+		});
 	}
 
 	int countSelection() {

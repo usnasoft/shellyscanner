@@ -142,8 +142,8 @@ public class ShellyPro2PM extends AbstractProDevice implements RelayCommander, R
 				meters = new Meters[] {meters0, meters1};
 				roller = null; // modeRelay change
 			}
-			relay0.fillSettings(configuration.get("switch:0"));
-			relay1.fillSettings(configuration.get("switch:1"));
+			relay0.fillSettings(configuration.get("switch:0"), configuration.get("input:0"));
+			relay1.fillSettings(configuration.get("switch:1"), configuration.get("input:1"));
 		} else {
 			if(roller == null) {
 				roller = new Roller(this, 0);

@@ -225,9 +225,12 @@ https://www.iconbolt.com/
 // mqtt deferrable (all)
 // login deferrable
 // help on checklist & graphs
+// fw update "any"
+// todo search ssid ?
 
 ---
 // TODO
+// editor sintax (start with inner blocks)
 // chacklist reset button(5)/power
 // grafico energia
 // inclusione massiva

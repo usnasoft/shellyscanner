@@ -17,6 +17,7 @@ import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 
 import it.usna.shellyscan.Main;
+import it.usna.shellyscan.controller.DeferrableTask;
 import it.usna.shellyscan.controller.DeferrablesContainer;
 import it.usna.shellyscan.model.device.GhostDevice;
 import it.usna.shellyscan.model.device.LoginManager;
@@ -188,12 +189,7 @@ public class PanelResLogin extends AbstractSettingsPanel {
 			} else if(device.getStatus() == Status.OFF_LINE || device instanceof GhostDevice) { // defer
 				res += String.format(LABELS.getString("dlgSetMultiMsgQueue"), device.getHostname()) + "<br>";
 				DeferrablesContainer dc = DeferrablesContainer.getInstance();
-				String taskDescription = LABELS.getString("dlgSetRestrictedLogin");
-				int existingIndex = dc.indexOf(parent.getModelIndex(i), taskDescription);
-				if(existingIndex >= 0) {
-					dc.cancel(existingIndex);
-				}
-				dc.add(parent.getModelIndex(i), taskDescription, (def, dev) -> {
+				dc.addOrUpdate(parent.getModelIndex(i), DeferrableTask.Type.LOGIN, LABELS.getString(enabled ? "RestrictedLoginTaskEnable" : "RestrictedLoginTaskDisable"), (def, dev) -> {
 					final LoginManager loginManager = dev.getLoginManager();
 					if(enabled) {
 						return loginManager.set(user, pwd);

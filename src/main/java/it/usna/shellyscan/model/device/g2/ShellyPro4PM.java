@@ -160,10 +160,10 @@ public class ShellyPro4PM extends AbstractProDevice implements RelayCommander, I
 	@Override
 	protected void fillSettings(JsonNode configuration) throws IOException {
 		super.fillSettings(configuration);
-		relay0.fillSettings(configuration.get("switch:0"));
-		relay1.fillSettings(configuration.get("switch:1"));
-		relay2.fillSettings(configuration.get("switch:2"));
-		relay3.fillSettings(configuration.get("switch:3"));
+		relay0.fillSettings(configuration.get("switch:0"), configuration.get("input:0"));
+		relay1.fillSettings(configuration.get("switch:1"), configuration.get("input:1"));
+		relay2.fillSettings(configuration.get("switch:2"), configuration.get("input:2"));
+		relay3.fillSettings(configuration.get("switch:3"), configuration.get("input:3"));
 	}
 
 	@Override
