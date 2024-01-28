@@ -15,12 +15,13 @@ public class UtilMiscellaneous {
 	public static String getDescName(ShellyAbstractDevice d, int channel) {
 		if(d instanceof RelayCommander) {
 			RelayInterface[] ri = ((RelayCommander)d).getRelays();
-			if(ri != null) {
+			if(ri != null) { // cover?
 				String name;
 				RelayInterface rel;
-				if(channel >= ri.length) {
+				/*if(channel >= ri.length) {
 					return getDescName(d);
-				} else if((rel = ri[channel]) != null && (name = rel.getName()) != null && name.length() > 0) {
+				} else*/
+				if(channel < ri.length && (rel = ri[channel]) != null && (name = rel.getName()) != null && name.length() > 0) {
 					final String dName = d.getName();
 					return (dName != null && dName.length() > 0) ? dName + "-" + name : name;
 				}
