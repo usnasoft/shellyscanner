@@ -121,17 +121,17 @@ public class ShellyEM extends AbstractG1Device implements RelayCommander {
 		super.fillStatus(status);
 		relay.fillStatus(status.get("relays").get(0));
 		
-		JsonNode eMeters = status.get("emeters");
-		JsonNode eMeters0 = eMeters.get(0);
-		power[0] = (float)eMeters0.get("power").asDouble();
-		reactive[0] = (float)eMeters0.get("reactive").asDouble();
-		pf[0] = (float)eMeters0.get("pf").asDouble();
-		voltage[0] = (float)eMeters0.get("voltage").asDouble();
-		JsonNode eMeters1 = eMeters.get(1);
-		power[1] = (float)eMeters1.get("power").asDouble();
-		reactive[1] = (float)eMeters1.get("reactive").asDouble();
-		pf[1] = (float)eMeters1.get("pf").asDouble();
-		voltage[1] = (float)eMeters1.get("voltage").asDouble();
+		final JsonNode eMeters = status.get("emeters");
+		final JsonNode eMeters0 = eMeters.get(0);
+		power[0] = eMeters0.get("power").floatValue();
+		reactive[0] = eMeters0.get("reactive").floatValue();
+		pf[0] = eMeters0.get("pf").floatValue();
+		voltage[0] = eMeters0.get("voltage").floatValue();
+		final JsonNode eMeters1 = eMeters.get(1);
+		power[1] = eMeters1.get("power").floatValue();
+		reactive[1] = eMeters1.get("reactive").floatValue();
+		pf[1] = eMeters1.get("pf").floatValue();
+		voltage[1] = eMeters1.get("voltage").floatValue();
 	}
 
 	@Override

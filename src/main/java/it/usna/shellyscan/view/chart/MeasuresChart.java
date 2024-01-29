@@ -56,6 +56,7 @@ import it.usna.shellyscan.controller.UsnaAction;
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.Devices.EventType;
 import it.usna.shellyscan.model.device.InternalTmpHolder;
+import it.usna.shellyscan.model.device.LabelHolder;
 import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
@@ -237,15 +238,16 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 
 		seriesCombo.addActionListener(e -> {
 			if(seriesCombo.getItemCount() > 0) {
-				if(seriesCombo.getSelectedIndex() == 0) { // All
+				int selected = seriesCombo.getSelectedIndex();
+				if(selected == 0) { // All
 					for(int i = 0; i < dataset.getSeriesCount(); i++) {
 						renderer.setSeriesLinesVisible(i, true);
 						renderer.setSeriesShapesVisible(i, btnMarks.isSelected());
 					}
 				} else {
 					for(int i = 0; i < dataset.getSeriesCount(); i++ ) {
-						renderer.setSeriesLinesVisible(i, seriesCombo.getSelectedIndex() - 1 == i);
-						renderer.setSeriesShapesVisible(i, seriesCombo.getSelectedIndex() - 1 == i && btnMarks.isSelected());
+						renderer.setSeriesLinesVisible(i, selected - 1 == i);
+						renderer.setSeriesShapesVisible(i, selected - 1 == i && btnMarks.isSelected());
 					}
 				}
 			}
@@ -347,7 +349,8 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 				if(meters != null) {
 					for(int i = 0; i < meters.length; i++) {
 						if(meters[i].hasType(currentType.mType)) {
-							TimeSeries ts = new TimeSeries(UtilMiscellaneous.getDescName(d, i));
+							String name = (meters[i] instanceof LabelHolder lh) ? UtilMiscellaneous.getDescName(d, lh.getLabel()) : UtilMiscellaneous.getDescName(d, i);
+							TimeSeries ts = new TimeSeries(name);
 							temp.add(ts);
 							dataset.addSeries(ts);
 						}
@@ -437,7 +440,7 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 						} else if((m = d.getMeters()) != null) {
 							int j = 0;
 							for(int i = 0; i < m.length; i++) {
-								if(m[i].hasType(currentType.mType)) {
+								if(m[i].hasType(currentType.mType) && j < ts.length) {
 									float val = m[i].getValue(currentType.mType);
 									ts[j].addOrUpdate(timestamp, val);
 									outStream(d, j, currentType.name(), timestamp, val);
@@ -446,7 +449,7 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 							}
 						}
 					} catch (Throwable ex) {
-						LOG.warn("Unexpected", ex); // possible error on graph type change
+						LOG.warn("Unexpected {}-{}", d, currentType.name(), ex); // possible error on graph type change
 					}
 				});
 			}
