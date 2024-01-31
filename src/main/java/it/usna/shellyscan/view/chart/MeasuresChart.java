@@ -3,11 +3,14 @@ package it.usna.shellyscan.view.chart;
 import static it.usna.shellyscan.Main.LABELS;
 
 import java.awt.BorderLayout;
+import java.awt.Desktop;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -53,6 +56,7 @@ import it.usna.shellyscan.controller.UsnaAction;
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.Devices.EventType;
 import it.usna.shellyscan.model.device.InternalTmpHolder;
+import it.usna.shellyscan.model.device.LabelHolder;
 import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
@@ -118,14 +122,22 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 //		mainPanel.add(scrollPane, BorderLayout.CENTER);
 
 		JPanel commandPanel = new JPanel(new BorderLayout());
-		JPanel westCommandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 0));
+		JPanel westCommandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 2, 0));
 		commandPanel.add(westCommandPanel, BorderLayout.WEST);
-		JPanel eastCommandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 0));
+		JPanel eastCommandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 2, 0));
 		commandPanel.add(eastCommandPanel, BorderLayout.EAST);
 		mainPanel.add(commandPanel, BorderLayout.SOUTH);
 
+		JButton btnHelp = new JButton(new UsnaAction("helpBtnLabel", e -> {
+			try {
+				Desktop.getDesktop().browse(new URI(LABELS.getString("dlgChartsManualUrl")));
+			} catch (IOException | URISyntaxException | UnsupportedOperationException ex) {
+				Msg.errorMsg(this, ex);
+			}
+		}));
 		JButton btnClear = new JButton(new UsnaAction("dlgChartsBtnClear", e -> initDataSet(plot.getRangeAxis(), dataset, model, ind)));
 		JButton btnClose = new JButton(new UsnaAction("dlgClose", e -> dispose()));
+		eastCommandPanel.add(btnHelp);
 		eastCommandPanel.add(btnClear);
 		eastCommandPanel.add(btnClose);
 
@@ -226,15 +238,16 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 
 		seriesCombo.addActionListener(e -> {
 			if(seriesCombo.getItemCount() > 0) {
-				if(seriesCombo.getSelectedIndex() == 0) { // All
+				int selected = seriesCombo.getSelectedIndex();
+				if(selected == 0) { // All
 					for(int i = 0; i < dataset.getSeriesCount(); i++) {
 						renderer.setSeriesLinesVisible(i, true);
 						renderer.setSeriesShapesVisible(i, btnMarks.isSelected());
 					}
 				} else {
 					for(int i = 0; i < dataset.getSeriesCount(); i++ ) {
-						renderer.setSeriesLinesVisible(i, seriesCombo.getSelectedIndex() - 1 == i);
-						renderer.setSeriesShapesVisible(i, seriesCombo.getSelectedIndex() - 1 == i && btnMarks.isSelected());
+						renderer.setSeriesLinesVisible(i, selected - 1 == i);
+						renderer.setSeriesShapesVisible(i, selected - 1 == i && btnMarks.isSelected());
 					}
 				}
 			}
@@ -270,7 +283,7 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 
 		model.addListener(this);
 
-		setSize(900, 460);
+		setSize(920, 460);
 		setLocationRelativeTo(owner);
 		setVisible(true);
 	}
@@ -296,38 +309,38 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 				if(meters != null) {
 					for(int i = 0; i < meters.length; i++) {
 						if(meters[i].hasType(Meters.Type.T)) {
-							TimeSeries ts = new TimeSeries(UtilMiscellaneous.getDescName(d));
+							TimeSeries ts = new TimeSeries(uniqueName(dataset, UtilMiscellaneous.getDescName(d)));
 							temp.add(ts);
 							dataset.addSeries(ts);
 						}
 						if(meters[i].hasType(Meters.Type.T1)) {
-							TimeSeries ts = new TimeSeries(UtilMiscellaneous.getDescName(d) + "-1");
+							TimeSeries ts = new TimeSeries(uniqueName(dataset, UtilMiscellaneous.getDescName(d) + "-1"));
 							temp.add(ts);
 							dataset.addSeries(ts);
 						}
 						if(meters[i].hasType(Meters.Type.T2)) {
-							TimeSeries ts = new TimeSeries(UtilMiscellaneous.getDescName(d) + "-2");
+							TimeSeries ts = new TimeSeries(uniqueName(dataset, UtilMiscellaneous.getDescName(d) + "-2"));
 							temp.add(ts);
 							dataset.addSeries(ts);
 						}
 						if(meters[i].hasType(Meters.Type.T3)) {
-							TimeSeries ts = new TimeSeries(UtilMiscellaneous.getDescName(d) + "-3");
+							TimeSeries ts = new TimeSeries(uniqueName(dataset, UtilMiscellaneous.getDescName(d) + "-3"));
 							temp.add(ts);
 							dataset.addSeries(ts);
 						}
 						if(meters[i].hasType(Meters.Type.T4)) {
-							TimeSeries ts = new TimeSeries(UtilMiscellaneous.getDescName(d) + "-4");
+							TimeSeries ts = new TimeSeries(uniqueName(dataset, UtilMiscellaneous.getDescName(d) + "-4"));
 							temp.add(ts);
 							dataset.addSeries(ts);
 						}
 					}
 				}
 				if(temp.size() == 0) {
-					dataset.addSeries(new TimeSeries(UtilMiscellaneous.getDescName(d))); // legend
+					dataset.addSeries(new TimeSeries(uniqueName(dataset, UtilMiscellaneous.getDescName(d)))); // legend
 				}
 				seriesMap.put(ind, temp.toArray(TimeSeries[]::new));
 			} else if(currentType.mType == null) { // device property (INT_TEMP & RSSI), not from "Meters" or P_SUM
-				TimeSeries ts = new TimeSeries(UtilMiscellaneous.getDescName(d));
+				TimeSeries ts = new TimeSeries(uniqueName(dataset, UtilMiscellaneous.getDescName(d)));
 				dataset.addSeries(ts);
 				seriesMap.put(ind, new TimeSeries[] {ts});
 			} else {
@@ -336,14 +349,15 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 				if(meters != null) {
 					for(int i = 0; i < meters.length; i++) {
 						if(meters[i].hasType(currentType.mType)) {
-							TimeSeries ts = new TimeSeries(UtilMiscellaneous.getDescName(d, i));
+							String name = (meters[i] instanceof LabelHolder lh) ? UtilMiscellaneous.getDescName(d, lh.getLabel()) : UtilMiscellaneous.getDescName(d, i);
+							TimeSeries ts = new TimeSeries(uniqueName(dataset, name));
 							temp.add(ts);
 							dataset.addSeries(ts);
 						}
 					}
 				}
 				if(temp.size() == 0) {
-					dataset.addSeries(new TimeSeries(UtilMiscellaneous.getDescName(d))); // legend
+					dataset.addSeries(new TimeSeries(uniqueName(dataset, UtilMiscellaneous.getDescName(d)))); // legend
 				}
 				seriesMap.put(ind, temp.toArray(TimeSeries[]::new));
 			}
@@ -356,6 +370,13 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 		for(int i = 0; i < dataset.getSeriesCount(); i++ ) {
 			seriesCombo.addItem(dataset.getSeries(i).getKey().toString());
 		}
+	}
+	
+	private static String uniqueName(TimeSeriesCollection dataset, String name) {
+		for(int i = 1; dataset.getSeries(name) != null; i++) {
+			name += "(" + i + ")";
+		}
+		return name;
 	}
 
 	@Override
@@ -426,7 +447,7 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 						} else if((m = d.getMeters()) != null) {
 							int j = 0;
 							for(int i = 0; i < m.length; i++) {
-								if(m[i].hasType(currentType.mType)) {
+								if(m[i].hasType(currentType.mType) /*&& j < ts.length*/) {
 									float val = m[i].getValue(currentType.mType);
 									ts[j].addOrUpdate(timestamp, val);
 									outStream(d, j, currentType.name(), timestamp, val);
@@ -435,7 +456,7 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 							}
 						}
 					} catch (Throwable ex) {
-						LOG.warn("Unexpected", ex); // possible error on graph type change
+						LOG.warn("Unexpected {}-{}", d, currentType.name(), ex); // possible error on graph type change
 					}
 				});
 			}

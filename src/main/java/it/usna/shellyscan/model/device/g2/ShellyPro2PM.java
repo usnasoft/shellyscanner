@@ -2,7 +2,7 @@ package it.usna.shellyscan.model.device.g2;
 
 import java.io.IOException;
 import java.net.InetAddress;
-import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -15,7 +15,6 @@ import it.usna.shellyscan.model.device.g2.modules.Input;
 import it.usna.shellyscan.model.device.g2.modules.Relay;
 import it.usna.shellyscan.model.device.g2.modules.Roller;
 import it.usna.shellyscan.model.device.modules.RelayCommander;
-import it.usna.shellyscan.model.device.modules.RelayInterface;
 import it.usna.shellyscan.model.device.modules.RollerCommander;
 
 public class ShellyPro2PM extends AbstractProDevice implements RelayCommander, RollerCommander, InternalTmpHolder {
@@ -101,8 +100,8 @@ public class ShellyPro2PM extends AbstractProDevice implements RelayCommander, R
 	}
 
 	@Override
-	public RelayInterface[] getRelays() {
-		return new RelayInterface[] {relay0, relay1};
+	public Relay[] getRelays() {
+		return new Relay[] {relay0, relay1};
 	}
 
 	@Override
@@ -143,8 +142,8 @@ public class ShellyPro2PM extends AbstractProDevice implements RelayCommander, R
 				meters = new Meters[] {meters0, meters1};
 				roller = null; // modeRelay change
 			}
-			relay0.fillSettings(configuration.get("switch:0"));
-			relay1.fillSettings(configuration.get("switch:1"));
+			relay0.fillSettings(configuration.get("switch:0"), configuration.get("input:0"));
+			relay1.fillSettings(configuration.get("switch:1"), configuration.get("input:1"));
 		} else {
 			if(roller == null) {
 				roller = new Roller(this, 0);
@@ -186,7 +185,7 @@ public class ShellyPro2PM extends AbstractProDevice implements RelayCommander, R
 	}
 
 	@Override
-	public void restoreCheck(Map<String, JsonNode> backupJsons, Map<Restore, String> res) throws IOException {
+	public void restoreCheck(Map<String, JsonNode> backupJsons, Map<Restore, String> res) {
 		JsonNode devInfo = backupJsons.get("Shelly.GetDeviceInfo.json");
 		boolean backModeRelay = MODE_RELAY.equals(devInfo.get("profile").asText());
 		if(backModeRelay != modeRelay) {
@@ -195,7 +194,7 @@ public class ShellyPro2PM extends AbstractProDevice implements RelayCommander, R
 	}
 
 	@Override
-	protected void restore(Map<String, JsonNode> backupJsons, ArrayList<String> errors) throws IOException, InterruptedException {
+	protected void restore(Map<String, JsonNode> backupJsons, List<String> errors) throws InterruptedException {
 		JsonNode configuration = backupJsons.get("Shelly.GetConfig.json");
 		final boolean backModeRelay = MODE_RELAY.equals(configuration.at("/sys/device/profile").asText());
 		if(backModeRelay == modeRelay) {

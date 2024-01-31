@@ -3,6 +3,7 @@ package it.usna.shellyscan.model.device.g1;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -12,7 +13,6 @@ import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.MetersPower;
 import it.usna.shellyscan.model.device.g1.modules.Relay;
 import it.usna.shellyscan.model.device.modules.RelayCommander;
-import it.usna.shellyscan.model.device.modules.RelayInterface;
 
 /**
  * Shelly 1 model
@@ -130,13 +130,13 @@ public class Shelly1 extends AbstractG1Device implements RelayCommander {
 	}
 
 	@Override
-	public RelayInterface getRelay(int index) {
+	public Relay getRelay(int index) {
 		return relay;
 	}
 
 	@Override
-	public RelayInterface[] getRelays() {
-		return new RelayInterface[] { relay };
+	public Relay[] getRelays() {
+		return new Relay[] { relay };
 	}
 
 	@Override
@@ -173,7 +173,7 @@ public class Shelly1 extends AbstractG1Device implements RelayCommander {
 	}
 
 	@Override
-	protected void restore(JsonNode settings, ArrayList<String> errors) throws IOException, InterruptedException {
+	protected void restore(JsonNode settings, List<String> errors) throws IOException, InterruptedException {
 		errors.add(sendCommand("/settings?" + jsonNodeToURLPar(settings, "longpush_time", "factory_reset_from_switch",
 				"wifirecovery_reboot_enabled", "ext_switch_enable", "ext_switch_reverse"/*, "eco_mode_enabled"*/) +
 				"&ext_sensors_temperature_unit=" + settings.path("ext_sensors").path("temperature_unit")));

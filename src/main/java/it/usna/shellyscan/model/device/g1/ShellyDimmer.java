@@ -2,7 +2,7 @@ package it.usna.shellyscan.model.device.g1;
 
 import java.io.IOException;
 import java.net.InetAddress;
-import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -104,7 +104,7 @@ public class ShellyDimmer extends AbstractG1Device implements WhiteCommander, In
 //	}
 
 	@Override
-	protected void restore(JsonNode settings, ArrayList<String> errors) throws IOException, InterruptedException {
+	protected void restore(JsonNode settings, List<String> errors) throws IOException, InterruptedException {
 		errors.add(sendCommand("/settings?" + jsonNodeToURLPar(settings, "led_status_disable", "factory_reset_from_switch", "pulse_mode", "transition", "fade_rate", "min_brightness", "zcross_debounce")));
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 		JsonNode nightMode = settings.get("night_mode");

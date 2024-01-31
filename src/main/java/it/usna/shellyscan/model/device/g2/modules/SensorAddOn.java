@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
@@ -283,7 +284,7 @@ public class SensorAddOn extends Meters {
 		return addOn == null || addOn.getTypes().length == 0 || backupAddOn == null || backupAddOn.size() == 0;
 	}
 
-	public static <T extends AbstractG2Device & SensorAddOnHolder> void restore(T d, Map<String, JsonNode> backupJsons, ArrayList<String> errors) throws InterruptedException {
+	public static <T extends AbstractG2Device & SensorAddOnHolder> void restore(T d, Map<String, JsonNode> backupJsons, List<String> errors) throws InterruptedException {
 		SensorAddOn addOn = d.getSensorAddOn();
 		JsonNode backupAddOn = backupJsons.get(BACKUP_SECTION);
 		//todo errors.add(Input.restore(this, configuration, "0"));

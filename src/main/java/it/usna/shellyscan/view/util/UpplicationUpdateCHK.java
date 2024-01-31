@@ -33,15 +33,14 @@ public class UpplicationUpdateCHK {
 	
 	public static void chechForUpdates(final Window w) {
 		w.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-		final String title = LABELS.getString("aboutCheckUpdates") + " - " + Main.VERSION + " r." + Main.VERSION_CODE.substring(Main.VERSION_CODE.length() - 2, Main.VERSION_CODE.length());
 		try {
 			List<Release> rel = remoteChech(true, "000");
 			if(rel.size() == 0) {
-				Msg.showMsg(w, LABELS.getString("aboutCheckUpdatesNone"), title, JOptionPane.INFORMATION_MESSAGE);
+				Msg.showMsg(w, LABELS.getString("aboutCheckUpdatesNone"), currentVersion(), JOptionPane.INFORMATION_MESSAGE);
 			} else {	
 				String msg = rel.stream().map(Release::msg).collect(Collectors.joining("\n"));
 				Object[] options = new Object[] {LABELS.getString("aboutCheckUpdatesDownload"), LABELS.getString("dlgClose")};
-				if(JOptionPane.showOptionDialog(w, msg, title, JOptionPane.OK_CANCEL_OPTION, JOptionPane.INFORMATION_MESSAGE, null, options, null) == 0) {
+				if(JOptionPane.showOptionDialog(w, msg, currentVersion(), JOptionPane.OK_CANCEL_OPTION, JOptionPane.INFORMATION_MESSAGE, null, options, null) == 0) {
 					try {
 						Desktop.getDesktop().browse(new URI(LABELS.getString("aboutCheckUpdatesDownloadURL")));
 					} catch (IOException | URISyntaxException ex) {
@@ -70,8 +69,7 @@ public class UpplicationUpdateCHK {
 				if(rel.size() > 0) {
 					String msg = rel.stream().map(Release::msg).collect(Collectors.joining("\n"));
 					final Object[] options = new Object[] {LABELS.getString("aboutCheckUpdatesDownload"), LABELS.getString("aboutCheckUpdatesSkip"), LABELS.getString("dlgClose")};
-					final String title = LABELS.getString("aboutCheckUpdates") + " - " + Main.VERSION + " r." + Main.VERSION_CODE.substring(Main.VERSION_CODE.length() - 2, Main.VERSION_CODE.length());
-					int choice = JOptionPane.showOptionDialog(w, msg, title, JOptionPane.OK_CANCEL_OPTION, JOptionPane.INFORMATION_MESSAGE, null, options, null);
+					int choice = JOptionPane.showOptionDialog(w, msg, currentVersion(), JOptionPane.OK_CANCEL_OPTION, JOptionPane.INFORMATION_MESSAGE, null, options, null);
 					if(choice == 0) { // download
 						try {
 							Desktop.getDesktop().browse(new URI(LABELS.getString("aboutCheckUpdatesDownloadURL")));
@@ -88,6 +86,10 @@ public class UpplicationUpdateCHK {
 				w.setCursor(Cursor.getDefaultCursor());
 			}
 		}
+	}
+	
+	private static String currentVersion() {
+		return String.format(LABELS.getString("aboutCheckUpdatesTitle"), Main.VERSION + " r." + Main.VERSION_CODE.substring(Main.VERSION_CODE.length() - 2, Main.VERSION_CODE.length()));
 	}
 	
 	private static List<Release> remoteChech(final boolean checkDev, final String ignoreRel) throws MalformedURLException, IOException {

@@ -1,4 +1,4 @@
-package it.usna.shellyscan.model.device.g2;
+package it.usna.shellyscan.model.device.g3;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -10,15 +10,15 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 import it.usna.shellyscan.model.device.ShellyUnmanagedDeviceInterface;
 
-public class ShellyG2Unmanaged extends AbstractG2Device implements ShellyUnmanagedDeviceInterface {
+public class ShellyG3Unmanaged extends AbstractG3Device implements ShellyUnmanagedDeviceInterface {
 	private String type;
 	private Throwable ex;
 
-	public ShellyG2Unmanaged(InetAddress address, int port, String hostname) {
+	public ShellyG3Unmanaged(InetAddress address, int port, String hostname) {
 		super(address, port, hostname);
 	}
 	
-	public ShellyG2Unmanaged(InetAddress address, int port, String hostname, Throwable e) {
+	public ShellyG3Unmanaged(InetAddress address, int port, String hostname, Throwable e) {
 		super(address, port, hostname);
 		this.ex = e;
 		this.hostname = hostname;
@@ -51,7 +51,7 @@ public class ShellyG2Unmanaged extends AbstractG2Device implements ShellyUnmanag
 	}
 	
 	public String getTypeName() {
-		return "Generic G2";
+		return "Generic G3";
 	}
 	
 	@Override
@@ -84,9 +84,9 @@ public class ShellyG2Unmanaged extends AbstractG2Device implements ShellyUnmanag
 	@Override
 	public String toString() {
 		if(ex == null) {
-			return "Shelly G2 (unmanaged) " + type + ": " + super.toString();
+			return "Shelly G3 (unmanaged) " + type + ": " + super.toString();
 		} else {
-			return "Shelly G2 (unmanaged): " + super.toString() + " Error: " + ex.getMessage();
+			return "Shelly G3 (unmanaged): " + super.toString() + " Error: " + ex.getMessage();
 		}
 	}
 }

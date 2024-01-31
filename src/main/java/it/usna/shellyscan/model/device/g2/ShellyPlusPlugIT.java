@@ -2,7 +2,7 @@ package it.usna.shellyscan.model.device.g2;
 
 import java.io.IOException;
 import java.net.InetAddress;
-import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -11,7 +11,6 @@ import it.usna.shellyscan.model.device.InternalTmpHolder;
 import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.g2.modules.Relay;
 import it.usna.shellyscan.model.device.modules.RelayCommander;
-import it.usna.shellyscan.model.device.modules.RelayInterface;
 
 public class ShellyPlusPlugIT extends AbstractG2Device implements RelayCommander, InternalTmpHolder {
 	public final static String ID = "PlusPlugIT";
@@ -62,7 +61,7 @@ public class ShellyPlusPlugIT extends AbstractG2Device implements RelayCommander
 	}
 	
 	@Override
-	public RelayInterface[] getRelays() {
+	public Relay[] getRelays() {
 		return new Relay[] {relay};
 	}
 	
@@ -106,7 +105,7 @@ public class ShellyPlusPlugIT extends AbstractG2Device implements RelayCommander
 	}
 
 	@Override
-	protected void restore(Map<String, JsonNode> backupJsons, ArrayList<String> errors) throws IOException, InterruptedException {
+	protected void restore(Map<String, JsonNode> backupJsons, List<String> errors) throws  InterruptedException {
 		JsonNode configuration = backupJsons.get("Shelly.GetConfig.json");
 		errors.add(relay.restore(configuration));
 	}

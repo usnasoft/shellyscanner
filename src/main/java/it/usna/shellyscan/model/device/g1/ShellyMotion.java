@@ -2,7 +2,7 @@ package it.usna.shellyscan.model.device.g1;
 
 import java.io.IOException;
 import java.net.InetAddress;
-import java.util.ArrayList;
+import java.util.List;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -71,7 +71,7 @@ public class ShellyMotion extends AbstractG1Device {
 	}
 
 	@Override
-	protected void restore(JsonNode settings, ArrayList<String> errors) throws IOException {
+	protected void restore(JsonNode settings, List<String> errors) throws IOException {
 		JsonNode motion = settings.path("motion");
 		String mSensitivity = motion.get("sensitivity").asText();
 		String mBlind = motion.get("blind_time_minutes").asText();

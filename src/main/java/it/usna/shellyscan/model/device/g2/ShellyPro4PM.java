@@ -2,10 +2,11 @@ package it.usna.shellyscan.model.device.g2;
 
 import java.io.IOException;
 import java.net.InetAddress;
-import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import it.usna.shellyscan.model.Devices;
@@ -14,7 +15,6 @@ import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.g2.modules.Input;
 import it.usna.shellyscan.model.device.g2.modules.Relay;
 import it.usna.shellyscan.model.device.modules.RelayCommander;
-import it.usna.shellyscan.model.device.modules.RelayInterface;
 
 public class ShellyPro4PM extends AbstractProDevice implements RelayCommander, InternalTmpHolder {
 	public final static String ID = "Pro4PM";
@@ -29,7 +29,7 @@ public class ShellyPro4PM extends AbstractProDevice implements RelayCommander, I
 	private float current0, current1, current2, current3;
 	private float pf0, pf1, pf2, pf3;
 	private Meters[] meters;
-	private RelayInterface[] relays = new RelayInterface[] {relay0, relay1, relay2, relay3};
+	private Relay[] relays = new Relay[] {relay0, relay1, relay2, relay3};
 
 	public ShellyPro4PM(InetAddress address, int port, String hostname) {
 		super(address, port, hostname);
@@ -122,19 +122,16 @@ public class ShellyPro4PM extends AbstractProDevice implements RelayCommander, I
 
 	@Override
 	public int getRelayCount() {
-		return 2;
+		return 4;
 	}
 
 	@Override
 	public Relay getRelay(int index) {
-		if(index == 0) return relay0;
-		if(index == 1) return relay1;
-		if(index == 2) return relay2;
-		/*if(index == 3)*/ return relay3;
+		return relays[index];
 	}
 
 	@Override
-	public RelayInterface[] getRelays() {
+	public Relay[] getRelays() {
 		return relays;
 	}
 
@@ -163,10 +160,10 @@ public class ShellyPro4PM extends AbstractProDevice implements RelayCommander, I
 	@Override
 	protected void fillSettings(JsonNode configuration) throws IOException {
 		super.fillSettings(configuration);
-		relay0.fillSettings(configuration.get("switch:0"));
-		relay1.fillSettings(configuration.get("switch:1"));
-		relay2.fillSettings(configuration.get("switch:2"));
-		relay3.fillSettings(configuration.get("switch:3"));
+		relay0.fillSettings(configuration.get("switch:0"), configuration.get("input:0"));
+		relay1.fillSettings(configuration.get("switch:1"), configuration.get("input:1"));
+		relay2.fillSettings(configuration.get("switch:2"), configuration.get("input:2"));
+		relay3.fillSettings(configuration.get("switch:3"), configuration.get("input:3"));
 	}
 
 	@Override
@@ -204,7 +201,7 @@ public class ShellyPro4PM extends AbstractProDevice implements RelayCommander, I
 	}
 
 	@Override
-	protected void restore(Map<String, JsonNode> backupJsons, ArrayList<String> errors) throws IOException, InterruptedException {
+	protected void restore(Map<String, JsonNode> backupJsons, List<String> errors) throws JsonProcessingException, InterruptedException {
 		JsonNode configuration = backupJsons.get("Shelly.GetConfig.json");
 		errors.add(Input.restore(this,configuration, "0"));
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);

@@ -2,7 +2,7 @@ package it.usna.shellyscan.model.device.g1;
 
 import java.io.IOException;
 import java.net.InetAddress;
-import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -12,7 +12,6 @@ import it.usna.shellyscan.model.device.LabelHolder;
 import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.g1.modules.Relay;
 import it.usna.shellyscan.model.device.modules.RelayCommander;
-import it.usna.shellyscan.model.device.modules.RelayInterface;
 
 public class ShellyEM extends AbstractG1Device implements RelayCommander {
 	public final static String ID = "SHEM";
@@ -77,13 +76,13 @@ public class ShellyEM extends AbstractG1Device implements RelayCommander {
 	}
 	
 	@Override
-	public RelayInterface getRelay(int index) {
+	public Relay getRelay(int index) {
 		return relay;
 	}
 	
 	@Override
-	public RelayInterface[] getRelays() {
-		return new RelayInterface[] {relay};
+	public Relay[] getRelays() {
+		return new Relay[] {relay};
 	}
 	
 	public float getPower(int index) {
@@ -122,21 +121,21 @@ public class ShellyEM extends AbstractG1Device implements RelayCommander {
 		super.fillStatus(status);
 		relay.fillStatus(status.get("relays").get(0));
 		
-		JsonNode eMeters = status.get("emeters");
-		JsonNode eMeters0 = eMeters.get(0);
-		power[0] = (float)eMeters0.get("power").asDouble();
-		reactive[0] = (float)eMeters0.get("reactive").asDouble();
-		pf[0] = (float)eMeters0.get("pf").asDouble();
-		voltage[0] = (float)eMeters0.get("voltage").asDouble();
-		JsonNode eMeters1 = eMeters.get(1);
-		power[1] = (float)eMeters1.get("power").asDouble();
-		reactive[1] = (float)eMeters1.get("reactive").asDouble();
-		pf[1] = (float)eMeters1.get("pf").asDouble();
-		voltage[1] = (float)eMeters1.get("voltage").asDouble();
+		final JsonNode eMeters = status.get("emeters");
+		final JsonNode eMeters0 = eMeters.get(0);
+		power[0] = eMeters0.get("power").floatValue();
+		reactive[0] = eMeters0.get("reactive").floatValue();
+		pf[0] = eMeters0.get("pf").floatValue();
+		voltage[0] = eMeters0.get("voltage").floatValue();
+		final JsonNode eMeters1 = eMeters.get(1);
+		power[1] = eMeters1.get("power").floatValue();
+		reactive[1] = eMeters1.get("reactive").floatValue();
+		pf[1] = eMeters1.get("pf").floatValue();
+		voltage[1] = eMeters1.get("voltage").floatValue();
 	}
 
 	@Override
-	protected void restore(JsonNode settings, ArrayList<String> errors) throws IOException, InterruptedException {
+	protected void restore(JsonNode settings, List<String> errors) throws IOException, InterruptedException {
 		errors.add(sendCommand("/settings?" + jsonNodeToURLPar(settings, "led_status_disable", "wifirecovery_reboot_enabled")));
 		JsonNode meters = settings.get("emeters");
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);

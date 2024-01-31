@@ -2,7 +2,7 @@ package it.usna.shellyscan.model.device.g1;
 
 import java.io.IOException;
 import java.net.InetAddress;
-import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -71,7 +71,7 @@ public class Button1 extends AbstractBatteryG1Device implements InputCommander {
 	}
 
 	@Override
-	protected void restore(JsonNode settings, ArrayList<String> errors) throws IOException, InterruptedException {
+	protected void restore(JsonNode settings, List<String> errors) throws IOException, InterruptedException {
 		final int longpushtime = settings.get("longpush_duration_ms").get("max").asInt();
 		final int multipushtime = settings.get("multipush_time_between_pushes_ms").get("max").asInt();
 		errors.add(sendCommand("/settings?" + jsonNodeToURLPar(settings, "remain_awake", "led_status_disable") +

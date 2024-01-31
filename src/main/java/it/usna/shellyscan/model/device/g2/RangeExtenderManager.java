@@ -14,7 +14,7 @@ public class RangeExtenderManager {
 
 	public RangeExtenderManager(AbstractG2Device d) throws IOException {
 //		this.d = d;
-		Status s = d.getStatus();
+		Status s = d.getStatus(); // get status since next call could loose NOT_LOOGGED (no login needed)
 		JsonNode clients = d.getJSON("/rpc/WiFi.ListAPClients");
 		if(clients.isNull() == false) {
 			clients.get("ap_clients").forEach(c -> ports.add(c.get("mport").asInt()));

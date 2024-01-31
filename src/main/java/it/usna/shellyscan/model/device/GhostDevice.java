@@ -1,7 +1,6 @@
 package it.usna.shellyscan.model.device;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.InetAddress;
 import java.util.Collections;
 import java.util.EnumMap;
@@ -19,17 +18,19 @@ import it.usna.shellyscan.model.device.g2.LoginManagerG2;
 public class GhostDevice extends ShellyAbstractDevice {
 	private final static Logger LOG = LoggerFactory.getLogger(GhostDevice.class);
 	private final String typeName;
+	private final int gen;
 	private final String typeID;
 	private final boolean battery;
 	private String note;
 	
 	public GhostDevice(InetAddress address, int port, String hostname,
-			String mac, String ssid, String typeName, String typeID, String name, long lastConnection, boolean battery,
+			String mac, String ssid, String typeName, String typeID, int gen, String name, long lastConnection, boolean battery,
 			String note) {
 		super(address, port, hostname);
 		this.mac = mac;
 		this.ssid = ssid;
 		this.typeName = typeName;
+		this.gen = gen;
 		this.typeID = typeID;
 		this.name = name;
 		this.lastConnection = lastConnection;
@@ -51,6 +52,10 @@ public class GhostDevice extends ShellyAbstractDevice {
 	public String getTypeID() {
 		return typeID;
 	}
+
+	public int getGeneration() {
+		return gen;
+	}
 	
 	public boolean isBattery() {
 		return battery;
@@ -64,6 +69,7 @@ public class GhostDevice extends ShellyAbstractDevice {
 		this.note = note;
 	}
 	
+	@Override
 	public JsonNode getJSON(final String command) throws DeviceOfflineException {
 		throw new DeviceOfflineException("Status-GHOST");
 	}
@@ -119,7 +125,7 @@ public class GhostDevice extends ShellyAbstractDevice {
 	}
 
 	@Override
-	public Map<Restore, String> restoreCheck(Map<String, JsonNode> backupJsons) throws IOException {
+	public Map<Restore, String> restoreCheck(Map<String, JsonNode> backupJsons) {
 		if(backupJsons.containsKey("settings.json")) {
 			return restoreCheckG1(backupJsons);
 		} else if(backupJsons.containsKey("Shelly.GetConfig.json")) {
@@ -129,7 +135,7 @@ public class GhostDevice extends ShellyAbstractDevice {
 		}
 	}
 	
-	private Map<Restore, String> restoreCheckG1(Map<String, JsonNode> backupJsons) throws IOException {
+	private Map<Restore, String> restoreCheckG1(Map<String, JsonNode> backupJsons) {
 		EnumMap<Restore, String> res = new EnumMap<>(Restore.class);
 		try {
 			JsonNode settings = backupJsons.get("settings.json");
@@ -157,7 +163,7 @@ public class GhostDevice extends ShellyAbstractDevice {
 		return res;
 	}
 
-	private Map<Restore, String> restoreCheckG2(Map<String, JsonNode> backupJsons) throws IOException {
+	private Map<Restore, String> restoreCheckG2(Map<String, JsonNode> backupJsons) {
 		EnumMap<Restore, String> res = new EnumMap<>(Restore.class);
 		try {
 			JsonNode devInfo = backupJsons.get("Shelly.GetDeviceInfo.json");

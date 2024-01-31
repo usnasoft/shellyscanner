@@ -2,7 +2,7 @@ package it.usna.shellyscan.model.device.g2;
 
 import java.io.IOException;
 import java.net.InetAddress;
-import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -117,7 +117,7 @@ public class ShellyPlus1PM extends AbstractG2Device implements RelayCommander, I
 	@Override
 	protected void fillSettings(JsonNode configuration) throws IOException {
 		super.fillSettings(configuration);
-		relay.fillSettings(configuration.get("switch:0"));
+		relay.fillSettings(configuration.get("switch:0"), configuration.get("input:0"));
 		if(addOn != null) {
 			addOn.fillSettings(configuration);
 		}
@@ -152,7 +152,7 @@ public class ShellyPlus1PM extends AbstractG2Device implements RelayCommander, I
 	}
 
 	@Override
-	protected void restore(Map<String, JsonNode> backupJsons, ArrayList<String> errors) throws IOException, InterruptedException {
+	protected void restore(Map<String, JsonNode> backupJsons, List<String> errors) throws InterruptedException {
 		JsonNode configuration = backupJsons.get("Shelly.GetConfig.json");
 		errors.add(Input.restore(this, configuration, "0"));
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);

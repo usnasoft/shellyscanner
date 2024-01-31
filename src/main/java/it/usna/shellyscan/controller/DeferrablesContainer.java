@@ -44,13 +44,23 @@ public class DeferrablesContainer extends UsnaObservable<DeferrableTask.Status, 
 		this.model = model;
 	};
 
-	public void add(int modelIdx, String decription,  Task task) {
+	public void add(int modelIdx, DeferrableTask.Type type, String decription,  Task task) {
 		synchronized (devIdx) {
-			DeferrableRecord newDef = new DeferrableRecord(decription, task, UtilMiscellaneous.getDescName(model.get(modelIdx)), LocalDateTime.now());
+			DeferrableRecord newDef = new DeferrableRecord(type, decription, task, UtilMiscellaneous.getDescName(model.get(modelIdx)), LocalDateTime.now());
 			devIdx.add(modelIdx);
 			defer.add(newDef);
 			fireEvent(Status.WAITING, devIdx.size() - 1);
 			LOG.trace("Deferrable added: {}", newDef);
+		}
+	}
+	
+	public void addOrUpdate(int modelIdx, DeferrableTask.Type type, String decription, Task task) {
+		synchronized (devIdx) {
+			int existingIndex = indexOf(modelIdx, type);
+			if(existingIndex >= 0) {
+				cancel(existingIndex);
+			}
+			add(modelIdx, type, decription, task);
 		}
 	}
 	
@@ -66,10 +76,10 @@ public class DeferrablesContainer extends UsnaObservable<DeferrableTask.Status, 
 //		return res;
 //	}
 	
-	public int indexOf(Integer modelIdx, String description) {
+	public int indexOf(Integer modelIdx, DeferrableTask.Type type) {
 		synchronized (devIdx) {
 			for(int i = 0; i < devIdx.size(); i++) {
-				if(modelIdx.equals(devIdx.get(i)) && defer.get(i).getDescription().equals(description)) {
+				if(modelIdx.equals(devIdx.get(i)) && defer.get(i).getType() == type) {
 					return i;
 				}
 			}
@@ -90,31 +100,36 @@ public class DeferrablesContainer extends UsnaObservable<DeferrableTask.Status, 
 
 	@Override
 	public void update(EventType mesgType, Integer modelIdx) {
-		int index;
-		ShellyAbstractDevice device;
-		if((mesgType == EventType.SUBSTITUTE || mesgType == EventType.UPDATE) &&
-				(index = devIdx.indexOf(modelIdx)) >= 0 &&
-				(device = model.get(modelIdx)).getStatus() == ShellyAbstractDevice.Status.ON_LINE) {
-			synchronized (devIdx) {
-				DeferrableTask deferrable = defer.get(index).def;
-				if(deferrable.getStatus() == Status.WAITING) {
-					deferrable.setStatus(Status.RUNNING); // deferrable.run(device) change the status but we need it is changed before fireEvent
-					new Thread(() -> {
-						final Status s = deferrable.run(device);
-						fireEvent(s, index);
-					}).start();
-					fireEvent(Status.RUNNING, index);
-					LOG.trace("Deferrable execution: {}", deferrable);
-					defer.get(index).deviceName = UtilMiscellaneous.getDescName(device); // could have been changed since add(...)
-					devIdx.set(index, null);
+		try {
+			int index;
+			ShellyAbstractDevice device;
+			if((mesgType == EventType.SUBSTITUTE || mesgType == EventType.UPDATE) &&
+					(index = devIdx.indexOf(modelIdx)) >= 0 &&
+					(device = model.get(modelIdx)).getStatus() == ShellyAbstractDevice.Status.ON_LINE) {
+				synchronized (devIdx) {
+					DeferrableTask deferrable = defer.get(index).def;
+					if(deferrable.getStatus() == Status.WAITING) {
+						deferrable.setStatus(Status.RUNNING); // deferrable.run(device) change the status but we need it is changed before fireEvent
+						new Thread(() -> {
+							final Status s = deferrable.run(device);
+							fireEvent(s, index);
+							LOG.trace("Deferrable executed: {}", deferrable);
+						}).start();
+						fireEvent(Status.RUNNING, index);
+						LOG.trace("Deferrable execution: {}", deferrable);
+						defer.get(index).deviceName = UtilMiscellaneous.getDescName(device); // could have been changed since add(...)
+						devIdx.set(index, null);
+					}
+				}
+			} else if(mesgType == Devices.EventType.CLEAR) {
+				synchronized (devIdx) {
+					for(int i = 0; i < devIdx.size(); i++) {
+						cancel(i);
+					}
 				}
 			}
-		} else if(mesgType == Devices.EventType.CLEAR) {
-			synchronized (devIdx) {
-				for(int i = 0; i < devIdx.size(); i++) {
-					cancel(i);
-				}
-			}
+		} catch(RuntimeException e) {
+			LOG.error("update", e);
 		}
 	}
 	
@@ -142,14 +157,18 @@ public class DeferrablesContainer extends UsnaObservable<DeferrableTask.Status, 
 		private final LocalDateTime time;
 		private String deviceName;
 
-		private DeferrableRecord(String decription, Task task, String deviceName, LocalDateTime time) {
-			this.def = new DeferrableTask(decription, task);
+		private DeferrableRecord(DeferrableTask.Type type, String decription, Task task, String deviceName, LocalDateTime time) {
+			this.def = new DeferrableTask(type, decription, task);
 			this.deviceName = deviceName;
 			this.time = time;
 		}
 		
 		public LocalDateTime getTime() {
 			return time;
+		}
+		
+		public DeferrableTask.Type getType() {
+			return def.getType();
 		}
 
 		public String getDescription() {

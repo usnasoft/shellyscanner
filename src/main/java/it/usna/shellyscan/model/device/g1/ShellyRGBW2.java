@@ -2,7 +2,7 @@ package it.usna.shellyscan.model.device.g1;
 
 import java.io.IOException;
 import java.net.InetAddress;
-import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -128,7 +128,7 @@ public class ShellyRGBW2 extends AbstractG1Device implements RGBWCommander, Whit
 	}
 
 	@Override
-	protected void restore(JsonNode settings, ArrayList<String> errors) throws IOException, InterruptedException {
+	protected void restore(JsonNode settings, List<String> errors) throws IOException, InterruptedException {
 		errors.add(sendCommand("/settings?" + jsonNodeToURLPar(settings, "mode", "led_status_disable", "factory_reset_from_switch")));
 		JsonNode nightMode = settings.get("night_mode");
 		if(nightMode != null) {

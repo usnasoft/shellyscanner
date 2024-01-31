@@ -2,7 +2,7 @@ package it.usna.shellyscan.model.device.g2;
 
 import java.io.IOException;
 import java.net.InetAddress;
-import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -14,19 +14,18 @@ import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.g2.modules.Input;
 import it.usna.shellyscan.model.device.g2.modules.Relay;
 import it.usna.shellyscan.model.device.modules.RelayCommander;
-import it.usna.shellyscan.model.device.modules.RelayInterface;
 
 public class ShellyPro1PM extends AbstractProDevice implements RelayCommander, InternalTmpHolder {
 	public final static String ID = "Pro1PM";
 	private final static Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.W, Meters.Type.PF, Meters.Type.V, Meters.Type.I};
-	private Relay relay0 = new Relay(this, 0);
+	private Relay relay = new Relay(this, 0);
 	private float internalTmp;
-	private float power0;
-	private float voltage0;
-	private float current0;
-	private float pf0;
+	private float power;
+	private float voltage;
+	private float current;
+	private float pf;
 	private Meters[] meters;
-	private RelayInterface[] relays = new RelayInterface[] {relay0};
+	private Relay[] relays = new Relay[] {relay};
 
 	public ShellyPro1PM(InetAddress address, int port, String hostname) {
 		super(address, port, hostname);
@@ -40,13 +39,13 @@ public class ShellyPro1PM extends AbstractProDevice implements RelayCommander, I
 					@Override
 					public float getValue(Type t) {
 						if(t == Meters.Type.W) {
-							return power0;
+							return power;
 						} else if(t == Meters.Type.I) {
-							return current0;
+							return current;
 						} else if(t == Meters.Type.PF) {
-							return pf0;
+							return pf;
 						} else {
-							return voltage0;
+							return voltage;
 						}
 					}
 				}
@@ -64,17 +63,12 @@ public class ShellyPro1PM extends AbstractProDevice implements RelayCommander, I
 	}
 
 	@Override
-	public int getRelayCount() {
-		return 2;
-	}
-
-	@Override
 	public Relay getRelay(int index) {
-		return relay0;
+		return relay;
 	}
 
 	@Override
-	public RelayInterface[] getRelays() {
+	public Relay[] getRelays() {
 		return relays;
 	}
 
@@ -103,32 +97,32 @@ public class ShellyPro1PM extends AbstractProDevice implements RelayCommander, I
 	@Override
 	protected void fillSettings(JsonNode configuration) throws IOException {
 		super.fillSettings(configuration);
-		relay0.fillSettings(configuration.get("switch:0"));
+		relay.fillSettings(configuration.get("switch:0"), configuration.get("input:0"));
 	}
 
 	@Override
 	protected void fillStatus(JsonNode status) throws IOException {
 		super.fillStatus(status);
 		JsonNode switchStatus0 = status.get("switch:0");
-		relay0.fillStatus(switchStatus0, status.get("input:0"));
-		power0 = switchStatus0.get("apower").floatValue();
-		voltage0 = switchStatus0.get("voltage").floatValue();
-		current0 = switchStatus0.get("current").floatValue();
-		pf0 = switchStatus0.get("pf").floatValue();
+		relay.fillStatus(switchStatus0, status.get("input:0"));
+		power = switchStatus0.get("apower").floatValue();
+		voltage = switchStatus0.get("voltage").floatValue();
+		current = switchStatus0.get("current").floatValue();
+		pf = switchStatus0.get("pf").floatValue();
 
-		internalTmp = switchStatus0.path("temperature").path("tC").floatValue();
+		internalTmp = switchStatus0.get("temperature").get("tC").floatValue();
 	}
 
 	@Override
-	protected void restore(Map<String, JsonNode> backupJsons, ArrayList<String> errors) throws IOException, InterruptedException {
+	protected void restore(Map<String, JsonNode> backupJsons, List<String> errors) throws InterruptedException {
 		JsonNode configuration = backupJsons.get("Shelly.GetConfig.json");
 		errors.add(Input.restore(this,configuration, "0"));
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-		errors.add(relay0.restore(configuration));
+		errors.add(relay.restore(configuration));
 	}
 
 	@Override
 	public String toString() {
-		return super.toString() + " Relay: " + relay0;
+		return super.toString() + " Relay: " + relay;
 	}
 }

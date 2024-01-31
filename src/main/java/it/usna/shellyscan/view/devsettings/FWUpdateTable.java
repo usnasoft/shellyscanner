@@ -13,6 +13,7 @@ import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableModel;
 
+import it.usna.shellyscan.Main;
 import it.usna.shellyscan.model.device.FirmwareManager;
 import it.usna.shellyscan.view.DevicesTable;
 import it.usna.swing.table.ExTooltipTable;
@@ -47,7 +48,11 @@ public class FWUpdateTable extends ExTooltipTable {
 	public Component prepareEditor(TableCellEditor editor, int row, int column) {
 		JCheckBox comp = (JCheckBox)super.prepareEditor(editor, row, column);
 		FirmwareManager fw = fwPanel.getFirmwareManager(convertRowIndexToModel(row));
-		comp.setText(FirmwareManager.getShortVersion(column == COL_STABLE ? fw.newStable() : fw.newBeta()));
+		if(fw != null) {
+			comp.setText(FirmwareManager.getShortVersion(column == COL_STABLE ? fw.newStable() : fw.newBeta()));
+		} else if(column == COL_STABLE) { // non info -> try update
+			comp.setText(Main.LABELS.getString("labelUpdateToAny"));
+		}
 		comp.setBackground(getSelectionBackground());
 		comp.setForeground(getSelectionForeground());
 		comp.setHorizontalAlignment(JLabel.LEFT);
@@ -97,18 +102,20 @@ public class FWUpdateTable extends ExTooltipTable {
 		@Override
 		public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
 			if(value == null || value instanceof Boolean) {
-				JCheckBox c = (JCheckBox)table.getDefaultRenderer(Boolean.class).getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+				JCheckBox comp = (JCheckBox)table.getDefaultRenderer(Boolean.class).getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 				if(value == null) {
-					c.setEnabled(false);
-					c.setText("");
+					comp.setEnabled(false);
+					comp.setText("");
 				} else {
-					c.setEnabled(true);
+					comp.setEnabled(true);
 					FirmwareManager fw = fwPanel.getFirmwareManager(convertRowIndexToModel(row));
 					if(fw != null) {
-						c.setText(FirmwareManager.getShortVersion(column == COL_STABLE ? fw.newStable() : fw.newBeta()));
+						comp.setText(FirmwareManager.getShortVersion(column == COL_STABLE ? fw.newStable() : fw.newBeta()));
+					} else if(column == COL_STABLE) { // non info -> try update
+						comp.setText(Main.LABELS.getString("labelUpdateToAny"));
 					}
 				}
-				return c;
+				return comp;
 			} else {
 				return table.getDefaultRenderer(String.class).getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 			}

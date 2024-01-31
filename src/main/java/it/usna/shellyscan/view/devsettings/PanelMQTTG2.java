@@ -439,7 +439,7 @@ public class PanelMQTTG2 extends AbstractSettingsPanel implements UsnaEventListe
 			}
 		}
 		String res = "<html>";
-		for(int i=0; i < parent.getLocalSize(); i++) {
+		for(int i = 0; i < parent.getLocalSize(); i++) {
 			String msg;
 			MQTTManagerG2 mqttM = mqttModule.get(i);
 			if(mqttM != null) {
@@ -491,6 +491,8 @@ public class PanelMQTTG2 extends AbstractSettingsPanel implements UsnaEventListe
 				}
 			} catch (IOException e) {
 				LOG.error("copy", e);
+			} catch (UnsupportedOperationException e) {
+				LOG.debug("copy", e);
 			}
 		}
 	}

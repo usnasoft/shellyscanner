@@ -42,12 +42,12 @@ public class Relay implements RelayInterface {
 //		reverse = input && settingsRelay.path("btn_reverse").asBoolean();
 //	}
 	
-	public void fillStatus(JsonNode relay) throws IOException {
+	public void fillStatus(JsonNode relay) {
 		isOn = relay.get("ison").asBoolean();
 		source = relay.get("source").asText("-");
 	}
 	
-	public void fillStatus(JsonNode relay, JsonNode inputs) throws IOException {
+	public void fillStatus(JsonNode relay, JsonNode inputs) {
 		isOn = relay.get("ison").asBoolean();
 		source = relay.path("source").asText("-"); //old fw miss "source"
 		inputIsOn = inputs.path("input").asBoolean();

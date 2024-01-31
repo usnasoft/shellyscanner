@@ -2,7 +2,7 @@ package it.usna.shellyscan.model.device.g1;
 
 import java.io.IOException;
 import java.net.InetAddress;
-import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -13,7 +13,6 @@ import it.usna.shellyscan.model.device.MetersPower;
 import it.usna.shellyscan.model.device.g1.modules.Relay;
 import it.usna.shellyscan.model.device.g1.modules.Roller;
 import it.usna.shellyscan.model.device.modules.RelayCommander;
-import it.usna.shellyscan.model.device.modules.RelayInterface;
 import it.usna.shellyscan.model.device.modules.RollerCommander;
 
 public class Shelly2 extends AbstractG1Device implements RelayCommander, RollerCommander {
@@ -60,13 +59,13 @@ public class Shelly2 extends AbstractG1Device implements RelayCommander, RollerC
 	}
 	
 	@Override
-	public RelayInterface getRelay(int index) {
+	public Relay getRelay(int index) {
 		return index == 0 ? relay0 : relay1;
 	}
 	
 	@Override
-	public RelayInterface[] getRelays() {
-		return new RelayInterface[] {relay0, relay1};
+	public Relay[] getRelays() {
+		return new Relay[] {relay0, relay1};
 	}
 	
 	@Override
@@ -125,7 +124,7 @@ public class Shelly2 extends AbstractG1Device implements RelayCommander, RollerC
 	}
 
 	@Override
-	protected void restore(JsonNode settings, ArrayList<String> errors) throws IOException, InterruptedException {
+	protected void restore(JsonNode settings, List<String> errors) throws IOException, InterruptedException {
 		errors.add(sendCommand("/settings?" + jsonNodeToURLPar(settings, "longpush_time", "factory_reset_from_switch", "mode", "wifirecovery_reboot_enabled"/*, "max_power"*/)));
 		final boolean backModeRelay = MODE_RELAY.equals(settings.get("mode").asText());
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);

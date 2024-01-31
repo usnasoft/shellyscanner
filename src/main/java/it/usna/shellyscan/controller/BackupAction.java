@@ -53,16 +53,12 @@ public class BackupAction extends UsnaAction {
 							res += String.format(LABELS.getString(connected ? "dlgSetMultiMsgOk" : "dlgSetMultiMsgStored"), hostName) + "<br>";
 						} catch (IOException | RuntimeException e1) {
 							if(d.getStatus() == Status.OFF_LINE || d instanceof GhostDevice) { // if error happened because the device is off-line -> try to queue action in DeferrablesContainer
-								LOG.debug("Interactive Backup error {}", d);
-								
-								String taskDescription = LABELS.getString("action_back_tooltip");
+								LOG.debug("Interactive Backup error {}", d, e1);
 								DeferrablesContainer dc = DeferrablesContainer.getInstance();
-								if(dc.indexOf(modelRow, taskDescription) < 0) {
-									dc.add(modelRow, taskDescription, (def, dev) -> {
-										dev.backup(outFile);
-										return null;
-									});
-								}
+								dc.addOrUpdate(modelRow, DeferrableTask.Type.BACKUP, LABELS.getString("action_back_tooltip"), (def, dev) -> {
+									dev.backup(outFile);
+									return null;
+								});
 								res += String.format(LABELS.getString("dlgSetMultiMsgQueue"), hostName) + "<br>";
 							} else {
 								LOG.debug("Backup error {}", d.getHostname(), e1);

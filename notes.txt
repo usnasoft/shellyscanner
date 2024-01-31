@@ -219,8 +219,20 @@ https://www.iconbolt.com/
 // graphs: zoom (selection / wheel)
 // status on deferred button + number of waiting
 
+1.0.3
+// bug fix on KVS panel
+// mini 1, mini 1pm (partial), mini pm (partial)
+// mqtt deferrable (all)
+// login deferrable
+// help on checklist & graphs
+// fw update "any"
+// todo search ssid ?
+
 ---
 // TODO
+// editor sintax (start with inner blocks)
+// chacklist reset button(5)/power
+// grafico energia
 // inclusione massiva
 // multi net ip scan
 //todo Gen2 1.0.0 - triphase and monophase profiles (EDIT: to be included in next beta), add option to reverse CT direction of measurement for active power and energy
@@ -230,3 +242,4 @@ https://www.iconbolt.com/
 // gestione "reading": se stato online leggo uptime, se uptime diverso dal precedente memorizzo il timestamp else Quando il time stamp corrente - memorizzato > intervallo * 3 modifico lo stato - si, ma dove?
 // suspended process (dispositivi a batteria)
 // https://www.baeldung.com/java-authentication-authorization-service
+// InetAddressAndPort potrebbe essere dentro ogni device e mantenere direttamente i byte (sarebbe estremamente ottimizzato)

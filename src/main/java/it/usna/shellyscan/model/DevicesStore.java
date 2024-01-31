@@ -27,13 +27,16 @@ import it.usna.shellyscan.model.device.BatteryDeviceInterface;
 import it.usna.shellyscan.model.device.GhostDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
-import it.usna.shellyscan.model.device.ShellyUnmanagedDevice;
+import it.usna.shellyscan.model.device.ShellyUnmanagedDeviceInterface;
+import it.usna.shellyscan.model.device.g1.AbstractG1Device;
+import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 
 public class DevicesStore {
 	private final static Logger LOG = LoggerFactory.getLogger(DevicesStore.class);
 	private final static int STORE_VERSION = 0;
 	private final static ObjectMapper JSON_MAPPER = new ObjectMapper();
 	private final static String TYPE_ID = "tid";
+	private final static String GENERATION = "gen";
 	private final static String TYPE_NAME = "tn";
 	private final static String NAME = "name";
 	private final static String HOSTNAME = "host";
@@ -45,7 +48,7 @@ public class DevicesStore {
 	private final static String LAST_CON = "last";
 	private final static String USER_NOTE = "note";
 
-	private final Pattern MAC_PATTERN = Pattern.compile("^[A-F0-9]{12}$");
+	private final static Pattern MAC_PATTERN = Pattern.compile("^[A-F0-9]{12}$");
 	
 	private final List<GhostDevice> ghostsList = new ArrayList<>();
 
@@ -59,7 +62,7 @@ public class DevicesStore {
 			ShellyAbstractDevice device = model.get(i);
 			GhostDevice stored = getStoredGhost(device);
 			// Device with errors or not authenticated -> get information from old store
-			if((device instanceof ShellyUnmanagedDevice ud && ud.getException() != null) || device.getStatus() == Status.NOT_LOOGGED) {
+			if((device instanceof ShellyUnmanagedDeviceInterface ud && ud.getException() != null) || device.getStatus() == Status.NOT_LOOGGED) {
 				if(stored != null) {
 					ObjectNode jsonDev = toJson(stored);
 					jsonDev.put(USER_NOTE, stored.getNote());
@@ -96,6 +99,7 @@ public class DevicesStore {
 		jsonDev.put(SSID, device.getSSID());
 		jsonDev.put(LAST_CON, device.getLastTime());
 		jsonDev.put(BATTERY, device instanceof BatteryDeviceInterface  || (device instanceof GhostDevice g && g.isBattery()));
+		jsonDev.put(GENERATION, gen(device));
 		return jsonDev;
 	}
 
@@ -115,10 +119,9 @@ public class DevicesStore {
 				array.forEach(el -> {
 					try {
 						ghostsList.add(new GhostDevice(
-								InetAddress.getByName(el.get(ADDRESS).asText()), el.get(PORT).asInt(), el.get(HOSTNAME).asText(), el.get(MAC).asText(),
-								el.get(SSID).asText(), el.get(TYPE_NAME).asText(), el.get(TYPE_ID).asText(), el.get(NAME).asText(), el.path(LAST_CON).asLong(),
-								el.path(BATTERY).asBoolean(false),
-								el.path(USER_NOTE).asText()));
+								InetAddress.getByName(el.get(ADDRESS).asText()), el.get(PORT).intValue(), el.get(HOSTNAME).asText(), el.get(MAC).asText(),
+								el.get(SSID).asText(), el.get(TYPE_NAME).asText(), el.get(TYPE_ID).asText(), el.path(GENERATION).intValue(), el.get(NAME).asText(), el.path(LAST_CON).longValue(),
+								el.path(BATTERY).booleanValue(), el.path(USER_NOTE).asText()));
 					} catch (UnknownHostException | RuntimeException e) {
 						LOG.error("Archive read", e);
 					}
@@ -143,7 +146,7 @@ public class DevicesStore {
 		GhostDevice stored;
 		for(int i= 0; i < model.size(); i++) {
 			ShellyAbstractDevice dev = model.get(i);
-			if(dev instanceof ShellyUnmanagedDevice == false || ((ShellyUnmanagedDevice)dev).getException() == null) {
+			if(dev instanceof ShellyUnmanagedDeviceInterface == false || ((ShellyUnmanagedDeviceInterface)dev).getException() == null) {
 				list.add(toGhost(dev));
 			} else if ((stored = getStoredGhost(dev)) != null) {
 				list.add(toGhost(stored));
@@ -155,7 +158,7 @@ public class DevicesStore {
 	private static GhostDevice toGhost(ShellyAbstractDevice dev) {
 		return new GhostDevice(
 				dev.getAddress(), dev.getPort(), dev.getHostname(), dev.getMacAddress(),
-				dev.getSSID(), dev.getTypeName(), dev.getTypeID(), dev.getName(), dev.getLastTime(),
+				dev.getSSID(), dev.getTypeName(), dev.getTypeID(), gen(dev), dev.getName(), dev.getLastTime(),
 				dev instanceof BatteryDeviceInterface || (dev instanceof GhostDevice g && g.isBattery()),
 				"");
 	}
@@ -163,6 +166,18 @@ public class DevicesStore {
 	private GhostDevice getStoredGhost(ShellyAbstractDevice d) {
 		int ind = ghostsList.indexOf(d);
 		return ind >= 0 ? ghostsList.get(ind) : null;
+	}
+	
+	private static int gen(ShellyAbstractDevice dev) {
+		if(dev instanceof GhostDevice) {
+			return ((GhostDevice) dev).getGeneration();
+		} else if(dev instanceof AbstractG1Device) {
+			return 1;
+		} else if(dev instanceof AbstractG2Device) {
+			return 2;
+		} else {
+			return 0;
+		}
 	}
 	
 	/**

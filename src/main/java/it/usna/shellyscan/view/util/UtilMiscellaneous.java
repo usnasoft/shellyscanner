@@ -15,12 +15,13 @@ public class UtilMiscellaneous {
 	public static String getDescName(ShellyAbstractDevice d, int channel) {
 		if(d instanceof RelayCommander) {
 			RelayInterface[] ri = ((RelayCommander)d).getRelays();
-			if(ri != null) {
+			if(ri != null) { // cover?
 				String name;
 				RelayInterface rel;
-				if(channel >= ri.length) {
+				/*if(channel >= ri.length) {
 					return getDescName(d);
-				} else if((rel = ri[channel]) != null && (name = rel.getName()) != null && name.length() > 0) {
+				} else*/
+				if(channel < ri.length && (rel = ri[channel]) != null && (name = rel.getName()) != null && name.length() > 0) {
 					final String dName = d.getName();
 					return (dName != null && dName.length() > 0) ? dName + "-" + name : name;
 				}
@@ -29,6 +30,10 @@ public class UtilMiscellaneous {
 		return channel == 0 ? getDescName(d) : getDescName(d) + "-" + (channel + 1);
 	}
 	
+	public static String getDescName(ShellyAbstractDevice d, String label) {
+		return (label != null && label.isEmpty() == false) ? getDescName(d) : getDescName(d) + "-" + label;
+	}
+
 	public static String getFullName(ShellyAbstractDevice d) {
 		final String dName = d.getName();
 		if(dName.length() > 0) {
