@@ -1,6 +1,7 @@
 package it.usna.shellyscan.model.device.g2.modules;
 
 import java.io.IOException;
+import java.io.Reader;
 
 import com.fasterxml.jackson.core.io.JsonStringEncoder;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -66,9 +67,9 @@ public class Script {
 		return running;
 	}
 
-	//		public int getId() {
-	//			return id;
-	//		}
+	public int getId() {
+		return id;
+	}
 
 	public String getCode() throws IOException {
 		try {
@@ -86,12 +87,28 @@ public class Script {
 		for (int start = 0; start < code.length(); start += 1024) {
 			String seg = code.substring(start, Math.min(code.length(), start + 1024));
 			String append = (start > 0) ? ",\"append\":true" : "";
-			String res = device.postCommand("Script.PutCode", "{\"id\":" + id + append + ",\"code\":\"" + (new String(encoder.quoteAsString(seg))) + "\"}");
+			String res = device.postCommand("Script.PutCode", "{\"id\":" + id + append + ",\"code\":\"" + new String(encoder.quoteAsString(seg))) + "\"}";
 			if(res != null) {
 				return res;
 			}
 		}
 		return null;
+	}
+	
+	public String putCode(Reader code) throws IOException {
+		JsonStringEncoder encoder = JsonStringEncoder.getInstance();
+		char[] buffer = new char[1024];
+		boolean subsequent = false;
+		int length;
+		while((length = code.read(buffer, 0, 1024)) >= 0) {
+			String append = subsequent ? ",\"append\":true" : "";
+			String res = device.postCommand("Script.PutCode", "{\"id\":" + id + append + ",\"code\":\"" + new String(encoder.quoteAsString(new String(buffer, 0, length))) + "\"}");
+			subsequent = true;
+			if(res != null) {
+				return res;
+			}
+		}
+		return null;	
 	}
 
 	public void delete() throws IOException {

@@ -8,15 +8,15 @@ import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.Reader;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.ArrayList;
-import java.util.stream.Collectors;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 
@@ -52,7 +52,6 @@ import it.usna.shellyscan.view.DialogDeviceLogsG2;
 import it.usna.shellyscan.view.util.Msg;
 import it.usna.swing.table.ExTooltipTable;
 import it.usna.swing.table.UsnaTableModel;
-import it.usna.util.IOFile;
 
 public class ScriptsPanel extends JPanel {
 	private static final long serialVersionUID = 1L;
@@ -227,16 +226,20 @@ public class ScriptsPanel extends JPanel {
 					Object sName = JOptionPane.showInputDialog(this, LABELS.getString("scrSelectionMsg"), LABELS.getString("scrSelectionTitle"), JOptionPane.PLAIN_MESSAGE, null, scriptList, null);
 					if(sName != null) {
 						try (InputStream is = inZip.getInputStream(inZip.getEntry(sName + ".mjs"))) {
-							String code = new BufferedReader(new InputStreamReader(is)).lines().collect(Collectors.joining("\n"));
-							res = sc.putCode(code);
+//							String code = new BufferedReader(new InputStreamReader(is)).lines().collect(Collectors.joining("\n"));
+//							res = sc.putCode(code);
+							res = sc.putCode(new InputStreamReader(is));
 						}
 					}
 				} else {
 					JOptionPane.showMessageDialog(this, LABELS.getString("scrNoneInZipFile"), LABELS.getString("btnUpload"), JOptionPane.INFORMATION_MESSAGE);
 				}
 			} catch (ZipException e1) { // no zip (backup) -> text file
-				String code = IOFile.readFile(in);
-				res = sc.putCode(code);
+//				String code = IOFile.readFile(in);
+//				res = sc.putCode(code);
+				try (Reader r = Files.newBufferedReader(in.toPath())) {
+					res = sc.putCode(r);
+				}
 			}
 			if(res != null) {
 				Msg.errorMsg(this, res);
