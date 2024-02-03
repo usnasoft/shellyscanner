@@ -87,7 +87,7 @@ public class Script {
 		for (int start = 0; start < code.length(); start += 1024) {
 			String seg = code.substring(start, Math.min(code.length(), start + 1024));
 			String append = (start > 0) ? ",\"append\":true" : "";
-			String res = device.postCommand("Script.PutCode", "{\"id\":" + id + append + ",\"code\":\"" + new String(encoder.quoteAsString(seg))) + "\"}";
+			String res = device.postCommand("Script.PutCode", "{\"id\":" + id + append + ",\"code\":\"" + new String(encoder.quoteAsString(seg)) + "\"}");
 			if(res != null) {
 				return res;
 			}
