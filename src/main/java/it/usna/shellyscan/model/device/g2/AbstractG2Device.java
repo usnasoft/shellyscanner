@@ -430,7 +430,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 						Script script = Script.create(this, writeToScriptName);
 
 						if(enableScriptsIfWasEnabled) {
-							script.setEnabled(jsonScript.get("enable").asBoolean());
+							script.setEnabled(jsonScript.get("enable").asBoolean()); //edge case: might make problems if already 3 scripts are enabled and the user has 3 scripts enabled in the backup and wants to restore without override
 							TimeUnit.MILLISECONDS.sleep(delay);
 						}
 						script.putCode(code);
