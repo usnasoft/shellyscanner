@@ -7,10 +7,7 @@ import java.net.InetAddress;
 import java.net.SocketTimeoutException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.EnumMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -349,6 +346,28 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 				if(config.at("/mqtt/enable").asBoolean() && config.at("/mqtt/user").asText("").length() > 0) {
 					res.put(Restore.RESTORE_MQTT, config.at("/mqtt/user").asText());
 				}
+				JsonNode scripts = backupJsons.get("Script.List.json");
+				if(scripts != null) {
+					List<String> scriptsEnabledByDefault = new ArrayList<>();
+					List<String> scriptsWithSameName = new ArrayList<>();;
+					JsonNode existingScripts = Script.list(this);
+					List<String> existingScriptsNames = new ArrayList<>();
+					for(JsonNode existingScript : existingScripts) {
+						existingScriptsNames.add(existingScript.get("name").asText());
+					}
+					for(JsonNode jsonScript : scripts.get("scripts")) {
+						if(existingScriptsNames.contains(jsonScript.get("name").asText()))
+							scriptsWithSameName.add(jsonScript.get("name").asText());
+						if(jsonScript.get("enable").asBoolean())
+							scriptsEnabledByDefault.add(jsonScript.get("name").asText());
+					}
+					if(!scriptsWithSameName.isEmpty()) {
+						res.put(Restore.QUESTION_RESTORE_SCRIPTS_OVERRIDE, String.join(", ", scriptsWithSameName));
+					}
+					if(!scriptsEnabledByDefault.isEmpty()) {
+						res.put(Restore.QUESTION_RESTORE_SCRIPTS_ENABLE_LIKE_BACKED_UP, String.join(", ", scriptsEnabledByDefault));
+					}
+				}
 				// device specific
 				restoreCheck(backupJsons, res);
 			}
@@ -379,6 +398,47 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 				TimeUnit.MILLISECONDS.sleep(delay);
 				restoreSchedule(schedule, errors);
 			}
+			JsonNode scripts = backupJsons.get("Script.List.json");
+			if(scripts != null) {
+				//check existing scripts
+				JsonNode existingScripts = Script.list(this);
+				HashMap<String, Integer> existingScriptsNamesIds = new HashMap<String, Integer>();
+				for(JsonNode existingScript : existingScripts) {
+					existingScriptsNamesIds.put(existingScript.get("name").asText(), existingScript.get("id").asInt());
+				}
+				//parameters asked user
+				boolean enableScriptsIfWasEnabled = Objects.equals(data.get(Restore.QUESTION_RESTORE_SCRIPTS_ENABLE_LIKE_BACKED_UP), "true");
+				boolean overrideScripts = Objects.equals(data.get(Restore.QUESTION_RESTORE_SCRIPTS_OVERRIDE), "true");
+
+				for(JsonNode jsonScript : scripts.get("scripts")) {
+					boolean scriptWithNameAlreadyExisting = existingScriptsNamesIds.containsKey(jsonScript.get("name").asText());
+					String writeToScriptName = jsonScript.get("name").asText();
+					if(scriptWithNameAlreadyExisting && !overrideScripts) {
+						writeToScriptName = jsonScript.get("name").asText() + "_restored";
+						//if this also exists dynamically append numbers (counter of already existing with same name) to the name
+						while (existingScriptsNamesIds.containsKey(writeToScriptName)) {
+							writeToScriptName = jsonScript.get("name").asText() + "_restored" + (existingScriptsNamesIds.keySet().stream().filter(s -> s.startsWith(jsonScript.get("name").asText() + "_restored")).count() + 1);
+						}
+					}
+
+					String code = backupJsons.get(jsonScript.get("name").asText() + ".mjs.json").get("code").asText();
+					if(code != null) {
+						TimeUnit.MILLISECONDS.sleep(delay);
+						if(existingScriptsNamesIds.containsKey(writeToScriptName))
+							new Script(this, existingScriptsNamesIds.get(writeToScriptName)).delete();
+
+						Script script = Script.create(this, writeToScriptName);
+
+						if(enableScriptsIfWasEnabled) {
+							script.setEnabled(jsonScript.get("enable").asBoolean()); //edge case: might make problems if already 3 scripts are enabled and the user has 3 scripts enabled in the backup and wants to restore without override
+							TimeUnit.MILLISECONDS.sleep(delay);
+						}
+						script.putCode(code);
+					}
+				}
+				TimeUnit.MILLISECONDS.sleep(delay);
+			}
+
 			JsonNode kvs = backupJsons.get("KVS.GetMany.json");
 			if(kvs != null) {
 				TimeUnit.MILLISECONDS.sleep(delay);
