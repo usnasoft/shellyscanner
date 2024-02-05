@@ -139,7 +139,7 @@ public abstract class AbstractG1Device extends ShellyAbstractDevice {
 	
 	@Override
 	public String[] getInfoRequests() {
-		return new String[] {"/shelly", "/settings", "/settings/actions", "/status", "/cit/d"}; // "settings/ap", "settings/sta", "settings/login", "settings/cloud" into "settings"; "/ota" into "status"
+		return new String[] {"/shelly", "/settings", "/settings/actions", "/status" /*, "/cit/d"*/}; // "settings/ap", "settings/sta", "settings/login", "settings/cloud" into "settings"; "/ota" into "status"
 	}
 	
 	@Override

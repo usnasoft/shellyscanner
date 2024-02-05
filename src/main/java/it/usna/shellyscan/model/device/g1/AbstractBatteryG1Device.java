@@ -86,6 +86,22 @@ public abstract class AbstractBatteryG1Device extends AbstractG1Device implement
 			}
 		}
 	}
+	
+//	public void copyFrom(BatteryDeviceInterface dev) {
+//		AbstractBatteryG1Device devG1 = (AbstractBatteryG1Device)dev;
+//		if(shelly == null) {
+//			shelly = devG1.shelly;
+//		}
+//		if(settings == null) {
+//			settings = devG1.settings;
+//		}
+//		if(status == null) {
+//			status = devG1.status;
+//		}
+//		if(settingsActions == null) {
+//			settingsActions = devG1.settingsActions;
+//		}
+//	}
 
 //	protected class BatteryMeter extends Meters {
 //		private final  Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.BAT};

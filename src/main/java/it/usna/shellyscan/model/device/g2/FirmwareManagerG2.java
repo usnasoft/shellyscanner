@@ -25,12 +25,14 @@ public class FirmwareManagerG2 implements FirmwareManager {
 
 	private void init() {
 		try {
-			JsonNode node = d.getJSON("/rpc/Shelly.GetDeviceInfo");
-			current = node.get("fw_id").asText();
-			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-			node = d.getJSON("/rpc/Shelly.CheckForUpdate");
+			JsonNode node = d.getJSON("/rpc/Shelly.CheckForUpdate");
 			stable = node.at("/stable/build_id").asText(null);
 			beta = node.at("/beta/build_id").asText(null);
+			if(d instanceof BatteryDeviceInterface == false) {
+				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+			}
+			JsonNode nodeDevInfo = d.getJSON("/rpc/Shelly.GetDeviceInfo");
+			current = nodeDevInfo.get("fw_id").asText();
 			valid = true;
 			updating = false;
 		} catch(/*IO*/Exception e) {
@@ -46,7 +48,9 @@ public class FirmwareManagerG2 implements FirmwareManager {
 					stable = node.at("/stable/version").asText(null); // not id
 					beta = node.at("/beta/version").asText(null); // not id
 				}
-				if((node = batteryDevice.getStoredJSON("/shelly")) != null) {
+				if((node = batteryDevice.getStoredJSON("/rpc/Shelly.GetConfig")) != null) { // this could fresher than "/rpc/Shelly.GetDeviceInfo"
+					current = node.at("/sys/device/fw_id").asText();
+				} else if((node = batteryDevice.getStoredJSON("/shelly")) != null) {
 					current = node.path("fw_id").asText();
 				}
 			}
@@ -82,7 +86,7 @@ public class FirmwareManagerG2 implements FirmwareManager {
 		}
 		return res;
 	}
-	
+
 	@Override
 	public boolean upadating() {
 		return updating;

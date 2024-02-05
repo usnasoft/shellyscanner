@@ -1,7 +1,6 @@
 package it.usna.shellyscan.model.device.g2.modules;
 
 import java.io.IOException;
-import java.io.Reader;
 
 import com.fasterxml.jackson.core.io.JsonStringEncoder;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -81,13 +80,15 @@ public class Script {
 			return "";
 		}
 	}
-
+	
 	public String putCode(String code) {
 		JsonStringEncoder encoder = JsonStringEncoder.getInstance();
-		for (int start = 0; start < code.length(); start += 1024) {
-			String seg = code.substring(start, Math.min(code.length(), start + 1024));
+		char codeC[] = encoder.quoteAsString(code);
+		for (int start = 0; start < codeC.length; start += 1024) {
+			String seg = new String(codeC, start, Math.min(codeC.length - start, start + 1024));
 			String append = (start > 0) ? ",\"append\":true" : "";
-			String res = device.postCommand("Script.PutCode", "{\"id\":" + id + append + ",\"code\":\"" + new String(encoder.quoteAsString(seg))) + "\"}";
+			String res = device.postCommand("Script.PutCode", "{\"id\":" + id + append + ",\"code\":\"" + seg + "\"}");
+//			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			if(res != null) {
 				return res;
 			}
@@ -95,21 +96,21 @@ public class Script {
 		return null;
 	}
 	
-	public String putCode(Reader code) throws IOException {
-		JsonStringEncoder encoder = JsonStringEncoder.getInstance();
-		char[] buffer = new char[1024];
-		boolean subsequent = false;
-		int length;
-		while((length = code.read(buffer, 0, 1024)) >= 0) {
-			String append = subsequent ? ",\"append\":true" : "";
-			String res = device.postCommand("Script.PutCode", "{\"id\":" + id + append + ",\"code\":\"" + new String(encoder.quoteAsString(new String(buffer, 0, length))) + "\"}");
-			subsequent = true;
-			if(res != null) {
-				return res;
-			}
-		}
-		return null;	
-	}
+//	public String putCode(Reader code) throws IOException {
+//		JsonStringEncoder encoder = JsonStringEncoder.getInstance();
+//		char[] buffer = new char[1024];
+//		boolean subsequent = false;
+//		int length;
+//		while((length = code.read(buffer, 0, 1024)) >= 0) {
+//			String append = subsequent ? ",\"append\":true" : "";
+//			String res = device.postCommand("Script.PutCode", "{\"id\":" + id + append + ",\"code\":\"" + new String(encoder.quoteAsString(new String(buffer, 0, length))) + "\"}");
+//			subsequent = true;
+//			if(res != null) {
+//				return res;
+//			}
+//		}
+//		return null;	
+//	}
 
 	public void delete() throws IOException {
 		device.getJSON("/rpc/Script.Delete?id=" + id);

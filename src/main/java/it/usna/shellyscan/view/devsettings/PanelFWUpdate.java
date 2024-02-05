@@ -248,8 +248,8 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 
 	private void initDevice(final int index) {
 		final ShellyAbstractDevice d = parent.getLocalDevice(index);
-		DeviceFirmware fwInfo = devicesFWData.get(index);
 		FirmwareManager fm = d.getFWManager();
+		DeviceFirmware fwInfo = devicesFWData.get(index);
 		fwInfo.fwModule = fm;
 		fwInfo.status = d.getStatus();
 		if(fm.upadating()) {
@@ -294,7 +294,7 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 			String msg = fwInfo.fwModule.update(toStable);
 			if(msg != null) {
 				if(device.getStatus() == Status.OFF_LINE) {
-					createDeferrable(parent.getModelIndex(i), toStable);
+					createDeferrable(parent.getModelIndex(i), fwInfo.fwModule, toStable);
 					return UtilMiscellaneous.getFullName(device) + " - " + LABELS.getString("msgFWUpdateQueue") + "\n";
 				} else {
 					if(LABELS.containsKey(msg)) {
@@ -311,16 +311,19 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 				return "";
 			}
 		} else {
-			createDeferrable(parent.getModelIndex(i), true);
+			createDeferrable(parent.getModelIndex(i), null, true);
 			return UtilMiscellaneous.getFullName(device) + " - " + LABELS.getString("msgFWUpdateQueue") + "\n";
 		}
 	}
 	
-	private static void createDeferrable(int modelIndex, boolean toStable) {
+	private static void createDeferrable(int modelIndex, FirmwareManager fm, boolean toStable) {
 		DeferrablesContainer dc = DeferrablesContainer.getInstance();
 		dc.addOrUpdate(modelIndex, DeferrableTask.Type.FW_UPDATE, LABELS.getString(toStable ? "dlgSetFWUpdateStable" : "dlgSetFWUpdateBeta"), (def, dev) -> {
-			FirmwareManager fm = dev.getFWManager();
-			return fm.update(toStable);
+			if(fm == null) {
+				return dev.getFWManager().update(toStable);
+			} else {
+				return fm.update(toStable);
+			}
 		});
 	}
 

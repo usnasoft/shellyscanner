@@ -35,6 +35,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import it.usna.shellyscan.model.device.BatteryDeviceInterface;
 import it.usna.shellyscan.model.device.GhostDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
@@ -385,13 +386,16 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 		synchronized(devices) {
 			int ind = devices.indexOf(d);
 			if(ind >= 0) {
-				if(d instanceof ShellyUnmanagedDeviceInterface == false || devices.get(ind) instanceof ShellyUnmanagedDeviceInterface || devices.get(ind) instanceof GhostDevice) { // Do not replace device if was recocnized and now is not
-					if(refreshProcess.get(ind) != null) {
-						refreshProcess.get(ind).cancel(true);
-					}
-					devices.set(ind, d);
-					fireEvent(EventType.SUBSTITUTE, ind);
-					refreshProcess.set(ind, scheduleRefresh(d, ind, refreshInterval, refreshTics));
+				ShellyAbstractDevice existingDevice = devices.get(ind);
+				if(d instanceof ShellyUnmanagedDeviceInterface == false || existingDevice instanceof ShellyUnmanagedDeviceInterface || existingDevice instanceof GhostDevice) { // Do not replace device if was recognized and now is not
+					if(d.getTypeID() != existingDevice.getTypeID() || d instanceof BatteryDeviceInterface == false) { // who cares: full refresh
+						if(refreshProcess.get(ind) != null) {
+							refreshProcess.get(ind).cancel(true);
+						}
+						devices.set(ind, d);
+						fireEvent(EventType.SUBSTITUTE, ind);
+						refreshProcess.set(ind, scheduleRefresh(d, ind, refreshInterval, refreshTics));
+					} // else -> don't loose stored informations on BatteryDeviceInterface implementation
 				}
 			} else {
 				final int idx = devices.size();
