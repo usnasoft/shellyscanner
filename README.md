@@ -1,6 +1,6 @@
 # shellyscanner
 
-More info and executalble from: https://www.usna.it/shellyscanner/index_en.html
+More info and executable from: https://www.usna.it/shellyscanner/index_en.html
 
 Also needs:
 - https://github.com/usnasoft/unsalib2 (usna general purpose library)
