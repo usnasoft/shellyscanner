@@ -319,11 +319,7 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 	private static void createDeferrable(int modelIndex, FirmwareManager fm, boolean toStable) {
 		DeferrablesContainer dc = DeferrablesContainer.getInstance();
 		dc.addOrUpdate(modelIndex, DeferrableTask.Type.FW_UPDATE, LABELS.getString(toStable ? "dlgSetFWUpdateStable" : "dlgSetFWUpdateBeta"), (def, dev) -> {
-			if(fm == null) {
-				return dev.getFWManager().update(toStable);
-			} else {
-				return fm.update(toStable);
-			}
+			return dev.getFWManager().update(toStable);
 		});
 	}
 

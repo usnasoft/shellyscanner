@@ -350,7 +350,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 					res.put(Restore.RESTORE_MQTT, config.at("/mqtt/user").asText());
 				}
 				JsonNode scripts = backupJsons.get("Script.List.json");
-				if(scripts != null) {
+				if(scripts != null && scripts.path("scripts").size() > 0) {
 					List<String> scriptsEnabledByDefault = new ArrayList<>();
 					List<String> scriptsWithSameName = new ArrayList<>();
 					JsonNode existingScripts = Script.list(this);

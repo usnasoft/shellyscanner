@@ -84,6 +84,7 @@ public class FirmwareManagerG2 implements FirmwareManager {
 		if(res != null && res.length() > 0) {
 			updating = false;
 		}
+//		System.out.println("res " + res + " - " + d.getStatus());
 		return res;
 	}
 

@@ -35,8 +35,8 @@ public class Script {
 	public static Script create(AbstractG2Device device, String name) throws IOException {
 		JsonNode id;
 		if(name != null) {
-			JsonStringEncoder e = JsonStringEncoder.getInstance();
-			id = device.getJSON("Script.Create", "{\"name\":\"" + (new String(e.quoteAsString(name))) + "\"}");
+			JsonStringEncoder encoder = JsonStringEncoder.getInstance();
+			id = device.getJSON("Script.Create", "{\"name\":\"" + (new String(encoder.quoteAsString(name))) + "\"}");
 		} else {
 			id = device.getJSON("Script.Create", "{}");
 		}
@@ -53,8 +53,8 @@ public class Script {
 	}
 
 	public String setName(String name) {
-		JsonStringEncoder e = JsonStringEncoder.getInstance();
-		String ret = device.postCommand("Script.SetConfig", "{\"id\":" + id + ",\"config\":{\"name\":\"" + (new String(e.quoteAsString(name))) + "\"}}");
+		JsonStringEncoder encoder = JsonStringEncoder.getInstance();
+		String ret = device.postCommand("Script.SetConfig", "{\"id\":" + id + ",\"config\":{\"name\":\"" + (new String(encoder.quoteAsString(name))) + "\"}}");
 		if(ret == null) {
 			this.name = name;
 		}

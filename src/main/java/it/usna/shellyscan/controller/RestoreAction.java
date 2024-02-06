@@ -232,8 +232,6 @@ public class RestoreAction extends UsnaSelectedAction {
 					throw new RuntimeException(e);
 				}
 			}));
-//			final Map<String, JsonNode> backupScripts = new HashMap<>(backupJsons);
-			//add all other objects as byte[]
 			in.stream().filter(entry -> entry.getName().endsWith(".mjs")).forEach(entry -> {
 				try (InputStream is = in.getInputStream(entry)) {
 					backupJsons.put(entry.getName() + ".json", jsonMapper.createObjectNode().put("code", new String(is.readAllBytes(), StandardCharsets.UTF_8)));
@@ -241,8 +239,6 @@ public class RestoreAction extends UsnaSelectedAction {
 					throw new RuntimeException(e);
 				}
 			});
-			//combine jsonMapper and backupObject at same depth
-//			backupJsons.putAll(backupScripts);
 			return backupJsons;
 		} catch(RuntimeException e) {
 			if(e.getCause() instanceof IOException) {

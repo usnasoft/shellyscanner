@@ -19,7 +19,7 @@ public class DeferrableTask implements Closeable {
 		this.task = runner;
 	}
 	
-	public Status run(ShellyAbstractDevice device) {
+	public final Status run(ShellyAbstractDevice device) {
 		try {
 			status = Status.RUNNING;
 			retValue = task.run(this, device);
@@ -75,6 +75,7 @@ public class DeferrableTask implements Closeable {
 	/**
 	 * Task definition
 	 */
+	@FunctionalInterface
 	public interface Task {
 		String run(DeferrableTask deferrable, ShellyAbstractDevice device) throws Exception;
 	}
