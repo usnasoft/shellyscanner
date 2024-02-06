@@ -7,7 +7,11 @@ import java.net.InetAddress;
 import java.net.SocketTimeoutException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.EnumMap;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -349,22 +353,22 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 				JsonNode scripts = backupJsons.get("Script.List.json");
 				if(scripts != null) {
 					List<String> scriptsEnabledByDefault = new ArrayList<>();
-					List<String> scriptsWithSameName = new ArrayList<>();;
+					List<String> scriptsWithSameName = new ArrayList<>();
 					JsonNode existingScripts = Script.list(this);
 					List<String> existingScriptsNames = new ArrayList<>();
-					for(JsonNode existingScript : existingScripts) {
+					for(JsonNode existingScript: existingScripts) {
 						existingScriptsNames.add(existingScript.get("name").asText());
 					}
-					for(JsonNode jsonScript : scripts.get("scripts")) {
+					for(JsonNode jsonScript: scripts.get("scripts")) {
 						if(existingScriptsNames.contains(jsonScript.get("name").asText()))
 							scriptsWithSameName.add(jsonScript.get("name").asText());
 						if(jsonScript.get("enable").asBoolean())
 							scriptsEnabledByDefault.add(jsonScript.get("name").asText());
 					}
-					if(!scriptsWithSameName.isEmpty()) {
+					if(scriptsWithSameName.isEmpty() == false) {
 						res.put(Restore.QUESTION_RESTORE_SCRIPTS_OVERRIDE, String.join(", ", scriptsWithSameName));
 					}
-					if(!scriptsEnabledByDefault.isEmpty()) {
+					if(scriptsEnabledByDefault.isEmpty() == false) {
 						res.put(Restore.QUESTION_RESTORE_SCRIPTS_ENABLE_LIKE_BACKED_UP, String.join(", ", scriptsEnabledByDefault));
 					}
 				}
@@ -379,7 +383,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 	}
 
 	/** device specific */
-	public void restoreCheck(Map<String, JsonNode> backupJsons, Map<Restore, String> res) throws IOException {}
+	public void restoreCheck(Map<String, JsonNode> backupJsons, Map<Restore, String> resp) throws IOException {}
 
 	@Override
 	public final List<String> restore(Map<String, JsonNode> backupJsons, Map<Restore, String> data) throws IOException {
@@ -398,46 +402,8 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 				TimeUnit.MILLISECONDS.sleep(delay);
 				restoreSchedule(schedule, errors);
 			}
-			JsonNode scripts = backupJsons.get("Script.List.json");
-			if(scripts != null) {
-				//check existing scripts
-				JsonNode existingScripts = Script.list(this);
-				HashMap<String, Integer> existingScriptsNamesIds = new HashMap<String, Integer>();
-				for(JsonNode existingScript : existingScripts) {
-					existingScriptsNamesIds.put(existingScript.get("name").asText(), existingScript.get("id").asInt());
-				}
-				//parameters asked user
-				boolean enableScriptsIfWasEnabled = Objects.equals(data.get(Restore.QUESTION_RESTORE_SCRIPTS_ENABLE_LIKE_BACKED_UP), "true");
-				boolean overrideScripts = Objects.equals(data.get(Restore.QUESTION_RESTORE_SCRIPTS_OVERRIDE), "true");
 
-				for(JsonNode jsonScript : scripts.get("scripts")) {
-					boolean scriptWithNameAlreadyExisting = existingScriptsNamesIds.containsKey(jsonScript.get("name").asText());
-					String writeToScriptName = jsonScript.get("name").asText();
-					if(scriptWithNameAlreadyExisting && !overrideScripts) {
-						writeToScriptName = jsonScript.get("name").asText() + "_restored";
-						//if this also exists dynamically append numbers (counter of already existing with same name) to the name
-						while (existingScriptsNamesIds.containsKey(writeToScriptName)) {
-							writeToScriptName = jsonScript.get("name").asText() + "_restored" + (existingScriptsNamesIds.keySet().stream().filter(s -> s.startsWith(jsonScript.get("name").asText() + "_restored")).count() + 1);
-						}
-					}
-
-					String code = backupJsons.get(jsonScript.get("name").asText() + ".mjs.json").get("code").asText();
-					if(code != null) {
-						TimeUnit.MILLISECONDS.sleep(delay);
-						if(existingScriptsNamesIds.containsKey(writeToScriptName))
-							new Script(this, existingScriptsNamesIds.get(writeToScriptName)).delete();
-
-						Script script = Script.create(this, writeToScriptName);
-
-						if(enableScriptsIfWasEnabled) {
-							script.setEnabled(jsonScript.get("enable").asBoolean()); //edge case: might make problems if already 3 scripts are enabled and the user has 3 scripts enabled in the backup and wants to restore without override
-							TimeUnit.MILLISECONDS.sleep(delay);
-						}
-						script.putCode(code);
-					}
-				}
-				TimeUnit.MILLISECONDS.sleep(delay);
-			}
+			restoreScripts(backupJsons, delay, data, errors);
 
 			JsonNode kvs = backupJsons.get("KVS.GetMany.json");
 			if(kvs != null) {
@@ -479,9 +445,52 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 			return List.of(Restore.ERR_UNKNOWN.toString());
 		}
 	}
+	
+	private void restoreScripts(Map<String, JsonNode> backupJsons, final long delay, Map<Restore, String> data, List<String> errors) throws InterruptedException {
+		try {
+			JsonNode scripts = backupJsons.get("Script.List.json");
+			if(scripts != null) {
+				//check existing scripts
+				TimeUnit.MILLISECONDS.sleep(delay);
+				JsonNode existingScripts = Script.list(this);
+				HashMap<String, Integer> existingScriptsNamesIds = new HashMap<>();
+				for(JsonNode existingScript: existingScripts) {
+					existingScriptsNamesIds.put(existingScript.get("name").asText(), existingScript.get("id").asInt());
+				}
+				//parameters asked user
+				boolean overrideScripts = data.containsKey(Restore.QUESTION_RESTORE_SCRIPTS_OVERRIDE);
+				boolean enableScriptsIfWasEnabled = data.containsKey(Restore.QUESTION_RESTORE_SCRIPTS_ENABLE_LIKE_BACKED_UP);
 
-	/** device specific */
-	protected abstract void restore(Map<String, JsonNode> backupJsons, List<String> errors) throws IOException, InterruptedException;
+				for(JsonNode jsonScript: scripts.get("scripts")) {
+					boolean scriptWithNameAlreadyExisting = existingScriptsNamesIds.containsKey(jsonScript.get("name").asText());
+					String writeToScriptName = jsonScript.get("name").asText();
+					if(scriptWithNameAlreadyExisting && overrideScripts == false) {
+						writeToScriptName = jsonScript.get("name").asText() + "_restored";
+						//if this also exists dynamically append numbers (counter of already existing with same name) to the name
+						for(int i = 1; existingScriptsNamesIds.containsKey(writeToScriptName); i++) {
+							writeToScriptName = jsonScript.get("name").asText() + "_restored" + i;
+						}
+					}
+					String code = backupJsons.get(jsonScript.get("name").asText() + ".mjs.json").get("code").asText();
+					if(code != null) {
+						TimeUnit.MILLISECONDS.sleep(delay);
+						Script script;
+						if(existingScriptsNamesIds.containsKey(writeToScriptName)) {
+							script = new Script(this, existingScriptsNamesIds.get(writeToScriptName));
+							script.putCode(code);
+						} else {
+							script = Script.create(this, writeToScriptName);
+							script.putCode(code);
+						}
+						TimeUnit.MILLISECONDS.sleep(delay);
+						script.setEnabled(enableScriptsIfWasEnabled && jsonScript.get("enable").asBoolean()); //edge case: might make problems if already 3 scripts are enabled and the user has 3 scripts enabled in the backup and wants to restore without override
+					}
+				}
+			}
+		} catch(IOException e) {
+			errors.add(e.getMessage());
+		}
+	}
 
 	// Shelly.GetConfig.json
 	void restoreCommonConfig(JsonNode config, final long delay, Map<Restore, String> data, List<String> errors) throws InterruptedException, IOException {
@@ -534,4 +543,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 			errors.add(postCommand("Schedule.Create", thisSc));
 		}
 	}
+	
+	/** device specific */
+	protected abstract void restore(Map<String, JsonNode> backupJsons, List<String> errors) throws IOException, InterruptedException;
 } // 477 - 474

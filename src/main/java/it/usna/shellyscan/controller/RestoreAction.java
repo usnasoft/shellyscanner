@@ -20,6 +20,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.JTable;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 import org.slf4j.Logger;
@@ -139,15 +140,20 @@ public class RestoreAction extends UsnaSelectedAction {
 							}
 							credentials.dispose();
 						}
-						if(test.containsKey(Restore.QUESTION_RESTORE_SCRIPTS_ENABLE_LIKE_BACKED_UP)) {
-							if(JOptionPane.showConfirmDialog(mainView, String.format(LABELS.getString("msgRestoreScriptsEnableLikeBackedUp"), test.get(Restore.QUESTION_RESTORE_SCRIPTS_ENABLE_LIKE_BACKED_UP)), LABELS.getString("msgRestoreTitle"), JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION) {
-								resData.put(Restore.QUESTION_RESTORE_SCRIPTS_ENABLE_LIKE_BACKED_UP, "true");
-							}
-						}
-						if(test.containsKey(Restore.QUESTION_RESTORE_SCRIPTS_OVERRIDE)) {
-							if(JOptionPane.showConfirmDialog(mainView, String.format(LABELS.getString("msgRestoreScriptsOverride"), test.get(Restore.QUESTION_RESTORE_SCRIPTS_OVERRIDE)), LABELS.getString("msgRestoreTitle"), JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION) {
+						boolean overwriteScriptNames = false;
+						final String no = UIManager.getString("OptionPane.noButtonText");
+						if(test.containsKey(Restore.QUESTION_RESTORE_SCRIPTS_OVERRIDE) && 
+							JOptionPane.showOptionDialog(mainView,
+									String.format(LABELS.getString("msgRestoreScriptsOverride"), test.get(Restore.QUESTION_RESTORE_SCRIPTS_OVERRIDE)),
+									LABELS.getString("msgRestoreTitle"), JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE, null, new Object[] {UIManager.getString("OptionPane.yesButtonText"), no}, no) == JOptionPane.YES_OPTION) {
 								resData.put(Restore.QUESTION_RESTORE_SCRIPTS_OVERRIDE, "true");
-							}
+								overwriteScriptNames = true;
+						}
+						if(test.containsKey(Restore.QUESTION_RESTORE_SCRIPTS_ENABLE_LIKE_BACKED_UP) && overwriteScriptNames &&
+							JOptionPane.showConfirmDialog(mainView,
+									String.format(LABELS.getString("msgRestoreScriptsEnableLikeBackedUp"), test.get(Restore.QUESTION_RESTORE_SCRIPTS_ENABLE_LIKE_BACKED_UP)),
+									LABELS.getString("msgRestoreTitle"), JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION) {
+								resData.put(Restore.QUESTION_RESTORE_SCRIPTS_ENABLE_LIKE_BACKED_UP, "true");
 						}
 					}
 					mainView.getContentPane().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
@@ -228,18 +234,17 @@ public class RestoreAction extends UsnaSelectedAction {
 					throw new RuntimeException(e);
 				}
 			}));
-			final Map<String, JsonNode> backupScripts = new HashMap<>(backupJsons);
+//			final Map<String, JsonNode> backupScripts = new HashMap<>(backupJsons);
 			//add all other objects as byte[]
 			in.stream().filter(entry -> entry.getName().endsWith(".mjs")).forEach(entry -> {
 				try (InputStream is = in.getInputStream(entry)) {
-					backupScripts.put(entry.getName() + ".json", jsonMapper.createObjectNode().put("code", new String(is.readAllBytes(), StandardCharsets.UTF_8)));
-
+					backupJsons.put(entry.getName() + ".json", jsonMapper.createObjectNode().put("code", new String(is.readAllBytes(), StandardCharsets.UTF_8)));
 				} catch(IOException e) {
 					throw new RuntimeException(e);
 				}
 			});
 			//combine jsonMapper and backupObject at same depth
-			backupJsons.putAll(backupScripts);
+//			backupJsons.putAll(backupScripts);
 			return backupJsons;
 		} catch(RuntimeException e) {
 			if(e.getCause() instanceof IOException) {

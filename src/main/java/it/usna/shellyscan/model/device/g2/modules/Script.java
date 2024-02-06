@@ -85,7 +85,7 @@ public class Script {
 		JsonStringEncoder encoder = JsonStringEncoder.getInstance();
 		char codeC[] = encoder.quoteAsString(code);
 		for (int start = 0; start < codeC.length; start += 1024) {
-			String seg = new String(codeC, start, Math.min(codeC.length - start, start + 1024));
+			String seg = new String(codeC, start, Math.min(codeC.length - start, 1024));
 			String append = (start > 0) ? ",\"append\":true" : "";
 			String res = device.postCommand("Script.PutCode", "{\"id\":" + id + append + ",\"code\":\"" + seg + "\"}");
 //			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
