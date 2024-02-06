@@ -141,15 +141,14 @@ public class RestoreAction extends UsnaSelectedAction {
 							credentials.dispose();
 						}
 						boolean overwriteScriptNames = false;
-						final String no = UIManager.getString("OptionPane.noButtonText");
 						if(test.containsKey(Restore.QUESTION_RESTORE_SCRIPTS_OVERRIDE) && 
-							JOptionPane.showOptionDialog(mainView,
+							JOptionPane.showConfirmDialog(mainView,
 									String.format(LABELS.getString("msgRestoreScriptsOverride"), test.get(Restore.QUESTION_RESTORE_SCRIPTS_OVERRIDE)),
-									LABELS.getString("msgRestoreTitle"), JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE, null, new Object[] {UIManager.getString("OptionPane.yesButtonText"), no}, no) == JOptionPane.YES_OPTION) {
+									LABELS.getString("msgRestoreTitle"), JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE) == JOptionPane.NO_OPTION) {
 								resData.put(Restore.QUESTION_RESTORE_SCRIPTS_OVERRIDE, "true");
 								overwriteScriptNames = true;
 						}
-						if(test.containsKey(Restore.QUESTION_RESTORE_SCRIPTS_ENABLE_LIKE_BACKED_UP) && overwriteScriptNames &&
+						if(test.containsKey(Restore.QUESTION_RESTORE_SCRIPTS_ENABLE_LIKE_BACKED_UP) && (overwriteScriptNames || test.containsKey(Restore.QUESTION_RESTORE_SCRIPTS_OVERRIDE) == false) &&
 							JOptionPane.showConfirmDialog(mainView,
 									String.format(LABELS.getString("msgRestoreScriptsEnableLikeBackedUp"), test.get(Restore.QUESTION_RESTORE_SCRIPTS_ENABLE_LIKE_BACKED_UP)),
 									LABELS.getString("msgRestoreTitle"), JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION) {
