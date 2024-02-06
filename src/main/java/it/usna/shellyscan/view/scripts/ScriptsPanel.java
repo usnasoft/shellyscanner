@@ -99,9 +99,15 @@ public class ScriptsPanel extends JPanel {
 					final int mRow = convertRowIndexToModel(getEditingRow());
 					final Script sc = scripts.get(mRow);
 					if(mCol == 0) { // name
-						sc.setName((String)getCellEditor().getCellEditorValue());
+						String ret = sc.setName((String)getCellEditor().getCellEditorValue());
+						if(ret != null) {
+							Msg.errorMsg(ScriptsPanel.this, ret);
+						}
 					} else if(mCol == 1) { // enabled
-						sc.setEnabled((Boolean)getCellEditor().getCellEditorValue());
+						String ret = sc.setEnabled((Boolean)getCellEditor().getCellEditorValue());
+						if(ret != null) {
+							Msg.errorMsg(ScriptsPanel.this, ret);
+						}
 					}
 					super.editingStopped(e);
 				} finally {

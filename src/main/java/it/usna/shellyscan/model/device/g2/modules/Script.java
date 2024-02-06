@@ -1,11 +1,16 @@
 package it.usna.shellyscan.model.device.g2.modules;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import com.fasterxml.jackson.core.io.JsonStringEncoder;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import it.usna.shellyscan.model.device.DeviceOfflineException;
+import it.usna.shellyscan.model.device.ShellyAbstractDevice.Restore;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 
 public class Script {
@@ -47,19 +52,25 @@ public class Script {
 		return name;
 	}
 
-	public void setName(String name) {
+	public String setName(String name) {
 		JsonStringEncoder e = JsonStringEncoder.getInstance();
-		device.postCommand("Script.SetConfig", "{\"id\":" + id + ",\"config\":{\"name\":\"" + (new String(e.quoteAsString(name))) + "\"}}");
-		this.name = name;
+		String ret = device.postCommand("Script.SetConfig", "{\"id\":" + id + ",\"config\":{\"name\":\"" + (new String(e.quoteAsString(name))) + "\"}}");
+		if(ret == null) {
+			this.name = name;
+		}
+		return ret;
 	}
 
 	public boolean isEnabled() {
 		return enabled;
 	}
 
-	public void setEnabled(boolean enabled) {
-		device.postCommand("Script.SetConfig", "{\"id\":" + id + ",\"config\":{\"enable\":" + enabled + "}}");
-		this.enabled = enabled;
+	public String setEnabled(boolean enabled) {
+		String ret = device.postCommand("Script.SetConfig", "{\"id\":" + id + ",\"config\":{\"enable\":" + enabled + "}}");
+		if(ret == null) {
+			this.enabled = enabled;
+		}
+		return ret;
 	}
 	
 	public boolean isRunning() {
@@ -124,6 +135,51 @@ public class Script {
 	public void stop() throws IOException {
 		device.getJSON("/rpc/Script.Stop?id=" + id);
 		running = false;
+	}
+	
+	public static void restoreAll(AbstractG2Device device, Map<String, JsonNode> backupJsons, final long delay, Map<Restore, String> restoreData, List<String> errors) throws InterruptedException {
+		try {
+			JsonNode scripts = backupJsons.get("Script.List.json");
+			if(scripts != null && scripts.path("scripts").size() > 0) {
+				//check for existing scripts
+				TimeUnit.MILLISECONDS.sleep(delay);
+				JsonNode existingScripts = Script.list(device);
+				HashMap<String, Integer> existingScriptsNamesIds = new HashMap<>();
+				for(JsonNode existingScript: existingScripts) {
+					existingScriptsNamesIds.put(existingScript.get("name").asText(), existingScript.get("id").asInt());
+				}
+				//parameters asked user
+				boolean overrideScripts = restoreData.containsKey(Restore.QUESTION_RESTORE_SCRIPTS_OVERRIDE);
+				boolean enableScriptsIfWasEnabled = restoreData.containsKey(Restore.QUESTION_RESTORE_SCRIPTS_ENABLE_LIKE_BACKED_UP);
+
+				for(JsonNode jsonScript: scripts.get("scripts")) {
+					String writeToScriptName = jsonScript.get("name").asText();
+					if(existingScriptsNamesIds.containsKey(writeToScriptName) && overrideScripts == false) {
+						writeToScriptName = writeToScriptName + "_restored";
+						//if this also exists dynamically append numbers (counter of already existing with same name) to the name
+						for(int i = 1; existingScriptsNamesIds.containsKey(writeToScriptName); i++) {
+							writeToScriptName = jsonScript.get("name").asText() + "_restored" + i;
+						}
+					}
+					String code = backupJsons.get(jsonScript.get("name").asText() + ".mjs.json").get("code").asText();
+					if(code != null) {
+						TimeUnit.MILLISECONDS.sleep(delay);
+						Script script;
+						if(existingScriptsNamesIds.containsKey(writeToScriptName)) {
+							script = new Script(device, existingScriptsNamesIds.get(writeToScriptName));
+							errors.add(script.putCode(code));
+						} else {
+							script = Script.create(device, writeToScriptName);
+							errors.add(script.putCode(code));
+						}
+						TimeUnit.MILLISECONDS.sleep(delay);
+						errors.add(script.setEnabled(enableScriptsIfWasEnabled && jsonScript.get("enable").asBoolean())); //edge case: might make problems if already 3 scripts are enabled and the user has 3 scripts enabled in the backup and wants to restore without override
+					}
+				}
+			}
+		} catch(IOException e) {
+			errors.add(e.getMessage());
+		}
 	}
 
 	@Override
