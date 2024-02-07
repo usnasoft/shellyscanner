@@ -192,7 +192,7 @@ public class Main {
 		}
 		try {
 			final Devices model = new Devices();
-			DeferrablesContainer.init(model);
+			DeferrablesContainer.init(model); // first model listener
 			final MainView view = new MainView(model, appProp);
 
 			// final values for thread

@@ -232,6 +232,7 @@ https://www.iconbolt.com/
 
 ---
 // TODO
+// https://github.com/tips4java/tips4java/blob/main/source/TextLineNumber.java
 // editor sintax (start with inner blocks)
 // chacklist reset button(5)/power
 // grafico energia

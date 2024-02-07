@@ -10,7 +10,6 @@ import com.fasterxml.jackson.core.io.JsonStringEncoder;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import it.usna.shellyscan.model.device.DeviceOfflineException;
-import it.usna.shellyscan.model.device.ShellyAbstractDevice.Restore;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 
 public class Script {
@@ -137,10 +136,35 @@ public class Script {
 		running = false;
 	}
 	
-	public static void restoreAll(AbstractG2Device device, Map<String, JsonNode> backupJsons, final long delay, Map<Restore, String> restoreData, List<String> errors) throws InterruptedException {
+//	public static void restoreCheckAll(AbstractG2Device device, Map<String, JsonNode> backupJsons, EnumMap<Restore, String> res) throws IOException {
+//		JsonNode scripts = backupJsons.get("Script.List.json");
+//		if(scripts != null && scripts.path("scripts").size() > 0) {
+//			List<String> scriptsEnabledByDefault = new ArrayList<>();
+//			List<String> scriptsWithSameName = new ArrayList<>();
+//			JsonNode existingScripts = Script.list(device);
+//			List<String> existingScriptsNames = new ArrayList<>();
+//			for(JsonNode existingScript: existingScripts) {
+//				existingScriptsNames.add(existingScript.get("name").asText());
+//			}
+//			for(JsonNode jsonScript: scripts.get("scripts")) {
+//				if(existingScriptsNames.contains(jsonScript.get("name").asText()))
+//					scriptsWithSameName.add(jsonScript.get("name").asText());
+//				if(jsonScript.get("enable").asBoolean())
+//					scriptsEnabledByDefault.add(jsonScript.get("name").asText());
+//			}
+//			if(scriptsWithSameName.isEmpty() == false) {
+//				res.put(Restore.QUESTION_RESTORE_SCRIPTS_OVERRIDE, String.join(", ", scriptsWithSameName));
+//			}
+//			if(scriptsEnabledByDefault.isEmpty() == false) {
+//				res.put(Restore.QUESTION_RESTORE_SCRIPTS_ENABLE_LIKE_BACKED_UP, String.join(", ", scriptsEnabledByDefault));
+//			}
+//		}	
+//	}
+	
+	public static void restoreAll(AbstractG2Device device, Map<String, JsonNode> backupJsons, final long delay, boolean overrideScripts, boolean enableScriptsIfWasEnabled, List<String> errors) throws InterruptedException {
 		try {
-			JsonNode scripts = backupJsons.get("Script.List.json");
-			if(scripts != null && scripts.path("scripts").size() > 0) {
+			JsonNode scriptsBackup = backupJsons.get("Script.List.json");
+			if(scriptsBackup != null && scriptsBackup.path("scripts").size() > 0) {
 				//check for existing scripts
 				TimeUnit.MILLISECONDS.sleep(delay);
 				JsonNode existingScripts = Script.list(device);
@@ -148,11 +172,8 @@ public class Script {
 				for(JsonNode existingScript: existingScripts) {
 					existingScriptsNamesIds.put(existingScript.get("name").asText(), existingScript.get("id").asInt());
 				}
-				//parameters asked user
-				boolean overrideScripts = restoreData.containsKey(Restore.QUESTION_RESTORE_SCRIPTS_OVERRIDE);
-				boolean enableScriptsIfWasEnabled = restoreData.containsKey(Restore.QUESTION_RESTORE_SCRIPTS_ENABLE_LIKE_BACKED_UP);
 
-				for(JsonNode jsonScript: scripts.get("scripts")) {
+				for(JsonNode jsonScript: scriptsBackup.get("scripts")) {
 					String writeToScriptName = jsonScript.get("name").asText();
 					if(existingScriptsNamesIds.containsKey(writeToScriptName) && overrideScripts == false) {
 						writeToScriptName = writeToScriptName + "_restored";

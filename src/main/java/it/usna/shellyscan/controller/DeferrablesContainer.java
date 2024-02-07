@@ -115,12 +115,12 @@ public class DeferrablesContainer extends UsnaObservable<DeferrableTask.Status, 
 							fireEvent(s, index);
 							LOG.trace("Deferrable executed: {}", deferrable);
 						}).start();
+//						}
 						fireEvent(Status.RUNNING, index);
 						LOG.trace("Deferrable execution: {}", deferrable);
 						defer.get(index).deviceName = UtilMiscellaneous.getDescName(device); // could have been changed since add(...)
 						devIdx.set(index, null);
 					}
-//				}
 			} else if(mesgType == Devices.EventType.CLEAR) {
 				synchronized (devIdx) {
 					for(int i = 0; i < devIdx.size(); i++) {

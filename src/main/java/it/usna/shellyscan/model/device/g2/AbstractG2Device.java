@@ -385,7 +385,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 	public void restoreCheck(Map<String, JsonNode> backupJsons, Map<Restore, String> resp) throws IOException {}
 
 	@Override
-	public final List<String> restore(Map<String, JsonNode> backupJsons, Map<Restore, String> data) throws IOException {
+	public final List<String> restore(Map<String, JsonNode> backupJsons, Map<Restore, String> userPref) throws IOException {
 		try {
 			final long delay = this instanceof BatteryDeviceInterface ? Devices.MULTI_QUERY_DELAY / 2: Devices.MULTI_QUERY_DELAY;
 			final ArrayList<String> errors = new ArrayList<>();
@@ -394,7 +394,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 			if(status == Status.OFF_LINE) {
 				return errors.size() > 0 ? errors : List.of(Restore.ERR_UNKNOWN.toString());
 			}
-			restoreCommonConfig(config, delay, data, errors);
+			restoreCommonConfig(config, delay, userPref, errors);
 
 			JsonNode schedule = backupJsons.get("Schedule.List.json");
 			if(schedule != null) {  // some devices do not have Schedule.List +H&T
@@ -402,7 +402,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 				restoreSchedule(schedule, errors);
 			}
 
-			Script.restoreAll(this, backupJsons, delay, data, errors);
+			Script.restoreAll(this, backupJsons, delay, userPref.containsKey(Restore.QUESTION_RESTORE_SCRIPTS_OVERRIDE), userPref.containsKey(Restore.QUESTION_RESTORE_SCRIPTS_ENABLE_LIKE_BACKED_UP), errors);
 
 			JsonNode kvs = backupJsons.get("KVS.GetMany.json");
 			if(kvs != null) {
@@ -416,25 +416,25 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 			TimeUnit.MILLISECONDS.sleep(delay);
 			Network currentConnection = WIFIManagerG2.currentConnection(this);
 			if(currentConnection != Network.UNKNOWN) {
-				if((data.containsKey(Restore.RESTORE_WI_FI2) || config.at("/wifi/sta1/is_open").asBoolean() || config.at("/wifi/sta1/enable").asBoolean() == false) && currentConnection != Network.SECONDARY) {
+				if((userPref.containsKey(Restore.RESTORE_WI_FI2) || config.at("/wifi/sta1/is_open").asBoolean() || config.at("/wifi/sta1/enable").asBoolean() == false) && currentConnection != Network.SECONDARY) {
 					TimeUnit.MILLISECONDS.sleep(delay);
 					WIFIManagerG2 wm = new WIFIManagerG2(this, Network.SECONDARY, true);
-					errors.add(wm.restore(config.at("/wifi/sta1"), data.get(Restore.RESTORE_WI_FI2)));
+					errors.add(wm.restore(config.at("/wifi/sta1"), userPref.get(Restore.RESTORE_WI_FI2)));
 				}
-				if((data.containsKey(Restore.RESTORE_WI_FI1) || config.at("/wifi/sta/is_open").asBoolean() || config.at("/wifi/sta/enable").asBoolean() == false) && currentConnection != Network.PRIMARY) {
+				if((userPref.containsKey(Restore.RESTORE_WI_FI1) || config.at("/wifi/sta/is_open").asBoolean() || config.at("/wifi/sta/enable").asBoolean() == false) && currentConnection != Network.PRIMARY) {
 					TimeUnit.MILLISECONDS.sleep(delay);
 					WIFIManagerG2 wm = new WIFIManagerG2(this, Network.PRIMARY, true);
-					errors.add(wm.restore(config.at("/wifi/sta"), data.get(Restore.RESTORE_WI_FI1)));
+					errors.add(wm.restore(config.at("/wifi/sta"), userPref.get(Restore.RESTORE_WI_FI1)));
 				}
-				if((data.containsKey(Restore.RESTORE_WI_FI_AP) || config.at("/wifi/ap/is_open").asBoolean() || config.at("/wifi/ap/enable").asBoolean() == false) && currentConnection != Network.AP) {
+				if((userPref.containsKey(Restore.RESTORE_WI_FI_AP) || config.at("/wifi/ap/is_open").asBoolean() || config.at("/wifi/ap/enable").asBoolean() == false) && currentConnection != Network.AP) {
 					TimeUnit.MILLISECONDS.sleep(delay);
-					errors.add(WIFIManagerG2.restoreAP_roam(this, config.get("wifi"), data.get(Restore.RESTORE_WI_FI_AP)));
+					errors.add(WIFIManagerG2.restoreAP_roam(this, config.get("wifi"), userPref.get(Restore.RESTORE_WI_FI_AP)));
 				}
 			}
 			TimeUnit.MILLISECONDS.sleep(delay);
 			LoginManagerG2 lm = new LoginManagerG2(this, true);
-			if(data.containsKey(Restore.RESTORE_LOGIN)) {
-				errors.add(lm.set(null, data.get(Restore.RESTORE_LOGIN).toCharArray()));
+			if(userPref.containsKey(Restore.RESTORE_LOGIN)) {
+				errors.add(lm.set(null, userPref.get(Restore.RESTORE_LOGIN).toCharArray()));
 			} else if(backupJsons.get("Shelly.GetDeviceInfo.json").path("auth_en").asBoolean() == false) {
 				errors.add(lm.disable());
 			}
@@ -446,7 +446,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 	}
 
 	// Shelly.GetConfig.json
-	void restoreCommonConfig(JsonNode config, final long delay, Map<Restore, String> data, List<String> errors) throws InterruptedException, IOException {
+	void restoreCommonConfig(JsonNode config, final long delay, Map<Restore, String> userPref, List<String> errors) throws InterruptedException, IOException {
 		ObjectNode outConfig = JsonNodeFactory.instance.objectNode();
 
 		// BLE.SetConfig
@@ -480,10 +480,10 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 		errors.add(postCommand("Sys.SetConfig", outConfig));
 
 		final JsonNode mqtt = config.path("mqtt");
-		if(data.containsKey(Restore.RESTORE_MQTT) || mqtt.path("enable").asBoolean() == false || mqtt.path("user").asText("").length() == 0) {
+		if(userPref.containsKey(Restore.RESTORE_MQTT) || mqtt.path("enable").asBoolean() == false || mqtt.path("user").asText("").length() == 0) {
 			TimeUnit.MILLISECONDS.sleep(delay);
 			MQTTManagerG2 mqttM = new MQTTManagerG2(this, true);
-			errors.add(mqttM.restore(mqtt, data.get(Restore.RESTORE_MQTT)));
+			errors.add(mqttM.restore(mqtt, userPref.get(Restore.RESTORE_MQTT)));
 		}
 	}
 
@@ -498,5 +498,5 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 	}
 	
 	/** device specific */
-	protected abstract void restore(Map<String, JsonNode> backupJsons, List<String> errors) throws IOException, InterruptedException;
+	protected abstract void restore(Map<String, JsonNode> backupJsons, /*Map<Restore, String> userPref,*/ List<String> errors) throws IOException, InterruptedException;
 } // 477 - 474
