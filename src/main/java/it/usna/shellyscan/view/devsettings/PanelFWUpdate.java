@@ -171,19 +171,24 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 		}
 	}
 
-	private Object[] createTableRow(int index) {
-		ShellyAbstractDevice d = parent.getLocalDevice(index);
-		FirmwareManager fw = getFirmwareManager(index);
+	private Object[] createTableRow(int localIndex) {
+		ShellyAbstractDevice d = parent.getLocalDevice(localIndex);
+		FirmwareManager fw = getFirmwareManager(localIndex);
 		if(fw != null) {
 			if(fw.upadating()) {
-				return new Object[] {DevicesTable.UPDATING_BULLET, UtilMiscellaneous.getExtendedHostName(d), FirmwareManager.getShortVersion(fw.current()), LABELS.getString("labelUpdating"), null}; // DevicesTable.UPDATING_BULLET
+				return new Object[] {DevicesTable.UPDATING_BULLET, UtilMiscellaneous.getExtendedHostName(d), FirmwareManager.getShortVersion(fw.current()), LABELS.getString("labelUpdating")}; // DevicesTable.UPDATING_BULLET
 			} else {
 				Boolean stableCell = (fw != null && fw.newStable() != null) ? Boolean.TRUE : null;
 				Boolean betaCell = (fw != null && fw.newBeta() != null) ? Boolean.FALSE : null;
 				return new Object[] {DevicesTable.getStatusIcon(d), UtilMiscellaneous.getExtendedHostName(d), FirmwareManager.getShortVersion(fw.current()), stableCell, betaCell};
 			}
 		} else {
-			return new Object[] {DevicesTable.getStatusIcon(d), UtilMiscellaneous.getExtendedHostName(d), null /*current fw unknown*/, Boolean.FALSE /*any*/};
+			DeferrablesContainer dc = DeferrablesContainer.getInstance();
+			if(dc.indexOf(parent.getModelIndex(localIndex), DeferrableTask.Type.FW_UPDATE) < 0) {
+				return new Object[] {DevicesTable.getStatusIcon(d), UtilMiscellaneous.getExtendedHostName(d), null /*current fw unknown*/, Boolean.FALSE /*any*/};
+			} else {
+				return new Object[] {DevicesTable.getStatusIcon(d), UtilMiscellaneous.getExtendedHostName(d), null,  LABELS.getString("labelRequested")};
+			}
 		}
 	}
 

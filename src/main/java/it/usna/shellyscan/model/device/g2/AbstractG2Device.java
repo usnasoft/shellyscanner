@@ -209,13 +209,17 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 			final JsonNode resp = executeRPC(method, payload);
 			JsonNode error;
 			if((error = resp.get("error")) == null) { // {"id":1,"src":"shellyplusi4-xxx","result":{"restart_required":true}}
+//				System.out.println(resp.toPrettyString());
 				if(resp.path("result").path("restart_required").asBoolean(false)) {
 					rebootRequired = true;
 				}
 				if(status == Status.NOT_LOOGGED) {
 					return "Status-PROTECTED";
+				} else if(status == Status.ERROR) {
+					return "Status-ERROR";
+				} else {
+					return null;
 				}
-				return null;
 			} else {
 				return error.path("message").asText("Generic error");
 			}
@@ -250,6 +254,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 				status = Status.NOT_LOOGGED;
 			} else /*if(statusCode == HttpURLConnection.HTTP_INTERNAL_ERROR || statusCode == HttpURLConnection.HTTP_BAD_REQUEST)*/ {
 				status = Status.ERROR;
+				LOG.debug("executeRPC - reponse code: {}", statusCode);
 			}
 			return jsonMapper.readTree(response.getContent());
 		} catch(InterruptedException | ExecutionException | TimeoutException | SocketTimeoutException e) {
