@@ -47,13 +47,13 @@ public class DeferrableTask implements Closeable {
 		status = s;
 	}
 	
-	public synchronized boolean statusToRun() {
-		if(status == Status.WAITING) {
-			status = Status.RUNNING;
-			return true;
-		}
-		return false;
-	}
+//	public synchronized boolean statusToRun() {
+//		if(status == Status.WAITING) {
+//			status = Status.RUNNING;
+//			return true;
+//		}
+//		return false;
+//	}
 	
 	public Type getType() {
 		return type;
