@@ -46,7 +46,7 @@ public class ScriptEditor extends JFrame {
 		
 		setIconImage(Main.ICON);
 
-		BasicEditorPanel editor = new BasicEditorPanel(this, script.getCode()) {
+		BasicEditorPanel editor = new BasicEditorPanel(this, script.getCode(), true) {
 			private static final long serialVersionUID = 1L;
 			private File path = null;
 						
