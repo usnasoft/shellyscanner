@@ -221,15 +221,18 @@ https://www.iconbolt.com/
 
 1.0.3
 // bug fix on KVS panel
+// bug fix on graphs (equalk names)
 // mini 1, mini 1pm (partial), mini pm (partial)
 // mqtt deferrable (all)
 // login deferrable
 // help on checklist & graphs
 // fw update "any"
+// motion 1/2 temperature
 // todo search ssid ?
 
 ---
 // TODO
+// https://github.com/tips4java/tips4java/blob/main/source/TextLineNumber.java
 // editor sintax (start with inner blocks)
 // chacklist reset button(5)/power
 // grafico energia

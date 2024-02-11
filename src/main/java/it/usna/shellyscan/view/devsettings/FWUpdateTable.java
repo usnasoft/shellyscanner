@@ -98,7 +98,7 @@ public class FWUpdateTable extends ExTooltipTable {
 		}
 	}
 
-	class FWCellRendered implements TableCellRenderer {
+	private class FWCellRendered implements TableCellRenderer {
 		@Override
 		public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
 			if(value == null || value instanceof Boolean) {

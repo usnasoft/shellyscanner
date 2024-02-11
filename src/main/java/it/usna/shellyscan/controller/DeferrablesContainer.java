@@ -106,7 +106,7 @@ public class DeferrablesContainer extends UsnaObservable<DeferrableTask.Status, 
 			if((mesgType == EventType.SUBSTITUTE || mesgType == EventType.UPDATE) &&
 					(index = devIdx.indexOf(modelIdx)) >= 0 &&
 					(device = model.get(modelIdx)).getStatus() == ShellyAbstractDevice.Status.ON_LINE) {
-				synchronized (devIdx) {
+//				synchronized (devIdx) {
 					DeferrableTask deferrable = defer.get(index).def;
 					if(deferrable.getStatus() == Status.WAITING) {
 						deferrable.setStatus(Status.RUNNING); // deferrable.run(device) change the status but we need it is changed before fireEvent
@@ -115,12 +115,12 @@ public class DeferrablesContainer extends UsnaObservable<DeferrableTask.Status, 
 							fireEvent(s, index);
 							LOG.trace("Deferrable executed: {}", deferrable);
 						}).start();
+//						}
 						fireEvent(Status.RUNNING, index);
 						LOG.trace("Deferrable execution: {}", deferrable);
 						defer.get(index).deviceName = UtilMiscellaneous.getDescName(device); // could have been changed since add(...)
 						devIdx.set(index, null);
 					}
-				}
 			} else if(mesgType == Devices.EventType.CLEAR) {
 				synchronized (devIdx) {
 					for(int i = 0; i < devIdx.size(); i++) {

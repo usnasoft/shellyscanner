@@ -99,9 +99,15 @@ public class ScriptsPanel extends JPanel {
 					final int mRow = convertRowIndexToModel(getEditingRow());
 					final Script sc = scripts.get(mRow);
 					if(mCol == 0) { // name
-						sc.setName((String)getCellEditor().getCellEditorValue());
+						String ret = sc.setName((String)getCellEditor().getCellEditorValue());
+						if(ret != null) {
+							Msg.errorMsg(ScriptsPanel.this, ret);
+						}
 					} else if(mCol == 1) { // enabled
-						sc.setEnabled((Boolean)getCellEditor().getCellEditorValue());
+						String ret = sc.setEnabled((Boolean)getCellEditor().getCellEditorValue());
+						if(ret != null) {
+							Msg.errorMsg(ScriptsPanel.this, ret);
+						}
 					}
 					super.editingStopped(e);
 				} finally {
@@ -229,14 +235,18 @@ public class ScriptsPanel extends JPanel {
 						try (InputStream is = inZip.getInputStream(inZip.getEntry(sName + ".mjs"))) {
 							String code = new BufferedReader(new InputStreamReader(is)).lines().collect(Collectors.joining("\n"));
 							res = sc.putCode(code);
+//							res = sc.putCode(new InputStreamReader(is));
 						}
 					}
 				} else {
 					JOptionPane.showMessageDialog(this, LABELS.getString("scrNoneInZipFile"), LABELS.getString("btnUpload"), JOptionPane.INFORMATION_MESSAGE);
 				}
 			} catch (ZipException e1) { // no zip (backup) -> text file
-				String code = IOFile.readFile(in);
+				String code = IOFile.readFile(in.toPath());
 				res = sc.putCode(code);
+//				try (Reader r = Files.newBufferedReader(in.toPath())) {
+//					res = sc.putCode(r);
+//				}
 			}
 			if(res != null) {
 				Msg.errorMsg(this, res);

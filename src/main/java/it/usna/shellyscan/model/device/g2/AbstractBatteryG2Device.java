@@ -78,7 +78,7 @@ public abstract class AbstractBatteryG2Device extends AbstractG2Device implement
 	 * No scripts, No Schedule
 	 */
 	public String[] getInfoRequests() {
-		return new String[] {"/rpc/Shelly.GetDeviceInfo", "/rpc/Shelly.GetConfig", "/rpc/Shelly.GetStatus", "/rpc/Shelly.CheckForUpdate", "/rpc/Webhook.List", "/rpc/KVS.GetMany"};
+		return new String[] {"/rpc/Shelly.GetDeviceInfo", "/rpc/Shelly.GetConfig", "/rpc/Shelly.GetStatus", "/rpc/Shelly.CheckForUpdate", "/rpc/Webhook.List", "/rpc/KVS.GetMany", "/rpc/Shelly.GetComponents"};
 	}
 	
 	@Override
@@ -119,4 +119,22 @@ public abstract class AbstractBatteryG2Device extends AbstractG2Device implement
 		}
 		return true;
 	}
+	
+//	public void copyFrom(BatteryDeviceInterface dev) {
+//		AbstractBatteryG2Device devG2 = (AbstractBatteryG2Device)dev;
+//		if(shelly == null) {
+//			shelly = devG2.shelly;
+//		}
+//		if(settings == null) {
+//			settings = devG2.settings;
+//		}
+//		if(status == null) {
+//			status = devG2.status;
+//		}
+//		devG2.others.keySet().forEach(k -> {
+//			if(others.containsKey(k) == false) {
+//				others.put(k, devG2.others.get(k));
+//			}
+//		});
+//	}
 }

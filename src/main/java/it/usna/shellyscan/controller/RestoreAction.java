@@ -139,6 +139,20 @@ public class RestoreAction extends UsnaSelectedAction {
 							}
 							credentials.dispose();
 						}
+						boolean overwriteScriptNames = false;
+						if(test.containsKey(Restore.QUESTION_RESTORE_SCRIPTS_OVERRIDE) && 
+							JOptionPane.showConfirmDialog(mainView,
+									String.format(LABELS.getString("msgRestoreScriptsOverride"), test.get(Restore.QUESTION_RESTORE_SCRIPTS_OVERRIDE)),
+									LABELS.getString("msgRestoreTitle"), JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE) == JOptionPane.NO_OPTION) {
+								resData.put(Restore.QUESTION_RESTORE_SCRIPTS_OVERRIDE, "true");
+								overwriteScriptNames = true;
+						}
+						if(test.containsKey(Restore.QUESTION_RESTORE_SCRIPTS_ENABLE_LIKE_BACKED_UP) && (overwriteScriptNames || test.containsKey(Restore.QUESTION_RESTORE_SCRIPTS_OVERRIDE) == false) &&
+							JOptionPane.showConfirmDialog(mainView,
+									String.format(LABELS.getString("msgRestoreScriptsEnableLikeBackedUp"), test.get(Restore.QUESTION_RESTORE_SCRIPTS_ENABLE_LIKE_BACKED_UP)),
+									LABELS.getString("msgRestoreTitle"), JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION) {
+								resData.put(Restore.QUESTION_RESTORE_SCRIPTS_ENABLE_LIKE_BACKED_UP, "true");
+						}
 					}
 					mainView.getContentPane().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 					appProp.setProperty("LAST_PATH", fc.getCurrentDirectory().getCanonicalPath());
@@ -218,6 +232,13 @@ public class RestoreAction extends UsnaSelectedAction {
 					throw new RuntimeException(e);
 				}
 			}));
+			in.stream().filter(entry -> entry.getName().endsWith(".mjs")).forEach(entry -> {
+				try (InputStream is = in.getInputStream(entry)) {
+					backupJsons.put(entry.getName() + ".json", jsonMapper.createObjectNode().put("code", new String(is.readAllBytes(), StandardCharsets.UTF_8)));
+				} catch(IOException e) {
+					throw new RuntimeException(e);
+				}
+			});
 			return backupJsons;
 		} catch(RuntimeException e) {
 			if(e.getCause() instanceof IOException) {
