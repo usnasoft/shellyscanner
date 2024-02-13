@@ -6,6 +6,7 @@ import java.awt.BorderLayout;
 import java.awt.Cursor;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
+import java.awt.event.KeyEvent;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -23,14 +24,21 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JTextField;
 import javax.swing.JToolBar;
+import javax.swing.KeyStroke;
 import javax.swing.SwingConstants;
 import javax.swing.filechooser.FileNameExtensionFilter;
+import javax.swing.text.AbstractDocument;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.DocumentFilter;
 
 import it.usna.shellyscan.Main;
 import it.usna.shellyscan.controller.UsnaAction;
 import it.usna.shellyscan.model.device.g2.modules.Script;
 import it.usna.shellyscan.view.BasicEditorPanel;
+import it.usna.shellyscan.view.MainView;
 import it.usna.shellyscan.view.util.Msg;
 import it.usna.util.IOFile;
 
@@ -43,13 +51,13 @@ public class ScriptEditor extends JFrame {
 	
 	public ScriptEditor(ScriptsPanel originatingPanel, Script script) throws IOException {
 		super(LABELS.getString("dlgScriptEditorTitle") + " - " + script.getName());
-		
 		setIconImage(Main.ICON);
 
 		BasicEditorPanel editor = new BasicEditorPanel(this, script.getCode(), true) {
 			private static final long serialVersionUID = 1L;
 			private File path = null;
-						
+
+			@Override
 			protected JToolBar createToolbar(JToolBar toolBar) {
 				UsnaAction openAction = new UsnaAction(ScriptEditor.this, "dlgOpen", "/images/Open24.png", e -> {
 					final JFileChooser fc = new JFileChooser(path);
@@ -77,13 +85,64 @@ public class ScriptEditor extends JFrame {
 						path = fc.getSelectedFile().getParentFile();
 					}
 				});
+				UsnaAction gotoAction = new UsnaAction(null, "dlgScriptEditorGotoLineTitle", "/images/goto_line.png", e -> {
+					JPanel msg = new JPanel(new FlowLayout());
+					JTextField input = new JTextField(10);
+					msg.add(new JLabel(LABELS.getString("dlgScriptEditorGotoLineLabel")));
+					msg.add(input);
+
+					DocumentFilter filter = new DocumentFilter() {
+						@Override
+						public void insertString(DocumentFilter.FilterBypass fb, int offset, String text, AttributeSet attr) throws BadLocationException {
+							StringBuilder buffer = new StringBuilder(text.length());
+							for (int i = 0; i < text.length(); i++) {
+								char ch = text.charAt(i);
+								if (Character.isDigit(ch)) {
+									buffer.append(ch);
+								}
+							}
+							super.insertString(fb, offset, buffer.toString(), attr);
+						}
+
+						@Override
+						public void replace(DocumentFilter.FilterBypass fb, int offset, int length, String string, AttributeSet attr) throws BadLocationException {
+							if (length > 0) {
+								fb.remove(offset, length);
+							}
+							insertString(fb, offset, string, attr);
+						}
+					};
+					((AbstractDocument)input.getDocument()).setDocumentFilter(filter);
+
+					JOptionPane optionPane = new JOptionPane(msg, JOptionPane.PLAIN_MESSAGE,  JOptionPane.OK_CANCEL_OPTION) {
+						private static final long serialVersionUID = 1L;
+						@Override
+						public void selectInitialValue() {
+							input.requestFocusInWindow();
+						}
+					};
+					optionPane.createDialog(this, LABELS.getString("dlgScriptEditorGotoLineTitle")).setVisible(true);
+					Object ret = optionPane.getValue();
+					if(ret != null && ret instanceof Number n && n.intValue() == JOptionPane.OK_OPTION) {
+						try {
+							gotoLine(Integer.parseInt(input.getText()));
+						} catch(RuntimeException ex) {}
+					}
+					requestFocus();
+				});
+				mapAction(KeyStroke.getKeyStroke(KeyEvent.VK_G, MainView.SHORTCUT_KEY), gotoAction, "goto_usna");
 				
 				toolBar.add(openAction);
 				toolBar.add(saveAsAction);
 				toolBar.addSeparator();
-				return super.createToolbar(toolBar);
+				super.createToolbar(toolBar);
+				toolBar.add(gotoAction);
+				return toolBar;
 			}
 		};
+		
+		
+		
 		getContentPane().add(editor);
 
 		// bottom buttons

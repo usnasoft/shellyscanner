@@ -221,13 +221,14 @@ https://www.iconbolt.com/
 
 1.0.3
 // bug fix on KVS panel
-// bug fix on graphs (equalk names)
+// bug fix on graphs (equal names)
 // mini 1, mini 1pm (partial), mini pm (partial)
 // mqtt deferrable (all)
 // login deferrable
 // help on checklist & graphs
 // fw update "any"
 // motion 1/2 temperature
+// restore degli script
 // todo search ssid ?
 
 ---

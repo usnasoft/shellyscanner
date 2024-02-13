@@ -18,6 +18,7 @@ import javax.swing.KeyStroke;
 import javax.swing.event.CaretListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultEditorKit;
+import javax.swing.text.Element;
 import javax.swing.undo.UndoManager;
 
 import it.usna.shellyscan.controller.UsnaAction;
@@ -71,22 +72,19 @@ public class BasicEditorPanel extends JPanel {
 		undoAction = new UsnaAction(null, "btnUndo", "/images/Undo24.png", e -> {
 			try {manager.undo();} catch(RuntimeException ex) {}
 		});
-		textArea.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_Z, MainView.SHORTCUT_KEY), "undo_usna");
-		textArea.getActionMap().put("undo_usna", undoAction);
+		mapAction(KeyStroke.getKeyStroke(KeyEvent.VK_Z, MainView.SHORTCUT_KEY), undoAction, "undo_usna");
 		
 		redoAction = new UsnaAction(null, "btnRedo", "/images/Redo24.png", e -> {
 			try {manager.redo();} catch(RuntimeException ex) {}
 		});
-		textArea.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_Y, MainView.SHORTCUT_KEY), "redo_usna");
-		textArea.getActionMap().put("redo_usna", redoAction);
+		mapAction(KeyStroke.getKeyStroke(KeyEvent.VK_Y, MainView.SHORTCUT_KEY), redoAction, "redo_usna");
 		
 		findAction = new UsnaAction(null, "btnFind", "/images/Search24.png", e -> {
 			FindReplaceDialog f = new FindReplaceDialog(owner, textArea, true);
 			f.setLocationRelativeTo(BasicEditorPanel.this);
 			f.setVisible(true);
 		});
-		textArea.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_F, MainView.SHORTCUT_KEY), "find_usna");
-		textArea.getActionMap().put("find_usna", findAction);
+		mapAction(KeyStroke.getKeyStroke(KeyEvent.VK_F, MainView.SHORTCUT_KEY), findAction, "find_usna");
 		
 		// toolbar
 		JToolBar toolBar = createToolbar(new JToolBar());
@@ -127,6 +125,18 @@ public class BasicEditorPanel extends JPanel {
 		} catch (BadLocationException e1) {
 			return 0;
 		}
+	}
+	
+	public void gotoLine(int line) {
+		Element el = textArea.getDocument().getDefaultRootElement().getElement(line - 1);
+		if(el != null) {
+			textArea.setCaretPosition(el.getStartOffset());
+		}
+	}
+	
+	public void mapAction(KeyStroke k, Action action, String name) {
+		textArea.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(k, name);
+		textArea.getActionMap().put(name, action);
 	}
 	
 	public String getText() {
