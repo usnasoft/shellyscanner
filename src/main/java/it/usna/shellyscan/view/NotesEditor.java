@@ -24,7 +24,7 @@ public class NotesEditor extends JFrame {
 		super(LABELS.getString("action_notes_tooltip") + " - " + UtilMiscellaneous.getDescName(ghost));
 		setIconImages(owner.getIconImages());
 		
-		BasicEditorPanel editor = new BasicEditorPanel(this, ghost.getNote(), false);
+		BasicEditorPanel editor = new BasicEditorPanel(this, ghost.getNote());
 		getContentPane().add(editor);
 
 		// bottom buttons

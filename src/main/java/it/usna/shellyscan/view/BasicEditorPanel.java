@@ -7,7 +7,6 @@ import java.awt.Window;
 import java.awt.event.KeyEvent;
 
 import javax.swing.Action;
-import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
@@ -22,7 +21,6 @@ import javax.swing.text.Element;
 import javax.swing.undo.UndoManager;
 
 import it.usna.shellyscan.controller.UsnaAction;
-import it.usna.swing.TextLineNumber;
 import it.usna.swing.dialog.FindReplaceDialog;
 
 /**
@@ -39,19 +37,14 @@ public class BasicEditorPanel extends JPanel {
 	private Action undoAction;
 	private Action redoAction;
 	private Action findAction;
+	protected JScrollPane scrollPane = new JScrollPane();
 	
-	public BasicEditorPanel(Window owner, String text, boolean lines) {
+	public BasicEditorPanel(Window owner, String text) {
 		setLayout(new BorderLayout());
-		JScrollPane scrollPane = new JScrollPane();
 		add(scrollPane, BorderLayout.CENTER);
 
 		textArea.setText(text);
 		scrollPane.setViewportView(textArea);
-		if(lines) {
-			TextLineNumber lineNum = new TextLineNumber(textArea);
-			lineNum.setBorder(BorderFactory.createEmptyBorder(0, 1, 0, 3));
-			scrollPane.setRowHeaderView(lineNum);
-		}
 		
 		// actions
 		UndoManager manager = new UndoManager();
