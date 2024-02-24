@@ -47,8 +47,8 @@ public class BasicEditorPanel extends JPanel {
 		scrollPane.setViewportView(textArea);
 		
 		// actions
-		UndoManager manager = new UndoManager();
-		textArea.getDocument().addUndoableEditListener(manager);
+		UndoManager undoManager = new UndoManager();
+		textArea.getDocument().addUndoableEditListener(undoManager);
 		
 		cutAction = new DefaultEditorKit.CutAction();
 		cutAction.putValue(Action.SHORT_DESCRIPTION, LABELS.getString("btnCut"));
@@ -63,12 +63,12 @@ public class BasicEditorPanel extends JPanel {
 		pasteAction.putValue(Action.SMALL_ICON, new ImageIcon(BasicEditorPanel.class.getResource("/images/Clipboard_Paste24.png")));
 		
 		undoAction = new UsnaAction(null, "btnUndo", "/images/Undo24.png", e -> {
-			try {manager.undo();} catch(RuntimeException ex) {}
+			try {undoManager.undo();} catch(RuntimeException ex) {}
 		});
 		mapAction(KeyStroke.getKeyStroke(KeyEvent.VK_Z, MainView.SHORTCUT_KEY), undoAction, "undo_usna");
 		
 		redoAction = new UsnaAction(null, "btnRedo", "/images/Redo24.png", e -> {
-			try {manager.redo();} catch(RuntimeException ex) {}
+			try {undoManager.redo();} catch(RuntimeException ex) {}
 		});
 		mapAction(KeyStroke.getKeyStroke(KeyEvent.VK_Y, MainView.SHORTCUT_KEY), redoAction, "redo_usna");
 		

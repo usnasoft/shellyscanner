@@ -60,10 +60,10 @@ public class ScriptEditor extends JFrame {
 			@Override
 			protected JToolBar createToolbar(JToolBar toolBar) {
 				TextLineNumber lineNum = new TextLineNumber(textArea);
-				lineNum.setBorder(BorderFactory.createEmptyBorder(0, 1, 0, 3));
+				lineNum.setBorder(BorderFactory.createEmptyBorder(0, 1, 0, 2));
 				scrollPane.setRowHeaderView(lineNum);
 				
-				UsnaAction uploadAction = new UsnaAction(ScriptEditor.this, "btnUpload", "btnUpload", "/images/Upload24.png", null, e -> {
+				UsnaAction uploadAction = new UsnaAction(ScriptEditor.this, "btnUpload", "btnUploadTooltip", "/images/Upload24.png", null, e -> {
 					String res = script.putCode(getText());
 					if(res != null) {
 						Msg.errorMsg(this, res);
