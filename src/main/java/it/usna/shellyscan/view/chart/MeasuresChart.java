@@ -87,7 +87,11 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 
 	public MeasuresChart(JFrame owner, final Devices model, int[] ind, AppProperties appProp) {
 		setIconImages(owner.getIconImages());
-		setTitle(LABELS.getString("dlgChartsTitle") + " - " + (ind.length == 1 ? UtilMiscellaneous.getDescName(model.get(ind[0])) : ind.length));
+		if(ind.length == 1) {
+			setTitle(String.format(LABELS.getString("dlgChartsTitle1"), UtilMiscellaneous.getDescName(model.get(ind[0]))));
+		} else {
+			setTitle(String.format(LABELS.getString("dlgChartsTitleMany"), ind.length));
+		}
 		setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 		this.model = model;
 

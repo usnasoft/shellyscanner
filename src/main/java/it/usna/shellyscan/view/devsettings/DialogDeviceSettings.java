@@ -48,8 +48,12 @@ public class DialogDeviceSettings extends JDialog implements UsnaEventListener<D
 		this.devicesInd = devicesInd;
 		model.addListener(this);
 
-		setTitle(LABELS.getString("dlgSetTitle") + " - " + (devicesInd.length == 1 ? UtilMiscellaneous.getDescName(getLocalDevice(0)) : devicesInd.length));
-		
+		if(devicesInd.length == 1) {
+			setTitle(String.format(LABELS.getString("dlgSetTitle1"), UtilMiscellaneous.getDescName(getLocalDevice(0))));
+		} else {
+			setTitle(String.format(LABELS.getString("dlgSetTitleMany"), devicesInd.length));
+		}
+
 		BorderLayout borderLayout = (BorderLayout) getContentPane().getLayout();
 		borderLayout.setVgap(5);
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
