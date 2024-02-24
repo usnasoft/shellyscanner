@@ -69,6 +69,9 @@ import it.usna.shellyscan.model.device.g2.ShellyPro2PM;
 import it.usna.shellyscan.model.device.g2.ShellyPro3;
 import it.usna.shellyscan.model.device.g2.ShellyPro4PM;
 import it.usna.shellyscan.model.device.g3.ShellyG3Unmanaged;
+import it.usna.shellyscan.model.device.g3.ShellyMini1G3;
+import it.usna.shellyscan.model.device.g3.ShellyMini1PMG3;
+import it.usna.shellyscan.model.device.g3.ShellyMiniPMG3;
 import it.usna.shellyscan.view.DialogAuthentication;
 
 public class DevicesFactory {
@@ -86,18 +89,13 @@ public class DevicesFactory {
 			return createG1(httpClient, address, port, info, name);
 		} else if(gen ==3) { // gen1 (info.get("gen") == null)
 			return createG3(httpClient, wsClient, address, port, info, name);
-		} else {
+		} else { // gen == 2
 			return new ShellyGenericUnmanagedImpl(address, port, name, httpClient);
 		}
 	}
 
 	public static ShellyAbstractDevice createWithError(HttpClient httpClient, final InetAddress address, int port, String name, Throwable e) {
 		return new ShellyGenericUnmanagedImpl(address, port, name, httpClient, e);
-//		ShellyG1Unmanaged d = new ShellyG1Unmanaged(address, port, name, e); // no mac available (info) -> try to desume from hostname
-//		d.setUnrecoverable(true);
-//		d.setHttpClient(httpClient);
-//		d.setMacAddress(name.substring(Math.max(name.length() - 12, 0), name.length()).toUpperCase());
-//		return d;
 	}
 
 	private static ShellyAbstractDevice createG1(HttpClient httpClient, final InetAddress address, int port, JsonNode info, String name) {
@@ -270,7 +268,12 @@ public class DevicesFactory {
 				}
 				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			}
-			d = new ShellyG3Unmanaged(address, port, name);
+			d = switch(info.get("app").asText()) {
+			case ShellyMini1G3.ID -> new ShellyMini1G3(address, port, name);
+			case ShellyMini1PMG3.ID -> new ShellyMini1PMG3(address, port, name);
+			case ShellyMiniPMG3.ID -> new ShellyMiniPMG3(address, port, name);
+			default -> new ShellyG3Unmanaged(address, port, name);
+			};
 		} catch(Exception e) { // really unexpected
 			LOG.error("create", e);
 			d = new ShellyG3Unmanaged(address, port, name, e);

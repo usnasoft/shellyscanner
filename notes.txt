@@ -229,12 +229,14 @@ https://www.iconbolt.com/
 // fw update "any"
 // motion 1/2 temperature
 // restore degli script
-// todo search ssid ?
+
+1.0.4
+// mini gen 3
 
 ---
 // TODO
-// https://github.com/tips4java/tips4java/blob/main/source/TextLineNumber.java
-// editor sintax (start with inner blocks)
+// todo search ssid ?
+// editor sintax
 // chacklist reset button(5)/power
 // grafico energia
 // inclusione massiva

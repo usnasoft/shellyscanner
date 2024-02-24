@@ -172,7 +172,7 @@ public class ScriptsPanel extends JPanel {
 		}));
 		operationsPanel.add(btnDownload);
 
-		final JButton btnUpload = new JButton(new UsnaAction(this, "btnUpload", e -> {
+		final JButton btnUpload = new JButton(new UsnaAction(this, "btnUpload", "btnUploadTooltip", null, null, e -> {
 			final int mRow = table.convertRowIndexToModel(table.getSelectedRow());
 			final Script sc = scripts.get(mRow);
 			final JFileChooser fc = new JFileChooser();
