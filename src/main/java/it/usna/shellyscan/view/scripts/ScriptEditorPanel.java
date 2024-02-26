@@ -21,7 +21,6 @@ import javax.swing.text.Element;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
-import javax.swing.undo.UndoManager;
 
 import it.usna.shellyscan.controller.UsnaAction;
 import it.usna.shellyscan.view.MainView;
@@ -74,16 +73,21 @@ public class ScriptEditorPanel extends JPanel {
 		StyleConstants.setBold(styleReserved, true);
 		StyleConstants.setForeground(styleReserved, Color.blue);
 		textArea.addDelimitedKeywords(new SyntaxEditor.DelimitedKeywords(new String[] {
-				"abstract",	"continue",	"for", "new", "switch",
-				"assert",	"default",	"goto",	"package", "synchronized",
-				"boolean", "do", "if", "private", "this",
-				"break", "double", "implements", "protected", "throw",
-				"byte", "else", "import", "public", "throws",
-				"case", "enum", "instanceof", "return", "transient",
-				"catch", "extends", "int", "short", "try",
-				"char", "final", "interface", "static", "void",
-				"class", "finally", "long", "strictfp", "volatile",
-				"const", "float", "native", "super", "while"}, styleReserved/*, null, null*/));
+				"abstract", "arguments", "await*", "boolean", "break", "byte", "case", "catch",
+				"char", "class", "const*", "continue", "debugger", "default", "delete", "do",
+				"double", "else", "enum", "eval", "export", "extends", "false", "final",
+				"finally", "float", "for", "function", "goto", "if", "implements", "import",
+				"in", "instanceof", "int", "interface", "let", "long", "native", "new",
+				"null", "package", "private", "protected", "public", "return", "short", "static",
+				"super", "switch", "synchronized", "this", "throw", "throws", "transient", "true",
+				"try", "typeof", "var", "void", "volatile", "while", "with", "yield",
+				"String", "Number", "Function", "Array", "Math", "Date", "Object", "Exceptions"}, styleReserved/*, null, null*/));
+		
+		Style styleShelly = textArea.addStyle("usna_styleReserved", null);
+		StyleConstants.setBold(styleShelly, true);
+		StyleConstants.setForeground(styleShelly, Color.red);
+		textArea.addDelimitedKeywords(new SyntaxEditor.DelimitedKeywords(new String[] {
+				"Shelly", "JSON", "Timer", "MQTT", "BLE", "HTTPServer"}, styleShelly/*, null, null*/));
 
 		textArea.activateUndo();
 		textArea.setTabSize(4);
@@ -92,9 +96,6 @@ public class ScriptEditorPanel extends JPanel {
 		scrollPane.setViewportView(textArea);
 		
 		// actions
-		UndoManager undoManager = new UndoManager();
-		textArea.getDocument().addUndoableEditListener(undoManager);
-		
 		cutAction = new DefaultEditorKit.CutAction();
 		cutAction.putValue(Action.SHORT_DESCRIPTION, LABELS.getString("btnCut"));
 		cutAction.putValue(Action.SMALL_ICON, new ImageIcon(ScriptEditorPanel.class.getResource("/images/Clipboard_Cut24.png")));
