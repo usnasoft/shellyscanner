@@ -4,9 +4,12 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
+import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.Meters;
 
 /**
@@ -74,8 +77,12 @@ public class ShellyMiniPMG3 extends AbstractG3Device {
 	}
 
 	@Override
-	protected void restore(Map<String, JsonNode> backupJsons, List<String> errors) {
-		// no specific action (missing parameters?)
+	protected void restore(Map<String, JsonNode> backupJsons, List<String> errors) throws InterruptedException {
+		JsonNode config = backupJsons.get("Shelly.GetConfig.json");
+		ObjectNode pm1 = (ObjectNode)config.path("pm1:0").deepCopy();
+		pm1.remove("id");
+		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+		errors.add(postCommand("PM1.SetConfig", pm1));
 	}
 }
 
@@ -211,44 +218,48 @@ public class ShellyMiniPMG3 extends AbstractG3Device {
   "cloud" : {
     "connected" : true
   },
-  "input:0" : {
-    "id" : 0,
-    "state" : false
-  },
   "mqtt" : {
     "connected" : false
   },
-  "switch:0" : {
+  "pm1:0" : {
     "id" : 0,
-    "source" : "init",
-    "output" : false,
-    "temperature" : {
-      "tC" : 49.0,
-      "tF" : 120.2
+    "voltage" : 221.8,
+    "current" : 0.0,
+    "apower" : 0.0,
+    "freq" : 50.1,
+    "aenergy" : {
+      "total" : 176.0,
+      "by_minute" : [ 0.0, 0.0, 0.0 ],
+      "minute_ts" : 1708946700
+    },
+    "ret_aenergy" : {
+      "total" : 0.0,
+      "by_minute" : [ 0.0, 0.0, 0.0 ],
+      "minute_ts" : 1708946700
     }
   },
   "sys" : {
     "mac" : "ZZZZZZZZZZZZ",
     "restart_required" : false,
-    "time" : "14:20",
-    "unixtime" : 1708777241,
-    "uptime" : 802,
-    "ram_size" : 259944,
-    "ram_free" : 150696,
+    "time" : "13:25",
+    "unixtime" : 1708946733,
+    "uptime" : 170274,
+    "ram_size" : 260488,
+    "ram_free" : 146400,
     "fs_size" : 1048576,
-    "fs_free" : 716800,
-    "cfg_rev" : 14,
-    "kvs_rev" : 0,
+    "fs_free" : 720896,
+    "cfg_rev" : 17,
+    "kvs_rev" : 47,
     "schedule_rev" : 0,
     "webhook_rev" : 0,
     "available_updates" : { },
     "reset_reason" : 3
   },
   "wifi" : {
-    "sta_ip" : "192.168.0.108",
+    "sta_ip" : "192.168.0.114",
     "status" : "got ip",
     "ssid" : "NotYourSSID",
-    "rssi" : -84
+    "rssi" : -73
   },
   "ws" : {
     "connected" : false

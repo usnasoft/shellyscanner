@@ -97,24 +97,24 @@ public class ScriptEditor3 extends JFrame {
 		// actions
 		cutAction = new DefaultEditorKit.CutAction();
 		cutAction.putValue(Action.SHORT_DESCRIPTION, LABELS.getString("btnCut"));
-		cutAction.putValue(Action.SMALL_ICON, new ImageIcon(ScriptEditorPanel.class.getResource("/images/Clipboard_Cut24.png")));
+		cutAction.putValue(Action.SMALL_ICON, new ImageIcon(ScriptEditor3.class.getResource("/images/Clipboard_Cut24.png")));
 		
 		copyAction = new DefaultEditorKit.CopyAction();
 		copyAction.putValue(Action.SHORT_DESCRIPTION, LABELS.getString("btnCopy"));
-		copyAction.putValue(Action.SMALL_ICON, new ImageIcon(ScriptEditorPanel.class.getResource("/images/Clipboard_Copy24.png")));
+		copyAction.putValue(Action.SMALL_ICON, new ImageIcon(ScriptEditor3.class.getResource("/images/Clipboard_Copy24.png")));
 
 		pasteAction = new DefaultEditorKit.PasteAction();
 		pasteAction.putValue(Action.SHORT_DESCRIPTION, LABELS.getString("btnPaste"));
-		pasteAction.putValue(Action.SMALL_ICON, new ImageIcon(ScriptEditorPanel.class.getResource("/images/Clipboard_Paste24.png")));
+		pasteAction.putValue(Action.SMALL_ICON, new ImageIcon(ScriptEditor3.class.getResource("/images/Clipboard_Paste24.png")));
 		
 		undoAction = editor.getUndoAction();
 		undoAction.putValue(Action.SHORT_DESCRIPTION, LABELS.getString("btnUndo"));
-		undoAction.putValue(Action.SMALL_ICON, new ImageIcon(ScriptEditorPanel.class.getResource("/images/Undo24.png")));
+		undoAction.putValue(Action.SMALL_ICON, new ImageIcon(ScriptEditor3.class.getResource("/images/Undo24.png")));
 		mapAction(KeyStroke.getKeyStroke(KeyEvent.VK_Z, MainView.SHORTCUT_KEY), undoAction, "undo_usna");
 		
 		redoAction = editor.getRedoAction();
 		redoAction.putValue(Action.SHORT_DESCRIPTION, LABELS.getString("btnRedo"));
-		redoAction.putValue(Action.SMALL_ICON, new ImageIcon(ScriptEditorPanel.class.getResource("/images/Redo24.png")));
+		redoAction.putValue(Action.SMALL_ICON, new ImageIcon(ScriptEditor3.class.getResource("/images/Redo24.png")));
 		mapAction(KeyStroke.getKeyStroke(KeyEvent.VK_Y, MainView.SHORTCUT_KEY), redoAction, "redo_usna");
 		
 		findAction = new UsnaAction(null, "btnFind", "/images/Search24.png", e -> {
@@ -265,15 +265,21 @@ public class ScriptEditor3 extends JFrame {
 				"in", "instanceof", "int", "interface", "let", "long", "native", "new",
 				"null", "package", "private", "protected", "public", "return", "short", "static",
 				"super", "switch", "synchronized", "this", "throw", "throws", "transient", "true",
-				"try", "typeof", "var", "void", "volatile", "while", "with", "yield",
-				"String", "Number", "Function", "Array", "Math", "Date", "Object", "Exceptions"}, styleReserved/*, null, null*/));
+				"try", "typeof", "var", "void", "volatile", "while", "with", "yield"}, styleReserved/*, null, null*/));
+		
+		Style styleImplemented = textArea.addStyle("usna_styleReserved", null);
+		StyleConstants.setBold(styleImplemented, true);
+		StyleConstants.setForeground(styleImplemented, new Color(153, 0, 153));
+		textArea.addDelimitedKeywords(new SyntaxEditor.DelimitedKeywords(new String[] {
+				"String", "Number", "Function", "Array", "Math", "Date", "Object", "Exceptions"}, styleImplemented/*, null, null*/));
 		
 		Style styleShelly = textArea.addStyle("usna_shellyReserved", null);
 		StyleConstants.setBold(styleShelly, true);
 		StyleConstants.setItalic(styleShelly, true);
-		StyleConstants.setForeground(styleShelly, Color.blue);
+		StyleConstants.setForeground(styleShelly, new Color(102, 0, 204));
 		textArea.addDelimitedKeywords(new SyntaxEditor.DelimitedKeywords(new String[] {
 				"Shelly", "JSON", "Timer", "MQTT", "BLE", "HTTPServer"}, styleShelly/*, null, null*/));
+		//todo va gestito il '.' margine finale
 
 		
 		return textArea;
