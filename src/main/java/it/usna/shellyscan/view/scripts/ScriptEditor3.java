@@ -79,14 +79,14 @@ public class ScriptEditor3 extends JFrame {
 	private JLabel caretLabel;
 	
 	public ScriptEditor3(ScriptsPanel originatingPanel, Script script) throws IOException {
-//		super(LABELS.getString("dlgScriptEditorTitle") + " - " + script.getName());
+		super(LABELS.getString("dlgScriptEditorTitle") + " - " + script.getName());
 		setIconImage(Main.ICON);
 		
 		getContentPane().setLayout(new BorderLayout());
 		
 		JScrollPane scrollPane = new JScrollPane();
 		
-		editor = getEditorPanel("script.getCode()");
+		editor = getEditorPanel(script.getCode());
 		scrollPane.setViewportView(editor);
 		TextLineNumber lineNum = new TextLineNumber(editor);
 		lineNum.setBorder(BorderFactory.createEmptyBorder(0, 1, 0, 2));
@@ -238,26 +238,26 @@ public class ScriptEditor3 extends JFrame {
 		
 		Style styleComment = textArea.addStyle("usna_red", null);
 		StyleConstants.setForeground(styleComment, Color.RED);
-		textArea.addBlockSyntax(new SyntaxEditor.BlockSyntax("//", "\n", styleComment));
-		textArea.addBlockSyntax(new SyntaxEditor.BlockSyntax("/*", "*/", styleComment));
+		textArea.addSyntaxRule(new SyntaxEditor.BlockSyntax("//", "\n", styleComment));
+		textArea.addSyntaxRule(new SyntaxEditor.BlockSyntax("/*", "*/", styleComment));
 		
 		Style styleStr = textArea.addStyle("usna_green", null);
 		StyleConstants.setForeground(styleStr, new Color(0, 120, 0));
-		textArea.addBlockSyntax(new SyntaxEditor.BlockSyntax("\"", "\"", "\\", styleStr));
-		textArea.addBlockSyntax(new SyntaxEditor.BlockSyntax("'", "'", "\\", styleStr));
+		textArea.addSyntaxRule(new SyntaxEditor.BlockSyntax("\"", "\"", "\\", styleStr));
+		textArea.addSyntaxRule(new SyntaxEditor.BlockSyntax("'", "'", "\\", styleStr));
 		
 		Style styleBrachets = textArea.addStyle("usna_brachets", null);
 		StyleConstants.setBold(styleBrachets, true);
-		textArea.addKeywords(new SyntaxEditor.Keywords(new String[] {"{", "}", "[", "]"}, styleBrachets));
+		textArea.addSyntaxRule(new SyntaxEditor.Keywords(new String[] {"{", "}", "[", "]"}, styleBrachets));
 		
 		Style styleOperators = textArea.addStyle("usna_brachets", null);
 		StyleConstants.setForeground(styleOperators, new Color(150, 0, 0));
-		textArea.addKeywords(new SyntaxEditor.Keywords(new String[] {"=", "+", "-", "*", "/", "%", "<", ">", "&", "|", "!"}, styleOperators));
+		textArea.addSyntaxRule(new SyntaxEditor.Keywords(new String[] {"=", "+", "-", "*", "/", "%", "<", ">", "&", "|", "!"}, styleOperators));
 		
 		Style styleReserved = textArea.addStyle("usna_styleReserved", null);
 		StyleConstants.setBold(styleReserved, true);
 		StyleConstants.setForeground(styleReserved, Color.blue);
-		textArea.addDelimitedKeywords(new SyntaxEditor.DelimitedKeywords(new String[] {
+		textArea.addSyntaxRule(new SyntaxEditor.DelimitedKeywords(new String[] {
 				"abstract", "arguments", "await*", "boolean", "break", "byte", "case", "catch",
 				"char", "class", "const*", "continue", "debugger", "default", "delete", "do",
 				"double", "else", "enum", "eval", "export", "extends", "false", "final",
@@ -270,14 +270,14 @@ public class ScriptEditor3 extends JFrame {
 		Style styleImplemented = textArea.addStyle("usna_styleReserved", null);
 		StyleConstants.setBold(styleImplemented, true);
 		StyleConstants.setForeground(styleImplemented, new Color(153, 0, 153));
-		textArea.addDelimitedKeywords(new SyntaxEditor.DelimitedKeywords(new String[] {
+		textArea.addSyntaxRule(new SyntaxEditor.DelimitedKeywords(new String[] {
 				"String", "Number", "Function", "Array", "Math", "Date", "Object", "Exceptions"}, styleImplemented/*, null, null*/));
 		
 		Style styleShelly = textArea.addStyle("usna_shellyReserved", null);
 		StyleConstants.setBold(styleShelly, true);
 		StyleConstants.setItalic(styleShelly, true);
 		StyleConstants.setForeground(styleShelly, new Color(102, 0, 204));
-		textArea.addDelimitedKeywords(new SyntaxEditor.DelimitedKeywords(new String[] {
+		textArea.addSyntaxRule(new SyntaxEditor.DelimitedKeywords(new String[] {
 				"Shelly", "JSON", "Timer", "MQTT", "BLE", "HTTPServer"}, styleShelly/*, null, null*/));
 		//todo va gestito il '.' margine finale
 
@@ -337,15 +337,5 @@ public class ScriptEditor3 extends JFrame {
 			setCursor(Cursor.getDefaultCursor());
 		}
 		return null;
-	}
-
-	public static void main(String ...strings) {
-		ScriptEditor3 p;
-		try {
-			p = new ScriptEditor3(null, null);
-			p.setVisible(true);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
 	}
 }
