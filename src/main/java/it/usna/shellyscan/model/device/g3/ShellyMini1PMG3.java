@@ -55,7 +55,7 @@ public class ShellyMini1PMG3 extends AbstractG3Device implements RelayCommander,
 
 	@Override
 	public String getTypeName() {
-		return "Shelly 1PM Mini G3";
+		return "Shelly Mini 1PM G3";
 	}
 
 	@Override

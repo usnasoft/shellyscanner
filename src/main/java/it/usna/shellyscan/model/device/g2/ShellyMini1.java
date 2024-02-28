@@ -30,7 +30,7 @@ public class ShellyMini1 extends AbstractG2Device implements RelayCommander, Int
 	
 	@Override
 	public String getTypeName() {
-		return "Shelly 1 Mini";
+		return "Shelly Mini 1";
 	}
 	
 	@Override

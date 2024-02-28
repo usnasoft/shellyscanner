@@ -17,7 +17,7 @@ import it.usna.shellyscan.model.device.Meters;
  * @author usna
  */
 public class ShellyMiniPMG3 extends AbstractG3Device {
-	public final static String ID = "Mini1PM";
+	public final static String ID = "MiniPMG3";
 	private final static Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.W, Meters.Type.V, Meters.Type.I};
 	private float power;
 	private float voltage;
@@ -49,7 +49,7 @@ public class ShellyMiniPMG3 extends AbstractG3Device {
 
 	@Override
 	public String getTypeName() {
-		return "Shelly PM Mini G3";
+		return "Shelly Mini PM G3";
 	}
 
 	@Override

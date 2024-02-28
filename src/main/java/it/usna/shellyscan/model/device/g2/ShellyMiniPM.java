@@ -49,7 +49,7 @@ public class ShellyMiniPM extends AbstractG2Device {
 
 	@Override
 	public String getTypeName() {
-		return "Shelly PM Mini";
+		return "Shelly Mini PM";
 	}
 
 	@Override

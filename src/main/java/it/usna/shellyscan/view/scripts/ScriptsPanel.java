@@ -196,7 +196,7 @@ public class ScriptsPanel extends JPanel {
 			try {
 				final int mRow = table.convertRowIndexToModel(table.getSelectedRow());
 				final Script sc = scripts.get(mRow);
-				new ScriptEditor3(ScriptsPanel.this, sc);
+				new ScriptEditor(ScriptsPanel.this, sc);
 			} catch (IOException e1) {
 				Msg.errorMsg(e1);
 			}
