@@ -238,13 +238,13 @@ public class ScriptEditor extends JFrame {
 		
 		Style styleComment = textArea.addStyle("usna_red", null);
 		StyleConstants.setForeground(styleComment, Color.RED);
-		textArea.addSyntaxRule(new SyntaxEditor.BlockSyntax("//", "\n", styleComment));
-		textArea.addSyntaxRule(new SyntaxEditor.BlockSyntax("/*", "*/", styleComment));
+		textArea.addSyntaxRule(new SyntaxEditor.BlockSimpleSyntax("//", "\n", styleComment));
+		textArea.addSyntaxRule(new SyntaxEditor.BlockSimpleSyntax("/*", "*/", styleComment));
 		
 		Style styleStr = textArea.addStyle("usna_green", null);
 		StyleConstants.setForeground(styleStr, new Color(0, 120, 0));
-		textArea.addSyntaxRule(new SyntaxEditor.BlockSyntax("\"", "\"", "\\", styleStr));
-		textArea.addSyntaxRule(new SyntaxEditor.BlockSyntax("'", "'", "\\", styleStr));
+		textArea.addSyntaxRule(new SyntaxEditor.BlockSimpleSyntax("\"", "\"", "\\", styleStr));
+		textArea.addSyntaxRule(new SyntaxEditor.BlockSimpleSyntax("'", "'", "\\", styleStr));
 		
 		Style styleBrachets = textArea.addStyle("usna_brachets", null);
 		StyleConstants.setBold(styleBrachets, true);
