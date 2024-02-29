@@ -224,7 +224,6 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 				return error.path("message").asText("Generic error");
 			}
 		} catch(IOException e) {
-			//			status = Status.OFF_LINE;
 			return "Status-OFFLINE";
 		} catch(RuntimeException e) {
 			return e.getMessage();
@@ -282,29 +281,36 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			sectionToStream("/rpc/Shelly.GetConfig", "Shelly.GetConfig.json", out);
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-			sectionToStream("/rpc/Schedule.List", "Schedule.List.json", out);
-			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+			try { // MiniPM (and maybe others) do non have Schedule.List
+				sectionToStream("/rpc/Schedule.List", "Schedule.List.json", out);
+				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+			} catch(Exception e) {}
 			sectionToStream("/rpc/Webhook.List", "Webhook.List.json", out);
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			sectionToStream("/rpc/KVS.GetMany", "KVS.GetMany.json", out);
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-			final byte[] scripts = sectionToStream("/rpc/Script.List", "Script.List.json", out);
-			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+			byte[] scripts = null;;
+			try {
+				scripts = sectionToStream("/rpc/Script.List", "Script.List.json", out);
+				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+			} catch(Exception e) {}
 			try { // On device with active sensor add-on
 				sectionToStream("/rpc/SensorAddon.GetPeripherals", SensorAddOn.BACKUP_SECTION, out);
 				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			} catch(Exception e) {}
 			// Scripts
-			JsonNode scrList = jsonMapper.readTree(scripts).get("scripts");
-			for(JsonNode scr: scrList) {
-				try {
-					Script script = new Script(this, scr);
-					byte[] code =  script.getCode().getBytes();
-					ZipEntry entry = new ZipEntry(scr.get("name").asText() + ".mjs");
-					out.putNextEntry(entry);
-					out.write(code, 0, code.length);
-				} catch(IOException e) {}
-				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+			if(scripts != null) {
+				JsonNode scrList = jsonMapper.readTree(scripts).get("scripts");
+				for(JsonNode scr: scrList) {
+					try {
+						Script script = new Script(this, scr);
+						byte[] code =  script.getCode().getBytes();
+						ZipEntry entry = new ZipEntry(scr.get("name").asText() + ".mjs");
+						out.putNextEntry(entry);
+						out.write(code, 0, code.length);
+					} catch(IOException e) {}
+					TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+				}
 			}
 		} catch(InterruptedException e) {
 			LOG.error("backup", e);
@@ -503,5 +509,5 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 	}
 	
 	/** device specific */
-	protected abstract void restore(Map<String, JsonNode> backupJsons, /*Map<Restore, String> userPref,*/ List<String> errors) throws IOException, InterruptedException;
-} // 477 - 474
+	protected abstract void restore(Map<String, JsonNode> backupJsons, List<String> errors) throws IOException, InterruptedException;
+} // 477 - 474 - 513

@@ -32,6 +32,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
+import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -65,13 +66,16 @@ public class ScriptEditor extends JFrame {
 	private Action openAction;
 	private Action saveAsAction;
 	private Action uploadAction;
-	private Action cutAction;
-	private Action copyAction;
-	private Action pasteAction;
+	private Action cutAction = new DefaultEditorKit.CutAction();
+	private Action copyAction = new DefaultEditorKit.CopyAction();;
+	private Action pasteAction = new DefaultEditorKit.PasteAction();
 	private Action undoAction;
 	private Action redoAction;
+//	private Action runAction;
 	private Action findAction;
 	private Action gotoAction;
+	
+	private JToggleButton btnRun;
 
 	private File path = null;
 	
@@ -95,15 +99,12 @@ public class ScriptEditor extends JFrame {
 		getContentPane().add(scrollPane, BorderLayout.CENTER);
 		
 		// actions
-		cutAction = new DefaultEditorKit.CutAction();
 		cutAction.putValue(Action.SHORT_DESCRIPTION, LABELS.getString("btnCut"));
 		cutAction.putValue(Action.SMALL_ICON, new ImageIcon(ScriptEditor.class.getResource("/images/Clipboard_Cut24.png")));
 		
-		copyAction = new DefaultEditorKit.CopyAction();
 		copyAction.putValue(Action.SHORT_DESCRIPTION, LABELS.getString("btnCopy"));
 		copyAction.putValue(Action.SMALL_ICON, new ImageIcon(ScriptEditor.class.getResource("/images/Clipboard_Copy24.png")));
 
-		pasteAction = new DefaultEditorKit.PasteAction();
 		pasteAction.putValue(Action.SHORT_DESCRIPTION, LABELS.getString("btnPaste"));
 		pasteAction.putValue(Action.SMALL_ICON, new ImageIcon(ScriptEditor.class.getResource("/images/Clipboard_Paste24.png")));
 		
@@ -116,6 +117,20 @@ public class ScriptEditor extends JFrame {
 		redoAction.putValue(Action.SHORT_DESCRIPTION, LABELS.getString("btnRedo"));
 		redoAction.putValue(Action.SMALL_ICON, new ImageIcon(ScriptEditor.class.getResource("/images/Redo24.png")));
 		mapAction(KeyStroke.getKeyStroke(KeyEvent.VK_Y, MainView.SHORTCUT_KEY), redoAction, "redo_usna");
+		
+		UsnaAction runAction = new UsnaAction(null, "btnRun", e -> {
+			try {
+				if(script.isRunning()) {
+					script.stop();
+				} else {
+					script.run();
+				}
+			} catch (IOException ex) {
+				Msg.errorMsg(this, ex);
+			}
+		});
+		btnRun = new JToggleButton(runAction);
+		btnRun.setSelected(script.isRunning());
 		
 		findAction = new UsnaAction(null, "btnFind", "/images/Search24.png", e -> {
 			FindReplaceDialog f = new FindReplaceDialog(this, editor, true);
@@ -226,7 +241,7 @@ public class ScriptEditor extends JFrame {
 		}
 	}
 	
-	private SyntaxEditor getEditorPanel(String initText) {
+	private static SyntaxEditor getEditorPanel(String initText) {
 		SimpleAttributeSet style = new SimpleAttributeSet();
 		StyleConstants.setFontFamily(style, Font.MONOSPACED);
 		SyntaxEditor textArea = new SyntaxEditor(style);
@@ -287,9 +302,20 @@ public class ScriptEditor extends JFrame {
 		JToolBar toolBar = new JToolBar();
 		JButton uploadBtn = new JButton(uploadAction);
 		uploadBtn.setHideActionText(false);
+		
+		ImageIcon runIcon = new ImageIcon(ScriptEditor.class.getResource("/images/PlayerPlay24.png"));
+//		JToggleButton btnRun = new JToggleButton(runIcon);
+		btnRun.setIcon(runIcon);
+		btnRun.setRolloverIcon(runIcon);
+		ImageIcon stopIcon = new ImageIcon(ScriptEditor.class.getResource("/images/PlayerStop24.png"));
+		btnRun.setRolloverSelectedIcon(stopIcon);
+		btnRun.setSelectedIcon(stopIcon);
+		btnRun.setHideActionText(true);
+		
 		toolBar.add(openAction);
 		toolBar.add(saveAsAction);
 		toolBar.add(uploadBtn);
+		toolBar.add(btnRun);
 		toolBar.addSeparator();
 		toolBar.add(cutAction);
 		toolBar.add(copyAction);
