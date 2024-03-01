@@ -77,13 +77,6 @@ public class ShellyMiniPMG3 extends AbstractG3Device {
 	}
 
 	@Override
-	public String[] getInfoRequests() {
-		return new String[] {
-				"/rpc/Shelly.GetDeviceInfo", "/rpc/Shelly.GetConfig", "/rpc/Shelly.GetStatus", "/rpc/Shelly.CheckForUpdate", /*"/rpc/Schedule.List",*/ "/rpc/Webhook.List",
-				"/rpc/Script.List", "/rpc/WiFi.ListAPClients" /*, "/rpc/Sys.GetStatus",*/ /*"/rpc/KVS.List"*/, "/rpc/KVS.GetMany", "/rpc/Shelly.GetComponents"};
-	}
-
-	@Override
 	protected void restore(Map<String, JsonNode> backupJsons, List<String> errors) throws InterruptedException {
 		JsonNode config = backupJsons.get("Shelly.GetConfig.json");
 		ObjectNode pm1 = (ObjectNode)config.path("pm1:0").deepCopy();

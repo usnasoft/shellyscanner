@@ -303,11 +303,11 @@ public class ScriptEditor extends JFrame {
 		JButton uploadBtn = new JButton(uploadAction);
 		uploadBtn.setHideActionText(false);
 		
-		ImageIcon runIcon = new ImageIcon(ScriptEditor.class.getResource("/images/PlayerPlay24.png"));
+		ImageIcon runIcon = new ImageIcon(ScriptEditor.class.getResource("/images/PlayerPlayGreen24.png"));
 //		JToggleButton btnRun = new JToggleButton(runIcon);
 		btnRun.setIcon(runIcon);
 		btnRun.setRolloverIcon(runIcon);
-		ImageIcon stopIcon = new ImageIcon(ScriptEditor.class.getResource("/images/PlayerStop24.png"));
+		ImageIcon stopIcon = new ImageIcon(ScriptEditor.class.getResource("/images/PlayerStopRed24.png"));
 		btnRun.setRolloverSelectedIcon(stopIcon);
 		btnRun.setSelectedIcon(stopIcon);
 		btnRun.setHideActionText(true);

@@ -72,6 +72,7 @@ import it.usna.shellyscan.model.device.g3.ShellyG3Unmanaged;
 import it.usna.shellyscan.model.device.g3.ShellyMini1G3;
 import it.usna.shellyscan.model.device.g3.ShellyMini1PMG3;
 import it.usna.shellyscan.model.device.g3.ShellyMiniPMG3;
+import it.usna.shellyscan.model.device.g3.ShellyPlusHTG3;
 import it.usna.shellyscan.view.DialogAuthentication;
 
 public class DevicesFactory {
@@ -272,6 +273,7 @@ public class DevicesFactory {
 			case ShellyMini1G3.ID -> new ShellyMini1G3(address, port, name);
 			case ShellyMini1PMG3.ID -> new ShellyMini1PMG3(address, port, name);
 			case ShellyMiniPMG3.ID -> new ShellyMiniPMG3(address, port, name);
+			case ShellyPlusHTG3.ID -> new ShellyPlusHTG3(address, port, name);
 			default -> new ShellyG3Unmanaged(address, port, name);
 			};
 		} catch(Exception e) { // really unexpected
