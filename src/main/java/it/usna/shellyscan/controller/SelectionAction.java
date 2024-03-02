@@ -2,6 +2,7 @@ package it.usna.shellyscan.controller;
 
 import static it.usna.shellyscan.Main.LABELS;
 
+import java.awt.event.ActionEvent;
 import java.util.function.IntPredicate;
 
 import javax.swing.ImageIcon;
@@ -25,9 +26,12 @@ public class SelectionAction extends UsnaAction {
 	public SelectionAction(JTable table, String tooltipId, IntPredicate test) {
 		super(null, tooltipId, null, null);
 		onActionPerformed = e -> {
+			
 			ListSelectionModel lsm = table.getSelectionModel();
 			lsm.setValueIsAdjusting(true);
-			lsm.clearSelection();
+			if((e.getModifiers() & ActionEvent.CTRL_MASK) != ActionEvent.CTRL_MASK) {
+				lsm.clearSelection();
+			}
 			for(int i = 0; i < table.getRowCount(); i++) {
 				if(test.test(table.convertRowIndexToModel(i))) {
 					lsm.addSelectionInterval(i, i);

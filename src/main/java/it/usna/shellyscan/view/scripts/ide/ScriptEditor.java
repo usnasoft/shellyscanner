@@ -1,4 +1,4 @@
-package it.usna.shellyscan.view.scripts;
+package it.usna.shellyscan.view.scripts.ide;
 
 import static it.usna.shellyscan.Main.LABELS;
 
@@ -50,6 +50,8 @@ import it.usna.shellyscan.Main;
 import it.usna.shellyscan.controller.UsnaAction;
 import it.usna.shellyscan.model.device.g2.modules.Script;
 import it.usna.shellyscan.view.MainView;
+import it.usna.shellyscan.view.scripts.DialogDeviceScriptsG2;
+import it.usna.shellyscan.view.scripts.ScriptsPanel;
 import it.usna.shellyscan.view.util.Msg;
 import it.usna.swing.SyntaxEditor;
 import it.usna.swing.TextLineNumber;

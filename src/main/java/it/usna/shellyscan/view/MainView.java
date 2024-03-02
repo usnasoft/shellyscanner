@@ -377,7 +377,8 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		UsnaPopupMenu selectionPopup = new UsnaPopupMenu(selectAll, selectOnLine,
 				new SelectionAction(devicesTable, "labelSelectOnLineReboot", null, null, i -> model.get(i).getStatus() == Status.ON_LINE && model.get(i).rebootRequired()),
 				new SelectionAction(devicesTable, "labelSelectG1", null, null, i -> model.get(i) instanceof AbstractG1Device),
-				new SelectionAction(devicesTable, "labelSelectG2", null, null, i -> model.get(i) instanceof AbstractG2Device || model.get(i) instanceof AbstractG3Device),
+				new SelectionAction(devicesTable, "labelSelectG2", null, null, i -> model.get(i) instanceof AbstractG2Device && model.get(i) instanceof AbstractG3Device == false),
+				new SelectionAction(devicesTable, "labelSelectG3", null, null, i -> model.get(i) instanceof AbstractG3Device),
 				new SelectionAction(devicesTable, "labelSelectGhosts", null, null, i -> model.get(i) instanceof GhostDevice) );
 
 		btnSelectCombo.addActionListener(e -> selectionPopup.show(btnSelectCombo, 0, 0));

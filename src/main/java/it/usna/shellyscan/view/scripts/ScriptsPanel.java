@@ -49,6 +49,7 @@ import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.g2.modules.Script;
 import it.usna.shellyscan.view.DialogDeviceLogsG2;
+import it.usna.shellyscan.view.scripts.ide.ScriptEditor;
 import it.usna.shellyscan.view.util.Msg;
 import it.usna.swing.table.ExTooltipTable;
 import it.usna.swing.table.UsnaTableModel;
