@@ -3,10 +3,8 @@ package it.usna.shellyscan.view.scripts.ide;
 import static it.usna.shellyscan.Main.LABELS;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.FlowLayout;
-import java.awt.Font;
 import java.awt.event.KeyEvent;
 import java.io.BufferedReader;
 import java.io.File;
@@ -42,9 +40,6 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.DocumentFilter;
 import javax.swing.text.Element;
-import javax.swing.text.SimpleAttributeSet;
-import javax.swing.text.Style;
-import javax.swing.text.StyleConstants;
 
 import it.usna.shellyscan.Main;
 import it.usna.shellyscan.controller.UsnaAction;
@@ -91,8 +86,8 @@ public class ScriptEditor extends JFrame {
 		getContentPane().setLayout(new BorderLayout());
 		
 		JScrollPane scrollPane = new JScrollPane();
-		
-		editor = getEditorPanel(script.getCode());
+
+		editor = new EditorPanel(script.getCode());
 		scrollPane.setViewportView(editor);
 		TextLineNumber lineNum = new TextLineNumber(editor);
 		lineNum.setBorder(BorderFactory.createEmptyBorder(0, 1, 0, 2));
@@ -241,63 +236,6 @@ public class ScriptEditor extends JFrame {
 		if(el != null) {
 			editor.setCaretPosition(el.getStartOffset());
 		}
-	}
-	
-	private static SyntaxEditor getEditorPanel(String initText) {
-		SimpleAttributeSet style = new SimpleAttributeSet();
-		StyleConstants.setFontFamily(style, Font.MONOSPACED);
-		SyntaxEditor textArea = new SyntaxEditor(style);
-		
-		textArea.activateUndo();
-		textArea.setTabSize(4);
-		textArea.setText(initText);
-		textArea.resetUndo();
-		
-		Style styleComment = textArea.addStyle("usna_red", null);
-		StyleConstants.setForeground(styleComment, Color.RED);
-		textArea.addSyntaxRule(new SyntaxEditor.BlockSimpleSyntax("//", "\n", styleComment));
-		textArea.addSyntaxRule(new SyntaxEditor.BlockSimpleSyntax("/*", "*/", styleComment));
-		
-		Style styleStr = textArea.addStyle("usna_green", null);
-		StyleConstants.setForeground(styleStr, new Color(0, 120, 0));
-		textArea.addSyntaxRule(new SyntaxEditor.BlockSimpleSyntax("\"", "\"", "\\", styleStr));
-		textArea.addSyntaxRule(new SyntaxEditor.BlockSimpleSyntax("'", "'", "\\", styleStr));
-		
-		Style styleBrachets = textArea.addStyle("usna_brachets", null);
-		StyleConstants.setBold(styleBrachets, true);
-		textArea.addSyntaxRule(new SyntaxEditor.Keywords(new String[] {"{", "}", "[", "]"}, styleBrachets));
-		
-		Style styleOperators = textArea.addStyle("usna_brachets", null);
-		StyleConstants.setForeground(styleOperators, new Color(150, 0, 0));
-		textArea.addSyntaxRule(new SyntaxEditor.Keywords(new String[] {"=", "+", "-", "*", "/", "%", "<", ">", "&", "|", "!"}, styleOperators));
-		
-		Style styleReserved = textArea.addStyle("usna_styleReserved", null);
-		StyleConstants.setBold(styleReserved, true);
-		StyleConstants.setForeground(styleReserved, Color.blue);
-		textArea.addSyntaxRule(new SyntaxEditor.DelimitedKeywords(new String[] {
-				"abstract", "arguments", "await*", "boolean", "break", "byte", "case", "catch",
-				"char", "class", "const*", "continue", "debugger", "default", "delete", "do",
-				"double", "else", "enum", "eval", "export", "extends", "false", "final",
-				"finally", "float", "for", "function", "goto", "if", "implements", "import",
-				"in", "instanceof", "int", "interface", "let", "long", "native", "new",
-				"null", "package", "private", "protected", "public", "return", "short", "static",
-				"super", "switch", "synchronized", "this", "throw", "throws", "transient", "true",
-				"try", "typeof", "var", "void", "volatile", "while", "with", "yield"}, styleReserved));
-		
-		Style styleImplemented = textArea.addStyle("usna_styleReserved", null);
-		StyleConstants.setBold(styleImplemented, true);
-		StyleConstants.setForeground(styleImplemented, new Color(153, 0, 153));
-		textArea.addSyntaxRule(new SyntaxEditor.DelimitedKeywords(new String[] {
-				"String", "Number", "Function", "Array", "Math", "Date", "Object", "Exceptions"}, styleImplemented));
-		
-		Style styleShelly = textArea.addStyle("usna_shellyReserved", null);
-		StyleConstants.setBold(styleShelly, true);
-		StyleConstants.setItalic(styleShelly, true);
-		StyleConstants.setForeground(styleShelly, new Color(102, 0, 204));
-		textArea.addSyntaxRule(new SyntaxEditor.DelimitedKeywords(new String[] {
-				"Shelly", "JSON", "Timer", "MQTT", "BLE", "HTTPServer"}, styleShelly));
-
-		return textArea;
 	}
 	
 	private JToolBar getToolBar() {
