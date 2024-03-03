@@ -3,6 +3,10 @@ package it.usna.shellyscan.view.scripts.ide;
 import java.awt.Color;
 import java.awt.Font;
 
+import javax.swing.Action;
+import javax.swing.JComponent;
+import javax.swing.KeyStroke;
+import javax.swing.text.Element;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
@@ -62,6 +66,18 @@ public class EditorPanel extends SyntaxEditor{
 		StyleConstants.setForeground(styleShelly, new Color(102, 0, 204));
 		addSyntaxRule(new SyntaxEditor.DelimitedKeywords(new String[] {
 				"Shelly", "JSON", "Timer", "MQTT", "BLE", "HTTPServer"}, styleShelly));
+	}
+	
+	public void mapAction(KeyStroke k, Action action, String name) {
+		getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(k, name);
+		getActionMap().put(name, action);
+	}
+	
+	public void gotoLine(int line) {
+		Element el = getDocument().getDefaultRootElement().getElement(line - 1);
+		if(el != null) {
+			setCaretPosition(el.getStartOffset());
+		}
 	}
 	
 	private static SimpleAttributeSet baseStyle() {

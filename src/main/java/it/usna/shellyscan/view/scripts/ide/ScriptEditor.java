@@ -22,7 +22,6 @@ import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
-import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -39,7 +38,6 @@ import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.DocumentFilter;
-import javax.swing.text.Element;
 
 import it.usna.shellyscan.Main;
 import it.usna.shellyscan.controller.UsnaAction;
@@ -48,7 +46,6 @@ import it.usna.shellyscan.view.MainView;
 import it.usna.shellyscan.view.scripts.DialogDeviceScriptsG2;
 import it.usna.shellyscan.view.scripts.ScriptsPanel;
 import it.usna.shellyscan.view.util.Msg;
-import it.usna.swing.SyntaxEditor;
 import it.usna.swing.TextLineNumber;
 import it.usna.swing.dialog.FindReplaceDialog;
 import it.usna.util.IOFile;
@@ -76,7 +73,7 @@ public class ScriptEditor extends JFrame {
 
 	private File path = null;
 	
-	private SyntaxEditor editor;
+	private EditorPanel editor;
 	private JLabel caretLabel;
 	
 	public ScriptEditor(ScriptsPanel originatingPanel, Script script) throws IOException {
@@ -108,12 +105,12 @@ public class ScriptEditor extends JFrame {
 		undoAction = editor.getUndoAction();
 		undoAction.putValue(Action.SHORT_DESCRIPTION, LABELS.getString("btnUndo"));
 		undoAction.putValue(Action.SMALL_ICON, new ImageIcon(ScriptEditor.class.getResource("/images/Undo24.png")));
-		mapAction(KeyStroke.getKeyStroke(KeyEvent.VK_Z, MainView.SHORTCUT_KEY), undoAction, "undo_usna");
+		editor.mapAction(KeyStroke.getKeyStroke(KeyEvent.VK_Z, MainView.SHORTCUT_KEY), undoAction, "undo_usna");
 		
 		redoAction = editor.getRedoAction();
 		redoAction.putValue(Action.SHORT_DESCRIPTION, LABELS.getString("btnRedo"));
 		redoAction.putValue(Action.SMALL_ICON, new ImageIcon(ScriptEditor.class.getResource("/images/Redo24.png")));
-		mapAction(KeyStroke.getKeyStroke(KeyEvent.VK_Y, MainView.SHORTCUT_KEY), redoAction, "redo_usna");
+		editor.mapAction(KeyStroke.getKeyStroke(KeyEvent.VK_Y, MainView.SHORTCUT_KEY), redoAction, "redo_usna");
 		
 		UsnaAction runAction = new UsnaAction(null, "btnRun", e -> {
 			try {
@@ -134,7 +131,7 @@ public class ScriptEditor extends JFrame {
 			f.setLocationRelativeTo(this);
 			f.setVisible(true);
 		});
-		mapAction(KeyStroke.getKeyStroke(KeyEvent.VK_F, MainView.SHORTCUT_KEY), findAction, "find_usna");
+		editor.mapAction(KeyStroke.getKeyStroke(KeyEvent.VK_F, MainView.SHORTCUT_KEY), findAction, "find_usna");
 		
 		openAction = new UsnaAction(ScriptEditor.this, "dlgOpen", "/images/Open24.png", e -> {
 			final JFileChooser fc = new JFileChooser(path);
@@ -211,12 +208,12 @@ public class ScriptEditor extends JFrame {
 			Object ret = optionPane.getValue();
 			if(ret != null && ret instanceof Number n && n.intValue() == JOptionPane.OK_OPTION) {
 				try {
-					gotoLine(Integer.parseInt(input.getText()));
+					editor.gotoLine(Integer.parseInt(input.getText()));
 				} catch(RuntimeException ex) {}
 			}
 			editor.requestFocus();
 		});
-		mapAction(KeyStroke.getKeyStroke(KeyEvent.VK_G, MainView.SHORTCUT_KEY), gotoAction, "goto_usna");
+		editor.mapAction(KeyStroke.getKeyStroke(KeyEvent.VK_G, MainView.SHORTCUT_KEY), gotoAction, "goto_usna");
 		
 		caretLabel = new JLabel(editor.getCaretRow() + " : " + editor.getCaretColumn() + "  ");
 		editor.addCaretListener(e -> {
@@ -229,13 +226,6 @@ public class ScriptEditor extends JFrame {
 		setVisible(true);
 		editor.requestFocus();
 		setLocationRelativeTo(originatingPanel);
-	}
-	
-	private void gotoLine(int line) {
-		Element el = editor.getDocument().getDefaultRootElement().getElement(line - 1);
-		if(el != null) {
-			editor.setCaretPosition(el.getStartOffset());
-		}
 	}
 	
 	private JToolBar getToolBar() {
@@ -251,6 +241,7 @@ public class ScriptEditor extends JFrame {
 		btnRun.setRolloverSelectedIcon(stopIcon);
 		btnRun.setSelectedIcon(stopIcon);
 		btnRun.setHideActionText(true);
+		btnRun.setBorderPainted(false);
 		
 		toolBar.add(openAction);
 		toolBar.add(saveAsAction);
@@ -271,11 +262,6 @@ public class ScriptEditor extends JFrame {
 		
 		toolBar.setFloatable(false);
 		return toolBar;
-	}
-	
-	private void mapAction(KeyStroke k, Action action, String name) {
-		editor.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(k, name);
-		editor.getActionMap().put(name, action);
 	}
 	
 	private String loadCodeFromFile(File in) {

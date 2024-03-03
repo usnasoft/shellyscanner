@@ -519,12 +519,15 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 			}
 		});
 		
-		getRootPane().registerKeyboardAction(e -> textFieldFilter.requestFocus(), KeyStroke.getKeyStroke(KeyEvent.VK_F, SHORTCUT_KEY), JComponent.WHEN_IN_FOCUSED_WINDOW);
-		getRootPane().registerKeyboardAction(e -> {
+		textFieldFilter.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_F, SHORTCUT_KEY), "find_focus_mw");
+		textFieldFilter.getActionMap().put("find_focus_mw", new UsnaAction(e -> textFieldFilter.requestFocus()));
+
+		comboFilterCol.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_S, SHORTCUT_KEY), "find_combo_mw");
+		comboFilterCol.getActionMap().put("find_combo_mw", new UsnaAction(e -> {
 			int selected = comboFilterCol.getSelectedIndex();
 			comboFilterCol.setSelectedIndex(++selected >= comboFilterCol.getItemCount() ? 0 : selected);
 			textFieldFilter.requestFocus();
-		} , KeyStroke.getKeyStroke(KeyEvent.VK_S, SHORTCUT_KEY), JComponent.WHEN_IN_FOCUSED_WINDOW);
+		}));
 
 		rescanAction.setEnabled(false);
 		refreshAction.setEnabled(false);
@@ -700,4 +703,4 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 			}
 		}
 	}
-} //557 - 614 - 620 - 669 - 705 - 727 - 699 - 760 - 782 - 811 - 805 - 646 - 699
+} //557 - 614 - 620 - 669 - 705 - 727 - 699 - 760 - 782 - 811 - 805 - 646 - 699 - 706

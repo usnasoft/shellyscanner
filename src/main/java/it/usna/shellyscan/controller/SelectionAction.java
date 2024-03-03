@@ -26,15 +26,13 @@ public class SelectionAction extends UsnaAction {
 	public SelectionAction(JTable table, String tooltipId, IntPredicate test) {
 		super(null, tooltipId, null, null);
 		onActionPerformed = e -> {
-			
 			ListSelectionModel lsm = table.getSelectionModel();
 			lsm.setValueIsAdjusting(true);
-			if((e.getModifiers() & ActionEvent.CTRL_MASK) != ActionEvent.CTRL_MASK) {
-				lsm.clearSelection();
-			}
 			for(int i = 0; i < table.getRowCount(); i++) {
 				if(test.test(table.convertRowIndexToModel(i))) {
 					lsm.addSelectionInterval(i, i);
+				} else if((e.getModifiers() & ActionEvent.CTRL_MASK) != ActionEvent.CTRL_MASK) {
+					lsm.removeSelectionInterval(i, i);
 				}
 			}
 			lsm.setValueIsAdjusting(false);

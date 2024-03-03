@@ -18,10 +18,10 @@ public class UsnaAction extends AbstractAction {
 	protected final Component w;
 	protected ActionListener onActionPerformed;
 	
-//	public UsnaAction(final ActionListener a) {
-//		this.onActionPerformed = a;
-//		w = null;
-//	}
+	public UsnaAction(final ActionListener a) {
+		this.onActionPerformed = a;
+		w = null;
+	}
 	
 	public UsnaAction(String nameId, final ActionListener a) {
 		putValue(NAME, LABELS.getString(nameId));
