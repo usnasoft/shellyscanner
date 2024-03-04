@@ -19,10 +19,9 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 
 import it.usna.shellyscan.Main;
+import it.usna.swing.TextDocumentListener;
 
 public class DialogAuthentication extends JDialog {
 	private static final long serialVersionUID = 1L;
@@ -123,27 +122,12 @@ public class DialogAuthentication extends JDialog {
 		
 		getRootPane().setDefaultButton(okButton);
 		
-		DocumentListener fieldListener = new DocumentListener() {
-			@Override
-			public void changedUpdate(DocumentEvent e) {
-				manageOK();
-			}
-			@Override
-			public void removeUpdate(DocumentEvent e) {
-				manageOK();
-			}
-			@Override
-			public void insertUpdate(DocumentEvent e) {
-				manageOK();
-			}
-
-			public void manageOK() {
-				okButton.setEnabled(
-						(userLabelText == null || fieldUser.getText().length() > 0) &&
-						(fieldPwd.getPassword().length > 0 || chckbxNoPwd.isSelected()) &&
-						(confLabelText == null || Arrays.equals(fieldConfirmPwd.getPassword(), fieldPwd.getPassword()))
-						);
-			}
+		TextDocumentListener fieldListener = e -> {
+			okButton.setEnabled(
+					(userLabelText == null || fieldUser.getText().length() > 0) &&
+					(fieldPwd.getPassword().length > 0 || chckbxNoPwd.isSelected()) &&
+					(confLabelText == null || Arrays.equals(fieldConfirmPwd.getPassword(), fieldPwd.getPassword()))
+					);
 		};
 		
 		fieldUser.getDocument().addDocumentListener(fieldListener);

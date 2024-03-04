@@ -21,7 +21,6 @@ import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.ImageIcon;
-import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -60,16 +59,15 @@ public class ScriptEditor extends JFrame {
 	private Action openAction;
 	private Action saveAsAction;
 	private Action uploadAction;
+	private Action runAction;
+	private Action uploadAndRunAction;
 	private Action cutAction = new DefaultEditorKit.CutAction();
 	private Action copyAction = new DefaultEditorKit.CopyAction();;
 	private Action pasteAction = new DefaultEditorKit.PasteAction();
 	private Action undoAction;
 	private Action redoAction;
-//	private Action runAction;
 	private Action findAction;
 	private Action gotoAction;
-	
-	private JToggleButton btnRun;
 
 	private File path = null;
 	
@@ -112,20 +110,6 @@ public class ScriptEditor extends JFrame {
 		redoAction.putValue(Action.SMALL_ICON, new ImageIcon(ScriptEditor.class.getResource("/images/Redo24.png")));
 		editor.mapAction(KeyStroke.getKeyStroke(KeyEvent.VK_Y, MainView.SHORTCUT_KEY), redoAction, "redo_usna");
 		
-		UsnaAction runAction = new UsnaAction(null, "btnRun", e -> {
-			try {
-				if(script.isRunning()) {
-					script.stop();
-				} else {
-					script.run();
-				}
-			} catch (IOException ex) {
-				Msg.errorMsg(this, ex);
-			}
-		});
-		btnRun = new JToggleButton(runAction);
-		btnRun.setSelected(script.isRunning());
-		
 		findAction = new UsnaAction(null, "btnFind", "/images/Search24.png", e -> {
 			FindReplaceDialog f = new FindReplaceDialog(this, editor, true);
 			f.setLocationRelativeTo(this);
@@ -161,10 +145,31 @@ public class ScriptEditor extends JFrame {
 			}
 		});
 
-		uploadAction = new UsnaAction(this, "btnUpload", "btnUploadTooltip", "/images/Upload24.png", null, e -> {
+		uploadAction = new UsnaAction(this, "btnUploadTooltip", "/images/Upload24.png", e -> {
 			String res = script.putCode(editor.getText());
 			if(res != null) {
 				Msg.errorMsg(this, res);
+			}
+		});
+		
+		runAction = new UsnaAction(null, "btnRun", "/images/PlayerPlayGreen24.png", e -> {
+			try {
+				if(script.isRunning()) {
+					script.stop();
+				} else {
+					script.run();
+				}
+			} catch (IOException ex) {
+				Msg.errorMsg(this, ex);
+			}
+		});
+		
+		uploadAndRunAction = new UsnaAction(this, "btnRun", "/images/PlayerUploadPlay24.png", e -> {
+			String res = script.putCode(editor.getText()); // uploadAction.actionPerformed(e);
+			if(res != null) {
+				Msg.errorMsg(this, res);
+			} else {
+				runAction.actionPerformed(e);
 			}
 		});
 		
@@ -197,7 +202,7 @@ public class ScriptEditor extends JFrame {
 			};
 			((AbstractDocument)input.getDocument()).setDocumentFilter(filter);
 
-			JOptionPane optionPane = new JOptionPane(msg, JOptionPane.PLAIN_MESSAGE,  JOptionPane.OK_CANCEL_OPTION) {
+			JOptionPane optionPane = new JOptionPane(msg, JOptionPane.PLAIN_MESSAGE, JOptionPane.OK_CANCEL_OPTION) {
 				private static final long serialVersionUID = 1L;
 				@Override
 				public void selectInitialValue() {
@@ -215,12 +220,13 @@ public class ScriptEditor extends JFrame {
 		});
 		editor.mapAction(KeyStroke.getKeyStroke(KeyEvent.VK_G, MainView.SHORTCUT_KEY), gotoAction, "goto_usna");
 		
-		caretLabel = new JLabel(editor.getCaretRow() + " : " + editor.getCaretColumn() + "  ");
+		caretLabel = new JLabel(editor.getCaretRow() + " : " + editor.getCaretColumn());
 		editor.addCaretListener(e -> {
-			caretLabel.setText(editor.getCaretRow() + " : " + editor.getCaretColumn() + "  ");
+			caretLabel.setText(editor.getCaretRow() + " : " + editor.getCaretColumn());
 		});
+		caretLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 30));
 		
-		getContentPane().add(getToolBar(), BorderLayout.NORTH);
+		getContentPane().add(getToolBar(script), BorderLayout.NORTH);
 		
 		setSize(800, 600);
 		setVisible(true);
@@ -228,25 +234,23 @@ public class ScriptEditor extends JFrame {
 		setLocationRelativeTo(originatingPanel);
 	}
 	
-	private JToolBar getToolBar() {
+	private JToolBar getToolBar(Script script) {
 		JToolBar toolBar = new JToolBar();
-		JButton uploadBtn = new JButton(uploadAction);
-		uploadBtn.setHideActionText(false);
-		
-		ImageIcon runIcon = new ImageIcon(ScriptEditor.class.getResource("/images/PlayerPlayGreen24.png"));
-//		JToggleButton btnRun = new JToggleButton(runIcon);
-		btnRun.setIcon(runIcon);
-		btnRun.setRolloverIcon(runIcon);
+
+		JToggleButton btnRun = new JToggleButton(runAction);
+		btnRun.setSelected(script.isRunning());
+		btnRun.setRolloverIcon(btnRun.getIcon());
 		ImageIcon stopIcon = new ImageIcon(ScriptEditor.class.getResource("/images/PlayerStopRed24.png"));
 		btnRun.setRolloverSelectedIcon(stopIcon);
 		btnRun.setSelectedIcon(stopIcon);
 		btnRun.setHideActionText(true);
-		btnRun.setBorderPainted(false);
 		
 		toolBar.add(openAction);
 		toolBar.add(saveAsAction);
-		toolBar.add(uploadBtn);
+		toolBar.add(uploadAction);
+		toolBar.addSeparator();
 		toolBar.add(btnRun);
+		toolBar.add(uploadAndRunAction);
 		toolBar.addSeparator();
 		toolBar.add(cutAction);
 		toolBar.add(copyAction);
@@ -260,7 +264,6 @@ public class ScriptEditor extends JFrame {
 		toolBar.add(Box.createHorizontalGlue());
 		toolBar.add(caretLabel);
 		
-		toolBar.setFloatable(false);
 		return toolBar;
 	}
 	

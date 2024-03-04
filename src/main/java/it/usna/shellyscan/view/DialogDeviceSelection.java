@@ -25,14 +25,13 @@ import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.RowFilter;
 import javax.swing.SortOrder;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import javax.swing.table.TableRowSorter;
 
 import it.usna.shellyscan.controller.UsnaAction;
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.view.util.UtilMiscellaneous;
+import it.usna.swing.TextDocumentListener;
 import it.usna.swing.table.ExTooltipTable;
 import it.usna.swing.table.UsnaTableModel;
 import it.usna.util.UsnaEventListener;
@@ -81,33 +80,20 @@ public class DialogDeviceSelection extends JDialog {
 		textFieldFilter.setColumns(18);
 		textFieldFilter.setBorder(BorderFactory.createEmptyBorder(2, 1, 2, 1));
 		panelFind.add(textFieldFilter);
-		textFieldFilter.getDocument().addDocumentListener(new DocumentListener() {
-			private final int[] cols = new int[] {0, 1};
-			@Override
-			public void changedUpdate(DocumentEvent e) {
-			}
-
-			@Override
-			public void removeUpdate(DocumentEvent e) {
-				setRowFilter(textFieldFilter.getText());
-			}
-			
-			@Override
-			public void insertUpdate(DocumentEvent e) {
-				setRowFilter(textFieldFilter.getText());
-			}
-			
-			public void setRowFilter(String filter) {
-				TableRowSorter<?> sorter = (TableRowSorter<?>)table.getRowSorter();
-				if(filter.length() > 0) {
-					filter = filter.replace("\\E", "\\e");
-					sorter.setRowFilter(RowFilter.regexFilter("(?i).*\\Q" + filter + "\\E.*", cols));
-				} else {
-					sorter.setRowFilter(null);
-				}
+		
+		textFieldFilter.getDocument().addDocumentListener((TextDocumentListener)e -> {
+			final int[] cols = new int[] {0, 1};
+			String filter = textFieldFilter.getText();
+			TableRowSorter<?> sorter = (TableRowSorter<?>)table.getRowSorter();
+			if(filter.length() > 0) {
+				filter = filter.replace("\\E", "\\e");
+				sorter.setRowFilter(RowFilter.regexFilter("(?i).*\\Q" + filter + "\\E.*", cols));
+			} else {
+				sorter.setRowFilter(null);
 			}
 		});
-		getRootPane().registerKeyboardAction(e -> textFieldFilter.requestFocus(), KeyStroke.getKeyStroke(KeyEvent.VK_F, MainView.SHORTCUT_KEY), JComponent.WHEN_IN_FOCUSED_WINDOW);
+		textFieldFilter.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_F, MainView.SHORTCUT_KEY), "find_focus_mw");
+		textFieldFilter.getActionMap().put("find_focus_mw", new UsnaAction(e -> textFieldFilter.requestFocus()));
 		
 		final Action eraseFilterAction = new UsnaAction(this, null, "/images/erase-9-16.png", e -> {
 			textFieldFilter.setText("");

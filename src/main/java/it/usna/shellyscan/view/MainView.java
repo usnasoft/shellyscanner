@@ -48,8 +48,6 @@ import javax.swing.RowSorter;
 import javax.swing.SortOrder;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -78,6 +76,7 @@ import it.usna.shellyscan.view.chart.MeasuresChart;
 import it.usna.shellyscan.view.devsettings.DialogDeviceSettings;
 import it.usna.shellyscan.view.scripts.DialogDeviceScriptsG2;
 import it.usna.shellyscan.view.util.Msg;
+import it.usna.swing.TextDocumentListener;
 import it.usna.swing.UsnaPopupMenu;
 import it.usna.swing.table.UsnaTableModel;
 import it.usna.util.AppProperties;
@@ -326,29 +325,11 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		comboFilterCol.addItem(LABELS.getString("col_type"));
 		comboFilterCol.addItem(LABELS.getString("col_device"));
 		comboFilterCol.addItem(LABELS.getString("col_device_name"));
-		comboFilterCol.addActionListener(event -> {
-			setColFilter(comboFilterCol);
-			displayStatus();
-		});
+		comboFilterCol.addActionListener( event -> setColFilter(comboFilterCol) );
 		statusFilterPanel.add(comboFilterCol);
 		statusFilterPanel.add(textFieldFilter);
 		
-		textFieldFilter.getDocument().addDocumentListener(new DocumentListener() {
-			@Override
-			public void changedUpdate(DocumentEvent e) {}
-
-			@Override
-			public void removeUpdate(DocumentEvent e) {
-				setColFilter(comboFilterCol);
-				displayStatus();
-			}
-			
-			@Override
-			public void insertUpdate(DocumentEvent e) {
-				setColFilter(comboFilterCol);
-				displayStatus();
-			}
-		});
+		textFieldFilter.getDocument().addDocumentListener( (TextDocumentListener)event -> setColFilter(comboFilterCol) );
 		
 		JButton eraseFilterButton = new JButton(eraseFilterAction);
 		eraseFilterButton.setBorder(BorderFactory.createEmptyBorder(0, 2, 0, 2));
@@ -547,6 +528,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		case 3 -> new int[] {DevicesTable.COL_NAME};
 		};
 		devicesTable.setRowFilter(textFieldFilter.getText(), cols);
+		displayStatus();
 	}
 	
 	private void rowsSelectionManager() {
@@ -703,4 +685,4 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 			}
 		}
 	}
-} //557 - 614 - 620 - 669 - 705 - 727 - 699 - 760 - 782 - 811 - 805 - 646 - 699 - 706
+} //557 - 614 - 620 - 669 - 705 - 727 - 699 - 760 - 782 - 811 - 805 - 646 - 699 - 706 - 688
