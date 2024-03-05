@@ -233,6 +233,8 @@ https://www.iconbolt.com/
 1.0.5
 // mini gen 3
 // improved editor
+todo editor observable (cambio stato run)
+todo editor: console
 
 ---
 // TODO

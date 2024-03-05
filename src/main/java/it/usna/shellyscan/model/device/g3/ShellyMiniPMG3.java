@@ -4,12 +4,9 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 
-import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.Meters;
 
 /**
@@ -78,11 +75,11 @@ public class ShellyMiniPMG3 extends AbstractG3Device {
 
 	@Override
 	protected void restore(Map<String, JsonNode> backupJsons, List<String> errors) throws InterruptedException {
-		JsonNode config = backupJsons.get("Shelly.GetConfig.json");
-		ObjectNode pm1 = (ObjectNode)config.path("pm1:0").deepCopy();
-		pm1.remove("id");
-		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-		errors.add(postCommand("PM1.SetConfig", pm1));
+//		JsonNode config = backupJsons.get("Shelly.GetConfig.json");
+//		ObjectNode pm1 = (ObjectNode)config.path("pm1:0").deepCopy();
+//		pm1.remove("id");
+//		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+//		errors.add(postCommand("PM1.SetConfig", pm1));
 	}
 }
 
