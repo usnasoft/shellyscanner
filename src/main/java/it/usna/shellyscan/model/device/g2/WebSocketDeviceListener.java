@@ -32,7 +32,7 @@ public class WebSocketDeviceListener implements Session.Listener.AutoDemanding {
 //	}
 	
     @Override
-    public void onWebSocketOpen(Session session) {
+    public void onWebSocketOpen(org.eclipse.jetty.websocket.api.Session session) {
        LOG.trace("ws-open"); // session.getRemoteAddress()
     }
 

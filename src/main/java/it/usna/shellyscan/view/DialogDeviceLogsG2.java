@@ -56,6 +56,9 @@ public class DialogDeviceLogsG2 extends JDialog {
 	private final static Logger LOG = LoggerFactory.getLogger(DialogDeviceLogsG2.class);
 	private boolean logWasActive;
 	private Future<Session> wsSession;
+	private UsnaTextPane textArea = new UsnaTextPane();
+	private Style bluStyle = textArea.addStyle("blue", null);
+	private JComboBox<String> comboBox = new JComboBox<>();
 
 	public DialogDeviceLogsG2(final Window owner, Devices devicesModel, int modelIndex, int initLlogLevel) {
 		super(owner, ModalityType.MODELESS);
@@ -68,10 +71,8 @@ public class DialogDeviceLogsG2 extends JDialog {
 
 		JPanel buttonsPanel = new JPanel();
 		getContentPane().add(buttonsPanel, BorderLayout.SOUTH);
-
-		UsnaTextPane textArea = new UsnaTextPane();
+		
 		StyledDocument document = textArea.getStyledDocument();
-		Style bluStyle = textArea.addStyle("blue", null);
 		StyleConstants.setForeground(bluStyle, Color.BLUE);
 		textArea.setEditable(false);
 
@@ -126,7 +127,6 @@ public class DialogDeviceLogsG2 extends JDialog {
 		JLabel lblNewLabel = new JLabel(Main.LABELS.getString("dlgLogG2Level"));
 		buttonsPanel.add(lblNewLabel);
 
-		JComboBox<String> comboBox = new JComboBox<>();
 		comboBox.addItem(LABELS.getString("dlgLogG2Lev0")); // error
 		comboBox.addItem(LABELS.getString("dlgLogG2Lev1")); // warn
 		comboBox.addItem(LABELS.getString("dlgLogG2Lev2")); // info
@@ -134,31 +134,9 @@ public class DialogDeviceLogsG2 extends JDialog {
 		comboBox.addItem(LABELS.getString("dlgLogG2Lev4")); // verbose
 		comboBox.setSelectedIndex(initLlogLevel);
 		buttonsPanel.add(comboBox);
-
-		JPanel panel = new JPanel(new BorderLayout());
-
+		
 		try {
-			WebSocketDeviceListener wsListener = new WebSocketDeviceListener() {
-			    @Override
-			    public void onWebSocketOpen(Session session) {
-			    	textArea.append(">>>> Open\n", bluStyle);
-			    }
-
-				@Override
-				public void onWebSocketClose(int statusCode, String reason) {
-					textArea.append(">>>> Close: " + reason + " (" + statusCode + ")\n", bluStyle);
-				}
-
-				@Override
-				public void onMessage(JsonNode msg) {
-					int logLevel = comboBox.getSelectedIndex();
-					int level = msg.get("level").asInt(0);
-					if (level <= logLevel) {
-						textArea.append(msg.get("ts").asLong() + " - L" + level + ": " + msg.get("data").asText().trim() + "\n");
-					}
-					textArea.setCaretPosition(textArea.getStyledDocument().getLength());
-				}
-			};
+			WebSocketDeviceListener wsListener = new LogWebSocketDeviceListener();
 			wsSession = device.connectWebSocketLogs(wsListener);
 			wsSession.get().setIdleTimeout(Duration.ofMinutes(30));
 
@@ -191,6 +169,7 @@ public class DialogDeviceLogsG2 extends JDialog {
 				}
 			});
 
+			JPanel panel = new JPanel(new BorderLayout());
 			JScrollPane scrollPane = new JScrollPane(textArea);
 			panel.add(scrollPane);
 
@@ -227,5 +206,27 @@ public class DialogDeviceLogsG2 extends JDialog {
 //		if (device.getDebugMode() != AbstractG2Device.LogMode.SOCKET) {
 			device.postCommand("Sys.SetConfig", "{\"config\": {\"debug\":{\"websocket\":{\"enable\": " + (active ? "true" : "false") + "}}}");
 //		}
+	}
+	
+	public class LogWebSocketDeviceListener extends WebSocketDeviceListener {
+		@Override
+		public void onWebSocketOpen(Session session) {
+			textArea.append(">>>> Open\n", bluStyle);
+		}
+
+		@Override
+		public void onWebSocketClose(int statusCode, String reason) {
+			textArea.append(">>>> Close: " + reason + " (" + statusCode + ")\n", bluStyle);
+		}
+
+		@Override
+		public void onMessage(JsonNode msg) {
+			int logLevel = comboBox.getSelectedIndex();
+			int level = msg.get("level").asInt(0);
+			if (level <= logLevel) {
+				textArea.append(msg.get("ts").asLong() + " - L" + level + ": " + msg.get("data").asText().trim() + "\n");
+			}
+			textArea.setCaretPosition(textArea.getStyledDocument().getLength());
+		}
 	}
 }

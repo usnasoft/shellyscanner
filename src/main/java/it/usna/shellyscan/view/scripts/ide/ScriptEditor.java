@@ -74,6 +74,8 @@ public class ScriptEditor extends JFrame {
 	private EditorPanel editor;
 	private JLabel caretLabel;
 	
+	private JToggleButton btnRun;
+	
 	public ScriptEditor(ScriptsPanel originatingPanel, Script script) throws IOException {
 		super(LABELS.getString("dlgScriptEditorTitle") + " - " + script.getName());
 		setIconImage(Main.ICON);
@@ -156,20 +158,23 @@ public class ScriptEditor extends JFrame {
 			try {
 				if(script.isRunning()) {
 					script.stop();
+					uploadAndRunAction.setEnabled(true);
 				} else {
 					script.run();
+					uploadAndRunAction.setEnabled(false);
 				}
 			} catch (IOException ex) {
 				Msg.errorMsg(this, ex);
 			}
 		});
 		
-		uploadAndRunAction = new UsnaAction(this, "btnRun", "/images/PlayerUploadPlay24.png", e -> {
+		uploadAndRunAction = new UsnaAction(this, "btnUploadRun", "/images/PlayerUploadPlay24.png", e -> {
 			String res = script.putCode(editor.getText()); // uploadAction.actionPerformed(e);
 			if(res != null) {
 				Msg.errorMsg(this, res);
 			} else {
 				runAction.actionPerformed(e);
+				btnRun.setSelected(true);
 			}
 		});
 		
@@ -220,11 +225,16 @@ public class ScriptEditor extends JFrame {
 		});
 		editor.mapAction(KeyStroke.getKeyStroke(KeyEvent.VK_G, MainView.SHORTCUT_KEY), gotoAction, "goto_usna");
 		
+		// buttons initial status
+		btnRun = new JToggleButton(runAction);
+		btnRun.setSelected(script.isRunning());
+		uploadAndRunAction.setEnabled(script.isRunning() == false);
+		
 		caretLabel = new JLabel(editor.getCaretRow() + " : " + editor.getCaretColumn());
 		editor.addCaretListener(e -> {
 			caretLabel.setText(editor.getCaretRow() + " : " + editor.getCaretColumn());
 		});
-		caretLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 30));
+		caretLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 8));
 		
 		getContentPane().add(getToolBar(script), BorderLayout.NORTH);
 		
@@ -237,8 +247,6 @@ public class ScriptEditor extends JFrame {
 	private JToolBar getToolBar(Script script) {
 		JToolBar toolBar = new JToolBar();
 
-		JToggleButton btnRun = new JToggleButton(runAction);
-		btnRun.setSelected(script.isRunning());
 		btnRun.setRolloverIcon(btnRun.getIcon());
 		ImageIcon stopIcon = new ImageIcon(ScriptEditor.class.getResource("/images/PlayerStopRed24.png"));
 		btnRun.setRolloverSelectedIcon(stopIcon);

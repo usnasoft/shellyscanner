@@ -230,8 +230,9 @@ https://www.iconbolt.com/
 // motion 1/2 temperature
 // restore degli script
 
-1.0.4
+1.0.5
 // mini gen 3
+// improved editor
 
 ---
 // TODO
