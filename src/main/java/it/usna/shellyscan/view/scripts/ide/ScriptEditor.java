@@ -159,9 +159,11 @@ public class ScriptEditor extends JFrame {
 				if(script.isRunning()) {
 					script.stop();
 					uploadAndRunAction.setEnabled(true);
+					firePropertyChange("isRunning", true, false);
 				} else {
 					script.run();
 					uploadAndRunAction.setEnabled(false);
+					firePropertyChange("scriptIsRunning", false, true);
 				}
 			} catch (IOException ex) {
 				Msg.errorMsg(this, ex);

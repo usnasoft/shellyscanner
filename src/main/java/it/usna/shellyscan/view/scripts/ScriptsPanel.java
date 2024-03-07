@@ -58,6 +58,7 @@ import it.usna.util.IOFile;
 public class ScriptsPanel extends JPanel {
 	private static final long serialVersionUID = 1L;
 	private final static Border BUTTON_BORDERS = BorderFactory.createEmptyBorder(0, 12, 0, 12);
+	private final static int COL_RUN = 2;
 	private final ExTooltipTable table;
 	private final ArrayList<Script> scripts = new ArrayList<>();
 
@@ -73,8 +74,8 @@ public class ScriptsPanel extends JPanel {
 				setAutoCreateRowSorter(true);
 				setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
-				columnModel.getColumn(2).setCellRenderer(new ButtonCellRenderer());
-				columnModel.getColumn(2).setCellEditor(new ButtonCellEditor());
+				columnModel.getColumn(COL_RUN).setCellRenderer(new ButtonCellRenderer());
+				columnModel.getColumn(COL_RUN).setCellEditor(new ButtonCellEditor());
 				
 				activateSingleCellStringCopy();
 			}
@@ -197,7 +198,8 @@ public class ScriptsPanel extends JPanel {
 			try {
 				final int mRow = table.convertRowIndexToModel(table.getSelectedRow());
 				final Script sc = scripts.get(mRow);
-				new ScriptEditor(ScriptsPanel.this, sc);
+				ScriptEditor editor = new ScriptEditor(ScriptsPanel.this, sc);
+				editor.addPropertyChangeListener("scriptIsRunning", propertyChangeEvent -> tModel.setValueAt(propertyChangeEvent.getNewValue(), mRow, COL_RUN));
 			} catch (IOException e1) {
 				Msg.errorMsg(e1);
 			}
