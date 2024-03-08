@@ -55,6 +55,7 @@ import it.usna.util.IOFile;
  */
 public class ScriptEditor extends JFrame {
 	private static final long serialVersionUID = 1L;
+	public final static String RUN_EVENT = "scriptIsRunning";
 
 	private Action openAction;
 	private Action saveAsAction;
@@ -159,11 +160,11 @@ public class ScriptEditor extends JFrame {
 				if(script.isRunning()) {
 					script.stop();
 					uploadAndRunAction.setEnabled(true);
-					firePropertyChange("isRunning", true, false);
+					firePropertyChange(RUN_EVENT, true, false);
 				} else {
 					script.run();
 					uploadAndRunAction.setEnabled(false);
-					firePropertyChange("scriptIsRunning", false, true);
+					firePropertyChange(RUN_EVENT, false, true);
 				}
 			} catch (IOException ex) {
 				Msg.errorMsg(this, ex);

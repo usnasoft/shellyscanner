@@ -175,7 +175,7 @@ public class RestoreAction extends UsnaSelectedAction {
 						} else {
 							JOptionPane.showMessageDialog(mainView, LABELS.getString("msgRestoreSuccess"), device.getHostname(), JOptionPane.INFORMATION_MESSAGE);
 						}
-					} else {	
+					} else {
 						if(device.getStatus() == Status.OFF_LINE /*|| device.getStatus() == Status.NOT_LOOGGED*/ || device.getStatus() == Status.GHOST) { // if error happened because the device is off-line -> try to queue action in DeferrablesContainer
 							LOG.debug("Interactive Restore error {} {}", device, ret);
 							SwingUtilities.invokeLater(() ->
@@ -219,7 +219,11 @@ public class RestoreAction extends UsnaSelectedAction {
 	}
 
 	private static String erroreMsg(List<String> errors) {
-		return errors.stream().filter(s-> s != null && s.length() > 0).map(s -> LABELS.containsKey(s) ? LABELS.getString(s) : s).distinct().collect(Collectors.joining("\n"));
+		String err = errors.stream().filter(s-> s != null && s.length() > 0 && s.startsWith("->r_step:") == false).map(s -> LABELS.containsKey(s) ? LABELS.getString(s) : s).distinct().collect(Collectors.joining("\n"));
+		if(err.length() > 0) {
+			LOG.debug(errors.stream().map(s -> s == null ? "-" : s).collect(Collectors.joining("\n")));
+		}
+		return err;
 	}
 
 	private static Map<String, JsonNode> readBackupFile(final File file) throws IOException {

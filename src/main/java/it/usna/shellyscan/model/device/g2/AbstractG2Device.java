@@ -401,29 +401,39 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 			final long delay = this instanceof BatteryDeviceInterface ? Devices.MULTI_QUERY_DELAY / 2: Devices.MULTI_QUERY_DELAY;
 			final ArrayList<String> errors = new ArrayList<>();
 			JsonNode config = backupJsons.get("Shelly.GetConfig.json");
+			
+			errors.add("->r_step:specific");
 			restore(backupJsons, errors);
 			if(status == Status.OFF_LINE) {
 				return errors.size() > 0 ? errors : List.of(Restore.ERR_UNKNOWN.toString());
 			}
+			
+			errors.add("->r_step:restoreCommonConfig");
 			restoreCommonConfig(config, delay, userPref, errors);
 
+			errors.add("->r_step:restoreSchedule");
 			JsonNode schedule = backupJsons.get("Schedule.List.json");
 			if(schedule != null) {  // some devices do not have Schedule.List +H&T
 				TimeUnit.MILLISECONDS.sleep(delay);
 				restoreSchedule(schedule, errors);
 			}
 
+			errors.add("->r_step:Script");
 			Script.restoreAll(this, backupJsons, delay, userPref.containsKey(Restore.QUESTION_RESTORE_SCRIPTS_OVERRIDE), userPref.containsKey(Restore.QUESTION_RESTORE_SCRIPTS_ENABLE_LIKE_BACKED_UP), errors);
 
+			errors.add("->r_step:KVS");
 			JsonNode kvs = backupJsons.get("KVS.GetMany.json");
 			if(kvs != null) {
 				TimeUnit.MILLISECONDS.sleep(delay);
 				KVS kvStore = new KVS(this);
 				kvStore.restoreKVS(kvs, errors);
 			}
+			
+			errors.add("->r_step:Webhooks");
 			TimeUnit.MILLISECONDS.sleep(delay);
 			Webhooks.restore(this, backupJsons.get("Webhook.List.json"), errors);
 
+			errors.add("->r_step:WIFIManagerG2");
 			TimeUnit.MILLISECONDS.sleep(delay);
 			Network currentConnection = WIFIManagerG2.currentConnection(this);
 			if(currentConnection != Network.UNKNOWN) {
@@ -442,6 +452,8 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 					errors.add(WIFIManagerG2.restoreAP_roam(this, config.get("wifi"), userPref.get(Restore.RESTORE_WI_FI_AP)));
 				}
 			}
+			
+			errors.add("->r_step:LoginManagerG2");
 			TimeUnit.MILLISECONDS.sleep(delay);
 			LoginManagerG2 lm = new LoginManagerG2(this, true);
 			if(userPref.containsKey(Restore.RESTORE_LOGIN)) {
@@ -510,4 +522,4 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 	
 	/** device specific */
 	protected abstract void restore(Map<String, JsonNode> backupJsons, List<String> errors) throws IOException, InterruptedException;
-} // 477 - 474 - 513
+} // 477 - 474 - 525

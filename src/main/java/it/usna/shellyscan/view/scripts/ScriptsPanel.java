@@ -8,6 +8,7 @@ import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
+import java.awt.event.MouseEvent;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileWriter;
@@ -51,6 +52,7 @@ import it.usna.shellyscan.model.device.g2.modules.Script;
 import it.usna.shellyscan.view.DialogDeviceLogsG2;
 import it.usna.shellyscan.view.scripts.ide.ScriptEditor;
 import it.usna.shellyscan.view.util.Msg;
+import it.usna.swing.UsnaPopupMenu;
 import it.usna.swing.table.ExTooltipTable;
 import it.usna.swing.table.UsnaTableModel;
 import it.usna.util.IOFile;
@@ -194,17 +196,34 @@ public class ScriptsPanel extends JPanel {
 		}));
 		operationsPanel.add(logsBtn);
 
-		final JButton editBtn = new JButton(new UsnaAction(this, "edit2", e -> {
+		final UsnaAction editAction = new UsnaAction(this, "edit2", e -> {
 			try {
 				final int mRow = table.convertRowIndexToModel(table.getSelectedRow());
 				final Script sc = scripts.get(mRow);
 				ScriptEditor editor = new ScriptEditor(ScriptsPanel.this, sc);
-				editor.addPropertyChangeListener("scriptIsRunning", propertyChangeEvent -> tModel.setValueAt(propertyChangeEvent.getNewValue(), mRow, COL_RUN));
+				editor.addPropertyChangeListener(ScriptEditor.RUN_EVENT, propertyChangeEvent -> {
+					tModel.setValueAt(propertyChangeEvent.getNewValue(), mRow, COL_RUN);
+				});
 			} catch (IOException e1) {
 				Msg.errorMsg(e1);
 			}
-		}));
+		});
+		final JButton editBtn = new JButton(editAction);
 		operationsPanel.add(editBtn);
+		
+		UsnaPopupMenu tablePopup = new UsnaPopupMenu(editAction) {
+			private static final long serialVersionUID = 1L;
+
+			@Override
+			protected void doPopup(MouseEvent evt) {
+				final int r = table.rowAtPoint(evt.getPoint());
+				if (r >= 0) {
+					table.setRowSelectionInterval(r, r);
+					show(table, evt.getX(), evt.getY());
+				}
+			}
+		};;
+		table.addMouseListener(tablePopup.getMouseListener());
 
 		for(JsonNode script: Script.list(device)) {
 			Script sc = new Script(device, script);
