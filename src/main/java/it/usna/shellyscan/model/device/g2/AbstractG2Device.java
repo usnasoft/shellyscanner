@@ -51,8 +51,8 @@ import it.usna.shellyscan.model.device.g2.modules.SensorAddOn;
 import it.usna.shellyscan.model.device.g2.modules.Webhooks;
 
 /**
- * Base class for any gen2 Shelly device
- * usna
+ * Base abstract class for any gen2(+) Shelly device
+ * @author usna
  */
 public abstract class AbstractG2Device extends ShellyAbstractDevice {
 	public final static int LOG_VERBOSE = 4;
@@ -397,11 +397,11 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 
 	@Override
 	public final List<String> restore(Map<String, JsonNode> backupJsons, Map<Restore, String> userPref) throws IOException {
+		final ArrayList<String> errors = new ArrayList<>();
 		try {
 			final long delay = this instanceof BatteryDeviceInterface ? Devices.MULTI_QUERY_DELAY / 2: Devices.MULTI_QUERY_DELAY;
-			final ArrayList<String> errors = new ArrayList<>();
+
 			JsonNode config = backupJsons.get("Shelly.GetConfig.json");
-			
 			errors.add("->r_step:specific");
 			restore(backupJsons, errors);
 			if(status == Status.OFF_LINE) {
@@ -461,11 +461,11 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 			} else if(backupJsons.get("Shelly.GetDeviceInfo.json").path("auth_en").asBoolean() == false) {
 				errors.add(lm.disable());
 			}
-			return errors/*.stream().filter(s-> s != null && s.length() > 0)*/;
 		} catch(RuntimeException | InterruptedException e) {
-			LOG.error("restore", e);
-			return List.of(Restore.ERR_UNKNOWN.toString());
+			LOG.error("restore - RuntimeException", e);
+			errors.add(Restore.ERR_UNKNOWN.toString());
 		}
+		return errors;
 	}
 
 	// Shelly.GetConfig.json
