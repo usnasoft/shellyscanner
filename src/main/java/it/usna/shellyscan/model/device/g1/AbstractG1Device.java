@@ -240,9 +240,9 @@ public abstract class AbstractG1Device extends ShellyAbstractDevice {
 	
 	@Override
 	public final List<String> restore(Map<String, JsonNode> backupJsons, Map<Restore, String> data) throws IOException {
+		final ArrayList<String> errors = new ArrayList<>();
 		try {
 			final long delay = this instanceof BatteryDeviceInterface ? Devices.MULTI_QUERY_DELAY / 2: Devices.MULTI_QUERY_DELAY;
-			final ArrayList<String> errors = new ArrayList<>();
 			JsonNode settings = backupJsons.get("settings.json");
 			JsonNode actions = backupJsons.get("actions.json");
 			LOG.trace("step 1");
@@ -277,11 +277,11 @@ public abstract class AbstractG1Device extends ShellyAbstractDevice {
 				errors.add(wm1.restore(settings.path("wifi_sta"), data.get(Restore.RESTORE_WI_FI1)));
 			}
 			LOG.trace("restore end {}", errors);
-			return errors;
 		} catch(RuntimeException | InterruptedException e) {
-			LOG.error("restore", e);
-			return List.of(Restore.ERR_UNKNOWN.name());
+			LOG.error("restore - RuntimeException", e);
+			errors.add(Restore.ERR_UNKNOWN.toString());
 		}
+		return errors;
 	}
 
 	protected abstract void restore(JsonNode settings, List<String> errors) throws IOException, InterruptedException;
