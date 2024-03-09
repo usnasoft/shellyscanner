@@ -437,7 +437,7 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 		LOG.debug("Starting ghosts reconnect");
 		int dalay = 0;
 		for(int i = 0; i < devices.size(); i++) {
-			if(devices.get(i) instanceof GhostDevice g && g.isBattery() == false && g.getPort() == 80) { // g.getPort() port is (currently) variable
+			if(devices.get(i) instanceof GhostDevice g && g.isBatteryOperated() == false && g.getPort() == 80) { // g.getPort() port is (currently) variable
 				executor.schedule(() -> {
 					try {
 						create(g.getAddress(), g.getPort(), g.getAddress().getHostAddress(), false);

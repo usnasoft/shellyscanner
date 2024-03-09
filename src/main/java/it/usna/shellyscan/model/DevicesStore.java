@@ -30,6 +30,7 @@ import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
 import it.usna.shellyscan.model.device.ShellyUnmanagedDeviceInterface;
 import it.usna.shellyscan.model.device.g1.AbstractG1Device;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
+import it.usna.shellyscan.model.device.g3.AbstractG3Device;
 
 public class DevicesStore {
 	private final static Logger LOG = LoggerFactory.getLogger(DevicesStore.class);
@@ -98,7 +99,7 @@ public class DevicesStore {
 		jsonDev.put(NAME, device.getName());
 		jsonDev.put(SSID, device.getSSID());
 		jsonDev.put(LAST_CON, device.getLastTime());
-		jsonDev.put(BATTERY, device instanceof BatteryDeviceInterface  || (device instanceof GhostDevice g && g.isBattery()));
+		jsonDev.put(BATTERY, device instanceof BatteryDeviceInterface  || (device instanceof GhostDevice g && g.isBatteryOperated()));
 		jsonDev.put(GENERATION, gen(device));
 		return jsonDev;
 	}
@@ -159,7 +160,7 @@ public class DevicesStore {
 		return new GhostDevice(
 				dev.getAddress(), dev.getPort(), dev.getHostname(), dev.getMacAddress(),
 				dev.getSSID(), dev.getTypeName(), dev.getTypeID(), gen(dev), dev.getName(), dev.getLastTime(),
-				dev instanceof BatteryDeviceInterface || (dev instanceof GhostDevice g && g.isBattery()),
+				dev instanceof BatteryDeviceInterface || (dev instanceof GhostDevice g && g.isBatteryOperated()),
 				"");
 	}
 	
@@ -171,11 +172,13 @@ public class DevicesStore {
 	private static int gen(ShellyAbstractDevice dev) {
 		if(dev instanceof GhostDevice) {
 			return ((GhostDevice) dev).getGeneration();
-		} else if(dev instanceof AbstractG1Device) {
-			return 1;
+		} else if(dev instanceof AbstractG3Device) {
+			return 3;
 		} else if(dev instanceof AbstractG2Device) {
 			return 2;
-		} else {
+		} else if(dev instanceof AbstractG1Device) {
+			return 1;
+		} else{
 			return 0;
 		}
 	}

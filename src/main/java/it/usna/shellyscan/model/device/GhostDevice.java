@@ -57,7 +57,7 @@ public class GhostDevice extends ShellyAbstractDevice {
 		return gen;
 	}
 	
-	public boolean isBattery() {
+	public boolean isBatteryOperated() {
 		return battery;
 	}
 	
