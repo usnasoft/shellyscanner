@@ -269,10 +269,18 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 	}
 
 	public Future<Session> connectWebSocketLogs(WebSocketDeviceListener listener) throws IOException, InterruptedException, ExecutionException {
+//		final Future<Session> s = wsClient.connect(listener, URI.create("ws://" + address.getHostAddress() + ":" + port + "/debug/log?auth.username=admin&auth.cnonce=1234"));
 		final Future<Session> s = wsClient.connect(listener, URI.create("ws://" + address.getHostAddress() + ":" + port + "/debug/log"));
 		return s;
 		//return wsClient.connect(listener, URI.create("ws://" + address.getHostAddress() + ":" + port + "/debug/log"));
 	}
+	/* Кристиан Тодоров
+	 * 
+When sending the challange request for the debug endpoint, you have to provide the same auth params, but as get paramethers in format
+auth.[paramName]=paramValue. For example about the username it will be auth.username=admin&auth.cnonce=…&auth.respose=...
+
+https://security.stackexchange.com/questions/264509/what-is-cnonce-in-digest-authentication
+	 */
 
 	@Override
 	public boolean backup(final File file) throws IOException {

@@ -19,6 +19,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import it.usna.shellyscan.model.device.LoginManager;
 
 //https://shelly-api-docs.shelly.cloud/gen2/Overview/CommonServices/Shelly#shellysetauth
+//https://shelly-api-docs.shelly.cloud/gen2/0.14/General/Authentication#authentication
 public class LoginManagerG2 implements LoginManager {
 	public static String LOGIN_USER = "admin";
 	private final AbstractG2Device d;
