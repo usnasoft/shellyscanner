@@ -23,10 +23,13 @@ import org.eclipse.jetty.client.AuthenticationStore;
 import org.eclipse.jetty.client.ContentResponse;
 import org.eclipse.jetty.client.DigestAuthentication;
 import org.eclipse.jetty.client.HttpClient;
+import org.eclipse.jetty.client.Request;
+import org.eclipse.jetty.client.Response;
 import org.eclipse.jetty.client.StringRequestContent;
 import org.eclipse.jetty.http.HttpStatus;
 import org.eclipse.jetty.websocket.api.Callback;
 import org.eclipse.jetty.websocket.api.Session;
+import org.eclipse.jetty.websocket.client.JettyUpgradeListener;
 import org.eclipse.jetty.websocket.client.WebSocketClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -269,8 +272,17 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 	}
 
 	public Future<Session> connectWebSocketLogs(WebSocketDeviceListener listener) throws IOException, InterruptedException, ExecutionException {
-//		final Future<Session> s = wsClient.connect(listener, URI.create("ws://" + address.getHostAddress() + ":" + port + "/debug/log?auth.username=admin&auth.cnonce=1234"));
-		final Future<Session> s = wsClient.connect(listener, URI.create("ws://" + address.getHostAddress() + ":" + port + "/debug/log"));
+		JettyUpgradeListener l = new JettyUpgradeListener() {
+			public void onHandshakeRequest(Request request) {
+				System.out.println(request);
+			}
+			public void onHandshakeResponse(Request request, Response response) {
+				System.out.println(response);
+			}
+		};
+		// prova usare una connessione nuova (non autenticata) e ridare le credenziali
+		final Future<Session> s = wsClient.connect(listener, URI.create("ws://" + address.getHostAddress() + ":" + port + "/debug/log?auth.username=admin&auth.cnonce=1234"), null, l);
+//		final Future<Session> s = wsClient.connect(listener, URI.create("ws://" + address.getHostAddress() + ":" + port + "/debug/log"));
 		return s;
 		//return wsClient.connect(listener, URI.create("ws://" + address.getHostAddress() + ":" + port + "/debug/log"));
 	}
