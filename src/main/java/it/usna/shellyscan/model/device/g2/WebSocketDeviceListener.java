@@ -26,11 +26,6 @@ public class WebSocketDeviceListener implements Session.Listener.AutoDemanding {
 		this.notifyCondition = condition;
 	}
 	
-//	@Override
-//	public void onWebSocketConnect(Session session) {
-//		LOG.trace("ws-open"); // session.getRemoteAddress()
-//	}
-	
     @Override
     public void onWebSocketOpen(Session session) {
        LOG.trace("ws-open"); // session.getRemoteAddress()
@@ -59,12 +54,17 @@ public class WebSocketDeviceListener implements Session.Listener.AutoDemanding {
 			LOG.warn("ws-message-error: {}", message, e);
 		}
 	}
+		
+	@Override
+	public void onWebSocketFrame(org.eclipse.jetty.websocket.api.Frame frame, org.eclipse.jetty.websocket.api.Callback callback) {
+		LOG.trace("ws-frame; length: {}", frame);
+	}
 
-//	@Override
-//	public void onWebSocketBinary(byte[] payload, int offset, int length) {
-//		LOG.trace("ws-binary; length: {}", length );
-//	}
-//	
+	@Override
+	public void onWebSocketBinary(java.nio.ByteBuffer payload, org.eclipse.jetty.websocket.api.Callback callback) {
+		LOG.trace("ws-binary; length: {}", payload);
+	}
+
 	public void onMessage(JsonNode msg) {
 		LOG.debug("M: {}", msg);
 	}

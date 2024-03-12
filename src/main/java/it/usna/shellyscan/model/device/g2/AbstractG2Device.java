@@ -6,7 +6,9 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.SocketTimeoutException;
 import java.net.URI;
+import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
@@ -23,13 +25,12 @@ import org.eclipse.jetty.client.AuthenticationStore;
 import org.eclipse.jetty.client.ContentResponse;
 import org.eclipse.jetty.client.DigestAuthentication;
 import org.eclipse.jetty.client.HttpClient;
-import org.eclipse.jetty.client.Request;
 import org.eclipse.jetty.client.Response;
 import org.eclipse.jetty.client.StringRequestContent;
+import org.eclipse.jetty.http.HttpField;
 import org.eclipse.jetty.http.HttpStatus;
 import org.eclipse.jetty.websocket.api.Callback;
 import org.eclipse.jetty.websocket.api.Session;
-import org.eclipse.jetty.websocket.client.JettyUpgradeListener;
 import org.eclipse.jetty.websocket.client.WebSocketClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -272,19 +273,111 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 	}
 
 	public Future<Session> connectWebSocketLogs(WebSocketDeviceListener listener) throws IOException, InterruptedException, ExecutionException {
-		JettyUpgradeListener l = new JettyUpgradeListener() {
-			public void onHandshakeRequest(Request request) {
-				System.out.println(request);
-			}
-			public void onHandshakeResponse(Request request, Response response) {
-				System.out.println(response);
-			}
-		};
+//		JettyUpgradeListener l = new JettyUpgradeListener() {
+//			public void onHandshakeRequest(Request request) {
+//				System.out.println(request);
+//			}
+//			public void onHandshakeResponse(Request request, Response response) {
+//				System.out.println(response);
+//			}
+//		};
 		// prova usare una connessione nuova (non autenticata) e ridare le credenziali
-		final Future<Session> s = wsClient.connect(listener, URI.create("ws://" + address.getHostAddress() + ":" + port + "/debug/log?auth.username=admin&auth.cnonce=1234"), null, l);
-//		final Future<Session> s = wsClient.connect(listener, URI.create("ws://" + address.getHostAddress() + ":" + port + "/debug/log"));
-		return s;
-		//return wsClient.connect(listener, URI.create("ws://" + address.getHostAddress() + ":" + port + "/debug/log"));
+//		HttpClient httpClient = new HttpClient();
+//		try {
+//			httpClient.start();
+//		} catch (Exception e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+//		WebSocketClient wsClient = new WebSocketClient(httpClient);
+//		try {
+//			wsClient.start();
+//		} catch (Exception e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+//		URI uri = URI.create("ws://" + address.getHostAddress() + ":" + port /*+ "/debug/log"*/);
+//		DigestAuthentication da = new DigestAuthentication(uri, DigestAuthentication.ANY_REALM, "admin", "1234", new java.util.Random());
+//		AuthenticationStore aStore = httpClient.getAuthenticationStore();
+//		aStore.addAuthentication(da);
+//		return wsClient.connect(listener, URI.create("ws://" + address.getHostAddress() + ":" + port + "/debug/log"));
+//		Result ar = aStore.findAuthenticationResult(uri);
+//		System.out.println(ar);
+		
+		try {
+			httpClient.newRequest("ws://" + address.getHostAddress() + ":" + port + "/debug/log").onResponseContent(new org.eclipse.jetty.client.Response.ContentListener() {
+
+				@Override
+				public void onContent(Response response, ByteBuffer content) {
+					System.out.println(content);
+				}
+				
+			}).onResponseHeader(new Response.HeaderListener() {
+
+				@Override
+				public boolean onHeader(Response response, HttpField field) {
+					System.out.println(field);
+					return false;
+				}
+				
+			});
+
+			/*
+				public void onContent(Request request, ByteBuffer content) {
+					System.out.println(content);
+				}
+				
+				@Override
+				public void onFailure(Request request, Throwable failure) {
+					System.out.println(failure);
+				}
+			}).send();*/
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		try {
+			ContentResponse resp = httpClient.GET("ws://" + address.getHostAddress() + ":" + port + "/debug/log");
+
+			String hAut = resp.getHeaders().get("WWW-Authenticate"); // Digest qop="auth", realm="shellyplus2pm-485519a2bb1c", nonce="1710242027", algorithm=SHA-256
+
+			String ha1 = "admin" + ":" + getHostname() + ":" + "1234";
+			String ha2 = "dummy_method:dummy_uri";
+
+			MessageDigest digest = MessageDigest.getInstance("SHA-256");
+			String encodedha1 = bytesToHex(digest.digest(ha1.getBytes(StandardCharsets.UTF_8)));
+			String encodedha2 = bytesToHex(digest.digest(ha2.getBytes(StandardCharsets.UTF_8)));
+			
+			int indN = hAut.indexOf(" nonce=\"") + 8;
+			String noumce =  hAut.substring(indN, hAut.indexOf('"', indN));
+			
+			String response = encodedha1 + ":" + noumce + ":1:" + "12345678" + ":auth:" + encodedha2;
+			String encodedresp = bytesToHex(digest.digest(response.getBytes(StandardCharsets.UTF_8)));
+
+			final Future<Session> s = wsClient.connect(listener, URI.create("ws://" + address.getHostAddress() + ":" + port + "/debug/log?" +
+			"auth.realm=" + getHostname() +
+			"&auth.username=admin" +
+			"&auth.nonce=" + noumce + 
+			"&auth.cnonce=313273957" + // todo
+			"&auth.respose=" + encodedresp + 
+			"&auth.algorithm=SHA-256")/*, null, l*/);
+			
+//			resp = httpClient.GET("ws://" + address.getHostAddress() + ":" + port + "/debug/log?" +
+//					"&auth.realm=" + getHostname() +
+//					"&auth.username=admin" +
+//					"&auth.nonce=" + noumce + 
+//					"&auth.cnonce=1234" +
+//					"&auth.respose=" + encodedresp + 
+//					"&auth.SHA-256");
+			//	final Future<Session> s = wsClient.connect(listener, URI.create("ws://" + address.getHostAddress() + ":" + port + "/debug/log"));
+			return s;
+			//return 
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null;
+		}
 	}
 	/* Кристиан Тодоров
 	 * 
@@ -292,7 +385,16 @@ When sending the challange request for the debug endpoint, you have to provide t
 auth.[paramName]=paramValue. For example about the username it will be auth.username=admin&auth.cnonce=…&auth.respose=...
 
 https://security.stackexchange.com/questions/264509/what-is-cnonce-in-digest-authentication
+https://shelly-api-docs.shelly.cloud/gen2/General/Authentication
 	 */
+	
+	private static String bytesToHex(byte[] hash) {
+	    StringBuilder sb = new StringBuilder();
+	    for (byte b : hash) {
+	        sb.append(String.format("%02x", b));
+	    }
+	   return sb.toString();
+	}
 
 	@Override
 	public boolean backup(final File file) throws IOException {
