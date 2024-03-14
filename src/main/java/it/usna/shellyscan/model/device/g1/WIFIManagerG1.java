@@ -113,8 +113,10 @@ public class WIFIManagerG1 implements WIFIManager {
 					"&ipv4_method=static" +
 					"&ip=" + ip +
 					"&netmask=" + netmask + // netmask = mask
-					"&gateway=" + gw + // gateway = gw
-					"&dns=" + dns;
+					"&gateway=" + gw; // gateway = gw
+			if(dns.length() > 0) {
+				cmd += "&dns=" + dns;
+			}
 			return d.sendCommand(cmd);
 		} catch (UnsupportedEncodingException e) {
 			return e.getMessage();

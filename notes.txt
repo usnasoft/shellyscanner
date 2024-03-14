@@ -233,7 +233,7 @@ https://www.iconbolt.com/
 1.0.5
 // mini gen 3
 // improved editor
-todo editor observable (cambio stato run)
+// motion 2 improved restore (actions) and table output (motion on/off)
 todo editor: console
 
 ---

@@ -79,7 +79,7 @@ public class ShellyMotion2 extends AbstractG1Device {
 		String mEnabled = motion.get("enabled").asText();
 		JsonNode sensors = settings.get("sensors");
 		String tempUnit = sensors.get("temperature_unit").asText();
-		String temptTreshohld = sensors.get("temperature_threshohld").asText();
+		String temptTreshohld = sensors.path("temperature_threshohld").asText();
 		// sleep_time is a temporary parameter
 		errors.add(sendCommand("/settings?" + jsonNodeToURLPar(settings, "led_status_disable", "tamper_sensitivity", "dark_threshold", "twilight_threshold", "temperature_offset") +
 				"&motion.sensitivity=" + mSensitivity +

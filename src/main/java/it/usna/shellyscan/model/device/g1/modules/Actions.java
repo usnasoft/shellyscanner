@@ -1,7 +1,10 @@
 package it.usna.shellyscan.model.device.g1.modules;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.URL;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -13,6 +16,7 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ContainerNode;
 
 import it.usna.shellyscan.model.device.g1.AbstractG1Device;
 import it.usna.shellyscan.model.device.modules.InputInterface;
@@ -100,13 +104,64 @@ public class Actions {
 				String command = "/settings/actions?name=" + ev.getKey();
 				Iterator<Entry<String, JsonNode>> pars = itIdx.next().fields();
 				while(pars.hasNext()) {
-					command += "&" + AbstractG1Device.jsonEntryToURLPar(pars.next());
+					command += /*"&" +*/ actionJsonEntryToURLPar(pars.next());
 				}
 				TimeUnit.MILLISECONDS.sleep(delay);
 				errors.add(parent.sendCommand(command));
 			}
 		}
 	}
+	
+	private static String actionJsonEntryToURLPar(Entry<String, JsonNode> jsonEntry) throws UnsupportedEncodingException {
+		final String name = jsonEntry.getKey();
+		final JsonNode val = jsonEntry.getValue();
+		if(val.isArray()) {
+			String res = "";
+			if(val.size() > 0) {
+				for(int i=0; i < val.size(); i++) {
+					if(val.get(i).isContainerNode()) {
+						Iterator<Entry<String, JsonNode>> fields = ((ContainerNode<?>)val.get(i)).fields();
+						while(fields.hasNext()) {
+							Entry<String, JsonNode> field = fields.next();
+							res += "&" + name + "[" + i + "][" + field.getKey() + "]=" + URLEncoder.encode(field.getValue().asText(""), StandardCharsets.UTF_8.name());
+						}
+					} else {
+						res += "&" + name + "[]=" + URLEncoder.encode(val.get(i).asText(""), StandardCharsets.UTF_8.name());
+					}
+				}
+			} else {
+				res = "&" + name + "[]=";
+			}
+			return res;
+		} else {
+			return "&" + name + "=" + URLEncoder.encode(val.asText(), StandardCharsets.UTF_8.name());
+		}
+	}
+
+/*
+ * Shelly 2.5
+    "btn_on_url" : [ {
+      "index" : 0,
+      "urls" : [ ],
+      "enabled" : false
+    }, {
+      "index" : 1,
+      "urls" : [ "http://192.168.1.207/light/0?turn=toggle", "http://192.168.1.208/light/0?turn=toggle" ],
+      "enabled" : false
+    } ],
+
+ * Shelly motion
+    "motion_off" : [ {
+        "index" : 0,
+        "enabled" : true,
+        "urls" : [ {
+          "url" : "HTTP://xx.it",
+          "int" : "0159-2301"
+        } ]
+      } ],
+	
+	http://192.168.1.225/settings/actions?index=0&enabled=true&name=motion_on&urls[0][url]=http%3A%2F%2Fxx.ii&urls[0][int]=0000-0000&urls[1][url]=http%3A%2F%2Fxx2.ii&urls[1][int]=0000-0010
+*/
 	
 	private class Input implements InputInterface {
 		private final String name;

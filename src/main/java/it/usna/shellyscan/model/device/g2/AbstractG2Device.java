@@ -25,12 +25,16 @@ import org.eclipse.jetty.client.AuthenticationStore;
 import org.eclipse.jetty.client.ContentResponse;
 import org.eclipse.jetty.client.DigestAuthentication;
 import org.eclipse.jetty.client.HttpClient;
+import org.eclipse.jetty.client.Request;
 import org.eclipse.jetty.client.Response;
 import org.eclipse.jetty.client.StringRequestContent;
 import org.eclipse.jetty.http.HttpField;
 import org.eclipse.jetty.http.HttpStatus;
+import org.eclipse.jetty.io.Connection;
+import org.eclipse.jetty.io.Content;
 import org.eclipse.jetty.websocket.api.Callback;
 import org.eclipse.jetty.websocket.api.Session;
+import org.eclipse.jetty.websocket.client.JettyUpgradeListener;
 import org.eclipse.jetty.websocket.client.WebSocketClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -271,16 +275,100 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 		s.get().sendText("{\"id\":2, \"src\":\"S_Scanner\", \"method\":\"Shelly.GetDeviceInfo\"}", Callback.NOOP);
 		return s;
 	}
-
+	
 	public Future<Session> connectWebSocketLogs(WebSocketDeviceListener listener) throws IOException, InterruptedException, ExecutionException {
+		try {
+			httpClient.newRequest("http://" + address.getHostAddress() + ":" + port + "/debug/log")/*.accept("application/json")*/.onResponseContentSource(((response, contentSource) ->
+		    {
+		        // The function (as a Runnable) that reads the response content.
+		        Runnable demander = new Runnable() 
+		        {
+		            @Override
+		            public void run() {
+		                while (true) {
+		                    Content.Chunk chunk = contentSource.read(); 
+
+		                    // No chunk of content, demand again and return.
+		                    if (chunk == null)  {
+		                        contentSource.demand(this); 
+		                        return;
+		                    }
+
+		                    // A failure happened.
+		                    if (Content.Chunk.isFailure(chunk)) {
+//		                        if (chunk.isLast()) {
+		                            // A terminal failure, such as a network failure.
+		                            // Your logic to handle terminal failures here.
+		                            LOG.error("Unexpected terminal failure", chunk.getFailure());
+		                            return;
+//		                        } else {
+//		                        	continue;
+////		                            // A transient failure such as a read timeout.
+////		                            // Your logic to handle transient failures here.
+////		                            if (ignoreTransientFailure(response, failure))
+////		                            {
+////		                                // Try to read again.
+////		                                continue;
+////		                            }
+////		                            else
+////		                            {
+////		                                // The transient failure is treated as a terminal failure.
+////		                                System.getLogger("failure").log(ERROR, "Unexpected transient failure", failure);
+////		                                return;
+////		                            }
+//		                        }
+		                    }
+
+		                    // A normal chunk of content.
+		                    byte[] buf = new byte[2048];
+		                    chunk.get(buf, 0, 2048);
+		                    System.out.println(new String(buf));
+		                    chunk.release();
+
+		                    // Loop around to read another response chunk.
+		                }
+		            }
+		        };
+
+		        // Initiate the reads.
+		        demander.run();
+		    }))
+		    .send();
+
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 //		JettyUpgradeListener l = new JettyUpgradeListener() {
 //			public void onHandshakeRequest(Request request) {
 //				System.out.println(request);
 //			}
 //			public void onHandshakeResponse(Request request, Response response) {
 //				System.out.println(response);
+//				request.getHeaders();
 //			}
 //		};
+//		wsClient.getHttpClient().getSslContextFactory().setExcludeProtocols("TLSv1.3");
+//		return wsClient.connect(listener, URI.create("ws://" + address.getHostAddress() + ":" + port + "/debug/log"), null, l);
+		return null;
+	}
+
+	public Future<Session> connectWebSocketLogsXXX(WebSocketDeviceListener listener) throws IOException, InterruptedException, ExecutionException {
+		JettyUpgradeListener l = new JettyUpgradeListener() {
+			public void onHandshakeRequest(Request request) {
+				System.out.println(request);
+			}
+			public void onHandshakeResponse(Request request, Response response) {
+				System.out.println(response);
+				request.getHeaders();
+			}
+		};
+//		wsClient.getHttpClient().getSslContextFactory().setExcludeProtocols("TLSv1.3");
+		wsClient.addEventListener(new Connection.Listener() {
+
+		});
+		
+		final Future<Session> sss = wsClient.connect(listener, URI.create("ws://" + address.getHostAddress() + ":" + port + "/debug/log"), null, l);
 		// prova usare una connessione nuova (non autenticata) e ridare le credenziali
 //		HttpClient httpClient = new HttpClient();
 //		try {
