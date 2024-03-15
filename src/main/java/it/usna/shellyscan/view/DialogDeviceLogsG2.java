@@ -14,9 +14,11 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.IOException;
 import java.time.Duration;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeoutException;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -34,6 +36,8 @@ import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 
+import org.eclipse.jetty.client.Response;
+import org.eclipse.jetty.io.Content;
 import org.eclipse.jetty.websocket.api.Callback;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.StatusCode;
@@ -229,4 +233,38 @@ public class DialogDeviceLogsG2 extends JDialog {
 			textArea.setCaretPosition(textArea.getStyledDocument().getLength());
 		}
 	}
+	
+//	public Future<Session> connectWebSocketLogsc(AbstractG2Device device) throws IOException, InterruptedException, ExecutionException, TimeoutException {
+//		device.get
+//		httpClient.newRequest("http://" + address.getHostAddress() + ":" + port + "/debug/log")
+//		.onResponseContentSource(((response, contentSource) -> {
+//			new Runnable() {
+//				@Override
+//				public void run() {
+//					while (true) {
+//						Content.Chunk chunk = contentSource.read(); 
+//
+//						if (chunk == null) { // No chunk of content, demand again and return
+//							contentSource.demand(this); 
+//						} else if (Content.Chunk.isFailure(chunk)) { // A failure happened.
+//							//if (chunk.isLast()) {
+//							LOG.error("Unexpected terminal failure", chunk.getFailure());
+//							chunk.release();
+//						} else { // A normal chunk of content
+//							//							byte[] buf = new byte[2048];
+//							//							chunk.get(buf, 0, 2048);
+//							System.out.println(/*new String(buf)*/chunk.getByteBuffer().asCharBuffer().toString());
+//							chunk.release();
+//						}
+//						// Loop around to read another response chunk.
+//					}
+//				}
+//			}.run();
+//		}))
+//		.onResponseFailure((Response response, Throwable failure) -> {
+//			System.out.println("Error: " + failure.getMessage());
+//		})
+//		.send();
+//		return null;
+//	}
 }

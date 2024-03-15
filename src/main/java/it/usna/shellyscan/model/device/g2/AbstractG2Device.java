@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.SocketTimeoutException;
 import java.net.URI;
-import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.ArrayList;
@@ -28,7 +27,6 @@ import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.Request;
 import org.eclipse.jetty.client.Response;
 import org.eclipse.jetty.client.StringRequestContent;
-import org.eclipse.jetty.http.HttpField;
 import org.eclipse.jetty.http.HttpStatus;
 import org.eclipse.jetty.io.Connection;
 import org.eclipse.jetty.io.Content;
@@ -276,80 +274,51 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 		return s;
 	}
 	
+	/** this doesn't work on protected devices
+	 * 
+	 * Кристиан Тодоров
+	 * 
+	When sending the challange request for the debug endpoint, you have to provide the same auth params, but as get paramethers in format
+	auth.[paramName]=paramValue. For example about the username it will be auth.username=admin&auth.cnonce=…&auth.respose=...
+
+	https://security.stackexchange.com/questions/264509/what-is-cnonce-in-digest-authentication
+	https://shelly-api-docs.shelly.cloud/gen2/General/Authentication
+	 */
 	public Future<Session> connectWebSocketLogs(WebSocketDeviceListener listener) throws IOException, InterruptedException, ExecutionException {
-		try {
-			httpClient.newRequest("http://" + address.getHostAddress() + ":" + port + "/debug/log")/*.accept("application/json")*/.onResponseContentSource(((response, contentSource) ->
-		    {
-		        // The function (as a Runnable) that reads the response content.
-		        Runnable demander = new Runnable() 
-		        {
-		            @Override
-		            public void run() {
-		                while (true) {
-		                    Content.Chunk chunk = contentSource.read(); 
+		return wsClient.connect(listener, URI.create("ws://" + address.getHostAddress() + ":" + port + "/debug/log"));
+	}
+	
+	public Future<Session> connectWebSocketLogsc(WebSocketDeviceListener listener) throws IOException, InterruptedException, ExecutionException, TimeoutException {
+		httpClient.newRequest("http://" + address.getHostAddress() + ":" + port + "/debug/log")
+		.onResponseContentSource(((response, contentSource) -> {
+			new Runnable() {
+				@Override
+				public void run() {
+					while (true) {
+						Content.Chunk chunk = contentSource.read(); 
 
-		                    // No chunk of content, demand again and return.
-		                    if (chunk == null)  {
-		                        contentSource.demand(this); 
-		                        return;
-		                    }
-
-		                    // A failure happened.
-		                    if (Content.Chunk.isFailure(chunk)) {
-//		                        if (chunk.isLast()) {
-		                            // A terminal failure, such as a network failure.
-		                            // Your logic to handle terminal failures here.
-		                            LOG.error("Unexpected terminal failure", chunk.getFailure());
-		                            return;
-//		                        } else {
-//		                        	continue;
-////		                            // A transient failure such as a read timeout.
-////		                            // Your logic to handle transient failures here.
-////		                            if (ignoreTransientFailure(response, failure))
-////		                            {
-////		                                // Try to read again.
-////		                                continue;
-////		                            }
-////		                            else
-////		                            {
-////		                                // The transient failure is treated as a terminal failure.
-////		                                System.getLogger("failure").log(ERROR, "Unexpected transient failure", failure);
-////		                                return;
-////		                            }
-//		                        }
-		                    }
-
-		                    // A normal chunk of content.
-		                    byte[] buf = new byte[2048];
-		                    chunk.get(buf, 0, 2048);
-		                    System.out.println(new String(buf));
-		                    chunk.release();
-
-		                    // Loop around to read another response chunk.
-		                }
-		            }
-		        };
-
-		        // Initiate the reads.
-		        demander.run();
-		    }))
-		    .send();
-
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-//		JettyUpgradeListener l = new JettyUpgradeListener() {
-//			public void onHandshakeRequest(Request request) {
-//				System.out.println(request);
-//			}
-//			public void onHandshakeResponse(Request request, Response response) {
-//				System.out.println(response);
-//				request.getHeaders();
-//			}
-//		};
-//		wsClient.getHttpClient().getSslContextFactory().setExcludeProtocols("TLSv1.3");
-//		return wsClient.connect(listener, URI.create("ws://" + address.getHostAddress() + ":" + port + "/debug/log"), null, l);
+						if (chunk == null) { // No chunk of content, demand again and return
+							contentSource.demand(this); 
+						} else if (Content.Chunk.isFailure(chunk)) { // A failure happened.
+							//if (chunk.isLast()) {
+							LOG.error("Unexpected terminal failure", chunk.getFailure());
+							chunk.release();
+						} else { // A normal chunk of content
+							//							byte[] buf = new byte[2048];
+							//							chunk.get(buf, 0, 2048);
+							System.out.println(/*new String(buf)*/chunk.getByteBuffer().asCharBuffer().toString());
+							listener.onMessage(null);
+							chunk.release();
+						}
+						// Loop around to read another response chunk.
+					}
+				}
+			}.run();
+		}))
+		.onResponseFailure((Response response, Throwable failure) -> {
+			System.out.println("Error: " + failure.getMessage());
+		})
+		.send();
 		return null;
 	}
 
@@ -391,40 +360,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 //		return wsClient.connect(listener, URI.create("ws://" + address.getHostAddress() + ":" + port + "/debug/log"));
 //		Result ar = aStore.findAuthenticationResult(uri);
 //		System.out.println(ar);
-		
-		try {
-			httpClient.newRequest("ws://" + address.getHostAddress() + ":" + port + "/debug/log").onResponseContent(new org.eclipse.jetty.client.Response.ContentListener() {
-
-				@Override
-				public void onContent(Response response, ByteBuffer content) {
-					System.out.println(content);
-				}
-				
-			}).onResponseHeader(new Response.HeaderListener() {
-
-				@Override
-				public boolean onHeader(Response response, HttpField field) {
-					System.out.println(field);
-					return false;
-				}
-				
-			});
-
-			/*
-				public void onContent(Request request, ByteBuffer content) {
-					System.out.println(content);
-				}
-				
-				@Override
-				public void onFailure(Request request, Throwable failure) {
-					System.out.println(failure);
-				}
-			}).send();*/
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
+	
 		try {
 			ContentResponse resp = httpClient.GET("ws://" + address.getHostAddress() + ":" + port + "/debug/log");
 
@@ -467,15 +403,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 			return null;
 		}
 	}
-	/* Кристиан Тодоров
-	 * 
-When sending the challange request for the debug endpoint, you have to provide the same auth params, but as get paramethers in format
-auth.[paramName]=paramValue. For example about the username it will be auth.username=admin&auth.cnonce=…&auth.respose=...
 
-https://security.stackexchange.com/questions/264509/what-is-cnonce-in-digest-authentication
-https://shelly-api-docs.shelly.cloud/gen2/General/Authentication
-	 */
-	
 	private static String bytesToHex(byte[] hash) {
 	    StringBuilder sb = new StringBuilder();
 	    for (byte b : hash) {
