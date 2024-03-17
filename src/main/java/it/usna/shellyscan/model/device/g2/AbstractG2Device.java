@@ -7,7 +7,6 @@ import java.net.InetAddress;
 import java.net.SocketTimeoutException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
@@ -26,13 +25,12 @@ import org.eclipse.jetty.client.DigestAuthentication;
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.Request;
 import org.eclipse.jetty.client.Response;
+import org.eclipse.jetty.client.Result;
 import org.eclipse.jetty.client.StringRequestContent;
 import org.eclipse.jetty.http.HttpStatus;
-import org.eclipse.jetty.io.Connection;
 import org.eclipse.jetty.io.Content;
 import org.eclipse.jetty.websocket.api.Callback;
 import org.eclipse.jetty.websocket.api.Session;
-import org.eclipse.jetty.websocket.client.JettyUpgradeListener;
 import org.eclipse.jetty.websocket.client.WebSocketClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -287,129 +285,49 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 	public Future<Session> connectWebSocketLogs(WebSocketDeviceListener listener) throws IOException, InterruptedException, ExecutionException {
 		return wsClient.connect(listener, URI.create("ws://" + address.getHostAddress() + ":" + port + "/debug/log"));
 	}
-	
-	public Future<Session> connectWebSocketLogsc(WebSocketDeviceListener listener) throws IOException, InterruptedException, ExecutionException, TimeoutException {
-		httpClient.newRequest("http://" + address.getHostAddress() + ":" + port + "/debug/log")
-		.onResponseContentSource(((response, contentSource) -> {
-			new Runnable() {
+
+	public Request httpLogs(LogListener listener) throws IOException, InterruptedException, ExecutionException {
+		Request request = httpClient.newRequest("http://" + address.getHostAddress() + ":" + port + "/debug/log")/*.accept("application/json")*/.onResponseContentSource(((response, contentSource) -> {
+			// The function (as a Runnable) that reads the response content.
+			Runnable demander = new Runnable()  {
 				@Override
 				public void run() {
-					while (true) {
-						Content.Chunk chunk = contentSource.read(); 
+					while (listener.requestNext()) {
+						Content.Chunk chunk = contentSource.read();
 
-						if (chunk == null) { // No chunk of content, demand again and return
+						// No chunk of content, demand again and return.
+						if (chunk == null)  {
 							contentSource.demand(this); 
-						} else if (Content.Chunk.isFailure(chunk)) { // A failure happened.
-							//if (chunk.isLast()) {
-							LOG.error("Unexpected terminal failure", chunk.getFailure());
-							chunk.release();
-						} else { // A normal chunk of content
-							//							byte[] buf = new byte[2048];
-							//							chunk.get(buf, 0, 2048);
-							System.out.println(/*new String(buf)*/chunk.getByteBuffer().asCharBuffer().toString());
-							listener.onMessage(null);
-							chunk.release();
+							return;
 						}
+
+						// A failure happened.
+						if (Content.Chunk.isFailure(chunk)) {
+							LOG.error("Unexpected terminal failure", chunk.getFailure());
+							return;
+						}
+
+						// A normal chunk of content.
+//						chunk.getByteBuffer().get()
+						int size = chunk.remaining();
+						byte[] buf = new byte[2048];
+						chunk.get(buf, 0, size);
+						listener.accept(new String(buf, 0, size));
 						// Loop around to read another response chunk.
 					}
 				}
-			}.run();
-		}))
-		.onResponseFailure((Response response, Throwable failure) -> {
-			System.out.println("Error: " + failure.getMessage());
-		})
-		.send();
-		return null;
-	}
-
-	public Future<Session> connectWebSocketLogsXXX(WebSocketDeviceListener listener) throws IOException, InterruptedException, ExecutionException {
-		JettyUpgradeListener l = new JettyUpgradeListener() {
-			public void onHandshakeRequest(Request request) {
-				System.out.println(request);
-			}
-			public void onHandshakeResponse(Request request, Response response) {
-				System.out.println(response);
-				request.getHeaders();
-			}
-		};
-//		wsClient.getHttpClient().getSslContextFactory().setExcludeProtocols("TLSv1.3");
-		wsClient.addEventListener(new Connection.Listener() {
-
-		});
+			};
+			// Initiate the reads.
+			demander.run();
+		}));
 		
-		final Future<Session> sss = wsClient.connect(listener, URI.create("ws://" + address.getHostAddress() + ":" + port + "/debug/log"), null, l);
-		// prova usare una connessione nuova (non autenticata) e ridare le credenziali
-//		HttpClient httpClient = new HttpClient();
-//		try {
-//			httpClient.start();
-//		} catch (Exception e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
-//		WebSocketClient wsClient = new WebSocketClient(httpClient);
-//		try {
-//			wsClient.start();
-//		} catch (Exception e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
-//		URI uri = URI.create("ws://" + address.getHostAddress() + ":" + port /*+ "/debug/log"*/);
-//		DigestAuthentication da = new DigestAuthentication(uri, DigestAuthentication.ANY_REALM, "admin", "1234", new java.util.Random());
-//		AuthenticationStore aStore = httpClient.getAuthenticationStore();
-//		aStore.addAuthentication(da);
-//		return wsClient.connect(listener, URI.create("ws://" + address.getHostAddress() + ":" + port + "/debug/log"));
-//		Result ar = aStore.findAuthenticationResult(uri);
-//		System.out.println(ar);
-	
-		try {
-			ContentResponse resp = httpClient.GET("ws://" + address.getHostAddress() + ":" + port + "/debug/log");
-
-			String hAut = resp.getHeaders().get("WWW-Authenticate"); // Digest qop="auth", realm="shellyplus2pm-485519a2bb1c", nonce="1710242027", algorithm=SHA-256
-
-			String ha1 = "admin" + ":" + getHostname() + ":" + "1234";
-			String ha2 = "dummy_method:dummy_uri";
-
-			MessageDigest digest = MessageDigest.getInstance("SHA-256");
-			String encodedha1 = bytesToHex(digest.digest(ha1.getBytes(StandardCharsets.UTF_8)));
-			String encodedha2 = bytesToHex(digest.digest(ha2.getBytes(StandardCharsets.UTF_8)));
-			
-			int indN = hAut.indexOf(" nonce=\"") + 8;
-			String noumce =  hAut.substring(indN, hAut.indexOf('"', indN));
-			
-			String response = encodedha1 + ":" + noumce + ":1:" + "12345678" + ":auth:" + encodedha2;
-			String encodedresp = bytesToHex(digest.digest(response.getBytes(StandardCharsets.UTF_8)));
-
-			final Future<Session> s = wsClient.connect(listener, URI.create("ws://" + address.getHostAddress() + ":" + port + "/debug/log?" +
-			"auth.realm=" + getHostname() +
-			"&auth.username=admin" +
-			"&auth.nonce=" + noumce + 
-			"&auth.cnonce=313273957" + // todo
-			"&auth.respose=" + encodedresp + 
-			"&auth.algorithm=SHA-256")/*, null, l*/);
-			
-//			resp = httpClient.GET("ws://" + address.getHostAddress() + ":" + port + "/debug/log?" +
-//					"&auth.realm=" + getHostname() +
-//					"&auth.username=admin" +
-//					"&auth.nonce=" + noumce + 
-//					"&auth.cnonce=1234" +
-//					"&auth.respose=" + encodedresp + 
-//					"&auth.SHA-256");
-			//	final Future<Session> s = wsClient.connect(listener, URI.create("ws://" + address.getHostAddress() + ":" + port + "/debug/log"));
-			return s;
-			//return 
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			return null;
-		}
-	}
-
-	private static String bytesToHex(byte[] hash) {
-	    StringBuilder sb = new StringBuilder();
-	    for (byte b : hash) {
-	        sb.append(String.format("%02x", b));
-	    }
-	   return sb.toString();
+		request.send(new Response.CompleteListener() {
+			@Override
+			public void onComplete(Result result) {
+				LOG.trace("httpLogs onComplete");
+			}
+		});
+		return request;
 	}
 
 	@Override

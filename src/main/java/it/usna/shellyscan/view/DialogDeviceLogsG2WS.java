@@ -14,8 +14,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.io.IOException;
+import java.time.Duration;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -33,38 +34,44 @@ import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 
-import org.eclipse.jetty.client.Request;
+import org.eclipse.jetty.websocket.api.Callback;
+import org.eclipse.jetty.websocket.api.Session;
+import org.eclipse.jetty.websocket.api.StatusCode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.fasterxml.jackson.databind.JsonNode;
 
 import it.usna.shellyscan.Main;
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
-import it.usna.shellyscan.model.device.g2.LogListener;
+import it.usna.shellyscan.model.device.g2.WebSocketDeviceListener;
 import it.usna.shellyscan.view.util.Msg;
 import it.usna.shellyscan.view.util.UsnaTextPane;
 import it.usna.shellyscan.view.util.UtilMiscellaneous;
 import it.usna.swing.dialog.FindReplaceDialog;
 
-public class DialogDeviceLogsG2 extends JDialog {
+/**
+ * This class is not used since web socket logs don't work in case of restricted login is enabled.
+ * The error is mine, on jetty or on shelly FW ... I will try to understand and check on components updates
+ */
+public class DialogDeviceLogsG2WS extends JDialog {
 	private static final long serialVersionUID = 1L;
-	private final static Logger LOG = LoggerFactory.getLogger(DialogDeviceLogsG2.class);
-//	private boolean logWasActive;
-//	private Future<Session> wsSession;
+	private final static Logger LOG = LoggerFactory.getLogger(DialogDeviceLogsG2WS.class);
+	private boolean logWasActive;
+	private Future<Session> wsSession;
 	private UsnaTextPane textArea = new UsnaTextPane();
 	private Style bluStyle = textArea.addStyle("blue", null);
 	private JComboBox<String> comboBox = new JComboBox<>();
-	private boolean readLogs;
-	private Request request;
 
-	public DialogDeviceLogsG2(final Window owner, Devices devicesModel, int modelIndex, int initLlogLevel) {
+	public DialogDeviceLogsG2WS(final Window owner, Devices devicesModel, int modelIndex, int initLlogLevel) {
 		super(owner, ModalityType.MODELESS);
 		AbstractG2Device device = (AbstractG2Device) devicesModel.get(modelIndex);
 		setTitle(UtilMiscellaneous.getExtendedHostName(device));
 		setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
 
-//		logWasActive = device.getDebugMode() == AbstractG2Device.LogMode.SOCKET;
-//		activateLog(device, true);
+		logWasActive = device.getDebugMode() == AbstractG2Device.LogMode.SOCKET;
+		activateLog(device, true);
 
 		JPanel buttonsPanel = new JPanel();
 		getContentPane().add(buttonsPanel, BorderLayout.SOUTH);
@@ -77,8 +84,8 @@ public class DialogDeviceLogsG2 extends JDialog {
 			private static final long serialVersionUID = 1L;
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				FindReplaceDialog f = new FindReplaceDialog(DialogDeviceLogsG2.this, textArea, false);
-				f.setLocationRelativeTo(DialogDeviceLogsG2.this);
+				FindReplaceDialog f = new FindReplaceDialog(DialogDeviceLogsG2WS.this, textArea, false);
+				f.setLocationRelativeTo(DialogDeviceLogsG2WS.this);
 				f.setVisible(true);
 			}
 		};
@@ -132,15 +139,17 @@ public class DialogDeviceLogsG2 extends JDialog {
 		comboBox.setSelectedIndex(initLlogLevel);
 		buttonsPanel.add(comboBox);
 		
-		textArea.append(">>>> Open\n", bluStyle);
-		request = activateLogConnection(device);
-
 		try {
+			WebSocketDeviceListener wsListener = new LogWebSocketDeviceListener();
+			wsSession = device.connectWebSocketLogs(wsListener);
+			wsSession.get().setIdleTimeout(Duration.ofMinutes(30));
+
 			btnActivateLog.addActionListener(event -> {
 				try {
 					setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-					textArea.append(">>>> Open\n", bluStyle);
-					setRequest(activateLogConnection(device));
+					if (wsSession.get().isOpen() == false) {
+						wsSession = device.connectWebSocketLogs(wsListener);
+					}
 				} catch (Exception e1) {
 					LOG.error("webSocketClient.connect", e1);
 				} finally {
@@ -148,12 +157,20 @@ public class DialogDeviceLogsG2 extends JDialog {
 				}
 			});
 
-			// todo
 			btnStopLog.addActionListener(event -> {
-				readLogs = false;
-				stopLogConnection(request);
-				textArea.append(">>>> Stop\n", bluStyle);
-				
+				try {
+					setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+					try {
+						if (wsSession.get().isOpen()) {
+//							wsSession.get().disconnect();
+							wsSession.get().close(StatusCode.NORMAL, "bye", Callback.NOOP);
+						}
+					} catch (/*IOException |*/ InterruptedException | ExecutionException e1) {
+						LOG.error("webSocketClient.close", e1);
+					}
+				} finally {
+					setCursor(Cursor.getDefaultCursor());
+				}
 			});
 
 			JPanel panel = new JPanel(new BorderLayout());
@@ -165,21 +182,19 @@ public class DialogDeviceLogsG2 extends JDialog {
 			addWindowListener(new WindowAdapter() {
 				@Override
 				public void windowClosing(WindowEvent e) {
-//					try {
-////						wsSession.get().disconnect();
-//						wsSession.get().close(StatusCode.NORMAL, "bye", Callback.NOOP);
-//					} catch (Exception e1) {
-//						LOG.error("webSocketClient.disconnect", e1);
-//					}
-					readLogs = false;
-					stopLogConnection(request);
+					try {
+//						wsSession.get().disconnect();
+						wsSession.get().close(StatusCode.NORMAL, "bye", Callback.NOOP);
+					} catch (Exception e1) {
+						LOG.error("webSocketClient.disconnect", e1);
+					}
 					dispose();
 				}
 
-//				@Override
-//				public void windowClosed(WindowEvent e) {
-//					activateLog(device, logWasActive);
-//				}
+				@Override
+				public void windowClosed(WindowEvent e) {
+					activateLog(device, logWasActive);
+				}
 			});
 
 			this.setSize(700, 650);
@@ -187,97 +202,35 @@ public class DialogDeviceLogsG2 extends JDialog {
 			setVisible(true);
 		} catch (Exception e) {
 //			LOG.error("webSocketClient.start", e); // Msg.errorMsg(...) do log
-			Msg.errorMsg(this, e);
+			Msg.errorMsg(owner, e);
 		}
-	}
-	
-	private void setRequest(Request req) {
-		
-	}
-	
-	private Request activateLogConnection(AbstractG2Device device) {
-		try {
-			readLogs = true;
-			return device.httpLogs(new LogListener() {
-				@Override
-				public void accept(String txt) {
-					textArea.append(txt);
-				}
-				
-				@Override
-				public boolean requestNext() {
-					return readLogs;
-				}
-			});
-		} catch (InterruptedException | ExecutionException | IOException e1) {
-			Msg.errorMsg(this, e1);
-			return null;
-		}
-	}
-	
-	private void stopLogConnection(Request req) {
-		req.abort(new RuntimeException("Bye"));
 	}
 
-//	private static void activateLog(AbstractG2Device device, boolean active) {
-////		if (device.getDebugMode() != AbstractG2Device.LogMode.SOCKET) {
-//			device.postCommand("Sys.SetConfig", "{\"config\": {\"debug\":{\"websocket\":{\"enable\": " + (active ? "true" : "false") + "}}}");
-////		}
-//	}
+	private static void activateLog(AbstractG2Device device, boolean active) {
+//		if (device.getDebugMode() != AbstractG2Device.LogMode.SOCKET) {
+			device.postCommand("Sys.SetConfig", "{\"config\": {\"debug\":{\"websocket\":{\"enable\": " + (active ? "true" : "false") + "}}}");
+//		}
+	}
 	
-//	public class LogWebSocketDeviceListener extends WebSocketDeviceListener {
-//		@Override
-//		public void onWebSocketOpen(Session session) {
-//			textArea.append(">>>> Open\n", bluStyle);
-//		}
-//
-//		@Override
-//		public void onWebSocketClose(int statusCode, String reason) {
-//			textArea.append(">>>> Close: " + reason + " (" + statusCode + ")\n", bluStyle);
-//		}
-//
-//		@Override
-//		public void onMessage(JsonNode msg) {
-//			int logLevel = comboBox.getSelectedIndex();
-//			int level = msg.get("level").asInt(0);
-//			if (level <= logLevel) {
-//				textArea.append(msg.get("ts").asLong() + " - L" + level + ": " + msg.get("data").asText().trim() + "\n");
-//			}
-//			textArea.setCaretPosition(textArea.getStyledDocument().getLength());
-//		}
-//	}
-	
-//	public Future<Session> connectWebSocketLogsc(AbstractG2Device device) throws IOException, InterruptedException, ExecutionException, TimeoutException {
-//		device.get
-//		httpClient.newRequest("http://" + address.getHostAddress() + ":" + port + "/debug/log")
-//		.onResponseContentSource(((response, contentSource) -> {
-//			new Runnable() {
-//				@Override
-//				public void run() {
-//					while (true) {
-//						Content.Chunk chunk = contentSource.read(); 
-//
-//						if (chunk == null) { // No chunk of content, demand again and return
-//							contentSource.demand(this); 
-//						} else if (Content.Chunk.isFailure(chunk)) { // A failure happened.
-//							//if (chunk.isLast()) {
-//							LOG.error("Unexpected terminal failure", chunk.getFailure());
-//							chunk.release();
-//						} else { // A normal chunk of content
-//							//							byte[] buf = new byte[2048];
-//							//							chunk.get(buf, 0, 2048);
-//							System.out.println(/*new String(buf)*/chunk.getByteBuffer().asCharBuffer().toString());
-//							chunk.release();
-//						}
-//						// Loop around to read another response chunk.
-//					}
-//				}
-//			}.run();
-//		}))
-//		.onResponseFailure((Response response, Throwable failure) -> {
-//			System.out.println("Error: " + failure.getMessage());
-//		})
-//		.send();
-//		return null;
-//	}
+	public class LogWebSocketDeviceListener extends WebSocketDeviceListener {
+		@Override
+		public void onWebSocketOpen(Session session) {
+			textArea.append(">>>> Open\n", bluStyle);
+		}
+
+		@Override
+		public void onWebSocketClose(int statusCode, String reason) {
+			textArea.append(">>>> Close: " + reason + " (" + statusCode + ")\n", bluStyle);
+		}
+
+		@Override
+		public void onMessage(JsonNode msg) {
+			int logLevel = comboBox.getSelectedIndex();
+			int level = msg.get("level").asInt(0);
+			if (level <= logLevel) {
+				textArea.append(msg.get("ts").asLong() + " - L" + level + ": " + msg.get("data").asText().trim() + "\n");
+			}
+			textArea.setCaretPosition(textArea.getStyledDocument().getLength());
+		}
+	}
 }
