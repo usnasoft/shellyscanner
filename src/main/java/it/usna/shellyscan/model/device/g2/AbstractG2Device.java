@@ -23,9 +23,6 @@ import org.eclipse.jetty.client.AuthenticationStore;
 import org.eclipse.jetty.client.ContentResponse;
 import org.eclipse.jetty.client.DigestAuthentication;
 import org.eclipse.jetty.client.HttpClient;
-import org.eclipse.jetty.client.Request;
-import org.eclipse.jetty.client.Response;
-import org.eclipse.jetty.client.Result;
 import org.eclipse.jetty.client.StringRequestContent;
 import org.eclipse.jetty.http.HttpStatus;
 import org.eclipse.jetty.io.Content;
@@ -274,60 +271,50 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 	
 	/** this doesn't work on protected devices
 	 * 
-	 * Кристиан Тодоров
+	 * Кристиан Тодоров:
 	 * 
 	When sending the challange request for the debug endpoint, you have to provide the same auth params, but as get paramethers in format
 	auth.[paramName]=paramValue. For example about the username it will be auth.username=admin&auth.cnonce=…&auth.respose=...
-
-	https://security.stackexchange.com/questions/264509/what-is-cnonce-in-digest-authentication
-	https://shelly-api-docs.shelly.cloud/gen2/General/Authentication
 	 */
 	public Future<Session> connectWebSocketLogs(WebSocketDeviceListener listener) throws IOException, InterruptedException, ExecutionException {
 		return wsClient.connect(listener, URI.create("ws://" + address.getHostAddress() + ":" + port + "/debug/log"));
 	}
 
-	public Request httpLogs(LogListener listener) throws IOException, InterruptedException, ExecutionException {
-		Request request = httpClient.newRequest("http://" + address.getHostAddress() + ":" + port + "/debug/log")/*.accept("application/json")*/.onResponseContentSource(((response, contentSource) -> {
+	public void connectHttpLogs(HttpLogsListener listener) {
+		httpClient.newRequest("http://" + address.getHostAddress() + ":" + port + "/debug/log").onResponseContentSource(((response, contentSource) -> {
 			// The function (as a Runnable) that reads the response content.
 			Runnable demander = new Runnable()  {
+				byte[] buf = new byte[512];
 				@Override
 				public void run() {
 					while (listener.requestNext()) {
 						Content.Chunk chunk = contentSource.read();
-
+						
 						// No chunk of content, demand again and return.
 						if (chunk == null)  {
 							contentSource.demand(this); 
 							return;
 						}
 
-						// A failure happened.
 						if (Content.Chunk.isFailure(chunk)) {
-							LOG.error("Unexpected terminal failure", chunk.getFailure());
+							listener.error("Unexpected terminal failure: " + chunk.getFailure().getMessage());
 							return;
 						}
 
 						// A normal chunk of content.
-//						chunk.getByteBuffer().get()
 						int size = chunk.remaining();
-						byte[] buf = new byte[2048];
+						if(size > buf.length) {
+							buf = new byte[size + 64];
+						}
 						chunk.get(buf, 0, size);
 						listener.accept(new String(buf, 0, size));
 						// Loop around to read another response chunk.
 					}
+					response.abort(new RuntimeException("bye"));
 				}
 			};
-			// Initiate the reads.
-			demander.run();
-		}));
-		
-		request.send(new Response.CompleteListener() {
-			@Override
-			public void onComplete(Result result) {
-				LOG.trace("httpLogs onComplete");
-			}
-		});
-		return request;
+			demander.run(); // Initiate the reads.
+		})).send(result -> LOG.trace("httpLogs onComplete"));
 	}
 
 	@Override
@@ -578,4 +565,4 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 	
 	/** device specific */
 	protected abstract void restore(Map<String, JsonNode> backupJsons, List<String> errors) throws IOException, InterruptedException;
-} // 477 - 474 - 525
+} // 477 - 474 - 525 - 568
