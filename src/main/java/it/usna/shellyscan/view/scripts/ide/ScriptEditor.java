@@ -27,6 +27,7 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
 import javax.swing.JTextField;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
@@ -45,6 +46,7 @@ import it.usna.shellyscan.view.MainView;
 import it.usna.shellyscan.view.scripts.DialogDeviceScriptsG2;
 import it.usna.shellyscan.view.scripts.ScriptsPanel;
 import it.usna.shellyscan.view.util.Msg;
+import it.usna.shellyscan.view.util.UsnaTextPane;
 import it.usna.swing.TextLineNumber;
 import it.usna.swing.dialog.FindReplaceDialog;
 import it.usna.util.IOFile;
@@ -80,10 +82,29 @@ public class ScriptEditor extends JFrame {
 	public ScriptEditor(ScriptsPanel originatingPanel, Script script) throws IOException {
 		super(LABELS.getString("dlgScriptEditorTitle") + " - " + script.getName());
 		setIconImage(Main.ICON);
+
+		JSplitPane splitPane = new JSplitPane();
+		splitPane.setOneTouchExpandable(true);
+		splitPane.setOrientation(JSplitPane.VERTICAL_SPLIT);
+
+		add(splitPane, BorderLayout.CENTER);
 		
-		getContentPane().setLayout(new BorderLayout());
+		splitPane.setTopComponent(editorPanel(script));
+		splitPane.setBottomComponent(logPanel(script));
 		
+		add(getToolBar(script), BorderLayout.NORTH);
+
+		setSize(800, 600);
+		setVisible(true);
+		splitPane.setDividerLocation(0.8d);
+		editor.requestFocus();
+		setLocationRelativeTo(originatingPanel);
+	}
+	
+	private JPanel editorPanel(Script script) throws IOException {
+		JPanel mainEditorPanel = new JPanel(new BorderLayout());
 		JScrollPane scrollPane = new JScrollPane();
+		scrollPane.setBorder(BorderFactory.createEmptyBorder());
 
 		editor = new EditorPanel(script.getCode());
 		scrollPane.setViewportView(editor);
@@ -91,7 +112,7 @@ public class ScriptEditor extends JFrame {
 		lineNum.setBorder(BorderFactory.createEmptyBorder(0, 1, 0, 2));
 		scrollPane.setRowHeaderView(lineNum);
 		
-		getContentPane().add(scrollPane, BorderLayout.CENTER);
+		mainEditorPanel.add(scrollPane, BorderLayout.CENTER);
 		
 		// actions
 		cutAction.putValue(Action.SHORT_DESCRIPTION, LABELS.getString("btnCut"));
@@ -239,12 +260,8 @@ public class ScriptEditor extends JFrame {
 		});
 		caretLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 8));
 		
-		getContentPane().add(getToolBar(script), BorderLayout.NORTH);
-		
-		setSize(800, 600);
-		setVisible(true);
-		editor.requestFocus();
-		setLocationRelativeTo(originatingPanel);
+//		mainEditorPanel.add(getToolBar(script), BorderLayout.NORTH);
+		return mainEditorPanel;
 	}
 	
 	private JToolBar getToolBar(Script script) {
@@ -276,6 +293,14 @@ public class ScriptEditor extends JFrame {
 		toolBar.add(caretLabel);
 		
 		return toolBar;
+	}
+	
+	private JPanel logPanel(Script script) throws IOException {
+		JPanel mainLogPanel = new JPanel(new BorderLayout());
+		UsnaTextPane textArea = new UsnaTextPane();
+//		Style bluStyle = textArea.addStyle("blue", null);
+		mainLogPanel.add(textArea, BorderLayout.CENTER);
+		return mainLogPanel;
 	}
 	
 	private String loadCodeFromFile(File in) {

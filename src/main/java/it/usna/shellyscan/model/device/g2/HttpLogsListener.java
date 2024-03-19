@@ -14,5 +14,9 @@ public interface HttpLogsListener {
 		LOG.error("LogListener error: {}", txt);
 	}
 	
+	default void closed() {
+		LOG.debug("LogListener closed");
+	}
+	
 	public boolean requestNext();
 }

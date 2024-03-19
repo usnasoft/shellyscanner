@@ -314,7 +314,10 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 				}
 			};
 			demander.run(); // Initiate the reads.
-		})).send(result -> LOG.trace("httpLogs onComplete"));
+		})).send(result -> {
+			LOG.trace("httpLogs onComplete");
+			listener.closed();
+		});
 	}
 
 	@Override

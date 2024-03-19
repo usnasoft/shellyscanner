@@ -150,7 +150,8 @@ public class ScriptsPanel extends JPanel {
 			try {
 				Script sc = Script.create(device, null);
 				scripts.add(sc);
-				tModel.addRow(sc.getName(), sc.isEnabled(), sc.isRunning());
+				int mrow = tModel.addRow(sc.getName(), sc.isEnabled(), sc.isRunning());
+				table.setRowSelectionInterval(0, table.convertRowIndexToView(mrow));
 			} catch (IOException e1) {
 				Msg.errorMsg(e1);
 			}

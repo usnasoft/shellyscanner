@@ -43,6 +43,8 @@ public class DialogDeviceLogsG2 extends JDialog {
 	private UsnaTextPane textArea = new UsnaTextPane();
 	private Style bluStyle = textArea.addStyle("blue", null);
 	private JComboBox<String> comboBox = new JComboBox<>();
+	private JButton btnActivateLog;
+	private JButton btnStopLog;
 	private boolean readLogs;
 
 	public DialogDeviceLogsG2(final Window owner, Devices devicesModel, int modelIndex, int initLlogLevel) {
@@ -88,10 +90,10 @@ public class DialogDeviceLogsG2 extends JDialog {
 		Component horizontalStrut = Box.createHorizontalStrut(25);
 		buttonsPanel.add(horizontalStrut);
 
-		JButton btnActivateLog = new JButton(LABELS.getString("dlgLogG2Activate"));
+		btnActivateLog = new JButton(LABELS.getString("dlgLogG2Activate"));
 		buttonsPanel.add(btnActivateLog);
 
-		JButton btnStopLog = new JButton(LABELS.getString("dlgLogG2Deactivate"));
+		btnStopLog = new JButton(LABELS.getString("dlgLogG2Deactivate"));
 		buttonsPanel.add(btnStopLog);
 
 		JButton btnsStopAppRefresh = new JButton(LABELS.getString("dlgLogG2PauseRefresh"));
@@ -113,14 +115,12 @@ public class DialogDeviceLogsG2 extends JDialog {
 		comboBox.addItem(LABELS.getString("dlgLogG2Lev4")); // verbose
 		comboBox.setSelectedIndex(initLlogLevel);
 		buttonsPanel.add(comboBox);
-		
-		textArea.append(">>>> Open\n", bluStyle);
+
 		activateLogConnection(device);
 
 		btnActivateLog.addActionListener(event -> {
 			try {
 				setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-				textArea.append(">>>> Connecting\n", bluStyle);
 				activateLogConnection(device);
 			} finally {
 				setCursor(Cursor.getDefaultCursor());
@@ -129,6 +129,8 @@ public class DialogDeviceLogsG2 extends JDialog {
 
 		btnStopLog.addActionListener(event -> {
 			readLogs = false;
+			btnActivateLog.setEnabled(true);
+			btnStopLog.setEnabled(false);
 			textArea.append(">>>> Pause\n", bluStyle);
 		});
 
@@ -151,6 +153,7 @@ public class DialogDeviceLogsG2 extends JDialog {
 	
 	private void activateLogConnection(AbstractG2Device device) {
 		try {
+			textArea.append(">>>> Connect\n", bluStyle);
 			readLogs = true;
 			device.connectHttpLogs(new HttpLogsListener() {
 				@Override
@@ -177,6 +180,8 @@ public class DialogDeviceLogsG2 extends JDialog {
 					return readLogs;
 				}
 			});
+			btnActivateLog.setEnabled(false);
+			btnStopLog.setEnabled(true);
 		} catch (RuntimeException e) {
 			Msg.errorMsg(this, e);
 		}
