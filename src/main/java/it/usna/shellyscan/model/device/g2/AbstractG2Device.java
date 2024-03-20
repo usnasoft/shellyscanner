@@ -281,7 +281,8 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 	}
 
 	public void connectHttpLogs(HttpLogsListener listener) {
-		httpClient.newRequest("http://" + address.getHostAddress() + ":" + port + "/debug/log").onResponseContentSource(((response, contentSource) -> {
+		httpClient.newRequest("http://" + address.getHostAddress() + ":" + port + "/debug/log").timeout(360, TimeUnit.MINUTES)
+		.onResponseContentSource(((response, contentSource) -> {
 			// The function (as a Runnable) that reads the response content.
 			Runnable demander = new Runnable()  {
 				byte[] buf = new byte[512];
@@ -289,7 +290,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 				public void run() {
 					while (listener.requestNext()) {
 						Content.Chunk chunk = contentSource.read();
-						
+
 						// No chunk of content, demand again and return.
 						if (chunk == null)  {
 							contentSource.demand(this); 
@@ -314,7 +315,8 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 				}
 			};
 			demander.run(); // Initiate the reads.
-		})).send(result -> {
+		}))
+		.send(result -> {
 			LOG.trace("httpLogs onComplete");
 			listener.closed();
 		});

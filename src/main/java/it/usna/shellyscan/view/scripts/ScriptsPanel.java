@@ -201,7 +201,7 @@ public class ScriptsPanel extends JPanel {
 			try {
 				final int mRow = table.convertRowIndexToModel(table.getSelectedRow());
 				final Script sc = scripts.get(mRow);
-				ScriptEditor editor = new ScriptEditor(ScriptsPanel.this, sc);
+				ScriptEditor editor = new ScriptEditor(ScriptsPanel.this, device, sc);
 				editor.addPropertyChangeListener(ScriptEditor.RUN_EVENT, propertyChangeEvent -> {
 					tModel.setValueAt(propertyChangeEvent.getNewValue(), mRow, COL_RUN);
 				});

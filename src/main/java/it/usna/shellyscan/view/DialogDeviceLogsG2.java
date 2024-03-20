@@ -170,9 +170,14 @@ public class DialogDeviceLogsG2 extends JDialog {
 						textArea.append(txt.trim() + "\n");
 						textArea.setCaretPosition(textArea.getStyledDocument().getLength());
 					} else if(level <= logLevel) {
-						textArea.append(logLine[0] + "-L" + logLine[1] + ": " + logLine[2].trim( )+ "\n");
+						textArea.append(logLine[0] + "-L" + logLine[1] + ": " + logLine[2].trim() + "\n");
 						textArea.setCaretPosition(textArea.getStyledDocument().getLength());
 					}
+				}
+				
+				@Override
+				public void error(String txt) {
+					textArea.append(txt.trim() + "\n", bluStyle);
 				}
 				
 				@Override

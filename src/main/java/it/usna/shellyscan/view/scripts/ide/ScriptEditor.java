@@ -41,6 +41,8 @@ import javax.swing.text.DocumentFilter;
 
 import it.usna.shellyscan.Main;
 import it.usna.shellyscan.controller.UsnaAction;
+import it.usna.shellyscan.model.device.g2.AbstractG2Device;
+import it.usna.shellyscan.model.device.g2.HttpLogsListener;
 import it.usna.shellyscan.model.device.g2.modules.Script;
 import it.usna.shellyscan.view.MainView;
 import it.usna.shellyscan.view.scripts.DialogDeviceScriptsG2;
@@ -79,7 +81,10 @@ public class ScriptEditor extends JFrame {
 	
 	private JToggleButton btnRun;
 	
-	public ScriptEditor(ScriptsPanel originatingPanel, Script script) throws IOException {
+	private boolean readLogs;
+	private UsnaTextPane logsTextArea = new UsnaTextPane();
+	
+	public ScriptEditor(ScriptsPanel originatingPanel, AbstractG2Device device, Script script) throws IOException {
 		super(LABELS.getString("dlgScriptEditorTitle") + " - " + script.getName());
 		setIconImage(Main.ICON);
 
@@ -90,7 +95,7 @@ public class ScriptEditor extends JFrame {
 		add(splitPane, BorderLayout.CENTER);
 		
 		splitPane.setTopComponent(editorPanel(script));
-		splitPane.setBottomComponent(logPanel(script));
+		splitPane.setBottomComponent(logPanel());
 		
 		add(getToolBar(script), BorderLayout.NORTH);
 
@@ -99,6 +104,8 @@ public class ScriptEditor extends JFrame {
 		splitPane.setDividerLocation(0.8d);
 		editor.requestFocus();
 		setLocationRelativeTo(originatingPanel);
+		
+		activateLogConnection(device);
 	}
 	
 	private JPanel editorPanel(Script script) throws IOException {
@@ -264,6 +271,18 @@ public class ScriptEditor extends JFrame {
 		return mainEditorPanel;
 	}
 	
+	private JPanel logPanel(/*Script script, AbstractG2Device device*/) throws IOException {
+		logsTextArea.setEditable(false);
+		JPanel mainLogPanel = new JPanel(new BorderLayout());
+
+		JScrollPane scrollPane = new JScrollPane();
+		scrollPane.setBorder(BorderFactory.createEmptyBorder(0, 2, 4, 2));
+		scrollPane.setViewportView(logsTextArea);
+
+		mainLogPanel.add(scrollPane, BorderLayout.CENTER);
+		return mainLogPanel;
+	}
+	
 	private JToolBar getToolBar(Script script) {
 		JToolBar toolBar = new JToolBar();
 
@@ -295,12 +314,39 @@ public class ScriptEditor extends JFrame {
 		return toolBar;
 	}
 	
-	private JPanel logPanel(Script script) throws IOException {
-		JPanel mainLogPanel = new JPanel(new BorderLayout());
-		UsnaTextPane textArea = new UsnaTextPane();
-//		Style bluStyle = textArea.addStyle("blue", null);
-		mainLogPanel.add(textArea, BorderLayout.CENTER);
-		return mainLogPanel;
+	private void activateLogConnection(AbstractG2Device device) {
+		try {
+			readLogs = true;
+			device.connectHttpLogs(new HttpLogsListener() {
+				@Override
+				public void accept(String txt) {
+//					int logLevel = comboBox.getSelectedIndex();
+					String[] logLine = txt.split("\\s", 3);
+					int level;
+					try {
+						level = Integer.parseInt(logLine[1]);
+					} catch(Exception e) {
+						level = Integer.MIN_VALUE;					
+					}
+					if(logLine.length < 3 || level == Integer.MIN_VALUE) {
+						logsTextArea.append(txt.trim() + "\n");
+						logsTextArea.setCaretPosition(logsTextArea.getStyledDocument().getLength());
+					} else if(level <= /*logLevel*/0) {
+						logsTextArea.append(/*logLine[0] + "L" + logLine[1] + ": " +*/ logLine[2].trim() + "\n");
+						logsTextArea.setCaretPosition(logsTextArea.getStyledDocument().getLength());
+					}
+				}
+				
+				@Override
+				public boolean requestNext() {
+					return readLogs;
+				}
+			});
+//			btnActivateLog.setEnabled(false);
+//			btnStopLog.setEnabled(true);
+		} catch (RuntimeException e) {
+			Msg.errorMsg(this, e);
+		}
 	}
 	
 	private String loadCodeFromFile(File in) {
@@ -328,3 +374,8 @@ public class ScriptEditor extends JFrame {
 		return null;
 	}
 }
+
+// todo su errore (500) stop
+// log arrivo solo con "run"
+// cleat logs
+// editor: cmmenti - indent
