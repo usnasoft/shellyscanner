@@ -128,8 +128,13 @@ public class Script {
 
 	// response example: {"was_running":true}
 	public void run() throws IOException {
-		device.getJSON("/rpc/Script.Start?id=" + id);
-		running = true;
+		try {
+			device.getJSON("/rpc/Script.Start?id=" + id);
+			running = true;
+		} catch(IOException e) {
+			running = false;
+			throw e;
+		}
 	}
 
 	public void stop() throws IOException {

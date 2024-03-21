@@ -5,6 +5,7 @@ import static it.usna.shellyscan.Main.LABELS;
 import java.awt.BorderLayout;
 import java.awt.Cursor;
 import java.awt.FlowLayout;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.io.BufferedReader;
 import java.io.File;
@@ -29,7 +30,6 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTextField;
-import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -41,6 +41,7 @@ import javax.swing.text.DocumentFilter;
 
 import it.usna.shellyscan.Main;
 import it.usna.shellyscan.controller.UsnaAction;
+import it.usna.shellyscan.controller.UsnaToggleAction;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.g2.HttpLogsListener;
 import it.usna.shellyscan.model.device.g2.modules.Script;
@@ -54,7 +55,7 @@ import it.usna.swing.dialog.FindReplaceDialog;
 import it.usna.util.IOFile;
 
 /**
- * A small text editor where "load" and "save" relies on "scipts" notes
+ * A small text editor for scripts
  * @author usna
  */
 public class ScriptEditor extends JFrame {
@@ -64,7 +65,7 @@ public class ScriptEditor extends JFrame {
 	private Action openAction;
 	private Action saveAsAction;
 	private Action uploadAction;
-	private Action runAction;
+	private UsnaToggleAction runAction2;
 	private Action uploadAndRunAction;
 	private Action cutAction = new DefaultEditorKit.CutAction();
 	private Action copyAction = new DefaultEditorKit.CopyAction();;
@@ -78,16 +79,17 @@ public class ScriptEditor extends JFrame {
 	
 	private EditorPanel editor;
 	private JLabel caretLabel;
-	
-	private JToggleButton btnRun;
-	
-	private boolean readLogs;
+
 	private UsnaTextPane logsTextArea = new UsnaTextPane();
+	
+	private final AbstractG2Device device;
+	private boolean readLogs;
 	
 	public ScriptEditor(ScriptsPanel originatingPanel, AbstractG2Device device, Script script) throws IOException {
 		super(LABELS.getString("dlgScriptEditorTitle") + " - " + script.getName());
 		setIconImage(Main.ICON);
-
+		
+		this.device = device;
 		JSplitPane splitPane = new JSplitPane();
 		splitPane.setOneTouchExpandable(true);
 		splitPane.setOrientation(JSplitPane.VERTICAL_SPLIT);
@@ -104,8 +106,8 @@ public class ScriptEditor extends JFrame {
 		splitPane.setDividerLocation(0.8d);
 		editor.requestFocus();
 		setLocationRelativeTo(originatingPanel);
-		
-		activateLogConnection(device);
+
+		runningStatus(script.isRunning());
 	}
 	
 	private JPanel editorPanel(Script script) throws IOException {
@@ -183,29 +185,32 @@ public class ScriptEditor extends JFrame {
 			}
 		});
 		
-		runAction = new UsnaAction(null, "btnRun", "/images/PlayerPlayGreen24.png", e -> {
+		final ActionListener runActionPerformed = e -> {
 			try {
 				if(script.isRunning()) {
 					script.stop();
-					uploadAndRunAction.setEnabled(true);
+					runningStatus(false);
 					firePropertyChange(RUN_EVENT, true, false);
 				} else {
+					runningStatus(true);
 					script.run();
-					uploadAndRunAction.setEnabled(false);
 					firePropertyChange(RUN_EVENT, false, true);
 				}
 			} catch (IOException ex) {
+				runningStatus(false);
 				Msg.errorMsg(this, ex);
 			}
-		});
+		};
+		
+		runAction2 = new UsnaToggleAction(this, "btnRun", "btnRunStoppedTooltip", "btnRunRunningTooltip", "/images/PlayerPlayGreen24.png", "/images/PlayerStopRed24.png", runActionPerformed, runActionPerformed);
 		
 		uploadAndRunAction = new UsnaAction(this, "btnUploadRun", "/images/PlayerUploadPlay24.png", e -> {
 			String res = script.putCode(editor.getText()); // uploadAction.actionPerformed(e);
 			if(res != null) {
 				Msg.errorMsg(this, res);
 			} else {
-				runAction.actionPerformed(e);
-				btnRun.setSelected(true);
+				runActionPerformed.actionPerformed(e);
+				runAction2.setSelected(true);
 			}
 		});
 		
@@ -256,19 +261,27 @@ public class ScriptEditor extends JFrame {
 		});
 		editor.mapAction(KeyStroke.getKeyStroke(KeyEvent.VK_G, MainView.SHORTCUT_KEY), gotoAction, "goto_usna");
 		
-		// buttons initial status
-		btnRun = new JToggleButton(runAction);
-		btnRun.setSelected(script.isRunning());
-		uploadAndRunAction.setEnabled(script.isRunning() == false);
-		
 		caretLabel = new JLabel(editor.getCaretRow() + " : " + editor.getCaretColumn());
 		editor.addCaretListener(e -> {
 			caretLabel.setText(editor.getCaretRow() + " : " + editor.getCaretColumn());
 		});
 		caretLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 8));
 		
-//		mainEditorPanel.add(getToolBar(script), BorderLayout.NORTH);
 		return mainEditorPanel;
+	}
+	
+	private void runningStatus(boolean running) {
+		if(running) {
+			uploadAndRunAction.setEnabled(false);
+			uploadAction.setEnabled(false);
+			runAction2.setSelected(true);
+			activateLogConnection();
+		} else {
+			uploadAndRunAction.setEnabled(true);
+			uploadAction.setEnabled(true);
+			runAction2.setSelected(false);
+			readLogs = false; // stop LogConnection
+		}
 	}
 	
 	private JPanel logPanel(/*Script script, AbstractG2Device device*/) throws IOException {
@@ -285,18 +298,12 @@ public class ScriptEditor extends JFrame {
 	
 	private JToolBar getToolBar(Script script) {
 		JToolBar toolBar = new JToolBar();
-
-		btnRun.setRolloverIcon(btnRun.getIcon());
-		ImageIcon stopIcon = new ImageIcon(ScriptEditor.class.getResource("/images/PlayerStopRed24.png"));
-		btnRun.setRolloverSelectedIcon(stopIcon);
-		btnRun.setSelectedIcon(stopIcon);
-		btnRun.setHideActionText(true);
 		
 		toolBar.add(openAction);
 		toolBar.add(saveAsAction);
 		toolBar.add(uploadAction);
 		toolBar.addSeparator();
-		toolBar.add(btnRun);
+		toolBar.add(runAction2);
 		toolBar.add(uploadAndRunAction);
 		toolBar.addSeparator();
 		toolBar.add(cutAction);
@@ -314,7 +321,7 @@ public class ScriptEditor extends JFrame {
 		return toolBar;
 	}
 	
-	private void activateLogConnection(AbstractG2Device device) {
+	private void activateLogConnection() {
 		try {
 			readLogs = true;
 			device.connectHttpLogs(new HttpLogsListener() {
@@ -375,7 +382,5 @@ public class ScriptEditor extends JFrame {
 	}
 }
 
-// todo su errore (500) stop
-// log arrivo solo con "run"
-// cleat logs
+// clear logs
 // editor: cmmenti - indent
