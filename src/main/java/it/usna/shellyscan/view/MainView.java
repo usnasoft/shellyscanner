@@ -41,7 +41,6 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
-import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
 import javax.swing.RowSorter;
@@ -64,6 +63,7 @@ import it.usna.shellyscan.controller.RestoreAction;
 import it.usna.shellyscan.controller.SelectionAction;
 import it.usna.shellyscan.controller.UsnaAction;
 import it.usna.shellyscan.controller.UsnaSelectedAction;
+import it.usna.shellyscan.controller.UsnaToggleAction;
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.GhostDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
@@ -117,7 +117,6 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 			LABELS.getString("col_relay"));
 	private final DevicesTable devicesTable = new DevicesTable(tabModel);
 	
-	private JToggleButton viewModeButton;
 	private JToolBar toolBar = new JToolBar();
 	private DialogDeferrables dialogDeferrables;
 
@@ -214,15 +213,9 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 	private Action chartAction = new UsnaAction(this, "action_chart_name", "action_chart_tooltip", null, "/images/Stats2.png",
 			e -> new MeasuresChart(this, model, devicesTable.getSelectedModelRows(), appProp) );
 	
-	private Action appSettingsAction = new UsnaAction(this, "action_appsettings_name", "action_appsettings_tooltip", null, "/images/Gear.png",
-			e -> new DialogAppSettings(MainView.this, devicesTable, model, viewModeButton.isSelected(), appProp) );
-	
 	private Action scriptManagerAction = new UsnaSelectedAction(this, devicesTable, "action_script_name", "action_script_tooltip", null, "/images/Movie.png",
 			i -> new DialogDeviceScriptsG2(MainView.this, model, i) );
-	
-	private Action detailedViewAction = new UsnaAction(this, "action_show_detail_name", "action_show_detail_tooltip", null, "/images/Plus.png",
-			e -> SwingUtilities.invokeLater(() -> detailedView(((JToggleButton)e.getSource()).isSelected()) ) );
-	
+
 	private Action notesAction = new UsnaSelectedAction(null, devicesTable, "action_notes_name", "action_notes_tooltip", "/images/Write2-16.png", "/images/Write2.png",
 			i -> new NotesEditor(this, model.getGhost(i)) );
 	
@@ -239,6 +232,11 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 			Arrays.stream(devicesTable.getSelectedRows()).map(devicesTable::convertRowIndexToModel).boxed().sorted(Collections.reverseOrder()).forEach(i-> model.remove(i));
 		}
 	});
+	
+	private UsnaToggleAction detailedViewAction;
+	
+	private Action appSettingsAction = new UsnaAction(this, "action_appsettings_name", "action_appsettings_tooltip", null, "/images/Gear.png",
+			e -> new DialogAppSettings(MainView.this, devicesTable, model, detailedViewAction.isSelected(), appProp) );
 	
 	private Action printAction = new UsnaAction(this, "action_print_name", "action_print_tooltip", null, "/images/Printer.png", e -> {
 		try {
@@ -368,6 +366,9 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		statusPanel.setBackground(Main.STATUS_LINE);
 		getContentPane().add(statusPanel, BorderLayout.SOUTH);
 		
+		detailedViewAction = new UsnaToggleAction(null, "action_show_detail_name", "action_show_detail_tooltip", "action_show_detail_tooltip", "/images/Plus.png", "/images/Minus.png",
+				e -> SwingUtilities.invokeLater(() -> detailedView(detailedViewAction.isSelected()) ) );
+		
 		// Table
 		JScrollPane scrollPane = new JScrollPane();
 		getContentPane().add(scrollPane, BorderLayout.CENTER);
@@ -379,12 +380,6 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 
 		// Toolbar
 		toolBar.setBorder(BorderFactory.createEmptyBorder());
-		viewModeButton = new JToggleButton(detailedViewAction);
-		viewModeButton.setVerticalTextPosition(JToggleButton.BOTTOM);
-		viewModeButton.setHorizontalTextPosition(JToggleButton.CENTER);
-		viewModeButton.setSelectedIcon(new ImageIcon(getClass().getResource("/images/Minus.png")));;
-		viewModeButton.setRolloverIcon(viewModeButton.getIcon()); // '+'
-		viewModeButton.setRolloverSelectedIcon(viewModeButton.getSelectedIcon()); // '-'
 		
 		toolBar.add(rescanAction);
 		toolBar.add(refreshAction);
@@ -404,7 +399,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		toolBar.addSeparator();
 		toolBar.add(notesAction);
 		toolBar.add(Box.createHorizontalGlue());
-		toolBar.add(viewModeButton);
+		toolBar.add(detailedViewAction);
 		toolBar.add(csvExportAction);
 		toolBar.add(printAction);
 		toolBar.addSeparator();
@@ -623,9 +618,9 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 				Msg.errorMsg(this, "Error storing archive");
 			}
 		}
-		if(viewModeButton.isSelected()) { // else -> normal view values stored on detailedView(true)
+		if(detailedViewAction.isSelected()) { // else -> normal view values stored on detailedView(true)
 			devicesTable.saveColPos(appProp, DevicesTable.STORE_EXT_PREFIX);
-			// no position/size stored for detailed view
+			// no position/window size stored for detailed view
 		} else {
 			devicesTable.saveColPos(appProp, DevicesTable.STORE_PREFIX);
 			super.storeProperties(appProp);

@@ -16,10 +16,14 @@ public class UsnaToggleAction extends UsnaAction {
 	private final ImageIcon imageActive;
 	private final String toolTipInactive;
 	private final String toolTipActive;
-	private boolean active = false;
+	private boolean selected = false;
 	
 	public UsnaToggleAction(Component w, String nameId, String tooltipId, String iconInactive, String iconActive, final ActionListener activate, final ActionListener deactivate) {
 		this(w, nameId, tooltipId, tooltipId, iconInactive, iconActive, activate, deactivate);
+	}
+	
+	public UsnaToggleAction(Component w, String nameId, String tooltipInactiveId, String tooltipActiveId, String iconInactive, String iconActive, final ActionListener listener) {
+		this(w, nameId, tooltipInactiveId, tooltipActiveId, iconInactive, iconActive, listener, listener);
 	}
 
 	public UsnaToggleAction(Component w, String nameId, String tooltipInactiveId, String tooltipActiveId, String iconInactive, String iconActive, final ActionListener activate, final ActionListener deactivate) {
@@ -35,12 +39,16 @@ public class UsnaToggleAction extends UsnaAction {
 		if(sel) {
 			putValue(SMALL_ICON, imageActive);
 			putValue(SHORT_DESCRIPTION, toolTipActive);
-			active = true;
+			selected = true;
 		} else {
 			putValue(SMALL_ICON, imageInactive);
 			putValue(SHORT_DESCRIPTION, toolTipInactive);
-			active = false;
+			selected = false;
 		}
+	}
+	
+	public boolean isSelected() {
+		return selected;
 	}
 	
 	@Override
@@ -49,12 +57,12 @@ public class UsnaToggleAction extends UsnaAction {
 			if(w != null) {
 				w.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR)); // usefull if SwingUtilities.invokeLater(...) is not used inside "onActionPerformed"
 			}
-			if(active) {
-				deactivate.actionPerformed(e);
+			if(selected) {
 				setSelected(false);
+				deactivate.actionPerformed(e);
 			} else {
-				onActionPerformed.actionPerformed(e);
 				setSelected(true);
+				onActionPerformed.actionPerformed(e);
 			}
 		} finally {
 			if(w != null) {

@@ -5,7 +5,6 @@ import static it.usna.shellyscan.Main.LABELS;
 import java.awt.BorderLayout;
 import java.awt.Cursor;
 import java.awt.FlowLayout;
-import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.io.BufferedReader;
 import java.io.File;
@@ -65,7 +64,7 @@ public class ScriptEditor extends JFrame {
 	private Action openAction;
 	private Action saveAsAction;
 	private Action uploadAction;
-	private UsnaToggleAction runAction2;
+	private UsnaToggleAction runStopAction;
 	private Action uploadAndRunAction;
 	private Action cutAction = new DefaultEditorKit.CutAction();
 	private Action copyAction = new DefaultEditorKit.CopyAction();;
@@ -184,8 +183,8 @@ public class ScriptEditor extends JFrame {
 				Msg.errorMsg(this, res);
 			}
 		});
-		
-		final ActionListener runActionPerformed = e -> {
+
+		runStopAction = new UsnaToggleAction(this, "btnRun", "btnRunStoppedTooltip", "btnRunRunningTooltip", "/images/PlayerPlayGreen24.png", "/images/PlayerStopRed24.png",  e -> {
 			try {
 				if(script.isRunning()) {
 					script.stop();
@@ -197,20 +196,21 @@ public class ScriptEditor extends JFrame {
 					firePropertyChange(RUN_EVENT, false, true);
 				}
 			} catch (IOException ex) {
+				if(ex.getMessage() != null && ex.getMessage().endsWith("500")) {
+					Msg.errorMsg(this, LABELS.getString("lblScriptExeError"));
+				} else {
+					Msg.errorMsg(this, ex);
+				}
 				runningStatus(false);
-				Msg.errorMsg(this, ex);
 			}
-		};
-		
-		runAction2 = new UsnaToggleAction(this, "btnRun", "btnRunStoppedTooltip", "btnRunRunningTooltip", "/images/PlayerPlayGreen24.png", "/images/PlayerStopRed24.png", runActionPerformed, runActionPerformed);
+		});
 		
 		uploadAndRunAction = new UsnaAction(this, "btnUploadRun", "/images/PlayerUploadPlay24.png", e -> {
 			String res = script.putCode(editor.getText()); // uploadAction.actionPerformed(e);
 			if(res != null) {
 				Msg.errorMsg(this, res);
 			} else {
-				runActionPerformed.actionPerformed(e);
-				runAction2.setSelected(true);
+				runStopAction.actionPerformed(e);
 			}
 		});
 		
@@ -274,12 +274,12 @@ public class ScriptEditor extends JFrame {
 		if(running) {
 			uploadAndRunAction.setEnabled(false);
 			uploadAction.setEnabled(false);
-			runAction2.setSelected(true);
+			runStopAction.setSelected(true);
 			activateLogConnection();
 		} else {
 			uploadAndRunAction.setEnabled(true);
 			uploadAction.setEnabled(true);
-			runAction2.setSelected(false);
+			runStopAction.setSelected(false);
 			readLogs = false; // stop LogConnection
 		}
 	}
@@ -303,7 +303,7 @@ public class ScriptEditor extends JFrame {
 		toolBar.add(saveAsAction);
 		toolBar.add(uploadAction);
 		toolBar.addSeparator();
-		toolBar.add(runAction2);
+		toolBar.add(runStopAction);
 		toolBar.add(uploadAndRunAction);
 		toolBar.addSeparator();
 		toolBar.add(cutAction);
