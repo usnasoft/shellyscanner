@@ -62,7 +62,7 @@ public class ScriptsPanel extends JPanel {
 	private final static Border BUTTON_BORDERS = BorderFactory.createEmptyBorder(0, 12, 0, 12);
 	private final static int COL_RUN = 2;
 	private final ExTooltipTable table;
-	private final ArrayList<Script> scripts = new ArrayList<>();
+	private final ArrayList<ScriptAndEditor> scripts = new ArrayList<>();
 
 	public ScriptsPanel(JDialog owner, Devices devicesModel, int modelIndex) throws IOException {
 		AbstractG2Device device = (AbstractG2Device) devicesModel.get(modelIndex);
@@ -84,7 +84,8 @@ public class ScriptsPanel extends JPanel {
 
 			@Override
 			public boolean isCellEditable(final int row, final int column) {
-				return true;
+				final int mRow = table.convertRowIndexToModel(row);
+				return scripts.get(mRow).isEdited() == false;
 			}
 
 			@Override
@@ -101,7 +102,7 @@ public class ScriptsPanel extends JPanel {
 				try {
 					final int mCol = convertColumnIndexToModel(getEditingColumn());
 					final int mRow = convertRowIndexToModel(getEditingRow());
-					final Script sc = scripts.get(mRow);
+					final Script sc = scripts.get(mRow).script;
 					if(mCol == 0) { // name
 						String ret = sc.setName((String)getCellEditor().getCellEditorValue());
 						if(ret != null) {
@@ -135,7 +136,7 @@ public class ScriptsPanel extends JPanel {
 					new Object[] {UIManager.getString("OptionPane.yesButtonText"), cancel}, cancel) == 0) {
 				try {
 					final int mRow = table.convertRowIndexToModel(table.getSelectedRow());
-					final Script sc = scripts.get(mRow);
+					final Script sc = scripts.get(mRow).script;
 					sc.delete();
 					scripts.remove(mRow);
 					tModel.removeRow(mRow);
@@ -149,7 +150,7 @@ public class ScriptsPanel extends JPanel {
 		final JButton btnNew = new JButton(new UsnaAction(this, "btnNew", e -> {
 			try {
 				Script sc = Script.create(device, null);
-				scripts.add(sc);
+				scripts.add(new ScriptAndEditor(sc));
 				int mrow = tModel.addRow(sc.getName(), sc.isEnabled(), sc.isRunning());
 				table.setRowSelectionInterval(0, table.convertRowIndexToView(mrow));
 			} catch (IOException e1) {
@@ -160,34 +161,29 @@ public class ScriptsPanel extends JPanel {
 
 		final JButton btnDownload = new JButton(new UsnaAction(this, "btnDownload", e -> {
 			final int mRow = table.convertRowIndexToModel(table.getSelectedRow());
-			final Script sc = scripts.get(mRow);
+			final Script sc = scripts.get(mRow).script;
 			final JFileChooser fc = new JFileChooser();
 			fc.setFileFilter(new FileNameExtensionFilter(LABELS.getString("filetype_js_desc"), DialogDeviceScriptsG2.FILE_EXTENSION));
 			fc.setSelectedFile(new File(sc.getName()));
 			if(fc.showSaveDialog(ScriptsPanel.this) == JFileChooser.APPROVE_OPTION) {
-//				setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 				try (FileWriter w = new FileWriter(fc.getSelectedFile())) {
 					w.write(sc.getCode());
 				} catch (IOException e1) {
 					Msg.errorMsg(ScriptsPanel.this, LABELS.getString("msgScrNoCode"));
-				} /*finally {
-					setCursor(Cursor.getDefaultCursor());
-				}*/
+				}
 			}
 		}));
 		operationsPanel.add(btnDownload);
 
 		final JButton btnUpload = new JButton(new UsnaAction(this, "btnUpload", "btnUploadTooltip", null, null, e -> {
 			final int mRow = table.convertRowIndexToModel(table.getSelectedRow());
-			final Script sc = scripts.get(mRow);
+			final Script sc = scripts.get(mRow).script;
 			final JFileChooser fc = new JFileChooser();
 			fc.setFileFilter(new FileNameExtensionFilter(LABELS.getString("filetype_js_desc"), DialogDeviceScriptsG2.FILE_EXTENSION));
 			fc.addChoosableFileFilter(new FileNameExtensionFilter(LABELS.getString("filetype_sbk_desc"), Main.BACKUP_FILE_EXT));
 			fc.setSelectedFile(new File(sc.getName()));
 			if(fc.showOpenDialog(ScriptsPanel.this) == JFileChooser.APPROVE_OPTION) {
-//				setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 				loadCodeFromFile(fc.getSelectedFile(), sc);
-//				setCursor(Cursor.getDefaultCursor());
 			}
 		}));
 		operationsPanel.add(btnUpload);
@@ -200,11 +196,15 @@ public class ScriptsPanel extends JPanel {
 		final UsnaAction editAction = new UsnaAction(this, "edit2", e -> {
 			try {
 				final int mRow = table.convertRowIndexToModel(table.getSelectedRow());
-				final Script sc = scripts.get(mRow);
-				ScriptEditor editor = new ScriptEditor(ScriptsPanel.this, device, sc);
-				editor.addPropertyChangeListener(ScriptEditor.RUN_EVENT, propertyChangeEvent -> {
-					tModel.setValueAt(propertyChangeEvent.getNewValue(), mRow, COL_RUN);
+				final Script sc = scripts.get(mRow).script;
+				final ScriptEditor editor = new ScriptEditor(ScriptsPanel.this, device, sc);
+				scripts.get(mRow).editors().add(editor);
+				editor.addPropertyChangeListener(ScriptEditor.RUN_EVENT, propertyChangeEvent -> tModel.setValueAt(propertyChangeEvent.getNewValue(), mRow, COL_RUN));
+				editor.addPropertyChangeListener(ScriptEditor.CLOSE_EVENT, propertyChangeEvent -> {
+					scripts.get(mRow).editors().remove(editor);
+					tModel.fireTableCellUpdated(mRow, COL_RUN);
 				});
+				tModel.fireTableCellUpdated(mRow, COL_RUN);
 			} catch (IOException e1) {
 				Msg.errorMsg(e1);
 			}
@@ -226,15 +226,16 @@ public class ScriptsPanel extends JPanel {
 		};;
 		table.addMouseListener(tablePopup.getMouseListener());
 
+		// Fill
 		for(JsonNode script: Script.list(device)) {
 			Script sc = new Script(device, script);
-			scripts.add(sc);
+			scripts.add(new ScriptAndEditor(sc));
 			tModel.addRow(sc.getName(), sc.isEnabled(), sc.isRunning());
 		}
 		TableColumnModel columnModel = table.getColumnModel();
 		columnModel.getColumn(0).setPreferredWidth(3000);
 		columnModel.getColumn(1).setPreferredWidth(500);
-		columnModel.getColumn(2).setPreferredWidth(500);
+		columnModel.getColumn(COL_RUN).setPreferredWidth(500);
 
 		ListSelectionListener l = e -> {
 			final boolean selection = table.getSelectedRowCount() > 0;
@@ -280,7 +281,7 @@ public class ScriptsPanel extends JPanel {
 	}
 	
 	private class ButtonCellRenderer implements TableCellRenderer {
-		private JButton runningB = new JButton(new ImageIcon(getClass().getResource("/images/Pause16.png")));
+		private JButton runningB = new JButton(new ImageIcon(getClass().getResource("/images/Stop16.png")));
 		private JButton idleB = new JButton(new ImageIcon(getClass().getResource("/images/Play16.png")));
 		private JPanel running = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
 		private JPanel idle = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
@@ -304,13 +305,16 @@ public class ScriptsPanel extends JPanel {
             } else {
                 b.setBackground(Color.WHITE);
             }
+			final boolean editing = scripts.get(table.convertRowIndexToModel(row)).isEdited();
+			idleB.setBackground(editing ? Color.CYAN : Color.WHITE);
+			runningB.setBackground(editing ? Color.CYAN : Color.WHITE);
 			return b;
 		}
 	}
 	
 	private class ButtonCellEditor extends AbstractCellEditor implements TableCellEditor {
 		private static final long serialVersionUID = 1L;
-		private JButton runningB = new JButton(new ImageIcon(getClass().getResource("/images/Pause16.png")));
+		private JButton runningB = new JButton(new ImageIcon(getClass().getResource("/images/Stop16.png")));
 		private JButton idleB = new JButton(new ImageIcon(getClass().getResource("/images/Play16.png")));
 		private JPanel running = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
 		private JPanel idle = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
@@ -326,14 +330,14 @@ public class ScriptsPanel extends JPanel {
 			runningB.addActionListener(e -> {
 				final int selRow = table.getSelectedRow();
 				final int mRow = table.convertRowIndexToModel(selRow);
-				final Script sc = scripts.get(mRow);
+				final Script sc = scripts.get(mRow).script;
 				try {
 					ScriptsPanel.this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 					sc.stop();
 					table.setValueAt(false, selRow, 2);
 					cancelCellEditing();
 				} catch (IOException e1) {
-					Msg.errorMsg(e1);
+					Msg.errorMsg(ScriptsPanel.this, e1);
 				} finally {
 					ScriptsPanel.this.setCursor(Cursor.getDefaultCursor());
 				}
@@ -342,14 +346,14 @@ public class ScriptsPanel extends JPanel {
 			idleB.addActionListener(e -> {
 				final int selRow = table.getSelectedRow();
 				final int mRow = table.convertRowIndexToModel(selRow);
-				final Script sc = scripts.get(mRow);
+				final Script sc = scripts.get(mRow).script;
 				try {
 					ScriptsPanel.this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 					sc.run();
 					table.setValueAt(true, selRow, 2);
 					cancelCellEditing();
 				} catch (IOException e1) {
-					Msg.errorMsg(e1);
+					Msg.errorMsg(ScriptsPanel.this, e1);
 				} finally {
 					ScriptsPanel.this.setCursor(Cursor.getDefaultCursor());
 				}
@@ -366,6 +370,16 @@ public class ScriptsPanel extends JPanel {
 			JComponent b = (value == Boolean.TRUE) ? running : idle;
 			b.setBackground(table.getSelectionBackground());
 			return b;
+		}
+	}
+	
+	private record ScriptAndEditor(Script script, ArrayList<ScriptEditor> editors) {
+		public ScriptAndEditor(Script script) {
+			this(script, new ArrayList<ScriptEditor>());
+		}
+		
+		public boolean isEdited() {
+			return editors.isEmpty() == false;
 		}
 	}
 }

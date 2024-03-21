@@ -18,10 +18,6 @@ public class UsnaToggleAction extends UsnaAction {
 	private final String toolTipActive;
 	private boolean selected = false;
 	
-	public UsnaToggleAction(Component w, String nameId, String tooltipId, String iconInactive, String iconActive, final ActionListener activate, final ActionListener deactivate) {
-		this(w, nameId, tooltipId, tooltipId, iconInactive, iconActive, activate, deactivate);
-	}
-	
 	public UsnaToggleAction(Component w, String nameId, String tooltipInactiveId, String tooltipActiveId, String iconInactive, String iconActive, final ActionListener listener) {
 		this(w, nameId, tooltipInactiveId, tooltipActiveId, iconInactive, iconActive, listener, listener);
 	}

@@ -31,6 +31,7 @@ import javax.swing.JSplitPane;
 import javax.swing.JTextField;
 import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
+import javax.swing.WindowConstants;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.AttributeSet;
@@ -60,6 +61,7 @@ import it.usna.util.IOFile;
 public class ScriptEditor extends JFrame {
 	private static final long serialVersionUID = 1L;
 	public final static String RUN_EVENT = "scriptIsRunning";
+	public final static String CLOSE_EVENT = "scriptEditorColose";
 
 	private Action openAction;
 	private Action saveAsAction;
@@ -85,8 +87,9 @@ public class ScriptEditor extends JFrame {
 	private boolean readLogs;
 	
 	public ScriptEditor(ScriptsPanel originatingPanel, AbstractG2Device device, Script script) throws IOException {
-		super(LABELS.getString("dlgScriptEditorTitle") + " - " + script.getName());
+		super(/*LABELS.getString("dlgScriptEditorTitle") + " - " +*/ script.getName());
 		setIconImage(Main.ICON);
+		setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 		
 		this.device = device;
 		JSplitPane splitPane = new JSplitPane();
@@ -98,15 +101,22 @@ public class ScriptEditor extends JFrame {
 		splitPane.setTopComponent(editorPanel(script));
 		splitPane.setBottomComponent(logPanel());
 		
-		add(getToolBar(script), BorderLayout.NORTH);
+		add(getToolBar(), BorderLayout.NORTH);
 
 		setSize(800, 600);
 		setVisible(true);
-		splitPane.setDividerLocation(0.8d);
+		splitPane.setDividerLocation(0.75d);
 		editor.requestFocus();
 		setLocationRelativeTo(originatingPanel);
 
 		runningStatus(script.isRunning());
+	}
+	
+	@Override
+	public void dispose() {
+		firePropertyChange(CLOSE_EVENT, null, null);
+		readLogs = false;
+		super.dispose();
 	}
 	
 	private JPanel editorPanel(Script script) throws IOException {
@@ -293,12 +303,21 @@ public class ScriptEditor extends JFrame {
 		scrollPane.setViewportView(logsTextArea);
 
 		mainLogPanel.add(scrollPane, BorderLayout.CENTER);
+		
+		JToolBar toolBar = new JToolBar();
+		toolBar.setFloatable(false);
+		
+		Action erase = new UsnaAction(this, null, "/images/erase-9-16.png", e -> {
+			logsTextArea.setText("");
+		});
+		toolBar.add(erase);
+		
+		mainLogPanel.add(toolBar, BorderLayout.NORTH);
 		return mainLogPanel;
 	}
 	
-	private JToolBar getToolBar(Script script) {
+	private JToolBar getToolBar() {
 		JToolBar toolBar = new JToolBar();
-		
 		toolBar.add(openAction);
 		toolBar.add(saveAsAction);
 		toolBar.add(uploadAction);
@@ -317,7 +336,6 @@ public class ScriptEditor extends JFrame {
 		toolBar.add(gotoAction);
 		toolBar.add(Box.createHorizontalGlue());
 		toolBar.add(caretLabel);
-		
 		return toolBar;
 	}
 	
@@ -327,7 +345,6 @@ public class ScriptEditor extends JFrame {
 			device.connectHttpLogs(new HttpLogsListener() {
 				@Override
 				public void accept(String txt) {
-//					int logLevel = comboBox.getSelectedIndex();
 					String[] logLine = txt.split("\\s", 3);
 					int level;
 					try {
@@ -349,8 +366,6 @@ public class ScriptEditor extends JFrame {
 					return readLogs;
 				}
 			});
-//			btnActivateLog.setEnabled(false);
-//			btnStopLog.setEnabled(true);
 		} catch (RuntimeException e) {
 			Msg.errorMsg(this, e);
 		}
@@ -374,7 +389,7 @@ public class ScriptEditor extends JFrame {
 				return IOFile.readFile(in);
 			}
 		} catch (/*IO*/Exception e1) {
-			Msg.errorMsg(e1);
+			Msg.errorMsg(this, e1);
 		} finally {
 			setCursor(Cursor.getDefaultCursor());
 		}
@@ -382,5 +397,5 @@ public class ScriptEditor extends JFrame {
 	}
 }
 
-// clear logs
+// dialog padre run disabled (bottone quadrato)
 // editor: cmmenti - indent
