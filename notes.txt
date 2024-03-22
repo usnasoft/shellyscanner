@@ -234,12 +234,13 @@ https://www.iconbolt.com/
 // mini gen 3
 // improved editor
 // motion 2 improved restore (actions) and table output (motion on/off)
-todo editor: console
+// editor: console
+// todo discover function and varable names with regexp (autocomplete)
 
 ---
 // TODO
 // todo search ssid ?
-// editor sintax
+// editor 			ScriptEngineManager engineManager = new ScriptEngineManager();
 // chacklist reset button(5)/power
 // grafico energia
 // inclusione massiva
