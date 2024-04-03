@@ -21,7 +21,7 @@ import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 
 import it.usna.shellyscan.Main;
-import it.usna.swing.TextDocumentListener;
+import it.usna.swing.texteditor.TextDocumentListener;
 
 public class DialogAuthentication extends JDialog {
 	private static final long serialVersionUID = 1L;

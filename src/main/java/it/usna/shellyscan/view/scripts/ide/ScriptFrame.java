@@ -5,6 +5,7 @@ import static it.usna.shellyscan.Main.LABELS;
 import java.awt.BorderLayout;
 import java.awt.Cursor;
 import java.awt.FlowLayout;
+import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.io.BufferedReader;
 import java.io.File;
@@ -50,15 +51,15 @@ import it.usna.shellyscan.view.scripts.DialogDeviceScriptsG2;
 import it.usna.shellyscan.view.scripts.ScriptsPanel;
 import it.usna.shellyscan.view.util.Msg;
 import it.usna.shellyscan.view.util.UsnaTextPane;
-import it.usna.swing.TextLineNumber;
 import it.usna.swing.dialog.FindReplaceDialog;
+import it.usna.swing.texteditor.TextLineNumber;
 import it.usna.util.IOFile;
 
 /**
  * A small text editor for scripts
  * @author usna
  */
-public class ScriptEditor extends JFrame {
+public class ScriptFrame extends JFrame {
 	private static final long serialVersionUID = 1L;
 	public final static String RUN_EVENT = "scriptIsRunning";
 	public final static String CLOSE_EVENT = "scriptEditorColose";
@@ -75,6 +76,7 @@ public class ScriptEditor extends JFrame {
 	private Action redoAction;
 	private Action findAction;
 	private Action gotoAction;
+	private Action commentAction;
 
 	private File path = null;
 	
@@ -86,7 +88,7 @@ public class ScriptEditor extends JFrame {
 	private final AbstractG2Device device;
 	private boolean readLogs;
 	
-	public ScriptEditor(ScriptsPanel originatingPanel, AbstractG2Device device, Script script) throws IOException {
+	public ScriptFrame(ScriptsPanel originatingPanel, AbstractG2Device device, Script script) throws IOException {
 		super(/*LABELS.getString("dlgScriptEditorTitle") + " - " +*/ script.getName());
 		setIconImage(Main.ICON);
 		setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
@@ -134,22 +136,22 @@ public class ScriptEditor extends JFrame {
 		
 		// actions
 		cutAction.putValue(Action.SHORT_DESCRIPTION, LABELS.getString("btnCut"));
-		cutAction.putValue(Action.SMALL_ICON, new ImageIcon(ScriptEditor.class.getResource("/images/Clipboard_Cut24.png")));
+		cutAction.putValue(Action.SMALL_ICON, new ImageIcon(ScriptFrame.class.getResource("/images/Clipboard_Cut24.png")));
 		
 		copyAction.putValue(Action.SHORT_DESCRIPTION, LABELS.getString("btnCopy"));
-		copyAction.putValue(Action.SMALL_ICON, new ImageIcon(ScriptEditor.class.getResource("/images/Clipboard_Copy24.png")));
+		copyAction.putValue(Action.SMALL_ICON, new ImageIcon(ScriptFrame.class.getResource("/images/Clipboard_Copy24.png")));
 
 		pasteAction.putValue(Action.SHORT_DESCRIPTION, LABELS.getString("btnPaste"));
-		pasteAction.putValue(Action.SMALL_ICON, new ImageIcon(ScriptEditor.class.getResource("/images/Clipboard_Paste24.png")));
+		pasteAction.putValue(Action.SMALL_ICON, new ImageIcon(ScriptFrame.class.getResource("/images/Clipboard_Paste24.png")));
 		
 		undoAction = editor.getUndoAction();
 		undoAction.putValue(Action.SHORT_DESCRIPTION, LABELS.getString("btnUndo"));
-		undoAction.putValue(Action.SMALL_ICON, new ImageIcon(ScriptEditor.class.getResource("/images/Undo24.png")));
+		undoAction.putValue(Action.SMALL_ICON, new ImageIcon(ScriptFrame.class.getResource("/images/Undo24.png")));
 		editor.mapAction(KeyStroke.getKeyStroke(KeyEvent.VK_Z, MainView.SHORTCUT_KEY), undoAction, "undo_usna");
 		
 		redoAction = editor.getRedoAction();
 		redoAction.putValue(Action.SHORT_DESCRIPTION, LABELS.getString("btnRedo"));
-		redoAction.putValue(Action.SMALL_ICON, new ImageIcon(ScriptEditor.class.getResource("/images/Redo24.png")));
+		redoAction.putValue(Action.SMALL_ICON, new ImageIcon(ScriptFrame.class.getResource("/images/Redo24.png")));
 		editor.mapAction(KeyStroke.getKeyStroke(KeyEvent.VK_Y, MainView.SHORTCUT_KEY), redoAction, "redo_usna");
 		
 		findAction = new UsnaAction(null, "btnFind", "/images/Search24.png", e -> {
@@ -159,11 +161,18 @@ public class ScriptEditor extends JFrame {
 		});
 		editor.mapAction(KeyStroke.getKeyStroke(KeyEvent.VK_F, MainView.SHORTCUT_KEY), findAction, "find_usna");
 		
-		openAction = new UsnaAction(ScriptEditor.this, "dlgOpen", "/images/Open24.png", e -> {
+		commentAction = new UsnaAction(null, "btnFind", "/images/Comment24.png", e -> {
+			editor.commentSelection();
+			editor.requestFocus();
+		});
+		editor.mapAction(KeyStroke.getKeyStroke(KeyEvent.VK_7, InputEvent.CTRL_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK), commentAction, "comment_usna");
+		editor.mapAction(KeyStroke.getKeyStroke(KeyEvent.VK_SLASH, InputEvent.CTRL_DOWN_MASK), commentAction, "comment_usna2");
+
+		openAction = new UsnaAction(ScriptFrame.this, "dlgOpen", "/images/Open24.png", e -> {
 			final JFileChooser fc = new JFileChooser(path);
 			fc.setFileFilter(new FileNameExtensionFilter(LABELS.getString("filetype_js_desc"), DialogDeviceScriptsG2.FILE_EXTENSION));
 			fc.addChoosableFileFilter(new FileNameExtensionFilter(LABELS.getString("filetype_sbk_desc"), Main.BACKUP_FILE_EXT));
-			if(fc.showOpenDialog(ScriptEditor.this) == JFileChooser.APPROVE_OPTION) {
+			if(fc.showOpenDialog(ScriptFrame.this) == JFileChooser.APPROVE_OPTION) {
 				String text = loadCodeFromFile(fc.getSelectedFile());
 				if(text != null) {
 					editor.setText(text);
@@ -172,14 +181,14 @@ public class ScriptEditor extends JFrame {
 			}
 		});
 		
-		saveAsAction = new UsnaAction(ScriptEditor.this, "dlgSave", "/images/Save24.png", e -> {
+		saveAsAction = new UsnaAction(ScriptFrame.this, "dlgSave", "/images/Save24.png", e -> {
 			final JFileChooser fc = new JFileChooser(path);
 			fc.setFileFilter(new FileNameExtensionFilter(LABELS.getString("filetype_js_desc"), DialogDeviceScriptsG2.FILE_EXTENSION));
-			if(fc.showSaveDialog(ScriptEditor.this) == JFileChooser.APPROVE_OPTION) {
+			if(fc.showSaveDialog(ScriptFrame.this) == JFileChooser.APPROVE_OPTION) {
 				try {
 					Path toSave = IOFile.addExtension(fc.getSelectedFile().toPath(), DialogDeviceScriptsG2.FILE_EXTENSION);
 					IOFile.writeFile(toSave, editor.getText());
-					JOptionPane.showMessageDialog(ScriptEditor.this, LABELS.getString("msgFileSaved"), LABELS.getString("dlgScriptEditorTitle"), JOptionPane.INFORMATION_MESSAGE);
+					JOptionPane.showMessageDialog(ScriptFrame.this, LABELS.getString("msgFileSaved"), LABELS.getString("dlgScriptEditorTitle"), JOptionPane.INFORMATION_MESSAGE);
 				} catch (IOException e1) {
 					Msg.errorMsg(e1);
 				}
@@ -194,7 +203,7 @@ public class ScriptEditor extends JFrame {
 			}
 		});
 
-		runStopAction = new UsnaToggleAction(this, "btnRun", "btnRunStoppedTooltip", "btnRunRunningTooltip", "/images/PlayerPlayGreen24.png", "/images/PlayerStopRed24.png",  e -> {
+		runStopAction = new UsnaToggleAction(this, "btnRun", "btnRunStoppedTooltip", "btnRunRunningTooltip", "/images/PlayerPlayGreen24.png", "/images/PlayerStopRed24.png", e -> {
 			try {
 				if(script.isRunning()) {
 					script.stop();
@@ -334,6 +343,8 @@ public class ScriptEditor extends JFrame {
 		toolBar.addSeparator();
 		toolBar.add(findAction);
 		toolBar.add(gotoAction);
+		toolBar.addSeparator();
+		toolBar.add(commentAction);
 		toolBar.add(Box.createHorizontalGlue());
 		toolBar.add(caretLabel);
 		return toolBar;

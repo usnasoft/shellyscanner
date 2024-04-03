@@ -50,7 +50,7 @@ import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.g2.modules.Script;
 import it.usna.shellyscan.view.DialogDeviceLogsG2;
-import it.usna.shellyscan.view.scripts.ide.ScriptEditor;
+import it.usna.shellyscan.view.scripts.ide.ScriptFrame;
 import it.usna.shellyscan.view.util.Msg;
 import it.usna.swing.UsnaPopupMenu;
 import it.usna.swing.table.ExTooltipTable;
@@ -197,10 +197,10 @@ public class ScriptsPanel extends JPanel {
 			try {
 				final int mRow = table.convertRowIndexToModel(table.getSelectedRow());
 				final Script sc = scripts.get(mRow).script;
-				final ScriptEditor editor = new ScriptEditor(ScriptsPanel.this, device, sc);
+				final ScriptFrame editor = new ScriptFrame(ScriptsPanel.this, device, sc);
 				scripts.get(mRow).editors().add(editor);
-				editor.addPropertyChangeListener(ScriptEditor.RUN_EVENT, propertyChangeEvent -> tModel.setValueAt(propertyChangeEvent.getNewValue(), mRow, COL_RUN));
-				editor.addPropertyChangeListener(ScriptEditor.CLOSE_EVENT, propertyChangeEvent -> {
+				editor.addPropertyChangeListener(ScriptFrame.RUN_EVENT, propertyChangeEvent -> tModel.setValueAt(propertyChangeEvent.getNewValue(), mRow, COL_RUN));
+				editor.addPropertyChangeListener(ScriptFrame.CLOSE_EVENT, propertyChangeEvent -> {
 					scripts.get(mRow).editors().remove(editor);
 					tModel.fireTableCellUpdated(mRow, COL_RUN);
 				});
@@ -373,9 +373,9 @@ public class ScriptsPanel extends JPanel {
 		}
 	}
 	
-	private record ScriptAndEditor(Script script, ArrayList<ScriptEditor> editors) {
+	private record ScriptAndEditor(Script script, ArrayList<ScriptFrame> editors) {
 		public ScriptAndEditor(Script script) {
-			this(script, new ArrayList<ScriptEditor>());
+			this(script, new ArrayList<ScriptFrame>());
 		}
 		
 		public boolean isEdited() {

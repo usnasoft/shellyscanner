@@ -2,19 +2,23 @@ package it.usna.shellyscan.view.scripts.ide;
 
 import java.awt.Color;
 import java.awt.Font;
+import java.util.regex.Pattern;
 
 import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.KeyStroke;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Element;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
 
-import it.usna.swing.SyntaxEditor;
+import it.usna.swing.texteditor.SyntaxEditor;
 
-public class EditorPanel extends SyntaxEditor{
+public class EditorPanel extends SyntaxEditor {
 	private static final long serialVersionUID = 1L;
+	private final static Pattern LINE_START = Pattern.compile("(^)(.*)", Pattern.MULTILINE);
+	private final static Pattern COMMENTED_LINE = Pattern.compile("(^)(\\s*)//", Pattern.MULTILINE);
 
 	EditorPanel(String initText) {
 		super(baseStyle());
@@ -80,9 +84,54 @@ public class EditorPanel extends SyntaxEditor{
 		}
 	}
 	
+	public void commentSelection() {
+		try {
+			final Element root = doc.getDefaultRootElement();
+			int startElIndex = root.getElementIndex(getSelectionStart());
+			final int start = root.getElement(startElIndex).getStartOffset();
+			int endElIndex = root.getElementIndex(getSelectionEnd());
+			final int end = Math.min(root.getElement(endElIndex).getEndOffset(), doc.getLength()); // javadoc: AbstractDocument models an implied break at the end of the document
+
+			String txt = doc.getText(start, end - start);
+
+			int selectedLines = (int)COMMENTED_LINE.matcher(txt).results().count();
+			if(selectedLines == endElIndex - startElIndex + 1) {
+				txt = COMMENTED_LINE.matcher(txt).replaceAll("$1$2");
+			} else {
+				txt = LINE_START.matcher(txt).replaceAll("$1//$2");
+			}
+			replace(start, end - start, txt);
+//			setSelectionStart(root.getElement(startElIndex).getStartOffset());
+//			setSelectionEnd(Math.min(root.getElement(endElIndex).getEndOffset(), doc.getLength()));
+			setCaretPosition(start);
+		} catch (BadLocationException e) { }
+	}
+	
 	private static SimpleAttributeSet baseStyle() {
 		SimpleAttributeSet style = new SimpleAttributeSet();
 		StyleConstants.setFontFamily(style, Font.MONOSPACED);
 		return style;
 	}
+
+//	public static void main(String... strings) {
+//		String test = "uno\ndue\ntre\nquattro\n // text";
+//		System.out.println(test);
+//		System.out.println("**************");
+//		Pattern p = Pattern.compile("(^)(.*)" , Pattern.MULTILINE );
+//		Matcher m = p.matcher(test);
+//		String res = m.replaceAll("$1//$2");
+//		System.out.println(res);
+//		System.out.println("**************");
+//		Pattern pc = Pattern.compile("^|\\R");
+//		m = pc.matcher(test);
+//		System.out.println(m.results().count());
+//		Pattern pcc = Pattern.compile("(^|\\R)\\s*//");
+//		m = pcc.matcher(test);
+//		System.out.println(m.results().count());
+//		System.out.println("**************");
+//		Pattern rc = Pattern.compile("(^|\\R)(\\s*)//");
+//		m = rc.matcher(res);
+//		String resr = m.replaceAll("$1$2");
+//		System.out.println(resr);
+//	}
 }
