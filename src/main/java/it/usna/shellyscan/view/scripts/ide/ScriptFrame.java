@@ -161,7 +161,7 @@ public class ScriptFrame extends JFrame {
 		});
 		editor.mapAction(KeyStroke.getKeyStroke(KeyEvent.VK_F, MainView.SHORTCUT_KEY), findAction, "find_usna");
 		
-		commentAction = new UsnaAction(null, "btnFind", "/images/Comment24.png", e -> {
+		commentAction = new UsnaAction(null, "btnCommentTooltip", "/images/Comment24.png", e -> {
 			editor.commentSelection();
 			editor.requestFocus();
 		});
