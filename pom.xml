@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>it.usna</groupId>
 	<artifactId>shellyscan</artifactId>
-	<version>1.0.5</version>
+	<version>1.0.6</version>
 	<name>shellyscan</name>
 	<packaging>jar</packaging>
 
@@ -95,6 +95,12 @@
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-databind</artifactId>
 			<version>2.17.0</version>
+			<exclusions>
+				<exclusion>
+					<groupId>net.bytebuddy</groupId>
+					<artifactId>byte-buddy</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.jmdns</groupId>
@@ -116,8 +122,8 @@
 			<artifactId>jetty-websocket-jetty-client</artifactId>
 			<version>12.0.7</version>
 		</dependency>
-		
-<!--<dependency>
+
+		<!--<dependency>
     <groupId>org.eclipse.jetty.http3</groupId>
     <artifactId>jetty-http3-client</artifactId>
     <version>12.0.6</version>

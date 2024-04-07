@@ -23,7 +23,6 @@ public class EditorPanel extends SyntaxEditor {
 	EditorPanel(String initText) {
 		super(baseStyle());
 		activateUndo();
-		setTabSize(4);
 		setText(initText);
 		resetUndo();
 		

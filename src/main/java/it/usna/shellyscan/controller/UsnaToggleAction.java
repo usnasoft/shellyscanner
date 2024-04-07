@@ -31,6 +31,15 @@ public class UsnaToggleAction extends UsnaAction {
 		toolTipActive =  LABELS.getString(tooltipActiveId);
 	}
 	
+	public UsnaToggleAction(Component w, String iconInactive, String iconActive, final ActionListener activate, final ActionListener deactivate) {
+		super(w, null, iconInactive, activate);
+		this.deactivate = deactivate;
+		imageInactive = (ImageIcon)getValue(SMALL_ICON);
+		toolTipInactive = (String)getValue(SHORT_DESCRIPTION);
+		imageActive = new ImageIcon(UsnaToggleAction.class.getResource(iconActive));
+		toolTipActive =  null;
+	}
+	
 	public void setSelected(boolean sel) {
 		if(sel) {
 			putValue(SMALL_ICON, imageActive);

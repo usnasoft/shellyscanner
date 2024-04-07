@@ -18,12 +18,13 @@ import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.view.MainView;
 import it.usna.shellyscan.view.util.Msg;
 import it.usna.shellyscan.view.util.UtilMiscellaneous;
+import it.usna.util.AppProperties;
 
-public class DialogDeviceScriptsG2 extends JDialog {
+public class DialogDeviceScripts extends JDialog {
 	private static final long serialVersionUID = 1L;
 	public final static String FILE_EXTENSION = "js";
 
-	public DialogDeviceScriptsG2(final MainView owner, Devices model, int modelIndex) {
+	public DialogDeviceScripts(final MainView owner, Devices model, int modelIndex, AppProperties appProp) {
 		super(owner, false);
 		try {
 			AbstractG2Device device = (AbstractG2Device) model.get(modelIndex);
@@ -40,7 +41,7 @@ public class DialogDeviceScriptsG2 extends JDialog {
 
 			// battery operated devices do not support scripts
 			if(device instanceof AbstractBatteryG2Device == false) {
-				JPanel scriptsPanel = new ScriptsPanel(this, model, modelIndex);
+				JPanel scriptsPanel = new ScriptsPanel(this, model, modelIndex, appProp);
 				tabs.addTab(LABELS.getString("lblScriptsTab"), scriptsPanel);
 				try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e) {}
 			}

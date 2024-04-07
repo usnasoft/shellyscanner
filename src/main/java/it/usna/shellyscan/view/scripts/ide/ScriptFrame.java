@@ -47,12 +47,14 @@ import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.g2.HttpLogsListener;
 import it.usna.shellyscan.model.device.g2.modules.Script;
 import it.usna.shellyscan.view.MainView;
-import it.usna.shellyscan.view.scripts.DialogDeviceScriptsG2;
+import it.usna.shellyscan.view.appsettings.DialogAppSettings;
+import it.usna.shellyscan.view.scripts.DialogDeviceScripts;
 import it.usna.shellyscan.view.scripts.ScriptsPanel;
 import it.usna.shellyscan.view.util.Msg;
 import it.usna.shellyscan.view.util.UsnaTextPane;
 import it.usna.swing.dialog.FindReplaceDialog;
 import it.usna.swing.texteditor.TextLineNumber;
+import it.usna.util.AppProperties;
 import it.usna.util.IOFile;
 
 /**
@@ -88,7 +90,7 @@ public class ScriptFrame extends JFrame {
 	private final AbstractG2Device device;
 	private boolean readLogs;
 	
-	public ScriptFrame(ScriptsPanel originatingPanel, AbstractG2Device device, Script script) throws IOException {
+	public ScriptFrame(ScriptsPanel originatingPanel, AbstractG2Device device, Script script, AppProperties appProp) throws IOException {
 		super(/*LABELS.getString("dlgScriptEditorTitle") + " - " +*/ script.getName());
 		setIconImage(Main.ICON);
 		setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
@@ -100,7 +102,7 @@ public class ScriptFrame extends JFrame {
 
 		add(splitPane, BorderLayout.CENTER);
 		
-		splitPane.setTopComponent(editorPanel(script));
+		splitPane.setTopComponent(editorPanel(script, appProp));
 		splitPane.setBottomComponent(logPanel());
 		
 		add(getToolBar(), BorderLayout.NORTH);
@@ -121,12 +123,13 @@ public class ScriptFrame extends JFrame {
 		super.dispose();
 	}
 	
-	private JPanel editorPanel(Script script) throws IOException {
+	private JPanel editorPanel(Script script, AppProperties appProp) throws IOException {
 		JPanel mainEditorPanel = new JPanel(new BorderLayout());
 		JScrollPane scrollPane = new JScrollPane();
 		scrollPane.setBorder(BorderFactory.createEmptyBorder());
 
 		editor = new EditorPanel(script.getCode());
+		editor.setTabSize(appProp.getIntProperty(DialogAppSettings.PROP_IDE_TAB_SIZE, DialogAppSettings.IDE_TAB_SIZE_DEFAULT));
 		scrollPane.setViewportView(editor);
 		TextLineNumber lineNum = new TextLineNumber(editor);
 		lineNum.setBorder(BorderFactory.createEmptyBorder(0, 1, 0, 2));
@@ -170,7 +173,7 @@ public class ScriptFrame extends JFrame {
 
 		openAction = new UsnaAction(ScriptFrame.this, "dlgOpen", "/images/Open24.png", e -> {
 			final JFileChooser fc = new JFileChooser(path);
-			fc.setFileFilter(new FileNameExtensionFilter(LABELS.getString("filetype_js_desc"), DialogDeviceScriptsG2.FILE_EXTENSION));
+			fc.setFileFilter(new FileNameExtensionFilter(LABELS.getString("filetype_js_desc"), DialogDeviceScripts.FILE_EXTENSION));
 			fc.addChoosableFileFilter(new FileNameExtensionFilter(LABELS.getString("filetype_sbk_desc"), Main.BACKUP_FILE_EXT));
 			if(fc.showOpenDialog(ScriptFrame.this) == JFileChooser.APPROVE_OPTION) {
 				String text = loadCodeFromFile(fc.getSelectedFile());
@@ -183,10 +186,10 @@ public class ScriptFrame extends JFrame {
 		
 		saveAsAction = new UsnaAction(ScriptFrame.this, "dlgSave", "/images/Save24.png", e -> {
 			final JFileChooser fc = new JFileChooser(path);
-			fc.setFileFilter(new FileNameExtensionFilter(LABELS.getString("filetype_js_desc"), DialogDeviceScriptsG2.FILE_EXTENSION));
+			fc.setFileFilter(new FileNameExtensionFilter(LABELS.getString("filetype_js_desc"), DialogDeviceScripts.FILE_EXTENSION));
 			if(fc.showSaveDialog(ScriptFrame.this) == JFileChooser.APPROVE_OPTION) {
 				try {
-					Path toSave = IOFile.addExtension(fc.getSelectedFile().toPath(), DialogDeviceScriptsG2.FILE_EXTENSION);
+					Path toSave = IOFile.addExtension(fc.getSelectedFile().toPath(), DialogDeviceScripts.FILE_EXTENSION);
 					IOFile.writeFile(toSave, editor.getText());
 					JOptionPane.showMessageDialog(ScriptFrame.this, LABELS.getString("msgFileSaved"), LABELS.getString("dlgScriptEditorTitle"), JOptionPane.INFORMATION_MESSAGE);
 				} catch (IOException e1) {
@@ -408,5 +411,4 @@ public class ScriptFrame extends JFrame {
 	}
 }
 
-// dialog padre run disabled (bottone quadrato)
 // editor: cmmenti - indent

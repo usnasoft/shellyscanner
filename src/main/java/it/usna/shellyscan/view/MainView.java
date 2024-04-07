@@ -74,7 +74,7 @@ import it.usna.shellyscan.model.device.g3.AbstractG3Device;
 import it.usna.shellyscan.view.appsettings.DialogAppSettings;
 import it.usna.shellyscan.view.chart.MeasuresChart;
 import it.usna.shellyscan.view.devsettings.DialogDeviceSettings;
-import it.usna.shellyscan.view.scripts.DialogDeviceScriptsG2;
+import it.usna.shellyscan.view.scripts.DialogDeviceScripts;
 import it.usna.shellyscan.view.util.Msg;
 import it.usna.swing.UsnaPopupMenu;
 import it.usna.swing.table.UsnaTableModel;
@@ -214,7 +214,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 			e -> new MeasuresChart(this, model, devicesTable.getSelectedModelRows(), appProp) );
 	
 	private Action scriptManagerAction = new UsnaSelectedAction(this, devicesTable, "action_script_name", "action_script_tooltip", null, "/images/Movie.png",
-			i -> new DialogDeviceScriptsG2(MainView.this, model, i) );
+			i -> new DialogDeviceScripts(MainView.this, model, i, appProp) );
 
 	private Action notesAction = new UsnaSelectedAction(null, devicesTable, "action_notes_name", "action_notes_tooltip", "/images/Write2-16.png", "/images/Write2.png",
 			i -> new NotesEditor(this, model.getGhost(i)) );

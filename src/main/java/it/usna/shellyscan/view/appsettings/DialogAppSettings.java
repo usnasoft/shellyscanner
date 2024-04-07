@@ -71,6 +71,9 @@ public class DialogAppSettings extends JDialog {
 	public final static String LAST_SCAN_IP = "LAST_SCAN";
 	public final static int LAST_SCAN_IP_DEFAULT = 254;
 	
+	public final static String PROP_IDE_TAB_SIZE = "IDE_TAB_SIZE";
+	public final static int IDE_TAB_SIZE_DEFAULT = 4;
+	
 	private final static Logger LOG = LoggerFactory.getLogger(DialogAppSettings.class);
 	
 	public DialogAppSettings(final MainView mainView, DevicesTable devTable, Devices model, boolean extendedView, final AppProperties appProp) {
@@ -93,6 +96,10 @@ public class DialogAppSettings extends JDialog {
 		PanelNetwork panelNetwork = new PanelNetwork(appProp);
 		panelNetwork.setBorder(new EmptyBorder(6, 6, 6, 6));
 		tabbedPane.add(LABELS.getString("dlgAppSetTabLANTitle"), panelNetwork);
+		
+		PanelIDE panelIDE = new PanelIDE(appProp);
+		panelIDE.setBorder(new EmptyBorder(6, 6, 6, 6));
+		tabbedPane.add(LABELS.getString("dlgAppSetTabIDETitle"), panelIDE);
 		
 		PanelStore panelStore = new PanelStore(model, appProp);
 		panelStore.setBorder(new EmptyBorder(6, 6, 6, 6));
@@ -191,6 +198,9 @@ public class DialogAppSettings extends JDialog {
 			boolean captions = panelGUI.chckbxToolbarCaptions.isSelected();
 			appProp.setBoolProperty(PROP_TOOLBAR_CAPTIONS, captions);
 			mainView.hideCaptions(captions == false);
+			
+			// IDE
+			appProp.setIntProperty(PROP_IDE_TAB_SIZE, panelIDE.tabSize.getIntValue());
 			
 			// store
 			boolean useStore = panelStore.chckbxUseStore.isSelected();
