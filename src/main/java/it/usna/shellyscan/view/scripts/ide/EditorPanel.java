@@ -19,6 +19,8 @@ public class EditorPanel extends SyntaxEditor {
 	private static final long serialVersionUID = 1L;
 	private final static Pattern LINE_START = Pattern.compile("(^)(.*)", Pattern.MULTILINE);
 	private final static Pattern COMMENTED_LINE = Pattern.compile("(^)(\\s*)//", Pattern.MULTILINE);
+	private final static Pattern LINE_INIT = Pattern.compile("^", Pattern.MULTILINE);
+	private final static Pattern LINE_TAB = Pattern.compile("^\\t", Pattern.MULTILINE);
 
 	EditorPanel(String initText) {
 		super(baseStyle());
@@ -94,16 +96,39 @@ public class EditorPanel extends SyntaxEditor {
 			String txt = doc.getText(start, end - start);
 
 			int selectedLines = (int)COMMENTED_LINE.matcher(txt).results().count();
-			if(selectedLines == endElIndex - startElIndex + 1) {
+			if(selectedLines == endElIndex - startElIndex + 1) { // all lines commented > remove
 				txt = COMMENTED_LINE.matcher(txt).replaceAll("$1$2");
 			} else {
-				txt = LINE_START.matcher(txt).replaceAll("$1//$2");
+				txt = LINE_START.matcher(txt).replaceAll("$1//$2"); // LINE_INIT.matcher(txt).replaceAll("//") ???
 			}
 			replace(start, end - start, txt);
-//			setSelectionStart(root.getElement(startElIndex).getStartOffset());
-//			setSelectionEnd(Math.min(root.getElement(endElIndex).getEndOffset(), doc.getLength()));
-			setCaretPosition(start);
+			setSelectionStart(start);
+			setSelectionEnd(Math.min(root.getElement(endElIndex).getEndOffset(), doc.getLength()));
+//			setCaretPosition(start);
 		} catch (BadLocationException e) { }
+	}
+	
+	public boolean indentSelection(boolean add) { // or remove
+		final Element root = doc.getDefaultRootElement();
+		int startElIndex = root.getElementIndex(getSelectionStart());
+		int endElIndex = root.getElementIndex(getSelectionEnd());
+		if(startElIndex != endElIndex) {
+			final int start = root.getElement(startElIndex).getStartOffset();
+			final int end = Math.min(root.getElement(endElIndex).getEndOffset(), doc.getLength()); // javadoc: AbstractDocument models an implied break at the end of the document
+			try {
+				String txt = doc.getText(start, end - start);
+				if(add) {
+					txt = LINE_TAB.matcher(txt).replaceAll("");
+				} else {
+					txt = LINE_INIT.matcher(txt).replaceAll("\\\t");
+				}
+				replace(start, end - start, txt);
+				setSelectionStart(start);
+				setSelectionEnd(Math.min(root.getElement(endElIndex).getEndOffset(), doc.getLength()));
+				return true;
+			} catch (BadLocationException e1) { }
+		}
+		return false;
 	}
 	
 	private static SimpleAttributeSet baseStyle() {

@@ -234,7 +234,12 @@ https://www.iconbolt.com/
 // mini gen 3
 // improved editor
 // motion 2 improved restore (actions) and table output (motion on/off)
+
+1.0.6
+// tab
+// app settings IDE
 todo editor: autoindent
+todo: uptime "since" + settings mode?
 
 ---
 // TODO

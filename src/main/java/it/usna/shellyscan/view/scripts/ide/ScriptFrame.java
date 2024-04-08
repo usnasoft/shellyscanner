@@ -6,6 +6,7 @@ import java.awt.BorderLayout;
 import java.awt.Cursor;
 import java.awt.FlowLayout;
 import java.awt.event.InputEvent;
+import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.io.BufferedReader;
 import java.io.File;
@@ -170,6 +171,15 @@ public class ScriptFrame extends JFrame {
 		});
 		editor.mapAction(KeyStroke.getKeyStroke(KeyEvent.VK_7, InputEvent.CTRL_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK), commentAction, "comment_usna");
 		editor.mapAction(KeyStroke.getKeyStroke(KeyEvent.VK_SLASH, InputEvent.CTRL_DOWN_MASK), commentAction, "comment_usna2");
+		
+		editor.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyPressed(KeyEvent e) {
+				if(e.getKeyCode() == KeyEvent.VK_TAB && editor.indentSelection(e.isShiftDown())) {
+					e.consume();
+				}
+			}
+		});
 
 		openAction = new UsnaAction(ScriptFrame.this, "dlgOpen", "/images/Open24.png", e -> {
 			final JFileChooser fc = new JFileChooser(path);
