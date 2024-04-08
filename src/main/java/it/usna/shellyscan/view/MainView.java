@@ -214,7 +214,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 			e -> new MeasuresChart(this, model, devicesTable.getSelectedModelRows(), appProp) );
 	
 	private Action scriptManagerAction = new UsnaSelectedAction(this, devicesTable, "action_script_name", "action_script_tooltip", null, "/images/Movie.png",
-			i -> new DialogDeviceScripts(MainView.this, model, i, appProp) );
+			i -> new DialogDeviceScripts(MainView.this, model, i) );
 
 	private Action notesAction = new UsnaSelectedAction(null, devicesTable, "action_notes_name", "action_notes_tooltip", "/images/Write2-16.png", "/images/Write2.png",
 			i -> new NotesEditor(this, model.getGhost(i)) );

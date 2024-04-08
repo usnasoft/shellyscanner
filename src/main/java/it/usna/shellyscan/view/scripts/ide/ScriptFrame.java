@@ -48,14 +48,12 @@ import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.g2.HttpLogsListener;
 import it.usna.shellyscan.model.device.g2.modules.Script;
 import it.usna.shellyscan.view.MainView;
-import it.usna.shellyscan.view.appsettings.DialogAppSettings;
 import it.usna.shellyscan.view.scripts.DialogDeviceScripts;
 import it.usna.shellyscan.view.scripts.ScriptsPanel;
 import it.usna.shellyscan.view.util.Msg;
 import it.usna.shellyscan.view.util.UsnaTextPane;
 import it.usna.swing.dialog.FindReplaceDialog;
 import it.usna.swing.texteditor.TextLineNumber;
-import it.usna.util.AppProperties;
 import it.usna.util.IOFile;
 
 /**
@@ -91,7 +89,7 @@ public class ScriptFrame extends JFrame {
 	private final AbstractG2Device device;
 	private boolean readLogs;
 	
-	public ScriptFrame(ScriptsPanel originatingPanel, AbstractG2Device device, Script script, AppProperties appProp) throws IOException {
+	public ScriptFrame(ScriptsPanel originatingPanel, AbstractG2Device device, Script script) throws IOException {
 		super(/*LABELS.getString("dlgScriptEditorTitle") + " - " +*/ script.getName());
 		setIconImage(Main.ICON);
 		setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
@@ -103,7 +101,7 @@ public class ScriptFrame extends JFrame {
 
 		add(splitPane, BorderLayout.CENTER);
 		
-		splitPane.setTopComponent(editorPanel(script, appProp));
+		splitPane.setTopComponent(editorPanel(script));
 		splitPane.setBottomComponent(logPanel());
 		
 		add(getToolBar(), BorderLayout.NORTH);
@@ -124,13 +122,12 @@ public class ScriptFrame extends JFrame {
 		super.dispose();
 	}
 	
-	private JPanel editorPanel(Script script, AppProperties appProp) throws IOException {
+	private JPanel editorPanel(Script script) throws IOException {
 		JPanel mainEditorPanel = new JPanel(new BorderLayout());
 		JScrollPane scrollPane = new JScrollPane();
 		scrollPane.setBorder(BorderFactory.createEmptyBorder());
 
 		editor = new EditorPanel(script.getCode());
-		editor.setTabSize(appProp.getIntProperty(DialogAppSettings.PROP_IDE_TAB_SIZE, DialogAppSettings.IDE_TAB_SIZE_DEFAULT));
 		scrollPane.setViewportView(editor);
 		TextLineNumber lineNum = new TextLineNumber(editor);
 		lineNum.setBorder(BorderFactory.createEmptyBorder(0, 1, 0, 2));
@@ -210,9 +207,13 @@ public class ScriptFrame extends JFrame {
 		});
 
 		uploadAction = new UsnaAction(this, "btnUploadTooltip", "/images/Upload24.png", e -> {
-			String res = script.putCode(editor.getText());
-			if(res != null) {
-				Msg.errorMsg(this, res);
+			if(editor.getText().isEmpty()) {
+				Msg.errorMsg(this, "dlgScriptEditorMsgEmpty");
+			} else {
+				String res = script.putCode(editor.getText());
+				if(res != null) {
+					Msg.errorMsg(this, res);
+				}
 			}
 		});
 
@@ -421,4 +422,4 @@ public class ScriptFrame extends JFrame {
 	}
 }
 
-// editor: cmmenti - indent
+// editor: indent

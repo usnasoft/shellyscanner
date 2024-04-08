@@ -24,6 +24,7 @@ import it.usna.shellyscan.view.DevicesTable;
 import it.usna.shellyscan.view.MainView;
 import it.usna.shellyscan.view.chart.ChartType;
 import it.usna.shellyscan.view.util.Msg;
+import it.usna.shellyscan.view.util.ScannerProperties;
 import it.usna.util.AppProperties;
 
 public class DialogAppSettings extends JDialog {
@@ -201,6 +202,8 @@ public class DialogAppSettings extends JDialog {
 			
 			// IDE
 			appProp.setIntProperty(PROP_IDE_TAB_SIZE, panelIDE.tabSize.getIntValue());
+			boolean darkMode = panelIDE.chcDarkMode.isSelected();
+			appProp.setBoolProperty(ScannerProperties.PROP_IDE_DARK, darkMode);
 			
 			// store
 			boolean useStore = panelStore.chckbxUseStore.isSelected();

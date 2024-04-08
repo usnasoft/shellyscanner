@@ -13,6 +13,8 @@ import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
 
+import it.usna.shellyscan.view.appsettings.DialogAppSettings;
+import it.usna.shellyscan.view.util.ScannerProperties;
 import it.usna.swing.texteditor.SyntaxEditor;
 
 public class EditorPanel extends SyntaxEditor {
@@ -24,6 +26,7 @@ public class EditorPanel extends SyntaxEditor {
 
 	EditorPanel(String initText) {
 		super(baseStyle());
+		setTabSize(ScannerProperties.get().getIntProperty(DialogAppSettings.PROP_IDE_TAB_SIZE, DialogAppSettings.IDE_TAB_SIZE_DEFAULT));
 		activateUndo();
 		setText(initText);
 		resetUndo();

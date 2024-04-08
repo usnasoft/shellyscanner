@@ -29,6 +29,7 @@ import it.usna.shellyscan.view.MainView;
 import it.usna.shellyscan.view.appsettings.DialogAppSettings;
 import it.usna.shellyscan.view.chart.MeasuresChart;
 import it.usna.shellyscan.view.util.Msg;
+import it.usna.shellyscan.view.util.ScannerProperties;
 import it.usna.shellyscan.view.util.UpplicationUpdateCHK;
 import it.usna.swing.UsnaSwingUtils;
 import it.usna.util.AppProperties;
@@ -50,11 +51,12 @@ public class Main {
 	public final static String TAB_VERSION = "4"; // on version change reset table settings
 
 	private final static String PROP_FILE = System.getProperty("user.home") + File.separator + ".shellyScanner";
-	private final static AppProperties appProp = new AppProperties(PROP_FILE);
 
 	private final static String IP_SCAN_PAR_FORMAT = "^((?:(?:0|1\\d?\\d?|2[0-4]?\\d?|25[0-5]?|[3-9]\\d?)\\.){2}(?:0|1\\d?\\d?|2[0-4]?\\d?|25[0-5]?|[3-9]\\d?))\\.(0|1\\d?\\d?|2[0-4]?\\d?|25[0-5]?|[3-9]\\d?)-(0|1\\d?\\d?|2[0-4]?\\d?|25[0-5]?|[3-9]\\d?)$";
 
 	public static void main(final String ... args) {
+		ScannerProperties.init(PROP_FILE);
+		final AppProperties appProp = ScannerProperties.get();
 //		System.setProperty(SimpleLogger.DEFAULT_LOG_LEVEL_KEY, "error");
 		System.setProperty(SimpleLogger.LOG_KEY_PREFIX + "javax.jmdns", "warn");
 		System.setProperty(SimpleLogger.SHOW_DATE_TIME_KEY, "true");
@@ -240,5 +242,5 @@ public class Main {
 			ex.printStackTrace();
 			System.exit(1);
 		}
-	}
+	} 
 }

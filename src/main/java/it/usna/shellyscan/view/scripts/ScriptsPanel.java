@@ -56,7 +56,6 @@ import it.usna.shellyscan.view.util.Msg;
 import it.usna.swing.UsnaPopupMenu;
 import it.usna.swing.table.ExTooltipTable;
 import it.usna.swing.table.UsnaTableModel;
-import it.usna.util.AppProperties;
 import it.usna.util.IOFile;
 
 public class ScriptsPanel extends JPanel {
@@ -66,7 +65,7 @@ public class ScriptsPanel extends JPanel {
 	private final ExTooltipTable table;
 	private final ArrayList<ScriptAndEditor> scripts = new ArrayList<>();
 
-	public ScriptsPanel(JDialog owner, Devices devicesModel, int modelIndex, AppProperties appProp) throws IOException {
+	public ScriptsPanel(JDialog owner, Devices devicesModel, int modelIndex) throws IOException {
 		AbstractG2Device device = (AbstractG2Device) devicesModel.get(modelIndex);
 		setLayout(new BorderLayout(0, 0));
 		final UsnaTableModel tModel = new UsnaTableModel(LABELS.getString("lblScrColName"), LABELS.getString("lblScrColEnabled"), LABELS.getString("lblScrColRunning"));
@@ -199,7 +198,7 @@ public class ScriptsPanel extends JPanel {
 			try {
 				final int mRow = table.convertRowIndexToModel(table.getSelectedRow());
 				final Script sc = scripts.get(mRow).script;
-				final ScriptFrame editor = new ScriptFrame(ScriptsPanel.this, device, sc, appProp);
+				final ScriptFrame editor = new ScriptFrame(ScriptsPanel.this, device, sc);
 				scripts.get(mRow).editors().add(editor);
 				editor.addPropertyChangeListener(ScriptFrame.RUN_EVENT, propertyChangeEvent -> tModel.setValueAt(propertyChangeEvent.getNewValue(), mRow, COL_RUN));
 				editor.addPropertyChangeListener(ScriptFrame.CLOSE_EVENT, propertyChangeEvent -> {
