@@ -26,7 +26,6 @@ import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.DevicesFactory;
 import it.usna.shellyscan.model.NonInteractiveDevices;
 import it.usna.shellyscan.view.MainView;
-import it.usna.shellyscan.view.appsettings.DialogAppSettings;
 import it.usna.shellyscan.view.chart.MeasuresChart;
 import it.usna.shellyscan.view.util.Msg;
 import it.usna.shellyscan.view.util.ScannerProperties;
@@ -55,8 +54,8 @@ public class Main {
 	private final static String IP_SCAN_PAR_FORMAT = "^((?:(?:0|1\\d?\\d?|2[0-4]?\\d?|25[0-5]?|[3-9]\\d?)\\.){2}(?:0|1\\d?\\d?|2[0-4]?\\d?|25[0-5]?|[3-9]\\d?))\\.(0|1\\d?\\d?|2[0-4]?\\d?|25[0-5]?|[3-9]\\d?)-(0|1\\d?\\d?|2[0-4]?\\d?|25[0-5]?|[3-9]\\d?)$";
 
 	public static void main(final String ... args) {
-		ScannerProperties.init(PROP_FILE);
-		final AppProperties appProp = ScannerProperties.get();
+		final AppProperties appProp = ScannerProperties.init(PROP_FILE);
+//		final AppProperties appProp = ScannerProperties.get();
 //		System.setProperty(SimpleLogger.DEFAULT_LOG_LEVEL_KEY, "error");
 		System.setProperty(SimpleLogger.LOG_KEY_PREFIX + "javax.jmdns", "warn");
 		System.setProperty(SimpleLogger.SHOW_DATE_TIME_KEY, "true");
@@ -102,12 +101,12 @@ public class Main {
 			firstIP = 1;
 			lastIP = 0;
 		} else {
-			final String scanMode = appProp.getProperty(DialogAppSettings.PROP_SCAN_MODE, DialogAppSettings.PROP_SCAN_MODE_DEFAULT);
+			final String scanMode = appProp.getProperty(ScannerProperties.PROP_SCAN_MODE, ScannerProperties.PROP_SCAN_MODE_DEFAULT);
 			if(scanMode.equals("IP")) {
-				final String baseIPPar = appProp.getProperty(DialogAppSettings.BASE_SCAN_IP);
+				final String baseIPPar = appProp.getProperty(ScannerProperties.BASE_SCAN_IP);
 				String ipS[] = baseIPPar.split("\\.");
-				firstIP = appProp.getIntProperty(DialogAppSettings.FIRST_SCAN_IP);
-				lastIP = appProp.getIntProperty(DialogAppSettings.LAST_SCAN_IP);
+				firstIP = appProp.getIntProperty(ScannerProperties.FIRST_SCAN_IP);
+				lastIP = appProp.getIntProperty(ScannerProperties.LAST_SCAN_IP);
 				baseIP = new byte[] {(byte)Integer.parseInt(ipS[0]), (byte)Integer.parseInt(ipS[1]), (byte)Integer.parseInt(ipS[2]), 0};
 			} else if(scanMode.equals("OFFLINE")) {
 				baseIP = new byte[] {127, 0, 0, 1};
@@ -119,10 +118,10 @@ public class Main {
 		}
 		
 		// Credentials (from configuration only)
-		String lUser = appProp.getProperty(DialogAppSettings.PROP_LOGIN_USER);
+		String lUser = appProp.getProperty(ScannerProperties.PROP_LOGIN_USER);
 		if(lUser != null && lUser.length() > 0) {
 			try {
-				char[] pDecoded = new String(Base64.getDecoder().decode(appProp.getProperty(DialogAppSettings.PROP_LOGIN_PWD).substring(1))).toCharArray();
+				char[] pDecoded = new String(Base64.getDecoder().decode(appProp.getProperty(ScannerProperties.PROP_LOGIN_PWD).substring(1))).toCharArray();
 				DevicesFactory.setCredential(lUser, pDecoded);
 			} catch(RuntimeException e) {}
 		}
@@ -208,21 +207,21 @@ public class Main {
 				try {
 					view.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 					view.requestFocus(); // remove random focus on toolbar button
-					boolean useArchive = appProp.getBoolProperty(DialogAppSettings.PROP_USE_ARCHIVE, true);
+					boolean useArchive = appProp.getBoolProperty(ScannerProperties.PROP_USE_ARCHIVE, true);
 					if(useArchive) {
 						try {
-							model.loadFromStore(Paths.get(appProp.getProperty(DialogAppSettings.PROP_ARCHIVE_FILE, DialogAppSettings.PROP_ARCHIVE_FILE_DEFAULT)));
+							model.loadFromStore(Paths.get(appProp.getProperty(ScannerProperties.PROP_ARCHIVE_FILE, ScannerProperties.PROP_ARCHIVE_FILE_DEFAULT)));
 						} catch (/*IO*/Exception e) {
-							appProp.setBoolProperty(DialogAppSettings.PROP_USE_ARCHIVE, false);
+							appProp.setBoolProperty(ScannerProperties.PROP_USE_ARCHIVE, false);
 							Msg.errorMsg(view, e);
 						}
 					}
-					final int refreshStatusInterval = appProp.getIntProperty(DialogAppSettings.PROP_REFRESH_ITERVAL, DialogAppSettings.PROP_REFRESH_ITERVAL_DEFAULT) * 1000;
-					final int refreshConfigTics = appProp.getIntProperty(DialogAppSettings.PROP_REFRESH_CONF, DialogAppSettings.PROP_REFRESH_CONF_DEFAULT);
+					final int refreshStatusInterval = appProp.getIntProperty(ScannerProperties.PROP_REFRESH_ITERVAL, ScannerProperties.PROP_REFRESH_ITERVAL_DEFAULT) * 1000;
+					final int refreshConfigTics = appProp.getIntProperty(ScannerProperties.PROP_REFRESH_CONF, ScannerProperties.PROP_REFRESH_CONF_DEFAULT);
 					if(ipFin != null) {
 						model.scannerInit(ipFin, firstIPFin, lastIPFin, refreshStatusInterval, refreshConfigTics);
 					} else {
-						model.scannerInit(fullScanx, refreshStatusInterval, refreshConfigTics, appProp.getBoolProperty(DialogAppSettings.PROP_AUTORELOAD_ARCHIVE, false) && useArchive);
+						model.scannerInit(fullScanx, refreshStatusInterval, refreshConfigTics, appProp.getBoolProperty(ScannerProperties.PROP_AUTORELOAD_ARCHIVE, false) && useArchive);
 					}
 				} catch (/*IO*/Exception e) {
 					Msg.errorMsg(e);

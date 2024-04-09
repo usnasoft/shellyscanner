@@ -32,48 +32,48 @@ public class DialogAppSettings extends JDialog {
 	
 	private final static String IPV4_REGEX_3 = "^((0|1\\d?\\d?|2[0-4]?\\d?|25[0-5]?|[3-9]\\d?)\\.){2}(0|1\\d?\\d?|2[0-4]?\\d?|25[0-5]?|[3-9]\\d?)$";
 	
-	public final static String PROP_TOOLBAR_CAPTIONS = "T_CAPTIONS";
-	public final static String PROP_CSV_SEPARATOR = "CSV_SEPARATOR";
-	public final static String PROP_CSV_SEPARATOR_DEFAULT = ",";
-	public final static String PROP_SCAN_MODE = "SCAN_MODE";
-	public final static String PROP_SCAN_MODE_DEFAULT = "FULL";
-	public final static String PROP_DCLICK_ACTION = "DCLICK_ACTION";
-	public final static String PROP_DCLICK_ACTION_DEFAULT = "DET";
-	
-	public final static String PROP_UPDATECHK_ACTION = "UPDATE_CHK";
-	public final static String PROP_UPDATECHK_ACTION_DEFAULT = "STABLE";
-	
-	public final static String PROP_CHARTS_START = "CHART_DEF";
-	public final static String PROP_CHARTS_EXPORT = "CHART_EXPORT";
-	
-	public final static String PROP_DETAILED_VIEW_SCREEN = "DETAIL_SCREEN";
-	public final static String PROP_DETAILED_VIEW_SCREEN_FULL = "FULL";
-	public final static String PROP_DETAILED_VIEW_SCREEN_AS_IS = "ASIS";
-	public final static String PROP_DETAILED_VIEW_SCREEN_HORIZONTAL = "HOR";
-	public final static String PROP_DETAILED_VIEW_SCREEN_ESTIMATE = "COMP";
-	public final static String PROP_DETAILED_VIEW_SCREEN_DEFAULT = PROP_DETAILED_VIEW_SCREEN_FULL;
-	
-	public final static String PROP_LOGIN_USER = "RLUSER";
-	public final static String PROP_LOGIN_PWD = "RLPWD";
-	
-	public final static String PROP_REFRESH_ITERVAL = "REFRESH_INTERVAL";
-	public final static int PROP_REFRESH_ITERVAL_DEFAULT = 2;
-	public final static String PROP_REFRESH_CONF = "REFRESH_SETTINGS";
-	public final static int PROP_REFRESH_CONF_DEFAULT = 5;
-	
-	public final static String PROP_USE_ARCHIVE = "USE_ARCHIVE";
-	public final static String PROP_ARCHIVE_FILE = "USE_ARCHIVE_FILENAME";
-	public final static String PROP_ARCHIVE_FILE_DEFAULT = Paths.get(System.getProperty("user.home"), "ShellyStore.arc").toString();
-	public final static String PROP_AUTORELOAD_ARCHIVE = "AUTORELOAD";
-	
-	public final static String BASE_SCAN_IP = "BASE_SCAN";
-	public final static String FIRST_SCAN_IP = "FIRST_SCAN";
-	public final static int FIST_SCAN_IP_DEFAULT = 1;
-	public final static String LAST_SCAN_IP = "LAST_SCAN";
-	public final static int LAST_SCAN_IP_DEFAULT = 254;
-	
-	public final static String PROP_IDE_TAB_SIZE = "IDE_TAB_SIZE";
-	public final static int IDE_TAB_SIZE_DEFAULT = 4;
+//	public final static String PROP_TOOLBAR_CAPTIONS = "T_CAPTIONS";
+//	public final static String PROP_CSV_SEPARATOR = "CSV_SEPARATOR";
+//	public final static String PROP_CSV_SEPARATOR_DEFAULT = ",";
+//	public final static String PROP_SCAN_MODE = "SCAN_MODE";
+//	public final static String PROP_SCAN_MODE_DEFAULT = "FULL";
+//	public final static String PROP_DCLICK_ACTION = "DCLICK_ACTION";
+//	public final static String PROP_DCLICK_ACTION_DEFAULT = "DET";
+//	
+//	public final static String PROP_UPDATECHK_ACTION = "UPDATE_CHK";
+//	public final static String PROP_UPDATECHK_ACTION_DEFAULT = "STABLE";
+//	
+//	public final static String PROP_CHARTS_START = "CHART_DEF";
+//	public final static String PROP_CHARTS_EXPORT = "CHART_EXPORT";
+//	
+//	public final static String PROP_DETAILED_VIEW_SCREEN = "DETAIL_SCREEN";
+//	public final static String PROP_DETAILED_VIEW_SCREEN_FULL = "FULL";
+//	public final static String PROP_DETAILED_VIEW_SCREEN_AS_IS = "ASIS";
+//	public final static String PROP_DETAILED_VIEW_SCREEN_HORIZONTAL = "HOR";
+//	public final static String PROP_DETAILED_VIEW_SCREEN_ESTIMATE = "COMP";
+//	public final static String PROP_DETAILED_VIEW_SCREEN_DEFAULT = PROP_DETAILED_VIEW_SCREEN_FULL;
+//	
+//	public final static String PROP_LOGIN_USER = "RLUSER";
+//	public final static String PROP_LOGIN_PWD = "RLPWD";
+//	
+//	public final static String PROP_REFRESH_ITERVAL = "REFRESH_INTERVAL";
+//	public final static int PROP_REFRESH_ITERVAL_DEFAULT = 2;
+//	public final static String PROP_REFRESH_CONF = "REFRESH_SETTINGS";
+//	public final static int PROP_REFRESH_CONF_DEFAULT = 5;
+//	
+//	public final static String PROP_USE_ARCHIVE = "USE_ARCHIVE";
+//	public final static String PROP_ARCHIVE_FILE = "USE_ARCHIVE_FILENAME";
+//	public final static String PROP_ARCHIVE_FILE_DEFAULT = Paths.get(System.getProperty("user.home"), "ShellyStore.arc").toString();
+//	public final static String PROP_AUTORELOAD_ARCHIVE = "AUTORELOAD";
+//	
+//	public final static String BASE_SCAN_IP = "BASE_SCAN";
+//	public final static String FIRST_SCAN_IP = "FIRST_SCAN";
+//	public final static int FIST_SCAN_IP_DEFAULT = 1;
+//	public final static String LAST_SCAN_IP = "LAST_SCAN";
+//	public final static int LAST_SCAN_IP_DEFAULT = 254;
+//	
+//	public final static String PROP_IDE_TAB_SIZE = "IDE_TAB_SIZE";
+//	public final static int IDE_TAB_SIZE_DEFAULT = 4;
 	
 	private final static Logger LOG = LoggerFactory.getLogger(DialogAppSettings.class);
 	
@@ -128,27 +128,27 @@ public class DialogAppSettings extends JDialog {
 					JOptionPane.showMessageDialog(this, LABELS.getString("dlgAppSetScanNetworWrongBase"), LABELS.getString("dlgAppSetTitle"), JOptionPane.ERROR_MESSAGE);
 					return;
 				}
-				appProp.setProperty(BASE_SCAN_IP, baseIP);
-				appProp.setProperty(FIRST_SCAN_IP, panelNetwork.firstIP.getText());
-				appProp.setProperty(LAST_SCAN_IP, panelNetwork.lastIP.getText());
-				model.setIPInterval(appProp.getIntProperty(FIRST_SCAN_IP), appProp.getIntProperty(LAST_SCAN_IP));
+				appProp.setProperty(ScannerProperties.BASE_SCAN_IP, baseIP);
+				appProp.setProperty(ScannerProperties.FIRST_SCAN_IP, panelNetwork.firstIP.getText());
+				appProp.setProperty(ScannerProperties.LAST_SCAN_IP, panelNetwork.lastIP.getText());
+				model.setIPInterval(appProp.getIntProperty(ScannerProperties.FIRST_SCAN_IP), appProp.getIntProperty(ScannerProperties.LAST_SCAN_IP));
 			} else { // Offline
 				scanMode = "OFFLINE";
 			}
-			if(appProp.changeProperty(PROP_SCAN_MODE, scanMode)) {
+			if(appProp.changeProperty(ScannerProperties.PROP_SCAN_MODE, scanMode)) {
 				JOptionPane.showMessageDialog(this, LABELS.getString("dlgAppSetScanNetworMsg"), LABELS.getString("dlgAppSetTitle"), JOptionPane.WARNING_MESSAGE);
 			}
 
 			// CSV
-			appProp.setProperty(PROP_CSV_SEPARATOR, panelGUI.csvTextField.getText());
+			appProp.setProperty(ScannerProperties.PROP_CSV_SEPARATOR, panelGUI.csvTextField.getText());
 			
 			// Charts
-			appProp.setProperty(PROP_CHARTS_START, ((ChartType)panelGUI.comboCharts.getSelectedItem()).name());
-			appProp.setProperty(PROP_CHARTS_EXPORT, panelGUI.comboChartsExport.getSelectedIndex() == 0 ? "H" : "V");
+			appProp.setProperty(ScannerProperties.PROP_CHARTS_START, ((ChartType)panelGUI.comboCharts.getSelectedItem()).name());
+			appProp.setProperty(ScannerProperties.PROP_CHARTS_EXPORT, panelGUI.comboChartsExport.getSelectedIndex() == 0 ? "H" : "V");
 			
 			// Login
 			String rlUser = panelNetwork.userFieldRL.getText();
-			appProp.setProperty(PROP_LOGIN_USER, rlUser);
+			appProp.setProperty(ScannerProperties.PROP_LOGIN_USER, rlUser);
 			String encodedRlp = "";
 			if(rlUser.length() > 0) {
 				char[] rlp = panelNetwork.passwordFieldRL.getPassword();
@@ -160,16 +160,16 @@ public class DialogAppSettings extends JDialog {
 			} else {
 				DevicesFactory.setCredential(null, null);
 			}
-			appProp.setProperty(PROP_LOGIN_PWD, encodedRlp);
+			appProp.setProperty(ScannerProperties.PROP_LOGIN_PWD, encodedRlp);
 			
 			// Double click
-			appProp.setProperty(PROP_DCLICK_ACTION, panelGUI.detailsButton.isSelected() ? "DET" : "WEB");
+			appProp.setProperty(ScannerProperties.PROP_DCLICK_ACTION, panelGUI.detailsButton.isSelected() ? "DET" : "WEB");
 			
 			// Refresh
-			boolean r0 = appProp.changeProperty(PROP_REFRESH_ITERVAL, panelNetwork.refreshTextField.getText());
-			boolean r1 = appProp.changeProperty(PROP_REFRESH_CONF, panelNetwork.confRefreshtextField.getText());
+			boolean r0 = appProp.changeProperty(ScannerProperties.PROP_REFRESH_ITERVAL, panelNetwork.refreshTextField.getText());
+			boolean r1 = appProp.changeProperty(ScannerProperties.PROP_REFRESH_CONF, panelNetwork.confRefreshtextField.getText());
 			if(r0 || r1) {
-				model.setRefreshTime(appProp.getIntProperty(PROP_REFRESH_ITERVAL) * 1000, appProp.getIntProperty(PROP_REFRESH_CONF));
+				model.setRefreshTime(appProp.getIntProperty(ScannerProperties.PROP_REFRESH_ITERVAL) * 1000, appProp.getIntProperty(ScannerProperties.PROP_REFRESH_CONF));
 				for(int i = 0; i < model.size(); i++) {
 					model.refresh(i, true);
 				}
@@ -177,51 +177,51 @@ public class DialogAppSettings extends JDialog {
 			
 			// Detailed view
 			if(panelGUI.rdbtnDetailedViewFull.isSelected()) {
-				appProp.setProperty(PROP_DETAILED_VIEW_SCREEN, PROP_DETAILED_VIEW_SCREEN_FULL);
+				appProp.setProperty(ScannerProperties.PROP_DETAILED_VIEW_SCREEN, ScannerProperties.PROP_DETAILED_VIEW_SCREEN_FULL);
 			} else if(panelGUI.rdbtnDetailedViewAsIs.isSelected()) {
-				appProp.setProperty(PROP_DETAILED_VIEW_SCREEN, PROP_DETAILED_VIEW_SCREEN_AS_IS);
+				appProp.setProperty(ScannerProperties.PROP_DETAILED_VIEW_SCREEN, ScannerProperties.PROP_DETAILED_VIEW_SCREEN_AS_IS);
 			} else if(panelGUI.rdbtnNDetailedViewEstimate.isSelected()) {
-				appProp.setProperty(PROP_DETAILED_VIEW_SCREEN, PROP_DETAILED_VIEW_SCREEN_ESTIMATE);
+				appProp.setProperty(ScannerProperties.PROP_DETAILED_VIEW_SCREEN, ScannerProperties.PROP_DETAILED_VIEW_SCREEN_ESTIMATE);
 			} else {
-				appProp.setProperty(PROP_DETAILED_VIEW_SCREEN, PROP_DETAILED_VIEW_SCREEN_HORIZONTAL);
+				appProp.setProperty(ScannerProperties.PROP_DETAILED_VIEW_SCREEN, ScannerProperties.PROP_DETAILED_VIEW_SCREEN_HORIZONTAL);
 			}
 			
 			// Check for new Shelly Scanner release
 			if(panelGUI.updNoCHK.isSelected()) {
-				appProp.setProperty(PROP_UPDATECHK_ACTION, "NEVER");
+				appProp.setProperty(ScannerProperties.PROP_UPDATECHK_ACTION, "NEVER");
 			} else if(panelGUI.updStableCHK.isSelected()) {
-				appProp.setProperty(PROP_UPDATECHK_ACTION, "STABLE");
+				appProp.setProperty(ScannerProperties.PROP_UPDATECHK_ACTION, "STABLE");
 			} else { // updBetaCHK
-				appProp.setProperty(PROP_UPDATECHK_ACTION, "BETA");
+				appProp.setProperty(ScannerProperties.PROP_UPDATECHK_ACTION, "BETA");
 			}
 			
 			// toolbar
 			boolean captions = panelGUI.chckbxToolbarCaptions.isSelected();
-			appProp.setBoolProperty(PROP_TOOLBAR_CAPTIONS, captions);
+			appProp.setBoolProperty(ScannerProperties.PROP_TOOLBAR_CAPTIONS, captions);
 			mainView.hideCaptions(captions == false);
 			
 			// IDE
-			appProp.setIntProperty(PROP_IDE_TAB_SIZE, panelIDE.tabSize.getIntValue());
+			appProp.setIntProperty(ScannerProperties.PROP_IDE_TAB_SIZE, panelIDE.tabSize.getIntValue());
 			boolean darkMode = panelIDE.chcDarkMode.isSelected();
 			appProp.setBoolProperty(ScannerProperties.PROP_IDE_DARK, darkMode);
 			
 			// store
 			boolean useStore = panelStore.chckbxUseStore.isSelected();
-			boolean changedUse = appProp.setBoolProperty(PROP_USE_ARCHIVE, useStore);
+			boolean changedUse = appProp.setBoolProperty(ScannerProperties.PROP_USE_ARCHIVE, useStore);
 			String fileName = panelStore.textFieldStoreFileName.getText();
-			boolean changeArcFile = appProp.changeProperty(PROP_ARCHIVE_FILE, fileName);
+			boolean changeArcFile = appProp.changeProperty(ScannerProperties.PROP_ARCHIVE_FILE, fileName);
 			if(useStore && (changedUse || changeArcFile)) {
 				try {
 					PanelStore.removeGhosts(model);
 					model.loadFromStore(Paths.get(fileName));
 				} catch(Exception e) {
-					appProp.setBoolProperty(PROP_USE_ARCHIVE, false);
+					appProp.setBoolProperty(ScannerProperties.PROP_USE_ARCHIVE, false);
 					LOG.error("Archive read", e);
 					Msg.errorMsg(this, String.format(LABELS.getString("dlgAppStoreerrorReadingStore"), fileName));
 				}
 			}
 			boolean autoReload = panelStore.autoReloadCheckBox.isSelected();
-			appProp.setBoolProperty(PROP_AUTORELOAD_ARCHIVE, autoReload);
+			appProp.setBoolProperty(ScannerProperties.PROP_AUTORELOAD_ARCHIVE, autoReload);
 			
 			dispose();
 		});

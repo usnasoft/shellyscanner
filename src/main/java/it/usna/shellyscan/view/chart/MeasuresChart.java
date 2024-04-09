@@ -61,8 +61,8 @@ import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
 import it.usna.shellyscan.view.MainView;
-import it.usna.shellyscan.view.appsettings.DialogAppSettings;
 import it.usna.shellyscan.view.util.Msg;
+import it.usna.shellyscan.view.util.ScannerProperties;
 import it.usna.shellyscan.view.util.UtilMiscellaneous;
 import it.usna.util.AppProperties;
 import it.usna.util.UsnaEventListener;  
@@ -201,10 +201,10 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 					TimeChartsExporter exp = new TimeChartsExporter(dataset);
 					File out = fc.getSelectedFile();
 					DateRange range = btnPause.isSelected() ? (DateRange)xAxis.getRange() : null;
-					if("V".equals(appProp.getProperty(DialogAppSettings.PROP_CHARTS_EXPORT))) {
-						exp.exportAsVerticalCSV(out, currentType.yLabel, appProp.getProperty(DialogAppSettings.PROP_CSV_SEPARATOR, DialogAppSettings.PROP_CSV_SEPARATOR_DEFAULT), range);
+					if("V".equals(appProp.getProperty(ScannerProperties.PROP_CHARTS_EXPORT))) {
+						exp.exportAsVerticalCSV(out, currentType.yLabel, appProp.getProperty(ScannerProperties.PROP_CSV_SEPARATOR, ScannerProperties.PROP_CSV_SEPARATOR_DEFAULT), range);
 					} else {
-						exp.exportAsHorizontalCSV(out, appProp.getProperty(DialogAppSettings.PROP_CSV_SEPARATOR, DialogAppSettings.PROP_CSV_SEPARATOR_DEFAULT), range);
+						exp.exportAsHorizontalCSV(out, appProp.getProperty(ScannerProperties.PROP_CSV_SEPARATOR, ScannerProperties.PROP_CSV_SEPARATOR_DEFAULT), range);
 					}
 					appProp.setProperty("LAST_PATH", fc.getCurrentDirectory().getPath());
 					JOptionPane.showMessageDialog(this, LABELS.getString("msgFileSaved"), Main.APP_NAME, JOptionPane.INFORMATION_MESSAGE);
@@ -257,7 +257,7 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 			}
 		});
 
-		this.currentType = ChartType.valueOf(appProp.getProperty(DialogAppSettings.PROP_CHARTS_START, ChartType.INT_TEMP.name()));
+		this.currentType = ChartType.valueOf(appProp.getProperty(ScannerProperties.PROP_CHARTS_START, ChartType.INT_TEMP.name()));
 		typeCombo.setSelectedItem(currentType);
 
 		initDataSet(plot.getRangeAxis(), dataset, model, ind);

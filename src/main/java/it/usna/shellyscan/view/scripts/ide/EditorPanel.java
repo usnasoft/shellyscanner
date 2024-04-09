@@ -2,6 +2,8 @@ package it.usna.shellyscan.view.scripts.ide;
 
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.Graphics;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.swing.Action;
@@ -13,7 +15,6 @@ import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
 
-import it.usna.shellyscan.view.appsettings.DialogAppSettings;
 import it.usna.shellyscan.view.util.ScannerProperties;
 import it.usna.swing.texteditor.SyntaxEditor;
 
@@ -21,23 +22,43 @@ public class EditorPanel extends SyntaxEditor {
 	private static final long serialVersionUID = 1L;
 	private final static Pattern LINE_START = Pattern.compile("(^)(.*)", Pattern.MULTILINE);
 	private final static Pattern COMMENTED_LINE = Pattern.compile("(^)(\\s*)//", Pattern.MULTILINE);
-	private final static Pattern LINE_INIT = Pattern.compile("^", Pattern.MULTILINE);
-	private final static Pattern LINE_TAB = Pattern.compile("^\\t", Pattern.MULTILINE);
-
+	private final static Pattern LINE_TAB = Pattern.compile("(^)\\t", Pattern.MULTILINE);
+	private final static Pattern LINE_SPACES = Pattern.compile("[ \t]*");
+	private final static Pattern START_BLOCK = Pattern.compile("\\{[ \t]*$");
+	private final boolean darkMode = ScannerProperties.get().getBoolProperty(ScannerProperties.PROP_IDE_DARK);
+	
 	EditorPanel(String initText) {
 		super(baseStyle());
-		setTabSize(ScannerProperties.get().getIntProperty(DialogAppSettings.PROP_IDE_TAB_SIZE, DialogAppSettings.IDE_TAB_SIZE_DEFAULT));
+		setTabSize(ScannerProperties.get().getIntProperty(ScannerProperties.PROP_IDE_TAB_SIZE, ScannerProperties.IDE_TAB_SIZE_DEFAULT));
 		activateUndo();
 		setText(initText);
+		setCaretPosition(0);
 		resetUndo();
 		
-		Style styleComment = addStyle("usna_red", null);
+		Style styleOperators = addStyle("usna_operators", null);
+		Style styleStr = addStyle("usna_green", null);
+		Style styleReserved = addStyle("usna_styleReserved", null);
+		Style styleImplemented = addStyle("usna_styleImplemented", null);
+		if(darkMode) {
+			setBackground(new Color(0,0,0,0));
+			setCaretColor(Color.WHITE);
+			
+			StyleConstants.setForeground(styleOperators, new Color(255, 153, 51));
+			StyleConstants.setForeground(styleStr, new Color(128, 255, 0));
+			StyleConstants.setForeground(styleReserved, Color.CYAN);
+			StyleConstants.setForeground(styleImplemented, new Color(255, 153, 255));
+		} else {
+			StyleConstants.setForeground(styleOperators, new Color(150, 0, 0));
+			StyleConstants.setForeground(styleStr, new Color(0, 120, 0));
+			StyleConstants.setForeground(styleReserved, Color.BLUE);
+			StyleConstants.setForeground(styleImplemented, new Color(153, 0, 153));
+		}
+
+		Style styleComment = addStyle("usna_comment", null);
 		StyleConstants.setForeground(styleComment, Color.RED);
 		addSyntaxRule(new SyntaxEditor.BlockSimpleSyntax("//", "\n", styleComment));
 		addSyntaxRule(new SyntaxEditor.BlockSimpleSyntax("/*", "*/", styleComment));
-		
-		Style styleStr = addStyle("usna_green", null);
-		StyleConstants.setForeground(styleStr, new Color(0, 120, 0));
+
 		addSyntaxRule(new SyntaxEditor.BlockSimpleSyntax("\"", "\"", "\\", styleStr));
 		addSyntaxRule(new SyntaxEditor.BlockSimpleSyntax("'", "'", "\\", styleStr));
 		
@@ -45,13 +66,9 @@ public class EditorPanel extends SyntaxEditor {
 		StyleConstants.setBold(styleBrachets, true);
 		addSyntaxRule(new SyntaxEditor.Keywords(new String[] {"{", "}", "[", "]"}, styleBrachets));
 		
-		Style styleOperators = addStyle("usna_brachets", null);
-		StyleConstants.setForeground(styleOperators, new Color(150, 0, 0));
 		addSyntaxRule(new SyntaxEditor.Keywords(new String[] {"=", "+", "-", "*", "/", "%", "<", ">", "&", "|", "!"}, styleOperators));
 		
-		Style styleReserved = addStyle("usna_styleReserved", null);
 		StyleConstants.setBold(styleReserved, true);
-		StyleConstants.setForeground(styleReserved, Color.blue);
 		addSyntaxRule(new SyntaxEditor.DelimitedKeywords(new String[] {
 				"abstract", "arguments", "await*", "boolean", "break", "byte", "case", "catch",
 				"char", "class", "const*", "continue", "debugger", "default", "delete", "do",
@@ -62,9 +79,7 @@ public class EditorPanel extends SyntaxEditor {
 				"super", "switch", "synchronized", "this", "throw", "throws", "transient", "true",
 				"try", "typeof", "var", "void", "volatile", "while", "with", "yield"}, styleReserved));
 		
-		Style styleImplemented = addStyle("usna_styleReserved", null);
 		StyleConstants.setBold(styleImplemented, true);
-		StyleConstants.setForeground(styleImplemented, new Color(153, 0, 153));
 		addSyntaxRule(new SyntaxEditor.DelimitedKeywords(new String[] {
 				"String", "Number", "Function", "Array", "Math", "Date", "Object", "Exceptions"}, styleImplemented));
 		
@@ -94,7 +109,7 @@ public class EditorPanel extends SyntaxEditor {
 			int startElIndex = root.getElementIndex(getSelectionStart());
 			final int start = root.getElement(startElIndex).getStartOffset();
 			int endElIndex = root.getElementIndex(getSelectionEnd());
-			final int end = Math.min(root.getElement(endElIndex).getEndOffset(), doc.getLength()); // javadoc: AbstractDocument models an implied break at the end of the document
+			final int end = root.getElement(endElIndex).getEndOffset() - 1; // javadoc: AbstractDocument models an implied break at the end of the document
 
 			String txt = doc.getText(start, end - start);
 
@@ -102,13 +117,13 @@ public class EditorPanel extends SyntaxEditor {
 			if(selectedLines == endElIndex - startElIndex + 1) { // all lines commented > remove
 				txt = COMMENTED_LINE.matcher(txt).replaceAll("$1$2");
 			} else {
-				txt = LINE_START.matcher(txt).replaceAll("$1//$2"); // LINE_INIT.matcher(txt).replaceAll("//") ???
+				txt = LINE_START.matcher(txt).replaceAll("$1//$2");
 			}
 			replace(start, end - start, txt);
 			setSelectionStart(start);
-			setSelectionEnd(Math.min(root.getElement(endElIndex).getEndOffset(), doc.getLength()));
-//			setCaretPosition(start);
-		} catch (BadLocationException e) { }
+			setSelectionEnd(root.getElement(endElIndex).getEndOffset() - 1);
+//			setCaretPosition(root.getElement(endElIndex).getEndOffset() - 1);
+		} catch (BadLocationException e) { /*e.printStackTrace();*/ }
 	}
 	
 	public boolean indentSelection(boolean add) { // or remove
@@ -117,48 +132,71 @@ public class EditorPanel extends SyntaxEditor {
 		int endElIndex = root.getElementIndex(getSelectionEnd());
 		if(startElIndex != endElIndex) {
 			final int start = root.getElement(startElIndex).getStartOffset();
-			final int end = Math.min(root.getElement(endElIndex).getEndOffset(), doc.getLength()); // javadoc: AbstractDocument models an implied break at the end of the document
+			final int end = root.getElement(endElIndex).getEndOffset() - 1; // javadoc: AbstractDocument models an implied break at the end of the document
 			try {
 				String txt = doc.getText(start, end - start);
 				if(add) {
-					txt = LINE_TAB.matcher(txt).replaceAll("");
+					txt = LINE_TAB.matcher(txt).replaceAll("$1");
 				} else {
-					txt = LINE_INIT.matcher(txt).replaceAll("\\\t");
+					txt = LINE_START.matcher(txt).replaceAll("$1\\\t$2");
 				}
 				replace(start, end - start, txt);
 				setSelectionStart(start);
-				setSelectionEnd(Math.min(root.getElement(endElIndex).getEndOffset(), doc.getLength()));
-				return true;
+				setSelectionEnd(root.getElement(endElIndex).getEndOffset() - 1);
+				return true; // consume event
 			} catch (BadLocationException e1) { }
 		}
 		return false;
 	}
 	
+	public void newIndentedLine(boolean auto) {
+		try {
+			final Element root = doc.getDefaultRootElement();
+			int startElIndex = root.getElementIndex(getSelectionStart());
+			int start = root.getElement(startElIndex).getStartOffset();
+			int end = Math.min(root.getElement(startElIndex).getEndOffset() -1, getSelectionStart());
+
+			String currentLine = doc.getText(start, end - start);
+			final Matcher findIndent = LINE_SPACES.matcher(currentLine);
+			final String more = auto && START_BLOCK.matcher(currentLine).find() ? "\t" : "";
+
+			if(findIndent.lookingAt()) {
+				replaceSelection("\n" + more + currentLine.substring(findIndent.start(), findIndent.end()));
+			} else {
+				replaceSelection("\n" + more);
+			}
+		} catch (BadLocationException e) { /*e.printStackTrace();*/ }
+	}
+	
+	public void removeIndentlevel() {
+		Element line = doc.getParagraphElement(getCaretPosition());
+		int start = line.getStartOffset();
+		int end = line.getEndOffset() - 1;
+		try {
+			String currentLine = doc.getText(start, end - start);
+			if(currentLine.startsWith("\t") && currentLine.contains("{") == false) {
+				doc.remove(start, 1);
+			}
+		} catch (BadLocationException e) { /*e.printStackTrace();*/ }
+	}
+
+	@Override
+	protected void paintComponent(Graphics g) {
+		if (darkMode) {
+			g.setColor(Color.BLACK);
+			g.fillRect(0, 0, getWidth(), getHeight());
+		}
+		super.paintComponent(g);
+	}
+	
 	private static SimpleAttributeSet baseStyle() {
 		SimpleAttributeSet style = new SimpleAttributeSet();
 		StyleConstants.setFontFamily(style, Font.MONOSPACED);
+		boolean darkMode = ScannerProperties.get().getBoolProperty(ScannerProperties.PROP_IDE_DARK);
+		if(darkMode) {
+			StyleConstants.setForeground(style, Color.WHITE);
+//			StyleConstants.setBackground(style, Color.BLACK);
+		}
 		return style;
 	}
-
-//	public static void main(String... strings) {
-//		String test = "uno\ndue\ntre\nquattro\n // text";
-//		System.out.println(test);
-//		System.out.println("**************");
-//		Pattern p = Pattern.compile("(^)(.*)" , Pattern.MULTILINE );
-//		Matcher m = p.matcher(test);
-//		String res = m.replaceAll("$1//$2");
-//		System.out.println(res);
-//		System.out.println("**************");
-//		Pattern pc = Pattern.compile("^|\\R");
-//		m = pc.matcher(test);
-//		System.out.println(m.results().count());
-//		Pattern pcc = Pattern.compile("(^|\\R)\\s*//");
-//		m = pcc.matcher(test);
-//		System.out.println(m.results().count());
-//		System.out.println("**************");
-//		Pattern rc = Pattern.compile("(^|\\R)(\\s*)//");
-//		m = rc.matcher(res);
-//		String resr = m.replaceAll("$1$2");
-//		System.out.println(resr);
-//	}
 }

@@ -24,7 +24,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import it.usna.shellyscan.Main;
-import it.usna.shellyscan.view.appsettings.DialogAppSettings;
 import it.usna.util.AppProperties;
 
 public class UpplicationUpdateCHK {
@@ -60,7 +59,7 @@ public class UpplicationUpdateCHK {
 	 * This call manages (read/write) IGNORE_VERION_DOWNLOAD parameter
 	 */
 	public static void chechForUpdates(final Window w, final AppProperties appProp) {
-		String mode = appProp.getProperty(DialogAppSettings.PROP_UPDATECHK_ACTION, DialogAppSettings.PROP_UPDATECHK_ACTION_DEFAULT);
+		String mode = appProp.getProperty(ScannerProperties.PROP_UPDATECHK_ACTION, ScannerProperties.PROP_UPDATECHK_ACTION_DEFAULT);
 		if(mode.equals("NEVER") == false) {
 			w.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 			try {

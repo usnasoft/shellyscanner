@@ -24,6 +24,7 @@ import javax.swing.border.EmptyBorder;
 
 import it.usna.shellyscan.view.DevicesTable;
 import it.usna.shellyscan.view.chart.ChartType;
+import it.usna.shellyscan.view.util.ScannerProperties;
 import it.usna.util.AppProperties;
 
 public class PanelGUI extends JPanel {
@@ -71,7 +72,7 @@ public class PanelGUI extends JPanel {
 		ButtonGroup dClickGroup = new ButtonGroup();
 		dClickGroup.add(detailsButton);
 		dClickGroup.add(webUIButton);
-		if(appProp.getProperty(DialogAppSettings.PROP_DCLICK_ACTION, DialogAppSettings.PROP_DCLICK_ACTION_DEFAULT).equals("DET")) {
+		if(appProp.getProperty(ScannerProperties.PROP_DCLICK_ACTION, ScannerProperties.PROP_DCLICK_ACTION_DEFAULT).equals("DET")) {
 			detailsButton.setSelected(true);
 		} else {
 			webUIButton.setSelected(true);
@@ -101,7 +102,7 @@ public class PanelGUI extends JPanel {
 		gbc_chckbxToolbarCaptiosn.gridx = 1;
 		gbc_chckbxToolbarCaptiosn.gridy = 2;
 		add(chckbxToolbarCaptions, gbc_chckbxToolbarCaptiosn);
-		chckbxToolbarCaptions.setSelected(appProp.getBoolProperty(DialogAppSettings.PROP_TOOLBAR_CAPTIONS, true));
+		chckbxToolbarCaptions.setSelected(appProp.getBoolProperty(ScannerProperties.PROP_TOOLBAR_CAPTIONS, true));
 		
 		JSeparator separator = new JSeparator();
 		GridBagConstraints gbc_separator = new GridBagConstraints();
@@ -150,7 +151,7 @@ public class PanelGUI extends JPanel {
 		updCHKGroup.add(updNoCHK);
 		updCHKGroup.add(updStableCHK);
 		updCHKGroup.add(updBetaCHK);
-		String updChkMode = appProp.getProperty(DialogAppSettings.PROP_UPDATECHK_ACTION, DialogAppSettings.PROP_UPDATECHK_ACTION_DEFAULT);
+		String updChkMode = appProp.getProperty(ScannerProperties.PROP_UPDATECHK_ACTION, ScannerProperties.PROP_UPDATECHK_ACTION_DEFAULT);
 		if(updChkMode.equals("NEVER")) {
 			updNoCHK.setSelected(true);
 		} else if(updChkMode.equals("STABLE")) {
@@ -216,12 +217,12 @@ public class PanelGUI extends JPanel {
 		detailedViewGroup.add(rdbtnDetailedViewAsIs);
 		detailedViewGroup.add(rdbtnNDetailedViewEstimate);
 		detailedViewGroup.add(rdbtnDetailedViewHorizontal);
-		String detailsViewMode = appProp.getProperty(DialogAppSettings.PROP_DETAILED_VIEW_SCREEN, DialogAppSettings.PROP_DETAILED_VIEW_SCREEN_DEFAULT);
-		if(detailsViewMode.equals(DialogAppSettings.PROP_DETAILED_VIEW_SCREEN_FULL)) {
+		String detailsViewMode = appProp.getProperty(ScannerProperties.PROP_DETAILED_VIEW_SCREEN, ScannerProperties.PROP_DETAILED_VIEW_SCREEN_DEFAULT);
+		if(detailsViewMode.equals(ScannerProperties.PROP_DETAILED_VIEW_SCREEN_FULL)) {
 			rdbtnDetailedViewFull.setSelected(true);
-		} else if(detailsViewMode.equals(DialogAppSettings.PROP_DETAILED_VIEW_SCREEN_HORIZONTAL)) {
+		} else if(detailsViewMode.equals(ScannerProperties.PROP_DETAILED_VIEW_SCREEN_HORIZONTAL)) {
 			rdbtnDetailedViewHorizontal.setSelected(true);
-		} else if(detailsViewMode.equals(DialogAppSettings.PROP_DETAILED_VIEW_SCREEN_ESTIMATE)) {
+		} else if(detailsViewMode.equals(ScannerProperties.PROP_DETAILED_VIEW_SCREEN_ESTIMATE)) {
 			rdbtnNDetailedViewEstimate.setSelected(true);
 		} else {
 			rdbtnDetailedViewAsIs.setSelected(true);
@@ -253,7 +254,7 @@ public class PanelGUI extends JPanel {
 		gbc_lblNewLabel_4.gridy = 9;
 		add(lblNewLabel_4, gbc_lblNewLabel_4);
 		
-		csvTextField = new JTextField(appProp.getProperty(DialogAppSettings.PROP_CSV_SEPARATOR, DialogAppSettings.PROP_CSV_SEPARATOR_DEFAULT));
+		csvTextField = new JTextField(appProp.getProperty(ScannerProperties.PROP_CSV_SEPARATOR, ScannerProperties.PROP_CSV_SEPARATOR_DEFAULT));
 		GridBagConstraints gbc_csvTextField = new GridBagConstraints();
 		gbc_csvTextField.anchor = GridBagConstraints.WEST;
 		gbc_csvTextField.insets = new Insets(0, 0, 5, 5);
@@ -279,7 +280,7 @@ public class PanelGUI extends JPanel {
 		add(comboChartsExport, gbc_comboChartsExport);
 		comboChartsExport.addItem(LABELS.getString("dlgAppLblChartsExportHorizontal"));
 		comboChartsExport.addItem(LABELS.getString("dlgAppLblChartsExportVertical"));
-		comboChartsExport.setSelectedIndex("V".equals(appProp.getProperty(DialogAppSettings.PROP_CHARTS_EXPORT)) ? 1 : 0);
+		comboChartsExport.setSelectedIndex("V".equals(appProp.getProperty(ScannerProperties.PROP_CHARTS_EXPORT)) ? 1 : 0);
 		
 		JSeparator separator_3 = new JSeparator();
 		GridBagConstraints gbc_separator_3 = new GridBagConstraints();
@@ -309,7 +310,7 @@ public class PanelGUI extends JPanel {
 		gbc_comboCharts.gridx = 1;
 		gbc_comboCharts.gridy = 11;
 		add(comboCharts, gbc_comboCharts);
-		comboCharts.setSelectedItem(ChartType.valueOf(appProp.getProperty(DialogAppSettings.PROP_CHARTS_START, ChartType.INT_TEMP.name())));
+		comboCharts.setSelectedItem(ChartType.valueOf(appProp.getProperty(ScannerProperties.PROP_CHARTS_START, ChartType.INT_TEMP.name())));
 
 		JSeparator separator_4 = new JSeparator();
 		GridBagConstraints gbc_separator_4 = new GridBagConstraints();

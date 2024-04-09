@@ -23,6 +23,7 @@ import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
 
 import it.usna.shellyscan.view.IntegerTextFieldPanel;
+import it.usna.shellyscan.view.util.ScannerProperties;
 import it.usna.util.AppProperties;
 
 public class PanelNetwork extends JPanel {
@@ -98,7 +99,7 @@ public class PanelNetwork extends JPanel {
 		gbc_lblNewLabel_1.gridy = 1;
 		add(lblNewLabel_1, gbc_lblNewLabel_1);
 
-		String baseIPProp = appProp.getProperty(DialogAppSettings.BASE_SCAN_IP);
+		String baseIPProp = appProp.getProperty(ScannerProperties.BASE_SCAN_IP);
 		if(baseIPProp == null) {
 			try {
 				baseIPProp = InetAddress.getLocalHost().getHostAddress();
@@ -133,7 +134,7 @@ public class PanelNetwork extends JPanel {
 		add(baseIP, gbc_baseIP);
 		baseIP.setColumns(11);
 
-		firstIP = new IntegerTextFieldPanel(appProp.getIntProperty(DialogAppSettings.FIRST_SCAN_IP, DialogAppSettings.FIST_SCAN_IP_DEFAULT), 0, 255, false);
+		firstIP = new IntegerTextFieldPanel(appProp.getIntProperty(ScannerProperties.FIRST_SCAN_IP, ScannerProperties.FIST_SCAN_IP_DEFAULT), 0, 255, false);
 		GridBagConstraints gbc_firstIP = new GridBagConstraints();
 		gbc_firstIP.anchor = GridBagConstraints.WEST;
 		gbc_firstIP.insets = new Insets(0, 0, 5, 5);
@@ -142,7 +143,7 @@ public class PanelNetwork extends JPanel {
 		add(firstIP, gbc_firstIP);
 		firstIP.setColumns(3);
 
-		lastIP = new IntegerTextFieldPanel(appProp.getIntProperty(DialogAppSettings.LAST_SCAN_IP, DialogAppSettings.LAST_SCAN_IP_DEFAULT), 0, 255, false);
+		lastIP = new IntegerTextFieldPanel(appProp.getIntProperty(ScannerProperties.LAST_SCAN_IP, ScannerProperties.LAST_SCAN_IP_DEFAULT), 0, 255, false);
 		GridBagConstraints gbc_lastIP = new GridBagConstraints();
 		gbc_lastIP.insets = new Insets(0, 0, 5, 5);
 		gbc_lastIP.anchor = GridBagConstraints.WEST;
@@ -151,10 +152,10 @@ public class PanelNetwork extends JPanel {
 		add(lastIP, gbc_lastIP);
 		lastIP.setColumns(3);
 
-		String mode = appProp.getProperty(DialogAppSettings.PROP_SCAN_MODE);
+		String mode = appProp.getProperty(ScannerProperties.PROP_SCAN_MODE);
 		if(mode == null) {
-			appProp.setProperty(DialogAppSettings.PROP_SCAN_MODE, DialogAppSettings.PROP_SCAN_MODE_DEFAULT);
-			mode = DialogAppSettings.PROP_SCAN_MODE_DEFAULT;
+			appProp.setProperty(ScannerProperties.PROP_SCAN_MODE, ScannerProperties.PROP_SCAN_MODE_DEFAULT);
+			mode = ScannerProperties.PROP_SCAN_MODE_DEFAULT;
 		}
 		if(mode.equals("LOCAL")) {
 			localScanButton.setSelected(true);
@@ -204,7 +205,7 @@ public class PanelNetwork extends JPanel {
 		gbc_lblNewLabel_6.gridy = 5;
 		add(lblNewLabel_6, gbc_lblNewLabel_6);
 
-		userFieldRL = new JTextField(appProp.getProperty(DialogAppSettings.PROP_LOGIN_USER));
+		userFieldRL = new JTextField(appProp.getProperty(ScannerProperties.PROP_LOGIN_USER));
 		GridBagConstraints gbc_userFieldRL = new GridBagConstraints();
 		gbc_userFieldRL.anchor = GridBagConstraints.WEST;
 		gbc_userFieldRL.insets = new Insets(0, 0, 5, 5);
@@ -215,7 +216,7 @@ public class PanelNetwork extends JPanel {
 
 		passwordFieldRL = new JPasswordField();
 		try {
-			passwordFieldRL.setText(new String(Base64.getDecoder().decode(appProp.getProperty(DialogAppSettings.PROP_LOGIN_PWD).substring(1))));
+			passwordFieldRL.setText(new String(Base64.getDecoder().decode(appProp.getProperty(ScannerProperties.PROP_LOGIN_PWD).substring(1))));
 		} catch(RuntimeException e) {}
 		passwordFieldRL.setColumns(20);
 		GridBagConstraints gbc_passwordFieldRL = new GridBagConstraints();
@@ -262,7 +263,7 @@ public class PanelNetwork extends JPanel {
 		gbc_lblNewLabel_rt.gridy = 8;
 		add(lblNewLabel_rt, gbc_lblNewLabel_rt);
 		
-		refreshTextField = new IntegerTextFieldPanel(appProp.getIntProperty(DialogAppSettings.PROP_REFRESH_ITERVAL, DialogAppSettings.PROP_REFRESH_ITERVAL_DEFAULT), 1, 3600, false);
+		refreshTextField = new IntegerTextFieldPanel(appProp.getIntProperty(ScannerProperties.PROP_REFRESH_ITERVAL, ScannerProperties.PROP_REFRESH_ITERVAL_DEFAULT), 1, 3600, false);
 		GridBagConstraints gbc_refreshtextField = new GridBagConstraints();
 		gbc_refreshtextField.anchor = GridBagConstraints.WEST;
 		gbc_refreshtextField.insets = new Insets(0, 0, 5, 5);
@@ -280,7 +281,7 @@ public class PanelNetwork extends JPanel {
 		gbc_lblNewLabel_4.gridy = 9;
 		add(lblNewLabel_4, gbc_lblNewLabel_4);
 		
-		confRefreshtextField = new IntegerTextFieldPanel(appProp.getIntProperty(DialogAppSettings.PROP_REFRESH_CONF, DialogAppSettings.PROP_REFRESH_CONF_DEFAULT), 1, 9999, false);
+		confRefreshtextField = new IntegerTextFieldPanel(appProp.getIntProperty(ScannerProperties.PROP_REFRESH_CONF, ScannerProperties.PROP_REFRESH_CONF_DEFAULT), 1, 9999, false);
 		GridBagConstraints gbc_confRefreshtextField = new GridBagConstraints();
 		gbc_confRefreshtextField.insets = new Insets(0, 0, 5, 5);
 		gbc_confRefreshtextField.anchor = GridBagConstraints.WEST;

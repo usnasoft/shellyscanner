@@ -32,7 +32,7 @@ public class PanelIDE extends JPanel {
 		gbc_lblNewLabel.gridy = 0;
 		add(lblNewLabel, gbc_lblNewLabel);
 		
-		tabSize = new IntegerTextFieldPanel(appProp.getIntProperty(DialogAppSettings.PROP_IDE_TAB_SIZE, DialogAppSettings.IDE_TAB_SIZE_DEFAULT), 1, 32, false);
+		tabSize = new IntegerTextFieldPanel(appProp.getIntProperty(ScannerProperties.PROP_IDE_TAB_SIZE, ScannerProperties.IDE_TAB_SIZE_DEFAULT), 1, 32, false);
 		GridBagConstraints gbc_textField = new GridBagConstraints();
 		gbc_textField.anchor = GridBagConstraints.NORTHWEST;
 		gbc_textField.insets = new Insets(0, 0, 5, 0);

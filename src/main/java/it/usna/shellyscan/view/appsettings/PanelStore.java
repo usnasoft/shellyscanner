@@ -23,6 +23,7 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import it.usna.shellyscan.Main;
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.GhostDevice;
+import it.usna.shellyscan.view.util.ScannerProperties;
 import it.usna.util.AppProperties;
 
 public class PanelStore extends JPanel {
@@ -56,7 +57,7 @@ public class PanelStore extends JPanel {
 		gbc_chckbxUseStore.gridx = 1;
 		gbc_chckbxUseStore.gridy = 0;
 		add(chckbxUseStore, gbc_chckbxUseStore);
-		chckbxUseStore.setSelected(appProp.getBoolProperty(DialogAppSettings.PROP_USE_ARCHIVE, true));
+		chckbxUseStore.setSelected(appProp.getBoolProperty(ScannerProperties.PROP_USE_ARCHIVE, true));
 		
 		JLabel lblStoreFile = new JLabel(LABELS.getString("dlgAppStoreFileLabel"));
 		lblStoreFile.setFont(new Font("Tahoma", Font.BOLD, 11));
@@ -68,7 +69,7 @@ public class PanelStore extends JPanel {
 		gbc_lblStoreFile.gridy = 1;
 		add(lblStoreFile, gbc_lblStoreFile);
 		
-		textFieldStoreFileName = new JTextField(appProp.getProperty(DialogAppSettings.PROP_ARCHIVE_FILE, DialogAppSettings.PROP_ARCHIVE_FILE_DEFAULT));
+		textFieldStoreFileName = new JTextField(appProp.getProperty(ScannerProperties.PROP_ARCHIVE_FILE, ScannerProperties.PROP_ARCHIVE_FILE_DEFAULT));
 		GridBagConstraints gbc_textFieldStoreFileName = new GridBagConstraints();
 		gbc_textFieldStoreFileName.insets = new Insets(0, 0, 5, 5);
 		gbc_textFieldStoreFileName.fill = GridBagConstraints.HORIZONTAL;
@@ -128,7 +129,7 @@ public class PanelStore extends JPanel {
 				removeGhosts(model);
 			}
 		});
-		autoReloadCheckBox.setSelected(appProp.getBoolProperty(DialogAppSettings.PROP_AUTORELOAD_ARCHIVE, false));
+		autoReloadCheckBox.setSelected(appProp.getBoolProperty(ScannerProperties.PROP_AUTORELOAD_ARCHIVE, false));
 		
 		ChangeListener enableListener = e -> {
 			textFieldStoreFileName.setEnabled(chckbxUseStore.isSelected());

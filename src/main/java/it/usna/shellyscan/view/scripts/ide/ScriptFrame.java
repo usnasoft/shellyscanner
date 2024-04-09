@@ -3,6 +3,7 @@ package it.usna.shellyscan.view.scripts.ide;
 import static it.usna.shellyscan.Main.LABELS;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.FlowLayout;
 import java.awt.event.InputEvent;
@@ -30,6 +31,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
+import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
@@ -51,7 +53,7 @@ import it.usna.shellyscan.view.MainView;
 import it.usna.shellyscan.view.scripts.DialogDeviceScripts;
 import it.usna.shellyscan.view.scripts.ScriptsPanel;
 import it.usna.shellyscan.view.util.Msg;
-import it.usna.shellyscan.view.util.UsnaTextPane;
+import it.usna.shellyscan.view.util.ScannerProperties;
 import it.usna.swing.dialog.FindReplaceDialog;
 import it.usna.swing.texteditor.TextLineNumber;
 import it.usna.util.IOFile;
@@ -84,13 +86,14 @@ public class ScriptFrame extends JFrame {
 	private EditorPanel editor;
 	private JLabel caretLabel;
 
-	private UsnaTextPane logsTextArea = new UsnaTextPane();
+	private /*UsnaTextPane*/JTextArea logsTextArea = /*new UsnaTextPane()*/ new JTextArea();
 	
+	private boolean darkMode = ScannerProperties.get().getBoolProperty(ScannerProperties.PROP_IDE_DARK);
 	private final AbstractG2Device device;
 	private boolean readLogs;
 	
 	public ScriptFrame(ScriptsPanel originatingPanel, AbstractG2Device device, Script script) throws IOException {
-		super(/*LABELS.getString("dlgScriptEditorTitle") + " - " +*/ script.getName());
+		super(script.getName());
 		setIconImage(Main.ICON);
 		setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 		
@@ -109,6 +112,7 @@ public class ScriptFrame extends JFrame {
 		setSize(800, 600);
 		setVisible(true);
 		splitPane.setDividerLocation(0.75d);
+		splitPane.setResizeWeight(0.6d);
 		editor.requestFocus();
 		setLocationRelativeTo(originatingPanel);
 
@@ -130,7 +134,10 @@ public class ScriptFrame extends JFrame {
 		editor = new EditorPanel(script.getCode());
 		scrollPane.setViewportView(editor);
 		TextLineNumber lineNum = new TextLineNumber(editor);
-		lineNum.setBorder(BorderFactory.createEmptyBorder(0, 1, 0, 2));
+		if(darkMode) {
+			lineNum.setBackground(Color.DARK_GRAY);
+			lineNum.setForeground(Color.WHITE);
+		}
 		scrollPane.setRowHeaderView(lineNum);
 		
 		mainEditorPanel.add(scrollPane, BorderLayout.CENTER);
@@ -168,12 +175,21 @@ public class ScriptFrame extends JFrame {
 		});
 		editor.mapAction(KeyStroke.getKeyStroke(KeyEvent.VK_7, InputEvent.CTRL_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK), commentAction, "comment_usna");
 		editor.mapAction(KeyStroke.getKeyStroke(KeyEvent.VK_SLASH, InputEvent.CTRL_DOWN_MASK), commentAction, "comment_usna2");
-		
+
 		editor.addKeyListener(new KeyAdapter() {
 			@Override
 			public void keyPressed(KeyEvent e) {
 				if(e.getKeyCode() == KeyEvent.VK_TAB && editor.indentSelection(e.isShiftDown())) {
 					e.consume();
+				} else if(e.getKeyCode() == KeyEvent.VK_ENTER) {
+					if(e.isShiftDown()) {
+						editor.replaceSelection("\n");
+					} else {
+						editor.newIndentedLine(true);
+					}
+					e.consume();
+				} else if(e.getKeyChar() == '}') {
+					editor.removeIndentlevel();
 				}
 			}
 		});
@@ -239,7 +255,7 @@ public class ScriptFrame extends JFrame {
 		});
 		
 		uploadAndRunAction = new UsnaAction(this, "btnUploadRun", "/images/PlayerUploadPlay24.png", e -> {
-			String res = script.putCode(editor.getText()); // uploadAction.actionPerformed(e);
+			String res = script.putCode(editor.getText());
 			if(res != null) {
 				Msg.errorMsg(this, res);
 			} else {
@@ -317,9 +333,14 @@ public class ScriptFrame extends JFrame {
 		}
 	}
 	
-	private JPanel logPanel(/*Script script, AbstractG2Device device*/) throws IOException {
+	private JPanel logPanel() throws IOException {
 		logsTextArea.setEditable(false);
 		JPanel mainLogPanel = new JPanel(new BorderLayout());
+		
+		if(darkMode) {
+			logsTextArea.setBackground(Color.BLACK);
+			logsTextArea.setForeground(Color.WHITE);
+		}
 
 		JScrollPane scrollPane = new JScrollPane();
 		scrollPane.setBorder(BorderFactory.createEmptyBorder(0, 2, 4, 2));
@@ -330,9 +351,7 @@ public class ScriptFrame extends JFrame {
 		JToolBar toolBar = new JToolBar();
 		toolBar.setFloatable(false);
 		
-		Action erase = new UsnaAction(this, null, "/images/erase-9-16.png", e -> {
-			logsTextArea.setText("");
-		});
+		Action erase = new UsnaAction(this, null, "/images/erase-9-16.png", e -> logsTextArea.setText("") );
 		toolBar.add(erase);
 		
 		mainLogPanel.add(toolBar, BorderLayout.NORTH);
@@ -379,10 +398,10 @@ public class ScriptFrame extends JFrame {
 					}
 					if(logLine.length < 3 || level == Integer.MIN_VALUE) {
 						logsTextArea.append(txt.trim() + "\n");
-						logsTextArea.setCaretPosition(logsTextArea.getStyledDocument().getLength());
+						logsTextArea.setCaretPosition(logsTextArea.getText().length());
 					} else if(level <= /*logLevel*/0) {
 						logsTextArea.append(/*logLine[0] + "L" + logLine[1] + ": " +*/ logLine[2].trim() + "\n");
-						logsTextArea.setCaretPosition(logsTextArea.getStyledDocument().getLength());
+						logsTextArea.setCaretPosition(logsTextArea.getText().length());
 					}
 				}
 				

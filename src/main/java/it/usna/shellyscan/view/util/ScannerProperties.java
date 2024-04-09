@@ -8,7 +8,8 @@ import it.usna.util.AppProperties;
  * Not a real singleton
  * @author a.flaccomio
  */
-public class ScannerProperties {
+public class ScannerProperties extends AppProperties {
+	private static final long serialVersionUID = 1L;
 	public final static String PROP_TOOLBAR_CAPTIONS = "T_CAPTIONS";
 	public final static String PROP_CSV_SEPARATOR = "CSV_SEPARATOR";
 	public final static String PROP_CSV_SEPARATOR_DEFAULT = ",";
@@ -54,15 +55,18 @@ public class ScannerProperties {
 	
 	public final static String PROP_IDE_DARK = "IDE_DARK";
 	
-	private static AppProperties ap;
+	private static ScannerProperties ap;
 	
-	private ScannerProperties() {}
-	
-	public static void init(String file) {
-		ap = new AppProperties(file);
+	private ScannerProperties(String file) {
+		super(file);
 	}
 	
-	public static AppProperties get() {
+	public static ScannerProperties init(String file) {
+		ap = new ScannerProperties(file);
+		return ap;
+	}
+	
+	public static ScannerProperties get() {
 		return ap;
 	}
 }

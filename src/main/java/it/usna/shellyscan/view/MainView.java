@@ -76,6 +76,7 @@ import it.usna.shellyscan.view.chart.MeasuresChart;
 import it.usna.shellyscan.view.devsettings.DialogDeviceSettings;
 import it.usna.shellyscan.view.scripts.DialogDeviceScripts;
 import it.usna.shellyscan.view.util.Msg;
+import it.usna.shellyscan.view.util.ScannerProperties;
 import it.usna.swing.UsnaPopupMenu;
 import it.usna.swing.table.UsnaTableModel;
 import it.usna.swing.texteditor.TextDocumentListener;
@@ -138,7 +139,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		SwingUtilities.invokeLater(() -> {
 			setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 			try {
-				model.rescan(appProp.getBoolProperty(DialogAppSettings.PROP_USE_ARCHIVE, true));
+				model.rescan(appProp.getBoolProperty(ScannerProperties.PROP_USE_ARCHIVE, true));
 				Thread.sleep(500); // too many call disturb some devices
 			} catch (IOException e1) {
 				Msg.errorMsg(this, e1);
@@ -253,7 +254,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		if(fc.showSaveDialog(MainView.this) == JFileChooser.APPROVE_OPTION) {
 			Path outPath = IOFile.addExtension(fc.getSelectedFile().toPath(), "csv");
 			try (BufferedWriter writer = Files.newBufferedWriter(outPath)) {
-				devicesTable.csvExport(writer, appProp.getProperty(DialogAppSettings.PROP_CSV_SEPARATOR, DialogAppSettings.PROP_CSV_SEPARATOR_DEFAULT));
+				devicesTable.csvExport(writer, appProp.getProperty(ScannerProperties.PROP_CSV_SEPARATOR, ScannerProperties.PROP_CSV_SEPARATOR_DEFAULT));
 				JOptionPane.showMessageDialog(MainView.this, LABELS.getString("msgFileSaved"), Main.APP_NAME, JOptionPane.INFORMATION_MESSAGE);
 			} catch (IOException ex) {
 				Msg.errorMsg(this, ex);
@@ -405,7 +406,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		toolBar.addSeparator();
 		toolBar.add(appSettingsAction);
 		toolBar.add(aboutAction);
-		hideCaptions(appProp.getBoolProperty(DialogAppSettings.PROP_TOOLBAR_CAPTIONS, true) == false);
+		hideCaptions(appProp.getBoolProperty(ScannerProperties.PROP_TOOLBAR_CAPTIONS, true) == false);
 		getContentPane().add(toolBar, BorderLayout.NORTH);
 
 		// devices popup
@@ -417,7 +418,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 			@Override
 			public void mousePressed(MouseEvent e) {
 		        if (e.getClickCount() == 2 && devicesTable.getSelectedRow() >= 0 && devicesTable.isCellEditable(devicesTable.getSelectedRow(), devicesTable.getSelectedColumn()) == false) {
-		        	if(appProp.getProperty(DialogAppSettings.PROP_DCLICK_ACTION, DialogAppSettings.PROP_DCLICK_ACTION_DEFAULT).equals("DET") && infoAction.isEnabled()) {
+		        	if(appProp.getProperty(ScannerProperties.PROP_DCLICK_ACTION, ScannerProperties.PROP_DCLICK_ACTION_DEFAULT).equals("DET") && infoAction.isEnabled()) {
 		        		infoAction.actionPerformed(null);
 		        	} else if(browseAction.isEnabled()) {
 		        		browseAction.actionPerformed(null);
@@ -550,7 +551,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 				devicesSettingsAction.setEnabled(selection);
 				chartAction.setEnabled(selectionNoGhost);
 				scriptManagerAction.setEnabled(singleSelectionNoGhost && d instanceof AbstractG2Device);
-				notesAction.setEnabled(singleSelection && appProp.getBoolProperty(DialogAppSettings.PROP_USE_ARCHIVE, true));
+				notesAction.setEnabled(singleSelection && appProp.getBoolProperty(ScannerProperties.PROP_USE_ARCHIVE, true));
 				
 				displayStatus();
 			}
@@ -571,13 +572,13 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 			devicesTable.resetRowsComputedHeight();
 			devicesTable.loadColPos(appProp, DevicesTable.STORE_EXT_PREFIX);
 			
-			String detScreenMode = appProp.getProperty(DialogAppSettings.PROP_DETAILED_VIEW_SCREEN, DialogAppSettings.PROP_DETAILED_VIEW_SCREEN_DEFAULT);
+			String detScreenMode = appProp.getProperty(ScannerProperties.PROP_DETAILED_VIEW_SCREEN, ScannerProperties.PROP_DETAILED_VIEW_SCREEN_DEFAULT);
 			if(getExtendedState() != JFrame.MAXIMIZED_BOTH) {
-				if(detScreenMode.equals(DialogAppSettings.PROP_DETAILED_VIEW_SCREEN_FULL)) {
+				if(detScreenMode.equals(ScannerProperties.PROP_DETAILED_VIEW_SCREEN_FULL)) {
 					setExtendedState(JFrame.MAXIMIZED_BOTH);
-				} else if(detScreenMode.equals(DialogAppSettings.PROP_DETAILED_VIEW_SCREEN_HORIZONTAL)) {
+				} else if(detScreenMode.equals(ScannerProperties.PROP_DETAILED_VIEW_SCREEN_HORIZONTAL)) {
 					setExtendedState(JFrame.MAXIMIZED_HORIZ);
-				} else if(detScreenMode.equals(DialogAppSettings.PROP_DETAILED_VIEW_SCREEN_ESTIMATE)) {
+				} else if(detScreenMode.equals(ScannerProperties.PROP_DETAILED_VIEW_SCREEN_ESTIMATE)) {
 					Rectangle screen = getCurrentScreenBounds();
 					Rectangle current = getBounds();
 					current.width = current.width * devicesTable.getColumnCount() / normColCount;
@@ -610,9 +611,9 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 	}
 
 	private void storeProperties() {
-		if(appProp.getBoolProperty(DialogAppSettings.PROP_USE_ARCHIVE, true)) {
+		if(appProp.getBoolProperty(ScannerProperties.PROP_USE_ARCHIVE, true)) {
 			try {
-				model.saveToStore(Paths.get(appProp.getProperty(DialogAppSettings.PROP_ARCHIVE_FILE, DialogAppSettings.PROP_ARCHIVE_FILE_DEFAULT)));
+				model.saveToStore(Paths.get(appProp.getProperty(ScannerProperties.PROP_ARCHIVE_FILE, ScannerProperties.PROP_ARCHIVE_FILE_DEFAULT)));
 			} catch (IOException | RuntimeException ex) {
 				LOG.error("Unexpected", ex);
 				Msg.errorMsg(this, "Error storing archive");
