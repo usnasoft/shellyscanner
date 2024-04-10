@@ -210,6 +210,9 @@ public class DialogAppSettings extends JDialog {
 				appProp.setProperty(ScannerProperties.IDE_AUTOINDENT, "SMART");
 			}
 			appProp.setBoolProperty(ScannerProperties.IDE_AUTOCLOSE_CURLY, panelIDE.chckbxCloseCurly.isSelected());
+			appProp.setBoolProperty(ScannerProperties.IDE_AUTOCLOSE_BRACKET, panelIDE.chckbxClosebracket.isSelected());
+			appProp.setBoolProperty(ScannerProperties.IDE_AUTOCLOSE_SQUARE, panelIDE.chckbxCloseSquare.isSelected());
+			appProp.setBoolProperty(ScannerProperties.IDE_AUTOCLOSE_STRING, panelIDE.chckbxCloseString.isSelected());
 			appProp.setBoolProperty(ScannerProperties.PROP_IDE_DARK, panelIDE.chcDarkMode.isSelected());
 			
 			// store

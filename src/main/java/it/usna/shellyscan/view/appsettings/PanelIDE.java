@@ -26,10 +26,13 @@ public class PanelIDE extends JPanel {
 	JRadioButton rdbtnIndentYes;
 	JRadioButton rdbtnIndentNone;
 	JCheckBox chckbxCloseCurly;
+	JCheckBox chckbxClosebracket;
+	JCheckBox chckbxCloseSquare;
+	JCheckBox chckbxCloseString;
 	
 	PanelIDE(final AppProperties appProp) {
 		GridBagLayout gridBagLayout = new GridBagLayout();
-		gridBagLayout.columnWeights = new double[]{0.0, 0.0, 0.0, 1.0};
+		gridBagLayout.columnWeights = new double[]{0.0, 0.0, 0.0, 0.0, 1.0};
 		setLayout(gridBagLayout);
 		
 		JLabel lblNewLabel = new JLabel(LABELS.getString("dlgAppSetIDETabSize"));
@@ -78,18 +81,9 @@ public class PanelIDE extends JPanel {
 		gbc_rdbtnIndentYes.gridy = 1;
 		add(rdbtnIndentYes, gbc_rdbtnIndentYes);
 		
-		rdbtnIndentNone = new JRadioButton(LABELS.getString("dlgAppSetIDEAutoIndentNo"));
-		GridBagConstraints gbc_rdbtnIndentNone = new GridBagConstraints();
-		gbc_rdbtnIndentNone.anchor = GridBagConstraints.NORTHWEST;
-		gbc_rdbtnIndentNone.insets = new Insets(0, 0, 5, 15);
-		gbc_rdbtnIndentNone.gridx = 3;
-		gbc_rdbtnIndentNone.gridy = 1;
-		add(rdbtnIndentNone, gbc_rdbtnIndentNone);
-		
 		ButtonGroup indentGroup = new ButtonGroup();
 		indentGroup.add(rdbtnIndentSmart);
 		indentGroup.add(rdbtnIndentYes);
-		indentGroup.add(rdbtnIndentNone);
 		String indentProp = appProp.getProperty(ScannerProperties.IDE_AUTOINDENT);
 		if("YES".equals(indentProp)) {
 			rdbtnIndentYes.setSelected(true);
@@ -98,6 +92,15 @@ public class PanelIDE extends JPanel {
 		} else {
 			rdbtnIndentSmart.setSelected(true); // default
 		}
+		
+		rdbtnIndentNone = new JRadioButton(LABELS.getString("dlgAppSetIDEAutoIndentNo"));
+		GridBagConstraints gbc_rdbtnIndentNone = new GridBagConstraints();
+		gbc_rdbtnIndentNone.anchor = GridBagConstraints.NORTHWEST;
+		gbc_rdbtnIndentNone.insets = new Insets(0, 0, 5, 15);
+		gbc_rdbtnIndentNone.gridx = 3;
+		gbc_rdbtnIndentNone.gridy = 1;
+		add(rdbtnIndentNone, gbc_rdbtnIndentNone);
+		indentGroup.add(rdbtnIndentNone);
 		
 		JLabel lblNewLabel_3 = new JLabel(LABELS.getString("dlgAppSetIDEAutoClose"));
 		lblNewLabel_3.setFont(new Font("Tahoma", Font.BOLD, 11));
@@ -119,6 +122,39 @@ public class PanelIDE extends JPanel {
 		gbc_chckbxCloseCurly.gridy = 2;
 		add(chckbxCloseCurly, gbc_chckbxCloseCurly);
 		chckbxCloseCurly.setSelected(appProp.getBoolProperty(ScannerProperties.IDE_AUTOCLOSE_CURLY, false));
+		
+		chckbxClosebracket = new JCheckBox("( )");
+		chckbxClosebracket.setFont(new Font("Tahoma", Font.BOLD, 11));
+		GridBagConstraints gbc_chckbxClosebracket = new GridBagConstraints();
+		gbc_chckbxClosebracket.anchor = GridBagConstraints.NORTHWEST;
+		gbc_chckbxClosebracket.fill = GridBagConstraints.VERTICAL;
+		gbc_chckbxClosebracket.insets = new Insets(0, 0, 5, 5);
+		gbc_chckbxClosebracket.gridx = 2;
+		gbc_chckbxClosebracket.gridy = 2;
+		add(chckbxClosebracket, gbc_chckbxClosebracket);
+		chckbxClosebracket.setSelected(appProp.getBoolProperty(ScannerProperties.IDE_AUTOCLOSE_BRACKET, false));
+		
+		chckbxCloseSquare = new JCheckBox("[ ]");
+		chckbxCloseSquare.setFont(new Font("Tahoma", Font.BOLD, 11));
+		GridBagConstraints gbc_chckbxCloseSquare = new GridBagConstraints();
+		gbc_chckbxCloseSquare.anchor = GridBagConstraints.NORTHWEST;
+		gbc_chckbxCloseSquare.fill = GridBagConstraints.VERTICAL;
+		gbc_chckbxCloseSquare.insets = new Insets(0, 0, 5, 5);
+		gbc_chckbxCloseSquare.gridx = 3;
+		gbc_chckbxCloseSquare.gridy = 2;
+		add(chckbxCloseSquare, gbc_chckbxCloseSquare);
+		chckbxCloseSquare.setSelected(appProp.getBoolProperty(ScannerProperties.IDE_AUTOCLOSE_SQUARE, false));
+		
+		chckbxCloseString = new JCheckBox("\" \"");
+		chckbxCloseString.setFont(new Font("Tahoma", Font.BOLD, 11));
+		GridBagConstraints gbc_chckbxCloseString = new GridBagConstraints();
+		gbc_chckbxCloseString.fill = GridBagConstraints.VERTICAL;
+		gbc_chckbxCloseString.anchor = GridBagConstraints.NORTHWEST;
+		gbc_chckbxCloseString.insets = new Insets(0, 0, 5, 5);
+		gbc_chckbxCloseString.gridx = 4;
+		gbc_chckbxCloseString.gridy = 2;
+		add(chckbxCloseString, gbc_chckbxCloseString);
+		chckbxCloseString.setSelected(appProp.getBoolProperty(ScannerProperties.IDE_AUTOCLOSE_STRING, false));
 		
 		JLabel lblNewLabel_1 = new JLabel(LABELS.getString("dlgAppSetIDEDarkMode"));
 		lblNewLabel_1.setFont(new Font("Tahoma", Font.BOLD, 11));
