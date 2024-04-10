@@ -202,8 +202,15 @@ public class DialogAppSettings extends JDialog {
 			
 			// IDE
 			appProp.setIntProperty(ScannerProperties.PROP_IDE_TAB_SIZE, panelIDE.tabSize.getIntValue());
-			boolean darkMode = panelIDE.chcDarkMode.isSelected();
-			appProp.setBoolProperty(ScannerProperties.PROP_IDE_DARK, darkMode);
+			if(panelIDE.rdbtnIndentNone.isSelected()) {
+				appProp.setProperty(ScannerProperties.IDE_AUTOINDENT, "NO");
+			} else if(panelIDE.rdbtnIndentYes.isSelected()) {
+				appProp.setProperty(ScannerProperties.IDE_AUTOINDENT, "YES");
+			} else if(panelIDE.rdbtnIndentSmart.isSelected()) {
+				appProp.setProperty(ScannerProperties.IDE_AUTOINDENT, "SMART");
+			}
+			appProp.setBoolProperty(ScannerProperties.IDE_AUTOCLOSE_CURLY, panelIDE.chckbxCloseCurly.isSelected());
+			appProp.setBoolProperty(ScannerProperties.PROP_IDE_DARK, panelIDE.chcDarkMode.isSelected());
 			
 			// store
 			boolean useStore = panelStore.chckbxUseStore.isSelected();

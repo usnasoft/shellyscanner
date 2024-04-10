@@ -52,7 +52,8 @@ public class ScannerProperties extends AppProperties {
 	
 	public final static String PROP_IDE_TAB_SIZE = "IDE_TAB_SIZE";
 	public final static int IDE_TAB_SIZE_DEFAULT = 4;
-	
+	public final static String IDE_AUTOINDENT = "IDE_INDENT";
+	public final static String IDE_AUTOCLOSE_CURLY = "CL_CURLY";
 	public final static String PROP_IDE_DARK = "IDE_DARK";
 	
 	private static ScannerProperties ap;

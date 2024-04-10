@@ -176,20 +176,29 @@ public class ScriptFrame extends JFrame {
 		editor.mapAction(KeyStroke.getKeyStroke(KeyEvent.VK_7, InputEvent.CTRL_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK), commentAction, "comment_usna");
 		editor.mapAction(KeyStroke.getKeyStroke(KeyEvent.VK_SLASH, InputEvent.CTRL_DOWN_MASK), commentAction, "comment_usna2");
 
+		final boolean closeCurly = ScannerProperties.get().getBoolProperty(ScannerProperties.IDE_AUTOCLOSE_CURLY, false);
+		final String indentMode = ScannerProperties.get().getProperty(ScannerProperties.IDE_AUTOINDENT, "SMART");
+		boolean autoIndent = "SMART".equals(indentMode);
 		editor.addKeyListener(new KeyAdapter() {
 			@Override
 			public void keyPressed(KeyEvent e) {
-				if(e.getKeyCode() == KeyEvent.VK_TAB && editor.indentSelection(e.isShiftDown())) {
-					e.consume();
-				} else if(e.getKeyCode() == KeyEvent.VK_ENTER) {
-					if(e.isShiftDown()) {
-						editor.replaceSelection("\n");
-					} else {
-						editor.newIndentedLine(true);
+				if(e.getKeyCode() == KeyEvent.VK_TAB) {
+					if(editor.indentSelection(e.isShiftDown())) {
+						e.consume();
 					}
-					e.consume();
+				} else if(e.getKeyCode() == KeyEvent.VK_ENTER) {
+					if("NO".equals(indentMode) == false) {
+						if(e.isShiftDown()) {
+							editor.replaceSelection("\n");
+						} else {
+							editor.newIndentedLine(autoIndent);
+						}
+						e.consume();
+					}
 				} else if(e.getKeyChar() == '}') {
-					editor.removeIndentlevel();
+					if(autoIndent && editor.removeIndentlevel()) {
+						e.consume();
+					}
 				}
 			}
 		});
@@ -440,5 +449,3 @@ public class ScriptFrame extends JFrame {
 		return null;
 	}
 }
-
-// editor: indent

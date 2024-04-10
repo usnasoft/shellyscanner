@@ -168,16 +168,25 @@ public class EditorPanel extends SyntaxEditor {
 		} catch (BadLocationException e) { /*e.printStackTrace();*/ }
 	}
 	
-	public void removeIndentlevel() {
+	private final static Pattern END_BLOCK = Pattern.compile("\\s*(\t)+\\s*$");
+	public boolean removeIndentlevel() {
 		Element line = doc.getParagraphElement(getCaretPosition());
 		int start = line.getStartOffset();
 		int end = line.getEndOffset() - 1;
 		try {
 			String currentLine = doc.getText(start, end - start);
-			if(currentLine.startsWith("\t") && currentLine.contains("{") == false) {
-				doc.remove(start, 1);
+			//if(currentLine.startsWith("\t") && currentLine.contains("{") == false) {
+			Matcher m = END_BLOCK.matcher(currentLine);
+			if(m.find()) {
+				undoManager.startCompound();
+				doc.remove(m.start(1), 1);
+				insert("}", getCaretPosition());
+				undoManager.endCompound();
+//				doc.remove(start, 1);
+				return true;
 			}
 		} catch (BadLocationException e) { /*e.printStackTrace();*/ }
+		return false;
 	}
 
 	@Override
