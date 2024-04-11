@@ -170,7 +170,7 @@ public class ScriptFrame extends JFrame {
 		editor.mapAction(KeyStroke.getKeyStroke(KeyEvent.VK_F, MainView.SHORTCUT_KEY), findAction, "find_usna");
 		
 		commentAction = new UsnaAction(null, "btnCommentTooltip", "/images/Comment24.png", e -> {
-			editor.commentSelection();
+			editor.commentSelected();
 			editor.requestFocus();
 		});
 		editor.mapAction(KeyStroke.getKeyStroke(KeyEvent.VK_7, InputEvent.CTRL_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK), commentAction, "comment_usna");
@@ -187,7 +187,7 @@ public class ScriptFrame extends JFrame {
 			@Override
 			public void keyPressed(KeyEvent e) {
 				if(e.getKeyCode() == KeyEvent.VK_TAB) {
-					if(editor.indentSelection(e.isShiftDown())) {
+					if(editor.indentSelected(e.isShiftDown())) {
 						e.consume();
 					}
 				} else if(e.getKeyCode() == KeyEvent.VK_ENTER) {
@@ -206,13 +206,16 @@ public class ScriptFrame extends JFrame {
 			@Override
 			public void keyTyped(KeyEvent e) {
 				if(closeBracket && e.getKeyChar() == '(') {
-					blockLimitsInsert("(", ")");
+					editor.blockLimitsInsert("(", ")");
 					e.consume();
 				} else if(closeSquare && e.getKeyChar() == '[') {
-					blockLimitsInsert("[", "]");
+					editor.blockLimitsInsert("[", "]");
+					e.consume();
+				} else if(closeSquare && e.getKeyChar() == '{') {
+					editor.blockLimitsInsert("{", "}");
 					e.consume();
 				} else if(closeString && e.getKeyChar() == '"') {
-					blockLimitsInsert("\"", "\"");
+					editor.stringBlockLimitsInsert();
 					e.consume();
 				} else if(e.getKeyChar() == '}') {
 					if(smartAutoIndent && editor.removeIndentlevel()) {
@@ -345,19 +348,6 @@ public class ScriptFrame extends JFrame {
 		caretLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 8));
 		
 		return mainEditorPanel;
-	}
-	
-	private void blockLimitsInsert(String start, String end) {
-		if(editor.insideInnerBlock() == false) {
-			try {
-				editor.replaceSelection(start);
-				int pos = editor.getCaretPosition();
-				editor.insert(end, pos); // separate undo
-				editor.setCaretPosition(pos);
-			} catch (BadLocationException e1) { /*e1.printStackTrace();*/ }
-		} else {
-			editor.replaceSelection(start);
-		}
 	}
 	
 	private void runningStatus(boolean running) {
