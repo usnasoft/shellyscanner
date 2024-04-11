@@ -25,6 +25,7 @@ public class EditorPanel extends SyntaxEditor {
 	private final static Pattern LINE_TAB = Pattern.compile("(^)\\t", Pattern.MULTILINE);
 	private final static Pattern LINE_SPACES = Pattern.compile("[ \t]*");
 	private final static Pattern START_BLOCK = Pattern.compile("\\{[ \t]*$");
+	private final static Pattern END_BLOCK_FIND_TAB = Pattern.compile("\\s*(\t)+\\s*$");
 	private final boolean darkMode = ScannerProperties.get().getBoolProperty(ScannerProperties.PROP_IDE_DARK);
 	
 	EditorPanel(String initText) {
@@ -35,10 +36,10 @@ public class EditorPanel extends SyntaxEditor {
 		setCaretPosition(0);
 		resetUndo();
 		
-		Style styleOperators = addStyle("usna_operators", null);
-		Style styleStr = addStyle("usna_green", null);
-		Style styleReserved = addStyle("usna_styleReserved", null);
-		Style styleImplemented = addStyle("usna_styleImplemented", null);
+		Style styleOperators = addStyle("usna_operator", null);
+		Style styleStr = addStyle("usna_string", null);
+		Style styleReserved = addStyle("usna_reserved", null);
+		Style styleImplemented = addStyle("usna_implemented", null);
 		if(darkMode) {
 			setBackground(new Color(0,0,0,0));
 			setCaretColor(Color.WHITE);
@@ -126,7 +127,7 @@ public class EditorPanel extends SyntaxEditor {
 		} catch (BadLocationException e) { /*e.printStackTrace();*/ }
 	}
 	
-	public boolean indentSelection(boolean add) { // or remove
+	public boolean indentSelection(boolean remove) { // or add
 		final Element root = doc.getDefaultRootElement();
 		int startElIndex = root.getElementIndex(getSelectionStart());
 		int endElIndex = root.getElementIndex(getSelectionEnd());
@@ -135,7 +136,7 @@ public class EditorPanel extends SyntaxEditor {
 			final int end = root.getElement(endElIndex).getEndOffset() - 1; // javadoc: AbstractDocument models an implied break at the end of the document
 			try {
 				String txt = doc.getText(start, end - start);
-				if(add) {
+				if(remove) {
 					txt = LINE_TAB.matcher(txt).replaceAll("$1");
 				} else {
 					txt = LINE_START.matcher(txt).replaceAll("$1\\\t$2");
@@ -149,40 +150,38 @@ public class EditorPanel extends SyntaxEditor {
 		return false;
 	}
 	
-	public void newIndentedLine(boolean auto) {
+	public void newIndentedLine(boolean autoIndent, boolean autoCloseBlock) {
 		try {
 			final Element root = doc.getDefaultRootElement();
 			int startElIndex = root.getElementIndex(getSelectionStart());
 			int start = root.getElement(startElIndex).getStartOffset();
-			int end = Math.min(root.getElement(startElIndex).getEndOffset() -1, getSelectionStart());
-
-			String currentLine = doc.getText(start, end - start);
+			String currentLine = doc.getText(start, getSelectionStart() - start);
 			final Matcher findIndent = LINE_SPACES.matcher(currentLine);
-			final String more = auto && START_BLOCK.matcher(currentLine).find() ? "\t" : "";
+			boolean startBlock = START_BLOCK.matcher(currentLine).find();
+			final String newLineStart = (autoIndent && startBlock) ? "\n\t" : "\n";
+			final String prevIndent = findIndent.lookingAt() ? currentLine.substring(findIndent.start(), findIndent.end()) : "";
+			replaceSelection(newLineStart + prevIndent);
 
-			if(findIndent.lookingAt()) {
-				replaceSelection("\n" + more + currentLine.substring(findIndent.start(), findIndent.end()));
-			} else {
-				replaceSelection("\n" + more);
+			if(startBlock && autoCloseBlock) {
+				int pos = getCaretPosition();
+				insert("\n" + prevIndent + "}", pos);
+				setCaretPosition(pos);
 			}
 		} catch (BadLocationException e) { /*e.printStackTrace();*/ }
 	}
 	
-	private final static Pattern END_BLOCK = Pattern.compile("\\s*(\t)+\\s*$");
 	public boolean removeIndentlevel() {
-		Element line = doc.getParagraphElement(getCaretPosition());
+		int pos = getCaretPosition();
+		Element line = doc.getParagraphElement(pos);
 		int start = line.getStartOffset();
-		int end = line.getEndOffset() - 1;
 		try {
-			String currentLine = doc.getText(start, end - start);
-			//if(currentLine.startsWith("\t") && currentLine.contains("{") == false) {
-			Matcher m = END_BLOCK.matcher(currentLine);
+			String currentLine = doc.getText(start, pos - start);
+			Matcher m = END_BLOCK_FIND_TAB.matcher(currentLine);
 			if(m.find()) {
 				undoManager.startCompound();
-				doc.remove(m.start(1), 1);
-				insert("}", getCaretPosition());
+				doc.remove(m.start(1) + line.getStartOffset(), 1);
+				insert("}", /*getCaretPosition()*/pos - 1);
 				undoManager.endCompound();
-//				doc.remove(start, 1);
 				return true;
 			}
 		} catch (BadLocationException e) { /*e.printStackTrace();*/ }
@@ -196,6 +195,31 @@ public class EditorPanel extends SyntaxEditor {
 			g.fillRect(0, 0, getWidth(), getHeight());
 		}
 		super.paintComponent(g);
+	}
+	
+	public boolean insideInnerBlock() {
+		String name = getCharacterAttributes().getAttribute(StyleConstants.NameAttribute).toString();
+		
+		int pos = getCaretPosition();
+//		doc.getCharacterElement(pos+1).getAttributes().getAttribute(StyleConstants.NameAttribute).toString();
+//		if(/*doc.getParagraphElement(pos).getEndOffset()*/ doc.getLength() == pos) {
+////			name = doc.getParagraphElement(getSelectionStart() - 1).getAttributes().getAttribute(StyleConstants.NameAttribute).toString();
+////			doc.getParagraphElement(pos).getStartOffset();;
+////			doc.getParagraphElement(pos).getEndOffset();
+////			
+////			final Element root = doc.getDefaultRootElement();
+////			int startElIndex = root.getElementIndex(getSelectionStart());
+////			root.getElement(1).getAttributes().getAttribute(StyleConstants.NameAttribute).toString();
+////			doc.getParagraphElement(pos).getAttributes().getAttribute(StyleConstants.NameAttribute).toString();
+//			name = doc.getCharacterElement(pos-1).getAttributes().getAttribute(StyleConstants.NameAttribute).toString();
+//		}
+		
+//		final Element root = doc.getDefaultRootElement();
+//		int startElIndex = root.getElementIndex(getSelectionStart());
+//		root.getElement(1);
+		//todo doc.getParagraphElement(pos).getStartOffset() != pos NO - SI RIFERISCE ALLA RIGA!!!
+		return ("usna_string".equals(name) || "usna_comment".equals(name)) &&
+				(doc.getParagraphElement(pos).getStartOffset() != pos /*|| pos == doc.getLength()*//*|| doc.getParagraphElement(pos).getStartOffset() == doc.getParagraphElement(pos).getEndOffset()*/);
 	}
 	
 	private static SimpleAttributeSet baseStyle() {

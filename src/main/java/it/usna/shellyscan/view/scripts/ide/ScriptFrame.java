@@ -181,7 +181,8 @@ public class ScriptFrame extends JFrame {
 		final boolean closeSquare = ScannerProperties.get().getBoolProperty(ScannerProperties.IDE_AUTOCLOSE_SQUARE, false);
 		final boolean closeString = ScannerProperties.get().getBoolProperty(ScannerProperties.IDE_AUTOCLOSE_STRING, false);
 		final String indentMode = ScannerProperties.get().getProperty(ScannerProperties.IDE_AUTOINDENT, "SMART");
-		final boolean autoIndent = "SMART".equals(indentMode);
+		final boolean indent = "NO".equals(indentMode) == false;
+		final boolean smartAutoIndent = "SMART".equals(indentMode);
 		editor.addKeyListener(new KeyAdapter() {
 			@Override
 			public void keyPressed(KeyEvent e) {
@@ -190,22 +191,21 @@ public class ScriptFrame extends JFrame {
 						e.consume();
 					}
 				} else if(e.getKeyCode() == KeyEvent.VK_ENTER) {
-					if("NO".equals(indentMode) == false) {
+					if(indent) {
 						if(e.isShiftDown()) {
 							editor.replaceSelection("\n");
 						} else {
-							editor.newIndentedLine(autoIndent);
+							editor.newIndentedLine(smartAutoIndent, closeCurly);
 						}
 						e.consume();
 					}
-				} else if(e.getKeyChar() == '}') {
-					if(autoIndent && editor.removeIndentlevel()) {
-						e.consume();
-					}
-				} else if(closeCurly && e.getKeyChar() == '{') {
-					blockLimitsInsert("{", "}");
-					e.consume();
-				} else if(closeBracket && e.getKeyChar() == '(') {
+				}
+			}
+			
+			// todo - style normal
+			@Override
+			public void keyTyped(KeyEvent e) {
+				if(closeBracket && e.getKeyChar() == '(') {
 					blockLimitsInsert("(", ")");
 					e.consume();
 				} else if(closeSquare && e.getKeyChar() == '[') {
@@ -214,6 +214,10 @@ public class ScriptFrame extends JFrame {
 				} else if(closeString && e.getKeyChar() == '"') {
 					blockLimitsInsert("\"", "\"");
 					e.consume();
+				} else if(e.getKeyChar() == '}') {
+					if(smartAutoIndent && editor.removeIndentlevel()) {
+						e.consume();
+					}
 				}
 			}
 		});
@@ -344,12 +348,16 @@ public class ScriptFrame extends JFrame {
 	}
 	
 	private void blockLimitsInsert(String start, String end) {
-		int pos = editor.getCaretPosition();
-		try {
-			editor.insert(start, pos);
-			editor.insert(end, ++pos); // separate undo
-			editor.setCaretPosition(pos);
-		} catch (BadLocationException e1) { /*e1.printStackTrace();*/ }
+		if(editor.insideInnerBlock() == false) {
+			try {
+				editor.replaceSelection(start);
+				int pos = editor.getCaretPosition();
+				editor.insert(end, pos); // separate undo
+				editor.setCaretPosition(pos);
+			} catch (BadLocationException e1) { /*e1.printStackTrace();*/ }
+		} else {
+			editor.replaceSelection(start);
+		}
 	}
 	
 	private void runningStatus(boolean running) {
