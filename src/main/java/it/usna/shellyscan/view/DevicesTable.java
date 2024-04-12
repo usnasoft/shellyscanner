@@ -220,7 +220,8 @@ public class DevicesTable extends ExTooltipTable {
 				s = s % 3600;
 				int mm = (int)(s / 60);
 				s = s % 60;
-				return String.format(LABELS.getString("col_uptime_tooltip"), gg, hh, mm, s);
+				LocalDateTime since = LocalDateTime.now().minusSeconds(((Number)value).longValue());
+				return String.format(LABELS.getString("col_uptime_tooltip"), gg, hh, mm, s, since);
 			} else if (value instanceof ImageIcon icon) {
 				adaptTooltipLocation = false;
 				return icon.getDescription();

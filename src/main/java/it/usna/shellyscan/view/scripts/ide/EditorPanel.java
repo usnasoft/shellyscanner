@@ -151,24 +151,36 @@ public class EditorPanel extends SyntaxEditor {
 		return false;
 	}
 	
-	public void newIndentedLine(boolean autoIndent, boolean autoCloseBlock) {
+	private final static Pattern END_BLOCK = Pattern.compile("\\s*\\}.*");
+	public void newIndentedLine(boolean smartIndent, boolean autoCloseBlock) {
 		try {
 			int start = doc.getParagraphElement(getSelectionStart()).getStartOffset();
-			String currentLine = doc.getText(start, getSelectionStart() - start);
+			int end = doc.getParagraphElement(getSelectionStart()).getEndOffset();
+			String currentLineBefore = doc.getText(start, getSelectionStart() - start);
+			String currentLineAfter = doc.getText(getSelectionEnd(), end - getSelectionEnd());
 			
-			final Matcher startBlockMatcher = START_BLOCK.matcher(currentLine);
+			final Matcher startBlockMatcher = START_BLOCK.matcher(currentLineBefore);
 			boolean startBlock = startBlockMatcher.find() && doc.getCharacterElement(start + startBlockMatcher.start()).getAttributes().getAttribute(StyleConstants.NameAttribute).toString().equals("usna_brachets");
-			final String newLineStart = (autoIndent && startBlock) ? "\n\t" : "\n";
+			final String newLineStart = (smartIndent && startBlock) ? "\n\t" : "\n";
 			
-			final Matcher findIndentMatcher = LINE_SPACES.matcher(currentLine);
-			final String prevIndent = findIndentMatcher.lookingAt() ? currentLine.substring(findIndentMatcher.start(), findIndentMatcher.end()) : "";
+			final Matcher findIndentMatcher = LINE_SPACES.matcher(currentLineBefore);
+			final String prevIndent = findIndentMatcher.lookingAt() ? currentLineBefore.substring(findIndentMatcher.start(), findIndentMatcher.end()) : "";
 			replaceSelection(newLineStart + prevIndent);
 
-			if(startBlock && autoCloseBlock) {
-				int pos = getCaretPosition();
-				insert("\n" + prevIndent + "}", pos);
-				setCaretPosition(pos);
+			if(smartIndent && startBlock) {
+				final Matcher findEndBlocktMatcher = END_BLOCK.matcher(currentLineAfter);
+				if(findEndBlocktMatcher.find()) {
+					int pos = getCaretPosition();
+					insert("\n" + prevIndent, pos);
+					setCaretPosition(pos);
+				}
 			}
+
+//			if(startBlock && autoCloseBlock) {
+//				int pos = getCaretPosition();
+//				insert("\n" + prevIndent + "}", pos);
+//				setCaretPosition(pos);
+//			}
 		} catch (BadLocationException e) { /*e.printStackTrace();*/ }
 	}
 	
