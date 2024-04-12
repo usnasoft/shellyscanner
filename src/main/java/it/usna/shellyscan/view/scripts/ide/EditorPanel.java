@@ -169,18 +169,12 @@ public class EditorPanel extends SyntaxEditor {
 
 			if(smartIndent && startBlock) {
 				final Matcher findEndBlocktMatcher = END_BLOCK.matcher(currentLineAfter);
-				if(findEndBlocktMatcher.find()) {
+				if(findEndBlocktMatcher.lookingAt()) {
 					int pos = getCaretPosition();
 					insert("\n" + prevIndent, pos);
 					setCaretPosition(pos);
 				}
 			}
-
-//			if(startBlock && autoCloseBlock) {
-//				int pos = getCaretPosition();
-//				insert("\n" + prevIndent + "}", pos);
-//				setCaretPosition(pos);
-//			}
 		} catch (BadLocationException e) { /*e.printStackTrace();*/ }
 	}
 	
@@ -231,7 +225,7 @@ public class EditorPanel extends SyntaxEditor {
 		analizeDocument(0, doc.getLength());
 		final int pos = getCaretPosition();
 		if("usna_string".equals(doc.getCharacterElement(pos - 1).getAttributes().getAttribute(StyleConstants.NameAttribute).toString()) &&
-				pos > 1 && "usna_string".equals(doc.getCharacterElement(pos - 2).getAttributes().getAttribute(StyleConstants.NameAttribute).toString()) == false) {
+				(pos < 2 || "usna_string".equals(doc.getCharacterElement(pos - 2).getAttributes().getAttribute(StyleConstants.NameAttribute).toString()) == false)) {
 			try {
 				insert("\"", pos); // separate undo
 				analizeDocument(0, doc.getLength());

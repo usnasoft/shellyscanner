@@ -119,6 +119,29 @@ public class ScriptFrame extends JFrame {
 		runningStatus(script.isRunning());
 	}
 	
+	private ScriptFrame() throws IOException { // test & design contructor
+		super("test");
+		this.device = null;
+
+		JSplitPane splitPane = new JSplitPane();
+		splitPane.setOneTouchExpandable(true);
+		splitPane.setOrientation(JSplitPane.VERTICAL_SPLIT);
+
+		add(splitPane, BorderLayout.CENTER);
+		
+		splitPane.setTopComponent(editorPanel(null));
+		splitPane.setBottomComponent(logPanel());
+		
+		add(getToolBar(), BorderLayout.NORTH);
+
+		setSize(800, 600);
+		setVisible(true);
+		splitPane.setDividerLocation(0.75d);
+		splitPane.setResizeWeight(0.6d);
+		editor.requestFocus();
+		setLocationRelativeTo(null);
+	}
+	
 	@Override
 	public void dispose() {
 		firePropertyChange(CLOSE_EVENT, null, null);
@@ -131,7 +154,7 @@ public class ScriptFrame extends JFrame {
 		JScrollPane scrollPane = new JScrollPane();
 		scrollPane.setBorder(BorderFactory.createEmptyBorder());
 
-		editor = new EditorPanel(script.getCode());
+		editor = new EditorPanel(script == null ? "" : script.getCode()); // script == null -> test
 		scrollPane.setViewportView(editor);
 		TextLineNumber lineNum = new TextLineNumber(editor);
 		if(darkMode) {
@@ -469,5 +492,10 @@ public class ScriptFrame extends JFrame {
 			setCursor(Cursor.getDefaultCursor());
 		}
 		return null;
+	}
+	
+	public static void main(String ...strings) throws IOException {
+		ScannerProperties.init(System.getProperty("user.home") + File.separator + ".shellyScanner").load(true);
+		new ScriptFrame();
 	}
 }
