@@ -25,6 +25,7 @@ public class EditorPanel extends SyntaxEditor {
 	private final static Pattern LINE_TAB = Pattern.compile("(^)\\t", Pattern.MULTILINE);
 	private final static Pattern LINE_SPACES = Pattern.compile("[ \t]*");
 	private final static Pattern START_BLOCK = Pattern.compile("\\{[ \t]*$");
+	private final static Pattern END_BLOCK = Pattern.compile("\\s*\\}.*");
 	private final static Pattern END_BLOCK_FIND_TAB = Pattern.compile("\\s*(\t)+\\s*$");
 	private final boolean darkMode = ScannerProperties.get().getBoolProperty(ScannerProperties.PROP_IDE_DARK);
 	
@@ -150,8 +151,7 @@ public class EditorPanel extends SyntaxEditor {
 		}
 		return false;
 	}
-	
-	private final static Pattern END_BLOCK = Pattern.compile("\\s*\\}.*");
+
 	public void newIndentedLine(boolean smartIndent, boolean autoCloseBlock) {
 		try {
 			int start = doc.getParagraphElement(getSelectionStart()).getStartOffset();
