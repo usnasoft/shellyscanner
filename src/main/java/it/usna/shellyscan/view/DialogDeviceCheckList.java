@@ -15,10 +15,12 @@ import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import javax.swing.Action;
 import javax.swing.BorderFactory;
@@ -389,6 +391,7 @@ public class DialogDeviceCheckList extends JDialog implements UsnaEventListener<
 					LOG.error("{}", d, e);
 				}
 			}
+			table.columnsWidthAdapt();
 		});
 	}
 
@@ -425,7 +428,17 @@ public class DialogDeviceCheckList extends JDialog implements UsnaEventListener<
 		if (ap != null && ap == Boolean.TRUE && settings.at("/wifi/ap/is_open").asBoolean(true) == false) {
 			ap = TRUE; // AP active but protected with pwd
 		}
-		Object debug = (d.getDebugMode() == LogMode.NO) ? Boolean.FALSE : LABELS.getString("debug" + d.getDebugMode());
+		ArrayList<LogMode> logModes = new ArrayList<>();
+		if(settings.at("/sys/debug/websocket/enable").booleanValue()) {
+			logModes.add(LogMode.SOCKET);
+		}
+		if(settings.at("/sys/debug/mqtt/enable").booleanValue()) {
+			logModes.add(LogMode.MQTT);
+		}
+		if(settings.at("/sys/debug/udp").isMissingNode() == false && settings.at("/sys/debug/udp/addr").isNull() == false) {
+			logModes.add(LogMode.UDP);
+		}
+		Object debug = (logModes.size() == 0) ? Boolean.FALSE : logModes.stream().map(log -> LABELS.getString("debug" + log.name())).collect(Collectors.joining(", "));
 		Object ble = boolVal(settings.at("/ble/enable"));
 		if (ble == Boolean.TRUE && boolVal(settings.at("/ble/observer/enable")) == Boolean.TRUE) {
 			ble = "OBS"; // used as observer

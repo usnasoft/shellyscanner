@@ -102,7 +102,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 			this.debugEnabled = LogMode.SOCKET;
 		} else if(debugNode.path("mqtt").path("enable").booleanValue()) {
 			this.debugEnabled = LogMode.MQTT;
-		} else if((udp = debugNode.path("udp")).isMissingNode() == false && udp.get("addr").isNull() == false) {  // no "udp" on wall display ???
+		} else if((udp = debugNode.get("udp")) != null && udp.get("addr").isNull() == false) {  // no "udp" on wall display ???
 			this.debugEnabled = LogMode.UDP;
 		} else {
 			this.debugEnabled = LogMode.NO;
@@ -155,9 +155,15 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 		postCommand("Sys.SetConfig", "{\"config\":{\"device\":{\"eco_mode\":" + eco + "}}}");
 	}
 
-	//	public void setDebugMode(LogMode mode) {
-	//		postCommand("Sys.SetConfig", "{\"config\": {\"debug\":{\"websocket\":{\"enable\": " + (LogMode.SOCKET == mode ? "true" : "false") + "}}}");
-	//	}
+//	public void setDebugMode(LogMode mode, boolean enable) {
+//		if(mode == LogMode.SOCKET) {
+//			postCommand("Sys.SetConfig", "{\"config\": {\"debug\":{\"websocket\":{\"enable\": " + (enable ? "true" : "false") + "}}}}");
+//		} else if(mode == LogMode.MQTT) {
+//			postCommand("Sys.SetConfig", "{\"config\": {\"debug\":{\"mqtt\":{\"enable\": " + (enable ? "true" : "false") + "}}}}");
+//		} else if(mode == LogMode.NO) {
+//			postCommand("Sys.SetConfig", "{\"config\": {\"debug\":{\"websocket\":{\"enable\": false}, \"mqtt\":{\"enable\": false}, \"udp\":{\"addr\": null}} } }");
+//		}
+//	}
 
 	public void setBLEMode(boolean ble) {
 		postCommand("BLE.SetConfig", "{\"config\":{\"enable\":" + ble + "}}");
@@ -271,9 +277,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 	}
 	
 	/** this doesn't work on protected devices
-	 * 
 	 * Кристиан Тодоров:
-	 * 
 	When sending the challange request for the debug endpoint, you have to provide the same auth params, but as get paramethers in format
 	auth.[paramName]=paramValue. For example about the username it will be auth.username=admin&auth.cnonce=…&auth.respose=...
 	 */
@@ -291,18 +295,15 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 				public void run() {
 					while (listener.requestNext()) {
 						Content.Chunk chunk = contentSource.read();
-
 						// No chunk of content, demand again and return.
 						if (chunk == null)  {
 							contentSource.demand(this); 
 							return;
 						}
-
 						if (Content.Chunk.isFailure(chunk)) {
 							listener.error("Unexpected terminal failure: " + chunk.getFailure().getMessage());
 							return;
 						}
-
 						// A normal chunk of content.
 						int size = chunk.remaining();
 						if(size > buf.length) {

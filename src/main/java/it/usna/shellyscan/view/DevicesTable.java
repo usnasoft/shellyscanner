@@ -440,7 +440,7 @@ public class DevicesTable extends ExTooltipTable {
 				row[DevicesTable.COL_UPTIME_IDX] = d.getUptime();
 				row[DevicesTable.COL_INT_TEMP] = (d instanceof InternalTmpHolder) ? ((InternalTmpHolder)d).getInternalTmp() : null;
 				row[DevicesTable.COL_MEASURES_IDX] = d.getMeters();
-				row[DevicesTable.COL_DEBUG] = LABELS.getString("debug" + d.getDebugMode());
+				row[DevicesTable.COL_DEBUG] = LABELS.getString("debug" + d.getDebugMode().name());
 				Object command = null;
 				if(d instanceof RelayCommander rc && rc.getRelayCount() > 0) {
 					row[DevicesTable.COL_COMMAND_IDX] = command = rc.getRelays();
