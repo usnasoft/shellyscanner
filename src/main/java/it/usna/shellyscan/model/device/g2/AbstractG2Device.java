@@ -155,15 +155,15 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 		postCommand("Sys.SetConfig", "{\"config\":{\"device\":{\"eco_mode\":" + eco + "}}}");
 	}
 
-//	public void setDebugMode(LogMode mode, boolean enable) {
-//		if(mode == LogMode.SOCKET) {
-//			postCommand("Sys.SetConfig", "{\"config\": {\"debug\":{\"websocket\":{\"enable\": " + (enable ? "true" : "false") + "}}}}");
-//		} else if(mode == LogMode.MQTT) {
-//			postCommand("Sys.SetConfig", "{\"config\": {\"debug\":{\"mqtt\":{\"enable\": " + (enable ? "true" : "false") + "}}}}");
-//		} else if(mode == LogMode.NO) {
-//			postCommand("Sys.SetConfig", "{\"config\": {\"debug\":{\"websocket\":{\"enable\": false}, \"mqtt\":{\"enable\": false}, \"udp\":{\"addr\": null}} } }");
-//		}
-//	}
+	public void setDebugMode(LogMode mode, boolean enable) {
+		if(mode == LogMode.SOCKET) {
+			postCommand("Sys.SetConfig", "{\"config\": {\"debug\":{\"websocket\":{\"enable\": " + (enable ? "true" : "false") + "}}}}");
+		} else if(mode == LogMode.MQTT) {
+			postCommand("Sys.SetConfig", "{\"config\": {\"debug\":{\"mqtt\":{\"enable\": " + (enable ? "true" : "false") + "}}}}");
+		} else if(mode == LogMode.NO) {
+			postCommand("Sys.SetConfig", "{\"config\": {\"debug\":{\"websocket\":{\"enable\": false}, \"mqtt\":{\"enable\": false}, \"udp\":{\"addr\": null}} } }");
+		}
+	}
 
 	public void setBLEMode(boolean ble) {
 		postCommand("BLE.SetConfig", "{\"config\":{\"enable\":" + ble + "}}");

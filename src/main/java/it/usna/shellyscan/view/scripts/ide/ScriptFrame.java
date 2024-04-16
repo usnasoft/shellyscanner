@@ -48,6 +48,7 @@ import javax.swing.text.DocumentFilter;
 import it.usna.shellyscan.Main;
 import it.usna.shellyscan.controller.UsnaAction;
 import it.usna.shellyscan.controller.UsnaToggleAction;
+import it.usna.shellyscan.model.device.ShellyAbstractDevice.LogMode;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.g2.HttpLogsListener;
 import it.usna.shellyscan.model.device.g2.modules.Script;
@@ -92,12 +93,18 @@ public class ScriptFrame extends JFrame {
 	
 	private boolean darkMode = ScannerProperties.get().getBoolProperty(ScannerProperties.PROP_IDE_DARK);
 	private final AbstractG2Device device;
+	private boolean logWasActive;
 	private boolean readLogs;
 	
 	public ScriptFrame(ScriptsPanel originatingPanel, AbstractG2Device device, Script script) throws IOException {
 		super(script.getName());
 		setIconImage(Main.ICON);
 		setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+		
+		logWasActive = device.getDebugMode() == LogMode.SOCKET;
+		if(logWasActive == false) {
+			device.setDebugMode(LogMode.SOCKET, true);
+		}
 		
 		this.device = device;
 		JSplitPane splitPane = new JSplitPane();
@@ -148,6 +155,9 @@ public class ScriptFrame extends JFrame {
 	public void dispose() {
 		firePropertyChange(CLOSE_EVENT, null, null);
 		readLogs = false;
+		if(logWasActive == false) {
+			device.setDebugMode(LogMode.SOCKET, false);
+		}
 		super.dispose();
 	}
 	

@@ -11,6 +11,8 @@ import java.awt.Window;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.KeyEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 
 import javax.swing.Action;
 import javax.swing.Box;
@@ -30,6 +32,7 @@ import javax.swing.text.StyledDocument;
 import it.usna.shellyscan.Main;
 import it.usna.shellyscan.controller.UsnaAction;
 import it.usna.shellyscan.model.Devices;
+import it.usna.shellyscan.model.device.ShellyAbstractDevice.LogMode;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.g2.HttpLogsListener;
 import it.usna.shellyscan.view.util.Msg;
@@ -40,6 +43,7 @@ import it.usna.swing.dialog.FindReplaceDialog;
 public class DialogDeviceLogsG2 extends JDialog {
 	private static final long serialVersionUID = 1L;
 //	private final static Logger LOG = LoggerFactory.getLogger(DialogDeviceLogsG2.class);
+	private boolean logWasActive;
 	private UsnaTextPane textArea = new UsnaTextPane();
 	private Style bluStyle = textArea.addStyle("blue", null);
 	private JComboBox<String> comboBox = new JComboBox<>();
@@ -51,7 +55,12 @@ public class DialogDeviceLogsG2 extends JDialog {
 		super(owner, ModalityType.MODELESS);
 		AbstractG2Device device = (AbstractG2Device) devicesModel.get(modelIndex);
 		setTitle(UtilMiscellaneous.getExtendedHostName(device));
-		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+		setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
+		
+		logWasActive = device.getDebugMode() == LogMode.SOCKET;
+		if(logWasActive == false) {
+			device.setDebugMode(LogMode.SOCKET, true);
+		}
 
 		JPanel buttonsPanel = new JPanel();
 		getContentPane().add(buttonsPanel, BorderLayout.SOUTH);
@@ -139,16 +148,25 @@ public class DialogDeviceLogsG2 extends JDialog {
 		panel.add(scrollPane);
 
 		getContentPane().add(panel, BorderLayout.CENTER);
+		
+		addWindowListener(new WindowAdapter() {
+			@Override
+			public void windowClosing(WindowEvent e) {
+				dispose();
+			}
+
+			@Override
+			public void windowClosed(WindowEvent e) {
+				readLogs = false;
+				if(logWasActive == false) {
+					device.setDebugMode(LogMode.SOCKET, false);
+				}
+			}
+		});
 
 		this.setSize(700, 650);
 		setLocationRelativeTo(owner);
 		setVisible(true);
-	}
-	
-	@Override
-	public void dispose() {
-		readLogs = false;
-		super.dispose();
 	}
 	
 	private void activateLogConnection(AbstractG2Device device) {

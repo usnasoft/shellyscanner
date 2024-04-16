@@ -286,6 +286,7 @@ public class EditorPanel extends SyntaxEditor {
 	}
 
 	@Override
+	// StyleConstants.setBackground(style, Color.BLACK);
 	protected void paintComponent(Graphics g) {
 		if (darkMode) {
 			g.setColor(Color.BLACK);
@@ -300,7 +301,6 @@ public class EditorPanel extends SyntaxEditor {
 		boolean darkMode = ScannerProperties.get().getBoolProperty(ScannerProperties.PROP_IDE_DARK);
 		if(darkMode) {
 			StyleConstants.setForeground(style, Color.WHITE);
-//			StyleConstants.setBackground(style, Color.BLACK);
 		}
 		return style;
 	}
