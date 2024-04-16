@@ -96,12 +96,13 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 		JsonNode sysNode = config.get("sys");
 		this.name = sysNode.path("device").path("name").asText("");
 
+		JsonNode udp;
 		JsonNode debugNode = sysNode.path("debug");
-		if(debugNode.path("websocket").path("enable").asBoolean()) {
+		if(debugNode.path("websocket").path("enable").booleanValue()) {
 			this.debugEnabled = LogMode.SOCKET;
-		} else if(debugNode.path("mqtt").path("enable").asBoolean()) {
+		} else if(debugNode.path("mqtt").path("enable").booleanValue()) {
 			this.debugEnabled = LogMode.MQTT;
-		} else if(debugNode.path("udp").path("addr").isNull() == false) {
+		} else if((udp = debugNode.path("udp")).isMissingNode() == false && udp.get("addr").isNull() == false) {  // no "udp" on wall display ???
 			this.debugEnabled = LogMode.UDP;
 		} else {
 			this.debugEnabled = LogMode.NO;
@@ -110,7 +111,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 		this.cloudEnabled = config.path("cloud").path("enable").booleanValue();
 		this.mqttEnabled = config.path("mqtt").path("enable").booleanValue();
 
-		this.rangeExtender = config.get("wifi").get("ap").path("range_extender").path("enable").booleanValue();
+		this.rangeExtender = config.get("wifi").path("ap").path("range_extender").path("enable").booleanValue(); // no "ap" on wall display ???
 	}
 
 	protected void fillStatus(JsonNode status) throws IOException {

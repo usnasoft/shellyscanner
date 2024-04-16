@@ -294,17 +294,19 @@ public class DevicesTable extends ExTooltipTable {
 		Graphics g = getGraphics();
 		if(g != null) {
 			final FontMetrics fm = g.getFontMetrics();
-			for(int c = 0; c < getColumnCount(); c++) {
+			final int columnCount = getColumnCount();
+			final int rowCount =  getRowCount();
+			for(int c = 0; c < columnCount; c++) {
 				TableColumn tc = columnModel.getColumn(c);
 				Object val = tc.getHeaderValue();
-				int width = (val != null) ? SwingUtilities.computeStringWidth(fm, val.toString()) / 2 : 1; // "/2"
-				for(int r = 0; r < getRowCount(); r++) {
+				int width = (val != null) ? SwingUtilities.computeStringWidth(fm, val.toString()) >> 1 /*/ 2*/ : 1;
+				for(int r = 0; r < rowCount; r++) {
 					val = getValueAt(r, c);
 					if(val != null) {
-						if(val instanceof Icon) {
-							width = Math.max(width, ((Icon)val).getIconWidth());
-						} else if(val instanceof Object[]) {
-							for(Object v: (Object[])val) {
+						if(val instanceof Icon icon) {
+							width = Math.max(width, icon.getIconWidth());
+						} else if(val instanceof Object[] arr) {
+							for(Object v: arr) {
 								if(v != null) {
 									int w = SwingUtilities.computeStringWidth(fm, v.toString());
 									width = Math.max(width, w);

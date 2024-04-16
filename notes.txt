@@ -236,14 +236,14 @@ https://www.iconbolt.com/
 // motion 2 improved restore (actions) and table output (motion on/off)
 
 1.0.6
-// IDE: tab - autoindent - autoclose
+// IDE: tab - autoindent - autoclose - dark mode
 // app settings IDE
-todo: uptime "since" + settings mode?
+// wall display basic support
+todo: uptime "up from" + settings mode?
 
 ---
 // TODO
 // todo search ssid ?
-// editor sintax
 // chacklist reset button(5)/power
 // grafico energia
 // inclusione massiva

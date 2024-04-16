@@ -68,6 +68,7 @@ import it.usna.shellyscan.model.device.g2.ShellyPro2;
 import it.usna.shellyscan.model.device.g2.ShellyPro2PM;
 import it.usna.shellyscan.model.device.g2.ShellyPro3;
 import it.usna.shellyscan.model.device.g2.ShellyPro4PM;
+import it.usna.shellyscan.model.device.g2.WallDisplay;
 import it.usna.shellyscan.model.device.g3.ShellyG3Unmanaged;
 import it.usna.shellyscan.model.device.g3.ShellyMini1G3;
 import it.usna.shellyscan.model.device.g3.ShellyMini1PMG3;
@@ -88,9 +89,9 @@ public class DevicesFactory {
 			return createG2(httpClient, wsClient, address, port, info, name);
 		} else if(gen == 0) { // gen1 (info.get("gen") == null)
 			return createG1(httpClient, address, port, info, name);
-		} else if(gen ==3) { // gen1 (info.get("gen") == null)
+		} else if(gen ==3) {
 			return createG3(httpClient, wsClient, address, port, info, name);
-		} else { // gen == 2
+		} else { // unknown gen
 			return new ShellyGenericUnmanagedImpl(address, port, name, httpClient);
 		}
 	}
@@ -215,6 +216,7 @@ public class DevicesFactory {
 				case ShellyPlusPlugIT.ID -> new ShellyPlusPlugIT(address, port, name);
 				case ShellyPlusPlugUS.ID -> new ShellyPlusPlugUS(address, port, name);
 				case ShellyPlusWallDimmer.ID -> new ShellyPlusWallDimmer(address, port, name);
+				case WallDisplay.ID -> new WallDisplay(address, port, name);
 				// Plus - Battery
 				case ShellyPlusHT.ID -> new ShellyPlusHT(address, port, name);
 				case ShellyPlusSmoke.ID -> new ShellyPlusSmoke(address, port, name);
