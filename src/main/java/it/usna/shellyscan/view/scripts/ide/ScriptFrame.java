@@ -131,6 +131,7 @@ public class ScriptFrame extends JFrame {
 	private ScriptFrame() throws IOException { // test & design contructor
 		super("test");
 		this.device = null;
+		setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
 		JSplitPane splitPane = new JSplitPane();
 		splitPane.setOneTouchExpandable(true);
