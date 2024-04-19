@@ -26,6 +26,7 @@ import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -256,14 +257,15 @@ public class ScriptFrame extends JFrame {
 				} else if(closeSquare && e.getKeyChar() == '[') {
 					editor.blockLimitsInsert("[", "]");
 					e.consume();
-				} else if(closeSquare && e.getKeyChar() == '{') {
+				} else if(closeCurly && e.getKeyChar() == '{') {
 					editor.blockLimitsInsert("{", "}");
 					e.consume();
 				} else if(closeString && e.getKeyChar() == '"') {
 					editor.stringBlockLimitsInsert();
 					e.consume();
 				} else if(e.getKeyChar() == '}') {
-					if(smartAutoIndent && editor.removeIndentlevel()) {
+					if(smartAutoIndent) {
+						editor.removeIndentlevel();
 						e.consume();
 					}
 				}
@@ -435,6 +437,8 @@ public class ScriptFrame extends JFrame {
 	}
 	
 	private JToolBar getToolBar() {
+		JButton btnHelp = new JButton(new UsnaAction("helpBtnLabel", e -> Msg.showMsg(this, "dlgScriptEditorHelp", LABELS.getString("dlgScriptEditorTitle"), JOptionPane.PLAIN_MESSAGE)));
+		
 		JToolBar toolBar = new JToolBar();
 		toolBar.add(openAction);
 		toolBar.add(saveAsAction);
@@ -452,10 +456,11 @@ public class ScriptFrame extends JFrame {
 		toolBar.addSeparator();
 		toolBar.add(findAction);
 		toolBar.add(gotoAction);
-		toolBar.addSeparator();
-		toolBar.add(commentAction);
+//		toolBar.addSeparator();
+//		toolBar.add(commentAction);
 		toolBar.add(Box.createHorizontalGlue());
 		toolBar.add(caretLabel);
+		toolBar.add(btnHelp);
 		return toolBar;
 	}
 	

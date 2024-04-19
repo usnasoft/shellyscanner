@@ -3,16 +3,12 @@ package it.usna.shellyscan.view.scripts.ide;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.StringReader;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.KeyStroke;
-import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Element;
 import javax.swing.text.SimpleAttributeSet;
@@ -31,12 +27,12 @@ public class EditorPanel extends SyntaxEditor {
 	private final static Pattern LINE_START = Pattern.compile("(^)(.*)", Pattern.MULTILINE);
 	private final static Pattern COMMENTED_LINE = Pattern.compile("(^)(\\s*)//", Pattern.MULTILINE);
 	private final static Pattern LINE_TAB = Pattern.compile("(^)\\t", Pattern.MULTILINE);
-	private final static Pattern LINE_SPACES = Pattern.compile("[ \t]*");
+	private final static Pattern SPACES = Pattern.compile("[ \t]*");
 //	private final static Pattern START_BLOCK = Pattern.compile("\\{[ \t]*$");
-	private final static Pattern START_BLOCK = Pattern.compile("\\{");
+//	private final static Pattern START_BLOCK = Pattern.compile("\\{");
 //	private final static Pattern END_BLOCK = Pattern.compile("[ \t]*}");
 //	private final static Pattern END_BLOCK = Pattern.compile("\\}");
-	private final static Pattern END_BLOCK_FIND_TAB = Pattern.compile("\\s*(\t)+\\s*$");
+//	private final static Pattern END_BLOCK_FIND_TAB = Pattern.compile("\\s*(\t)+\\s*$");
 	private final boolean darkMode = ScannerProperties.get().getBoolProperty(ScannerProperties.PROP_IDE_DARK);
 	private final static Logger LOG = LoggerFactory.getLogger(EditorPanel.class);
 	
@@ -168,90 +164,95 @@ public class EditorPanel extends SyntaxEditor {
 	}
 	
 	public void autoIndentSelected() {
-		final Element root = doc.getDefaultRootElement();
-		final int startElIndex = root.getElementIndex(getSelectionStart());
-		final int endElIndex = root.getElementIndex(getSelectionEnd());
-		StringBuilder txt = new StringBuilder();
 		try {
-			String indent;
-//			String thisIndent;
-			String thisLine = null;
+			final Element root = doc.getDefaultRootElement();
+			final int startElIndex = root.getElementIndex(getSelectionStart());
+			final int endElIndex = root.getElementIndex(getSelectionEnd());
+			final StringBuilder txt = new StringBuilder();
+			String thisIndent = null;
+			Element thisEl = null;
 			for(int lineIndex = startElIndex; lineIndex <= endElIndex; lineIndex++) {
+				final String indent;
 				if(lineIndex > 0) {
-					Element refEl = root.getElement(lineIndex - 1);
-					int refLineStart = refEl.getStartOffset();
-					int refLineEnd = refEl.getEndOffset();
-					String refLine = doc.getText(refLineStart, refLineEnd - refLineStart);
-					indent = indentPrev2(refLine, refLineStart, refLineEnd);
-					if(thisLine == null) {
-						final Matcher findIndentMatcher = LINE_SPACES.matcher(refLine);
+					if(thisIndent == null) { // first line
+						String refLine;
+						int refIndex = lineIndex;
+						Element refEl;
+						int refLineStart;
+						do { // if previous line is empty look back
+							refEl = root.getElement(--refIndex);
+							refLineStart = refEl.getStartOffset();
+							refLine = doc.getText(refLineStart, refEl.getEndOffset() - refLineStart);
+						} while(refLine.trim().isEmpty() && refIndex > 0);
+						
+						final Matcher findIndentMatcher = SPACES.matcher(refLine);
 						int end = findIndentMatcher.lookingAt() ? findIndentMatcher.end() : 0;
-						indent += refLine.substring(0, end);
+						indent = indentPrev(refLine, refLineStart) + refLine.substring(0, end);
 					} else {
-						final Matcher findIndentMatcher = LINE_SPACES.matcher(thisLine);
-						int end = findIndentMatcher.lookingAt() ? findIndentMatcher.end() : 0;
-						indent += thisLine.substring(0, end);
+						Element refEl = root.getElement(lineIndex - 1);
+						int refLineStart = refEl.getStartOffset();
+						String refLine = doc.getText(refLineStart, refEl.getEndOffset() - refLineStart);
+						indent = indentPrev(refLine, refLineStart) + thisIndent;
 					}
 				} else {
 					indent = "";
 				}
-				Element thisEl = root.getElement(lineIndex);
+				thisEl = root.getElement(lineIndex);
 				int lineStart = thisEl.getStartOffset();
 				int lineEnd = thisEl.getEndOffset();
 				int lineLength = (lineEnd > doc.getLength()) ? lineEnd - lineStart - 1 : lineEnd - lineStart;
-				thisLine = doc.getText(lineStart, lineLength);
-				thisLine = indentThis2(thisLine, indent, lineStart, lineEnd);
+				String thisLine = doc.getText(lineStart, lineLength);
+				thisIndent = indentThis(thisLine, indent, lineStart);
 				
-//				Matcher thisIndentMatcher = LINE_SPACES.matcher(thisLine);
-//				int spacesEnd = thisIndentMatcher.lookingAt() ? thisIndentMatcher.end() : 0;
-//				thisLine = indent + thisLine.replaceAll("^\\s*", "");
+				Matcher currentIndentMatcher = SPACES.matcher(thisLine);
+				int spacesEnd = currentIndentMatcher.lookingAt() ? currentIndentMatcher.end() : 0;
 				
-				txt.append(thisLine);
+				txt.append(thisIndent).append(thisLine.substring(spacesEnd));
 			}
 			int start = root.getElement(startElIndex).getStartOffset();
-			int end = root.getElement(endElIndex).getEndOffset();
-			int lineLength = (end > doc.getLength()) ? end - start - 1 : end - start;
-			replace(start, lineLength, txt.toString());
-			Element thisEl = root.getElement(endElIndex);
-			setCaretPosition(thisEl.getStartOffset());
+			int end = thisEl.getEndOffset();
+			int length = (end > doc.getLength()) ? end - start - 1 : end - start;
+			String txtStr = txt.toString();
+			if(doc.getText(start, length).equals(txtStr) == false) { // avoid false undo
+				replace(start, length, txtStr);
+			}
+
+			setCaretPosition(Math.min(end - 1, doc.getLength()));
 		} catch (BadLocationException e) {
 			LOG.error("autoIndentSelected", e);
 		}
 	}
 	
-	private String indentPrev2(String line, int lineStart, int lineEnd) {
+	// add one '\t' for every '{'
+	private String indentPrev(String line, int lineStart/*, int lineEnd*/) {
 		int plus = 0;
 		int lineLength = line.length();
 		for(int i = 0; i < lineLength; i++) {
 			if(line.charAt(i) == '{') {
-				if(doc.getCharacterElement(lineStart + i).getAttributes().getAttribute(StyleConstants.NameAttribute).toString().equals("usna_brachets")) {
+				if(getCharacterStileName(lineStart + i).equals("usna_brachets")) {
 					plus++;
 				}
 			} else if(line.charAt(i) == '}') {
-				if(doc.getCharacterElement(lineStart + i).getAttributes().getAttribute(StyleConstants.NameAttribute).toString().equals("usna_brachets")) {
-					if(plus > 0) {
-						plus--;
-					}
+				if(plus > 0 && getCharacterStileName(lineStart + i).equals("usna_brachets")) {
+					plus--;
 				}
 			}
 		}
 		return (plus > 0) ? "\t".repeat(plus) : "";
 	}
 	
-	private String indentThis2(String line, String prevIndent, int lineStart, int lineEnd) {
-		// remove opening spaces
+	// remove one '\t' for every '}'
+	private String indentThis(String line, String indent, int lineStart/*, int lineEnd*/) {
 		int plus = 0;
 		int minus = 0;
-		Matcher thisIndentMatcher = LINE_SPACES.matcher(line);
-		int spacesEnd = thisIndentMatcher.lookingAt() ? thisIndentMatcher.end() : 0;
 		int lineLength = line.length();
-		for(int i = spacesEnd; i < lineLength; i++) {
+		for(int i = 0; i < lineLength; i++) {
 			if(line.charAt(i) == '{') {
-				if(doc.getCharacterElement(lineStart + i).getAttributes().getAttribute(StyleConstants.NameAttribute).toString().equals("usna_brachets")) {
+				if(getCharacterStileName(lineStart + i).equals("usna_brachets")) {
 					plus++;
 				}
 			} else if(line.charAt(i) == '}') {
-				if(doc.getCharacterElement(lineStart + i).getAttributes().getAttribute(StyleConstants.NameAttribute).toString().equals("usna_brachets")) {
+				if(getCharacterStileName(lineStart + i).equals("usna_brachets")) {
 					if(plus > 0) {
 						plus--;
 					} else {
@@ -261,29 +262,42 @@ public class EditorPanel extends SyntaxEditor {
 			}
 		}
 		while(minus-- > 0) {
-			prevIndent = prevIndent.replaceFirst("\\t", "");
+			indent = indent.replaceFirst("\\t", "");
 		}
-		return prevIndent + line.substring(spacesEnd);
+		return indent;
 	}
 	
 	// "Enter" typed
-	public void newIndentedLine(boolean autoIndent, boolean autoCloseBlock) {
+	public void newIndentedLine(boolean smartAutoIndent, boolean autoCloseBlock) {
+		// called -> Indent enabled
 		try {
-			int start = doc.getParagraphElement(getSelectionStart()).getStartOffset();
+			int selectionStart = getSelectionStart();
+			int start = doc.getParagraphElement(selectionStart).getStartOffset();
 			String currentLine = doc.getText(start, getSelectionStart() - start);
+			final Matcher findIndentMatcher = SPACES.matcher(currentLine);
+			final String prevIndent = findIndentMatcher.lookingAt() ? currentLine.substring(0, findIndentMatcher.end()) : "";
 			
-			final Matcher startBlockMatcher = START_BLOCK.matcher(currentLine);
-			boolean startBlock = startBlockMatcher.find(); //&& doc.getCharacterElement(start + startBlockMatcher.start()).getAttributes().getAttribute(StyleConstants.NameAttribute).toString().equals("usna_brachets");
-			final String newLineStart = (autoIndent && startBlock) ? "\n\t" : "\n";
+			boolean closeBlock = autoCloseBlock && selectionStart > 0 &&
+					getSelectionEnd() == selectionStart &&
+					doc.getText(getSelectionStart() - 1, 2).equals("{}") &&
+					getCharacterStileName(selectionStart - 1).equals("usna_brachets");
 			
-			final Matcher findIndentMatcher = LINE_SPACES.matcher(currentLine);
-			final String prevIndent = findIndentMatcher.lookingAt() ? currentLine.substring(findIndentMatcher.start(), findIndentMatcher.end()) : "";
-			replaceSelection(newLineStart + prevIndent);
-
-			if(startBlock && autoCloseBlock) {
+			replaceSelection("\n" + prevIndent);
+			if(smartAutoIndent) {
+				final Element root = doc.getDefaultRootElement();
 				int pos = getCaretPosition();
-				insert("\n" + prevIndent /*+ "}"*/, pos);
-				setCaretPosition(pos);
+				final int startElIndex = root.getElementIndex(pos);
+				int endPar = root.getElement(startElIndex).getEndOffset();
+				analizeDocument(0, doc.getLength());
+				autoIndentSelected();
+				int newEndPar = root.getElement(startElIndex ).getEndOffset();
+				setCaretPosition(pos + newEndPar - endPar);
+			}
+			if(closeBlock) {
+				int pos = getCaretPosition();
+				final String newLineStart = (smartAutoIndent) ? "\t\n" : "\n";
+				insert(newLineStart + prevIndent, pos);
+				setCaretPosition(pos + 1);
 			}
 		} catch (BadLocationException e) {
 			LOG.error("newIndentedLine", e);
@@ -291,30 +305,16 @@ public class EditorPanel extends SyntaxEditor {
 	}
 	
 	// "}" typed
-	public boolean removeIndentlevel() {
+	public void removeIndentlevel() {
+		final Element root = doc.getDefaultRootElement();
 		int pos = getCaretPosition();
-		Element line = doc.getParagraphElement(pos);
-		int start = line.getStartOffset();
-		try {
-			String currentLine = doc.getText(start, pos - start);
-			Matcher m = END_BLOCK_FIND_TAB.matcher(currentLine);
-			if(m.find()) {
-				doc.removeDocumentListener(docListener);
-				undoManager.startCompound();
-				insert("}", pos);
-				analizeDocument(0, doc.getLength());
-				String styleName = doc.getCharacterElement(pos - 1).getAttributes().getAttribute(StyleConstants.NameAttribute).toString();
-				if("usna_string".equals(styleName) == false && "usna_comment".equals(styleName) == false) {
-					doc.remove(m.start(1) + start, 1);
-				}
-				undoManager.endCompound();
-				doc.addDocumentListener(docListener);
-				return true;
-			}
-		} catch (BadLocationException e) {
-			LOG.error("removeIndentlevel", e);
-		}
-		return false;
+		final int startElIndex = root.getElementIndex(pos);
+		int endPar = root.getElement(startElIndex).getEndOffset();
+		replaceSelection("}");
+		analizeDocument(0, doc.getLength());
+		autoIndentSelected();
+		int newEndPar = root.getElement(startElIndex).getEndOffset();
+		setCaretPosition(pos + newEndPar - endPar);
 	}
 	
 	public void blockLimitsInsert(String start, String end) {
@@ -323,12 +323,14 @@ public class EditorPanel extends SyntaxEditor {
 		analizeDocument(0, doc.getLength());
 		final int pos = getCaretPosition();
 		
-		String styleName = doc.getCharacterElement(pos - 1).getAttributes().getAttribute(StyleConstants.NameAttribute).toString();
+		String styleName = getCharacterStileName(pos - 1);
 		if("usna_string".equals(styleName) == false && "usna_comment".equals(styleName) == false) {
 			try {
 				insert(end, pos); // separate undo
 				analizeDocument(0, doc.getLength());
-			} catch (BadLocationException e) { LOG.error("blockLimitsInsert", e); }
+			} catch (BadLocationException e) {
+				LOG.error("blockLimitsInsert", e);
+			}
 			setCaretPosition(pos);
 		}
 		doc.addDocumentListener(docListener);
@@ -339,12 +341,13 @@ public class EditorPanel extends SyntaxEditor {
 		replaceSelection("\"");
 		analizeDocument(0, doc.getLength());
 		final int pos = getCaretPosition();
-		if("usna_string".equals(doc.getCharacterElement(pos - 1).getAttributes().getAttribute(StyleConstants.NameAttribute).toString()) &&
-				pos > 1 && "usna_string".equals(doc.getCharacterElement(pos - 2).getAttributes().getAttribute(StyleConstants.NameAttribute).toString()) == false) {
+		if("usna_string".equals(getCharacterStileName(pos - 1)) && (pos < 2 || "usna_string".equals(getCharacterStileName(pos - 2)) == false)) {
 			try {
 				insert("\"", pos); // separate undo
 				analizeDocument(0, doc.getLength());
-			} catch (BadLocationException e) { LOG.error("stringBlockLimitsInsert", e); }
+			} catch (BadLocationException e) {
+				LOG.error("stringBlockLimitsInsert", e);
+			}
 			setCaretPosition(pos);
 		}
 		doc.addDocumentListener(docListener);
