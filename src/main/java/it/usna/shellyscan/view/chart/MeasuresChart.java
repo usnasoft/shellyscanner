@@ -10,7 +10,6 @@ import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -134,8 +133,8 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 
 		JButton btnHelp = new JButton(new UsnaAction("helpBtnLabel", e -> {
 			try {
-				Desktop.getDesktop().browse(new URI(LABELS.getString("dlgChartsManualUrl")));
-			} catch (IOException | URISyntaxException | UnsupportedOperationException ex) {
+				Desktop.getDesktop().browse(URI.create(LABELS.getString("dlgChartsManualUrl")));
+			} catch (IOException | UnsupportedOperationException ex) {
 				Msg.errorMsg(this, ex);
 			}
 		}));

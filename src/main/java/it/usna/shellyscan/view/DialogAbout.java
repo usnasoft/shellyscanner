@@ -7,7 +7,6 @@ import java.awt.Desktop;
 import java.awt.Window;
 import java.io.IOException;
 import java.net.URI;
-import java.net.URISyntaxException;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -34,12 +33,12 @@ public class DialogAbout {
 			try {
 				if(ev.getEventType().equals(HyperlinkEvent.EventType.ACTIVATED)) {
 					if(Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
-						Desktop.getDesktop().browse(new URI(ev.getURL().toString()));
+						Desktop.getDesktop().browse(URI.create(ev.getURL().toString()));
 					} else {
 						JOptionPane.showMessageDialog(ep, ev.getURL(), "", JOptionPane.PLAIN_MESSAGE);
 					}
 				}
-			} catch (IOException | URISyntaxException ex) {}
+			} catch (IOException ex) {}
 		});
 		
 		// JButton Check Updates

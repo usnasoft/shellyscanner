@@ -8,7 +8,6 @@ import java.awt.Window;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
@@ -41,8 +40,8 @@ public class UpplicationUpdateCHK {
 				Object[] options = new Object[] {LABELS.getString("aboutCheckUpdatesDownload"), LABELS.getString("dlgClose")};
 				if(JOptionPane.showOptionDialog(w, msg, currentVersion(), JOptionPane.OK_CANCEL_OPTION, JOptionPane.INFORMATION_MESSAGE, null, options, null) == 0) {
 					try {
-						Desktop.getDesktop().browse(new URI(LABELS.getString("aboutCheckUpdatesDownloadURL")));
-					} catch (IOException | URISyntaxException ex) {
+						Desktop.getDesktop().browse(URI.create(LABELS.getString("aboutCheckUpdatesDownloadURL")));
+					} catch (IOException ex) {
 						Msg.errorMsg(w, LABELS.getString("aboutCheckUpdatesDownloadURL"));
 					}
 				}
@@ -71,8 +70,8 @@ public class UpplicationUpdateCHK {
 					int choice = JOptionPane.showOptionDialog(w, msg, currentVersion(), JOptionPane.OK_CANCEL_OPTION, JOptionPane.INFORMATION_MESSAGE, null, options, null);
 					if(choice == 0) { // download
 						try {
-							Desktop.getDesktop().browse(new URI(LABELS.getString("aboutCheckUpdatesDownloadURL")));
-						} catch (IOException | URISyntaxException ex) {
+							Desktop.getDesktop().browse(URI.create(LABELS.getString("aboutCheckUpdatesDownloadURL")));
+						} catch (IOException ex) {
 							Msg.errorMsg(w, LABELS.getString("aboutCheckUpdatesDownloadURL"));
 						}
 					} else if(choice == 1) { // skip

@@ -5,6 +5,7 @@ import static it.usna.shellyscan.Main.LABELS;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Cursor;
+import java.awt.Desktop;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
@@ -15,6 +16,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.stream.Collectors;
@@ -26,7 +28,6 @@ import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.ImageIcon;
-import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -437,7 +438,17 @@ public class ScriptFrame extends JFrame {
 	}
 	
 	private JToolBar getToolBar() {
-		UsnaAction btnHelp = new UsnaAction(null, "helpBtnLabel", "/images/Question24.png", e -> Msg.showMsg(this, "dlgScriptEditorHelp", LABELS.getString("dlgScriptEditorTitle"), JOptionPane.PLAIN_MESSAGE));
+		UsnaAction btnHelp = new UsnaAction(null, "helpBtnLabel", "/images/Question24.png", e -> {
+			String close = LABELS.getString("dlgClose");
+			if(JOptionPane.showOptionDialog(null, LABELS.getString("dlgScriptEditorHelp"), LABELS.getString("dlgScriptEditorTitle"),
+					JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null, new Object[] {close, LABELS.getString("lblManual")}, close) == 1 /*reboot*/) {
+				try {
+					Desktop.getDesktop().browse(URI.create(LABELS.getString("dlgIDEManualUrl")));
+				} catch (IOException | UnsupportedOperationException ex) {
+					Msg.errorMsg(this, ex);
+				}
+			}
+		});
 		
 		JToolBar toolBar = new JToolBar();
 		toolBar.add(openAction);

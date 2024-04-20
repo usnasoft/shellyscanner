@@ -14,7 +14,6 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.concurrent.Executors;
@@ -194,8 +193,8 @@ public class DialogDeviceCheckList extends JDialog implements UsnaEventListener<
 
 		Action browseAction = new UsnaSelectedAction(this, table, "edit", i -> {
 			try {
-				Desktop.getDesktop().browse(new URI("http://" + InetAddressAndPort.toString(getLocalDevice(i))));
-			} catch (IOException | URISyntaxException ex) {
+				Desktop.getDesktop().browse(URI.create("http://" + InetAddressAndPort.toString(getLocalDevice(i))));
+			} catch (IOException ex) {
 				Msg.errorMsg(ex);
 			}
 		});
@@ -304,8 +303,8 @@ public class DialogDeviceCheckList extends JDialog implements UsnaEventListener<
 
 		JButton btnHelp = new JButton(new UsnaAction("helpBtnLabel", e -> {
 			try {
-				Desktop.getDesktop().browse(new URI(LABELS.getString("dlgChecklistManualUrl")));
-			} catch (IOException | URISyntaxException | UnsupportedOperationException ex) {
+				Desktop.getDesktop().browse(URI.create(LABELS.getString("dlgChecklistManualUrl")));
+			} catch (IOException | UnsupportedOperationException ex) {
 				Msg.errorMsg(this, ex);
 			}
 		}));

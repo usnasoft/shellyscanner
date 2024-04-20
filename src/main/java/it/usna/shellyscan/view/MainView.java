@@ -16,7 +16,6 @@ import java.awt.event.WindowEvent;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -195,8 +194,8 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 	
 	private Action browseAction = new UsnaSelectedAction(this, devicesTable, "action_web_name", "action_web_tooltip", "/images/Computer16.png", "/images/Computer.png", i -> {
 		try {
-			Desktop.getDesktop().browse(new URI("http://" + InetAddressAndPort.toString(model.get(i))));
-		} catch (IOException | URISyntaxException | UnsupportedOperationException e) {
+			Desktop.getDesktop().browse(URI.create("http://" + InetAddressAndPort.toString(model.get(i))));
+		} catch (IOException | UnsupportedOperationException e) {
 			Msg.errorMsg(this, e);
 		}
 	});
