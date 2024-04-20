@@ -206,7 +206,7 @@ public class ScriptFrame extends JFrame {
 		});
 		editor.mapAction(KeyStroke.getKeyStroke(KeyEvent.VK_F, MainView.SHORTCUT_KEY), findAction, "find_usna");
 		
-		commentAction = new UsnaAction(null, "btnCommentTooltip", "/images/Comment24.png", e -> {
+		commentAction = new UsnaAction(null, "btnCommentTooltip"/*, "/images/Comment24.png"*/, e -> {
 			editor.commentSelected();
 			editor.requestFocus();
 		});
@@ -437,7 +437,7 @@ public class ScriptFrame extends JFrame {
 	}
 	
 	private JToolBar getToolBar() {
-		JButton btnHelp = new JButton(new UsnaAction("helpBtnLabel", e -> Msg.showMsg(this, "dlgScriptEditorHelp", LABELS.getString("dlgScriptEditorTitle"), JOptionPane.PLAIN_MESSAGE)));
+		UsnaAction btnHelp = new UsnaAction(null, "helpBtnLabel", "/images/Question24.png", e -> Msg.showMsg(this, "dlgScriptEditorHelp", LABELS.getString("dlgScriptEditorTitle"), JOptionPane.PLAIN_MESSAGE));
 		
 		JToolBar toolBar = new JToolBar();
 		toolBar.add(openAction);
