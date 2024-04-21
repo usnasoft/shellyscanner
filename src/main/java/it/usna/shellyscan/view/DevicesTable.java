@@ -27,7 +27,6 @@ import javax.swing.ListSelectionModel;
 import javax.swing.RowFilter;
 import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
@@ -99,6 +98,8 @@ public class DevicesTable extends ExTooltipTable {
 	
 	public final static String STORE_PREFIX = "TAB";
 	public final static String STORE_EXT_PREFIX = "TAB_EXT";
+	
+	private UptimeCellRenderer uptimeRenderer = new UptimeCellRenderer();
 
 	private boolean adaptTooltipLocation = false;
 	
@@ -113,6 +114,7 @@ public class DevicesTable extends ExTooltipTable {
 		centerRenderer.setHorizontalAlignment(JLabel.CENTER);
 		columnModel.getColumn(COL_CLOUD).setCellRenderer(centerRenderer);
 		columnModel.getColumn(COL_MQTT).setCellRenderer(centerRenderer);
+		columnModel.getColumn(COL_UPTIME_IDX).setCellRenderer(uptimeRenderer);
 		columnModel.getColumn(COL_DEBUG).setCellRenderer(centerRenderer);
 		columnModel.getColumn(COL_SOURCE_IDX).setCellRenderer(new ArrayTableCellRenderer());
 		final TableColumn colCommand = columnModel.getColumn(COL_COMMAND_IDX);
@@ -196,13 +198,17 @@ public class DevicesTable extends ExTooltipTable {
 		computeRowHeight(row, comp);
 		return comp;
 	}
-
-	public void stopCellEditing() {
-		TableCellEditor editor = getCellEditor();
-		if(editor != null) {
-			editor.stopCellEditing();
-		}
+	
+	public void setUptimeRenderMode(String mode) {
+		uptimeRenderer.setMode(mode);
 	}
+
+//	public void stopCellEditing() {
+//		TableCellEditor editor = getCellEditor();
+//		if(editor != null) {
+//			editor.stopCellEditing();
+//		}
+//	}
 
 	@Override
 	public String getToolTipText(final MouseEvent evt) {

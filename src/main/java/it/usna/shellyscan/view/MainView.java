@@ -154,7 +154,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		SwingUtilities.invokeLater(() -> {
 			setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 			setEnabled(false);
-			devicesTable.stopCellEditing();
+			devicesTable.removeEditor(); //	devicesTable.stopCellEditing();
 			for(int i = 0; i < tabModel.getRowCount(); i++) {
 				if(model.get(i) instanceof GhostDevice == false) {
 					tabModel.setValueAt(DevicesTable.UPDATING_BULLET, i, DevicesTable.COL_STATUS_IDX);
@@ -374,6 +374,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		getContentPane().add(scrollPane, BorderLayout.CENTER);
 		devicesTable.sortByColumn(DevicesTable.COL_IP_IDX, SortOrder.ASCENDING);
 		devicesTable.loadColPos(appProp);
+		devicesTable.setUptimeRenderMode(appProp.getProperty(ScannerProperties.PROP_UPTIME_MODE, ScannerProperties.PROP_UPTIME_MODE_DEFAULT));
 		
 		scrollPane.setViewportView(devicesTable);
 		scrollPane.getViewport().setBackground(Main.BG_COLOR);
