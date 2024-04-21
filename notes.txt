@@ -240,6 +240,7 @@ https://www.iconbolt.com/
 // app settings IDE
 // wall display basic support
 todo: uptime "up from" + settings mode?
+todo: notes column (second field on notes?)
 
 ---
 // TODO
