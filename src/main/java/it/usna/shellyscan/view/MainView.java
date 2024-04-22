@@ -406,7 +406,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		toolBar.addSeparator();
 		toolBar.add(appSettingsAction);
 		toolBar.add(aboutAction);
-		hideCaptions(appProp.getBoolProperty(ScannerProperties.PROP_TOOLBAR_CAPTIONS, true) == false);
+		updateHideCaptions();
 		getContentPane().add(toolBar, BorderLayout.NORTH);
 
 		// devices popup
@@ -512,8 +512,17 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		rowsSelectionManager();
 	}
 	
-	public void hideCaptions(boolean en) {
+	public void updateHideCaptions() {
+		boolean en = appProp.getBoolProperty(ScannerProperties.PROP_TOOLBAR_CAPTIONS, true) == false;
 		Stream.of(toolBar.getComponents()).filter(c -> c instanceof AbstractButton).forEach(b -> ((AbstractButton)b).setHideActionText(en));
+	}
+	
+	public void updateUptimeRenderMode() {
+		devicesTable.setUptimeRenderMode(appProp.getProperty(ScannerProperties.PROP_UPTIME_MODE));
+		for(int i = 0; i < model.size(); i++) {
+			devicesTable.updateRow(model.get(i), i);
+		}
+		devicesTable.columnsWidthAdapt();
 	}
 	
 	private void setColFilter(JComboBox<?> combo) {

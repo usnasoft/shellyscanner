@@ -153,18 +153,22 @@ public class DialogAppSettings extends JDialog {
 			}
 			
 			// Uptime
+			boolean uptimeChange;
 			if(panelGUI.rdbtnUptimeSeconds.isSelected()) {
-				appProp.setProperty(ScannerProperties.PROP_UPTIME_MODE, "SEC");
+				uptimeChange = appProp.changeProperty(ScannerProperties.PROP_UPTIME_MODE, "SEC");
 			} else if(panelGUI.rdbtnUptimeDay.isSelected()) {
-				appProp.setProperty(ScannerProperties.PROP_UPTIME_MODE, "DAY");
+				uptimeChange = appProp.changeProperty(ScannerProperties.PROP_UPTIME_MODE, "DAY");
 			} else { // updBetaCHK
-				appProp.setProperty(ScannerProperties.PROP_UPTIME_MODE, "FROM");
+				uptimeChange = appProp.changeProperty(ScannerProperties.PROP_UPTIME_MODE, "FROM");
+			}
+			if(uptimeChange) {
+				mainView.updateUptimeRenderMode();
 			}
 			
 			// toolbar
 			boolean captions = panelGUI.chckbxToolbarCaptions.isSelected();
 			if(appProp.setBoolProperty(ScannerProperties.PROP_TOOLBAR_CAPTIONS, captions)) {
-				mainView.hideCaptions(captions == false);
+				mainView.updateHideCaptions();
 			}
 			
 			// IDE

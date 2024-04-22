@@ -160,7 +160,6 @@ public class PanelIDE extends JPanel {
 		lblNewLabel_1.setFont(new Font("Tahoma", Font.BOLD, 11));
 		GridBagConstraints gbc_lblNewLabel_1 = new GridBagConstraints();
 		gbc_lblNewLabel_1.anchor = GridBagConstraints.NORTHWEST;
-		gbc_lblNewLabel_1.weighty = 1.0;
 		gbc_lblNewLabel_1.insets = new Insets(0, 0, 0, 15);
 		gbc_lblNewLabel_1.gridx = 0;
 		gbc_lblNewLabel_1.gridy = 3;
@@ -174,5 +173,16 @@ public class PanelIDE extends JPanel {
 		gbc_chcDarkMode.gridx = 1;
 		gbc_chcDarkMode.gridy = 3;
 		add(chcDarkMode, gbc_chcDarkMode);
+		
+		JLabel lblNewLabelMsg = new JLabel(LABELS.getString("dlgAppSetIDEMsg"));
+		lblNewLabel_1.setFont(new Font("Tahoma", Font.BOLD, 11));
+		GridBagConstraints gbc_lblNewLabelMsg = new GridBagConstraints();
+		gbc_lblNewLabelMsg.gridwidth = 5;
+		gbc_lblNewLabelMsg.anchor = GridBagConstraints.NORTHWEST;
+		gbc_lblNewLabelMsg.weighty = 1.0;
+		gbc_lblNewLabelMsg.insets = new Insets(20, 0, 0, 15);
+		gbc_lblNewLabelMsg.gridx = 0;
+		gbc_lblNewLabelMsg.gridy = 4;
+		add(lblNewLabelMsg, gbc_lblNewLabelMsg);
 	}
 }

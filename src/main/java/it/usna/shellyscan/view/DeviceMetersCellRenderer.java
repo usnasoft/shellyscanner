@@ -40,6 +40,7 @@ public class DeviceMetersCellRenderer extends DefaultTableCellRenderer {
 		GBC_FILLER.weightx = 1.0;
 	}
 
+	// todo: extends JPanel implements TableCellRenderer
 	public DeviceMetersCellRenderer() {
 		GridBagLayout gridBagLayout = new GridBagLayout();
 		gridBagLayout.rowWeights = new double[]{1.0, 1.0, 1.0, 1.0, 1.0}; // up to 5 rows

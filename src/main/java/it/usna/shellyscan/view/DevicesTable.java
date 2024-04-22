@@ -20,7 +20,6 @@ import java.util.Locale;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.ListSelectionModel;
@@ -306,20 +305,24 @@ public class DevicesTable extends ExTooltipTable {
 				TableColumn tc = columnModel.getColumn(c);
 				Object val = tc.getHeaderValue();
 				int width = (val != null) ? SwingUtilities.computeStringWidth(fm, val.toString()) >> 1 /*/ 2*/ : 1;
-				for(int r = 0; r < rowCount; r++) {
-					val = getValueAt(r, c);
-					if(val != null) {
-						if(val instanceof Icon icon) {
-							width = Math.max(width, icon.getIconWidth());
-						} else if(val instanceof Object[] arr) {
-							for(Object v: arr) {
-								if(v != null) {
-									int w = SwingUtilities.computeStringWidth(fm, v.toString());
-									width = Math.max(width, w);
+				if(c == COL_UPTIME_IDX) {
+					width = Math.max(width, uptimeRenderer.getPreferredWidth(fm));
+				} else if(c == COL_STATUS_IDX) {
+					width = Math.max(width, ONLINE_BULLET.getIconWidth() + 1);
+				} else {
+					for(int r = 0; r < rowCount; r++) {
+						val = getValueAt(r, c);
+						if(val != null) {
+							if(val instanceof Object[] arr) {
+								for(Object v: arr) {
+									if(v != null) {
+										int w = SwingUtilities.computeStringWidth(fm, v.toString());
+										width = Math.max(width, w);
+									}
 								}
+							} else {
+								width = Math.max(width, SwingUtilities.computeStringWidth(fm, val.toString()));
 							}
-						} else {
-							width = Math.max(width, SwingUtilities.computeStringWidth(fm, val.toString()));
 						}
 					}
 				}
@@ -418,8 +421,8 @@ public class DevicesTable extends ExTooltipTable {
 		getRowSorter().allRowsChanged();
 	}
 	
-	public void updateRow(ShellyAbstractDevice d, int index) {
-		generateRow(d, ((UsnaTableModel)dataModel).getRow(index));
+	public void updateRow(ShellyAbstractDevice device, int index) {
+		generateRow(device, ((UsnaTableModel)dataModel).getRow(index));
 		((UsnaTableModel)dataModel).fireTableRowsUpdated(index, index);
 		final ListSelectionModel lsm = getSelectionModel(); // allRowsChanged() do not preserve the selected cell; this mess the selection dragging the mouse
 		final int i1 = lsm.getAnchorSelectionIndex();

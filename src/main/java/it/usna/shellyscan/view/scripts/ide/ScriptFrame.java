@@ -278,9 +278,11 @@ public class ScriptFrame extends JFrame {
 			fc.setFileFilter(new FileNameExtensionFilter(LABELS.getString("filetype_js_desc"), DialogDeviceScripts.FILE_EXTENSION));
 			fc.addChoosableFileFilter(new FileNameExtensionFilter(LABELS.getString("filetype_sbk_desc"), Main.BACKUP_FILE_EXT));
 			if(fc.showOpenDialog(ScriptFrame.this) == JFileChooser.APPROVE_OPTION) {
-				String text = loadCodeFromFile(fc.getSelectedFile());
+				File thisFile = fc.getSelectedFile();
+				String text = loadCodeFromFile(thisFile);
 				if(text != null) {
 					editor.setText(text);
+					setTitle(script.getName() + " - " + thisFile.getName());
 				}
 				path = fc.getSelectedFile().getParentFile();
 			}
@@ -294,6 +296,7 @@ public class ScriptFrame extends JFrame {
 					Path toSave = IOFile.addExtension(fc.getSelectedFile().toPath(), DialogDeviceScripts.FILE_EXTENSION);
 					IOFile.writeFile(toSave, editor.getText());
 					JOptionPane.showMessageDialog(ScriptFrame.this, LABELS.getString("msgFileSaved"), LABELS.getString("dlgScriptEditorTitle"), JOptionPane.INFORMATION_MESSAGE);
+					setTitle(script.getName() + " - " + toSave.getFileName());
 				} catch (IOException e1) {
 					Msg.errorMsg(e1);
 				}

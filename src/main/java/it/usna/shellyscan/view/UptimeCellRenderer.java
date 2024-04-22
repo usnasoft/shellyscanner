@@ -2,11 +2,10 @@ package it.usna.shellyscan.view;
 
 import static it.usna.shellyscan.Main.LABELS;
 
-import java.awt.Component;
+import java.awt.FontMetrics;
 import java.time.LocalDateTime;
 
-import javax.swing.JLabel;
-import javax.swing.JTable;
+import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableCellRenderer;
 
 public class UptimeCellRenderer extends DefaultTableCellRenderer {
@@ -18,25 +17,37 @@ public class UptimeCellRenderer extends DefaultTableCellRenderer {
 	public void setMode(String mode) {
 		uptimeMode = UptimeMode.valueOf(mode);
 	}
-
+	
 	@Override
-	public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-		Component l = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+	public void setValue(Object value) {
 		if(value != null) {
 			if(uptimeMode == UptimeMode.DAY) {
-				int s = ((Integer) value).intValue();
+				int s = ((Number) value).intValue();
 				final int gg = (int)(s / (3600 * 24));
 				s = s % (3600 * 24);
 				int hh = (int)(s / 3600);
 				s = s % 3600;
 				int mm = (int)(s / 60);
 				s = s % 60;
-				((JLabel)l).setText(String.format(LABELS.getString("col_uptime_as_day"), gg, hh, mm, s));
+				setText(String.format(LABELS.getString("col_uptime_as_day"), gg, hh, mm, s));
 			} else if(uptimeMode == UptimeMode.FROM) {
 				LocalDateTime since = LocalDateTime.now().minusSeconds(((Integer) value).intValue());
-				((JLabel)l).setText(String.format(LABELS.getString("col_uptime_as_From"), since));
-			} //else int value
+				setText(String.format(LABELS.getString("col_uptime_as_From"), since));
+			} else { // UptimeMode.SEC
+				setText(value.toString());
+			}
+		} else {
+			setText("");
 		}
-		return l;
+	}
+	
+	public int getPreferredWidth(final FontMetrics fm) {
+		if(uptimeMode == UptimeMode.DAY) { // %d days, %d hours, %d min, %d sec
+			return SwingUtilities.computeStringWidth(fm, "100 days, 00 hours, 00 min, 00 sec");
+		} else if(uptimeMode == UptimeMode.FROM) { // %1$td/%1$tm/%1$tY %1$tT
+			return SwingUtilities.computeStringWidth(fm, "01/01/2024 00:00:00");
+		} else {
+			return SwingUtilities.computeStringWidth(fm, "17280000"); // 200 days
+		}
 	}
 }
