@@ -305,9 +305,9 @@ public class DevicesTable extends ExTooltipTable {
 				TableColumn tc = columnModel.getColumn(c);
 				Object val = tc.getHeaderValue();
 				int width = (val != null) ? SwingUtilities.computeStringWidth(fm, val.toString()) >> 1 /*/ 2*/ : 1;
-				if(c == COL_UPTIME_IDX) {
+				if(c == convertColumnIndexToView(COL_UPTIME_IDX)) {
 					width = Math.max(width, uptimeRenderer.getPreferredWidth(fm));
-				} else if(c == COL_STATUS_IDX) {
+				} else if(c == convertColumnIndexToView(COL_STATUS_IDX)) {
 					width = Math.max(width, ONLINE_BULLET.getIconWidth() + 1);
 				} else {
 					for(int r = 0; r < rowCount; r++) {

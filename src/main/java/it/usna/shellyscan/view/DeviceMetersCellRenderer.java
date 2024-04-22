@@ -1,7 +1,6 @@
 package it.usna.shellyscan.view;
 
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -10,24 +9,22 @@ import java.text.MessageFormat;
 import java.util.Locale;
 
 import javax.swing.BorderFactory;
-import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
-import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.TableCellRenderer;
 
 import it.usna.shellyscan.Main;
 import it.usna.shellyscan.model.device.Meters;
 
-public class DeviceMetersCellRenderer extends DefaultTableCellRenderer {
+public class DeviceMetersCellRenderer extends JPanel implements TableCellRenderer {
 	private static final long serialVersionUID = 1L;
-	private final JPanel measuresPanel = new JPanel();
 	private final static Insets INSETS_LABEL1 = new Insets(0, 0, 0, 2);
 	private final static Insets INSETS_LABEL2 = new Insets(0, 6, 0, 2);
 
-	private static Border EMPTY_BORDER; // = BorderFactory.createEmptyBorder(0, 5, 0, 5);
+	private static Border EMPTY_BORDER;
 	private final static Border FOCUS_BORDER = UIManager.getBorder("Table.focusCellHighlightBorder");
 	private final static Font LABEL_FONT = new Font("Tahoma", Font.BOLD, 11);
 	private final Object[] singleArrayObj = new Object[1];
@@ -40,23 +37,19 @@ public class DeviceMetersCellRenderer extends DefaultTableCellRenderer {
 		GBC_FILLER.weightx = 1.0;
 	}
 
-	// todo: extends JPanel implements TableCellRenderer
 	public DeviceMetersCellRenderer() {
 		GridBagLayout gridBagLayout = new GridBagLayout();
-		gridBagLayout.rowWeights = new double[]{1.0, 1.0, 1.0, 1.0, 1.0}; // up to 5 rows
-		measuresPanel.setLayout(gridBagLayout);
+		gridBagLayout.rowWeights = new double[] {1.0, 1.0, 1.0, 1.0, 1.0}; // up to 5 rows
+		setLayout(gridBagLayout);
 		final Insets borderInsets = FOCUS_BORDER.getBorderInsets(this);
 		EMPTY_BORDER = BorderFactory.createEmptyBorder(borderInsets.top, borderInsets.left, borderInsets.bottom, borderInsets.right);
 	}
 
 	@Override
-	public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+	public JPanel getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
 //		try {
-		if(value == null) {
-			return this;
-		} else {
-			JComponent ret = measuresPanel;
-			measuresPanel.removeAll();
+		removeAll();
+		if(value != null) {
 			final Color foregroundColor = isSelected ? table.getSelectionForeground() : table.getForeground();
 			Meters ms[] = (Meters[])value;
 			for(int i = 0; i < ms.length; i++) {
@@ -73,7 +66,7 @@ public class DeviceMetersCellRenderer extends DefaultTableCellRenderer {
 						gbc_label.gridy = i;
 						label.setForeground(foregroundColor);
 						label.setFont(LABEL_FONT);
-						measuresPanel.add(label, gbc_label);
+						add(label, gbc_label);
 
 						JLabel val;
 						float metValue = m.getValue(t);
@@ -87,24 +80,23 @@ public class DeviceMetersCellRenderer extends DefaultTableCellRenderer {
 							}
 						}
 						GridBagConstraints gbc_value = new GridBagConstraints();
-						//					gbc_value.insets = INSETS_VALUE;
 						gbc_value.anchor = GridBagConstraints.EAST;
 						gbc_value.weightx = 0.0;
 						gbc_value.gridx = gbc_label.gridx + 1;
 						gbc_value.gridy = i;
 						val.setForeground(foregroundColor);
-						measuresPanel.add(val, gbc_value);
+						add(val, gbc_value);
 
 						j++;
 					}
 					GBC_FILLER.gridx = (j * 2) + 2;
 					GBC_FILLER.gridy = i;
-					ret.add(EMPTY, GBC_FILLER);
+					add(EMPTY, GBC_FILLER);
 				}
 			}
-			ret.setBorder(hasFocus ? FOCUS_BORDER : EMPTY_BORDER);
-			return ret;
 		}
+		setBorder(hasFocus ? FOCUS_BORDER : EMPTY_BORDER);
+		return this;
 //		}catch(Exception e) {
 //			e.printStackTrace();
 //			return this;
