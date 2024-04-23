@@ -100,6 +100,16 @@ public class EditorPanel extends SyntaxEditor {
 		addSyntaxRule(new SyntaxEditor.DelimitedKeywords(new String[] {
 				"Shelly", "JSON", "Timer", "MQTT", "BLE", "HTTPServer"}, styleShelly));
 	}
+
+	private static SimpleAttributeSet baseStyle() {
+		SimpleAttributeSet style = new SimpleAttributeSet();
+		StyleConstants.setFontFamily(style, Font.MONOSPACED);
+		boolean darkMode = ScannerProperties.get().getBoolProperty(ScannerProperties.PROP_IDE_DARK);
+		if(darkMode) {
+			StyleConstants.setForeground(style, Color.WHITE);
+		}
+		return style;
+	}
 	
 	public void mapAction(KeyStroke k, Action action, String name) {
 		getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(k, name);
@@ -352,6 +362,28 @@ public class EditorPanel extends SyntaxEditor {
 		}
 		doc.addDocumentListener(docListener);
 	}
+	
+	private final static int MIN_AUTOCOMPLETE = 2;
+	public void autocomplete() {
+		final int pos = getCaretPosition();
+		if(pos >= MIN_AUTOCOMPLETE) {
+//			System.out.println("auto " + getCharacterStileName(getCaretPosition()));
+			try {
+				StringBuilder token = new StringBuilder();
+				for(int i = pos - 1; i >= 0 && "default".equals(getCharacterStileName(i)); i--) {
+					String c = doc.getText(i, 1);
+					if(c.matches("[\\s.,;()\\[\\]{}]")) {
+						break;
+					} else {
+						token.insert(0, c);
+					}
+				}
+				System.out.println(token);
+			} catch (BadLocationException e) {
+				LOG.error("autocomplete", e);
+			}
+		}
+	}
 
 	@Override
 	// StyleConstants.setBackground(style, Color.BLACK);
@@ -361,15 +393,5 @@ public class EditorPanel extends SyntaxEditor {
 			g.fillRect(0, 0, getWidth(), getHeight());
 		}
 		super.paintComponent(g);
-	}
-	
-	private static SimpleAttributeSet baseStyle() {
-		SimpleAttributeSet style = new SimpleAttributeSet();
-		StyleConstants.setFontFamily(style, Font.MONOSPACED);
-		boolean darkMode = ScannerProperties.get().getBoolProperty(ScannerProperties.PROP_IDE_DARK);
-		if(darkMode) {
-			StyleConstants.setForeground(style, Color.WHITE);
-		}
-		return style;
 	}
 }

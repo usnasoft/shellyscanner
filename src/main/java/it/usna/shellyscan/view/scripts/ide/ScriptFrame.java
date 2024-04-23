@@ -222,6 +222,15 @@ public class ScriptFrame extends JFrame {
 				editor.autoIndentSelected();
 			}
 		}, "autoindent_usna");
+		
+		editor.mapAction(KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, InputEvent.CTRL_DOWN_MASK), new AbstractAction() {
+			private static final long serialVersionUID = 1L;
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				editor.autocomplete();
+			}
+		}, "autocomplete_usna");
 
 		final boolean closeCurly = ScannerProperties.get().getBoolProperty(ScannerProperties.IDE_AUTOCLOSE_CURLY, false);
 		final boolean closeBracket = ScannerProperties.get().getBoolProperty(ScannerProperties.IDE_AUTOCLOSE_BRACKET, false);
