@@ -3,11 +3,16 @@ package it.usna.shellyscan.view.scripts.ide;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.geom.Rectangle2D;
+import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.swing.Action;
+import javax.swing.BorderFactory;
 import javax.swing.JComponent;
+import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
 import javax.swing.KeyStroke;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Element;
@@ -36,6 +41,20 @@ public class EditorPanel extends SyntaxEditor {
 	private final boolean darkMode = ScannerProperties.get().getBoolProperty(ScannerProperties.PROP_IDE_DARK);
 	private final static Logger LOG = LoggerFactory.getLogger(EditorPanel.class);
 	
+	private final String[] reservedWords = new String[] {
+			"abstract", "arguments", "await*", "boolean", "break", "byte", "case", "catch",
+			"char", "class", "const*", "continue", "debugger", "default", "delete", "do",
+			"double", "else", "enum", "eval", "export", "extends", "false", "final",
+			"finally", "float", "for", "function", "goto", "if", "implements", "import",
+			"in", "instanceof", "int", "interface", "let", "long", "native", "new",
+			"null", "package", "private", "protected", "public", "return", "short", "static",
+			"super", "switch", "synchronized", "this", "throw", "throws", "transient", "true",
+			"try", "typeof", "var", "void", "volatile", "while", "with", "yield"};
+	
+	private final String[] implementedWords = new String[] {"String", "Number", "Function", "Array", "Math", "Date", "Object", "Exceptions"};
+	
+	private final String[] shellyWords = new String[] {"Shelly", "JSON", "Timer", "MQTT", "BLE", "HTTPServer"};
+	
 	EditorPanel(String initText) {
 		super(baseStyle());
 		setTabSize(ScannerProperties.get().getIntProperty(ScannerProperties.PROP_IDE_TAB_SIZE, ScannerProperties.IDE_TAB_SIZE_DEFAULT));
@@ -48,6 +67,7 @@ public class EditorPanel extends SyntaxEditor {
 		Style styleStr = addStyle("usna_string", null);
 		Style styleReserved = addStyle("usna_reserved", null);
 		Style styleImplemented = addStyle("usna_implemented", null);
+		Style styleShelly = addStyle("usna_shellyReserved", null);
 		if(darkMode) {
 			setBackground(new Color(0,0,0,0));
 			setCaretColor(Color.WHITE);
@@ -56,11 +76,13 @@ public class EditorPanel extends SyntaxEditor {
 			StyleConstants.setForeground(styleStr, new Color(128, 255, 0));
 			StyleConstants.setForeground(styleReserved, Color.CYAN);
 			StyleConstants.setForeground(styleImplemented, new Color(255, 153, 255));
+			StyleConstants.setForeground(styleShelly, new Color(190, 65, 201));
 		} else {
 			StyleConstants.setForeground(styleOperators, new Color(150, 0, 0));
 			StyleConstants.setForeground(styleStr, new Color(0, 120, 0));
 			StyleConstants.setForeground(styleReserved, Color.BLUE);
 			StyleConstants.setForeground(styleImplemented, new Color(153, 0, 153));
+			StyleConstants.setForeground(styleShelly, new Color(102, 0, 204));
 		}
 
 		Style styleComment = addStyle("usna_comment", null);
@@ -79,26 +101,14 @@ public class EditorPanel extends SyntaxEditor {
 		addSyntaxRule(new SyntaxEditor.Keywords(new String[] {"=", "+", "-", "*", "/", "%", "<", ">", "&", "|", "!"}, styleOperators));
 		
 		StyleConstants.setBold(styleReserved, true);
-		addSyntaxRule(new SyntaxEditor.DelimitedKeywords(new String[] {
-				"abstract", "arguments", "await*", "boolean", "break", "byte", "case", "catch",
-				"char", "class", "const*", "continue", "debugger", "default", "delete", "do",
-				"double", "else", "enum", "eval", "export", "extends", "false", "final",
-				"finally", "float", "for", "function", "goto", "if", "implements", "import",
-				"in", "instanceof", "int", "interface", "let", "long", "native", "new",
-				"null", "package", "private", "protected", "public", "return", "short", "static",
-				"super", "switch", "synchronized", "this", "throw", "throws", "transient", "true",
-				"try", "typeof", "var", "void", "volatile", "while", "with", "yield"}, styleReserved));
+		addSyntaxRule(new SyntaxEditor.DelimitedKeywords(reservedWords, styleReserved));
 		
 		StyleConstants.setBold(styleImplemented, true);
-		addSyntaxRule(new SyntaxEditor.DelimitedKeywords(new String[] {
-				"String", "Number", "Function", "Array", "Math", "Date", "Object", "Exceptions"}, styleImplemented));
-		
-		Style styleShelly = addStyle("usna_shellyReserved", null);
+		addSyntaxRule(new SyntaxEditor.DelimitedKeywords(implementedWords, styleImplemented));
+
 		StyleConstants.setBold(styleShelly, true);
 		StyleConstants.setItalic(styleShelly, true);
-		StyleConstants.setForeground(styleShelly, new Color(102, 0, 204));
-		addSyntaxRule(new SyntaxEditor.DelimitedKeywords(new String[] {
-				"Shelly", "JSON", "Timer", "MQTT", "BLE", "HTTPServer"}, styleShelly));
+		addSyntaxRule(new SyntaxEditor.DelimitedKeywords(shellyWords, styleShelly));
 	}
 
 	private static SimpleAttributeSet baseStyle() {
@@ -367,20 +377,58 @@ public class EditorPanel extends SyntaxEditor {
 	public void autocomplete() {
 		final int pos = getCaretPosition();
 		if(pos >= MIN_AUTOCOMPLETE) {
-//			System.out.println("auto " + getCharacterStileName(getCaretPosition()));
 			try {
 				StringBuilder token = new StringBuilder();
-				for(int i = pos - 1; i >= 0 && "default".equals(getCharacterStileName(i)); i--) {
-					String c = doc.getText(i, 1);
-					if(c.matches("[\\s.,;()\\[\\]{}]")) {
-						break;
+				int i = pos - 1;
+				String c;
+				for(; i >= 0 && (c = doc.getText(i, 1)).matches("[\\s.,;()\\[\\]{}]") == false && "default".equals(getCharacterStileName(i)); i--) {
+					token.insert(0, c);
+				}
+//				System.out.println(token);
+				
+				if(token.length() >= MIN_AUTOCOMPLETE) {
+					ArrayList<String> found = new ArrayList<>();
+					addAutocompleteCandidate(reservedWords, token.toString(), found);
+					addAutocompleteCandidate(shellyWords, token.toString(), found);
+					addAutocompleteCandidate(implementedWords, token.toString(), found);
+//					System.out.println(found);
+					if(found.size() == 1) {
+						replace(i + 1, pos - i - 1, found.get(0));
 					} else {
-						token.insert(0, c);
+						found.sort(String::compareToIgnoreCase);
+						final int start = i;
+						JPopupMenu popup = new JPopupMenu();
+						found.stream().map(t -> new JMenuItem(t)).forEach(m -> {
+							if(darkMode) {
+								m.setOpaque(true);
+								m.setBackground(new Color(7, 65, 115));
+								m.setForeground(Color.WHITE);
+							}
+							m.setBorder(BorderFactory.createEmptyBorder());
+							m.addActionListener(e -> {
+								try {
+									replace(start + 1, pos - start - 1, m.getText());
+								} catch (BadLocationException e1) {
+									LOG.error("autocomplete", e);
+								}
+							});
+							popup.add(m);
+						});
+						popup.setBorder(BorderFactory.createEmptyBorder());
+						Rectangle2D r = modelToView2D(pos);
+						popup.show(this, (int)r.getX() + 2, (int)r.getCenterY());
 					}
 				}
-				System.out.println(token);
 			} catch (BadLocationException e) {
 				LOG.error("autocomplete", e);
+			}
+		}
+	}
+	
+	private static void addAutocompleteCandidate(String[] list, String token, ArrayList<String> found) {
+		for(String w: list) {
+			if(w.toLowerCase().startsWith(token.toString().toLowerCase())) {
+				found.add(w);
 			}
 		}
 	}

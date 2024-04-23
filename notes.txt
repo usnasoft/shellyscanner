@@ -4,6 +4,8 @@ https://www.softicons.com/system-icons/web0.2ama-icons-by-chrfb/
 https://www.veryicon.com/
 https://www.iconbolt.com/
 
+https://coolors.co/
+
 //-D"org.slf4j.simpleLogger.log.it.usna=debug" -D"org.slf4j.simpleLogger.showDateTime=true"
 
 //https://eclipse.dev/jetty/documentation/jetty-9/index.html
