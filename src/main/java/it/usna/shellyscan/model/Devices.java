@@ -165,8 +165,8 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 		this.refreshTics = refreshTics;
 	}
 	
-	public void setIPInterval(int lower, int higher) {
-		// todo
+	public void setIPInterval(IPCollection coll) {
+		this.ipCollection = coll;
 //		this.lowerIP = lower;
 //		this.higherIP = higher;
 	}

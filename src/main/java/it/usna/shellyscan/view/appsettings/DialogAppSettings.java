@@ -20,6 +20,7 @@ import org.slf4j.LoggerFactory;
 
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.DevicesFactory;
+import it.usna.shellyscan.model.IPCollection;
 import it.usna.shellyscan.view.DevicesTable;
 import it.usna.shellyscan.view.MainView;
 import it.usna.shellyscan.view.chart.ChartType;
@@ -88,7 +89,9 @@ public class DialogAppSettings extends JDialog {
 				appProp.setProperty(ScannerProperties.BASE_SCAN_IP, baseIP);
 				appProp.setProperty(ScannerProperties.FIRST_SCAN_IP, panelNetwork.firstIP.getText());
 				appProp.setProperty(ScannerProperties.LAST_SCAN_IP, panelNetwork.lastIP.getText());
-				model.setIPInterval(appProp.getIntProperty(ScannerProperties.FIRST_SCAN_IP), appProp.getIntProperty(ScannerProperties.LAST_SCAN_IP));
+				IPCollection ipCollecton = new IPCollection();
+				ipCollecton.add(baseIP, appProp.getIntProperty(ScannerProperties.FIRST_SCAN_IP), appProp.getIntProperty(ScannerProperties.LAST_SCAN_IP));
+				model.setIPInterval(ipCollecton);
 			} else { // Offline
 				scanMode = "OFFLINE";
 			}

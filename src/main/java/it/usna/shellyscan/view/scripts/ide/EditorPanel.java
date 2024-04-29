@@ -14,7 +14,9 @@ import javax.swing.JComponent;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.KeyStroke;
+import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.DefaultHighlighter;
 import javax.swing.text.Element;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.Style;
@@ -54,6 +56,8 @@ public class EditorPanel extends SyntaxEditor {
 	private final String[] implementedWords = new String[] {"String", "Number", "Function", "Array", "Math", "Date", "Object", "Exceptions"};
 	
 	private final String[] shellyWords = new String[] {"Shelly", "JSON", "Timer", "MQTT", "BLE", "HTTPServer"};
+	
+	private final static DefaultHighlighter.DefaultHighlightPainter HILIGHTER = new DefaultHighlighter.DefaultHighlightPainter(Color.ORANGE);
 	
 	EditorPanel(String initText) {
 		super(baseStyle());
@@ -96,7 +100,7 @@ public class EditorPanel extends SyntaxEditor {
 		Style styleBrachets = addStyle("usna_brachets", null);
 		StyleConstants.setBold(styleBrachets, true);
 //		StyleConstants.setForeground(styleBrachets, Color.RED);
-		addSyntaxRule(new SyntaxEditor.Keywords(new String[] {"{", "}", "[", "]"}, styleBrachets));
+		addSyntaxRule(new SyntaxEditor.Keywords(new String[] {"{", "}", "[", "]", "(", ")"}, styleBrachets));
 		
 		addSyntaxRule(new SyntaxEditor.Keywords(new String[] {"=", "+", "-", "*", "/", "%", "<", ">", "&", "|", "!"}, styleOperators));
 		
@@ -109,6 +113,32 @@ public class EditorPanel extends SyntaxEditor {
 		StyleConstants.setBold(styleShelly, true);
 		StyleConstants.setItalic(styleShelly, true);
 		addSyntaxRule(new SyntaxEditor.DelimitedKeywords(shellyWords, styleShelly));
+		
+		// hilighter
+		addCaretListener(e -> {
+			getHighlighter().removeAllHighlights();
+			SwingUtilities.invokeLater(() -> {
+				try {
+					int pos = e.getDot() - 1;
+					String c = doc.getText(pos, 1);
+					if(c.equals("(") && getCharacterStileName(pos).equals("usna_brachets")) {
+						highlightCorrespondingClose(pos, "(", ")");
+					} else if(c.equals(")") && getCharacterStileName(pos).equals("usna_brachets")) {
+						highlightCorrespondingOpen(pos, "(", ")");
+					} else if(c.equals("[") && getCharacterStileName(pos).equals("usna_brachets")) {
+						highlightCorrespondingClose(pos, "[", "]");
+					} else if(c.equals("]") && getCharacterStileName(pos).equals("usna_brachets")) {
+						highlightCorrespondingOpen(pos, "[", "]");
+					} else if(c.equals("{") && getCharacterStileName(pos).equals("usna_brachets")) {
+						highlightCorrespondingClose(pos, "{", "}");
+					} else if(c.equals("}") && getCharacterStileName(pos).equals("usna_brachets")) {
+						highlightCorrespondingOpen(pos, "{", "}");
+					}
+				} catch (BadLocationException e1) {
+					LOG.error("CaretListener", e);
+				}
+			});
+		});
 	}
 
 	private static SimpleAttributeSet baseStyle() {
@@ -119,6 +149,43 @@ public class EditorPanel extends SyntaxEditor {
 			StyleConstants.setForeground(style, Color.WHITE);
 		}
 		return style;
+	}
+	
+	private void highlightCorrespondingClose(int pos, String start, String end) throws BadLocationException {
+		getHighlighter().addHighlight(pos, pos + 1, HILIGHTER);
+		int count = 0;
+		int docLength = doc.getLength();
+		for(int i = pos + 1; i < docLength; i++) {
+			String c = doc.getText(i, 1);
+			if(c.equals(end) && getCharacterStileName(i).equals("usna_brachets")) {
+				if(count == 0) {
+					getHighlighter().addHighlight(i, i + 1, HILIGHTER);
+					break;
+				} else {
+					count--;
+				}
+			} else if(c.equals(start) && getCharacterStileName(i).equals("usna_brachets")) {
+				count++;
+			}
+		}
+	}
+	
+	private void highlightCorrespondingOpen(int pos, String start, String end) throws BadLocationException {
+		getHighlighter().addHighlight(pos, pos + 1, HILIGHTER);
+		int count = 0;
+		for(int i = pos - 1; i >= 0; i--) {
+			String c = doc.getText(i, 1);
+			if(c.equals(start) && getCharacterStileName(i).equals("usna_brachets")) {
+				if(count == 0) {
+					getHighlighter().addHighlight(i, i + 1, HILIGHTER);
+					break;
+				} else {
+					count--;
+				}
+			} else if(c.equals(end) && getCharacterStileName(i).equals("usna_brachets")) {
+				count++;
+			}
+		}
 	}
 	
 	public void mapAction(KeyStroke k, Action action, String name) {
@@ -157,7 +224,9 @@ public class EditorPanel extends SyntaxEditor {
 			}
 			setSelectionStart(start);
 			setSelectionEnd(root.getElement(endElIndex).getEndOffset() - 1);
-		} catch (BadLocationException e) { LOG.error("commentSelected", e); }
+		} catch (BadLocationException e) {
+			LOG.error("commentSelected", e);
+		}
 	}
 	
 	public boolean indentSelected(boolean remove) { // or add (shift-tab / tab)
@@ -178,7 +247,9 @@ public class EditorPanel extends SyntaxEditor {
 				setSelectionStart(start);
 				setSelectionEnd(root.getElement(endElIndex).getEndOffset() - 1);
 				return true; // consume event
-			} catch (BadLocationException e) { LOG.error("indentSelected", e); }
+			} catch (BadLocationException e) {
+				LOG.error("indentSelected", e);
+			}
 		}
 		return false;
 	}
