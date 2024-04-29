@@ -43,9 +43,10 @@ public class NonInteractiveDevices implements Closeable {
 	private JmmDNS jd;
 	private Set<JmDNS> bjServices = new HashSet<>();
 
-	private byte[] baseScanIP;
-	private int lowerIP;
-	private int higherIP;
+	private IPCollection ipCollection = null;
+//	private byte[] baseScanIP;
+//	private int lowerIP;
+//	private int higherIP;
 
 	private final static String SERVICE_TYPE1 = "_http._tcp.local.";
 //	private final static String SERVICE_TYPE2 = "_shelly._tcp.local.";
@@ -66,9 +67,9 @@ public class NonInteractiveDevices implements Closeable {
 		scannerInit(fullScan);
 	}
 	
-	public NonInteractiveDevices(final byte[] ip, int first, final int last) throws Exception {
+	public NonInteractiveDevices(IPCollection ipCollection) throws Exception {
 		this();
-		scannerInit(ip, first, last);
+		scannerInit(ipCollection);
 	}
 
 	public void scannerInit(boolean fullScan) throws IOException {
@@ -86,20 +87,52 @@ public class NonInteractiveDevices implements Closeable {
 		}
 	}
 
-	public void scannerInit(final byte[] ip, int first, final int last) throws IOException {
-		this.baseScanIP = ip;
-		this.lowerIP = first;
-		this.higherIP = last;
-		LOG.debug("IP scan: {} {} {}", ip, first, last);
+	public void scannerInit(IPCollection ipCollection) throws IOException {
+//		this.baseScanIP = ip;
+//		this.lowerIP = first;
+//		this.higherIP = last;
+		this.ipCollection = ipCollection;
+		LOG.debug("IP scan: {}", ipCollection);
 //		scanByIP();
 	}
 
+//	private void scanByIP(Consumer<ShellyAbstractDevice> c) throws IOException {
+//		ScheduledExecutorService executor = Executors.newScheduledThreadPool(EXECUTOR_POOL_SIZE);
+//		try {
+//			for(int dalay = 0, ip4 = lowerIP; ip4 <= higherIP; dalay +=4, ip4++) {
+//				baseScanIP[3] = (byte)ip4;
+//				final InetAddress addr = InetAddress.getByAddress(baseScanIP);
+//				executor.schedule(() -> {
+//					try {
+//						if(addr.isReachable(5_000)) {
+//							Thread.sleep(Devices.MULTI_QUERY_DELAY);
+//							JsonNode info = isShelly(addr, 80);
+//							if(info != null) {
+//								Thread.sleep(Devices.MULTI_QUERY_DELAY);
+//								create(addr, 80, info, addr.getHostAddress(), c);
+//							}
+//						} else {
+//							LOG.trace("no ping {}", addr);
+//						}
+//					} catch (TimeoutException e) {
+//						LOG.trace("timeout {}", addr);
+//					} catch (IOException | InterruptedException e) {
+//						LOG.error("ip scan error {} {}", addr, e.toString());
+//					}
+//				}, dalay, TimeUnit.MILLISECONDS);
+//			}
+//			executor.shutdown();
+//			executor.awaitTermination(60, TimeUnit.MINUTES);
+//		} catch (Exception e) {
+//			LOG.error("ip scan error {}", e.toString());
+//		}
+//	}
+	
 	private void scanByIP(Consumer<ShellyAbstractDevice> c) throws IOException {
 		ScheduledExecutorService executor = Executors.newScheduledThreadPool(EXECUTOR_POOL_SIZE);
 		try {
-			for(int dalay = 0, ip4 = lowerIP; ip4 <= higherIP; dalay +=4, ip4++) {
-				baseScanIP[3] = (byte)ip4;
-				final InetAddress addr = InetAddress.getByAddress(baseScanIP);
+			int dalay = 0;
+			for(InetAddress addr: ipCollection) {
 				executor.schedule(() -> {
 					try {
 						if(addr.isReachable(5_000)) {
@@ -118,6 +151,7 @@ public class NonInteractiveDevices implements Closeable {
 						LOG.error("ip scan error {} {}", addr, e.toString());
 					}
 				}, dalay, TimeUnit.MILLISECONDS);
+				dalay += 4;
 			}
 			executor.shutdown();
 			executor.awaitTermination(60, TimeUnit.MINUTES);
@@ -145,7 +179,7 @@ public class NonInteractiveDevices implements Closeable {
 
 	public void execute(Consumer<ShellyAbstractDevice> c) throws IOException {
 		LOG.trace("scan");
-		if(this.baseScanIP == null) {
+		if(this.ipCollection == null) {
 			for(JmDNS bonjourService: bjServices) {
 				LOG.debug("scanning: {} {}", bonjourService.getName(), bonjourService.getInetAddress());
 				final ServiceInfo[] serviceInfos = bonjourService.list(SERVICE_TYPE1);
