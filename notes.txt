@@ -242,8 +242,10 @@ https://coolors.co/
 // app settings IDE
 // wall display basic support
 // uptime "up from" + settings mode
+// multi ip scan
+todo: jetty 12.0.5 -> 12.0.7 error on websocket
+todo: autocomplete funcions & variables
 todo: notes column (second field on notes?)
-todo: multi net ip scan
 
 ---
 // TODO
