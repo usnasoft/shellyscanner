@@ -30,17 +30,14 @@ import it.usna.swing.texteditor.SyntaxEditor;
 
 public class EditorPanel extends SyntaxEditor {
 	private static final long serialVersionUID = 1L;
-//	private final static Pattern LINE_START_NOT_EMPTY = Pattern.compile("(^)(.+)", Pattern.MULTILINE);
 	private final static Pattern LINE_START = Pattern.compile("(^)(.*)", Pattern.MULTILINE);
 	private final static Pattern COMMENTED_LINE = Pattern.compile("(^)(\\s*)//", Pattern.MULTILINE);
 	private final static Pattern LINE_TAB = Pattern.compile("(^)\\t", Pattern.MULTILINE);
 	private final static Pattern SPACES = Pattern.compile("[ \t]*");
-//	private final static Pattern START_BLOCK = Pattern.compile("\\{[ \t]*$");
-//	private final static Pattern START_BLOCK = Pattern.compile("\\{");
-//	private final static Pattern END_BLOCK = Pattern.compile("[ \t]*}");
-//	private final static Pattern END_BLOCK = Pattern.compile("\\}");
-//	private final static Pattern END_BLOCK_FIND_TAB = Pattern.compile("\\s*(\t)+\\s*$");
+	private final static Pattern FUNCTIONS = Pattern.compile("function\\s*(\\S*\\s*\\()");
 	private final boolean darkMode = ScannerProperties.get().getBoolProperty(ScannerProperties.PROP_IDE_DARK);
+	private final static int MIN_AUTOCOMPLETE = 2;
+	private final static Font AUTOCOMPLETE_FONT = new Font(Font.MONOSPACED, Font.PLAIN, 12);
 	private final static Logger LOG = LoggerFactory.getLogger(EditorPanel.class);
 	
 	private final String[] reservedWords = new String[] {
@@ -57,7 +54,7 @@ public class EditorPanel extends SyntaxEditor {
 	
 	private final String[] shellyWords = new String[] {"Shelly", "JSON", "Timer", "MQTT", "BLE", "HTTPServer"};
 	
-	private final static DefaultHighlighter.DefaultHighlightPainter HILIGHTER = new DefaultHighlighter.DefaultHighlightPainter(Color.ORANGE);
+	private DefaultHighlighter.DefaultHighlightPainter hilighter;// = new DefaultHighlighter.DefaultHighlightPainter(Color.ORANGE);
 	
 	EditorPanel(String initText) {
 		super(baseStyle());
@@ -73,7 +70,7 @@ public class EditorPanel extends SyntaxEditor {
 		Style styleImplemented = addStyle("usna_implemented", null);
 		Style styleShelly = addStyle("usna_shellyReserved", null);
 		if(darkMode) {
-			setBackground(new Color(0,0,0,0));
+			setBackground(new Color(0, 0, 0, 0));
 			setCaretColor(Color.WHITE);
 			
 			StyleConstants.setForeground(styleOperators, new Color(255, 153, 51));
@@ -81,12 +78,16 @@ public class EditorPanel extends SyntaxEditor {
 			StyleConstants.setForeground(styleReserved, Color.CYAN);
 			StyleConstants.setForeground(styleImplemented, new Color(255, 153, 255));
 			StyleConstants.setForeground(styleShelly, new Color(190, 65, 201));
+			
+			hilighter = new DefaultHighlighter.DefaultHighlightPainter(Color.GRAY);
 		} else {
 			StyleConstants.setForeground(styleOperators, new Color(150, 0, 0));
 			StyleConstants.setForeground(styleStr, new Color(0, 120, 0));
 			StyleConstants.setForeground(styleReserved, Color.BLUE);
 			StyleConstants.setForeground(styleImplemented, new Color(153, 0, 153));
 			StyleConstants.setForeground(styleShelly, new Color(102, 0, 204));
+			
+			hilighter = new DefaultHighlighter.DefaultHighlightPainter(Color.ORANGE);
 		}
 
 		Style styleComment = addStyle("usna_comment", null);
@@ -152,14 +153,14 @@ public class EditorPanel extends SyntaxEditor {
 	}
 	
 	private void highlightCorrespondingClose(int pos, String start, String end) throws BadLocationException {
-		getHighlighter().addHighlight(pos, pos + 1, HILIGHTER);
+		getHighlighter().addHighlight(pos, pos + 1, hilighter);
 		int count = 0;
 		int docLength = doc.getLength();
 		for(int i = pos + 1; i < docLength; i++) {
 			String c = doc.getText(i, 1);
 			if(c.equals(end) && getCharacterStileName(i).equals("usna_brachets")) {
 				if(count == 0) {
-					getHighlighter().addHighlight(i, i + 1, HILIGHTER);
+					getHighlighter().addHighlight(i, i + 1, hilighter);
 					break;
 				} else {
 					count--;
@@ -171,13 +172,13 @@ public class EditorPanel extends SyntaxEditor {
 	}
 	
 	private void highlightCorrespondingOpen(int pos, String start, String end) throws BadLocationException {
-		getHighlighter().addHighlight(pos, pos + 1, HILIGHTER);
+		getHighlighter().addHighlight(pos, pos + 1, hilighter);
 		int count = 0;
 		for(int i = pos - 1; i >= 0; i--) {
 			String c = doc.getText(i, 1);
 			if(c.equals(start) && getCharacterStileName(i).equals("usna_brachets")) {
 				if(count == 0) {
-					getHighlighter().addHighlight(i, i + 1, HILIGHTER);
+					getHighlighter().addHighlight(i, i + 1, hilighter);
 					break;
 				} else {
 					count--;
@@ -444,7 +445,6 @@ public class EditorPanel extends SyntaxEditor {
 		doc.addDocumentListener(docListener);
 	}
 	
-	private final static int MIN_AUTOCOMPLETE = 2;
 	public void autocomplete() {
 		final int pos = getCaretPosition();
 		if(pos >= MIN_AUTOCOMPLETE) {
@@ -458,10 +458,12 @@ public class EditorPanel extends SyntaxEditor {
 //				System.out.println(token);
 				
 				if(token.length() >= MIN_AUTOCOMPLETE) {
+					String tokenStr = token.toString();
 					ArrayList<String> found = new ArrayList<>();
-					addAutocompleteCandidate(reservedWords, token.toString(), found);
-					addAutocompleteCandidate(shellyWords, token.toString(), found);
-					addAutocompleteCandidate(implementedWords, token.toString(), found);
+					addAutocompleteCandidate(reservedWords, tokenStr, found);
+					addAutocompleteCandidate(shellyWords, tokenStr, found);
+					addAutocompleteCandidate(implementedWords, tokenStr, found);
+					findFunction(tokenStr, found);
 //					System.out.println(found);
 					if(found.size() == 1) {
 						replace(i + 1, pos - i - 1, found.get(0));
@@ -472,10 +474,11 @@ public class EditorPanel extends SyntaxEditor {
 						found.stream().map(t -> new JMenuItem(t)).forEach(m -> {
 							if(darkMode) {
 								m.setOpaque(true);
-								m.setBackground(new Color(7, 65, 115));
+								m.setBackground(new Color(2, 50, 100));
 								m.setForeground(Color.WHITE);
 							}
-							m.setBorder(BorderFactory.createEmptyBorder());
+							m.setBorder(BorderFactory.createEmptyBorder(0, 2, 0, 2));
+							m.setFont(AUTOCOMPLETE_FONT);
 							m.addActionListener(e -> {
 								try {
 									replace(start + 1, pos - start - 1, m.getText());
@@ -485,9 +488,9 @@ public class EditorPanel extends SyntaxEditor {
 							});
 							popup.add(m);
 						});
-						popup.setBorder(BorderFactory.createEmptyBorder());
+						popup.setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));
 						Rectangle2D r = modelToView2D(pos);
-						popup.show(this, (int)r.getX() + 2, (int)r.getCenterY());
+						popup.show(this, (int)r.getX() + 2, (int)r.getMaxY() - 4);
 					}
 				}
 			} catch (BadLocationException e) {
@@ -501,6 +504,22 @@ public class EditorPanel extends SyntaxEditor {
 			if(w.toLowerCase().startsWith(token.toString().toLowerCase())) {
 				found.add(w);
 			}
+		}
+	}
+	
+	
+	private void findFunction(String token, ArrayList<String> found) {
+		try {
+			String txt = doc.getText(0, doc.getLength());
+			Matcher functionMatcher = FUNCTIONS.matcher(txt);
+			while(functionMatcher.find()) {
+				String fName = functionMatcher.group(1);
+				if(fName.toLowerCase().startsWith(token.toString().toLowerCase())) {
+					found.add(fName);
+				}
+			}
+		} catch (BadLocationException e) {
+			LOG.error("findFunction", e);
 		}
 	}
 
