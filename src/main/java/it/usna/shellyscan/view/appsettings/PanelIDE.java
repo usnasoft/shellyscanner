@@ -20,15 +20,15 @@ import java.awt.Font;
 
 public class PanelIDE extends JPanel {
 	private static final long serialVersionUID = 1L;
-	IntegerTextFieldPanel tabSize;
-	JCheckBox chcDarkMode;
-	JRadioButton rdbtnIndentSmart;
-	JRadioButton rdbtnIndentYes;
-	JRadioButton rdbtnIndentNone;
-	JCheckBox chckbxCloseCurly;
-	JCheckBox chckbxClosebracket;
-	JCheckBox chckbxCloseSquare;
-	JCheckBox chckbxCloseString;
+	private IntegerTextFieldPanel tabSize;
+	private JCheckBox chcDarkMode;
+	private JRadioButton rdbtnIndentSmart;
+	private JRadioButton rdbtnIndentYes;
+	private JRadioButton rdbtnIndentNone;
+	private JCheckBox chckbxCloseCurly;
+	private JCheckBox chckbxClosebracket;
+	private JCheckBox chckbxCloseSquare;
+	private JCheckBox chckbxCloseString;
 	
 	PanelIDE(final AppProperties appProp) {
 		GridBagLayout gridBagLayout = new GridBagLayout();
@@ -184,5 +184,21 @@ public class PanelIDE extends JPanel {
 		gbc_lblNewLabelMsg.gridx = 0;
 		gbc_lblNewLabelMsg.gridy = 4;
 		add(lblNewLabelMsg, gbc_lblNewLabelMsg);
+	}
+	
+	public void store(AppProperties appProp) {
+		appProp.setIntProperty(ScannerProperties.PROP_IDE_TAB_SIZE, tabSize.getIntValue());
+		if(rdbtnIndentNone.isSelected()) {
+			appProp.setProperty(ScannerProperties.IDE_AUTOINDENT, "NO");
+		} else if(rdbtnIndentYes.isSelected()) {
+			appProp.setProperty(ScannerProperties.IDE_AUTOINDENT, "YES");
+		} else if(rdbtnIndentSmart.isSelected()) {
+			appProp.setProperty(ScannerProperties.IDE_AUTOINDENT, "SMART");
+		}
+		appProp.setBoolProperty(ScannerProperties.IDE_AUTOCLOSE_CURLY, chckbxCloseCurly.isSelected());
+		appProp.setBoolProperty(ScannerProperties.IDE_AUTOCLOSE_BRACKET, chckbxClosebracket.isSelected());
+		appProp.setBoolProperty(ScannerProperties.IDE_AUTOCLOSE_SQUARE, chckbxCloseSquare.isSelected());
+		appProp.setBoolProperty(ScannerProperties.IDE_AUTOCLOSE_STRING, chckbxCloseString.isSelected());
+		appProp.setBoolProperty(ScannerProperties.PROP_IDE_DARK, chcDarkMode.isSelected());
 	}
 }

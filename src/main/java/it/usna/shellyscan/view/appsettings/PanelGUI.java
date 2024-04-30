@@ -367,7 +367,9 @@ public class PanelGUI extends JPanel {
 		gbc_comboCharts.gridx = 1;
 		gbc_comboCharts.gridy = 13;
 		add(comboCharts, gbc_comboCharts);
-		comboCharts.setSelectedItem(ChartType.valueOf(appProp.getProperty(ScannerProperties.PROP_CHARTS_START, ChartType.INT_TEMP.name())));
+		try {
+			comboCharts.setSelectedItem(ChartType.valueOf(appProp.getProperty(ScannerProperties.PROP_CHARTS_START, ChartType.INT_TEMP.name())));
+		} catch(Exception e) {}
 
 		JSeparator separator_4 = new JSeparator();
 		GridBagConstraints gbc_separator_4 = new GridBagConstraints();

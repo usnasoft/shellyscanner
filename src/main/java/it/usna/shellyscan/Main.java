@@ -75,10 +75,7 @@ public class Main {
 		
 		boolean fullScan = false;
 		IPCollection ipCollection = null;
-//		byte [] baseIP = null;
-//		int firstIP = 0;
-//		int lastIP  = 0;
-		
+
 		int cliIndex;
 		// Scan mode
 		if(cli.hasEntry("-fullscan", "-full") >= 0) {
@@ -90,11 +87,8 @@ public class Main {
 				Matcher m = Pattern.compile(IP_SCAN_PAR_FORMAT).matcher(cli.getParameter(cliIndex));
 				m.find();
 				final String baseIPPar = m.group(1);
-//				String ipS[] = baseIPPar.split("\\.");
 				int firstIP = Integer.parseInt(m.group(2));
 				int lastIP = Integer.parseInt(m.group(3));
-//				baseIP = new byte[] {(byte)Integer.parseInt(ipS[0]), (byte)Integer.parseInt(ipS[1]), (byte)Integer.parseInt(ipS[2]), 0};
-				
 				ipCollection = new IPCollection();
 				ipCollection.add(baseIPPar, firstIP, lastIP);
 			} catch (Exception e) {
@@ -102,27 +96,20 @@ public class Main {
 				System.exit(1);
 			}
 		} else if((cliIndex = cli.hasEntry("-noscan")) >= 0) { // only archive (it's actually an IP scan with firstIP > lastIP)
-//			baseIP = new byte[] {127, 0, 0, 1};
-//			firstIP = 1;
-//			lastIP = 0;
-			
 			ipCollection = new IPCollection();
 		} else {
 			final String scanMode = appProp.getProperty(ScannerProperties.PROP_SCAN_MODE, ScannerProperties.PROP_SCAN_MODE_DEFAULT);
 			if(scanMode.equals("IP")) {
-				final String baseIPPar = appProp.getProperty(ScannerProperties.BASE_SCAN_IP);
-//				String ipS[] = baseIPPar.split("\\.");
-				int firstIP = appProp.getIntProperty(ScannerProperties.FIRST_SCAN_IP);
-				int lastIP = appProp.getIntProperty(ScannerProperties.LAST_SCAN_IP);
-//				baseIP = new byte[] {(byte)Integer.parseInt(ipS[0]), (byte)Integer.parseInt(ipS[1]), (byte)Integer.parseInt(ipS[2]), 0};
-				
 				ipCollection = new IPCollection();
-				ipCollection.add(baseIPPar, firstIP, lastIP);
+				for(int i = 0; i < 10; i++) {
+					final String baseIPPar = appProp.getProperty(ScannerProperties.BASE_SCAN_IP + i);
+					if(baseIPPar != null && baseIPPar.isEmpty() == false) {
+						int firstIP = appProp.getIntProperty(ScannerProperties.FIRST_SCAN_IP + i);
+						int lastIP = appProp.getIntProperty(ScannerProperties.LAST_SCAN_IP + i);
+						ipCollection.add(baseIPPar, firstIP, lastIP);
+					}
+				}
 			} else if(scanMode.equals("OFFLINE")) {
-//				baseIP = new byte[] {127, 0, 0, 1};
-//				firstIP = 1;
-//				lastIP = 0;
-				
 				ipCollection = new IPCollection();
 			} else {
 				fullScan = scanMode.equals("FULL");
@@ -156,7 +143,6 @@ public class Main {
 				System.exit(10);
 			}
 			LOG.info("Backup devices in {}", path);
-//			try (NonInteractiveDevices model = (baseIP == null) ? new NonInteractiveDevices(fullScan) : new NonInteractiveDevices(baseIP, firstIP, lastIP)) {
 			try (NonInteractiveDevices model = (ipCollection == null) ? new NonInteractiveDevices(fullScan) : new NonInteractiveDevices(ipCollection)) {
 				model.execute(d -> {
 					try {
@@ -210,10 +196,7 @@ public class Main {
 			final MainView view = new MainView(model, appProp);
 
 			// final values for thread
-			final boolean fullScanx = fullScan;
-//			final byte [] ipFin = baseIP;
-//			final int firstIPFin = firstIP;
-//			final int lastIPFin = lastIP;
+			final boolean fullScanFinal = fullScan;
 			final IPCollection ipCollectionFinal = ipCollection;
 			
 			SwingUtilities.invokeLater(() -> {
@@ -235,7 +218,7 @@ public class Main {
 					if(ipCollectionFinal != null) {
 						model.scannerInit(ipCollectionFinal, refreshStatusInterval, refreshConfigTics);
 					} else {
-						model.scannerInit(fullScanx, refreshStatusInterval, refreshConfigTics, appProp.getBoolProperty(ScannerProperties.PROP_AUTORELOAD_ARCHIVE, false) && useArchive);
+						model.scannerInit(fullScanFinal, refreshStatusInterval, refreshConfigTics, appProp.getBoolProperty(ScannerProperties.PROP_AUTORELOAD_ARCHIVE, false) && useArchive);
 					}
 				} catch (/*IO*/Exception e) {
 					Msg.errorMsg(e);

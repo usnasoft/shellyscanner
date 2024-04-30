@@ -30,8 +30,8 @@ public class IntegerTextFieldPanel extends JPanel {
 		downB.setContentAreaFilled(false);
 		add(downB);
 	}
-	
-	public IntegerTextFieldPanel(int init, int min, int max, boolean allowNull) {
+
+	public IntegerTextFieldPanel(Integer init, int min, int max, boolean allowNull) {
 		this(min, max);
 		itf.setValue(init);
 		itf.allowNull(allowNull);
