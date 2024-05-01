@@ -342,32 +342,42 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 	}
 
 	private Future<Session> wsEventListener(int index, AbstractG2Device d) throws IOException, InterruptedException, ExecutionException {
-		return d.connectWebSocketClient(new WebSocketDeviceListener(json -> json.path("method").asText().equals(WebSocketDeviceListener.NOTIFY_EVENT)) {
-			@Override
-			public void onMessage(JsonNode msg) {
-				try {
-					for(JsonNode event: msg.path("params").path("events")) {
-						String eventType = event.path("event").asText();
-						if(eventType.equals("ota_progress")) { // dowloading
-							((FirmwareManagerG2)getFirmwareManager(index)).upadating(true);
-							int progress = event.path("progress_percent").asInt();
-							tModel.setValueAt(DevicesTable.UPDATING_BULLET, index, FWUpdateTable.COL_STATUS);
-							tModel.setValueAt(String.format(Main.LABELS.getString("lbl_downloading"), progress), index, FWUpdateTable.COL_STABLE);
-							tModel.setValueAt(null, index, FWUpdateTable.COL_BETA);
-							break;
-						} else if(/*eventType.equals("ota_success") ||*/ eventType.equals("scheduled_restart")) { // rebooting
-							tModel.setValueAt(DevicesTable.OFFLINE_BULLET, index, FWUpdateTable.COL_STATUS);
-							tModel.setValueAt(LABELS.getString("lbl_rebooting"), index, FWUpdateTable.COL_STABLE);
-							tModel.setValueAt(null, index, FWUpdateTable.COL_BETA);
-							devicesFWData.get(index).rebootTime = System.currentTimeMillis();
-							break;
-						}
+		return d.connectWebSocketClient(new FMUpdateListener(index));
+	}
+	
+	// "Jetty uses MethodHandles to instantiate WebSocket endpoints and invoke WebSocket event methods, so WebSocket endpoint classes and WebSocket event methods must be public"
+	// -> no anonymous class
+	public class FMUpdateListener extends WebSocketDeviceListener {
+		private final int index;
+		public FMUpdateListener(int index) {
+			super(json -> json.path("method").asText().equals(WebSocketDeviceListener.NOTIFY_EVENT));
+			this.index = index;
+		}
+
+		@Override
+		public void onMessage(JsonNode msg) {
+			try {
+				for(JsonNode event: msg.path("params").path("events")) {
+					String eventType = event.path("event").asText();
+					if(eventType.equals("ota_progress")) { // dowloading
+						((FirmwareManagerG2)getFirmwareManager(index)).upadating(true);
+						int progress = event.path("progress_percent").asInt();
+						tModel.setValueAt(DevicesTable.UPDATING_BULLET, index, FWUpdateTable.COL_STATUS);
+						tModel.setValueAt(String.format(Main.LABELS.getString("lbl_downloading"), progress), index, FWUpdateTable.COL_STABLE);
+						tModel.setValueAt(null, index, FWUpdateTable.COL_BETA);
+						break;
+					} else if(/*eventType.equals("ota_success") ||*/ eventType.equals("scheduled_restart")) { // rebooting
+						tModel.setValueAt(DevicesTable.OFFLINE_BULLET, index, FWUpdateTable.COL_STATUS);
+						tModel.setValueAt(LABELS.getString("lbl_rebooting"), index, FWUpdateTable.COL_STABLE);
+						tModel.setValueAt(null, index, FWUpdateTable.COL_BETA);
+						devicesFWData.get(index).rebootTime = System.currentTimeMillis();
+						break;
 					}
-				} catch(Exception e) {
-					LOG.debug("onMessage {}", msg, e);
 				}
+			} catch(Exception e) {
+				LOG.debug("onMessage {}", msg, e);
 			}
-		});
+		}
 	}
 
 	private static class DeviceFirmware {
@@ -388,14 +398,12 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 
 				if(newStatus == ShellyAbstractDevice.Status.ON_LINE && devicesFWData.get(localIndex).fwModule == null) {
 					// Awakened
-
 					retriveFutures.set(localIndex, exeService.submit(() -> {
 						initDevice(localIndex);
 						tModel.setRow(localIndex, createTableRow(localIndex));
 					}, null));
 				} else if(newStatus != ShellyAbstractDevice.Status.ERROR) {
 					// Updating?
-
 					DeviceFirmware fwInfo = devicesFWData.get(localIndex);
 					// status changes to ON_LINE -> maybe reboot after fw update
 					// System.currentTimeMillis() - fwInfo.rebootTime > 3000L && status == ON_LINE -> maybe sampling too slow and missed OFF_LINE (gen2)
@@ -427,7 +435,7 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 			}
 		}
 	}
-} // 346 - 362 - 462 - 476 - 509 - 418
+} // 346 - 362 - 462 - 476 - 509 - 418 - 438
 
 //{"src":"shellyplusi4-a8032ab1fe78","dst":"S_Scanner","method":"NotifyEvent","params":{"ts":1677696108.45,"events":[{"component":"sys", "event":"ota_progress", "msg":"Waiting for data", "progress_percent":99, "ts":1677696108.45}]}}
 //{"src":"shellyplusi4-a8032ab1fe78","dst":"S_Scanner","method":"NotifyEvent","params":{"ts":1677696109.49,"events":[{"component":"sys", "event":"ota_success", "msg":"Update applied, rebooting", "ts":1677696109.49}]}}
