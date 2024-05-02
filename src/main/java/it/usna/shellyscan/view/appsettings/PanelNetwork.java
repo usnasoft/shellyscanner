@@ -293,6 +293,7 @@ public class PanelNetwork extends JPanel {
 			String ip = dialogIP.baseIP[i].getText();
 			if(ip.isEmpty() == false) {
 				panelIP.add(new JLabel(ip + " / " + dialogIP.firstIP[i].getText() + "-" +  dialogIP.lastIP[i].getText()));
+				panelIP.repaint();
 				/*panelIP.*/revalidate();
 			}
 		}

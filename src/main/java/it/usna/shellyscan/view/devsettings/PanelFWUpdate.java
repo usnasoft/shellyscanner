@@ -176,7 +176,7 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 		FirmwareManager fw = getFirmwareManager(localIndex);
 		if(fw != null) {
 			if(fw.upadating()) {
-				return new Object[] {DevicesTable.UPDATING_BULLET, UtilMiscellaneous.getExtendedHostName(d), FirmwareManager.getShortVersion(fw.current()), LABELS.getString("labelUpdating")}; // DevicesTable.UPDATING_BULLET
+				return new Object[] {DevicesTable.UPDATING_BULLET, UtilMiscellaneous.getExtendedHostName(d), FirmwareManager.getShortVersion(fw.current()), LABELS.getString("labelUpdating"), null}; // DevicesTable.UPDATING_BULLET
 			} else {
 				Boolean stableCell = (fw != null && fw.newStable() != null) ? Boolean.TRUE : null;
 				Boolean betaCell = (fw != null && fw.newBeta() != null) ? Boolean.FALSE : null;
