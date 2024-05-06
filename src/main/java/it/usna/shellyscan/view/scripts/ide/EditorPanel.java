@@ -54,7 +54,9 @@ public class EditorPanel extends SyntaxEditor {
 	
 	private final String[] shellyWords = new String[] {"Shelly", "JSON", "Timer", "MQTT", "BLE", "HTTPServer"};
 	
-	private DefaultHighlighter.DefaultHighlightPainter hilighter;// = new DefaultHighlighter.DefaultHighlightPainter(Color.ORANGE);
+	private final String[] othersForAutocomplete = new String[] {"print(", "console.log("};
+	
+	private DefaultHighlighter.DefaultHighlightPainter hilighter;
 	
 	EditorPanel(String initText) {
 		super(baseStyle());
@@ -122,17 +124,17 @@ public class EditorPanel extends SyntaxEditor {
 				try {
 					int pos = e.getDot() - 1;
 					String c = doc.getText(pos, 1);
-					if(c.equals("(") && getCharacterStileName(pos).equals("usna_brachets")) {
+					if(c.equals("(") && getCharacterStyleName(pos).equals("usna_brachets")) {
 						highlightCorrespondingClose(pos, "(", ")");
-					} else if(c.equals(")") && getCharacterStileName(pos).equals("usna_brachets")) {
+					} else if(c.equals(")") && getCharacterStyleName(pos).equals("usna_brachets")) {
 						highlightCorrespondingOpen(pos, "(", ")");
-					} else if(c.equals("[") && getCharacterStileName(pos).equals("usna_brachets")) {
+					} else if(c.equals("[") && getCharacterStyleName(pos).equals("usna_brachets")) {
 						highlightCorrespondingClose(pos, "[", "]");
-					} else if(c.equals("]") && getCharacterStileName(pos).equals("usna_brachets")) {
+					} else if(c.equals("]") && getCharacterStyleName(pos).equals("usna_brachets")) {
 						highlightCorrespondingOpen(pos, "[", "]");
-					} else if(c.equals("{") && getCharacterStileName(pos).equals("usna_brachets")) {
+					} else if(c.equals("{") && getCharacterStyleName(pos).equals("usna_brachets")) {
 						highlightCorrespondingClose(pos, "{", "}");
-					} else if(c.equals("}") && getCharacterStileName(pos).equals("usna_brachets")) {
+					} else if(c.equals("}") && getCharacterStyleName(pos).equals("usna_brachets")) {
 						highlightCorrespondingOpen(pos, "{", "}");
 					}
 				} catch (BadLocationException e1) {
@@ -158,14 +160,14 @@ public class EditorPanel extends SyntaxEditor {
 		int docLength = doc.getLength();
 		for(int i = pos + 1; i < docLength; i++) {
 			String c = doc.getText(i, 1);
-			if(c.equals(end) && getCharacterStileName(i).equals("usna_brachets")) {
+			if(c.equals(end) && getCharacterStyleName(i).equals("usna_brachets")) {
 				if(count == 0) {
 					getHighlighter().addHighlight(i, i + 1, hilighter);
 					break;
 				} else {
 					count--;
 				}
-			} else if(c.equals(start) && getCharacterStileName(i).equals("usna_brachets")) {
+			} else if(c.equals(start) && getCharacterStyleName(i).equals("usna_brachets")) {
 				count++;
 			}
 		}
@@ -176,14 +178,14 @@ public class EditorPanel extends SyntaxEditor {
 		int count = 0;
 		for(int i = pos - 1; i >= 0; i--) {
 			String c = doc.getText(i, 1);
-			if(c.equals(start) && getCharacterStileName(i).equals("usna_brachets")) {
+			if(c.equals(start) && getCharacterStyleName(i).equals("usna_brachets")) {
 				if(count == 0) {
 					getHighlighter().addHighlight(i, i + 1, hilighter);
 					break;
 				} else {
 					count--;
 				}
-			} else if(c.equals(end) && getCharacterStileName(i).equals("usna_brachets")) {
+			} else if(c.equals(end) && getCharacterStyleName(i).equals("usna_brachets")) {
 				count++;
 			}
 		}
@@ -321,11 +323,11 @@ public class EditorPanel extends SyntaxEditor {
 		int lineLength = line.length();
 		for(int i = 0; i < lineLength; i++) {
 			if(line.charAt(i) == '{') {
-				if(getCharacterStileName(lineStart + i).equals("usna_brachets")) {
+				if(getCharacterStyleName(lineStart + i).equals("usna_brachets")) {
 					plus++;
 				}
 			} else if(line.charAt(i) == '}') {
-				if(plus > 0 && getCharacterStileName(lineStart + i).equals("usna_brachets")) {
+				if(plus > 0 && getCharacterStyleName(lineStart + i).equals("usna_brachets")) {
 					plus--;
 				}
 			}
@@ -340,11 +342,11 @@ public class EditorPanel extends SyntaxEditor {
 		int lineLength = line.length();
 		for(int i = 0; i < lineLength; i++) {
 			if(line.charAt(i) == '{') {
-				if(getCharacterStileName(lineStart + i).equals("usna_brachets")) {
+				if(getCharacterStyleName(lineStart + i).equals("usna_brachets")) {
 					plus++;
 				}
 			} else if(line.charAt(i) == '}') {
-				if(getCharacterStileName(lineStart + i).equals("usna_brachets")) {
+				if(getCharacterStyleName(lineStart + i).equals("usna_brachets")) {
 					if(plus > 0) {
 						plus--;
 					} else {
@@ -372,7 +374,7 @@ public class EditorPanel extends SyntaxEditor {
 			boolean closeBlock = autoCloseBlock && selectionStart > 0 &&
 					getSelectionEnd() == selectionStart &&
 					doc.getText(getSelectionStart() - 1, 2).equals("{}") &&
-					getCharacterStileName(selectionStart - 1).equals("usna_brachets");
+					getCharacterStyleName(selectionStart - 1).equals("usna_brachets");
 			
 			replaceSelection("\n" + prevIndent);
 			if(smartAutoIndent) {
@@ -415,7 +417,7 @@ public class EditorPanel extends SyntaxEditor {
 		analizeDocument(0, doc.getLength());
 		final int pos = getCaretPosition();
 		
-		String styleName = getCharacterStileName(pos - 1);
+		String styleName = getCharacterStyleName(pos - 1);
 		if("usna_string".equals(styleName) == false && "usna_comment".equals(styleName) == false) {
 			try {
 				insert(end, pos); // separate undo
@@ -433,7 +435,7 @@ public class EditorPanel extends SyntaxEditor {
 		replaceSelection("\"");
 		analizeDocument(0, doc.getLength());
 		final int pos = getCaretPosition();
-		if("usna_string".equals(getCharacterStileName(pos - 1)) && (pos < 2 || "usna_string".equals(getCharacterStileName(pos - 2)) == false)) {
+		if("usna_string".equals(getCharacterStyleName(pos - 1)) && (pos < 2 || "usna_string".equals(getCharacterStyleName(pos - 2)) == false)) {
 			try {
 				insert("\"", pos); // separate undo
 				analizeDocument(0, doc.getLength());
@@ -452,18 +454,19 @@ public class EditorPanel extends SyntaxEditor {
 				StringBuilder token = new StringBuilder();
 				int i = pos - 1;
 				String c;
-				for(; i >= 0 && (c = doc.getText(i, 1)).matches("[\\s.,;()\\[\\]{}]") == false && "default".equals(getCharacterStileName(i)); i--) {
+				for(; i >= 0 && (c = doc.getText(i, 1)).matches("[\\s.,;()\\[\\]{}]") == false && "default".equals(getCharacterStyleName(i)); i--) {
 					token.insert(0, c);
 				}
-//				System.out.println(token);
-				
+
 				if(token.length() >= MIN_AUTOCOMPLETE) {
 					String tokenStr = token.toString();
 					ArrayList<String> found = new ArrayList<>();
 					addAutocompleteCandidate(reservedWords, tokenStr, found);
 					addAutocompleteCandidate(shellyWords, tokenStr, found);
 					addAutocompleteCandidate(implementedWords, tokenStr, found);
+					addAutocompleteCandidate(othersForAutocomplete, tokenStr, found);
 					findFunction(tokenStr, found);
+//					findVariables(tokenStr, found);
 //					System.out.println(found);
 					if(found.size() == 1) {
 						replace(i + 1, pos - i - 1, found.get(0));
@@ -506,15 +509,14 @@ public class EditorPanel extends SyntaxEditor {
 			}
 		}
 	}
-	
-	
+
 	private void findFunction(String token, ArrayList<String> found) {
 		try {
 			String txt = doc.getText(0, doc.getLength());
 			Matcher functionMatcher = FUNCTIONS.matcher(txt);
 			while(functionMatcher.find()) {
 				String fName = functionMatcher.group(1);
-				if(fName.toLowerCase().startsWith(token.toString().toLowerCase())) {
+				if(fName.toLowerCase().startsWith(token.toLowerCase()) && getCharacterStyleName(functionMatcher.start(1)).equals("default")) {
 					found.add(fName);
 				}
 			}
@@ -522,6 +524,37 @@ public class EditorPanel extends SyntaxEditor {
 			LOG.error("findFunction", e);
 		}
 	}
+	
+	private void findVariables(String token, ArrayList<String> found) {
+		try {
+			int length = doc.getLength();
+			String txt = doc.getText(0, length);
+			for(int pos = 0; pos < length; pos++) {
+				if(txt.charAt(pos) == '=' && getCharacterStyleName(pos).equals("usna_operator")) {
+					String w = findWord(txt, pos);
+					System.out.println(w);
+				}
+			}
+		} catch (BadLocationException e) {
+			LOG.error("findFunction", e);
+		}
+	}
+	
+	private String findWord(String txt, int pos) {
+		String w = "";
+		while(--pos >= 0 && getCharacterStyleName(pos).equals("default")) {
+			if(Character.isWhitespace(txt.charAt(pos))) {
+				if(w.length() > 0) {
+					break;
+				}
+			} else {
+				w = txt.charAt(pos) + w;
+			}
+		}
+		return w;
+	}
+	
+	// scapes: global, function, let
 
 	@Override
 	// StyleConstants.setBackground(style, Color.BLACK);
