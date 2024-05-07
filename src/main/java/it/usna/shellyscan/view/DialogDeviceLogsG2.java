@@ -34,12 +34,13 @@ import it.usna.shellyscan.controller.UsnaAction;
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice.LogMode;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
-import it.usna.shellyscan.model.device.g2.HttpLogsListener;
-import it.usna.shellyscan.view.util.Msg;
 import it.usna.shellyscan.view.util.UsnaTextPane;
 import it.usna.shellyscan.view.util.UtilMiscellaneous;
 import it.usna.swing.dialog.FindReplaceDialog;
 
+/**
+ * NOT USED
+ */
 public class DialogDeviceLogsG2 extends JDialog {
 	private static final long serialVersionUID = 1L;
 //	private final static Logger LOG = LoggerFactory.getLogger(DialogDeviceLogsG2.class);
@@ -170,43 +171,45 @@ public class DialogDeviceLogsG2 extends JDialog {
 	}
 	
 	private void activateLogConnection(AbstractG2Device device) {
-		try {
-			textArea.append(">>>> Connect\n", bluStyle);
-			readLogs = true;
-			device.connectHttpLogs(new HttpLogsListener() {
-				@Override
-				public void accept(String txt) {
-					int logLevel = comboBox.getSelectedIndex();
-					String[] logLine = txt.split("\\s", 3);
-					int level;
-					try {
-						level = Integer.parseInt(logLine[1]);
-					} catch(Exception e) {
-						level = Integer.MIN_VALUE;					
-					}
-					if(logLine.length < 3 || level == Integer.MIN_VALUE) {
-						textArea.append(txt.trim() + "\n");
-						textArea.setCaretPosition(textArea.getStyledDocument().getLength());
-					} else if(level <= logLevel) {
-						textArea.append(logLine[0] + "-L" + logLine[1] + ": " + logLine[2].trim() + "\n");
-						textArea.setCaretPosition(textArea.getStyledDocument().getLength());
-					}
-				}
-				
-				@Override
-				public void error(String txt) {
-					textArea.append(txt.trim() + "\n", bluStyle);
-				}
-				
-				@Override
-				public boolean requestNext() {
-					return readLogs;
-				}
-			});
-			btnActivateLog.setEnabled(false);
-			btnStopLog.setEnabled(true);
-		} catch (RuntimeException e) {
-			Msg.errorMsg(this, e);
-		}
+//		try {
+//			textArea.append(">>>> Connect\n", bluStyle);
+//			readLogs = true;
+//			device.connectHttpLogs(new HttpLogsListener() {
+//				@Override
+//				public void accept(String txt) {
+//					int logLevel = comboBox.getSelectedIndex();
+//					String[] logLine = txt.split("\\s", 3);
+//					int level;
+//					try {
+//						level = Integer.parseInt(logLine[1]);
+//					} catch(Exception e) {
+//						level = Integer.MIN_VALUE;					
+//					}
+//					if(logLine.length < 3 || level == Integer.MIN_VALUE) {
+//						textArea.append(txt.trim() + "\n");
+//						textArea.setCaretPosition(textArea.getStyledDocument().getLength());
+//					} else if(level <= logLevel) {
+//						textArea.append(logLine[0] + "-L" + logLine[1] + ": " + logLine[2].trim() + "\n");
+//						textArea.setCaretPosition(textArea.getStyledDocument().getLength());
+//					}
+//				}
+//				
+//				@Override
+//				public void error(String txt) {
+//					textArea.append(txt.trim() + "\n", bluStyle);
+//				}
+//				
+//				@Override
+//				public boolean requestNext() {
+//					return readLogs;
+//				}
+//			});
+//			btnActivateLog.setEnabled(false);
+//			btnStopLog.setEnabled(true);
+//		} catch (RuntimeException e) {
+//			Msg.errorMsg(this, e);
+//		}
 	}
 }
+
+//[May 03 16:34:22.114] INFO:  test

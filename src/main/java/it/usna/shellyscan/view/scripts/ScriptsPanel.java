@@ -50,7 +50,6 @@ import it.usna.shellyscan.controller.UsnaToggleAction;
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.g2.modules.Script;
-import it.usna.shellyscan.view.DialogDeviceLogsG2;
 import it.usna.shellyscan.view.scripts.ide.ScriptFrame;
 import it.usna.shellyscan.view.util.Msg;
 import it.usna.swing.UsnaPopupMenu;
@@ -61,6 +60,7 @@ import it.usna.util.IOFile;
 public class ScriptsPanel extends JPanel {
 	private static final long serialVersionUID = 1L;
 	private final static Border BUTTON_BORDERS = BorderFactory.createEmptyBorder(0, 12, 0, 12);
+	private final static int COL_ENABLED = 1;
 	private final static int COL_RUN = 2;
 	private final ExTooltipTable table;
 	private final ArrayList<ScriptAndEditor> scripts = new ArrayList<>();
@@ -86,7 +86,8 @@ public class ScriptsPanel extends JPanel {
 			@Override
 			public boolean isCellEditable(final int row, final int column) {
 				final int mRow = table.convertRowIndexToModel(row);
-				return scripts.get(mRow).isEdited() == false;
+				final int mCol = table.convertColumnIndexToModel(column);
+				return mCol == COL_ENABLED || scripts.get(mRow).isEdited() == false;
 			}
 
 			@Override
@@ -189,10 +190,10 @@ public class ScriptsPanel extends JPanel {
 		}));
 		operationsPanel.add(btnUpload);
 
-		final JButton logsBtn = new JButton(new UsnaAction(this, "btnLogs", e -> {
-			new DialogDeviceLogsG2(owner, devicesModel, modelIndex, AbstractG2Device.LOG_WARN);
-		}));
-		operationsPanel.add(logsBtn);
+//		final JButton logsBtn = new JButton(new UsnaAction(this, "btnLogs", e -> {
+//			new DialogDeviceLogsG2(owner, devicesModel, modelIndex, AbstractG2Device.LOG_WARN);
+//		}));
+//		operationsPanel.add(logsBtn);
 
 		final UsnaAction editAction = new UsnaAction(this, "edit2", e -> {
 			try {
@@ -225,7 +226,6 @@ public class ScriptsPanel extends JPanel {
 				}
 			}
 		};
-		;
 		table.addMouseListener(tablePopup.getMouseListener());
 
 		// Fill

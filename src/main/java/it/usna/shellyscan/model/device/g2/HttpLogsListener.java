@@ -2,7 +2,9 @@ package it.usna.shellyscan.model.device.g2;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
+/**
+ * NOT USED
+ */
 public interface HttpLogsListener {
 	final static Logger LOG = LoggerFactory.getLogger(HttpLogsListener.class);
 

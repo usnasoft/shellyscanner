@@ -19,6 +19,9 @@ import java.io.InputStreamReader;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
+import java.time.Duration;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
@@ -47,12 +50,20 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.DocumentFilter;
 
+import org.eclipse.jetty.websocket.api.Callback;
+import org.eclipse.jetty.websocket.api.Session;
+import org.eclipse.jetty.websocket.api.StatusCode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.fasterxml.jackson.databind.JsonNode;
+
 import it.usna.shellyscan.Main;
 import it.usna.shellyscan.controller.UsnaAction;
 import it.usna.shellyscan.controller.UsnaToggleAction;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice.LogMode;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
-import it.usna.shellyscan.model.device.g2.HttpLogsListener;
+import it.usna.shellyscan.model.device.g2.WebSocketDeviceListener;
 import it.usna.shellyscan.model.device.g2.modules.Script;
 import it.usna.shellyscan.view.MainView;
 import it.usna.shellyscan.view.scripts.DialogDeviceScripts;
@@ -69,6 +80,7 @@ import it.usna.util.IOFile;
  */
 public class ScriptFrame extends JFrame {
 	private static final long serialVersionUID = 1L;
+	private final static Logger LOG = LoggerFactory.getLogger(ScriptFrame.class);
 	public final static String RUN_EVENT = "scriptIsRunning";
 	public final static String CLOSE_EVENT = "scriptEditorColose";
 
@@ -84,7 +96,6 @@ public class ScriptFrame extends JFrame {
 	private Action redoAction;
 	private Action findAction;
 	private Action gotoAction;
-	private Action commentAction;
 
 	private File path = null;
 	
@@ -96,17 +107,18 @@ public class ScriptFrame extends JFrame {
 	private boolean darkMode = ScannerProperties.get().getBoolProperty(ScannerProperties.PROP_IDE_DARK);
 	private final AbstractG2Device device;
 	private boolean logWasActive;
-	private boolean readLogs;
+	private Future<Session> wsSession;
+//	private boolean readLogs;
+	
+	private final int scriptId;
 	
 	public ScriptFrame(ScriptsPanel originatingPanel, AbstractG2Device device, Script script) throws IOException {
 		super(script.getName());
 		setIconImage(Main.ICON);
 		setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 		
+		this.scriptId = script.getId();
 		logWasActive = device.getDebugMode() == LogMode.SOCKET;
-		if(logWasActive == false) {
-			device.setDebugMode(LogMode.SOCKET, true);
-		}
 		
 		this.device = device;
 		JSplitPane splitPane = new JSplitPane();
@@ -133,8 +145,9 @@ public class ScriptFrame extends JFrame {
 	private ScriptFrame() throws IOException { // test & design contructor
 		super("test");
 		this.device = null;
+		this.scriptId = 0;
 		setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-
+	
 		JSplitPane splitPane = new JSplitPane();
 		splitPane.setOneTouchExpandable(true);
 		splitPane.setOrientation(JSplitPane.VERTICAL_SPLIT);
@@ -157,7 +170,13 @@ public class ScriptFrame extends JFrame {
 	@Override
 	public void dispose() {
 		firePropertyChange(CLOSE_EVENT, null, null);
-		readLogs = false;
+		if(wsSession != null) {
+			try {
+				wsSession.get().close(StatusCode.NORMAL, "bye", Callback.NOOP);
+			} catch (InterruptedException | ExecutionException e) {
+				LOG.error("webSocketClient.disconnect", e);
+			}
+		}
 		if(logWasActive == false) {
 			device.setDebugMode(LogMode.SOCKET, false);
 		}
@@ -207,7 +226,7 @@ public class ScriptFrame extends JFrame {
 		});
 		editor.mapAction(KeyStroke.getKeyStroke(KeyEvent.VK_F, MainView.SHORTCUT_KEY), findAction, "find_usna");
 		
-		commentAction = new UsnaAction(null, "btnCommentTooltip"/*, "/images/Comment24.png"*/, e -> {
+		Action commentAction = new UsnaAction(e -> {
 			editor.commentSelected();
 			editor.requestFocus();
 		});
@@ -420,7 +439,13 @@ public class ScriptFrame extends JFrame {
 			uploadAndRunAction.setEnabled(true);
 			uploadAction.setEnabled(true);
 			runStopAction.setSelected(false);
-			readLogs = false; // stop LogConnection
+			try {
+				if(wsSession != null && wsSession.get().isOpen()) {
+					wsSession.get().close(StatusCode.NORMAL, "bye", Callback.NOOP);
+				}
+			} catch (Exception e1) {
+				LOG.error("webSocketClient.disconnect", e1);
+			}
 		}
 	}
 	
@@ -443,7 +468,7 @@ public class ScriptFrame extends JFrame {
 		toolBar.setFloatable(false);
 		
 		Action erase = new UsnaAction(this, null, "/images/erase-9-16.png", e -> logsTextArea.setText("") );
-		toolBar.add(erase);
+		toolBar.add(erase).setBorder(BorderFactory.createEmptyBorder(1, 2, 0, 2));
 		
 		mainLogPanel.add(toolBar, BorderLayout.NORTH);
 		return mainLogPanel;
@@ -479,8 +504,6 @@ public class ScriptFrame extends JFrame {
 		toolBar.addSeparator();
 		toolBar.add(findAction);
 		toolBar.add(gotoAction);
-//		toolBar.addSeparator();
-//		toolBar.add(commentAction);
 		toolBar.add(Box.createHorizontalGlue());
 		toolBar.add(caretLabel);
 		toolBar.add(btnHelp);
@@ -489,33 +512,33 @@ public class ScriptFrame extends JFrame {
 	
 	private void activateLogConnection() {
 		try {
-			readLogs = true;
-			device.connectHttpLogs(new HttpLogsListener() {
-				@Override
-				public void accept(String txt) {
-					String[] logLine = txt.split("\\s", 3);
-					int level;
-					try {
-						level = Integer.parseInt(logLine[1]);
-					} catch(Exception e) {
-						level = Integer.MIN_VALUE;					
-					}
-					if(logLine.length < 3 || level == Integer.MIN_VALUE) {
-						logsTextArea.append(txt.trim() + "\n");
-						logsTextArea.setCaretPosition(logsTextArea.getText().length());
-					} else if(level <= /*logLevel*/0) {
-						logsTextArea.append(/*logLine[0] + "L" + logLine[1] + ": " +*/ logLine[2].trim() + "\n");
-						logsTextArea.setCaretPosition(logsTextArea.getText().length());
-					}
-				}
-				
-				@Override
-				public boolean requestNext() {
-					return readLogs;
-				}
-			});
-		} catch (RuntimeException e) {
-			Msg.errorMsg(this, e);
+			if(device.getDebugMode() == LogMode.SOCKET == false) {
+				device.setDebugMode(LogMode.SOCKET, true);
+			}
+			WebSocketDeviceListener wsListener = new LogWebSocketDeviceListener();
+			wsSession = device.connectWebSocketLogs(wsListener);
+			wsSession.get().setIdleTimeout(Duration.ofMinutes(30));
+		} catch(IOException | InterruptedException | ExecutionException e) {
+			LOG.error("webSocketClient.disconnect", e);
+		}
+	}
+	
+	public class LogWebSocketDeviceListener extends WebSocketDeviceListener {
+		public LogWebSocketDeviceListener() {
+			super(node -> node.path("level").intValue() == 2 && node.path("fd").asInt(100 + scriptId) == 100 + scriptId); // Info
+		}
+		
+		@Override
+		public void onWebSocketError(Throwable cause) {
+			if(cause instanceof java.nio.channels.ClosedChannelException == false) {
+				logsTextArea.append("Shelly Scanner error: " + cause.getMessage() + "\n");
+				LOG.debug("ws-error", cause);
+			}
+		}
+
+		@Override
+		public void onMessage(JsonNode msg) {
+			logsTextArea.append(msg.path("data").asText() + "\n");
 		}
 	}
 	

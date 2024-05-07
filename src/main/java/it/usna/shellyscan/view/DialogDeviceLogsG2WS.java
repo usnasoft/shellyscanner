@@ -44,6 +44,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 import it.usna.shellyscan.Main;
 import it.usna.shellyscan.model.Devices;
+import it.usna.shellyscan.model.device.ShellyAbstractDevice.LogMode;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.g2.WebSocketDeviceListener;
 import it.usna.shellyscan.view.util.Msg;
@@ -70,8 +71,10 @@ public class DialogDeviceLogsG2WS extends JDialog {
 		setTitle(UtilMiscellaneous.getExtendedHostName(device));
 		setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
 
-		logWasActive = device.getDebugMode() == AbstractG2Device.LogMode.SOCKET;
-		activateLog(device, true);
+		logWasActive = device.getDebugMode() == LogMode.SOCKET;
+		if(logWasActive == false) {
+			device.setDebugMode(LogMode.SOCKET, true);
+		}
 
 		JPanel buttonsPanel = new JPanel();
 		getContentPane().add(buttonsPanel, BorderLayout.SOUTH);
@@ -143,28 +146,35 @@ public class DialogDeviceLogsG2WS extends JDialog {
 			WebSocketDeviceListener wsListener = new LogWebSocketDeviceListener();
 			wsSession = device.connectWebSocketLogs(wsListener);
 			wsSession.get().setIdleTimeout(Duration.ofMinutes(30));
+			btnActivateLog.setEnabled(false);
 
 			btnActivateLog.addActionListener(event -> {
 				try {
 					setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 					if (wsSession.get().isOpen() == false) {
 						wsSession = device.connectWebSocketLogs(wsListener);
+						wsSession.get().setIdleTimeout(Duration.ofMinutes(30));
 					}
+					btnActivateLog.setEnabled(false);
+					btnStopLog.setEnabled(true);
 				} catch (Exception e1) {
 					LOG.error("webSocketClient.connect", e1);
 				} finally {
 					setCursor(Cursor.getDefaultCursor());
 				}
 			});
+			
+			btnActivateLog.doClick();
 
 			btnStopLog.addActionListener(event -> {
 				try {
 					setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 					try {
 						if (wsSession.get().isOpen()) {
-//							wsSession.get().disconnect();
 							wsSession.get().close(StatusCode.NORMAL, "bye", Callback.NOOP);
 						}
+						btnActivateLog.setEnabled(true);
+						btnStopLog.setEnabled(false);
 					} catch (/*IOException |*/ InterruptedException | ExecutionException e1) {
 						LOG.error("webSocketClient.close", e1);
 					}
@@ -193,7 +203,9 @@ public class DialogDeviceLogsG2WS extends JDialog {
 
 				@Override
 				public void windowClosed(WindowEvent e) {
-					activateLog(device, logWasActive);
+					if(logWasActive == false) {
+						device.setDebugMode(LogMode.SOCKET, false);
+					}
 				}
 			});
 
@@ -206,12 +218,6 @@ public class DialogDeviceLogsG2WS extends JDialog {
 		}
 	}
 
-	private static void activateLog(AbstractG2Device device, boolean active) {
-//		if (device.getDebugMode() != AbstractG2Device.LogMode.SOCKET) {
-			device.postCommand("Sys.SetConfig", "{\"config\": {\"debug\":{\"websocket\":{\"enable\": " + (active ? "true" : "false") + "}}}");
-//		}
-	}
-	
 	public class LogWebSocketDeviceListener extends WebSocketDeviceListener {
 		@Override
 		public void onWebSocketOpen(Session session) {

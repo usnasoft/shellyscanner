@@ -50,7 +50,7 @@ public class DialogDeviceScripts extends JDialog {
 
 			getContentPane().add(tabs, BorderLayout.CENTER);
 
-			setSize(600, 360);
+			setSize(550, 360);
 			setLocationRelativeTo(owner);
 			setVisible(true);
 		} catch (IOException e) {

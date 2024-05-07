@@ -7,6 +7,7 @@ import java.net.InetAddress;
 import java.net.SocketTimeoutException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
@@ -26,9 +27,9 @@ import org.eclipse.jetty.client.DigestAuthentication;
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.StringRequestContent;
 import org.eclipse.jetty.http.HttpStatus;
-import org.eclipse.jetty.io.Content;
 import org.eclipse.jetty.websocket.api.Callback;
 import org.eclipse.jetty.websocket.api.Session;
+import org.eclipse.jetty.websocket.client.JettyUpgradeListener;
 import org.eclipse.jetty.websocket.client.WebSocketClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -291,44 +292,44 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 		return wsClient.connect(listener, URI.create("ws://" + address.getHostAddress() + ":" + port + "/debug/log"));
 	}
 
-	public void connectHttpLogs(HttpLogsListener listener) {
-		httpClient.newRequest("http://" + address.getHostAddress() + ":" + port + "/debug/log").timeout(360, TimeUnit.MINUTES)
-		.onResponseContentSource(((response, contentSource) -> {
-			// The function (as a Runnable) that reads the response content.
-			Runnable demander = new Runnable()  {
-				byte[] buf = new byte[512];
-				@Override
-				public void run() {
-					while (listener.requestNext()) {
-						Content.Chunk chunk = contentSource.read();
-						// No chunk of content, demand again and return.
-						if (chunk == null)  {
-							contentSource.demand(this); 
-							return;
-						}
-						if (Content.Chunk.isFailure(chunk)) {
-							listener.error("Unexpected terminal failure: " + chunk.getFailure().getMessage());
-							return;
-						}
-						// A normal chunk of content.
-						int size = chunk.remaining();
-						if(size > buf.length) {
-							buf = new byte[size + 64];
-						}
-						chunk.get(buf, 0, size);
-						listener.accept(new String(buf, 0, size));
-						// Loop around to read another response chunk.
-					}
-					response.abort(new RuntimeException("bye"));
-				}
-			};
-			demander.run(); // Initiate the reads.
-		}))
-		.send(result -> {
-			LOG.trace("httpLogs onComplete");
-			listener.closed();
-		});
-	}
+//	public void connectHttpLogs(HttpLogsListener listener) {
+//		httpClient.newRequest("http://" + address.getHostAddress() + ":" + port + "/debug/log").timeout(360, TimeUnit.MINUTES)
+//		.onResponseContentSource(((response, contentSource) -> {
+//			// The function (as a Runnable) that reads the response content.
+//			Runnable demander = new Runnable()  {
+//				byte[] buf = new byte[512];
+//				@Override
+//				public void run() {
+//					while (listener.requestNext()) {
+//						Content.Chunk chunk = contentSource.read();
+//						// No chunk of content, demand again and return.
+//						if (chunk == null)  {
+//							contentSource.demand(this); 
+//							return;
+//						}
+//						if (Content.Chunk.isFailure(chunk)) {
+//							listener.error("Unexpected terminal failure: " + chunk.getFailure().getMessage());
+//							return;
+//						}
+//						// A normal chunk of content.
+//						int size = chunk.remaining();
+//						if(size > buf.length) {
+//							buf = new byte[size + 64];
+//						}
+//						chunk.get(buf, 0, size);
+//						listener.accept(new String(buf, 0, size));
+//						// Loop around to read another response chunk.
+//					}
+//					response.abort(new RuntimeException("bye"));
+//				}
+//			};
+//			demander.run(); // Initiate the reads.
+//		}))
+//		.send(result -> {
+//			LOG.trace("httpLogs onComplete");
+//			listener.closed();
+//		});
+//	}
 
 	@Override
 	public boolean backup(final File file) throws IOException {
@@ -503,7 +504,9 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 					WIFIManagerG2 wm = new WIFIManagerG2(this, Network.PRIMARY, true);
 					errors.add(wm.restore(config.at("/wifi/sta"), userPref.get(Restore.RESTORE_WI_FI1)));
 				}
-				if((userPref.containsKey(Restore.RESTORE_WI_FI_AP) || config.at("/wifi/ap/is_open").asBoolean() || config.at("/wifi/ap/enable").asBoolean() == false) && currentConnection != Network.AP) {
+				
+				JsonNode apNode = config.at("/wifi/ap"); // wall display -> null (?)
+				if(apNode != null && ((userPref.containsKey(Restore.RESTORE_WI_FI_AP) || apNode.path("is_open").asBoolean() || apNode.path("enable").asBoolean() == false) && currentConnection != Network.AP)) {
 					TimeUnit.MILLISECONDS.sleep(delay);
 					errors.add(WIFIManagerG2.restoreAP_roam(this, config.get("wifi"), userPref.get(Restore.RESTORE_WI_FI_AP)));
 				}
@@ -578,4 +581,46 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 	
 	/** device specific */
 	protected abstract void restore(Map<String, JsonNode> backupJsons, List<String> errors) throws IOException, InterruptedException;
+	
+	/* experimental */
+	public Future<Session> connectWebSocketLogs2(WebSocketDeviceListener listener) throws IOException, InterruptedException, ExecutionException {
+		//return wsClient.connect(listener, URI.create("ws://" + address.getHostAddress() + ":" + port + "/debug/log"));
+		//		ClientUpgradeRequest upgrade = new ClientUpgradeRequest();
+		try {
+			String nonce = (System.currentTimeMillis() / 1000) + "";
+			String cnonce = "ss" + nonce;
+			System.out.println(nonce);
+
+			String response = LoginManagerG2.getResponse(nonce, cnonce, hostname, "1234");
+
+			CompletableFuture<Session> s = wsClient.connect(listener, URI.create("ws://192.168.1.10/debug/log?" +
+					"auth.auth_type=digest&" +
+					"auth.nonce="+ nonce + "&" +
+					"auth.nc=1&" +
+					"auth.realm=shellyplus2pm-485519a2bb1c" +
+					"&auth.algorithm=SHA-256&" +
+					"auth.username=admin&" +
+					"auth.cnonce=xdaChipkEtz61jum&" +
+					"auth.response=" + response),
+
+					/*upgrade*/null, new JettyUpgradeListener() {
+				@Override
+				public void onHandshakeRequest(org.eclipse.jetty.client.Request request) {
+					System.out.println(request);
+				}
+				@Override
+				public void onHandshakeResponse(org.eclipse.jetty.client.Request request, org.eclipse.jetty.client.Response response) {
+					System.out.println(request);
+					System.out.println(response.getHeaders().getField("WWW-Authenticate").getValueList());
+				}
+
+
+			}); // this also do upgrade
+			return s;
+		} catch (NoSuchAlgorithmException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null;
+		}
+	}
 } // 477 - 474 - 525 - 568
