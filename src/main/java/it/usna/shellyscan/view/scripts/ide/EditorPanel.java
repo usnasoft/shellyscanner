@@ -18,6 +18,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultHighlighter;
 import javax.swing.text.Element;
+import javax.swing.text.Highlighter;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
@@ -40,8 +41,6 @@ public class EditorPanel extends SyntaxEditor {
 	private final static Font AUTOCOMPLETE_FONT = new Font(Font.MONOSPACED, Font.PLAIN, 12);
 	private final static Logger LOG = LoggerFactory.getLogger(EditorPanel.class);
 	
-	private final static String RESERVED_ST_NAME = "usna_reserved";
-	
 	private final String[] reservedWords = new String[] {
 			"abstract", "arguments", "await*", "boolean", "break", "byte", "case", "catch",
 			"char", "class", "const*", "continue", "debugger", "default", "delete", "do",
@@ -58,7 +57,7 @@ public class EditorPanel extends SyntaxEditor {
 	
 	private final String[] othersForAutocomplete = new String[] {"print(", "console.log("};
 	
-	private DefaultHighlighter.DefaultHighlightPainter hilighter;
+	private DefaultHighlighter.DefaultHighlightPainter highlighterPainter;
 	private HighlightCouple highlightCouple;
 	
 	EditorPanel(String initText) {
@@ -71,7 +70,7 @@ public class EditorPanel extends SyntaxEditor {
 		
 		Style styleOperators = addStyle("usna_operator", null);
 		Style styleStr = addStyle("usna_string", null);
-		Style styleReserved = addStyle(RESERVED_ST_NAME, null);
+		Style styleReserved = addStyle("usna_reserved", null);
 		Style styleImplemented = addStyle("usna_implemented", null);
 		Style styleShelly = addStyle("usna_shellyReserved", null);
 		if(darkMode) {
@@ -84,7 +83,7 @@ public class EditorPanel extends SyntaxEditor {
 			StyleConstants.setForeground(styleImplemented, new Color(255, 153, 255));
 			StyleConstants.setForeground(styleShelly, new Color(190, 65, 201));
 			
-			hilighter = new DefaultHighlighter.DefaultHighlightPainter(Color.GRAY);
+			highlighterPainter = new DefaultHighlighter.DefaultHighlightPainter(Color.GRAY);
 		} else {
 			StyleConstants.setForeground(styleOperators, new Color(150, 0, 0));
 			StyleConstants.setForeground(styleStr, new Color(0, 120, 0));
@@ -92,7 +91,7 @@ public class EditorPanel extends SyntaxEditor {
 			StyleConstants.setForeground(styleImplemented, new Color(153, 0, 153));
 			StyleConstants.setForeground(styleShelly, new Color(102, 0, 204));
 			
-			hilighter = new DefaultHighlighter.DefaultHighlightPainter(Color.ORANGE);
+			highlighterPainter = new DefaultHighlighter.DefaultHighlightPainter(Color.ORANGE);
 		}
 
 		Style styleComment = addStyle("usna_comment", null);
@@ -120,9 +119,12 @@ public class EditorPanel extends SyntaxEditor {
 		StyleConstants.setItalic(styleShelly, true);
 		addSyntaxRule(new SyntaxEditor.DelimitedKeywords(shellyWords, styleShelly));
 		
-		// hilighter
+		// Highlighter
 		addCaretListener(e -> {
-			getHighlighter().removeAllHighlights(); // todo
+			if(highlightCouple != null) {
+				highlightCouple.remove(getHighlighter());
+				highlightCouple = null;
+			}
 			SwingUtilities.invokeLater(() -> {
 				try {
 					int pos = e.getDot() - 1;
@@ -158,14 +160,13 @@ public class EditorPanel extends SyntaxEditor {
 	}
 	
 	private void highlightCorrespondingClose(int pos, String start, String end) throws BadLocationException {
-		getHighlighter().addHighlight(pos, pos + 1, hilighter);
 		int count = 0;
 		int docLength = doc.getLength();
 		for(int i = pos + 1; i < docLength; i++) {
 			String c = doc.getText(i, 1);
 			if(c.equals(end) && getCharacterStyleName(i).equals("usna_brachets")) {
 				if(count == 0) {
-					getHighlighter().addHighlight(i, i + 1, hilighter);
+					highlightCouple = new HighlightCouple(getHighlighter().addHighlight(pos, pos + 1, highlighterPainter), getHighlighter().addHighlight(i, i + 1, highlighterPainter));
 					break;
 				} else {
 					count--;
@@ -177,13 +178,12 @@ public class EditorPanel extends SyntaxEditor {
 	}
 	
 	private void highlightCorrespondingOpen(int pos, String start, String end) throws BadLocationException {
-		getHighlighter().addHighlight(pos, pos + 1, hilighter);
 		int count = 0;
 		for(int i = pos - 1; i >= 0; i--) {
 			String c = doc.getText(i, 1);
 			if(c.equals(start) && getCharacterStyleName(i).equals("usna_brachets")) {
 				if(count == 0) {
-					getHighlighter().addHighlight(i, i + 1, hilighter);
+					highlightCouple = new HighlightCouple(getHighlighter().addHighlight(pos, pos + 1, highlighterPainter), getHighlighter().addHighlight(i, i + 1, highlighterPainter));
 					break;
 				} else {
 					count--;
@@ -540,16 +540,18 @@ public class EditorPanel extends SyntaxEditor {
 					if(txt.charAt(pos) == '{' && getCharacterStyleName(pos).equals("usna_brachets")) {
 						bracketCount++;
 					} else if(txt.charAt(pos) == '}' && getCharacterStyleName(pos).equals("usna_brachets")) {
-						bracketCount--;
-						if(bracketCount == 0) {
+						if(--bracketCount == 0) {
 							function = false;
 						}
 					}
-				} else if(functionMatcher.region(pos, length).lookingAt() && getCharacterStyleName(pos).equals(RESERVED_ST_NAME)) {
+				} else if(functionMatcher.region(pos, length).lookingAt() && getCharacterStyleName(pos).equals("usna_reserved")) {
 					function = true;
 				} else if(txt.charAt(pos) == '=' && getCharacterStyleName(pos).equals("usna_operator")) {
 					String w = findPreviousWord(txt, pos);
-					System.out.println(w);
+//					System.out.println(w);
+					if(w.startsWith(token)) {
+						found.add(w); // todo: ignoring "let"
+					}
 				}
 			}
 		} catch (BadLocationException e) {
@@ -571,7 +573,7 @@ public class EditorPanel extends SyntaxEditor {
 		return w;
 	}
 	
-	// scapes: global, function, let
+	//// scopes: global, function, let
 
 	@Override
 	// StyleConstants.setBackground(style, Color.BLACK);
@@ -583,5 +585,10 @@ public class EditorPanel extends SyntaxEditor {
 		super.paintComponent(g);
 	}
 	
-	record HighlightCouple(Object a1, Object a2) {}
+	private record HighlightCouple(Object tag1, Object tag2) {
+		public void remove(Highlighter h) {
+			h.removeHighlight(tag1);
+			h.removeHighlight(tag2);
+		}
+	}
 }
