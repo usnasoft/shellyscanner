@@ -40,6 +40,8 @@ public class EditorPanel extends SyntaxEditor {
 	private final static Font AUTOCOMPLETE_FONT = new Font(Font.MONOSPACED, Font.PLAIN, 12);
 	private final static Logger LOG = LoggerFactory.getLogger(EditorPanel.class);
 	
+	private final static String RESERVED_ST_NAME = "usna_reserved";
+	
 	private final String[] reservedWords = new String[] {
 			"abstract", "arguments", "await*", "boolean", "break", "byte", "case", "catch",
 			"char", "class", "const*", "continue", "debugger", "default", "delete", "do",
@@ -57,6 +59,7 @@ public class EditorPanel extends SyntaxEditor {
 	private final String[] othersForAutocomplete = new String[] {"print(", "console.log("};
 	
 	private DefaultHighlighter.DefaultHighlightPainter hilighter;
+	private HighlightCouple highlightCouple;
 	
 	EditorPanel(String initText) {
 		super(baseStyle());
@@ -68,7 +71,7 @@ public class EditorPanel extends SyntaxEditor {
 		
 		Style styleOperators = addStyle("usna_operator", null);
 		Style styleStr = addStyle("usna_string", null);
-		Style styleReserved = addStyle("usna_reserved", null);
+		Style styleReserved = addStyle(RESERVED_ST_NAME, null);
 		Style styleImplemented = addStyle("usna_implemented", null);
 		Style styleShelly = addStyle("usna_shellyReserved", null);
 		if(darkMode) {
@@ -119,7 +122,7 @@ public class EditorPanel extends SyntaxEditor {
 		
 		// hilighter
 		addCaretListener(e -> {
-			getHighlighter().removeAllHighlights();
+			getHighlighter().removeAllHighlights(); // todo
 			SwingUtilities.invokeLater(() -> {
 				try {
 					int pos = e.getDot() - 1;
@@ -466,7 +469,7 @@ public class EditorPanel extends SyntaxEditor {
 					addAutocompleteCandidate(implementedWords, tokenStr, found);
 					addAutocompleteCandidate(othersForAutocomplete, tokenStr, found);
 					findFunction(tokenStr, found);
-//					findVariables(tokenStr, found);
+					findVariables(tokenStr, found);
 //					System.out.println(found);
 					if(found.size() == 1) {
 						replace(i + 1, pos - i - 1, found.get(0));
@@ -527,11 +530,25 @@ public class EditorPanel extends SyntaxEditor {
 	
 	private void findVariables(String token, ArrayList<String> found) {
 		try {
+			boolean function = false;
+			int bracketCount = 0;
 			int length = doc.getLength();
 			String txt = doc.getText(0, length);
+			Matcher functionMatcher = FUNCTIONS.matcher(txt);
 			for(int pos = 0; pos < length; pos++) {
-				if(txt.charAt(pos) == '=' && getCharacterStyleName(pos).equals("usna_operator")) {
-					String w = findWord(txt, pos);
+				if(function) {
+					if(txt.charAt(pos) == '{' && getCharacterStyleName(pos).equals("usna_brachets")) {
+						bracketCount++;
+					} else if(txt.charAt(pos) == '}' && getCharacterStyleName(pos).equals("usna_brachets")) {
+						bracketCount--;
+						if(bracketCount == 0) {
+							function = false;
+						}
+					}
+				} else if(functionMatcher.region(pos, length).lookingAt() && getCharacterStyleName(pos).equals(RESERVED_ST_NAME)) {
+					function = true;
+				} else if(txt.charAt(pos) == '=' && getCharacterStyleName(pos).equals("usna_operator")) {
+					String w = findPreviousWord(txt, pos);
 					System.out.println(w);
 				}
 			}
@@ -540,7 +557,7 @@ public class EditorPanel extends SyntaxEditor {
 		}
 	}
 	
-	private String findWord(String txt, int pos) {
+	private String findPreviousWord(String txt, int pos) {
 		String w = "";
 		while(--pos >= 0 && getCharacterStyleName(pos).equals("default")) {
 			if(Character.isWhitespace(txt.charAt(pos))) {
@@ -565,4 +582,6 @@ public class EditorPanel extends SyntaxEditor {
 		}
 		super.paintComponent(g);
 	}
+	
+	record HighlightCouple(Object a1, Object a2) {}
 }
