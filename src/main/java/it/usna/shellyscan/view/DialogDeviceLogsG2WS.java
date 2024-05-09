@@ -52,10 +52,6 @@ import it.usna.shellyscan.view.util.UsnaTextPane;
 import it.usna.shellyscan.view.util.UtilMiscellaneous;
 import it.usna.swing.dialog.FindReplaceDialog;
 
-/**
- * This class is not used since web socket logs don't work in case of restricted login is enabled.
- * The error is mine, on jetty or on shelly FW ... I will try to understand and check on components updates
- */
 public class DialogDeviceLogsG2WS extends JDialog {
 	private static final long serialVersionUID = 1L;
 	private final static Logger LOG = LoggerFactory.getLogger(DialogDeviceLogsG2WS.class);
@@ -213,8 +209,7 @@ public class DialogDeviceLogsG2WS extends JDialog {
 			setLocationRelativeTo(owner);
 			setVisible(true);
 		} catch (Exception e) {
-//			LOG.error("webSocketClient.start", e); // Msg.errorMsg(...) do log
-			Msg.errorMsg(owner, e);
+			Msg.errorMsg(owner, e); // Msg.errorMsg(...) do log
 		}
 	}
 
