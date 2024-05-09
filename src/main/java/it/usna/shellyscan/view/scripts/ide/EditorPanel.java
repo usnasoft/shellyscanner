@@ -10,11 +10,14 @@ import java.util.regex.Pattern;
 
 import javax.swing.Action;
 import javax.swing.BorderFactory;
+import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
+import javax.swing.event.MenuKeyEvent;
+import javax.swing.event.MenuKeyListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultHighlighter;
 import javax.swing.text.Element;
@@ -40,6 +43,9 @@ public class EditorPanel extends SyntaxEditor {
 	private final static int MIN_AUTOCOMPLETE = 2;
 	private final static Font AUTOCOMPLETE_FONT = new Font(Font.MONOSPACED, Font.PLAIN, 12);
 	private final static Logger LOG = LoggerFactory.getLogger(EditorPanel.class);
+	
+	private final static ImageIcon FUNCTON_ICON = new ImageIcon(EditorPanel.class.getResource("/images/function_12.png"));
+	private final static ImageIcon VAR_ICON = new ImageIcon(EditorPanel.class.getResource("/images/var_12.png"));
 	
 	private final String[] reservedWords = new String[] {
 			"abstract", "arguments", "await*", "boolean", "break", "byte", "case", "catch",
@@ -457,7 +463,8 @@ public class EditorPanel extends SyntaxEditor {
 				StringBuilder token = new StringBuilder();
 				int i = pos - 1;
 				String c;
-				for(; i >= 0 && (c = doc.getText(i, 1)).matches("[\\s.,;()\\[\\]{}]") == false && "default".equals(getCharacterStyleName(i)); i--) {
+				String style;
+				for(; i >= 0 && (c = doc.getText(i, 1)).matches("[\\s.,;()\\[\\]{}]") == false && ("default".equals(style = getCharacterStyleName(i)) || "usna_reserved".equals(style)); i--) {
 					token.insert(0, c);
 				}
 
@@ -468,16 +475,18 @@ public class EditorPanel extends SyntaxEditor {
 					addAutocompleteCandidate(shellyWords, tokenStr, found);
 					addAutocompleteCandidate(implementedWords, tokenStr, found);
 					addAutocompleteCandidate(othersForAutocomplete, tokenStr, found);
-					findFunction(tokenStr, found);
-					findVariables(tokenStr, found);
-//					System.out.println(found);
+					ArrayList<String> funct = findFunctions(tokenStr);
+					found.addAll(funct);
+					ArrayList<String> vars = findVariables(tokenStr);
+					found.addAll(vars);
 					if(found.size() == 1) {
 						replace(i + 1, pos - i - 1, found.get(0));
-					} else {
+					} else if(found.size() > 1) {
 						found.sort(String::compareToIgnoreCase);
 						final int start = i;
 						JPopupMenu popup = new JPopupMenu();
-						found.stream().map(t -> new JMenuItem(t)).forEach(m -> {
+						found.forEach(t -> {
+							JMenuItem m = new JMenuItem(t);
 							if(darkMode) {
 								m.setOpaque(true);
 								m.setBackground(new Color(2, 50, 100));
@@ -492,11 +501,32 @@ public class EditorPanel extends SyntaxEditor {
 									LOG.error("autocomplete", e);
 								}
 							});
+							if(funct.contains(t)) {
+								m.setIcon(FUNCTON_ICON);
+							} else if(vars.contains(t)) {
+								m.setIcon(VAR_ICON);
+							}
 							popup.add(m);
 						});
 						popup.setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));
 						Rectangle2D r = modelToView2D(pos);
 						popup.show(this, (int)r.getX() + 2, (int)r.getMaxY() - 4);
+						popup.addMenuKeyListener(new MenuKeyListener() {
+							@Override
+							public void menuKeyTyped(MenuKeyEvent e) {
+								popup.setVisible(false);
+								char c;
+								if(Character.isISOControl(c = e.getKeyChar()) == false) {
+									replaceSelection(String.valueOf(c));
+								}
+							}
+							
+							@Override
+							public void menuKeyReleased(MenuKeyEvent e) {}
+							
+							@Override
+							public void menuKeyPressed(MenuKeyEvent e) {}
+						});
 					}
 				}
 			} catch (BadLocationException e) {
@@ -513,7 +543,8 @@ public class EditorPanel extends SyntaxEditor {
 		}
 	}
 
-	private void findFunction(String token, ArrayList<String> found) {
+	private ArrayList<String> findFunctions(String token) {
+		ArrayList<String> found = new ArrayList<>();
 		try {
 			String txt = doc.getText(0, doc.getLength());
 			Matcher functionMatcher = FUNCTIONS.matcher(txt);
@@ -526,9 +557,11 @@ public class EditorPanel extends SyntaxEditor {
 		} catch (BadLocationException e) {
 			LOG.error("findFunction", e);
 		}
+		return found;
 	}
 	
-	private void findVariables(String token, ArrayList<String> found) {
+	private ArrayList<String> findVariables(String token) {
+		ArrayList<String> found = new ArrayList<>();
 		try {
 			boolean function = false;
 			int bracketCount = 0;
@@ -547,7 +580,7 @@ public class EditorPanel extends SyntaxEditor {
 				} else if(functionMatcher.region(pos, length).lookingAt() && getCharacterStyleName(pos).equals("usna_reserved")) {
 					function = true;
 				} else if(txt.charAt(pos) == '=' && getCharacterStyleName(pos).equals("usna_operator")) {
-					String w = findPreviousWord(txt, pos);
+					String w = findPreviousPlainWord(txt, pos);
 //					System.out.println(w);
 					if(w.startsWith(token)) {
 						found.add(w); // todo: ignoring "let"
@@ -557,26 +590,27 @@ public class EditorPanel extends SyntaxEditor {
 		} catch (BadLocationException e) {
 			LOG.error("findFunction", e);
 		}
+		return found;
 	}
 	
-	private String findPreviousWord(String txt, int pos) {
-		String w = "";
+	private String findPreviousPlainWord(String txt, int pos) {
+		StringBuilder w = new StringBuilder();
 		while(--pos >= 0 && getCharacterStyleName(pos).equals("default")) {
-			if(Character.isWhitespace(txt.charAt(pos))) {
+			char c;
+			if(Character.isWhitespace(c = txt.charAt(pos))) {
 				if(w.length() > 0) {
 					break;
 				}
 			} else {
-				w = txt.charAt(pos) + w;
+				w.insert(0, c);
 			}
 		}
-		return w;
+		return w.toString();
 	}
 	
 	//// scopes: global, function, let
 
 	@Override
-	// StyleConstants.setBackground(style, Color.BLACK);
 	protected void paintComponent(Graphics g) {
 		if (darkMode) {
 			g.setColor(Color.BLACK);
