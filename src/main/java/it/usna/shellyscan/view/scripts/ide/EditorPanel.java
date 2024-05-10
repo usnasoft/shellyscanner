@@ -5,6 +5,7 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -38,7 +39,8 @@ public class EditorPanel extends SyntaxEditor {
 	private final static Pattern COMMENTED_LINE = Pattern.compile("(^)(\\s*)//", Pattern.MULTILINE);
 	private final static Pattern LINE_TAB = Pattern.compile("(^)\\t", Pattern.MULTILINE);
 	private final static Pattern SPACES = Pattern.compile("[ \t]*");
-	private final static Pattern FUNCTIONS = Pattern.compile("function\\s*(\\S*\\s*\\()");
+	private final static Pattern FUNCTION = Pattern.compile("function\\s+(\\S*\\s*\\()");
+	private final static Pattern FUNCTION_ARGS = Pattern.compile("\\s*[\\S&&[^\\(]]+\\((.*)\\)");
 	private final boolean darkMode = ScannerProperties.get().getBoolProperty(ScannerProperties.PROP_IDE_DARK);
 	private final static int MIN_AUTOCOMPLETE = 2;
 	private final static Font AUTOCOMPLETE_FONT = new Font(Font.MONOSPACED, Font.PLAIN, 12);
@@ -126,30 +128,32 @@ public class EditorPanel extends SyntaxEditor {
 		addSyntaxRule(new SyntaxEditor.DelimitedKeywords(shellyWords, styleShelly));
 		
 		// Highlighter {}[]()
-		addCaretListener(e -> {
+		addCaretListener(event -> {
 			if(highlightCouple != null) {
 				highlightCouple.remove(getHighlighter());
 				highlightCouple = null;
 			}
 			SwingUtilities.invokeLater(() -> {
-				try {
-					int pos = e.getDot() - 1;
-					char c = doc.getText(pos, 1).charAt(0);
-					if(c == '(' && getCharacterStyleName(pos).equals("usna_brachets")) {
-						highlightCorrespondingClose(pos, "(", ")");
-					} else if(c == ')' && getCharacterStyleName(pos).equals("usna_brachets")) {
-						highlightCorrespondingOpen(pos, "(", ")");
-					} else if(c == '[' && getCharacterStyleName(pos).equals("usna_brachets")) {
-						highlightCorrespondingClose(pos, "[", "]");
-					} else if(c == ']' && getCharacterStyleName(pos).equals("usna_brachets")) {
-						highlightCorrespondingOpen(pos, "[", "]");
-					} else if(c == '{' && getCharacterStyleName(pos).equals("usna_brachets")) {
-						highlightCorrespondingClose(pos, "{", "}");
-					} else if(c == '}' && getCharacterStyleName(pos).equals("usna_brachets")) {
-						highlightCorrespondingOpen(pos, "{", "}");
+				int pos = event.getDot() - 1;
+				if(pos >= 0) {
+					try {
+						char c = doc.getText(pos, 1).charAt(0);
+						if(c == '(' && getCharacterStyleName(pos).equals("usna_brachets")) {
+							highlightCorrespondingClose(pos, "(", ")");
+						} else if(c == ')' && getCharacterStyleName(pos).equals("usna_brachets")) {
+							highlightCorrespondingOpen(pos, "(", ")");
+						} else if(c == '[' && getCharacterStyleName(pos).equals("usna_brachets")) {
+							highlightCorrespondingClose(pos, "[", "]");
+						} else if(c == ']' && getCharacterStyleName(pos).equals("usna_brachets")) {
+							highlightCorrespondingOpen(pos, "[", "]");
+						} else if(c == '{' && getCharacterStyleName(pos).equals("usna_brachets")) {
+							highlightCorrespondingClose(pos, "{", "}");
+						} else if(c == '}' && getCharacterStyleName(pos).equals("usna_brachets")) {
+							highlightCorrespondingOpen(pos, "{", "}");
+						}
+					} catch (BadLocationException e) {
+						LOG.error("CaretListener", e);
 					}
-				} catch (BadLocationException e1) {
-					LOG.error("CaretListener", e);
 				}
 			});
 		});
@@ -475,9 +479,9 @@ public class EditorPanel extends SyntaxEditor {
 					addAutocompleteCandidate(shellyWords, lowercaseToken, found);
 					addAutocompleteCandidate(implementedWords, lowercaseToken, found);
 					addAutocompleteCandidate(othersForAutocomplete, lowercaseToken, found);
-					ArrayList<String> funct = findFunctions(txt, lowercaseToken);
+					HashSet<String> funct = findFunctions(txt, lowercaseToken);
 					found.addAll(funct);
-					ArrayList<String> vars = findVariables(txt, lowercaseToken);
+					HashSet<String> vars = findVariables(txt, lowercaseToken, pos, 0, doc.getLength());
 					found.addAll(vars);
 					if(found.size() == 1) {
 						replace(i + 1, pos - i - 1, found.get(0));
@@ -543,10 +547,9 @@ public class EditorPanel extends SyntaxEditor {
 		}
 	}
 
-	private ArrayList<String> findFunctions(String txt, String token) {
-		ArrayList<String> found = new ArrayList<>();
-		
-		Matcher functionMatcher = FUNCTIONS.matcher(txt);
+	private HashSet<String> findFunctions(String txt, String token) {
+		final HashSet<String> found = new HashSet<>();
+		Matcher functionMatcher = FUNCTION.matcher(txt);
 		while(functionMatcher.find()) {
 			String fName = functionMatcher.group(1);
 			if(fName.toLowerCase().startsWith(token) && getCharacterStyleName(functionMatcher.start(1)).equals("default")) {
@@ -556,23 +559,44 @@ public class EditorPanel extends SyntaxEditor {
 		return found;
 	}
 	
-	private ArrayList<String> findVariables(String txt, String token) {
-		ArrayList<String> found = new ArrayList<>();
+	private HashSet<String> findVariables(String txt, String token, int caretPos, int start, int end) {
+		final HashSet<String> found = new HashSet<>();
 		boolean function = false;
 		int bracketCount = 0;
 		int length = doc.getLength();
-		Matcher functionMatcher = FUNCTIONS.matcher(txt);
-		for(int pos = 0; pos < length; pos++) {
+		Matcher functionMatcher = FUNCTION.matcher(txt);
+		Matcher functionArgsMatcher = FUNCTION_ARGS.matcher(txt);
+
+		int lastFunctionPos = Integer.MAX_VALUE;
+		for(int pos = start; pos < end; pos++) {
 			if(function) {
 				if(txt.charAt(pos) == '{' && getCharacterStyleName(pos).equals("usna_brachets")) {
 					bracketCount++;
-				} else if(txt.charAt(pos) == '}' && getCharacterStyleName(pos).equals("usna_brachets")) {
-					if(--bracketCount == 0) {
+				} else if((txt.charAt(pos) == '}' && getCharacterStyleName(pos).equals("usna_brachets") && --bracketCount == 0) || pos == end - 1) {
+//					if(--bracketCount == 0) {
 						function = false;
-					}
+						if(pos >= caretPos && lastFunctionPos <= caretPos) { // to cursore fine documento
+							found.addAll(findVariables(txt, token, caretPos, lastFunctionPos, pos));
+							
+							if(functionArgsMatcher.find(lastFunctionPos)) { // parameters
+								int defPos;
+								for(String p: functionArgsMatcher.group(1).split(",")) {
+									if((defPos = p.indexOf('=')) > 0) {
+										p = p.substring(0, defPos).trim(); // function myFunction(x, y = 10)
+									} else {
+										p = p.replace("...", "").trim(); //function myFunction(x, y) - function sum(...args) {
+									}
+									if(p.toLowerCase().startsWith(token)) {
+										found.add(p);
+									}
+								}
+							}
+						}
+//					}
 				}
 			} else if(functionMatcher.region(pos, length).lookingAt() && getCharacterStyleName(pos).equals("usna_reserved")) {
 				function = true;
+				lastFunctionPos = pos + 8; //" function" -> 8
 			} else if(txt.charAt(pos) == '=' && getCharacterStyleName(pos).equals("usna_operator")) {
 				String w = findPreviousPlainWord(txt, pos);
 				//					System.out.println(w);
