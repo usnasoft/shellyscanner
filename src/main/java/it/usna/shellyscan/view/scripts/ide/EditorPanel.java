@@ -573,26 +573,24 @@ public class EditorPanel extends SyntaxEditor {
 				if(txt.charAt(pos) == '{' && getCharacterStyleName(pos).equals("usna_brachets")) {
 					bracketCount++;
 				} else if((txt.charAt(pos) == '}' && getCharacterStyleName(pos).equals("usna_brachets") && --bracketCount == 0) || pos == end - 1) {
-//					if(--bracketCount == 0) {
-						function = false;
-						if(pos >= caretPos && lastFunctionPos <= caretPos) { // to cursore fine documento
-							found.addAll(findVariables(txt, token, caretPos, lastFunctionPos, pos));
-							
-							if(functionArgsMatcher.find(lastFunctionPos)) { // parameters
-								int defPos;
-								for(String p: functionArgsMatcher.group(1).split(",")) {
-									if((defPos = p.indexOf('=')) > 0) {
-										p = p.substring(0, defPos).trim(); // function myFunction(x, y = 10)
-									} else {
-										p = p.replace("...", "").trim(); //function myFunction(x, y) - function sum(...args) {
-									}
-									if(p.toLowerCase().startsWith(token)) {
-										found.add(p);
-									}
+					function = false;
+					if(pos + 1 >= caretPos && lastFunctionPos <= caretPos) {
+						found.addAll(findVariables(txt, token, caretPos, lastFunctionPos, pos));
+
+						if(functionArgsMatcher.find(lastFunctionPos)) { // parameters
+							int defPos;
+							for(String par: functionArgsMatcher.group(1).split(",")) {
+								if((defPos = par.indexOf('=')) > 0) {
+									par = par.substring(0, defPos).trim(); // function myFunction(x, y = 10)
+								} else {
+									par = par.replace("...", "").trim(); // function myFunction(x, y) - function sum(...args) {
+								}
+								if(par.toLowerCase().startsWith(token)) {
+									found.add(par);
 								}
 							}
 						}
-//					}
+					}
 				}
 			} else if(functionMatcher.region(pos, length).lookingAt() && getCharacterStyleName(pos).equals("usna_reserved")) {
 				function = true;

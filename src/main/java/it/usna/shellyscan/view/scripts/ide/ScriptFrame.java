@@ -102,13 +102,12 @@ public class ScriptFrame extends JFrame {
 	private EditorPanel editor;
 	private JLabel caretLabel;
 
-	private /*UsnaTextPane*/JTextArea logsTextArea = /*new UsnaTextPane()*/ new JTextArea();
+	private JTextArea logsTextArea = new JTextArea();
 	
 	private boolean darkMode = ScannerProperties.get().getBoolProperty(ScannerProperties.PROP_IDE_DARK);
 	private final AbstractG2Device device;
 	private boolean logWasActive;
 	private Future<Session> wsSession;
-//	private boolean readLogs;
 	
 	private final int scriptId;
 	
@@ -118,7 +117,7 @@ public class ScriptFrame extends JFrame {
 		setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 		
 		this.scriptId = script.getId();
-		logWasActive = device.getDebugMode() == LogMode.SOCKET;
+		logWasActive = (device.getDebugMode() == LogMode.SOCKET);
 		
 		this.device = device;
 		JSplitPane splitPane = new JSplitPane();
@@ -276,8 +275,7 @@ public class ScriptFrame extends JFrame {
 					}
 				}
 			}
-			
-			// todo - style normal
+
 			@Override
 			public void keyTyped(KeyEvent e) {
 				if(closeBracket && e.getKeyChar() == '(') {
@@ -572,3 +570,5 @@ public class ScriptFrame extends JFrame {
 		new ScriptFrame();
 	}
 }
+
+// todo? lower / upper
