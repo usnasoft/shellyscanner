@@ -243,13 +243,15 @@ https://coolors.co/
 // wall display basic support
 // uptime "up from" + settings mode
 // multi ip scan
-todo: jetty 12.0.5 -> 12.0.7 error on websocket
-todo: autocomplete funcions & variables
-todo: notes column (second field on notes?)
+// jetty 12.0.5 -> 12.0.7 error on websocket
+// autocomplete funcions & variables
 
 ---
 // TODO
-// NTP server addres
+// others: NTP server addres
+// others: cloud enable/disable
+// notes column (second field on notes?)
+// scroll orizzontale grafici
 // todo search ssid ?
 // chacklist reset button(5)/power
 // grafico energia
@@ -259,6 +261,5 @@ todo: notes column (second field on notes?)
 //todo Gen2 1.0.0 - Authentication in HTTP client, supporting basic and digest schemes. This enables the HTTP service and webhooks to access password-protected URLs.
 // https://docs.oracle.com/javase/8/docs/api/javax/security/auth/callback/CallbackHandler.html
 // gestione "reading": se stato online leggo uptime, se uptime diverso dal precedente memorizzo il timestamp else Quando il time stamp corrente - memorizzato > intervallo * 3 modifico lo stato - si, ma dove?
-// suspended process (dispositivi a batteria)
 // https://www.baeldung.com/java-authentication-authorization-service
 // InetAddressAndPort potrebbe essere dentro ogni device e mantenere direttamente i byte (sarebbe estremamente ottimizzato)

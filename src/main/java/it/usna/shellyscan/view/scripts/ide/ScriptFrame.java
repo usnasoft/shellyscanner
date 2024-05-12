@@ -232,6 +232,12 @@ public class ScriptFrame extends JFrame {
 		editor.mapAction(KeyStroke.getKeyStroke(KeyEvent.VK_7, InputEvent.CTRL_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK), commentAction, "comment_usna");
 		editor.mapAction(KeyStroke.getKeyStroke(KeyEvent.VK_SLASH, InputEvent.CTRL_DOWN_MASK), commentAction, "comment_usna");
 		
+		Action upperAction = new UsnaAction(e -> editor.replaceSelection(editor.getSelectedText().toUpperCase()));
+		editor.mapAction(KeyStroke.getKeyStroke(KeyEvent.VK_U, InputEvent.CTRL_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK), upperAction, "upper_usna");
+		
+		Action lowerAction = new UsnaAction(e -> editor.replaceSelection(editor.getSelectedText().toLowerCase()));
+		editor.mapAction(KeyStroke.getKeyStroke(KeyEvent.VK_L, InputEvent.CTRL_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK), lowerAction, "lower_usna");
+		
 		editor.mapAction(KeyStroke.getKeyStroke(KeyEvent.VK_I, InputEvent.CTRL_DOWN_MASK), new AbstractAction() {
 			private static final long serialVersionUID = 1L;
 
@@ -308,6 +314,8 @@ public class ScriptFrame extends JFrame {
 				String text = loadCodeFromFile(thisFile);
 				if(text != null) {
 					editor.setText(text);
+					editor.setCaretPosition(0);
+					editor.requestFocus();
 					setTitle(script.getName() + " - " + thisFile.getName());
 				}
 				path = fc.getSelectedFile().getParentFile();
@@ -548,14 +556,14 @@ public class ScriptFrame extends JFrame {
 					Object sName = JOptionPane.showInputDialog(this, LABELS.getString("scrSelectionMsg"), LABELS.getString("scrSelectionTitle"), JOptionPane.PLAIN_MESSAGE, null, scriptList, null);
 					if(sName != null) {
 						try (InputStream is = inZip.getInputStream(inZip.getEntry(sName + ".mjs"))) {
-							return new BufferedReader(new InputStreamReader(is)).lines().collect(Collectors.joining("\n"));
+							return new BufferedReader(new InputStreamReader(is)).lines().collect(Collectors.joining("\n")).replaceAll("\\r+\\n", "\n");
 						}
 					}
 				} else {
 					JOptionPane.showMessageDialog(this, LABELS.getString("scrNoneInZipFile"), LABELS.getString("btnUpload"), JOptionPane.INFORMATION_MESSAGE);
 				}
 			} catch (ZipException e1) { // no zip (backup) -> text file
-				return IOFile.readFile(in);
+				return IOFile.readFile(in).replaceAll("\\r+\\n", "\n");
 			}
 		} catch (/*IO*/Exception e1) {
 			Msg.errorMsg(this, e1);

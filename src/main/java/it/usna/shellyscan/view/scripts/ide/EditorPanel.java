@@ -479,10 +479,10 @@ public class EditorPanel extends SyntaxEditor {
 					addAutocompleteCandidate(shellyWords, lowercaseToken, found);
 					addAutocompleteCandidate(implementedWords, lowercaseToken, found);
 					addAutocompleteCandidate(othersForAutocomplete, lowercaseToken, found);
-					HashSet<String> funct = findFunctions(txt, lowercaseToken);
-					found.addAll(funct);
-					HashSet<String> vars = findVariables(txt, lowercaseToken, pos, 0, doc.getLength());
-					found.addAll(vars);
+					HashSet<String> functions = findFunctions(txt, lowercaseToken);
+					found.addAll(functions);
+					HashSet<String> variables = findVariables(txt, lowercaseToken, pos, 0, doc.getLength());
+					found.addAll(variables);
 					if(found.size() == 1) {
 						replace(i + 1, pos - i - 1, found.get(0));
 					} else if(found.size() > 1) {
@@ -505,9 +505,9 @@ public class EditorPanel extends SyntaxEditor {
 									LOG.error("autocomplete", e);
 								}
 							});
-							if(funct.contains(t)) {
+							if(functions.contains(t)) {
 								m.setIcon(FUNCTON_ICON);
-							} else if(vars.contains(t)) {
+							} else if(variables.contains(t)) {
 								m.setIcon(VAR_ICON);
 							}
 							popup.add(m);
@@ -572,7 +572,7 @@ public class EditorPanel extends SyntaxEditor {
 			if(function) {
 				if(txt.charAt(pos) == '{' && getCharacterStyleName(pos).equals("usna_brachets")) {
 					bracketCount++;
-				} else if((txt.charAt(pos) == '}' && getCharacterStyleName(pos).equals("usna_brachets") && --bracketCount == 0) || pos == end - 1) {
+				} else if((txt.charAt(pos) == '}' && getCharacterStyleName(pos).equals("usna_brachets") && --bracketCount == 0) || pos == end - 1) { // pos == end - 1 -> last, not yet closed
 					function = false;
 					if(pos + 1 >= caretPos && lastFunctionPos <= caretPos) {
 						found.addAll(findVariables(txt, token, caretPos, lastFunctionPos, pos));

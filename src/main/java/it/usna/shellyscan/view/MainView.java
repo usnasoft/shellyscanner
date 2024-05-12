@@ -91,7 +91,6 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 	private final static ImageIcon DEFERRED_ICON_FAIL = new ImageIcon(MainView.class.getResource("/images/deferred_list_fail.png"));
 	private final static ImageIcon DEFERRED_ICON_OK = new ImageIcon(MainView.class.getResource("/images/deferred_list_ok.png"));
 	private ListSelectionListener tableSelectionListener;
-//	private boolean browserSupported = Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE);
 	private AppProperties appProp;
 	private AppProperties temporaryProp = new AppProperties(); // normal view properties stored here on detailed view
 	private JLabel statusLabel = new JLabel();
@@ -195,7 +194,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 	private Action browseAction = new UsnaSelectedAction(this, devicesTable, "action_web_name", "action_web_tooltip", "/images/Computer16.png", "/images/Computer.png", i -> {
 		try {
 			Desktop.getDesktop().browse(URI.create("http://" + InetAddressAndPort.toString(model.get(i))));
-		} catch (IOException | UnsupportedOperationException e) {
+		} catch (IOException | UnsupportedOperationException e) { // browserSupported = Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE);
 			Msg.errorMsg(this, e);
 		}
 	});

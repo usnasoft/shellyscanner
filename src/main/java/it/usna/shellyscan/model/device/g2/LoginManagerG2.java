@@ -129,25 +129,25 @@ public class LoginManagerG2 implements LoginManager {
 	// (ha1: string, <user>:<realm>:<password> encoded in SHA256)
 	// (ha2: string, "dummy_method:dummy_uri" encoded in SHA256)
 	
-	public static String getResponse(String nonce, String cnonce, String realm, String pwd) throws NoSuchAlgorithmException {
-		String ha1 = sha256toHex("admin:" + realm + ":" + pwd);
-		String ha2 = sha256toHex("dummy_method:dummy_uri"); // const
-		String resp = ha1 + ":" + nonce + ":1:" + cnonce + ":auth:" + ha2;
-		return sha256toHex(resp);
-	}
-	
-	private static String sha256toHex(String in) throws NoSuchAlgorithmException {
-		MessageDigest digest = MessageDigest.getInstance("SHA-256");
-		byte[] hash = digest.digest(in.getBytes(StandardCharsets.UTF_8));
-		final StringBuilder hexString = new StringBuilder();
-        for (int i = 0; i < hash.length; i++) {
-            final String hex = Integer.toHexString(0xff & hash[i]);
-            if(hex.length() == 1) 
-              hexString.append('0');
-            hexString.append(hex);
-        }
-        return hexString.toString();
-	}
+//	public static String getResponse(String nonce, String cnonce, String realm, String pwd) throws NoSuchAlgorithmException {
+//		String ha1 = sha256toHex("admin:" + realm + ":" + pwd);
+//		String ha2 = sha256toHex("dummy_method:dummy_uri"); // const
+//		String resp = ha1 + ":" + nonce + ":1:" + cnonce + ":auth:" + ha2;
+//		return sha256toHex(resp);
+//	}
+//	
+//	private static String sha256toHex(String in) throws NoSuchAlgorithmException {
+//		MessageDigest digest = MessageDigest.getInstance("SHA-256");
+//		byte[] hash = digest.digest(in.getBytes(StandardCharsets.UTF_8));
+//		final StringBuilder hexString = new StringBuilder();
+//        for (int i = 0; i < hash.length; i++) {
+//            final String hex = Integer.toHexString(0xff & hash[i]);
+//            if(hex.length() == 1) 
+//              hexString.append('0');
+//            hexString.append(hex);
+//        }
+//        return hexString.toString();
+//	}
 	
 //	public static void main(String ...strings) throws NoSuchAlgorithmException {
 //		getResponse("1714902300", "shellyplus2pm-485519a2bb1c", "1234");

@@ -229,7 +229,7 @@ public class DialogDeviceLogsG2WS extends JDialog {
 			int logLevel = comboBox.getSelectedIndex();
 			int level = msg.get("level").asInt(0);
 			if (level <= logLevel) {
-				textArea.append(msg.get("ts").asLong() + " - L" + level + ": " + msg.get("data").asText().trim() + "\n");
+				textArea.append(msg.get("ts").asLong() + " - L" + level + " - fd" + msg.path("fd").asText() + ": " + msg.get("data").asText().trim() + "\n");
 			}
 			textArea.setCaretPosition(textArea.getStyledDocument().getLength());
 		}

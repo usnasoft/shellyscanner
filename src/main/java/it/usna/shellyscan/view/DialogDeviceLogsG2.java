@@ -50,7 +50,7 @@ public class DialogDeviceLogsG2 extends JDialog {
 	private JComboBox<String> comboBox = new JComboBox<>();
 	private JButton btnActivateLog;
 	private JButton btnStopLog;
-	private boolean readLogs;
+//	private boolean readLogs;
 
 	public DialogDeviceLogsG2(final Window owner, Devices devicesModel, int modelIndex, int initLlogLevel) {
 		super(owner, ModalityType.MODELESS);
@@ -138,7 +138,7 @@ public class DialogDeviceLogsG2 extends JDialog {
 		});
 
 		btnStopLog.addActionListener(event -> {
-			readLogs = false;
+//			readLogs = false;
 			btnActivateLog.setEnabled(true);
 			btnStopLog.setEnabled(false);
 			textArea.append(">>>> Pause\n", bluStyle);
@@ -158,7 +158,7 @@ public class DialogDeviceLogsG2 extends JDialog {
 
 			@Override
 			public void windowClosed(WindowEvent e) {
-				readLogs = false;
+//				readLogs = false;
 				if(logWasActive == false) {
 					device.setDebugMode(LogMode.SOCKET, false);
 				}

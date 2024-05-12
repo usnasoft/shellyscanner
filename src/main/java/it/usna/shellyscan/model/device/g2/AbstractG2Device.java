@@ -7,7 +7,6 @@ import java.net.InetAddress;
 import java.net.SocketTimeoutException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
@@ -29,7 +28,6 @@ import org.eclipse.jetty.client.StringRequestContent;
 import org.eclipse.jetty.http.HttpStatus;
 import org.eclipse.jetty.websocket.api.Callback;
 import org.eclipse.jetty.websocket.api.Session;
-import org.eclipse.jetty.websocket.client.JettyUpgradeListener;
 import org.eclipse.jetty.websocket.client.WebSocketClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,7 +57,7 @@ import it.usna.shellyscan.model.device.g2.modules.Webhooks;
  */
 public abstract class AbstractG2Device extends ShellyAbstractDevice {
 	public final static int LOG_VERBOSE = 4;
-	public final static int LOG_WARN = 1;
+//	public final static int LOG_WARN = 1;
 
 	private final static Logger LOG = LoggerFactory.getLogger(AbstractG2Device.class);
 	protected WebSocketClient wsClient;
@@ -583,44 +581,44 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 	protected abstract void restore(Map<String, JsonNode> backupJsons, List<String> errors) throws IOException, InterruptedException;
 	
 	/* experimental */
-	public Future<Session> connectWebSocketLogs2(WebSocketDeviceListener listener) throws IOException, InterruptedException, ExecutionException {
-		//return wsClient.connect(listener, URI.create("ws://" + address.getHostAddress() + ":" + port + "/debug/log"));
-		//		ClientUpgradeRequest upgrade = new ClientUpgradeRequest();
-		try {
-			String nonce = (System.currentTimeMillis() / 1000) + "";
-			String cnonce = "ss" + nonce;
-			System.out.println(nonce);
-
-			String response = LoginManagerG2.getResponse(nonce, cnonce, hostname, "1234");
-
-			CompletableFuture<Session> s = wsClient.connect(listener, URI.create("ws://192.168.1.10/debug/log?" +
-					"auth.auth_type=digest&" +
-					"auth.nonce="+ nonce + "&" +
-					"auth.nc=1&" +
-					"auth.realm=shellyplus2pm-485519a2bb1c" +
-					"&auth.algorithm=SHA-256&" +
-					"auth.username=admin&" +
-					"auth.cnonce=xdaChipkEtz61jum&" +
-					"auth.response=" + response),
-
-					/*upgrade*/null, new JettyUpgradeListener() {
-				@Override
-				public void onHandshakeRequest(org.eclipse.jetty.client.Request request) {
-					System.out.println(request);
-				}
-				@Override
-				public void onHandshakeResponse(org.eclipse.jetty.client.Request request, org.eclipse.jetty.client.Response response) {
-					System.out.println(request);
-					System.out.println(response.getHeaders().getField("WWW-Authenticate").getValueList());
-				}
-
-
-			}); // this also do upgrade
-			return s;
-		} catch (NoSuchAlgorithmException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			return null;
-		}
-	}
+//	public Future<Session> connectWebSocketLogs2(WebSocketDeviceListener listener) throws IOException, InterruptedException, ExecutionException {
+//		//return wsClient.connect(listener, URI.create("ws://" + address.getHostAddress() + ":" + port + "/debug/log"));
+//		//		ClientUpgradeRequest upgrade = new ClientUpgradeRequest();
+//		try {
+//			String nonce = (System.currentTimeMillis() / 1000) + "";
+//			String cnonce = "ss" + nonce;
+//			System.out.println(nonce);
+//
+//			String response = LoginManagerG2.getResponse(nonce, cnonce, hostname, "1234");
+//
+//			CompletableFuture<Session> s = wsClient.connect(listener, URI.create("ws://192.168.1.10/debug/log?" +
+//					"auth.auth_type=digest&" +
+//					"auth.nonce="+ nonce + "&" +
+//					"auth.nc=1&" +
+//					"auth.realm=shellyplus2pm-485519a2bb1c" +
+//					"&auth.algorithm=SHA-256&" +
+//					"auth.username=admin&" +
+//					"auth.cnonce=xdaChipkEtz61jum&" +
+//					"auth.response=" + response),
+//
+//					/*upgrade*/null, new JettyUpgradeListener() {
+//				@Override
+//				public void onHandshakeRequest(org.eclipse.jetty.client.Request request) {
+//					System.out.println(request);
+//				}
+//				@Override
+//				public void onHandshakeResponse(org.eclipse.jetty.client.Request request, org.eclipse.jetty.client.Response response) {
+//					System.out.println(request);
+//					System.out.println(response.getHeaders().getField("WWW-Authenticate").getValueList());
+//				}
+//
+//
+//			}); // this also do upgrade
+//			return s;
+//		} catch (NoSuchAlgorithmException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//			return null;
+//		}
+//	}
 } // 477 - 474 - 525 - 568

@@ -82,7 +82,7 @@ public class Script {
 
 	public String getCode() throws IOException {
 		try {
-			return device.getJSON("/rpc/Script.GetCode?id=" + id).get("data").asText();
+			return device.getJSON("/rpc/Script.GetCode?id=" + id).get("data").asText().replaceAll("\\r+\\n", "\n");
 		} catch(IOException e) {
 			if(e instanceof DeviceOfflineException) {
 				throw e;
@@ -95,7 +95,7 @@ public class Script {
 	public String putCode(String code) {
 		JsonStringEncoder encoder = JsonStringEncoder.getInstance();
 		for (int start = 0; start < code.length(); start += 1024) {
-			String seg = code.substring(start, Math.min(start + 1024, code.length()));
+			String seg = code.substring(start, Math.min(start + 1024, code.length())).replaceAll("\\r+\\n", "\n");
 			String append = (start > 0) ? ",\"append\":true" : "";
 			String res = device.postCommand("Script.PutCode", "{\"id\":" + id + append + ",\"code\":\"" + new String(encoder.quoteAsString(seg)) + "\"}");
 //			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
