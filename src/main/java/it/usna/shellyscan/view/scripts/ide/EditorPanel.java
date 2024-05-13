@@ -129,11 +129,11 @@ public class EditorPanel extends SyntaxEditor {
 		
 		// Highlighter {}[]()
 		addCaretListener(event -> {
-			if(highlightCouple != null) {
-				highlightCouple.remove(getHighlighter());
-				highlightCouple = null;
-			}
 			SwingUtilities.invokeLater(() -> {
+				if(highlightCouple != null) {
+					highlightCouple.remove(getHighlighter());
+					highlightCouple = null;
+				}
 				int pos = event.getDot() - 1;
 				if(pos >= 0) {
 					try {

@@ -26,6 +26,7 @@ import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.DevicesFactory;
 import it.usna.shellyscan.model.IPCollection;
 import it.usna.shellyscan.model.NonInteractiveDevices;
+import it.usna.shellyscan.view.DevicesTable;
 import it.usna.shellyscan.view.MainView;
 import it.usna.shellyscan.view.chart.MeasuresChart;
 import it.usna.shellyscan.view.util.Msg;
@@ -82,15 +83,24 @@ public class Main {
 			fullScan = true;
 		} else if(cli.hasEntry("-localscan", "-local") >= 0) {
 			fullScan = false;
-		} else if((cliIndex = cli.hasEntry("-ipscan", "-ip")) >= 0) {
+		} else if((cliIndex = cli.hasEntry("-ipscan", "-ipscan1", "-ip", "-ip1")) >= 0) {
 			try {
-				Matcher m = Pattern.compile(IP_SCAN_PAR_FORMAT).matcher(cli.getParameter(cliIndex));
+				final Pattern ipRangePattern = Pattern.compile(IP_SCAN_PAR_FORMAT);
+				Matcher m = ipRangePattern.matcher(cli.getParameter(cliIndex));
 				m.find();
-				final String baseIPPar = m.group(1);
+				String baseIPPar = m.group(1);
 				int firstIP = Integer.parseInt(m.group(2));
 				int lastIP = Integer.parseInt(m.group(3));
 				ipCollection = new IPCollection();
 				ipCollection.add(baseIPPar, firstIP, lastIP);
+				for(int i = 2; i < 10 && (cliIndex = cli.hasEntry("-ipscan" + i, "-ip" + i)) >= 0; i++) {
+					m = ipRangePattern.matcher(cli.getParameter(cliIndex));
+					m.find();
+					baseIPPar = m.group(1);
+					firstIP = Integer.parseInt(m.group(2));
+					lastIP = Integer.parseInt(m.group(3));
+					ipCollection.add(baseIPPar, firstIP, lastIP);
+				}
 			} catch (Exception e) {
 				System.err.println("Wrong parameter format; example: -ipscan 192.168.1.1-254");
 				System.exit(1);
@@ -187,8 +197,8 @@ public class Main {
 		
 		if(TAB_VERSION.equals(appProp.getProperty("TAB_VER")) == false) {
 			appProp.setProperty("TAB_VER", TAB_VERSION);
-			appProp.remove("TAB.COL_P");
-			appProp.remove("TAB_EXT.COL_P");
+			appProp.remove(DevicesTable.STORE_PREFIX + ".COL_P");
+			appProp.remove(DevicesTable.STORE_EXT_PREFIX + ".COL_P");
 		}
 		try {
 			final Devices model = new Devices();

@@ -248,6 +248,7 @@ https://coolors.co/
 
 ---
 // TODO
+// scripts saveAs
 // others: NTP server addres
 // others: cloud enable/disable
 // notes column (second field on notes?)

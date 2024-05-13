@@ -85,6 +85,7 @@ public class ScriptFrame extends JFrame {
 	public final static String CLOSE_EVENT = "scriptEditorColose";
 
 	private Action openAction;
+	private Action saveAction;
 	private Action saveAsAction;
 	private Action uploadAction;
 	private UsnaToggleAction runStopAction;
@@ -306,7 +307,7 @@ public class ScriptFrame extends JFrame {
 		});
 		
 		openAction = new UsnaAction(ScriptFrame.this, "dlgOpen", "/images/Open24.png", e -> {
-			final JFileChooser fc = new JFileChooser(path);
+			final JFileChooser fc = (path == null) ? new JFileChooser() : new JFileChooser(path.getParentFile());
 			fc.setFileFilter(new FileNameExtensionFilter(LABELS.getString("filetype_js_desc"), DialogDeviceScripts.FILE_EXTENSION));
 			fc.addChoosableFileFilter(new FileNameExtensionFilter(LABELS.getString("filetype_sbk_desc"), Main.BACKUP_FILE_EXT));
 			if(fc.showOpenDialog(ScriptFrame.this) == JFileChooser.APPROVE_OPTION) {
@@ -318,12 +319,12 @@ public class ScriptFrame extends JFrame {
 					editor.requestFocus();
 					setTitle(script.getName() + " - " + thisFile.getName());
 				}
-				path = fc.getSelectedFile().getParentFile();
+				path = fc.getSelectedFile();
 			}
 		});
 		
-		saveAsAction = new UsnaAction(ScriptFrame.this, "dlgSave", "/images/Save24.png", e -> {
-			final JFileChooser fc = new JFileChooser(path);
+		saveAsAction = new UsnaAction(ScriptFrame.this, "dlgSaveAs", "/images/SaveAs24.png", e -> {
+			final JFileChooser fc = (path == null) ? new JFileChooser() : new JFileChooser(path.getParentFile());
 			fc.setFileFilter(new FileNameExtensionFilter(LABELS.getString("filetype_js_desc"), DialogDeviceScripts.FILE_EXTENSION));
 			if(fc.showSaveDialog(ScriptFrame.this) == JFileChooser.APPROVE_OPTION) {
 				try {
@@ -334,9 +335,23 @@ public class ScriptFrame extends JFrame {
 				} catch (IOException e1) {
 					Msg.errorMsg(e1);
 				}
-				path = fc.getSelectedFile().getParentFile();
+				path = fc.getSelectedFile();
 			}
 		});
+		
+		saveAction = new UsnaAction(ScriptFrame.this, "dlgSave", "/images/Save24.png", e -> {
+			if(path != null) {
+				try {
+					IOFile.writeFile(path, editor.getText());
+					JOptionPane.showMessageDialog(ScriptFrame.this, LABELS.getString("msgFileSaved"), LABELS.getString("dlgScriptEditorTitle"), JOptionPane.INFORMATION_MESSAGE);
+				} catch (IOException e1) {
+					Msg.errorMsg(e1);
+				}
+			} else {
+				saveAsAction.actionPerformed(e);
+			}
+		});
+		editor.mapAction(KeyStroke.getKeyStroke(KeyEvent.VK_S, MainView.SHORTCUT_KEY), saveAction, "save_usna");
 
 		uploadAction = new UsnaAction(this, "btnUploadTooltip", "/images/Upload24.png", e -> {
 			if(editor.getText().isEmpty()) {
@@ -481,10 +496,10 @@ public class ScriptFrame extends JFrame {
 	}
 	
 	private JToolBar getToolBar() {
-		UsnaAction btnHelp = new UsnaAction(null, "helpBtnLabel", "/images/Question24.png", e -> {
+		UsnaAction btnHelp = new UsnaAction(null, "helpBtnTooltip", "/images/Question24.png", e -> {
 			String close = LABELS.getString("dlgClose");
 			if(JOptionPane.showOptionDialog(null, LABELS.getString("dlgScriptEditorHelp"), LABELS.getString("dlgScriptEditorTitle"),
-					JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null, new Object[] {close, LABELS.getString("lblManual")}, close) == 1 /*reboot*/) {
+					JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null, new Object[] {close, LABELS.getString("lblManual")}, close) == 1) {
 				try {
 					Desktop.getDesktop().browse(URI.create(LABELS.getString("dlgIDEManualUrl")));
 				} catch (IOException | UnsupportedOperationException ex) {
@@ -495,6 +510,7 @@ public class ScriptFrame extends JFrame {
 		
 		JToolBar toolBar = new JToolBar();
 		toolBar.add(openAction);
+		toolBar.add(saveAction);
 		toolBar.add(saveAsAction);
 		toolBar.add(uploadAction);
 		toolBar.addSeparator();
@@ -578,5 +594,3 @@ public class ScriptFrame extends JFrame {
 		new ScriptFrame();
 	}
 }
-
-// todo? lower / upper

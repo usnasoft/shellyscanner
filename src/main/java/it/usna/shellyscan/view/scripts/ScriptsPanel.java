@@ -60,6 +60,7 @@ import it.usna.util.IOFile;
 public class ScriptsPanel extends JPanel {
 	private static final long serialVersionUID = 1L;
 	private final static Border BUTTON_BORDERS = BorderFactory.createEmptyBorder(0, 12, 0, 12);
+	private final static int COL_NAME = 0;
 	private final static int COL_ENABLED = 1;
 	private final static int COL_RUN = 2;
 	private final ExTooltipTable table;
@@ -87,7 +88,7 @@ public class ScriptsPanel extends JPanel {
 			public boolean isCellEditable(final int row, final int column) {
 				final int mRow = table.convertRowIndexToModel(row);
 				final int mCol = table.convertColumnIndexToModel(column);
-				return mCol == COL_ENABLED || scripts.get(mRow).isEdited() == false;
+				return mCol == COL_ENABLED || scripts.get(mRow).hasOpenEditor() == false;
 			}
 
 			@Override
@@ -105,12 +106,12 @@ public class ScriptsPanel extends JPanel {
 					final int mCol = convertColumnIndexToModel(getEditingColumn());
 					final int mRow = convertRowIndexToModel(getEditingRow());
 					final Script sc = scripts.get(mRow).script;
-					if (mCol == 0) { // name
+					if (mCol == COL_NAME) {
 						String ret = sc.setName((String) getCellEditor().getCellEditorValue());
 						if (ret != null) {
 							Msg.errorMsg(ScriptsPanel.this, ret);
 						}
-					} else if (mCol == 1) { // enabled
+					} else if (mCol == COL_ENABLED) {
 						String ret = sc.setEnabled((Boolean) getCellEditor().getCellEditorValue());
 						if (ret != null) {
 							Msg.errorMsg(ScriptsPanel.this, ret);
@@ -190,11 +191,6 @@ public class ScriptsPanel extends JPanel {
 		}));
 		operationsPanel.add(btnUpload);
 
-//		final JButton logsBtn = new JButton(new UsnaAction(this, "btnLogs", e -> {
-//			new DialogDeviceLogsG2(owner, devicesModel, modelIndex, AbstractG2Device.LOG_WARN);
-//		}));
-//		operationsPanel.add(logsBtn);
-
 		final UsnaAction editAction = new UsnaAction(this, "edit2", e -> {
 			try {
 				final int mRow = table.convertRowIndexToModel(table.getSelectedRow());
@@ -228,15 +224,15 @@ public class ScriptsPanel extends JPanel {
 		};
 		table.addMouseListener(tablePopup.getMouseListener());
 
-		// Fill
-		for (JsonNode script : Script.list(device)) {
-			Script sc = new Script(device, script);
+		// Fill table
+		for (JsonNode scriptDesc : Script.list(device)) {
+			Script sc = new Script(device, scriptDesc);
 			scripts.add(new ScriptAndEditor(sc));
 			tModel.addRow(sc.getName(), sc.isEnabled(), sc.isRunning());
 		}
 		TableColumnModel columnModel = table.getColumnModel();
-		columnModel.getColumn(0).setPreferredWidth(3000);
-		columnModel.getColumn(1).setPreferredWidth(500);
+		columnModel.getColumn(COL_NAME).setPreferredWidth(3000);
+		columnModel.getColumn(COL_ENABLED).setPreferredWidth(500);
 		columnModel.getColumn(COL_RUN).setPreferredWidth(500);
 
 		ListSelectionListener l = e -> {
@@ -261,7 +257,6 @@ public class ScriptsPanel extends JPanel {
 						try (InputStream is = inZip.getInputStream(inZip.getEntry(sName + ".mjs"))) {
 							String code = new BufferedReader(new InputStreamReader(is)).lines().collect(Collectors.joining("\n"));
 							res = sc.putCode(code);
-							// res = sc.putCode(new InputStreamReader(is));
 						}
 					}
 				} else {
@@ -270,9 +265,6 @@ public class ScriptsPanel extends JPanel {
 			} catch (ZipException e1) { // no zip (backup) -> text file
 				String code = IOFile.readFile(in.toPath());
 				res = sc.putCode(code);
-				// try (Reader r = Files.newBufferedReader(in.toPath())) {
-				// res = sc.putCode(r);
-				// }
 			}
 			if (res != null) {
 				Msg.errorMsg(this, res);
@@ -303,7 +295,7 @@ public class ScriptsPanel extends JPanel {
 			} else {
 				panel.setBackground(Color.WHITE);
 			}
-			final boolean editing = scripts.get(table.convertRowIndexToModel(row)).isEdited();
+			final boolean editing = scripts.get(table.convertRowIndexToModel(row)).hasOpenEditor();
 			runningB.setBackground(editing ? Color.gray : Color.WHITE);
 			runningB.setIcon(value == Boolean.TRUE ? stopIcon : runIcon);
 			return panel;
@@ -366,7 +358,7 @@ public class ScriptsPanel extends JPanel {
 			this(script, new ArrayList<ScriptFrame>());
 		}
 
-		public boolean isEdited() {
+		public boolean hasOpenEditor() {
 			return editors.isEmpty() == false;
 		}
 	}

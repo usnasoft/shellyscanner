@@ -139,17 +139,6 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 			executor.schedule(() -> ghostsReconnect(), 45, TimeUnit.SECONDS);
 		}
 	}
-
-//	public void scannerInit(final byte[] ip, int first, final int last, int refreshInterval, int refreshTics) throws IOException {
-//		this.baseScanIP = ip;
-//		this.lowerIP = first;
-//		this.higherIP = last;
-//		this.refreshInterval = refreshInterval;
-//		this.refreshTics = refreshTics;
-//		LOG.debug("IP scan: {} {} {}", ip, first, last);
-//		scanByIP();
-//		fireEvent(EventType.READY);
-//	}
 	
 	public void scannerInit(final IPCollection ipCollection, int refreshInterval, int refreshTics) throws IOException {
 		this.ipCollection = ipCollection;
@@ -167,34 +156,7 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 	
 	public void setIPInterval(IPCollection coll) {
 		this.ipCollection = coll;
-//		this.lowerIP = lower;
-//		this.higherIP = higher;
 	}
-
-//	private void scanByIP() throws IOException {
-//		for(int dalay = 0, ip4 = lowerIP; ip4 <= higherIP; dalay +=4, ip4++) {
-//			baseScanIP[3] = (byte)ip4;
-//			final InetAddress addr = InetAddress.getByAddress(baseScanIP);
-//			executor.schedule(() -> {
-//				try {
-//					if(addr.isReachable(10_000)) {
-////						Thread.sleep(MULTI_QUERY_DELAY);
-//						JsonNode info = isShelly(addr, 80);
-//						if(info != null) {
-//							Thread.sleep(MULTI_QUERY_DELAY);
-//							create(addr, 80, info, addr.getHostAddress());
-//						}
-//					} else {
-//						LOG.trace("no ping {}", addr);
-//					}
-//				} catch (TimeoutException e) {
-//					LOG.trace("timeout {}", addr);
-//				} catch (IOException | InterruptedException e) {
-//					LOG.error("IP scan error {} {}", addr, e.toString());
-//				}
-//			}, dalay, TimeUnit.MILLISECONDS);
-//		}
-//	}
 	
 	private void scanByIP() throws IOException {
 		int dalay = 0;

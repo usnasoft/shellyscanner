@@ -46,17 +46,17 @@ public class DialogEditBulbRGB extends JDialog {
 	
 	private JSlider sliderBrightness;
 	private JSlider sliderTemp;
-	private JLabel labelBrightness = new JLabel(/*light.getBrightness() + ""*/);
-	private JLabel labelTemp = new JLabel(/*light.getTemp() + ""*/);
+	private JLabel labelBrightness = new JLabel();
+	private JLabel labelTemp = new JLabel();
 	
 	private JSlider sliderGain;
 	private JSlider sliderRed;
 	private JSlider sliderGreen;
 	private JSlider sliderBlue;
-	private JLabel labelGain = new JLabel(/*light.getBrightness() + ""*/);
-	private JLabel labelRed = new JLabel(/*light.getRed() + ""*/);
-	private JLabel labelGreen = new JLabel(/*light.getGreen() + ""*/);
-	private JLabel labelBlue = new JLabel(/*light.getBlue() + ""*/);
+	private JLabel labelGain = new JLabel();
+	private JLabel labelRed = new JLabel();
+	private JLabel labelGreen = new JLabel();
+	private JLabel labelBlue = new JLabel();
 	private final JPanel previewColorPanel = new JPanel();
 	private final JPanel previewWhitePanel = new JPanel();
 	private final static Logger LOG = LoggerFactory.getLogger(DialogEditBulbRGB.class);
@@ -181,7 +181,6 @@ public class DialogEditBulbRGB extends JDialog {
 		
 		sliderBrightness.addChangeListener(e -> {
 			if(sliderBrightness.getValueIsAdjusting() == false) {
-
 				try {
 					light.setBrightness(sliderBrightness.getValue());
 					adjust(light);
