@@ -60,10 +60,7 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 	private JmmDNS jd;
 	private Set<JmDNS> bjServices = new HashSet<>();
 
-//	private byte[] baseScanIP;
 	private IPCollection ipCollection = null;
-//	private int lowerIP;
-//	private int higherIP;
 
 	private final static String SERVICE_TYPE1 = "_http._tcp.local.";
 //	private final static String SERVICE_TYPE2 = "_shelly._tcp.local.";
@@ -164,7 +161,6 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 			executor.schedule(() -> {
 				try {
 					if(addr.isReachable(10_000)) {
-//						Thread.sleep(MULTI_QUERY_DELAY);
 						JsonNode info = isShelly(addr, 80);
 						if(info != null) {
 							Thread.sleep(MULTI_QUERY_DELAY);

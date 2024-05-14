@@ -23,11 +23,13 @@ public class IntegerTextFieldPanel extends JPanel {
 		upB = new JButton(itf.upAction());
 		upB.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 2));
 		upB.setContentAreaFilled(false);
+		upB.setFocusable(false);
 		add(upB);
 		
 		downB = new JButton(itf.downAction());
 		downB.setBorder(BorderFactory.createEmptyBorder(5, 2, 5, 5));
 		downB.setContentAreaFilled(false);
+		downB.setFocusable(false);
 		add(downB);
 	}
 
