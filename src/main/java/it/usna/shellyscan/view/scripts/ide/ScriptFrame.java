@@ -315,6 +315,7 @@ public class ScriptFrame extends JFrame {
 				String text = loadCodeFromFile(thisFile);
 				if(text != null) {
 					editor.setText(text);
+					editor.resetUndo();
 					editor.setCaretPosition(0);
 					editor.requestFocus();
 					setTitle(script.getName() + " - " + thisFile.getName());
@@ -396,29 +397,22 @@ public class ScriptFrame extends JFrame {
 		
 		gotoAction = new UsnaAction(null, "dlgScriptEditorGotoLineTitle", "/images/goto_line.png", e -> {
 			JPanel msg = new JPanel(new FlowLayout());
-			JTextField input = new JTextField(10);
+			JTextField input = new JTextField(8);
 			msg.add(new JLabel(LABELS.getString("dlgScriptEditorGotoLineLabel")));
 			msg.add(input);
 
 			DocumentFilter filter = new DocumentFilter() {
 				@Override
 				public void insertString(DocumentFilter.FilterBypass fb, int offset, String text, AttributeSet attr) throws BadLocationException {
-					StringBuilder buffer = new StringBuilder(text.length());
-					for (int i = 0; i < text.length(); i++) {
-						char ch = text.charAt(i);
-						if (Character.isDigit(ch)) {
-							buffer.append(ch);
-						}
-					}
-					super.insertString(fb, offset, buffer.toString(), attr);
+					super.insertString(fb, offset, text.replaceAll("\\D", ""), attr);
 				}
 
 				@Override
-				public void replace(DocumentFilter.FilterBypass fb, int offset, int length, String string, AttributeSet attr) throws BadLocationException {
+				public void replace(DocumentFilter.FilterBypass fb, int offset, int length, String text, AttributeSet attr) throws BadLocationException {
 					if (length > 0) {
 						fb.remove(offset, length);
 					}
-					insertString(fb, offset, string, attr);
+					insertString(fb, offset, text, attr);
 				}
 			};
 			((AbstractDocument)input.getDocument()).setDocumentFilter(filter);
@@ -442,11 +436,9 @@ public class ScriptFrame extends JFrame {
 		editor.mapAction(KeyStroke.getKeyStroke(KeyEvent.VK_G, MainView.SHORTCUT_KEY), gotoAction, "goto_usna");
 		
 		caretLabel = new JLabel(editor.getCaretRow() + " : " + editor.getCaretColumn());
-		editor.addCaretListener(e -> {
-			caretLabel.setText(editor.getCaretRow() + " : " + editor.getCaretColumn());
-		});
 		caretLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 8));
-		
+		editor.addCaretListener(e -> caretLabel.setText(editor.getCaretRow() + " : " + editor.getCaretColumn()));
+
 		return mainEditorPanel;
 	}
 	
@@ -541,7 +533,7 @@ public class ScriptFrame extends JFrame {
 			wsSession = device.connectWebSocketLogs(wsListener);
 			wsSession.get().setIdleTimeout(Duration.ofMinutes(30));
 		} catch(IOException | InterruptedException | ExecutionException e) {
-			LOG.error("webSocketClient.disconnect", e);
+			LOG.error("activateLogConnection", e);
 		}
 	}
 	

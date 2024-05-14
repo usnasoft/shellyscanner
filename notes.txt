@@ -238,17 +238,16 @@ https://coolors.co/
 // motion 2 improved restore (actions) and table output (motion on/off)
 
 1.0.6
-// IDE: tab - autoindent - autoclose - dark mode
+// IDE: tab - autoindent - autoclose - autocomplete - dark mode - matching brackets - block comments ...
 // app settings IDE
 // wall display basic support
 // uptime "up from" + settings mode
 // multi ip scan
-// jetty 12.0.5 -> 12.0.7 error on websocket
-// autocomplete funcions & variables
+// fix: jetty 12.0.5 -> 12.0.7 error on websocket
+// scripts saveAs
 
 ---
 // TODO
-// scripts saveAs
 // others: NTP server addres
 // others: cloud enable/disable
 // notes column (second field on notes?)

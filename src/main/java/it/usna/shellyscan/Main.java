@@ -83,7 +83,7 @@ public class Main {
 			fullScan = true;
 		} else if(cli.hasEntry("-localscan", "-local") >= 0) {
 			fullScan = false;
-		} else if((cliIndex = cli.hasEntry("-ipscan", "-ipscan1", "-ip", "-ip1")) >= 0) {
+		} else if((cliIndex = cli.hasEntry("-ipscan", "-ipscan0", "-ip", "-ip0")) >= 0) {
 			try {
 				final Pattern ipRangePattern = Pattern.compile(IP_SCAN_PAR_FORMAT);
 				Matcher m = ipRangePattern.matcher(cli.getParameter(cliIndex));
@@ -93,7 +93,7 @@ public class Main {
 				int lastIP = Integer.parseInt(m.group(3));
 				ipCollection = new IPCollection();
 				ipCollection.add(baseIPPar, firstIP, lastIP);
-				for(int i = 2; i < 10 && (cliIndex = cli.hasEntry("-ipscan" + i, "-ip" + i)) >= 0; i++) {
+				for(int i = 1; (cliIndex = cli.hasEntry("-ipscan" + i, "-ip" + i)) >= 0; i++) {
 					m = ipRangePattern.matcher(cli.getParameter(cliIndex));
 					m.find();
 					baseIPPar = m.group(1);

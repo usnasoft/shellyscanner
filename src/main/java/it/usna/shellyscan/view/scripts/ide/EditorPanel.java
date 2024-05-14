@@ -134,26 +134,39 @@ public class EditorPanel extends SyntaxEditor {
 					highlightCouple.remove(getHighlighter());
 					highlightCouple = null;
 				}
-				int pos = event.getDot() - 1;
-				if(pos >= 0) {
-					try {
-						char c = doc.getText(pos, 1).charAt(0);
-						if(c == '(' && getCharacterStyleName(pos).equals("usna_brachets")) {
-							highlightCorrespondingClose(pos, "(", ")");
-						} else if(c == ')' && getCharacterStyleName(pos).equals("usna_brachets")) {
-							highlightCorrespondingOpen(pos, "(", ")");
-						} else if(c == '[' && getCharacterStyleName(pos).equals("usna_brachets")) {
-							highlightCorrespondingClose(pos, "[", "]");
-						} else if(c == ']' && getCharacterStyleName(pos).equals("usna_brachets")) {
-							highlightCorrespondingOpen(pos, "[", "]");
-						} else if(c == '{' && getCharacterStyleName(pos).equals("usna_brachets")) {
-							highlightCorrespondingClose(pos, "{", "}");
-						} else if(c == '}' && getCharacterStyleName(pos).equals("usna_brachets")) {
-							highlightCorrespondingOpen(pos, "{", "}");
+				int pos = event.getDot();
+				try {
+					char c = doc.getText(pos, 1).charAt(0);
+					if(c == '(' && getCharacterStyleName(pos).equals("usna_brachets")) {
+						highlightCorrespondingClose(pos, "(", ")");
+					} else if(c == ')' && getCharacterStyleName(pos).equals("usna_brachets")) {
+						highlightCorrespondingOpen(pos, "(", ")");
+					} else if(c == '[' && getCharacterStyleName(pos).equals("usna_brachets")) {
+						highlightCorrespondingClose(pos, "[", "]");
+					} else if(c == ']' && getCharacterStyleName(pos).equals("usna_brachets")) {
+						highlightCorrespondingOpen(pos, "[", "]");
+					} else if(c == '{' && getCharacterStyleName(pos).equals("usna_brachets")) {
+						highlightCorrespondingClose(pos, "{", "}");
+					} else if(c == '}' && getCharacterStyleName(pos).equals("usna_brachets")) {
+						highlightCorrespondingOpen(pos, "{", "}");
+					} else if(pos > 0) {
+						c = doc.getText(pos - 1, 1).charAt(0);
+						if(c == '(' && getCharacterStyleName(pos - 1).equals("usna_brachets")) {
+							highlightCorrespondingClose(pos - 1, "(", ")");
+						} else if(c == ')' && getCharacterStyleName(pos - 1).equals("usna_brachets")) {
+							highlightCorrespondingOpen(pos - 1, "(", ")");
+						} else if(c == '[' && getCharacterStyleName(pos - 1).equals("usna_brachets")) {
+							highlightCorrespondingClose(pos - 1, "[", "]");
+						} else if(c == ']' && getCharacterStyleName(pos - 1).equals("usna_brachets")) {
+							highlightCorrespondingOpen(pos - 1, "[", "]");
+						} else if(c == '{' && getCharacterStyleName(pos - 1).equals("usna_brachets")) {
+							highlightCorrespondingClose(pos - 1, "{", "}");
+						} else if(c == '}' && getCharacterStyleName(pos - 1).equals("usna_brachets")) {
+							highlightCorrespondingOpen(pos - 1, "{", "}");
 						}
-					} catch (BadLocationException e) {
-						LOG.error("CaretListener", e);
 					}
+				} catch (BadLocationException e) {
+					LOG.error("CaretListener", e);
 				}
 			});
 		});

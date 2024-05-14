@@ -203,19 +203,22 @@ public class DialogNetworkIPScanSelection extends JDialog {
 	
 	public void store(Devices model) {
 		IPCollection ipCollecton = new IPCollection();
+		boolean change = false;
 		for(int i = 0; i < 10; i++) {
 			String ip = baseIP[i].getText();
 			if(ip.isEmpty() == false) {
-				appProp.setProperty(ScannerProperties.BASE_SCAN_IP + i, ip);
-				appProp.setProperty(ScannerProperties.FIRST_SCAN_IP + i, firstIP[i].getText());
-				appProp.setProperty(ScannerProperties.LAST_SCAN_IP + i, lastIP[i].getText());
+				change |= appProp.changeProperty(ScannerProperties.BASE_SCAN_IP + i, ip);
+				change |= appProp.changeProperty(ScannerProperties.FIRST_SCAN_IP + i, firstIP[i].getText());
+				change |= appProp.changeProperty(ScannerProperties.LAST_SCAN_IP + i, lastIP[i].getText());
 				ipCollecton.add(ip, appProp.getIntProperty(ScannerProperties.FIRST_SCAN_IP + i), appProp.getIntProperty(ScannerProperties.LAST_SCAN_IP + i));
-				model.setIPInterval(ipCollecton);
 			} else {
-				appProp.remove(ScannerProperties.BASE_SCAN_IP + i);
-				appProp.remove(ScannerProperties.FIRST_SCAN_IP + i);
-				appProp.remove(ScannerProperties.LAST_SCAN_IP + i);
+				change |= appProp.remove(ScannerProperties.BASE_SCAN_IP + i) != null;
+				change |= appProp.remove(ScannerProperties.FIRST_SCAN_IP + i) != null;
+				change |= appProp.remove(ScannerProperties.LAST_SCAN_IP + i) != null;
 			}
+		}
+		if(change) {
+			model.setIPInterval(ipCollecton);
 		}
 	}
 
