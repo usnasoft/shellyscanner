@@ -99,6 +99,7 @@ public class ScriptFrame extends JFrame {
 	private Action gotoAction;
 
 	private File path = null;
+	private boolean canOverwriteFile = false;
 	
 	private EditorPanel editor;
 	private JLabel caretLabel;
@@ -320,7 +321,7 @@ public class ScriptFrame extends JFrame {
 					editor.requestFocus();
 					setTitle(script.getName() + " - " + thisFile.getName());
 				}
-				path = fc.getSelectedFile();
+				path = thisFile;
 			}
 		});
 		
@@ -333,6 +334,7 @@ public class ScriptFrame extends JFrame {
 					IOFile.writeFile(toSave, editor.getText());
 					JOptionPane.showMessageDialog(ScriptFrame.this, LABELS.getString("msgFileSaved"), LABELS.getString("dlgScriptEditorTitle"), JOptionPane.INFORMATION_MESSAGE);
 					setTitle(script.getName() + " - " + toSave.getFileName());
+					canOverwriteFile = true;
 				} catch (IOException e1) {
 					Msg.errorMsg(e1);
 				}
@@ -341,7 +343,7 @@ public class ScriptFrame extends JFrame {
 		});
 		
 		saveAction = new UsnaAction(ScriptFrame.this, "dlgSave", "/images/Save24.png", e -> {
-			if(path != null) {
+			if(canOverwriteFile) {
 				try {
 					IOFile.writeFile(path, editor.getText());
 					JOptionPane.showMessageDialog(ScriptFrame.this, LABELS.getString("msgFileSaved"), LABELS.getString("dlgScriptEditorTitle"), JOptionPane.INFORMATION_MESSAGE);
@@ -490,7 +492,7 @@ public class ScriptFrame extends JFrame {
 	private JToolBar getToolBar() {
 		UsnaAction btnHelp = new UsnaAction(null, "helpBtnTooltip", "/images/Question24.png", e -> {
 			String close = LABELS.getString("dlgClose");
-			if(JOptionPane.showOptionDialog(null, LABELS.getString("dlgScriptEditorHelp"), LABELS.getString("dlgScriptEditorTitle"),
+			if(JOptionPane.showOptionDialog(this, LABELS.getString("dlgScriptEditorHelp"), LABELS.getString("dlgScriptEditorTitle"),
 					JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null, new Object[] {close, LABELS.getString("lblManual")}, close) == 1) {
 				try {
 					Desktop.getDesktop().browse(URI.create(LABELS.getString("dlgIDEManualUrl")));
@@ -563,6 +565,7 @@ public class ScriptFrame extends JFrame {
 				if(scriptList.length > 0) {
 					Object sName = JOptionPane.showInputDialog(this, LABELS.getString("scrSelectionMsg"), LABELS.getString("scrSelectionTitle"), JOptionPane.PLAIN_MESSAGE, null, scriptList, null);
 					if(sName != null) {
+						canOverwriteFile = false;
 						try (InputStream is = inZip.getInputStream(inZip.getEntry(sName + ".mjs"))) {
 							return new BufferedReader(new InputStreamReader(is)).lines().collect(Collectors.joining("\n")).replaceAll("\\r+\\n", "\n");
 						}
@@ -570,10 +573,13 @@ public class ScriptFrame extends JFrame {
 				} else {
 					JOptionPane.showMessageDialog(this, LABELS.getString("scrNoneInZipFile"), LABELS.getString("btnUpload"), JOptionPane.INFORMATION_MESSAGE);
 				}
+				
 			} catch (ZipException e1) { // no zip (backup) -> text file
+				canOverwriteFile = true;
 				return IOFile.readFile(in).replaceAll("\\r+\\n", "\n");
 			}
 		} catch (/*IO*/Exception e1) {
+			canOverwriteFile = false;
 			Msg.errorMsg(this, e1);
 		} finally {
 			setCursor(Cursor.getDefaultCursor());
