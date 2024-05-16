@@ -87,7 +87,7 @@ public class EditorPanel extends SyntaxEditor {
 			
 			StyleConstants.setForeground(styleOperators, new Color(255, 153, 51));
 			StyleConstants.setForeground(styleStr, new Color(128, 255, 0));
-			StyleConstants.setForeground(styleReserved, Color.CYAN);
+			StyleConstants.setForeground(styleReserved, new Color(77, 166, 255));
 			StyleConstants.setForeground(styleImplemented, new Color(255, 153, 255));
 			StyleConstants.setForeground(styleShelly, new Color(190, 65, 201));
 			
@@ -103,7 +103,7 @@ public class EditorPanel extends SyntaxEditor {
 		}
 
 		Style styleComment = addStyle("usna_comment", null);
-		StyleConstants.setForeground(styleComment, Color.RED);
+		StyleConstants.setForeground(styleComment, /*Color.RED*/new Color(255, 71, 26));
 		addSyntaxRule(new SyntaxEditor.BlockSimpleSyntax("//", "\n", styleComment));
 		addSyntaxRule(new SyntaxEditor.BlockSimpleSyntax("/*", "*/", styleComment));
 
@@ -175,6 +175,7 @@ public class EditorPanel extends SyntaxEditor {
 	private static SimpleAttributeSet baseStyle() {
 		SimpleAttributeSet style = new SimpleAttributeSet();
 		StyleConstants.setFontFamily(style, Font.MONOSPACED);
+		StyleConstants.setFontSize(style, 16);
 		boolean darkMode = ScannerProperties.get().getBoolProperty(ScannerProperties.PROP_IDE_DARK);
 		if(darkMode) {
 			StyleConstants.setForeground(style, Color.WHITE);

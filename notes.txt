@@ -5,6 +5,7 @@ https://www.veryicon.com/
 https://www.iconbolt.com/
 
 https://coolors.co/
+https://www.w3schools.com/colors/colors_picker.asp
 
 //-D"org.slf4j.simpleLogger.log.it.usna=debug" -D"org.slf4j.simpleLogger.showDateTime=true"
 
