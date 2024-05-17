@@ -84,6 +84,8 @@ public class ScriptFrame extends JFrame {
 	public final static String RUN_EVENT = "scriptIsRunning";
 	public final static String CLOSE_EVENT = "scriptEditorColose";
 
+	public final static Color DARK_BACKGOUND_COLOR = new Color(40, 40, 40);
+
 	private Action openAction;
 	private Action saveAction;
 	private Action saveAsAction;
@@ -469,7 +471,7 @@ public class ScriptFrame extends JFrame {
 		JPanel mainLogPanel = new JPanel(new BorderLayout());
 		
 		if(darkMode) {
-			logsTextArea.setBackground(Color.BLACK);
+			logsTextArea.setBackground(DARK_BACKGOUND_COLOR);
 			logsTextArea.setForeground(Color.WHITE);
 		}
 

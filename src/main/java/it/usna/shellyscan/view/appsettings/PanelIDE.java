@@ -2,21 +2,20 @@ package it.usna.shellyscan.view.appsettings;
 
 import static it.usna.shellyscan.Main.LABELS;
 
+import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 
+import javax.swing.ButtonGroup;
+import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JRadioButton;
 
 import it.usna.shellyscan.view.IntegerTextFieldPanel;
 import it.usna.shellyscan.view.util.ScannerProperties;
 import it.usna.util.AppProperties;
-
-import javax.swing.ButtonGroup;
-import javax.swing.JCheckBox;
-import javax.swing.JRadioButton;
-import java.awt.Font;
 
 public class PanelIDE extends JPanel {
 	private static final long serialVersionUID = 1L;
@@ -29,6 +28,7 @@ public class PanelIDE extends JPanel {
 	private JCheckBox chckbxClosebracket;
 	private JCheckBox chckbxCloseSquare;
 	private JCheckBox chckbxCloseString;
+	private IntegerTextFieldPanel fontSize;
 	
 	PanelIDE(final AppProperties appProp) {
 		GridBagLayout gridBagLayout = new GridBagLayout();
@@ -47,38 +47,62 @@ public class PanelIDE extends JPanel {
 		
 		tabSize = new IntegerTextFieldPanel(appProp.getIntProperty(ScannerProperties.PROP_IDE_TAB_SIZE, ScannerProperties.IDE_TAB_SIZE_DEFAULT), 1, 32, false);
 		GridBagConstraints gbc_textField = new GridBagConstraints();
-		gbc_textField.gridwidth = 2;
+		gbc_textField.gridwidth = 4;
 		gbc_textField.anchor = GridBagConstraints.NORTHWEST;
-		gbc_textField.insets = new Insets(0, 0, 5, 5);
+		gbc_textField.insets = new Insets(0, 0, 2, 5);
 		gbc_textField.gridx = 1;
 		gbc_textField.gridy = 0;
 		add(tabSize, gbc_textField);
 		tabSize.setColumns(2);
+		
+		JLabel lblNewLabel_4 = new JLabel(LABELS.getString("dlgAppSetIDEFontSize"));
+		lblNewLabel_4.setFont(new Font("Tahoma", Font.BOLD, 11));
+		GridBagConstraints gbc_lblNewLabel_4 = new GridBagConstraints();
+		gbc_lblNewLabel_4.fill = GridBagConstraints.VERTICAL;
+		gbc_lblNewLabel_4.anchor = GridBagConstraints.NORTHWEST;
+		gbc_lblNewLabel_4.insets = new Insets(0, 0, 5, 15);
+		gbc_lblNewLabel_4.gridx = 0;
+		gbc_lblNewLabel_4.gridy = 1;
+		add(lblNewLabel_4, gbc_lblNewLabel_4);
+		
+		fontSize = new IntegerTextFieldPanel(appProp.getIntProperty(ScannerProperties.PROP_IDE_FONT_SIZE, ScannerProperties.IDE_FONT_SIZE_DEFAULT), 8, 24, false);
+		GridBagConstraints gbc_textFontField = new GridBagConstraints();
+		gbc_textFontField.fill = GridBagConstraints.BOTH;
+		gbc_textFontField.gridwidth = 4;
+		gbc_textFontField.anchor = GridBagConstraints.NORTHWEST;
+		gbc_textFontField.insets = new Insets(0, 0, 2, 5);
+		gbc_textField.fill = GridBagConstraints.BOTH;
+		gbc_textFontField.gridx = 1;
+		gbc_textFontField.gridy = 1;
+		add(fontSize, gbc_textFontField);
+		fontSize.setColumns(2);
 		
 		JLabel lblNewLabel_2 = new JLabel(LABELS.getString("dlgAppSetIDEAutoIndent"));
 		lblNewLabel_2.setFont(new Font("Tahoma", Font.BOLD, 11));
 		GridBagConstraints gbc_lblNewLabel_2 = new GridBagConstraints();
 		gbc_lblNewLabel_2.fill = GridBagConstraints.VERTICAL;
 		gbc_lblNewLabel_2.anchor = GridBagConstraints.NORTHWEST;
-		gbc_lblNewLabel_2.insets = new Insets(0, 0, 5, 15);
+		gbc_lblNewLabel_2.insets = new Insets(4, 0, 9, 15);
 		gbc_lblNewLabel_2.gridx = 0;
-		gbc_lblNewLabel_2.gridy = 1;
+		gbc_lblNewLabel_2.gridy = 2;
 		add(lblNewLabel_2, gbc_lblNewLabel_2);
 		
 		rdbtnIndentSmart = new JRadioButton(LABELS.getString("dlgAppSetIDEAutoIndentSmart"));
 		GridBagConstraints gbc_rdbtnIndentSmart = new GridBagConstraints();
+		gbc_rdbtnIndentSmart.fill = GridBagConstraints.VERTICAL;
 		gbc_rdbtnIndentSmart.anchor = GridBagConstraints.NORTHWEST;
 		gbc_rdbtnIndentSmart.insets = new Insets(0, 0, 5, 15);
 		gbc_rdbtnIndentSmart.gridx = 1;
-		gbc_rdbtnIndentSmart.gridy = 1;
+		gbc_rdbtnIndentSmart.gridy = 2;
 		add(rdbtnIndentSmart, gbc_rdbtnIndentSmart);
 		
 		rdbtnIndentYes = new JRadioButton(LABELS.getString("dlgAppSetIDEAutoIndentYes"));
 		GridBagConstraints gbc_rdbtnIndentYes = new GridBagConstraints();
+		gbc_rdbtnIndentYes.fill = GridBagConstraints.VERTICAL;
 		gbc_rdbtnIndentYes.anchor = GridBagConstraints.NORTHWEST;
 		gbc_rdbtnIndentYes.insets = new Insets(0, 0, 5, 15);
 		gbc_rdbtnIndentYes.gridx = 2;
-		gbc_rdbtnIndentYes.gridy = 1;
+		gbc_rdbtnIndentYes.gridy = 2;
 		add(rdbtnIndentYes, gbc_rdbtnIndentYes);
 		
 		ButtonGroup indentGroup = new ButtonGroup();
@@ -95,10 +119,11 @@ public class PanelIDE extends JPanel {
 		
 		rdbtnIndentNone = new JRadioButton(LABELS.getString("dlgAppSetIDEAutoIndentNo"));
 		GridBagConstraints gbc_rdbtnIndentNone = new GridBagConstraints();
+		gbc_rdbtnIndentNone.fill = GridBagConstraints.VERTICAL;
 		gbc_rdbtnIndentNone.anchor = GridBagConstraints.NORTHWEST;
 		gbc_rdbtnIndentNone.insets = new Insets(0, 0, 5, 15);
 		gbc_rdbtnIndentNone.gridx = 3;
-		gbc_rdbtnIndentNone.gridy = 1;
+		gbc_rdbtnIndentNone.gridy = 2;
 		add(rdbtnIndentNone, gbc_rdbtnIndentNone);
 		indentGroup.add(rdbtnIndentNone);
 		
@@ -107,9 +132,9 @@ public class PanelIDE extends JPanel {
 		GridBagConstraints gbc_lblNewLabel_3 = new GridBagConstraints();
 		gbc_lblNewLabel_3.anchor = GridBagConstraints.NORTHWEST;
 		gbc_lblNewLabel_3.fill = GridBagConstraints.VERTICAL;
-		gbc_lblNewLabel_3.insets = new Insets(0, 0, 5, 15);
+		gbc_lblNewLabel_3.insets = new Insets(4, 0, 9, 15);
 		gbc_lblNewLabel_3.gridx = 0;
-		gbc_lblNewLabel_3.gridy = 2;
+		gbc_lblNewLabel_3.gridy = 3;
 		add(lblNewLabel_3, gbc_lblNewLabel_3);
 		
 		chckbxCloseCurly = new JCheckBox("{ }");
@@ -119,7 +144,7 @@ public class PanelIDE extends JPanel {
 		gbc_chckbxCloseCurly.fill = GridBagConstraints.VERTICAL;
 		gbc_chckbxCloseCurly.insets = new Insets(0, 0, 5, 5);
 		gbc_chckbxCloseCurly.gridx = 1;
-		gbc_chckbxCloseCurly.gridy = 2;
+		gbc_chckbxCloseCurly.gridy = 3;
 		add(chckbxCloseCurly, gbc_chckbxCloseCurly);
 		chckbxCloseCurly.setSelected(appProp.getBoolProperty(ScannerProperties.IDE_AUTOCLOSE_CURLY, false));
 		
@@ -130,7 +155,7 @@ public class PanelIDE extends JPanel {
 		gbc_chckbxClosebracket.fill = GridBagConstraints.VERTICAL;
 		gbc_chckbxClosebracket.insets = new Insets(0, 0, 5, 5);
 		gbc_chckbxClosebracket.gridx = 2;
-		gbc_chckbxClosebracket.gridy = 2;
+		gbc_chckbxClosebracket.gridy = 3;
 		add(chckbxClosebracket, gbc_chckbxClosebracket);
 		chckbxClosebracket.setSelected(appProp.getBoolProperty(ScannerProperties.IDE_AUTOCLOSE_BRACKET, false));
 		
@@ -141,7 +166,7 @@ public class PanelIDE extends JPanel {
 		gbc_chckbxCloseSquare.fill = GridBagConstraints.VERTICAL;
 		gbc_chckbxCloseSquare.insets = new Insets(0, 0, 5, 5);
 		gbc_chckbxCloseSquare.gridx = 3;
-		gbc_chckbxCloseSquare.gridy = 2;
+		gbc_chckbxCloseSquare.gridy = 3;
 		add(chckbxCloseSquare, gbc_chckbxCloseSquare);
 		chckbxCloseSquare.setSelected(appProp.getBoolProperty(ScannerProperties.IDE_AUTOCLOSE_SQUARE, false));
 		
@@ -150,9 +175,9 @@ public class PanelIDE extends JPanel {
 		GridBagConstraints gbc_chckbxCloseString = new GridBagConstraints();
 		gbc_chckbxCloseString.fill = GridBagConstraints.VERTICAL;
 		gbc_chckbxCloseString.anchor = GridBagConstraints.NORTHWEST;
-		gbc_chckbxCloseString.insets = new Insets(0, 0, 5, 5);
+		gbc_chckbxCloseString.insets = new Insets(0, 0, 5, 0);
 		gbc_chckbxCloseString.gridx = 4;
-		gbc_chckbxCloseString.gridy = 2;
+		gbc_chckbxCloseString.gridy = 3;
 		add(chckbxCloseString, gbc_chckbxCloseString);
 		chckbxCloseString.setSelected(appProp.getBoolProperty(ScannerProperties.IDE_AUTOCLOSE_STRING, false));
 		
@@ -160,18 +185,19 @@ public class PanelIDE extends JPanel {
 		lblNewLabel_1.setFont(new Font("Tahoma", Font.BOLD, 11));
 		GridBagConstraints gbc_lblNewLabel_1 = new GridBagConstraints();
 		gbc_lblNewLabel_1.anchor = GridBagConstraints.NORTHWEST;
-		gbc_lblNewLabel_1.insets = new Insets(0, 0, 0, 15);
+		gbc_lblNewLabel_1.insets = new Insets(4, 0, 9, 15);
 		gbc_lblNewLabel_1.gridx = 0;
-		gbc_lblNewLabel_1.gridy = 3;
+		gbc_lblNewLabel_1.gridy = 4;
 		add(lblNewLabel_1, gbc_lblNewLabel_1);
 		
 		chcDarkMode = new JCheckBox();
 		chcDarkMode.setSelected(appProp.getBoolProperty(ScannerProperties.PROP_IDE_DARK, false));
 		GridBagConstraints gbc_chcDarkMode = new GridBagConstraints();
-		gbc_chcDarkMode.insets = new Insets(0, 0, 0, 5);
+		gbc_chcDarkMode.fill = GridBagConstraints.VERTICAL;
+		gbc_chcDarkMode.insets = new Insets(0, 0, 5, 5);
 		gbc_chcDarkMode.anchor = GridBagConstraints.NORTHWEST;
 		gbc_chcDarkMode.gridx = 1;
-		gbc_chcDarkMode.gridy = 3;
+		gbc_chcDarkMode.gridy = 4;
 		add(chcDarkMode, gbc_chcDarkMode);
 		
 		JLabel lblNewLabelMsg = new JLabel(LABELS.getString("dlgAppSetIDEMsg"));
@@ -182,12 +208,13 @@ public class PanelIDE extends JPanel {
 		gbc_lblNewLabelMsg.weighty = 1.0;
 		gbc_lblNewLabelMsg.insets = new Insets(20, 0, 0, 15);
 		gbc_lblNewLabelMsg.gridx = 0;
-		gbc_lblNewLabelMsg.gridy = 4;
+		gbc_lblNewLabelMsg.gridy = 5;
 		add(lblNewLabelMsg, gbc_lblNewLabelMsg);
 	}
 	
 	public void store(AppProperties appProp) {
 		appProp.setIntProperty(ScannerProperties.PROP_IDE_TAB_SIZE, tabSize.getIntValue());
+		appProp.setIntProperty(ScannerProperties.PROP_IDE_FONT_SIZE, fontSize.getIntValue());
 		if(rdbtnIndentNone.isSelected()) {
 			appProp.setProperty(ScannerProperties.IDE_AUTOINDENT, "NO");
 		} else if(rdbtnIndentYes.isSelected()) {

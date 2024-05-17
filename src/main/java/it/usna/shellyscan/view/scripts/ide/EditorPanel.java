@@ -82,7 +82,7 @@ public class EditorPanel extends SyntaxEditor {
 		Style styleImplemented = addStyle("usna_implemented", null);
 		Style styleShelly = addStyle("usna_shellyReserved", null);
 		if(darkMode) {
-			setBackground(new Color(0, 0, 0, 0));
+			setBackground(/*new Color(0, 0, 0, 0)*/ScriptFrame.DARK_BACKGOUND_COLOR);
 			setCaretColor(Color.WHITE);
 			
 			StyleConstants.setForeground(styleOperators, new Color(255, 153, 51));
@@ -175,7 +175,7 @@ public class EditorPanel extends SyntaxEditor {
 	private static SimpleAttributeSet baseStyle() {
 		SimpleAttributeSet style = new SimpleAttributeSet();
 		StyleConstants.setFontFamily(style, Font.MONOSPACED);
-		StyleConstants.setFontSize(style, 16);
+		StyleConstants.setFontSize(style, ScannerProperties.get().getIntProperty(ScannerProperties.PROP_IDE_FONT_SIZE, ScannerProperties.IDE_FONT_SIZE_DEFAULT));
 		boolean darkMode = ScannerProperties.get().getBoolProperty(ScannerProperties.PROP_IDE_DARK);
 		if(darkMode) {
 			StyleConstants.setForeground(style, Color.WHITE);
@@ -640,7 +640,7 @@ public class EditorPanel extends SyntaxEditor {
 	@Override
 	protected void paintComponent(Graphics g) {
 		if (darkMode) {
-			g.setColor(Color.BLACK);
+			g.setColor(/*Color.BLACK*/ScriptFrame.DARK_BACKGOUND_COLOR);
 			g.fillRect(0, 0, getWidth(), getHeight());
 		}
 		super.paintComponent(g);
