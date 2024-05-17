@@ -103,7 +103,7 @@ public class EditorPanel extends SyntaxEditor {
 		}
 
 		Style styleComment = addStyle("usna_comment", null);
-		StyleConstants.setForeground(styleComment, /*Color.RED*/new Color(255, 71, 26));
+		StyleConstants.setForeground(styleComment, /*Color.RED*/new Color(255, 100, 36));
 		addSyntaxRule(new SyntaxEditor.BlockSimpleSyntax("//", "\n", styleComment));
 		addSyntaxRule(new SyntaxEditor.BlockSimpleSyntax("/*", "*/", styleComment));
 
@@ -176,8 +176,7 @@ public class EditorPanel extends SyntaxEditor {
 		SimpleAttributeSet style = new SimpleAttributeSet();
 		StyleConstants.setFontFamily(style, Font.MONOSPACED);
 		StyleConstants.setFontSize(style, ScannerProperties.get().getIntProperty(ScannerProperties.PROP_IDE_FONT_SIZE, ScannerProperties.IDE_FONT_SIZE_DEFAULT));
-		boolean darkMode = ScannerProperties.get().getBoolProperty(ScannerProperties.PROP_IDE_DARK);
-		if(darkMode) {
+		if(ScannerProperties.get().getBoolProperty(ScannerProperties.PROP_IDE_DARK)) {
 			StyleConstants.setForeground(style, Color.WHITE);
 		}
 		return style;
