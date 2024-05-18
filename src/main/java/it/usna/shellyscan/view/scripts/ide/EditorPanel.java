@@ -82,7 +82,7 @@ public class EditorPanel extends SyntaxEditor {
 		Style styleImplemented = addStyle("usna_implemented", null);
 		Style styleShelly = addStyle("usna_shellyReserved", null);
 		if(darkMode) {
-			setBackground(/*new Color(0, 0, 0, 0)*/ScriptFrame.DARK_BACKGOUND_COLOR);
+			setBackground(new Color(ScriptFrame.DARK_BACKGOUND_COLOR.getRed(), ScriptFrame.DARK_BACKGOUND_COLOR.getGreen(), ScriptFrame.DARK_BACKGOUND_COLOR.getBlue(), 0));
 			setCaretColor(Color.WHITE);
 			
 			StyleConstants.setForeground(styleOperators, new Color(255, 153, 51));
