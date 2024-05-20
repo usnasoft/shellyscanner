@@ -247,9 +247,14 @@ https://www.w3schools.com/colors/colors_picker.asp
 // fix: jetty 12.0.5 -> 12.0.7 error on websocket
 // scripts saveAs
 
+1.0.7
+//todo Shelly.GetComponents (include ["config", "status"]) - http://<IP>/rpc/Shelly.GetComponents?include=["config", "status"]
+//todo Shelly.GetDeviceInfo (ident) - http://<IP>/rpc/Shelly.GetDeviceInfo?ident=true
+//todo NTP server addres - http://<IP>/rpc/Sys.SetConfig?config={"location":{"tz":"Europe/Sofia"}}
+//todo it.usna.shellyscan.model.device.g2.FirmwareManagerG2 - 29/30 -> node.textValue()
+
 ---
 // TODO
-// others: NTP server addres
 // others: cloud enable/disable
 // notes column (second field on notes?)
 // scroll orizzontale grafici

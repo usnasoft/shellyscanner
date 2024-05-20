@@ -189,6 +189,12 @@ public abstract class AbstractG1Device extends ShellyAbstractDevice {
 		return new MQTTManagerG1(this);
 	}
 	
+	//todo
+	public String getSNTPServer() throws IOException {
+		JsonNode settings = getJSON("/settings");
+		return settings.path("sntp").path("server").textValue();
+	}
+	
 	@Override
 	public boolean backup(final File file) throws IOException {
 		try(ZipOutputStream out = new ZipOutputStream(new FileOutputStream(file), StandardCharsets.UTF_8)) {
