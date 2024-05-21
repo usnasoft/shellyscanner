@@ -210,6 +210,8 @@ public abstract class ShellyAbstractDevice {
 	public abstract MQTTManager getMQTTManager() throws IOException;
 	
 	public abstract LoginManager getLoginManager() throws IOException;
+	
+	public abstract String getSNTPServer() throws IOException;
 
 	public abstract boolean backup(final File file) throws IOException; // false: use of stored data; could not connect to device
 	

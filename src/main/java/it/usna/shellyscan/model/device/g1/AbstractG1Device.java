@@ -189,7 +189,7 @@ public abstract class AbstractG1Device extends ShellyAbstractDevice {
 		return new MQTTManagerG1(this);
 	}
 	
-	//todo
+	@Override
 	public String getSNTPServer() throws IOException {
 		JsonNode settings = getJSON("/settings");
 		return settings.path("sntp").path("server").textValue();

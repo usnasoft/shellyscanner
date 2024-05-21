@@ -111,6 +111,11 @@ public class ShellyGenericUnmanagedImpl extends ShellyAbstractDevice implements 
 	public LoginManager getLoginManager() {
 		throw new UnsupportedOperationException();
 	}
+	
+	@Override
+	public String getSNTPServer() throws IOException {
+		throw new UnsupportedOperationException();
+	}
 
 	@Override
 	public boolean backup(File file) {

@@ -26,8 +26,8 @@ public class FirmwareManagerG2 implements FirmwareManager {
 	private void init() {
 		try {
 			JsonNode node = d.getJSON("/rpc/Shelly.CheckForUpdate");
-			stable = node.at("/stable/build_id").asText(null);
-			beta = node.at("/beta/build_id").asText(null);
+			stable = node.at("/stable/build_id").textValue();
+			beta = node.at("/beta/build_id").textValue();
 			if(d instanceof BatteryDeviceInterface == false) {
 				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			}
@@ -41,12 +41,12 @@ public class FirmwareManagerG2 implements FirmwareManager {
 			JsonNode node;
 			if(d instanceof BatteryDeviceInterface batteryDevice) {
 				if((node = batteryDevice.getStoredJSON("/rpc/Shelly.CheckForUpdate")) != null) {
-					stable = node.at("/stable/build_id").asText(null);
-					beta = node.at("/beta/build_id").asText(null);
+					stable = node.at("/stable/build_id").textValue();
+					beta = node.at("/beta/build_id").textValue();
 				} else if((node = batteryDevice.getStoredJSON("/rpc/Shelly.GetStatus")) != null) {
 					node = node.at("/sys/available_updates");
-					stable = node.at("/stable/version").asText(null); // not id
-					beta = node.at("/beta/version").asText(null); // not id
+					stable = node.at("/stable/version").textValue(); // not id
+					beta = node.at("/beta/version").textValue(); // not id
 				}
 				if((node = batteryDevice.getStoredJSON("/rpc/Shelly.GetConfig")) != null) { // this could fresher than "/rpc/Shelly.GetDeviceInfo"
 					current = node.at("/sys/device/fw_id").asText();

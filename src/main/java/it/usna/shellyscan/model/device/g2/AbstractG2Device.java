@@ -141,8 +141,8 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 	@Override
 	public String[] getInfoRequests() {
 		return new String[] {
-				"/rpc/Shelly.GetDeviceInfo", "/rpc/Shelly.GetConfig", "/rpc/Shelly.GetStatus", "/rpc/Shelly.CheckForUpdate", "/rpc/Schedule.List", "/rpc/Webhook.List",
-				"/rpc/Script.List", "/rpc/WiFi.ListAPClients" /*, "/rpc/Sys.GetStatus",*/ /*"/rpc/KVS.List"*/, "/rpc/KVS.GetMany", "/rpc/Shelly.GetComponents"};
+				"/rpc/Shelly.GetDeviceInfo?ident=true", "/rpc/Shelly.GetConfig", "/rpc/Shelly.GetStatus", "/rpc/Shelly.CheckForUpdate", "/rpc/Schedule.List", "/rpc/Webhook.List",
+				"/rpc/Script.List", "/rpc/WiFi.ListAPClients" /*, "/rpc/Sys.GetStatus",*/, "/rpc/KVS.GetMany", "/rpc/Shelly.GetComponents"};
 	}
 
 	@Override
@@ -199,6 +199,12 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 	@Override
 	public MQTTManagerG2 getMQTTManager() throws IOException {
 		return new MQTTManagerG2(this);
+	}
+	
+	@Override
+	public String getSNTPServer() throws IOException {
+		JsonNode settings = getJSON("/rpc/Shelly.GetConfig");
+		return settings.path("sys").path("sntp").path("server").textValue();
 	}
 
 	public String postCommand(final String method, JsonNode payload) {
