@@ -113,7 +113,7 @@ public class ShellyGenericUnmanagedImpl extends ShellyAbstractDevice implements 
 	}
 	
 	@Override
-	public String getSNTPServer() throws IOException {
+	public TimeAndLocationManager getTimeAndLocationManager() {
 		throw new UnsupportedOperationException();
 	}
 

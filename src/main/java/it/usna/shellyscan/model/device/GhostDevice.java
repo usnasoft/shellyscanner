@@ -1,7 +1,6 @@
 package it.usna.shellyscan.model.device;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.InetAddress;
 import java.util.Collections;
 import java.util.EnumMap;
@@ -121,7 +120,7 @@ public class GhostDevice extends ShellyAbstractDevice {
 	}
 	
 	@Override
-	public String getSNTPServer() throws IOException {
+	public TimeAndLocationManager getTimeAndLocationManager() {
 		throw new UnsupportedOperationException();
 	}
 

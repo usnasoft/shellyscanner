@@ -36,6 +36,7 @@ import it.usna.shellyscan.model.device.BatteryDeviceInterface;
 import it.usna.shellyscan.model.device.FirmwareManager;
 import it.usna.shellyscan.model.device.LoginManager;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
+import it.usna.shellyscan.model.device.TimeAndLocationManager;
 import it.usna.shellyscan.model.device.WIFIManager;
 import it.usna.shellyscan.model.device.WIFIManager.Network;
 import it.usna.shellyscan.model.device.g1.modules.Actions;
@@ -188,11 +189,10 @@ public abstract class AbstractG1Device extends ShellyAbstractDevice {
 	public MQTTManagerG1 getMQTTManager() throws IOException {
 		return new MQTTManagerG1(this);
 	}
-	
+
 	@Override
-	public String getSNTPServer() throws IOException {
-		JsonNode settings = getJSON("/settings");
-		return settings.path("sntp").path("server").textValue();
+	public TimeAndLocationManager getTimeAndLocationManager() {
+		return new TimeAndLocationManagerG1(this);
 	}
 	
 	@Override

@@ -73,12 +73,12 @@ public class PanelOthers extends AbstractSettingsPanel {
 				throw new InterruptedException();
 			}
 			try {
-				String ntpServer = d.getSNTPServer();
+				String ntpServer = d.getTimeAndLocationManager().getSNTPServer();
 				if(first) {
 					sntpServerGlobal = ntpServer;
 					first = false;
 				} else {
-					if(ntpServer.equals(sntpServerGlobal) == false) sntpServerGlobal = "";
+					if(ntpServer == null || ntpServer.equals(sntpServerGlobal) == false) sntpServerGlobal = "";
 				}
 			} catch (IOException | RuntimeException e) {
 				LOG.error("PanelOthers.showing", e);
@@ -93,11 +93,10 @@ public class PanelOthers extends AbstractSettingsPanel {
 
 	@Override
 	String apply() {
-		// TODO Auto-generated method stub
+		final String server = ntpServerTextField.getText().trim();
+		if(server.isEmpty()) {
+			throw new IllegalArgumentException(LABELS.getString("dlgNTPServerEmptyError"));
+		}
 		return null;
 	}
 }
-
-// https://api.shelly.cloud/timezone/tzlist
-
-// Shelly.ListTimezones

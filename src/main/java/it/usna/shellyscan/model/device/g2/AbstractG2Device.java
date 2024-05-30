@@ -202,9 +202,8 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 	}
 	
 	@Override
-	public String getSNTPServer() throws IOException {
-		JsonNode settings = getJSON("/rpc/Shelly.GetConfig");
-		return settings.path("sys").path("sntp").path("server").textValue();
+	public TimeAndLocationManagerG2 getTimeAndLocationManager() {
+		return new TimeAndLocationManagerG2(this);
 	}
 
 	public String postCommand(final String method, JsonNode payload) {

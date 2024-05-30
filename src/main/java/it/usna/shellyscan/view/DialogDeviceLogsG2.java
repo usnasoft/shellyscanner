@@ -29,6 +29,9 @@ import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import it.usna.shellyscan.Main;
 import it.usna.shellyscan.controller.UsnaAction;
 import it.usna.shellyscan.model.Devices;
@@ -209,6 +212,24 @@ public class DialogDeviceLogsG2 extends JDialog {
 //		} catch (RuntimeException e) {
 //			Msg.errorMsg(this, e);
 //		}
+	}
+	
+	public interface HttpLogsListener {
+		final static Logger LOG = LoggerFactory.getLogger(HttpLogsListener.class);
+
+		default void accept(String txt) {
+			LOG.trace("LogListener: {}", txt);
+		}
+		
+		default void error(String txt) {
+			LOG.error("LogListener error: {}", txt);
+		}
+		
+		default void closed() {
+			LOG.debug("LogListener closed");
+		}
+		
+		public boolean requestNext();
 	}
 }
 
