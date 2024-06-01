@@ -20,9 +20,10 @@ public class TimeAndLocationManagerG2 implements TimeAndLocationManager {
 	}
 
 	@Override
-	public String setSNTPServer(String server) throws IOException {
+	public String setSNTPServer(String server) {
 		return d.postCommand("Sys.SetConfig", "{\"config\":{\"sntp\": {\"server\": \"" + server + "\"}}}");
 	}
 }
 
-//Shelly.ListTimezones
+// Shelly.ListTimezones
+// http://<IP>/rpc/Sys.SetConfig?config={"location":{"tz":"Europe/Sofia"}}

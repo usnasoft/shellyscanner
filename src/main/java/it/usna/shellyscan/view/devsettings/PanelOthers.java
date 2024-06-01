@@ -17,7 +17,12 @@ import javax.swing.JTextField;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import it.usna.shellyscan.controller.DeferrableTask;
+import it.usna.shellyscan.controller.DeferrablesContainer;
+import it.usna.shellyscan.model.device.DeviceOfflineException;
+import it.usna.shellyscan.model.device.GhostDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
+import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
 
 public class PanelOthers extends AbstractSettingsPanel {
 	private static final long serialVersionUID = 1L;
@@ -63,8 +68,8 @@ public class PanelOthers extends AbstractSettingsPanel {
 
 	@Override
 	String showing() throws InterruptedException {
+		ntpServerTextField.setEnabled(false);
 		ShellyAbstractDevice d = null;
-		//		try {
 		String sntpServerGlobal = "";
 		boolean first = true;
 		for(int i = 0; i < parent.getLocalSize(); i++) {
@@ -80,15 +85,15 @@ public class PanelOthers extends AbstractSettingsPanel {
 				} else {
 					if(ntpServer == null || ntpServer.equals(sntpServerGlobal) == false) sntpServerGlobal = "";
 				}
+			} catch (DeviceOfflineException | UnsupportedOperationException e) {
+				LOG.debug("PanelOthers.showing offline {}", d.getHostname());
 			} catch (IOException | RuntimeException e) {
 				LOG.error("PanelOthers.showing", e);
 			}
 		}
+		ntpServerTextField.setEnabled(true); // form is now active
 		ntpServerTextField.setText(sntpServerGlobal);
 		return null;
-		//		} catch (RuntimeException e) {
-		//			return UtilMiscellaneous.getFullName(d) + ": " + e.getMessage();
-		//		}
 	}
 
 	@Override
@@ -97,6 +102,30 @@ public class PanelOthers extends AbstractSettingsPanel {
 		if(server.isEmpty()) {
 			throw new IllegalArgumentException(LABELS.getString("dlgNTPServerEmptyError"));
 		}
-		return null;
+		String res = "<html>";
+		for(int i = 0; i < parent.getLocalSize(); i++) {
+			final ShellyAbstractDevice device = parent.getLocalDevice(i);
+			if(device.getStatus() == Status.OFF_LINE || device instanceof GhostDevice) { // defer
+				res += String.format(LABELS.getString("dlgSetMultiMsgQueue"), device.getHostname()) + "<br>";
+				DeferrablesContainer dc = DeferrablesContainer.getInstance();
+				dc.addOrUpdate(parent.getModelIndex(i), DeferrableTask.Type.SNTP, LABELS.getString("dlgNTPServer"), (def, dev) -> {
+					return dev.getTimeAndLocationManager().setSNTPServer(server);
+				});
+			} else {
+				String msg = device.getTimeAndLocationManager().setSNTPServer(server);
+				if(msg != null) {
+					if(LABELS.containsKey(msg)) {
+						msg = LABELS.getString(msg);
+					}
+					res += String.format(LABELS.getString("dlgSetMultiMsgFail"), device.getHostname()) + " (" + msg + ")<br>";
+				} else {
+					res += String.format(LABELS.getString("dlgSetMultiMsgOk"), device.getHostname()) + "<br>";
+				}
+			}
+		}
+		try {
+			showing();
+		} catch (InterruptedException e) {}
+		return res;
 	}
 }

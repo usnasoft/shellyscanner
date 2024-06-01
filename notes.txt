@@ -249,8 +249,7 @@ https://www.w3schools.com/colors/colors_picker.asp
 
 1.0.7
 Shelly.GetDeviceInfo (ident) - http://<IP>/rpc/Shelly.GetDeviceInfo?ident=true
-
-//todo NTP server addres - http://<IP>/rpc/Sys.SetConfig?config={"location":{"tz":"Europe/Sofia"}}
+NTP server addres (also deferrable)
 
 ---
 // TODO

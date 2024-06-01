@@ -20,8 +20,9 @@ public class TimeAndLocationManagerG1 implements TimeAndLocationManager {
 	}
 
 	@Override
-	public String setSNTPServer(String server) throws IOException {
-		return d.sendCommand("/settings?sntp.server=" + server);
+	public String setSNTPServer(String server) {
+		System.out.println(">>>>>>>>>>" + server);
+		return d.sendCommand("/settings?sntp_server=" + server);
 	}
 }
 

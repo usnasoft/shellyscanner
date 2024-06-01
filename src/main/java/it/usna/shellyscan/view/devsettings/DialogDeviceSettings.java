@@ -159,6 +159,9 @@ public class DialogDeviceSettings extends JDialog implements UsnaEventListener<D
 				Msg.showHtmlMessageDialog(this, msg, name, JOptionPane.INFORMATION_MESSAGE);
 			}
 			return true;
+		} catch(IllegalArgumentException e) {
+			Msg.errorMsg(this, e.getMessage());
+			return false;
 		} catch(Exception e) {
 			Msg.errorMsg(this, e);
 			return false;
