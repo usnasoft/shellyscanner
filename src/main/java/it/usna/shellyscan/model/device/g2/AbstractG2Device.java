@@ -151,22 +151,29 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 	}
 
 	@Override
-	public void setEcoMode(boolean eco) {
-		postCommand("Sys.SetConfig", "{\"config\":{\"device\":{\"eco_mode\":" + eco + "}}}");
+	public boolean setEcoMode(boolean eco) {
+		return postCommand("Sys.SetConfig", "{\"config\":{\"device\":{\"eco_mode\":" + eco + "}}}") == null;
 	}
 
-	public void setDebugMode(LogMode mode, boolean enable) {
+	public boolean setDebugMode(LogMode mode, boolean enable) {
 		if(mode == LogMode.SOCKET) {
-			postCommand("Sys.SetConfig", "{\"config\": {\"debug\":{\"websocket\":{\"enable\": " + (enable ? "true" : "false") + "}}}}");
+			return postCommand("Sys.SetConfig", "{\"config\": {\"debug\":{\"websocket\":{\"enable\": " + (enable ? "true" : "false") + "}}}}") == null;
 		} else if(mode == LogMode.MQTT) {
-			postCommand("Sys.SetConfig", "{\"config\": {\"debug\":{\"mqtt\":{\"enable\": " + (enable ? "true" : "false") + "}}}}");
+			return postCommand("Sys.SetConfig", "{\"config\": {\"debug\":{\"mqtt\":{\"enable\": " + (enable ? "true" : "false") + "}}}}") == null;
 		} else if(mode == LogMode.NO) {
-			postCommand("Sys.SetConfig", "{\"config\": {\"debug\":{\"websocket\":{\"enable\": false}, \"mqtt\":{\"enable\": false}, \"udp\":{\"addr\": null}} } }");
+			return postCommand("Sys.SetConfig", "{\"config\": {\"debug\":{\"websocket\":{\"enable\": false}, \"mqtt\":{\"enable\": false}, \"udp\":{\"addr\": null}} } }") == null;
+		} else {
+			return false;
 		}
 	}
 
-	public void setBLEMode(boolean ble) {
-		postCommand("BLE.SetConfig", "{\"config\":{\"enable\":" + ble + "}}");
+	@Override
+	public boolean setCloudEnabled(boolean enable) {
+		return postCommand("Cloud.SetConfig", "{\"config\":{\"enable\":" + enable + "}}") == null;
+	}
+
+	public boolean setBLEMode(boolean ble) {
+		return postCommand("BLE.SetConfig", "{\"config\":{\"enable\":" + ble + "}}") == null;
 	}
 
 	public boolean rebootRequired() {
@@ -294,45 +301,6 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 	public Future<Session> connectWebSocketLogs(WebSocketDeviceListener listener) throws IOException, InterruptedException, ExecutionException {
 		return wsClient.connect(listener, URI.create("ws://" + address.getHostAddress() + ":" + port + "/debug/log"));
 	}
-
-//	public void connectHttpLogs(HttpLogsListener listener) {
-//		httpClient.newRequest("http://" + address.getHostAddress() + ":" + port + "/debug/log").timeout(360, TimeUnit.MINUTES)
-//		.onResponseContentSource(((response, contentSource) -> {
-//			// The function (as a Runnable) that reads the response content.
-//			Runnable demander = new Runnable()  {
-//				byte[] buf = new byte[512];
-//				@Override
-//				public void run() {
-//					while (listener.requestNext()) {
-//						Content.Chunk chunk = contentSource.read();
-//						// No chunk of content, demand again and return.
-//						if (chunk == null)  {
-//							contentSource.demand(this); 
-//							return;
-//						}
-//						if (Content.Chunk.isFailure(chunk)) {
-//							listener.error("Unexpected terminal failure: " + chunk.getFailure().getMessage());
-//							return;
-//						}
-//						// A normal chunk of content.
-//						int size = chunk.remaining();
-//						if(size > buf.length) {
-//							buf = new byte[size + 64];
-//						}
-//						chunk.get(buf, 0, size);
-//						listener.accept(new String(buf, 0, size));
-//						// Loop around to read another response chunk.
-//					}
-//					response.abort(new RuntimeException("bye"));
-//				}
-//			};
-//			demander.run(); // Initiate the reads.
-//		}))
-//		.send(result -> {
-//			LOG.trace("httpLogs onComplete");
-//			listener.closed();
-//		});
-//	}
 
 	@Override
 	public boolean backup(final File file) throws IOException {

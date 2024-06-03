@@ -233,4 +233,44 @@ public class DialogDeviceLogsG2 extends JDialog {
 	}
 }
 
+// it.usna.shellyscan.model.device.g2.AbstractG2Device
+//public void connectHttpLogs(HttpLogsListener listener) {
+//httpClient.newRequest("http://" + address.getHostAddress() + ":" + port + "/debug/log").timeout(360, TimeUnit.MINUTES)
+//.onResponseContentSource(((response, contentSource) -> {
+//	// The function (as a Runnable) that reads the response content.
+//	Runnable demander = new Runnable()  {
+//		byte[] buf = new byte[512];
+//		@Override
+//		public void run() {
+//			while (listener.requestNext()) {
+//				Content.Chunk chunk = contentSource.read();
+//				// No chunk of content, demand again and return.
+//				if (chunk == null)  {
+//					contentSource.demand(this); 
+//					return;
+//				}
+//				if (Content.Chunk.isFailure(chunk)) {
+//					listener.error("Unexpected terminal failure: " + chunk.getFailure().getMessage());
+//					return;
+//				}
+//				// A normal chunk of content.
+//				int size = chunk.remaining();
+//				if(size > buf.length) {
+//					buf = new byte[size + 64];
+//				}
+//				chunk.get(buf, 0, size);
+//				listener.accept(new String(buf, 0, size));
+//				// Loop around to read another response chunk.
+//			}
+//			response.abort(new RuntimeException("bye"));
+//		}
+//	};
+//	demander.run(); // Initiate the reads.
+//}))
+//.send(result -> {
+//	LOG.trace("httpLogs onComplete");
+//	listener.closed();
+//});
+//}
+
 //[May 03 16:34:22.114] INFO:  test

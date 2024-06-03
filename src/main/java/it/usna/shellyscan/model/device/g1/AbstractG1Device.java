@@ -151,9 +151,12 @@ public abstract class AbstractG1Device extends ShellyAbstractDevice {
 	}
 	
 	@Override
-	public void setEcoMode(boolean eco) {
+	public boolean setEcoMode(boolean eco) {
 		if(sendCommand("/settings?eco_mode_enabled=" + eco) == null) {
 			rebootRequired = true;
+			return true;
+		} else {
+			return true;
 		}
 	}
 	
@@ -168,6 +171,11 @@ public abstract class AbstractG1Device extends ShellyAbstractDevice {
 		} catch (IOException e) {
 			LOG.warn("setDebugMode: {}", mode, e);
 		}
+	}
+	
+	@Override
+	public boolean setCloudEnabled(boolean enable) {
+		return sendCommand("/settings/cloud?enabled=" + enable) == null;
 	}
 	
 	@Override

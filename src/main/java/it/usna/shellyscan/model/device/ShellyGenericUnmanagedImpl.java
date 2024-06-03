@@ -54,12 +54,12 @@ public class ShellyGenericUnmanagedImpl extends ShellyAbstractDevice implements 
 
 	@Override
 	public void refreshSettings() {
-		// none
+		// generation unknown
 	}
 
 	@Override
 	public void refreshStatus() {
-		// none
+		// generation unknown
 	}
 
 	@Override
@@ -86,9 +86,14 @@ public class ShellyGenericUnmanagedImpl extends ShellyAbstractDevice implements 
 	public void reboot() {
 		throw new UnsupportedOperationException();
 	}
+	
+	@Override
+	public boolean setCloudEnabled(boolean enable) {
+		throw new UnsupportedOperationException();
+	}
 
 	@Override
-	public void setEcoMode(boolean eco) {
+	public boolean setEcoMode(boolean eco) {
 		throw new UnsupportedOperationException();
 	}
 

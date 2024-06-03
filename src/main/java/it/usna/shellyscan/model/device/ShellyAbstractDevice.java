@@ -136,6 +136,8 @@ public abstract class ShellyAbstractDevice {
 	public boolean getCloudEnabled() {
 		return cloudEnabled;
 	}
+	
+	public abstract boolean setCloudEnabled(boolean enable);
 
 	public boolean getCloudConnected() {
 		return cloudConnected;
@@ -197,7 +199,7 @@ public abstract class ShellyAbstractDevice {
 
 	public abstract void reboot() throws IOException;
 	
-	public abstract void setEcoMode(boolean eco);
+	public abstract boolean setEcoMode(boolean eco);
 	
 	public abstract void refreshSettings() throws IOException;
 	

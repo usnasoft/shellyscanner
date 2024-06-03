@@ -83,9 +83,14 @@ public class GhostDevice extends ShellyAbstractDevice {
 	public void reboot() {
 		throw new UnsupportedOperationException();
 	}
+	
+	@Override
+	public boolean setCloudEnabled(boolean enable) {
+		throw new UnsupportedOperationException();
+	}
 
 	@Override
-	public void setEcoMode(boolean eco) {
+	public boolean setEcoMode(boolean eco) {
 		throw new UnsupportedOperationException();
 	}
 
