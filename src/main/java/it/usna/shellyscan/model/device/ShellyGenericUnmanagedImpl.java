@@ -88,7 +88,7 @@ public class ShellyGenericUnmanagedImpl extends ShellyAbstractDevice implements 
 	}
 	
 	@Override
-	public boolean setCloudEnabled(boolean enable) {
+	public String setCloudEnabled(boolean enable) {
 		throw new UnsupportedOperationException();
 	}
 

@@ -69,7 +69,7 @@ public class ScriptsPanel extends JPanel {
 	public ScriptsPanel(JDialog owner, Devices devicesModel, int modelIndex) throws IOException {
 		AbstractG2Device device = (AbstractG2Device) devicesModel.get(modelIndex);
 		setLayout(new BorderLayout(0, 0));
-		final UsnaTableModel tModel = new UsnaTableModel(LABELS.getString("lblScrColName"), LABELS.getString("lblScrColEnabled"), LABELS.getString("lblScrColRunning"));
+		final UsnaTableModel tModel = new UsnaTableModel(LABELS.getString("lblScrColName"), LABELS.getString("lblEnabled"), LABELS.getString("lblScrColRunning"));
 
 		table = new ExTooltipTable(tModel) {
 			private static final long serialVersionUID = 1L;

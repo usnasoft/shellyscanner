@@ -85,7 +85,7 @@ public class GhostDevice extends ShellyAbstractDevice {
 	}
 	
 	@Override
-	public boolean setCloudEnabled(boolean enable) {
+	public String setCloudEnabled(boolean enable) {
 		throw new UnsupportedOperationException();
 	}
 

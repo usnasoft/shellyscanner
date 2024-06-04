@@ -6,7 +6,7 @@ import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 
 public class DeferrableTask implements Closeable {
 	public enum Status {WAITING, CANCELLED, RUNNING, SUCCESS, FAIL};
-	public enum Type {FW_UPDATE, RESTORE, BACKUP, MQTT, LOGIN, SNTP};
+	public enum Type {FW_UPDATE, RESTORE, BACKUP, MQTT, LOGIN, NTP, CLOUD_ENABLE};
 	private final Type type;
 	private final String description;
 	private Task task;

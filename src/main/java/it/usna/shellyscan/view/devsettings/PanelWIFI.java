@@ -45,7 +45,7 @@ public class PanelWIFI extends AbstractSettingsPanel implements UsnaEventListene
 	private final JTextField textFieldNetmask = new JTextField();
 	private final JTextField textFieldGateway = new JTextField();
 	private final JTextField textFieldDNS = new JTextField();;
-	private final JRadioButton rdbtnDHCP = new JRadioButton(LABELS.getString("dlgSetEnabled"));
+	private final JRadioButton rdbtnDHCP = new JRadioButton(LABELS.getString("lblEnabled"));
 	private final JRadioButton rdbtnStaticIP = new JRadioButton(LABELS.getString("dlgSetStatic"));
 	private final JRadioButton rdbtnDhcpNoChange = new JRadioButton(LABELS.getString("dlgSetDoNotChange"));
 	private final char pwdEchoChar;
@@ -67,7 +67,7 @@ public class PanelWIFI extends AbstractSettingsPanel implements UsnaEventListene
 		gridBagLayout.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
 		setLayout(gridBagLayout);
 
-		JLabel lblNewLabel = new JLabel(LABELS.getString("dlgSetEnabled"));
+		JLabel lblNewLabel = new JLabel(LABELS.getString("lblEnabled"));
 		GridBagConstraints gbc_lblNewLabel = new GridBagConstraints();
 		gbc_lblNewLabel.anchor = GridBagConstraints.WEST;
 		gbc_lblNewLabel.insets = new Insets(0, 0, 5, 5);

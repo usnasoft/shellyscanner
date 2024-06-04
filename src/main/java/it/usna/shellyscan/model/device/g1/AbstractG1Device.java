@@ -174,8 +174,8 @@ public abstract class AbstractG1Device extends ShellyAbstractDevice {
 	}
 	
 	@Override
-	public boolean setCloudEnabled(boolean enable) {
-		return sendCommand("/settings/cloud?enabled=" + enable) == null;
+	public String setCloudEnabled(boolean enable) {
+		return sendCommand("/settings/cloud?enabled=" + enable);
 	}
 	
 	@Override

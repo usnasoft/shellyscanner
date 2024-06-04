@@ -137,7 +137,7 @@ public abstract class ShellyAbstractDevice {
 		return cloudEnabled;
 	}
 	
-	public abstract boolean setCloudEnabled(boolean enable);
+	public abstract String setCloudEnabled(boolean enable);
 
 	public boolean getCloudConnected() {
 		return cloudConnected;

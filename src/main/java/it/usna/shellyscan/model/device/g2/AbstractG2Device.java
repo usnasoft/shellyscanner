@@ -168,8 +168,8 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 	}
 
 	@Override
-	public boolean setCloudEnabled(boolean enable) {
-		return postCommand("Cloud.SetConfig", "{\"config\":{\"enable\":" + enable + "}}") == null;
+	public String setCloudEnabled(boolean enable) {
+		return postCommand("Cloud.SetConfig", "{\"config\":{\"enable\":" + enable + "}}");
 	}
 
 	public boolean setBLEMode(boolean ble) {

@@ -78,7 +78,7 @@ public class PanelMQTTG1 extends AbstractSettingsPanel implements UsnaEventListe
 		//		gridBagLayout.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
 		contentPanel.setLayout(gridBagLayout);
 
-		JLabel lblNewLabel = new JLabel(LABELS.getString("dlgSetEnabled"));
+		JLabel lblNewLabel = new JLabel(LABELS.getString("lblEnabled"));
 		GridBagConstraints gbc_lblNewLabel = new GridBagConstraints();
 		gbc_lblNewLabel.anchor = GridBagConstraints.WEST;
 		gbc_lblNewLabel.insets = new Insets(0, 0, 5, 5);
