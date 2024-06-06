@@ -251,6 +251,7 @@ https://www.w3schools.com/colors/colors_picker.asp
 Shelly.GetDeviceInfo (ident) - http://<IP>/rpc/Shelly.GetDeviceInfo?ident=true
 NTP server addres (also deferrable)
 Cloud enable/disable (also deferrable)
+New checklist UI
 
 ---
 // TODO

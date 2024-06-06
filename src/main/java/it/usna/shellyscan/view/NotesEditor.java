@@ -34,13 +34,14 @@ import it.usna.swing.dialog.FindReplaceDialog;
  */
 public class NotesEditor extends JFrame {
 	private static final long serialVersionUID = 1L;
+//	private JTextField textField;
 	
 	public NotesEditor(Window owner, GhostDevice ghost) {
 		super(LABELS.getString("action_notes_tooltip") + " - " + UtilMiscellaneous.getDescName(ghost));
 		setIconImages(owner.getIconImages());
 		
 		BasicEditorPanel editor = new BasicEditorPanel(this, ghost.getNote());
-		getContentPane().add(editor);
+		getContentPane().add(editor, BorderLayout.NORTH);
 
 		// bottom buttons
 		JPanel buttonsPanel = new JPanel(new FlowLayout());
@@ -56,6 +57,18 @@ public class NotesEditor extends JFrame {
 		JButton closeButton = new JButton(LABELS.getString("dlgClose"));
 		closeButton.addActionListener(e -> dispose());
 		buttonsPanel.add(closeButton);
+		
+//		JPanel panel = new JPanel();
+//		FlowLayout flowLayout = (FlowLayout) panel.getLayout();
+//		flowLayout.setAlignment(FlowLayout.LEADING);
+//		getContentPane().add(panel, BorderLayout.CENTER);
+//		
+//		JLabel lblNewLabel = new JLabel("keyword");
+//		panel.add(lblNewLabel);
+//		
+//		textField = new JTextField();
+//		panel.add(textField);
+//		textField.setColumns(20);
 		
 		setSize(550, 400);
 		setVisible(true);

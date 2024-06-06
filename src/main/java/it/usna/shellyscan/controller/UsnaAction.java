@@ -48,7 +48,7 @@ public class UsnaAction extends AbstractAction {
 	/**
 	 * This constructor must be followed by a setActionListener call
 	 */
-	protected UsnaAction(Component w, String nameId, String tooltipId, String smallIcon, String largeIcon) {
+	public UsnaAction(Component w, String nameId, String tooltipId, String smallIcon, String largeIcon) {
 		this(w, largeIcon, tooltipId);
 		putValue(NAME, LABELS.getString(nameId));
 		if(smallIcon != null) {
@@ -69,7 +69,7 @@ public class UsnaAction extends AbstractAction {
 		}
 	}
 	
-	protected void setActionListener(ActionListener a) {
+	public void setActionListener(ActionListener a) {
 		onActionPerformed = a;
 	}
 

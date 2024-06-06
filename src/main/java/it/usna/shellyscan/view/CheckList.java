@@ -15,30 +15,32 @@ import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+import javax.swing.AbstractButton;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
-import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.RowFilter;
 import javax.swing.SortOrder;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -63,6 +65,7 @@ import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.g2.RangeExtenderManager;
 import it.usna.shellyscan.model.device.g2.WIFIManagerG2;
 import it.usna.shellyscan.view.util.Msg;
+import it.usna.shellyscan.view.util.ScannerProperties;
 import it.usna.shellyscan.view.util.UtilMiscellaneous;
 import it.usna.swing.UsnaPopupMenu;
 import it.usna.swing.table.ExTooltipTable;
@@ -70,7 +73,7 @@ import it.usna.swing.table.UsnaTableModel;
 import it.usna.swing.texteditor.TextDocumentListener;
 import it.usna.util.UsnaEventListener;
 
-public class DialogDeviceCheckList extends JDialog implements UsnaEventListener<Devices.EventType, Integer> {
+public class CheckList extends JDialog implements UsnaEventListener<Devices.EventType, Integer> {
 	private static final long serialVersionUID = 1L;
 	private final static Logger LOG = LoggerFactory.getLogger(AbstractG1Device.class);
 	private final static String TRUE = LABELS.getString("true_yn");
@@ -87,11 +90,12 @@ public class DialogDeviceCheckList extends JDialog implements UsnaEventListener<
 
 	private Devices appModel;
 	private int[] devicesInd;
+	private final JToolBar toolBar = new JToolBar();
 	private ExTooltipTable table;
 	private UsnaTableModel tModel;
 	private ScheduledExecutorService exeService /* = Executors.newFixedThreadPool(20) */;
 
-	public DialogDeviceCheckList(final Window owner, Devices appModel, int[] devicesInd, final SortOrder ipSort) {
+	public CheckList(final Window owner, Devices appModel, int[] devicesInd, final SortOrder ipSort) {
 		super(owner, LABELS.getString("dlgChecklistTitle"));
 		this.appModel = appModel;
 		this.devicesInd = devicesInd;
@@ -138,7 +142,7 @@ public class DialogDeviceCheckList extends JDialog implements UsnaEventListener<
 			}
 		};
 
-		Action ecoModeAction = new UsnaSelectedAction(this, table, "setEcoMode_action", localRow -> {
+		Action ecoModeAction = new UsnaSelectedAction(this, table, "setEcoMode_action", "setEcoMode_action_tooletip", null, "/images/leaf24.png", localRow -> {
 			Boolean eco = (Boolean) tModel.getValueAt(localRow, COL_ECO);
 			ShellyAbstractDevice d = getLocalDevice(localRow);
 			d.setEcoMode(!eco);
@@ -146,7 +150,7 @@ public class DialogDeviceCheckList extends JDialog implements UsnaEventListener<
 			updateRow(d, localRow);
 		});
 
-		Action ledAction = new UsnaSelectedAction(this, table, "setLED_action", localRow -> { // AbstractG1Device
+		Action ledAction = new UsnaSelectedAction(this, table, "setLED_action", "setLED_action_tooletip", null, "/images/Light24.png", localRow -> { // AbstractG1Device
 			Boolean led = (Boolean) tModel.getValueAt(localRow, COL_LED);
 			AbstractG1Device d = (AbstractG1Device) getLocalDevice(localRow);
 			d.setLEDMode(!led);
@@ -154,7 +158,7 @@ public class DialogDeviceCheckList extends JDialog implements UsnaEventListener<
 			updateRow(d, localRow);
 		});
 
-		Action logsAction = new UsnaSelectedAction(this, table, "setLogs_action", localRow -> { // AbstractG1Device
+		Action logsAction = new UsnaSelectedAction(this, table, "setLogs_action", "setLogs_action_tooletip", null, "/images/Document2_24.png", localRow -> { // AbstractG1Device
 			Boolean logs = (Boolean) tModel.getValueAt(localRow, COL_LOGS);
 			AbstractG1Device d = (AbstractG1Device) getLocalDevice(localRow);
 			d.setDebugMode(logs ? LogMode.NO : LogMode.FILE);
@@ -162,7 +166,7 @@ public class DialogDeviceCheckList extends JDialog implements UsnaEventListener<
 			updateRow(d, localRow);
 		});
 
-		Action bleAction = new UsnaSelectedAction(this, table, "setBLE_action", localRow -> { // AbstractG2Device
+		Action bleAction = new UsnaSelectedAction(this, table, "setBLE_action", "setBLE_action_tooletip", null, "/images/Bluetooth24.png", localRow -> { // AbstractG2Device
 			Boolean ble = (Boolean) tModel.getValueAt(localRow, COL_BLE);
 			AbstractG2Device d = (AbstractG2Device) getLocalDevice(localRow);
 			d.setBLEMode(!ble);
@@ -170,7 +174,7 @@ public class DialogDeviceCheckList extends JDialog implements UsnaEventListener<
 			updateRow(d, localRow);
 		});
 
-		Action apModeAction = new UsnaSelectedAction(this, table, "setAPMode_action", localRow -> { // AbstractG2Device
+		Action apModeAction = new UsnaSelectedAction(this, table, "setAPMode_action", "setAPMode_action_tooletip", null, "/images/Rss24.png", localRow -> { // AbstractG2Device
 			Object ap = tModel.getValueAt(localRow, COL_AP);
 			AbstractG2Device d = (AbstractG2Device) getLocalDevice(localRow);
 			WIFIManagerG2.enableAP(d, !((ap instanceof Boolean && ap == Boolean.TRUE) || (ap instanceof String && TRUE.equals(ap))));
@@ -178,7 +182,7 @@ public class DialogDeviceCheckList extends JDialog implements UsnaEventListener<
 			updateRow(d, localRow);
 		});
 
-		Action rangeExtenderAction = new UsnaSelectedAction(this, table, "setExtender_action", localRow -> { // AbstractG2Device
+		Action rangeExtenderAction = new UsnaSelectedAction(this, table, "setExtender_action", "setExtender_action_tooletip", null, "/images/Extender24.png", localRow -> { // AbstractG2Device
 			Object ext = tModel.getValueAt(localRow, COL_EXTENDER);
 			AbstractG2Device d = (AbstractG2Device) getLocalDevice(localRow);
 			RangeExtenderManager.enable(d, "-".equals(ext));
@@ -186,16 +190,44 @@ public class DialogDeviceCheckList extends JDialog implements UsnaEventListener<
 			updateRow(d, localRow);
 		});
 
-		Action rebootAction = new UsnaSelectedAction(this, table, "action_reboot_tooltip", i -> {
-			tModel.setValueAt(DevicesTable.UPDATING_BULLET, i, COL_STATUS);
-			appModel.reboot(devicesInd[i]);
+		Action rebootAction = new UsnaAction(this, "action_reboot_name", "action_reboot_tooltip", null, "/images/Nuke24.png", e -> {
+			final String cancel = UIManager.getString("OptionPane.cancelButtonText");
+			if(JOptionPane.showOptionDialog(
+					CheckList.this, LABELS.getString("action_reboot_confirm"), LABELS.getString("action_reboot_tooltip"),
+					JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null,
+					new Object[] {LABELS.getString("action_reboot_name"), cancel}, cancel) == 0) {
+				for(int ind: table.getSelectedRows()) {
+					//todo
+					int modelRow = table.convertRowIndexToModel(ind);
+					ShellyAbstractDevice d = getLocalDevice(modelRow);
+					d.setStatus(Status.READING);
+					tModel.setValueAt(DevicesTable.UPDATING_BULLET, modelRow, DevicesTable.COL_STATUS_IDX);
+					SwingUtilities.invokeLater(() -> appModel.reboot(devicesInd[modelRow]));
+				}
+			}
 		});
 
-		Action browseAction = new UsnaSelectedAction(this, table, "edit", i -> {
+		Action browseAction = new UsnaSelectedAction(this, table, "edit", "edit", null, "/images/Computer24.png", i -> {
 			try {
 				Desktop.getDesktop().browse(URI.create("http://" + InetAddressAndPort.toString(getLocalDevice(i))));
 			} catch (IOException ex) {
 				Msg.errorMsg(ex);
+			}
+		});
+		
+		UsnaAction refreshAction = new UsnaAction(this, "labelRefresh", "labelRefresh", null, "/images/Refresh24.png");
+		refreshAction.setActionListener(i -> {
+			refreshAction.setEnabled(false);
+			tModel.clear();
+			fill();
+			exeService.schedule(() -> refreshAction.setEnabled(true), 600, TimeUnit.MILLISECONDS);
+		});
+		
+		Action helpAction = new UsnaAction(this, "helpBtnTooltip", "helpBtnTooltip", null, "/images/Question24.png", i -> {
+			try {
+				Desktop.getDesktop().browse(URI.create(LABELS.getString("dlgChecklistManualUrl")));
+			} catch (IOException | UnsupportedOperationException ex) {
+				Msg.errorMsg(this, ex);
 			}
 		});
 
@@ -217,30 +249,32 @@ public class DialogDeviceCheckList extends JDialog implements UsnaEventListener<
 		});
 
 		ListSelectionListener selListener = e -> {
-			int modelRow = table.getSelectedModelRow();
-			if (modelRow >= 0) {
-				ShellyAbstractDevice d = getLocalDevice(modelRow);
-				Object eco = tModel.getValueAt(modelRow, COL_ECO);
-				ecoModeAction.setEnabled(eco instanceof Boolean);
-				Object led = tModel.getValueAt(modelRow, COL_LED);
-				ledAction.setEnabled(led instanceof Boolean);
-				Object logs = tModel.getValueAt(modelRow, COL_LOGS);
-				logsAction.setEnabled(logs instanceof Boolean && d instanceof AbstractG1Device);
-				Object ble = tModel.getValueAt(modelRow, COL_BLE);
-				bleAction.setEnabled(ble instanceof Boolean);
-				apModeAction.setEnabled(d instanceof AbstractG2Device);
-				rangeExtenderAction.setEnabled(d instanceof AbstractG2Device);
-				browseAction.setEnabled(true);
-				rebootAction.setEnabled(true);
-			} else {
-				ecoModeAction.setEnabled(false);
-				ledAction.setEnabled(false);
-				logsAction.setEnabled(false);
-				bleAction.setEnabled(false);
-				apModeAction.setEnabled(false);
-				rangeExtenderAction.setEnabled(false);
-				browseAction.setEnabled(false);
-				rebootAction.setEnabled(false);
+			if(e.getValueIsAdjusting() == false) {
+				int modelRow = table.getSelectedModelRow();
+				if (modelRow >= 0) {
+					ShellyAbstractDevice d = getLocalDevice(modelRow);
+					Object eco = tModel.getValueAt(modelRow, COL_ECO);
+					ecoModeAction.setEnabled(eco instanceof Boolean);
+					Object led = tModel.getValueAt(modelRow, COL_LED);
+					ledAction.setEnabled(led instanceof Boolean);
+					Object logs = tModel.getValueAt(modelRow, COL_LOGS);
+					logsAction.setEnabled(logs instanceof Boolean && d instanceof AbstractG1Device);
+					Object ble = tModel.getValueAt(modelRow, COL_BLE);
+					bleAction.setEnabled(ble instanceof Boolean);
+					apModeAction.setEnabled(d instanceof AbstractG2Device);
+					rangeExtenderAction.setEnabled(d instanceof AbstractG2Device);
+					browseAction.setEnabled(true);
+					rebootAction.setEnabled(true);
+				} else {
+					ecoModeAction.setEnabled(false);
+					ledAction.setEnabled(false);
+					logsAction.setEnabled(false);
+					bleAction.setEnabled(false);
+					apModeAction.setEnabled(false);
+					rangeExtenderAction.setEnabled(false);
+					browseAction.setEnabled(false);
+					rebootAction.setEnabled(false);
+				}
 			}
 		};
 		table.getSelectionModel().addListSelectionListener(selListener);
@@ -259,6 +293,23 @@ public class DialogDeviceCheckList extends JDialog implements UsnaEventListener<
 			}
 		};
 		table.addMouseListener(tablePopup.getMouseListener());
+		
+		toolBar.setBorder(BorderFactory.createEmptyBorder());
+		toolBar.add(refreshAction);
+		toolBar.addSeparator();
+		toolBar.add(ecoModeAction);
+		toolBar.add(ledAction);
+		toolBar.add(logsAction);
+		toolBar.add(bleAction);
+		toolBar.add(apModeAction);
+		toolBar.add(rangeExtenderAction);
+		toolBar.addSeparator();
+		toolBar.add(browseAction);
+		toolBar.add(rebootAction);
+		toolBar.add(Box.createHorizontalGlue());
+		toolBar.add(helpAction);
+		updateHideCaptions();
+		getContentPane().add(toolBar, BorderLayout.NORTH);
 
 		JPanel panelBottom = new JPanel(new BorderLayout(0, 0));
 		getContentPane().add(panelBottom, BorderLayout.SOUTH);
@@ -301,49 +352,10 @@ public class DialogDeviceCheckList extends JDialog implements UsnaEventListener<
 		panelRight.add(eraseFilterButton);
 		panelRight.add(Box.createHorizontalStrut(12));
 
-		JButton btnHelp = new JButton(new UsnaAction("helpBtnLabel", e -> {
-			try {
-				Desktop.getDesktop().browse(URI.create(LABELS.getString("dlgChecklistManualUrl")));
-			} catch (IOException | UnsupportedOperationException ex) {
-				Msg.errorMsg(this, ex);
-			}
-		}));
-		panelRight.add(btnHelp);
-
-		JButton btnRefresh = new JButton(LABELS.getString("labelRefresh"));
-		btnRefresh.addActionListener(e -> {
-			btnRefresh.setEnabled(false);
-			tModel.clear();
-			exeService.shutdownNow();
-			fill();
-			exeService.schedule(() -> btnRefresh.setEnabled(true), 600, TimeUnit.MILLISECONDS);
-		});
-		panelRight.add(btnRefresh);
-
 		JButton btnClose = new JButton(new UsnaAction("dlgClose", e -> dispose()));
 		panelRight.add(btnClose);
 
-		JPanel panelLeft = new JPanel(new FlowLayout(FlowLayout.LEFT, 3, 0));
-		panelBottom.add(panelLeft, BorderLayout.WEST);
-
-		JButton btnExecute = new JButton(browseAction);
-
-		JButton btnSelectCombo = new JButton(new ImageIcon(MainView.class.getResource("/images/expand-more.png")));
-		btnSelectCombo.setContentAreaFilled(false);
-		btnSelectCombo.setBorder(BorderFactory.createEmptyBorder(1, 1, 1, 1));
-		panelLeft.add(btnSelectCombo);
-		UsnaPopupMenu actionSelectionPopup = new UsnaPopupMenu(Arrays.stream(tablePopup.getComponents()).map(c -> c instanceof JMenuItem ? ((JMenuItem) c).getAction().toString() : null).toArray()) {
-			private static final long serialVersionUID = 1L;
-
-			@Override
-			protected void itemSelected(JMenuItem item, int ind) {
-				btnExecute.setAction(((JMenuItem) tablePopup.getComponent(ind)).getAction());
-			}
-		};
-		btnSelectCombo.addActionListener(e -> actionSelectionPopup.show(btnSelectCombo, 0, 0));
-		panelLeft.add(btnExecute);
-
-		setSize(860, 460);
+		setSize(860, 490);
 		setVisible(true);
 		setLocationRelativeTo(owner);
 		table.columnsWidthAdapt();
@@ -358,12 +370,20 @@ public class DialogDeviceCheckList extends JDialog implements UsnaEventListener<
 	}
 
 	private void fill() {
+		if(exeService != null && exeService.isShutdown() == false) {
+			exeService.shutdownNow();
+		}
 		exeService = Executors.newScheduledThreadPool(20);
 		for (int devicesInd : devicesInd) {
 			ShellyAbstractDevice d = appModel.get(devicesInd);
 			final int row = tModel.addRow(DevicesTable.UPDATING_BULLET, UtilMiscellaneous.getExtendedHostName(d), new InetAddressAndPort(d));
 			updateRow(d, row);
 		}
+	}
+	
+	private void updateHideCaptions() {
+		boolean en = ScannerProperties.get().getBoolProperty(ScannerProperties.PROP_TOOLBAR_CAPTIONS, true) == false;
+		Stream.of(toolBar.getComponents()).filter(c -> c instanceof AbstractButton).forEach(b -> ((AbstractButton)b).setHideActionText(en));
 	}
 
 	private void updateRow(ShellyAbstractDevice d, int row) {
@@ -529,6 +549,6 @@ public class DialogDeviceCheckList extends JDialog implements UsnaEventListener<
 			} catch (RuntimeException e) { } // on "refresh" table row could non exists
 		}
 	}
-}
+} // 534 - 552
 
 // g1 "factory_reset_from_switch" : true, "pon_wifi_reset" : false,
