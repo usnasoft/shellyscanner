@@ -1,14 +1,15 @@
 package it.usna.shellyscan.view.util;
 
 import java.nio.file.Paths;
+import java.util.ArrayList;
 
 import it.usna.util.AppProperties;
 
 /**
- * Not a real singleton
+ * Not a perfect singleton
  * @author a.flaccomio
  */
-public class ScannerProperties extends AppProperties {
+public class ScannerProperties extends AppProperties { // cannot also extend UsnaObservable
 	private static final long serialVersionUID = 1L;
 	public final static String PROP_TOOLBAR_CAPTIONS = "T_CAPTIONS";
 	public final static String PROP_CSV_SEPARATOR = "CSV_SEPARATOR";
@@ -64,6 +65,9 @@ public class ScannerProperties extends AppProperties {
 	public final static String IDE_AUTOCLOSE_STRING = "CL_STRING";
 	public final static String PROP_IDE_DARK = "IDE_DARK";
 	
+	public enum PropertyEvent {CHANGE};
+	
+	private static ArrayList<PropertyListener> listeners = new ArrayList<>();
 	private static ScannerProperties ap;
 	
 	private ScannerProperties(String file) {
@@ -77,5 +81,29 @@ public class ScannerProperties extends AppProperties {
 	
 	public static ScannerProperties get() {
 		return ap;
+	}
+	
+	// Observable ability
+	
+	public synchronized void addListener(PropertyListener l) {
+		listeners.add(l);
+	}
+	
+	public synchronized void removeListeners() {
+		listeners.clear();
+	}
+	
+	public synchronized void removeListener(PropertyListener l) {
+		listeners.remove(l);
+	}
+	
+	@Override
+	public Object setProperty(String key, String value) {
+		listeners.forEach(l -> l.update(PropertyEvent.CHANGE, key));
+        return super.setProperty(key, value);
+    }
+	
+	public interface PropertyListener {
+		void update(PropertyEvent e, String propKey);
 	}
 }

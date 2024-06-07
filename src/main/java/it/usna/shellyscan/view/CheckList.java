@@ -66,6 +66,7 @@ import it.usna.shellyscan.model.device.g2.RangeExtenderManager;
 import it.usna.shellyscan.model.device.g2.WIFIManagerG2;
 import it.usna.shellyscan.view.util.Msg;
 import it.usna.shellyscan.view.util.ScannerProperties;
+import it.usna.shellyscan.view.util.ScannerProperties.PropertyEvent;
 import it.usna.shellyscan.view.util.UtilMiscellaneous;
 import it.usna.swing.UsnaPopupMenu;
 import it.usna.swing.table.ExTooltipTable;
@@ -73,7 +74,7 @@ import it.usna.swing.table.UsnaTableModel;
 import it.usna.swing.texteditor.TextDocumentListener;
 import it.usna.util.UsnaEventListener;
 
-public class CheckList extends JDialog implements UsnaEventListener<Devices.EventType, Integer> {
+public class CheckList extends JDialog implements UsnaEventListener<Devices.EventType, Integer>, ScannerProperties.PropertyListener {
 	private static final long serialVersionUID = 1L;
 	private final static Logger LOG = LoggerFactory.getLogger(AbstractG1Device.class);
 	private final static String TRUE = LABELS.getString("true_yn");
@@ -88,11 +89,12 @@ public class CheckList extends JDialog implements UsnaEventListener<Devices.Even
 	private final static int COL_AP = 7;
 	private final static int COL_EXTENDER = 11;
 
-	private Devices appModel;
-	private int[] devicesInd;
+	private final ScannerProperties properties = ScannerProperties.get();
+	private final Devices appModel;
+	private final int[] devicesInd;
 	private final JToolBar toolBar = new JToolBar();
-	private ExTooltipTable table;
-	private UsnaTableModel tModel;
+	private final ExTooltipTable table;
+	private final UsnaTableModel tModel;
 	private ScheduledExecutorService exeService /* = Executors.newFixedThreadPool(20) */;
 
 	public CheckList(final Window owner, Devices appModel, int[] devicesInd, final SortOrder ipSort) {
@@ -360,10 +362,12 @@ public class CheckList extends JDialog implements UsnaEventListener<Devices.Even
 		setLocationRelativeTo(owner);
 		table.columnsWidthAdapt();
 		appModel.addListener(this);
+		properties.addListener(this);
 	}
 
 	@Override
 	public void dispose() {
+		properties.removeListener(this);
 		appModel.removeListener(this);
 		exeService.shutdownNow();
 		super.dispose();
@@ -382,7 +386,7 @@ public class CheckList extends JDialog implements UsnaEventListener<Devices.Even
 	}
 	
 	private void updateHideCaptions() {
-		boolean en = ScannerProperties.get().getBoolProperty(ScannerProperties.PROP_TOOLBAR_CAPTIONS, true) == false;
+		boolean en = properties.getBoolProperty(ScannerProperties.PROP_TOOLBAR_CAPTIONS, true) == false;
 		Stream.of(toolBar.getComponents()).filter(c -> c instanceof AbstractButton).forEach(b -> ((AbstractButton)b).setHideActionText(en));
 	}
 
@@ -549,6 +553,13 @@ public class CheckList extends JDialog implements UsnaEventListener<Devices.Even
 			} catch (RuntimeException e) { } // on "refresh" table row could non exists
 		}
 	}
-} // 534 - 552
+
+	@Override
+	public void update(PropertyEvent e, String propKey) {
+		if(ScannerProperties.PROP_TOOLBAR_CAPTIONS.equals(propKey)) {
+			updateHideCaptions();
+		}
+	}
+} // 534 - 562
 
 // g1 "factory_reset_from_switch" : true, "pon_wifi_reset" : false,
