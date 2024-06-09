@@ -329,7 +329,8 @@ public class PanelNetwork extends JPanel {
 		if(rlUser.length() > 0) {
 			char[] rlp = passwordFieldRL.getPassword();
 			try {
-				encodedRlp = (char)(rlp.hashCode() % ('Z' - 'A') + 'A') + Base64.getEncoder().encodeToString(new String(rlp).getBytes());
+				String rplStr = new String(rlp);
+				encodedRlp = (char)(rplStr.hashCode() % ('Z' - 'A') + 'A') + Base64.getEncoder().encodeToString(rplStr.getBytes());
 			} catch(RuntimeException e) {}
 			DevicesFactory.setCredential(rlUser, rlp);
 		} else {

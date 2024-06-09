@@ -76,6 +76,7 @@ import it.usna.shellyscan.view.devsettings.DialogDeviceSettings;
 import it.usna.shellyscan.view.scripts.DialogDeviceScripts;
 import it.usna.shellyscan.view.util.Msg;
 import it.usna.shellyscan.view.util.ScannerProperties;
+import it.usna.shellyscan.view.util.ScannerProperties.PropertyEvent;
 import it.usna.swing.UsnaPopupMenu;
 import it.usna.swing.table.UsnaTableModel;
 import it.usna.swing.texteditor.TextDocumentListener;
@@ -83,7 +84,7 @@ import it.usna.util.AppProperties;
 import it.usna.util.IOFile;
 import it.usna.util.UsnaEventListener;
 
-public class MainView extends MainWindow implements UsnaEventListener<Devices.EventType, Integer> {
+public class MainView extends MainWindow implements UsnaEventListener<Devices.EventType, Integer>, ScannerProperties.AppPropertyListener {
 	private static final long serialVersionUID = 1L;
 	public final static int SHORTCUT_KEY = Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx();
 	private final static Logger LOG = LoggerFactory.getLogger(MainWindow.class);
@@ -272,10 +273,11 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		displayStatus();
 	});
 
-	public MainView(final Devices model, final AppProperties appProp) {
+	public MainView(final Devices model, final ScannerProperties appProp) {
 		this.model = model;
 		this.appProp = appProp;
 		model.addListener(this);
+		appProp.addListener(this);
 		
 		backupAction = new BackupAction(this, devicesTable, appProp, model);
 		restoreAction = new RestoreAction(this, devicesTable, appProp, model);
@@ -483,6 +485,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 			@Override
 			public void windowClosing(WindowEvent e) {
 				MainView.this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+				appProp.removeListeners();
 				model.removeListeners(); // immediate; before subsequent model.close();
 				storeProperties();
 				dispose();
@@ -511,17 +514,9 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		rowsSelectionManager();
 	}
 	
-	public void updateHideCaptions() {
+	private void updateHideCaptions() {
 		boolean en = appProp.getBoolProperty(ScannerProperties.PROP_TOOLBAR_CAPTIONS, true) == false;
 		Stream.of(toolBar.getComponents()).filter(c -> c instanceof AbstractButton).forEach(b -> ((AbstractButton)b).setHideActionText(en));
-	}
-	
-	public void updateUptimeRenderMode() {
-		devicesTable.setUptimeRenderMode(appProp.getProperty(ScannerProperties.PROP_UPTIME_MODE));
-		for(int i = 0; i < model.size(); i++) {
-			devicesTable.updateRow(model.get(i), i);
-		}
-		devicesTable.columnsWidthAdapt();
 	}
 	
 	private void setColFilter(JComboBox<?> combo) {
@@ -671,6 +666,19 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		});
 	}
 	
+	@Override
+	public void update(PropertyEvent e, String propKey) {
+		if(ScannerProperties.PROP_TOOLBAR_CAPTIONS.equals(propKey)) {
+			updateHideCaptions();
+		} else if(ScannerProperties.PROP_UPTIME_MODE.equals(propKey)) {
+			devicesTable.setUptimeRenderMode(appProp.getProperty(ScannerProperties.PROP_UPTIME_MODE));
+			for(int i = 0; i < model.size(); i++) {
+				devicesTable.updateRow(model.get(i), i);
+			}
+			devicesTable.columnsWidthAdapt();
+		}
+	}
+	
 	public synchronized void reserveStatusLine(boolean r) {
 		statusLineReserved = r;
 		if(r == false) displayStatus();
@@ -689,4 +697,4 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 			}
 		}
 	}
-} //557 - 614 - 620 - 669 - 705 - 727 - 699 - 760 - 782 - 811 - 805 - 646 - 699 - 706 - 688
+} //557 - 614 - 620 - 669 - 705 - 727 - 699 - 760 - 782 - 811 - 805 - 646 - 699 - 706 - 688 - 700

@@ -67,7 +67,7 @@ public class ScannerProperties extends AppProperties { // cannot also extend Usn
 	
 	public enum PropertyEvent {CHANGE};
 	
-	private static ArrayList<PropertyListener> listeners = new ArrayList<>();
+	private static ArrayList<AppPropertyListener> listeners = new ArrayList<>();
 	private static ScannerProperties ap;
 	
 	private ScannerProperties(String file) {
@@ -85,7 +85,7 @@ public class ScannerProperties extends AppProperties { // cannot also extend Usn
 	
 	// Observable ability
 	
-	public synchronized void addListener(PropertyListener l) {
+	public synchronized void addListener(AppPropertyListener l) {
 		listeners.add(l);
 	}
 	
@@ -93,17 +93,20 @@ public class ScannerProperties extends AppProperties { // cannot also extend Usn
 		listeners.clear();
 	}
 	
-	public synchronized void removeListener(PropertyListener l) {
+	public synchronized void removeListener(AppPropertyListener l) {
 		listeners.remove(l);
 	}
 	
 	@Override
 	public Object setProperty(String key, String value) {
-		listeners.forEach(l -> l.update(PropertyEvent.CHANGE, key));
-        return super.setProperty(key, value);
+		Object ret = super.setProperty(key, value);
+		if(value.equals(ret) == false) {
+			listeners.forEach(l -> l.update(PropertyEvent.CHANGE, key));
+		}
+        return ret;
     }
 	
-	public interface PropertyListener {
+	public interface AppPropertyListener {
 		void update(PropertyEvent e, String propKey);
 	}
 }

@@ -74,7 +74,7 @@ import it.usna.swing.table.UsnaTableModel;
 import it.usna.swing.texteditor.TextDocumentListener;
 import it.usna.util.UsnaEventListener;
 
-public class CheckList extends JDialog implements UsnaEventListener<Devices.EventType, Integer>, ScannerProperties.PropertyListener {
+public class CheckList extends JDialog implements UsnaEventListener<Devices.EventType, Integer>, ScannerProperties.AppPropertyListener {
 	private static final long serialVersionUID = 1L;
 	private final static Logger LOG = LoggerFactory.getLogger(AbstractG1Device.class);
 	private final static String TRUE = LABELS.getString("true_yn");

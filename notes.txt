@@ -255,7 +255,7 @@ New checklist UI
 
 ---
 // TODO
-// others: cloud enable/disable
+// chacklist multiselection
 // notes column (second field on notes?)
 // scroll orizzontale grafici
 // todo search ssid ?
