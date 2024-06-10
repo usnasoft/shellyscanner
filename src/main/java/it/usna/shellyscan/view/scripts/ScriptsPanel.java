@@ -191,7 +191,7 @@ public class ScriptsPanel extends JPanel {
 		}));
 		operationsPanel.add(btnUpload);
 
-		final UsnaAction editAction = new UsnaAction(this, "edit2", e -> {
+		final UsnaAction editAction = new UsnaAction(this, "edit", e -> {
 			try {
 				final int mRow = table.convertRowIndexToModel(table.getSelectedRow());
 				final Script sc = scripts.get(mRow).script;

@@ -97,6 +97,9 @@ public class ScannerProperties extends AppProperties { // cannot also extend Usn
 		listeners.remove(l);
 	}
 	
+	/**
+	 * @throws NullPointerException if value is null
+	 */
 	@Override
 	public Object setProperty(String key, String value) {
 		Object ret = super.setProperty(key, value);

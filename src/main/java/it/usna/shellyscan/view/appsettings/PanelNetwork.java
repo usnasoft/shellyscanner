@@ -46,7 +46,7 @@ public class PanelNetwork extends JPanel {
 	private IntegerTextFieldPanel confRefreshtextField;
 	
 	private JPanel panelIP = new JPanel();
-	private JButton btnIPEdit = new JButton(LABELS.getString("edit2"));
+	private JButton btnIPEdit = new JButton(LABELS.getString("edit"));
 	private DialogNetworkIPScanSelection dialogIP;
 
 	PanelNetwork(JDialog parent, final AppProperties appProp) {

@@ -192,24 +192,38 @@ public class CheckList extends JDialog implements UsnaEventListener<Devices.Even
 			updateRow(d, localRow);
 		});
 
-		Action rebootAction = new UsnaAction(this, "action_reboot_name", "action_reboot_tooltip", null, "/images/Nuke24.png", e -> {
-			final String cancel = UIManager.getString("OptionPane.cancelButtonText");
-			if(JOptionPane.showOptionDialog(
-					CheckList.this, LABELS.getString("action_reboot_confirm"), LABELS.getString("action_reboot_tooltip"),
-					JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null,
-					new Object[] {LABELS.getString("action_reboot_name"), cancel}, cancel) == 0) {
-				for(int ind: table.getSelectedRows()) {
-					//todo
-					int modelRow = table.convertRowIndexToModel(ind);
+//		Action rebootAction = new UsnaAction(this, "action_reboot_name", "action_reboot_tooltip", null, "/images/Nuke24.png", e -> {
+//			final String cancel = UIManager.getString("OptionPane.cancelButtonText");
+//			if(JOptionPane.showOptionDialog(
+//					CheckList.this, LABELS.getString("action_reboot_confirm"), LABELS.getString("action_reboot_tooltip"),
+//					JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null,
+//					new Object[] {LABELS.getString("action_reboot_name"), cancel}, cancel) == 0) {
+//				for(int ind: table.getSelectedRows()) {
+//					//todo
+//					int modelRow = table.convertRowIndexToModel(ind);
+//					ShellyAbstractDevice d = getLocalDevice(modelRow);
+//					d.setStatus(Status.READING);
+//					tModel.setValueAt(DevicesTable.UPDATING_BULLET, modelRow, DevicesTable.COL_STATUS_IDX);
+//					SwingUtilities.invokeLater(() -> appModel.reboot(devicesInd[modelRow]));
+//				}
+//			}
+//		});
+
+		Action rebootAction = new UsnaSelectedAction(this, table, "action_reboot_name", "action_reboot_tooltip", null, "/images/Nuke24.png",
+				() -> {
+					final String cancel = UIManager.getString("OptionPane.cancelButtonText");
+					return JOptionPane.showOptionDialog(
+							CheckList.this, LABELS.getString("action_reboot_confirm"), LABELS.getString("action_reboot_tooltip"),
+							JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null,
+							new Object[] {LABELS.getString("action_reboot_name"), cancel}, cancel) == 0;},
+				modelRow -> {
 					ShellyAbstractDevice d = getLocalDevice(modelRow);
 					d.setStatus(Status.READING);
 					tModel.setValueAt(DevicesTable.UPDATING_BULLET, modelRow, DevicesTable.COL_STATUS_IDX);
 					SwingUtilities.invokeLater(() -> appModel.reboot(devicesInd[modelRow]));
-				}
-			}
-		});
+				});
 
-		Action browseAction = new UsnaSelectedAction(this, table, "edit", "edit", null, "/images/Computer24.png", i -> {
+		Action browseAction = new UsnaSelectedAction(this, table, "action_web_name", "action_web_tooltip", null, "/images/Computer24.png", i -> {
 			try {
 				Desktop.getDesktop().browse(URI.create("http://" + InetAddressAndPort.toString(getLocalDevice(i))));
 			} catch (IOException ex) {
@@ -560,6 +574,6 @@ public class CheckList extends JDialog implements UsnaEventListener<Devices.Even
 			updateHideCaptions();
 		}
 	}
-} // 534 - 562
+} // 534 - 563
 
 // g1 "factory_reset_from_switch" : true, "pon_wifi_reset" : false,
