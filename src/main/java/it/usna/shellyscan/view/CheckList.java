@@ -192,23 +192,6 @@ public class CheckList extends JDialog implements UsnaEventListener<Devices.Even
 			updateRow(d, localRow);
 		});
 
-//		Action rebootAction = new UsnaAction(this, "action_reboot_name", "action_reboot_tooltip", null, "/images/Nuke24.png", e -> {
-//			final String cancel = UIManager.getString("OptionPane.cancelButtonText");
-//			if(JOptionPane.showOptionDialog(
-//					CheckList.this, LABELS.getString("action_reboot_confirm"), LABELS.getString("action_reboot_tooltip"),
-//					JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null,
-//					new Object[] {LABELS.getString("action_reboot_name"), cancel}, cancel) == 0) {
-//				for(int ind: table.getSelectedRows()) {
-//					//todo
-//					int modelRow = table.convertRowIndexToModel(ind);
-//					ShellyAbstractDevice d = getLocalDevice(modelRow);
-//					d.setStatus(Status.READING);
-//					tModel.setValueAt(DevicesTable.UPDATING_BULLET, modelRow, DevicesTable.COL_STATUS_IDX);
-//					SwingUtilities.invokeLater(() -> appModel.reboot(devicesInd[modelRow]));
-//				}
-//			}
-//		});
-
 		Action rebootAction = new UsnaSelectedAction(this, table, "action_reboot_name", "action_reboot_tooltip", null, "/images/Nuke24.png",
 				() -> {
 					final String cancel = UIManager.getString("OptionPane.cancelButtonText");
@@ -574,6 +557,6 @@ public class CheckList extends JDialog implements UsnaEventListener<Devices.Even
 			updateHideCaptions();
 		}
 	}
-} // 534 - 563
+} // 534 - 560
 
 // g1 "factory_reset_from_switch" : true, "pon_wifi_reset" : false,

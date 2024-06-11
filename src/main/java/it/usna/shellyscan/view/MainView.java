@@ -169,21 +169,19 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		});
 	});
 	
-	private Action rebootAction = new UsnaAction(this, "action_reboot_name", "action_reboot_tooltip", null, "/images/nuke.png", e -> {
-		final String cancel = UIManager.getString("OptionPane.cancelButtonText");
-		if(JOptionPane.showOptionDialog(
-				MainView.this, LABELS.getString("action_reboot_confirm"), LABELS.getString("action_reboot_tooltip"),
-				JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null,
-				new Object[] {LABELS.getString("action_reboot_name"), cancel}, cancel) == 0) {
-			for(int ind: devicesTable.getSelectedRows()) {
-				int modelRow = devicesTable.convertRowIndexToModel(ind);
+	private Action rebootAction = new UsnaSelectedAction(this, devicesTable, "action_reboot_name", "action_reboot_tooltip", null, "/images/nuke.png",
+			() -> {
+				final String cancel = UIManager.getString("OptionPane.cancelButtonText");
+				return JOptionPane.showOptionDialog(
+						MainView.this, LABELS.getString("action_reboot_confirm"), LABELS.getString("action_reboot_tooltip"),
+						JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null,
+						new Object[] {LABELS.getString("action_reboot_name"), cancel}, cancel) == 0;},
+			modelRow -> {
 				ShellyAbstractDevice d = model.get(modelRow);
 				d.setStatus(Status.READING);
 				tabModel.setValueAt(DevicesTable.UPDATING_BULLET, modelRow, DevicesTable.COL_STATUS_IDX);
 				SwingUtilities.invokeLater(() -> model.reboot(modelRow));
-			}
-		}
-	});
+			});
 	
 	private Action checkListAction = new UsnaAction(this, "action_checklist_name", "action_checklist_tooltip", null, "/images/Ok.png", e -> {
 		List<? extends RowSorter.SortKey> k = devicesTable.getRowSorter().getSortKeys();
@@ -672,9 +670,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 			updateHideCaptions();
 		} else if(ScannerProperties.PROP_UPTIME_MODE.equals(propKey)) {
 			devicesTable.setUptimeRenderMode(appProp.getProperty(ScannerProperties.PROP_UPTIME_MODE));
-			for(int i = 0; i < model.size(); i++) {
-				devicesTable.updateRow(model.get(i), i);
-			}
+			((UsnaTableModel)devicesTable.getModel()).fireTableDataChanged();
 			devicesTable.columnsWidthAdapt();
 		}
 	}
@@ -697,4 +693,4 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 			}
 		}
 	}
-} //557 - 614 - 620 - 669 - 705 - 727 - 699 - 760 - 782 - 811 - 805 - 646 - 699 - 706 - 688 - 700
+} //557 - 614 - 620 - 669 - 705 - 727 - 699 - 760 - 782 - 811 - 805 - 646 - 699 - 706 - 688 - 696
