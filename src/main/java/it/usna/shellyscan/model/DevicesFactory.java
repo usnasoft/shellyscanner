@@ -69,6 +69,8 @@ import it.usna.shellyscan.model.device.g2.ShellyPro2PM;
 import it.usna.shellyscan.model.device.g2.ShellyPro3;
 import it.usna.shellyscan.model.device.g2.ShellyPro4PM;
 import it.usna.shellyscan.model.device.g2.WallDisplay;
+import it.usna.shellyscan.model.device.g3.Shelly1G3;
+import it.usna.shellyscan.model.device.g3.Shelly1PMG3;
 import it.usna.shellyscan.model.device.g3.ShellyG3Unmanaged;
 import it.usna.shellyscan.model.device.g3.ShellyMini1G3;
 import it.usna.shellyscan.model.device.g3.ShellyMini1PMG3;
@@ -272,6 +274,8 @@ public class DevicesFactory {
 				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			}
 			d = switch(info.get("app").asText()) {
+			case Shelly1G3.ID -> new Shelly1G3(address, port, name);
+			case Shelly1PMG3.ID -> new Shelly1PMG3(address, port, name);
 			case ShellyMini1G3.ID -> new ShellyMini1G3(address, port, name);
 			case ShellyMini1PMG3.ID -> new ShellyMini1PMG3(address, port, name);
 			case ShellyMiniPMG3.ID -> new ShellyMiniPMG3(address, port, name);
