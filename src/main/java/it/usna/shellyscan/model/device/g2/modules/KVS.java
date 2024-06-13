@@ -80,7 +80,7 @@ public class KVS {
 	 * @throws InterruptedException
 	 */
 	public void restoreKVS(JsonNode kvsMany, List<String> errors) throws InterruptedException {
-		Iterator<Entry<String, JsonNode>> fields = kvsMany.get("items").fields();
+		Iterator<Entry<String, JsonNode>> fields = kvsMany.path("items").fields(); // wall display: {"code":-114,"message":"Method KVS.GetMany failed: No such component"}
 		while(fields.hasNext()) {
 			Entry<String, JsonNode> entry = fields.next();		
 			KVItem storedItem = new KVItem(entry.getKey(), entry.getValue().get("etag").asText(), entry.getValue().get("value").asText());

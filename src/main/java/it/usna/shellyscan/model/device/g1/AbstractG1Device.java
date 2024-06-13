@@ -320,8 +320,13 @@ public abstract class AbstractG1Device extends ShellyAbstractDevice {
 					"&coiot_update_period=" + settings.at("/coiot/update_period").asText() +
 					"&coiot_peer=" + URLEncoder.encode(settings.at("/coiot/peer").asText(), StandardCharsets.UTF_8.name());
 		}
+		String sntpSetting = "";
+		JsonNode sntpNode = settings.at("/sntp/server");
+		if(sntpNode.isMissingNode() == false) {
+			sntpSetting = "&sntp_server=" + sntpNode.asText();
+		}
 		TimeUnit.MILLISECONDS.sleep(delay);
-		errors.add(sendCommand("/settings?" + jsonNodeToURLPar(settings, settigsRestore) + coiotSettings));
+		errors.add(sendCommand("/settings?" + jsonNodeToURLPar(settings, settigsRestore) + coiotSettings + sntpSetting));
 		// eco_mode_enabled=" + settings.get("eco_mode_enabled") // no way: device reboot changing this parameter
 		TimeUnit.MILLISECONDS.sleep(delay);
 		LoginManagerG1 lm = new LoginManagerG1(this, true);

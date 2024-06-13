@@ -46,7 +46,7 @@ import it.usna.shellyscan.model.device.g1.ShellyMotion;
 import it.usna.shellyscan.model.device.g1.ShellyMotion2;
 import it.usna.shellyscan.model.device.g1.ShellyTRV;
 import it.usna.shellyscan.model.device.g1.modules.LightBulbRGBCommander;
-import it.usna.shellyscan.model.device.g1.modules.Thermostat;
+import it.usna.shellyscan.model.device.g1.modules.ThermostatG1;
 import it.usna.shellyscan.model.device.g2.ShellyPlusSmoke;
 import it.usna.shellyscan.model.device.g2.modules.SensorAddOn;
 import it.usna.shellyscan.model.device.modules.DeviceModule;
@@ -237,9 +237,9 @@ public class DevicesTable extends ExTooltipTable {
 			} else if(value instanceof DeviceModule dm && isColumnVisible(COL_SOURCE_IDX) == false && (ret = dm.getLastSource()) != null) {
 				adaptTooltipLocation = false;
 				return "<html>" + String.format(LABELS.getString("col_last_source_tooltip"), value, ret) + "</html>";
-			} else if(value instanceof Thermostat) {
+			} else if(value instanceof ThermostatG1) {
 				adaptTooltipLocation = false;
-				return String.format(Locale.ENGLISH, LABELS.getString("col_command_therm_tooltip"), ((Thermostat)value).getCurrentProfile(), ((Thermostat)value).getTargetTemp(), ((Thermostat)value).getPosition());
+				return String.format(Locale.ENGLISH, LABELS.getString("col_command_therm_tooltip"), ((ThermostatG1)value).getCurrentProfile(), ((ThermostatG1)value).getTargetTemp(), ((ThermostatG1)value).getPosition());
 			} else if(value instanceof Meters[] meters) {
 				Component comp = getCellRenderer(r, c).getTableCellRendererComponent(this, value, false, false, r, c);
 				if(Arrays.stream(meters).anyMatch(m -> m instanceof LabelHolder || m instanceof SensorAddOn) || getCellRect(r, c, false).width <= comp.getPreferredSize().width) {
@@ -476,8 +476,8 @@ public class DevicesTable extends ExTooltipTable {
 				} else if(d instanceof ShellyPlusSmoke smoke) {
 					row[DevicesTable.COL_COMMAND_IDX] = String.format(LABELS.getString("lableStatusSmoke"), smoke.getAlarm() ? YES : NO);
 				} else if(d instanceof ShellyTRV trv) {
-					Thermostat thermostat = trv.getThermostat();
-					if(thermostat.isAutoTemp()) {
+					ThermostatG1 thermostat = trv.getThermostat();
+					if(thermostat.isEnabled()) {
 						row[DevicesTable.COL_COMMAND_IDX] = thermostat;
 					} else {
 						row[DevicesTable.COL_COMMAND_IDX] = String.format(LABELS.getString("lableStatusTRV"), thermostat.getPosition());

@@ -6,8 +6,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 import it.usna.shellyscan.model.device.g1.AbstractG1Device;
 import it.usna.shellyscan.model.device.modules.DeviceModule;
+import it.usna.shellyscan.model.device.modules.Thermostat;
 
-public class Thermostat implements DeviceModule /*, ThermostatInterface*/ {
+public class ThermostatG1 implements Thermostat /*, ThermostatInterface*/ {
 	private final AbstractG1Device parent;
 	private final static String INDEX = "0";
 	private boolean autoTemp;
@@ -19,7 +20,7 @@ public class Thermostat implements DeviceModule /*, ThermostatInterface*/ {
 	public final static float TARGET_MIN = 4;
 	public final static float TARGET_MAX = 31;
 	
-	public Thermostat(AbstractG1Device parent) {
+	public ThermostatG1(AbstractG1Device parent) {
 		this.parent = parent;
 	}
 	
@@ -36,11 +37,12 @@ public class Thermostat implements DeviceModule /*, ThermostatInterface*/ {
 		fillThermostat(thermostat);
 	}
 	
-	public boolean isAutoTemp() {
+	@Override
+	public boolean isEnabled() {
 		return autoTemp;
 	}
 	
-//	@Override
+	@Override
 	public float getTargetTemp() {
 		return targetTemp;
 	}
@@ -70,7 +72,7 @@ public class Thermostat implements DeviceModule /*, ThermostatInterface*/ {
 		return scheduleProfile;
 	}
 
-//	@Override
+	@Override
 	public void setTargetTemp(float temp) throws IOException {
 		fillThermostat(parent.getJSON("/settings/thermostats/" + INDEX + "?target_t=" + temp));
 	}

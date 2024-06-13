@@ -23,7 +23,7 @@ import javax.swing.table.TableCellRenderer;
 import it.usna.shellyscan.Main;
 import it.usna.shellyscan.model.device.g1.modules.LightBulbRGB;
 import it.usna.shellyscan.model.device.g1.modules.LightRGBW;
-import it.usna.shellyscan.model.device.g1.modules.Thermostat;
+import it.usna.shellyscan.model.device.g1.modules.ThermostatG1;
 import it.usna.shellyscan.model.device.modules.InputInterface;
 import it.usna.shellyscan.model.device.modules.WhiteInterface;
 import it.usna.shellyscan.model.device.modules.RelayInterface;
@@ -63,7 +63,7 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 	// Thermostat
 	private JPanel thermPanel = new JPanel(new BorderLayout());
 	private JLabel thermProfileLabel = new JLabel();
-	private JSlider thermSlider = new JSlider((int)(Thermostat.TARGET_MIN * 2), (int)(Thermostat.TARGET_MAX * 2));
+	private JSlider thermSlider = new JSlider((int)(ThermostatG1.TARGET_MIN * 2), (int)(ThermostatG1.TARGET_MAX * 2));
 
 	private JPanel stackedPanel = new JPanel();
 	
@@ -291,7 +291,7 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 			ret = stackedPanel;
 		} else if(value instanceof InputInterface[] inputs) { // Button1 - I3 - I4
 			ret = actionButtonsPanel(inputs, foregroundColor);
-		} else if(value instanceof Thermostat thermostat) {
+		} else if(value instanceof ThermostatG1 thermostat) {
 			thermSlider.setValue((int)(thermostat.getTargetTemp() * 2));
 			thermProfileLabel.setText(thermostat.getCurrentProfile() + " " + thermostat.getTargetTemp() + "°C");
 			thermProfileLabel.setEnabled(thermostat.isScheduleActive());

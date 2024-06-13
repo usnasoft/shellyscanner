@@ -41,7 +41,7 @@ public class NotesEditor extends JFrame {
 		setIconImages(owner.getIconImages());
 		
 		BasicEditorPanel editor = new BasicEditorPanel(this, ghost.getNote());
-		getContentPane().add(editor, BorderLayout.NORTH);
+		getContentPane().add(editor, BorderLayout.CENTER); // NORTH
 
 		// bottom buttons
 		JPanel buttonsPanel = new JPanel(new FlowLayout());

@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
+import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.modules.RelayInterface;
 
@@ -57,18 +58,23 @@ public class Relay implements RelayInterface {
 
 	@Override
 	public boolean toggle() throws IOException {
-//		final JsonNode relay = parent.getJSON("/rpc/Switch.Toggle?id=" + index);
-		final JsonNode relay = parent.getJSON("/relay/" + index + "?turn=toggle");
-		isOn = relay.get("ison").asBoolean();
-		source = relay.get("source").asText("-");
+//		final JsonNode relay = parent.getJSON("/relay/" + index + "?turn=toggle");
+//		isOn = relay.get("ison").asBoolean();
+//		source = relay.get("source").asText("-");
+		final JsonNode relay = parent.getJSON("/rpc/Switch.Toggle?id=" + index);
+		isOn = relay.get("was_on").asBoolean() == false;
+		source = Devices.SCANNER_AGENT;
 		return isOn;
 	}
 	
 	@Override
 	public void change(boolean on) throws IOException {
-		final JsonNode relay = parent.getJSON("/relay/" + index + "?turn=" + (on ? "on" : "off"));
-		isOn = relay.get("ison").asBoolean();
-		source = relay.get("source").asText("-");
+//		final JsonNode relay = parent.getJSON("/relay/" + index + "?turn=" + (on ? "on" : "off"));
+//		isOn = relay.get("ison").asBoolean();
+//		source = relay.get("source").asText("-");
+		final JsonNode relay = parent.getJSON("/rpc/Switch.Set?id=" + index + "&on=" + on);
+		isOn = relay.get("was_on").asBoolean() == false;
+		source = Devices.SCANNER_AGENT;
 	}
 	
 	@Override

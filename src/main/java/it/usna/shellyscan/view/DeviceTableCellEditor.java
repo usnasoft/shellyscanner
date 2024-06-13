@@ -31,7 +31,7 @@ import org.slf4j.LoggerFactory;
 
 import it.usna.shellyscan.model.device.g1.modules.LightBulbRGB;
 import it.usna.shellyscan.model.device.g1.modules.LightRGBW;
-import it.usna.shellyscan.model.device.g1.modules.Thermostat;
+import it.usna.shellyscan.model.device.g1.modules.ThermostatG1;
 import it.usna.shellyscan.model.device.modules.InputInterface;
 import it.usna.shellyscan.model.device.modules.WhiteInterface;
 import it.usna.shellyscan.model.device.modules.RelayInterface;
@@ -74,7 +74,7 @@ public class DeviceTableCellEditor extends AbstractCellEditor implements TableCe
 	// Thermostat
 	private JPanel thermPanel = new JPanel(new BorderLayout());
 	private JLabel thermProfileLabel = new JLabel();
-	private JSlider thermSlider = new JSlider((int)(Thermostat.TARGET_MIN * 2), (int)(Thermostat.TARGET_MAX * 2));
+	private JSlider thermSlider = new JSlider((int)(ThermostatG1.TARGET_MIN * 2), (int)(ThermostatG1.TARGET_MAX * 2));
 	
 	private JPanel stackedPanel = new JPanel();
 
@@ -336,12 +336,12 @@ public class DeviceTableCellEditor extends AbstractCellEditor implements TableCe
 		thermPanel.add(thermButtonPanel, BorderLayout.EAST);
 		thermProfileLabel.setForeground(table.getSelectionForeground());
 		thermSlider.addChangeListener(e -> {
-			if(edited != null && edited instanceof Thermostat) {
+			if(edited != null && edited instanceof ThermostatG1) {
 				if(thermSlider.getValueIsAdjusting()) {
-					thermProfileLabel.setText(((Thermostat)edited).getCurrentProfile() + " " + thermSlider.getValue()/2f + "°C");
+					thermProfileLabel.setText(((ThermostatG1)edited).getCurrentProfile() + " " + thermSlider.getValue()/2f + "°C");
 				} else {
 					try {
-						((Thermostat)edited).setTargetTemp(thermSlider.getValue()/2f);
+						((ThermostatG1)edited).setTargetTemp(thermSlider.getValue()/2f);
 					} catch (/*IO*/Exception ex) {
 						LOG.error("thermSlider", ex);
 					}
@@ -350,9 +350,9 @@ public class DeviceTableCellEditor extends AbstractCellEditor implements TableCe
 			}
 		});
 		thermButtonUp.addActionListener(e -> {
-			if(edited != null && edited instanceof Thermostat) {
+			if(edited != null && edited instanceof ThermostatG1) {
 				try {
-					((Thermostat)edited).targetTempUp(0.5f);
+					((ThermostatG1)edited).targetTempUp(0.5f);
 				} catch (/*IO*/Exception ex) {
 					LOG.error("thermButtonUp", ex);
 				}
@@ -360,9 +360,9 @@ public class DeviceTableCellEditor extends AbstractCellEditor implements TableCe
 			}
 		});
 		thermButtonDown.addActionListener(e -> {
-			if(edited != null && edited instanceof Thermostat) {
+			if(edited != null && edited instanceof ThermostatG1) {
 				try {
-					((Thermostat)edited).targetTempDown(0.5f);
+					((ThermostatG1)edited).targetTempDown(0.5f);
 				} catch (/*IO*/Exception ex) {
 					LOG.error("thermButtonDown", ex);
 				}
@@ -392,7 +392,7 @@ public class DeviceTableCellEditor extends AbstractCellEditor implements TableCe
 			return getRGBWWhitePanel(wiArray, table);
 		} else if(value instanceof InputInterface[] inputArray) {
 			return getActionsPanel(inputArray, table);
-		} else if(value instanceof Thermostat th) {
+		} else if(value instanceof ThermostatG1 th) {
 			return getThermostatPanel(th);
 		}
 		return null;
@@ -549,7 +549,7 @@ public class DeviceTableCellEditor extends AbstractCellEditor implements TableCe
 		return stackedPanel;
 	}
 	
-	private Component getThermostatPanel(Thermostat thermostat) {
+	private Component getThermostatPanel(ThermostatG1 thermostat) {
 		thermSlider.setValue((int)(thermostat.getTargetTemp() * 2f));
 		thermProfileLabel.setText(thermostat.getCurrentProfile() + " " + thermostat.getTargetTemp() + "°C");
 		thermProfileLabel.setEnabled(thermostat.isScheduleActive());

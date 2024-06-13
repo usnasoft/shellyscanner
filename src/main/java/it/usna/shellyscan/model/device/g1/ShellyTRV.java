@@ -9,13 +9,14 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.Meters;
-import it.usna.shellyscan.model.device.g1.modules.Thermostat;
+import it.usna.shellyscan.model.device.g1.modules.ThermostatG1;
+import it.usna.shellyscan.model.device.modules.ThermostatCommander;
 
-public class ShellyTRV extends AbstractG1Device {
+public class ShellyTRV extends AbstractG1Device implements ThermostatCommander {
 	public final static String ID = "SHTRV-01";
 //	private final static Logger LOG = LoggerFactory.getLogger(ShellyTRV.class);
 	private final static Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.BAT, Meters.Type.T};
-	private Thermostat thermostat = new Thermostat(this);
+	private ThermostatG1 thermostat = new ThermostatG1(this);
 	private float measuredTemp;
 	private Meters[] meters;
 	protected int bat;
@@ -76,15 +77,8 @@ public class ShellyTRV extends AbstractG1Device {
 		return measuredTemp;
 	}
 	
-//	public float getTargetTemp() {
-//		return thermostat.getTargetTemp();
-//	}
-//	
-//	public float getPosition() {
-//		return thermostat.getPosition();
-//	}
-	
-	public Thermostat getThermostat() {
+	@Override
+	public ThermostatG1 getThermostat() {
 		return thermostat;
 	}
 

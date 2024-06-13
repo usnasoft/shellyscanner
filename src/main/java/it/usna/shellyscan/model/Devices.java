@@ -44,6 +44,7 @@ import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Integer> {
 	private final static Logger LOG = LoggerFactory.getLogger(Devices.class);
 	private final static ObjectMapper JSON_MAPPER = new ObjectMapper();
+	public final static String SCANNER_AGENT = "Shelly Scanner";
 	
 	public enum EventType {
 		ADD,
