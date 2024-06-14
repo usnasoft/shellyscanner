@@ -11,7 +11,7 @@ import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.g2.modules.Relay;
 import it.usna.shellyscan.model.device.g2.modules.ThermostatG2;
 import it.usna.shellyscan.model.device.modules.RelayCommander;
-import it.usna.shellyscan.model.device.modules.Thermostat;
+import it.usna.shellyscan.model.device.modules.ThermostatInterface;
 import it.usna.shellyscan.model.device.modules.ThermostatCommander;
 
 /**
@@ -82,7 +82,7 @@ public class WallDisplay extends AbstractG2Device implements RelayCommander, The
 	}
 	
 	@Override
-	public Thermostat getThermostat() {
+	public ThermostatInterface getThermostat() {
 		return thermostat;
 	}
 

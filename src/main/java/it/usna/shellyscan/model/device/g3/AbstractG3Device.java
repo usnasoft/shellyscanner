@@ -14,5 +14,11 @@ public abstract class AbstractG3Device extends AbstractG2Device {
 		super(address, port, hostname);
 	}
 	
-	// todo
+	@Override
+	public String[] getInfoRequests() {
+		return new String[] {
+				"/rpc/Shelly.GetDeviceInfo?ident=true", "/rpc/Shelly.GetConfig", "/rpc/Shelly.GetStatus", "/rpc/Shelly.CheckForUpdate", "/rpc/Schedule.List", "/rpc/Webhook.List",
+				"/rpc/Script.List", "/rpc/WiFi.ListAPClients" /*, "/rpc/Sys.GetStatus",*/, "/rpc/KVS.GetMany", "/rpc/Shelly.GetComponents",
+				"/rpc/BTHome.GetConfig", "/rpc/BTHome.GetStatus"};
+	}
 }

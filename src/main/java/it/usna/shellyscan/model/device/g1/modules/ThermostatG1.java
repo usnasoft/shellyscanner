@@ -5,10 +5,9 @@ import java.io.IOException;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import it.usna.shellyscan.model.device.g1.AbstractG1Device;
-import it.usna.shellyscan.model.device.modules.DeviceModule;
-import it.usna.shellyscan.model.device.modules.Thermostat;
+import it.usna.shellyscan.model.device.modules.ThermostatInterface;
 
-public class ThermostatG1 implements Thermostat /*, ThermostatInterface*/ {
+public class ThermostatG1 implements ThermostatInterface {
 	private final AbstractG1Device parent;
 	private final static String INDEX = "0";
 	private boolean autoTemp;
