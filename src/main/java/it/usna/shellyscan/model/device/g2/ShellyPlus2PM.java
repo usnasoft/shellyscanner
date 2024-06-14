@@ -21,6 +21,8 @@ import it.usna.shellyscan.model.device.modules.RollerCommander;
 
 public class ShellyPlus2PM extends AbstractG2Device implements RelayCommander, RollerCommander, InternalTmpHolder, SensorAddOnHolder {
 	public final static String ID = "Plus2PM";
+	private final static String MSG_RESTORE_MODE_ERROR = "msgRestoreCoverMode";
+	private final static String MSG_RESTORE_MODE_SYNT_ERROR = "msgRestoreCoverModeSynt";
 	private boolean modeRelay;
 	private final static Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.W, Meters.Type.PF, Meters.Type.V, Meters.Type.I};
 	private Relay relay0, relay1;
@@ -218,7 +220,7 @@ public class ShellyPlus2PM extends AbstractG2Device implements RelayCommander, R
 		JsonNode devInfo = backupJsons.get("Shelly.GetDeviceInfo.json");
 		boolean backModeRelay = MODE_RELAY.equals(devInfo.get("profile").asText());
 		if(backModeRelay != modeRelay) {
-			res.put(Restore.ERR_RESTORE_MSG, Roller.MSG_RESTORE_MODE_ERROR);
+			res.put(Restore.ERR_RESTORE_MSG, MSG_RESTORE_MODE_ERROR);
 		}
 		if(SensorAddOn.restoreCheck(this, backupJsons, res) == false) {
 			res.put(Restore.WARN_RESTORE_MSG, SensorAddOn.MSG_RESTORE_ERROR);
@@ -242,7 +244,7 @@ public class ShellyPlus2PM extends AbstractG2Device implements RelayCommander, R
 				errors.add(roller.restore(configuration));
 			}
 		} else {
-			errors.add(Roller.MSG_RESTORE_MODE_SYNT_ERROR);
+			errors.add(MSG_RESTORE_MODE_SYNT_ERROR);
 		}
 
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);

@@ -252,10 +252,15 @@ Shelly.GetDeviceInfo (ident) - http://<IP>/rpc/Shelly.GetDeviceInfo?ident=true
 NTP server address (also deferrable)
 Cloud enable/disable (also deferrable)
 ntp server added to restore
+Wall Dispay better support
 New checklist UI
 
 ---
 // TODO
+// https://shelly-api-docs.shelly.cloud/gen2/DynamicComponents/BTHome/
+// https://shelly.guide/webhooks-https-requests/
+// rivedere it.usna.shellyscan.model.device.g2.ShellyPlusi4 alla luce di "Input.Trigger" (?)
+// charts scroll
 // chacklist multiselection
 // notes column (second field on notes?)
 // scroll orizzontale grafici
@@ -266,7 +271,5 @@ New checklist UI
 //todo Gen2 1.0.0 - triphase and monophase profiles (EDIT: to be included in next beta), add option to reverse CT direction of measurement for active power and energy
 //todo Gen2 1.0.0 - Input invert and range_map configuration properties for analog input type
 //todo Gen2 1.0.0 - Authentication in HTTP client, supporting basic and digest schemes. This enables the HTTP service and webhooks to access password-protected URLs.
-// https://docs.oracle.com/javase/8/docs/api/javax/security/auth/callback/CallbackHandler.html
 // gestione "reading": se stato online leggo uptime, se uptime diverso dal precedente memorizzo il timestamp else Quando il time stamp corrente - memorizzato > intervallo * 3 modifico lo stato - si, ma dove?
-// https://www.baeldung.com/java-authentication-authorization-service
 // InetAddressAndPort potrebbe essere dentro ogni device e mantenere direttamente i byte (sarebbe estremamente ottimizzato)

@@ -4,13 +4,10 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
-import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.Meters;
-import it.usna.shellyscan.model.device.g2.modules.Input;
 import it.usna.shellyscan.model.device.g2.modules.Relay;
 import it.usna.shellyscan.model.device.g2.modules.ThermostatG2;
 import it.usna.shellyscan.model.device.modules.RelayCommander;
@@ -23,6 +20,8 @@ import it.usna.shellyscan.model.device.modules.ThermostatCommander;
  */
 public class WallDisplay extends AbstractG2Device implements RelayCommander, ThermostatCommander {
 	public final static String ID = "WallDisplay";
+	public final static String MSG_RESTORE_MODE_ERROR = "msgRestoreThermostatMode";
+	public final static String MSG_RESTORE_MODE_SYNT_ERROR = "msgRestoreThermostatModeSynt";
 //	private boolean modeRelay; // otherwise "thermostat"
 	private final static Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.T, Meters.Type.H, Meters.Type.L};
 	private float temp;
@@ -133,14 +132,29 @@ public class WallDisplay extends AbstractG2Device implements RelayCommander, The
 	public Meters[] getMeters() {
 		return meters;
 	}
+	
+	//todo
+//	@Override
+//	public void restoreCheck(Map<String, JsonNode> backupJsons, Map<Restore, String> res) throws IOException {
+//		JsonNode devInfo = backupJsons.get("Shelly.GetDeviceInfo.json");
+//		boolean backThermostat = MODE_RELAY.equals(devInfo.get("profile").asText());
+//		if(backThermostat != (thermostat == null)) {
+//			res.put(Restore.ERR_RESTORE_MSG, MSG_RESTORE_MODE_ERROR);
+//		}
+//	}
 
 	@Override
 	protected void restore(Map<String, JsonNode> backupJsons, List<String> errors) throws InterruptedException {
-		JsonNode configuration = backupJsons.get("Shelly.GetConfig.json");
-		errors.add(Input.restore(this, configuration, "0"));
-		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-		errors.add(relay.restore(configuration));
-		// todo  "relay_in_thermostat" : true/false,
+		JsonNode backupConfiguration = backupJsons.get("Shelly.GetConfig.json");
+		if(backupConfiguration.get("thermostat:0") == null && relay != null) { // saved configuration was "relay" as is the current configuration
+			if(relay != null) {
+				errors.add(relay.restore(backupConfiguration));
+			} else {
+				thermostat.restore(backupConfiguration);
+			}
+		} else {
+			errors.add(MSG_RESTORE_MODE_SYNT_ERROR);
+		}
 	}
 	
 	@Override
@@ -148,8 +162,7 @@ public class WallDisplay extends AbstractG2Device implements RelayCommander, The
 		if(relay != null) {
 			return super.toString() + " Relay: " + relay;
 		} else {
-			//todo
-			return super.toString();
+			return super.toString() + " Therm: " + thermostat;
 		}
 	}
 }

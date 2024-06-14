@@ -54,6 +54,7 @@ import it.usna.shellyscan.model.device.modules.InputCommander;
 import it.usna.shellyscan.model.device.modules.RGBWCommander;
 import it.usna.shellyscan.model.device.modules.RelayCommander;
 import it.usna.shellyscan.model.device.modules.RollerCommander;
+import it.usna.shellyscan.model.device.modules.ThermostatCommander;
 import it.usna.shellyscan.model.device.modules.WhiteCommander;
 import it.usna.swing.ArrayTableCellRenderer;
 import it.usna.swing.DecimalTableCellRenderer;
@@ -475,13 +476,15 @@ public class DevicesTable extends ExTooltipTable {
 					row[DevicesTable.COL_COMMAND_IDX] = String.format(LABELS.getString("lableStatusMotion"), motion.motion() ? YES : NO);
 				} else if(d instanceof ShellyPlusSmoke smoke) {
 					row[DevicesTable.COL_COMMAND_IDX] = String.format(LABELS.getString("lableStatusSmoke"), smoke.getAlarm() ? YES : NO);
-				} else if(d instanceof ShellyTRV trv) {
+				} else if(d instanceof ShellyTRV trv) { // very specific
 					ThermostatG1 thermostat = trv.getThermostat();
 					if(thermostat.isEnabled()) {
 						row[DevicesTable.COL_COMMAND_IDX] = thermostat;
 					} else {
 						row[DevicesTable.COL_COMMAND_IDX] = String.format(LABELS.getString("lableStatusTRV"), thermostat.getPosition());
 					}
+				} else if(d instanceof ThermostatCommander tc) {
+					row[DevicesTable.COL_COMMAND_IDX] = tc.getThermostat();
 				}
 				if(command instanceof DeviceModule dm) {
 					row[DevicesTable.COL_SOURCE_IDX] = dm.getLastSource();

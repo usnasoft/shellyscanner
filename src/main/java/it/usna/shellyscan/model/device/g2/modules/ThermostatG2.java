@@ -11,7 +11,7 @@ public class ThermostatG2 implements Thermostat {
 	private final AbstractG2Device parent;
 	private String name;
 	private boolean enabled;
-	private float targhet;
+	private float targetTemp;
 	
 	public ThermostatG2(AbstractG2Device parent) {
 		this.parent = parent;
@@ -20,7 +20,7 @@ public class ThermostatG2 implements Thermostat {
 	public void fillSettings(JsonNode thermostat) {
 		name = thermostat.get("name").asText("");
 		enabled = thermostat.get("enable").booleanValue();
-		targhet = thermostat.get("target_C").floatValue();
+		targetTemp = thermostat.get("target_C").floatValue();
 	}
 	
 	public void fillStatus(JsonNode thermostat) throws IOException {
@@ -46,5 +46,17 @@ public class ThermostatG2 implements Thermostat {
 	@Override
 	public void setTargetTemp(float temp) throws IOException {
 		// TODO Auto-generated method stub
+	}
+	
+	public String restore(JsonNode data) {
+		// TODO
+		return null; /*parent.sendCommand("/settings/thermostats/" + INDEX + "?" +
+				AbstractG1Device.jsonNodeToURLPar(data, "temperature_offset") +
+				"&ext_t_enabled=" + data.get("ext_t").get("enabled").asBoolean());*/
+	}
+	
+	@Override
+	public String toString() {
+		return "Temp:" + targetTemp;
 	}
 }
