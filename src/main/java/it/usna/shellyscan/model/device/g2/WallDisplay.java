@@ -156,7 +156,7 @@ public class WallDisplay extends AbstractG2Device implements RelayCommander, The
 		
 		ObjectNode ui = (ObjectNode)backupConfiguration.get("ui").deepCopy();
 		ObjectNode out = JsonNodeFactory.instance.objectNode().set("config", ui);
-		errors.add(postCommand("ui.setconfig", out));
+		errors.add(postCommand("Ui.SetConfig", out));
 	}
 	
 	@Override

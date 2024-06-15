@@ -107,3 +107,7 @@ public class ThermostatG2 implements ThermostatInterface {
 		return "Temp:" + targetTemp;
 	}
 }
+
+/*
+"Thermostat.Create","Thermostat.Delete","Thermostat.GetConfig","Thermostat.GetStatus","Thermostat.Schedule.AddProfile","Thermostat.Schedule.AddRule","Thermostat.Schedule.ChangeRule","Thermostat.Schedule.DeleteProfile","Thermostat.Schedule.DeleteRule","Thermostat.Schedule.ListProfiles","Thermostat.Schedule.ListRules","Thermostat.Schedule.RenameProfile","Thermostat.Schedule.SetConfig","Thermostat.SetConfig"
+*/
