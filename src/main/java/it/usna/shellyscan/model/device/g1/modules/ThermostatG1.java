@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import it.usna.shellyscan.model.device.g1.AbstractG1Device;
 import it.usna.shellyscan.model.device.modules.ThermostatInterface;
 
+/* TRV only, I will not continue develop this class */
 public class ThermostatG1 implements ThermostatInterface {
 	private final AbstractG1Device parent;
 	private final static String INDEX = "0";
@@ -21,6 +22,16 @@ public class ThermostatG1 implements ThermostatInterface {
 	
 	public ThermostatG1(AbstractG1Device parent) {
 		this.parent = parent;
+	}
+	
+	@Override
+	public float getMaxTargetTemp() {
+		return TARGET_MAX;
+	}
+	
+	@Override
+	public float getMinTargetTemp() {
+		return TARGET_MIN;
 	}
 	
 	public void fillSettings(JsonNode thermostat) {
@@ -39,6 +50,16 @@ public class ThermostatG1 implements ThermostatInterface {
 	@Override
 	public boolean isEnabled() {
 		return autoTemp;
+	}
+	
+	@Override
+	public void setEnabled(boolean enable) {
+		// todo not user - TRV only, I will not continue develop this class
+	}
+	
+	@Override
+	public boolean isRunning() {
+		return position > 0;
 	}
 	
 	@Override

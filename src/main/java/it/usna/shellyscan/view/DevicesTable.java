@@ -119,7 +119,7 @@ public class DevicesTable extends ExTooltipTable {
 		columnModel.getColumn(COL_SOURCE_IDX).setCellRenderer(new ArrayTableCellRenderer());
 		final TableColumn colCommand = columnModel.getColumn(COL_COMMAND_IDX);
 		colCommand.setCellRenderer(new DevicesCommandCellRenderer());
-		colCommand.setCellEditor(new DeviceTableCellEditor(this));
+		colCommand.setCellEditor(new DevicesCommandCellEditor(this));
 
 		TableRowSorter<?> sorter = (TableRowSorter<?>)getRowSorter();
 		

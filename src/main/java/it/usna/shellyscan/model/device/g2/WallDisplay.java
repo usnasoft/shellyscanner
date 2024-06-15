@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Map;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.g2.modules.Relay;
@@ -21,15 +23,14 @@ public class WallDisplay extends AbstractG2Device implements RelayCommander, The
 	public final static String ID = "WallDisplay";
 	public final static String MSG_RESTORE_MODE_ERROR = "msgRestoreThermostatMode";
 	public final static String MSG_RESTORE_MODE_SYNT_ERROR = "msgRestoreThermostatModeSynt";
-//	private boolean modeRelay; // otherwise "thermostat"
 	private final static Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.T, Meters.Type.H, Meters.Type.L};
 	private float temp;
 	private float humidity;
 	private int lux;
 	private Meters[] meters;
-	private Relay relay = new Relay(this, 0);
-	private Relay[] relays = new Relay[] {relay};
-	private ThermostatG2 thermostat = new ThermostatG2(this);
+	private Relay relay = null;
+	private Relay[] relays = null;
+	private ThermostatG2 thermostat = null;
 
 	public WallDisplay(InetAddress address, int port, String hostname) {
 		super(address, port, hostname);
@@ -131,29 +132,31 @@ public class WallDisplay extends AbstractG2Device implements RelayCommander, The
 	public Meters[] getMeters() {
 		return meters;
 	}
-	
-	//todo
-//	@Override
-//	public void restoreCheck(Map<String, JsonNode> backupJsons, Map<Restore, String> res) throws IOException {
-//		JsonNode devInfo = backupJsons.get("Shelly.GetDeviceInfo.json");
-//		boolean backThermostat = MODE_RELAY.equals(devInfo.get("profile").asText());
-//		if(backThermostat != (thermostat == null)) {
-//			res.put(Restore.ERR_RESTORE_MSG, MSG_RESTORE_MODE_ERROR);
-//		}
-//	}
+
+	@Override
+	public void restoreCheck(Map<String, JsonNode> backupJsons, Map<Restore, String> res) throws IOException {
+		JsonNode backupConfiguration = backupJsons.get("Shelly.GetConfig.json");
+		boolean thermMode = backupConfiguration.get("thermostat:0") != null;
+		if((thermMode && thermostat == null) || (thermMode == false && thermostat != null)) {
+			res.put(Restore.ERR_RESTORE_MSG, MSG_RESTORE_MODE_ERROR);
+		}
+	}
 
 	@Override
 	protected void restore(Map<String, JsonNode> backupJsons, List<String> errors) throws InterruptedException {
 		JsonNode backupConfiguration = backupJsons.get("Shelly.GetConfig.json");
-		if(backupConfiguration.get("thermostat:0") == null && relay != null) { // saved configuration was "relay" as is the current configuration
-			if(relay != null) {
-				errors.add(relay.restore(backupConfiguration));
-			} else {
-				thermostat.restore(backupConfiguration);
-			}
+		boolean thermMode = backupConfiguration.get("thermostat:0") != null;
+		if(thermMode && thermostat != null) { // saved configuration was "thermostat" and the current too? 
+			errors.add(thermostat.restore(backupConfiguration));
+		} else if(thermMode == false && relay !=null) {
+			errors.add(relay.restore(backupConfiguration));
 		} else {
 			errors.add(MSG_RESTORE_MODE_SYNT_ERROR);
 		}
+		
+		ObjectNode ui = (ObjectNode)backupConfiguration.get("ui").deepCopy();
+		ObjectNode out = JsonNodeFactory.instance.objectNode().set("config", ui);
+		errors.add(postCommand("ui.setconfig", out));
 	}
 	
 	@Override
