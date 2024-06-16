@@ -43,8 +43,7 @@ public class Script {
 	}
 
 	public static JsonNode list(AbstractG2Device device) throws IOException {
-		JsonNode sl = device.getJSON("/rpc/Script.List");
-		return sl.get("scripts");
+		return device.getJSON("/rpc/Script.List").get("scripts");
 	}
 
 	public String getName() {

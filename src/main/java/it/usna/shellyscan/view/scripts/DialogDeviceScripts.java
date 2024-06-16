@@ -25,36 +25,47 @@ public class DialogDeviceScripts extends JDialog {
 
 	public DialogDeviceScripts(final MainView owner, Devices model, int modelIndex) {
 		super(owner, false);
-		try {
-			AbstractG2Device device = (AbstractG2Device) model.get(modelIndex);
-			setTitle(String.format(LABELS.getString("dlgScriptTitle"), UtilMiscellaneous.getExtendedHostName(device)));
-			setDefaultCloseOperation(/*DO_NOTHING_ON_CLOSE*/DISPOSE_ON_CLOSE);
-			
-			JPanel buttonsPanel = new JPanel();
-			getContentPane().add(buttonsPanel, BorderLayout.SOUTH);
+		// try {
+		AbstractG2Device device = (AbstractG2Device) model.get(modelIndex);
+		setTitle(String.format(LABELS.getString("dlgScriptTitle"), UtilMiscellaneous.getExtendedHostName(device)));
+		setDefaultCloseOperation(/* DO_NOTHING_ON_CLOSE */DISPOSE_ON_CLOSE);
 
-			JButton jButtonClose = new JButton(new UsnaAction("dlgClose", e -> dispose()));
-			buttonsPanel.add(jButtonClose);
-			
-			JTabbedPane tabs = new JTabbedPane();
+		JPanel buttonsPanel = new JPanel();
+		getContentPane().add(buttonsPanel, BorderLayout.SOUTH);
 
-			// battery operated devices do not support scripts
-			if(device instanceof AbstractBatteryG2Device == false) {
+		JButton jButtonClose = new JButton(new UsnaAction("dlgClose", e -> dispose()));
+		buttonsPanel.add(jButtonClose);
+
+		JTabbedPane tabs = new JTabbedPane();
+
+		// battery operated devices do not support scripts
+		if (device instanceof AbstractBatteryG2Device == false) {
+			try {
 				JPanel scriptsPanel = new ScriptsPanel(this, model, modelIndex);
 				tabs.addTab(LABELS.getString("lblScriptsTab"), scriptsPanel);
 				try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e) {}
+			} catch (IOException e) {
+				Msg.errorMsg(e);
 			}
-			
+		}
+
+		try {
 			JPanel kvsPanel = new KVSPanel(device);
 			tabs.addTab(LABELS.getString("lblKVSTab"), kvsPanel);
-
-			getContentPane().add(tabs, BorderLayout.CENTER);
-
-			setSize(550, 360);
-			setLocationRelativeTo(owner);
-			setVisible(true);
 		} catch (IOException e) {
 			Msg.errorMsg(e);
 		}
+
+		if(tabs.getComponentCount() > 0) {
+			getContentPane().add(tabs, BorderLayout.CENTER);
+			setSize(550, 360);
+			setLocationRelativeTo(owner);
+			setVisible(true);
+		} else {
+			dispose();
+		}
+		// } catch (IOException e) {
+		// Msg.errorMsg(e);
+		// }
 	}
 }

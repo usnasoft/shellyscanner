@@ -18,14 +18,6 @@ public abstract class AbstractProDevice extends AbstractG2Device {
 	}
 	
 	@Override
-	public String[] getInfoRequests() {
-		return new String[] {
-				"/rpc/Shelly.GetDeviceInfo?ident=true", "/rpc/Shelly.GetConfig", "/rpc/Shelly.GetStatus", "/rpc/Shelly.CheckForUpdate", "/rpc/Schedule.List", "/rpc/Webhook.List",
-				"/rpc/Script.List", "/rpc/WiFi.ListAPClients" /*, "/rpc/Sys.GetStatus",*/, "/rpc/KVS.GetMany", "/rpc/Shelly.GetComponents",
-				"/rpc/BTHome.GetConfig", "/rpc/BTHome.GetStatus"};
-	}
-	
-	@Override
 	void restoreCommonConfig(JsonNode config, final long delay, Map<Restore, String> data, List<String> errors) throws InterruptedException, IOException {
 		super.restoreCommonConfig(config, delay, data, errors);
 		errors.add(ethRestore(config.get("eth")));

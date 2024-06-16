@@ -89,7 +89,7 @@ public class KVSPanel extends JPanel {
 					}
 					super.editingStopped(e);
 				} catch (IOException e1) {
-					Msg.errorMsg(e1);
+					Msg.errorMsg(KVSPanel.this, e1);
 				} finally {
 					KVSPanel.this.setCursor(Cursor.getDefaultCursor());
 				}

@@ -40,8 +40,8 @@ public class MQTTManagerG2 implements MQTTManager {
 		this.user = settings.path("user").asText("");
 		this.prefix = settings.path("topic_prefix").asText("");
 		this.sslCA = settings.path("ssl_ca").asText("");
-		this.rpcNtf = settings.get("rpc_ntf").asBoolean();
-		this.statusNtf = settings.get("status_ntf").asBoolean();
+		this.rpcNtf = settings.path("rpc_ntf").asBoolean();
+		this.statusNtf = settings.path("status_ntf").asBoolean();
 	}
 
 	@Override

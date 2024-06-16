@@ -249,6 +249,14 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 			return e.getMessage();
 		}
 	}
+	
+	public JsonNode getJSON(final String command) throws IOException {
+		JsonNode resp = super.getJSON(command);
+		if(resp.has("code")) {
+			throw new IOException(resp.get("code") + ": " + resp.path("message").asText("Generic error"));
+		}
+		return resp;
+	}
 
 	public JsonNode getJSON(final String method, String payload) throws IOException {
 		final JsonNode resp = executeRPC(method, payload);
