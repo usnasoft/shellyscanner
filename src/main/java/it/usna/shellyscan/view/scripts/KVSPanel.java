@@ -13,6 +13,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ListSelectionListener;
@@ -187,6 +188,7 @@ public class KVSPanel extends JPanel {
 	public void setVisible(boolean v) {
 		super.setVisible(v);
 		if (v) {
+			SwingUtilities.invokeLater(() -> {
 			table.columnsWidthAdapt();
 			TableColumn col0 = table.getColumnModel().getColumn(0);
 			col0.setPreferredWidth(col0.getPreferredWidth() * 120 / 100);
@@ -199,6 +201,7 @@ public class KVSPanel extends JPanel {
 			} else {
 				table.setAutoResizeMode(ExTooltipTable.AUTO_RESIZE_OFF);
 			}
+			});
 		}
 	}
 }

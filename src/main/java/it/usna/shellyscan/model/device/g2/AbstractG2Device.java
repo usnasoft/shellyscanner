@@ -323,9 +323,11 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 			} catch(Exception e) {}
 			sectionToStream("/rpc/Webhook.List", "Webhook.List.json", out);
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-			sectionToStream("/rpc/KVS.GetMany", "KVS.GetMany.json", out);
-			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-			byte[] scripts = null;;
+			try {
+				sectionToStream("/rpc/KVS.GetMany", "KVS.GetMany.json", out);
+				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+			} catch(Exception e) {}
+			byte[] scripts = null;
 			try {
 				scripts = sectionToStream("/rpc/Script.List", "Script.List.json", out);
 				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
@@ -449,7 +451,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 
 			errors.add("->r_step:restoreSchedule");
 			JsonNode schedule = backupJsons.get("Schedule.List.json");
-			if(schedule != null) {  // some devices do not have Schedule.List +H&T
+			if(schedule != null) { // some devices do not have Schedule.List +H&T
 				TimeUnit.MILLISECONDS.sleep(delay);
 				restoreSchedule(schedule, errors);
 			}
@@ -460,9 +462,11 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 			errors.add("->r_step:KVS");
 			JsonNode kvs = backupJsons.get("KVS.GetMany.json");
 			if(kvs != null) {
-				TimeUnit.MILLISECONDS.sleep(delay);
-				KVS kvStore = new KVS(this);
-				kvStore.restoreKVS(kvs, errors);
+				try {
+					TimeUnit.MILLISECONDS.sleep(delay);
+					KVS kvStore = new KVS(this);
+					kvStore.restoreKVS(kvs, errors);
+				} catch(Exception e) {}
 			}
 			
 			errors.add("->r_step:Webhooks");
@@ -473,10 +477,11 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 			TimeUnit.MILLISECONDS.sleep(delay);
 			Network currentConnection = WIFIManagerG2.currentConnection(this);
 			if(currentConnection != Network.UNKNOWN) {
-				if((userPref.containsKey(Restore.RESTORE_WI_FI2) || config.at("/wifi/sta1/is_open").asBoolean() || config.at("/wifi/sta1/enable").asBoolean() == false) && currentConnection != Network.SECONDARY) {
+				JsonNode sta1Node = config.at("/wifi/sta1");
+				if(sta1Node.isMissingNode() == false && (userPref.containsKey(Restore.RESTORE_WI_FI2) || sta1Node.path("is_open").asBoolean() || sta1Node.path("enable").asBoolean() == false) && currentConnection != Network.SECONDARY) {
 					TimeUnit.MILLISECONDS.sleep(delay);
 					WIFIManagerG2 wm = new WIFIManagerG2(this, Network.SECONDARY, true);
-					errors.add(wm.restore(config.at("/wifi/sta1"), userPref.get(Restore.RESTORE_WI_FI2)));
+					errors.add(wm.restore(sta1Node, userPref.get(Restore.RESTORE_WI_FI2)));
 				}
 				if((userPref.containsKey(Restore.RESTORE_WI_FI1) || config.at("/wifi/sta/is_open").asBoolean() || config.at("/wifi/sta/enable").asBoolean() == false) && currentConnection != Network.PRIMARY) {
 					TimeUnit.MILLISECONDS.sleep(delay);
