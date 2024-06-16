@@ -104,7 +104,7 @@ public class ThermostatG2 implements ThermostatInterface {
 	
 	@Override
 	public String toString() {
-		return "Temp:" + targetTemp;
+		return "Target temp:" + targetTemp;
 	}
 }
 
