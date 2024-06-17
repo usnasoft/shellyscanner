@@ -40,6 +40,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.BatteryDeviceInterface;
+import it.usna.shellyscan.model.device.DeviceAPIException;
 import it.usna.shellyscan.model.device.DeviceOfflineException;
 import it.usna.shellyscan.model.device.FirmwareManager;
 import it.usna.shellyscan.model.device.LoginManager;
@@ -250,10 +251,11 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 		}
 	}
 	
+	@Override
 	public JsonNode getJSON(final String command) throws IOException {
 		JsonNode resp = super.getJSON(command);
-		if(resp.has("code")) {
-			throw new IOException(resp.get("code") + ": " + resp.path("message").asText("Generic error"));
+		if(resp.has("code") && resp.has("message")) { // e.g.: {"code":-114,"message":"Method KVS.GetMany failed: No such component"}
+			throw new DeviceAPIException(resp.get("code").intValue(), resp.get("message").asText("Generic error"));
 		}
 		return resp;
 	}
@@ -265,7 +267,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 			return result;
 		} else {
 			JsonNode error = resp.get("error");
-			throw new IOException(error.path("code") + ": " + error.path("message").asText("Generic error"));
+			throw new DeviceAPIException(error.get("code").intValue(), error.get("message").asText("Generic error"));
 		}	
 	}
 

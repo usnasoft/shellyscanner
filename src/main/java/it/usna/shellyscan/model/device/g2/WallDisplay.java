@@ -44,12 +44,12 @@ public class WallDisplay extends AbstractG2Device implements RelayCommander, The
 
 					@Override
 					public float getValue(Type t) {
-						if(t == Meters.Type.H) {
-							return lux;
+						if(t == Meters.Type.T) {
+							return temp;
 						} else if(t == Meters.Type.H) {
 							return humidity;
 						} else {
-							return temp;
+							return lux;
 						}
 					}
 				}
@@ -126,6 +126,10 @@ public class WallDisplay extends AbstractG2Device implements RelayCommander, The
 	
 	public float getHumidity() {
 		return humidity;
+	}
+	
+	public float getIlluminance() {
+		return lux;
 	}
 
 	@Override
