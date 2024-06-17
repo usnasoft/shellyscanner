@@ -72,8 +72,8 @@ public class Relay implements RelayInterface {
 //		final JsonNode relay = parent.getJSON("/relay/" + index + "?turn=" + (on ? "on" : "off"));
 //		isOn = relay.get("ison").asBoolean();
 //		source = relay.get("source").asText("-");
-		final JsonNode relay = parent.getJSON("/rpc/Switch.Set?id=" + index + "&on=" + on);
-		isOn = relay.get("was_on").asBoolean() == false;
+		parent.getJSON("/rpc/Switch.Set?id=" + index + "&on=" + on);
+		isOn = on;
 		source = Devices.SCANNER_AGENT;
 	}
 	

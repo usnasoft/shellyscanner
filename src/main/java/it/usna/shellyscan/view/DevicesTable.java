@@ -216,7 +216,7 @@ public class DevicesTable extends ExTooltipTable {
 		final Object value;
 		if(((Component) evt.getSource()).isVisible() && (r = rowAtPoint(evt.getPoint())) >= 0 && (c = columnAtPoint(evt.getPoint())) >= 0 && (value = getValueAt(r, c)) != null) {
 			final int modelCol = convertColumnIndexToModel(c);
-			final String ret;
+//			final String ret;
 			if(modelCol == COL_UPTIME_IDX) {
 				adaptTooltipLocation = false;
 				long s = ((Number)value).longValue();
@@ -231,13 +231,13 @@ public class DevicesTable extends ExTooltipTable {
 			} else if (value instanceof ImageIcon icon) {
 				adaptTooltipLocation = false;
 				return icon.getDescription();
-			} else if(value instanceof DeviceModule[] dmArray && isColumnVisible(COL_SOURCE_IDX) == false && dmArray.length > 0 && dmArray[0].getLastSource() != null) {
-				adaptTooltipLocation = false;
-				return Arrays.stream(dmArray).
-						map(rel -> String.format(LABELS.getString("col_last_source_tooltip"), rel, rel.getLastSource())).collect(Collectors.joining("<br>", "<html>", "</html>"));
-			} else if(value instanceof DeviceModule dm && isColumnVisible(COL_SOURCE_IDX) == false && (ret = dm.getLastSource()) != null) {
-				adaptTooltipLocation = false;
-				return "<html>" + String.format(LABELS.getString("col_last_source_tooltip"), value, ret) + "</html>";
+//			} else if(value instanceof DeviceModule[] dmArray && isColumnVisible(COL_SOURCE_IDX) == false && dmArray.length > 0 && dmArray[0].getLastSource() != null) {
+//				adaptTooltipLocation = false;
+//				return Arrays.stream(dmArray).
+//						map(rel -> String.format(LABELS.getString("col_last_source_tooltip"), rel, rel.getLastSource())).collect(Collectors.joining("<br>", "<html>", "</html>"));
+//			} else if(value instanceof DeviceModule dm && isColumnVisible(COL_SOURCE_IDX) == false && (ret = dm.getLastSource()) != null) {
+//				adaptTooltipLocation = false;
+//				return "<html>" + String.format(LABELS.getString("col_last_source_tooltip"), value, ret) + "</html>";
 			} else if(value instanceof ThermostatG1) {
 				adaptTooltipLocation = false;
 				return String.format(Locale.ENGLISH, LABELS.getString("col_command_therm_tooltip"), ((ThermostatG1)value).getCurrentProfile(), ((ThermostatG1)value).getTargetTemp(), ((ThermostatG1)value).getPosition());
