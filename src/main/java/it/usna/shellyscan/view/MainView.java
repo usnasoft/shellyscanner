@@ -98,6 +98,8 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 	private boolean statusLineReserved = false;
 	private JTextField textFieldFilter = new JTextField();
 	private Devices model;
+	private JToolBar toolBar = new JToolBar();
+	private DialogDeferrables dialogDeferrables;
 	private final UsnaTableModel tabModel = new UsnaTableModel(
 			"",
 			LABELS.getString("col_type"),
@@ -116,9 +118,6 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 			LABELS.getString("col_source"),
 			LABELS.getString("col_relay"));
 	private final DevicesTable devicesTable = new DevicesTable(tabModel);
-	
-	private JToolBar toolBar = new JToolBar();
-	private DialogDeferrables dialogDeferrables;
 
 	private Action infoAction = new UsnaSelectedAction(this, devicesTable, "action_info_name", "action_info_tooltip", "/images/Bubble3_16.png", "/images/Bubble3.png",
 			i -> new DialogDeviceInfo(MainView.this, model, i) );
@@ -267,6 +266,9 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 	private Action eraseFilterAction = new UsnaAction(this, null, "/images/erase-9-16.png", e -> {
 		textFieldFilter.setText("");
 		textFieldFilter.requestFocusInWindow();
+		if(devicesTable.isEditing()) {
+			devicesTable.getCellEditor().stopCellEditing();
+		}
 		devicesTable.clearSelection();
 		displayStatus();
 	});
@@ -693,4 +695,4 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 			}
 		}
 	}
-} //557 - 614 - 620 - 669 - 705 - 727 - 699 - 760 - 782 - 811 - 805 - 646 - 699 - 706 - 688 - 696
+} //557 - 614 - 620 - 669 - 705 - 727 - 699 - 760 - 782 - 811 - 805 - 646 - 699 - 706 - 688 - 698

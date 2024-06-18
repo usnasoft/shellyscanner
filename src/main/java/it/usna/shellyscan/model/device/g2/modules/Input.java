@@ -16,6 +16,7 @@ import it.usna.shellyscan.model.device.modules.InputInterface;
 public class Input implements InputInterface {
 //	private final AbstractG2Device parent;
 	private String name;
+	private boolean enable;
 //	private boolean reverse;
 	private boolean inputIsOn;
 	private  Map<String, Webhook> webHooks;
@@ -24,12 +25,13 @@ public class Input implements InputInterface {
 ////		this.parent = parent;
 //	}
 	
-	public /*JsonNode*/void fillSettings(JsonNode input) throws IOException {
+	public void fillSettings(JsonNode input) {
 		name = input.get("name").asText("");
+		enable = input.get("enable").booleanValue();
 //		reverse = input.get("invert").asBoolean();
 	}
 	
-	public /*JsonNode*/void fillStatus(JsonNode input) throws IOException {
+	public void fillStatus(JsonNode input) {
 		inputIsOn = input.get("state").asBoolean();
 	}
 
@@ -60,13 +62,17 @@ public class Input implements InputInterface {
 	
 	@Override
 	public boolean enabled() {
-		return name.isEmpty() == false || webHooks.size() > 0;
+		return enable /*name.isEmpty() == false || webHooks.size() > 0*/;
 	}
 
 	@Override
 	public void execute(String type) throws IOException {
 		webHooks.get(type).execute();
 	}
+	
+//	public void trigger(String command) throws IOException {
+//		parent.getJSON("/rpc/Input.Trigger?id=" + idx + "&event_type=" + command);
+//	}
 	
 	public void associateWH(Map<String, Webhook> wh) {
 		this.webHooks = (wh == null) ? Collections.<String, Webhook>emptyMap() : wh;

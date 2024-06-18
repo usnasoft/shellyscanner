@@ -189,18 +189,18 @@ public class KVSPanel extends JPanel {
 		super.setVisible(v);
 		if (v) {
 			SwingUtilities.invokeLater(() -> {
-			table.columnsWidthAdapt();
-			TableColumn col0 = table.getColumnModel().getColumn(0);
-			col0.setPreferredWidth(col0.getPreferredWidth() * 120 / 100);
-			TableColumn col1 = table.getColumnModel().getColumn(1);
-			col1.setPreferredWidth(col1.getPreferredWidth() * 120 / 100);
-			TableColumn col2 = table.getColumnModel().getColumn(2);
-			col2.setPreferredWidth(col2.getPreferredWidth() * 110 / 100);
-			if (scrollPane.getViewport().getWidth() > table.getPreferredSize().width) {
-				table.setAutoResizeMode(ExTooltipTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS);
-			} else {
-				table.setAutoResizeMode(ExTooltipTable.AUTO_RESIZE_OFF);
-			}
+				table.columnsWidthAdapt();
+				TableColumn col0 = table.getColumnModel().getColumn(0);
+				col0.setPreferredWidth(col0.getPreferredWidth() * 120 / 100);
+				TableColumn col1 = table.getColumnModel().getColumn(1);
+				col1.setPreferredWidth(col1.getPreferredWidth() * 120 / 100);
+				TableColumn col2 = table.getColumnModel().getColumn(2);
+				col2.setPreferredWidth(col2.getPreferredWidth() * 110 / 100);
+				if (scrollPane.getViewport().getWidth() > table.getPreferredSize().width) {
+					table.setAutoResizeMode(ExTooltipTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS);
+				} else {
+					table.setAutoResizeMode(ExTooltipTable.AUTO_RESIZE_OFF);
+				}
 			});
 		}
 	}

@@ -360,17 +360,17 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 	
 	private JPanel actionButtonsPanel(final InputInterface[] inputs, Color foregroundColor) {
 		stackedPanel.removeAll();
-		for(InputInterface act: inputs) {
-			if(act.enabled()) {
+		for(InputInterface inp: inputs) {
+			if(inp.enabled()) {
 				JPanel actionsPanel = new JPanel(new BorderLayout());
-				String label = act.getLabel();
-				JLabel actionsLabel = new JLabel(label.isEmpty() ? "-" : label);
+				String inpName = inp.getLabel();
+				JLabel actionsLabel = new JLabel(inpName.isEmpty() ? "-" : inpName);
 				actionsLabel.setForeground(foregroundColor);
 				actionsPanel.add(actionsLabel, BorderLayout.CENTER);
 				JPanel actionsSouthPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
-				int numSupported = act.getTypesCount();
-				for(String type: act.getSupportedEvents()) {
-					boolean enabled = act.enabled(type);
+				int numSupported = inp.getTypesCount();
+				for(String type: inp.getSupportedEvents()) { // webhooks
+					boolean enabled = inp.enabled(type);
 					if(enabled || numSupported <= MAX_ACTIONS_SHOWN) {
 						String bLabel;
 						try {
@@ -380,11 +380,10 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 						}
 						JButton b = new JButton(bLabel);
 						b.setBorder(bLabel.length() > 1 ? BUTTON_BORDERS_SMALLER : BUTTON_BORDERS_SMALL);
-//						b.setPreferredSize(new JButton("xxx").getSize());
 						b.setEnabled(enabled);
 						b.setBackground(BUTTON_OFF_BG_COLOR);
 						actionsSouthPanel.add(b);
-						if(act.isInputOn()) {
+						if(inp.isInputOn()) {
 							b.setForeground(BUTTON_ON_FG_COLOR);
 						}
 					}
