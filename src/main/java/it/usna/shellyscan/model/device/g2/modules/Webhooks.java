@@ -20,6 +20,7 @@ public class Webhooks {
 	public final static String INPUT_PUSH = "input.button_push";
 	public final static String INPUT_LONG_PUSH = "input.button_longpush";
 	public final static String INPUT_DOUBLE_PUSH = "input.button_doublepush";
+	public final static String INPUT_TRIPLE_PUSH = "input.button_triplepush";
 	
 	private final AbstractG2Device parent;
 	private Map<Integer, Map<String, Webhook>> hooks = new HashMap<>();
