@@ -266,10 +266,10 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 	private Action eraseFilterAction = new UsnaAction(this, null, "/images/erase-9-16.png", e -> {
 		textFieldFilter.setText("");
 		textFieldFilter.requestFocusInWindow();
-		if(devicesTable.isEditing()) {
-			devicesTable.getCellEditor().stopCellEditing();
-		}
-		devicesTable.clearSelection();
+//		if(devicesTable.isEditing()) {
+//			devicesTable.getCellEditor().stopCellEditing();
+//		}
+//		devicesTable.clearSelection();
 		displayStatus();
 	});
 

@@ -29,7 +29,7 @@ public class Webhooks {
 		this.parent = parent;
 	}
 
-	public /*JsonNode*/void fillSettings() throws IOException {
+	public void fillSettings() throws IOException {
 		hooks.clear();
 		JsonNode wh = parent.getJSON("/rpc/Webhook.List").get("hooks");
 		wh.forEach(node -> {
@@ -42,7 +42,6 @@ public class Webhooks {
 			String event = node.get("event").asText();
 			cidMap.put(event, new Webhook(node));
 		});
-		//		System.out.println("x");
 	}
 	
 	public Map<String, Webhook> getHooks(int index) {
