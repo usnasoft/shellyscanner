@@ -29,7 +29,7 @@ public class Input implements InputInterface {
 //		reverse = input.get("invert").asBoolean();
 	}
 	
-	public /*JsonNode*/void fillStatus(JsonNode input) throws IOException {
+	public void fillStatus(JsonNode input) throws IOException {
 		inputIsOn = input.get("state").asBoolean();
 	}
 

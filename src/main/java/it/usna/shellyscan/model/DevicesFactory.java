@@ -69,8 +69,6 @@ import it.usna.shellyscan.model.device.g2.ShellyPro2PM;
 import it.usna.shellyscan.model.device.g2.ShellyPro3;
 import it.usna.shellyscan.model.device.g2.ShellyPro4PM;
 import it.usna.shellyscan.model.device.g2.WallDisplay;
-import it.usna.shellyscan.model.device.g3.Shelly1G3;
-import it.usna.shellyscan.model.device.g3.Shelly1PMG3;
 import it.usna.shellyscan.model.device.g3.ShellyG3Unmanaged;
 import it.usna.shellyscan.model.device.g3.ShellyMini1G3;
 import it.usna.shellyscan.model.device.g3.ShellyMini1PMG3;

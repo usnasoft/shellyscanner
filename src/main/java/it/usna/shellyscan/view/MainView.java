@@ -268,6 +268,9 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		textFieldFilter.setText("");
 		textFieldFilter.requestFocusInWindow();
 		devicesTable.clearSelection();
+		if(devicesTable.getCellEditor() !=null) {
+			devicesTable.getCellEditor().stopCellEditing();
+		}
 		displayStatus();
 	});
 

@@ -203,13 +203,6 @@ public class DevicesTable extends ExTooltipTable {
 		uptimeRenderer.setMode(mode);
 	}
 
-//	public void stopCellEditing() {
-//		TableCellEditor editor = getCellEditor();
-//		if(editor != null) {
-//			editor.stopCellEditing();
-//		}
-//	}
-
 	@Override
 	public String getToolTipText(final MouseEvent evt) {
 		final int r, c;
