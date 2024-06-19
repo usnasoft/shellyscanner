@@ -18,11 +18,11 @@ import it.usna.shellyscan.model.device.g2.modules.SensorAddOnHolder;
 import it.usna.shellyscan.model.device.modules.RelayCommander;
 
 /**
- * Shelly Shelly Plus 1 model
+ * Shelly Shelly 1 G3 model
  * @author usna
  */
 public class Shelly1G3 extends AbstractG3Device implements RelayCommander, InternalTmpHolder, SensorAddOnHolder {
-	public final static String ID = "Shelly1G3";
+	public final static String ID = "S1G3";
 	private Relay relay = new Relay(this, 0);
 	private Relay[] ralayes = new Relay[] {relay};
 	private float internalTmp;
@@ -52,7 +52,7 @@ public class Shelly1G3 extends AbstractG3Device implements RelayCommander, Inter
 	
 	@Override
 	public String getTypeName() {
-		return "Shelly +1";
+		return "Shelly 1 G3";
 	}
 	
 	@Override

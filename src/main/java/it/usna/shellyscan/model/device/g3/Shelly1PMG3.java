@@ -18,11 +18,11 @@ import it.usna.shellyscan.model.device.g2.modules.SensorAddOnHolder;
 import it.usna.shellyscan.model.device.modules.RelayCommander;
 
 /**
- * Shelly Shelly Plus 1PM model
+ * Shelly Shelly 1PM G3 model
  * @author usna
  */
 public class Shelly1PMG3 extends AbstractG3Device implements RelayCommander, InternalTmpHolder, SensorAddOnHolder {
-	public final static String ID = "Shelly1PMG3";
+	public final static String ID = "S1PMG3";
 	private final static Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.W, /*Meters.Type.PF,*/ Meters.Type.V, Meters.Type.I};
 	private Relay relay = new Relay(this, 0);
 	private float internalTmp;

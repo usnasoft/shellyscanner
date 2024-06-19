@@ -95,7 +95,7 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 		lightPanel.add(lightLabel, BorderLayout.CENTER);
 		lightPanel.add(lightButton, BorderLayout.EAST);
 		lightPanel.add(lightBrightness, BorderLayout.SOUTH);
-		lightPanel.setPreferredSize(new Dimension(20, lightPanel.getPreferredSize().height));
+		lightBrightness.setPreferredSize(new Dimension(20, lightBrightness.getPreferredSize().height));
 		
 		// RGBW Bulbs
 		JPanel lightRGBSouthPanel = new JPanel(new BorderLayout());

@@ -255,6 +255,11 @@ ntp server added to restore
 Wall Dispay better support
 New checklist UI
 
+1.1.0
+Shelly 1 G3
+Shelly 1PM G3
+Shelly Dimmer 0/1-10 G3
+
 ---
 // TODO
 // https://shelly-api-docs.shelly.cloud/gen2/DynamicComponents/BTHome/
