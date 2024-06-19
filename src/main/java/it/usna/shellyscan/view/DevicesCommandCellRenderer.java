@@ -95,7 +95,7 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 		lightPanel.add(lightLabel, BorderLayout.CENTER);
 		lightPanel.add(lightButton, BorderLayout.EAST);
 		lightPanel.add(lightBrightness, BorderLayout.SOUTH);
-		lightPanel.setPreferredSize(new Dimension(20, lightPanel.getPreferredSize().height));
+		lightBrightness.setPreferredSize(new Dimension(12, lightBrightness.getPreferredSize().height));
 		
 		// RGBW Bulbs
 		JPanel lightRGBSouthPanel = new JPanel(new BorderLayout());
@@ -105,7 +105,7 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 		lightRGBBulbPanel.add(lightRGBBulbButton, BorderLayout.EAST);
 		lightRGBBulbPanel.add(lightRGBSouthPanel, BorderLayout.SOUTH);
 		lightRGBSouthPanel.add(lightRGBBulbBrightness, BorderLayout.CENTER);
-		lightRGBBulbBrightness.setPreferredSize(new Dimension(20, lightRGBBulbBrightness.getPreferredSize().height));
+		lightRGBBulbBrightness.setPreferredSize(new Dimension(12, lightRGBBulbBrightness.getPreferredSize().height));
 		lightEditRGBButton.setBorder(BorderFactory.createEmptyBorder(0, 3, 0, 3));
 		lightEditRGBButton.setContentAreaFilled(false);
 		lightRGBSouthPanel.add(lightEditRGBButton, BorderLayout.EAST);
@@ -126,9 +126,9 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 		JPanel stackedSliders = new JPanel(new GridLayout(2, 1));
 		stackedSliders.setOpaque(false);
 		stackedSliders.add(colorRGBWGain);
-		colorRGBWGain.setPreferredSize(new Dimension(20, colorRGBWGain.getPreferredSize().height));
+		colorRGBWGain.setPreferredSize(new Dimension(12, colorRGBWGain.getPreferredSize().height));
 		stackedSliders.add(colorRGBWWhite);
-		colorRGBWWhite.setPreferredSize(new Dimension(20, colorRGBWWhite.getPreferredSize().height));
+		colorRGBWWhite.setPreferredSize(new Dimension(12, colorRGBWWhite.getPreferredSize().height));
 		colorRGBSlidersPanel.add(stackedSliders);
 		JButton editRGBButton = new JButton(new ImageIcon(getClass().getResource("/images/Write16.png")));
 		editRGBButton.setBorder(BorderFactory.createEmptyBorder(0, 3, 0, 3));
@@ -142,7 +142,7 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 		JPanel rollerButtonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 3, 0));
 		rollerPanel.add(rollerLabel, BorderLayout.CENTER);
 		rollerSouthPanel.add(rollerPerc, BorderLayout.CENTER);
-		rollerPerc.setPreferredSize(new Dimension(20, rollerPerc.getPreferredSize().height));
+		rollerPerc.setPreferredSize(new Dimension(12, rollerPerc.getPreferredSize().height));
 		rollerSouthPanel.add(rollerButtonPanel, BorderLayout.EAST);
 		JButton rollerButtonUp = new JButton(new ImageIcon(getClass().getResource("/images/Arrow16up.png")));
 		JButton rollerButtonDown = new JButton(new ImageIcon(getClass().getResource("/images/Arrow16down.png")));
@@ -165,7 +165,7 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 		// Thermostat G1 (TRV)
 		trvPanel.add(trvProfileLabel, BorderLayout.CENTER);
 		trvPanel.add(trvSlider, BorderLayout.SOUTH);
-		trvSlider.setPreferredSize(new Dimension(20, trvSlider.getPreferredSize().height));
+		trvSlider.setPreferredSize(new Dimension(12, trvSlider.getPreferredSize().height));
 		JPanel trvButtonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 3, 0));
 		trvButtonPanel.setBorder(BorderFactory.createEmptyBorder(1, 0, 0, 0));
 		trvButtonPanel.setOpaque(false);
@@ -180,7 +180,7 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 		// ThermostatInterface
 		thermPanel.add(thermProfileLabel, BorderLayout.CENTER);
 		thermPanel.add(thermSlider, BorderLayout.SOUTH);
-		thermSlider.setPreferredSize(new Dimension(20, thermSlider.getPreferredSize().height));
+		thermSlider.setPreferredSize(new Dimension(12, thermSlider.getPreferredSize().height));
 		JPanel thermButtonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 3, 0));
 		thermButtonPanel.setBorder(BorderFactory.createEmptyBorder(1, 0, 0, 0));
 		thermButtonPanel.setOpaque(false);
