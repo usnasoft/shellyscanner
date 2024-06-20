@@ -207,7 +207,8 @@ public class DevicesTable extends ExTooltipTable {
 	public String getToolTipText(final MouseEvent evt) {
 		final int r, c;
 		final Object value;
-		if(((Component) evt.getSource()).isVisible() && (r = rowAtPoint(evt.getPoint())) >= 0 && (c = columnAtPoint(evt.getPoint())) >= 0 && (value = getValueAt(r, c)) != null) {
+		if(((Component) evt.getSource()).isVisible() && (r = rowAtPoint(evt.getPoint())) >= 0 && (c = columnAtPoint(evt.getPoint())) >= 0 &&
+				(value = getValueAt(r, c)) != null && (getEditingColumn() == c && getEditingRow() == r) == false) {
 			final int modelCol = convertColumnIndexToModel(c);
 //			final String ret;
 			if(modelCol == COL_UPTIME_IDX) {
@@ -231,9 +232,9 @@ public class DevicesTable extends ExTooltipTable {
 //			} else if(value instanceof DeviceModule dm && isColumnVisible(COL_SOURCE_IDX) == false && (ret = dm.getLastSource()) != null) {
 //				adaptTooltipLocation = false;
 //				return "<html>" + String.format(LABELS.getString("col_last_source_tooltip"), value, ret) + "</html>";
-			} else if(value instanceof ThermostatG1) {
+			} else if(value instanceof ThermostatG1 therm) { // TRV
 				adaptTooltipLocation = false;
-				return String.format(Locale.ENGLISH, LABELS.getString("col_command_therm_tooltip"), ((ThermostatG1)value).getCurrentProfile(), ((ThermostatG1)value).getTargetTemp(), ((ThermostatG1)value).getPosition());
+				return String.format(Locale.ENGLISH, LABELS.getString("col_command_therm_tooltip"), therm.getCurrentProfile(), therm.getTargetTemp(), therm.getPosition());
 			} else if(value instanceof Meters[] meters) {
 				Component comp = getCellRenderer(r, c).getTableCellRendererComponent(this, value, false, false, r, c);
 				if(Arrays.stream(meters).anyMatch(m -> m instanceof LabelHolder || m instanceof SensorAddOn) || getCellRect(r, c, false).width <= comp.getPreferredSize().width) {
@@ -378,30 +379,13 @@ public class DevicesTable extends ExTooltipTable {
 	}
 
 	public void resetRowsComputedHeight() {
-//		Collections.fill(rowH, 1);
 		for(int i = 0; i < getRowCount(); i++) {
 			setRowHeight(i, 1);
 		}
 	}
 
 	// adapt row height
-//	private ArrayList<Integer> rowH = new ArrayList<>();
 	private void computeRowHeight(int rowIndex, Component callVal) {
-//		int modelRowIndex = convertRowIndexToModel(rowIndex);
-//		int currentH;
-//		if(modelRowIndex >= rowH.size()) {
-//			while(rowH.size() <= modelRowIndex) {
-//				rowH.add(1);
-//			}
-//			currentH = 1;
-//		} else {
-//			currentH = rowH.get(modelRowIndex);
-//		}
-//		int thisH = callVal.getPreferredSize().height;
-//		if(currentH < thisH) {
-//			setRowHeight(rowIndex, thisH);
-//			rowH.set(modelRowIndex, thisH);
-//		}
 		int thisH = callVal.getPreferredSize().height;
 		if(getRowHeight(rowIndex) < thisH) {
 			setRowHeight(rowIndex, thisH);
@@ -409,7 +393,6 @@ public class DevicesTable extends ExTooltipTable {
 	}
 	
 	public void addRow(ShellyAbstractDevice d) {
-//		resetRowsComputedHeight();
 		((UsnaTableModel)dataModel).addRow(generateRow(d, new Object[DevicesTable.COL_COMMAND_IDX + 1]));
 		columnsWidthAdapt();
 		getRowSorter().allRowsChanged();
@@ -465,8 +448,8 @@ public class DevicesTable extends ExTooltipTable {
 					row[DevicesTable.COL_COMMAND_IDX] = LABELS.getString("lableStatusFlood") + ": " + (flood.flood() ? YES : NO);
 				} else if(d instanceof ShellyMotion motion) {
 					row[DevicesTable.COL_COMMAND_IDX] = String.format(LABELS.getString("lableStatusMotion"), motion.motion() ? YES : NO);
-				} else if(d instanceof ShellyMotion2 motion) {
-					row[DevicesTable.COL_COMMAND_IDX] = String.format(LABELS.getString("lableStatusMotion"), motion.motion() ? YES : NO);
+				} else if(d instanceof ShellyMotion2 motion2) {
+					row[DevicesTable.COL_COMMAND_IDX] = String.format(LABELS.getString("lableStatusMotion"), motion2.motion() ? YES : NO);
 				} else if(d instanceof ShellyPlusSmoke smoke) {
 					row[DevicesTable.COL_COMMAND_IDX] = String.format(LABELS.getString("lableStatusSmoke"), smoke.getAlarm() ? YES : NO);
 				} else if(d instanceof ShellyTRV trv) { // very specific
@@ -519,4 +502,4 @@ public class DevicesTable extends ExTooltipTable {
 			return LOGIN_BULLET;
 		}
 	}
-} // 462 - 472 - 513
+} // 462 - 472 - 513 - 505
