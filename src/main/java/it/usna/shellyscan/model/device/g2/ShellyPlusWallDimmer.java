@@ -43,7 +43,7 @@ public class ShellyPlusWallDimmer extends AbstractG2Device implements WhiteComma
 	}
 
 	@Override
-	protected void restore(Map<String, JsonNode> backupJsons, List<String> errors) throws JsonProcessingException, InterruptedException {
+	protected void restore(Map<String, JsonNode> backupJsons, List<String> errors) throws JsonProcessingException {
 		JsonNode configuration = backupJsons.get("Shelly.GetConfig.json");
 		errors.add(light.restore(configuration));
 		errors.add(postCommand("WD_UI.SetConfig", "{\"config\":" + jsonMapper.writeValueAsString(configuration.get("wd_ui")) + "}"));
@@ -64,8 +64,8 @@ public class ShellyPlusWallDimmer extends AbstractG2Device implements WhiteComma
 		return 1;
 	}
 	
-//	@Override
-//	public String toString() {
-//		return super.toString() + " Relay: " + relay;
-//	}
+	@Override
+	public String toString() {
+		return super.toString() + " Light: " + light;
+	}
 }

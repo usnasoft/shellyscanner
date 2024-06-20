@@ -79,11 +79,6 @@ public class ShellyDUO extends AbstractG1Device implements WhiteCommander {
 		power = (float)status.get("meters").get(0).get("power").asDouble(0);
 	}
 
-//	@Override
-//	public String[] getInfoRequests() {
-//		return new String[] {"shelly", "settings", "settings/actions", "light/0", "status", "ota"};
-//	}
-
 	@Override
 	protected void restore(JsonNode settings, List<String> errors) throws IOException, InterruptedException {
 		errors.add(sendCommand("/settings?" + jsonNodeToURLPar(settings, "transition")));

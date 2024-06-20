@@ -100,7 +100,7 @@ public class DialogEditLightsArray extends JDialog {
 			final JPanel lp = new JPanel(new BorderLayout(10, 0));
 			final JLabel label = new JLabel();
 			final JToggleButton switchButton = new JToggleButton(new ImageIcon(DialogEditRGB.class.getResource("/images/Standby24.png")));
-			final JSlider brightness = new JSlider(/*LightWhite.MIN_BRIGHTNESS*/0, WhiteInterface.MAX_BRIGHTNESS, light.getBrightness()); // 0 seems valid for RGBW2, not for dimmer
+			final JSlider brightness = new JSlider(light.getMinBrightness(), light.getMaxBrightness(), light.getBrightness()); // 0 seems valid for RGBW2, not for dimmer
 			labels[i] = label;
 			buttons[i] = switchButton;
 			sliders[i] = brightness;

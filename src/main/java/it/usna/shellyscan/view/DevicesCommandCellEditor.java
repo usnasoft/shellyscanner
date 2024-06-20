@@ -47,7 +47,7 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 	private JLabel lightLabel = new JLabel();
 	private JPanel lightPanel = new JPanel(new BorderLayout());
 	private JButton lightButton = new JButton();
-	private JSlider lightBrightness = new JSlider(1, 100);
+	private JSlider lightBrightness = new JSlider();
 	
 	private JLabel lightRGBLabel = new JLabel();
 	private JPanel lightRGBPanel = new JPanel(new BorderLayout());
@@ -532,6 +532,8 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 	
 	private Component getLightPanel(WhiteInterface light) { // single
 		lightLabel.setText(light.getLabel() + " " + light.getBrightness() + "%");
+		lightBrightness.setMinimum(light.getMinBrightness());
+		lightBrightness.setMaximum(light.getMaxBrightness());
 		lightBrightness.setValue(light.getBrightness());
 		if(light.isOn()) {
 			lightButton.setText(DevicesCommandCellRenderer.LABEL_ON);
@@ -540,6 +542,7 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 			lightButton.setText(DevicesCommandCellRenderer.LABEL_OFF);
 			lightButton.setBackground(DevicesCommandCellRenderer.BUTTON_OFF_BG_COLOR);
 		}
+		lightButton.setForeground(light.isInputOn() ? DevicesCommandCellRenderer.BUTTON_ON_FG_COLOR : null);
 		edited = light;
 		return lightPanel;
 	}
@@ -614,6 +617,9 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 				editSwitchPanel.add(BorderLayout.WEST, editLightWhiteButton);
 				relayPanel.add(editSwitchPanel, BorderLayout.EAST);
 			}
+//			if(light.isInputOn()) {
+//				relayButton.setForeground(DevicesCommandCellRenderer.BUTTON_ON_FG_COLOR);
+//			}
 			stackedPanel.add(relayPanel);
 		}
 		edited = lights;

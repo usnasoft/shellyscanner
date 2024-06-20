@@ -21,11 +21,20 @@ public class LightWhite implements WhiteInterface {
 	private String source;
 	private String prefix; // "/white/", "/light/"
 	private boolean inputIsOn;
-//	public final static int MIN_BRIGHTNESS = 0;
 	
 	public LightWhite(AbstractG1Device parent, final String command, int index) {
 		this.parent = parent;
 		this.prefix = command + index;
+	}
+	
+	@Override
+	public int getMinBrightness() {
+		return 1;
+	}
+
+	@Override
+	public int getMaxBrightness() {
+		return 100;
 	}
 
 	public void fillSettings(JsonNode settingsWhite) {
@@ -58,8 +67,8 @@ public class LightWhite implements WhiteInterface {
 	
 	@Override
 	public void change(boolean on) throws IOException {
-		final JsonNode color = parent.getJSON(prefix + "?turn=" + (on ? "on" : "off"));
-		fillStatus(color);
+		final JsonNode status = parent.getJSON(prefix + "?turn=" + (on ? "on" : "off"));
+		fillStatus(status);
 	}
 	
 	@Override
@@ -67,13 +76,10 @@ public class LightWhite implements WhiteInterface {
 		return isOn;
 	}
 	
+	@Override
 	public boolean isInputOn() {
 		return inputIsOn;
 	}
-	
-//	public void refresh() throws IOException {
-//		fillStatus(parent.getJSON(prefix));
-//	}
 
 	@Override
 	public void setBrightness(int b) throws IOException {
@@ -102,7 +108,6 @@ public class LightWhite implements WhiteInterface {
 			while(pars.hasNext()) {
 				command += "&" + AbstractG1Device.jsonEntryToURLPar(pars.next());
 			}
-//			System.out.println(command);
 			return parent.sendCommand(command);
 		}
 		return null;

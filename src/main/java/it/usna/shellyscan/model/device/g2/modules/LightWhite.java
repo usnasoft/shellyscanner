@@ -10,25 +10,41 @@ import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.modules.WhiteInterface;
 
 /**
- * Used by wall dimmer
+ * Used by wall dimmer, dimmer 0/1-10
  */
 public class LightWhite implements WhiteInterface {
 	private final AbstractG2Device parent;
+	private final int index;
 	private String name;
 	private boolean isOn;
-	private int brightness; // Brightness, 1..100 - seems wrong: 0 seems valid for RGBW2, not for dimmer
+	private int brightness;
+//	private int minB = 0;
+//	private int maxB = 1000;
 	private String source;
-	private int index;
-//	private boolean inputIsOn;
-//	public final static int MIN_BRIGHTNESS = 0;
+	private boolean inputIsOn;
 	
 	public LightWhite(AbstractG2Device parent, int index) {
 		this.parent = parent;
 		this.index = index;
 	}
+	
+	@Override
+	public int getMinBrightness() {
+		return /*minB*/0;
+	}
+
+	@Override
+	public int getMaxBrightness() {
+		return /*maxB*/100;
+	}
 
 	public void fillSettings(JsonNode settingsWhite) {
 		name = settingsWhite.get("name").asText("");
+//		JsonNode range = settingsWhite.get("range_map");
+//		if(range != null) {
+//			minB = range.get(0).intValue();
+//			maxB = range.get(1).intValue();
+//		}
 	}
 	
 	public void fillStatus(JsonNode statusWhite) {
@@ -37,23 +53,25 @@ public class LightWhite implements WhiteInterface {
 		source = statusWhite.get("source").asText("-");
 	}
 	
+	public void fillStatus(JsonNode statusWhite, JsonNode input) {
+		isOn = statusWhite.get("output").asBoolean();
+		brightness = statusWhite.get("brightness").intValue();
+		source = statusWhite.get("source").asText("-");
+		inputIsOn = input.get("state").asBoolean();
+	}
+	
 	public String getName() {
 		return name;
 	}
 	
 	@Override
 	public boolean toggle() throws IOException {
-//		final JsonNode w = parent.getJSON(prefix + "?turn=toggle");
-//		fillStatus(w);
 		parent.getJSON("/rpc/Light.Toggle?id=" + index);
-		isOn = !isOn;
-		return isOn;
+		return (isOn = ! isOn);
 	}
 	
 	@Override
-	public void change(boolean on) throws IOException {//Light.Set?id=0&on=true&brightness=50
-//		final JsonNode color = parent.getJSON(prefix + "?turn=" + (on ? "on" : "off"));
-//		fillStatus(color);
+	public void change(boolean on) throws IOException {
 		parent.getJSON("/rpc/Light.Set?id=" + index + "&on=" + on);
 		isOn = on;
 	}
@@ -63,14 +81,13 @@ public class LightWhite implements WhiteInterface {
 		return isOn;
 	}
 	
-//	public boolean isInputOn() {
-//		return inputIsOn;
-//	}
+	@Override
+	public boolean isInputOn() {
+		return inputIsOn;
+	}
 
 	@Override
 	public void setBrightness(int b) throws IOException {
-//		final JsonNode status = parent.getJSON(prefix + "?brightness=" + b);
-//		fillStatus(status);
 		parent.getJSON("/rpc/Light.Set?id=" + index + "&brightness=" + b);
 		brightness = b;
 	}

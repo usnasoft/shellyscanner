@@ -95,12 +95,6 @@ public class Relay implements RelayInterface {
 	public String restore(JsonNode config) {
 		ObjectNode out = JsonNodeFactory.instance.objectNode();
 		out.put("id", index);
-
-//		ObjectNode input = (ObjectNode)config.get("input:" + index).deepCopy();
-//		input.remove("id");
-//		out.set("config", input);
-//		errors.add(parent.postCommand("Input.SetConfig", out));
-		
 		ObjectNode sw = (ObjectNode)config.get("switch:" + index).deepCopy();
 		sw.remove("id");
 		out.set("config", sw);

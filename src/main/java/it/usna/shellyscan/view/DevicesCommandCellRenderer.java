@@ -36,7 +36,7 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 	private JPanel lightPanel = new JPanel(new BorderLayout());
 	private JLabel lightLabel = new JLabel();
 	private JButton lightButton = new JButton();
-	private JSlider lightBrightness = new JSlider(1, 100);
+	private JSlider lightBrightness = new JSlider();
 	
 	// RGBW Bulbs
 	private JPanel lightRGBBulbPanel = new JPanel(new BorderLayout());
@@ -258,6 +258,9 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 				lightButton.setText(LABEL_OFF);
 				lightButton.setBackground(BUTTON_OFF_BG_COLOR);
 			}
+			lightButton.setForeground(light.isInputOn() ? BUTTON_ON_FG_COLOR : null);
+			lightBrightness.setMinimum(light.getMinBrightness());
+			lightBrightness.setMaximum(light.getMaxBrightness());
 			lightBrightness.setValue(light.getBrightness());
 			lightLabel.setText(light.getLabel() + " " + light.getBrightness() + "%");
 			lightLabel.setForeground(foregroundColor);
@@ -297,23 +300,26 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 			for(int i = 0; i < lights.length;) {
 				JLabel relayLabel = new JLabel(lights[i].getLabel());
 				JPanel relayPanel = new JPanel(new BorderLayout());
-				JButton relayButton = new JButton();
+				JButton button = new JButton();
 				relayPanel.setOpaque(false);
-				relayButton.setBorder(BUTTON_BORDERS);
+				button.setBorder(BUTTON_BORDERS);
 				relayPanel.add(relayLabel, BorderLayout.CENTER);
 				relayLabel.setForeground(foregroundColor);
 				if(lights[i].isOn()) {
-					relayButton.setText(LABEL_ON);
-					relayButton.setBackground(BUTTON_ON_BG_COLOR);
+					button.setText(LABEL_ON);
+					button.setBackground(BUTTON_ON_BG_COLOR);
 				} else {
-					relayButton.setText(LABEL_OFF);
-					relayButton.setBackground(BUTTON_OFF_BG_COLOR);
+					button.setText(LABEL_OFF);
+					button.setBackground(BUTTON_OFF_BG_COLOR);
 				}
+//				if(lights[i].isInputOn()) {
+//					button.setForeground(BUTTON_ON_FG_COLOR);
+//				}
 				if(++i < lights.length) {
-					relayPanel.add(relayButton, BorderLayout.EAST);
+					relayPanel.add(button, BorderLayout.EAST);
 				} else {
 					editSwitchPanel.removeAll();
-					editSwitchPanel.add(relayButton, BorderLayout.EAST);
+					editSwitchPanel.add(button, BorderLayout.EAST);
 					editSwitchPanel.add(BorderLayout.WEST, editLightWhiteButton);
 					relayPanel.add(editSwitchPanel, BorderLayout.EAST);
 				}

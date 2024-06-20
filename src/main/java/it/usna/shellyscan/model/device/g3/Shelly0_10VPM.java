@@ -4,10 +4,12 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 
+import it.usna.shellyscan.model.Devices;
+import it.usna.shellyscan.model.device.g2.modules.Input;
 import it.usna.shellyscan.model.device.g2.modules.LightWhite;
 import it.usna.shellyscan.model.device.modules.WhiteCommander;
 
@@ -39,14 +41,18 @@ public class Shelly0_10VPM extends AbstractG3Device implements WhiteCommander {
 	@Override
 	protected void fillStatus(JsonNode status) throws IOException {
 		super.fillStatus(status);
-		light.fillStatus(status.get("light:0"));
+		light.fillStatus(status.get("light:0"), status.get("input:0"));
 	}
 
 	@Override
-	protected void restore(Map<String, JsonNode> backupJsons, List<String> errors) throws JsonProcessingException, InterruptedException {
+	protected void restore(Map<String, JsonNode> backupJsons, List<String> errors) throws InterruptedException {
 		JsonNode configuration = backupJsons.get("Shelly.GetConfig.json");
+		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 		errors.add(light.restore(configuration));
-		errors.add(postCommand("WD_UI.SetConfig", "{\"config\":" + jsonMapper.writeValueAsString(configuration.get("wd_ui")) + "}"));
+		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+		errors.add(Input.restore(this, configuration, "0"));
+		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+		errors.add(Input.restore(this, configuration, "1"));
 	}
 
 	@Override
@@ -63,9 +69,9 @@ public class Shelly0_10VPM extends AbstractG3Device implements WhiteCommander {
 	public int getWhiteCount() {
 		return 1;
 	}
-	
-//	@Override
-//	public String toString() {
-//		return super.toString() + " Relay: " + relay;
-//	}
+
+	@Override
+	public String toString() {
+		return super.toString() + " Light: " + light;
+	}
 }
