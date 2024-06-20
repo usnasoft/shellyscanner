@@ -11,12 +11,12 @@ import com.fasterxml.jackson.databind.JsonNode;
 import it.usna.shellyscan.model.device.g2.modules.LightWhite;
 import it.usna.shellyscan.model.device.modules.WhiteCommander;
 
-public class ShellyPlusWallDimmer extends AbstractG2Device implements WhiteCommander {
+public class ShellyWallDimmer extends AbstractG2Device implements WhiteCommander {
 	public final static String ID = "PlusWallDimmer";
 	private LightWhite light = new LightWhite(this, 0);
 	private LightWhite[] lightArray = new LightWhite[] {light};
 
-	public ShellyPlusWallDimmer(InetAddress address, int port, String hostname) {
+	public ShellyWallDimmer(InetAddress address, int port, String hostname) {
 		super(address, port, hostname);
 	}
 	

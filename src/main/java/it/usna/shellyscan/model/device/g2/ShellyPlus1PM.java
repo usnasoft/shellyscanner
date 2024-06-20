@@ -15,6 +15,7 @@ import it.usna.shellyscan.model.device.g2.modules.Input;
 import it.usna.shellyscan.model.device.g2.modules.Relay;
 import it.usna.shellyscan.model.device.g2.modules.SensorAddOn;
 import it.usna.shellyscan.model.device.g2.modules.SensorAddOnHolder;
+import it.usna.shellyscan.model.device.meters.MetersWVI;
 import it.usna.shellyscan.model.device.modules.RelayCommander;
 
 /**
@@ -23,7 +24,6 @@ import it.usna.shellyscan.model.device.modules.RelayCommander;
  */
 public class ShellyPlus1PM extends AbstractG2Device implements RelayCommander, InternalTmpHolder, SensorAddOnHolder {
 	public final static String ID = "Plus1PM";
-	private final static Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.W, /*Meters.Type.PF,*/ Meters.Type.V, Meters.Type.I};
 	private Relay relay = new Relay(this, 0);
 	private float internalTmp;
 	private float power;
@@ -44,19 +44,13 @@ public class ShellyPlus1PM extends AbstractG2Device implements RelayCommander, I
 		this.mac = devInfo.get("mac").asText();
 		final JsonNode config = getJSON("/rpc/Shelly.GetConfig");
 		
-		Meters m0 = new Meters() {
-			public Type[] getTypes() {
-				return SUPPORTED_MEASURES;
-			}
-
+		Meters m0 = new MetersWVI() {
 			@Override
 			public float getValue(Type t) {
 				if(t == Meters.Type.W) {
 					return power;
 				} else if(t == Meters.Type.I) {
 					return current;
-//				} else if(t == Meters.Type.PF) {
-//					return pf;
 				} else {
 					return voltage;
 				}

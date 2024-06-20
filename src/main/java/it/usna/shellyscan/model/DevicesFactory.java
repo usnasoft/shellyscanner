@@ -60,7 +60,7 @@ import it.usna.shellyscan.model.device.g2.ShellyPlusPlugS;
 import it.usna.shellyscan.model.device.g2.ShellyPlusPlugUK;
 import it.usna.shellyscan.model.device.g2.ShellyPlusPlugUS;
 import it.usna.shellyscan.model.device.g2.ShellyPlusSmoke;
-import it.usna.shellyscan.model.device.g2.ShellyPlusWallDimmer;
+import it.usna.shellyscan.model.device.g2.ShellyWallDimmer;
 import it.usna.shellyscan.model.device.g2.ShellyPlusi4;
 import it.usna.shellyscan.model.device.g2.ShellyPro1;
 import it.usna.shellyscan.model.device.g2.ShellyPro1PM;
@@ -218,7 +218,7 @@ public class DevicesFactory {
 				case ShellyPlusPlugUK.ID -> new ShellyPlusPlugUK(address, port, name);
 				case ShellyPlusPlugIT.ID -> new ShellyPlusPlugIT(address, port, name);
 				case ShellyPlusPlugUS.ID -> new ShellyPlusPlugUS(address, port, name);
-				case ShellyPlusWallDimmer.ID -> new ShellyPlusWallDimmer(address, port, name);
+				case ShellyWallDimmer.ID -> new ShellyWallDimmer(address, port, name);
 				case WallDisplay.ID -> new WallDisplay(address, port, name);
 				// Plus - Battery
 				case ShellyPlusHT.ID -> new ShellyPlusHT(address, port, name);

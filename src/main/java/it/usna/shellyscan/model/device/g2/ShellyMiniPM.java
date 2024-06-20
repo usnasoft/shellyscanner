@@ -8,6 +8,7 @@ import java.util.Map;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import it.usna.shellyscan.model.device.Meters;
+import it.usna.shellyscan.model.device.meters.MetersWVI;
 
 /**
  * Shelly Shelly Plus mini PM model
@@ -15,7 +16,6 @@ import it.usna.shellyscan.model.device.Meters;
  */
 public class ShellyMiniPM extends AbstractG2Device {
 	public final static String ID = "PlusPMMini";
-	private final static Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.W, Meters.Type.V, Meters.Type.I};
 	private float power;
 	private float voltage;
 	private float current;
@@ -24,12 +24,8 @@ public class ShellyMiniPM extends AbstractG2Device {
 	public ShellyMiniPM(InetAddress address, int port, String hostname) {
 		super(address, port, hostname);
 
-		meters = new Meters[] {
-				new Meters() {
-					public Type[] getTypes() {
-						return SUPPORTED_MEASURES;
-					}
-
+		meters = new MetersWVI[] {
+				new MetersWVI() {
 					@Override
 					public float getValue(Type t) {
 						if(t == Meters.Type.W) {

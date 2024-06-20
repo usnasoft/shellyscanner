@@ -13,6 +13,7 @@ import it.usna.shellyscan.model.device.InternalTmpHolder;
 import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.g2.modules.Input;
 import it.usna.shellyscan.model.device.g2.modules.Relay;
+import it.usna.shellyscan.model.device.meters.MetersWVI;
 import it.usna.shellyscan.model.device.modules.RelayCommander;
 
 /**
@@ -21,7 +22,6 @@ import it.usna.shellyscan.model.device.modules.RelayCommander;
  */
 public class ShellyMini1PMG3 extends AbstractG3Device implements RelayCommander, InternalTmpHolder {
 	public final static String ID = "Mini1PMG3";
-	private final static Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.W, Meters.Type.V, Meters.Type.I};
 	private float internalTmp;
 	private float power;
 	private float voltage;
@@ -33,12 +33,8 @@ public class ShellyMini1PMG3 extends AbstractG3Device implements RelayCommander,
 	public ShellyMini1PMG3(InetAddress address, int port, String hostname) {
 		super(address, port, hostname);
 
-		meters = new Meters[] {
-				new Meters() {
-					public Type[] getTypes() {
-						return SUPPORTED_MEASURES;
-					}
-
+		meters = new MetersWVI[] {
+				new MetersWVI() {
 					@Override
 					public float getValue(Type t) {
 						if(t == Meters.Type.W) {

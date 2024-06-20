@@ -14,11 +14,11 @@ import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.InternalTmpHolder;
 import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.g2.modules.Relay;
+import it.usna.shellyscan.model.device.meters.MetersWVI;
 import it.usna.shellyscan.model.device.modules.RelayCommander;
 
 public class ShellyPlusPlugUK extends AbstractG2Device implements RelayCommander, InternalTmpHolder {
 	public final static String ID = "PlusPlugUK";
-	private final static Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.W, Meters.Type.V, Meters.Type.I};
 	private Relay relay = new Relay(this, 0);
 	private float internalTmp;
 	private float power;
@@ -29,12 +29,8 @@ public class ShellyPlusPlugUK extends AbstractG2Device implements RelayCommander
 	public ShellyPlusPlugUK(InetAddress address, int port, String hostname) {
 		super(address, port, hostname);
 
-		meters = new Meters[] {
-				new Meters() {
-					public Type[] getTypes() {
-						return SUPPORTED_MEASURES;
-					}
-
+		meters = new MetersWVI[] {
+				new MetersWVI() {
 					@Override
 					public float getValue(Type t) {
 						if(t == Meters.Type.W) {

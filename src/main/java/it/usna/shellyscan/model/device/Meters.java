@@ -53,11 +53,12 @@ public abstract class Meters implements Comparable<Meters> {
 	public String toString() {
 		Type[] t = getTypes();
 		if(t.length > 0) {
-			String res = t[0] + "=" + NF.format(getValue(t[0]));
+			StringBuilder res = new StringBuilder(t[0].toString());
+			res.append("=").append(NF.format(getValue(t[0])));
 			for(int i = 1; i < t.length; i++) {
-				res += " " + t[i] + "=" + NF.format(getValue(t[i]));
+				res.append(" ").append(t[i].toString()).append("=").append(NF.format(getValue(t[i])));
 			}
-			return res;
+			return res.toString();
 		} else {
 			return "";
 		}

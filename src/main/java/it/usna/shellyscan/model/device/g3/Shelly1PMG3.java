@@ -15,6 +15,7 @@ import it.usna.shellyscan.model.device.g2.modules.Input;
 import it.usna.shellyscan.model.device.g2.modules.Relay;
 import it.usna.shellyscan.model.device.g2.modules.SensorAddOn;
 import it.usna.shellyscan.model.device.g2.modules.SensorAddOnHolder;
+import it.usna.shellyscan.model.device.meters.MetersWVI;
 import it.usna.shellyscan.model.device.modules.RelayCommander;
 
 /**
@@ -23,13 +24,11 @@ import it.usna.shellyscan.model.device.modules.RelayCommander;
  */
 public class Shelly1PMG3 extends AbstractG3Device implements RelayCommander, InternalTmpHolder, SensorAddOnHolder {
 	public final static String ID = "S1PMG3";
-	private final static Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.W, /*Meters.Type.PF,*/ Meters.Type.V, Meters.Type.I};
 	private Relay relay = new Relay(this, 0);
 	private float internalTmp;
 	private float power;
 	private float voltage;
 	private float current;
-//	private float pf;
 	private Relay[] relays = new Relay[] {relay};
 	private Meters[] meters;
 	private SensorAddOn addOn;
@@ -43,20 +42,14 @@ public class Shelly1PMG3 extends AbstractG3Device implements RelayCommander, Int
 		this.hostname = devInfo.get("id").asText("");
 		this.mac = devInfo.get("mac").asText();
 		final JsonNode config = getJSON("/rpc/Shelly.GetConfig");
-		
-		Meters m0 = new Meters() {
-			public Type[] getTypes() {
-				return SUPPORTED_MEASURES;
-			}
-
+	
+		Meters m0 = new MetersWVI() {
 			@Override
 			public float getValue(Type t) {
 				if(t == Meters.Type.W) {
 					return power;
 				} else if(t == Meters.Type.I) {
 					return current;
-//				} else if(t == Meters.Type.PF) {
-//					return pf;
 				} else {
 					return voltage;
 				}
@@ -132,7 +125,6 @@ public class Shelly1PMG3 extends AbstractG3Device implements RelayCommander, Int
 		power = switchStatus.get("apower").floatValue();
 		voltage = switchStatus.get("voltage").floatValue();
 		current = switchStatus.get("current").floatValue();
-//		pf = switchStatus.path("pf").floatValue();
 		if(addOn != null) {
 			addOn.fillStatus(status);
 		}
