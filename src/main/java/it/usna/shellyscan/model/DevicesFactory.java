@@ -60,7 +60,6 @@ import it.usna.shellyscan.model.device.g2.ShellyPlusPlugS;
 import it.usna.shellyscan.model.device.g2.ShellyPlusPlugUK;
 import it.usna.shellyscan.model.device.g2.ShellyPlusPlugUS;
 import it.usna.shellyscan.model.device.g2.ShellyPlusSmoke;
-import it.usna.shellyscan.model.device.g2.ShellyWallDimmer;
 import it.usna.shellyscan.model.device.g2.ShellyPlusi4;
 import it.usna.shellyscan.model.device.g2.ShellyPro1;
 import it.usna.shellyscan.model.device.g2.ShellyPro1PM;
@@ -68,11 +67,14 @@ import it.usna.shellyscan.model.device.g2.ShellyPro2;
 import it.usna.shellyscan.model.device.g2.ShellyPro2PM;
 import it.usna.shellyscan.model.device.g2.ShellyPro3;
 import it.usna.shellyscan.model.device.g2.ShellyPro4PM;
+import it.usna.shellyscan.model.device.g2.ShellyProDimmer1;
+import it.usna.shellyscan.model.device.g2.ShellyWallDimmer;
 import it.usna.shellyscan.model.device.g2.WallDisplay;
 import it.usna.shellyscan.model.device.g3.Shelly0_10VPM;
 import it.usna.shellyscan.model.device.g3.Shelly1G3;
 import it.usna.shellyscan.model.device.g3.Shelly1PMG3;
 import it.usna.shellyscan.model.device.g3.ShellyG3Unmanaged;
+import it.usna.shellyscan.model.device.g3.ShellyI4G3;
 import it.usna.shellyscan.model.device.g3.ShellyMini1G3;
 import it.usna.shellyscan.model.device.g3.ShellyMini1PMG3;
 import it.usna.shellyscan.model.device.g3.ShellyMiniPMG3;
@@ -230,6 +232,7 @@ public class DevicesFactory {
 				case ShellyPro2.ID -> new ShellyPro2(address, port, name);
 				case ShellyPro3.ID -> new ShellyPro3(address, port, name);
 				case ShellyPro4PM.ID -> new ShellyPro4PM(address, port, name);
+				case ShellyProDimmer1.ID -> new ShellyProDimmer1(address, port, name);
 				default -> new ShellyG2Unmanaged(address, port, name);
 			};
 		} catch(Exception e) { // really unexpected
@@ -278,6 +281,7 @@ public class DevicesFactory {
 			case Shelly1G3.ID -> new Shelly1G3(address, port, name);
 			case Shelly1PMG3.ID -> new Shelly1PMG3(address, port, name);
 			case Shelly0_10VPM.ID -> new Shelly0_10VPM(address, port, name);
+			case ShellyI4G3.ID -> new ShellyI4G3(address, port, name);
 			case ShellyMini1G3.ID -> new ShellyMini1G3(address, port, name);
 			case ShellyMini1PMG3.ID -> new ShellyMini1PMG3(address, port, name);
 			case ShellyMiniPMG3.ID -> new ShellyMiniPMG3(address, port, name);

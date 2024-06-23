@@ -1,4 +1,4 @@
-package it.usna.shellyscan.model.device.g3;
+package it.usna.shellyscan.model.device.g2;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -16,8 +16,12 @@ import it.usna.shellyscan.model.device.g2.modules.LightWhite;
 import it.usna.shellyscan.model.device.meters.MetersWVI;
 import it.usna.shellyscan.model.device.modules.WhiteCommander;
 
-public class Shelly0_10VPM extends AbstractG3Device implements InternalTmpHolder, WhiteCommander {
-	public final static String ID = "Dimmer0110VPMG3";
+/**
+ * Pro Dimmer 1PM model
+ * @author usna
+ */
+public class ShellyProDimmer1 extends AbstractProDevice implements InternalTmpHolder, WhiteCommander {
+	public final static String ID = "ProDimmerx";
 	private float internalTmp;
 	private float power;
 	private float voltage;
@@ -26,7 +30,7 @@ public class Shelly0_10VPM extends AbstractG3Device implements InternalTmpHolder
 	private LightWhite light = new LightWhite(this, 0);
 	private LightWhite[] lightArray = new LightWhite[] {light};
 
-	public Shelly0_10VPM(InetAddress address, int port, String hostname) {
+	public ShellyProDimmer1(InetAddress address, int port, String hostname) {
 		super(address, port, hostname);
 		
 		meters = new MetersWVI[] {
@@ -47,7 +51,7 @@ public class Shelly0_10VPM extends AbstractG3Device implements InternalTmpHolder
 	
 	@Override
 	public String getTypeName() {
-		return "Shelly Dimmer 0/1-10 G3";
+		return "Shelly Pro Dimmer 1";
 	}
 	
 	@Override
@@ -107,7 +111,7 @@ public class Shelly0_10VPM extends AbstractG3Device implements InternalTmpHolder
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 		errors.add(light.restore(configuration));
 	}
-
+	
 	@Override
 	public String toString() {
 		return super.toString() + " Light: " + light;
