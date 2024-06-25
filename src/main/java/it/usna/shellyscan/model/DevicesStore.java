@@ -11,6 +11,7 @@ import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -51,7 +52,7 @@ public class DevicesStore {
 
 	private final static Pattern MAC_PATTERN = Pattern.compile("^[A-F0-9]{12}$");
 	
-	private final List<GhostDevice> ghostsList = new ArrayList<>();
+	private final ArrayList<GhostDevice> ghostsList = new ArrayList<>();
 
 	public void store(Devices model, Path storeFile) throws IOException {
 		LOG.trace("storing archive");
@@ -188,12 +189,49 @@ public class DevicesStore {
 	 * @param d
 	 * @return
 	 */
-	public GhostDevice getGhost(ShellyAbstractDevice d) {
-		int ind = ghostsList.indexOf(d);
-		if(ind >= 0) {
-			return ghostsList.get(ind);
+//	public GhostDevice getGhost(ShellyAbstractDevice d) {
+//		int ind = ghostsList.indexOf(d);
+//		if(ind >= 0) {
+//			return ghostsList.get(ind);
+//		} else {
+//			GhostDevice ghost = toGhost(d);
+//			ghostsList.add(ghost);
+//			return ghost;
+//		}
+//	}
+	
+	/**
+	 * get corresponding dev ghost or generate a new one; the idea is to align model index with ghostsList index for better performances
+	 * @param dev ShellyAbstractDevice
+	 * @param modelIndex an hint; could be wrong
+	 * @return the ghost corrisponding to d
+	 */
+	public synchronized GhostDevice getGhost(ShellyAbstractDevice dev, int modelIndex) {
+		if(modelIndex < ghostsList.size()) {
+			GhostDevice ghost;
+			if(dev.equals(ghost = ghostsList.get(modelIndex))) { // ShellyAbstractDevice equals use only mac address
+				return ghost;
+			} else {
+				int localInd = ghostsList.indexOf(dev);
+				GhostDevice found;
+				if(localInd >= 0) {
+					found = ghostsList.get(localInd);
+					ghostsList.set(modelIndex, found);
+					ghostsList.set(localInd, ghost);
+				} else {
+					found = toGhost(dev);
+					ghostsList.set(modelIndex, found);
+					if(ghost != null) {
+						ghostsList.add(ghost);
+					}
+				}
+				return found;
+			}
 		} else {
-			GhostDevice ghost = toGhost(d);
+			GhostDevice ghost = toGhost(dev);
+			if(modelIndex != ghostsList.size()) { // modelIndex > ghostsList.size(); if modelIndex == ghostsList.size() the subsequent "add" do the trick
+				ghostsList.addAll(Arrays.asList(new GhostDevice[modelIndex - ghostsList.size()]));
+			}
 			ghostsList.add(ghost);
 			return ghost;
 		}

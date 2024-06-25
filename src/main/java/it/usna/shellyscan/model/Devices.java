@@ -490,7 +490,7 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 	}
 	
 	public GhostDevice getGhost(int modelIdx) {
-		return ghostsStore.getGhost(devices.get(modelIdx));
+		return ghostsStore.getGhost(devices.get(modelIdx), modelIdx);
 	}
 	
 	public void saveToStore(Path path) throws IOException {
