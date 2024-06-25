@@ -22,10 +22,11 @@ public class GhostDevice extends ShellyAbstractDevice {
 	private final String typeID;
 	private final boolean battery;
 	private String note;
+	private String keyNote;
 	
 	public GhostDevice(InetAddress address, int port, String hostname,
 			String mac, String ssid, String typeName, String typeID, int gen, String name, long lastConnection, boolean battery,
-			String note) {
+			String note, String keyNote) {
 		super(address, port, hostname);
 		this.mac = mac;
 		this.ssid = ssid;
@@ -36,6 +37,7 @@ public class GhostDevice extends ShellyAbstractDevice {
 		this.lastConnection = lastConnection;
 		this.battery = battery;
 		this.note = note;
+		this.keyNote = keyNote;
 	}
 
 	@Override
@@ -67,6 +69,14 @@ public class GhostDevice extends ShellyAbstractDevice {
 	
 	public void setNote(String note) {
 		this.note = note;
+	}
+	
+	public String getKeyNote() {
+		return keyNote;
+	}
+	
+	public void setKeyNote(String keyNote) {
+		this.keyNote = keyNote;
 	}
 	
 	@Override

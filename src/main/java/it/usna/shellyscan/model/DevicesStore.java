@@ -11,7 +11,7 @@ import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -49,6 +49,7 @@ public class DevicesStore {
 	private final static String BATTERY = "bat";
 	private final static String LAST_CON = "last";
 	private final static String USER_NOTE = "note";
+	private final static String KEYWORD_NOTE = "keyword";
 
 	private final static Pattern MAC_PATTERN = Pattern.compile("^[A-F0-9]{12}$");
 	
@@ -63,11 +64,12 @@ public class DevicesStore {
 		for (int i = 0; i < model.size(); i++) {
 			ShellyAbstractDevice device = model.get(i);
 			GhostDevice stored = getStoredGhost(device);
-			// Device with errors or not authenticated -> get information from old store
+			// Device with errors or not authenticated -> get data from old store
 			if((device instanceof ShellyUnmanagedDeviceInterface ud && ud.getException() != null) || device.getStatus() == Status.NOT_LOOGGED) {
 				if(stored != null) {
 					ObjectNode jsonDev = toJson(stored);
 					jsonDev.put(USER_NOTE, stored.getNote());
+					jsonDev.put(KEYWORD_NOTE, stored.getKeyNote());
 					jsonDev.put(ADDRESS, device.getAddress().getHostAddress());
 					toBeStored.add(jsonDev);
 				} else if(MAC_PATTERN.matcher(device.getMacAddress()).matches()) {
@@ -77,6 +79,7 @@ public class DevicesStore {
 				ObjectNode jsonDev = toJson(device);
 				if(stored != null) {
 					jsonDev.put(USER_NOTE, stored.getNote());
+					jsonDev.put(KEYWORD_NOTE, stored.getKeyNote());
 				}
 				toBeStored.add(jsonDev);
 			}
@@ -123,7 +126,7 @@ public class DevicesStore {
 						ghostsList.add(new GhostDevice(
 								InetAddress.getByName(el.get(ADDRESS).asText()), el.get(PORT).intValue(), el.get(HOSTNAME).asText(), el.get(MAC).asText(),
 								el.get(SSID).asText(), el.get(TYPE_NAME).asText(), el.get(TYPE_ID).asText(), el.path(GENERATION).intValue(), el.get(NAME).asText(), el.path(LAST_CON).longValue(),
-								el.path(BATTERY).booleanValue(), el.path(USER_NOTE).asText()));
+								el.path(BATTERY).booleanValue(), el.path(USER_NOTE).asText(), el.path(KEYWORD_NOTE).asText()));
 					} catch (UnknownHostException | RuntimeException e) {
 						LOG.error("Archive read", e);
 					}
@@ -162,7 +165,7 @@ public class DevicesStore {
 				dev.getAddress(), dev.getPort(), dev.getHostname(), dev.getMacAddress(),
 				dev.getSSID(), dev.getTypeName(), dev.getTypeID(), gen(dev), dev.getName(), dev.getLastTime(),
 				dev instanceof BatteryDeviceInterface || (dev instanceof GhostDevice g && g.isBatteryOperated()),
-				"");
+				"", "");
 	}
 	
 	private GhostDevice getStoredGhost(ShellyAbstractDevice d) {
@@ -214,11 +217,11 @@ public class DevicesStore {
 			} else {
 				int localInd = ghostsList.indexOf(dev);
 				GhostDevice found;
-				if(localInd >= 0) {
+				if(localInd >= 0) { // we have it but in the wrong index
 					found = ghostsList.get(localInd);
 					ghostsList.set(modelIndex, found);
 					ghostsList.set(localInd, ghost);
-				} else {
+				} else { // generate, put on the correct index, save old occupant 
 					found = toGhost(dev);
 					ghostsList.set(modelIndex, found);
 					if(ghost != null) {
@@ -229,9 +232,7 @@ public class DevicesStore {
 			}
 		} else {
 			GhostDevice ghost = toGhost(dev);
-			if(modelIndex != ghostsList.size()) { // modelIndex > ghostsList.size(); if modelIndex == ghostsList.size() the subsequent "add" do the trick
-				ghostsList.addAll(Arrays.asList(new GhostDevice[modelIndex - ghostsList.size()]));
-			}
+			ghostsList.addAll(Collections.nCopies(modelIndex - ghostsList.size(), null)); // could add 0 elements
 			ghostsList.add(ghost);
 			return ghost;
 		}
