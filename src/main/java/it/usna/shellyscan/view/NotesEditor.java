@@ -8,19 +8,19 @@ import java.awt.Window;
 import java.awt.event.KeyEvent;
 
 import javax.swing.Action;
+import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
+import javax.swing.JTextField;
 import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
-import javax.swing.event.CaretListener;
-import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultEditorKit;
-import javax.swing.text.Element;
 import javax.swing.undo.UndoManager;
 
 import it.usna.shellyscan.controller.UsnaAction;
@@ -34,14 +34,17 @@ import it.usna.swing.dialog.FindReplaceDialog;
  */
 public class NotesEditor extends JFrame {
 	private static final long serialVersionUID = 1L;
-//	private JTextField textField;
 	
 	public NotesEditor(Window owner, GhostDevice ghost) {
 		super(LABELS.getString("action_notes_tooltip") + " - " + UtilMiscellaneous.getDescName(ghost));
 		setIconImages(owner.getIconImages());
 		
+		JPanel centerPanel = new JPanel(new BorderLayout());
+		
 		BasicEditorPanel editor = new BasicEditorPanel(this, ghost.getNote());
-		getContentPane().add(editor, BorderLayout.CENTER); // NORTH
+		JTextField textFieldKeyword = new JTextField(ghost.getKeyNote());
+		textFieldKeyword.setColumns(20);
+		centerPanel.add(editor, BorderLayout.CENTER);
 
 		// bottom buttons
 		JPanel buttonsPanel = new JPanel(new FlowLayout());
@@ -50,6 +53,7 @@ public class NotesEditor extends JFrame {
 		JButton okButton = new JButton(LABELS.getString("dlgSave"));
 		okButton.addActionListener(e -> {
 			ghost.setNote(editor.getText());
+			ghost.setKeyNote(textFieldKeyword.getText());
 			dispose();
 		});
 		buttonsPanel.add(okButton);
@@ -58,17 +62,22 @@ public class NotesEditor extends JFrame {
 		closeButton.addActionListener(e -> dispose());
 		buttonsPanel.add(closeButton);
 		
-//		JPanel panel = new JPanel();
-//		FlowLayout flowLayout = (FlowLayout) panel.getLayout();
-//		flowLayout.setAlignment(FlowLayout.LEADING);
-//		getContentPane().add(panel, BorderLayout.CENTER);
-//		
-//		JLabel lblNewLabel = new JLabel("keyword");
-//		panel.add(lblNewLabel);
-//		
-//		textField = new JTextField();
-//		panel.add(textField);
-//		textField.setColumns(20);
+		JPanel keyPanel = new JPanel(new FlowLayout(FlowLayout.LEADING));
+		keyPanel.add(new JLabel(LABELS.getString("labelKeynote")));
+		keyPanel.add(textFieldKeyword);
+
+		centerPanel.add(keyPanel, BorderLayout.SOUTH);
+		
+		getContentPane().add(centerPanel, BorderLayout.CENTER);
+		
+		centerPanel.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_K, MainView.SHORTCUT_KEY), "focusKeyword");
+		centerPanel.getActionMap().put("focusKeyword", new UsnaAction(e -> textFieldKeyword.requestFocus()));
+		
+		centerPanel.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_N, MainView.SHORTCUT_KEY), "focusNote");
+		centerPanel.getActionMap().put("focusNote", new UsnaAction(e -> editor.requestFocus()));
+		
+		centerPanel.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_S, MainView.SHORTCUT_KEY), "saveNote");
+		centerPanel.getActionMap().put("saveNote", new UsnaAction(e -> okButton.doClick()));
 		
 		setSize(550, 400);
 		setVisible(true);
@@ -80,17 +89,18 @@ public class NotesEditor extends JFrame {
 class BasicEditorPanel extends JPanel {
 	private static final long serialVersionUID = 1L;
 	
-	protected JTextArea textArea = new JTextArea();
+	private JTextArea textArea = new JTextArea();
 	private Action cutAction;
 	private Action copyAction;
 	private Action pasteAction;
 	private Action undoAction;
 	private Action redoAction;
 	private Action findAction;
-	protected JScrollPane scrollPane = new JScrollPane();
 	
 	public BasicEditorPanel(Window owner, String text) {
 		setLayout(new BorderLayout());
+		
+		JScrollPane scrollPane = new JScrollPane();
 		add(scrollPane, BorderLayout.CENTER);
 
 		textArea.setText(text);
@@ -130,12 +140,7 @@ class BasicEditorPanel extends JPanel {
 		mapAction(KeyStroke.getKeyStroke(KeyEvent.VK_F, MainView.SHORTCUT_KEY), findAction, "find_usna");
 		
 		// toolbar
-		JToolBar toolBar = createToolbar(new JToolBar());
-		toolBar.setFloatable(false);
-		add(toolBar, BorderLayout.NORTH);
-	}
-	
-	protected JToolBar createToolbar(JToolBar toolBar) {
+		JToolBar toolBar = new JToolBar();
 		toolBar.add(cutAction);
 		toolBar.add(copyAction);
 		toolBar.add(pasteAction);
@@ -144,40 +149,12 @@ class BasicEditorPanel extends JPanel {
 		toolBar.add(redoAction);
 		toolBar.addSeparator();
 		toolBar.add(findAction);
-		return toolBar;
+		toolBar.setBorder(BorderFactory.createEmptyBorder());
+		toolBar.setFloatable(false);
+		add(toolBar, BorderLayout.NORTH);
 	}
-	
-	public void addCaretListener(CaretListener listener) {
-		textArea.addCaretListener(listener);
-	}
-	
-	public int getCaretRow() {
-		try {
-			int caretpos = textArea.getCaretPosition();
-			return textArea.getLineOfOffset(caretpos) + 1;
-		} catch (BadLocationException e1) {
-			return 0;
-		}
-	}
-	
-	public int getCaretColumn() {
-		try {
-			int caretpos = textArea.getCaretPosition();
-			int row = textArea.getLineOfOffset(caretpos);
-			return caretpos - textArea.getLineStartOffset(row) + 1;
-		} catch (BadLocationException e1) {
-			return 0;
-		}
-	}
-	
-	public void gotoLine(int line) {
-		Element el = textArea.getDocument().getDefaultRootElement().getElement(line - 1);
-		if(el != null) {
-			textArea.setCaretPosition(el.getStartOffset());
-		}
-	}
-	
-	public void mapAction(KeyStroke k, Action action, String name) {
+
+	private void mapAction(KeyStroke k, Action action, String name) {
 		textArea.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(k, name);
 		textArea.getActionMap().put(name, action);
 	}
