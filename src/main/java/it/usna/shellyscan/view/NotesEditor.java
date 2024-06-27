@@ -24,6 +24,7 @@ import javax.swing.text.DefaultEditorKit;
 import javax.swing.undo.UndoManager;
 
 import it.usna.shellyscan.controller.UsnaAction;
+import it.usna.shellyscan.controller.UsnaTextAction;
 import it.usna.shellyscan.model.device.GhostDevice;
 import it.usna.shellyscan.view.util.UtilMiscellaneous;
 import it.usna.swing.dialog.FindReplaceDialog;
@@ -34,112 +35,71 @@ import it.usna.swing.dialog.FindReplaceDialog;
  */
 public class NotesEditor extends JFrame {
 	private static final long serialVersionUID = 1L;
-	
+	private final static int MAX_KEYWORD = 24;
+	private JPanel centerPanel = new JPanel(new BorderLayout());
+
 	public NotesEditor(Window owner, GhostDevice ghost) {
 		super(LABELS.getString("action_notes_tooltip") + " - " + UtilMiscellaneous.getDescName(ghost));
 		setIconImages(owner.getIconImages());
+
+		// Notes editor
+		JTextArea notesEditor = new JTextArea();
+		JScrollPane editorScrollPane = new JScrollPane();
+		notesEditor.setText(ghost.getNote());
+		editorScrollPane.setViewportView(notesEditor);
+		UndoManager notesUndoManager = new UndoManager();
+		notesEditor.getDocument().addUndoableEditListener(notesUndoManager);
 		
-		JPanel centerPanel = new JPanel(new BorderLayout());
-		
-		BasicEditorPanel editor = new BasicEditorPanel(this, ghost.getNote());
+		// Keyword
 		JTextField textFieldKeyword = new JTextField(ghost.getKeyNote());
-		textFieldKeyword.setColumns(20);
-		centerPanel.add(editor, BorderLayout.CENTER);
+		textFieldKeyword.setColumns(MAX_KEYWORD);
+		centerPanel.add(editorScrollPane, BorderLayout.CENTER);
+		UndoManager keywordUndoManager = new UndoManager();
+		textFieldKeyword.getDocument().addUndoableEditListener(keywordUndoManager);
 
-		// bottom buttons
-		JPanel buttonsPanel = new JPanel(new FlowLayout());
-		getContentPane().add(buttonsPanel, BorderLayout.SOUTH);
-		
-		JButton okButton = new JButton(LABELS.getString("dlgSave"));
-		okButton.addActionListener(e -> {
-			ghost.setNote(editor.getText());
-			ghost.setKeyNote(textFieldKeyword.getText());
-			dispose();
-		});
-		buttonsPanel.add(okButton);
-		
-		JButton closeButton = new JButton(LABELS.getString("dlgClose"));
-		closeButton.addActionListener(e -> dispose());
-		buttonsPanel.add(closeButton);
-		
-		JPanel keyPanel = new JPanel(new FlowLayout(FlowLayout.LEADING));
-		keyPanel.add(new JLabel(LABELS.getString("labelKeynote")));
-		keyPanel.add(textFieldKeyword);
-
-		centerPanel.add(keyPanel, BorderLayout.SOUTH);
-		
-		getContentPane().add(centerPanel, BorderLayout.CENTER);
-		
-		centerPanel.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_K, MainView.SHORTCUT_KEY), "focusKeyword");
-		centerPanel.getActionMap().put("focusKeyword", new UsnaAction(e -> textFieldKeyword.requestFocus()));
-		
-		centerPanel.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_N, MainView.SHORTCUT_KEY), "focusNote");
-		centerPanel.getActionMap().put("focusNote", new UsnaAction(e -> editor.requestFocus()));
-		
-		centerPanel.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_S, MainView.SHORTCUT_KEY), "saveNote");
-		centerPanel.getActionMap().put("saveNote", new UsnaAction(e -> okButton.doClick()));
-		
-		setSize(550, 400);
-		setVisible(true);
-		editor.requestFocus();
-		setLocationRelativeTo(owner);
-	}
-}
-
-class BasicEditorPanel extends JPanel {
-	private static final long serialVersionUID = 1L;
-	
-	private JTextArea textArea = new JTextArea();
-	private Action cutAction;
-	private Action copyAction;
-	private Action pasteAction;
-	private Action undoAction;
-	private Action redoAction;
-	private Action findAction;
-	
-	public BasicEditorPanel(Window owner, String text) {
-		setLayout(new BorderLayout());
-		
-		JScrollPane scrollPane = new JScrollPane();
-		add(scrollPane, BorderLayout.CENTER);
-
-		textArea.setText(text);
-		scrollPane.setViewportView(textArea);
-		
-		// actions
-		UndoManager undoManager = new UndoManager();
-		textArea.getDocument().addUndoableEditListener(undoManager);
-		
-		cutAction = new DefaultEditorKit.CutAction();
+		// Actions
+		Action cutAction = new DefaultEditorKit.CutAction();
 		cutAction.putValue(Action.SHORT_DESCRIPTION, LABELS.getString("btnCut"));
-		cutAction.putValue(Action.SMALL_ICON, new ImageIcon(BasicEditorPanel.class.getResource("/images/Clipboard_Cut24.png")));
-		
-		copyAction = new DefaultEditorKit.CopyAction();
-		copyAction.putValue(Action.SHORT_DESCRIPTION, LABELS.getString("btnCopy"));
-		copyAction.putValue(Action.SMALL_ICON, new ImageIcon(BasicEditorPanel.class.getResource("/images/Clipboard_Copy24.png")));
+		cutAction.putValue(Action.SMALL_ICON, new ImageIcon(NotesEditor.class.getResource("/images/Clipboard_Cut24.png")));
 
-		pasteAction = new DefaultEditorKit.PasteAction();
+		Action copyAction = new DefaultEditorKit.CopyAction();
+		copyAction.putValue(Action.SHORT_DESCRIPTION, LABELS.getString("btnCopy"));
+		copyAction.putValue(Action.SMALL_ICON, new ImageIcon(NotesEditor.class.getResource("/images/Clipboard_Copy24.png")));
+
+		Action pasteAction = new DefaultEditorKit.PasteAction();
 		pasteAction.putValue(Action.SHORT_DESCRIPTION, LABELS.getString("btnPaste"));
-		pasteAction.putValue(Action.SMALL_ICON, new ImageIcon(BasicEditorPanel.class.getResource("/images/Clipboard_Paste24.png")));
-		
-		undoAction = new UsnaAction(null, "btnUndo", "/images/Undo24.png", e -> {
-			try {undoManager.undo();} catch(RuntimeException ex) {}
+		pasteAction.putValue(Action.SMALL_ICON, new ImageIcon(NotesEditor.class.getResource("/images/Clipboard_Paste24.png")));
+
+		Action undoAction = new UsnaTextAction("notesUno", "btnUndo", "/images/Undo24.png", (textComponent, e) -> {
+			try {
+				if(textComponent == textFieldKeyword) {
+					keywordUndoManager.undo();
+				} else {
+					notesUndoManager.undo();
+				}
+			} catch(RuntimeException ex) {}
 		});
 		mapAction(KeyStroke.getKeyStroke(KeyEvent.VK_Z, MainView.SHORTCUT_KEY), undoAction, "undo_usna");
-		
-		redoAction = new UsnaAction(null, "btnRedo", "/images/Redo24.png", e -> {
-			try {undoManager.redo();} catch(RuntimeException ex) {}
+
+		Action redoAction = new UsnaTextAction("notesRedo", "btnRedo", "/images/Redo24.png", (textComponent, e) -> {
+			try {
+				if(textComponent == textFieldKeyword) {
+					keywordUndoManager.redo();
+				} else {
+					notesUndoManager.redo();
+				}
+			} catch(RuntimeException ex) {}
 		});
 		mapAction(KeyStroke.getKeyStroke(KeyEvent.VK_Y, MainView.SHORTCUT_KEY), redoAction, "redo_usna");
-		
-		findAction = new UsnaAction(null, "btnFind", "/images/Search24.png", e -> {
-			FindReplaceDialog f = new FindReplaceDialog(owner, textArea, true);
-			f.setLocationRelativeTo(BasicEditorPanel.this);
+
+		Action findAction = new UsnaTextAction("btnFindNote", "btnFind", "/images/Search24.png", (textComponent, e) -> {
+			FindReplaceDialog f = new FindReplaceDialog(this, textComponent, true);
+			f.setLocationRelativeTo(this);
 			f.setVisible(true);
 		});
 		mapAction(KeyStroke.getKeyStroke(KeyEvent.VK_F, MainView.SHORTCUT_KEY), findAction, "find_usna");
-		
-		// toolbar
+
+		// Toolbar
 		JToolBar toolBar = new JToolBar();
 		toolBar.add(cutAction);
 		toolBar.add(copyAction);
@@ -151,20 +111,45 @@ class BasicEditorPanel extends JPanel {
 		toolBar.add(findAction);
 		toolBar.setBorder(BorderFactory.createEmptyBorder());
 		toolBar.setFloatable(false);
-		add(toolBar, BorderLayout.NORTH);
+		getContentPane().add(toolBar, BorderLayout.NORTH);
+		
+		// bottom buttons
+		JPanel buttonsPanel = new JPanel(new FlowLayout());
+		getContentPane().add(buttonsPanel, BorderLayout.SOUTH);
+
+		JButton okButton = new JButton(LABELS.getString("dlgSave"));
+		okButton.addActionListener(e -> {
+			ghost.setNote(notesEditor.getText());
+			String keyNote = textFieldKeyword.getText();
+			ghost.setKeyNote(keyNote.substring(0, Math.min(MAX_KEYWORD, keyNote.length())));
+			dispose();
+		});
+		buttonsPanel.add(okButton);
+
+		JButton closeButton = new JButton(LABELS.getString("dlgClose"));
+		closeButton.addActionListener(e -> dispose());
+		buttonsPanel.add(closeButton);
+
+		JPanel keyPanel = new JPanel(new FlowLayout(FlowLayout.LEADING));
+		keyPanel.add(new JLabel(LABELS.getString("labelKeynote")));
+		keyPanel.add(textFieldKeyword);
+
+		centerPanel.add(keyPanel, BorderLayout.SOUTH);
+
+		getContentPane().add(centerPanel, BorderLayout.CENTER);
+
+		mapAction(KeyStroke.getKeyStroke(KeyEvent.VK_K, MainView.SHORTCUT_KEY), new UsnaAction(e -> textFieldKeyword.requestFocus()), "focusKeyword");
+		mapAction(KeyStroke.getKeyStroke(KeyEvent.VK_N, MainView.SHORTCUT_KEY), new UsnaAction(e -> notesEditor.requestFocus()), "focusNote");
+		mapAction(KeyStroke.getKeyStroke(KeyEvent.VK_S, MainView.SHORTCUT_KEY), new UsnaAction(e -> okButton.doClick()), "saveNote");
+
+		setSize(550, 400);
+		setVisible(true);
+		notesEditor.requestFocus();
+		setLocationRelativeTo(owner);
 	}
 
 	private void mapAction(KeyStroke k, Action action, String name) {
-		textArea.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(k, name);
-		textArea.getActionMap().put(name, action);
-	}
-	
-	public String getText() {
-		return textArea.getText();
-	}
-	
-	@Override
-	public void requestFocus() {
-		textArea.requestFocus();
+		centerPanel.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(k, name);
+		centerPanel.getActionMap().put(name, action);
 	}
 }

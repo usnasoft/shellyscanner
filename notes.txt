@@ -260,6 +260,8 @@ Shelly 1PM G3
 Shelly i4 G3
 Shelly Dimmer 0/1-10 G3 - todo full restore
 Shelly DIMMER 1 PRO - todo full restore
+Keyword
+todo  notes column (second field on notes)
 
 ---
 // TODO
@@ -267,7 +269,6 @@ Shelly DIMMER 1 PRO - todo full restore
 // rivedere it.usna.shellyscan.model.device.g2.ShellyPlusi4 alla luce di "Input.Trigger" (?)
 // charts scroll
 // chacklist multiselection
-// notes column (second field on notes?)
 // chacklist reset button(5)/power
 // grafico energia
 // inclusione massiva
