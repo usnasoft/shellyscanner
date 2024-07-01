@@ -35,6 +35,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import it.usna.shellyscan.Main;
+import it.usna.shellyscan.model.device.GhostDevice;
 import it.usna.shellyscan.model.device.InternalTmpHolder;
 import it.usna.shellyscan.model.device.LabelHolder;
 import it.usna.shellyscan.model.device.Meters;
@@ -83,18 +84,19 @@ public class DevicesTable extends ExTooltipTable {
 	final static int COL_TYPE = 1;
 	final static int COL_DEVICE = 2;
 	final static int COL_NAME = 3;
-	final static int COL_MAC_IDX = 4;
-	final static int COL_IP_IDX = 5;
-	final static int COL_SSID_IDX = 6;
-	final static int COL_RSSI_IDX = 7;
-	final static int COL_CLOUD = 8;
-	final static int COL_MQTT = 9;
-	final static int COL_UPTIME_IDX = 10;
-	final static int COL_INT_TEMP = 11;
-	final static int COL_MEASURES_IDX = 12;
-	final static int COL_DEBUG = 13;
-	final static int COL_SOURCE_IDX = 14;
-	final static int COL_COMMAND_IDX = 15;
+	final static int COL_KEYWORD = 4;
+	final static int COL_MAC_IDX = 5;
+	final static int COL_IP_IDX = 6;
+	final static int COL_SSID_IDX = 7;
+	final static int COL_RSSI_IDX = 8;
+	final static int COL_CLOUD = 9;
+	final static int COL_MQTT = 10;
+	final static int COL_UPTIME_IDX = 11;
+	final static int COL_INT_TEMP = 12;
+	final static int COL_MEASURES_IDX = 13;
+	final static int COL_DEBUG = 14;
+	final static int COL_SOURCE_IDX = 15;
+	final static int COL_COMMAND_IDX = 16;
 	
 	public final static String STORE_PREFIX = "TAB";
 	public final static String STORE_EXT_PREFIX = "TAB_EXT";
@@ -283,6 +285,7 @@ public class DevicesTable extends ExTooltipTable {
 	
 	public void loadColPos(final AppProperties appProp) {
 		if(loadColPos(appProp, STORE_PREFIX) == false) { // no configuration -> default
+			hideColumn(COL_KEYWORD);
 			hideColumn(COL_MAC_IDX);
 			hideColumn(COL_SSID_IDX);
 			hideColumn(COL_DEBUG);
@@ -392,16 +395,16 @@ public class DevicesTable extends ExTooltipTable {
 		}
 	}
 	
-	public void addRow(ShellyAbstractDevice d) {
-		((UsnaTableModel)dataModel).addRow(generateRow(d, new Object[DevicesTable.COL_COMMAND_IDX + 1]));
+	public void addRow(ShellyAbstractDevice device, GhostDevice ghost) {
+		((UsnaTableModel)dataModel).addRow(generateRow(device, ghost, new Object[DevicesTable.COL_COMMAND_IDX + 1]));
 		columnsWidthAdapt();
 		getRowSorter().allRowsChanged();
 	}
 	
-	public void updateRow(ShellyAbstractDevice device, int index) {
-		generateRow(device, ((UsnaTableModel)dataModel).getRow(index));
+	public void updateRow(ShellyAbstractDevice device, GhostDevice ghost, int index) {
+		generateRow(device, ghost, ((UsnaTableModel)dataModel).getRow(index));
 		((UsnaTableModel)dataModel).fireTableRowsUpdated(index, index);
-		final ListSelectionModel lsm = getSelectionModel(); // allRowsChanged() do not preserve the selected cell; this mess the selection dragging the mouse
+		final ListSelectionModel lsm = getSelectionModel(); // getRowSorter().allRowsChanged() do not preserve the selected cell; this mess the selection dragging the mouse
 		final int i1 = lsm.getAnchorSelectionIndex();
 //		final int i2 = lsm.getLeadSelectionIndex();
 		getRowSorter().allRowsChanged();
@@ -409,12 +412,13 @@ public class DevicesTable extends ExTooltipTable {
 //		lsm.setLeadSelectionIndex(i2);
 	}
 	
-	private static Object[] generateRow(ShellyAbstractDevice d, final Object row[]) {
+	private static Object[] generateRow(ShellyAbstractDevice d, GhostDevice g, final Object row[]) {
 		try {
 			row[DevicesTable.COL_STATUS_IDX] = getStatusIcon(d);
 			row[DevicesTable.COL_TYPE] = d.getTypeName();
 			row[DevicesTable.COL_DEVICE] = d.getHostname();
 			row[DevicesTable.COL_NAME] = d.getName();
+			row[DevicesTable.COL_KEYWORD] = g.getKeyNote();
 			row[DevicesTable.COL_MAC_IDX] = d.getMacAddress();
 			row[DevicesTable.COL_IP_IDX] = new InetAddressAndPort(d);
 			row[DevicesTable.COL_SSID_IDX] = d.getSSID();

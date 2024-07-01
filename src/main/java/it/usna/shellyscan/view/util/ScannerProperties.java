@@ -18,6 +18,7 @@ public class ScannerProperties extends AppProperties { // cannot also extend Usn
 	public final static String PROP_SCAN_MODE_DEFAULT = "FULL";
 	public final static String PROP_DCLICK_ACTION = "DCLICK_ACTION";
 	public final static String PROP_DCLICK_ACTION_DEFAULT = "DET";
+	public final static String PROP_DEFAULT_FILTER_IDX = "DEFAULT_FILTER";
 	
 	public final static String PROP_UPTIME_MODE = "UPTIME_MODE";
 	public final static String PROP_UPTIME_MODE_DEFAULT = "SEC";

@@ -114,7 +114,7 @@ public class DevicesStore {
 	 * @return ghosts list 
 	 * @throws IOException
 	 */
-	public List<GhostDevice> read(Path storeFile) throws IOException {
+	public synchronized List<GhostDevice> read(Path storeFile) throws IOException {
 		LOG.trace("reading archive");
 		ghostsList.clear();
 		try (BufferedReader r = Files.newBufferedReader(storeFile, StandardCharsets.UTF_8)) {
@@ -186,22 +186,6 @@ public class DevicesStore {
 			return 0;
 		}
 	}
-	
-	/**
-	 * getCorresponding ghost or generate a new one
-	 * @param d
-	 * @return
-	 */
-//	public GhostDevice getGhost(ShellyAbstractDevice d) {
-//		int ind = ghostsList.indexOf(d);
-//		if(ind >= 0) {
-//			return ghostsList.get(ind);
-//		} else {
-//			GhostDevice ghost = toGhost(d);
-//			ghostsList.add(ghost);
-//			return ghost;
-//		}
-//	}
 	
 	/**
 	 * get corresponding dev ghost or generate a new one; the idea is to align model index with ghostsList index for better performances

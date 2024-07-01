@@ -260,8 +260,8 @@ Shelly 1PM G3
 Shelly i4 G3
 Shelly Dimmer 0/1-10 G3 - todo full restore
 Shelly DIMMER 1 PRO - todo full restore
-Keyword
-todo  notes column (second field on notes)
+Keyword on table - (second field on notes)
+Default filter 
 
 ---
 // TODO

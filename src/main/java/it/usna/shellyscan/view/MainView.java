@@ -105,6 +105,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 			LABELS.getString("col_type"),
 			LABELS.getString("col_device"),
 			LABELS.getString("col_device_name"),
+			LABELS.getString("col_keyword"),
 			LABELS.getString("col_mac"),
 			LABELS.getString("col_ip"),
 			LABELS.getString("col_ssid"),
@@ -168,19 +169,18 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		});
 	});
 	
-	private Action rebootAction = new UsnaSelectedAction(this, devicesTable, "action_reboot_name", "action_reboot_tooltip", null, "/images/nuke.png",
-			() -> {
-				final String cancel = UIManager.getString("OptionPane.cancelButtonText");
-				return JOptionPane.showOptionDialog(
-						MainView.this, LABELS.getString("action_reboot_confirm"), LABELS.getString("action_reboot_tooltip"),
-						JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null,
-						new Object[] {LABELS.getString("action_reboot_name"), cancel}, cancel) == 0;},
-			modelRow -> {
-				ShellyAbstractDevice d = model.get(modelRow);
-				d.setStatus(Status.READING);
-				tabModel.setValueAt(DevicesTable.UPDATING_BULLET, modelRow, DevicesTable.COL_STATUS_IDX);
-				SwingUtilities.invokeLater(() -> model.reboot(modelRow));
-			});
+	private Action rebootAction = new UsnaSelectedAction(this, devicesTable, "action_reboot_name", "action_reboot_tooltip", null, "/images/nuke.png", () -> {
+		final String cancel = UIManager.getString("OptionPane.cancelButtonText");
+		return JOptionPane.showOptionDialog(
+				MainView.this, LABELS.getString("action_reboot_confirm"), LABELS.getString("action_reboot_tooltip"),
+				JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null,
+				new Object[] {LABELS.getString("action_reboot_name"), cancel}, cancel) == 0;
+	}, modelRow -> {
+		ShellyAbstractDevice d = model.get(modelRow);
+		d.setStatus(Status.READING);
+		tabModel.setValueAt(DevicesTable.UPDATING_BULLET, modelRow, DevicesTable.COL_STATUS_IDX);
+		SwingUtilities.invokeLater(() -> model.reboot(modelRow));
+	});
 	
 	private Action checkListAction = new UsnaAction(this, "action_checklist_name", "action_checklist_tooltip", null, "/images/Ok.png", e -> {
 		List<? extends RowSorter.SortKey> k = devicesTable.getRowSorter().getSortKeys();
@@ -324,7 +324,9 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		comboFilterCol.addItem(LABELS.getString("col_type"));
 		comboFilterCol.addItem(LABELS.getString("col_device"));
 		comboFilterCol.addItem(LABELS.getString("col_device_name"));
+		comboFilterCol.addItem(LABELS.getString("col_keyword"));
 		comboFilterCol.addActionListener( event -> setColFilter(comboFilterCol) );
+		comboFilterCol.setSelectedIndex(appProp.getIntProperty(ScannerProperties.PROP_DEFAULT_FILTER_IDX));
 		statusFilterPanel.add(comboFilterCol);
 		statusFilterPanel.add(textFieldFilter);
 		
@@ -521,10 +523,11 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 	
 	private void setColFilter(JComboBox<?> combo) {
 		final int[] cols = switch(combo.getSelectedIndex()) {
-		default -> new int[] {DevicesTable.COL_TYPE, DevicesTable.COL_DEVICE, DevicesTable.COL_NAME, DevicesTable.COL_IP_IDX};
+		default -> new int[] {DevicesTable.COL_TYPE, DevicesTable.COL_DEVICE, DevicesTable.COL_NAME, DevicesTable.COL_KEYWORD, DevicesTable.COL_IP_IDX};
 		case 1 -> new int[] {DevicesTable.COL_TYPE};
 		case 2 -> new int[] {DevicesTable.COL_DEVICE};
 		case 3 -> new int[] {DevicesTable.COL_NAME};
+		case 4 -> new int[] {DevicesTable.COL_KEYWORD};
 		};
 		devicesTable.setRowFilter(textFieldFilter.getText(), cols);
 		displayStatus();
@@ -641,12 +644,14 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		SwingUtilities.invokeLater(() -> {
 			try {
 				if(mesgType == Devices.EventType.UPDATE) {
-					devicesTable.updateRow(model.get(msgBody), msgBody);
+					int modelIndex = msgBody;
+					ShellyAbstractDevice d = model.get(modelIndex);
+					devicesTable.updateRow(d, model.getGhost(d, modelIndex), modelIndex);
 				} else if(mesgType == Devices.EventType.ADD) {
-					devicesTable.addRow(model.get(msgBody));
+					devicesTable.addRow(model.get(msgBody), model.getGhost(msgBody));
 					displayStatus();
 				} else if(mesgType == Devices.EventType.SUBSTITUTE) {
-					devicesTable.updateRow(model.get(msgBody), msgBody);
+					devicesTable.updateRow(model.get(msgBody), model.getGhost(msgBody), msgBody);
 					devicesTable.columnsWidthAdapt();
 					tableSelectionListener.valueChanged(new ListSelectionEvent(devicesTable, -1, -1, false));
 				} else if(mesgType == Devices.EventType.READY) {

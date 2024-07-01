@@ -489,6 +489,10 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 		}
 	}
 	
+	public GhostDevice getGhost(ShellyAbstractDevice dev, int modelIdx) {
+		return ghostsStore.getGhost(dev, modelIdx);
+	}
+	
 	public GhostDevice getGhost(int modelIdx) {
 		return ghostsStore.getGhost(devices.get(modelIdx), modelIdx);
 	}

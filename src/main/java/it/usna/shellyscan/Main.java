@@ -37,8 +37,8 @@ import it.usna.util.CLI;
 
 public class Main {
 	public final static String APP_NAME = "Shelly Scanner";
-	public final static String VERSION = "1.1.0 alpha";
-	public final static String VERSION_CODE = "001.001.000r000"; // r0xx alpha; r1xx beta; r2xx stable
+	public final static String VERSION = "1.1.0 beta";
+	public final static String VERSION_CODE = "001.001.000r100"; // r0xx alpha; r1xx beta; r2xx stable
 	public final static Image ICON = Toolkit.getDefaultToolkit().createImage(Main.class.getResource("/images/ShSc24.png"));
 	public final static String BACKUP_FILE_EXT = "sbk";
 	public final static String ARCHIVE_FILE_EXT = "arc";
@@ -48,7 +48,7 @@ public class Main {
 	public final static Color TAB_LINE1 = new Color(240, 240, 240);
 	public final static Color TAB_LINE2 = new Color(160, 180, 255)/*Color.lightGray*/;
 	public final static Color STATUS_LINE = new Color(200, 220, 255);
-	public final static String TAB_VERSION = "4"; // on version change reset table settings
+	public final static String TAB_VERSION = "5"; // on version change reset table settings
 
 	private final static String PROP_FILE = System.getProperty("user.home") + File.separator + ".shellyScanner";
 

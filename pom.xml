@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>it.usna</groupId>
 	<artifactId>shellyscan</artifactId>
-	<version>1.1.0alpha</version>
+	<version>1.1.0beta</version>
 	<name>shellyscan</name>
 	<packaging>jar</packaging>
 
@@ -125,7 +125,7 @@
 		<dependency>
 			<groupId>org.jfree</groupId>
 			<artifactId>jfreechart</artifactId>
-			<version>1.5.4</version>
+			<version>1.5.5</version>
 		</dependency>
 	</dependencies>
 </project>

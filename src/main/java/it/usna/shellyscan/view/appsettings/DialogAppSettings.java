@@ -109,6 +109,9 @@ public class DialogAppSettings extends JDialog {
 				appProp.setProperty(ScannerProperties.PROP_UPTIME_MODE, "FROM");
 			}
 			
+			// Filter
+			appProp.setIntProperty(ScannerProperties.PROP_DEFAULT_FILTER_IDX, panelGUI.comboFilterCol.getSelectedIndex());
+
 			// toolbar
 			boolean captions = panelGUI.chckbxToolbarCaptions.isSelected();
 			appProp.setBoolProperty(ScannerProperties.PROP_TOOLBAR_CAPTIONS, captions);
