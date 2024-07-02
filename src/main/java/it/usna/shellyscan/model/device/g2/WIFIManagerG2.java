@@ -165,27 +165,29 @@ public class WIFIManagerG2 implements WIFIManager {
 	// restore /wifi/ap & /wifi/roam
 	public static String restoreAP_roam(AbstractG2Device d, JsonNode wifi, String pwd) {
 		ObjectNode outWifi = JsonNodeFactory.instance.objectNode();
-		ObjectNode outAP = JsonNodeFactory.instance.objectNode();
-		
-		JsonNode enable = wifi.at("/ap/enable");
-		outAP.put("enable", enable.asBoolean());
-		if(enable.asBoolean()) {
-			JsonNode open = wifi.at("/ap/is_open");
-			outAP.put("is_open", open.asBoolean());
-			if(open.asBoolean() == false && pwd != null) {
+
+		JsonNode ap = (ObjectNode)wifi.path("ap");
+		if(ap.isMissingNode() == false) {
+			ObjectNode outAP = (ObjectNode)ap.deepCopy();
+			outAP.remove("ssid");
+			if(ap.path("is_open").booleanValue() == false) {
 				outAP.put("pass", pwd);
 			}
+			outWifi.set("ap", outAP);
 		}
-		outWifi.set("ap", outAP);
 
 		JsonNode roam = wifi.path("roam");
 		if(roam.isMissingNode() == false) {
 			outWifi.set("roam", roam.deepCopy());
 		}
 		
-		ObjectNode outConfig = JsonNodeFactory.instance.objectNode();
-		outConfig.set("config", outWifi);
-		return d.postCommand("WiFi.SetConfig", outConfig);
+		if(outWifi.size() > 0) {
+			ObjectNode outConfig = JsonNodeFactory.instance.objectNode();
+			outConfig.set("config", outWifi);
+			return d.postCommand("WiFi.SetConfig", outConfig);
+		} else {
+			return null;
+		}
 	}
 	
 	public static String enableAP(AbstractG2Device d, boolean enable) {

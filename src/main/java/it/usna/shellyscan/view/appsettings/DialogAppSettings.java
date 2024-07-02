@@ -5,7 +5,6 @@ import static it.usna.shellyscan.Main.LABELS;
 import java.awt.BorderLayout;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.nio.file.Paths;
 
 import javax.swing.JButton;
 import javax.swing.JDialog;
@@ -13,21 +12,15 @@ import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.border.EmptyBorder;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.view.DevicesTable;
 import it.usna.shellyscan.view.MainView;
 import it.usna.shellyscan.view.chart.ChartType;
-import it.usna.shellyscan.view.util.Msg;
 import it.usna.shellyscan.view.util.ScannerProperties;
 import it.usna.util.AppProperties;
 
 public class DialogAppSettings extends JDialog {
 	private static final long serialVersionUID = 1L;
-	
-	private final static Logger LOG = LoggerFactory.getLogger(DialogAppSettings.class);
 	
 	public DialogAppSettings(final MainView mainView, DevicesTable devTable, Devices model, boolean extendedView, final AppProperties appProp) {
 		super(mainView, LABELS.getString("dlgAppSetTitle"), true);
@@ -117,22 +110,23 @@ public class DialogAppSettings extends JDialog {
 			appProp.setBoolProperty(ScannerProperties.PROP_TOOLBAR_CAPTIONS, captions);
 			
 			// store
-			boolean useStore = panelStore.chckbxUseStore.isSelected();
-			boolean changedUse = appProp.setBoolProperty(ScannerProperties.PROP_USE_ARCHIVE, useStore);
-			String fileName = panelStore.textFieldStoreFileName.getText();
-			boolean changeArcFile = appProp.changeProperty(ScannerProperties.PROP_ARCHIVE_FILE, fileName);
-			if(useStore && (changedUse || changeArcFile)) {
-				try {
-					PanelStore.removeGhosts(model);
-					model.loadFromStore(Paths.get(fileName));
-				} catch(Exception e) {
-					appProp.setBoolProperty(ScannerProperties.PROP_USE_ARCHIVE, false);
-					LOG.error("Archive read", e);
-					Msg.errorMsg(this, String.format(LABELS.getString("dlgAppStoreerrorReadingStore"), fileName));
-				}
-			}
-			boolean autoReload = panelStore.autoReloadCheckBox.isSelected();
-			appProp.setBoolProperty(ScannerProperties.PROP_AUTORELOAD_ARCHIVE, autoReload);
+//			boolean useStore = panelStore.chckbxUseStore.isSelected();
+//			boolean changedUse = appProp.setBoolProperty(ScannerProperties.PROP_USE_ARCHIVE, useStore);
+//			String fileName = panelStore.textFieldStoreFileName.getText();
+//			boolean changeArcFile = appProp.changeProperty(ScannerProperties.PROP_ARCHIVE_FILE, fileName);
+//			if(useStore && (changedUse || changeArcFile)) {
+//				try {
+//					PanelStore.removeGhosts(model);
+//					model.loadFromStore(Paths.get(fileName));
+//				} catch(Exception e) {
+//					appProp.setBoolProperty(ScannerProperties.PROP_USE_ARCHIVE, false);
+//					LOG.error("Archive read", e);
+//					Msg.errorMsg(this, String.format(LABELS.getString("dlgAppStoreerrorReadingStore"), fileName));
+//				}
+//			}
+//			boolean autoReload = panelStore.autoReloadCheckBox.isSelected();
+//			appProp.setBoolProperty(ScannerProperties.PROP_AUTORELOAD_ARCHIVE, autoReload);
+			panelStore.store(appProp, model);
 			
 			dispose();
 		});

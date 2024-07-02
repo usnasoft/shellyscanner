@@ -20,17 +20,22 @@ import javax.swing.UIManager;
 import javax.swing.event.ChangeListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import it.usna.shellyscan.Main;
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.GhostDevice;
+import it.usna.shellyscan.view.util.Msg;
 import it.usna.shellyscan.view.util.ScannerProperties;
 import it.usna.util.AppProperties;
 
 public class PanelStore extends JPanel {
 	private static final long serialVersionUID = 1L;
-	JCheckBox chckbxUseStore = new JCheckBox();
-	JTextField textFieldStoreFileName;
-	JCheckBox autoReloadCheckBox;
+	private final static Logger LOG = LoggerFactory.getLogger(PanelStore.class);
+	private JCheckBox chckbxUseStore = new JCheckBox();
+	private JTextField textFieldStoreFileName;
+	private JCheckBox autoReloadCheckBox;
 
 	PanelStore(final Devices model, final AppProperties appProp) {
 		GridBagLayout gridBagLayout = new GridBagLayout();
@@ -146,5 +151,24 @@ public class PanelStore extends JPanel {
 				model.remove(i);
 			}
 		}
+	}
+	
+	public void store(AppProperties appProp, Devices model) {
+		boolean useStore = chckbxUseStore.isSelected();
+		boolean changedUse = appProp.setBoolProperty(ScannerProperties.PROP_USE_ARCHIVE, useStore);
+		String fileName = textFieldStoreFileName.getText();
+		boolean changeArcFile = appProp.changeProperty(ScannerProperties.PROP_ARCHIVE_FILE, fileName);
+		if(useStore && (changedUse || changeArcFile)) {
+			try {
+				PanelStore.removeGhosts(model);
+				model.loadFromStore(Paths.get(fileName));
+			} catch(Exception e) {
+				appProp.setBoolProperty(ScannerProperties.PROP_USE_ARCHIVE, false);
+				LOG.error("Archive read", e);
+				Msg.errorMsg(this, String.format(LABELS.getString("dlgAppStoreerrorReadingStore"), fileName));
+			}
+		}
+		boolean autoReload = autoReloadCheckBox.isSelected();
+		appProp.setBoolProperty(ScannerProperties.PROP_AUTORELOAD_ARCHIVE, autoReload);
 	}
 }
