@@ -263,7 +263,7 @@ Shelly DIMMER 1 PRO - todo full restore
 Keyword on table - (second field on notes)
 Default filter 
 range extender enable restore
-
+todo: verificare che addon non sia un componente virtuale (restore)
 ---
 // TODO
 // https://shelly-api-docs.shelly.cloud/gen2/DynamicComponents/BTHome/
@@ -278,3 +278,11 @@ range extender enable restore
 // gestione "reading": se stato online leggo uptime, se uptime diverso dal precedente memorizzo il timestamp else Quando il time stamp corrente - memorizzato > intervallo * 3 modifico lo stato - si, ma dove?
 // InetAddressAndPort potrebbe essere dentro ogni device e mantenere direttamente i byte (sarebbe estremamente ottimizzato)
 // color weel https://stackoverflow.com/questions/36252778/how-to-draw-a-rgb-color-wheel-in-java
+
+
+https://shelly-api-docs.shelly.cloud/gen2/DynamicComponents/BTHome/#bthomegetobjectinfos
+
+http://192.168.1.8/rpc/Shelly.GetComponents?dynamic_only=true
+http://192.168.1.8/rpc/BTHome.DeleteDevice?id=200
+http://192.168.1.8/rpc/BTHome.AddDevice?config={%22addr%22:%22b0:c7:de:04:26:e8%22}
+

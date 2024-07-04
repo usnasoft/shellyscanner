@@ -79,6 +79,9 @@ public class RestoreAction extends UsnaSelectedAction {
 						if(test.containsKey(Restore.WARN_RESTORE_MSG)) {
 							Msg.warningMsg(mainView, LABELS.getString(test.get(Restore.WARN_RESTORE_MSG)));
 						}
+						if(test.containsKey(Restore.WARN_RESTORE_VIRTUAL)) {
+							Msg.warningMsg(mainView, LABELS.getString("msgRestoreVirtual"));
+						}
 						if(test.containsKey(Restore.RESTORE_LOGIN)) {
 							DialogAuthentication credentials = new DialogAuthentication(mainView,
 									LABELS.getString("dlgAuthTitle"), device instanceof AbstractG1Device ? LABELS.getString("labelUser") : null,

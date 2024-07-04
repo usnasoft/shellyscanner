@@ -54,7 +54,11 @@ public class Webhooks {
 			ObjectNode thisAction = (ObjectNode)ac.deepCopy();
 			thisAction.remove("id");
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-			errors.add(parent.postCommand("Webhook.Create", thisAction));
+			String ret = parent.postCommand("Webhook.Create", thisAction);
+			if(ret != null) {
+				ret = "Action \"" + ac.path("name").asText("") + "\" - error: " + ret;
+			}
+			errors.add(ret);
 		}
 	}
 

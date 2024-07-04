@@ -334,6 +334,10 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 				scripts = sectionToStream("/rpc/Script.List", "Script.List.json", out);
 				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			} catch(Exception e) {}
+			try { // Virtual components
+				sectionToStream("/rpc/Shelly.GetComponents?dynamic_only=true", "Shelly.GetComponents.json", out);
+				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+			} catch(Exception e) {}
 			try { // On device with active sensor add-on
 				sectionToStream("/rpc/SensorAddon.GetPeripherals", SensorAddOn.BACKUP_SECTION, out);
 				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
@@ -372,6 +376,10 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 				boolean sameHost = fileHostname.equals(this.hostname);
 				if(sameHost == false) {
 					res.put(Restore.ERR_RESTORE_HOST, fileHostname);
+				}
+				JsonNode virtualComponents = backupJsons.get("Shelly.GetComponents.json");
+				if(virtualComponents != null && virtualComponents.path("components").size() > 0) {
+					res.put(Restore.WARN_RESTORE_VIRTUAL, null);
 				}
 				if(devInfo.path("auth_en").asBoolean()) {
 					res.put(Restore.RESTORE_LOGIN, LoginManagerG2.LOGIN_USER);
