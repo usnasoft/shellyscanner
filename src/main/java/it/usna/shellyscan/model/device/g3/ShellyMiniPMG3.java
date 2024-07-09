@@ -10,7 +10,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import it.usna.shellyscan.model.device.Meters;
 
 /**
- * Shelly Shelly Plus mini PM model
+ * Shelly mini PM G3 model
  * @author usna
  */
 public class ShellyMiniPMG3 extends AbstractG3Device {

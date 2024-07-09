@@ -258,12 +258,15 @@ New checklist UI
 Shelly 1 G3
 Shelly 1PM G3
 Shelly i4 G3
-Shelly Dimmer 0/1-10 G3 - todo full restore
-Shelly DIMMER 1 PRO - todo full restore
+Shelly Dimmer 0/1-10 G3
+Shelly DIMMER 1 PRO
+Shelly X MOD1 (no measures)
 Keyword on table - (second field on notes)
 Default filter 
 range extender enable restore
-todo: verificare che addon non sia un componente virtuale (restore)
+//todo rimuovere bthome... (?)
+//todo aggiungere "knx"
+
 ---
 // TODO
 // https://shelly-api-docs.shelly.cloud/gen2/DynamicComponents/BTHome/
@@ -282,7 +285,12 @@ todo: verificare che addon non sia un componente virtuale (restore)
 
 https://shelly-api-docs.shelly.cloud/gen2/DynamicComponents/BTHome/#bthomegetobjectinfos
 
+----------BLU-----------------
 http://192.168.1.8/rpc/Shelly.GetComponents?dynamic_only=true
 http://192.168.1.8/rpc/BTHome.DeleteDevice?id=200
 http://192.168.1.8/rpc/BTHome.AddDevice?config={%22addr%22:%22b0:c7:de:04:26:e8%22}
+
+lo stesso device puo' essere (virtuale) su piu' device -> occorre vedere se esiste già ed eventualmente aggiornare i sensori (che possono essere diversi);
+come indirizzo prendiamo quello del primo (minore?) dispositivo <ip>:BLU
+da device info (o altro posto) elencare i dispositivi che lo riferiscono
 

@@ -64,34 +64,42 @@ public abstract class ShellyAbstractDevice {
 	}
 	
 	public JsonNode getJSON(final String command) throws IOException  { //JsonProcessingException extends IOException
+		ContentResponse response;
+		int statusCode;
 		try {
-			ContentResponse response = httpClient.GET(uriPrefix + command);
-			int statusCode = response.getStatus();
+			response = httpClient.GET(uriPrefix + command);
+			statusCode = response.getStatus();
 			if(statusCode == HttpStatus.OK_200) {
 				status = Status.ON_LINE;
 				return jsonMapper.readTree(response.getContent());
-			}
-			if(statusCode == HttpStatus.UNAUTHORIZED_401) {
-				status = Status.NOT_LOOGGED;
-				throw new IOException("Status-" + statusCode);
-			} else if(statusCode == HttpStatus.INTERNAL_SERVER_ERROR_500) {
-				status = Status.ERROR;
-				throw new IOException("Status-" + statusCode);
-			} else if(statusCode == HttpStatus.NOT_FOUND_404) {
-				status = Status.ERROR;
-				throw new IOException("Status-404");
-			} else {
-				status = Status.OFF_LINE;
-				throw new DeviceOfflineException("Status-" + statusCode);
 			}
 		} catch(InterruptedException | ExecutionException | TimeoutException | SocketTimeoutException e) {
 			status = Status.OFF_LINE;
 			throw new DeviceOfflineException(e);
 		} catch (IOException | RuntimeException e) {
-			if(status == Status.ON_LINE || status == Status.READING) {
+//			if(status == Status.ON_LINE || status == Status.READING) {
 				status = Status.ERROR;
-			}
+//			}
 			throw e;
+		}
+		if(statusCode == HttpStatus.UNAUTHORIZED_401) {
+			status = Status.NOT_LOOGGED;
+			throw new IOException("Status-" + HttpStatus.UNAUTHORIZED_401);
+		} else if(statusCode == HttpStatus.INTERNAL_SERVER_ERROR_500) {
+			status = Status.ERROR;
+			String errorMsg;
+			try {
+				errorMsg = jsonMapper.readTree(response.getContent()).toString();
+			} catch(Exception e) {
+				errorMsg = null;
+			}
+			throw new DeviceAPIException(HttpStatus.INTERNAL_SERVER_ERROR_500, errorMsg);
+		} else if(statusCode == HttpStatus.NOT_FOUND_404) {
+			status = Status.ERROR;
+			throw new IOException("Status-" + HttpStatus.NOT_FOUND_404);
+		} else {
+			status = Status.OFF_LINE;
+			throw new DeviceOfflineException("Status-" + statusCode);
 		}
 	}
 	

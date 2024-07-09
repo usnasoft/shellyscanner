@@ -19,7 +19,7 @@ import it.usna.shellyscan.model.device.meters.MetersWVI;
 import it.usna.shellyscan.model.device.modules.RelayCommander;
 
 /**
- * Shelly Shelly 1PM G3 model
+ * Shelly 1PM G3 model
  * @author usna
  */
 public class Shelly1PMG3 extends AbstractG3Device implements RelayCommander, InternalTmpHolder, SensorAddOnHolder {

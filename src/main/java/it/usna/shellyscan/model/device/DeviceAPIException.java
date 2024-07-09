@@ -11,6 +11,11 @@ public class DeviceAPIException extends IOException {
 		this.code = code;
 		this.msg = msg;
 	}
+	
+	public DeviceAPIException(int code) {
+		this.code = code;
+		this.msg = null;
+	}
 
 	@Override
 	public String getMessage() {

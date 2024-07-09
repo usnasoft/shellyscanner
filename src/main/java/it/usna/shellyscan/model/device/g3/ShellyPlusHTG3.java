@@ -11,6 +11,10 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import it.usna.shellyscan.model.device.Meters;
 
+/**
+ * Shelly H&T G3 model
+ * @author usna
+ */
 public class ShellyPlusHTG3 extends AbstractBatteryG3Device {
 	public final static String ID = "HTG3";
 	private final static Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.T, Meters.Type.H, Meters.Type.BAT};

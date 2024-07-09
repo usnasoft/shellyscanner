@@ -16,6 +16,10 @@ import it.usna.shellyscan.model.device.g2.modules.LightWhite;
 import it.usna.shellyscan.model.device.meters.MetersWVI;
 import it.usna.shellyscan.model.device.modules.WhiteCommander;
 
+/**
+ * Shelly dimmer 0/1-10 G3 model
+ * @author usna
+ */
 public class Shelly0_10VPM extends AbstractG3Device implements InternalTmpHolder, WhiteCommander {
 	public final static String ID = "Dimmer0110VPMG3";
 	private float internalTmp;

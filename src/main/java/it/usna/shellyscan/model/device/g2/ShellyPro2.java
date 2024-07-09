@@ -14,6 +14,10 @@ import it.usna.shellyscan.model.device.g2.modules.Input;
 import it.usna.shellyscan.model.device.g2.modules.Relay;
 import it.usna.shellyscan.model.device.modules.RelayCommander;
 
+/**
+ * Shelly Pro 2 model
+ * @author usna
+ */
 public class ShellyPro2 extends AbstractProDevice implements RelayCommander, InternalTmpHolder {
 	public final static String ID = "Pro2";
 	private Relay relay0 = new Relay(this, 0);

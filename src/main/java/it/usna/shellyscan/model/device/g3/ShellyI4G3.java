@@ -16,6 +16,10 @@ import it.usna.shellyscan.model.device.g2.modules.SensorAddOnHolder;
 import it.usna.shellyscan.model.device.g2.modules.Webhooks;
 import it.usna.shellyscan.model.device.modules.InputCommander;
 
+/**
+ * Shelly i4 G3 model
+ * @author usna
+ */
 public class ShellyI4G3 extends AbstractG3Device implements InputCommander, SensorAddOnHolder {
 	public final static String ID = "I4G3";
 	private Input[] inputs;

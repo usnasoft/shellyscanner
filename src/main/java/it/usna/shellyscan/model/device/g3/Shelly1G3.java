@@ -18,7 +18,7 @@ import it.usna.shellyscan.model.device.g2.modules.SensorAddOnHolder;
 import it.usna.shellyscan.model.device.modules.RelayCommander;
 
 /**
- * Shelly Shelly 1 G3 model
+ * Shelly 1 G3 model
  * @author usna
  */
 public class Shelly1G3 extends AbstractG3Device implements RelayCommander, InternalTmpHolder, SensorAddOnHolder {

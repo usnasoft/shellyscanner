@@ -19,6 +19,10 @@ import it.usna.shellyscan.model.device.g2.modules.SensorAddOnHolder;
 import it.usna.shellyscan.model.device.modules.RelayCommander;
 import it.usna.shellyscan.model.device.modules.RollerCommander;
 
+/**
+ * Shelly plus 2PM model 
+ * @author usna
+ */
 public class ShellyPlus2PM extends AbstractG2Device implements RelayCommander, RollerCommander, InternalTmpHolder, SensorAddOnHolder {
 	public final static String ID = "Plus2PM";
 	private final static String MSG_RESTORE_MODE_ERROR = "msgRestoreCoverMode";
