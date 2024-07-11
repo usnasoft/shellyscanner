@@ -37,6 +37,7 @@ public class FWUpdateTable extends ExTooltipTable {
 		getColumnModel().getColumn(COL_STABLE).setCellRenderer(fwRendered);
 		getColumnModel().getColumn(COL_BETA).setCellRenderer(fwRendered);
 		columnModel.getColumn(COL_STATUS).setMaxWidth(DevicesTable.ONLINE_BULLET.getIconWidth() + 4);
+		activateSingleCellStringCopy();
 	}
 
 	@Override

@@ -191,7 +191,7 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 				LOG.trace("Not Shelly {}, resp {}, node ()", address, resp, shellyNode);
 				return null;
 			}
-		} catch (InterruptedException | ExecutionException | IOException e) {
+		} catch (InterruptedException | ExecutionException | IOException e) { // SocketTimeoutException extends IOException
 			LOG.trace("Not Shelly {} - {}", address, e.toString());
 			return null;
 		}
@@ -329,12 +329,18 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 	public void create(InetAddress address, int port, String hostName, boolean force) {
 		LOG.trace("getting info (/shelly) {}:{} - {}", address, port, hostName);
 		try {
-			ContentResponse response = httpClient.newRequest("http://" + address.getHostAddress() + ":" + port + "/shelly").timeout(80, TimeUnit.SECONDS).method(HttpMethod.GET).send();
-			create(address, port, JSON_MAPPER.readTree(response.getContent()), hostName);
-			Thread.sleep(Devices.MULTI_QUERY_DELAY);
-		} catch(IOException | TimeoutException | InterruptedException | ExecutionException e) { // SocketTimeoutException extends IOException
-			if(force) {
-				LOG.error("create with error {}:{}", address, port, e);
+			//ContentResponse response = httpClient.newRequest("http://" + address.getHostAddress() + ":" + port + "/shelly").timeout(80, TimeUnit.SECONDS).method(HttpMethod.GET).send();
+			JsonNode info = isShelly(address, port);
+			if(info != null) {
+				create(address, port, /*JSON_MAPPER.readTree(response.getContent())*/info, hostName);
+			} else if(force && (hostName.startsWith("shelly") || hostName.startsWith("Shelly"))) {
+				LOG.warn("create with error (info==null) {}:{}", address, port);
+				newDevice(DevicesFactory.createWithError(httpClient, address, port, hostName, new NullPointerException()));
+			}
+//			Thread.sleep(Devices.MULTI_QUERY_DELAY);
+		} catch(/*IOException |*/ TimeoutException /*| InterruptedException*/ /*| ExecutionException*/ e) { // SocketTimeoutException extends IOException
+			if(force && (hostName.startsWith("shelly") || hostName.startsWith("Shelly"))) {
+				LOG.warn("create with error {}:{}", address, port, e);
 				newDevice(DevicesFactory.createWithError(httpClient, address, port, hostName, e));
 			}
 		}
@@ -566,9 +572,9 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 		public void serviceResolved(ServiceEvent event) {
 			ServiceInfo info = event.getInfo();
 			final String name = info.getName();
-			if(name.startsWith("shelly") || name.startsWith("Shelly")) {
+//			if(name.startsWith("shelly") || name.startsWith("Shelly")) { // Shelly X devices can have different names
 				executor.execute(() -> create(info.getInetAddresses()[0], 80, name, true));
-			}
+//			}
 		}
 	}
 } // 197 - 307 - 326 - 418 - 510 - 544 - 574

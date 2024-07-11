@@ -334,11 +334,11 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 				scripts = sectionToStream("/rpc/Script.List", "Script.List.json", out);
 				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			} catch(Exception e) {}
-			try { // Virtual components
+			try { // Virtual components (PRO)
 				sectionToStream("/rpc/Shelly.GetComponents?dynamic_only=true", "Shelly.GetComponents.json", out);
 				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			} catch(Exception e) {}
-			try { // On device with active sensor add-on
+			try { // On devices with active sensor add-on
 				sectionToStream("/rpc/SensorAddon.GetPeripherals", SensorAddOn.BACKUP_SECTION, out);
 				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			} catch(Exception e) {}

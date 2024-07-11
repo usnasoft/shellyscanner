@@ -142,7 +142,7 @@ public class NotesEditor extends JFrame {
 		mapAction(KeyStroke.getKeyStroke(KeyEvent.VK_N, MainView.SHORTCUT_KEY), new UsnaAction(e -> notesEditor.requestFocus()), "focusNote");
 		mapAction(KeyStroke.getKeyStroke(KeyEvent.VK_S, MainView.SHORTCUT_KEY), new UsnaAction(e -> okButton.doClick()), "saveNote");
 
-		setSize(550, 400);
+		setSize(600, 400);
 		setVisible(true);
 		notesEditor.requestFocus();
 		setLocationRelativeTo(owner);

@@ -653,6 +653,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 					displayStatus();
 				} else if(mesgType == Devices.EventType.SUBSTITUTE) {
 					devicesTable.updateRow(model.get(msgBody), model.getGhost(msgBody), msgBody);
+//					devicesTable.resetRowComputedHeight(msgBody);
 					devicesTable.columnsWidthAdapt();
 					tableSelectionListener.valueChanged(new ListSelectionEvent(devicesTable, -1, -1, false));
 				} else if(mesgType == Devices.EventType.READY) {

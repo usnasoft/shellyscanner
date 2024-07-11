@@ -78,6 +78,10 @@ public class Input implements InputInterface {
 		this.webHooks = (wh == null) ? Collections.<String, Webhook>emptyMap() : wh;
 	}
 	
+	public static String restore(AbstractG2Device parent, JsonNode config, int index) {
+		return restore(parent, config, index + "");
+	}
+	
 	public static String restore(AbstractG2Device parent, JsonNode config, String index) {
 		ObjectNode out = JsonNodeFactory.instance.objectNode();
 		out.put("id", index);

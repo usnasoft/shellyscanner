@@ -386,6 +386,10 @@ public class DevicesTable extends ExTooltipTable {
 			setRowHeight(i, 1);
 		}
 	}
+	
+	public void resetRowComputedHeight(int modelIndex) {
+		setRowHeight(convertRowIndexToView(modelIndex), 1);
+	}
 
 	// adapt row height
 	private void computeRowHeight(int rowIndex, Component callVal) {
@@ -401,9 +405,9 @@ public class DevicesTable extends ExTooltipTable {
 		getRowSorter().allRowsChanged();
 	}
 	
-	public void updateRow(ShellyAbstractDevice device, GhostDevice ghost, int index) {
-		generateRow(device, ghost, ((UsnaTableModel)dataModel).getRow(index));
-		((UsnaTableModel)dataModel).fireTableRowsUpdated(index, index);
+	public void updateRow(ShellyAbstractDevice device, GhostDevice ghost, int modelIndex) {
+		generateRow(device, ghost, ((UsnaTableModel)dataModel).getRow(modelIndex));
+		((UsnaTableModel)dataModel).fireTableRowsUpdated(modelIndex, modelIndex);
 		final ListSelectionModel lsm = getSelectionModel(); // getRowSorter().allRowsChanged() do not preserve the selected cell; this mess the selection dragging the mouse
 		final int i1 = lsm.getAnchorSelectionIndex();
 //		final int i2 = lsm.getLeadSelectionIndex();
@@ -445,7 +449,7 @@ public class DevicesTable extends ExTooltipTable {
 				} else if(d instanceof WhiteCommander wc && wc.getWhiteCount() > 1) {
 					row[DevicesTable.COL_COMMAND_IDX] = command = wc.getWhites();
 				} else if(d instanceof InputCommander ic) {
-					row[DevicesTable.COL_COMMAND_IDX] = ic.getActionsGroups();
+					row[DevicesTable.COL_COMMAND_IDX] /*= command*/ = ic.getActionsGroups(); // currently no getLastSource()
 				} else if(d instanceof ShellyDW dw) {
 					row[DevicesTable.COL_COMMAND_IDX] = LABELS.getString("lableStatusOpen") + ": " + (dw.isOpen() ? YES : NO);
 				} else if(d instanceof ShellyFlood flood) {
@@ -469,16 +473,21 @@ public class DevicesTable extends ExTooltipTable {
 				if(command instanceof DeviceModule dm) {
 					row[DevicesTable.COL_SOURCE_IDX] = dm.getLastSource();
 				} else if(command instanceof DeviceModule[] m) {
-					String res[] = new String[m.length];
-					for(int i = 0; i < m.length; i++) {
-						res[i] = m[i].getLastSource();
+					if(row[DevicesTable.COL_SOURCE_IDX] instanceof String[] res && res.length == m.length) {
+						for(int i = 0; i < m.length; i++) {
+							res[i] = m[i].getLastSource();
+						}
+					} else {
+						String res[] = new String[m.length]; // Arrays.setAll(res, i -> m[i].getLastSource()); // slower for 2 elements
+						for(int i = 0; i < m.length; i++) {
+							res[i] = m[i].getLastSource();
+						}
+						row[DevicesTable.COL_SOURCE_IDX] = res;
 					}
-//					Arrays.setAll(res, i -> m[i].getLastSource()); // slower for 2 elements
-					row[DevicesTable.COL_SOURCE_IDX] = res;
 				}
 			} else {
 				row[DevicesTable.COL_RSSI_IDX] = row[DevicesTable.COL_CLOUD] = row[DevicesTable.COL_UPTIME_IDX] = row[DevicesTable.COL_INT_TEMP] =
-						row[DevicesTable.COL_MEASURES_IDX] = row[DevicesTable.COL_DEBUG] = row[DevicesTable.COL_COMMAND_IDX] = null;
+						row[DevicesTable.COL_MEASURES_IDX] = row[DevicesTable.COL_DEBUG] = row[DevicesTable.COL_SOURCE_IDX] = row[DevicesTable.COL_COMMAND_IDX] = null;
 			}
 		} catch(Exception e) {
 			LOG.error("", e);
@@ -506,4 +515,4 @@ public class DevicesTable extends ExTooltipTable {
 			return LOGIN_BULLET;
 		}
 	}
-} // 462 - 472 - 513 - 505
+} // 462 - 472 - 513 - 505 - 518
