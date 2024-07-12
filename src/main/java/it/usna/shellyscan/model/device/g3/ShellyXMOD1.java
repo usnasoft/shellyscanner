@@ -9,8 +9,11 @@ import java.util.concurrent.TimeUnit;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import it.usna.shellyscan.model.Devices;
+import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.g2.modules.Input;
 import it.usna.shellyscan.model.device.g2.modules.Relay;
+import it.usna.shellyscan.model.device.g2.modules.SensorAddOn;
+import it.usna.shellyscan.model.device.g2.modules.SensorAddOnHolder;
 import it.usna.shellyscan.model.device.modules.RelayCommander;
 
 /**
@@ -18,12 +21,13 @@ import it.usna.shellyscan.model.device.modules.RelayCommander;
  * @author usna
  */
 //TODO gestire eventuali input in eccesso (o separare tutto) creando un array di LabelHolder (?) e appositi renderers/editors
-public class ShellyXMOD1 extends AbstractG3Device implements RelayCommander {
+public class ShellyXMOD1 extends AbstractG3Device implements RelayCommander, SensorAddOnHolder {
 	public final static String ID = "XMOD1";
-//	TODO	private Meters[] meters;
 	private int numInputs;
 	private int numOutputs;
 	private Relay[] inputOutput;
+	private Meters[] meters;
+	private SensorAddOn addOn;
 
 	public ShellyXMOD1(InetAddress address, int port, String hostname) {
 		super(address, port, hostname);
@@ -41,8 +45,16 @@ public class ShellyXMOD1 extends AbstractG3Device implements RelayCommander {
 		for(int i = 0; i < numOutputs; i++) {
 			inputOutput[i] = new Relay(this, i);
 		}
+		
+		final JsonNode config = getJSON("/rpc/Shelly.GetConfig");
+		if(SensorAddOn.ADDON_TYPE.equals(config.get("sys").get("device").path("addon_type").asText())) {
+			addOn = new SensorAddOn(this);
+			if(addOn.getTypes().length > 0) {
+				meters = new Meters[] {addOn};
+			}
+		}
 
-		fillSettings(getJSON("/rpc/Shelly.GetConfig"));
+		fillSettings(config);
 		fillStatus(getJSON("/rpc/Shelly.GetStatus"));
 	}
 	
@@ -71,10 +83,15 @@ public class ShellyXMOD1 extends AbstractG3Device implements RelayCommander {
 		return numOutputs;
 	}
 	
-//	@Override
-//	public Meters[] getMeters() {
-//		return meters;
-//	}
+	@Override
+	public Meters[] getMeters() {
+		return meters;
+	}
+	
+	@Override
+	public SensorAddOn getSensorAddOn() {
+		return addOn;
+	}
 	
 	@Override
 	protected void fillSettings(JsonNode configuration) throws IOException {
@@ -85,6 +102,9 @@ public class ShellyXMOD1 extends AbstractG3Device implements RelayCommander {
 			} else {
 				(/*(Relay)*/inputOutput[i]).fillSettings(configuration.get("switch:" + i));
 			}
+		}
+		if(addOn != null) {
+			addOn.fillSettings(configuration);
 		}
 	}
 	
@@ -98,6 +118,9 @@ public class ShellyXMOD1 extends AbstractG3Device implements RelayCommander {
 				(/*(Relay)*/inputOutput[i]).fillStatus(status.get("switch:" + i));
 			}
 		}
+		if(addOn != null) {
+			addOn.fillStatus(status);
+		}
 	}
 	
 	@Override
@@ -109,9 +132,12 @@ public class ShellyXMOD1 extends AbstractG3Device implements RelayCommander {
 	}
 	
 	//TODO warning on numStoredInputs != numInputs || numStoredOutputs != numOutputs
-//	@Override
-//	public void restoreCheck(Map<String, JsonNode> backupJsons, Map<Restore, String> res) {
-//	}
+	@Override
+	public void restoreCheck(Map<String, JsonNode> backupJsons, Map<Restore, String> res) {
+		if(SensorAddOn.restoreCheck(this, backupJsons, res) == false) {
+			res.put(Restore.WARN_RESTORE_MSG, SensorAddOn.MSG_RESTORE_ERROR);
+		}
+	}
 
 	@Override
 	protected void restore(Map<String, JsonNode> backupJsons, List<String> errors) throws InterruptedException {
@@ -128,6 +154,8 @@ public class ShellyXMOD1 extends AbstractG3Device implements RelayCommander {
 			errors.add((/*(Relay)*/inputOutput[i]).restore(configuration));
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 		}
+		
+		SensorAddOn.restore(this, backupJsons, errors);
 	}
 	
 	@Override

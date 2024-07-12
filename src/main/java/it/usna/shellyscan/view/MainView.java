@@ -159,6 +159,8 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 				if(model.get(i) instanceof GhostDevice == false) {
 					tabModel.setValueAt(DevicesTable.UPDATING_BULLET, i, DevicesTable.COL_STATUS_IDX);
 					model.refresh(i, false);
+				} else {
+					update(Devices.EventType.UPDATE, i); // keyword
 				}
 			}
 			// too many call disturb some devices especially gen1
@@ -702,4 +704,4 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 			}
 		}
 	}
-} //557 - 614 - 620 - 669 - 705 - 727 - 699 - 760 - 782 - 811 - 805 - 646 - 699 - 706 - 688 - 698
+} //557 - 614 - 620 - 669 - 705 - 727 - 699 - 760 - 782 - 811 - 805 - 646 - 699 - 706 - 688 - 698 - 707

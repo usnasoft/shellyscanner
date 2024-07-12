@@ -35,7 +35,7 @@ import it.usna.swing.dialog.FindReplaceDialog;
  */
 public class NotesEditor extends JFrame {
 	private static final long serialVersionUID = 1L;
-	private final static int MAX_KEYWORD = 24;
+	private final static int MAX_KEYWORD_SIZE = 32;
 	private JPanel centerPanel = new JPanel(new BorderLayout());
 
 	public NotesEditor(Window owner, GhostDevice ghost) {
@@ -52,7 +52,7 @@ public class NotesEditor extends JFrame {
 		
 		// Keyword
 		JTextField textFieldKeyword = new JTextField(ghost.getKeyNote());
-		textFieldKeyword.setColumns(MAX_KEYWORD);
+		textFieldKeyword.setColumns(MAX_KEYWORD_SIZE);
 		centerPanel.add(editorScrollPane, BorderLayout.CENTER);
 		UndoManager keywordUndoManager = new UndoManager();
 		textFieldKeyword.getDocument().addUndoableEditListener(keywordUndoManager);
@@ -121,7 +121,7 @@ public class NotesEditor extends JFrame {
 		okButton.addActionListener(e -> {
 			ghost.setNote(notesEditor.getText());
 			String keyNote = textFieldKeyword.getText();
-			ghost.setKeyNote(keyNote.substring(0, Math.min(MAX_KEYWORD, keyNote.length())));
+			ghost.setKeyNote(keyNote.substring(0, Math.min(MAX_KEYWORD_SIZE, keyNote.length())));
 			dispose();
 		});
 		buttonsPanel.add(okButton);
