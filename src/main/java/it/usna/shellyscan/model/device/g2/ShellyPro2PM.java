@@ -14,10 +14,10 @@ import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.g2.modules.Input;
 import it.usna.shellyscan.model.device.g2.modules.Relay;
 import it.usna.shellyscan.model.device.g2.modules.Roller;
-import it.usna.shellyscan.model.device.modules.RelayCommander;
+import it.usna.shellyscan.model.device.modules.ModuleHolder;
 import it.usna.shellyscan.model.device.modules.RollerCommander;
 
-public class ShellyPro2PM extends AbstractProDevice implements RelayCommander, RollerCommander, InternalTmpHolder {
+public class ShellyPro2PM extends AbstractProDevice implements ModuleHolder, RollerCommander, InternalTmpHolder {
 	public final static String ID = "Pro2PM";
 	private final static String MSG_RESTORE_MODE_ERROR = "msgRestoreCoverMode";
 	private final static String MSG_RESTORE_MODE_SYNT_ERROR = "msgRestoreCoverModeSynt";
@@ -85,25 +85,25 @@ public class ShellyPro2PM extends AbstractProDevice implements RelayCommander, R
 	public String getTypeID() {
 		return ID;
 	}
-
+	
 	@Override
-	public int getRelaysCount() {
+	public int getModulesCount() {
 		return modeRelay ? 2 : 0;
 	}
-
+	
 	@Override
-	public int getRollersCount() {
-		return modeRelay ? 0 : 1;
-	}
-
-	@Override
-	public Relay getRelay(int index) {
+	public Relay getModule(int index) {
 		return (index == 0) ? relay0 : relay1;
 	}
 
 	@Override
-	public Relay[] getRelays() {
+	public Relay[] getModules() {
 		return new Relay[] {relay0, relay1};
+	}
+	
+	@Override
+	public int getRollersCount() {
+		return modeRelay ? 0 : 1;
 	}
 
 	@Override

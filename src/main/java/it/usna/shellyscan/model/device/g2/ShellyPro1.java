@@ -12,17 +12,17 @@ import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.InternalTmpHolder;
 import it.usna.shellyscan.model.device.g2.modules.Input;
 import it.usna.shellyscan.model.device.g2.modules.Relay;
-import it.usna.shellyscan.model.device.modules.RelayCommander;
+import it.usna.shellyscan.model.device.modules.ModuleHolder;
 
 /**
  * Shelly Pro 1 model
  * @author usna
  */
-public class ShellyPro1 extends AbstractProDevice implements RelayCommander, InternalTmpHolder {
+public class ShellyPro1 extends AbstractProDevice implements ModuleHolder, InternalTmpHolder {
 	public final static String ID = "Pro1";
 	private Relay relay = new Relay(this, 0);
 	private float internalTmp;
-	private Relay[] ralayes = new Relay[] {relay};
+	private Relay[] relays = new Relay[] {relay};
 
 	public ShellyPro1(InetAddress address, int port, String hostname) {
 		super(address, port, hostname);
@@ -39,13 +39,13 @@ public class ShellyPro1 extends AbstractProDevice implements RelayCommander, Int
 	}
 	
 	@Override
-	public Relay getRelay(int index) {
+	public Relay getModule(int index) {
 		return relay;
 	}
-	
+
 	@Override
-	public Relay[] getRelays() {
-		return ralayes;
+	public Relay[] getModules() {
+		return relays;
 	}
 	
 	@Override

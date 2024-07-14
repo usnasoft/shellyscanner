@@ -12,10 +12,10 @@ import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.g1.modules.Relay;
 import it.usna.shellyscan.model.device.g1.modules.Roller;
 import it.usna.shellyscan.model.device.meters.MetersPower;
-import it.usna.shellyscan.model.device.modules.RelayCommander;
+import it.usna.shellyscan.model.device.modules.ModuleHolder;
 import it.usna.shellyscan.model.device.modules.RollerCommander;
 
-public class Shelly2 extends AbstractG1Device implements RelayCommander, RollerCommander {
+public class Shelly2 extends AbstractG1Device implements ModuleHolder, RollerCommander {
 	public final static String ID = "SHSW-21";
 	private boolean modeRelay;
 	private Relay relay0, relay1;
@@ -49,23 +49,23 @@ public class Shelly2 extends AbstractG1Device implements RelayCommander, RollerC
 	}
 	
 	@Override
-	public int getRelaysCount() {
+	public int getModulesCount() {
 		return modeRelay ? 2 : 0;
+	}
+	
+	@Override
+	public Relay getModule(int index) {
+		return index == 0 ? relay0 : relay1;
+	}
+
+	@Override
+	public Relay[] getModules() {
+		return new Relay[] {relay0, relay1};
 	}
 	
 	@Override
 	public int getRollersCount() {
 		return modeRelay ? 0 : 1;
-	}
-	
-	@Override
-	public Relay getRelay(int index) {
-		return index == 0 ? relay0 : relay1;
-	}
-	
-	@Override
-	public Relay[] getRelays() {
-		return new Relay[] {relay0, relay1};
 	}
 	
 	@Override

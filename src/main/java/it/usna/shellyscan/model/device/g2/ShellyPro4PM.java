@@ -14,9 +14,9 @@ import it.usna.shellyscan.model.device.InternalTmpHolder;
 import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.g2.modules.Input;
 import it.usna.shellyscan.model.device.g2.modules.Relay;
-import it.usna.shellyscan.model.device.modules.RelayCommander;
+import it.usna.shellyscan.model.device.modules.ModuleHolder;
 
-public class ShellyPro4PM extends AbstractProDevice implements RelayCommander, InternalTmpHolder {
+public class ShellyPro4PM extends AbstractProDevice implements ModuleHolder, InternalTmpHolder {
 	public final static String ID = "Pro4PM";
 	private final static Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.W, Meters.Type.PF, Meters.Type.V, Meters.Type.I};
 	private Relay relay0 = new Relay(this, 0);
@@ -119,19 +119,19 @@ public class ShellyPro4PM extends AbstractProDevice implements RelayCommander, I
 	public String getTypeID() {
 		return ID;
 	}
-
+	
 	@Override
-	public int getRelaysCount() {
+	public int getModulesCount() {
 		return 4;
 	}
 
 	@Override
-	public Relay getRelay(int index) {
+	public Relay getModule(int index) {
 		return relays[index];
 	}
 
 	@Override
-	public Relay[] getRelays() {
+	public Relay[] getModules() {
 		return relays;
 	}
 

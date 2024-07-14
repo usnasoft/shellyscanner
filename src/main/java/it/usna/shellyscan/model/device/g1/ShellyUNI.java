@@ -11,9 +11,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.g1.modules.Relay;
-import it.usna.shellyscan.model.device.modules.RelayCommander;
+import it.usna.shellyscan.model.device.modules.ModuleHolder;
 
-public class ShellyUNI extends AbstractG1Device implements RelayCommander {
+public class ShellyUNI extends AbstractG1Device implements ModuleHolder {
 	public final static String ID = "SHUNI-1";
 //	private final static Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.V};
 	private Relay relay0 = new Relay(this, 0);
@@ -104,17 +104,17 @@ public class ShellyUNI extends AbstractG1Device implements RelayCommander {
 	}
 	
 	@Override
-	public int getRelaysCount() {
+	public int getModulesCount() {
 		return 2;
 	}
 	
 	@Override
-	public Relay getRelay(int index) {
+	public Relay getModule(int index) {
 		return index == 0 ? relay0 : relay1;
 	}
-	
+
 	@Override
-	public Relay[] getRelays() {
+	public Relay[] getModules() {
 		return new Relay[] {relay0, relay1};
 	}
 	

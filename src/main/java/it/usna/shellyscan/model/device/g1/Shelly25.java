@@ -13,11 +13,11 @@ import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.g1.modules.Relay;
 import it.usna.shellyscan.model.device.g1.modules.Roller;
 import it.usna.shellyscan.model.device.meters.MetersPower;
-import it.usna.shellyscan.model.device.modules.RelayCommander;
+import it.usna.shellyscan.model.device.modules.ModuleHolder;
 import it.usna.shellyscan.model.device.modules.RelayInterface;
 import it.usna.shellyscan.model.device.modules.RollerCommander;
 
-public class Shelly25 extends AbstractG1Device implements RelayCommander, RollerCommander, InternalTmpHolder {
+public class Shelly25 extends AbstractG1Device implements ModuleHolder, RollerCommander, InternalTmpHolder {
 	public final static String ID = "SHSW-25";
 	private final static Meters.Type[] SUPPORTED_MEASURES_C1 = new Meters.Type[] {Meters.Type.W, Meters.Type.V};
 	private boolean modeRelay;
@@ -65,23 +65,23 @@ public class Shelly25 extends AbstractG1Device implements RelayCommander, Roller
 	}
 	
 	@Override
-	public int getRelaysCount() {
+	public int getModulesCount() {
 		return modeRelay ? 2 : 0;
+	}
+	
+	@Override
+	public Relay getModule(int index) {
+		return index == 0 ? relay0 : relay1;
+	}
+
+	@Override
+	public Relay[] getModules() {
+		return new Relay[] {relay0, relay1};
 	}
 	
 	@Override
 	public int getRollersCount() {
 		return modeRelay ? 0 : 1;
-	}
-	
-	@Override
-	public Relay getRelay(int index) {
-		return (index == 0) ? relay0 : relay1;
-	}
-	
-	@Override
-	public RelayInterface[] getRelays() {
-		return new RelayInterface[] {relay0, relay1};
 	}
 	
 	@Override

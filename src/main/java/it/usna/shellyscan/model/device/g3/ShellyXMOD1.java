@@ -15,13 +15,13 @@ import it.usna.shellyscan.model.device.g2.modules.Relay;
 import it.usna.shellyscan.model.device.g2.modules.SensorAddOn;
 import it.usna.shellyscan.model.device.g2.modules.SensorAddOnHolder;
 import it.usna.shellyscan.model.device.modules.DeviceModule;
-import it.usna.shellyscan.model.device.modules.MixedModuleHolder;
+import it.usna.shellyscan.model.device.modules.ModuleHolder;
 
 /**
  * Shelly X MOD1 model
  * @author usna
  */
-public class ShellyXMOD1 extends AbstractG3Device implements MixedModuleHolder, SensorAddOnHolder {
+public class ShellyXMOD1 extends AbstractG3Device implements ModuleHolder, SensorAddOnHolder {
 	public final static String ID = "XMOD1";
 	private int numInputs;
 	private int numOutputs;

@@ -11,10 +11,9 @@ import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.LabelHolder;
 import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.g1.modules.Relay;
-import it.usna.shellyscan.model.device.modules.RelayCommander;
-import it.usna.shellyscan.model.device.modules.RelayInterface;
+import it.usna.shellyscan.model.device.modules.ModuleHolder;
 
-public class Shelly3EM extends AbstractG1Device implements RelayCommander {
+public class Shelly3EM extends AbstractG1Device implements ModuleHolder {
 	public final static String ID = "SHEM-3";
 	private final static Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.W, Meters.Type.PF, Meters.Type.V, Meters.Type.I};
 	private Relay relay = new Relay(this, 0);
@@ -76,15 +75,26 @@ public class Shelly3EM extends AbstractG1Device implements RelayCommander {
 		return ID;
 	}
 	
-	@Override
-	public RelayInterface getRelay(int index) {
-		return relay;
-	}
+//	@Override
+//	public RelayInterface getRelay(int index) {
+//		return relay;
+//	}
+//	
+//	@Override
+//	public RelayInterface[] getRelays() {
+//		return new RelayInterface[] {relay};
+//	}
 	
 	@Override
-	public RelayInterface[] getRelays() {
-		return new RelayInterface[] {relay};
+	public Relay getModule(int index) {
+		return relay;
 	}
+
+	@Override
+	public Relay[] getModules() {
+		return new Relay[] {relay};
+	}
+	
 	public float getPower(int index) {
 		return power[index];
 	}

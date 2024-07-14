@@ -12,14 +12,14 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.g2.modules.Relay;
 import it.usna.shellyscan.model.device.g2.modules.ThermostatG2;
-import it.usna.shellyscan.model.device.modules.RelayCommander;
+import it.usna.shellyscan.model.device.modules.ModuleHolder;
 import it.usna.shellyscan.model.device.modules.ThermostatCommander;
 
 /**
  * Shelly Wall Display
  * @author usna
  */
-public class WallDisplay extends AbstractG2Device implements RelayCommander, ThermostatCommander {
+public class WallDisplay extends AbstractG2Device implements ModuleHolder, ThermostatCommander {
 	public final static String ID = "WallDisplay";
 	public final static String MSG_RESTORE_MODE_ERROR = "msgRestoreThermostatMode";
 	public final static String MSG_RESTORE_MODE_SYNT_ERROR = "msgRestoreThermostatModeSynt";
@@ -67,17 +67,17 @@ public class WallDisplay extends AbstractG2Device implements RelayCommander, The
 	}
 	
 	@Override
-	public int getRelaysCount() {
+	public int getModulesCount() {
 		return relays != null ? 1 : 0;
 	}
 	
 	@Override
-	public Relay getRelay(int index) {
+	public Relay getModule(int index) {
 		return relay;
 	}
-	
+
 	@Override
-	public Relay[] getRelays() {
+	public Relay[] getModules() {
 		return relays;
 	}
 	

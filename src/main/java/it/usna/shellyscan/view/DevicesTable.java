@@ -52,9 +52,8 @@ import it.usna.shellyscan.model.device.g2.ShellyPlusSmoke;
 import it.usna.shellyscan.model.device.g2.modules.SensorAddOn;
 import it.usna.shellyscan.model.device.modules.DeviceModule;
 import it.usna.shellyscan.model.device.modules.InputCommander;
-import it.usna.shellyscan.model.device.modules.MixedModuleHolder;
+import it.usna.shellyscan.model.device.modules.ModuleHolder;
 import it.usna.shellyscan.model.device.modules.RGBWCommander;
-import it.usna.shellyscan.model.device.modules.RelayCommander;
 import it.usna.shellyscan.model.device.modules.RollerCommander;
 import it.usna.shellyscan.model.device.modules.ThermostatCommander;
 import it.usna.shellyscan.model.device.modules.WhiteCommander;
@@ -437,8 +436,8 @@ public class DevicesTable extends ExTooltipTable {
 				row[DevicesTable.COL_MEASURES_IDX] = d.getMeters();
 				row[DevicesTable.COL_DEBUG] = LABELS.getString("debug" + d.getDebugMode().name());
 				Object command = null;
-				if(d instanceof RelayCommander rc && rc.getRelaysCount() > 0) {
-					row[DevicesTable.COL_COMMAND_IDX] = command = rc.getRelays();
+				if(d instanceof ModuleHolder mh && mh.getModulesCount() > 0) {
+					row[DevicesTable.COL_COMMAND_IDX] = command = mh.getModules();
 				} else if(d instanceof RollerCommander rc && rc.getRollersCount() > 0) {
 					row[DevicesTable.COL_COMMAND_IDX] = command = rc.getRoller(0);
 				} else if(d instanceof WhiteCommander wc && wc.getWhitesCount() == 1) { // dimmer
@@ -449,8 +448,6 @@ public class DevicesTable extends ExTooltipTable {
 					row[DevicesTable.COL_COMMAND_IDX] = command = rgbwc.getColor(0);
 				} else if(d instanceof WhiteCommander wc && wc.getWhitesCount() > 1) {
 					row[DevicesTable.COL_COMMAND_IDX] = command = wc.getWhites();
-				} else if(d instanceof MixedModuleHolder mh) {
-					row[DevicesTable.COL_COMMAND_IDX] = command = mh.getModules(); // currently no getLastSource()
 				} else if(d instanceof InputCommander ic) {
 					row[DevicesTable.COL_COMMAND_IDX] /*= command*/ = ic.getActionsGroups(); // currently no getLastSource()
 				} else if(d instanceof ShellyDW dw) {

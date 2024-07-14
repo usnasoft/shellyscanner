@@ -16,13 +16,13 @@ import it.usna.shellyscan.model.device.g2.modules.Relay;
 import it.usna.shellyscan.model.device.g2.modules.SensorAddOn;
 import it.usna.shellyscan.model.device.g2.modules.SensorAddOnHolder;
 import it.usna.shellyscan.model.device.meters.MetersWVI;
-import it.usna.shellyscan.model.device.modules.RelayCommander;
+import it.usna.shellyscan.model.device.modules.ModuleHolder;
 
 /**
  * Shelly Shelly Plus 1PM model
  * @author usna
  */
-public class ShellyPlus1PM extends AbstractG2Device implements RelayCommander, InternalTmpHolder, SensorAddOnHolder {
+public class ShellyPlus1PM extends AbstractG2Device implements ModuleHolder, InternalTmpHolder, SensorAddOnHolder {
 	public final static String ID = "Plus1PM";
 	private Relay relay = new Relay(this, 0);
 	private float internalTmp;
@@ -72,17 +72,17 @@ public class ShellyPlus1PM extends AbstractG2Device implements RelayCommander, I
 	}
 	
 	@Override
-	public Relay getRelay(int index) {
-		return relay;
-	}
-	
-	@Override
 	public String getTypeID() {
 		return ID;
 	}
 	
 	@Override
-	public Relay[] getRelays() {
+	public Relay getModule(int index) {
+		return relay;
+	}
+
+	@Override
+	public Relay[] getModules() {
 		return relays;
 	}
 	

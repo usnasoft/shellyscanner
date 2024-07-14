@@ -12,13 +12,13 @@ import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.InternalTmpHolder;
 import it.usna.shellyscan.model.device.g2.modules.Input;
 import it.usna.shellyscan.model.device.g2.modules.Relay;
-import it.usna.shellyscan.model.device.modules.RelayCommander;
+import it.usna.shellyscan.model.device.modules.ModuleHolder;
 
 /**
  * Shelly Pro 2 model
  * @author usna
  */
-public class ShellyPro2 extends AbstractProDevice implements RelayCommander, InternalTmpHolder {
+public class ShellyPro2 extends AbstractProDevice implements ModuleHolder, InternalTmpHolder {
 	public final static String ID = "Pro2";
 	private Relay relay0 = new Relay(this, 0);
 	private Relay relay1 = new Relay(this, 1);
@@ -38,19 +38,19 @@ public class ShellyPro2 extends AbstractProDevice implements RelayCommander, Int
 	public String getTypeID() {
 		return ID;
 	}
-
+	
 	@Override
-	public int getRelaysCount() {
+	public int getModulesCount() {
 		return 2;
 	}
-
+	
 	@Override
-	public Relay getRelay(int index) {
+	public Relay getModule(int index) {
 		return (index == 0) ? relay0 : relay1;
 	}
 
 	@Override
-	public Relay[] getRelays() {
+	public Relay[] getModules() {
 		return relays;
 	}
 

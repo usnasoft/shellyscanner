@@ -16,13 +16,13 @@ import it.usna.shellyscan.model.device.g2.modules.Relay;
 import it.usna.shellyscan.model.device.g2.modules.SensorAddOn;
 import it.usna.shellyscan.model.device.g2.modules.SensorAddOnHolder;
 import it.usna.shellyscan.model.device.meters.MetersWVI;
-import it.usna.shellyscan.model.device.modules.RelayCommander;
+import it.usna.shellyscan.model.device.modules.ModuleHolder;
 
 /**
  * Shelly 1PM G3 model
  * @author usna
  */
-public class Shelly1PMG3 extends AbstractG3Device implements RelayCommander, InternalTmpHolder, SensorAddOnHolder {
+public class Shelly1PMG3 extends AbstractG3Device implements ModuleHolder, InternalTmpHolder, SensorAddOnHolder {
 	public final static String ID = "S1PMG3";
 	private Relay relay = new Relay(this, 0);
 	private float internalTmp;
@@ -71,17 +71,17 @@ public class Shelly1PMG3 extends AbstractG3Device implements RelayCommander, Int
 	}
 	
 	@Override
-	public Relay getRelay(int index) {
-		return relay;
-	}
-	
-	@Override
 	public String getTypeID() {
 		return ID;
 	}
 	
 	@Override
-	public Relay[] getRelays() {
+	public Relay getModule(int index) {
+		return relay;
+	}
+
+	@Override
+	public Relay[] getModules() {
 		return relays;
 	}
 	

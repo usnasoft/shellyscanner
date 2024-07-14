@@ -14,13 +14,13 @@ import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.g2.modules.Input;
 import it.usna.shellyscan.model.device.g2.modules.Relay;
 import it.usna.shellyscan.model.device.meters.MetersWVI;
-import it.usna.shellyscan.model.device.modules.RelayCommander;
+import it.usna.shellyscan.model.device.modules.ModuleHolder;
 
 /**
  * Shelly Shelly Plus mini 1PM model
  * @author usna
  */
-public class ShellyMini1PM extends AbstractG2Device implements RelayCommander, InternalTmpHolder {
+public class ShellyMini1PM extends AbstractG2Device implements ModuleHolder, InternalTmpHolder {
 	public final static String ID = "Plus1PMMini";
 	private float internalTmp;
 	private float power;
@@ -58,14 +58,14 @@ public class ShellyMini1PM extends AbstractG2Device implements RelayCommander, I
 	public String getTypeID() {
 		return ID;
 	}
-
+	
 	@Override
-	public Relay getRelay(int index) {
+	public Relay getModule(int index) {
 		return relay;
 	}
 
 	@Override
-	public Relay[] getRelays() {
+	public Relay[] getModules() {
 		return relays;
 	}
 

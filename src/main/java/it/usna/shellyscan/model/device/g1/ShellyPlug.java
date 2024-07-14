@@ -11,9 +11,9 @@ import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.g1.modules.Relay;
 import it.usna.shellyscan.model.device.meters.MetersPower;
-import it.usna.shellyscan.model.device.modules.RelayCommander;
+import it.usna.shellyscan.model.device.modules.ModuleHolder;
 
-public class ShellyPlug extends AbstractG1Device implements RelayCommander {
+public class ShellyPlug extends AbstractG1Device implements ModuleHolder {
 	public final static String ID = "SHPLG-1";
 	private Relay relay = new Relay(this, 0);
 	private Relay[] relayArray = new Relay[] {relay};
@@ -53,12 +53,12 @@ public class ShellyPlug extends AbstractG1Device implements RelayCommander {
 	}
 	
 	@Override
-	public Relay getRelay(int index) {
+	public Relay getModule(int index) {
 		return relay;
 	}
-	
+
 	@Override
-	public Relay[] getRelays() {
+	public Relay[] getModules() {
 		return relayArray;
 	}
 	

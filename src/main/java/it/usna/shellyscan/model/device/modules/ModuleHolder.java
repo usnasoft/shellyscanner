@@ -1,9 +1,12 @@
 package it.usna.shellyscan.model.device.modules;
 
-public interface MixedModuleHolder {
+public interface ModuleHolder {
+	
 	DeviceModule getModule(int index);
 	
 	DeviceModule[] getModules();
-	
-	int getModulesCount();
+
+	default int getModulesCount() {
+		return 1;
+	}
 }
