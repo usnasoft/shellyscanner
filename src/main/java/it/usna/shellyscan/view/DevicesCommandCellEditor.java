@@ -32,6 +32,7 @@ import org.slf4j.LoggerFactory;
 import it.usna.shellyscan.model.device.g1.modules.LightBulbRGB;
 import it.usna.shellyscan.model.device.g1.modules.LightRGBW;
 import it.usna.shellyscan.model.device.g1.modules.ThermostatG1;
+import it.usna.shellyscan.model.device.modules.DeviceModule;
 import it.usna.shellyscan.model.device.modules.InputInterface;
 import it.usna.shellyscan.model.device.modules.RelayInterface;
 import it.usna.shellyscan.model.device.modules.RollerInterface;
@@ -448,7 +449,13 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 	@Override
 	public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
 		if(value instanceof RelayInterface[] riArray) {
-			return getRelaysPanel(riArray, table.getSelectionForeground());
+			stackedPanel.removeAll();
+			for(RelayInterface rel: riArray) {
+				stackedPanel.add(getRelayPanel(rel, table.getSelectionForeground()));
+			}
+			edited = riArray;
+			return stackedPanel;
+//			return getRelaysPanel(riArray, table.getSelectionForeground());
 		} else if(value instanceof RollerInterface ri) {
 			return getRollerPanel(ri);
 		} else if(value instanceof WhiteInterface wi) {
@@ -465,54 +472,106 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 			return getTrvPanel(th);
 		} else if(value instanceof ThermostatInterface th) {
 			return getThermostatPanel(th);
+		} else if(value instanceof DeviceModule[] madArray) {
+			stackedPanel.removeAll();
+			for(DeviceModule module: madArray) {
+				if(module instanceof RelayInterface rel) {
+					stackedPanel.add(getRelayPanel(rel, table.getSelectionForeground()));
+				} else if(module instanceof InputInterface input) {
+					stackedPanel.add(new JLabel(input.getLabel()));
+				}
+			}
+			edited = madArray;
+			return stackedPanel;
 		}
 		return null;
 	}
 	
-	private Component getRelaysPanel(RelayInterface[] relays, Color selColor) {
-		stackedPanel.removeAll();
-		for(RelayInterface rel: relays) {
-			JLabel relayLabel = new JLabel(rel.getLabel());
-			relayLabel.setForeground(selColor);
-			JPanel relayPanel = new JPanel(new BorderLayout());
-			JButton relayButton = new JButton();
-			relayButton.addActionListener(e -> {
-				if(edited != null) {
-					try {
-						rel.toggle();
-					} catch (IOException ex) {
-						LOG.error("getRelaysPanel {}", rel, ex);
-					}
-					cancelCellEditing();
+//	private Component getRelaysPanel(RelayInterface[] relays, Color selColor) {
+//		stackedPanel.removeAll();
+//		for(RelayInterface rel: relays) {
+//			JLabel relayLabel = new JLabel(rel.getLabel());
+//			relayLabel.setForeground(selColor);
+//			JPanel relayPanel = new JPanel(new BorderLayout());
+//			JButton relayButton = new JButton();
+//			relayButton.addActionListener(e -> {
+//				if(edited != null) {
+//					try {
+//						rel.toggle();
+//					} catch (IOException ex) {
+//						LOG.error("getRelaysPanel {}", rel, ex);
+//					}
+//					cancelCellEditing();
+//				}
+//			});
+//			
+//			JPanel relayButtonPanel = new JPanel();
+//			relayButtonPanel.setLayout(new BoxLayout(relayButtonPanel, BoxLayout.Y_AXIS));
+//			relayButtonPanel.setOpaque(false);
+//			relayButton.setBorder(DevicesCommandCellRenderer.BUTTON_BORDERS);
+//			relayButtonPanel.add(Box.createVerticalGlue());
+//			relayButtonPanel.add(relayButton);
+//			relayButtonPanel.add(Box.createVerticalGlue());
+//
+//			relayPanel.setOpaque(false);
+//			relayPanel.add(relayLabel, BorderLayout.CENTER);
+//			relayPanel.add(relayButtonPanel, BorderLayout.EAST);
+//			
+//			if(rel.isOn()) {
+//				relayButton.setText(DevicesCommandCellRenderer.LABEL_ON);
+//				relayButton.setBackground(DevicesCommandCellRenderer.BUTTON_ON_BG_COLOR);
+//			} else {
+//				relayButton.setText(DevicesCommandCellRenderer.LABEL_OFF);
+//				relayButton.setBackground(DevicesCommandCellRenderer.BUTTON_OFF_BG_COLOR);
+//			}
+//			if(rel.isInputOn()) {
+//				relayButton.setForeground(DevicesCommandCellRenderer.BUTTON_ON_FG_COLOR);
+//			}
+//			stackedPanel.add(relayPanel);
+//		}
+//		edited = relays;
+//		return stackedPanel;
+//	}
+	
+	private JPanel getRelayPanel(RelayInterface rel, final Color selColor) {
+		JLabel relayLabel = new JLabel(rel.getLabel());
+		relayLabel.setForeground(selColor);
+		JPanel relayPanel = new JPanel(new BorderLayout());
+		JButton relayButton = new JButton();
+		relayButton.addActionListener(e -> {
+			if(edited != null) {
+				try {
+					rel.toggle();
+				} catch (IOException ex) {
+					LOG.error("getRelaysPanel {}", rel, ex);
 				}
-			});
-			
-			JPanel relayButtonPanel = new JPanel();
-			relayButtonPanel.setLayout(new BoxLayout(relayButtonPanel, BoxLayout.Y_AXIS));
-			relayButtonPanel.setOpaque(false);
-			relayButton.setBorder(DevicesCommandCellRenderer.BUTTON_BORDERS);
-			relayButtonPanel.add(Box.createVerticalGlue());
-			relayButtonPanel.add(relayButton);
-			relayButtonPanel.add(Box.createVerticalGlue());
+				cancelCellEditing();
+			}
+		});
+		
+		JPanel relayButtonPanel = new JPanel();
+		relayButtonPanel.setLayout(new BoxLayout(relayButtonPanel, BoxLayout.Y_AXIS));
+		relayButtonPanel.setOpaque(false);
+		relayButton.setBorder(DevicesCommandCellRenderer.BUTTON_BORDERS);
+		relayButtonPanel.add(Box.createVerticalGlue());
+		relayButtonPanel.add(relayButton);
+		relayButtonPanel.add(Box.createVerticalGlue());
 
-			relayPanel.setOpaque(false);
-			relayPanel.add(relayLabel, BorderLayout.CENTER);
-			relayPanel.add(relayButtonPanel, BorderLayout.EAST);
-			
-			if(rel.isOn()) {
-				relayButton.setText(DevicesCommandCellRenderer.LABEL_ON);
-				relayButton.setBackground(DevicesCommandCellRenderer.BUTTON_ON_BG_COLOR);
-			} else {
-				relayButton.setText(DevicesCommandCellRenderer.LABEL_OFF);
-				relayButton.setBackground(DevicesCommandCellRenderer.BUTTON_OFF_BG_COLOR);
-			}
-			if(rel.isInputOn()) {
-				relayButton.setForeground(DevicesCommandCellRenderer.BUTTON_ON_FG_COLOR);
-			}
-			stackedPanel.add(relayPanel);
+		relayPanel.setOpaque(false);
+		relayPanel.add(relayLabel, BorderLayout.CENTER);
+		relayPanel.add(relayButtonPanel, BorderLayout.EAST);
+		
+		if(rel.isOn()) {
+			relayButton.setText(DevicesCommandCellRenderer.LABEL_ON);
+			relayButton.setBackground(DevicesCommandCellRenderer.BUTTON_ON_BG_COLOR);
+		} else {
+			relayButton.setText(DevicesCommandCellRenderer.LABEL_OFF);
+			relayButton.setBackground(DevicesCommandCellRenderer.BUTTON_OFF_BG_COLOR);
 		}
-		edited = relays;
-		return stackedPanel;
+		if(rel.isInputOn()) {
+			relayButton.setForeground(DevicesCommandCellRenderer.BUTTON_ON_FG_COLOR);
+		}
+		return relayPanel;
 	}
 	
 	private Component getRollerPanel(RollerInterface roller) {

@@ -187,7 +187,7 @@ public class ShellyPro2PM extends AbstractProDevice implements RelayCommander, R
 	}
 
 	@Override
-	public void restoreCheck(Map<String, JsonNode> backupJsons, Map<Restore, String> res) {
+	public void restoreCheck(Map<String, JsonNode> backupJsons, Map<Restore, Object> res) {
 		JsonNode devInfo = backupJsons.get("Shelly.GetDeviceInfo.json");
 		boolean backModeRelay = MODE_RELAY.equals(devInfo.get("profile").asText());
 		if(backModeRelay != modeRelay) {

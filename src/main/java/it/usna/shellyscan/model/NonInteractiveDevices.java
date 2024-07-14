@@ -172,7 +172,7 @@ public class NonInteractiveDevices implements Closeable {
 				return null;
 			}
 		} catch (InterruptedException | ExecutionException | IOException e) {
-			LOG.trace("Not Shelly {} - {}", address, e.toString());
+			LOG.trace("Not Shelly {} - {}", address, e);
 			return null;
 		}
 	}

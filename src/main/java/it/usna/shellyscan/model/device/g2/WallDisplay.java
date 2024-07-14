@@ -138,7 +138,7 @@ public class WallDisplay extends AbstractG2Device implements RelayCommander, The
 	}
 
 	@Override
-	public void restoreCheck(Map<String, JsonNode> backupJsons, Map<Restore, String> res) throws IOException {
+	public void restoreCheck(Map<String, JsonNode> backupJsons, Map<Restore, Object> res) throws IOException {
 		JsonNode backupConfiguration = backupJsons.get("Shelly.GetConfig.json");
 		boolean thermMode = backupConfiguration.get("thermostat:0") != null;
 		if((thermMode && thermostat == null) || (thermMode == false && thermostat != null)) {

@@ -363,8 +363,8 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 	}
 
 	@Override
-	public Map<Restore, String> restoreCheck(Map<String, JsonNode> backupJsons) throws IOException {
-		EnumMap<Restore, String> res = new EnumMap<>(Restore.class);
+	public Map<Restore, Object> restoreCheck(Map<String, JsonNode> backupJsons) throws IOException {
+		EnumMap<Restore, Object> res = new EnumMap<>(Restore.class);
 		try {
 			JsonNode devInfo = backupJsons.get("Shelly.GetDeviceInfo.json");
 			JsonNode config = backupJsons.get("Shelly.GetConfig.json");
@@ -441,7 +441,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 	}
 
 	/** device specific */
-	public void restoreCheck(Map<String, JsonNode> backupJsons, Map<Restore, String> resp) throws IOException {}
+	public void restoreCheck(Map<String, JsonNode> backupJsons, Map<Restore, Object> resp) throws IOException {}
 
 	@Override
 	public final List<String> restore(Map<String, JsonNode> backupJsons, Map<Restore, String> userPref) throws IOException {

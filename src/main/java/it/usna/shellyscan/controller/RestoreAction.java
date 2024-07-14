@@ -58,7 +58,7 @@ public class RestoreAction extends UsnaSelectedAction {
 				if(fc.showOpenDialog(mainView) == JFileChooser.APPROVE_OPTION) {
 					mainView.getContentPane().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 					final Map<String, JsonNode> backupJsons = readBackupFile(fc.getSelectedFile());
-					Map<Restore, String> test = device.restoreCheck(backupJsons);
+					Map<Restore, Object> test = device.restoreCheck(backupJsons);
 
 					mainView.getContentPane().setCursor(Cursor.getDefaultCursor());
 					Map<Restore, String> resData = new HashMap<>();
@@ -73,11 +73,11 @@ public class RestoreAction extends UsnaSelectedAction {
 						Msg.errorMsg(mainView, LABELS.getString("msgRestoreConfigurationError"));
 						return;
 					} else if(test.containsKey(Restore.ERR_RESTORE_MSG)) {
-						Msg.errorMsg(mainView, LABELS.getString(test.get(Restore.ERR_RESTORE_MSG)));
+						Msg.errorMsg(mainView, LABELS.getString(test.get(Restore.ERR_RESTORE_MSG).toString()));
 						return;
 					} else {
-						if(test.containsKey(Restore.WARN_RESTORE_MSG)) {
-							Msg.warningMsg(mainView, LABELS.getString(test.get(Restore.WARN_RESTORE_MSG)));
+						if(test.containsKey(Restore.WARN_RESTORE_ADDON)) {
+							Msg.warningMsg(mainView, LABELS.getString("msgRestoreSensorAddOn"));
 						}
 						if(test.containsKey(Restore.WARN_RESTORE_VIRTUAL)) {
 							Msg.warningMsg(mainView, LABELS.getString("msgRestoreVirtual"));
@@ -86,7 +86,7 @@ public class RestoreAction extends UsnaSelectedAction {
 							DialogAuthentication credentials = new DialogAuthentication(mainView,
 									LABELS.getString("dlgAuthTitle"), device instanceof AbstractG1Device ? LABELS.getString("labelUser") : null,
 											LABELS.getString("labelPassword"), LABELS.getString("labelConfPassword"));
-							credentials.setUser(test.get(Restore.RESTORE_LOGIN));
+							credentials.setUser(test.get(Restore.RESTORE_LOGIN).toString());
 							credentials.setMessage(LABELS.getString("msgRestoreEnterLogin"));
 							credentials.editableUser(false);
 							credentials.setVisible(true);
@@ -98,7 +98,7 @@ public class RestoreAction extends UsnaSelectedAction {
 						if(test.containsKey(Restore.RESTORE_WI_FI1)) {
 							DialogAuthentication credentials = new DialogAuthentication(mainView,
 									LABELS.getString("dlgSetWIFI"), LABELS.getString("dlgSetSSID"), LABELS.getString("labelPassword"), LABELS.getString("labelConfPassword"));
-							credentials.setUser(test.get(Restore.RESTORE_WI_FI1));
+							credentials.setUser(test.get(Restore.RESTORE_WI_FI1).toString());
 							credentials.setMessage(LABELS.getString("msgRestoreEnterWIFI1"));
 							credentials.editableUser(false);
 							credentials.setVisible(true);
@@ -110,7 +110,7 @@ public class RestoreAction extends UsnaSelectedAction {
 						if(test.containsKey(Restore.RESTORE_WI_FI2)) {
 							DialogAuthentication credentials = new DialogAuthentication(mainView,
 									LABELS.getString("dlgSetWIFIBackup"), LABELS.getString("dlgSetSSID"), LABELS.getString("labelPassword"), LABELS.getString("labelConfPassword"));
-							credentials.setUser(test.get(Restore.RESTORE_WI_FI2));
+							credentials.setUser(test.get(Restore.RESTORE_WI_FI2).toString());
 							credentials.setMessage(LABELS.getString("msgRestoreEnterWIFI2"));
 							credentials.editableUser(false);
 							credentials.setVisible(true);
@@ -122,7 +122,7 @@ public class RestoreAction extends UsnaSelectedAction {
 						if(test.containsKey(Restore.RESTORE_WI_FI_AP)) {
 							DialogAuthentication credentials = new DialogAuthentication(mainView,
 									LABELS.getString("dlgSetWIFI_AP"), null, LABELS.getString("labelPassword"), LABELS.getString("labelConfPassword"));
-							credentials.setUser(test.get(Restore.RESTORE_WI_FI_AP));
+							credentials.setUser(test.get(Restore.RESTORE_WI_FI_AP).toString());
 							credentials.setMessage(LABELS.getString("msgRestoreEnterWIFI_AP"));
 							credentials.setVisible(true);
 							if(credentials.getUser() != null) {
@@ -133,7 +133,7 @@ public class RestoreAction extends UsnaSelectedAction {
 						if(test.containsKey(Restore.RESTORE_MQTT)) {
 							DialogAuthentication credentials = new DialogAuthentication(mainView,
 									LABELS.getString("dlgSetMQTT"), LABELS.getString("labelUser"), LABELS.getString("labelPassword") /*,LABELS.getString("labelConfPassword")*/);
-							credentials.setUser(test.get(Restore.RESTORE_MQTT));
+							credentials.setUser(test.get(Restore.RESTORE_MQTT).toString());
 							credentials.setMessage(LABELS.getString("msgRestoreEnterMQTT"));
 							credentials.editableUser(false);
 							credentials.setVisible(true);

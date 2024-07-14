@@ -29,7 +29,6 @@ import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 public class SensorAddOn extends Meters {
 	private final static Logger LOG = LoggerFactory.getLogger(SensorAddOn.class);
 	public final static String BACKUP_SECTION = "SensorAddon.GetPeripherals.json";
-	public final static String MSG_RESTORE_ERROR = "msgRestoreSensorAddOn";
 	public final static String ADDON_TYPE = "sensor";
 	private Type[] supported;
 
@@ -58,8 +57,7 @@ public class SensorAddOn extends Meters {
 			JsonNode peripherals = d.getJSON("/rpc/SensorAddon.GetPeripherals");
 			ArrayList<Meters.Type> types = new ArrayList<>();
 
-			ObjectNode dht22Node = ((ObjectNode)peripherals.get("dht22"));
-			if(dht22Node.size() > 0) {
+			if(peripherals.get("dht22") instanceof ObjectNode dht22Node && dht22Node.size() > 0) {
 				Iterator<String> dht22 = dht22Node.fieldNames();
 				while(dht22.hasNext()) {
 					String par = dht22.next();
@@ -72,8 +70,7 @@ public class SensorAddOn extends Meters {
 				types.add(Type.T);
 				types.add(Type.H);
 			}
-			ObjectNode ds18b20Node = ((ObjectNode)peripherals.get("ds18b20"));
-			if(ds18b20Node.size() > 0) {
+			if(peripherals.get("ds18b20") instanceof ObjectNode ds18b20Node && ds18b20Node.size() > 0) {
 				Iterator<String> temp = ds18b20Node.fieldNames();
 				for(int i = 0; temp.hasNext(); i++) {
 					if(i == 0) {
@@ -94,21 +91,26 @@ public class SensorAddOn extends Meters {
 					}
 				}
 			}
-
-			Iterator<String> digIn = ((ObjectNode)peripherals.get("digital_in")).fieldNames();
-			if(digIn.hasNext()) {
-				switchID = digIn.next();
-				types.add(Type.EX);
+			if(peripherals.get("digital_in") instanceof ObjectNode digIn) {
+				Iterator<String> digInIterator = digIn.fieldNames();
+				if(digInIterator.hasNext()) {
+					switchID = digInIterator.next();
+					types.add(Type.EX);
+				}
 			}
-			Iterator<String> analogIn = ((ObjectNode)peripherals.get("analog_in")).fieldNames();
-			if(analogIn.hasNext()) {
-				analogID = analogIn.next();
-				types.add(Type.PERC);
+			if(peripherals.get("analog_in") instanceof ObjectNode analogIn) {
+				Iterator<String> analogInIterator = analogIn.fieldNames();
+				if(analogInIterator.hasNext()) {
+					analogID = analogInIterator.next();
+					types.add(Type.PERC);
+				}
 			}
-			Iterator<String> voltIn = ((ObjectNode)peripherals.get("voltmeter")).fieldNames();
-			if(voltIn.hasNext()) {
-				voltmeterID = voltIn.next();
-				types.add(Type.V);
+			if(peripherals.get("voltmeter") instanceof ObjectNode voltIn) {
+				Iterator<String> voltInIterator = voltIn.fieldNames();
+				if(voltInIterator.hasNext()) {
+					voltmeterID = voltInIterator.next();
+					types.add(Type.V);
+				}
 			}
 			supported = types.toArray(Type[]::new);
 		} catch (RuntimeException e) {
@@ -278,7 +280,7 @@ public class SensorAddOn extends Meters {
 		return d.postCommand("SensorAddon.AddPeripheral", "{\"type\":\"" + type + "\",\"attrs\":{\"cid\":" + id + ",\"addr\":\"" + addr + "\"}}");
 	}
 
-	public static <T extends AbstractG2Device & SensorAddOnHolder> boolean restoreCheck(T d, Map<String, JsonNode> backupJsons, Map<Restore, String> res) {
+	public static <T extends AbstractG2Device & SensorAddOnHolder> boolean restoreCheck(T d, Map<String, JsonNode> backupJsons, Map<Restore, Object> res) {
 		SensorAddOn addOn = d.getSensorAddOn();
 		JsonNode backupAddOn = backupJsons.get(BACKUP_SECTION);
 		return addOn == null || addOn.getTypes().length == 0 || backupAddOn == null || backupAddOn.size() == 0;

@@ -192,7 +192,7 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 				return null;
 			}
 		} catch (InterruptedException | ExecutionException | IOException e) { // SocketTimeoutException extends IOException
-			LOG.trace("Not Shelly {} - {}", address, e.toString());
+			LOG.trace("Not Shelly {} - {}", address, e);
 			return null;
 		}
 	}
@@ -381,7 +381,7 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 		}
 	}
 	
-	// Add or update (existace tested by mac address) a device
+	// Add or update (existence tested by mac address) a device
 	private void newDevice(ShellyAbstractDevice d) {
 		synchronized(devices) {
 			int ind = devices.indexOf(d);

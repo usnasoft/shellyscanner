@@ -52,6 +52,7 @@ import it.usna.shellyscan.model.device.g2.ShellyPlusSmoke;
 import it.usna.shellyscan.model.device.g2.modules.SensorAddOn;
 import it.usna.shellyscan.model.device.modules.DeviceModule;
 import it.usna.shellyscan.model.device.modules.InputCommander;
+import it.usna.shellyscan.model.device.modules.MixedModuleHolder;
 import it.usna.shellyscan.model.device.modules.RGBWCommander;
 import it.usna.shellyscan.model.device.modules.RelayCommander;
 import it.usna.shellyscan.model.device.modules.RollerCommander;
@@ -448,6 +449,8 @@ public class DevicesTable extends ExTooltipTable {
 					row[DevicesTable.COL_COMMAND_IDX] = command = rgbwc.getColor(0);
 				} else if(d instanceof WhiteCommander wc && wc.getWhiteCount() > 1) {
 					row[DevicesTable.COL_COMMAND_IDX] = command = wc.getWhites();
+				} else if(d instanceof MixedModuleHolder mh) {
+					row[DevicesTable.COL_COMMAND_IDX] = command = mh.getModules(); // currently no getLastSource()
 				} else if(d instanceof InputCommander ic) {
 					row[DevicesTable.COL_COMMAND_IDX] /*= command*/ = ic.getActionsGroups(); // currently no getLastSource()
 				} else if(d instanceof ShellyDW dw) {

@@ -139,9 +139,9 @@ public class ShellyPlus1PM extends AbstractG2Device implements RelayCommander, I
 	}
 	
 	@Override
-	public void restoreCheck(Map<String, JsonNode> backupJsons, Map<Restore, String> res) {
+	public void restoreCheck(Map<String, JsonNode> backupJsons, Map<Restore, Object> res) {
 		if(SensorAddOn.restoreCheck(this, backupJsons, res) == false) {
-			res.put(Restore.WARN_RESTORE_MSG, SensorAddOn.MSG_RESTORE_ERROR);
+			res.put(Restore.WARN_RESTORE_ADDON, null);
 		}
 	}
 

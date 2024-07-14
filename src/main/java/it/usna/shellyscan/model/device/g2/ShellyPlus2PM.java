@@ -220,14 +220,14 @@ public class ShellyPlus2PM extends AbstractG2Device implements RelayCommander, R
 	}
 	
 	@Override
-	public void restoreCheck(Map<String, JsonNode> backupJsons, Map<Restore, String> res) throws IOException {
+	public void restoreCheck(Map<String, JsonNode> backupJsons, Map<Restore, Object> res) throws IOException {
 		JsonNode devInfo = backupJsons.get("Shelly.GetDeviceInfo.json");
 		boolean backModeRelay = MODE_RELAY.equals(devInfo.get("profile").asText());
 		if(backModeRelay != modeRelay) {
 			res.put(Restore.ERR_RESTORE_MSG, MSG_RESTORE_MODE_ERROR);
 		}
 		if(SensorAddOn.restoreCheck(this, backupJsons, res) == false) {
-			res.put(Restore.WARN_RESTORE_MSG, SensorAddOn.MSG_RESTORE_ERROR);
+			res.put(Restore.WARN_RESTORE_ADDON, null);
 		}
 	}
 

@@ -145,7 +145,7 @@ public class GhostDevice extends ShellyAbstractDevice {
 	}
 
 	@Override
-	public Map<Restore, String> restoreCheck(Map<String, JsonNode> backupJsons) {
+	public Map<Restore, Object> restoreCheck(Map<String, JsonNode> backupJsons) {
 		if(backupJsons.containsKey("settings.json")) {
 			return restoreCheckG1(backupJsons);
 		} else if(backupJsons.containsKey("Shelly.GetConfig.json")) {
@@ -155,8 +155,8 @@ public class GhostDevice extends ShellyAbstractDevice {
 		}
 	}
 	
-	private Map<Restore, String> restoreCheckG1(Map<String, JsonNode> backupJsons) {
-		EnumMap<Restore, String> res = new EnumMap<>(Restore.class);
+	private Map<Restore, Object> restoreCheckG1(Map<String, JsonNode> backupJsons) {
+		EnumMap<Restore, Object> res = new EnumMap<>(Restore.class);
 		try {
 			JsonNode settings = backupJsons.get("settings.json");
 			final String fileHostname = settings.get("device").get("hostname").asText("");
@@ -183,8 +183,8 @@ public class GhostDevice extends ShellyAbstractDevice {
 		return res;
 	}
 
-	private Map<Restore, String> restoreCheckG2(Map<String, JsonNode> backupJsons) {
-		EnumMap<Restore, String> res = new EnumMap<>(Restore.class);
+	private Map<Restore, Object> restoreCheckG2(Map<String, JsonNode> backupJsons) {
+		EnumMap<Restore, Object> res = new EnumMap<>(Restore.class);
 		try {
 			JsonNode devInfo = backupJsons.get("Shelly.GetDeviceInfo.json");
 			JsonNode config = backupJsons.get("Shelly.GetConfig.json");

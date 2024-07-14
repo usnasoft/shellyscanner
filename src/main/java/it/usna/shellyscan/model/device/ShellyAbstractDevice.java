@@ -47,7 +47,7 @@ public abstract class ShellyAbstractDevice {
 	public enum Status {ON_LINE, OFF_LINE, NOT_LOOGGED, READING, ERROR, GHOST}; // GHOST not yet detected (in store)
 	public enum LogMode {NO, FILE, MQTT, SOCKET, UDP, UNDEFINED};
 
-	public enum Restore {ERR_RESTORE_HOST, ERR_RESTORE_MODEL, ERR_RESTORE_CONF, ERR_RESTORE_MSG, WARN_RESTORE_MSG, WARN_RESTORE_VIRTUAL,
+	public enum Restore {ERR_RESTORE_HOST, ERR_RESTORE_MODEL, ERR_RESTORE_CONF, ERR_RESTORE_MSG, WARN_RESTORE_ADDON, WARN_RESTORE_VIRTUAL,
 		RESTORE_LOGIN, RESTORE_WI_FI1, RESTORE_WI_FI2,  RESTORE_WI_FI_AP, RESTORE_MQTT, RESTORE_OPEN_MQTT,
 		QUESTION_RESTORE_SCRIPTS_OVERRIDE, QUESTION_RESTORE_SCRIPTS_ENABLE_LIKE_BACKED_UP,
 		ERR_UNKNOWN};
@@ -225,7 +225,7 @@ public abstract class ShellyAbstractDevice {
 
 	public abstract boolean backup(final File file) throws IOException; // false: use of stored data; could not connect to device
 	
-	public abstract Map<Restore, String> restoreCheck(Map<String, JsonNode> backupJsons) throws IOException;
+	public abstract Map<Restore, Object> restoreCheck(Map<String, JsonNode> backupJsons) throws IOException;
 	
 	/**
 	 * @param backupJsons map of buckup sections (json name-json section)
