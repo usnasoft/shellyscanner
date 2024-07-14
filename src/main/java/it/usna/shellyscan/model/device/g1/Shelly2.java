@@ -49,12 +49,12 @@ public class Shelly2 extends AbstractG1Device implements RelayCommander, RollerC
 	}
 	
 	@Override
-	public int getRelayCount() {
+	public int getRelaysCount() {
 		return modeRelay ? 2 : 0;
 	}
 	
 	@Override
-	public int getRollerCount() {
+	public int getRollersCount() {
 		return modeRelay ? 0 : 1;
 	}
 	

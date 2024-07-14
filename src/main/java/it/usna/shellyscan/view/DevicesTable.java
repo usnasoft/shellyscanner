@@ -437,17 +437,17 @@ public class DevicesTable extends ExTooltipTable {
 				row[DevicesTable.COL_MEASURES_IDX] = d.getMeters();
 				row[DevicesTable.COL_DEBUG] = LABELS.getString("debug" + d.getDebugMode().name());
 				Object command = null;
-				if(d instanceof RelayCommander rc && rc.getRelayCount() > 0) {
+				if(d instanceof RelayCommander rc && rc.getRelaysCount() > 0) {
 					row[DevicesTable.COL_COMMAND_IDX] = command = rc.getRelays();
-				} else if(d instanceof RollerCommander rc && rc.getRollerCount() > 0) {
+				} else if(d instanceof RollerCommander rc && rc.getRollersCount() > 0) {
 					row[DevicesTable.COL_COMMAND_IDX] = command = rc.getRoller(0);
-				} else if(d instanceof WhiteCommander wc && wc.getWhiteCount() == 1) { // dimmer
+				} else if(d instanceof WhiteCommander wc && wc.getWhitesCount() == 1) { // dimmer
 					row[DevicesTable.COL_COMMAND_IDX] = command = wc.getWhite(0);
 				} else if(d instanceof LightBulbRGBCommander lbc) {
 					row[DevicesTable.COL_COMMAND_IDX] = command = lbc.getLight(0);
-				} else if(d instanceof RGBWCommander rgbwc && rgbwc.getColorCount() > 0) {
+				} else if(d instanceof RGBWCommander rgbwc && rgbwc.getColorsCount() > 0) {
 					row[DevicesTable.COL_COMMAND_IDX] = command = rgbwc.getColor(0);
-				} else if(d instanceof WhiteCommander wc && wc.getWhiteCount() > 1) {
+				} else if(d instanceof WhiteCommander wc && wc.getWhitesCount() > 1) {
 					row[DevicesTable.COL_COMMAND_IDX] = command = wc.getWhites();
 				} else if(d instanceof MixedModuleHolder mh) {
 					row[DevicesTable.COL_COMMAND_IDX] = command = mh.getModules(); // currently no getLastSource()

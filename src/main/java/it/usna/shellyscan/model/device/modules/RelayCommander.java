@@ -5,7 +5,7 @@ public interface RelayCommander {
 	
 	RelayInterface[] getRelays();
 	
-	default int getRelayCount() {
+	default int getRelaysCount() {
 		return 1;
 	}
 }

@@ -87,12 +87,12 @@ public class ShellyPro2PM extends AbstractProDevice implements RelayCommander, R
 	}
 
 	@Override
-	public int getRelayCount() {
+	public int getRelaysCount() {
 		return modeRelay ? 2 : 0;
 	}
 
 	@Override
-	public int getRollerCount() {
+	public int getRollersCount() {
 		return modeRelay ? 0 : 1;
 	}
 

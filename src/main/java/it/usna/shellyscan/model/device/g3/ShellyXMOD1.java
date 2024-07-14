@@ -21,7 +21,6 @@ import it.usna.shellyscan.model.device.modules.MixedModuleHolder;
  * Shelly X MOD1 model
  * @author usna
  */
-//TODO gestire eventuali input in eccesso (o separare tutto) creando un array di LabelHolder (?) e appositi renderers/editors
 public class ShellyXMOD1 extends AbstractG3Device implements MixedModuleHolder, SensorAddOnHolder {
 	public final static String ID = "XMOD1";
 	private int numInputs;
@@ -70,25 +69,10 @@ public class ShellyXMOD1 extends AbstractG3Device implements MixedModuleHolder, 
 		return "Shelly X MOD1";
 	}
 	
-//	@Override
-//	public Relay getRelay(int index) {
-//		return /*(Relay)*/inputOutput[index];
-//	}
-	
 	@Override
 	public String getTypeID() {
 		return ID;
 	}
-	
-//	@Override
-//	public Relay[] getRelays() {
-//		return /*(Relay[])*/inputOutput;
-//	}
-	
-//	@Override
-//	public int getRelayCount() {
-//		return numOutputs;
-//	}
 
 	@Override
 	public DeviceModule getModule(int index) {
@@ -101,7 +85,7 @@ public class ShellyXMOD1 extends AbstractG3Device implements MixedModuleHolder, 
 	}
 
 	@Override
-	public int getModuleCount() {
+	public int getModulesCount() {
 		return numModules;
 	}
 	

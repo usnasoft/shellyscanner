@@ -67,7 +67,7 @@ public class WallDisplay extends AbstractG2Device implements RelayCommander, The
 	}
 	
 	@Override
-	public int getRelayCount() {
+	public int getRelaysCount() {
 		return relays != null ? 1 : 0;
 	}
 	

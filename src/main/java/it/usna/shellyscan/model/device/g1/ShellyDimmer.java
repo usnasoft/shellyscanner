@@ -47,7 +47,7 @@ public class ShellyDimmer extends AbstractG1Device implements WhiteCommander, In
 	}
 	
 	@Override
-	public int getWhiteCount() {
+	public int getWhitesCount() {
 		return 1;
 	}
 	

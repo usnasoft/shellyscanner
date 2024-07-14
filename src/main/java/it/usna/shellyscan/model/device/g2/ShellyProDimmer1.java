@@ -80,7 +80,7 @@ public class ShellyProDimmer1 extends AbstractProDevice implements InternalTmpHo
 	}
 
 	@Override
-	public int getWhiteCount() {
+	public int getWhitesCount() {
 		return 1;
 	}
 	

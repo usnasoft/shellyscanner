@@ -6,5 +6,5 @@ public interface RGBWCommander {
 	
 	LightRGBW getColor(int index);
 	
-	int getColorCount();
+	int getColorsCount();
 }

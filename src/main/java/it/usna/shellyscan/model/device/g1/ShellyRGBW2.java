@@ -169,7 +169,7 @@ public class ShellyRGBW2 extends AbstractG1Device implements RGBWCommander, Whit
 	}
 	
 	@Override
-	public int getColorCount() {
+	public int getColorsCount() {
 		return modeColor ? 1 : 0;
 	}
 	
@@ -192,7 +192,7 @@ public class ShellyRGBW2 extends AbstractG1Device implements RGBWCommander, Whit
 	}
 	
 	@Override
-	public int getWhiteCount() {
+	public int getWhitesCount() {
 		return modeColor ? 0 : 4;
 	}
 }

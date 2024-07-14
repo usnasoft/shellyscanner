@@ -6,5 +6,5 @@ public interface WhiteCommander {
 	
 	WhiteInterface[] getWhites();
 	
-	int getWhiteCount();
+	int getWhitesCount();
 }

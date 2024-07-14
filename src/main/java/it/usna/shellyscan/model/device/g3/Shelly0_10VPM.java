@@ -80,7 +80,7 @@ public class Shelly0_10VPM extends AbstractG3Device implements InternalTmpHolder
 	}
 
 	@Override
-	public int getWhiteCount() {
+	public int getWhitesCount() {
 		return 1;
 	}
 	

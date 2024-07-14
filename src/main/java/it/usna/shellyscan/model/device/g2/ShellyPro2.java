@@ -40,7 +40,7 @@ public class ShellyPro2 extends AbstractProDevice implements RelayCommander, Int
 	}
 
 	@Override
-	public int getRelayCount() {
+	public int getRelaysCount() {
 		return 2;
 	}
 

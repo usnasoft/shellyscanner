@@ -5,5 +5,5 @@ public interface MixedModuleHolder {
 	
 	DeviceModule[] getModules();
 	
-	int getModuleCount();
+	int getModulesCount();
 }

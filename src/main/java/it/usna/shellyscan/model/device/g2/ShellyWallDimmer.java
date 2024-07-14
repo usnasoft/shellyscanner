@@ -60,7 +60,7 @@ public class ShellyWallDimmer extends AbstractG2Device implements WhiteCommander
 	}
 
 	@Override
-	public int getWhiteCount() {
+	public int getWhitesCount() {
 		return 1;
 	}
 	

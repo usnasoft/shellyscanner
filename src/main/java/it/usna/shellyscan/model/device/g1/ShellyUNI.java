@@ -104,7 +104,7 @@ public class ShellyUNI extends AbstractG1Device implements RelayCommander {
 	}
 	
 	@Override
-	public int getRelayCount() {
+	public int getRelaysCount() {
 		return 2;
 	}
 	

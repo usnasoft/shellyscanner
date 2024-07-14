@@ -108,12 +108,12 @@ public class ShellyPlus2PM extends AbstractG2Device implements RelayCommander, R
 	}
 
 	@Override
-	public int getRelayCount() {
+	public int getRelaysCount() {
 		return modeRelay ? 2 : 0;
 	}
 
 	@Override
-	public int getRollerCount() {
+	public int getRollersCount() {
 		return modeRelay ? 0 : 1;
 	}
 

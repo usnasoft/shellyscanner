@@ -43,7 +43,7 @@ public class ShellyDUO extends AbstractG1Device implements WhiteCommander {
 	}
 	
 	@Override
-	public int getWhiteCount() {
+	public int getWhitesCount() {
 		return 1;
 	}
 	
