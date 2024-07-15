@@ -12,13 +12,13 @@ import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.InternalTmpHolder;
 import it.usna.shellyscan.model.device.g2.modules.Input;
 import it.usna.shellyscan.model.device.g2.modules.Relay;
-import it.usna.shellyscan.model.device.modules.ModuleHolder;
+import it.usna.shellyscan.model.device.modules.ModulesHolder;
 
 /**
  * Shelly Pro 1 model
  * @author usna
  */
-public class ShellyPro1 extends AbstractProDevice implements ModuleHolder, InternalTmpHolder {
+public class ShellyPro1 extends AbstractProDevice implements ModulesHolder, InternalTmpHolder {
 	public final static String ID = "Pro1";
 	private Relay relay = new Relay(this, 0);
 	private float internalTmp;

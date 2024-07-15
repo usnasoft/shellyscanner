@@ -12,14 +12,14 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.g2.modules.Relay;
 import it.usna.shellyscan.model.device.g2.modules.ThermostatG2;
-import it.usna.shellyscan.model.device.modules.ModuleHolder;
-import it.usna.shellyscan.model.device.modules.ThermostatCommander;
+import it.usna.shellyscan.model.device.modules.DeviceModule;
+import it.usna.shellyscan.model.device.modules.ModulesHolder;
 
 /**
  * Shelly Wall Display
  * @author usna
  */
-public class WallDisplay extends AbstractG2Device implements ModuleHolder, ThermostatCommander {
+public class WallDisplay extends AbstractG2Device implements ModulesHolder {
 	public final static String ID = "WallDisplay";
 	public final static String MSG_RESTORE_MODE_ERROR = "msgRestoreThermostatMode";
 	public final static String MSG_RESTORE_MODE_SYNT_ERROR = "msgRestoreThermostatModeSynt";
@@ -31,6 +31,7 @@ public class WallDisplay extends AbstractG2Device implements ModuleHolder, Therm
 	private Relay relay = null;
 	private Relay[] relays = null;
 	private ThermostatG2 thermostat = null;
+	private ThermostatG2[] thermostats = null;
 
 	public WallDisplay(InetAddress address, int port, String hostname) {
 		super(address, port, hostname);
@@ -67,23 +68,13 @@ public class WallDisplay extends AbstractG2Device implements ModuleHolder, Therm
 	}
 	
 	@Override
-	public int getModulesCount() {
-		return relays != null ? 1 : 0;
-	}
-	
-	@Override
-	public Relay getModule(int index) {
-		return relay;
+	public DeviceModule getModule(int index) {
+		return relay != null ? relay : thermostat;
 	}
 
 	@Override
-	public Relay[] getModules() {
-		return relays;
-	}
-	
-	@Override
-	public ThermostatG2 getThermostat() {
-		return thermostat;
+	public DeviceModule[] getModules() {
+		return relay != null ? relays : thermostats;
 	}
 
 	@Override
@@ -93,6 +84,7 @@ public class WallDisplay extends AbstractG2Device implements ModuleHolder, Therm
 		if(thermostatConf != null) {
 			if(thermostat == null) {
 				thermostat = new ThermostatG2(this);
+				thermostats = new ThermostatG2[] {thermostat};
 				relay = null;
 				relays = null;
 			}
@@ -102,6 +94,7 @@ public class WallDisplay extends AbstractG2Device implements ModuleHolder, Therm
 				relay = new Relay(this, 0);
 				relays = new Relay[] {relay};
 				thermostat = null;
+				thermostats = null;
 			}
 			relay.fillSettings(configuration.get("switch:0"), configuration.get("input:0"));
 		}

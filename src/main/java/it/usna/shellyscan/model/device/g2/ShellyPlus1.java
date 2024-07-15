@@ -15,13 +15,13 @@ import it.usna.shellyscan.model.device.g2.modules.Input;
 import it.usna.shellyscan.model.device.g2.modules.Relay;
 import it.usna.shellyscan.model.device.g2.modules.SensorAddOn;
 import it.usna.shellyscan.model.device.g2.modules.SensorAddOnHolder;
-import it.usna.shellyscan.model.device.modules.ModuleHolder;
+import it.usna.shellyscan.model.device.modules.ModulesHolder;
 
 /**
  * Shelly Plus 1 model
  * @author usna
  */
-public class ShellyPlus1 extends AbstractG2Device implements ModuleHolder, InternalTmpHolder, SensorAddOnHolder {
+public class ShellyPlus1 extends AbstractG2Device implements ModulesHolder, InternalTmpHolder, SensorAddOnHolder {
 	public final static String ID = "Plus1";
 	private Relay relay = new Relay(this, 0);
 	private Relay[] relays = new Relay[] {relay};

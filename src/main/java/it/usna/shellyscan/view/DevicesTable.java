@@ -51,11 +51,8 @@ import it.usna.shellyscan.model.device.g1.modules.ThermostatG1;
 import it.usna.shellyscan.model.device.g2.ShellyPlusSmoke;
 import it.usna.shellyscan.model.device.g2.modules.SensorAddOn;
 import it.usna.shellyscan.model.device.modules.DeviceModule;
-import it.usna.shellyscan.model.device.modules.InputCommander;
-import it.usna.shellyscan.model.device.modules.ModuleHolder;
+import it.usna.shellyscan.model.device.modules.ModulesHolder;
 import it.usna.shellyscan.model.device.modules.RGBWCommander;
-import it.usna.shellyscan.model.device.modules.RollerCommander;
-import it.usna.shellyscan.model.device.modules.ThermostatCommander;
 import it.usna.shellyscan.model.device.modules.WhiteCommander;
 import it.usna.swing.ArrayTableCellRenderer;
 import it.usna.swing.DecimalTableCellRenderer;
@@ -436,10 +433,8 @@ public class DevicesTable extends ExTooltipTable {
 				row[DevicesTable.COL_MEASURES_IDX] = d.getMeters();
 				row[DevicesTable.COL_DEBUG] = LABELS.getString("debug" + d.getDebugMode().name());
 				Object command = null;
-				if(d instanceof ModuleHolder mh && mh.getModulesCount() > 0) {
+				if(d instanceof ModulesHolder mh && mh.getModulesCount() > 0) {
 					row[DevicesTable.COL_COMMAND_IDX] = command = mh.getModules();
-				} else if(d instanceof RollerCommander rc && rc.getRollersCount() > 0) {
-					row[DevicesTable.COL_COMMAND_IDX] = command = rc.getRoller(0);
 				} else if(d instanceof WhiteCommander wc && wc.getWhitesCount() == 1) { // dimmer
 					row[DevicesTable.COL_COMMAND_IDX] = command = wc.getWhite(0);
 				} else if(d instanceof LightBulbRGBCommander lbc) {
@@ -448,8 +443,6 @@ public class DevicesTable extends ExTooltipTable {
 					row[DevicesTable.COL_COMMAND_IDX] = command = rgbwc.getColor(0);
 				} else if(d instanceof WhiteCommander wc && wc.getWhitesCount() > 1) {
 					row[DevicesTable.COL_COMMAND_IDX] = command = wc.getWhites();
-				} else if(d instanceof InputCommander ic) {
-					row[DevicesTable.COL_COMMAND_IDX] /*= command*/ = ic.getActionsGroups(); // currently no getLastSource()
 				} else if(d instanceof ShellyDW dw) {
 					row[DevicesTable.COL_COMMAND_IDX] = LABELS.getString("lableStatusOpen") + ": " + (dw.isOpen() ? YES : NO);
 				} else if(d instanceof ShellyFlood flood) {
@@ -467,8 +460,6 @@ public class DevicesTable extends ExTooltipTable {
 					} else {
 						row[DevicesTable.COL_COMMAND_IDX] = String.format(LABELS.getString("lableStatusTRV"), thermostat.getPosition());
 					}
-				} else if(d instanceof ThermostatCommander tc) {
-					row[DevicesTable.COL_COMMAND_IDX] = tc.getThermostat();
 				}
 				if(command instanceof DeviceModule dm) {
 					row[DevicesTable.COL_SOURCE_IDX] = dm.getLastSource();

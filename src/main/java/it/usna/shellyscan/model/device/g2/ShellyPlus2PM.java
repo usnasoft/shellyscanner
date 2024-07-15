@@ -16,21 +16,23 @@ import it.usna.shellyscan.model.device.g2.modules.Relay;
 import it.usna.shellyscan.model.device.g2.modules.Roller;
 import it.usna.shellyscan.model.device.g2.modules.SensorAddOn;
 import it.usna.shellyscan.model.device.g2.modules.SensorAddOnHolder;
-import it.usna.shellyscan.model.device.modules.ModuleHolder;
-import it.usna.shellyscan.model.device.modules.RollerCommander;
+import it.usna.shellyscan.model.device.modules.DeviceModule;
+import it.usna.shellyscan.model.device.modules.ModulesHolder;
 
 /**
  * Shelly plus 2PM model 
  * @author usna
  */
-public class ShellyPlus2PM extends AbstractG2Device implements ModuleHolder, RollerCommander, InternalTmpHolder, SensorAddOnHolder {
+public class ShellyPlus2PM extends AbstractG2Device implements ModulesHolder, InternalTmpHolder, SensorAddOnHolder {
 	public final static String ID = "Plus2PM";
 	private final static String MSG_RESTORE_MODE_ERROR = "msgRestoreCoverMode";
 	private final static String MSG_RESTORE_MODE_SYNT_ERROR = "msgRestoreCoverModeSynt";
 	private boolean modeRelay;
 	private final static Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.W, Meters.Type.PF, Meters.Type.V, Meters.Type.I};
 	private Relay relay0, relay1;
+	private Relay[] relaysArray;
 	private Roller roller;
+	private Roller[] rollersArray;
 	private float internalTmp;
 	private float power0, power1;
 	private float voltage0, voltage1;
@@ -109,27 +111,21 @@ public class ShellyPlus2PM extends AbstractG2Device implements ModuleHolder, Rol
 	
 	@Override
 	public int getModulesCount() {
-		return modeRelay ? 2 : 0;
+		return modeRelay ? 2 : 1;
 	}
 	
 	@Override
-	public Relay getModule(int index) {
-		return (index == 0) ? relay0 : relay1;
+	public DeviceModule getModule(int index) {
+		if(modeRelay) {
+			return (index == 0) ? relay0 : relay1;
+		} else {
+			return roller;
+		}
 	}
 
 	@Override
-	public Relay[] getModules() {
-		return new Relay[] {relay0, relay1};
-	}
-	
-	@Override
-	public int getRollersCount() {
-		return modeRelay ? 0 : 1;
-	}
-
-	@Override
-	public Roller getRoller(int index) {
-		return roller;
+	public DeviceModule[] getModules() {
+		return modeRelay ? relaysArray : rollersArray;
 	}
 
 	@Override
@@ -162,16 +158,20 @@ public class ShellyPlus2PM extends AbstractG2Device implements ModuleHolder, Rol
 			if(relay0 == null /*|| relay1 == null*/) {
 				relay0 = new Relay(this, 0);
 				relay1 = new Relay(this, 1);
+				relaysArray = new Relay[] {relay0, relay1};
 				meters = (addOn == null || addOn.getTypes().length == 0) ? new Meters[] {meters0, meters1} : new Meters[] {meters0, meters1, addOn};
 				roller = null; // modeRelay change
+				rollersArray = null;
 			}
 			relay0.fillSettings(configuration.get("switch:0"), configuration.get("input:0"));
 			relay1.fillSettings(configuration.get("switch:1"), configuration.get("input:1"));
 		} else {
 			if(roller == null) {
 				roller = new Roller(this, 0);
+				rollersArray = new Roller[] {roller};
 				meters = (addOn == null || addOn.getTypes().length == 0) ? new Meters[] {meters0} : new Meters[] {meters0, addOn};
 				relay0 = relay1 = null; // modeRelay change
+				relaysArray = null;
 			}
 			roller.fillSettings(configuration.get("cover:0"));
 		}

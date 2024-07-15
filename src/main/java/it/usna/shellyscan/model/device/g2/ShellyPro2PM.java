@@ -14,17 +14,19 @@ import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.g2.modules.Input;
 import it.usna.shellyscan.model.device.g2.modules.Relay;
 import it.usna.shellyscan.model.device.g2.modules.Roller;
-import it.usna.shellyscan.model.device.modules.ModuleHolder;
-import it.usna.shellyscan.model.device.modules.RollerCommander;
+import it.usna.shellyscan.model.device.modules.DeviceModule;
+import it.usna.shellyscan.model.device.modules.ModulesHolder;
 
-public class ShellyPro2PM extends AbstractProDevice implements ModuleHolder, RollerCommander, InternalTmpHolder {
+public class ShellyPro2PM extends AbstractProDevice implements ModulesHolder, InternalTmpHolder {
 	public final static String ID = "Pro2PM";
 	private final static String MSG_RESTORE_MODE_ERROR = "msgRestoreCoverMode";
 	private final static String MSG_RESTORE_MODE_SYNT_ERROR = "msgRestoreCoverModeSynt";
 	private boolean modeRelay;
 	private final static Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.W, Meters.Type.PF, Meters.Type.V, Meters.Type.I};
 	private Relay relay0, relay1;
+	private Relay[] relaysArray;
 	private Roller roller;
+	private Roller[] rollersArray;
 	private float internalTmp;
 	private float power0, power1;
 	private float voltage0, voltage1;
@@ -88,27 +90,21 @@ public class ShellyPro2PM extends AbstractProDevice implements ModuleHolder, Rol
 	
 	@Override
 	public int getModulesCount() {
-		return modeRelay ? 2 : 0;
+		return modeRelay ? 2 : 1;
 	}
 	
 	@Override
-	public Relay getModule(int index) {
-		return (index == 0) ? relay0 : relay1;
+	public DeviceModule getModule(int index) {
+		if(modeRelay) {
+			return (index == 0) ? relay0 : relay1;
+		} else {
+			return roller;
+		}
 	}
 
 	@Override
-	public Relay[] getModules() {
-		return new Relay[] {relay0, relay1};
-	}
-	
-	@Override
-	public int getRollersCount() {
-		return modeRelay ? 0 : 1;
-	}
-
-	@Override
-	public Roller getRoller(int index) {
-		return roller;
+	public DeviceModule[] getModules() {
+		return modeRelay ? relaysArray : rollersArray;
 	}
 
 	@Override
@@ -141,16 +137,20 @@ public class ShellyPro2PM extends AbstractProDevice implements ModuleHolder, Rol
 			if(relay0 == null /*|| relay1 == null*/) {
 				relay0 = new Relay(this, 0);
 				relay1 = new Relay(this, 1);
+				relaysArray = new Relay[] {relay0, relay1};
 				meters = new Meters[] {meters0, meters1};
 				roller = null; // modeRelay change
+				rollersArray = null;
 			}
 			relay0.fillSettings(configuration.get("switch:0"), configuration.get("input:0"));
 			relay1.fillSettings(configuration.get("switch:1"), configuration.get("input:1"));
 		} else {
 			if(roller == null) {
 				roller = new Roller(this, 0);
+				rollersArray = new Roller[] {roller};
 				meters = new Meters[] {meters0};
 				relay0 = relay1 = null; // modeRelay change
+				relaysArray = null;
 			}
 			roller.fillSettings(configuration.get("cover:0"));
 		}

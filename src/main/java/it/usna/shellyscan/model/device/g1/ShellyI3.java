@@ -9,10 +9,11 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.g1.modules.Actions;
-import it.usna.shellyscan.model.device.modules.InputCommander;
+import it.usna.shellyscan.model.device.modules.DeviceModule;
 import it.usna.shellyscan.model.device.modules.InputInterface;
+import it.usna.shellyscan.model.device.modules.ModulesHolder;
 
-public class ShellyI3 extends AbstractG1Device implements InputCommander {
+public class ShellyI3 extends AbstractG1Device implements ModulesHolder {
 	public final static String ID = "SHIX3-1";
 	private Actions actions = new Actions(this);
 	
@@ -43,6 +44,21 @@ public class ShellyI3 extends AbstractG1Device implements InputCommander {
 	}
 
 	@Override
+	public int getModulesCount() {
+		return 3;
+	}
+	
+	@Override
+	public DeviceModule getModule(int index) {
+		return actions.getInput(index);
+	}
+
+	@Override
+	public DeviceModule[] getModules() {
+		return new InputInterface[] {actions.getInput(0), actions.getInput(1), actions.getInput(2)};
+	}
+
+	@Override
 	protected void restore(JsonNode settings, List<String> errors) throws IOException, InterruptedException {
 		final int longpushtimemax = settings.get("longpush_duration_ms").get("max").asInt();
 		final int longpushtimemin = settings.get("longpush_duration_ms").get("min").asInt();
@@ -54,16 +70,6 @@ public class ShellyI3 extends AbstractG1Device implements InputCommander {
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			errors.add(sendCommand("/settings/input/" + i + "?" + jsonNodeToURLPar(inp, "name", "btn_type", "btn_reverse")));
 		}
-	}
-
-	@Override
-	public InputInterface getActionsGroup(int index) {
-		return actions.getInput(index);
-	}
-	
-	@Override
-	public InputInterface[] getActionsGroups() {
-		return new InputInterface[] {actions.getInput(0), actions.getInput(1), actions.getInput(2)};
 	}
 
 	@Override

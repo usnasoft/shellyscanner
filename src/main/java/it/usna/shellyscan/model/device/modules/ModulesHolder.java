@@ -1,6 +1,6 @@
 package it.usna.shellyscan.model.device.modules;
 
-public interface ModuleHolder {
+public interface ModulesHolder {
 	
 	DeviceModule getModule(int index);
 	

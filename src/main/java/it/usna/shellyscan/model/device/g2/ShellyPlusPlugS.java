@@ -15,9 +15,9 @@ import it.usna.shellyscan.model.device.InternalTmpHolder;
 import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.g2.modules.Relay;
 import it.usna.shellyscan.model.device.meters.MetersWVI;
-import it.usna.shellyscan.model.device.modules.ModuleHolder;
+import it.usna.shellyscan.model.device.modules.ModulesHolder;
 
-public class ShellyPlusPlugS extends AbstractG2Device implements ModuleHolder, InternalTmpHolder {
+public class ShellyPlusPlugS extends AbstractG2Device implements ModulesHolder, InternalTmpHolder {
 	public final static String ID = "PlusPlugS";
 	private Relay relay = new Relay(this, 0);
 	private float internalTmp;

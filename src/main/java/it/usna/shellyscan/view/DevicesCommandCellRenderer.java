@@ -212,7 +212,8 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 				stackedPanel.add(getRelayPanel(rel, foregroundColor));
 			}
 			ret = stackedPanel;
-		} else if(value instanceof RollerInterface roller) { // 2.5
+		} else if(value instanceof RollerInterface[] rollers) { // 2.5
+			RollerInterface roller = rollers[0]; // multiple rollers devices currently not supported
 			String labelText;
 			if(roller.isCalibrated()) {
 				labelText = roller.getLabel() + " " + roller.getPosition() + "%";
@@ -309,7 +310,8 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 			trvProfileLabel.setEnabled(thermostat.isScheduleActive());
 			trvProfileLabel.setForeground(foregroundColor);
 			ret = trvPanel;
-		} else if(value instanceof ThermostatInterface thermostat) {
+		} else if(value instanceof ThermostatInterface[] thermostats) {
+			ThermostatInterface thermostat = thermostats[0]; // multiple thermostats devices currently not supported
 			thermSlider.setMinimum((int)(thermostat.getMinTargetTemp() * 2));
 			thermSlider.setMaximum((int)(thermostat.getMaxTargetTemp() * 2));
 			thermSlider.setValue((int)(thermostat.getTargetTemp() * 2));

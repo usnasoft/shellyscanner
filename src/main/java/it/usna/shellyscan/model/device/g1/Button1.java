@@ -10,14 +10,15 @@ import com.fasterxml.jackson.databind.JsonNode;
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.g1.modules.Actions;
-import it.usna.shellyscan.model.device.modules.InputCommander;
+import it.usna.shellyscan.model.device.modules.DeviceModule;
 import it.usna.shellyscan.model.device.modules.InputInterface;
+import it.usna.shellyscan.model.device.modules.ModulesHolder;
 
 /**
  * Button 1 model
  * usna
  */
-public class Button1 extends AbstractBatteryG1Device implements InputCommander {
+public class Button1 extends AbstractBatteryG1Device implements ModulesHolder {
 	public final static String ID = "SHBTN-2";
 	private final static Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.BAT};
 	private Actions actions = new Actions(this);
@@ -69,6 +70,16 @@ public class Button1 extends AbstractBatteryG1Device implements InputCommander {
 	public Meters[] getMeters() {
 		return meters;
 	}
+	
+	@Override
+	public DeviceModule getModule(int index) {
+		return actions.getInput(0);
+	}
+
+	@Override
+	public DeviceModule[] getModules() {
+		return new  InputInterface[] {actions.getInput(0)};
+	}
 
 	@Override
 	protected void restore(JsonNode settings, List<String> errors) throws IOException, InterruptedException {
@@ -83,15 +94,5 @@ public class Button1 extends AbstractBatteryG1Device implements InputCommander {
 	@Override
 	public String toString() {
 		return super.toString();
-	}
-
-	@Override
-	public InputInterface getActionsGroup(int index) {
-		return actions.getInput(0);
-	}
-
-	@Override
-	public InputInterface[] getActionsGroups() {
-		return new  InputInterface[] {actions.getInput(0)};
 	}
 }

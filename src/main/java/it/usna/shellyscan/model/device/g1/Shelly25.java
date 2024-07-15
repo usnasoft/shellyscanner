@@ -13,11 +13,10 @@ import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.g1.modules.Relay;
 import it.usna.shellyscan.model.device.g1.modules.Roller;
 import it.usna.shellyscan.model.device.meters.MetersPower;
-import it.usna.shellyscan.model.device.modules.ModuleHolder;
-import it.usna.shellyscan.model.device.modules.RelayInterface;
-import it.usna.shellyscan.model.device.modules.RollerCommander;
+import it.usna.shellyscan.model.device.modules.DeviceModule;
+import it.usna.shellyscan.model.device.modules.ModulesHolder;
 
-public class Shelly25 extends AbstractG1Device implements ModuleHolder, RollerCommander, InternalTmpHolder {
+public class Shelly25 extends AbstractG1Device implements ModulesHolder, InternalTmpHolder {
 	public final static String ID = "SHSW-25";
 	private final static Meters.Type[] SUPPORTED_MEASURES_C1 = new Meters.Type[] {Meters.Type.W, Meters.Type.V};
 	private boolean modeRelay;
@@ -66,27 +65,25 @@ public class Shelly25 extends AbstractG1Device implements ModuleHolder, RollerCo
 	
 	@Override
 	public int getModulesCount() {
-		return modeRelay ? 2 : 0;
+		return modeRelay ? 2 : 1;
 	}
 	
 	@Override
-	public Relay getModule(int index) {
-		return index == 0 ? relay0 : relay1;
+	public DeviceModule getModule(int index) {
+		if(modeRelay) {
+			return (index == 0) ? relay0 : relay1;
+		} else {
+			return roller;
+		}
 	}
 
 	@Override
-	public Relay[] getModules() {
-		return new Relay[] {relay0, relay1};
-	}
-	
-	@Override
-	public int getRollersCount() {
-		return modeRelay ? 0 : 1;
-	}
-	
-	@Override
-	public Roller getRoller(int index) {
-		return roller;
+	public DeviceModule[] getModules() {
+		if(modeRelay) {
+			return new Relay[] {relay0, relay1};
+		} else {
+			return new Roller[] {roller};
+		}
 	}
 
 	@Override
@@ -131,7 +128,6 @@ public class Shelly25 extends AbstractG1Device implements ModuleHolder, RollerCo
 	@Override
 	protected void fillStatus(JsonNode status) throws IOException {
 		super.fillStatus(status);
-//		internalTmp = (float)status.get("tmp").get("tC").asDouble();
 		internalTmp = status.get("temperature").floatValue();
 		final JsonNode meters = status.get("meters");
 		power0 = meters.get(0).get("power").floatValue();

@@ -2,7 +2,7 @@ package it.usna.shellyscan.view.util;
 
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.modules.DeviceModule;
-import it.usna.shellyscan.model.device.modules.ModuleHolder;
+import it.usna.shellyscan.model.device.modules.ModulesHolder;
 import it.usna.shellyscan.model.device.modules.RelayInterface;
 
 public class UtilMiscellaneous {
@@ -14,8 +14,8 @@ public class UtilMiscellaneous {
 	}
 	
 	public static String getDescName(ShellyAbstractDevice d, int channel) {
-		if(d instanceof ModuleHolder) {
-			 DeviceModule[] ri = ((ModuleHolder)d).getModules();
+		if(d instanceof ModulesHolder) {
+			 DeviceModule[] ri = ((ModulesHolder)d).getModules();
 			if(ri != null) { // cover?
 				String name;
 				if(channel < ri.length && ri[channel] instanceof RelayInterface rel && (name = rel.getName()) != null && name.length() > 0) {

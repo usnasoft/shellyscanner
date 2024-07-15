@@ -11,9 +11,9 @@ import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.LabelHolder;
 import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.g1.modules.Relay;
-import it.usna.shellyscan.model.device.modules.ModuleHolder;
+import it.usna.shellyscan.model.device.modules.ModulesHolder;
 
-public class Shelly3EM extends AbstractG1Device implements ModuleHolder {
+public class Shelly3EM extends AbstractG1Device implements ModulesHolder {
 	public final static String ID = "SHEM-3";
 	private final static Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.W, Meters.Type.PF, Meters.Type.V, Meters.Type.I};
 	private Relay relay = new Relay(this, 0);

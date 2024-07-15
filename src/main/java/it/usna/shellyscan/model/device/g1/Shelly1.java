@@ -12,13 +12,13 @@ import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.g1.modules.Relay;
 import it.usna.shellyscan.model.device.meters.MetersPower;
-import it.usna.shellyscan.model.device.modules.ModuleHolder;
+import it.usna.shellyscan.model.device.modules.ModulesHolder;
 
 /**
  * Shelly 1 model
  * @author usna
  */
-public class Shelly1 extends AbstractG1Device implements ModuleHolder {
+public class Shelly1 extends AbstractG1Device implements ModulesHolder {
 	public final static String ID = "SHSW-1";
 	private final static Meters.Type[] SUPPORTED_MEASURES_H = new Meters.Type[] { Meters.Type.T, Meters.Type.H };
 	private final static Meters.Type[] MEASURES_EXT_SWITCH = new Meters.Type[] { Meters.Type.EX };

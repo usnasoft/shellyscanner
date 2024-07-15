@@ -455,7 +455,8 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 			}
 			edited = riArray;
 			return stackedPanel;
-//			return getRelaysPanel(riArray, table.getSelectionForeground());
+		} else if(value instanceof RollerInterface[] riArray) {
+			return getRollerPanel(riArray[0]); // multiple rollers devices currently not supported
 		} else if(value instanceof RollerInterface ri) {
 			return getRollerPanel(ri);
 		} else if(value instanceof WhiteInterface wi) {
@@ -470,8 +471,8 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 			return getActionsPanel(inputArray, table);
 		} else if(value instanceof ThermostatG1 th) { // TRV
 			return getTrvPanel(th);
-		} else if(value instanceof ThermostatInterface th) {
-			return getThermostatPanel(th);
+		} else if(value instanceof ThermostatInterface[] ths) {
+			return getThermostatPanel(ths[0]);
 		} else if(value instanceof DeviceModule[] madArray) {
 			stackedPanel.removeAll();
 			for(DeviceModule module: madArray) {

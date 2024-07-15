@@ -14,9 +14,10 @@ import it.usna.shellyscan.model.device.g2.modules.Input;
 import it.usna.shellyscan.model.device.g2.modules.SensorAddOn;
 import it.usna.shellyscan.model.device.g2.modules.SensorAddOnHolder;
 import it.usna.shellyscan.model.device.g2.modules.Webhooks;
-import it.usna.shellyscan.model.device.modules.InputCommander;
+import it.usna.shellyscan.model.device.modules.DeviceModule;
+import it.usna.shellyscan.model.device.modules.ModulesHolder;
 
-public class ShellyPlusi4 extends AbstractG2Device implements InputCommander, SensorAddOnHolder {
+public class ShellyPlusi4 extends AbstractG2Device implements ModulesHolder, SensorAddOnHolder {
 	public final static String ID = "PlusI4";
 	private Input[] inputs;
 	private Webhooks webhooks;
@@ -120,12 +121,17 @@ public class ShellyPlusi4 extends AbstractG2Device implements InputCommander, Se
 	}
 	
 	@Override
-	public Input getActionsGroup(int index) {
+	public int getModulesCount() {
+		return 4;
+	}
+	
+	@Override
+	public DeviceModule getModule(int index) {
 		return inputs[index];
 	}
 
 	@Override
-	public Input[] getActionsGroups() {
+	public DeviceModule[] getModules() {
 		return inputs;
 	}
 

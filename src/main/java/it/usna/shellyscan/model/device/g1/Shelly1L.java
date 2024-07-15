@@ -12,9 +12,9 @@ import it.usna.shellyscan.model.device.InternalTmpHolder;
 import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.g1.modules.Relay;
 import it.usna.shellyscan.model.device.meters.MetersPower;
-import it.usna.shellyscan.model.device.modules.ModuleHolder;
+import it.usna.shellyscan.model.device.modules.ModulesHolder;
 
-public class Shelly1L extends AbstractG1Device implements ModuleHolder, InternalTmpHolder {
+public class Shelly1L extends AbstractG1Device implements ModulesHolder, InternalTmpHolder {
 	public final static String ID = "SHSW-L";
 	private Relay relay = new Relay(this, 0);
 	private Relay[] relayArray = new Relay[] {relay};

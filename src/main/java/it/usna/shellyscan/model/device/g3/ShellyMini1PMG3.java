@@ -14,13 +14,13 @@ import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.g2.modules.Input;
 import it.usna.shellyscan.model.device.g2.modules.Relay;
 import it.usna.shellyscan.model.device.meters.MetersWVI;
-import it.usna.shellyscan.model.device.modules.ModuleHolder;
+import it.usna.shellyscan.model.device.modules.ModulesHolder;
 
 /**
  * Shelly mini 1PM G3 model
  * @author usna
  */
-public class ShellyMini1PMG3 extends AbstractG3Device implements ModuleHolder, InternalTmpHolder {
+public class ShellyMini1PMG3 extends AbstractG3Device implements ModulesHolder, InternalTmpHolder {
 	public final static String ID = "Mini1PMG3";
 	private float internalTmp;
 	private float power;
