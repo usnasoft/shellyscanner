@@ -46,7 +46,6 @@ import it.usna.shellyscan.model.device.g1.ShellyFlood;
 import it.usna.shellyscan.model.device.g1.ShellyMotion;
 import it.usna.shellyscan.model.device.g1.ShellyMotion2;
 import it.usna.shellyscan.model.device.g1.ShellyTRV;
-import it.usna.shellyscan.model.device.g1.modules.LightBulbRGBCommander;
 import it.usna.shellyscan.model.device.g1.modules.ThermostatG1;
 import it.usna.shellyscan.model.device.g2.ShellyPlusSmoke;
 import it.usna.shellyscan.model.device.g2.modules.SensorAddOn;
@@ -189,10 +188,10 @@ public class DevicesTable extends ExTooltipTable {
 	@Override
 	public Component prepareRenderer(TableCellRenderer renderer, int row, int column) {
 		Component comp = super.prepareRenderer(renderer, row, column);
-		if(isRowSelected(row) == false) {
-			comp.setBackground((row % 2 == 0) ? Main.TAB_LINE1 : Main.TAB_LINE2);
-		} else {
+		if(isRowSelected(row)) {
 			comp.setBackground(getSelectionBackground());
+		} else {
+			comp.setBackground((row % 2 == 0) ? Main.TAB_LINE1 : Main.TAB_LINE2);
 		}
 		computeRowHeight(row, comp);
 		return comp;
@@ -437,8 +436,6 @@ public class DevicesTable extends ExTooltipTable {
 					row[DevicesTable.COL_COMMAND_IDX] = command = mh.getModules();
 				} else if(d instanceof WhiteCommander wc && wc.getWhitesCount() == 1) { // dimmer
 					row[DevicesTable.COL_COMMAND_IDX] = command = wc.getWhite(0);
-				} else if(d instanceof LightBulbRGBCommander lbc) {
-					row[DevicesTable.COL_COMMAND_IDX] = command = lbc.getLight(0);
 				} else if(d instanceof RGBWCommander rgbwc && rgbwc.getColorsCount() > 0) {
 					row[DevicesTable.COL_COMMAND_IDX] = command = rgbwc.getColor(0);
 				} else if(d instanceof WhiteCommander wc && wc.getWhitesCount() > 1) {

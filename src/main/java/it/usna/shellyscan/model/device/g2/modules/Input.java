@@ -20,11 +20,12 @@ public class Input implements InputInterface {
 	private boolean enable;
 //	private boolean reverse;
 	private boolean inputIsOn;
-	private  Map<String, Webhook> webHooks;
+	private Map<String, Webhook> webHooks;
 
 	public Input(AbstractG2Device parent, int id) {
 		this.parent = parent;
 		this.id = id;
+		webHooks = Collections.<String, Webhook>emptyMap();
 	}
 	
 	public Input() {
@@ -51,12 +52,12 @@ public class Input implements InputInterface {
 	}
 
 	@Override
-	public int getTypesCount() {
+	public int getRegisteredEventsCount() {
 		return webHooks.size();
 	}
 
 	@Override
-	public Collection<String> getSupportedEvents() {
+	public Collection<String> getRegisteredEvents() {
 		return webHooks.keySet();
 	}
 

@@ -204,12 +204,12 @@ public class Actions {
 //		}
 		
 		@Override
-		public Set<String> getSupportedEvents() {
+		public Set<String> getRegisteredEvents() {
 			return act.keySet();
 		}
 		
 		@Override
-		public int getTypesCount() {
+		public int getRegisteredEventsCount() {
 			return act.size();
 		}
 		

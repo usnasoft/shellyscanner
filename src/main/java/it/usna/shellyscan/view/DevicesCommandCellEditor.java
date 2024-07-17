@@ -85,11 +85,17 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 	private JButton thermActiveButton = new JButton();
 
 	private JPanel stackedPanel = new JPanel();
+	
+	private final Color selBackground;
+	private final Color selForeground;
 
 	public DevicesCommandCellEditor(JTable table) {
+		this.selBackground = table.getSelectionBackground();
+		this.selForeground = table.getSelectionForeground();
+		
 		// Dimmer
-		lightPanel.setBackground(table.getSelectionBackground());
-		lightLabel.setForeground(table.getSelectionForeground());
+		lightPanel.setBackground(selBackground);
+		lightLabel.setForeground(selForeground);
 		lightPanel.add(lightLabel, BorderLayout.CENTER);
 		lightPanel.add(lightButton, BorderLayout.EAST);
 		lightButton.setBorder(DevicesCommandCellRenderer.BUTTON_BORDERS);
@@ -120,8 +126,8 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 		});
 		
 		// RGBW Bulbs
-		lightRGBPanel.setBackground(table.getSelectionBackground());
-		lightRGBLabel.setForeground(table.getSelectionForeground());
+		lightRGBPanel.setBackground(selBackground);
+		lightRGBLabel.setForeground(selForeground);
 		lightRGBPanel.add(lightRGBLabel, BorderLayout.CENTER);
 		lightRGBPanel.add(lightRGBButton, BorderLayout.EAST);
 		lightRGBButton.setBorder(DevicesCommandCellRenderer.BUTTON_BORDERS);
@@ -173,8 +179,8 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 		});
 		
 		// RGBW (color)
-		colorRGBPanel.setBackground(table.getSelectionBackground());
-		colorRGBLabel.setForeground(table.getSelectionForeground());
+		colorRGBPanel.setBackground(selBackground);
+		colorRGBLabel.setForeground(selForeground);
 		colorRGBPanel.add(colorRGBLabel, BorderLayout.CENTER);
 		colorRGBPanel.add(colorRGBButton, BorderLayout.EAST);
 		colorRGBButton.setBorder(DevicesCommandCellRenderer.BUTTON_BORDERS);
@@ -221,8 +227,8 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 		colorRGBSlidersPanel.setLayout(colorRGBSlidersPanelLO);
 		JPanel stackedLabels = new JPanel(new GridLayout(2, 1));
 		stackedLabels.setOpaque(false);
-		colorRGBGainLabel.setForeground(table.getSelectionForeground());
-		colorRGBWhiteLabel.setForeground(table.getSelectionForeground());
+		colorRGBGainLabel.setForeground(selForeground);
+		colorRGBWhiteLabel.setForeground(selForeground);
 		stackedLabels.add(colorRGBGainLabel);
 		stackedLabels.add(colorRGBWhiteLabel);
 		colorRGBSlidersPanel.add(stackedLabels);
@@ -248,8 +254,8 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 		colorRGBPanel.add(colorRGBSlidersPanel, BorderLayout.SOUTH);
 		
 		// Roller
-		rollerPanel.setBackground(table.getSelectionBackground());
-		rollerLabel.setForeground(table.getSelectionForeground());
+		rollerPanel.setBackground(selBackground);
+		rollerLabel.setForeground(selForeground);
 		rollerPanel.add(rollerLabel, BorderLayout.CENTER);
 		JPanel rollerSouthPanel = new JPanel(new BorderLayout());
 		rollerSouthPanel.add(rollerPerc, BorderLayout.CENTER);
@@ -329,7 +335,7 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 		});
 		
 		// Thermostat G1 (TRV)
-		trvPanel.setBackground(table.getSelectionBackground());
+		trvPanel.setBackground(selBackground);
 		trvPanel.add(trvProfileLabel, BorderLayout.CENTER);
 		trvPanel.add(trvSlider, BorderLayout.SOUTH);
 		JPanel trvButtonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 3, 0));
@@ -342,7 +348,7 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 		trvButtonPanel.add(trvButtonUp);
 		trvButtonPanel.add(trvButtonDown);
 		trvPanel.add(trvButtonPanel, BorderLayout.EAST);
-		trvProfileLabel.setForeground(table.getSelectionForeground());
+		trvProfileLabel.setForeground(selForeground);
 		trvSlider.addChangeListener(e -> {
 			if(edited != null && edited instanceof ThermostatG1) {
 				if(trvSlider.getValueIsAdjusting()) {
@@ -379,7 +385,7 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 		});
 		
 		// ThermostatInterface
-		thermPanel.setBackground(table.getSelectionBackground());
+		thermPanel.setBackground(selBackground);
 		thermPanel.add(thermProfileLabel, BorderLayout.CENTER);
 		thermPanel.add(thermSlider, BorderLayout.SOUTH);
 		JPanel thermButtonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 3, 0));
@@ -394,7 +400,7 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 		thermButtonPanel.add(thermButtonUp);
 		thermButtonPanel.add(thermButtonDown);
 		thermPanel.add(thermButtonPanel, BorderLayout.EAST);
-		thermProfileLabel.setForeground(table.getSelectionForeground());
+		thermProfileLabel.setForeground(selForeground);
 		thermSlider.addChangeListener(e -> {
 			if(edited != null && edited instanceof ThermostatInterface th) {
 				if(thermSlider.getValueIsAdjusting()) {
@@ -443,7 +449,7 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 		// used for Relay[]
 		BoxLayout stackedPanelLO = new BoxLayout(stackedPanel, BoxLayout.Y_AXIS);
 		stackedPanel.setLayout(stackedPanelLO);
-		stackedPanel.setBackground(table.getSelectionBackground());
+		stackedPanel.setBackground(selBackground);
 	}
 
 	@Override
@@ -451,92 +457,54 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 		if(value instanceof RelayInterface[] riArray) {
 			stackedPanel.removeAll();
 			for(RelayInterface rel: riArray) {
-				stackedPanel.add(getRelayPanel(rel, table.getSelectionForeground()));
+				stackedPanel.add(getRelayPanel(rel));
 			}
 			edited = riArray;
 			return stackedPanel;
 		} else if(value instanceof RollerInterface[] riArray) {
 			return getRollerPanel(riArray[0]); // multiple rollers devices currently not supported
-		} else if(value instanceof RollerInterface ri) {
-			return getRollerPanel(ri);
 		} else if(value instanceof WhiteInterface wi) {
 			return getLightPanel(wi);
-		} else if(value instanceof LightBulbRGB bulb) { // RGBW Bulbs
-			return getLightRGBWPanel(bulb);
+		} else if(value instanceof LightBulbRGB[] bulbsArray) { // RGBW Bulbs
+			return getLightRGBWPanel(bulbsArray[0]); // multiple bulbs devices currently not supported
 		} else if(value instanceof LightRGBW light) { // RGBW2 (color mode)
 			return getRGBWColorPanel(light);
 		} else if(value instanceof WhiteInterface[] wiArray) { // RGBW2 (white mode)
-			return getRGBWWhitePanel(wiArray, table);
+			return getRGBWWhitePanel(wiArray);
 		} else if(value instanceof InputInterface[] inputArray) {
-			return getActionsPanel(inputArray, table);
+			stackedPanel.removeAll();
+			for(InputInterface act: inputArray) {
+				if(act.enabled()) {
+					Component actionsPanel = getInputPanel(act, table);
+					stackedPanel.add(actionsPanel);
+				}
+			}
+			edited = inputArray;
+			return stackedPanel;
+//			return getActionsPanel(inputArray, table);
 		} else if(value instanceof ThermostatG1 th) { // TRV
 			return getTrvPanel(th);
 		} else if(value instanceof ThermostatInterface[] ths) {
 			return getThermostatPanel(ths[0]);
-		} else if(value instanceof DeviceModule[] madArray) {
+		} else if(value instanceof DeviceModule[] modArray) {
 			stackedPanel.removeAll();
-			for(DeviceModule module: madArray) {
+			for(DeviceModule module: modArray) {
 				if(module instanceof RelayInterface rel) {
-					stackedPanel.add(getRelayPanel(rel, table.getSelectionForeground()));
+					stackedPanel.add(getRelayPanel(rel));
 				} else if(module instanceof InputInterface input) {
-					stackedPanel.add(new JLabel(input.getLabel()));
+//					stackedPanel.add(new JLabel(input.getLabel()));
+					getInputPanel(input, table);
 				}
 			}
-			edited = madArray;
+			edited = modArray;
 			return stackedPanel;
 		}
 		return null;
 	}
 	
-//	private Component getRelaysPanel(RelayInterface[] relays, Color selColor) {
-//		stackedPanel.removeAll();
-//		for(RelayInterface rel: relays) {
-//			JLabel relayLabel = new JLabel(rel.getLabel());
-//			relayLabel.setForeground(selColor);
-//			JPanel relayPanel = new JPanel(new BorderLayout());
-//			JButton relayButton = new JButton();
-//			relayButton.addActionListener(e -> {
-//				if(edited != null) {
-//					try {
-//						rel.toggle();
-//					} catch (IOException ex) {
-//						LOG.error("getRelaysPanel {}", rel, ex);
-//					}
-//					cancelCellEditing();
-//				}
-//			});
-//			
-//			JPanel relayButtonPanel = new JPanel();
-//			relayButtonPanel.setLayout(new BoxLayout(relayButtonPanel, BoxLayout.Y_AXIS));
-//			relayButtonPanel.setOpaque(false);
-//			relayButton.setBorder(DevicesCommandCellRenderer.BUTTON_BORDERS);
-//			relayButtonPanel.add(Box.createVerticalGlue());
-//			relayButtonPanel.add(relayButton);
-//			relayButtonPanel.add(Box.createVerticalGlue());
-//
-//			relayPanel.setOpaque(false);
-//			relayPanel.add(relayLabel, BorderLayout.CENTER);
-//			relayPanel.add(relayButtonPanel, BorderLayout.EAST);
-//			
-//			if(rel.isOn()) {
-//				relayButton.setText(DevicesCommandCellRenderer.LABEL_ON);
-//				relayButton.setBackground(DevicesCommandCellRenderer.BUTTON_ON_BG_COLOR);
-//			} else {
-//				relayButton.setText(DevicesCommandCellRenderer.LABEL_OFF);
-//				relayButton.setBackground(DevicesCommandCellRenderer.BUTTON_OFF_BG_COLOR);
-//			}
-//			if(rel.isInputOn()) {
-//				relayButton.setForeground(DevicesCommandCellRenderer.BUTTON_ON_FG_COLOR);
-//			}
-//			stackedPanel.add(relayPanel);
-//		}
-//		edited = relays;
-//		return stackedPanel;
-//	}
-	
-	private JPanel getRelayPanel(RelayInterface rel, final Color selColor) {
+	private JPanel getRelayPanel(RelayInterface rel) {
 		JLabel relayLabel = new JLabel(rel.getLabel());
-		relayLabel.setForeground(selColor);
+		relayLabel.setForeground(selForeground);
 		JPanel relayPanel = new JPanel(new BorderLayout());
 		JButton relayButton = new JButton();
 		relayButton.addActionListener(e -> {
@@ -576,7 +544,7 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 	}
 	
 	private Component getRollerPanel(RollerInterface roller) {
-		String labelText;
+		final String labelText;
 		if(roller.isCalibrated()) {
 			labelText = roller.getLabel() + " " + roller.getPosition() + "%";
 			rollerPerc.setVisible(true);
@@ -638,13 +606,12 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 		return colorRGBPanel;
 	}
 	
-	private Component getRGBWWhitePanel(WhiteInterface[] lights, JTable table) {
+	private Component getRGBWWhitePanel(WhiteInterface[] lights) {
 		stackedPanel.removeAll();
-		Color selColor = table.getSelectionForeground();
 		for(int i = 0; i < lights.length;) {
 			WhiteInterface light = lights[i];
 			JLabel relayLabel = new JLabel(light.getLabel());
-			relayLabel.setForeground(selColor);
+			relayLabel.setForeground(selForeground);
 			JPanel relayPanel = new JPanel(new BorderLayout());
 			JButton relayButton = new JButton();
 			relayButton.addActionListener(e -> {
@@ -715,67 +682,65 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 		return thermPanel;
 	}
 	
-	private Component getActionsPanel(final InputInterface[] inputs, JTable table) {
-		stackedPanel.removeAll();
-		Color selBackground = table.getSelectionBackground();
-		Color selForeground = table.getSelectionForeground();
-		for(InputInterface act: inputs) {
-			if(act.enabled()) {
-				JPanel actionsPanel = new JPanel(new BorderLayout());
-				String label = act.getLabel();
-				JLabel actionsLabel = new JLabel(label.isEmpty() ? "-" : label);
-				actionsPanel.setBackground(selBackground);
-				actionsLabel.setForeground(selForeground);
-				actionsPanel.add(actionsLabel, BorderLayout.CENTER);
-				JPanel actionsSouthPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
-				int numSupported = act.getTypesCount();
-				for(String type: act.getSupportedEvents()) {
-					boolean enabled = act.enabled(type);
-					if(enabled || numSupported <= DevicesCommandCellRenderer.MAX_ACTIONS_SHOWN) {
-						String bLabel;
-						try {
-							bLabel = LABELS.getString(type);
-						} catch( MissingResourceException e) {
-							bLabel = "x";
-						}
-						JButton b = new JButton(bLabel);
-						if(enabled) {
-							b.addActionListener(e -> {
-								if(edited != null && edited instanceof InputInterface[]) {
-									table.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-									try {
-										new Thread(() -> {
-											try {
-												act.execute(type);
-											} catch (IOException ex) {
-												Msg.errorMsg(ex);
-											}
-										}).start();
-										Thread.sleep(200);
-									} catch (InterruptedException e1) {}
-									table.setCursor(Cursor.getDefaultCursor());
-									cancelCellEditing();
-								}
-							});
-						} else {
-							b.setEnabled(false);
-						}
-						b.setBorder(bLabel.length() > 1 ? DevicesCommandCellRenderer.BUTTON_BORDERS_SMALLER : DevicesCommandCellRenderer.BUTTON_BORDERS_SMALL/*new EmptyBorder(DevicesTableRenderer.BUTTON_MARGIN_V, DevicesTableRenderer.BUTTON_MARGIN_H-2, DevicesTableRenderer.BUTTON_MARGIN_V, DevicesTableRenderer.BUTTON_MARGIN_H-2)*/);
-						b.setBackground(DevicesCommandCellRenderer.BUTTON_OFF_BG_COLOR);
-						actionsSouthPanel.add(b);
-						if(act.isInputOn()) {
-							b.setForeground(DevicesCommandCellRenderer.BUTTON_ON_FG_COLOR);
-						}
+	private Component getInputPanel(final InputInterface act, JTable table) {
+		JPanel actionsPanel = new JPanel(new BorderLayout());
+		String label = act.getLabel();
+		JLabel actionsLabel = new JLabel(label.isEmpty() ? "-" : label);
+		actionsPanel.setBackground(selBackground);
+		actionsLabel.setForeground(selForeground);
+		actionsPanel.add(actionsLabel, BorderLayout.CENTER);
+		JPanel actionsSouthPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
+		int numEvents = act.getRegisteredEventsCount();
+		if(numEvents > 0) {
+			for(String type: act.getRegisteredEvents()) {
+				boolean enabled = act.enabled(type);
+				if(enabled || numEvents <= DevicesCommandCellRenderer.MAX_ACTIONS_SHOWN) {
+					String bLabel;
+					try {
+						bLabel = LABELS.getString(type);
+					} catch( MissingResourceException e) {
+						bLabel = "x";
+					}
+					JButton b = new JButton(bLabel);
+					if(enabled) {
+						b.addActionListener(e -> {
+							if(edited != null && edited instanceof InputInterface[]) {
+								table.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+								try {
+									new Thread(() -> {
+										try {
+											act.execute(type);
+										} catch (IOException ex) {
+											Msg.errorMsg(ex);
+										}
+									}).start();
+									Thread.sleep(200);
+								} catch (InterruptedException e1) {}
+								table.setCursor(Cursor.getDefaultCursor());
+								cancelCellEditing();
+							}
+						});
+					} else {
+						b.setEnabled(false);
+					}
+					b.setBorder(bLabel.length() > 1 ? DevicesCommandCellRenderer.BUTTON_BORDERS_SMALLER : DevicesCommandCellRenderer.BUTTON_BORDERS_SMALL/*new EmptyBorder(DevicesTableRenderer.BUTTON_MARGIN_V, DevicesTableRenderer.BUTTON_MARGIN_H-2, DevicesTableRenderer.BUTTON_MARGIN_V, DevicesTableRenderer.BUTTON_MARGIN_H-2)*/);
+					b.setBackground(DevicesCommandCellRenderer.BUTTON_OFF_BG_COLOR);
+					actionsSouthPanel.add(b);
+					if(act.isInputOn()) {
+						b.setForeground(DevicesCommandCellRenderer.BUTTON_ON_FG_COLOR);
 					}
 				}
-				actionsSouthPanel.setOpaque(false);
-				actionsPanel.add(actionsSouthPanel, BorderLayout.SOUTH);
-				actionsPanel.setOpaque(false);
-				stackedPanel.add(actionsPanel);
+			}
+		} else {
+			if(act.isInputOn()) {
+				actionsLabel.setForeground(DevicesCommandCellRenderer.BUTTON_ON_FG_COLOR);
 			}
 		}
-		edited = inputs;
-		return stackedPanel;
+		actionsSouthPanel.setOpaque(false);
+		actionsPanel.add(actionsSouthPanel, BorderLayout.SOUTH);
+		actionsPanel.setOpaque(false);
+		stackedPanel.add(actionsPanel);
+		return actionsPanel;
 	}
 
 	@Override

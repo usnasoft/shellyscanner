@@ -9,9 +9,9 @@ public interface InputInterface extends DeviceModule {
 	
 	/* Actions/webhooks */
 	
-	int getTypesCount();
+	int getRegisteredEventsCount();
 	
-	Collection<String> getSupportedEvents();
+	Collection<String> getRegisteredEvents();
 	
 	boolean enabled(); // is in use
 	

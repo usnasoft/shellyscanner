@@ -10,16 +10,18 @@ import com.fasterxml.jackson.databind.JsonNode;
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.g1.modules.LightBulbRGB;
-import it.usna.shellyscan.model.device.g1.modules.LightBulbRGBCommander;
 import it.usna.shellyscan.model.device.meters.MetersPower;
+import it.usna.shellyscan.model.device.modules.DeviceModule;
+import it.usna.shellyscan.model.device.modules.ModulesHolder;
 
 /**
  * Shelly Shelly DUO RGB model
  * @author usna
  */
-public class ShellyDUORGB extends AbstractG1Device implements LightBulbRGBCommander {
+public class ShellyDUORGB extends AbstractG1Device implements ModulesHolder {
 	public final static String ID = "SHCB-1";
 	private LightBulbRGB light = new LightBulbRGB(this, 0);
+	private LightBulbRGB[] lightsArray = new LightBulbRGB[] {light};
 	private float power;
 	private Meters[] meters;
 	
@@ -56,13 +58,13 @@ public class ShellyDUORGB extends AbstractG1Device implements LightBulbRGBComman
 	}
 	
 	@Override
-	public int getLightCount() {
-		return 1;
+	public DeviceModule getModule(int index) {
+		return light;
 	}
 	
 	@Override
-	public LightBulbRGB getLight(int index) {
-		return light;
+	public DeviceModule[] getModules() {
+		return lightsArray;
 	}
 	
 	@Override

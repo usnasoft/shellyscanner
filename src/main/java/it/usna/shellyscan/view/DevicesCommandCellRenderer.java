@@ -241,7 +241,8 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 			lightLabel.setText(light.getLabel() + " " + light.getBrightness() + "%");
 			lightLabel.setForeground(foregroundColor);
 			ret = lightPanel;
-		} else if(value instanceof LightBulbRGB light) { // RGBW Bulbs
+		} else if(value instanceof LightBulbRGB[] lights) { // RGBW Bulbs
+			LightBulbRGB light = lights[0]; // multiple bulbs devices currently not supported
 			if(light.isOn()) {
 				lightRGBBulbButton.setText(LABEL_ON);
 				lightRGBBulbButton.setBackground(BUTTON_ON_BG_COLOR);
@@ -303,7 +304,14 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 			}
 			ret = stackedPanel;
 		} else if(value instanceof InputInterface[] inputs) { // Button1 - I3 - I4
-			ret = actionButtonsPanel(inputs, foregroundColor);
+			stackedPanel.removeAll();
+			for(InputInterface inp: inputs) {
+				if(inp.enabled()) {
+					JPanel actionsPanel = getInputPanel(inp, foregroundColor);
+					stackedPanel.add(actionsPanel);
+				}
+			}
+			ret = stackedPanel/*actionButtonsPanel(inputs, foregroundColor)*/;
 		} else if(value instanceof ThermostatG1 thermostat) { // TRV
 			trvSlider.setValue((int)(thermostat.getTargetTemp() * 2));
 			trvProfileLabel.setText(thermostat.getCurrentProfile() + " " + thermostat.getTargetTemp() + "°C");
@@ -334,8 +342,9 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 			for(DeviceModule module: devArray) {
 				if(module instanceof RelayInterface rel) {
 					stackedPanel.add(getRelayPanel(rel, foregroundColor));
-				} else if(module instanceof InputInterface input) {
-					stackedPanel.add(new JLabel(input.getLabel()));
+				} else if(module instanceof InputInterface input && input.enabled()) {
+//					stackedPanel.add(new JLabel(input.getLabel())/*/getInputPanel(input, foregroundColor)*/);
+					stackedPanel.add(getInputPanel(input, foregroundColor));
 				}
 			}
 			ret = stackedPanel;
@@ -353,6 +362,7 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 	
 	private JPanel getRelayPanel(RelayInterface rel, final Color foregroundColor) {
 		JLabel relayLabel = new JLabel(rel.getLabel());
+		relayLabel.setForeground(foregroundColor);
 		JPanel relayPanel = new JPanel(new BorderLayout());
 		JButton relayButton = new JButton();
 		
@@ -367,7 +377,6 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 		relayPanel.setOpaque(false);
 		relayPanel.add(relayLabel, BorderLayout.CENTER);
 		relayPanel.add(relayButtonPanel, BorderLayout.EAST);
-		relayLabel.setForeground(foregroundColor);
 		if(rel.isOn()) {
 			relayButton.setText(LABEL_ON);
 			relayButton.setBackground(BUTTON_ON_BG_COLOR);
@@ -381,43 +390,43 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 		return relayPanel;
 	}
 	
-	private JPanel actionButtonsPanel(final InputInterface[] inputs, Color foregroundColor) {
-		stackedPanel.removeAll();
-		for(InputInterface inp: inputs) {
-			if(inp.enabled()) {
-				JPanel actionsPanel = new JPanel(new BorderLayout());
-				String inpName = inp.getLabel();
-				JLabel actionsLabel = new JLabel(inpName.isEmpty() ? "-" : inpName);
-				actionsLabel.setForeground(foregroundColor);
-				actionsPanel.add(actionsLabel, BorderLayout.CENTER);
-				JPanel actionsSouthPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
-				int numSupported = inp.getTypesCount();
-				for(String type: inp.getSupportedEvents()) { // webhooks
-					boolean enabled = inp.enabled(type);
-					if(enabled || numSupported <= MAX_ACTIONS_SHOWN) {
-						String bLabel;
-						try {
-							bLabel = Main.LABELS.getString(type);
-						} catch( MissingResourceException e) {
-							bLabel = "x";
-						}
-						JButton b = new JButton(bLabel);
-						b.setBorder(bLabel.length() > 1 ? BUTTON_BORDERS_SMALLER : BUTTON_BORDERS_SMALL);
-						b.setEnabled(enabled);
-						b.setBackground(BUTTON_OFF_BG_COLOR);
-						actionsSouthPanel.add(b);
-						if(inp.isInputOn()) {
-							b.setForeground(BUTTON_ON_FG_COLOR);
-						}
+	private JPanel getInputPanel(InputInterface inp, final Color foregroundColor) {
+		JPanel actionsPanel = new JPanel(new BorderLayout());
+		String inpName = inp.getLabel();
+		JLabel actionsLabel = new JLabel(inpName.isEmpty() ? "-" : inpName);
+		actionsLabel.setForeground(foregroundColor);
+		actionsPanel.add(actionsLabel, BorderLayout.CENTER);
+		JPanel actionsSouthPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
+		int numEvents = inp.getRegisteredEventsCount();
+		if(numEvents > 0) {
+			for(String type: inp.getRegisteredEvents()) { // webhooks
+				boolean enabled = inp.enabled(type);
+				if(enabled || numEvents <= MAX_ACTIONS_SHOWN) {
+					String bLabel;
+					try {
+						bLabel = Main.LABELS.getString(type);
+					} catch( MissingResourceException e) {
+						bLabel = "x";
+					}
+					JButton b = new JButton(bLabel);
+					b.setBorder(bLabel.length() > 1 ? BUTTON_BORDERS_SMALLER : BUTTON_BORDERS_SMALL);
+					b.setEnabled(enabled);
+					b.setBackground(BUTTON_OFF_BG_COLOR);
+					actionsSouthPanel.add(b);
+					if(inp.isInputOn()) {
+						b.setForeground(BUTTON_ON_FG_COLOR);
 					}
 				}
-				actionsSouthPanel.setOpaque(false);
-				actionsPanel.add(actionsSouthPanel, BorderLayout.SOUTH);
-				actionsPanel.setOpaque(false);
-				stackedPanel.add(actionsPanel);
+			}
+		} else {
+			if(inp.isInputOn()) {
+				actionsLabel.setForeground(BUTTON_ON_FG_COLOR);
 			}
 		}
-		return stackedPanel;
+		actionsSouthPanel.setOpaque(false);
+		actionsPanel.add(actionsSouthPanel, BorderLayout.SOUTH);
+		actionsPanel.setOpaque(false);
+		return actionsPanel;
 	}
 }
 
