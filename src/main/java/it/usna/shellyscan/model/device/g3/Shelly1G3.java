@@ -108,9 +108,7 @@ public class Shelly1G3 extends AbstractG3Device implements ModulesHolder, Intern
 	
 	@Override
 	public void restoreCheck(Map<String, JsonNode> backupJsons, Map<Restore, Object> res) {
-		if(SensorAddOn.restoreCheck(this, backupJsons, res) == false) {
-			res.put(Restore.WARN_RESTORE_ADDON, null);
-		}
+		SensorAddOn.restoreCheck(this, backupJsons, res);
 	}
 
 	@Override

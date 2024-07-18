@@ -208,11 +208,11 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 		final Color foregroundColor = isSelected ? table.getSelectionForeground() : table.getForeground();
 		if(value instanceof RelayInterface[] riArray) {
 			stackedPanel.removeAll();
-			for(RelayInterface rel: riArray) { // 1, 1PM, EM, 2.5
+			for(RelayInterface rel: riArray) { // 1, 1PM, EM, 2.5 ...
 				stackedPanel.add(getRelayPanel(rel, foregroundColor));
 			}
 			ret = stackedPanel;
-		} else if(value instanceof RollerInterface[] rollers) { // 2.5
+		} else if(value instanceof RollerInterface[] rollers) { // 2.5 ...
 			RollerInterface roller = rollers[0]; // multiple rollers devices currently not supported
 			String labelText;
 			if(roller.isCalibrated()) {
@@ -311,7 +311,7 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 					stackedPanel.add(actionsPanel);
 				}
 			}
-			ret = stackedPanel/*actionButtonsPanel(inputs, foregroundColor)*/;
+			ret = stackedPanel;
 		} else if(value instanceof ThermostatG1 thermostat) { // TRV
 			trvSlider.setValue((int)(thermostat.getTargetTemp() * 2));
 			trvProfileLabel.setText(thermostat.getCurrentProfile() + " " + thermostat.getTargetTemp() + "°C");
@@ -337,13 +337,12 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 			}
 			thermProfileLabel.setForeground(foregroundColor);
 			ret = thermPanel;
-		} else if(value instanceof DeviceModule[] devArray) {
+		} else if(value instanceof DeviceModule[] devArray) { // mixed modules
 			stackedPanel.removeAll();
 			for(DeviceModule module: devArray) {
 				if(module instanceof RelayInterface rel) {
 					stackedPanel.add(getRelayPanel(rel, foregroundColor));
 				} else if(module instanceof InputInterface input && input.enabled()) {
-//					stackedPanel.add(new JLabel(input.getLabel())/*/getInputPanel(input, foregroundColor)*/);
 					stackedPanel.add(getInputPanel(input, foregroundColor));
 				}
 			}

@@ -79,6 +79,9 @@ public class RestoreAction extends UsnaSelectedAction {
 						if(test.containsKey(Restore.WARN_RESTORE_ADDON)) {
 							Msg.warningMsg(mainView, LABELS.getString("msgRestoreSensorAddOn"));
 						}
+						if(test.containsKey(Restore.WARN_RESTORE_XMOD_IO)) {
+							Msg.warningMsg(mainView, LABELS.getString("msgRestoreXmodIO"));
+						}
 						if(test.containsKey(Restore.WARN_RESTORE_VIRTUAL)) {
 							Msg.warningMsg(mainView, LABELS.getString("msgRestoreVirtual"));
 						}

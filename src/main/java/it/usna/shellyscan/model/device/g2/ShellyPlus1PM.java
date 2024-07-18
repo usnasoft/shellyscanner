@@ -140,9 +140,7 @@ public class ShellyPlus1PM extends AbstractG2Device implements ModulesHolder, In
 	
 	@Override
 	public void restoreCheck(Map<String, JsonNode> backupJsons, Map<Restore, Object> res) {
-		if(SensorAddOn.restoreCheck(this, backupJsons, res) == false) {
-			res.put(Restore.WARN_RESTORE_ADDON, null);
-		}
+		SensorAddOn.restoreCheck(this, backupJsons, res);
 	}
 
 	@Override

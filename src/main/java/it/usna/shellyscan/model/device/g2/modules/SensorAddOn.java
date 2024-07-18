@@ -13,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import it.usna.shellyscan.model.Devices;
@@ -21,7 +22,7 @@ import it.usna.shellyscan.model.device.ShellyAbstractDevice.Restore;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 
 /**
- * Sensor add-on model<br>
+ * Sensor add-on model
  * @see https://kb.shelly.cloud/knowledge-base/shelly-plus-add-on
  * @see https://shelly-api-docs.shelly.cloud/gen2/Addons/ShellySensorAddon
  * @author usna
@@ -280,16 +281,17 @@ public class SensorAddOn extends Meters {
 		return d.postCommand("SensorAddon.AddPeripheral", "{\"type\":\"" + type + "\",\"attrs\":{\"cid\":" + id + ",\"addr\":\"" + addr + "\"}}");
 	}
 
-	public static <T extends AbstractG2Device & SensorAddOnHolder> boolean restoreCheck(T d, Map<String, JsonNode> backupJsons, Map<Restore, Object> res) {
+	public static <T extends AbstractG2Device & SensorAddOnHolder> void /*boolean*/ restoreCheck(T d, Map<String, JsonNode> backupJsons, Map<Restore, Object> res) {
 		SensorAddOn addOn = d.getSensorAddOn();
 		JsonNode backupAddOn = backupJsons.get(BACKUP_SECTION);
-		return addOn == null || addOn.getTypes().length == 0 || backupAddOn == null || backupAddOn.size() == 0;
+		if((addOn == null || addOn.getTypes().length == 0 || backupAddOn == null || backupAddOn.size() == 0) == false) {
+			res.put(Restore.WARN_RESTORE_ADDON, null);
+		}
 	}
 
 	public static <T extends AbstractG2Device & SensorAddOnHolder> void restore(T d, Map<String, JsonNode> backupJsons, List<String> errors) throws InterruptedException {
 		SensorAddOn addOn = d.getSensorAddOn();
 		JsonNode backupAddOn = backupJsons.get(BACKUP_SECTION);
-		//todo errors.add(Input.restore(this, configuration, "0"));
 		if(backupAddOn == null && addOn != null) {
 			errors.add(enable(d, false));
 		} else if(backupAddOn != null) {
@@ -297,7 +299,6 @@ public class SensorAddOn extends Meters {
 				if(addOn == null) {
 					enable(d, true);
 				}
-//				JsonNode backupConfig = backupJsons.get("Shelly.GetConfig.json");
 				Iterator<Entry<String, JsonNode>> nodes = backupAddOn.fields();
 				while(nodes.hasNext()) {
 					Map.Entry<String, JsonNode> entry = (Map.Entry<String, JsonNode>) nodes.next();
@@ -317,16 +318,59 @@ public class SensorAddOn extends Meters {
 							} else {
 								errors.add(addSensor(d, sensor, typeIdx[1]));
 							}
-							// device should reboot before
-//							if("input".equals(typeIdx[0])) {
-//								TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-//								errors.add(Input.restore(d, backupConfig, typeIdx[1]));
-//							}
+						}
+					}
+				}
+			} else {
+				restoreAddoOnConfig(d, backupJsons, errors); // device must reboot before config can be set
+			}
+		}
+	}
+	
+	private static <T extends AbstractG2Device & SensorAddOnHolder> void restoreAddoOnConfig(T d, Map<String, JsonNode> backupJsons, List<String> errors) throws InterruptedException {
+		try {
+			JsonNode backupAddOn = backupJsons.get(BACKUP_SECTION);
+			if(backupAddOn != null) {
+				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+				JsonNode config = d.getJSON("/rpc/Shelly.GetConfig");
+				JsonNode backConfig = backupJsons.get("Shelly.GetConfig.json");
+				Iterator<Entry<String, JsonNode>> nodes = backupAddOn.fields();
+				while(nodes.hasNext()) {
+					Map.Entry<String, JsonNode> entry = (Map.Entry<String, JsonNode>) nodes.next();
+					if(entry.getValue() != null && entry.getValue().isEmpty() == false) {
+						Iterator<Entry<String, JsonNode>> id = entry.getValue().fields();
+						while(id.hasNext()) {
+							Entry<String, JsonNode> input = id.next();
+							String inputKey = input.getKey();
+							if(config.has(inputKey)) {
+								TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+								String typeIdx[] = inputKey.split(":");
+								if(typeIdx[0].equals("temperature")) {
+									errors.add(d.postCommand("Temperature.SetConfig", createRestoreNode(typeIdx, backConfig)));
+								} else if(typeIdx[0].equals("humidity")) {
+									errors.add(d.postCommand("Humidity.SetConfig", createRestoreNode(typeIdx, backConfig)));
+								} else if(typeIdx[0].equals("input")) {
+									errors.add(d.postCommand("Input.SetConfig", createRestoreNode(typeIdx, backConfig)));
+								} else if(typeIdx[0].equals("voltmeter")) {
+									errors.add(d.postCommand("Voltmeter.SetConfig", createRestoreNode(typeIdx, backConfig)));
+								}
+							}
 						}
 					}
 				}
 			}
+		} catch(IOException e) {
+			LOG.error("SensorAddOn.restoreConfig", e);
 		}
+	}
+	
+	private static ObjectNode createRestoreNode(String typeIdx[], JsonNode backConfig) {
+		ObjectNode out = JsonNodeFactory.instance.objectNode();
+		out.put("id", Integer.parseInt(typeIdx[1]));
+		ObjectNode data = (ObjectNode)backConfig.get(typeIdx[0] + ":" + typeIdx[1]).deepCopy();
+		data.remove("id");
+		out.set("config", data);
+		return out;
 	}
 	
 //	@Override

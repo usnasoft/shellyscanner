@@ -154,11 +154,14 @@ public class ShellyXMOD1 extends AbstractG3Device implements ModulesHolder, Sens
 	
 	//TODO warning on numStoredInputs != numInputs || numStoredOutputs != numOutputs
 	@Override
-	public void restoreCheck(Map<String, JsonNode> backupJsons, Map<Restore, Object
-			> res) {
-		if(SensorAddOn.restoreCheck(this, backupJsons, res) == false) {
-			res.put(Restore.WARN_RESTORE_ADDON, null);
+	public void restoreCheck(Map<String, JsonNode> backupJsons, Map<Restore, Object> res) {
+		JsonNode xmodStored = backupJsons.get("XMOD.GetInfo.json");
+		int numStoredInputs = xmodStored.at("/jwt/xmod1/ni").intValue();
+		int numStoredOutputs = xmodStored.at("/jwt/xmod1/no").intValue();
+		if(numStoredInputs != numInputs || numStoredOutputs != numOutputs) {
+			res.put(Restore.WARN_RESTORE_XMOD_IO, null);
 		}
+		SensorAddOn.restoreCheck(this, backupJsons, res);
 	}
 
 	@Override

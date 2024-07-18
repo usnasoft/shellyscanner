@@ -226,9 +226,7 @@ public class ShellyPlus2PM extends AbstractG2Device implements ModulesHolder, In
 		if(backModeRelay != modeRelay) {
 			res.put(Restore.ERR_RESTORE_MSG, MSG_RESTORE_MODE_ERROR);
 		}
-		if(SensorAddOn.restoreCheck(this, backupJsons, res) == false) {
-			res.put(Restore.WARN_RESTORE_ADDON, null);
-		}
+		SensorAddOn.restoreCheck(this, backupJsons, res);
 	}
 
 	@Override
