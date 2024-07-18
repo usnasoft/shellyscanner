@@ -260,15 +260,15 @@ Shelly 1PM G3
 Shelly i4 G3
 Shelly Dimmer 0/1-10 G3
 Shelly DIMMER 1 PRO
-Shelly X MOD1 (no measures)
+Shelly X MOD1 (measures from beta2)
 Keyword on table - (second field on notes)
 Default filter 
 range extender enable restore
-//todo rimuovere bthome... (?)
-//todo aggiungere "knx"
+addon config restore improved
 
 ---
 // TODO
+//todo aggiungere "knx"
 // https://shelly-api-docs.shelly.cloud/gen2/DynamicComponents/BTHome/
 // rivedere it.usna.shellyscan.model.device.g2.ShellyPlusi4 alla luce di "Input.Trigger" (?)
 // charts scroll
