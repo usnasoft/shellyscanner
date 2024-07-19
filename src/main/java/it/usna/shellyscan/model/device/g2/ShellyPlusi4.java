@@ -34,17 +34,22 @@ public class ShellyPlusi4 extends AbstractG2Device implements ModulesHolder, Sen
 	protected void init(JsonNode devInfo) throws IOException {
 		this.hostname = devInfo.get("id").asText("");
 		this.mac = devInfo.get("mac").asText();
-		final JsonNode config = getJSON("/rpc/Shelly.GetConfig");
 		
+		final JsonNode config = configure();
+		
+		fillSettings(config);
+		fillStatus(getJSON("/rpc/Shelly.GetStatus"));
+	}
+	
+	private JsonNode configure() throws IOException {
+		final JsonNode config = getJSON("/rpc/Shelly.GetConfig");
 		if(SensorAddOn.ADDON_TYPE.equals(config.get("sys").get("device").path("addon_type").asText())) {
 			addOn = new SensorAddOn(this);
 			if(addOn.getTypes().length > 0) {
 				meters = new Meters[] {addOn};
 			}
 		}
-		
-		fillSettings(config);
-		fillStatus(getJSON("/rpc/Shelly.GetStatus"));
+		return config;
 	}
 	
 	@Override
@@ -99,20 +104,21 @@ public class ShellyPlusi4 extends AbstractG2Device implements ModulesHolder, Sen
 	}
 	
 	@Override
-	public void restoreCheck(Map<String, JsonNode> backupJsons, Map<Restore, Object> res) {
+	public void restoreCheck(Map<String, JsonNode> backupJsons, Map<Restore, Object> res) throws IOException {
+		configure(); // useless in case of mDNS use since you must reboot before -> on reboot the device registers again on mDNS ad execute a reload
 		SensorAddOn.restoreCheck(this, backupJsons, res);
 	}
 
 	@Override
 	protected void restore(Map<String, JsonNode> backupJsons, List<String> errors) throws InterruptedException {
 		JsonNode configuration = backupJsons.get("Shelly.GetConfig.json");
-		errors.add(Input.restore(this, configuration, "0"));
+		errors.add(Input.restore(this, configuration, 0));
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-		errors.add(Input.restore(this, configuration, "1"));
+		errors.add(Input.restore(this, configuration, 1));
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-		errors.add(Input.restore(this, configuration, "2"));
+		errors.add(Input.restore(this, configuration, 2));
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-		errors.add(Input.restore(this, configuration, "3"));
+		errors.add(Input.restore(this, configuration, 3));
 		
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 		SensorAddOn.restore(this, backupJsons, errors);

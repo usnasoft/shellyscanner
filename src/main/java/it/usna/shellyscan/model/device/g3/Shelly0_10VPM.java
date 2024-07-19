@@ -105,9 +105,9 @@ public class Shelly0_10VPM extends AbstractG3Device implements InternalTmpHolder
 	protected void restore(Map<String, JsonNode> backupJsons, List<String> errors) throws InterruptedException {
 		JsonNode configuration = backupJsons.get("Shelly.GetConfig.json");
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-		errors.add(Input.restore(this, configuration, "0"));
+		errors.add(Input.restore(this, configuration, 0));
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-		errors.add(Input.restore(this, configuration, "1"));
+		errors.add(Input.restore(this, configuration, 1));
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 		errors.add(light.restore(configuration));
 	}

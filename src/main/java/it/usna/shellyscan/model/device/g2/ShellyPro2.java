@@ -82,9 +82,9 @@ public class ShellyPro2 extends AbstractProDevice implements ModulesHolder, Inte
 	@Override
 	protected void restore(Map<String, JsonNode> backupJsons, List<String> errors) throws InterruptedException {
 		JsonNode configuration = backupJsons.get("Shelly.GetConfig.json");
-		errors.add(Input.restore(this,configuration, "0"));
+		errors.add(Input.restore(this,configuration, 0));
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-		errors.add(Input.restore(this,configuration, "1"));
+		errors.add(Input.restore(this,configuration, 1));
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 		errors.add(relay0.restore(configuration));
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);

@@ -100,7 +100,7 @@ public class ShellyMini1PMG3 extends AbstractG3Device implements ModulesHolder, 
 	@Override
 	protected void restore(Map<String, JsonNode> backupJsons, List<String> errors) throws InterruptedException {
 		JsonNode configuration = backupJsons.get("Shelly.GetConfig.json");
-		errors.add(Input.restore(this, configuration, "0"));
+		errors.add(Input.restore(this, configuration, 0));
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 		errors.add(relay.restore(configuration));
 	}

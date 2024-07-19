@@ -234,9 +234,9 @@ public class ShellyPlus2PM extends AbstractG2Device implements ModulesHolder, In
 		JsonNode configuration = backupJsons.get("Shelly.GetConfig.json");
 		final boolean backModeRelay = MODE_RELAY.equals(configuration.at("/sys/device/profile").asText());
 		if(backModeRelay == modeRelay) {
-			errors.add(Input.restore(this,configuration, "0"));
+			errors.add(Input.restore(this,configuration, 0));
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-			errors.add(Input.restore(this,configuration, "1"));
+			errors.add(Input.restore(this,configuration, 1));
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			if(backModeRelay) {
 				errors.add(relay0.restore(configuration));

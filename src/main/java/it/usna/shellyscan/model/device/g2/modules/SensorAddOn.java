@@ -322,7 +322,7 @@ public class SensorAddOn extends Meters {
 					}
 				}
 			} else {
-				restoreAddoOnConfig(d, backupJsons, errors); // device must reboot before configuration can be retored
+				restoreAddoOnConfig(d, backupJsons, errors); // device must reboot before configuration can be restored
 			}
 		}
 	}

@@ -132,6 +132,9 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 	});
 
 	private Action rescanAction = new UsnaAction(null, "action_scan_name", "action_scan_tooltip", null, "/images/73-radar.png", e -> {
+		if(devicesTable.isEditing()) {
+			devicesTable.getCellEditor().stopCellEditing();
+		}
 		devicesTable.clearSelection();
 		reserveStatusLine(true);
 		setStatus(LABELS.getString("scanning_start"));

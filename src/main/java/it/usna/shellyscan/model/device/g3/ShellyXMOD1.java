@@ -225,7 +225,7 @@ public class ShellyXMOD1 extends AbstractG3Device implements ModulesHolder, Sens
 
 	@Override
 	public void restoreCheck(Map<String, JsonNode> backupJsons, Map<Restore, Object> res) throws IOException {
-		configure(); // reload IO & addon configuration
+		configure(); // reload IO & addon configuration -  useless in case of mDNS use since you must reboot before -> on reboot the device registers again on mDNS ad execute a reload
 		JsonNode xmodStored = backupJsons.get("XMOD.GetInfo.json");
 		int numStoredInputs = xmodStored.at("/jwt/xmod1/ni").intValue();
 		int numStoredOutputs = xmodStored.at("/jwt/xmod1/no").intValue();

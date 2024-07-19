@@ -229,9 +229,7 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 //				final ServiceInfo[] serviceInfos = bonjourService.list(SERVICE_TYPE2);
 				for (ServiceInfo dnsInfo: serviceInfos) {
 					final String name = dnsInfo.getName();
-					if(name.startsWith("shelly") || name.startsWith("Shelly")) { // ShellyBulbDuo-xxx
-						executor.execute(() -> create(dnsInfo.getInetAddresses()[0], 80, name, true));
-					}
+					executor.execute(() -> create(dnsInfo.getInetAddresses()[0], 80, name, true));
 				}
 			}
 			if(useStore) {
@@ -333,7 +331,7 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 			JsonNode info = isShelly(address, port);
 			if(info != null) {
 				create(address, port, /*JSON_MAPPER.readTree(response.getContent())*/info, hostName);
-			} else if(force && (hostName.startsWith("shelly") || hostName.startsWith("Shelly"))) {
+			} else if(force && (hostName.startsWith("shelly") || hostName.startsWith("Shelly"))) { // ShellyBulbDuo-xxx, ShellyWallDisplay-xxx, ...
 				LOG.warn("create with error (info==null) {}:{}", address, port);
 				newDevice(DevicesFactory.createWithError(httpClient, address, port, hostName, new NullPointerException()));
 			}
