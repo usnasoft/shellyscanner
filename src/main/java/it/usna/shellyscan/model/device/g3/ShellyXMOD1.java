@@ -1,10 +1,18 @@
 package it.usna.shellyscan.model.device.g3;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.InetAddress;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -12,6 +20,7 @@ import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.g2.modules.Input;
 import it.usna.shellyscan.model.device.g2.modules.Relay;
+import it.usna.shellyscan.model.device.g2.modules.Script;
 import it.usna.shellyscan.model.device.g2.modules.SensorAddOn;
 import it.usna.shellyscan.model.device.g2.modules.SensorAddOnHolder;
 import it.usna.shellyscan.model.device.modules.DeviceModule;
@@ -22,6 +31,7 @@ import it.usna.shellyscan.model.device.modules.ModulesHolder;
  * @author usna
  */
 public class ShellyXMOD1 extends AbstractG3Device implements ModulesHolder, SensorAddOnHolder {
+	private final static Logger LOG = LoggerFactory.getLogger(ShellyXMOD1.class);
 	public final static String ID = "XMOD1";
 	private int numInputs;
 	private int numOutputs;
@@ -38,6 +48,14 @@ public class ShellyXMOD1 extends AbstractG3Device implements ModulesHolder, Sens
 	protected void init(JsonNode devInfo) throws IOException {
 		this.hostname = devInfo.get("id").asText("");
 		this.mac = devInfo.get("mac").asText();
+
+		final JsonNode config = configure();
+
+		fillSettings(config);
+		fillStatus(getJSON("/rpc/Shelly.GetStatus"));
+	}
+	
+	private JsonNode configure() throws IOException {
 		final JsonNode xmod = getJSON("/rpc/XMOD.GetInfo").get("jwt").get("xmod1");
 		numInputs = xmod.get("ni").intValue();
 		numOutputs = xmod.get("no").intValue();
@@ -51,7 +69,7 @@ public class ShellyXMOD1 extends AbstractG3Device implements ModulesHolder, Sens
 		for(; i < numInputs; i++) {
 			inputOutput[i] = new Input(this, i);
 		}
-		
+
 		final JsonNode config = getJSON("/rpc/Shelly.GetConfig");
 		if(SensorAddOn.ADDON_TYPE.equals(config.get("sys").get("device").path("addon_type").asText())) {
 			addOn = new SensorAddOn(this);
@@ -59,9 +77,7 @@ public class ShellyXMOD1 extends AbstractG3Device implements ModulesHolder, Sens
 				meters = new Meters[] {addOn};
 			}
 		}
-
-		fillSettings(config);
-		fillStatus(getJSON("/rpc/Shelly.GetStatus"));
+		return config;
 	}
 	
 	@Override
@@ -152,9 +168,64 @@ public class ShellyXMOD1 extends AbstractG3Device implements ModulesHolder, Sens
 		}
 	}
 	
-	//TODO warning on numStoredInputs != numInputs || numStoredOutputs != numOutputs
 	@Override
-	public void restoreCheck(Map<String, JsonNode> backupJsons, Map<Restore, Object> res) {
+	// add /rpc/XMOD.GetInfo to standard gen3 backup
+	public boolean backup(final File file) throws IOException {
+		try(ZipOutputStream out = new ZipOutputStream(new FileOutputStream(file), StandardCharsets.UTF_8)) {
+			sectionToStream("/rpc/Shelly.GetDeviceInfo", "Shelly.GetDeviceInfo.json", out);
+			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+			sectionToStream("/rpc/Shelly.GetConfig", "Shelly.GetConfig.json", out);
+			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+			try { //unmanaged battery device
+				sectionToStream("/rpc/Schedule.List", "Schedule.List.json", out);
+			} catch(Exception e) {}
+			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+			sectionToStream("/rpc/Webhook.List", "Webhook.List.json", out);
+			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+			try {
+				sectionToStream("/rpc/KVS.GetMany", "KVS.GetMany.json", out);
+			} catch(Exception e) {}
+			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+			byte[] scripts = null;
+			try {
+				scripts = sectionToStream("/rpc/Script.List", "Script.List.json", out);
+			} catch(Exception e) {}
+			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+			try { // Virtual components
+				sectionToStream("/rpc/Shelly.GetComponents?dynamic_only=true", "Shelly.GetComponents.json", out);
+			} catch(Exception e) {}
+			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+			try { // On devices with active sensor add-on
+				sectionToStream("/rpc/SensorAddon.GetPeripherals", SensorAddOn.BACKUP_SECTION, out);
+			} catch(Exception e) {}
+			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+			try { // THIS IS SPECIFIC FOR XMOD1
+				sectionToStream("/rpc/XMOD.GetInfo", "XMOD.GetInfo.json", out);
+			} catch(Exception e) {}
+			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+			// Scripts
+			if(scripts != null) {
+				JsonNode scrList = jsonMapper.readTree(scripts).get("scripts");
+				for(JsonNode scr: scrList) {
+					try {
+						Script script = new Script(this, scr);
+						byte[] code =  script.getCode().getBytes();
+						ZipEntry entry = new ZipEntry(scr.get("name").asText() + ".mjs");
+						out.putNextEntry(entry);
+						out.write(code, 0, code.length);
+					} catch(IOException e) {}
+					TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+				}
+			}
+		} catch(InterruptedException e) {
+			LOG.error("backup", e);
+		}
+		return true;
+	}
+
+	@Override
+	public void restoreCheck(Map<String, JsonNode> backupJsons, Map<Restore, Object> res) throws IOException {
+		configure(); // reload IO & addon configuration
 		JsonNode xmodStored = backupJsons.get("XMOD.GetInfo.json");
 		int numStoredInputs = xmodStored.at("/jwt/xmod1/ni").intValue();
 		int numStoredOutputs = xmodStored.at("/jwt/xmod1/no").intValue();

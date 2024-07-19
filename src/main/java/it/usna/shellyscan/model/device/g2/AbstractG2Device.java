@@ -321,27 +321,27 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			try { //unmanaged battery device
 				sectionToStream("/rpc/Schedule.List", "Schedule.List.json", out);
-				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			} catch(Exception e) {}
+			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			sectionToStream("/rpc/Webhook.List", "Webhook.List.json", out);
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			try {
 				sectionToStream("/rpc/KVS.GetMany", "KVS.GetMany.json", out);
-				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			} catch(Exception e) {}
+			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			byte[] scripts = null;
 			try {
 				scripts = sectionToStream("/rpc/Script.List", "Script.List.json", out);
-				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			} catch(Exception e) {}
-			try { // Virtual components (PRO)
+			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+			try { // Virtual components (PRO & gen3)
 				sectionToStream("/rpc/Shelly.GetComponents?dynamic_only=true", "Shelly.GetComponents.json", out);
-				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			} catch(Exception e) {}
+			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			try { // On devices with active sensor add-on
 				sectionToStream("/rpc/SensorAddon.GetPeripherals", SensorAddOn.BACKUP_SECTION, out);
-				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			} catch(Exception e) {}
+			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			// Scripts
 			if(scripts != null) {
 				JsonNode scrList = jsonMapper.readTree(scripts).get("scripts");

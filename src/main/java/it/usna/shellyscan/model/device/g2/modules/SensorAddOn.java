@@ -281,7 +281,7 @@ public class SensorAddOn extends Meters {
 		return d.postCommand("SensorAddon.AddPeripheral", "{\"type\":\"" + type + "\",\"attrs\":{\"cid\":" + id + ",\"addr\":\"" + addr + "\"}}");
 	}
 
-	public static <T extends AbstractG2Device & SensorAddOnHolder> void /*boolean*/ restoreCheck(T d, Map<String, JsonNode> backupJsons, Map<Restore, Object> res) {
+	public static <T extends AbstractG2Device & SensorAddOnHolder> void restoreCheck(T d, Map<String, JsonNode> backupJsons, Map<Restore, Object> res) {
 		SensorAddOn addOn = d.getSensorAddOn();
 		JsonNode backupAddOn = backupJsons.get(BACKUP_SECTION);
 		if((addOn == null || addOn.getTypes().length == 0 || backupAddOn == null || backupAddOn.size() == 0) == false) {
@@ -322,7 +322,7 @@ public class SensorAddOn extends Meters {
 					}
 				}
 			} else {
-				restoreAddoOnConfig(d, backupJsons, errors); // device must reboot before config can be set
+				restoreAddoOnConfig(d, backupJsons, errors); // device must reboot before configuration can be retored
 			}
 		}
 	}
