@@ -76,8 +76,14 @@ public class RestoreAction extends UsnaSelectedAction {
 						Msg.errorMsg(mainView, LABELS.getString(test.get(Restore.ERR_RESTORE_MSG).toString()));
 						return;
 					} else {
-						if(test.containsKey(Restore.WARN_RESTORE_ADDON)) {
-							Msg.warningMsg(mainView, LABELS.getString("msgRestoreSensorAddOn"));
+						if(test.containsKey(Restore.WARN_RESTORE_ADDON_CANT_INSTALL)) {
+							Msg.warningMsg(mainView, LABELS.getString("msgRestoreSensorAddOnCantInstall"));
+						}
+						if(test.containsKey(Restore.WARN_RESTORE_ADDON_INSTALL)) {
+							Msg.warningMsg(mainView, LABELS.getString("msgRestoreSensorAddOnInstall"));
+						}
+						if(test.containsKey(Restore.WARN_RESTORE_ADDON_ENABLE)) {
+							Msg.warningMsg(mainView, LABELS.getString("msgRestoreSensorAddOnEnable"));
 						}
 						if(test.containsKey(Restore.WARN_RESTORE_XMOD_IO)) {
 							Msg.warningMsg(mainView, LABELS.getString("msgRestoreXmodIO"));

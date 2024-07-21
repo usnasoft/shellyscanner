@@ -265,6 +265,9 @@ Keyword on table - (second field on notes)
 Default filter 
 range extender enable restore
 addon config restore improved
+// escludere creazione sensori dopo creazione addon - Fornire messaggio valido (restore in 3 passaggi con messaggi specifici - verifica se esistono sensori altrimenti solo passaggio iniziale)
+// Xmod1 sganciare bottone se detatched
+// Bottone push se no actions
 
 ---
 // TODO

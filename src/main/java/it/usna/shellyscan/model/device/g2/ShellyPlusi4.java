@@ -6,6 +6,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.fasterxml.jackson.databind.JsonNode;
 
 import it.usna.shellyscan.model.Devices;
@@ -18,6 +21,7 @@ import it.usna.shellyscan.model.device.modules.DeviceModule;
 import it.usna.shellyscan.model.device.modules.ModulesHolder;
 
 public class ShellyPlusi4 extends AbstractG2Device implements ModulesHolder, SensorAddOnHolder {
+	private final static Logger LOG = LoggerFactory.getLogger(ShellyPlusi4.class);
 	public final static String ID = "PlusI4";
 	private Input[] inputs;
 	private Webhooks webhooks;
@@ -105,7 +109,11 @@ public class ShellyPlusi4 extends AbstractG2Device implements ModulesHolder, Sen
 	
 	@Override
 	public void restoreCheck(Map<String, JsonNode> backupJsons, Map<Restore, Object> res) throws IOException {
-		configure(); // useless in case of mDNS use since you must reboot before -> on reboot the device registers again on mDNS ad execute a reload
+		try {
+			configure(); // maybe useless in case of mDNS use since you must reboot before -> on reboot the device registers again on mDNS ad execute a reload
+		} catch (IOException e) {
+			LOG.error("restoreCheck", e);
+		}
 		SensorAddOn.restoreCheck(this, backupJsons, res);
 	}
 

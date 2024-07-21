@@ -1,5 +1,4 @@
 {
-  "stable-": {"id": "001.000.000r300", "version": "1.0.0", "note": "st. note"},
-  "dev": {"id": "001.000.000r100", "version": "1.0.0 beta", "note": "beta version"},
-  "none": "No update available."
+  "stable": {"id": "001.000.007r200", "version": "1.0.7", "note": ""},
+  "dev": {"id": "001.001.000r101", "version": "1.1.0 beta 2 rev 2", "note": ""}
 }

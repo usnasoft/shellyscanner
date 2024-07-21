@@ -6,6 +6,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.fasterxml.jackson.databind.JsonNode;
 
 import it.usna.shellyscan.model.Devices;
@@ -23,6 +26,7 @@ import it.usna.shellyscan.model.device.modules.ModulesHolder;
  * @author usna
  */
 public class Shelly1PMG3 extends AbstractG3Device implements ModulesHolder, InternalTmpHolder, SensorAddOnHolder {
+	private final static Logger LOG = LoggerFactory.getLogger(Shelly1PMG3.class);
 	public final static String ID = "S1PMG3";
 	private Relay relay = new Relay(this, 0);
 	private float internalTmp;
@@ -41,9 +45,15 @@ public class Shelly1PMG3 extends AbstractG3Device implements ModulesHolder, Inte
 	protected void init(JsonNode devInfo) throws IOException {
 		this.hostname = devInfo.get("id").asText("");
 		this.mac = devInfo.get("mac").asText();
-		final JsonNode config = getJSON("/rpc/Shelly.GetConfig");
+		
+		final JsonNode config = configure();
+		
+		fillSettings(config);
+		fillStatus(getJSON("/rpc/Shelly.GetStatus"));
+	}
 	
-		Meters m0 = new MetersWVI() {
+	private JsonNode configure() throws IOException {
+		Meters baseMeasures = new MetersWVI() {
 			@Override
 			public float getValue(Type t) {
 				if(t == Meters.Type.W) {
@@ -55,14 +65,18 @@ public class Shelly1PMG3 extends AbstractG3Device implements ModulesHolder, Inte
 				}
 			}
 		};
-
+		
+		final JsonNode config = getJSON("/rpc/Shelly.GetConfig");
 		if(SensorAddOn.ADDON_TYPE.equals(config.get("sys").get("device").path("addon_type").asText())) {
 			addOn = new SensorAddOn(this);
+			if(addOn.getTypes().length > 0) {
+				meters = new Meters[] {baseMeasures, addOn};
+			}
+		} else {
+			addOn = null;
+			meters = new Meters[] {baseMeasures};
 		}
-		meters = (addOn == null || addOn.getTypes().length == 0) ? new Meters[] {m0} : new Meters[] {m0, addOn};
-		
-		fillSettings(config);
-		fillStatus(getJSON("/rpc/Shelly.GetStatus"));
+		return config;
 	}
 	
 	@Override
@@ -137,7 +151,17 @@ public class Shelly1PMG3 extends AbstractG3Device implements ModulesHolder, Inte
 	}
 	
 	@Override
-	public void restoreCheck(Map<String, JsonNode> backupJsons, Map<Restore, Object> res) {
+	public SensorAddOn getSensorAddOn() {
+		return addOn;
+	}
+	
+	@Override
+	public void restoreCheck(Map<String, JsonNode> backupJsons, Map<Restore, Object> res) throws IOException {
+		try {
+			configure(); // maybe useless in case of mDNS use since you must reboot before -> on reboot the device registers again on mDNS ad execute a reload
+		} catch (IOException e) {
+			LOG.error("restoreCheck", e);
+		}
 		SensorAddOn.restoreCheck(this, backupJsons, res);
 	}
 
@@ -150,11 +174,6 @@ public class Shelly1PMG3 extends AbstractG3Device implements ModulesHolder, Inte
 		
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 		SensorAddOn.restore(this, backupJsons, errors);
-	}
-	
-	@Override
-	public SensorAddOn getSensorAddOn() {
-		return addOn;
 	}
 	
 	@Override

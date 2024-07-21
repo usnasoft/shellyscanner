@@ -76,6 +76,9 @@ public class ShellyXMOD1 extends AbstractG3Device implements ModulesHolder, Sens
 			if(addOn.getTypes().length > 0) {
 				meters = new Meters[] {addOn};
 			}
+		} else {
+			addOn = null;
+			meters = null;
 		}
 		return config;
 	}

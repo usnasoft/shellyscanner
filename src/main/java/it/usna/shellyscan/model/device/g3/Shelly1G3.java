@@ -6,6 +6,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.fasterxml.jackson.databind.JsonNode;
 
 import it.usna.shellyscan.model.Devices;
@@ -22,13 +25,14 @@ import it.usna.shellyscan.model.device.modules.ModulesHolder;
  * @author usna
  */
 public class Shelly1G3 extends AbstractG3Device implements ModulesHolder, InternalTmpHolder, SensorAddOnHolder {
+	private final static Logger LOG = LoggerFactory.getLogger(Shelly1G3.class);
 	public final static String ID = "S1G3";
 	private Relay relay = new Relay(this, 0);
 	private Relay[] relays = new Relay[] {relay};
 	private float internalTmp;
 	private Meters[] meters;
 	private SensorAddOn addOn;
-
+	
 	public Shelly1G3(InetAddress address, int port, String hostname) {
 		super(address, port, hostname);
 	}
@@ -37,17 +41,25 @@ public class Shelly1G3 extends AbstractG3Device implements ModulesHolder, Intern
 	protected void init(JsonNode devInfo) throws IOException {
 		this.hostname = devInfo.get("id").asText("");
 		this.mac = devInfo.get("mac").asText();
-		final JsonNode config = getJSON("/rpc/Shelly.GetConfig");
 
+		final JsonNode config = configure();
+		
+		fillSettings(config);
+		fillStatus(getJSON("/rpc/Shelly.GetStatus"));
+	}
+	
+	private JsonNode configure() throws IOException {
+		final JsonNode config = getJSON("/rpc/Shelly.GetConfig");
 		if(SensorAddOn.ADDON_TYPE.equals(config.get("sys").get("device").path("addon_type").asText())) {
 			addOn = new SensorAddOn(this);
 			if(addOn.getTypes().length > 0) {
 				meters = new Meters[] {addOn};
 			}
+		} else {
+			addOn = null;
+			meters = null;
 		}
-		
-		fillSettings(config);
-		fillStatus(getJSON("/rpc/Shelly.GetStatus"));
+		return config;
 	}
 	
 	@Override
@@ -108,6 +120,11 @@ public class Shelly1G3 extends AbstractG3Device implements ModulesHolder, Intern
 	
 	@Override
 	public void restoreCheck(Map<String, JsonNode> backupJsons, Map<Restore, Object> res) {
+		try {
+			configure(); // maybe useless in case of mDNS use since you must reboot before -> on reboot the device registers again on mDNS ad execute a reload
+		} catch (IOException e) {
+			LOG.error("restoreCheck", e);
+		}
 		SensorAddOn.restoreCheck(this, backupJsons, res);
 	}
 
