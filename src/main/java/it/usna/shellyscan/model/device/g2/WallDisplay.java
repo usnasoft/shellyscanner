@@ -21,8 +21,8 @@ import it.usna.shellyscan.model.device.modules.ModulesHolder;
  */
 public class WallDisplay extends AbstractG2Device implements ModulesHolder {
 	public final static String ID = "WallDisplay";
-	public final static String MSG_RESTORE_MODE_ERROR = "msgRestoreThermostatMode";
-	public final static String MSG_RESTORE_MODE_SYNT_ERROR = "msgRestoreThermostatModeSynt";
+	private final static String MSG_RESTORE_MODE_ERROR = "msgRestoreThermostatMode";
+	private final static String MSG_RESTORE_MODE_SYNT_ERROR = "msgRestoreThermostatModeSynt";
 	private final static Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.T, Meters.Type.H, Meters.Type.L};
 	private float temp;
 	private float humidity;

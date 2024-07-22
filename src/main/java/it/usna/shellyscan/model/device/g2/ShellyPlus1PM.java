@@ -6,6 +6,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.fasterxml.jackson.databind.JsonNode;
 
 import it.usna.shellyscan.model.Devices;
@@ -23,6 +26,7 @@ import it.usna.shellyscan.model.device.modules.ModulesHolder;
  * @author usna
  */
 public class ShellyPlus1PM extends AbstractG2Device implements ModulesHolder, InternalTmpHolder, SensorAddOnHolder {
+	private final static Logger LOG = LoggerFactory.getLogger(ShellyPlus1PM.class);
 	public final static String ID = "Plus1PM";
 	private Relay relay = new Relay(this, 0);
 	private float internalTmp;
@@ -42,9 +46,15 @@ public class ShellyPlus1PM extends AbstractG2Device implements ModulesHolder, In
 	protected void init(JsonNode devInfo) throws IOException {
 		this.hostname = devInfo.get("id").asText("");
 		this.mac = devInfo.get("mac").asText();
-		final JsonNode config = getJSON("/rpc/Shelly.GetConfig");
 		
-		Meters m0 = new MetersWVI() {
+		final JsonNode config = configure();
+		
+		fillSettings(config);
+		fillStatus(getJSON("/rpc/Shelly.GetStatus"));
+	}
+	
+	private JsonNode configure() throws IOException {
+		Meters baseMeasures = new MetersWVI() {
 			@Override
 			public float getValue(Type t) {
 				if(t == Meters.Type.W) {
@@ -56,14 +66,16 @@ public class ShellyPlus1PM extends AbstractG2Device implements ModulesHolder, In
 				}
 			}
 		};
-
+		
+		final JsonNode config = getJSON("/rpc/Shelly.GetConfig");
 		if(SensorAddOn.ADDON_TYPE.equals(config.get("sys").get("device").path("addon_type").asText())) {
 			addOn = new SensorAddOn(this);
+			meters = (addOn.getTypes().length > 0) ? new Meters[] {baseMeasures, addOn} : new Meters[] {baseMeasures};
+		} else {
+			addOn = null;
+			meters = new Meters[] {baseMeasures};
 		}
-		meters = (addOn == null || addOn.getTypes().length == 0) ? new Meters[] {m0} : new Meters[] {m0, addOn};
-		
-		fillSettings(config);
-		fillStatus(getJSON("/rpc/Shelly.GetStatus"));
+		return config;
 	}
 	
 	@Override
@@ -140,6 +152,11 @@ public class ShellyPlus1PM extends AbstractG2Device implements ModulesHolder, In
 	
 	@Override
 	public void restoreCheck(Map<String, JsonNode> backupJsons, Map<Restore, Object> res) {
+		try {
+			configure(); // maybe useless in case of mDNS use since you must reboot before -> on reboot the device registers again on mDNS ad execute a reload
+		} catch (IOException e) {
+			LOG.error("restoreCheck", e);
+		}
 		SensorAddOn.restoreCheck(this, backupJsons, res);
 	}
 

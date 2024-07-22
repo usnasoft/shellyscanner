@@ -6,6 +6,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.fasterxml.jackson.databind.JsonNode;
 
 import it.usna.shellyscan.model.Devices;
@@ -24,6 +27,7 @@ import it.usna.shellyscan.model.device.modules.ModulesHolder;
  * @author usna
  */
 public class ShellyPlus2PM extends AbstractG2Device implements ModulesHolder, InternalTmpHolder, SensorAddOnHolder {
+	private final static Logger LOG = LoggerFactory.getLogger(ShellyPlus2PM.class);
 	public final static String ID = "Plus2PM";
 	private final static String MSG_RESTORE_MODE_ERROR = "msgRestoreCoverMode";
 	private final static String MSG_RESTORE_MODE_SYNT_ERROR = "msgRestoreCoverModeSynt";
@@ -52,11 +56,8 @@ public class ShellyPlus2PM extends AbstractG2Device implements ModulesHolder, In
 	protected void init(JsonNode devInfo) throws IOException {
 		this.hostname = devInfo.get("id").asText("");
 		this.mac = devInfo.get("mac").asText();
-		final JsonNode config = getJSON("/rpc/Shelly.GetConfig");
 		
-		if(SensorAddOn.ADDON_TYPE.equals(config.get("sys").get("device").path("addon_type").asText())) {
-			addOn = new SensorAddOn(this);
-		}
+		final JsonNode config = configure();
 		
 		meters0 = new Meters() {
 			public Type[] getTypes() {
@@ -97,6 +98,16 @@ public class ShellyPlus2PM extends AbstractG2Device implements ModulesHolder, In
 		
 		fillSettings(config);
 		fillStatus(getJSON("/rpc/Shelly.GetStatus"));
+	}
+	
+	private JsonNode configure() throws IOException {
+		final JsonNode config = getJSON("/rpc/Shelly.GetConfig");
+		if(SensorAddOn.ADDON_TYPE.equals(config.get("sys").get("device").path("addon_type").asText())) {
+			addOn = new SensorAddOn(this);
+		} else {
+			addOn = null;
+		}
+		return config;
 	}
 
 	@Override
@@ -225,6 +236,11 @@ public class ShellyPlus2PM extends AbstractG2Device implements ModulesHolder, In
 		boolean backModeRelay = MODE_RELAY.equals(devInfo.get("profile").asText());
 		if(backModeRelay != modeRelay) {
 			res.put(Restore.ERR_RESTORE_MSG, MSG_RESTORE_MODE_ERROR);
+		}
+		try {
+			configure(); // maybe useless in case of mDNS use since you must reboot before -> on reboot the device registers again on mDNS ad execute a reload
+		} catch (IOException e) {
+			LOG.error("restoreCheck", e);
 		}
 		SensorAddOn.restoreCheck(this, backupJsons, res);
 	}

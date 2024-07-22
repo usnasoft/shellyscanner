@@ -53,9 +53,7 @@ public class ShellyI4G3 extends AbstractG3Device implements ModulesHolder, Senso
 		final JsonNode config = getJSON("/rpc/Shelly.GetConfig");
 		if(SensorAddOn.ADDON_TYPE.equals(config.get("sys").get("device").path("addon_type").asText())) {
 			addOn = new SensorAddOn(this);
-			if(addOn.getTypes().length > 0) {
-				meters = new Meters[] {addOn};
-			}
+			meters = (addOn.getTypes().length > 0) ? new Meters[] {addOn} : null;
 		} else {
 			addOn = null;
 			meters = null;
