@@ -30,8 +30,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import it.usna.shellyscan.Main;
 import it.usna.shellyscan.model.Devices;
+import it.usna.shellyscan.model.device.RestoreMsg;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
-import it.usna.shellyscan.model.device.ShellyAbstractDevice.Restore;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
 import it.usna.shellyscan.model.device.g1.AbstractG1Device;
 import it.usna.shellyscan.view.DevicesTable;
@@ -43,10 +43,12 @@ import it.usna.util.AppProperties;
 public class RestoreAction extends UsnaSelectedAction {
 	private static final long serialVersionUID = 1L;
 	private final static Logger LOG = LoggerFactory.getLogger(RestoreAction.class);
+	private final static String CHECK_MSG_PREFIX = "msgRestore";
+	private final static String ERROR_MSG_PREFIX = "errRestore";
 
 	public RestoreAction(MainView mainView, JTable devicesTable, AppProperties appProp, Devices model) {
 		super(mainView, "action_restore_name", "action_restore_tooltip", "/images/Upload16.png", "/images/Upload.png");
-
+		
 		setConsumer(devicesTable, modelRow -> {
 			ShellyAbstractDevice device = model.get(modelRow);
 			final JFileChooser fc = new JFileChooser(appProp.getProperty("LAST_PATH"));
@@ -58,114 +60,114 @@ public class RestoreAction extends UsnaSelectedAction {
 				if(fc.showOpenDialog(mainView) == JFileChooser.APPROVE_OPTION) {
 					mainView.getContentPane().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 					final Map<String, JsonNode> backupJsons = readBackupFile(fc.getSelectedFile());
-					Map<Restore, Object> test = device.restoreCheck(backupJsons);
-
+					final Map<RestoreMsg, Object> test = device.restoreCheck(backupJsons);
+					
 					mainView.getContentPane().setCursor(Cursor.getDefaultCursor());
-					Map<Restore, String> resData = new HashMap<>();
-					if(test.containsKey(Restore.ERR_RESTORE_HOST) &&
-							JOptionPane.showConfirmDialog(mainView, String.format(LABELS.getString("msgRestoreDifferent"), test.get(Restore.ERR_RESTORE_HOST)),
-									LABELS.getString("msgRestoreTitle"), JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE) != JOptionPane.YES_OPTION) {
-						return;
-					} else if(test.containsKey(Restore.ERR_RESTORE_MODEL)) {
-						Msg.errorMsg(mainView, LABELS.getString("msgRestoreDifferentModel"));
-						return;
-					} else if(test.containsKey(Restore.ERR_RESTORE_CONF)) {
-						Msg.errorMsg(mainView, LABELS.getString("msgRestoreConfigurationError"));
-						return;
-					} else if(test.containsKey(Restore.ERR_RESTORE_MSG)) {
-						Msg.errorMsg(mainView, LABELS.getString(test.get(Restore.ERR_RESTORE_MSG).toString()));
-						return;
-					} else {
-						if(test.containsKey(Restore.WARN_RESTORE_ADDON_CANT_INSTALL)) {
-							Msg.warningMsg(mainView, LABELS.getString("msgRestoreSensorAddOnCantInstall"));
-						}
-						if(test.containsKey(Restore.WARN_RESTORE_ADDON_INSTALL)) {
-							Msg.warningMsg(mainView, LABELS.getString("msgRestoreSensorAddOnInstall"));
-						}
-						if(test.containsKey(Restore.WARN_RESTORE_ADDON_ENABLE)) {
-							Msg.warningMsg(mainView, LABELS.getString("msgRestoreSensorAddOnEnable"));
-						}
-						if(test.containsKey(Restore.WARN_RESTORE_XMOD_IO)) {
-							Msg.warningMsg(mainView, LABELS.getString("msgRestoreXmodIO"));
-						}
-						if(test.containsKey(Restore.WARN_RESTORE_VIRTUAL)) {
-							Msg.warningMsg(mainView, LABELS.getString("msgRestoreVirtual"));
-						}
-						if(test.containsKey(Restore.RESTORE_LOGIN)) {
-							DialogAuthentication credentials = new DialogAuthentication(mainView,
-									LABELS.getString("dlgAuthTitle"), device instanceof AbstractG1Device ? LABELS.getString("labelUser") : null,
-											LABELS.getString("labelPassword"), LABELS.getString("labelConfPassword"));
-							credentials.setUser(test.get(Restore.RESTORE_LOGIN).toString());
-							credentials.setMessage(LABELS.getString("msgRestoreEnterLogin"));
-							credentials.editableUser(false);
-							credentials.setVisible(true);
-							if(credentials.getUser() != null) {
-								resData.put(Restore.RESTORE_LOGIN, new String(credentials.getPassword()));
-							}
-							credentials.dispose();
-						}
-						if(test.containsKey(Restore.RESTORE_WI_FI1)) {
-							DialogAuthentication credentials = new DialogAuthentication(mainView,
-									LABELS.getString("dlgSetWIFI"), LABELS.getString("dlgSetSSID"), LABELS.getString("labelPassword"), LABELS.getString("labelConfPassword"));
-							credentials.setUser(test.get(Restore.RESTORE_WI_FI1).toString());
-							credentials.setMessage(LABELS.getString("msgRestoreEnterWIFI1"));
-							credentials.editableUser(false);
-							credentials.setVisible(true);
-							if(credentials.getUser() != null) {
-								resData.put(Restore.RESTORE_WI_FI1, new String(credentials.getPassword()));
-							}
-							credentials.dispose();
-						}
-						if(test.containsKey(Restore.RESTORE_WI_FI2)) {
-							DialogAuthentication credentials = new DialogAuthentication(mainView,
-									LABELS.getString("dlgSetWIFIBackup"), LABELS.getString("dlgSetSSID"), LABELS.getString("labelPassword"), LABELS.getString("labelConfPassword"));
-							credentials.setUser(test.get(Restore.RESTORE_WI_FI2).toString());
-							credentials.setMessage(LABELS.getString("msgRestoreEnterWIFI2"));
-							credentials.editableUser(false);
-							credentials.setVisible(true);
-							if(credentials.getUser() != null) {
-								resData.put(Restore.RESTORE_WI_FI2, new String(credentials.getPassword()));
-							}
-							credentials.dispose();
-						}
-						if(test.containsKey(Restore.RESTORE_WI_FI_AP)) {
-							DialogAuthentication credentials = new DialogAuthentication(mainView,
-									LABELS.getString("dlgSetWIFI_AP"), null, LABELS.getString("labelPassword"), LABELS.getString("labelConfPassword"));
-							credentials.setUser(test.get(Restore.RESTORE_WI_FI_AP).toString());
-							credentials.setMessage(LABELS.getString("msgRestoreEnterWIFI_AP"));
-							credentials.setVisible(true);
-							if(credentials.getUser() != null) {
-								resData.put(Restore.RESTORE_WI_FI_AP, new String(credentials.getPassword()));
-							}
-							credentials.dispose();
-						}
-						if(test.containsKey(Restore.RESTORE_MQTT)) {
-							DialogAuthentication credentials = new DialogAuthentication(mainView,
-									LABELS.getString("dlgSetMQTT"), LABELS.getString("labelUser"), LABELS.getString("labelPassword") /*,LABELS.getString("labelConfPassword")*/);
-							credentials.setUser(test.get(Restore.RESTORE_MQTT).toString());
-							credentials.setMessage(LABELS.getString("msgRestoreEnterMQTT"));
-							credentials.editableUser(false);
-							credentials.setVisible(true);
-							if(credentials.getUser() != null) {
-								resData.put(Restore.RESTORE_MQTT, new String(credentials.getPassword()));
-							}
-							credentials.dispose();
-						}
-						boolean overwriteScriptNames = false;
-						if(test.containsKey(Restore.QUESTION_RESTORE_SCRIPTS_OVERRIDE) && 
-							JOptionPane.showConfirmDialog(mainView,
-									String.format(LABELS.getString("msgRestoreScriptsOverride"), test.get(Restore.QUESTION_RESTORE_SCRIPTS_OVERRIDE)),
-									LABELS.getString("msgRestoreTitle"), JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE) == JOptionPane.NO_OPTION) {
-								resData.put(Restore.QUESTION_RESTORE_SCRIPTS_OVERRIDE, "true");
-								overwriteScriptNames = true;
-						}
-						if(test.containsKey(Restore.QUESTION_RESTORE_SCRIPTS_ENABLE_LIKE_BACKED_UP) && (overwriteScriptNames || test.containsKey(Restore.QUESTION_RESTORE_SCRIPTS_OVERRIDE) == false) &&
-							JOptionPane.showConfirmDialog(mainView,
-									String.format(LABELS.getString("msgRestoreScriptsEnableLikeBackedUp"), test.get(Restore.QUESTION_RESTORE_SCRIPTS_ENABLE_LIKE_BACKED_UP)),
-									LABELS.getString("msgRestoreTitle"), JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION) {
-								resData.put(Restore.QUESTION_RESTORE_SCRIPTS_ENABLE_LIKE_BACKED_UP, "true");
+
+					for(Map.Entry<RestoreMsg, Object> e: test.entrySet()) {
+						if(e.getKey().getType() == RestoreMsg.Type.PRE &&
+								JOptionPane.showConfirmDialog(mainView, String.format(LABELS.getString(CHECK_MSG_PREFIX + e.getKey().name()), e.getValue()),
+										LABELS.getString("msgRestoreTitle"), JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE) != JOptionPane.YES_OPTION) {
+							return;
+
 						}
 					}
+					
+					for(Map.Entry<RestoreMsg, Object> e: test.entrySet()) {
+						if(e.getKey().getType() == RestoreMsg.Type.ERROR) {
+							Msg.errorMsg(mainView, LABELS.getString(CHECK_MSG_PREFIX + e.getKey().name()));
+							return;
+						}
+					}
+					
+					final StringBuilder warn = new StringBuilder();
+					for(Map.Entry<RestoreMsg, Object> e: test.entrySet()) {
+						if(e.getKey().getType() == RestoreMsg.Type.WARN) {
+							warn.append(LABELS.getString(CHECK_MSG_PREFIX + e.getKey().name())).append("<br><br>");
+						}
+					}
+					if(warn.isEmpty() == false) {
+						Msg.warningMsg(mainView, "<html>" + warn);
+					}
+
+					mainView.getContentPane().setCursor(Cursor.getDefaultCursor());
+					Map<RestoreMsg, String> resData = new HashMap<>();
+
+					if(test.containsKey(RestoreMsg.RESTORE_LOGIN)) {
+						DialogAuthentication credentials = new DialogAuthentication(mainView,
+								LABELS.getString("dlgAuthTitle"), device instanceof AbstractG1Device ? LABELS.getString("labelUser") : null,
+										LABELS.getString("labelPassword"), LABELS.getString("labelConfPassword"));
+						credentials.setUser(test.get(RestoreMsg.RESTORE_LOGIN).toString());
+						credentials.setMessage(LABELS.getString(CHECK_MSG_PREFIX + "RESTORE_LOGIN"));
+						credentials.editableUser(false);
+						credentials.setVisible(true);
+						if(credentials.getUser() != null) {
+							resData.put(RestoreMsg.RESTORE_LOGIN, new String(credentials.getPassword()));
+						}
+						credentials.dispose();
+					}
+					if(test.containsKey(RestoreMsg.RESTORE_WI_FI1)) {
+						DialogAuthentication credentials = new DialogAuthentication(mainView,
+								LABELS.getString("dlgSetWIFI"), LABELS.getString("dlgSetSSID"), LABELS.getString("labelPassword"), LABELS.getString("labelConfPassword"));
+						credentials.setUser(test.get(RestoreMsg.RESTORE_WI_FI1).toString());
+						credentials.setMessage(LABELS.getString(CHECK_MSG_PREFIX + "RESTORE_WI_FI1"));
+						credentials.editableUser(false);
+						credentials.setVisible(true);
+						if(credentials.getUser() != null) {
+							resData.put(RestoreMsg.RESTORE_WI_FI1, new String(credentials.getPassword()));
+						}
+						credentials.dispose();
+					}
+					if(test.containsKey(RestoreMsg.RESTORE_WI_FI2)) {
+						DialogAuthentication credentials = new DialogAuthentication(mainView,
+								LABELS.getString("dlgSetWIFIBackup"), LABELS.getString("dlgSetSSID"), LABELS.getString("labelPassword"), LABELS.getString("labelConfPassword"));
+						credentials.setUser(test.get(RestoreMsg.RESTORE_WI_FI2).toString());
+						credentials.setMessage(LABELS.getString(CHECK_MSG_PREFIX + "RESTORE_WI_FI2"));
+						credentials.editableUser(false);
+						credentials.setVisible(true);
+						if(credentials.getUser() != null) {
+							resData.put(RestoreMsg.RESTORE_WI_FI2, new String(credentials.getPassword()));
+						}
+						credentials.dispose();
+					}
+					if(test.containsKey(RestoreMsg.RESTORE_WI_FI_AP)) {
+						DialogAuthentication credentials = new DialogAuthentication(mainView,
+								LABELS.getString("dlgSetWIFI_AP"), null, LABELS.getString("labelPassword"), LABELS.getString("labelConfPassword"));
+						credentials.setUser(test.get(RestoreMsg.RESTORE_WI_FI_AP).toString());
+						credentials.setMessage(LABELS.getString(CHECK_MSG_PREFIX + "RESTORE_WI_FI_AP"));
+						credentials.setVisible(true);
+						if(credentials.getUser() != null) {
+							resData.put(RestoreMsg.RESTORE_WI_FI_AP, new String(credentials.getPassword()));
+						}
+						credentials.dispose();
+					}
+					if(test.containsKey(RestoreMsg.RESTORE_MQTT)) {
+						DialogAuthentication credentials = new DialogAuthentication(mainView,
+								LABELS.getString("dlgSetMQTT"), LABELS.getString("labelUser"), LABELS.getString("labelPassword") /*,LABELS.getString("labelConfPassword")*/);
+						credentials.setUser(test.get(RestoreMsg.RESTORE_MQTT).toString());
+						credentials.setMessage(LABELS.getString(CHECK_MSG_PREFIX + "RESTORE_MQTT"));
+						credentials.editableUser(false);
+						credentials.setVisible(true);
+						if(credentials.getUser() != null) {
+							resData.put(RestoreMsg.RESTORE_MQTT, new String(credentials.getPassword()));
+						}
+						credentials.dispose();
+					}
+					boolean overwriteScriptNames = false;
+					if(test.containsKey(RestoreMsg.QUESTION_RESTORE_SCRIPTS_OVERRIDE) && 
+							JOptionPane.showConfirmDialog(mainView,
+									String.format(LABELS.getString(CHECK_MSG_PREFIX + "QUESTION_RESTORE_SCRIPTS_OVERRIDE"), test.get(RestoreMsg.QUESTION_RESTORE_SCRIPTS_OVERRIDE)),
+									LABELS.getString("msgRestoreTitle"), JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE) == JOptionPane.NO_OPTION) {
+						resData.put(RestoreMsg.QUESTION_RESTORE_SCRIPTS_OVERRIDE, "true");
+						overwriteScriptNames = true;
+					}
+					if(test.containsKey(RestoreMsg.QUESTION_RESTORE_SCRIPTS_ENABLE_LIKE_BACKED_UP) && (overwriteScriptNames || test.containsKey(RestoreMsg.QUESTION_RESTORE_SCRIPTS_OVERRIDE) == false) &&
+							JOptionPane.showConfirmDialog(mainView,
+									String.format(LABELS.getString(CHECK_MSG_PREFIX + "QUESTION_RESTORE_SCRIPTS_ENABLE_LIKE_BACKED_UP"), test.get(RestoreMsg.QUESTION_RESTORE_SCRIPTS_ENABLE_LIKE_BACKED_UP)),
+									LABELS.getString("msgRestoreTitle"), JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION) {
+						resData.put(RestoreMsg.QUESTION_RESTORE_SCRIPTS_ENABLE_LIKE_BACKED_UP, "true");
+					}
+
 					mainView.getContentPane().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 					appProp.setProperty("LAST_PATH", fc.getCurrentDirectory().getCanonicalPath());
 					final String ret = erroreMsg(device.restore(backupJsons, resData));
@@ -212,7 +214,7 @@ public class RestoreAction extends UsnaSelectedAction {
 							});
 						} else {
 							LOG.error("Restore error {} {}", device, ret);
-							Msg.showMsg(mainView, (ret.equals(Restore.ERR_UNKNOWN.name())) ? LABELS.getString("labelError") : ret, device.getHostname(), JOptionPane.ERROR_MESSAGE);
+							Msg.showMsg(mainView, (ret.equals(RestoreMsg.ERR_UNKNOWN.name())) ? LABELS.getString("labelError") : ret, device.getHostname(), JOptionPane.ERROR_MESSAGE);
 						}
 					}
 
@@ -231,8 +233,9 @@ public class RestoreAction extends UsnaSelectedAction {
 	}
 
 	private static String erroreMsg(List<String> errors) {
-		String err = errors.stream().filter(s-> s != null && s.length() > 0 && s.startsWith("->r_step:") == false).map(s -> LABELS.containsKey(s) ? LABELS.getString(s) : s).distinct().collect(Collectors.joining("\n"));
-		if(err.length() > 0) {
+		String err = errors.stream().filter(s-> s != null && s.length() > 0 && s.startsWith("->r_step:") == false)
+				.map(s -> LABELS.containsKey(ERROR_MSG_PREFIX + s) ? LABELS.getString(ERROR_MSG_PREFIX + s) : s).distinct().collect(Collectors.joining("\n"));
+		if(err.isEmpty() == false) {
 			LOG.debug(errors.stream().map(s -> s == null ? "-" : s).collect(Collectors.joining("\n")));
 		}
 		return err;

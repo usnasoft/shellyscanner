@@ -18,7 +18,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.Meters;
-import it.usna.shellyscan.model.device.ShellyAbstractDevice.Restore;
+import it.usna.shellyscan.model.device.RestoreMsg;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 
 /**
@@ -281,7 +281,7 @@ public class SensorAddOn extends Meters {
 		return d.postCommand("SensorAddon.AddPeripheral", "{\"type\":\"" + type + "\",\"attrs\":{\"cid\":" + id + ",\"addr\":\"" + addr + "\"}}");
 	}
 
-	public static <T extends AbstractG2Device & SensorAddOnHolder> void restoreCheck(T d, Map<String, JsonNode> backupJsons, Map<Restore, Object> res) {
+	public static <T extends AbstractG2Device & SensorAddOnHolder> void restoreCheck(T d, Map<String, JsonNode> backupJsons, Map<RestoreMsg, Object> res) {
 		SensorAddOn addOn = d.getSensorAddOn(); // addOn must be up to date -> the device should refresh data before this call
 		JsonNode backupAddOn = backupJsons.get(BACKUP_SECTION);
 		if(backupAddOn != null) {
@@ -294,19 +294,19 @@ public class SensorAddOn extends Meters {
 				}
 			}
 			if(addOn == null && backupNumSensors > 0) { // NO addon on the device but addon on backup -> enable (must reboot and later install sensors)
-				res.put(Restore.WARN_RESTORE_ADDON_ENABLE, null);// msg: Please reboot the device at the restore process end and restore again to install sensors
+				res.put(RestoreMsg.WARN_RESTORE_ADDON_ENABLE, null);// msg: Please reboot the device at the restore process end and restore again to install sensors
 			} else if(addOn != null && addOn.getTypes().length > 0 && backupNumSensors > 0) { // will restore configuration (if possible)
 				try {
 					TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 					JsonNode devicePeripherals = d.getJSON("/rpc/SensorAddon.GetPeripherals");
 					if(devicePeripherals.equals(backupAddOn) == false) {
-						res.put(Restore.WARN_RESTORE_ADDON_CANT_INSTALL, null); // Sensors installation list will not be restored since one or more sensors are already configured on the destination device.
+						res.put(RestoreMsg.WARN_RESTORE_ADDON_CANT_INSTALL, null); // Sensors installation list will not be restored since one or more sensors are already configured on the destination device.
 					}
 				} catch (IOException | InterruptedException e) {
 					LOG.error("SensorAddOn.restoreCheck", e);
 				}
 			} else if(addOn != null && addOn.getTypes().length == 0 && backupNumSensors > 0) { // will install sensors
-				res.put(Restore.WARN_RESTORE_ADDON_INSTALL, null); // msg: Please reboot the device at the end of restore process and restore again to restore full sensors configuration
+				res.put(RestoreMsg.WARN_RESTORE_ADDON_INSTALL, null); // msg: Please reboot the device at the end of restore process and restore again to restore full sensors configuration
 			}
 		}
 	}

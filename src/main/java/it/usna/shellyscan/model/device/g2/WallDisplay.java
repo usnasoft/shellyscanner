@@ -10,6 +10,7 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import it.usna.shellyscan.model.device.Meters;
+import it.usna.shellyscan.model.device.RestoreMsg;
 import it.usna.shellyscan.model.device.g2.modules.Relay;
 import it.usna.shellyscan.model.device.g2.modules.ThermostatG2;
 import it.usna.shellyscan.model.device.modules.DeviceModule;
@@ -21,8 +22,6 @@ import it.usna.shellyscan.model.device.modules.ModulesHolder;
  */
 public class WallDisplay extends AbstractG2Device implements ModulesHolder {
 	public final static String ID = "WallDisplay";
-	private final static String MSG_RESTORE_MODE_ERROR = "msgRestoreThermostatMode";
-	private final static String MSG_RESTORE_MODE_SYNT_ERROR = "msgRestoreThermostatModeSynt";
 	private final static Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.T, Meters.Type.H, Meters.Type.L};
 	private float temp;
 	private float humidity;
@@ -131,11 +130,11 @@ public class WallDisplay extends AbstractG2Device implements ModulesHolder {
 	}
 
 	@Override
-	public void restoreCheck(Map<String, JsonNode> backupJsons, Map<Restore, Object> res) throws IOException {
+	public void restoreCheck(Map<String, JsonNode> backupJsons, Map<RestoreMsg, Object> res) throws IOException {
 		JsonNode backupConfiguration = backupJsons.get("Shelly.GetConfig.json");
 		boolean thermMode = backupConfiguration.get("thermostat:0") != null;
 		if((thermMode && thermostat == null) || (thermMode == false && thermostat != null)) {
-			res.put(Restore.ERR_RESTORE_MSG, MSG_RESTORE_MODE_ERROR);
+			res.put(RestoreMsg.ERR_RESTORE_MODE_THERM, null);
 		}
 	}
 
@@ -145,10 +144,10 @@ public class WallDisplay extends AbstractG2Device implements ModulesHolder {
 		boolean thermMode = backupConfiguration.get("thermostat:0") != null;
 		if(thermMode && thermostat != null) { // saved configuration was "thermostat" and the current too? 
 			errors.add(thermostat.restore(backupConfiguration));
-		} else if(thermMode == false && relay !=null) {
+		} else if(thermMode == false && relay != null) {
 			errors.add(relay.restore(backupConfiguration));
 		} else {
-			errors.add(MSG_RESTORE_MODE_SYNT_ERROR);
+			errors.add(RestoreMsg.ERR_RESTORE_MODE_THERM.name());
 		}
 		
 		ObjectNode ui = (ObjectNode)backupConfiguration.get("ui").deepCopy();

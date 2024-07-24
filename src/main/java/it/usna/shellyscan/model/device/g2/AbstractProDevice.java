@@ -10,6 +10,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import it.usna.shellyscan.model.Devices;
+import it.usna.shellyscan.model.device.RestoreMsg;
 
 public abstract class AbstractProDevice extends AbstractG2Device {
 
@@ -18,7 +19,7 @@ public abstract class AbstractProDevice extends AbstractG2Device {
 	}
 	
 	@Override
-	void restoreCommonConfig(JsonNode config, final long delay, Map<Restore, String> data, List<String> errors) throws InterruptedException, IOException {
+	void restoreCommonConfig(JsonNode config, final long delay, Map<RestoreMsg, String> data, List<String> errors) throws InterruptedException, IOException {
 		super.restoreCommonConfig(config, delay, data, errors);
 		errors.add(ethRestore(config.get("eth")));
 	}

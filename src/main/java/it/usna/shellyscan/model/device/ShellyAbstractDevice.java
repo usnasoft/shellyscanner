@@ -47,12 +47,6 @@ public abstract class ShellyAbstractDevice {
 	public enum Status {ON_LINE, OFF_LINE, NOT_LOOGGED, READING, ERROR, GHOST}; // GHOST not yet detected (in store)
 	public enum LogMode {NO, FILE, MQTT, SOCKET, UDP, UNDEFINED};
 
-	public enum Restore {ERR_RESTORE_HOST, ERR_RESTORE_MODEL, ERR_RESTORE_CONF, ERR_RESTORE_MSG, ERR_UNKNOWN,
-		WARN_RESTORE_ADDON_CANT_INSTALL, WARN_RESTORE_ADDON_INSTALL, WARN_RESTORE_ADDON_ENABLE,
-		WARN_RESTORE_XMOD_IO, WARN_RESTORE_VIRTUAL,
-		RESTORE_LOGIN, RESTORE_WI_FI1, RESTORE_WI_FI2,  RESTORE_WI_FI_AP, RESTORE_MQTT, RESTORE_OPEN_MQTT,
-		QUESTION_RESTORE_SCRIPTS_OVERRIDE, QUESTION_RESTORE_SCRIPTS_ENABLE_LIKE_BACKED_UP};
-
 	protected ShellyAbstractDevice(InetAddress address, int port, String hostname) {
 		this.address = address;
 		this.port = port;
@@ -226,7 +220,7 @@ public abstract class ShellyAbstractDevice {
 
 	public abstract boolean backup(final File file) throws IOException; // false: use of stored data; could not connect to device
 	
-	public abstract Map<Restore, Object> restoreCheck(Map<String, JsonNode> backupJsons) throws IOException;
+	public abstract Map<RestoreMsg, Object> restoreCheck(Map<String, JsonNode> backupJsons) throws IOException;
 	
 	/**
 	 * @param backupJsons map of buckup sections (json name-json section)
@@ -234,7 +228,7 @@ public abstract class ShellyAbstractDevice {
 	 * @return list of results for any restore section (element is null if section restored successfully)
 	 * @throws IOException
 	 */
-	public abstract List<String> restore(Map<String, JsonNode> backupJsons, Map<Restore, String> data) throws IOException;
+	public abstract List<String> restore(Map<String, JsonNode> backupJsons, Map<RestoreMsg, String> data) throws IOException;
 
 	/**
 	 * @param section call whose returned json must be stored

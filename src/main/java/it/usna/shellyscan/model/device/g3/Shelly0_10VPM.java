@@ -14,6 +14,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.InternalTmpHolder;
 import it.usna.shellyscan.model.device.Meters;
+import it.usna.shellyscan.model.device.RestoreMsg;
 import it.usna.shellyscan.model.device.g2.modules.Input;
 import it.usna.shellyscan.model.device.g2.modules.LightWhite;
 import it.usna.shellyscan.model.device.g2.modules.SensorAddOn;
@@ -141,7 +142,7 @@ public class Shelly0_10VPM extends AbstractG3Device implements InternalTmpHolder
 	}
 
 	@Override
-	public void restoreCheck(Map<String, JsonNode> backupJsons, Map<Restore, Object> res) throws IOException {
+	public void restoreCheck(Map<String, JsonNode> backupJsons, Map<RestoreMsg, Object> res) throws IOException {
 		try {
 			configure(); // maybe useless in case of mDNS use since you must reboot before -> on reboot the device registers again on mDNS ad execute a reload
 		} catch (IOException e) {

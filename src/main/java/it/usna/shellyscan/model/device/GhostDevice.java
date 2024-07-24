@@ -145,77 +145,77 @@ public class GhostDevice extends ShellyAbstractDevice {
 	}
 
 	@Override
-	public Map<Restore, Object> restoreCheck(Map<String, JsonNode> backupJsons) {
+	public Map<RestoreMsg, Object> restoreCheck(Map<String, JsonNode> backupJsons) {
 		if(backupJsons.containsKey("settings.json")) {
 			return restoreCheckG1(backupJsons);
 		} else if(backupJsons.containsKey("Shelly.GetConfig.json")) {
 			return restoreCheckG2(backupJsons);
 		} else {
-			return Collections.singletonMap(Restore.ERR_RESTORE_MODEL, null);
+			return Collections.singletonMap(RestoreMsg.ERR_RESTORE_MODEL, null);
 		}
 	}
 	
-	private Map<Restore, Object> restoreCheckG1(Map<String, JsonNode> backupJsons) {
-		EnumMap<Restore, Object> res = new EnumMap<>(Restore.class);
+	private Map<RestoreMsg, Object> restoreCheckG1(Map<String, JsonNode> backupJsons) {
+		EnumMap<RestoreMsg, Object> res = new EnumMap<>(RestoreMsg.class);
 		try {
 			JsonNode settings = backupJsons.get("settings.json");
 			final String fileHostname = settings.get("device").get("hostname").asText("");
 			final String fileType = settings.get("device").get("type").asText();
 			if(/*fileType.length() > 0 &&*/ getTypeID().equals(fileType) == false) {
-				res.put(Restore.ERR_RESTORE_MODEL, null);
+				res.put(RestoreMsg.ERR_RESTORE_MODEL, null);
 			} else {
 				boolean sameHost = fileHostname.equals(this.hostname);
 				if(sameHost == false) {
-					res.put(Restore.ERR_RESTORE_HOST, fileHostname);
+					res.put(RestoreMsg.PRE_QUESTION_RESTORE_HOST, fileHostname);
 				}
 				if(settings.at("/login/enabled").asBoolean()) {
-					res.put(Restore.RESTORE_LOGIN, settings.at("/login/username").asText());
+					res.put(RestoreMsg.RESTORE_LOGIN, settings.at("/login/username").asText());
 				}
 				// Can't restore network values
 				if(settings.at("/mqtt/enable").asBoolean() && settings.at("/mqtt/user").asText("").length() > 0) {
-					res.put(Restore.RESTORE_MQTT, settings.at("/mqtt/user").asText());
+					res.put(RestoreMsg.RESTORE_MQTT, settings.at("/mqtt/user").asText());
 				}
 			}
 		} catch(RuntimeException e) {
 			LOG.error("restoreCheck", e);
-			res.put(Restore.ERR_RESTORE_MODEL, null);
+			res.put(RestoreMsg.ERR_RESTORE_MODEL, null);
 		}
 		return res;
 	}
 
-	private Map<Restore, Object> restoreCheckG2(Map<String, JsonNode> backupJsons) {
-		EnumMap<Restore, Object> res = new EnumMap<>(Restore.class);
+	private Map<RestoreMsg, Object> restoreCheckG2(Map<String, JsonNode> backupJsons) {
+		EnumMap<RestoreMsg, Object> res = new EnumMap<>(RestoreMsg.class);
 		try {
 			JsonNode devInfo = backupJsons.get("Shelly.GetDeviceInfo.json");
 			JsonNode config = backupJsons.get("Shelly.GetConfig.json");
 			final String fileHostname = devInfo.get("id").asText("");
 			final String fileType = devInfo.get("app").asText();
 			if(getTypeID().equals(fileType) == false) {
-				res.put(Restore.ERR_RESTORE_MODEL, null);
+				res.put(RestoreMsg.ERR_RESTORE_MODEL, null);
 			} else {
 				boolean sameHost = fileHostname.equals(this.hostname);
 				if(sameHost == false) {
-					res.put(Restore.ERR_RESTORE_HOST, fileHostname);
+					res.put(RestoreMsg.PRE_QUESTION_RESTORE_HOST, fileHostname);
 				}
 				if(devInfo.path("auth_en").asBoolean()) {
-					res.put(Restore.RESTORE_LOGIN, LoginManagerG2.LOGIN_USER);
+					res.put(RestoreMsg.RESTORE_LOGIN, LoginManagerG2.LOGIN_USER);
 				}
 				// Can't restore network values
 				if(config.at("/mqtt/enable").asBoolean() && config.at("/mqtt/user").asText("").length() > 0) {
-					res.put(Restore.RESTORE_MQTT, config.at("/mqtt/user").asText());
+					res.put(RestoreMsg.RESTORE_MQTT, config.at("/mqtt/user").asText());
 				}
 				// device specific
 //				restoreCheck(backupJsons, res); // TODO check compatibility with this call for any new device
 			}
 		} catch(RuntimeException e) {
 			LOG.error("restoreCheck", e);
-			res.put(Restore.ERR_RESTORE_MODEL, null);
+			res.put(RestoreMsg.ERR_RESTORE_MODEL, null);
 		}
 		return res;
 	}
 	
 	@Override
-	public List<String> restore(Map<String, JsonNode> backupJsons, Map<Restore, String> data) {
+	public List<String> restore(Map<String, JsonNode> backupJsons, Map<RestoreMsg, String> data) {
 		return List.of("GhostDevice");
 	}
 	

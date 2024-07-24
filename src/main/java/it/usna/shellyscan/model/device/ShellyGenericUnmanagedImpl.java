@@ -128,12 +128,12 @@ public class ShellyGenericUnmanagedImpl extends ShellyAbstractDevice implements 
 	}
 
 	@Override
-	public Map<Restore, Object> restoreCheck(Map<String, JsonNode> backupJsons) {
+	public Map<RestoreMsg, Object> restoreCheck(Map<String, JsonNode> backupJsons) {
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
-	public List<String> restore(Map<String, JsonNode> backupJsons, Map<Restore, String> data) {
+	public List<String> restore(Map<String, JsonNode> backupJsons, Map<RestoreMsg, String> data) {
 		throw new UnsupportedOperationException();
 	}
 }

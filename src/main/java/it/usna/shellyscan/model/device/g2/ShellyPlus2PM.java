@@ -14,6 +14,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.InternalTmpHolder;
 import it.usna.shellyscan.model.device.Meters;
+import it.usna.shellyscan.model.device.RestoreMsg;
 import it.usna.shellyscan.model.device.g2.modules.Input;
 import it.usna.shellyscan.model.device.g2.modules.Relay;
 import it.usna.shellyscan.model.device.g2.modules.Roller;
@@ -29,8 +30,6 @@ import it.usna.shellyscan.model.device.modules.ModulesHolder;
 public class ShellyPlus2PM extends AbstractG2Device implements ModulesHolder, InternalTmpHolder, SensorAddOnHolder {
 	private final static Logger LOG = LoggerFactory.getLogger(ShellyPlus2PM.class);
 	public final static String ID = "Plus2PM";
-	private final static String MSG_RESTORE_MODE_ERROR = "msgRestoreCoverMode";
-	private final static String MSG_RESTORE_MODE_SYNT_ERROR = "msgRestoreCoverModeSynt";
 	private boolean modeRelay;
 	private final static Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.W, Meters.Type.PF, Meters.Type.V, Meters.Type.I};
 	private Relay relay0, relay1;
@@ -231,11 +230,11 @@ public class ShellyPlus2PM extends AbstractG2Device implements ModulesHolder, In
 	}
 	
 	@Override
-	public void restoreCheck(Map<String, JsonNode> backupJsons, Map<Restore, Object> res) throws IOException {
+	public void restoreCheck(Map<String, JsonNode> backupJsons, Map<RestoreMsg, Object> res) throws IOException {
 		JsonNode devInfo = backupJsons.get("Shelly.GetDeviceInfo.json");
 		boolean backModeRelay = MODE_RELAY.equals(devInfo.get("profile").asText());
 		if(backModeRelay != modeRelay) {
-			res.put(Restore.ERR_RESTORE_MSG, MSG_RESTORE_MODE_ERROR);
+			res.put(RestoreMsg.ERR_RESTORE_MODE_COVER, null);
 		}
 		try {
 			configure(); // maybe useless in case of mDNS use since you must reboot before -> on reboot the device registers again on mDNS ad execute a reload
@@ -262,7 +261,7 @@ public class ShellyPlus2PM extends AbstractG2Device implements ModulesHolder, In
 				errors.add(roller.restore(configuration));
 			}
 		} else {
-			errors.add(MSG_RESTORE_MODE_SYNT_ERROR);
+			errors.add(RestoreMsg.ERR_RESTORE_MODE_COVER.name());
 		}
 
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);

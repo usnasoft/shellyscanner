@@ -35,6 +35,7 @@ import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.BatteryDeviceInterface;
 import it.usna.shellyscan.model.device.FirmwareManager;
 import it.usna.shellyscan.model.device.LoginManager;
+import it.usna.shellyscan.model.device.RestoreMsg;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.TimeAndLocationManager;
 import it.usna.shellyscan.model.device.WIFIManager;
@@ -216,44 +217,44 @@ public abstract class AbstractG1Device extends ShellyAbstractDevice {
 	}
 	
 	@Override
-	public final Map<Restore, Object> restoreCheck(Map<String, JsonNode> backupJsons) throws IOException {
-		EnumMap<Restore, Object> res = new EnumMap<>(Restore.class);
+	public final Map<RestoreMsg, Object> restoreCheck(Map<String, JsonNode> backupJsons) throws IOException {
+		EnumMap<RestoreMsg, Object> res = new EnumMap<>(RestoreMsg.class);
 		try {
 			JsonNode settings = backupJsons.get("settings.json");
 			final String fileHostname = settings.get("device").get("hostname").asText("");
 			final String fileType = settings.get("device").get("type").asText();
 			if(fileType.length() > 0 && fileType.equals(this.getTypeID()) == false) {
-				res.put(Restore.ERR_RESTORE_MODEL, null);
+				res.put(RestoreMsg.ERR_RESTORE_MODEL, null);
 			} else {
 				boolean sameHost = fileHostname.equals(this.hostname);
 				if(sameHost == false) {
-					res.put(Restore.ERR_RESTORE_HOST, fileHostname);
+					res.put(RestoreMsg.PRE_QUESTION_RESTORE_HOST, fileHostname);
 				}
 				if(settings.at("/login/enabled").asBoolean()) {
-					res.put(Restore.RESTORE_LOGIN, settings.at("/login/username").asText());
+					res.put(RestoreMsg.RESTORE_LOGIN, settings.at("/login/username").asText());
 				}
 				Network currentConnection = WIFIManagerG1.currentConnection(this);
 				if(currentConnection != Network.UNKNOWN) {
 					if(settings.at("/wifi_sta/enabled").asBoolean() && (sameHost || settings.at("/wifi_sta/ipv4_method").asText().equals("dhcp")) && currentConnection != Network.PRIMARY) {
-						res.put(Restore.RESTORE_WI_FI1, settings.at("/wifi_sta/ssid").asText());
+						res.put(RestoreMsg.RESTORE_WI_FI1, settings.at("/wifi_sta/ssid").asText());
 					}
 					if(settings.at("/wifi_sta1/enabled").asBoolean() && (sameHost || settings.at("/wifi_sta1/ipv4_method").asText().equals("dhcp")) && currentConnection != Network.SECONDARY) {
-						res.put(Restore.RESTORE_WI_FI2, settings.at("/wifi_sta1/ssid").asText());
+						res.put(RestoreMsg.RESTORE_WI_FI2, settings.at("/wifi_sta1/ssid").asText());
 					}
 				}
 				if(settings.at("/mqtt/enable").asBoolean() && settings.at("/mqtt/user").asText("").length() > 0) {
-					res.put(Restore.RESTORE_MQTT, settings.at("/mqtt/user").asText());
+					res.put(RestoreMsg.RESTORE_MQTT, settings.at("/mqtt/user").asText());
 				}
 			}
 		} catch(RuntimeException e) {
 			LOG.error("restoreCheck", e);
-			res.put(Restore.ERR_RESTORE_MODEL, null);
+			res.put(RestoreMsg.ERR_RESTORE_MODEL, null);
 		}
 		return res;
 	}
 	
 	@Override
-	public final List<String> restore(Map<String, JsonNode> backupJsons, Map<Restore, String> data) throws IOException {
+	public final List<String> restore(Map<String, JsonNode> backupJsons, Map<RestoreMsg, String> data) throws IOException {
 		final ArrayList<String> errors = new ArrayList<>();
 		try {
 			final long delay = this instanceof BatteryDeviceInterface ? Devices.MULTI_QUERY_DELAY / 2: Devices.MULTI_QUERY_DELAY;
@@ -262,7 +263,7 @@ public abstract class AbstractG1Device extends ShellyAbstractDevice {
 			LOG.trace("step 1");
 			restore(settings, errors);
 			if(status == Status.OFF_LINE) {
-				return errors.size() > 0 ? errors : List.of(Restore.ERR_UNKNOWN.name());
+				return errors.size() > 0 ? errors : List.of(RestoreMsg.ERR_UNKNOWN.name());
 			}
 			TimeUnit.MILLISECONDS.sleep(delay);
 			LOG.trace("step 2 {}", errors);
@@ -279,21 +280,21 @@ public abstract class AbstractG1Device extends ShellyAbstractDevice {
 			TimeUnit.MILLISECONDS.sleep(delay);
 			Network currentConnection = WIFIManagerG1.currentConnection(this);
 			JsonNode sta1 = settings.path("wifi_sta1"); // "sta1.isMissingNode() == false": motion doesn't have wi-fi2
-			if(currentConnection != Network.SECONDARY && sta1.isMissingNode() == false && (data.containsKey(Restore.RESTORE_WI_FI2) || sta1.path("enabled").asBoolean() == false)) {
+			if(currentConnection != Network.SECONDARY && sta1.isMissingNode() == false && (data.containsKey(RestoreMsg.RESTORE_WI_FI2) || sta1.path("enabled").asBoolean() == false)) {
 				TimeUnit.MILLISECONDS.sleep(delay);
 				WIFIManagerG1 wm2 = new WIFIManagerG1(this, Network.SECONDARY, true);
-				errors.add(wm2.restore(settings.path("wifi_sta1"), data.get(Restore.RESTORE_WI_FI2)));
+				errors.add(wm2.restore(settings.path("wifi_sta1"), data.get(RestoreMsg.RESTORE_WI_FI2)));
 			}
 			// last - hereafter we loose connection
-			if(currentConnection != Network.PRIMARY && (data.containsKey(Restore.RESTORE_WI_FI1) || settings.at("/wifi_sta/enabled").asBoolean() == false)) {
+			if(currentConnection != Network.PRIMARY && (data.containsKey(RestoreMsg.RESTORE_WI_FI1) || settings.at("/wifi_sta/enabled").asBoolean() == false)) {
 				TimeUnit.MILLISECONDS.sleep(delay);
 				WIFIManagerG1 wm1 = new WIFIManagerG1(this, Network.PRIMARY, true);
-				errors.add(wm1.restore(settings.path("wifi_sta"), data.get(Restore.RESTORE_WI_FI1)));
+				errors.add(wm1.restore(settings.path("wifi_sta"), data.get(RestoreMsg.RESTORE_WI_FI1)));
 			}
 			LOG.trace("restore end {}", errors);
 		} catch(RuntimeException | InterruptedException e) {
 			LOG.error("restore - RuntimeException", e);
-			errors.add(Restore.ERR_UNKNOWN.toString());
+			errors.add(RestoreMsg.ERR_UNKNOWN.toString());
 		}
 		return errors;
 	}
@@ -305,7 +306,7 @@ public abstract class AbstractG1Device extends ShellyAbstractDevice {
 	 * debug_enable - intentionally ignored
 	 * Return errors List
 	 */
-	private void restoreCommons(JsonNode settings, final long delay, Map<Restore, String> data, ArrayList<String> errors) throws InterruptedException, IOException {
+	private void restoreCommons(JsonNode settings, final long delay, Map<RestoreMsg, String> data, ArrayList<String> errors) throws InterruptedException, IOException {
 		errors.add(sendCommand("/settings/cloud?enabled=" + settings.get("cloud").get("enabled").asText()));
 //		LOG.trace("step 2.1");
 		final String[] settigsRestore;
@@ -331,17 +332,17 @@ public abstract class AbstractG1Device extends ShellyAbstractDevice {
 		TimeUnit.MILLISECONDS.sleep(delay);
 		LoginManagerG1 lm = new LoginManagerG1(this, true);
 //		LOG.trace("step 2.2");
-		if(data.containsKey(Restore.RESTORE_LOGIN)) {
-			errors.add(lm.set(settings.at("/login/username").asText(""), data.get(Restore.RESTORE_LOGIN).toCharArray()));
+		if(data.containsKey(RestoreMsg.RESTORE_LOGIN)) {
+			errors.add(lm.set(settings.at("/login/username").asText(""), data.get(RestoreMsg.RESTORE_LOGIN).toCharArray()));
 		} else if(settings.at("/login/enabled").asBoolean() == false) {
 			errors.add(lm.disable());
 		}
 //		LOG.trace("step 2.3");
 		final JsonNode mqtt = settings.get("mqtt");
-		if(data.containsKey(Restore.RESTORE_MQTT) || mqtt.path("enable").asBoolean() == false || mqtt.path("user").asText("").length() == 0) {
+		if(data.containsKey(RestoreMsg.RESTORE_MQTT) || mqtt.path("enable").asBoolean() == false || mqtt.path("user").asText("").length() == 0) {
 			TimeUnit.MILLISECONDS.sleep(delay);
 			MQTTManagerG1 mqttM = new MQTTManagerG1(this, true);
-			errors.add(mqttM.restore(mqtt, data.get(Restore.RESTORE_MQTT)));
+			errors.add(mqttM.restore(mqtt, data.get(RestoreMsg.RESTORE_MQTT)));
 		}
 	}
 
