@@ -51,6 +51,7 @@ import it.usna.shellyscan.model.device.g2.ShellyG2Unmanaged;
 import it.usna.shellyscan.model.device.g2.ShellyMini1;
 import it.usna.shellyscan.model.device.g2.ShellyMini1PM;
 import it.usna.shellyscan.model.device.g2.ShellyMiniPM;
+import it.usna.shellyscan.model.device.g2.ShellyPlus0_10VDimmer;
 import it.usna.shellyscan.model.device.g2.ShellyPlus1;
 import it.usna.shellyscan.model.device.g2.ShellyPlus1PM;
 import it.usna.shellyscan.model.device.g2.ShellyPlus2PM;
@@ -222,6 +223,7 @@ public class DevicesFactory {
 				case ShellyPlusPlugIT.ID -> new ShellyPlusPlugIT(address, port, name);
 				case ShellyPlusPlugUS.ID -> new ShellyPlusPlugUS(address, port, name);
 				case ShellyWallDimmer.ID -> new ShellyWallDimmer(address, port, name);
+				case ShellyPlus0_10VDimmer.ID -> new ShellyPlus0_10VDimmer(address, port, name);
 				case WallDisplay.ID -> new WallDisplay(address, port, name);
 				// Plus - Battery
 				case ShellyPlusHT.ID -> new ShellyPlusHT(address, port, name);

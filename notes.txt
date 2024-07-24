@@ -258,6 +258,7 @@ New checklist UI
 Shelly 1 G3
 Shelly 1PM G3
 Shelly i4 G3
+Shelly Plus Dimmer 0-10
 Shelly Dimmer 0/1-10 G3
 Shelly DIMMER 1 PRO
 Shelly X MOD1 (measures from beta2)

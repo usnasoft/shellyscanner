@@ -80,7 +80,7 @@ public class Shelly0_10VPM extends AbstractG3Device implements InternalTmpHolder
 	
 	@Override
 	public String getTypeName() {
-		return "Shelly Dimmer 0/1-10 G3";
+		return "Shelly Dimmer 0/1-10V G3";
 	}
 	
 	@Override
