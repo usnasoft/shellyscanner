@@ -4,11 +4,14 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
+import java.util.zip.ZipOutputStream;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
+import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.RestoreMsg;
 import it.usna.shellyscan.model.device.g2.modules.Relay;
@@ -112,6 +115,18 @@ public class WallDisplay extends AbstractG2Device implements ModulesHolder {
 		}
 	}
 	
+	@Override
+	public String[] getInfoRequests() {
+		if(relay != null) {
+			return super.getInfoRequests();
+		} else {
+			return new String[] {
+					"/rpc/Shelly.GetDeviceInfo?ident=true", "/rpc/Shelly.GetConfig", "/rpc/Shelly.GetStatus", "/rpc/Shelly.CheckForUpdate", "/rpc/Schedule.List", "/rpc/Webhook.List",
+					"/rpc/Script.List", "/rpc/WiFi.ListAPClients" /*, "/rpc/Sys.GetStatus",*/, "/rpc/KVS.GetMany", "/rpc/Shelly.GetComponents",
+					"/rpc/Thermostat.Schedule.ListProfiles?id=0"};
+		}
+	}
+	
 	public float getTemp() {
 		return temp;
 	}
@@ -127,6 +142,21 @@ public class WallDisplay extends AbstractG2Device implements ModulesHolder {
 	@Override
 	public Meters[] getMeters() {
 		return meters;
+	}
+	
+	@Override
+	protected void backup(ZipOutputStream out) throws IOException, InterruptedException {
+		if(thermostat != null) {
+			byte[] profiles = sectionToStream("/rpc/Thermostat.Schedule.ListProfiles?id=0", "Thermostat.Schedule.ListProfiles_id-0.json", out);
+			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+			
+			JsonNode profilesJ = jsonMapper.readTree(profiles).get("profiles");
+			for(JsonNode p: profilesJ) {
+				final String id = p.get("id").asText();
+				sectionToStream("/rpc/Thermostat.Schedule.ListRules?id=0&profile_id=" + id, "Thermostat.Schedule.ListRules_id-0_profile_id-" + id + ".json", out);
+				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+			}
+		}
 	}
 
 	@Override
@@ -164,3 +194,7 @@ public class WallDisplay extends AbstractG2Device implements ModulesHolder {
 		}
 	}
 }
+
+// http://deviceip/
+// http://192.168.1.28/rpc/Thermostat.Schedule.ListProfiles?id=0
+// http://192.168.1.28/rpc/Thermostat.Schedule.ListRules?id=0&profile_id=0

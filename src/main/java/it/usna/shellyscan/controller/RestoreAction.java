@@ -79,13 +79,8 @@ public class RestoreAction extends UsnaSelectedAction {
 							return;
 						}
 					}
-					
-					final StringBuilder warn = new StringBuilder();
-					for(Map.Entry<RestoreMsg, Object> e: test.entrySet()) {
-						if(e.getKey().getType() == RestoreMsg.Type.WARN) {
-							warn.append(LABELS.getString(CHECK_MSG_PREFIX + e.getKey().name())).append("<br><br>");
-						}
-					}
+					String warn = test.entrySet().stream().filter(e -> e.getKey().getType() == RestoreMsg.Type.WARN).
+							map(e -> LABELS.getString(CHECK_MSG_PREFIX + e.getKey().name())).collect(Collectors.joining("<br><br>"));
 					if(warn.isEmpty() == false) {
 						Msg.warningMsg(mainView, "<html>" + warn);
 					}

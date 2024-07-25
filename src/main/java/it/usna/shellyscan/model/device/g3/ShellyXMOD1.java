@@ -1,18 +1,11 @@
 package it.usna.shellyscan.model.device.g3;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.InetAddress;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -21,7 +14,6 @@ import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.RestoreMsg;
 import it.usna.shellyscan.model.device.g2.modules.Input;
 import it.usna.shellyscan.model.device.g2.modules.Relay;
-import it.usna.shellyscan.model.device.g2.modules.Script;
 import it.usna.shellyscan.model.device.g2.modules.SensorAddOn;
 import it.usna.shellyscan.model.device.g2.modules.SensorAddOnHolder;
 import it.usna.shellyscan.model.device.modules.DeviceModule;
@@ -32,7 +24,6 @@ import it.usna.shellyscan.model.device.modules.ModulesHolder;
  * @author usna
  */
 public class ShellyXMOD1 extends AbstractG3Device implements ModulesHolder, SensorAddOnHolder {
-	private final static Logger LOG = LoggerFactory.getLogger(ShellyXMOD1.class);
 	public final static String ID = "XMOD1";
 	private int numInputs;
 	private int numOutputs;
@@ -157,72 +148,17 @@ public class ShellyXMOD1 extends AbstractG3Device implements ModulesHolder, Sens
 	
 	@Override
 	public String[] getInfoRequests() {
-		if(addOn != null) {
-			return new String[] {
-					"/rpc/Shelly.GetDeviceInfo?ident=true", "/rpc/Shelly.GetConfig", "/rpc/Shelly.GetStatus", "/rpc/Shelly.CheckForUpdate", "/rpc/Schedule.List", "/rpc/Webhook.List",
-					"/rpc/Script.List", "/rpc/WiFi.ListAPClients" /*, "/rpc/Sys.GetStatus",*/, "/rpc/KVS.GetMany", "/rpc/Shelly.GetComponents",
-					/*"/rpc/BTHome.GetConfig", "/rpc/BTHome.GetStatus",*/ "/rpc/SensorAddon.GetPeripherals", "/rpc/XMOD.GetProductJWS", "/rpc/XMOD.GetInfo"};
-		} else {
-			return new String[] {
-					"/rpc/Shelly.GetDeviceInfo?ident=true", "/rpc/Shelly.GetConfig", "/rpc/Shelly.GetStatus", "/rpc/Shelly.CheckForUpdate", "/rpc/Schedule.List", "/rpc/Webhook.List",
-					"/rpc/Script.List", "/rpc/WiFi.ListAPClients" /*, "/rpc/Sys.GetStatus",*/, "/rpc/KVS.GetMany", "/rpc/Shelly.GetComponents",
-					/*"/rpc/BTHome.GetConfig", "/rpc/BTHome.GetStatus",*/ "/rpc/XMOD.GetProductJWS", "/rpc/XMOD.GetInfo"};
-		}
+		final String[] cmd = new String[] {
+				"/rpc/Shelly.GetDeviceInfo?ident=true", "/rpc/Shelly.GetConfig", "/rpc/Shelly.GetStatus", "/rpc/Shelly.CheckForUpdate", "/rpc/Schedule.List", "/rpc/Webhook.List",
+				"/rpc/Script.List", "/rpc/WiFi.ListAPClients" /*, "/rpc/Sys.GetStatus",*/, "/rpc/KVS.GetMany", "/rpc/Shelly.GetComponents",
+				/*"/rpc/BTHome.GetConfig", "/rpc/BTHome.GetStatus",*/ "/rpc/XMOD.GetProductJWS", "/rpc/XMOD.GetInfo"};
+		return (addOn != null) ? SensorAddOn.getInfoRequests(cmd) : cmd;
 	}
-	
+
 	@Override
-	// add /rpc/XMOD.GetInfo to standard gen3 backup
-	public boolean backup(final File file) throws IOException {
-		try(ZipOutputStream out = new ZipOutputStream(new FileOutputStream(file), StandardCharsets.UTF_8)) {
-			sectionToStream("/rpc/Shelly.GetDeviceInfo", "Shelly.GetDeviceInfo.json", out);
-			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-			sectionToStream("/rpc/Shelly.GetConfig", "Shelly.GetConfig.json", out);
-			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-			try { //unmanaged battery device
-				sectionToStream("/rpc/Schedule.List", "Schedule.List.json", out);
-			} catch(Exception e) {}
-			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-			sectionToStream("/rpc/Webhook.List", "Webhook.List.json", out);
-			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-			try {
-				sectionToStream("/rpc/KVS.GetMany", "KVS.GetMany.json", out);
-			} catch(Exception e) {}
-			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-			byte[] scripts = null;
-			try {
-				scripts = sectionToStream("/rpc/Script.List", "Script.List.json", out);
-			} catch(Exception e) {}
-			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-			try { // Virtual components
-				sectionToStream("/rpc/Shelly.GetComponents?dynamic_only=true", "Shelly.GetComponents.json", out);
-			} catch(Exception e) {}
-			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-			try { // On devices with active sensor add-on
-				sectionToStream("/rpc/SensorAddon.GetPeripherals", SensorAddOn.BACKUP_SECTION, out);
-			} catch(Exception e) {}
-			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-			try { // THIS IS SPECIFIC FOR XMOD1
-				sectionToStream("/rpc/XMOD.GetInfo", "XMOD.GetInfo.json", out);
-			} catch(Exception e) {}
-			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-			// Scripts
-			if(scripts != null) {
-				JsonNode scrList = jsonMapper.readTree(scripts).get("scripts");
-				for(JsonNode scr: scrList) {
-					try {
-						Script script = new Script(this, scr);
-						byte[] code =  script.getCode().getBytes();
-						ZipEntry entry = new ZipEntry(scr.get("name").asText() + ".mjs");
-						out.putNextEntry(entry);
-						out.write(code, 0, code.length);
-					} catch(IOException e) {}
-					TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-				}
-			}
-		} catch(InterruptedException e) {
-			LOG.error("backup", e);
-		}
-		return true;
+	protected void backup(ZipOutputStream out) throws IOException, InterruptedException {
+		sectionToStream("/rpc/XMOD.GetInfo", "XMOD.GetInfo.json", out);
+		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 	}
 
 	@Override

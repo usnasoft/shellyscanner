@@ -357,11 +357,20 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 					TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 				}
 			}
+			try { // Device specific
+				backup(out);
+			} catch(Exception e) {
+				LOG.error("backup specific", e);
+			}
+			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 		} catch(InterruptedException e) {
 			LOG.error("backup", e);
 		}
 		return true;
 	}
+	
+	/** implement for devices that need additional information */
+	protected void backup(ZipOutputStream out) throws IOException, InterruptedException {	}
 
 	@Override
 	public Map<RestoreMsg, Object> restoreCheck(Map<String, JsonNode> backupJsons) throws IOException {
@@ -442,7 +451,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 	}
 
 	/** device specific */
-	public void restoreCheck(Map<String, JsonNode> backupJsons, Map<RestoreMsg, Object> resp) throws IOException {}
+	protected void restoreCheck(Map<String, JsonNode> backupJsons, Map<RestoreMsg, Object> resp) throws IOException {}
 
 	@Override
 	public final List<String> restore(Map<String, JsonNode> backupJsons, Map<RestoreMsg, String> userPref) throws IOException {
@@ -500,8 +509,8 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 					errors.add(wm.restore(config.at("/wifi/sta"), userPref.get(RestoreMsg.RESTORE_WI_FI1)));
 				}
 				
-				JsonNode apNode = config.at("/wifi/ap"); // wall display -> null (?)
-				if(apNode != null && ((userPref.containsKey(RestoreMsg.RESTORE_WI_FI_AP) || apNode.path("is_open").asBoolean() || apNode.path("enable").asBoolean() == false) && currentConnection != Network.AP)) {
+				JsonNode apNode = config.at("/wifi/ap"); // wall display -> isMissingNode() (?)
+				if(apNode.isMissingNode() == false && ((userPref.containsKey(RestoreMsg.RESTORE_WI_FI_AP) || apNode.path("is_open").asBoolean() || apNode.path("enable").asBoolean() == false) && currentConnection != Network.AP)) {
 					TimeUnit.MILLISECONDS.sleep(delay);
 					errors.add(WIFIManagerG2.restoreAP_roam(this, config.get("wifi"), userPref.get(RestoreMsg.RESTORE_WI_FI_AP)));
 				}

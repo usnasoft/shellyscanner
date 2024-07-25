@@ -268,4 +268,4 @@ public abstract class ShellyAbstractDevice {
 	public String toString() {
 		return getTypeName() + "-" + name + ": " + address.getHostAddress() + " (" + hostname + ")";
 	}
-} //278 - 399 - 316 - 251 - 237 - 231 - 247
+} //278 - 399 - 316 - 251 - 237 - 231 - 247 - 271
