@@ -183,6 +183,16 @@ public class WallDisplay extends AbstractG2Device implements ModulesHolder {
 		ObjectNode ui = (ObjectNode)backupConfiguration.get("ui").deepCopy();
 		ObjectNode out = JsonNodeFactory.instance.objectNode().set("config", ui);
 		errors.add(postCommand("Ui.SetConfig", out));
+		
+//		ObjectNode outConfig = JsonNodeFactory.instance.objectNode();
+//		ObjectNode outSys = JsonNodeFactory.instance.objectNode();
+//		outSys.set("ext_sensor_id", backupConfiguration.at("/sys/ext_sensor_id"));
+//		outConfig.set("config", outSys);
+//		errors.add(postCommand("Sys.SetConfig", outConfig));
+		
+		//"temperature:0" : {
+		//"humidity:0" : {
+		//"illuminance:0" : {
 	}
 	
 	@Override
@@ -195,6 +205,6 @@ public class WallDisplay extends AbstractG2Device implements ModulesHolder {
 	}
 }
 
-// http://deviceip/
+// http://deviceip/rpc/Shelly.ListMethods
 // http://192.168.1.28/rpc/Thermostat.Schedule.ListProfiles?id=0
 // http://192.168.1.28/rpc/Thermostat.Schedule.ListRules?id=0&profile_id=0
