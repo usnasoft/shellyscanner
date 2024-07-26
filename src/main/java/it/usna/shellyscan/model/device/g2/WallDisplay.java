@@ -172,6 +172,7 @@ public class WallDisplay extends AbstractG2Device implements ModulesHolder {
 	protected void restore(Map<String, JsonNode> backupJsons, List<String> errors) throws InterruptedException {
 		JsonNode backupConfiguration = backupJsons.get("Shelly.GetConfig.json");
 		boolean thermMode = backupConfiguration.get("thermostat:0") != null;
+		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 		if(thermMode && thermostat != null) { // saved configuration was "thermostat" and the current too? 
 			errors.add(thermostat.restore(backupConfiguration));
 		} else if(thermMode == false && relay != null) {
@@ -179,25 +180,24 @@ public class WallDisplay extends AbstractG2Device implements ModulesHolder {
 		} else {
 			errors.add(RestoreMsg.ERR_RESTORE_MODE_THERM.name());
 		}
-		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 		
 		ObjectNode ui = (ObjectNode)backupConfiguration.get("ui").deepCopy();
 		ObjectNode out = JsonNodeFactory.instance.objectNode().set("config", ui);
-		errors.add(postCommand("Ui.SetConfig", out));
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-		
+		errors.add(postCommand("Ui.SetConfig", out));
+
 //		ObjectNode outConfig = JsonNodeFactory.instance.objectNode();
 //		ObjectNode outSys = JsonNodeFactory.instance.objectNode();
 //		outSys.set("ext_sensor_id", backupConfiguration.at("/sys/ext_sensor_id"));
 //		outConfig.set("config", outSys);
 //		errors.add(postCommand("Sys.SetConfig", outConfig));
 
+		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 		errors.add(postCommand("Temperature.SetConfig", createIndexedRestoreNode(backupConfiguration, "temperature", 0)));
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 		errors.add(postCommand("Humidity.SetConfig", createIndexedRestoreNode(backupConfiguration, "humidity", 0)));
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-		errors.add(postCommand("Illuminance.SetConfig", createIndexedRestoreNode(backupConfiguration, "illuminance", 0))); // todo test not documented
-		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+		errors.add(postCommand("Illuminance.SetConfig", createIndexedRestoreNode(backupConfiguration, "illuminance", 0)));
 	}
 	
 	@Override

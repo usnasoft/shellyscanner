@@ -6,8 +6,6 @@ import java.util.Collections;
 import java.util.Map;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.g2.modules.Webhooks.Webhook;
@@ -84,18 +82,8 @@ public class Input implements InputInterface {
 		this.webHooks = (wh == null) ? Collections.<String, Webhook>emptyMap() : wh;
 	}
 	
-//	public static String restore(AbstractG2Device parent, JsonNode config, String index) {
-//		return restore(parent, config, Integer.parseInt(index));
-//	}
-	
 	public static String restore(AbstractG2Device parent, JsonNode config, int index) {
-		ObjectNode out = JsonNodeFactory.instance.objectNode();
-		out.put("id", index);
-
-		ObjectNode input = (ObjectNode)config.get("input:" + index).deepCopy();
-		input.remove("id");
-		out.set("config", input);
-		return parent.postCommand("Input.SetConfig", out);
+		return parent.postCommand("Input.SetConfig", AbstractG2Device.createIndexedRestoreNode(config, "input", index));
 	}
 	
 	@Override

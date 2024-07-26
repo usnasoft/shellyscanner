@@ -3,8 +3,6 @@ package it.usna.shellyscan.model.device.g2.modules;
 import java.io.IOException;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.modules.WhiteInterface;
@@ -103,12 +101,7 @@ public class LightWhite implements WhiteInterface {
 	}
 	
 	public String restore(JsonNode config) {
-		ObjectNode out = JsonNodeFactory.instance.objectNode();
-		out.put("id", index);
-		ObjectNode light = (ObjectNode)config.get("light:" + index).deepCopy();
-		light.remove("id");
-		out.set("config", light);
-		return parent.postCommand("Light.SetConfig", out);
+		return parent.postCommand("Light.SetConfig", AbstractG2Device.createIndexedRestoreNode(config, "light", index));
 	}
 	
 	@Override

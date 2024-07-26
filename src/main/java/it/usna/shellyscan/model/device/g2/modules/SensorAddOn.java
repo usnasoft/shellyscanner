@@ -13,7 +13,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import it.usna.shellyscan.model.Devices;
@@ -363,13 +362,13 @@ public class SensorAddOn extends Meters {
 								TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 								String typeIdx[] = inputKey.split(":");
 								if(typeIdx[0].equals("temperature")) {
-									errors.add(d.postCommand("Temperature.SetConfig", createRestoreNode(typeIdx, backConfig)));
+									errors.add(d.postCommand("Temperature.SetConfig", AbstractG2Device.createIndexedRestoreNode(backConfig, "temperature", Integer.parseInt(typeIdx[1]))));
 								} else if(typeIdx[0].equals("humidity")) {
-									errors.add(d.postCommand("Humidity.SetConfig", createRestoreNode(typeIdx, backConfig)));
+									errors.add(d.postCommand("Humidity.SetConfig", AbstractG2Device.createIndexedRestoreNode(backConfig, "humidity", Integer.parseInt(typeIdx[1]))));
 								} else if(typeIdx[0].equals("input")) {
-									errors.add(d.postCommand("Input.SetConfig", createRestoreNode(typeIdx, backConfig)));
+									errors.add(d.postCommand("Input.SetConfig", AbstractG2Device.createIndexedRestoreNode(backConfig, "input", Integer.parseInt(typeIdx[1]))));
 								} else if(typeIdx[0].equals("voltmeter")) {
-									errors.add(d.postCommand("Voltmeter.SetConfig", createRestoreNode(typeIdx, backConfig)));
+									errors.add(d.postCommand("Voltmeter.SetConfig", AbstractG2Device.createIndexedRestoreNode(backConfig, "voltmeter", Integer.parseInt(typeIdx[1]))));
 								}
 							}
 						}
@@ -379,15 +378,6 @@ public class SensorAddOn extends Meters {
 		} catch(IOException e) {
 			LOG.error("SensorAddOn.restoreConfig", e);
 		}
-	}
-	
-	private static ObjectNode createRestoreNode(String typeIdx[], JsonNode backConfig) {
-		ObjectNode out = JsonNodeFactory.instance.objectNode();
-		out.put("id", Integer.parseInt(typeIdx[1]));
-		ObjectNode data = (ObjectNode)backConfig.get(typeIdx[0] + ":" + typeIdx[1]).deepCopy();
-		data.remove("id");
-		out.set("config", data);
-		return out;
 	}
 	
 //	@Override
@@ -402,6 +392,6 @@ public class SensorAddOn extends Meters {
 //			return "";
 //		}
 //	}
-} // 388
+}
 
 //todo Gen2 fw 1.0.0 - Input invert and range_map configuration properties for analog input type

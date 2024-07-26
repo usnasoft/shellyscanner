@@ -549,22 +549,12 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 
 		// Sys.SetConfig
 		JsonNode sys = config.get("sys");
-
-//		ObjectNode outDevice = JsonNodeFactory.instance.objectNode();
-//		outDevice.put("name", sys.at("/device/name").asText("")); // does not appreciate null
-//		JsonNode ecoMode = sys.at("/device/eco_mode");
-//		if(ecoMode.isNull() == false) {
-//			outDevice.put("eco_mode", ecoMode.asBoolean());
-//		}
 		ObjectNode outSys = JsonNodeFactory.instance.objectNode();
 		
 		ObjectNode outDevice = sys.get("device").deepCopy(); // todo test (anche caso name = null)
 		outDevice.remove("mac");
 		outDevice.remove("fw_id");
 		outDevice.remove("addon_type");
-		if(outDevice.get("name") == null) { // does not appreciate null
-			outDevice.remove("name");
-		}
 		outSys.set("device", outDevice);
 
 		outSys.set("sntp", sys.get("sntp").deepCopy());
@@ -644,4 +634,4 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 //			return null;
 //		}
 //	}
-} // 477 - 474 - 525 - 568
+} // 477 - 474 - 525 - 568 - 637

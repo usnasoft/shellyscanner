@@ -3,8 +3,6 @@ package it.usna.shellyscan.model.device.g2.modules;
 import java.io.IOException;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
@@ -92,18 +90,13 @@ public class Relay implements RelayInterface {
 		return source;
 	}
 	
-	public String restore(JsonNode config) {
-		ObjectNode out = JsonNodeFactory.instance.objectNode();
-		out.put("id", index);
-		ObjectNode sw = (ObjectNode)config.get("switch:" + index).deepCopy();
-		sw.remove("id");
-		out.set("config", sw);
-		return parent.postCommand("Switch.SetConfig", out);
-	}
-	
 	@Override
 	public String getLabel() {
 		return (name != null && name.length() > 0) ? name : parent.getName();
+	}
+	
+	public String restore(JsonNode config) {
+		return parent.postCommand("Switch.SetConfig", AbstractG2Device.createIndexedRestoreNode(config, "switch", index));
 	}
 	
 	@Override
