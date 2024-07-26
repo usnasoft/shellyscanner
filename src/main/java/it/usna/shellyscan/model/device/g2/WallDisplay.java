@@ -179,10 +179,12 @@ public class WallDisplay extends AbstractG2Device implements ModulesHolder {
 		} else {
 			errors.add(RestoreMsg.ERR_RESTORE_MODE_THERM.name());
 		}
+		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 		
 		ObjectNode ui = (ObjectNode)backupConfiguration.get("ui").deepCopy();
 		ObjectNode out = JsonNodeFactory.instance.objectNode().set("config", ui);
 		errors.add(postCommand("Ui.SetConfig", out));
+		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 		
 //		ObjectNode outConfig = JsonNodeFactory.instance.objectNode();
 //		ObjectNode outSys = JsonNodeFactory.instance.objectNode();
@@ -191,8 +193,11 @@ public class WallDisplay extends AbstractG2Device implements ModulesHolder {
 //		errors.add(postCommand("Sys.SetConfig", outConfig));
 
 		errors.add(postCommand("Temperature.SetConfig", createIndexedRestoreNode(backupConfiguration, "temperature", 0)));
+		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 		errors.add(postCommand("Humidity.SetConfig", createIndexedRestoreNode(backupConfiguration, "humidity", 0)));
+		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 		errors.add(postCommand("Illuminance.SetConfig", createIndexedRestoreNode(backupConfiguration, "illuminance", 0))); // todo test not documented
+		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 	}
 	
 	@Override

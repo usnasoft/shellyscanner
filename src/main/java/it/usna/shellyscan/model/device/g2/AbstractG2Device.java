@@ -562,6 +562,9 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 		outDevice.remove("mac");
 		outDevice.remove("fw_id");
 		outDevice.remove("addon_type");
+		if(outDevice.get("name") == null) { // does not appreciate null
+			outDevice.remove("name");
+		}
 		outSys.set("device", outDevice);
 
 		outSys.set("sntp", sys.get("sntp").deepCopy());
@@ -569,7 +572,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 		outConfig.set("config", outSys);
 		TimeUnit.MILLISECONDS.sleep(delay);
 		errors.add(postCommand("Sys.SetConfig", outConfig));
-
+		
 		final JsonNode mqtt = config.path("mqtt");
 		if(userPref.containsKey(RestoreMsg.RESTORE_MQTT) || mqtt.path("enable").asBoolean() == false || mqtt.path("user").asText("").length() == 0) {
 			TimeUnit.MILLISECONDS.sleep(delay);
