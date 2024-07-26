@@ -189,10 +189,10 @@ public class WallDisplay extends AbstractG2Device implements ModulesHolder {
 //		outSys.set("ext_sensor_id", backupConfiguration.at("/sys/ext_sensor_id"));
 //		outConfig.set("config", outSys);
 //		errors.add(postCommand("Sys.SetConfig", outConfig));
-		
-		//"temperature:0" : {
-		//"humidity:0" : {
-		//"illuminance:0" : {
+
+		errors.add(postCommand("Temperature.SetConfig", createIndexedRestoreNode(backupConfiguration, "temperature", 0)));
+		errors.add(postCommand("Humidity.SetConfig", createIndexedRestoreNode(backupConfiguration, "humidity", 0)));
+		errors.add(postCommand("Illuminance.SetConfig", createIndexedRestoreNode(backupConfiguration, "illuminance", 0))); // todo test not documented
 	}
 	
 	@Override

@@ -93,7 +93,9 @@ public abstract class AbstractBatteryG2Device extends AbstractG2Device implement
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			sectionToStream("/rpc/Webhook.List", "Webhook.List.json", out);
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-			sectionToStream("/rpc/KVS.GetMany", "KVS.GetMany.json", out);
+			try {
+				sectionToStream("/rpc/KVS.GetMany", "KVS.GetMany.json", out);
+			} catch(Exception e) {}
 		} catch(InterruptedException e) {
 			LOG.error("backup", e);
 		} catch(Exception e) {

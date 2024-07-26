@@ -320,7 +320,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			sectionToStream("/rpc/Shelly.GetConfig", "Shelly.GetConfig.json", out);
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-			try { //unmanaged battery device
+			try { // unmanaged battery device
 				sectionToStream("/rpc/Schedule.List", "Schedule.List.json", out);
 			} catch(Exception e) {}
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
@@ -541,7 +541,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 		errors.add(postCommand("BLE.SetConfig", outConfig));
 
 		// Cloud.SetConfig
-		ObjectNode outCloud = JsonNodeFactory.instance.objectNode(); // Cloud // https://shelly-api-docs.shelly.cloud/gen2/Components/SystemComponents/Cloud#cloudsetconfig-example
+		ObjectNode outCloud = JsonNodeFactory.instance.objectNode(); // Cloud
 		outCloud.put("enable", config.at("/cloud/enable").asBoolean());
 		outConfig.set("config", outCloud);
 		TimeUnit.MILLISECONDS.sleep(delay);
@@ -550,13 +550,18 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 		// Sys.SetConfig
 		JsonNode sys = config.get("sys");
 
-		ObjectNode outDevice = JsonNodeFactory.instance.objectNode();
-		outDevice.put("name", sys.at("/device/name").asText("")); // does not appreciate null
-		JsonNode ecoMode = sys.at("/device/eco_mode");
-		if(ecoMode.isNull() == false) {
-			outDevice.put("eco_mode", ecoMode.asBoolean());
-		}
+//		ObjectNode outDevice = JsonNodeFactory.instance.objectNode();
+//		outDevice.put("name", sys.at("/device/name").asText("")); // does not appreciate null
+//		JsonNode ecoMode = sys.at("/device/eco_mode");
+//		if(ecoMode.isNull() == false) {
+//			outDevice.put("eco_mode", ecoMode.asBoolean());
+//		}
 		ObjectNode outSys = JsonNodeFactory.instance.objectNode();
+		
+		ObjectNode outDevice = sys.get("device").deepCopy(); // todo test (anche caso name = null)
+		outDevice.remove("mac");
+		outDevice.remove("fw_id");
+		outDevice.remove("addon_type");
 		outSys.set("device", outDevice);
 
 		outSys.set("sntp", sys.get("sntp").deepCopy());
@@ -583,6 +588,15 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 		}
 	}
 	
+	public static ObjectNode createIndexedRestoreNode(JsonNode backConfig, String type, int index) { // todo addon, input, switch
+		ObjectNode out = JsonNodeFactory.instance.objectNode();
+		out.put("id", index);
+		ObjectNode data = (ObjectNode)backConfig.get(type + ":" + index).deepCopy();
+		data.remove("id");
+		out.set("config", data);
+		return out;
+	}
+
 	/** device specific */
 	protected abstract void restore(Map<String, JsonNode> backupJsons, List<String> errors) throws IOException, InterruptedException;
 	
