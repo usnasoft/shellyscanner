@@ -555,6 +555,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 		outDevice.remove("mac");
 		outDevice.remove("fw_id");
 		outDevice.remove("addon_type");
+		outDevice.remove("profile"); // postCommand("Shelly.setprofile", "{\"name\":\"" + shelly.get("profile") +"\"}");
 		outSys.set("device", outDevice);
 
 		outSys.set("sntp", sys.get("sntp").deepCopy());

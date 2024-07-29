@@ -165,9 +165,17 @@ public class RestoreAction extends UsnaSelectedAction {
 
 					mainView.getContentPane().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 					appProp.setProperty("LAST_PATH", fc.getCurrentDirectory().getCanonicalPath());
-					final String ret = erroreMsg(device.restore(backupJsons, resData));
-					
-					if(ret == null || ret.length() == 0 || test.containsKey(RestoreMsg.valueOf(ret))) { // test.containsKey(RestoreMsg.valueOf(ret) ->  warning already showed
+					List<String> restoreResult = device.restore(backupJsons, resData);
+//					restoreResult = restoreResult.stream().filter(err -> {
+//						try {
+//							return test.containsKey(RestoreMsg.valueOf(err)) == false; // test.containsKey(RestoreMsg.valueOf(ret) ->  warning already showed
+//						} catch(RuntimeException e) {
+//							return true;
+//						}
+//					}).collect(Collectors.toList());
+					final String ret = erroreMsg(restoreResult);
+
+					if(ret == null || ret.length() == 0) {
 						Thread.sleep(Devices.MULTI_QUERY_DELAY);
 						device.refreshSettings();
 						Thread.sleep(Devices.MULTI_QUERY_DELAY);

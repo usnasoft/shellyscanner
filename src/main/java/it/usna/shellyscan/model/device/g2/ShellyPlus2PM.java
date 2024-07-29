@@ -229,12 +229,16 @@ public class ShellyPlus2PM extends AbstractG2Device implements ModulesHolder, In
 		return (addOn != null) ? SensorAddOn.getInfoRequests(cmd) : cmd;
 	}
 	
+	public void setProfile(boolean cover) {
+		postCommand("Shelly.SetProfile", "{\"name\":\"" + (cover ? "cover" : "switch")  +"\"}");
+	}
+	
 	@Override
 	public void restoreCheck(Map<String, JsonNode> backupJsons, Map<RestoreMsg, Object> res) throws IOException {
 		JsonNode devInfo = backupJsons.get("Shelly.GetDeviceInfo.json");
 		boolean backModeRelay = MODE_RELAY.equals(devInfo.get("profile").asText());
 		if(backModeRelay != modeRelay) {
-			res.put(RestoreMsg.WARN_RESTORE_MODE_COVER, null);
+			res.put(RestoreMsg.ERR_RESTORE_MODE_COVER, null);
 		}
 		try {
 			configure(); // maybe useless in case of mDNS use since you must reboot before -> on reboot the device registers again on mDNS ad execute a reload
@@ -261,7 +265,7 @@ public class ShellyPlus2PM extends AbstractG2Device implements ModulesHolder, In
 				errors.add(roller.restore(configuration));
 			}
 		} else {
-			errors.add(RestoreMsg.WARN_RESTORE_MODE_COVER.name());
+			errors.add(RestoreMsg.ERR_RESTORE_MODE_COVER.name());
 		}
 
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);

@@ -164,7 +164,7 @@ public class WallDisplay extends AbstractG2Device implements ModulesHolder {
 		JsonNode backupConfiguration = backupJsons.get("Shelly.GetConfig.json");
 		boolean thermMode = backupConfiguration.get("thermostat:0") != null;
 		if((thermMode && thermostat == null) || (thermMode == false && thermostat != null)) {
-			res.put(RestoreMsg.WARN_RESTORE_MODE_THERM, null);
+			res.put(RestoreMsg.ERR_RESTORE_MODE_THERM, null);
 		}
 	}
 
@@ -178,7 +178,7 @@ public class WallDisplay extends AbstractG2Device implements ModulesHolder {
 		} else if(thermMode == false && relay != null) {
 			errors.add(relay.restore(backupConfiguration));
 		} else {
-			errors.add(RestoreMsg.WARN_RESTORE_MODE_THERM.name());
+			errors.add(RestoreMsg.ERR_RESTORE_MODE_THERM.name());
 		}
 		
 		ObjectNode ui = (ObjectNode)backupConfiguration.get("ui").deepCopy();

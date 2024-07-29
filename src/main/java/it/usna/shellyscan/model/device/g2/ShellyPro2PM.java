@@ -172,13 +172,17 @@ public class ShellyPro2PM extends AbstractProDevice implements ModulesHolder, In
 			roller.fillStatus(cover);
 		}
 	}
+	
+	public void setProfile(boolean cover) {
+		postCommand("Shelly.SetProfile", "{\"name\":\"" + (cover ? "cover" : "switch")  +"\"}");
+	}
 
 	@Override
 	public void restoreCheck(Map<String, JsonNode> backupJsons, Map<RestoreMsg, Object> res) {
 		JsonNode devInfo = backupJsons.get("Shelly.GetDeviceInfo.json");
 		boolean backModeRelay = MODE_RELAY.equals(devInfo.get("profile").asText());
 		if(backModeRelay != modeRelay) {
-			res.put(RestoreMsg.WARN_RESTORE_MODE_COVER, null);
+			res.put(RestoreMsg.ERR_RESTORE_MODE_COVER, null);
 		}
 	}
 
@@ -199,7 +203,7 @@ public class ShellyPro2PM extends AbstractProDevice implements ModulesHolder, In
 				errors.add(roller.restore(configuration));
 			}
 		} else {
-			errors.add(RestoreMsg.WARN_RESTORE_MODE_COVER.name());
+			errors.add(RestoreMsg.ERR_RESTORE_MODE_COVER.name());
 		}
 	}
 
@@ -228,3 +232,5 @@ public class ShellyPro2PM extends AbstractProDevice implements ModulesHolder, In
 "profile" : "switch"
 }
  */
+
+//{"method":"shelly.setprofile","id":10,"src":"ad382a6a-9f44-4afb-8b86-da2bc20ba78b","params":{"name":"cover"}}
