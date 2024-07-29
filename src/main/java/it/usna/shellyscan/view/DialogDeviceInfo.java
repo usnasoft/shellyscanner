@@ -201,7 +201,9 @@ public class DialogDeviceInfo extends JDialog implements UsnaEventListener<Devic
 			panel.setCursor(Cursor.getDefaultCursor());
 		}, Devices.MULTI_QUERY_DELAY, TimeUnit.MILLISECONDS);
 		JScrollPane scrollPane = new JScrollPane(textPane);
+		scrollPane.getVerticalScrollBar().setUnitIncrement(16);
 		panel.add(scrollPane);
+		
 		// final Action topAction = new UsnaAction(e -> {
 		// scrollPane.getVerticalScrollBar().setValue(0);
 		// }

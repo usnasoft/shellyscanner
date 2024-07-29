@@ -185,12 +185,8 @@ public class WallDisplay extends AbstractG2Device implements ModulesHolder {
 		ObjectNode out = JsonNodeFactory.instance.objectNode().set("config", ui);
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 		errors.add(postCommand("Ui.SetConfig", out));
-
-//		ObjectNode outConfig = JsonNodeFactory.instance.objectNode();
-//		ObjectNode outSys = JsonNodeFactory.instance.objectNode();
-//		outSys.set("ext_sensor_id", backupConfiguration.at("/sys/ext_sensor_id"));
-//		outConfig.set("config", outSys);
-//		errors.add(postCommand("Sys.SetConfig", outConfig));
+		
+		// can't restore /sys/ext_sensor_id since external sensor must approve
 
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 		errors.add(postCommand("Temperature.SetConfig", createIndexedRestoreNode(backupConfiguration, "temperature", 0)));
@@ -210,6 +206,25 @@ public class WallDisplay extends AbstractG2Device implements ModulesHolder {
 	}
 }
 
-// http://deviceip/rpc/Shelly.ListMethods
 // http://192.168.1.28/rpc/Thermostat.Schedule.ListProfiles?id=0
 // http://192.168.1.28/rpc/Thermostat.Schedule.ListRules?id=0&profile_id=0
+
+/*
+http://deviceip/rpc/Shelly.ListMethods
+
+{"methods":["BLE.GetConfig","BLE.GetStatus","BLE.SetConfig","Button.GetConfig","Button.GetStatus","Button.SetConfig","Button.Trigger","Cloud.GetConfig","Cloud.GetStatus",
+"Cloud.SetConfig","DevicePower.GetStatus","Humidity.GetConfig","Humidity.GetStatus","Humidity.SetConfig","Illuminance.GetConfig","Illuminance.GetStatus","Illuminance.SetConfig",
+"Input.GetConfig","Input.GetStatus","Input.SetConfig","Input.Trigger","Media.Delete","Media.GetConfig","Media.GetStatus","Media.List","Media.ListAudioAlbums","Media.ListAudioArtists",
+"Media.MediaPlayer.Next","Media.MediaPlayer.Pause","Media.MediaPlayer.Play","Media.MediaPlayer.PlayAudioClip","Media.MediaPlayer.PlayOrPause","Media.MediaPlayer.Previous",
+"Media.MediaPlayer.Stop","Media.PutMedia","Media.Radio.ListFavourites","Media.Radio.PlayFavourite","Media.Radio.PlayNextFavourite","Media.Radio.PlayPreviousFavourite","Media.Radio.Stop",
+"Media.Reload","Media.SetVolume","Mqtt.GetConfig","Mqtt.GetStatus","Mqtt.SetConfig","Schedule.Create","Schedule.Delete","Schedule.DeleteAll","Schedule.GetConfig","Schedule.GetStatus",
+"Schedule.List","Schedule.SetConfig","Schedule.Update","Script.GetConfig","Script.GetStatus","Script.List","Script.SetConfig","Shelly.CheckForUpdate","Shelly.DetectLocation",
+"Shelly.FactoryReset","Shelly.GetComponents","Shelly.GetConfig","Shelly.GetDeviceInfo","Shelly.GetStatus","Shelly.ListMethods","Shelly.ListTimezones","Shelly.PutUserCA","Shelly.Reboot",
+"Shelly.ResetAuthCode","Shelly.SetAuth","Shelly.SetConfig","Shelly.Update","Switch.GetConfig","Switch.GetStatus","Switch.Set","Switch.SetConfig","Switch.Toggle","Sys.GetConfig",
+"Sys.GetInternalTemperatures","Sys.GetStatus","Sys.ListDebugComponents","Sys.RestartApplication","Sys.SetConfig","Sys.SetDebugConfig","Temperature.GetConfig","Temperature.GetStatus",
+"Temperature.SetConfig","Thermostat.Create","Thermostat.Delete","Thermostat.GetConfig","Thermostat.GetStatus","Thermostat.Schedule.AddProfile","Thermostat.Schedule.AddRule",
+"Thermostat.Schedule.ChangeRule","Thermostat.Schedule.DeleteProfile","Thermostat.Schedule.DeleteRule","Thermostat.Schedule.ListProfiles","Thermostat.Schedule.ListRules",
+"Thermostat.Schedule.RenameProfile","Thermostat.Schedule.SetConfig","Thermostat.SetConfig","Ui.GetConfig","Ui.GetStatus","Ui.ListAvailable","Ui.SetConfig","Ui.Tap","Virtual.Add",
+"Virtual.Delete","Virtual.List","Virtual.ListSupported","Webhook.Create","Webhook.Delete","Webhook.DeleteAll","Webhook.List","Webhook.ListSupported","Webhook.Update","WiFi.GetConfig",
+"WiFi.GetStatus","WiFi.SavedNetworks.Delete","WiFi.SavedNetworks.List","WiFi.Scan","WiFi.SetConfig","Ws.GetConfig","Ws.GetStatus","Ws.SetConfig"]}
+*/
