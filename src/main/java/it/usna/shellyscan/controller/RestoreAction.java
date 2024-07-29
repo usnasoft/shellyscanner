@@ -166,8 +166,8 @@ public class RestoreAction extends UsnaSelectedAction {
 					mainView.getContentPane().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 					appProp.setProperty("LAST_PATH", fc.getCurrentDirectory().getCanonicalPath());
 					final String ret = erroreMsg(device.restore(backupJsons, resData));
-
-					if(ret == null || ret.length() == 0) {
+					
+					if(ret == null || ret.length() == 0 || test.containsKey(RestoreMsg.valueOf(ret))) { // test.containsKey(RestoreMsg.valueOf(ret) ->  warning already showed
 						Thread.sleep(Devices.MULTI_QUERY_DELAY);
 						device.refreshSettings();
 						Thread.sleep(Devices.MULTI_QUERY_DELAY);
@@ -209,7 +209,7 @@ public class RestoreAction extends UsnaSelectedAction {
 							});
 						} else {
 							LOG.error("Restore error {} {}", device, ret);
-							Msg.showMsg(mainView, (ret.equals(RestoreMsg.ERR_UNKNOWN.name())) ? LABELS.getString("labelError") : ret, device.getHostname(), JOptionPane.ERROR_MESSAGE);
+							Msg.showMsg(mainView, /*(ret.equals(RestoreMsg.ERR_UNKNOWN.name())) ? LABELS.getString("labelError") :*/ ret, device.getHostname(), JOptionPane.ERROR_MESSAGE);
 						}
 					}
 

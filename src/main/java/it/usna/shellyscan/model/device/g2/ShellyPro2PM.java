@@ -178,7 +178,7 @@ public class ShellyPro2PM extends AbstractProDevice implements ModulesHolder, In
 		JsonNode devInfo = backupJsons.get("Shelly.GetDeviceInfo.json");
 		boolean backModeRelay = MODE_RELAY.equals(devInfo.get("profile").asText());
 		if(backModeRelay != modeRelay) {
-			res.put(RestoreMsg.ERR_RESTORE_MODE_COVER, null);
+			res.put(RestoreMsg.WARN_RESTORE_MODE_COVER, null);
 		}
 	}
 
@@ -199,7 +199,7 @@ public class ShellyPro2PM extends AbstractProDevice implements ModulesHolder, In
 				errors.add(roller.restore(configuration));
 			}
 		} else {
-			errors.add(RestoreMsg.ERR_RESTORE_MODE_COVER.name());
+			errors.add(RestoreMsg.WARN_RESTORE_MODE_COVER.name());
 		}
 	}
 
