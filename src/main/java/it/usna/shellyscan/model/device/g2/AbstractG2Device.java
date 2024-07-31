@@ -48,6 +48,7 @@ import it.usna.shellyscan.model.device.RestoreMsg;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.WIFIManager;
 import it.usna.shellyscan.model.device.WIFIManager.Network;
+import it.usna.shellyscan.model.device.g2.modules.DynamicComponents;
 import it.usna.shellyscan.model.device.g2.modules.KVS;
 import it.usna.shellyscan.model.device.g2.modules.Script;
 import it.usna.shellyscan.model.device.g2.modules.SensorAddOn;
@@ -387,10 +388,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 				if(sameHost == false) {
 					res.put(RestoreMsg.PRE_QUESTION_RESTORE_HOST, fileHostname);
 				}
-				JsonNode virtualComponents = backupJsons.get("Shelly.GetComponents.json");
-				if(virtualComponents != null && virtualComponents.path("components").size() > 0) {
-					res.put(RestoreMsg.WARN_RESTORE_VIRTUAL, null);
-				}
+				DynamicComponents.restoreCheck(this, backupJsons, res);
 				if(devInfo.path("auth_en").asBoolean()) {
 					res.put(RestoreMsg.RESTORE_LOGIN, LoginManagerG2.LOGIN_USER);
 				}
