@@ -442,7 +442,8 @@ public class ScriptFrame extends JFrame {
 		caretLabel = new JLabel(editor.getCaretRow() + " : " + editor.getCaretColumn());
 		caretLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 8));
 		editor.addCaretListener(e -> caretLabel.setText(editor.getCaretRow() + " : " + editor.getCaretColumn()));
-
+		scrollPane.getVerticalScrollBar().setUnitIncrement(editor.getFont().getSize());
+		
 		return mainEditorPanel;
 	}
 	
@@ -488,6 +489,8 @@ public class ScriptFrame extends JFrame {
 		toolBar.add(erase).setBorder(BorderFactory.createEmptyBorder(1, 2, 0, 2));
 		
 		mainLogPanel.add(toolBar, BorderLayout.NORTH);
+		scrollPane.getVerticalScrollBar().setUnitIncrement(editor.getFont().getSize());
+		
 		return mainLogPanel;
 	}
 	

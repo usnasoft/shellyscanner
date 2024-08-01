@@ -325,6 +325,7 @@ public class SensorAddOn extends Meters {
 					String sensor = entry.getKey();
 					//System.out.println(sensor);
 					Iterator<Entry<String, JsonNode>> id = entry.getValue().fields();
+					String prevIndex = "";
 					while(id.hasNext()) {
 						Entry<String, JsonNode> input = id.next();
 						String inputKey = input.getKey();
@@ -332,10 +333,13 @@ public class SensorAddOn extends Meters {
 						//System.out.println(id.next().getKey());
 						TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 						String index = inputKey.substring(inputKey.indexOf(':') + 1);
-						if(inputValue.has("addr")) {
-							errors.add(addSensor(d, sensor, index, inputValue.get("addr").asText()));
-						} else {
-							errors.add(addSensor(d, sensor, index));
+						if(index.equals(prevIndex) == false) { // dht22 have 2 entries but must be added once
+							prevIndex = index;
+							if(inputValue.has("addr")) {
+								errors.add(addSensor(d, sensor, index, inputValue.get("addr").asText()));
+							} else {
+								errors.add(addSensor(d, sensor, index));
+							}
 						}
 					}
 				}

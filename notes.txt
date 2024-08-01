@@ -266,6 +266,7 @@ Keyword column - (second field on notes)
 Default filter 
 range extender enable restore
 addon config restore improved (3 steps)
+dht22 restore fix
 
 ---
 // TODO
