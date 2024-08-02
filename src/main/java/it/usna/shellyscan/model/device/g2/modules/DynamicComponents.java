@@ -35,6 +35,19 @@ public class DynamicComponents {
 //		}
 	}
 	
+	// todo - si puo' rimuovere un component che si trova in un gruppo?
+	public void deleteAllVirtual(AbstractG2Device parent) throws IOException {
+		JsonNode components = parent.getJSON("/rpc/Shelly.GetComponents?dynamic_only=true").path("components");
+		Iterator<JsonNode> compIt = components.path("components").iterator();
+		while (compIt.hasNext()) {
+			JsonNode comp = compIt.next();
+			String key = comp.get("key").asText();
+			if(Arrays.stream(VIRTUAL_TYPES).anyMatch(type -> key.toLowerCase().startsWith(type.toLowerCase() + ":"))) {
+				parent.postCommand("Virtual.Delete", "key=\"" + key + "\"");
+			}
+		}
+	}
+	
 	public static void restoreCheck(AbstractG2Device d, Map<String, JsonNode> backupJsons, Map<RestoreMsg, Object> res) {
 		JsonNode virtualComponents = backupJsons.get("Shelly.GetComponents.json");
 		if(virtualComponents != null && virtualComponents.path("components").size() > 0) {
@@ -42,7 +55,8 @@ public class DynamicComponents {
 		}
 	}
 	
-	// todo Group.Set last  - solo componenti esistenti (BTHOME_TYPES)
+	// todo si puo' fare Group.Set con componenti non ancora creati?
+	//Group.Set last - solo componenti esistenti (BTHOME_TYPES)
 	public static void restore(AbstractG2Device d, Map<String, JsonNode> backupJsons, List<String> errors) throws InterruptedException {
 		JsonNode components = backupJsons.get("Shelly.GetComponents.json");
 		if(components != null) {
