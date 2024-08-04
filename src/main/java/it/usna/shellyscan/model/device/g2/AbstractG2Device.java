@@ -524,7 +524,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 			}
 			
 			errors.add("->r_step:DynamicComponents");
-//			DynamicComponents.restore(this, backupJsons, errors);
+			DynamicComponents.restore(this, backupJsons, errors);
 		} catch(RuntimeException | InterruptedException e) {
 			LOG.error("restore - RuntimeException", e);
 			errors.add(RestoreMsg.ERR_UNKNOWN.toString());

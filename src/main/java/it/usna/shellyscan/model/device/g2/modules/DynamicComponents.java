@@ -1,13 +1,18 @@
 package it.usna.shellyscan.model.device.g2.modules;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
@@ -15,87 +20,136 @@ import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.RestoreMsg;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 
+/**
+ * Reference: https://shelly-api-docs.shelly.cloud/gen2/DynamicComponents/
+ * <br>
+ * IDs for these components start from 200 and are limited to 299.
+ */
 public class DynamicComponents {
-//	private final static Logger LOG = LoggerFactory.getLogger(DynamicComponents.class);
+	private final static Logger LOG = LoggerFactory.getLogger(DynamicComponents.class);
 	
 	private final static String[] VIRTUAL_TYPES = {"Boolean", "Number", "Text", "Enum", "Group", "Button"};
 	private final static String[] BTHOME_TYPES = {"BTHomeDevice", "BTHomeSensor"};
 	
+//	/**
+//	 * @param components - result of <IP>/rpc/Shelly.GetComponents?dynamic_only=true
+//	 */
+//	public DynamicComponents(JsonNode components) {
+//		components.path("components");
+//	}
+//	
+//	public DynamicComponents(AbstractG2Device parent) throws IOException {
+//		JsonNode components = parent.getJSON("/rpc/Shelly.GetComponents?dynamic_only=true").path("components");
+////		for(int i= 0; i < components.size(); i++) {
+////			
+////		}
+//	}
+
 	/**
-	 * @param components - result of <IP>/rpc/Shelly.GetComponents?dynamic_only=true
+	 * Remove all virtual components.<br>
+	 * Note: if a component is removed and it is grouped it is also removed from its group  
+	 * @return the List<String> of not removed dynamic components (usually bthome components).
 	 */
-	public DynamicComponents(JsonNode components) {
-		components.path("components");
-	}
-	
-	public DynamicComponents(AbstractG2Device parent) throws IOException {
-		JsonNode components = parent.getJSON("/rpc/Shelly.GetComponents?dynamic_only=true").path("components");
-//		for(int i= 0; i < components.size(); i++) {
-//			
-//		}
-	}
-	
-	// todo - si puo' rimuovere un component che si trova in un gruppo?
-	public void deleteAllVirtual(AbstractG2Device parent) throws IOException {
-		JsonNode components = parent.getJSON("/rpc/Shelly.GetComponents?dynamic_only=true").path("components");
-		Iterator<JsonNode> compIt = components.path("components").iterator();
+	private static List<String> deleteAllVirtual(AbstractG2Device parent) throws IOException, InterruptedException {
+		List<String> dynamicKeys = new ArrayList<>();
+		JsonNode currenteComponents = parent.getJSON("/rpc/Shelly.GetComponents?dynamic_only=true").path("components");
+		Iterator<JsonNode> compIt = currenteComponents.iterator();
 		while (compIt.hasNext()) {
 			JsonNode comp = compIt.next();
 			String key = comp.get("key").asText();
 			if(Arrays.stream(VIRTUAL_TYPES).anyMatch(type -> key.toLowerCase().startsWith(type.toLowerCase() + ":"))) {
-				parent.postCommand("Virtual.Delete", "key=\"" + key + "\"");
+				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+				parent.postCommand("Virtual.Delete", "{\"key\":\"" + key + "\"}");
+			} else {
+				dynamicKeys.add(key);
 			}
 		}
+		return dynamicKeys;
 	}
 	
 	public static void restoreCheck(AbstractG2Device d, Map<String, JsonNode> backupJsons, Map<RestoreMsg, Object> res) {
-		JsonNode virtualComponents = backupJsons.get("Shelly.GetComponents.json");
-		if(virtualComponents != null && virtualComponents.path("components").size() > 0) {
-			res.put(RestoreMsg.WARN_RESTORE_VIRTUAL, null);
+		JsonNode storedComponents = backupJsons.get("Shelly.GetComponents.json").path("components");
+		Iterator<JsonNode> compIt = storedComponents.iterator();
+		while (compIt.hasNext()) {
+			JsonNode comp = compIt.next();
+			String key = comp.get("key").asText();
+			if(Arrays.stream(BTHOME_TYPES).anyMatch(type -> key.toLowerCase().startsWith(type.toLowerCase() + ":"))) {
+				res.put(RestoreMsg.WARN_RESTORE_BTHOME, null);
+				break;
+			}
+		}
+
+//		try {
+//			JsonNode currenteComponents = d.getJSON("/rpc/Shelly.GetComponents?dynamic_only=true").path("components");
+//			JsonNode storedComponents = backupJsons.get("Shelly.GetComponents.json");
+//
+//			Iterator<JsonNode> compIt = storedComponents.iterator();
+//			while (compIt.hasNext()) {
+//				JsonNode comp = compIt.next();
+//				if(comp.get("key").asText().toLowerCase().startsWith("bthomedevice:")) {
+//					String addr = comp.at("/config/addr").asText();
+//					if(currenteComponents.size() > 0 && ((ArrayNode)currenteComponents).equals(addr, null))
+//				}
+//			}
+//		} catch (IOException e) {
+//			LOG.error("DynamicComponents.restoreCheck", e);
+//		}
+	}
+
+	public static void restore(AbstractG2Device d, Map<String, JsonNode> backupJsons, List<String> errors) throws InterruptedException {
+		try {
+			List<String> existingKeys = deleteAllVirtual(d);
+			
+			JsonNode components = backupJsons.get("Shelly.GetComponents.json");
+			if(components != null) {
+				List<GroupValue> groupsValues = new ArrayList<>();
+				Iterator<JsonNode> compIt = components.path("components").iterator();
+				while (compIt.hasNext()) {
+					JsonNode comp = compIt.next();
+					String key = comp.get("key").asText();
+					String typeIdx[] = key.split(":");
+					if(typeIdx.length == 2 && Arrays.stream(VIRTUAL_TYPES).anyMatch(typeIdx[0]::equalsIgnoreCase)) {
+						TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+						ObjectNode out = JsonNodeFactory.instance.objectNode();
+						out.put("type", typeIdx[0]);
+						out.put("id", Integer.parseInt(typeIdx[1]));
+						ObjectNode config = (ObjectNode)comp.path("config").deepCopy();
+						config.remove("id");
+						out.set("config", config);
+						errors.add(d.postCommand("Virtual.Add", out));
+						existingKeys.add(key);
+
+						JsonNode value;
+						if(typeIdx[0].equalsIgnoreCase("Group") && (value = comp.path("status").get("value")) != null && value.size() > 0) {
+							groupsValues.add(new GroupValue(Integer.parseInt(typeIdx[1]), (ArrayNode)value));
+						}
+					}
+				}
+				// group values after all components have been added
+				for(GroupValue val: groupsValues) {
+					ObjectNode grValue = JsonNodeFactory.instance.objectNode();
+					groupRestoreValues(val.value, existingKeys);
+					grValue.put("id", val.id);
+					grValue.set("value", val.value); // todo only values included in existingKeys
+					TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+					errors.add(d.postCommand("Group.Set", grValue));
+				}
+			}
+		} catch (IOException e) {
+			LOG.error("DynamicComponents.restore", e);
 		}
 	}
 	
-	// todo si puo' fare Group.Set con componenti non ancora creati?
-	//Group.Set last - solo componenti esistenti (BTHOME_TYPES)
-	public static void restore(AbstractG2Device d, Map<String, JsonNode> backupJsons, List<String> errors) throws InterruptedException {
-		JsonNode components = backupJsons.get("Shelly.GetComponents.json");
-		if(components != null) {
-			Iterator<JsonNode> compIt = components.path("components").iterator();
-			while (compIt.hasNext()) {
-				JsonNode comp = compIt.next();
-				String key = comp.get("key").asText();
-				String typeIdx[] = key.split(":");
-				if(typeIdx.length == 2 && Arrays.stream(VIRTUAL_TYPES).anyMatch(typeIdx[0]::equalsIgnoreCase)) {
-					TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-					ObjectNode out = JsonNodeFactory.instance.objectNode();
-					out.put("type", typeIdx[0]);
-					out.put("id", Integer.parseInt(typeIdx[1]));
-					ObjectNode config = (ObjectNode)comp.path("config").deepCopy();
-					config.remove("id");
-					out.set("config", config);
-					errors.add(d.postCommand("Virtual.Add", out));
-					
-					JsonNode value;
-					if(typeIdx[0].equalsIgnoreCase("Group") && (value = comp.path("status").get("value")) != null && value.size() > 0) {
-						TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-						ObjectNode grValue = JsonNodeFactory.instance.objectNode();
-						grValue.put("id", Integer.parseInt(typeIdx[1]));
-						grValue.set("value", value);
-						errors.add(d.postCommand("Group.Set", grValue));
-					}
-				}
+	// remove non existing components from orig
+	private static void groupRestoreValues(ArrayNode orig, List<String> existing) {
+		Iterator<JsonNode> toRestore = orig.iterator();
+		while(toRestore.hasNext()) {
+			String val = toRestore.next().asText();
+			if(existing.contains(val) == false) {
+				toRestore.remove();
 			}
 		}
 	}
+	
+	private record GroupValue(Integer id, ArrayNode value) {}
 }
-
-// ref: https://shelly-api-docs.shelly.cloud/gen2/DynamicComponents/
-// IDs for these components start from 200 and are limited to 299
-
-/* 
-restore VIRTUAL_TYPES solo se non ci sono componenti virtuali già inclusi
-aggiungere Group(s) solo al termine
-
-restore BTHOME_TYPES solo se non ci sono componenti BTHome già inclusi
-nei gruppi possono anche esserci BTHome
-*/

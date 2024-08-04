@@ -267,10 +267,12 @@ Default filter
 range extender enable restore
 addon config restore improved (3 steps)
 dht22 restore fix
+virtual comonents restore
+//todo bthome component restore (no install)
 
 ---
 // TODO
-// Xmod1 sganciare bottone se detatched
+// Xmod1 sganciare bottone se detatched (?)
 // Button push if no actions
 // add "knx" support
 // https://shelly-api-docs.shelly.cloud/gen2/DynamicComponents/BTHome/
