@@ -25,11 +25,12 @@ import it.usna.shellyscan.model.device.g2.AbstractG2Device;
  * <br>
  * IDs for these components start from 200 and are limited to 299.
  */
+//TODO restore BTHOME_TYPES configuration when same device is installed
 public class DynamicComponents {
 	private final static Logger LOG = LoggerFactory.getLogger(DynamicComponents.class);
 	
 	private final static String[] VIRTUAL_TYPES = {"Boolean", "Number", "Text", "Enum", "Group", "Button"};
-	private final static String[] BTHOME_TYPES = {"BTHomeDevice", "BTHomeSensor"};
+//	private final static String[] BTHOME_TYPES = {"BTHomeDevice", "BTHomeSensor"};
 	
 //	/**
 //	 * @param components - result of <IP>/rpc/Shelly.GetComponents?dynamic_only=true
@@ -68,33 +69,80 @@ public class DynamicComponents {
 	}
 	
 	public static void restoreCheck(AbstractG2Device d, Map<String, JsonNode> backupJsons, Map<RestoreMsg, Object> res) {
-		JsonNode storedComponents = backupJsons.get("Shelly.GetComponents.json").path("components");
-		Iterator<JsonNode> compIt = storedComponents.iterator();
-		while (compIt.hasNext()) {
-			JsonNode comp = compIt.next();
-			String key = comp.get("key").asText();
-			if(Arrays.stream(BTHOME_TYPES).anyMatch(type -> key.toLowerCase().startsWith(type.toLowerCase() + ":"))) {
-				res.put(RestoreMsg.WARN_RESTORE_BTHOME, null);
-				break;
-			}
-		}
-
-//		try {
-//			JsonNode currenteComponents = d.getJSON("/rpc/Shelly.GetComponents?dynamic_only=true").path("components");
-//			JsonNode storedComponents = backupJsons.get("Shelly.GetComponents.json");
-//
-//			Iterator<JsonNode> compIt = storedComponents.iterator();
-//			while (compIt.hasNext()) {
-//				JsonNode comp = compIt.next();
-//				if(comp.get("key").asText().toLowerCase().startsWith("bthomedevice:")) {
-//					String addr = comp.at("/config/addr").asText();
-//					if(currenteComponents.size() > 0 && ((ArrayNode)currenteComponents).equals(addr, null))
-//				}
+//		JsonNode storedComponents = backupJsons.get("Shelly.GetComponents.json").path("components");
+//		Iterator<JsonNode> compIt = storedComponents.iterator();
+//		while (compIt.hasNext()) {
+//			JsonNode comp = compIt.next();
+//			String key = comp.get("key").asText();
+//			if(Arrays.stream(BTHOME_TYPES).anyMatch(type -> key.toLowerCase().startsWith(type.toLowerCase() + ":"))) {
+//				res.put(RestoreMsg.WARN_RESTORE_BTHOME, null);
+//				break;
 //			}
-//		} catch (IOException e) {
-//			LOG.error("DynamicComponents.restoreCheck", e);
 //		}
+
+		try {
+			JsonNode currenteComponents = d.getJSON("/rpc/Shelly.GetComponents?dynamic_only=true").path("components");
+			JsonNode storedComponents = backupJsons.get("Shelly.GetComponents.json").path("components");
+
+			// BTHomeDevice -> stored ones are already installed on the device?
+			Iterator<JsonNode> storedIt = storedComponents.iterator();
+			while (storedIt.hasNext()) {
+				JsonNode storedComp = storedIt.next();
+				String storedKey = storedComp.get("key").asText().toLowerCase();
+				if(storedKey.startsWith("bthomedevice:")) {
+					boolean exists = false;
+					Iterator<JsonNode> it = currenteComponents.iterator();
+					while (it.hasNext()) {
+						JsonNode currentComp = storedIt.next();
+						if(storedKey.equals(currentComp.get("key").asText().toLowerCase()) && currentComp.at("/config/addr").equals(storedComp.at("/config/addr"))) {
+							exists = true;
+							break;
+						}
+					}
+					if(exists == false) {
+						res.put(RestoreMsg.WARN_RESTORE_BTHOME, null);
+						return;
+					}
+				}
+			}
+			
+			// BTHomeSensor -> stored ones are already installed on the device?
+			/*Iterator<JsonNode>*/ storedIt = storedComponents.iterator();
+			while (storedIt.hasNext()) {
+				JsonNode storedComp = storedIt.next();
+				String storedKey = storedComp.get("key").asText().toLowerCase();
+				if(storedKey.startsWith("bthomesensor:")) {
+					boolean exists = false;
+					Iterator<JsonNode> it = currenteComponents.iterator();
+					while (it.hasNext()) {
+						JsonNode currentComp = storedIt.next();
+						if(storedKey.equals(currentComp.get("key").asText().toLowerCase()) && currentComp.at("/config/addr").equals(storedComp.at("/config/addr"))
+								/*&& id*/) {
+							exists = true;
+							break;
+						}
+					}
+					if(exists == false) {
+						res.put(RestoreMsg.WARN_RESTORE_BTHOME, null);
+						return;
+					}
+				}
+			}
+		} catch (IOException e) {
+			LOG.error("DynamicComponents.restoreCheck", e);
+		}
 	}
+	
+//	private boolean exist(ArrayNode array, String val) {
+//		Iterator<JsonNode> it = array.iterator();
+//		while (it.hasNext()) {
+//			String node = it.next().asText();
+//			if(it.next().asText().equals(val)) {
+//				return true;
+//			}
+//		}
+//		return false;
+//	}
 
 	public static void restore(AbstractG2Device d, Map<String, JsonNode> backupJsons, List<String> errors) throws InterruptedException {
 		try {
@@ -129,7 +177,7 @@ public class DynamicComponents {
 				for(GroupValue val: groupsValues) {
 					ObjectNode grValue = JsonNodeFactory.instance.objectNode();
 					groupRestoreValues(val.value, existingKeys);
-					grValue.put("id", val.id);
+					grValue.put("id", val.groupId);
 					grValue.set("value", val.value); // todo only values included in existingKeys
 					TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 					errors.add(d.postCommand("Group.Set", grValue));
@@ -151,5 +199,5 @@ public class DynamicComponents {
 		}
 	}
 	
-	private record GroupValue(Integer id, ArrayNode value) {}
+	private record GroupValue(Integer groupId, ArrayNode value) {}
 }
