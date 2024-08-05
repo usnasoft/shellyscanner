@@ -25,63 +25,51 @@ import it.usna.shellyscan.model.device.g2.AbstractG2Device;
  * <br>
  * IDs for these components start from 200 and are limited to 299.
  */
-//TODO restore BTHOME_TYPES configuration when same device is installed
 public class DynamicComponents {
 	private final static Logger LOG = LoggerFactory.getLogger(DynamicComponents.class);
 	
 	private final static String[] VIRTUAL_TYPES = {"Boolean", "Number", "Text", "Enum", "Group", "Button"};
-//	private final static String[] BTHOME_TYPES = {"BTHomeDevice", "BTHomeSensor"};
+	private final static String BTHOME_DEVICE = "BTHomeDevice";
+	private final static String BTHOME_SENSOR = "BTHomeSensor";
 	
 //	/**
 //	 * @param components - result of <IP>/rpc/Shelly.GetComponents?dynamic_only=true
 //	 */
 //	public DynamicComponents(JsonNode components) {
-//		components.path("components");
 //	}
 //	
 //	public DynamicComponents(AbstractG2Device parent) throws IOException {
-//		JsonNode components = parent.getJSON("/rpc/Shelly.GetComponents?dynamic_only=true").path("components");
-////		for(int i= 0; i < components.size(); i++) {
-////			
-////		}
 //	}
 
 	/**
-	 * Remove all virtual components.<br>
+	 * Remove all dynamic components except BTHomeDevice(s).<br>
 	 * Note: if a component is removed and it is grouped it is also removed from its group  
 	 * @return the List<String> of not removed dynamic components (usually bthome components).
 	 */
-	private static List<String> deleteAllVirtual(AbstractG2Device parent) throws IOException, InterruptedException {
-		List<String> dynamicKeys = new ArrayList<>();
-		JsonNode currenteComponents = parent.getJSON("/rpc/Shelly.GetComponents?dynamic_only=true").path("components");
-		Iterator<JsonNode> compIt = currenteComponents.iterator();
+	private static List<String> deleteAll(AbstractG2Device parent) throws IOException, InterruptedException {
+		final List<String> devicesAddress = new ArrayList<>();
+		final JsonNode currenteComponents = parent.getJSON("/rpc/Shelly.GetComponents?dynamic_only=true").path("components");
+		final Iterator<JsonNode> compIt = currenteComponents.iterator();
 		while (compIt.hasNext()) {
 			JsonNode comp = compIt.next();
 			String key = comp.get("key").asText();
-			if(Arrays.stream(VIRTUAL_TYPES).anyMatch(type -> key.toLowerCase().startsWith(type.toLowerCase() + ":"))) {
+			if(Arrays.stream(VIRTUAL_TYPES).anyMatch(type -> key.toLowerCase().startsWith(type.toLowerCase() + ":"))) { // VIRTUAL_TYPES
 				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 				parent.postCommand("Virtual.Delete", "{\"key\":\"" + key + "\"}");
-			} else {
-				dynamicKeys.add(key);
+			} else if(key.toLowerCase().startsWith("bthomesensor" + ":")) { // BTHomeSensor
+				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+				String typeIdx[] = key.split(":");
+				parent.postCommand("BTHome.DeleteSensor", "{\"id\":" + typeIdx[1] + "}");
+			} else { // BTHomeDevice
+				devicesAddress.add(comp.at("/config/addr").asText());
 			}
 		}
-		return dynamicKeys;
+		return devicesAddress;
 	}
 	
-	public static void restoreCheck(AbstractG2Device d, Map<String, JsonNode> backupJsons, Map<RestoreMsg, Object> res) {
-//		JsonNode storedComponents = backupJsons.get("Shelly.GetComponents.json").path("components");
-//		Iterator<JsonNode> compIt = storedComponents.iterator();
-//		while (compIt.hasNext()) {
-//			JsonNode comp = compIt.next();
-//			String key = comp.get("key").asText();
-//			if(Arrays.stream(BTHOME_TYPES).anyMatch(type -> key.toLowerCase().startsWith(type.toLowerCase() + ":"))) {
-//				res.put(RestoreMsg.WARN_RESTORE_BTHOME, null);
-//				break;
-//			}
-//		}
-
+	public static void restoreCheck(AbstractG2Device parent, Map<String, JsonNode> backupJsons, Map<RestoreMsg, Object> res) {
 		try {
-			JsonNode currenteComponents = d.getJSON("/rpc/Shelly.GetComponents?dynamic_only=true").path("components");
+			JsonNode currenteComponents = parent.getJSON("/rpc/Shelly.GetComponents?dynamic_only=true").path("components");
 			JsonNode storedComponents = backupJsons.get("Shelly.GetComponents.json").path("components");
 
 			// BTHomeDevice -> stored ones are already installed on the device?
@@ -93,7 +81,7 @@ public class DynamicComponents {
 					boolean exists = false;
 					Iterator<JsonNode> it = currenteComponents.iterator();
 					while (it.hasNext()) {
-						JsonNode currentComp = storedIt.next();
+						JsonNode currentComp = it.next();
 						if(storedKey.equals(currentComp.get("key").asText().toLowerCase()) && currentComp.at("/config/addr").equals(storedComp.at("/config/addr"))) {
 							exists = true;
 							break;
@@ -107,70 +95,77 @@ public class DynamicComponents {
 			}
 			
 			// BTHomeSensor -> stored ones are already installed on the device?
-			/*Iterator<JsonNode>*/ storedIt = storedComponents.iterator();
-			while (storedIt.hasNext()) {
-				JsonNode storedComp = storedIt.next();
-				String storedKey = storedComp.get("key").asText().toLowerCase();
-				if(storedKey.startsWith("bthomesensor:")) {
-					boolean exists = false;
-					Iterator<JsonNode> it = currenteComponents.iterator();
-					while (it.hasNext()) {
-						JsonNode currentComp = storedIt.next();
-						if(storedKey.equals(currentComp.get("key").asText().toLowerCase()) && currentComp.at("/config/addr").equals(storedComp.at("/config/addr"))
-								/*&& id*/) {
-							exists = true;
-							break;
-						}
-					}
-					if(exists == false) {
-						res.put(RestoreMsg.WARN_RESTORE_BTHOME, null);
-						return;
-					}
-				}
-			}
-		} catch (IOException e) {
+//			storedIt = storedComponents.iterator();
+//			while (storedIt.hasNext()) {
+//				JsonNode storedComp = storedIt.next();
+//				String storedKey = storedComp.get("key").asText().toLowerCase();
+//				if(storedKey.startsWith("bthomesensor:")) {
+//					boolean exists = false;
+//					Iterator<JsonNode> it = currenteComponents.iterator();
+//					while (it.hasNext()) {
+//						JsonNode currentComp = it.next();
+//						if(storedKey.equals(currentComp.get("key").asText().toLowerCase()) &&
+//								currentComp.at("/config/addr").equals(storedComp.at("/config/addr")) &&
+//								currentComp.at("/config/obj_id").equals(storedComp.at("/config/obj_id"))) {
+//							exists = true;
+//							break;
+//						}
+//					}
+//					if(exists == false) {
+//						res.put(RestoreMsg.WARN_RESTORE_BTHOME, null);
+//						return;
+//					}
+//				}
+//			}
+		} catch (/*IO*/Exception e) { // beta version -> possible errors on firmware updates
 			LOG.error("DynamicComponents.restoreCheck", e);
 		}
 	}
-	
-//	private boolean exist(ArrayNode array, String val) {
-//		Iterator<JsonNode> it = array.iterator();
-//		while (it.hasNext()) {
-//			String node = it.next().asText();
-//			if(it.next().asText().equals(val)) {
-//				return true;
-//			}
-//		}
-//		return false;
-//	}
 
-	public static void restore(AbstractG2Device d, Map<String, JsonNode> backupJsons, List<String> errors) throws InterruptedException {
+	public static void restore(AbstractG2Device parent, Map<String, JsonNode> backupJsons, List<String> errors) throws InterruptedException {
 		try {
-			List<String> existingKeys = deleteAllVirtual(d);
+			final List<String> existingKeys = new ArrayList<>();
+			final List<String> existingDevices = deleteAll(parent);
 			
-			JsonNode components = backupJsons.get("Shelly.GetComponents.json");
-			if(components != null) {
+			final JsonNode storedComponents = backupJsons.get("Shelly.GetComponents.json");
+			if(storedComponents != null) {
 				List<GroupValue> groupsValues = new ArrayList<>();
-				Iterator<JsonNode> compIt = components.path("components").iterator();
-				while (compIt.hasNext()) {
-					JsonNode comp = compIt.next();
-					String key = comp.get("key").asText();
+				Iterator<JsonNode> storedIt = storedComponents.path("components").iterator();
+				while (storedIt.hasNext()) {
+					JsonNode storedComp = storedIt.next();
+					String key = storedComp.get("key").asText();
 					String typeIdx[] = key.split(":");
-					if(typeIdx.length == 2 && Arrays.stream(VIRTUAL_TYPES).anyMatch(typeIdx[0]::equalsIgnoreCase)) {
+					if(typeIdx.length == 2 && Arrays.stream(VIRTUAL_TYPES).anyMatch(typeIdx[0]::equalsIgnoreCase)) { // add virtual component
 						TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 						ObjectNode out = JsonNodeFactory.instance.objectNode();
 						out.put("type", typeIdx[0]);
 						out.put("id", Integer.parseInt(typeIdx[1]));
-						ObjectNode config = (ObjectNode)comp.path("config").deepCopy();
+						ObjectNode config = (ObjectNode)storedComp.path("config").deepCopy();
 						config.remove("id");
 						out.set("config", config);
-						errors.add(d.postCommand("Virtual.Add", out));
+						errors.add(parent.postCommand("Virtual.Add", out));
 						existingKeys.add(key);
 
-						JsonNode value;
-						if(typeIdx[0].equalsIgnoreCase("Group") && (value = comp.path("status").get("value")) != null && value.size() > 0) {
+						JsonNode value; // groups values are restored later
+						if(typeIdx[0].equalsIgnoreCase("Group") && (value = storedComp.path("status").get("value")) != null && value.size() > 0) {
 							groupsValues.add(new GroupValue(Integer.parseInt(typeIdx[1]), (ArrayNode)value));
 						}
+					} else if(typeIdx.length == 2 && typeIdx[0].equalsIgnoreCase(BTHOME_SENSOR) && existingDevices.contains(storedComp.at("/config/addr").asText())) { // add BTHome sensor
+						TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+						ObjectNode out = JsonNodeFactory.instance.objectNode();
+						out.set("config", storedComp.path("config"));
+						errors.add(parent.postCommand("BTHome.AddSensor", out));
+						existingKeys.add(key);
+					} else if(typeIdx.length == 2 && typeIdx[0].equalsIgnoreCase(BTHOME_DEVICE) && existingDevices.contains(storedComp.at("/config/addr").asText())) { // add BTHome sensor
+						TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+						ObjectNode out = JsonNodeFactory.instance.objectNode();
+						out.put("id", Integer.parseInt(typeIdx[1]));
+						ObjectNode config = (ObjectNode)storedComp.path("config").deepCopy();
+						config.remove("id");
+						config.remove("addr");
+						out.set("config", config);
+						errors.add(parent.postCommand("BTHomeDevice.SetConfig", out));
+						existingKeys.add(key);
 					}
 				}
 				// group values after all components have been added
@@ -180,10 +175,10 @@ public class DynamicComponents {
 					grValue.put("id", val.groupId);
 					grValue.set("value", val.value); // todo only values included in existingKeys
 					TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-					errors.add(d.postCommand("Group.Set", grValue));
+					errors.add(parent.postCommand("Group.Set", grValue));
 				}
 			}
-		} catch (IOException e) {
+		} catch (/*IO*/Exception e) { // beta version -> possible errors on firmware updates
 			LOG.error("DynamicComponents.restore", e);
 		}
 	}

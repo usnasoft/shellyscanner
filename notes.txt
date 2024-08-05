@@ -267,8 +267,7 @@ Default filter
 range extender enable restore
 addon config restore improved (3 steps)
 dht22 restore fix
-virtual comonents restore
-//todo bthome component restore (no install)
+virtual & bthome comonents restore (bthome not added)
 
 ---
 // TODO
