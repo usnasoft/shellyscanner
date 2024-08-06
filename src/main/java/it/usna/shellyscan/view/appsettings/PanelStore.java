@@ -119,6 +119,7 @@ public class PanelStore extends JPanel {
 		autoReloadCheckBox = new JCheckBox(LABELS.getString("dlgAppStoreAutoRetooltip"));
 		autoReloadCheckBox.setVerticalTextPosition(SwingConstants.TOP);
 		GridBagConstraints gbc_chckbxNewCheckBox = new GridBagConstraints();
+		gbc_chckbxNewCheckBox.fill = GridBagConstraints.HORIZONTAL;
 		gbc_chckbxNewCheckBox.gridwidth = 2;
 		gbc_chckbxNewCheckBox.anchor = GridBagConstraints.NORTHWEST;
 		gbc_chckbxNewCheckBox.insets = new Insets(0, 0, 0, 5);
