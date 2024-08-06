@@ -69,54 +69,33 @@ public class DynamicComponents {
 	
 	public static void restoreCheck(AbstractG2Device parent, Map<String, JsonNode> backupJsons, Map<RestoreMsg, Object> res) {
 		try {
-			JsonNode currenteComponents = parent.getJSON("/rpc/Shelly.GetComponents?dynamic_only=true").path("components");
-			JsonNode storedComponents = backupJsons.get("Shelly.GetComponents.json").path("components");
+			JsonNode storedComponentsFile = backupJsons.get("Shelly.GetComponents.json");
+			JsonNode storedComponents;
+			if(storedComponentsFile != null && (storedComponents = storedComponentsFile.get("components")).size() > 0) {
+				JsonNode currenteComponents = parent.getJSON("/rpc/Shelly.GetComponents?dynamic_only=true").path("components");
 
-			// BTHomeDevice -> stored ones are already installed on the device?
-			Iterator<JsonNode> storedIt = storedComponents.iterator();
-			while (storedIt.hasNext()) {
-				JsonNode storedComp = storedIt.next();
-				String storedKey = storedComp.get("key").asText().toLowerCase();
-				if(storedKey.startsWith("bthomedevice:")) {
-					boolean exists = false;
-					Iterator<JsonNode> it = currenteComponents.iterator();
-					while (it.hasNext()) {
-						JsonNode currentComp = it.next();
-						if(storedKey.equals(currentComp.get("key").asText().toLowerCase()) && currentComp.at("/config/addr").equals(storedComp.at("/config/addr"))) {
-							exists = true;
-							break;
+				// BTHomeDevice -> stored ones are already installed on the device?
+				Iterator<JsonNode> storedIt = storedComponents.iterator();
+				while (storedIt.hasNext()) {
+					JsonNode storedComp = storedIt.next();
+					String storedKey = storedComp.get("key").asText().toLowerCase();
+					if(storedKey.startsWith("bthomedevice:")) {
+						boolean exists = false;
+						Iterator<JsonNode> it = currenteComponents.iterator();
+						while (it.hasNext()) {
+							JsonNode currentComp = it.next();
+							if(storedKey.equals(currentComp.get("key").asText().toLowerCase()) && currentComp.at("/config/addr").equals(storedComp.at("/config/addr"))) {
+								exists = true;
+								break;
+							}
 						}
-					}
-					if(exists == false) {
-						res.put(RestoreMsg.WARN_RESTORE_BTHOME, null);
-						return;
+						if(exists == false) {
+							res.put(RestoreMsg.WARN_RESTORE_BTHOME, null);
+							return;
+						}
 					}
 				}
 			}
-			
-			// BTHomeSensor -> stored ones are already installed on the device?
-//			storedIt = storedComponents.iterator();
-//			while (storedIt.hasNext()) {
-//				JsonNode storedComp = storedIt.next();
-//				String storedKey = storedComp.get("key").asText().toLowerCase();
-//				if(storedKey.startsWith("bthomesensor:")) {
-//					boolean exists = false;
-//					Iterator<JsonNode> it = currenteComponents.iterator();
-//					while (it.hasNext()) {
-//						JsonNode currentComp = it.next();
-//						if(storedKey.equals(currentComp.get("key").asText().toLowerCase()) &&
-//								currentComp.at("/config/addr").equals(storedComp.at("/config/addr")) &&
-//								currentComp.at("/config/obj_id").equals(storedComp.at("/config/obj_id"))) {
-//							exists = true;
-//							break;
-//						}
-//					}
-//					if(exists == false) {
-//						res.put(RestoreMsg.WARN_RESTORE_BTHOME, null);
-//						return;
-//					}
-//				}
-//			}
 		} catch (/*IO*/Exception e) { // beta version -> possible errors on firmware updates
 			LOG.error("DynamicComponents.restoreCheck", e);
 		}
@@ -124,13 +103,12 @@ public class DynamicComponents {
 
 	public static void restore(AbstractG2Device parent, Map<String, JsonNode> backupJsons, List<String> errors) throws InterruptedException {
 		try {
-			final List<String> existingKeys = new ArrayList<>();
-			final List<String> existingDevices = deleteAll(parent);
-			
 			final JsonNode storedComponents = backupJsons.get("Shelly.GetComponents.json");
 			if(storedComponents != null) {
-				List<GroupValue> groupsValues = new ArrayList<>();
-				Iterator<JsonNode> storedIt = storedComponents.path("components").iterator();
+				final List<String> existingKeys = new ArrayList<>();
+				final List<String> existingDevices = deleteAll(parent);
+				final List<GroupValue> groupsValues = new ArrayList<>();
+				final Iterator<JsonNode> storedIt = storedComponents.path("components").iterator();
 				while (storedIt.hasNext()) {
 					JsonNode storedComp = storedIt.next();
 					String key = storedComp.get("key").asText();
@@ -156,7 +134,7 @@ public class DynamicComponents {
 						out.set("config", storedComp.path("config"));
 						errors.add(parent.postCommand("BTHome.AddSensor", out));
 						existingKeys.add(key);
-					} else if(typeIdx.length == 2 && typeIdx[0].equalsIgnoreCase(BTHOME_DEVICE) && existingDevices.contains(storedComp.at("/config/addr").asText())) { // add BTHome sensor
+					} else if(typeIdx.length == 2 && typeIdx[0].equalsIgnoreCase(BTHOME_DEVICE) && existingDevices.contains(storedComp.at("/config/addr").asText())) { // add BTHome device
 						TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 						ObjectNode out = JsonNodeFactory.instance.objectNode();
 						out.put("id", Integer.parseInt(typeIdx[1]));

@@ -464,6 +464,9 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 				return errors.size() > 0 ? errors : List.of(RestoreMsg.ERR_UNKNOWN.toString());
 			}
 			
+			errors.add("->r_step:DynamicComponents");
+			DynamicComponents.restore(this, backupJsons, errors);
+			
 			errors.add("->r_step:restoreCommonConfig");
 			restoreCommonConfig(config, delay, userPref, errors);
 
@@ -522,9 +525,6 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 			} else if(backupJsons.get("Shelly.GetDeviceInfo.json").path("auth_en").asBoolean() == false) {
 				errors.add(lm.disable());
 			}
-			
-			errors.add("->r_step:DynamicComponents");
-			DynamicComponents.restore(this, backupJsons, errors);
 		} catch(RuntimeException | InterruptedException e) {
 			LOG.error("restore - RuntimeException", e);
 			errors.add(RestoreMsg.ERR_UNKNOWN.toString());

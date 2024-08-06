@@ -686,6 +686,8 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 			devicesTable.setUptimeRenderMode(appProp.getProperty(ScannerProperties.PROP_UPTIME_MODE));
 			((UsnaTableModel)devicesTable.getModel()).fireTableDataChanged();
 			devicesTable.columnsWidthAdapt();
+		} else if(ScannerProperties.PROP_USE_ARCHIVE.equals(propKey)) {
+			devicesTable.clearSelection();
 		}
 	}
 	
