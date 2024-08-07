@@ -542,11 +542,11 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		tableSelectionListener = e -> {
 			if(e.getValueIsAdjusting() == false) {
 				boolean singleSelection, singleSelectionNoGhost, selection, selectionNoGhost;
-				int selectedRows = devicesTable.getSelectedRowCount();
-				singleSelection = singleSelectionNoGhost = selectedRows == 1;
-				selection = selectionNoGhost = selectedRows > 0;
+				int selectedRows[] = devicesTable.getSelectedRows();
+				singleSelection = singleSelectionNoGhost = (selectedRows.length == 1);
+				selection = selectionNoGhost = (selectedRows.length > 0);
 				ShellyAbstractDevice d = null;
-				for(int idx: devicesTable.getSelectedRows()) {
+				for(int idx: selectedRows) {
 					d = model.get(devicesTable.convertRowIndexToModel(idx));
 					if(d instanceof GhostDevice) {
 						selectionNoGhost = singleSelectionNoGhost = false;
