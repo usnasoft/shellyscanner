@@ -2,6 +2,7 @@ package it.usna.shellyscan.model.device;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.SocketTimeoutException;
 import java.util.List;
@@ -51,10 +52,18 @@ public abstract class ShellyAbstractDevice {
 		this.address = address;
 		this.port = port;
 		this.hostname = hostname;
-		if(port == 80) {
-			this.uriPrefix = "http://" + address.getHostAddress();
+		if(address instanceof Inet6Address) {
+			if(port == 80) {
+				this.uriPrefix = "http://[" + address.getHostAddress() + "]";
+			} else {
+				this.uriPrefix = "http://[" + address.getHostAddress() + "]:" + port;
+			}
 		} else {
-			this.uriPrefix = "http://" + address.getHostAddress() + ":" + port;
+			if(port == 80) {
+				this.uriPrefix = "http://" + address.getHostAddress();
+			} else {
+				this.uriPrefix = "http://" + address.getHostAddress() + ":" + port;
+			}
 		}
 	}
 	
