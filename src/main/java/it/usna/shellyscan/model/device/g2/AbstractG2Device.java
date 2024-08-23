@@ -172,11 +172,15 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 
 	@Override
 	public String setCloudEnabled(boolean enable) {
-		return postCommand("Cloud.SetConfig", "{\"config\":{\"enable\":" + enable + "}}");
+		String ret = postCommand("Cloud.SetConfig", "{\"config\":{\"enable\":" + enable + "}}");
+		if(ret == null) {
+			this.cloudEnabled = enable;
+		}
+		return ret;
 	}
 
-	public boolean setBLEMode(boolean ble) {
-		return postCommand("BLE.SetConfig", "{\"config\":{\"enable\":" + ble + "}}") == null;
+	public String setBLEMode(boolean ble) {
+		return postCommand("BLE.SetConfig", "{\"config\":{\"enable\":" + ble + "}}");
 	}
 
 	public boolean rebootRequired() {
@@ -212,7 +216,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 	}
 	
 	@Override
-	public TimeAndLocationManagerG2 getTimeAndLocationManager() {
+	public TimeAndLocationManagerG2 getTimeAndLocationManager() throws IOException {
 		return new TimeAndLocationManagerG2(this);
 	}
 

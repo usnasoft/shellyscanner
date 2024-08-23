@@ -225,7 +225,7 @@ public abstract class ShellyAbstractDevice {
 	
 	public abstract LoginManager getLoginManager() throws IOException;
 	
-	public abstract TimeAndLocationManager getTimeAndLocationManager();
+	public abstract TimeAndLocationManager getTimeAndLocationManager() throws IOException;
 
 	public abstract boolean backup(final File file) throws IOException; // false: use of stored data; could not connect to device
 	

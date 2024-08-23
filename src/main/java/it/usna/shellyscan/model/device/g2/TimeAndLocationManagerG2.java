@@ -8,20 +8,30 @@ import it.usna.shellyscan.model.device.TimeAndLocationManager;
 
 public class TimeAndLocationManagerG2 implements TimeAndLocationManager {
 	private final AbstractG2Device d;
+	private String server;
 	
-	public TimeAndLocationManagerG2(AbstractG2Device d) {
+	public TimeAndLocationManagerG2(AbstractG2Device d) throws IOException {
 		this.d = d;
+		init(d.getJSON("/rpc/Shelly.GetConfig"));
 	}
 	
+	private void init(JsonNode settings) {
+		server = settings.path("sys").path("sntp").path("server").textValue();
+	}
+	
+	
 	@Override
-	public String getSNTPServer() throws IOException {
-		JsonNode settings = d.getJSON("/rpc/Shelly.GetConfig");
-		return settings.path("sys").path("sntp").path("server").textValue();
+	public String getSNTPServer() {
+		return server;
 	}
 
 	@Override
 	public String setSNTPServer(String server) {
-		return d.postCommand("Sys.SetConfig", "{\"config\":{\"sntp\": {\"server\": \"" + server + "\"}}}");
+		String ret = d.postCommand("Sys.SetConfig", "{\"config\":{\"sntp\": {\"server\": \"" + server + "\"}}}");
+		if(ret == null) {
+			this.server = server;
+		}
+		return ret;
 	}
 }
 

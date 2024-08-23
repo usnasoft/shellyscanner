@@ -176,7 +176,11 @@ public abstract class AbstractG1Device extends ShellyAbstractDevice {
 	
 	@Override
 	public String setCloudEnabled(boolean enable) {
-		return sendCommand("/settings/cloud?enabled=" + enable);
+		String ret = sendCommand("/settings/cloud?enabled=" + enable);
+		if(ret == null) {
+			this.cloudEnabled = enable;
+		}
+		return ret;
 	}
 	
 	@Override
@@ -200,7 +204,7 @@ public abstract class AbstractG1Device extends ShellyAbstractDevice {
 	}
 
 	@Override
-	public TimeAndLocationManager getTimeAndLocationManager() {
+	public TimeAndLocationManager getTimeAndLocationManager() throws IOException {
 		return new TimeAndLocationManagerG1(this);
 	}
 	
