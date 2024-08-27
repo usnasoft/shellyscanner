@@ -55,7 +55,7 @@ public class PanelOthers extends AbstractSettingsPanel {
 	private final ButtonGroup radioCloudGroup = new ButtonGroup();
 	private JRadioButton radioCloudEnable;	
 	private JRadioButton radioCloudDisable;
-	private final ButtonGroup resetGroup = new ButtonGroup();
+	private final ButtonGroup radioResetGroup = new ButtonGroup();
 	private JRadioButton radioResetEnable;
 	private JRadioButton radioResetDisable;
 	
@@ -148,8 +148,8 @@ public class PanelOthers extends AbstractSettingsPanel {
 		gbc_radioResetDisable.gridy = 2;
 		contentPanel.add(radioResetDisable, gbc_radioResetDisable);
 		
-		resetGroup.add(radioResetEnable);
-		resetGroup.add(radioResetDisable);
+		radioResetGroup.add(radioResetEnable);
+		radioResetGroup.add(radioResetDisable);
 		
 		radioMainSectionGroup.add(rdbtnSNTP);
 		radioMainSectionGroup.add(rdbtnCloud);
@@ -164,18 +164,14 @@ public class PanelOthers extends AbstractSettingsPanel {
 	private void radioSelection(ActionEvent e) {
 		if(e == null || ((JRadioButton)e.getSource()).isSelected()) {
 			ntpServerTextField.setEnabled(false);
-			radioCloudEnable.setEnabled(false);
-			radioCloudDisable.setEnabled(false);
-			radioResetEnable.setEnabled(false);
-			radioResetDisable.setEnabled(false);
+			enableRadioGroup(radioCloudGroup, false);
+			enableRadioGroup(radioResetGroup, false);
 			if(rdbtnSNTP.isSelected()) {
 				ntpServerTextField.setEnabled(true);
 			} else if(rdbtnCloud.isSelected()) {
-				radioCloudEnable.setEnabled(true);
-				radioCloudDisable.setEnabled(true);
+				enableRadioGroup(radioCloudGroup, true);
 			} else if(rdbtnInReset.isSelected()) {
-				radioResetEnable.setEnabled(true);
-				radioResetDisable.setEnabled(true);
+				enableRadioGroup(radioResetGroup, true);
 			}
 		}
 	}
@@ -258,16 +254,12 @@ public class PanelOthers extends AbstractSettingsPanel {
 				radioResetDisable.setSelected(true);
 			}
 		} else {
-			resetGroup.clearSelection();
+			radioResetGroup.clearSelection();
 		}
 		
 		selectedRadio.setSelected(true); // form is now active
 		radioSelection(null);
 		enableRadioGroup(radioMainSectionGroup, true);
-		
-		
-		radioResetEnable.setSelected(false);
-		radioResetDisable.setSelected(false);
 		return null;
 	}
 
@@ -299,17 +291,17 @@ public class PanelOthers extends AbstractSettingsPanel {
 			if(device.getStatus() == Status.OFF_LINE || device instanceof GhostDevice) { // defer
 				res += String.format(LABELS.getString("dlgSetMultiMsgQueue"), device.getHostname()) + "<br>";
 				DeferrablesContainer dc = DeferrablesContainer.getInstance();
-				dc.addOrUpdate(parent.getModelIndex(i), DeferrableTask.Type.NTP, LABELS.getString("dlgNTPServer"), (def, dev) -> {
-					return dev.getTimeAndLocationManager().setSNTPServer(server);
-				});
+				dc.addOrUpdate(parent.getModelIndex(i), DeferrableTask.Type.NTP, LABELS.getString("dlgNTPServer"), (def, dev) ->
+					dev.getTimeAndLocationManager().setSNTPServer(server)
+				);
 			} else {
 				try {
-					TimeAndLocationManager timeManager = devicesData.get(i).timeManager;
+					DevData data = devicesData.get(i);
 					String msg;
-					if(timeManager == null) {
+					if(data == null) {
 						msg = device.getTimeAndLocationManager().setSNTPServer(server);
 					} else {
-						msg = timeManager.setSNTPServer(server);
+						msg = data.timeManager.setSNTPServer(server);
 					}
 					if(msg != null) {
 						if(LABELS.containsKey(msg)) {
@@ -337,9 +329,9 @@ public class PanelOthers extends AbstractSettingsPanel {
 				if(device.getStatus() == Status.OFF_LINE || device instanceof GhostDevice) { // defer
 					res += String.format(LABELS.getString("dlgSetMultiMsgQueue"), device.getHostname()) + "<br>";
 					DeferrablesContainer dc = DeferrablesContainer.getInstance();
-					dc.addOrUpdate(parent.getModelIndex(i), DeferrableTask.Type.CLOUD_ENABLE, LABELS.getString("dlgCloudConf"), (def, dev) -> {
-						return dev.setCloudEnabled(enable);
-					});
+					dc.addOrUpdate(parent.getModelIndex(i), DeferrableTask.Type.CLOUD_ENABLE, LABELS.getString("dlgCloudConf"), (def, dev) ->
+						dev.setCloudEnabled(enable)
+					);
 				} else {
 					String msg = device.setCloudEnabled(enable);
 					if(msg != null) {
@@ -368,17 +360,17 @@ public class PanelOthers extends AbstractSettingsPanel {
 				if(device.getStatus() == Status.OFF_LINE || device instanceof GhostDevice) { // defer
 					res += String.format(LABELS.getString("dlgSetMultiMsgQueue"), device.getHostname()) + "<br>";
 					DeferrablesContainer dc = DeferrablesContainer.getInstance();
-					dc.addOrUpdate(parent.getModelIndex(i), DeferrableTask.Type.INPUT_RESET_ENABLE, LABELS.getString("dlgResetConf"), (def, dev) -> {
-						return dev.getInputResetManager().enableReset(enable);
-					});
+					dc.addOrUpdate(parent.getModelIndex(i), DeferrableTask.Type.INPUT_RESET_ENABLE, LABELS.getString("dlgResetConf"), (def, dev) -> 
+						dev.getInputResetManager().enableReset(enable)
+					);
 				} else {
 					try {
-						InputResetManager resetManager = devicesData.get(i).inReset;
+						DevData data = devicesData.get(i);
 						String msg;
-						if(resetManager == null) {
+						if(data == null) {
 							msg = device.getInputResetManager().enableReset(enable);
 						} else {
-							msg = resetManager.enableReset(enable);
+							msg = data.inReset.enableReset(enable);
 						}
 						if(msg != null) {
 							if(LABELS.containsKey(msg)) {

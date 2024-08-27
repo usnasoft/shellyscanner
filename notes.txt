@@ -269,6 +269,10 @@ addon config restore improved (3 steps)
 dht22 restore fix
 virtual & bthome comonents restore (bthome not added)
 
+1.1.0
+Input reset configuration
+Shelly Pro EM-50
+
 ---
 // TODO
 // Xmod1 sganciare bottone se detatched (?)

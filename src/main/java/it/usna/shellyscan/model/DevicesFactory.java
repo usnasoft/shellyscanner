@@ -68,6 +68,7 @@ import it.usna.shellyscan.model.device.g2.ShellyPro2PM;
 import it.usna.shellyscan.model.device.g2.ShellyPro3;
 import it.usna.shellyscan.model.device.g2.ShellyPro4PM;
 import it.usna.shellyscan.model.device.g2.ShellyProDimmer1;
+import it.usna.shellyscan.model.device.g2.ShellyProEM50;
 import it.usna.shellyscan.model.device.g2.ShellyWallDimmer;
 import it.usna.shellyscan.model.device.g2.WallDisplay;
 import it.usna.shellyscan.model.device.g2.modules.LoginManagerG2;
@@ -237,6 +238,7 @@ public class DevicesFactory {
 				case ShellyPro3.ID -> new ShellyPro3(address, port, name);
 				case ShellyPro4PM.ID -> new ShellyPro4PM(address, port, name);
 				case ShellyProDimmer1.ID -> new ShellyProDimmer1(address, port, name);
+				case ShellyProEM50.ID -> new ShellyProEM50(address, port, name);
 				default -> new ShellyG2Unmanaged(address, port, name);
 			};
 		} catch(Exception e) { // really unexpected
