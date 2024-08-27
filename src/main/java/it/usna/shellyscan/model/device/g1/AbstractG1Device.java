@@ -33,14 +33,21 @@ import com.fasterxml.jackson.databind.node.NullNode;
 
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.BatteryDeviceInterface;
-import it.usna.shellyscan.model.device.FirmwareManager;
-import it.usna.shellyscan.model.device.LoginManager;
 import it.usna.shellyscan.model.device.RestoreMsg;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
-import it.usna.shellyscan.model.device.TimeAndLocationManager;
-import it.usna.shellyscan.model.device.WIFIManager;
-import it.usna.shellyscan.model.device.WIFIManager.Network;
 import it.usna.shellyscan.model.device.g1.modules.Actions;
+import it.usna.shellyscan.model.device.g1.modules.FirmwareManagerG1;
+import it.usna.shellyscan.model.device.g1.modules.InputResetManagerG1;
+import it.usna.shellyscan.model.device.g1.modules.LoginManagerG1;
+import it.usna.shellyscan.model.device.g1.modules.MQTTManagerG1;
+import it.usna.shellyscan.model.device.g1.modules.TimeAndLocationManagerG1;
+import it.usna.shellyscan.model.device.g1.modules.WIFIManagerG1;
+import it.usna.shellyscan.model.device.modules.FirmwareManager;
+import it.usna.shellyscan.model.device.modules.InputResetManager;
+import it.usna.shellyscan.model.device.modules.LoginManager;
+import it.usna.shellyscan.model.device.modules.TimeAndLocationManager;
+import it.usna.shellyscan.model.device.modules.WIFIManager;
+import it.usna.shellyscan.model.device.modules.WIFIManager.Network;
 
 /**
  * Base class for any gen1 Shelly device
@@ -206,6 +213,11 @@ public abstract class AbstractG1Device extends ShellyAbstractDevice {
 	@Override
 	public TimeAndLocationManager getTimeAndLocationManager() throws IOException {
 		return new TimeAndLocationManagerG1(this);
+	}
+	
+	@Override
+	public InputResetManager getInputResetManager() throws IOException {
+		return new InputResetManagerG1(this);
 	}
 	
 	@Override

@@ -12,8 +12,14 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
-import it.usna.shellyscan.model.device.WIFIManager.Network;
-import it.usna.shellyscan.model.device.g2.LoginManagerG2;
+import it.usna.shellyscan.model.device.g2.modules.LoginManagerG2;
+import it.usna.shellyscan.model.device.modules.FirmwareManager;
+import it.usna.shellyscan.model.device.modules.InputResetManager;
+import it.usna.shellyscan.model.device.modules.LoginManager;
+import it.usna.shellyscan.model.device.modules.MQTTManager;
+import it.usna.shellyscan.model.device.modules.TimeAndLocationManager;
+import it.usna.shellyscan.model.device.modules.WIFIManager;
+import it.usna.shellyscan.model.device.modules.WIFIManager.Network;
 
 public class GhostDevice extends ShellyAbstractDevice {
 	private final static Logger LOG = LoggerFactory.getLogger(GhostDevice.class);
@@ -136,6 +142,11 @@ public class GhostDevice extends ShellyAbstractDevice {
 	
 	@Override
 	public TimeAndLocationManager getTimeAndLocationManager() {
+		throw new UnsupportedOperationException();
+	}
+	
+	@Override
+	public InputResetManager getInputResetManager() {
 		throw new UnsupportedOperationException();
 	}
 

@@ -14,7 +14,7 @@ import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableModel;
 
 import it.usna.shellyscan.Main;
-import it.usna.shellyscan.model.device.FirmwareManager;
+import it.usna.shellyscan.model.device.modules.FirmwareManager;
 import it.usna.shellyscan.view.DevicesTable;
 import it.usna.swing.table.ExTooltipTable;
 

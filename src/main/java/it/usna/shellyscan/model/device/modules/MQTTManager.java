@@ -1,4 +1,4 @@
-package it.usna.shellyscan.model.device;
+package it.usna.shellyscan.model.device.modules;
 
 public interface MQTTManager {
 	

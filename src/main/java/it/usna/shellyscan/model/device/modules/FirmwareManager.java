@@ -1,4 +1,4 @@
-package it.usna.shellyscan.model.device;
+package it.usna.shellyscan.model.device.modules;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;

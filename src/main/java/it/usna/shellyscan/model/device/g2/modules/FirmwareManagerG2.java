@@ -1,4 +1,4 @@
-package it.usna.shellyscan.model.device.g2;
+package it.usna.shellyscan.model.device.g2.modules;
 
 import java.util.concurrent.TimeUnit;
 
@@ -6,7 +6,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.BatteryDeviceInterface;
-import it.usna.shellyscan.model.device.FirmwareManager;
+import it.usna.shellyscan.model.device.g2.AbstractG2Device;
+import it.usna.shellyscan.model.device.modules.FirmwareManager;
 
 //https://shelly-api-docs.shelly.cloud/gen2/Overview/CommonServices/Shelly#shellyupdate
 public class FirmwareManagerG2 implements FirmwareManager {

@@ -1,4 +1,4 @@
-package it.usna.shellyscan.model.device.g1;
+package it.usna.shellyscan.model.device.g1.modules;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -17,7 +17,8 @@ import org.eclipse.jetty.http.HttpStatus;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
-import it.usna.shellyscan.model.device.LoginManager;
+import it.usna.shellyscan.model.device.g1.AbstractG1Device;
+import it.usna.shellyscan.model.device.modules.LoginManager;
 
 public class LoginManagerG1 implements LoginManager {
 	private AbstractG1Device d;

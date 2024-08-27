@@ -1,10 +1,11 @@
-package it.usna.shellyscan.model.device.g1;
+package it.usna.shellyscan.model.device.g1.modules;
 
 import java.io.IOException;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
-import it.usna.shellyscan.model.device.TimeAndLocationManager;
+import it.usna.shellyscan.model.device.g1.AbstractG1Device;
+import it.usna.shellyscan.model.device.modules.TimeAndLocationManager;
 
 public class TimeAndLocationManagerG1 implements TimeAndLocationManager {
 	private final AbstractG1Device d;
@@ -13,6 +14,11 @@ public class TimeAndLocationManagerG1 implements TimeAndLocationManager {
 	public TimeAndLocationManagerG1(AbstractG1Device d) throws IOException {
 		this.d = d;
 		init(d.getJSON("/settings"));
+	}
+	
+	public TimeAndLocationManagerG1(AbstractG1Device d, JsonNode settings) {
+		this.d = d;
+		init(settings);
 	}
 	
 	private void init(JsonNode settings) {

@@ -42,17 +42,24 @@ import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.BatteryDeviceInterface;
 import it.usna.shellyscan.model.device.DeviceAPIException;
 import it.usna.shellyscan.model.device.DeviceOfflineException;
-import it.usna.shellyscan.model.device.FirmwareManager;
-import it.usna.shellyscan.model.device.LoginManager;
 import it.usna.shellyscan.model.device.RestoreMsg;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
-import it.usna.shellyscan.model.device.WIFIManager;
-import it.usna.shellyscan.model.device.WIFIManager.Network;
 import it.usna.shellyscan.model.device.g2.modules.DynamicComponents;
+import it.usna.shellyscan.model.device.g2.modules.FirmwareManagerG2;
+import it.usna.shellyscan.model.device.g2.modules.InputResetManagerG2;
 import it.usna.shellyscan.model.device.g2.modules.KVS;
+import it.usna.shellyscan.model.device.g2.modules.LoginManagerG2;
+import it.usna.shellyscan.model.device.g2.modules.MQTTManagerG2;
 import it.usna.shellyscan.model.device.g2.modules.Script;
 import it.usna.shellyscan.model.device.g2.modules.SensorAddOn;
+import it.usna.shellyscan.model.device.g2.modules.TimeAndLocationManagerG2;
+import it.usna.shellyscan.model.device.g2.modules.WIFIManagerG2;
 import it.usna.shellyscan.model.device.g2.modules.Webhooks;
+import it.usna.shellyscan.model.device.modules.FirmwareManager;
+import it.usna.shellyscan.model.device.modules.InputResetManager;
+import it.usna.shellyscan.model.device.modules.LoginManager;
+import it.usna.shellyscan.model.device.modules.WIFIManager;
+import it.usna.shellyscan.model.device.modules.WIFIManager.Network;
 
 /**
  * Base abstract class for any gen2(+) Shelly device
@@ -218,6 +225,11 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 	@Override
 	public TimeAndLocationManagerG2 getTimeAndLocationManager() throws IOException {
 		return new TimeAndLocationManagerG2(this);
+	}
+	
+	@Override
+	public InputResetManager getInputResetManager() throws IOException {
+		return new InputResetManagerG2(this);
 	}
 
 	public String postCommand(final String method, JsonNode payload) {

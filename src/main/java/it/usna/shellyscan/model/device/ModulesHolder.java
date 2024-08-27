@@ -1,4 +1,6 @@
-package it.usna.shellyscan.model.device.modules;
+package it.usna.shellyscan.model.device;
+
+import it.usna.shellyscan.model.device.modules.DeviceModule;
 
 public interface ModulesHolder {
 	
