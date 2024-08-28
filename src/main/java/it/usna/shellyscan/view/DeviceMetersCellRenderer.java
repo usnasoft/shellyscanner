@@ -57,7 +57,7 @@ public class DeviceMetersCellRenderer extends JPanel implements TableCellRendere
 				if(m != null) {
 					int j = 0;
 					for(Meters.Type t: m.getTypes()) {
-						if(m.isVisible(t)) {
+						if(isVisible(t)) {
 							JLabel label = new JLabel(Main.LABELS.getString("METER_LBL_" + t));
 							GridBagConstraints gbc_label = new GridBagConstraints();
 							gbc_label.insets = (j > 0) ? INSETS_LABEL2 : INSETS_LABEL1;
@@ -103,6 +103,19 @@ public class DeviceMetersCellRenderer extends JPanel implements TableCellRendere
 //			e.printStackTrace();
 //			return this;
 //		}
+	}
+	
+	private static boolean isVisible(Meters.Type t) {
+		return t != Meters.Type.VAR && t != Meters.Type.FREQ;
+	}
+	
+	public static boolean hasHiddenMeasures(Meters meters) {
+		for(Meters.Type t: meters.getTypes()) {
+			if(t == Meters.Type.VAR && t == Meters.Type.FREQ) {
+				return true;
+			}
+		}
+		return false;
 	}
 	
 //	public static void main(String ...strings) {

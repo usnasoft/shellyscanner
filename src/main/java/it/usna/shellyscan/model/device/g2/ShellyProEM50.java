@@ -60,16 +60,6 @@ public class ShellyProEM50 extends AbstractProDevice implements ModulesHolder, I
 					return voltage[ind];
 				}
 			}
-			
-			@Override
-			public boolean isVisible(Type t) {
-				return t != Type.VAR && t != Type.FREQ;
-			}
-			
-			@Override
-			public boolean hasHidden() {
-				return true;
-			}
 
 			@Override
 			public String getLabel() {
@@ -158,20 +148,6 @@ public class ShellyProEM50 extends AbstractProDevice implements ModulesHolder, I
 		errors.add(postCommand("EM1.SetConfig", createIndexedRestoreNode(config, "em1", 0)));
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 		errors.add(postCommand("EM1.SetConfig", createIndexedRestoreNode(config, "em1", 1)));
-		
-//		ObjectNode outConfig = JsonNodeFactory.instance.objectNode();
-//		ObjectNode emNode = configuration.get("em1:0").deepCopy();
-//		JsonNode idNode = emNode.remove("id");
-//		outConfig.set("config", emNode);
-//		outConfig.set("id", idNode);
-//		errors.add(postCommand("EM1.SetConfig", outConfig));
-//		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-//		
-//		emNode = configuration.get("em1:1").deepCopy();
-//		idNode = emNode.remove("id");
-//		outConfig.set("config", emNode);
-//		outConfig.set("id", idNode);
-//		errors.add(postCommand("EM1.SetConfig", outConfig));
 	}
 
 	@Override

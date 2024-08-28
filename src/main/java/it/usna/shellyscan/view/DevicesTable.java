@@ -235,7 +235,7 @@ public class DevicesTable extends ExTooltipTable {
 				return String.format(Locale.ENGLISH, LABELS.getString("col_command_therm_tooltip"), therm.getCurrentProfile(), therm.getTargetTemp(), therm.getPosition());
 			} else if(value instanceof Meters[] meters) {
 				Component comp = getCellRenderer(r, c).getTableCellRendererComponent(this, value, false, false, r, c);
-				if(Arrays.stream(meters).anyMatch(m -> m.hasHidden() || m instanceof LabelHolder || m instanceof SensorAddOn) || getCellRect(r, c, false).width <= comp.getPreferredSize().width) {
+				if(Arrays.stream(meters).anyMatch(m -> DeviceMetersCellRenderer.hasHiddenMeasures(m) || m instanceof LabelHolder || m instanceof SensorAddOn) || getCellRect(r, c, false).width <= comp.getPreferredSize().width) {
 					adaptTooltipLocation = true;
 					String tt = "<html><table border='0' cellspacing='0' cellpadding='0'>";
 					for(Meters m: meters) {
