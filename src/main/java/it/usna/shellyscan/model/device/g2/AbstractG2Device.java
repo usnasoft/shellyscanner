@@ -592,7 +592,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 	private void restoreSchedule(JsonNode schedule, ArrayList<String> errors) throws InterruptedException {
 		errors.add(postCommand("Schedule.DeleteAll", "{}"));
 		for(JsonNode sc: schedule.get("jobs")) {
-			ObjectNode thisSc = (ObjectNode)sc.deepCopy();
+			ObjectNode thisSc = sc.deepCopy();
 			thisSc.remove("id");
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			errors.add(postCommand("Schedule.Create", thisSc));
@@ -602,7 +602,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 	public static ObjectNode createIndexedRestoreNode(JsonNode backConfig, String type, int index) { // todo addon, input, switch
 		ObjectNode out = JsonNodeFactory.instance.objectNode();
 		out.put("id", index);
-		ObjectNode data = (ObjectNode)backConfig.get(type + ":" + index).deepCopy();
+		ObjectNode data = backConfig.get(type + ":" + index).deepCopy();
 		data.remove("id");
 		out.set("config", data);
 		return out;

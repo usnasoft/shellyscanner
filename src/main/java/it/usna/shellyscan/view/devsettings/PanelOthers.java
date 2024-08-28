@@ -59,7 +59,7 @@ public class PanelOthers extends AbstractSettingsPanel {
 	private JRadioButton radioResetEnable;
 	private JRadioButton radioResetDisable;
 	
-	private ArrayList<DevData> devicesData = new ArrayList<>();
+	private ArrayList<DeviceData> devicesData = new ArrayList<>();
 
 	protected PanelOthers(DialogDeviceSettings parent) {
 		super(parent);
@@ -217,7 +217,7 @@ public class PanelOthers extends AbstractSettingsPanel {
 
 				String ntpServer = timeManager.getSNTPServer();
 				boolean cloudEnabled = d.getCloudEnabled();
-				devicesData.add(new DevData(timeManager, inputResetMode));
+				devicesData.add(new DeviceData(timeManager, inputResetMode));
 				
 				if(first) {
 					sntpServerGlobal = ntpServer;
@@ -296,7 +296,7 @@ public class PanelOthers extends AbstractSettingsPanel {
 				);
 			} else {
 				try {
-					DevData data = devicesData.get(i);
+					DeviceData data = devicesData.get(i);
 					String msg;
 					if(data == null) {
 						msg = device.getTimeAndLocationManager().setSNTPServer(server);
@@ -365,7 +365,7 @@ public class PanelOthers extends AbstractSettingsPanel {
 					);
 				} else {
 					try {
-						DevData data = devicesData.get(i);
+						DeviceData data = devicesData.get(i);
 						String msg;
 						if(data == null) {
 							msg = device.getInputResetManager().enableReset(enable);
@@ -391,5 +391,5 @@ public class PanelOthers extends AbstractSettingsPanel {
 		}
 	}
 	
-	private record DevData(TimeAndLocationManager timeManager, InputResetManager inReset) {};
+	private record DeviceData(TimeAndLocationManager timeManager, InputResetManager inReset) {};
 }

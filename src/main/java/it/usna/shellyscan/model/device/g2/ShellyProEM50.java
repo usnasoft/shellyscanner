@@ -7,8 +7,6 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.InternalTmpHolder;
@@ -19,11 +17,12 @@ import it.usna.shellyscan.model.device.g2.modules.Relay;
 
 public class ShellyProEM50 extends AbstractProDevice implements ModulesHolder, InternalTmpHolder {
 	public final static String ID = "ProEM";
-	private final static Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.W, Meters.Type.PF, Meters.Type.V, Meters.Type.I};
+	private final static Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.W, Meters.Type.VAR, Meters.Type.PF, Meters.Type.V, Meters.Type.I};
 	private Relay relay = new Relay(this, 0);
 	private Relay[] relays = new Relay[] {relay};
 	private float internalTmp;
 	private float power[] = new float[2];
+	private float var[] = new float[2];
 	private float voltage[] = new float[2];
 	private float current[] = new float[2];
 	private float pf[] = new float[2];
@@ -48,6 +47,8 @@ public class ShellyProEM50 extends AbstractProDevice implements ModulesHolder, I
 			public float getValue(Type t) {
 				if(t == Type.W) {
 					return power[ind];
+				} else if(t == Type.VAR) {
+					return var[ind];
 				} else if(t == Type.I) {
 					return current[ind];
 				} else if(t == Type.PF) {
@@ -55,6 +56,16 @@ public class ShellyProEM50 extends AbstractProDevice implements ModulesHolder, I
 				} else {
 					return voltage[ind];
 				}
+			}
+			
+			@Override
+			public boolean isVisible(Type t) {
+				return t != Type.VAR;
+			}
+			
+			@Override
+			public boolean hasHidden() {
+				return true;
 			}
 
 			@Override
@@ -118,6 +129,7 @@ public class ShellyProEM50 extends AbstractProDevice implements ModulesHolder, I
 
 		JsonNode em1_0 = status.get("em1:0");
 		power[0] = em1_0.get("act_power").floatValue();
+		var[0] = em1_0.get("aprt_power").floatValue();
 		current[0] = em1_0.get("current").floatValue();
 		pf[0] = em1_0.get("pf").floatValue();
 		voltage[0] = em1_0.get("voltage").floatValue();
@@ -132,23 +144,27 @@ public class ShellyProEM50 extends AbstractProDevice implements ModulesHolder, I
 
 	@Override
 	protected void restore(Map<String, JsonNode> backupJsons, List<String> errors) throws InterruptedException {
-		JsonNode configuration = backupJsons.get("Shelly.GetConfig.json");
-		errors.add(relay.restore(configuration));
+		JsonNode config = backupJsons.get("Shelly.GetConfig.json");
+		errors.add(relay.restore(config));
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 		
-		ObjectNode outConfig = JsonNodeFactory.instance.objectNode();
-		ObjectNode emNode = configuration.get("em1:0").deepCopy();
-		JsonNode idNode = emNode.remove("id");
-		outConfig.set("config", emNode);
-		outConfig.set("id", idNode);
-		errors.add(postCommand("EM1.SetConfig", outConfig));
+		errors.add(postCommand("EM1.SetConfig", createIndexedRestoreNode(config, "em1", 0)));
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+		errors.add(postCommand("EM1.SetConfig", createIndexedRestoreNode(config, "em1", 1)));
 		
-		emNode = configuration.get("em1:1").deepCopy();
-		idNode = emNode.remove("id");
-		outConfig.set("config", emNode);
-		outConfig.set("id", idNode);
-		errors.add(postCommand("EM1.SetConfig", outConfig));
+//		ObjectNode outConfig = JsonNodeFactory.instance.objectNode();
+//		ObjectNode emNode = configuration.get("em1:0").deepCopy();
+//		JsonNode idNode = emNode.remove("id");
+//		outConfig.set("config", emNode);
+//		outConfig.set("id", idNode);
+//		errors.add(postCommand("EM1.SetConfig", outConfig));
+//		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+//		
+//		emNode = configuration.get("em1:1").deepCopy();
+//		idNode = emNode.remove("id");
+//		outConfig.set("config", emNode);
+//		outConfig.set("id", idNode);
+//		errors.add(postCommand("EM1.SetConfig", outConfig));
 	}
 
 	@Override

@@ -39,6 +39,17 @@ public abstract class Meters implements Comparable<Meters> {
 		return false;
 	}
 	
+	public boolean isVisible(Type t) {
+		return true;
+	}
+	
+	/**
+	 * Should return true if some call to isVisible(Type t) returns false
+	 */
+	public boolean hasHidden() {
+		return false;
+	}
+	
 	@Override
 	public int compareTo(Meters o) {
 		final Type t0 = getTypes()[0];
