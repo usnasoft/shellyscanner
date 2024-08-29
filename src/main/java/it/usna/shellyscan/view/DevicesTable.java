@@ -335,12 +335,16 @@ public class DevicesTable extends ExTooltipTable {
 		w.newLine();
 
 		for(int row = 0; row < getRowCount(); row++) {
-			Stream.Builder<String> r = Stream.builder();
-			for(int col = 0; col < getColumnCount(); col++) {
-				r.accept(cellTooltipValue(getValueAt(row, col), true, row, col));
+			try {
+				Stream.Builder<String> r = Stream.builder();
+				for(int col = 0; col < getColumnCount(); col++) {
+					r.accept(cellTooltipValue(getValueAt(row, col), true, row, col));
+				}
+				w.write(r.build().collect(Collectors.joining(separator)));
+				w.newLine();
+			} catch(RuntimeException e) {
+				LOG.error("csvExport", e);
 			}
-			w.write(r.build().collect(Collectors.joining(separator)));
-			w.newLine();
 		}
 	}
 
