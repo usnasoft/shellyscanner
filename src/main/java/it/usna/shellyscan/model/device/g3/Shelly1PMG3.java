@@ -135,9 +135,9 @@ public class Shelly1PMG3 extends AbstractG3Device implements ModulesHolder, Inte
 		JsonNode switchStatus = status.get("switch:0");
 		relay.fillStatus(switchStatus, status.get("input:0"));
 		internalTmp = switchStatus.path("temperature").path("tC").floatValue();
-		power = switchStatus.get("apower").floatValue();
-		voltage = switchStatus.get("voltage").floatValue();
-		current = switchStatus.get("current").floatValue();
+		power = switchStatus.path("apower").floatValue();
+		voltage = switchStatus.path("voltage").floatValue();
+		current = switchStatus.path("current").floatValue();
 		if(addOn != null) {
 			addOn.fillStatus(status);
 		}

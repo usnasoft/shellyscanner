@@ -135,9 +135,9 @@ public class ShellyPlus1PM extends AbstractG2Device implements ModulesHolder, In
 		JsonNode switchStatus = status.get("switch:0");
 		relay.fillStatus(switchStatus, status.get("input:0"));
 		internalTmp = switchStatus.path("temperature").path("tC").floatValue();
-		power = switchStatus.get("apower").floatValue();
-		voltage = switchStatus.get("voltage").floatValue();
-		current = switchStatus.get("current").floatValue();
+		power = switchStatus.path("apower").floatValue();
+		voltage = switchStatus.path("voltage").floatValue();
+		current = switchStatus.path("current").floatValue();
 //		pf = switchStatus.path("pf").floatValue();
 		if(addOn != null) {
 			addOn.fillStatus(status);

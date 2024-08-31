@@ -269,9 +269,10 @@ addon config restore improved (3 steps)
 dht22 restore fix
 virtual & bthome comonents restore (bthome not added)
 
-1.1.0
+1.1.1
 Input reset configuration
 Shelly Pro EM-50
+Shelly plus 1PM - Shelly plus 2PM - Shelly 1PM G3 - 24V DC
 
 ---
 // TODO
