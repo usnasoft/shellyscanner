@@ -39,8 +39,8 @@ public class ShellyPlus2PM extends AbstractG2Device implements ModulesHolder, In
 	private float power0, power1;
 	private float voltage0, voltage1;
 	private float current0, current1;
-	private Meters meters0, meters1;
 	private float pf0, pf1;
+	private Meters meters0, meters1;
 	private Meters[] meters;
 	private SensorAddOn addOn;
 
