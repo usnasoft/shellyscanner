@@ -14,19 +14,20 @@ import com.fasterxml.jackson.databind.JsonNode;
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.InternalTmpHolder;
 import it.usna.shellyscan.model.device.Meters;
+import it.usna.shellyscan.model.device.ModulesHolder;
 import it.usna.shellyscan.model.device.RestoreMsg;
 import it.usna.shellyscan.model.device.g2.SensorAddOnHolder;
 import it.usna.shellyscan.model.device.g2.modules.Input;
 import it.usna.shellyscan.model.device.g2.modules.LightWhite;
 import it.usna.shellyscan.model.device.g2.modules.SensorAddOn;
 import it.usna.shellyscan.model.device.meters.MetersWVI;
-import it.usna.shellyscan.model.device.modules.WhiteCommander;
+import it.usna.shellyscan.model.device.modules.DeviceModule;
 
 /**
  * Shelly dimmer 0/1-10 G3 model
  * @author usna
  */
-public class Shelly0_10VPM extends AbstractG3Device implements InternalTmpHolder, WhiteCommander, SensorAddOnHolder {
+public class Shelly0_10VPM extends AbstractG3Device implements InternalTmpHolder, ModulesHolder, SensorAddOnHolder {
 	private final static Logger LOG = LoggerFactory.getLogger(Shelly0_10VPM.class);
 	public final static String ID = "Dimmer0110VPMG3";
 	private float internalTmp;
@@ -97,20 +98,15 @@ public class Shelly0_10VPM extends AbstractG3Device implements InternalTmpHolder
 	public Meters[] getMeters() {
 		return meters;
 	}
-	
+
 	@Override
-	public LightWhite getWhite(int index) {
+	public DeviceModule getModule(int index) {
 		return light;
 	}
 
 	@Override
-	public LightWhite[] getWhites() {
+	public DeviceModule[] getModules() {
 		return lightArray;
-	}
-
-	@Override
-	public int getWhitesCount() {
-		return 1;
 	}
 	
 	@Override

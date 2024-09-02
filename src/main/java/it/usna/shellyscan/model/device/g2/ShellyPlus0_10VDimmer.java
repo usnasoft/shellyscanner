@@ -13,17 +13,18 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.Meters;
+import it.usna.shellyscan.model.device.ModulesHolder;
 import it.usna.shellyscan.model.device.RestoreMsg;
 import it.usna.shellyscan.model.device.g2.modules.Input;
 import it.usna.shellyscan.model.device.g2.modules.LightWhite;
 import it.usna.shellyscan.model.device.g2.modules.SensorAddOn;
-import it.usna.shellyscan.model.device.modules.WhiteCommander;
+import it.usna.shellyscan.model.device.modules.DeviceModule;
 
 /**
  * Shelly plus dimmer 0-10 model
  * @author usna
  */
-public class ShellyPlus0_10VDimmer extends AbstractG2Device implements /*InternalTmpHolder,*/ WhiteCommander, SensorAddOnHolder {
+public class ShellyPlus0_10VDimmer extends AbstractG2Device implements /*InternalTmpHolder,*/ ModulesHolder, SensorAddOnHolder {
 	private final static Logger LOG = LoggerFactory.getLogger(ShellyPlus0_10VDimmer.class);
 	public final static String ID = "Plus10V";
 //	private float internalTmp;
@@ -89,25 +90,20 @@ public class ShellyPlus0_10VDimmer extends AbstractG2Device implements /*Interna
 //	public float getInternalTmp() {
 //		return internalTmp;
 //	}
-	
+
 	@Override
 	public Meters[] getMeters() {
 		return meters;
 	}
 	
 	@Override
-	public LightWhite getWhite(int index) {
+	public DeviceModule getModule(int index) {
 		return light;
 	}
 
 	@Override
-	public LightWhite[] getWhites() {
+	public DeviceModule[] getModules() {
 		return lightArray;
-	}
-
-	@Override
-	public int getWhitesCount() {
-		return 1;
 	}
 	
 	@Override
@@ -123,7 +119,7 @@ public class ShellyPlus0_10VDimmer extends AbstractG2Device implements /*Interna
 	protected void fillStatus(JsonNode status) throws IOException {
 		super.fillStatus(status);
 		JsonNode lightStatus = status.get("light:0");
-//		internalTmp = lightStatus.get("temperature").get("tC").floatValue();
+//		internalTmp = lightStatus.path("temperature").path("tC").floatValue();
 //		power = lightStatus.get("apower").floatValue();
 //		voltage = lightStatus.get("voltage").floatValue();
 //		current = lightStatus.get("current").floatValue();

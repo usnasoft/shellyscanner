@@ -607,50 +607,68 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 	}
 	
 	private Component getRGBWWhitePanel(WhiteInterface[] lights) {
-		stackedPanel.removeAll();
-		for(int i = 0; i < lights.length;) {
-			WhiteInterface light = lights[i];
-			JLabel relayLabel = new JLabel(light.getLabel());
-			relayLabel.setForeground(selForeground);
-			JPanel relayPanel = new JPanel(new BorderLayout());
-			JButton relayButton = new JButton();
-			relayButton.addActionListener(e -> {
-				if(edited != null) {
-					try {
-						light.toggle();
-					} catch (IOException ex) {
-						LOG.error("getRGBWWhitePanel {}", light, ex);
-					}
-					cancelCellEditing();
-				}
-			});
-			relayPanel.setOpaque(false);
-			relayButton.setBorder(DevicesCommandCellRenderer.BUTTON_BORDERS);
-			relayPanel.add(relayLabel, BorderLayout.CENTER);
-			relayPanel.add(relayButton, BorderLayout.EAST);
-			
+		if(lights.length == 1) {
+			WhiteInterface light = lights[0];
+			lightLabel.setText(light.getLabel() + " " + light.getBrightness() + "%");
+			lightBrightness.setMinimum(light.getMinBrightness());
+			lightBrightness.setMaximum(light.getMaxBrightness());
+			lightBrightness.setValue(light.getBrightness());
 			if(light.isOn()) {
-				relayButton.setText(DevicesCommandCellRenderer.LABEL_ON);
-				relayButton.setBackground(DevicesCommandCellRenderer.BUTTON_ON_BG_COLOR);
+				lightButton.setText(DevicesCommandCellRenderer.LABEL_ON);
+				lightButton.setBackground(DevicesCommandCellRenderer.BUTTON_ON_BG_COLOR);
 			} else {
-				relayButton.setText(DevicesCommandCellRenderer.LABEL_OFF);
-				relayButton.setBackground(DevicesCommandCellRenderer.BUTTON_OFF_BG_COLOR);
+				lightButton.setText(DevicesCommandCellRenderer.LABEL_OFF);
+				lightButton.setBackground(DevicesCommandCellRenderer.BUTTON_OFF_BG_COLOR);
 			}
-			if(++i < lights.length) {
+			lightButton.setForeground(light.isInputOn() ? DevicesCommandCellRenderer.BUTTON_ON_FG_COLOR : null);
+			edited = light;
+			return lightPanel;
+		} else {
+			stackedPanel.removeAll();
+			for(int i = 0; i < lights.length;) {
+				WhiteInterface light = lights[i];
+				JLabel relayLabel = new JLabel(light.getLabel());
+				relayLabel.setForeground(selForeground);
+				JPanel relayPanel = new JPanel(new BorderLayout());
+				JButton relayButton = new JButton();
+				relayButton.addActionListener(e -> {
+					if(edited != null) {
+						try {
+							light.toggle();
+						} catch (IOException ex) {
+							LOG.error("getRGBWWhitePanel {}", light, ex);
+						}
+						cancelCellEditing();
+					}
+				});
+				relayPanel.setOpaque(false);
+				relayButton.setBorder(DevicesCommandCellRenderer.BUTTON_BORDERS);
+				relayPanel.add(relayLabel, BorderLayout.CENTER);
 				relayPanel.add(relayButton, BorderLayout.EAST);
-			} else {
-				editSwitchPanel.removeAll();
-				editSwitchPanel.add(relayButton, BorderLayout.EAST);
-				editSwitchPanel.add(BorderLayout.WEST, editLightWhiteButton);
-				relayPanel.add(editSwitchPanel, BorderLayout.EAST);
+
+				if(light.isOn()) {
+					relayButton.setText(DevicesCommandCellRenderer.LABEL_ON);
+					relayButton.setBackground(DevicesCommandCellRenderer.BUTTON_ON_BG_COLOR);
+				} else {
+					relayButton.setText(DevicesCommandCellRenderer.LABEL_OFF);
+					relayButton.setBackground(DevicesCommandCellRenderer.BUTTON_OFF_BG_COLOR);
+				}
+				if(++i < lights.length) {
+					relayPanel.add(relayButton, BorderLayout.EAST);
+				} else {
+					editSwitchPanel.removeAll();
+					editSwitchPanel.add(relayButton, BorderLayout.EAST);
+					editSwitchPanel.add(BorderLayout.WEST, editLightWhiteButton);
+					relayPanel.add(editSwitchPanel, BorderLayout.EAST);
+				}
+				//			if(light.isInputOn()) {
+				//				relayButton.setForeground(DevicesCommandCellRenderer.BUTTON_ON_FG_COLOR);
+				//			}
+				stackedPanel.add(relayPanel);
 			}
-//			if(light.isInputOn()) {
-//				relayButton.setForeground(DevicesCommandCellRenderer.BUTTON_ON_FG_COLOR);
-//			}
-			stackedPanel.add(relayPanel);
+			edited = lights;
+			return stackedPanel;
 		}
-		edited = lights;
-		return stackedPanel;
 	}
 	
 	private Component getTrvPanel(ThermostatG1 thermostat) {
