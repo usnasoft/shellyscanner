@@ -50,8 +50,6 @@ import it.usna.shellyscan.model.device.g1.modules.ThermostatG1;
 import it.usna.shellyscan.model.device.g2.ShellyPlusSmoke;
 import it.usna.shellyscan.model.device.g2.modules.SensorAddOn;
 import it.usna.shellyscan.model.device.modules.DeviceModule;
-import it.usna.shellyscan.model.device.modules.RGBWCommander;
-import it.usna.shellyscan.model.device.modules.WhiteCommander;
 import it.usna.swing.ArrayTableCellRenderer;
 import it.usna.swing.DecimalTableCellRenderer;
 import it.usna.swing.table.ExTooltipTable;
@@ -434,15 +432,9 @@ public class DevicesTable extends ExTooltipTable {
 				row[DevicesTable.COL_INT_TEMP] = (d instanceof InternalTmpHolder) ? ((InternalTmpHolder)d).getInternalTmp() : null;
 				row[DevicesTable.COL_MEASURES_IDX] = d.getMeters();
 				row[DevicesTable.COL_DEBUG] = LABELS.getString("debug" + d.getDebugMode().name());
-				Object command = null;
+				DeviceModule[] command = null;
 				if(d instanceof ModulesHolder mh && mh.getModulesCount() > 0) {
 					row[DevicesTable.COL_COMMAND_IDX] = command = mh.getModules();
-//				} else if(d instanceof WhiteCommander wc && wc.getWhitesCount() == 1) { // dimmer
-//					row[DevicesTable.COL_COMMAND_IDX] = command = wc.getWhite(0);
-				} else if(d instanceof RGBWCommander rgbwc && rgbwc.getColorsCount() > 0) {
-					row[DevicesTable.COL_COMMAND_IDX] = command = rgbwc.getColor(0);
-				} else if(d instanceof WhiteCommander wc && wc.getWhitesCount() > 1) {
-					row[DevicesTable.COL_COMMAND_IDX] = command = wc.getWhites();
 				} else if(d instanceof ShellyDW dw) {
 					row[DevicesTable.COL_COMMAND_IDX] = LABELS.getString("lableStatusOpen") + ": " + (dw.isOpen() ? YES : NO);
 				} else if(d instanceof ShellyFlood flood) {
@@ -459,19 +451,21 @@ public class DevicesTable extends ExTooltipTable {
 						row[DevicesTable.COL_COMMAND_IDX] = String.format(LABELS.getString("lableStatusTRV"), thermostat.getPosition());
 					}
 				}
-				if(command instanceof DeviceModule dm) {
-					row[DevicesTable.COL_SOURCE_IDX] = dm.getLastSource();
-				} else if(command instanceof DeviceModule[] m) {
-					if(row[DevicesTable.COL_SOURCE_IDX] instanceof String[] res && res.length == m.length) {
-						for(int i = 0; i < m.length; i++) {
-							res[i] = m[i].getLastSource();
-						}
+				if(command != null) {
+					if(command.length == 1) {
+						row[DevicesTable.COL_SOURCE_IDX] = command[0].getLastSource();
 					} else {
-						String res[] = new String[m.length]; // Arrays.setAll(res, i -> m[i].getLastSource()); // slower for 2 elements
-						for(int i = 0; i < m.length; i++) {
-							res[i] = m[i].getLastSource();
+						if(row[DevicesTable.COL_SOURCE_IDX] instanceof String[] res && res.length == command.length) {
+							for(int i = 0; i < command.length; i++) {
+								res[i] = command[i].getLastSource();
+							}
+						} else {
+							String res[] = new String[command.length]; // Arrays.setAll(res, i -> m[i].getLastSource()); // slower for 2 elements
+							for(int i = 0; i < command.length; i++) {
+								res[i] = command[i].getLastSource();
+							}
+							row[DevicesTable.COL_SOURCE_IDX] = res;
 						}
-						row[DevicesTable.COL_SOURCE_IDX] = res;
 					}
 				}
 			} else {

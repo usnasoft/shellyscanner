@@ -273,6 +273,7 @@ virtual & bthome comonents restore (bthome not added)
 Input reset configuration
 Shelly Pro EM-50
 Shelly plus 1PM - Shelly plus 2PM - Shelly 1PM G3 - 24V DC
+bug fix rgbw2
 
 ---
 // TODO

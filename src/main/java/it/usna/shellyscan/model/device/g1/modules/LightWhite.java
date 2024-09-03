@@ -17,19 +17,28 @@ public class LightWhite implements WhiteInterface {
 	private final AbstractG1Device parent;
 	private String name;
 	private boolean isOn;
-	private int brightness; // Brightness, 1..100 - seems wrong: 0 seems valid for RGBW2, not for dimmer
+	private int brightness;
 	private String source;
 	private String prefix; // "/white/", "/light/"
 	private boolean inputIsOn;
+	private final int minBrightness;
 	
 	public LightWhite(AbstractG1Device parent, final String command, int index) {
 		this.parent = parent;
 		this.prefix = command + index;
+		minBrightness = 1;
+	}
+	
+	public LightWhite(AbstractG1Device parent, final String command, int minBrightness, int index) {
+		this.parent = parent;
+		this.prefix = command + index;
+		this.minBrightness = minBrightness;
 	}
 	
 	@Override
+	// Brightness, 1..100 - seems wrong: 0 seems valid for RGBW2, not for dimmer
 	public int getMinBrightness() {
-		return 1;
+		return minBrightness;
 	}
 
 	@Override

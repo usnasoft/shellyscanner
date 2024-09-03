@@ -385,7 +385,7 @@ public class ShellyPlusRGBW extends AbstractG2Device implements ModulesHolder, I
 	
 	@Override
 	public String toString() {
-		if(profile != Mode.LIGHT) {
+		if(profile == Mode.LIGHT) {
 			return super.toString() + ": " + light0 + " / " + light1 + " / " + light2 + " / " +  light3;
 		} else {
 			return super.toString();

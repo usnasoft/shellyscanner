@@ -226,21 +226,6 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 			rollerLabel.setText(labelText);
 			rollerLabel.setForeground(foregroundColor);
 			ret = rollerPanel;
-		} else if(value instanceof WhiteInterface light) { // Dimmer
-			if(light.isOn()) {
-				lightButton.setText(LABEL_ON);
-				lightButton.setBackground(BUTTON_ON_BG_COLOR);
-			} else {
-				lightButton.setText(LABEL_OFF);
-				lightButton.setBackground(BUTTON_OFF_BG_COLOR);
-			}
-			lightButton.setForeground(light.isInputOn() ? BUTTON_ON_FG_COLOR : null);
-			lightBrightness.setMinimum(light.getMinBrightness());
-			lightBrightness.setMaximum(light.getMaxBrightness());
-			lightBrightness.setValue(light.getBrightness());
-			lightLabel.setText(light.getLabel() + " " + light.getBrightness() + "%");
-			lightLabel.setForeground(foregroundColor);
-			ret = lightPanel;
 		} else if(value instanceof LightBulbRGB[] lights) { // RGBW Bulbs
 			LightBulbRGB light = lights[0]; // multiple bulbs devices currently not supported
 			if(light.isOn()) {
@@ -255,7 +240,8 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 			lightRGBBulbLabel.setText(light.getLabel() + " " + slider + "%");
 			lightRGBBulbLabel.setForeground(foregroundColor);
 			ret = lightRGBBulbPanel;
-		} else if(value instanceof LightRGBW color) { // RGBW2 color
+		} else if(value instanceof LightRGBW[] colors) { // RGBW2 color
+			LightRGBW color = colors[0];
 			if(color.isOn()) {
 				colorRGBButton.setText(LABEL_ON);
 				colorRGBButton.setBackground(BUTTON_ON_BG_COLOR);
@@ -292,14 +278,15 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 			} else {
 				stackedPanel.removeAll();
 				for(int i = 0; i < lights.length;) {
-					JLabel relayLabel = new JLabel(lights[i].getLabel());
+					WhiteInterface light = lights[i];
+					JLabel relayLabel = new JLabel(light.getLabel() + " " + light.getBrightness() + "%");
 					JPanel relayPanel = new JPanel(new BorderLayout());
 					JButton button = new JButton();
 					relayPanel.setOpaque(false);
 					button.setBorder(BUTTON_BORDERS);
 					relayPanel.add(relayLabel, BorderLayout.CENTER);
 					relayLabel.setForeground(foregroundColor);
-					if(lights[i].isOn()) {
+					if(light.isOn()) {
 						button.setText(LABEL_ON);
 						button.setBackground(BUTTON_ON_BG_COLOR);
 					} else {

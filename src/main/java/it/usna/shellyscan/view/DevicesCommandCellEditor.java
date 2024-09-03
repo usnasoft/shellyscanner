@@ -461,16 +461,14 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 			}
 			edited = riArray;
 			return stackedPanel;
-		} else if(value instanceof RollerInterface[] riArray) {
-			return getRollerPanel(riArray[0]); // multiple rollers devices currently not supported
-		} else if(value instanceof WhiteInterface wi) {
-			return getLightPanel(wi);
+		} else if(value instanceof RollerInterface[] rollersArray) {
+			return getRollerPanel(rollersArray[0]); // multiple rollers devices currently not supported
 		} else if(value instanceof LightBulbRGB[] bulbsArray) { // RGBW Bulbs
 			return getLightRGBWPanel(bulbsArray[0]); // multiple bulbs devices currently not supported
-		} else if(value instanceof LightRGBW light) { // RGBW2 (color mode)
-			return getRGBWColorPanel(light);
-		} else if(value instanceof WhiteInterface[] wiArray) { // RGBW2 (white mode)
-			return getRGBWWhitePanel(wiArray);
+		} else if(value instanceof LightRGBW[] rgbs) {
+			return getRGBWColorPanel(rgbs[0]); // multiple LightRGBW devices currently not supported
+		} else if(value instanceof WhiteInterface[] whitesArray) {
+			return getWhitePanel(whitesArray);
 		} else if(value instanceof InputInterface[] inputArray) {
 			stackedPanel.removeAll();
 			for(InputInterface act: inputArray) {
@@ -481,12 +479,11 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 			}
 			edited = inputArray;
 			return stackedPanel;
-//			return getActionsPanel(inputArray, table);
 		} else if(value instanceof ThermostatG1 th) { // TRV
 			return getTrvPanel(th);
 		} else if(value instanceof ThermostatInterface[] ths) {
 			return getThermostatPanel(ths[0]);
-		} else if(value instanceof DeviceModule[] modArray) {
+		} else if(value instanceof DeviceModule[] modArray) { // mixed
 			stackedPanel.removeAll();
 			for(DeviceModule module: modArray) {
 				if(module instanceof RelayInterface rel) {
@@ -558,23 +555,6 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 		return rollerPanel;
 	}
 	
-	private Component getLightPanel(WhiteInterface light) { // single
-		lightLabel.setText(light.getLabel() + " " + light.getBrightness() + "%");
-		lightBrightness.setMinimum(light.getMinBrightness());
-		lightBrightness.setMaximum(light.getMaxBrightness());
-		lightBrightness.setValue(light.getBrightness());
-		if(light.isOn()) {
-			lightButton.setText(DevicesCommandCellRenderer.LABEL_ON);
-			lightButton.setBackground(DevicesCommandCellRenderer.BUTTON_ON_BG_COLOR);
-		} else {
-			lightButton.setText(DevicesCommandCellRenderer.LABEL_OFF);
-			lightButton.setBackground(DevicesCommandCellRenderer.BUTTON_OFF_BG_COLOR);
-		}
-		lightButton.setForeground(light.isInputOn() ? DevicesCommandCellRenderer.BUTTON_ON_FG_COLOR : null);
-		edited = light;
-		return lightPanel;
-	}
-	
 	private Component getLightRGBWPanel(LightBulbRGB light) {
 		final int slider = light.isColorMode() ? light.getGain() : light.getBrightness();
 		lightRGBLabel.setText(light.getLabel() + " " + slider + "%");
@@ -606,7 +586,7 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 		return colorRGBPanel;
 	}
 	
-	private Component getRGBWWhitePanel(WhiteInterface[] lights) {
+	private Component getWhitePanel(WhiteInterface[] lights) {
 		if(lights.length == 1) {
 			WhiteInterface light = lights[0];
 			lightLabel.setText(light.getLabel() + " " + light.getBrightness() + "%");
@@ -627,7 +607,7 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 			stackedPanel.removeAll();
 			for(int i = 0; i < lights.length;) {
 				WhiteInterface light = lights[i];
-				JLabel relayLabel = new JLabel(light.getLabel());
+				JLabel relayLabel = new JLabel(light.getLabel() + " " + light.getBrightness() + "%");
 				relayLabel.setForeground(selForeground);
 				JPanel relayPanel = new JPanel(new BorderLayout());
 				JButton relayButton = new JButton();
