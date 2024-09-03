@@ -244,7 +244,7 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 			if(edited != null && edited instanceof LightRGBW) {
 				final Window win = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusedWindow();
 				win.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-				new DialogEditRGB(win, (LightRGBW)edited);
+				new DialogEditRGBW(win, (LightRGBW)edited);
 				cancelCellEditing();
 				win.setCursor(Cursor.getDefaultCursor());
 			}

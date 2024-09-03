@@ -25,9 +25,9 @@ import javax.swing.event.ChangeListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import it.usna.shellyscan.model.device.g1.modules.LightRGBW;
+import it.usna.shellyscan.model.device.modules.RGBWInterface;
 
-public class DialogEditRGB extends JDialog {
+public class DialogEditRGBW extends JDialog {
 	private static final long serialVersionUID = 1L;
 	
 	private JToggleButton switchButton;
@@ -36,18 +36,18 @@ public class DialogEditRGB extends JDialog {
 	private JSlider sliderGreen;
 	private JSlider sliderBlue;
 	private JSlider sliderWhite;
-	private JLabel labelGain = new JLabel(/*light.getBrightness() + ""*/);
-	private JLabel labelRed = new JLabel(/*light.getRed() + ""*/);
-	private JLabel labelGreen = new JLabel(/*light.getGreen() + ""*/);
-	private JLabel labelBlue = new JLabel(/*light.getBlue() + ""*/);
-	private JLabel labelWhite = new JLabel(/*light.getBlue() + ""*/);
+	private JLabel labelGain = new JLabel();
+	private JLabel labelRed = new JLabel();
+	private JLabel labelGreen = new JLabel();
+	private JLabel labelBlue = new JLabel();
+	private JLabel labelWhite = new JLabel();
 	private final JPanel previewColorPanel = new JPanel();
-	private final static Logger LOG = LoggerFactory.getLogger(DialogEditRGB.class);
+	private final static Logger LOG = LoggerFactory.getLogger(DialogEditRGBW.class);
 	
 	/**
 	 * @wbp.parser.constructor
 	 */
-	public DialogEditRGB(final Window owner, LightRGBW light) {
+	public DialogEditRGBW(final Window owner, RGBWInterface light) {
 		super(owner, light.getLabel(), Dialog.ModalityType.MODELESS);
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		getContentPane().setLayout(new BorderLayout(0, 10));
@@ -69,14 +69,14 @@ public class DialogEditRGB extends JDialog {
 		setVisible(true);
 	}
 	
-	private JPanel modePanel(LightRGBW light) {
+	private JPanel modePanel(RGBWInterface light) {
 		JPanel typePanel = new JPanel();
 		BoxLayout bl = new BoxLayout(typePanel, BoxLayout.X_AXIS);
 		typePanel.setLayout(bl);
 		typePanel.setBackground(Color.LIGHT_GRAY);
 
-		switchButton = new JToggleButton(new ImageIcon(DialogEditRGB.class.getResource("/images/Standby24.png"))/*, light.isOn()*/);
-		switchButton.setSelectedIcon(new ImageIcon(DialogEditRGB.class.getResource("/images/StandbyOn24.png")));
+		switchButton = new JToggleButton(new ImageIcon(DialogEditRGBW.class.getResource("/images/Standby24.png"))/*, light.isOn()*/);
+		switchButton.setSelectedIcon(new ImageIcon(DialogEditRGBW.class.getResource("/images/StandbyOn24.png")));
 		switchButton.setRolloverEnabled(false);
 		switchButton.setContentAreaFilled(false);
 		switchButton.addActionListener(e -> {
@@ -95,7 +95,7 @@ public class DialogEditRGB extends JDialog {
 	 /**
 	  * x@wbp.parser.entryPoint
 	  */
-	private JPanel pColor(LightRGBW light) {
+	private JPanel pColor(RGBWInterface light) {
 		JPanel colorPanel = new JPanel();
 		GridBagLayout gbl_panelC = new GridBagLayout();
 		gbl_panelC.columnWidths = new int[] {0, 0, 30};
@@ -269,7 +269,7 @@ public class DialogEditRGB extends JDialog {
 		return colorPanel;
 	}
 	
-	private void adjust(LightRGBW light) {
+	private void adjust(RGBWInterface light) {
 		switchButton.setSelected(light.isOn());
 		adjustGain(light.getGain());
 		adjustLightRGBW(light.getRed(), light.getGreen(), light.getBlue(), light.getWhite());

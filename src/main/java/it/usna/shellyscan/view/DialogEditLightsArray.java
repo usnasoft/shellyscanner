@@ -99,16 +99,16 @@ public class DialogEditLightsArray extends JDialog {
 			final WhiteInterface light = lights[i];
 			final JPanel lp = new JPanel(new BorderLayout(10, 0));
 			final JLabel label = new JLabel();
-			final JToggleButton switchButton = new JToggleButton(new ImageIcon(DialogEditRGB.class.getResource("/images/Standby24.png")));
+			final JToggleButton switchButton = new JToggleButton(new ImageIcon(DialogEditLightsArray.class.getResource("/images/Standby24.png")));
 			final JSlider brightness = new JSlider(light.getMinBrightness(), light.getMaxBrightness(), light.getBrightness()); // 0 seems valid for RGBW2, not for dimmer
 			labels[i] = label;
 			buttons[i] = switchButton;
 			sliders[i] = brightness;
 			
 			lp.add(label, BorderLayout.NORTH);
-			switchButton.setSelectedIcon(new ImageIcon(DialogEditRGB.class.getResource("/images/StandbyOn24.png")));
-			switchButton.setRolloverIcon(new ImageIcon(DialogEditRGB.class.getResource("/images/Standby24.png")));
-			switchButton.setRolloverSelectedIcon(new ImageIcon(DialogEditRGB.class.getResource("/images/StandbyOn24.png")));
+			switchButton.setSelectedIcon(new ImageIcon(DialogEditLightsArray.class.getResource("/images/StandbyOn24.png")));
+			switchButton.setRolloverIcon(new ImageIcon(DialogEditLightsArray.class.getResource("/images/Standby24.png")));
+			switchButton.setRolloverSelectedIcon(new ImageIcon(DialogEditLightsArray.class.getResource("/images/StandbyOn24.png")));
 			switchButton.setContentAreaFilled(false);
 			switchButton.setBorder(BorderFactory.createEmptyBorder());
 			switchButton.addActionListener(e -> {

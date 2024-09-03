@@ -8,12 +8,12 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import it.usna.shellyscan.model.device.g1.AbstractG1Device;
-import it.usna.shellyscan.model.device.modules.DeviceModule;
+import it.usna.shellyscan.model.device.modules.RGBWInterface;
 
 /**
  * Used by RGBW2 (color mode)
  */
-public class LightRGBW implements DeviceModule {
+public class LightRGBW implements RGBWInterface {
 	private final AbstractG1Device parent;
 	private final int index;
 	private boolean isOn;
@@ -43,44 +43,53 @@ public class LightRGBW implements DeviceModule {
 		source = statusColor.get("source").asText("-");
 	}
 	
+	@Override
 	public boolean toggle() throws IOException {
 		final JsonNode color = parent.getJSON("/color/" + index + "?turn=toggle");
 		refresh(color);
 		return isOn;
 	}
 	
+	@Override
 	public void change(boolean on) throws IOException {
 		final JsonNode color = parent.getJSON("/color/" + index + "?turn=" + (on ? "on" : "off"));
 		refresh(color);
 	}
 	
+	@Override
 	public boolean isOn() {
 		return isOn;
 	}
 	
+	@Override
 	public int getRed() {
 		return red;
 	}
 	
+	@Override
 	public int getGreen() {
 		return green;
 	}
 	
+	@Override
 	public int getBlue() {
 		return blue;
 	}
 	
+	@Override
 	public void setWhite(int w) throws IOException {
 		final JsonNode status = parent.getJSON("/color/" + index + "?white=" + w);
 		refresh(status);
 	}
 	
+	@Override
 	public int getWhite() {
 		return white;
 	}
 	
+	@Override
 	public void setColor(int r, int g, int b, int w) throws IOException {
-		final JsonNode status = parent.getJSON("/light/" + index + "?red=" + r + "&green=" + g + "&blue=" + b+ "&white=" + w);
+		final JsonNode status = parent.getJSON("/light/" + index + "?red=" + r + "&green=" + g + "&blue=" + b + "&white=" + w);
 		refresh(status);
 	}
 	
@@ -88,15 +97,18 @@ public class LightRGBW implements DeviceModule {
 		refresh(parent.getJSON("/color/" + index));
 	}
 	
+	@Override
 	public void setGain(int b) throws IOException {
 		final JsonNode status = parent.getJSON("/color/" + index + "?gain=" + b);
 		refresh(status);
 	}
 	
+	@Override
 	public int getGain() {
 		return gain;
 	}
 	
+	@Override
 	public String getLastSource() {
 		return source;
 	}
