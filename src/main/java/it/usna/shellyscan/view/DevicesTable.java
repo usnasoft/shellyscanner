@@ -40,12 +40,11 @@ import it.usna.shellyscan.model.device.InternalTmpHolder;
 import it.usna.shellyscan.model.device.LabelHolder;
 import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.ModulesHolder;
+import it.usna.shellyscan.model.device.MotionSensor;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
 import it.usna.shellyscan.model.device.g1.ShellyDW;
 import it.usna.shellyscan.model.device.g1.ShellyFlood;
-import it.usna.shellyscan.model.device.g1.ShellyMotion;
-import it.usna.shellyscan.model.device.g1.ShellyMotion2;
 import it.usna.shellyscan.model.device.g1.ShellyTRV;
 import it.usna.shellyscan.model.device.g1.modules.ThermostatG1;
 import it.usna.shellyscan.model.device.g2.ShellyPlusSmoke;
@@ -438,8 +437,8 @@ public class DevicesTable extends ExTooltipTable {
 				Object command = null;
 				if(d instanceof ModulesHolder mh && mh.getModulesCount() > 0) {
 					row[DevicesTable.COL_COMMAND_IDX] = command = mh.getModules();
-				} else if(d instanceof WhiteCommander wc && wc.getWhitesCount() == 1) { // dimmer
-					row[DevicesTable.COL_COMMAND_IDX] = command = wc.getWhite(0);
+//				} else if(d instanceof WhiteCommander wc && wc.getWhitesCount() == 1) { // dimmer
+//					row[DevicesTable.COL_COMMAND_IDX] = command = wc.getWhite(0);
 				} else if(d instanceof RGBWCommander rgbwc && rgbwc.getColorsCount() > 0) {
 					row[DevicesTable.COL_COMMAND_IDX] = command = rgbwc.getColor(0);
 				} else if(d instanceof WhiteCommander wc && wc.getWhitesCount() > 1) {
@@ -448,10 +447,8 @@ public class DevicesTable extends ExTooltipTable {
 					row[DevicesTable.COL_COMMAND_IDX] = LABELS.getString("lableStatusOpen") + ": " + (dw.isOpen() ? YES : NO);
 				} else if(d instanceof ShellyFlood flood) {
 					row[DevicesTable.COL_COMMAND_IDX] = LABELS.getString("lableStatusFlood") + ": " + (flood.flood() ? YES : NO);
-				} else if(d instanceof ShellyMotion motion) {
+				} else if(d instanceof MotionSensor motion) {
 					row[DevicesTable.COL_COMMAND_IDX] = String.format(LABELS.getString("lableStatusMotion"), motion.motion() ? YES : NO);
-				} else if(d instanceof ShellyMotion2 motion2) {
-					row[DevicesTable.COL_COMMAND_IDX] = String.format(LABELS.getString("lableStatusMotion"), motion2.motion() ? YES : NO);
 				} else if(d instanceof ShellyPlusSmoke smoke) {
 					row[DevicesTable.COL_COMMAND_IDX] = String.format(LABELS.getString("lableStatusSmoke"), smoke.getAlarm() ? YES : NO);
 				} else if(d instanceof ShellyTRV trv) { // very specific

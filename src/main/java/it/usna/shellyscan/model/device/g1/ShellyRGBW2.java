@@ -22,7 +22,7 @@ public class ShellyRGBW2 extends AbstractG1Device implements RGBWCommander, Whit
 	private LightWhite white0, white1, white2, white3;
 	private float power[] = new float[4];
 	
-	private final String MODE_COLOR = "color";
+	private final static String MODE_COLOR = "color";
 
 	public ShellyRGBW2(InetAddress address, int port, String hostname) {
 		super(address, port, hostname);
@@ -113,17 +113,17 @@ public class ShellyRGBW2 extends AbstractG1Device implements RGBWCommander, Whit
 		super.fillStatus(status);
 		if(modeColor) {
 			color.fillStatus(status.get("lights").get(0));
-			power[0] = (float)status.get("meters").get(0).get("power").asDouble(0);
+			power[0] = status.get("meters").get(0).path("power").floatValue();
 		} else {
 			white0.fillStatus(status.get("lights").get(0));
 			white1.fillStatus(status.get("lights").get(1));
 			white2.fillStatus(status.get("lights").get(2));
 			white3.fillStatus(status.get("lights").get(3));
 			final JsonNode meters = status.get("meters");
-			power[0] = (float)meters.get(0).get("power").asDouble(0);
-			power[1] = (float)meters.get(1).get("power").asDouble(0);
-			power[2] = (float)meters.get(2).get("power").asDouble(0);
-			power[3] = (float)meters.get(3).get("power").asDouble(0);
+			power[0] = meters.get(0).path("power").floatValue();
+			power[1] = meters.get(1).path("power").floatValue();
+			power[2] = meters.get(2).path("power").floatValue();
+			power[3] = meters.get(3).path("power").floatValue();
 		}
 	}
 
