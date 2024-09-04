@@ -263,11 +263,11 @@ public class ShellyPlus2PM extends AbstractG2Device implements ModulesHolder, In
 			} else {
 				errors.add(roller.restore(configuration));
 			}
+			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 		} else {
 			errors.add(RestoreMsg.ERR_RESTORE_MODE_COVER.name());
 		}
 
-		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 		SensorAddOn.restore(this, backupJsons, errors);
 	}
 	

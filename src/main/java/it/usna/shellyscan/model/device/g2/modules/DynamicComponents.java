@@ -105,6 +105,7 @@ public class DynamicComponents {
 		try {
 			final JsonNode storedComponents = backupJsons.get("Shelly.GetComponents.json");
 			if(storedComponents != null) {
+				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 				final List<String> existingKeys = new ArrayList<>();
 				final List<String> existingDevices = deleteAll(parent);
 				final List<GroupValue> groupsValues = new ArrayList<>();

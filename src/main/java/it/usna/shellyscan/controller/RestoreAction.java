@@ -75,7 +75,11 @@ public class RestoreAction extends UsnaSelectedAction {
 					
 					for(Map.Entry<RestoreMsg, Object> e: test.entrySet()) {
 						if(e.getKey().getType() == RestoreMsg.Type.ERROR) {
-							Msg.errorMsg(mainView, LABELS.getString(CHECK_MSG_PREFIX + e.getKey().name()));
+							if(e.getValue() != null) {
+								Msg.errorMsg(mainView, String.format(LABELS.getString(CHECK_MSG_PREFIX + e.getKey().name()), e.getValue()));
+							} else {
+								Msg.errorMsg(mainView, LABELS.getString(CHECK_MSG_PREFIX + e.getKey().name()));
+							}
 							return;
 						}
 					}
@@ -195,8 +199,7 @@ public class RestoreAction extends UsnaSelectedAction {
 					} else {
 						if(device.getStatus() == Status.OFF_LINE /*|| device.getStatus() == Status.NOT_LOOGGED*/ || device.getStatus() == Status.GHOST) { // if error happened because the device is off-line -> try to queue action in DeferrablesContainer
 							LOG.debug("Interactive Restore error {} {}", device, ret);
-							SwingUtilities.invokeLater(() ->
-							JOptionPane.showMessageDialog(mainView, LABELS.getString("msgRestoreQueue"), device.getHostname(), JOptionPane.WARNING_MESSAGE));
+							SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(mainView, LABELS.getString("msgRestoreQueue"), device.getHostname(), JOptionPane.WARNING_MESSAGE));
 
 							DeferrablesContainer dc = DeferrablesContainer.getInstance();
 							dc.addOrUpdate(modelRow, DeferrableTask.Type.RESTORE, LABELS.getString("action_restore_tooltip"), (def, dev) -> {
