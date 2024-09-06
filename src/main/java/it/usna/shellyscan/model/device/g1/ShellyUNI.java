@@ -15,7 +15,6 @@ import it.usna.shellyscan.model.device.g1.modules.Relay;
 
 public class ShellyUNI extends AbstractG1Device implements ModulesHolder {
 	public final static String ID = "SHUNI-1";
-//	private final static Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.V};
 	private Relay relay0 = new Relay(this, 0);
 	private Relay relay1 = new Relay(this, 1);
 	private float voltage;
@@ -25,20 +24,6 @@ public class ShellyUNI extends AbstractG1Device implements ModulesHolder {
 
 	public ShellyUNI(InetAddress address, int port, String hostname) {
 		super(address, port, hostname);
-		
-//		meters = new Meters[] {
-//				new Meters() {
-//					@Override
-//					public Type[] getTypes() {
-//						return SUPPORTED_MEASURES;
-//					}
-//
-//					@Override
-//					public float getValue(Type t) {
-//						return voltage;
-//					}
-//				}
-//		};
 	}
 
 	@Override
@@ -51,9 +36,9 @@ public class ShellyUNI extends AbstractG1Device implements ModulesHolder {
 		
 		meters = new Meters[] {
 				new Meters() {
-					final ArrayList<Meters.Type> tt = new ArrayList<>(3);
 					final Meters.Type[] mTypes;
 					{
+						final ArrayList<Meters.Type> tt = new ArrayList<>();
 						final JsonNode extT = settings.path("ext_temperature");
 						if(extT.has("0"))  {
 							tt.add(Meters.Type.T);
@@ -70,6 +55,7 @@ public class ShellyUNI extends AbstractG1Device implements ModulesHolder {
 						tt.add(Meters.Type.V);
 						mTypes = tt.toArray(Meters.Type[]::new);
 					}
+					
 					@Override
 					public Type[] getTypes() {
 						return mTypes;
@@ -192,12 +178,11 @@ public class ShellyUNI extends AbstractG1Device implements ModulesHolder {
 		JsonNode adc0 = settings.get("adcs").get(0);
 		errors.add(sendCommand("/settings/adc/0?range=" + adc0.get("range").asText() + "&offset=" + adc0.path("offset").asText()));
 		JsonNode relAct = adc0.get("relay_actions");
-//		if(relAct.size() > 0) {
-			for(int index = 0; index < relAct.size(); index++) {
-				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-				errors.add(sendCommand("/settings/adc/0/relay_actions." + index + "?" + AbstractG1Device.jsonEntryIteratorToURLPar(relAct.get(index).fields())));
-			}
-//		}
+
+		for(int index = 0; index < relAct.size(); index++) {
+			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+			errors.add(sendCommand("/settings/adc/0/relay_actions." + index + "?" + AbstractG1Device.jsonEntryIteratorToURLPar(relAct.get(index).fields())));
+		}
 	}
 
 	@Override

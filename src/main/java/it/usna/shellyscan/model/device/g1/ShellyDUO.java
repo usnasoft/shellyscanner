@@ -92,6 +92,6 @@ public class ShellyDUO extends AbstractG1Device implements ModulesHolder {
 
 	@Override
 	public String toString() {
-		return super.toString() + " Load: " + light;
+		return super.toString() + " Light: " + light;
 	}
 }

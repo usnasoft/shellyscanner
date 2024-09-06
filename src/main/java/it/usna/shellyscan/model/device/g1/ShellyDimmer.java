@@ -70,11 +70,6 @@ public class ShellyDimmer extends AbstractG1Device implements ModulesHolder, Int
 	public Meters[] getMeters() {
 		return meters;
 	}
-	
-//	@Override
-//	public void statusRefresh() throws IOException {
-//		light.refresh();
-//	}
 
 	@Override
 	protected void fillSettings(JsonNode settings) throws IOException {
@@ -93,11 +88,6 @@ public class ShellyDimmer extends AbstractG1Device implements ModulesHolder, Int
 	public boolean calibrated() {
 		return calibrated;
 	}
-	
-//	@Override
-//	public String[] getInfoRequests() {
-//		return new String[] {"shelly", "settings", "settings/actions", "light/0", "status", "ota"};
-//	}
 
 	@Override
 	protected void restore(JsonNode settings, List<String> errors) throws IOException, InterruptedException {

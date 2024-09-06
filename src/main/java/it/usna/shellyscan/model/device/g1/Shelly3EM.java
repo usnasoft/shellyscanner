@@ -15,7 +15,6 @@ import it.usna.shellyscan.model.device.g1.modules.Relay;
 
 public class Shelly3EM extends AbstractG1Device implements ModulesHolder {
 	public final static String ID = "SHEM-3";
-	private final static Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.W, Meters.Type.PF, Meters.Type.V, Meters.Type.I};
 	private Relay relay = new Relay(this, 0);
 	private float power[] = new float[3];
 	private float current[] = new float[3];
@@ -28,6 +27,7 @@ public class Shelly3EM extends AbstractG1Device implements ModulesHolder {
 		super(address, port, hostname);
 		
 		class EM3Meters extends Meters implements LabelHolder {
+			private final static Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.W, Meters.Type.PF, Meters.Type.V, Meters.Type.I};
 			private int ind;
 			private EM3Meters(int ind) {
 				this.ind = ind;
