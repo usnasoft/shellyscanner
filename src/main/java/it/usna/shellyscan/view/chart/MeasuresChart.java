@@ -28,6 +28,7 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JScrollBar;
 import javax.swing.JToggleButton;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
@@ -43,6 +44,7 @@ import org.jfree.chart.event.ChartChangeEventType;
 import org.jfree.chart.labels.StandardXYToolTipGenerator;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
+import org.jfree.data.Range;
 import org.jfree.data.time.DateRange;
 import org.jfree.data.time.Millisecond;
 import org.jfree.data.time.TimeSeries;
@@ -76,13 +78,19 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 		NF.setMinimumFractionDigits(2);
 	}
 	private final Devices model;
-	private final Map<Integer, TimeSeries[]> seriesMap = new HashMap<>();
+	
+	private final TimeSeriesCollection dataset = new TimeSeriesCollection(); // Create dataset
+	private final Map<Integer, TimeSeries[]> seriesMap = new HashMap<>(); // device index, TimeSeries (one or more)
 
 	private static boolean outStream = false;
 
-	private JComboBox<String> seriesCombo = new JComboBox<>();
+	private final JComboBox<String> seriesCombo = new JComboBox<>();
 
 	private ChartType currentType;
+	
+	private final JScrollBar scrollBar = new JScrollBar(JScrollBar.HORIZONTAL, 0, 0, 0, 0);
+	
+	private final ValueAxis xAxis;
 
 	public MeasuresChart(JFrame owner, final Devices model, int[] ind, AppProperties appProp) {
 		setIconImages(owner.getIconImages());
@@ -97,8 +105,6 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 		JPanel mainPanel = new JPanel(new BorderLayout());
 		this.setContentPane(mainPanel);
 
-		// Create dataset
-		TimeSeriesCollection dataset = new TimeSeriesCollection();
 		// Create chart
 		JFreeChart chart = ChartFactory.createTimeSeriesChart(  
 				null, // Chart  
@@ -138,13 +144,16 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 				Msg.errorMsg(this, ex);
 			}
 		}));
-		JButton btnClear = new JButton(new UsnaAction("dlgChartsBtnClear", e -> initDataSet(plot.getRangeAxis(), dataset, model, ind)));
+		JButton btnClear = new JButton(new UsnaAction("dlgChartsBtnClear", e -> {
+			initDataSet(plot.getRangeAxis(), dataset, model, ind);
+			adjustScrollBar();
+		}));
 		JButton btnClose = new JButton(new UsnaAction("dlgClose", e -> dispose()));
 		eastCommandPanel.add(btnHelp);
 		eastCommandPanel.add(btnClear);
 		eastCommandPanel.add(btnClose);
 
-		ValueAxis xAxis = plot.getDomainAxis();
+		xAxis = plot.getDomainAxis();
 
 		JComboBox<String> rangeCombo = new JComboBox<>();
 		rangeCombo.addItem(LABELS.getString("dlgChartsRangeAuto"));
@@ -174,7 +183,7 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 				xAxis.setRange(xAxis.getRange());
 				chartPanel.setMouseWheelEnabled(true);
 			} else {
-				setRange(xAxis, rangeCombo.getSelectedIndex());
+				setRange(rangeCombo.getSelectedIndex());
 				chartPanel.setMouseWheelEnabled(false);
 				yAxis.setAutoRange(true); // recover from pan (zoom)
 			}
@@ -227,7 +236,7 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 
 		rangeCombo.addActionListener(e -> {
 			btnPause.setSelected(false);
-			setRange(xAxis, rangeCombo.getSelectedIndex());
+			setRange(rangeCombo.getSelectedIndex());
 			yAxis.setAutoRange(true); // recover from pan (zoom)
 		});
 
@@ -276,6 +285,21 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 				}
 			}
 		});
+		
+		scrollBar.setVisible(false);
+		scrollBar.setBlockIncrement(5000);
+		scrollBar.setUnitIncrement(1000);
+		scrollBar.addAdjustmentListener(e -> {
+			if(scrollBar.getValueIsAdjusting() == false) {
+				if(btnPause.isSelected() == false) {
+//					btnPause.setSelected(true);
+//					chartPanel.setMouseWheelEnabled(true);
+					btnPause.doClick();
+				}
+			}
+			//			System.out.println(e);
+		});
+		mainPanel.add(scrollBar, BorderLayout.NORTH);
 
 		getRootPane().registerKeyboardAction(e -> {
 			int selected = rangeCombo.getSelectedIndex();
@@ -286,19 +310,37 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 
 		model.addListener(this);
 
-		setSize(920, 460);
+		setSize(920, 480);
 		setLocationRelativeTo(owner);
 		setVisible(true);
 	}
 
-	private static void setRange(ValueAxis xAxis, int selected) {
-		if(selected == 1) xAxis.setFixedAutoRange(1000 * 1 * 60);
-		else if(selected == 2) xAxis.setFixedAutoRange(1000 * 5 * 60);
-		else if(selected == 3) xAxis.setFixedAutoRange(1000 * 15 * 60);
-		else if(selected == 4) xAxis.setFixedAutoRange(1000 * 30 * 60);
-		else if(selected == 5) xAxis.setFixedAutoRange(1000 * 60 * 60);
-		else xAxis.setFixedAutoRange(0); // selected == 0 - auto
-		xAxis.setAutoRange(true);
+	private void setRange(int selected) {
+		if(selected == 0) {
+			xAxis.setFixedAutoRange(0);
+			xAxis.setAutoRange(true);
+			scrollBar.setVisible(false);
+		} else {
+			scrollBar.setVisible(true);
+			if(selected == 1) xAxis.setFixedAutoRange(1000 * 1 * 60);
+			else if(selected == 2) xAxis.setFixedAutoRange(1000 * 5 * 60);
+			else if(selected == 3) xAxis.setFixedAutoRange(1000 * 15 * 60);
+			else if(selected == 4) xAxis.setFixedAutoRange(1000 * 30 * 60);
+			else /*if(selected == 5)*/ xAxis.setFixedAutoRange(1000 * 60 * 60);
+			
+			xAxis.setAutoRange(true);
+			adjustScrollBar();
+		}
+	}
+	
+	private void adjustScrollBar() {
+		Range xRange = dataset.getDomainBounds(true);
+		if(xRange != null) {
+			scrollBar.setValueIsAdjusting(true);
+			int max = (int)xRange.getLength();
+			int ext = (int)xAxis.getRange().getLength();
+			scrollBar.setValues(/*max - ext*/(int)(xAxis.getLowerBound() - xRange.getLowerBound()), ext, 0, max);
+		}
 	}
 
 	private void initDataSet(ValueAxis yAxis, TimeSeriesCollection dataset, final Devices model, int[] modelIndexes) {
@@ -461,6 +503,9 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 					} catch (Throwable ex) {
 						LOG.warn("Unexpected {}-{}", d, currentType.name(), ex); // possible error on graph type change
 					}
+//					if(xAxis.isAutoRange()) {
+						adjustScrollBar();
+//					}
 				});
 			}
 		} else if(mesgType == Devices.EventType.CLEAR) {
