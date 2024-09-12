@@ -274,6 +274,7 @@ Input reset configuration
 Shelly Pro EM-50
 Shelly plus 1PM - Shelly plus 2PM - Shelly 1PM G3 - 24V DC
 bug fix rgbw2
+charts scroll
 
 ---
 // TODO
@@ -282,7 +283,6 @@ bug fix rgbw2
 // add "knx" support
 // https://shelly-api-docs.shelly.cloud/gen2/DynamicComponents/BTHome/
 // rivedere it.usna.shellyscan.model.device.g2.ShellyPlusi4 alla luce di "Input.Trigger" (?)
-// charts scroll
 // chacklist multiselection
 // grafico energia
 // inclusione massiva
