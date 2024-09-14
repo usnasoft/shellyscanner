@@ -93,6 +93,13 @@ public class LightRGBW implements RGBWInterface {
 		refresh(status);
 	}
 	
+
+	@Override
+	public void setColor(int r, int g, int b) throws IOException {
+		final JsonNode status = parent.getJSON("/light/" + index + "?red=" + r + "&green=" + g + "&blue=" + b);
+		refresh(status);
+	}
+	
 	public void refresh() throws IOException {
 		refresh(parent.getJSON("/color/" + index));
 	}

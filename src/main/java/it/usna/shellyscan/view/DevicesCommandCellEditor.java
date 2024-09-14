@@ -30,10 +30,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import it.usna.shellyscan.model.device.g1.modules.LightBulbRGB;
-import it.usna.shellyscan.model.device.g1.modules.LightRGBW;
 import it.usna.shellyscan.model.device.g1.modules.ThermostatG1;
 import it.usna.shellyscan.model.device.modules.DeviceModule;
 import it.usna.shellyscan.model.device.modules.InputInterface;
+import it.usna.shellyscan.model.device.modules.RGBInterface;
+import it.usna.shellyscan.model.device.modules.RGBWInterface;
 import it.usna.shellyscan.model.device.modules.RelayInterface;
 import it.usna.shellyscan.model.device.modules.RollerInterface;
 import it.usna.shellyscan.model.device.modules.ThermostatInterface;
@@ -45,23 +46,31 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 	private final static Logger LOG = LoggerFactory.getLogger(DevicesCommandCellEditor.class);
 	private Object edited;
 
+	// Dimmer
 	private JLabel lightLabel = new JLabel();
 	private JPanel lightPanel = new JPanel(new BorderLayout());
 	private JButton lightButton = new JButton();
 	private JSlider lightBrightness = new JSlider();
 	
+	// RGBW Bulbs
 	private JLabel lightRGBLabel = new JLabel();
 	private JPanel lightRGBPanel = new JPanel(new BorderLayout());
 	private JButton lightRGBButton = new JButton();
 	private JSlider lightRGBBrightness = new JSlider(0, 100);
 	
-	// RGBW
+	// RGB
 	private JPanel colorRGBPanel = new JPanel(new BorderLayout());
 	private JLabel colorRGBLabel = new JLabel();
 	private JButton colorRGBButton = new JButton();
-	private JSlider colorRGBGain = new JSlider(0, 100);
-	private JSlider colorRGBBWhite = new JSlider(0, 100);
-	private JLabel colorRGBGainLabel = new JLabel();
+	private JSlider colorRGBBrightness = new JSlider(0, 100);
+	
+	// RGBW
+	private JPanel colorRGBWPanel = new JPanel(new BorderLayout());
+	private JLabel colorRGBWLabel = new JLabel();
+	private JButton colorRGBWButton = new JButton();
+	private JSlider colorRGBWGain = new JSlider(0, 100);
+	private JSlider colorRGBWWhite = new JSlider(0, 255);
+	private JLabel colorRGBWGainLabel = new JLabel();
 	private JLabel colorRGBWhiteLabel = new JLabel();
 	
 	// Roller
@@ -96,13 +105,13 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 		// Dimmer
 		lightPanel.setBackground(selBackground);
 		lightLabel.setForeground(selForeground);
-		lightPanel.add(lightLabel, BorderLayout.CENTER);
+		lightPanel.add(lightLabel, BorderLayout.WEST);
 		lightPanel.add(lightButton, BorderLayout.EAST);
 		lightButton.setBorder(DevicesCommandCellRenderer.BUTTON_BORDERS);
 		lightButton.addActionListener(e -> {
-			if(edited != null && edited instanceof WhiteInterface wi) {
+			if(edited != null && edited instanceof WhiteInterface[] wi) {
 				try {
-					wi.toggle();
+					wi[0].toggle();
 				} catch (IOException ex) {
 					LOG.error("lightButton", ex);
 				}
@@ -111,12 +120,12 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 		});
 		lightPanel.add(lightBrightness, BorderLayout.SOUTH);
 		lightBrightness.addChangeListener(e -> {
-			if(edited != null && edited instanceof WhiteInterface wi) {
+			if(edited != null && edited instanceof WhiteInterface[] wi) {
 				if(lightBrightness.getValueIsAdjusting()) {
-					lightLabel.setText(wi.getLabel() + " " + lightBrightness.getValue() + "%");
+					lightLabel.setText(wi[0].getLabel() + " " + lightBrightness.getValue() + "%");
 				} else {
 					try {
-						wi.setBrightness(lightBrightness.getValue());
+						wi[0].setBrightness(lightBrightness.getValue());
 					} catch (IOException ex) {
 						LOG.error("lightBrightness", ex);
 					}
@@ -132,9 +141,9 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 		lightRGBPanel.add(lightRGBButton, BorderLayout.EAST);
 		lightRGBButton.setBorder(DevicesCommandCellRenderer.BUTTON_BORDERS);
 		lightRGBButton.addActionListener(e -> {
-			if(edited != null && edited instanceof LightBulbRGB) {
+			if(edited != null && edited instanceof LightBulbRGB[] bulbs) {
 				try {
-					((LightBulbRGB)edited).toggle();
+					bulbs[0].toggle();
 				} catch (IOException ex) {
 					LOG.error("lightRGBButton", ex);
 				}
@@ -149,18 +158,18 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 		lightEditRGBButton.setBorder(BorderFactory.createEmptyBorder(0, 3, 0, 3));
 		lightEditRGBButton.setContentAreaFilled(false);
 		lightEditRGBButton.addActionListener(e -> {
-			if(edited != null && edited instanceof LightBulbRGB) {
+			if(edited != null && edited instanceof LightBulbRGB[] bulbs) {
 				final Window win = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusedWindow();
 				win.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-				new DialogEditBulbRGB(win, (LightBulbRGB)edited);
+				new DialogEditBulbRGB(win, bulbs[0]);
 				cancelCellEditing();
 				win.setCursor(Cursor.getDefaultCursor());
 			}
 		});
 		lightRGBSouthPanel.add(lightEditRGBButton, BorderLayout.EAST);
 		lightRGBBrightness.addChangeListener(e -> {
-			if(edited != null && edited instanceof LightBulbRGB) {
-				LightBulbRGB light = (LightBulbRGB)edited;
+			if(edited != null && edited instanceof LightBulbRGB[] bulbs) {
+				LightBulbRGB light = bulbs[0];
 				if(lightRGBBrightness.getValueIsAdjusting()) {
 					lightRGBLabel.setText(light.getLabel() + " " + lightRGBBrightness.getValue() + "%");
 				} else {
@@ -178,29 +187,30 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 			}
 		});
 		
-		// RGBW (color)
+		// RGB
 		colorRGBPanel.setBackground(selBackground);
 		colorRGBLabel.setForeground(selForeground);
-		colorRGBPanel.add(colorRGBLabel, BorderLayout.CENTER);
-		colorRGBPanel.add(colorRGBButton, BorderLayout.EAST);
 		colorRGBButton.setBorder(DevicesCommandCellRenderer.BUTTON_BORDERS);
+		colorRGBPanel.add(colorRGBLabel, BorderLayout.WEST);
+		colorRGBPanel.add(colorRGBButton, BorderLayout.EAST);
+		colorRGBPanel.add(colorRGBBrightness, BorderLayout.SOUTH);
 		colorRGBButton.addActionListener(e -> {
-			if(edited != null && edited instanceof LightRGBW) {
+			if(edited != null && edited instanceof RGBInterface[] rgbs) {
 				try {
-					((LightRGBW)edited).toggle();
+					rgbs[0].toggle();
 				} catch (IOException ex) {
-					LOG.error("colorRGBButton", ex);
+					LOG.error("lightRGBButton", ex);
 				}
 				cancelCellEditing();
 			}
 		});
-		colorRGBGain.addChangeListener(e -> {
-			if(edited != null && edited instanceof LightRGBW) {
-				if(colorRGBGain.getValueIsAdjusting()) {
-					colorRGBGainLabel.setText(LABELS.getString("labelShortGain") + " " + colorRGBGain.getValue() + "% ");
+		colorRGBBrightness.addChangeListener(e -> {
+			if(edited != null && edited instanceof RGBInterface[] rgbs) {
+				if(colorRGBBrightness.getValueIsAdjusting()) {
+					colorRGBWGainLabel.setText(rgbs[0].getLabel() + " " + colorRGBBrightness.getValue() + "%");
 				} else {
 					try {
-						((LightRGBW)edited).setGain(colorRGBGain.getValue());
+						rgbs[0].setGain(colorRGBBrightness.getValue());
 					} catch (IOException ex) {
 						LOG.error("colorRGBGain", ex);
 					}
@@ -208,13 +218,44 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 				}
 			}
 		});
-		colorRGBBWhite.addChangeListener(e -> {
-			if(edited != null && edited instanceof LightRGBW) {
-				if(colorRGBBWhite.getValueIsAdjusting()) {
-					colorRGBWhiteLabel.setText(LABELS.getString("labelShortWhite") + " " + colorRGBBWhite.getValue() + "% ");
+		
+		// RGBW (color)
+		colorRGBWPanel.setBackground(selBackground);
+		colorRGBWLabel.setForeground(selForeground);
+		colorRGBWPanel.add(colorRGBWLabel, BorderLayout.WEST);
+		colorRGBWPanel.add(colorRGBWButton, BorderLayout.EAST);
+		colorRGBWButton.setBorder(DevicesCommandCellRenderer.BUTTON_BORDERS);
+		colorRGBWButton.addActionListener(e -> {
+			if(edited != null && edited instanceof RGBWInterface[] rgbws) {
+				try {
+					rgbws[0].toggle();
+				} catch (IOException ex) {
+					LOG.error("colorRGBButton", ex);
+				}
+				cancelCellEditing();
+			}
+		});
+		colorRGBWGain.addChangeListener(e -> {
+			if(edited != null && edited instanceof RGBWInterface[] rgbws) {
+				if(colorRGBWGain.getValueIsAdjusting()) {
+					colorRGBWGainLabel.setText(LABELS.getString("labelShortGain") + String.format("%-4s", colorRGBWGain.getValue() + "%"));
 				} else {
 					try {
-						((LightRGBW)edited).setWhite(colorRGBBWhite.getValue());
+						rgbws[0].setGain(colorRGBWGain.getValue());
+					} catch (IOException ex) {
+						LOG.error("colorRGBGain", ex);
+					}
+					cancelCellEditing();
+				}
+			}
+		});
+		colorRGBWWhite.addChangeListener(e -> {
+			if(edited != null && edited instanceof RGBWInterface[] rgbws) {
+				if(colorRGBWWhite.getValueIsAdjusting()) {
+					colorRGBWhiteLabel.setText(LABELS.getString("labelShortWhite") + colorRGBWWhite.getValue());
+				} else {
+					try {
+						rgbws[0].setWhite(colorRGBWWhite.getValue());
 					} catch (IOException ex) {
 						LOG.error("colorRGBBWhite", ex);
 					}
@@ -222,36 +263,36 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 				}
 			}
 		});
-		JPanel colorRGBSlidersPanel = new JPanel();
-		BoxLayout colorRGBSlidersPanelLO = new BoxLayout(colorRGBSlidersPanel, BoxLayout.X_AXIS);
-		colorRGBSlidersPanel.setLayout(colorRGBSlidersPanelLO);
-		JPanel stackedLabels = new JPanel(new GridLayout(2, 1));
-		stackedLabels.setOpaque(false);
-		colorRGBGainLabel.setForeground(selForeground);
+		JPanel colorRGBWSlidersPanel = new JPanel();
+		BoxLayout colorRGBWSlidersPanelLO = new BoxLayout(colorRGBWSlidersPanel, BoxLayout.X_AXIS);
+		colorRGBWSlidersPanel.setLayout(colorRGBWSlidersPanelLO);
+		JPanel stackedRGBWLabels = new JPanel(new GridLayout(2, 1));
+		stackedRGBWLabels.setOpaque(false);
+		colorRGBWGainLabel.setForeground(selForeground);
 		colorRGBWhiteLabel.setForeground(selForeground);
-		stackedLabels.add(colorRGBGainLabel);
-		stackedLabels.add(colorRGBWhiteLabel);
-		colorRGBSlidersPanel.add(stackedLabels);
-		JPanel stackedSliders = new JPanel(new GridLayout(2, 1));
-		stackedSliders.setOpaque(false);
-		stackedSliders.add(colorRGBGain);
-		stackedSliders.add(colorRGBBWhite);
-		colorRGBSlidersPanel.add(stackedSliders);
-		JButton editRGBButton = new JButton(new ImageIcon(getClass().getResource("/images/Write16.png")));
-		editRGBButton.setBorder(BorderFactory.createEmptyBorder(0, 3, 0, 3));
-		editRGBButton.setContentAreaFilled(false);
-		editRGBButton.addActionListener(e -> {
-			if(edited != null && edited instanceof LightRGBW) {
+		stackedRGBWLabels.add(colorRGBWGainLabel);
+		stackedRGBWLabels.add(colorRGBWhiteLabel);
+		colorRGBWSlidersPanel.add(stackedRGBWLabels);
+		JPanel stackedRGBWSliders = new JPanel(new GridLayout(2, 1));
+		stackedRGBWSliders.setOpaque(false);
+		stackedRGBWSliders.add(colorRGBWGain);
+		stackedRGBWSliders.add(colorRGBWWhite);
+		colorRGBWSlidersPanel.add(stackedRGBWSliders);
+		JButton editRGBWButton = new JButton(new ImageIcon(getClass().getResource("/images/Write16.png")));
+		editRGBWButton.setBorder(BorderFactory.createEmptyBorder(0, 2, 0, 3));
+		editRGBWButton.setContentAreaFilled(false);
+		editRGBWButton.addActionListener(e -> {
+			if(edited != null && edited instanceof RGBWInterface[] rgbws) {
 				final Window win = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusedWindow();
 				win.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-				new DialogEditRGBW(win, (LightRGBW)edited);
+				new DialogEditRGBW(win, rgbws[0]);
 				cancelCellEditing();
 				win.setCursor(Cursor.getDefaultCursor());
 			}
 		});
-		colorRGBSlidersPanel.add(editRGBButton);
-		colorRGBSlidersPanel.setOpaque(false);
-		colorRGBPanel.add(colorRGBSlidersPanel, BorderLayout.SOUTH);
+		colorRGBWSlidersPanel.add(editRGBWButton);
+		colorRGBWSlidersPanel.setOpaque(false);
+		colorRGBWPanel.add(colorRGBWSlidersPanel, BorderLayout.SOUTH);
 		
 		// Roller
 		rollerPanel.setBackground(selBackground);
@@ -274,9 +315,9 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 		rollerButtonPanel.setOpaque(false);
 		rollerPanel.add(rollerSouthPanel, BorderLayout.SOUTH);
 		rollerButtonUp.addActionListener(e -> {
-			if(edited != null && edited instanceof RollerInterface) {
+			if(edited != null && edited instanceof RollerInterface[] rollers) {
 				try {
-					((RollerInterface)edited).open();
+					rollers[0].open();
 				} catch (IOException ex) {
 					LOG.error("rollerButtonUp", ex);
 				}
@@ -284,9 +325,9 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 			}
 		});
 		rollerButtonStop.addActionListener(e -> {
-			if(edited != null && edited instanceof RollerInterface) {
+			if(edited != null && edited instanceof RollerInterface[] rollers) {
 				try {
-					((RollerInterface)edited).stop();
+					rollers[0].stop();
 				} catch (IOException ex) {
 					LOG.error("rollerButtonStop", ex);
 				}
@@ -294,9 +335,9 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 			}
 		});
 		rollerButtonDown.addActionListener(e -> {
-			if(edited != null && edited instanceof RollerInterface) {
+			if(edited != null && edited instanceof RollerInterface[] rollers) {
 				try {
-					((RollerInterface)edited).close();
+					rollers[0].close();
 				} catch (IOException ex) {
 					LOG.error("rollerButtonDown", ex);
 				}
@@ -304,14 +345,14 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 			}
 		});
 		rollerPerc.addChangeListener(e -> {
-			if(edited != null && edited instanceof RollerInterface) {
+			if(edited != null && edited instanceof RollerInterface[] rollers) {
 				if(rollerPerc.getValueIsAdjusting()) {
-					if(((RollerInterface)edited).isCalibrated()) {
-						rollerLabel.setText(((RollerInterface)edited).getLabel() + " " + rollerPerc.getValue() + "%");
+					if(rollers[0].isCalibrated()) {
+						rollerLabel.setText(rollers[0].getLabel() + " " + rollerPerc.getValue() + "%");
 					}
 				} else {
 					try {
-						((RollerInterface)edited).setPosition(rollerPerc.getValue());
+						rollers[0].setPosition(rollerPerc.getValue());
 					} catch (IOException ex) {
 						LOG.error("rollerPerc", ex);
 					}
@@ -325,13 +366,13 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 		editLightWhiteButton.setBorder(BorderFactory.createEmptyBorder(0, 3, 0, 3));
 		editLightWhiteButton.setContentAreaFilled(false);
 		editLightWhiteButton.addChangeListener(e -> {
-				if(edited != null && edited instanceof WhiteInterface[]) {
-					final Window win = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusedWindow();
-					win.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-					new DialogEditLightsArray(win, (WhiteInterface[])edited);
-					cancelCellEditing();
-					win.setCursor(Cursor.getDefaultCursor());
-				}
+			if(edited != null && edited instanceof WhiteInterface[]) {
+				final Window win = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusedWindow();
+				win.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+				new DialogEditLightsArray(win, (WhiteInterface[])edited);
+				cancelCellEditing();
+				win.setCursor(Cursor.getDefaultCursor());
+			}
 		});
 		
 		// Thermostat G1 (TRV)
@@ -462,11 +503,13 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 			edited = riArray;
 			return stackedPanel;
 		} else if(value instanceof RollerInterface[] rollersArray) {
-			return getRollerPanel(rollersArray[0]); // multiple rollers devices currently not supported
+			return getRollerPanel(rollersArray);
 		} else if(value instanceof LightBulbRGB[] bulbsArray) { // RGBW Bulbs
-			return getLightRGBWPanel(bulbsArray[0]); // multiple bulbs devices currently not supported
-		} else if(value instanceof LightRGBW[] rgbs) {
-			return getRGBWColorPanel(rgbs[0]); // multiple LightRGBW devices currently not supported
+			return getLightRGBWPanel(bulbsArray);
+		} else if(value instanceof RGBWInterface[] rgbws) {
+			return getRGBWColorPanel(rgbws);
+		} else if(value instanceof RGBInterface[] rgbs) {
+			return getRGBColorPanel(rgbs);
 		} else if(value instanceof WhiteInterface[] whitesArray) {
 			return getWhitePanel(whitesArray);
 		} else if(value instanceof InputInterface[] inputArray) {
@@ -540,7 +583,8 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 		return relayPanel;
 	}
 	
-	private Component getRollerPanel(RollerInterface roller) {
+	private Component getRollerPanel(RollerInterface[] rollers) {
+		RollerInterface roller = rollers[0]; // multiple rollers devices currently not supported
 		final String labelText;
 		if(roller.isCalibrated()) {
 			labelText = roller.getLabel() + " " + roller.getPosition() + "%";
@@ -551,11 +595,12 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 		}
 		rollerPerc.setValue(roller.getPosition());
 		rollerLabel.setText(labelText);
-		edited = roller;
+		edited = rollers;
 		return rollerPanel;
 	}
 	
-	private Component getLightRGBWPanel(LightBulbRGB light) {
+	private Component getLightRGBWPanel(LightBulbRGB[] lights) {
+		LightBulbRGB light = lights[0]; // multiple bulbs devices currently not supported
 		final int slider = light.isColorMode() ? light.getGain() : light.getBrightness();
 		lightRGBLabel.setText(light.getLabel() + " " + slider + "%");
 		lightRGBBrightness.setValue(slider);
@@ -566,24 +611,44 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 			lightRGBButton.setText(DevicesCommandCellRenderer.LABEL_OFF);
 			lightRGBButton.setBackground(DevicesCommandCellRenderer.BUTTON_OFF_BG_COLOR);
 		}
-		edited = light;
+		edited = lights;
 		return lightRGBPanel;
 	}
 	
-	private Component getRGBWColorPanel(LightRGBW color) {
-		colorRGBLabel.setText(color.getLabel());
-		colorRGBGain.setValue(color.getGain());
-		if(color.isOn()) {
+	private Component getRGBColorPanel(RGBInterface[] colors) {
+		RGBInterface rgb = colors[0];
+		colorRGBLabel.setText(rgb.getLabel() + " " + rgb.getGain() + "%");
+//		lightBrightness.setMinimum(light.getMinBrightness());
+//		lightBrightness.setMaximum(light.getMaxBrightness());
+		colorRGBBrightness.setValue(rgb.getGain());
+		if(rgb.isOn()) {
 			colorRGBButton.setText(DevicesCommandCellRenderer.LABEL_ON);
 			colorRGBButton.setBackground(DevicesCommandCellRenderer.BUTTON_ON_BG_COLOR);
 		} else {
 			colorRGBButton.setText(DevicesCommandCellRenderer.LABEL_OFF);
 			colorRGBButton.setBackground(DevicesCommandCellRenderer.BUTTON_OFF_BG_COLOR);
 		}
-		colorRGBGainLabel.setText(LABELS.getString("labelShortGain") + " " + color.getGain() + "% ");
-		colorRGBWhiteLabel.setText(LABELS.getString("labelShortWhite") + " " + color.getWhite() + "% ");
-		edited = color;
+//		lightButton.setForeground(light.isInputOn() ? DevicesCommandCellRenderer.BUTTON_ON_FG_COLOR : null);
+		edited = colors;
 		return colorRGBPanel;
+	}
+	
+	private Component getRGBWColorPanel(RGBWInterface[] colors) {
+		RGBWInterface color = colors[0]; // multiple LightRGBW devices currently not supported
+		colorRGBWLabel.setText(color.getLabel());
+		colorRGBWGain.setValue(color.getGain());
+		colorRGBWWhite.setValue(color.getWhite());
+		colorRGBWGainLabel.setText(LABELS.getString("labelShortGain") + String.format("%-4s", color.getGain() + "%"));
+		colorRGBWhiteLabel.setText(LABELS.getString("labelShortWhite") + color.getWhite() /*+ " "*/);
+		if(color.isOn()) {
+			colorRGBWButton.setText(DevicesCommandCellRenderer.LABEL_ON);
+			colorRGBWButton.setBackground(DevicesCommandCellRenderer.BUTTON_ON_BG_COLOR);
+		} else {
+			colorRGBWButton.setText(DevicesCommandCellRenderer.LABEL_OFF);
+			colorRGBWButton.setBackground(DevicesCommandCellRenderer.BUTTON_OFF_BG_COLOR);
+		}
+		edited = colors;
+		return colorRGBWPanel;
 	}
 	
 	private Component getWhitePanel(WhiteInterface[] lights) {
@@ -601,7 +666,7 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 				lightButton.setBackground(DevicesCommandCellRenderer.BUTTON_OFF_BG_COLOR);
 			}
 			lightButton.setForeground(light.isInputOn() ? DevicesCommandCellRenderer.BUTTON_ON_FG_COLOR : null);
-			edited = light;
+			edited = lights;
 			return lightPanel;
 		} else {
 			stackedPanel.removeAll();

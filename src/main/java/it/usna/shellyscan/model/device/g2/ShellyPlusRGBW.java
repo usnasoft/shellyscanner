@@ -17,8 +17,11 @@ import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.ModulesHolder;
 import it.usna.shellyscan.model.device.RestoreMsg;
 import it.usna.shellyscan.model.device.g2.modules.Input;
+import it.usna.shellyscan.model.device.g2.modules.LightRGB;
+import it.usna.shellyscan.model.device.g2.modules.LightRGBW;
 import it.usna.shellyscan.model.device.g2.modules.LightWhite;
 import it.usna.shellyscan.model.device.g2.modules.SensorAddOn;
+import it.usna.shellyscan.model.device.meters.MetersWVI;
 import it.usna.shellyscan.model.device.modules.DeviceModule;
 
 /**
@@ -38,17 +41,19 @@ public class ShellyPlusRGBW extends AbstractG2Device implements ModulesHolder, I
 	};
 	public final static String ID = "PlusRGBWPM";
 	//	private final static Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.W, Meters.Type.PF, Meters.Type.V, Meters.Type.I};
-	private final static Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.V}; // not calibrated
+//	private final static Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.V, Type.I}; // not calibrated
 	private Profile profile;
-//	private Relay relay0, relay1;
-//	private Relay[] relaysArray;
 	private float internalTmp;
-	private float power0, power1;
+	private float power0, power1, power2, power3; // if calibrated (white)
 	private float voltage0, voltage1, voltage2, voltage3;
-	private float current0, current1;
-//	private float pf0, pf1;
+	private float current0, current1, current2, current3; // if calibrated (white)
 	private LightWhite light0, light1, light2, light3;
 	private LightWhite[] lights;
+	private LightRGB rgbLight;
+	private LightRGB[] rgbs;
+	private LightRGBW rgbwLight;
+	private LightRGBW[] rgbws;
+	
 	private Meters meters0, meters1, meters2, meters3;
 	private Meters[] meters;
 	private SensorAddOn addOn;
@@ -64,77 +69,53 @@ public class ShellyPlusRGBW extends AbstractG2Device implements ModulesHolder, I
 
 		final JsonNode config = configure();
 
-		meters0 = new Meters() {
-			public Type[] getTypes() {
-				return SUPPORTED_MEASURES;
-			}
-
+		meters0 = new MetersWVI() {
 			@Override
 			public float getValue(Type t) {
-				//				if(t == Meters.Type.W) {
-				//					return power0;
-				//				} else if(t == Meters.Type.I) {
-				//					return current0;
-				//				} else if(t == Meters.Type.PF) {
-				//					return pf0;
-				//				} else {
-				return voltage0;
-				//				}
+				if(t == Meters.Type.W) {
+					return power0;
+				} else if(t == Meters.Type.I) {
+					return current0;
+				} else {
+					return voltage0;
+				}
 			}
 		};
-		meters1 = new Meters() {
-			public Type[] getTypes() {
-				return SUPPORTED_MEASURES;
-			}
-
+		meters1 = new MetersWVI() {
 			@Override
 			public float getValue(Type t) {
-				//				if(t == Meters.Type.W) {
-				//					return power1;
-				//				} else if(t == Meters.Type.I) {
-				//					return current1;
-				//				} else if(t == Meters.Type.PF) {
-				//					return pf1;
-				//				} else {
-				return voltage1;
-				//				}
+				if(t == Meters.Type.W) {
+					return power1;
+				} else if(t == Meters.Type.I) {
+					return current1;
+				} else {
+					return voltage1;
+				}
 			}
 
 		};
-		meters2 = new Meters() {
-			public Type[] getTypes() {
-				return SUPPORTED_MEASURES;
-			}
-
+		meters2 = new MetersWVI() {
 			@Override
 			public float getValue(Type t) {
-				//				if(t == Meters.Type.W) {
-				//					return power1;
-				//				} else if(t == Meters.Type.I) {
-				//					return current1;
-				//				} else if(t == Meters.Type.PF) {
-				//					return pf1;
-				//				} else {
-				return voltage2;
-				//				}
+				if(t == Meters.Type.W) {
+					return power2;
+				} else if(t == Meters.Type.I) {
+					return current2;
+				} else {
+					return voltage2;
+				}
 			}
 		};
-		meters3 = new Meters() {
-			public Type[] getTypes() {
-				return SUPPORTED_MEASURES;
-			}
-
+		meters3 = new MetersWVI() {
 			@Override
 			public float getValue(Type t) {
-				//					if(t == Meters.Type.W) {
-				//						return power1;
-				//					} else if(t == Meters.Type.I) {
-				//						return current1;
-				//					} else if(t == Meters.Type.PF) {
-				//						return pf1;
-				//					} else {
-				return voltage3;
-				//					}
+				if(t == Meters.Type.W) {
+					return power3;
+				} else if(t == Meters.Type.I) {
+					return current3;
+				} else {
+					return voltage3;
+				}
 			}
 		};
 
@@ -175,8 +156,10 @@ public class ShellyPlusRGBW extends AbstractG2Device implements ModulesHolder, I
 	public DeviceModule getModule(int index) {
 		if(profile != Profile.LIGHT) {
 			return lights[index];
+		} else if(profile == Profile.RGBW) {
+			return rgbwLight;
 		} else {
-			return null; //todo
+			return rgbLight;
 		}
 	}
 
@@ -184,26 +167,16 @@ public class ShellyPlusRGBW extends AbstractG2Device implements ModulesHolder, I
 	public DeviceModule[] getModules() {
 		if(profile == Profile.LIGHT) {
 			return lights;
+		} else if(profile == Profile.RGBW) {
+			return rgbws;
 		} else {
-			return null; //todo
+			return rgbs;
 		}
 	}
 
 	@Override
 	public float getInternalTmp() {
 		return internalTmp;
-	}
-
-	public float getPower() {
-		return power0;
-	}
-
-	public float getVoltage() {
-		return voltage0;
-	}
-
-	public float getCurrent() {
-		return current0;
 	}
 
 	@Override
@@ -223,6 +196,7 @@ public class ShellyPlusRGBW extends AbstractG2Device implements ModulesHolder, I
 				light2 = new LightWhite(this, 2);
 				light3 = new LightWhite(this, 3);
 				lights = new LightWhite[] {light0, light1, light2, light3};
+				rgbLight = null;
 				meters = new Meters[] {meters0, meters1, meters2, meters3};
 				meters = (addOn == null || addOn.getTypes().length == 0) ? new Meters[] {meters0, meters1, meters2, meters3} : new Meters[] {meters0, meters1, meters2, meters3, addOn};
 			}
@@ -233,23 +207,27 @@ public class ShellyPlusRGBW extends AbstractG2Device implements ModulesHolder, I
 		} else if(prof.equals(Profile.RGB.code)) {
 			if(profile != Profile.RGB) {
 				profile = Profile.RGB;
-				
+				rgbLight = new LightRGB(this, 0);
+				rgbs = new LightRGB[] {rgbLight};
 				light0 =  light1 =  light2 = light3 = null;
+				rgbwLight = null;
 				
 				meters = new Meters[] {meters0};
 				meters = (addOn == null || addOn.getTypes().length == 0) ? new Meters[] {meters0} : new Meters[] {meters0, addOn};
 			}
-			// todo fill
+			rgbLight.fillConfig(configuration.get("rgb:0"));
 		} else /*if(prof.equals(Mode.RGBW.code))*/ {
 			if(profile != Profile.RGBW) {
 				profile = Profile.RGBW;
-				
+				rgbwLight = new LightRGBW(this, 0);
+				rgbws = new LightRGBW[] {rgbwLight};
 				light0 =  light1 =  light2 = light3 = null;
+				rgbLight = null;
 				
 				meters = new Meters[] {meters0};
 				meters = (addOn == null || addOn.getTypes().length == 0) ? new Meters[] {meters0} : new Meters[] {meters0, addOn};
 			}
-			// todo fill
+			rgbwLight.fillConfig(configuration.get("rgbw:0"));
 		} 
 		if(addOn != null) {
 			addOn.fillSettings(configuration);
@@ -262,33 +240,45 @@ public class ShellyPlusRGBW extends AbstractG2Device implements ModulesHolder, I
 		if(profile == Profile.LIGHT) {
 			JsonNode lightStatus0 = status.get("light:0");
 			voltage0 = lightStatus0.get("voltage").floatValue();
+			current0 = lightStatus0.path("current").floatValue();
+			power0 = lightStatus0.path("apower").floatValue();
 			light0.fillStatus(lightStatus0, status.get("input:0"));
 			
 			JsonNode lightStatus1 = status.get("light:1");
 			voltage1 = lightStatus1.get("voltage").floatValue();
+			current1 = lightStatus1.path("current").floatValue();
+			power1 = lightStatus1.path("apower").floatValue();
 			light1.fillStatus(lightStatus1, status.get("input:1"));
 			
 			JsonNode lightStatus2 = status.get("light:2");
 			voltage2 = lightStatus2.get("voltage").floatValue();
+			current2 = lightStatus2.path("current").floatValue();
+			power2 = lightStatus2.path("apower").floatValue();
 			light2.fillStatus(lightStatus2, status.get("input:2"));
 			
 			JsonNode lightStatus3 = status.get("light:3");
 			voltage3 = lightStatus3.get("voltage").floatValue();
+			current3 = lightStatus3.path("current").floatValue();
+			power3 = lightStatus3.path("apower").floatValue();
 			light3.fillStatus(lightStatus3, status.get("input:3"));
 			
 			internalTmp = lightStatus0.get("temperature").path("tC").floatValue();
 		} else if(profile == Profile.RGB) {
 			JsonNode rgb = status.get("rgb:0");
 			voltage0 = rgb.get("voltage").floatValue();
-			internalTmp = rgb.get("temperature").path("tC").floatValue();
+			current0 = rgb.path("current").floatValue();
+			power0 = rgb.path("apower").floatValue();
+			rgbLight.fillStatus(rgb);
 			
-			// todo fill
+			internalTmp = rgb.get("temperature").path("tC").floatValue();
 		} else /*if(profile == Mode.RGBW)*/ {
 			JsonNode rgbw = status.get("rgbw:0");
 			voltage0 = rgbw.get("voltage").floatValue();
-			internalTmp = rgbw.get("temperature").path("tC").floatValue();
+			current0 = rgbw.path("current").floatValue();
+			power0 = rgbw.path("apower").floatValue();
+			rgbwLight.fillStatus(rgbw);
 			
-			// todo fill
+			internalTmp = rgbw.get("temperature").path("tC").floatValue();
 		}
 		if(addOn != null) {
 			addOn.fillStatus(status);
@@ -341,12 +331,12 @@ public class ShellyPlusRGBW extends AbstractG2Device implements ModulesHolder, I
 				errors.add(light2.restore(configuration));
 				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 				errors.add(light3.restore(configuration));
-				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			} else if(profile == Profile.RGBW) {
-				//todo
+				errors.add(rgbwLight.restore(configuration));
 			} else /*if(profile == Mode.RGB)*/ {
-				//todo
+				errors.add(rgbLight.restore(configuration));
 			}
+			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 		} else {
 			errors.add(RestoreMsg.ERR_RESTORE_MODE_COLOR.name());
 		}
@@ -367,8 +357,10 @@ public class ShellyPlusRGBW extends AbstractG2Device implements ModulesHolder, I
 	public String toString() {
 		if(profile == Profile.LIGHT) {
 			return super.toString() + ": " + light0 + " / " + light1 + " / " + light2 + " / " +  light3;
+		} else if(profile == Profile.RGBW) {
+			return super.toString() + ": " + rgbwLight;
 		} else {
-			return super.toString();
+			return super.toString() + ": " + rgbLight;
 		}
 	}
 }

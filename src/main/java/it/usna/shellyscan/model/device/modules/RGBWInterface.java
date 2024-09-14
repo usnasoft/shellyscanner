@@ -2,26 +2,11 @@ package it.usna.shellyscan.model.device.modules;
 
 import java.io.IOException;
 
-public interface RGBWInterface extends DeviceModule {
-	boolean toggle() throws IOException;
-	
-	void change(boolean on) throws IOException;
-	
-	boolean isOn();
-	
+public interface RGBWInterface extends RGBInterface {
+
 	int getWhite();
-	
-	int getRed();
-	
-	int getGreen();
-	
-	int getBlue();
-	
-	void setWhite(int w) throws IOException; // todo remove?
+
+	void setWhite(int w) throws IOException;
 	
 	void setColor(int r, int g, int b, int w) throws IOException;
-	
-	void setGain(int b) throws IOException;
-	
-	int getGain();
 }

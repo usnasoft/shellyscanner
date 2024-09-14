@@ -9,8 +9,6 @@ public interface RGBInterface extends DeviceModule {
 	
 	boolean isOn();
 	
-	int getWhite();
-	
 	int getRed();
 	
 	int getGreen();

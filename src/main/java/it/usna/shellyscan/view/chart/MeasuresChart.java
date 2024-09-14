@@ -172,7 +172,7 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 		westCommandPanel.add(typeCombo);
 
 		JToggleButton btnPause = new JToggleButton(new ImageIcon(MeasuresChart.class.getResource("/images/Pause16.png")));
-		btnPause.setSelectedIcon(new ImageIcon(MeasuresChart.class.getResource("/images/Play16.png")));
+		btnPause.setSelectedIcon(new ImageIcon(MeasuresChart.class.getResource("/images/playTrasp24Green.png")));
 		btnPause.setRolloverEnabled(false);
 		btnPause.setPreferredSize(new Dimension(33, 28));
 		btnPause.setToolTipText(LABELS.getString("dlgChartsPauseTooltip"));

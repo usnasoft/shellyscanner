@@ -13,24 +13,24 @@ import java.io.IOException;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
-import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
-import javax.swing.JToggleButton;
 import javax.swing.SwingConstants;
 import javax.swing.event.ChangeListener;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import it.usna.shellyscan.controller.UsnaToggleAction;
 import it.usna.shellyscan.model.device.modules.RGBWInterface;
 
 public class DialogEditRGBW extends JDialog {
 	private static final long serialVersionUID = 1L;
 	
-	private JToggleButton switchButton;
+	private UsnaToggleAction toggleAction;
 	private JSlider sliderGain;
 	private JSlider sliderRed;
 	private JSlider sliderGreen;
@@ -60,7 +60,7 @@ public class DialogEditRGBW extends JDialog {
 
 		JPanel colorPanel = pColor(light);
 
-		getContentPane().add(modePanel(light), BorderLayout.NORTH);
+		getContentPane().add(buttonsPanel(light), BorderLayout.NORTH);
 		getContentPane().add(colorPanel, BorderLayout.CENTER);
 		
 		adjust(light);
@@ -69,17 +69,13 @@ public class DialogEditRGBW extends JDialog {
 		setVisible(true);
 	}
 	
-	private JPanel modePanel(RGBWInterface light) {
+	private JPanel buttonsPanel(RGBWInterface light) {
 		JPanel typePanel = new JPanel();
 		BoxLayout bl = new BoxLayout(typePanel, BoxLayout.X_AXIS);
 		typePanel.setLayout(bl);
 		typePanel.setBackground(Color.LIGHT_GRAY);
-
-		switchButton = new JToggleButton(new ImageIcon(DialogEditRGBW.class.getResource("/images/Standby24.png"))/*, light.isOn()*/);
-		switchButton.setSelectedIcon(new ImageIcon(DialogEditRGBW.class.getResource("/images/StandbyOn24.png")));
-		switchButton.setRolloverEnabled(false);
-		switchButton.setContentAreaFilled(false);
-		switchButton.addActionListener(e -> {
+		
+		toggleAction = new UsnaToggleAction(null, "/images/Standby24.png", "/images/StandbyOn24.png", e -> {
 			try {
 				light.toggle();
 				adjust(light);
@@ -87,6 +83,9 @@ public class DialogEditRGBW extends JDialog {
 				LOG.error("switchButton", e1);
 			}
 		});
+		JButton switchButton = new JButton(toggleAction);
+		switchButton.setContentAreaFilled(false);
+
 		typePanel.add(Box.createHorizontalGlue());
 		typePanel.add(switchButton);
 		return typePanel;
@@ -270,7 +269,7 @@ public class DialogEditRGBW extends JDialog {
 	}
 	
 	private void adjust(RGBWInterface light) {
-		switchButton.setSelected(light.isOn());
+		toggleAction.setSelected(light.isOn());
 		adjustGain(light.getGain());
 		adjustLightRGBW(light.getRed(), light.getGreen(), light.getBlue(), light.getWhite());
 	}
