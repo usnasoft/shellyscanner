@@ -20,4 +20,6 @@ public interface RGBInterface extends DeviceModule {
 	void setGain(int b) throws IOException;
 	
 	int getGain();
+	
+	boolean isInputOn();
 }

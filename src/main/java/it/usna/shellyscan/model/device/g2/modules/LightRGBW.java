@@ -19,6 +19,7 @@ public class LightRGBW implements RGBWInterface {
 	private int white; // 0..255
 	private int gain; // Gain for all channels, 0..100
 	private String source;
+	private boolean inputIsOn;
 	
 	public LightRGBW(AbstractG2Device parent, int index) {
 		this.parent = parent;
@@ -38,6 +39,11 @@ public class LightRGBW implements RGBWInterface {
 		white = statusColor.get("white").asInt();
 		gain = statusColor.get("brightness").asInt();
 		source = statusColor.get("source").asText("-");
+	}
+	
+	public void fillStatus(JsonNode statusColor, JsonNode input) {
+		fillStatus(statusColor);
+		inputIsOn = input.get("state").asBoolean();
 	}
 
 	@Override
@@ -63,6 +69,11 @@ public class LightRGBW implements RGBWInterface {
 	@Override
 	public boolean isOn() {
 		return isOn;
+	}
+	
+	@Override
+	public boolean isInputOn() {
+		return inputIsOn;
 	}
 
 	@Override

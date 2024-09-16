@@ -27,11 +27,12 @@ import org.slf4j.LoggerFactory;
 
 import it.usna.shellyscan.controller.UsnaAction;
 import it.usna.shellyscan.controller.UsnaToggleAction;
+import it.usna.shellyscan.model.device.modules.RGBInterface;
 import it.usna.shellyscan.model.device.modules.RGBWInterface;
 
 public class DialogEditRGBW extends JDialog {
 	private static final long serialVersionUID = 1L;
-	
+
 	private UsnaToggleAction toggleAction;
 	private JSlider sliderGain;
 	private JSlider sliderRed;
@@ -45,38 +46,40 @@ public class DialogEditRGBW extends JDialog {
 	private JLabel labelWhite = new JLabel();
 	private final JPanel previewColorPanel = new JPanel();
 	private final static Logger LOG = LoggerFactory.getLogger(DialogEditRGBW.class);
-	
+
 	/**
 	 * @wbp.parser.constructor
 	 */
-	public DialogEditRGBW(final Window owner, RGBWInterface light) {
+	public DialogEditRGBW(final Window owner, RGBInterface light) {
 		super(owner, light.getLabel(), Dialog.ModalityType.MODELESS);
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		getContentPane().setLayout(new BorderLayout(0, 10));
-		
+
 		sliderGain = new JSlider(0, 100, light.getGain()); // set sliders value before "addChangeListener" to avoid call on initial change
 		sliderRed = new JSlider(0, 255, light.getRed());
 		sliderGreen = new JSlider(0, 255, light.getGreen());
 		sliderBlue = new JSlider(0, 255, light.getBlue());
-		sliderWhite = new JSlider(0, 255, light.getWhite());
+		if(light instanceof RGBWInterface rgbw) {
+			sliderWhite = new JSlider(0, 255, rgbw.getWhite());
+		}
 
 		JPanel colorPanel = pColor(light);
 
 		getContentPane().add(buttonsPanel(light), BorderLayout.NORTH);
 		getContentPane().add(colorPanel, BorderLayout.CENTER);
-		
+
 		adjust(light);
 		pack();
 		setLocationRelativeTo(owner);
 		setVisible(true);
 	}
-	
-	private JPanel buttonsPanel(RGBWInterface light) {
+
+	private JPanel buttonsPanel(RGBInterface light) {
 		JPanel panel = new JPanel();
 		BoxLayout bl = new BoxLayout(panel, BoxLayout.X_AXIS);
 		panel.setLayout(bl);
 		panel.setBackground(Color.LIGHT_GRAY);
-		
+
 		toggleAction = new UsnaToggleAction(null, "/images/Standby24.png", "/images/StandbyOn24.png", e -> {
 			try {
 				light.toggle();
@@ -92,19 +95,19 @@ public class DialogEditRGBW extends JDialog {
 		panel.add(switchButton);
 		return panel;
 	}
-	
-	 /**
-	  * x@wbp.parser.entryPoint
-	  */
-	private JPanel pColor(RGBWInterface light) {
+
+	/**
+	 * x@wbp.parser.entryPoint
+	 */
+	private JPanel pColor(RGBInterface light) {
 		JPanel colorPanel = new JPanel();
 		GridBagLayout gbl_panelC = new GridBagLayout();
 		gbl_panelC.columnWidths = new int[] {0, 30, 30};
 		gbl_panelC.rowHeights = new int[] {0, 0, 0, 0, 0, 0, 20};
-//		gbl_panelC.columnWeights = new double[]{0.0, 1.0, 1.0};
-//		gbl_panelC.rowWeights = new double[]{0.0, 0.0, 0.0, Double.MIN_VALUE, 0.0, 1.0, 1.0};
+		//		gbl_panelC.columnWeights = new double[]{0.0, 1.0, 1.0};
+		//		gbl_panelC.rowWeights = new double[]{0.0, 0.0, 0.0, Double.MIN_VALUE, 0.0, 1.0, 1.0};
 		colorPanel.setLayout(gbl_panelC);
-		
+
 		JLabel lblNewLabel = new JLabel(LABELS.getString("labelGain"));
 		lblNewLabel.setHorizontalAlignment(SwingConstants.TRAILING);
 		GridBagConstraints gbc_lblNewLabel = new GridBagConstraints();
@@ -122,7 +125,7 @@ public class DialogEditRGBW extends JDialog {
 		gbc_labelBrightness.gridx = 1;
 		gbc_labelBrightness.gridy = 0;
 		colorPanel.add(labelGain, gbc_labelBrightness);
-		
+
 		sliderGain.addChangeListener(e -> {
 			if(sliderGain.getValueIsAdjusting() == false) {
 				try {
@@ -143,7 +146,7 @@ public class DialogEditRGBW extends JDialog {
 		gbc_sliderB.gridx = 2;
 		gbc_sliderB.gridy = 0;
 		colorPanel.add(sliderGain, gbc_sliderB);
-		
+
 		JLabel lblNewLabel_2 = new JLabel(LABELS.getString("labelRed"));
 		GridBagConstraints gbc_lblNewLabel_2 = new GridBagConstraints();
 		gbc_lblNewLabel_2.fill = GridBagConstraints.HORIZONTAL;
@@ -152,7 +155,7 @@ public class DialogEditRGBW extends JDialog {
 		gbc_lblNewLabel_2.gridx = 0;
 		gbc_lblNewLabel_2.gridy = 1;
 		colorPanel.add(lblNewLabel_2, gbc_lblNewLabel_2);
-		
+
 		labelRed.setHorizontalAlignment(SwingConstants.RIGHT);
 		GridBagConstraints gbc_labelRed = new GridBagConstraints();
 		gbc_labelRed.insets = new Insets(0, 0, 5, 5);
@@ -168,7 +171,7 @@ public class DialogEditRGBW extends JDialog {
 		gbc_sliderRed.gridx = 2;
 		gbc_sliderRed.gridy = 1;
 		colorPanel.add(sliderRed, gbc_sliderRed);
-		
+
 		JLabel lblNewLabel_3 = new JLabel(LABELS.getString("labelGreen"));
 		GridBagConstraints gbc_lblNewLabel_3 = new GridBagConstraints();
 		gbc_lblNewLabel_3.fill = GridBagConstraints.HORIZONTAL;
@@ -177,7 +180,7 @@ public class DialogEditRGBW extends JDialog {
 		gbc_lblNewLabel_3.gridx = 0;
 		gbc_lblNewLabel_3.gridy = 2;
 		colorPanel.add(lblNewLabel_3, gbc_lblNewLabel_3);
-		
+
 		labelRed.setHorizontalAlignment(SwingConstants.RIGHT);
 		GridBagConstraints gbc_labelGreen = new GridBagConstraints();
 		gbc_labelGreen.insets = new Insets(0, 0, 5, 5);
@@ -185,7 +188,7 @@ public class DialogEditRGBW extends JDialog {
 		gbc_labelGreen.gridx = 1;
 		gbc_labelGreen.gridy = 2;
 		colorPanel.add(labelGreen, gbc_labelGreen);
-		
+
 		GridBagConstraints gbc_sliderGren = new GridBagConstraints();
 		gbc_sliderGren.insets = new Insets(0, 10, 5, 10);
 		gbc_sliderGren.fill = GridBagConstraints.HORIZONTAL;
@@ -193,7 +196,7 @@ public class DialogEditRGBW extends JDialog {
 		gbc_sliderGren.gridx = 2;
 		gbc_sliderGren.gridy = 2;
 		colorPanel.add(sliderGreen, gbc_sliderGren);
-		
+
 		JLabel lblNewLabel_4 = new JLabel(LABELS.getString("labelBlue"));
 		GridBagConstraints gbc_lblNewLabel_4 = new GridBagConstraints();
 		gbc_lblNewLabel_4.fill = GridBagConstraints.HORIZONTAL;
@@ -202,7 +205,7 @@ public class DialogEditRGBW extends JDialog {
 		gbc_lblNewLabel_4.gridx = 0;
 		gbc_lblNewLabel_4.gridy = 3;
 		colorPanel.add(lblNewLabel_4, gbc_lblNewLabel_4);
-		
+
 		labelBlue.setHorizontalAlignment(SwingConstants.RIGHT);
 		GridBagConstraints gbc_labelBlue = new GridBagConstraints();
 		gbc_labelBlue.insets = new Insets(0, 0, 5, 5);
@@ -210,7 +213,7 @@ public class DialogEditRGBW extends JDialog {
 		gbc_labelBlue.gridx = 1;
 		gbc_labelBlue.gridy = 3;
 		colorPanel.add(labelBlue, gbc_labelBlue);
-		
+
 		GridBagConstraints gbc_sliderBlue = new GridBagConstraints();
 		gbc_sliderBlue.insets = new Insets(0, 10, 5, 10);
 		gbc_sliderBlue.fill = GridBagConstraints.HORIZONTAL;
@@ -219,31 +222,33 @@ public class DialogEditRGBW extends JDialog {
 		gbc_sliderBlue.gridy = 3;
 		colorPanel.add(sliderBlue, gbc_sliderBlue);
 		
-		JLabel lblNewLabel_1 = new JLabel(LABELS.getString("labelWhite"));
-		GridBagConstraints gbc_lblNewLabel_1 = new GridBagConstraints();
-		gbc_lblNewLabel_1.fill = GridBagConstraints.HORIZONTAL;
-		gbc_lblNewLabel_1.anchor = GridBagConstraints.NORTHWEST;
-		gbc_lblNewLabel_1.insets = new Insets(0, 10, 5, 5);
-		gbc_lblNewLabel_1.gridx = 0;
-		gbc_lblNewLabel_1.gridy = 4;
-		colorPanel.add(lblNewLabel_1, gbc_lblNewLabel_1);
-		
-		labelWhite.setHorizontalAlignment(SwingConstants.RIGHT);
-		GridBagConstraints gbc_labelWhite = new GridBagConstraints();
-		gbc_labelWhite.insets = new Insets(0, 0, 5, 5);
-		gbc_labelWhite.anchor = GridBagConstraints.NORTHEAST;
-		gbc_labelWhite.gridx = 1;
-		gbc_labelWhite.gridy = 4;
-		colorPanel.add(labelWhite, gbc_labelWhite);
-		
-		GridBagConstraints gbc_slider = new GridBagConstraints();
-		gbc_slider.insets = new Insets(0, 10, 5, 10);
-		gbc_slider.fill = GridBagConstraints.HORIZONTAL;
-		gbc_slider.anchor = GridBagConstraints.NORTH;
-		gbc_slider.gridx = 2;
-		gbc_slider.gridy = 4;
-		colorPanel.add(sliderWhite, gbc_slider);
-		
+		if(light instanceof RGBWInterface ) {
+			JLabel lblNewLabel_1 = new JLabel(LABELS.getString("labelWhite"));
+			GridBagConstraints gbc_lblNewLabel_1 = new GridBagConstraints();
+			gbc_lblNewLabel_1.fill = GridBagConstraints.HORIZONTAL;
+			gbc_lblNewLabel_1.anchor = GridBagConstraints.NORTHWEST;
+			gbc_lblNewLabel_1.insets = new Insets(0, 10, 5, 5);
+			gbc_lblNewLabel_1.gridx = 0;
+			gbc_lblNewLabel_1.gridy = 4;
+			colorPanel.add(lblNewLabel_1, gbc_lblNewLabel_1);
+
+			labelWhite.setHorizontalAlignment(SwingConstants.RIGHT);
+			GridBagConstraints gbc_labelWhite = new GridBagConstraints();
+			gbc_labelWhite.insets = new Insets(0, 0, 5, 5);
+			gbc_labelWhite.anchor = GridBagConstraints.NORTHEAST;
+			gbc_labelWhite.gridx = 1;
+			gbc_labelWhite.gridy = 4;
+			colorPanel.add(labelWhite, gbc_labelWhite);
+
+			GridBagConstraints gbc_slider = new GridBagConstraints();
+			gbc_slider.insets = new Insets(0, 10, 5, 10);
+			gbc_slider.fill = GridBagConstraints.HORIZONTAL;
+			gbc_slider.anchor = GridBagConstraints.NORTH;
+			gbc_slider.gridx = 2;
+			gbc_slider.gridy = 4;
+			colorPanel.add(sliderWhite, gbc_slider);
+		}
+
 		JPanel colorsPanel = new JPanel();
 		GridBagConstraints gbc_panel = new GridBagConstraints();
 		gbc_panel.gridwidth = 3;
@@ -252,10 +257,14 @@ public class DialogEditRGBW extends JDialog {
 		gbc_panel.gridx = 0;
 		gbc_panel.gridy = 5;
 		colorPanel.add(colorsPanel, gbc_panel);
-		
+
 		JButton redButton = new JButton(new UsnaAction(e -> {
 			try {
-				light.setColor(255, 0, 0, 0);
+				if(light instanceof RGBWInterface rgbw) {
+					rgbw.setColor(255, 0, 0, 0);
+				} else {
+					light.setColor(255, 0, 0);
+				}
 				adjust(light);
 			} catch (IOException e1) {
 				LOG.error("color button", e1);
@@ -265,7 +274,11 @@ public class DialogEditRGBW extends JDialog {
 		redButton.setBackground(Color.RED);
 		JButton greenButton = new JButton(new UsnaAction(e -> {
 			try {
-				light.setColor(0, 255, 0, 0);
+				if(light instanceof RGBWInterface rgbw) {
+					rgbw.setColor(0, 255, 0, 0);
+				} else {
+					light.setColor(0, 255, 0);
+				}
 				adjust(light);
 			} catch (IOException e1) {
 				LOG.error("color button", e1);
@@ -275,7 +288,11 @@ public class DialogEditRGBW extends JDialog {
 		greenButton.setBackground(Color.GREEN);
 		JButton blueButton = new JButton(new UsnaAction(e -> {
 			try {
-				light.setColor(0, 0, 255, 0);
+				if(light instanceof RGBWInterface rgbw) {
+					rgbw.setColor(0, 0, 255, 0);
+				} else {
+					light.setColor(0, 0, 255);
+				}
 				adjust(light);
 			} catch (IOException e1) {
 				LOG.error("color button", e1);
@@ -283,10 +300,14 @@ public class DialogEditRGBW extends JDialog {
 		}));
 		blueButton.setBorder(BorderFactory.createEmptyBorder(10, 12, 10, 12));
 		blueButton.setBackground(Color.BLUE);
-		
+
 		JButton whiteButton = new JButton(new UsnaAction(e -> {
 			try {
-				light.setColor(0, 0, 0, 255);
+				if(light instanceof RGBWInterface rgbw) {
+					rgbw.setColor(0, 0, 0, 255);
+				} else {
+					light.setColor(255, 255, 255);
+				}
 				adjust(light);
 			} catch (IOException e1) {
 				LOG.error("color button", e1);
@@ -294,12 +315,12 @@ public class DialogEditRGBW extends JDialog {
 		}));
 		whiteButton.setBorder(BorderFactory.createEmptyBorder(10, 12, 10, 12));
 		whiteButton.setBackground(Color.WHITE);
-		
+
 		colorsPanel.add(redButton);
 		colorsPanel.add(greenButton);
 		colorsPanel.add(blueButton);
 		colorsPanel.add(whiteButton);
-		
+
 		GridBagConstraints gbc_previewColorPanel = new GridBagConstraints();
 		gbc_previewColorPanel.anchor = GridBagConstraints.NORTH;
 		gbc_previewColorPanel.gridwidth = 3;
@@ -308,11 +329,12 @@ public class DialogEditRGBW extends JDialog {
 		gbc_previewColorPanel.gridx = 0;
 		gbc_previewColorPanel.gridy = 6;
 		colorPanel.add(previewColorPanel, gbc_previewColorPanel);
-		
-		ChangeListener scl = e -> {
-			if(sliderRed.getValueIsAdjusting() == false && sliderGreen.getValueIsAdjusting() == false && sliderBlue.getValueIsAdjusting() == false && sliderWhite.getValueIsAdjusting() == false) {
+		previewColorPanel.setBorder(BorderFactory.createLineBorder(Color.GRAY));
+
+		ChangeListener sclRGB = e -> {
+			if(sliderRed.getValueIsAdjusting() == false && sliderGreen.getValueIsAdjusting() == false && sliderBlue.getValueIsAdjusting() == false) {
 				try {
-					light.setColor(sliderRed.getValue(), sliderGreen.getValue(), sliderBlue.getValue(), sliderWhite.getValue());
+					light.setColor(sliderRed.getValue(), sliderGreen.getValue(), sliderBlue.getValue());
 					adjust(light);
 				} catch (IOException e1) {
 					LOG.error("sliderColor", e1);
@@ -321,24 +343,51 @@ public class DialogEditRGBW extends JDialog {
 				adjustLightRGBW(sliderRed.getValue(), sliderGreen.getValue(), sliderBlue.getValue(), sliderWhite.getValue());
 			}
 		};
-		sliderRed.addChangeListener(scl);
-		sliderGreen.addChangeListener(scl);
-		sliderBlue.addChangeListener(scl);
-		sliderWhite.addChangeListener(scl);
+		sliderRed.addChangeListener(sclRGB);
+		sliderGreen.addChangeListener(sclRGB);
+		sliderBlue.addChangeListener(sclRGB);
+		if(light instanceof RGBWInterface rgbw) {
+			sliderWhite.addChangeListener( e -> {
+				if(sliderWhite.getValueIsAdjusting() == false) {
+					try {
+						rgbw.setWhite( sliderWhite.getValue());
+						adjust(light);
+					} catch (IOException e1) {
+						LOG.error("sliderColor", e1);
+					}
+				} else {
+					adjustLightRGBW(sliderRed.getValue(), sliderGreen.getValue(), sliderBlue.getValue(), sliderWhite.getValue());
+				}
+			});
+		}
 		return colorPanel;
 	}
-	
-	private void adjust(RGBWInterface light) {
+
+	private void adjust(RGBInterface light) {
 		toggleAction.setSelected(light.isOn());
 		adjustGain(light.getGain());
-		adjustLightRGBW(light.getRed(), light.getGreen(), light.getBlue(), light.getWhite());
+		if(light instanceof RGBWInterface rgbw) {
+			adjustLightRGBW(rgbw.getRed(), rgbw.getGreen(), rgbw.getBlue(), rgbw.getWhite());
+		} else {
+			adjustLightRGB(light.getRed(), light.getGreen(), light.getBlue());
+		}
 	}
-	
+
 	private void adjustGain(int g) {
 		sliderGain.setValue(g);
 		labelGain.setText(g + "");
 	}
 	
+	private void adjustLightRGB(int red, int green, int blue) {
+		sliderRed.setValue(red);
+		sliderGreen.setValue(green);
+		sliderBlue.setValue(blue);
+		labelRed.setText(red + "");
+		labelGreen.setText(green + "");
+		labelBlue.setText(blue + "");
+		previewColorPanel.setBackground(new Color(red, green, blue));
+	}
+
 	private void adjustLightRGBW(int red, int green, int blue, int white) {
 		sliderRed.setValue(red);
 		sliderGreen.setValue(green);
@@ -348,7 +397,7 @@ public class DialogEditRGBW extends JDialog {
 		labelGreen.setText(green + "");
 		labelBlue.setText(blue + "");
 		labelWhite.setText(white + "");
-		
+
 		// rgbw -> rgb
 		int rr = red + white * 2;
 		int gg = green + white * 2;

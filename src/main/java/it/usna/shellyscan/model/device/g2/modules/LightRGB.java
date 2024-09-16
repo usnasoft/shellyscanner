@@ -18,6 +18,7 @@ public class LightRGB implements RGBInterface {
 	private int blue; // 0..255
 	private int gain; // Gain for all channels, 0..100
 	private String source;
+	private boolean inputIsOn;
 	
 	public LightRGB(AbstractG2Device parent, int index) {
 		this.parent = parent;
@@ -36,6 +37,11 @@ public class LightRGB implements RGBInterface {
 		blue = rgbNode.get(2).asInt();
 		gain = statusColor.get("brightness").asInt();
 		source = statusColor.get("source").asText("-");
+	}
+	
+	public void fillStatus(JsonNode statusColor, JsonNode input) {
+		fillStatus(statusColor);
+		inputIsOn = input.get("state").asBoolean();
 	}
 
 	@Override
@@ -62,6 +68,11 @@ public class LightRGB implements RGBInterface {
 	public boolean isOn() {
 		return isOn;
 	}
+	
+	@Override
+	public boolean isInputOn() {
+		return inputIsOn;
+	}
 
 	@Override
 	public int getRed() {
@@ -80,7 +91,7 @@ public class LightRGB implements RGBInterface {
 
 	@Override
 	public void setColor(int r, int g, int b) throws IOException {
-		parent.getJSON("/rpc/RGBW.Set?id=" + index + "&rgb=[" + r + "," + g + "," + b + "]");
+		parent.getJSON("/rpc/RGB.Set?id=" + index + "&rgb=[" + r + "," + g + "," + b + "]");
 		red = r;
 		green = g;
 		blue = b;

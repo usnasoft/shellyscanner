@@ -268,7 +268,7 @@ public class ShellyPlusRGBW extends AbstractG2Device implements ModulesHolder, I
 			voltage0 = rgb.get("voltage").floatValue();
 			current0 = rgb.path("current").floatValue();
 			power0 = rgb.path("apower").floatValue();
-			rgbLight.fillStatus(rgb);
+			rgbLight.fillStatus(rgb, status.get("input:0"));
 			
 			internalTmp = rgb.get("temperature").path("tC").floatValue();
 		} else /*if(profile == Mode.RGBW)*/ {
@@ -276,7 +276,7 @@ public class ShellyPlusRGBW extends AbstractG2Device implements ModulesHolder, I
 			voltage0 = rgbw.get("voltage").floatValue();
 			current0 = rgbw.path("current").floatValue();
 			power0 = rgbw.path("apower").floatValue();
-			rgbwLight.fillStatus(rgbw);
+			rgbwLight.fillStatus(rgbw, status.get("input:0"));
 			
 			internalTmp = rgbw.get("temperature").path("tC").floatValue();
 		}

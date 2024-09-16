@@ -120,6 +120,11 @@ public class LightRGBW implements RGBWInterface {
 		return source;
 	}
 	
+	@Override
+	public boolean isInputOn() {
+		return false;
+	}
+	
 	public String restore(JsonNode data) throws IOException {
 		((ObjectNode)data).remove("ison");
 //		((ObjectNode)data).remove("has_timer"); // not a parameter
