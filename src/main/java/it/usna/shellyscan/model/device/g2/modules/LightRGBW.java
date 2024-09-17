@@ -135,9 +135,8 @@ public class LightRGBW implements RGBWInterface {
 		return source;
 	}
 	
-	public String restore(JsonNode data) {
-		// todo
-		return null;
+	public String restore(JsonNode config) {
+		return parent.postCommand("RGBW.SetConfig", AbstractG2Device.createIndexedRestoreNode(config, "rgbw", index));
 	}
 	
 	@Override
