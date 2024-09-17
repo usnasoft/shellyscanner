@@ -79,20 +79,20 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 		NF.setMaximumFractionDigits(2);
 		NF.setMinimumFractionDigits(2);
 	}
+	private final static Dimension BTN_SIZE = new Dimension(33, 28);
 	private final Devices model;
 	
 	private final TimeSeriesCollection dataset = new TimeSeriesCollection(); // Create dataset
 	private final ValueAxis xAxis;
 	private final Map<Integer, TimeSeries[]> seriesMap = new HashMap<>(); // device index, TimeSeries (one or more)
 
-	private final JComboBox<String> seriesCombo = new JComboBox<>();
-
 	private ChartType currentType;
 	
+	private final JComboBox<String> seriesCombo = new JComboBox<>();
 	private final JScrollBar scrollBar = new JScrollBar(JScrollBar.HORIZONTAL, 0, 0, 0, 0);
 	
 	private static boolean outStream = false;
-
+	
 	public MeasuresChart(JFrame owner, final Devices model, int[] ind, AppProperties appProp) {
 		setIconImages(owner.getIconImages());
 		if(ind.length == 1) {
@@ -174,7 +174,7 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 		JToggleButton btnPause = new JToggleButton(new ImageIcon(MeasuresChart.class.getResource("/images/Pause16.png")));
 		btnPause.setSelectedIcon(new ImageIcon(MeasuresChart.class.getResource("/images/playTrasp24Green.png")));
 		btnPause.setRolloverEnabled(false);
-		btnPause.setPreferredSize(new Dimension(33, 28));
+		btnPause.setPreferredSize(BTN_SIZE);
 		btnPause.setToolTipText(LABELS.getString("dlgChartsPauseTooltip"));
 		btnPause.addActionListener(e ->  {
 			if(btnPause.isSelected()) {
@@ -191,7 +191,7 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 		JToggleButton btnMarks = new JToggleButton(new ImageIcon(GrayFilter.createDisabledImage(markerIcon.getImage())));
 		btnMarks.setSelectedIcon(markerIcon);
 		btnMarks.setRolloverEnabled(false);
-		btnMarks.setPreferredSize(new Dimension(33, 28));
+		btnMarks.setPreferredSize(BTN_SIZE);
 		btnMarks.setToolTipText(LABELS.getString("dlgChartsMarkersTooltip"));
 		btnMarks.addActionListener(e -> {
 			for(int i = 0; i < dataset.getSeriesCount(); i++) {
@@ -219,10 +219,10 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 				Msg.errorMsg(this, ex);
 			}
 		}));
-		btnDownload.setPreferredSize(new Dimension(33, 28));
+		btnDownload.setPreferredSize(BTN_SIZE);
 
 		JButton btnCopy = new JButton(new UsnaAction(null, "btnCopy", "/images/Toolbar-Copy16.png", e -> chartPanel.doCopy()));
-		btnCopy.setPreferredSize(new Dimension(33, 28));
+		btnCopy.setPreferredSize(BTN_SIZE);
 
 		westCommandPanel.add(new JLabel(LABELS.getString("dlgChartsSeriesLabel")));
 		westCommandPanel.add(seriesCombo);
@@ -278,12 +278,16 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 					if(rangeCombo.getSelectedIndex() == 0) {
 						scrollBar.setVisible(false);
 					}
-				} else if((xAxis.isAutoRange() == false || yAxis.isAutoRange() == false) && btnPause.isSelected() == false) { // zoom (drag)
-					btnPause.setSelected(true);
-					chartPanel.setMouseWheelEnabled(true);
-					scrollBar.setVisible(true);
+				} else if(xAxis.isAutoRange() == false || yAxis.isAutoRange() == false) { // zoom (drag)
+					if(scrollBar.isVisible() == false) {
+						scrollBar.setVisible(true);
+						adjustScrollBar();
+					}
+					if(btnPause.isSelected() == false) {
+						btnPause.setSelected(true);
+						chartPanel.setMouseWheelEnabled(true);
+					}
 				}
-				adjustScrollBar(); // zoom; wheel 
 			}
 		});
 		

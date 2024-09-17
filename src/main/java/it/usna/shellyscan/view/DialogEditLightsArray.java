@@ -25,6 +25,7 @@ import org.slf4j.LoggerFactory;
 
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.modules.WhiteInterface;
+import it.usna.shellyscan.view.util.UtilMiscellaneous;
 
 public class DialogEditLightsArray extends JDialog {
 	private static final long serialVersionUID = 1L;
@@ -34,7 +35,7 @@ public class DialogEditLightsArray extends JDialog {
 	private final static Logger LOG = LoggerFactory.getLogger(DialogEditLightsArray.class);
 
 	public DialogEditLightsArray(final Window owner, WhiteInterface[] lights) {
-		super(owner, lights[0].getParent().getName(), Dialog.ModalityType.MODELESS);
+		super(owner, UtilMiscellaneous.getDescName(lights[0].getParent()), Dialog.ModalityType.MODELESS);
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		getContentPane().setLayout(new BorderLayout(0, 5));
 		
