@@ -34,7 +34,7 @@ public class DialogEditLightsArray extends JDialog {
 	private final static Logger LOG = LoggerFactory.getLogger(DialogEditLightsArray.class);
 
 	public DialogEditLightsArray(final Window owner, WhiteInterface[] lights) {
-		super(owner, LABELS.getString("dlgELATitle"), Dialog.ModalityType.MODELESS);
+		super(owner, lights[0].getParent().getName(), Dialog.ModalityType.MODELESS);
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		getContentPane().setLayout(new BorderLayout(0, 5));
 		

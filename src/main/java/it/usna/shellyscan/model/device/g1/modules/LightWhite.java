@@ -128,6 +128,11 @@ public class LightWhite implements WhiteInterface {
 	}
 	
 	@Override
+	public AbstractG1Device getParent() {
+		return parent;
+	}
+	
+	@Override
 	public String toString() {
 		return getLabel() + "-" + brightness + (isOn ? "-ON" : "-OFF");
 	}

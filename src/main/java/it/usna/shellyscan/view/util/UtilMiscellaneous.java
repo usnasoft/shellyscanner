@@ -15,8 +15,8 @@ public class UtilMiscellaneous {
 	
 	public static String getDescName(ShellyAbstractDevice d, int channel) {
 		if(d instanceof ModulesHolder) {
-			 DeviceModule[] ri = ((ModulesHolder)d).getModules();
-			if(ri != null) { // cover?
+			DeviceModule[] ri = ((ModulesHolder)d).getModules();
+			if(ri != null) {
 				String name;
 				if(channel < ri.length && ri[channel] instanceof RelayInterface rel && (name = rel.getName()) != null && name.length() > 0) {
 					final String dName = d.getName();

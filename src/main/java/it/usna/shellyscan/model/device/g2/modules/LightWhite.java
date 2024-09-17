@@ -8,7 +8,7 @@ import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.modules.WhiteInterface;
 
 /**
- * Used by wall dimmer, dimmer 0/1-10, RGBW
+ * Used by wall dimmer, dimmer 0/1-10, RGBW, ...
  */
 public class LightWhite implements WhiteInterface {
 	private final AbstractG2Device parent;
@@ -64,8 +64,10 @@ public class LightWhite implements WhiteInterface {
 	
 	@Override
 	public boolean toggle() throws IOException {
-		parent.getJSON("/rpc/Light.Toggle?id=" + index);
-		return (isOn = ! isOn);
+//		parent.getJSON("/rpc/Light.Toggle?id=" + index);
+//		return (isOn = ! isOn);
+		change(! isOn);
+		return isOn;
 	}
 	
 	@Override
@@ -107,6 +109,11 @@ public class LightWhite implements WhiteInterface {
 	@Override
 	public String getLabel() {
 		return (name != null && name.length() > 0) ? name : parent.getName();
+	}
+	
+	@Override
+	public AbstractG2Device getParent() {
+		return parent;
 	}
 	
 	@Override

@@ -141,6 +141,6 @@ public class LightRGBW implements RGBWInterface {
 	
 	@Override
 	public String toString() {
-		return getLabel() + (isOn ? "-ON" : "-OFF");
+		return getLabel() + "-" + gain + (isOn ? "-ON" : "-OFF");
 	}
 }

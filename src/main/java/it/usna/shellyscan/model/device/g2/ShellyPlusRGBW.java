@@ -40,8 +40,6 @@ public class ShellyPlusRGBW extends AbstractG2Device implements ModulesHolder, I
 		}
 	};
 	public final static String ID = "PlusRGBWPM";
-	//	private final static Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.W, Meters.Type.PF, Meters.Type.V, Meters.Type.I};
-//	private final static Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.V, Type.I}; // not calibrated
 	private Profile profile;
 	private float internalTmp;
 	private float power0, power1, power2, power3; // if calibrated (white)
