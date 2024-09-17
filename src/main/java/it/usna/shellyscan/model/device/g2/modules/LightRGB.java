@@ -113,9 +113,8 @@ public class LightRGB implements RGBInterface {
 		return source;
 	}
 	
-	public String restore(JsonNode data) {
-		// todo
-		return null;
+	public String restore(JsonNode config) {
+		return parent.postCommand("RGB.SetConfig", AbstractG2Device.createIndexedRestoreNode(config, "rgb", index));
 	}
 	
 	@Override
