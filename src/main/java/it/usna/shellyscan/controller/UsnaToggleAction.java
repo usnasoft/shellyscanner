@@ -18,10 +18,6 @@ public class UsnaToggleAction extends UsnaAction {
 	private final String toolTipActive;
 	private boolean selected = false;
 	
-	public UsnaToggleAction(Component w, String nameId, String tooltipInactiveId, String tooltipActiveId, String iconInactive, String iconActive, final ActionListener listener) {
-		this(w, nameId, tooltipInactiveId, tooltipActiveId, iconInactive, iconActive, listener, listener);
-	}
-
 	public UsnaToggleAction(Component w, String nameId, String tooltipInactiveId, String tooltipActiveId, String iconInactive, String iconActive, final ActionListener activate, final ActionListener deactivate) {
 		super(w, nameId, tooltipInactiveId, iconInactive, null, activate);
 		this.deactivate = deactivate;
@@ -31,22 +27,30 @@ public class UsnaToggleAction extends UsnaAction {
 		toolTipActive =  LABELS.getString(tooltipActiveId);
 	}
 	
+	public UsnaToggleAction(Component w, String nameId, String tooltipInactiveId, String tooltipActiveId, String iconInactive, String iconActive, final ActionListener listener) {
+		this(w, nameId, tooltipInactiveId, tooltipActiveId, iconInactive, iconActive, listener, listener);
+	}
+	
 	public UsnaToggleAction(Component w, String iconInactive, String iconActive, final ActionListener activate, final ActionListener deactivate) {
 		super(w, null, iconInactive, activate);
 		this.deactivate = deactivate;
-		imageInactive = (ImageIcon)getValue(SMALL_ICON);
-		toolTipInactive = (String)getValue(SHORT_DESCRIPTION);
+		imageInactive = (ImageIcon)getValue(LARGE_ICON_KEY);
+//		toolTipInactive = (String)getValue(SHORT_DESCRIPTION);
 		imageActive = new ImageIcon(UsnaToggleAction.class.getResource(iconActive));
-		toolTipActive =  null;
+		toolTipActive = toolTipInactive = null;
+	}
+	
+	public UsnaToggleAction(Component w, String iconInactive, String iconActive, final ActionListener listener) {
+		this(w, iconInactive, iconActive, listener, listener);
 	}
 	
 	public void setSelected(boolean sel) {
 		if(sel) {
-			putValue(SMALL_ICON, imageActive);
+			putValue(LARGE_ICON_KEY, imageActive);
 			putValue(SHORT_DESCRIPTION, toolTipActive);
 			selected = true;
 		} else {
-			putValue(SMALL_ICON, imageInactive);
+			putValue(LARGE_ICON_KEY, imageInactive);
 			putValue(SHORT_DESCRIPTION, toolTipInactive);
 			selected = false;
 		}

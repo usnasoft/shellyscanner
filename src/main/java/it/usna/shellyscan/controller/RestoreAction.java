@@ -6,15 +6,17 @@ import java.awt.Cursor;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
+import java.util.stream.Stream;
 
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
@@ -59,7 +61,7 @@ public class RestoreAction extends UsnaSelectedAction {
 				fc.setSelectedFile(new File(fileName));
 				if(fc.showOpenDialog(mainView) == JFileChooser.APPROVE_OPTION) {
 					mainView.getContentPane().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-					final Map<String, JsonNode> backupJsons = readBackupFile(fc.getSelectedFile());
+					final Map<String, JsonNode> backupJsons = readBackupFile(fc.getSelectedFile().toPath());
 					final Map<RestoreMsg, Object> test = device.restoreCheck(backupJsons);
 					
 					mainView.getContentPane().setCursor(Cursor.getDefaultCursor());
@@ -75,7 +77,11 @@ public class RestoreAction extends UsnaSelectedAction {
 					
 					for(Map.Entry<RestoreMsg, Object> e: test.entrySet()) {
 						if(e.getKey().getType() == RestoreMsg.Type.ERROR) {
-							Msg.errorMsg(mainView, LABELS.getString(CHECK_MSG_PREFIX + e.getKey().name()));
+							if(e.getValue() != null) {
+								Msg.errorMsg(mainView, String.format(LABELS.getString(CHECK_MSG_PREFIX + e.getKey().name()), e.getValue()));
+							} else {
+								Msg.errorMsg(mainView, LABELS.getString(CHECK_MSG_PREFIX + e.getKey().name()));
+							}
 							return;
 						}
 					}
@@ -195,8 +201,7 @@ public class RestoreAction extends UsnaSelectedAction {
 					} else {
 						if(device.getStatus() == Status.OFF_LINE /*|| device.getStatus() == Status.NOT_LOOGGED*/ || device.getStatus() == Status.GHOST) { // if error happened because the device is off-line -> try to queue action in DeferrablesContainer
 							LOG.debug("Interactive Restore error {} {}", device, ret);
-							SwingUtilities.invokeLater(() ->
-							JOptionPane.showMessageDialog(mainView, LABELS.getString("msgRestoreQueue"), device.getHostname(), JOptionPane.WARNING_MESSAGE));
+							SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(mainView, LABELS.getString("msgRestoreQueue"), device.getHostname(), JOptionPane.WARNING_MESSAGE));
 
 							DeferrablesContainer dc = DeferrablesContainer.getInstance();
 							dc.addOrUpdate(modelRow, DeferrableTask.Type.RESTORE, LABELS.getString("action_restore_tooltip"), (def, dev) -> {
@@ -244,19 +249,17 @@ public class RestoreAction extends UsnaSelectedAction {
 		return err;
 	}
 
-	private static Map<String, JsonNode> readBackupFile(final File file) throws IOException {
-		final ObjectMapper jsonMapper = new ObjectMapper();
-		try (ZipFile in = new ZipFile(file, StandardCharsets.UTF_8)) {
-			final Map<String, JsonNode> backupJsons = in.stream().filter(entry -> entry.getName().endsWith(".json")).collect(Collectors.toMap(ZipEntry::getName, entry -> {
-				try (InputStream is = in.getInputStream(entry)) {
-					return jsonMapper.readTree(is);
-				} catch (IOException e) {
-					throw new RuntimeException(e);
-				}
-			}));
-			in.stream().filter(entry -> entry.getName().endsWith(".mjs")).forEach(entry -> {
-				try (InputStream is = in.getInputStream(entry)) {
-					backupJsons.put(entry.getName() + ".json", jsonMapper.createObjectNode().put("code", new String(is.readAllBytes(), StandardCharsets.UTF_8)));
+	private static Map<String, JsonNode> readBackupFile(final Path file) throws IOException {
+		try(FileSystem fs = FileSystems.newFileSystem(file); Stream<Path> pathStream = Files.list(fs.getPath("/"))) {
+			final Map<String, JsonNode> backupJsons = new HashMap<>();
+			final ObjectMapper jsonMapper = new ObjectMapper();
+			pathStream.forEach(p -> {
+				try {
+					if(p.toString().endsWith(".json")) {
+						backupJsons.put(p.getFileName().toString(), jsonMapper.readTree(Files.readString(p)));
+					} else {
+						backupJsons.put(p.getFileName().toString() + ".json", jsonMapper.createObjectNode().put("code", Files.readString(p, StandardCharsets.UTF_8)));
+					}
 				} catch(IOException e) {
 					throw new RuntimeException(e);
 				}

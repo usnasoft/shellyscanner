@@ -9,13 +9,15 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.Meters;
+import it.usna.shellyscan.model.device.ModulesHolder;
 import it.usna.shellyscan.model.device.g1.modules.LightWhite;
 import it.usna.shellyscan.model.device.meters.MetersPower;
-import it.usna.shellyscan.model.device.modules.WhiteCommander;
+import it.usna.shellyscan.model.device.modules.DeviceModule;
 
-public class ShellyDUO extends AbstractG1Device implements WhiteCommander {
+public class ShellyDUO extends AbstractG1Device implements ModulesHolder {
 	public final static String ID = "SHBDUO-1";
 	private LightWhite light = new LightWhite(this, "/light/", 0);
+	private LightWhite[] lightArray = new LightWhite[] {light};
 	private float power;
 	private Meters[] meters;
 
@@ -43,18 +45,13 @@ public class ShellyDUO extends AbstractG1Device implements WhiteCommander {
 	}
 	
 	@Override
-	public int getWhitesCount() {
-		return 1;
-	}
-	
-	@Override
-	public LightWhite getWhite(int index) {
+	public DeviceModule getModule(int index) {
 		return light;
 	}
-	
+
 	@Override
-	public LightWhite[] getWhites() {
-		return new LightWhite[] {light};
+	public DeviceModule[] getModules() {
+		return lightArray;
 	}
 	
 	public float getPower() {
@@ -95,6 +92,6 @@ public class ShellyDUO extends AbstractG1Device implements WhiteCommander {
 
 	@Override
 	public String toString() {
-		return super.toString() + " Load: " + light;
+		return super.toString() + " Light: " + light;
 	}
 }

@@ -14,14 +14,13 @@ import com.fasterxml.jackson.databind.JsonNode;
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.InternalTmpHolder;
 import it.usna.shellyscan.model.device.Meters;
+import it.usna.shellyscan.model.device.ModulesHolder;
 import it.usna.shellyscan.model.device.RestoreMsg;
 import it.usna.shellyscan.model.device.g2.modules.Input;
 import it.usna.shellyscan.model.device.g2.modules.Relay;
 import it.usna.shellyscan.model.device.g2.modules.Roller;
 import it.usna.shellyscan.model.device.g2.modules.SensorAddOn;
-import it.usna.shellyscan.model.device.g2.modules.SensorAddOnHolder;
 import it.usna.shellyscan.model.device.modules.DeviceModule;
-import it.usna.shellyscan.model.device.modules.ModulesHolder;
 
 /**
  * Shelly plus 2PM model 
@@ -40,8 +39,8 @@ public class ShellyPlus2PM extends AbstractG2Device implements ModulesHolder, In
 	private float power0, power1;
 	private float voltage0, voltage1;
 	private float current0, current1;
-	private Meters meters0, meters1;
 	private float pf0, pf1;
+	private Meters meters0, meters1;
 	private Meters[] meters;
 	private SensorAddOn addOn;
 
@@ -196,25 +195,25 @@ public class ShellyPlus2PM extends AbstractG2Device implements ModulesHolder, In
 		if(modeRelay) {
 			JsonNode switchStatus0 = status.get("switch:0");
 			relay0.fillStatus(switchStatus0, status.get("input:0"));
-			power0 = switchStatus0.get("apower").floatValue();
-			voltage0 = switchStatus0.get("voltage").floatValue();
-			current0 = switchStatus0.get("current").floatValue();
-			pf0 = switchStatus0.get("pf").floatValue();
+			power0 = switchStatus0.path("apower").floatValue();
+			voltage0 = switchStatus0.path("voltage").floatValue();
+			current0 = switchStatus0.path("current").floatValue();
+			pf0 = switchStatus0.path("pf").floatValue();
 
 			JsonNode switchStatus1 = status.get("switch:1");
 			relay1.fillStatus(switchStatus1, status.get("input:1"));
-			power1 = switchStatus1.get("apower").floatValue();
-			voltage1 = switchStatus1.get("voltage").floatValue();
-			current1 = switchStatus1.get("current").floatValue();
-			pf1 = switchStatus1.get("pf").floatValue();
+			power1 = switchStatus1.path("apower").floatValue();
+			voltage1 = switchStatus1.path("voltage").floatValue();
+			current1 = switchStatus1.path("current").floatValue();
+			pf1 = switchStatus1.path("pf").floatValue();
 
-			internalTmp = (float)switchStatus0.path("temperature").path("tC").floatValue();
+			internalTmp = switchStatus0.path("temperature").path("tC").floatValue();
 		} else {
 			JsonNode cover = status.get("cover:0");
-			power0 = cover.get("apower").floatValue();
-			voltage0 = cover.get("voltage").floatValue();
-			current0 = cover.get("current").floatValue();
-			pf0 = cover.get("pf").floatValue();
+			power0 = cover.path("apower").floatValue();
+			voltage0 = cover.path("voltage").floatValue();
+			current0 = cover.path("current").floatValue();
+			pf0 = cover.path("pf").floatValue();
 			internalTmp = cover.path("temperature").path("tC").floatValue();
 			roller.fillStatus(cover);
 		}
@@ -264,11 +263,11 @@ public class ShellyPlus2PM extends AbstractG2Device implements ModulesHolder, In
 			} else {
 				errors.add(roller.restore(configuration));
 			}
+			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 		} else {
 			errors.add(RestoreMsg.ERR_RESTORE_MODE_COVER.name());
 		}
 
-		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 		SensorAddOn.restore(this, backupJsons, errors);
 	}
 	

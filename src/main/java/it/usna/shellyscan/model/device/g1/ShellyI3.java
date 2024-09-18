@@ -8,10 +8,10 @@ import java.util.concurrent.TimeUnit;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import it.usna.shellyscan.model.Devices;
+import it.usna.shellyscan.model.device.ModulesHolder;
 import it.usna.shellyscan.model.device.g1.modules.Actions;
 import it.usna.shellyscan.model.device.modules.DeviceModule;
 import it.usna.shellyscan.model.device.modules.InputInterface;
-import it.usna.shellyscan.model.device.modules.ModulesHolder;
 
 public class ShellyI3 extends AbstractG1Device implements ModulesHolder {
 	public final static String ID = "SHIX3-1";

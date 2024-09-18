@@ -2,6 +2,8 @@ package it.usna.shellyscan.model.device.modules;
 
 import java.io.IOException;
 
+import it.usna.shellyscan.model.device.ShellyAbstractDevice;
+
 public interface WhiteInterface extends DeviceModule {
 	boolean isOn();
 
@@ -18,4 +20,6 @@ public interface WhiteInterface extends DeviceModule {
 	void setBrightness(int b) throws IOException;
 	
 	boolean isInputOn(); // input:0 switch
+	
+	ShellyAbstractDevice getParent();
 }

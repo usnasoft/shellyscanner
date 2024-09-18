@@ -1,4 +1,4 @@
-package it.usna.shellyscan.model.device.g1;
+package it.usna.shellyscan.model.device.g1.modules;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -7,7 +7,8 @@ import java.nio.charset.StandardCharsets;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
-import it.usna.shellyscan.model.device.MQTTManager;
+import it.usna.shellyscan.model.device.g1.AbstractG1Device;
+import it.usna.shellyscan.model.device.modules.MQTTManager;
 
 public class MQTTManagerG1 implements MQTTManager {
 	private final AbstractG1Device d;

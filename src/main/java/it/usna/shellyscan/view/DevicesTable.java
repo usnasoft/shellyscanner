@@ -39,20 +39,17 @@ import it.usna.shellyscan.model.device.GhostDevice;
 import it.usna.shellyscan.model.device.InternalTmpHolder;
 import it.usna.shellyscan.model.device.LabelHolder;
 import it.usna.shellyscan.model.device.Meters;
+import it.usna.shellyscan.model.device.ModulesHolder;
+import it.usna.shellyscan.model.device.MotionSensor;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
 import it.usna.shellyscan.model.device.g1.ShellyDW;
 import it.usna.shellyscan.model.device.g1.ShellyFlood;
-import it.usna.shellyscan.model.device.g1.ShellyMotion;
-import it.usna.shellyscan.model.device.g1.ShellyMotion2;
 import it.usna.shellyscan.model.device.g1.ShellyTRV;
 import it.usna.shellyscan.model.device.g1.modules.ThermostatG1;
 import it.usna.shellyscan.model.device.g2.ShellyPlusSmoke;
 import it.usna.shellyscan.model.device.g2.modules.SensorAddOn;
 import it.usna.shellyscan.model.device.modules.DeviceModule;
-import it.usna.shellyscan.model.device.modules.ModulesHolder;
-import it.usna.shellyscan.model.device.modules.RGBWCommander;
-import it.usna.shellyscan.model.device.modules.WhiteCommander;
 import it.usna.swing.ArrayTableCellRenderer;
 import it.usna.swing.DecimalTableCellRenderer;
 import it.usna.swing.table.ExTooltipTable;
@@ -235,7 +232,7 @@ public class DevicesTable extends ExTooltipTable {
 				return String.format(Locale.ENGLISH, LABELS.getString("col_command_therm_tooltip"), therm.getCurrentProfile(), therm.getTargetTemp(), therm.getPosition());
 			} else if(value instanceof Meters[] meters) {
 				Component comp = getCellRenderer(r, c).getTableCellRendererComponent(this, value, false, false, r, c);
-				if(Arrays.stream(meters).anyMatch(m -> m instanceof LabelHolder || m instanceof SensorAddOn) || getCellRect(r, c, false).width <= comp.getPreferredSize().width) {
+				if(Arrays.stream(meters).anyMatch(m -> DeviceMetersCellRenderer.hasHiddenMeasures(m) || m instanceof LabelHolder || m instanceof SensorAddOn) || getCellRect(r, c, false).width <= comp.getPreferredSize().width) {
 					adaptTooltipLocation = true;
 					String tt = "<html><table border='0' cellspacing='0' cellpadding='0'>";
 					for(Meters m: meters) {
@@ -335,12 +332,16 @@ public class DevicesTable extends ExTooltipTable {
 		w.newLine();
 
 		for(int row = 0; row < getRowCount(); row++) {
-			Stream.Builder<String> r = Stream.builder();
-			for(int col = 0; col < getColumnCount(); col++) {
-				r.accept(cellTooltipValue(getValueAt(row, col), true, row, col));
+			try {
+				Stream.Builder<String> r = Stream.builder();
+				for(int col = 0; col < getColumnCount(); col++) {
+					r.accept(cellTooltipValue(getValueAt(row, col), true, row, col));
+				}
+				w.write(r.build().collect(Collectors.joining(separator)));
+				w.newLine();
+			} catch(RuntimeException e) {
+				LOG.error("csvExport", e);
 			}
-			w.write(r.build().collect(Collectors.joining(separator)));
-			w.newLine();
 		}
 	}
 
@@ -431,23 +432,15 @@ public class DevicesTable extends ExTooltipTable {
 				row[DevicesTable.COL_INT_TEMP] = (d instanceof InternalTmpHolder) ? ((InternalTmpHolder)d).getInternalTmp() : null;
 				row[DevicesTable.COL_MEASURES_IDX] = d.getMeters();
 				row[DevicesTable.COL_DEBUG] = LABELS.getString("debug" + d.getDebugMode().name());
-				Object command = null;
+				DeviceModule[] command = null;
 				if(d instanceof ModulesHolder mh && mh.getModulesCount() > 0) {
 					row[DevicesTable.COL_COMMAND_IDX] = command = mh.getModules();
-				} else if(d instanceof WhiteCommander wc && wc.getWhitesCount() == 1) { // dimmer
-					row[DevicesTable.COL_COMMAND_IDX] = command = wc.getWhite(0);
-				} else if(d instanceof RGBWCommander rgbwc && rgbwc.getColorsCount() > 0) {
-					row[DevicesTable.COL_COMMAND_IDX] = command = rgbwc.getColor(0);
-				} else if(d instanceof WhiteCommander wc && wc.getWhitesCount() > 1) {
-					row[DevicesTable.COL_COMMAND_IDX] = command = wc.getWhites();
 				} else if(d instanceof ShellyDW dw) {
 					row[DevicesTable.COL_COMMAND_IDX] = LABELS.getString("lableStatusOpen") + ": " + (dw.isOpen() ? YES : NO);
 				} else if(d instanceof ShellyFlood flood) {
 					row[DevicesTable.COL_COMMAND_IDX] = LABELS.getString("lableStatusFlood") + ": " + (flood.flood() ? YES : NO);
-				} else if(d instanceof ShellyMotion motion) {
+				} else if(d instanceof MotionSensor motion) {
 					row[DevicesTable.COL_COMMAND_IDX] = String.format(LABELS.getString("lableStatusMotion"), motion.motion() ? YES : NO);
-				} else if(d instanceof ShellyMotion2 motion2) {
-					row[DevicesTable.COL_COMMAND_IDX] = String.format(LABELS.getString("lableStatusMotion"), motion2.motion() ? YES : NO);
 				} else if(d instanceof ShellyPlusSmoke smoke) {
 					row[DevicesTable.COL_COMMAND_IDX] = String.format(LABELS.getString("lableStatusSmoke"), smoke.getAlarm() ? YES : NO);
 				} else if(d instanceof ShellyTRV trv) { // very specific
@@ -458,19 +451,21 @@ public class DevicesTable extends ExTooltipTable {
 						row[DevicesTable.COL_COMMAND_IDX] = String.format(LABELS.getString("lableStatusTRV"), thermostat.getPosition());
 					}
 				}
-				if(command instanceof DeviceModule dm) {
-					row[DevicesTable.COL_SOURCE_IDX] = dm.getLastSource();
-				} else if(command instanceof DeviceModule[] m) {
-					if(row[DevicesTable.COL_SOURCE_IDX] instanceof String[] res && res.length == m.length) {
-						for(int i = 0; i < m.length; i++) {
-							res[i] = m[i].getLastSource();
-						}
+				if(command != null) {
+					if(command.length == 1) {
+						row[DevicesTable.COL_SOURCE_IDX] = command[0].getLastSource();
 					} else {
-						String res[] = new String[m.length]; // Arrays.setAll(res, i -> m[i].getLastSource()); // slower for 2 elements
-						for(int i = 0; i < m.length; i++) {
-							res[i] = m[i].getLastSource();
+						if(row[DevicesTable.COL_SOURCE_IDX] instanceof String[] res && res.length == command.length) {
+							for(int i = 0; i < command.length; i++) {
+								res[i] = command[i].getLastSource();
+							}
+						} else {
+							String res[] = new String[command.length]; // Arrays.setAll(res, i -> m[i].getLastSource()); // slower for 2 elements
+							for(int i = 0; i < command.length; i++) {
+								res[i] = command[i].getLastSource();
+							}
+							row[DevicesTable.COL_SOURCE_IDX] = res;
 						}
-						row[DevicesTable.COL_SOURCE_IDX] = res;
 					}
 				}
 			} else {

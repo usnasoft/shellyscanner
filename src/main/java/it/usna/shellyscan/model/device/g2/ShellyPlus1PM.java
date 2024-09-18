@@ -14,13 +14,12 @@ import com.fasterxml.jackson.databind.JsonNode;
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.InternalTmpHolder;
 import it.usna.shellyscan.model.device.Meters;
+import it.usna.shellyscan.model.device.ModulesHolder;
 import it.usna.shellyscan.model.device.RestoreMsg;
 import it.usna.shellyscan.model.device.g2.modules.Input;
 import it.usna.shellyscan.model.device.g2.modules.Relay;
 import it.usna.shellyscan.model.device.g2.modules.SensorAddOn;
-import it.usna.shellyscan.model.device.g2.modules.SensorAddOnHolder;
 import it.usna.shellyscan.model.device.meters.MetersWVI;
-import it.usna.shellyscan.model.device.modules.ModulesHolder;
 
 /**
  * Shelly Shelly Plus 1PM model
@@ -136,9 +135,9 @@ public class ShellyPlus1PM extends AbstractG2Device implements ModulesHolder, In
 		JsonNode switchStatus = status.get("switch:0");
 		relay.fillStatus(switchStatus, status.get("input:0"));
 		internalTmp = switchStatus.path("temperature").path("tC").floatValue();
-		power = switchStatus.get("apower").floatValue();
-		voltage = switchStatus.get("voltage").floatValue();
-		current = switchStatus.get("current").floatValue();
+		power = switchStatus.path("apower").floatValue();
+		voltage = switchStatus.path("voltage").floatValue();
+		current = switchStatus.path("current").floatValue();
 //		pf = switchStatus.path("pf").floatValue();
 		if(addOn != null) {
 			addOn.fillStatus(status);

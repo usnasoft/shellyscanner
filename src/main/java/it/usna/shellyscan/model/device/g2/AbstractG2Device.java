@@ -42,17 +42,24 @@ import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.BatteryDeviceInterface;
 import it.usna.shellyscan.model.device.DeviceAPIException;
 import it.usna.shellyscan.model.device.DeviceOfflineException;
-import it.usna.shellyscan.model.device.FirmwareManager;
-import it.usna.shellyscan.model.device.LoginManager;
 import it.usna.shellyscan.model.device.RestoreMsg;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
-import it.usna.shellyscan.model.device.WIFIManager;
-import it.usna.shellyscan.model.device.WIFIManager.Network;
 import it.usna.shellyscan.model.device.g2.modules.DynamicComponents;
+import it.usna.shellyscan.model.device.g2.modules.FirmwareManagerG2;
+import it.usna.shellyscan.model.device.g2.modules.InputResetManagerG2;
 import it.usna.shellyscan.model.device.g2.modules.KVS;
+import it.usna.shellyscan.model.device.g2.modules.LoginManagerG2;
+import it.usna.shellyscan.model.device.g2.modules.MQTTManagerG2;
 import it.usna.shellyscan.model.device.g2.modules.Script;
 import it.usna.shellyscan.model.device.g2.modules.SensorAddOn;
+import it.usna.shellyscan.model.device.g2.modules.TimeAndLocationManagerG2;
+import it.usna.shellyscan.model.device.g2.modules.WIFIManagerG2;
 import it.usna.shellyscan.model.device.g2.modules.Webhooks;
+import it.usna.shellyscan.model.device.modules.FirmwareManager;
+import it.usna.shellyscan.model.device.modules.InputResetManager;
+import it.usna.shellyscan.model.device.modules.LoginManager;
+import it.usna.shellyscan.model.device.modules.WIFIManager;
+import it.usna.shellyscan.model.device.modules.WIFIManager.Network;
 
 /**
  * Base abstract class for any gen2(+) Shelly device
@@ -172,11 +179,15 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 
 	@Override
 	public String setCloudEnabled(boolean enable) {
-		return postCommand("Cloud.SetConfig", "{\"config\":{\"enable\":" + enable + "}}");
+		String ret = postCommand("Cloud.SetConfig", "{\"config\":{\"enable\":" + enable + "}}");
+		if(ret == null) {
+			this.cloudEnabled = enable;
+		}
+		return ret;
 	}
 
-	public boolean setBLEMode(boolean ble) {
-		return postCommand("BLE.SetConfig", "{\"config\":{\"enable\":" + ble + "}}") == null;
+	public String setBLEMode(boolean ble) {
+		return postCommand("BLE.SetConfig", "{\"config\":{\"enable\":" + ble + "}}");
 	}
 
 	public boolean rebootRequired() {
@@ -212,8 +223,13 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 	}
 	
 	@Override
-	public TimeAndLocationManagerG2 getTimeAndLocationManager() {
+	public TimeAndLocationManagerG2 getTimeAndLocationManager() throws IOException {
 		return new TimeAndLocationManagerG2(this);
+	}
+	
+	@Override
+	public InputResetManager getInputResetManager() throws IOException {
+		return new InputResetManagerG2(this);
 	}
 
 	public String postCommand(final String method, JsonNode payload) {
@@ -473,8 +489,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 			errors.add("->r_step:restoreSchedule");
 			JsonNode schedule = backupJsons.get("Schedule.List.json");
 			if(schedule != null) { // some devices do not have Schedule.List +H&T
-				TimeUnit.MILLISECONDS.sleep(delay);
-				restoreSchedule(schedule, errors);
+				restoreSchedule(schedule, delay, errors);
 			}
 
 			errors.add("->r_step:Script");
@@ -484,15 +499,14 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 			JsonNode kvs = backupJsons.get("KVS.GetMany.json");
 			if(kvs != null) {
 				try {
-					TimeUnit.MILLISECONDS.sleep(delay);
+					TimeUnit.MILLISECONDS.sleep(delay); // new KVS(,,,)
 					KVS kvStore = new KVS(this);
 					kvStore.restoreKVS(kvs, errors);
 				} catch(Exception e) {}
 			}
 			
 			errors.add("->r_step:Webhooks");
-			TimeUnit.MILLISECONDS.sleep(delay);
-			Webhooks.restore(this, backupJsons.get("Webhook.List.json"), errors);
+			Webhooks.restore(this, delay, backupJsons.get("Webhook.List.json"), errors);
 
 			errors.add("->r_step:WIFIManagerG2");
 			TimeUnit.MILLISECONDS.sleep(delay);
@@ -521,8 +535,10 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 			TimeUnit.MILLISECONDS.sleep(delay);
 			LoginManagerG2 lm = new LoginManagerG2(this, true);
 			if(userPref.containsKey(RestoreMsg.RESTORE_LOGIN)) {
+				TimeUnit.MILLISECONDS.sleep(delay);
 				errors.add(lm.set(null, userPref.get(RestoreMsg.RESTORE_LOGIN).toCharArray()));
 			} else if(backupJsons.get("Shelly.GetDeviceInfo.json").path("auth_en").asBoolean() == false) {
+				TimeUnit.MILLISECONDS.sleep(delay);
 				errors.add(lm.disable());
 			}
 		} catch(RuntimeException | InterruptedException e) {
@@ -573,12 +589,13 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 		}
 	}
 
-	private void restoreSchedule(JsonNode schedule, ArrayList<String> errors) throws InterruptedException {
+	private void restoreSchedule(JsonNode schedule, final long delay, ArrayList<String> errors) throws InterruptedException {
+		TimeUnit.MILLISECONDS.sleep(delay);
 		errors.add(postCommand("Schedule.DeleteAll", "{}"));
 		for(JsonNode sc: schedule.get("jobs")) {
-			ObjectNode thisSc = (ObjectNode)sc.deepCopy();
+			ObjectNode thisSc = sc.deepCopy();
 			thisSc.remove("id");
-			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+			TimeUnit.MILLISECONDS.sleep(delay);
 			errors.add(postCommand("Schedule.Create", thisSc));
 		}
 	}
@@ -586,7 +603,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 	public static ObjectNode createIndexedRestoreNode(JsonNode backConfig, String type, int index) { // todo addon, input, switch
 		ObjectNode out = JsonNodeFactory.instance.objectNode();
 		out.put("id", index);
-		ObjectNode data = (ObjectNode)backConfig.get(type + ":" + index).deepCopy();
+		ObjectNode data = backConfig.get(type + ":" + index).deepCopy();
 		data.remove("id");
 		out.set("config", data);
 		return out;

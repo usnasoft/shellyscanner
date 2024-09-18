@@ -63,7 +63,7 @@ import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
 import it.usna.shellyscan.model.device.g1.AbstractG1Device;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.g2.RangeExtenderManager;
-import it.usna.shellyscan.model.device.g2.WIFIManagerG2;
+import it.usna.shellyscan.model.device.g2.modules.WIFIManagerG2;
 import it.usna.shellyscan.view.util.Msg;
 import it.usna.shellyscan.view.util.ScannerProperties;
 import it.usna.shellyscan.view.util.ScannerProperties.PropertyEvent;
@@ -392,7 +392,7 @@ public class CheckList extends JDialog implements UsnaEventListener<Devices.Even
 			try {
 				if (d instanceof AbstractG1Device) {
 					tModel.setRow(row, g1Row(d, d.getJSON("/settings")));
-				} else { // G2
+				} else { // G2-G3
 					tModel.setRow(row, g2Row(d, d.getJSON("/rpc/Shelly.GetConfig"), d.getJSON("/rpc/Shelly.GetStatus")));
 				}
 			} catch (/* IO */Exception e) {

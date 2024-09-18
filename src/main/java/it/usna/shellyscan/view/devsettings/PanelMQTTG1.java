@@ -30,7 +30,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
-import it.usna.shellyscan.model.device.g1.MQTTManagerG1;
+import it.usna.shellyscan.model.device.g1.modules.MQTTManagerG1;
 import it.usna.shellyscan.view.DialogDeviceSelection;
 import it.usna.shellyscan.view.IntegerTextFieldPanel;
 import it.usna.shellyscan.view.util.Msg;

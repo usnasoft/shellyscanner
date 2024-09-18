@@ -1,4 +1,4 @@
-package it.usna.shellyscan.model.device.g1;
+package it.usna.shellyscan.model.device.g1.modules;
 
 import java.util.concurrent.TimeUnit;
 
@@ -6,7 +6,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.BatteryDeviceInterface;
-import it.usna.shellyscan.model.device.FirmwareManager;
+import it.usna.shellyscan.model.device.g1.AbstractG1Device;
+import it.usna.shellyscan.model.device.modules.FirmwareManager;
 
 public class FirmwareManagerG1 implements FirmwareManager {
 	private final static String STATUS_UPDATING = "updating";

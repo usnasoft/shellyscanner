@@ -10,12 +10,11 @@ import com.fasterxml.jackson.databind.JsonNode;
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.LabelHolder;
 import it.usna.shellyscan.model.device.Meters;
+import it.usna.shellyscan.model.device.ModulesHolder;
 import it.usna.shellyscan.model.device.g1.modules.Relay;
-import it.usna.shellyscan.model.device.modules.ModulesHolder;
 
 public class ShellyEM extends AbstractG1Device implements ModulesHolder {
 	public final static String ID = "SHEM";
-	private final static Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.W, Meters.Type.VAR, Meters.Type.PF, Meters.Type.V};
 	private Relay relay = new Relay(this, 0);
 	private float power[] = new float[2];
 	private float reactive[] = new float[2];
@@ -28,6 +27,7 @@ public class ShellyEM extends AbstractG1Device implements ModulesHolder {
 		super(address, port, hostname);
 		
 		class EMMeters extends Meters implements LabelHolder {
+			private final static Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.W, Meters.Type.VAR, Meters.Type.PF, Meters.Type.V};
 			private int ind;
 			private EMMeters(int ind) {
 				this.ind = ind;

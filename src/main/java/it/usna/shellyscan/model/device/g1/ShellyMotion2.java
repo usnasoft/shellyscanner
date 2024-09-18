@@ -7,8 +7,9 @@ import java.util.List;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import it.usna.shellyscan.model.device.Meters;
+import it.usna.shellyscan.model.device.MotionSensor;
 
-public class ShellyMotion2 extends AbstractG1Device {
+public class ShellyMotion2 extends AbstractG1Device implements MotionSensor {
 	public final static String ID = "SHMOS-02";
 	private final static Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.T, Meters.Type.L, Meters.Type.BAT};
 	private int lux;
@@ -51,6 +52,7 @@ public class ShellyMotion2 extends AbstractG1Device {
 		return ID;
 	}
 	
+	@Override
 	public boolean motion() {
 		return motion;
 	}

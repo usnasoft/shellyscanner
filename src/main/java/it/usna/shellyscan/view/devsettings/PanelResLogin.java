@@ -20,10 +20,10 @@ import it.usna.shellyscan.Main;
 import it.usna.shellyscan.controller.DeferrableTask;
 import it.usna.shellyscan.controller.DeferrablesContainer;
 import it.usna.shellyscan.model.device.GhostDevice;
-import it.usna.shellyscan.model.device.LoginManager;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
-import it.usna.shellyscan.model.device.g2.LoginManagerG2;
+import it.usna.shellyscan.model.device.g2.modules.LoginManagerG2;
+import it.usna.shellyscan.model.device.modules.LoginManager;
 import it.usna.shellyscan.view.devsettings.DialogDeviceSettings.Gen;
 
 public class PanelResLogin extends AbstractSettingsPanel {

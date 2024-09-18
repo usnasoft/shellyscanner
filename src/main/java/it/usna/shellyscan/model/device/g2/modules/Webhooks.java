@@ -11,7 +11,6 @@ import java.util.concurrent.TimeUnit;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
-import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 
 public class Webhooks {
@@ -48,12 +47,13 @@ public class Webhooks {
 		return hooks.get(index);
 	}
 
-	public static void restore(AbstractG2Device parent, JsonNode webhooks, ArrayList<String> errors) throws InterruptedException {
+	public static void restore(AbstractG2Device parent, long delay, JsonNode webhooks, ArrayList<String> errors) throws InterruptedException {
+		TimeUnit.MILLISECONDS.sleep(delay);
 		errors.add(parent.postCommand("Webhook.DeleteAll", "{}"));
 		for(JsonNode ac: webhooks.get("hooks")) {
 			ObjectNode thisAction = (ObjectNode)ac.deepCopy();
 			thisAction.remove("id");
-			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+			TimeUnit.MILLISECONDS.sleep(delay);
 			String ret = parent.postCommand("Webhook.Create", thisAction);
 			if(ret != null) {
 				ret = "Action \"" + ac.path("name").asText("") + "\" - error: " + ret;

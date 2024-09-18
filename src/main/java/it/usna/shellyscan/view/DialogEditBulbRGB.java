@@ -402,7 +402,7 @@ public class DialogEditBulbRGB extends JDialog {
 		gbc_previwPanel.fill = GridBagConstraints.HORIZONTAL;
 		gbc_previwPanel.gridx = 2;
 		gbc_previwPanel.gridy = 4;
-		previewColorPanel.setBorder(new LineBorder(new Color(0, 0, 0), 1, true));
+		previewColorPanel.setBorder(BorderFactory.createLineBorder(Color.GRAY));
 		colorPanel.add(previewColorPanel, gbc_previwPanel);
 
 		ChangeListener scl = e -> {

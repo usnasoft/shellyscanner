@@ -38,7 +38,6 @@ public class Relay implements RelayInterface {
 	}
 	
 	public void fillStatus(JsonNode relay) { // Ralay
-//		JsonNode relay = parent.getJSON("/relay/" + index);
 		isOn = relay.get("output").asBoolean();
 		source = relay.get("source").asText("-");
 	}

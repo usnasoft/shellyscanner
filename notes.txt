@@ -269,6 +269,15 @@ addon config restore improved (3 steps)
 dht22 restore fix
 virtual & bthome comonents restore (bthome not added)
 
+1.1.1
+Input reset configuration
+Shelly Pro EM-50
+Shelly Plus RGBW
+Shelly 2PM G3
+Shelly plus 1PM - Shelly plus 2PM - Shelly 1PM G3 - 24V DC
+bug fix rgbw2
+charts scroll
+
 ---
 // TODO
 // Xmod1 sganciare bottone se detatched (?)
@@ -276,9 +285,7 @@ virtual & bthome comonents restore (bthome not added)
 // add "knx" support
 // https://shelly-api-docs.shelly.cloud/gen2/DynamicComponents/BTHome/
 // rivedere it.usna.shellyscan.model.device.g2.ShellyPlusi4 alla luce di "Input.Trigger" (?)
-// charts scroll
 // chacklist multiselection
-// chacklist reset button(5)/power
 // grafico energia
 // inclusione massiva
 //todo Gen2 1.0.0 - triphase and monophase profiles (EDIT: to be included in next beta), add option to reverse CT direction of measurement for active power and energy

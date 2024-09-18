@@ -1,4 +1,4 @@
-package it.usna.shellyscan.model.device.g2;
+package it.usna.shellyscan.model.device.g2.modules;
 
 import java.io.IOException;
 
@@ -6,7 +6,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
-import it.usna.shellyscan.model.device.MQTTManager;
+import it.usna.shellyscan.model.device.g2.AbstractG2Device;
+import it.usna.shellyscan.model.device.modules.MQTTManager;
 
 //https://shelly-api-docs.shelly.cloud/gen2/Components/SystemComponents/Mqtt
 public class MQTTManagerG2 implements MQTTManager {

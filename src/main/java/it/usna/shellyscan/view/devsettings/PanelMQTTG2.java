@@ -29,9 +29,9 @@ import javax.swing.SwingConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import it.usna.shellyscan.model.device.MQTTManager;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
-import it.usna.shellyscan.model.device.g2.MQTTManagerG2;
+import it.usna.shellyscan.model.device.g2.modules.MQTTManagerG2;
+import it.usna.shellyscan.model.device.modules.MQTTManager;
 import it.usna.shellyscan.view.DialogDeviceSelection;
 import it.usna.shellyscan.view.util.Msg;
 import it.usna.shellyscan.view.util.UtilMiscellaneous;

@@ -13,11 +13,11 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.Meters;
+import it.usna.shellyscan.model.device.ModulesHolder;
 import it.usna.shellyscan.model.device.RestoreMsg;
 import it.usna.shellyscan.model.device.g2.modules.Relay;
 import it.usna.shellyscan.model.device.g2.modules.ThermostatG2;
 import it.usna.shellyscan.model.device.modules.DeviceModule;
-import it.usna.shellyscan.model.device.modules.ModulesHolder;
 
 /**
  * Shelly Wall Display

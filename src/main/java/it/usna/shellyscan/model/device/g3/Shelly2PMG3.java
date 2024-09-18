@@ -14,14 +14,14 @@ import com.fasterxml.jackson.databind.JsonNode;
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.InternalTmpHolder;
 import it.usna.shellyscan.model.device.Meters;
+import it.usna.shellyscan.model.device.ModulesHolder;
 import it.usna.shellyscan.model.device.RestoreMsg;
+import it.usna.shellyscan.model.device.g2.SensorAddOnHolder;
 import it.usna.shellyscan.model.device.g2.modules.Input;
 import it.usna.shellyscan.model.device.g2.modules.Relay;
 import it.usna.shellyscan.model.device.g2.modules.Roller;
 import it.usna.shellyscan.model.device.g2.modules.SensorAddOn;
-import it.usna.shellyscan.model.device.g2.modules.SensorAddOnHolder;
 import it.usna.shellyscan.model.device.modules.DeviceModule;
-import it.usna.shellyscan.model.device.modules.ModulesHolder;
 
 /**
  * Shelly plus 2PM model 
@@ -29,7 +29,7 @@ import it.usna.shellyscan.model.device.modules.ModulesHolder;
  */
 public class Shelly2PMG3 extends AbstractG3Device implements ModulesHolder, InternalTmpHolder, SensorAddOnHolder {
 	private final static Logger LOG = LoggerFactory.getLogger(Shelly2PMG3.class);
-	public final static String ID = "2PMG3";
+	public final static String ID = "S2PMG3";
 	private boolean modeRelay;
 	private final static Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.W, Meters.Type.PF, Meters.Type.V, Meters.Type.I};
 	private Relay relay0, relay1;
@@ -196,25 +196,25 @@ public class Shelly2PMG3 extends AbstractG3Device implements ModulesHolder, Inte
 		if(modeRelay) {
 			JsonNode switchStatus0 = status.get("switch:0");
 			relay0.fillStatus(switchStatus0, status.get("input:0"));
-			power0 = switchStatus0.get("apower").floatValue();
-			voltage0 = switchStatus0.get("voltage").floatValue();
-			current0 = switchStatus0.get("current").floatValue();
-			pf0 = switchStatus0.get("pf").floatValue();
+			power0 = switchStatus0.path("apower").floatValue();
+			voltage0 = switchStatus0.path("voltage").floatValue();
+			current0 = switchStatus0.path("current").floatValue();
+			pf0 = switchStatus0.path("pf").floatValue();
 
 			JsonNode switchStatus1 = status.get("switch:1");
 			relay1.fillStatus(switchStatus1, status.get("input:1"));
-			power1 = switchStatus1.get("apower").floatValue();
-			voltage1 = switchStatus1.get("voltage").floatValue();
-			current1 = switchStatus1.get("current").floatValue();
-			pf1 = switchStatus1.get("pf").floatValue();
+			power1 = switchStatus1.path("apower").floatValue();
+			voltage1 = switchStatus1.path("voltage").floatValue();
+			current1 = switchStatus1.path("current").floatValue();
+			pf1 = switchStatus1.path("pf").floatValue();
 
 			internalTmp = (float)switchStatus0.path("temperature").path("tC").floatValue();
 		} else {
 			JsonNode cover = status.get("cover:0");
-			power0 = cover.get("apower").floatValue();
-			voltage0 = cover.get("voltage").floatValue();
-			current0 = cover.get("current").floatValue();
-			pf0 = cover.get("pf").floatValue();
+			power0 = cover.path("apower").floatValue();
+			voltage0 = cover.path("voltage").floatValue();
+			current0 = cover.path("current").floatValue();
+			pf0 = cover.path("pf").floatValue();
 			internalTmp = cover.path("temperature").path("tC").floatValue();
 			roller.fillStatus(cover);
 		}

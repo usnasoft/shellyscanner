@@ -8,10 +8,11 @@ import java.util.Map;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 
+import it.usna.shellyscan.model.device.ModulesHolder;
 import it.usna.shellyscan.model.device.g2.modules.LightWhite;
-import it.usna.shellyscan.model.device.modules.WhiteCommander;
+import it.usna.shellyscan.model.device.modules.DeviceModule;
 
-public class ShellyWallDimmer extends AbstractG2Device implements WhiteCommander {
+public class ShellyWallDimmer extends AbstractG2Device implements ModulesHolder {
 	public final static String ID = "PlusWallDimmer";
 	private LightWhite light = new LightWhite(this, 0);
 	private LightWhite[] lightArray = new LightWhite[] {light};
@@ -50,18 +51,13 @@ public class ShellyWallDimmer extends AbstractG2Device implements WhiteCommander
 	}
 
 	@Override
-	public LightWhite getWhite(int index) {
+	public DeviceModule getModule(int index) {
 		return light;
 	}
 
 	@Override
-	public LightWhite[] getWhites() {
+	public DeviceModule[] getModules() {
 		return lightArray;
-	}
-
-	@Override
-	public int getWhitesCount() {
-		return 1;
 	}
 	
 	@Override

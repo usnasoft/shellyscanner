@@ -11,6 +11,7 @@ public abstract class Meters implements Comparable<Meters> {
 //		PF1, // power factor (1 decimal precision)
 		V, // voltage
 		I, // current
+		FREQ, // Frequency
 		BAT, // battery%
 		T, // temperature (celsius)
 		H, // humidity %

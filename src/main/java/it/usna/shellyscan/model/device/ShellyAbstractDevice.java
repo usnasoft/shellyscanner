@@ -19,6 +19,13 @@ import org.eclipse.jetty.http.HttpStatus;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import it.usna.shellyscan.model.device.modules.FirmwareManager;
+import it.usna.shellyscan.model.device.modules.InputResetManager;
+import it.usna.shellyscan.model.device.modules.LoginManager;
+import it.usna.shellyscan.model.device.modules.MQTTManager;
+import it.usna.shellyscan.model.device.modules.TimeAndLocationManager;
+import it.usna.shellyscan.model.device.modules.WIFIManager;
+
 /**
  * Base class for any device
  * @author usna
@@ -225,7 +232,9 @@ public abstract class ShellyAbstractDevice {
 	
 	public abstract LoginManager getLoginManager() throws IOException;
 	
-	public abstract TimeAndLocationManager getTimeAndLocationManager();
+	public abstract TimeAndLocationManager getTimeAndLocationManager() throws IOException;
+	
+	public abstract InputResetManager getInputResetManager() throws IOException;
 
 	public abstract boolean backup(final File file) throws IOException; // false: use of stored data; could not connect to device
 	

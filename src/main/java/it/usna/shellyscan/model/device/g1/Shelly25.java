@@ -10,11 +10,11 @@ import com.fasterxml.jackson.databind.JsonNode;
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.InternalTmpHolder;
 import it.usna.shellyscan.model.device.Meters;
+import it.usna.shellyscan.model.device.ModulesHolder;
 import it.usna.shellyscan.model.device.g1.modules.Relay;
 import it.usna.shellyscan.model.device.g1.modules.Roller;
 import it.usna.shellyscan.model.device.meters.MetersPower;
 import it.usna.shellyscan.model.device.modules.DeviceModule;
-import it.usna.shellyscan.model.device.modules.ModulesHolder;
 
 public class Shelly25 extends AbstractG1Device implements ModulesHolder, InternalTmpHolder {
 	public final static String ID = "SHSW-25";
