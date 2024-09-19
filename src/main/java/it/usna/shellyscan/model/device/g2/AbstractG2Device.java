@@ -140,7 +140,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 	@Override
 	public void refreshSettings() throws IOException {
 		fillSettings(getJSON("/rpc/Shelly.GetConfig"));
-		fillStatus(getJSON("/rpc/Shelly.GetStatus"));
+//		fillStatus(getJSON("/rpc/Shelly.GetStatus"));
 	}
 
 	@Override
