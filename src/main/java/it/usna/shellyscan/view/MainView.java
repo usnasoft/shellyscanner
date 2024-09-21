@@ -65,6 +65,7 @@ import it.usna.shellyscan.controller.UsnaSelectedAction;
 import it.usna.shellyscan.controller.UsnaToggleAction;
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.GhostDevice;
+import it.usna.shellyscan.model.device.InetAddressAndPort;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
 import it.usna.shellyscan.model.device.g1.AbstractG1Device;
@@ -196,7 +197,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 	
 	private Action browseAction = new UsnaSelectedAction(this, devicesTable, "action_web_name", "action_web_tooltip", "/images/Computer16.png", "/images/Computer.png", i -> {
 		try {
-			Desktop.getDesktop().browse(URI.create("http://" + InetAddressAndPort.toString(model.get(i))));
+			Desktop.getDesktop().browse(URI.create("http://" + model.get(i).getAddressAndPort().toString()));
 		} catch (IOException | UnsupportedOperationException e) { // browserSupported = Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE);
 			Msg.errorMsg(this, e);
 		}
@@ -205,8 +206,10 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 	private Action aboutAction = new UsnaAction(this, "action_about_name", "action_about_tooltip", null, "/images/question.png", e -> DialogAbout.show(MainView.this));
 	
 	// also asks for credential if needed (login action)
-	private UsnaAction reloadAction = new UsnaSelectedAction(this, devicesTable, "action_name_reload", null, "/images/Loop16.png", null,
-			i -> model.create(model.get(i).getAddress(), model.get(i).getPort(), model.get(i).getHostname(), false) );
+	private UsnaAction reloadAction = new UsnaSelectedAction(this, devicesTable, "action_name_reload", null, "/images/Loop16.png", null, i -> {
+		InetAddressAndPort addr = model.get(i).getAddressAndPort();
+		model.create(addr.getAddress(), addr.getPort(), model.get(i).getHostname(), false);
+	});
 
 	private Action backupAction;
 

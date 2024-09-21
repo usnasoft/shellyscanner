@@ -57,6 +57,7 @@ import it.usna.shellyscan.controller.UsnaSelectedAction;
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.Devices.EventType;
 import it.usna.shellyscan.model.device.BatteryDeviceInterface;
+import it.usna.shellyscan.model.device.InetAddressAndPort;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice.LogMode;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
@@ -208,7 +209,7 @@ public class CheckList extends JDialog implements UsnaEventListener<Devices.Even
 
 		Action browseAction = new UsnaSelectedAction(this, table, "action_web_name", "action_web_tooltip", null, "/images/Computer24.png", i -> {
 			try {
-				Desktop.getDesktop().browse(URI.create("http://" + InetAddressAndPort.toString(getLocalDevice(i))));
+				Desktop.getDesktop().browse(URI.create("http://" + getLocalDevice(i).getAddressAndPort().toString()));
 			} catch (IOException ex) {
 				Msg.errorMsg(ex);
 			}
@@ -377,7 +378,7 @@ public class CheckList extends JDialog implements UsnaEventListener<Devices.Even
 		exeService = Executors.newScheduledThreadPool(20);
 		for (int devicesInd : devicesInd) {
 			ShellyAbstractDevice d = appModel.get(devicesInd);
-			final int row = tModel.addRow(DevicesTable.UPDATING_BULLET, UtilMiscellaneous.getExtendedHostName(d), new InetAddressAndPort(d));
+			final int row = tModel.addRow(DevicesTable.UPDATING_BULLET, UtilMiscellaneous.getExtendedHostName(d), d.getAddressAndPort());
 			updateRow(d, row);
 		}
 	}
@@ -403,7 +404,7 @@ public class CheckList extends JDialog implements UsnaEventListener<Devices.Even
 						tModel.setRow(row, g2Row(d, ((BatteryDeviceInterface) d).getStoredJSON("/rpc/Shelly.GetConfig"), null));
 					}
 				} else {
-					tModel.setRow(row, DevicesTable.getStatusIcon(d), UtilMiscellaneous.getExtendedHostName(d), new InetAddressAndPort(d));
+					tModel.setRow(row, DevicesTable.getStatusIcon(d), UtilMiscellaneous.getExtendedHostName(d), d.getAddressAndPort());
 				}
 				if (d.getStatus() == Status.OFF_LINE || d.getStatus() == Status.NOT_LOOGGED) {
 					// LOG.debug("{}", d, e);
@@ -439,7 +440,7 @@ public class CheckList extends JDialog implements UsnaEventListener<Devices.Even
 		} else {
 			wifi2 = "-";
 		}
-		return new Object[] { DevicesTable.getStatusIcon(d), UtilMiscellaneous.getExtendedHostName(d), new InetAddressAndPort(d), eco, ledOff, debug, "-", "-", roaming, wifi1, wifi2, "-" };
+		return new Object[] { DevicesTable.getStatusIcon(d), UtilMiscellaneous.getExtendedHostName(d), d.getAddressAndPort(), eco, ledOff, debug, "-", "-", roaming, wifi1, wifi2, "-" };
 	}
 
 	private static Object[] g2Row(ShellyAbstractDevice d, JsonNode settings, JsonNode status) {
@@ -485,7 +486,7 @@ public class CheckList extends JDialog implements UsnaEventListener<Devices.Even
 		}
 		JsonNode extClient;
 		String extender = (status == null || (extClient = status.at("/wifi/ap_client_count")).isMissingNode()) ? "-" : extClient.asInt() + "";
-		return new Object[] { DevicesTable.getStatusIcon(d), UtilMiscellaneous.getExtendedHostName(d), new InetAddressAndPort(d), eco, "-", debug, ble, ap, roaming, wifi1, wifi2, extender };
+		return new Object[] { DevicesTable.getStatusIcon(d), UtilMiscellaneous.getExtendedHostName(d), d.getAddressAndPort(), eco, "-", debug, ble, ap, roaming, wifi1, wifi2, extender };
 	}
 
 	private static Boolean boolVal(JsonNode node) {

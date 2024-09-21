@@ -1,10 +1,10 @@
 package it.usna.shellyscan.model.device.blu;
 
 import java.io.IOException;
-import java.net.InetAddress;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
+import it.usna.shellyscan.model.device.InetAddressAndPort;
 import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 
@@ -12,8 +12,9 @@ public abstract class AbstractBluDevice {
 	protected final ShellyAbstractDevice parent;
 	private final String id;
 	
-	private final InetAddress parentAddress;
-	private final int parentPort;
+//	private final InetAddress parentAddress;
+//	private final int parentPort;
+	protected final InetAddressAndPort addressAndPort;
 	private String name;
 	private String mac;
 	private int rssi;
@@ -23,8 +24,9 @@ public abstract class AbstractBluDevice {
 	protected AbstractBluDevice(ShellyAbstractDevice parent, JsonNode info, String id) throws IOException {
 		this.parent = parent;
 		this.id = id;
-		this.parentAddress = parent.getAddress();
-		this.parentPort = parent.getPort();
+		this.addressAndPort = parent.getAddressAndPort();
+//		this.parentAddress = parent.getAddress();
+//		this.parentPort = parent.getPort();
 		
 		final JsonNode config = info.path("config");
 		this.mac = config.path("addr").asText();

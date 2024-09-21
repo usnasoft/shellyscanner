@@ -217,10 +217,10 @@ public class NonInteractiveDevices implements Closeable {
 							try {
 								JsonNode infoEx = isShelly(address, p);
 								if(infoEx != null) {
-									create(d.getAddress(), p, infoEx, d.getHostname() + "-EX" + ":" + p, c); // fillOnce will later correct hostname
+									create(d.getAddressAndPort().getAddress(), p, infoEx, d.getHostname() + "-EX" + ":" + p, c); // fillOnce will later correct hostname
 								}
 							} catch (TimeoutException | RuntimeException e) {
-								LOG.debug("timeout {}:{}", d.getAddress(), p, e);
+								LOG.debug("timeout {}:{}", d.getAddressAndPort().getAddress(), p, e);
 							}
 							//							});
 						} catch(RuntimeException e) {

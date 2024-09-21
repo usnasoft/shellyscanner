@@ -71,7 +71,7 @@ public class LoginManagerG1 implements LoginManager {
 			String msg = d.sendCommand(cmd);
 			if(msg == null) {
 //				d.setAuthentication(new BasicAuthentication(URI.create("http://" + d.getAddress().getHostAddress()), BasicAuthentication.ANY_REALM, user, new String(pwd)));
-				d.setAuthenticationResult(new BasicAuthentication.BasicResult(URI.create("http://" + d.getAddress().getHostAddress()  + ":" + d.getPort()), user, new String(pwd)));
+				d.setAuthenticationResult(new BasicAuthentication.BasicResult(URI.create("http://" + d.getAddressAndPort().getRepresentation()), user, new String(pwd)));
 			}
 			return msg;
 		} catch (UnsupportedEncodingException e) {

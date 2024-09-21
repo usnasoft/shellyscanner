@@ -4,11 +4,12 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
+import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.Meters;
-import it.usna.shellyscan.model.device.meters.MetersWVI;
 
 /**
  * Shelly Shelly Plus mini PM model
@@ -16,24 +17,32 @@ import it.usna.shellyscan.model.device.meters.MetersWVI;
  */
 public class ShellyMiniPM extends AbstractG2Device {
 	public final static String ID = "PlusPMMini";
+	private final static Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.W, Meters.Type.V, Meters.Type.I, Meters.Type.FREQ};
 	private float power;
 	private float voltage;
 	private float current;
+	private float freq;
 	private Meters[] meters;
 
 	public ShellyMiniPM(InetAddress address, int port, String hostname) {
 		super(address, port, hostname);
 
-		meters = new MetersWVI[] {
-				new MetersWVI() {
+		meters = new Meters[] {
+				new Meters() {
+					public Type[] getTypes() {
+						return SUPPORTED_MEASURES;
+					}
+
 					@Override
 					public float getValue(Type t) {
 						if(t == Meters.Type.W) {
 							return power;
 						} else if(t == Meters.Type.I) {
 							return current;
-						} else {
+						} else if(t == Meters.Type.V)  {
 							return voltage;
+						} else { // Meters.Type.FREQ
+							return freq;
 						}
 					}
 				}
@@ -67,14 +76,13 @@ public class ShellyMiniPM extends AbstractG2Device {
 		power = pm1.get("apower").floatValue();
 		voltage = pm1.get("voltage").floatValue();
 		current = pm1.get("current").floatValue();
+		freq = pm1.get("freq").floatValue();
 	}
 
 	@Override
 	protected void restore(Map<String, JsonNode> backupJsons, List<String> errors) throws InterruptedException {
-//		JsonNode config = backupJsons.get("Shelly.GetConfig.json");
-//		ObjectNode pm1 = (ObjectNode)config.path("pm1:0").deepCopy();
-//		pm1.remove("id");
-//		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-//		errors.add(postCommand("PM1.SetConfig", pm1));
+		JsonNode config = backupJsons.get("Shelly.GetConfig.json");
+		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+		errors.add(postCommand("PM1.SetConfig", createIndexedRestoreNode(config, "pm1", 0)));
 	}
 }

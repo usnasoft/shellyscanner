@@ -4,9 +4,11 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
+import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.Meters;
 
 /**
@@ -15,10 +17,11 @@ import it.usna.shellyscan.model.device.Meters;
  */
 public class ShellyMiniPMG3 extends AbstractG3Device {
 	public final static String ID = "MiniPMG3";
-	private final static Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.W, Meters.Type.V, Meters.Type.I};
+	private final static Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.W, Meters.Type.V, Meters.Type.I, Meters.Type.FREQ};
 	private float power;
 	private float voltage;
 	private float current;
+	private float freq;
 	private Meters[] meters;
 
 	public ShellyMiniPMG3(InetAddress address, int port, String hostname) {
@@ -36,8 +39,10 @@ public class ShellyMiniPMG3 extends AbstractG3Device {
 							return power;
 						} else if(t == Meters.Type.I) {
 							return current;
-						} else {
+						} else if(t == Meters.Type.V)  {
 							return voltage;
+						} else { // Meters.Type.FREQ
+							return freq;
 						}
 					}
 				}
@@ -71,15 +76,14 @@ public class ShellyMiniPMG3 extends AbstractG3Device {
 		power = pm1.get("apower").floatValue();
 		voltage = pm1.get("voltage").floatValue();
 		current = pm1.get("current").floatValue();
+		freq = pm1.get("freq").floatValue();
 	}
 
 	@Override
 	protected void restore(Map<String, JsonNode> backupJsons, List<String> errors) throws InterruptedException {
-//		JsonNode config = backupJsons.get("Shelly.GetConfig.json");
-//		ObjectNode pm1 = (ObjectNode)config.path("pm1:0").deepCopy();
-//		pm1.remove("id");
-//		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-//		errors.add(postCommand("PM1.SetConfig", pm1));
+		JsonNode config = backupJsons.get("Shelly.GetConfig.json");
+		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+		errors.add(postCommand("PM1.SetConfig", createIndexedRestoreNode(config, "pm1", 0)));
 	}
 }
 
