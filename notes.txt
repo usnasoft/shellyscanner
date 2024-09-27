@@ -299,6 +299,11 @@ charts scroll
 
 https://shelly-api-docs.shelly.cloud/gen2/DynamicComponents/BTHome/#bthomegetobjectinfos
 
+jmdns note:
+<jvm.version>17</jvm.version>
+<artifactId>maven-javadoc-plugin</artifactId> removed
+tests removed (-Dmaven.test.skip=true)
+
 ----------BLU-----------------
 http://192.168.1.8/rpc/Shelly.GetComponents?dynamic_only=true
 http://192.168.1.8/rpc/BTHome.DeleteDevice?id=200
