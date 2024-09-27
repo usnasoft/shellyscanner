@@ -24,7 +24,7 @@ import it.usna.shellyscan.model.device.g2.modules.SensorAddOn;
 import it.usna.shellyscan.model.device.modules.DeviceModule;
 
 /**
- * Shelly plus 2PM model 
+ * Shelly 2PM G3 model 
  * @author usna
  */
 public class Shelly2PMG3 extends AbstractG3Device implements ModulesHolder, InternalTmpHolder, SensorAddOnHolder {

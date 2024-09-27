@@ -27,8 +27,8 @@ import it.usna.shellyscan.model.device.modules.DeviceModule;
  * Shelly dimmer 0/1-10 G3 model
  * @author usna
  */
-public class Shelly0_10VPM extends AbstractG3Device implements InternalTmpHolder, ModulesHolder, SensorAddOnHolder {
-	private final static Logger LOG = LoggerFactory.getLogger(Shelly0_10VPM.class);
+public class Shelly0_10VPMG3 extends AbstractG3Device implements InternalTmpHolder, ModulesHolder, SensorAddOnHolder {
+	private final static Logger LOG = LoggerFactory.getLogger(Shelly0_10VPMG3.class);
 	public final static String ID = "Dimmer0110VPMG3";
 	private float internalTmp;
 	private float power;
@@ -39,7 +39,7 @@ public class Shelly0_10VPM extends AbstractG3Device implements InternalTmpHolder
 	private LightWhite[] lightArray = new LightWhite[] {light};
 	private SensorAddOn addOn;
 
-	public Shelly0_10VPM(InetAddress address, int port, String hostname) {
+	public Shelly0_10VPMG3(InetAddress address, int port, String hostname) {
 		super(address, port, hostname);
 	}
 	
