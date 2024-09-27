@@ -6,7 +6,6 @@ import java.net.NetworkInterface;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
@@ -42,8 +41,6 @@ import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
 import it.usna.shellyscan.model.device.ShellyUnmanagedDeviceInterface;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
-import it.usna.shellyscan.model.device.g2.AbstractProDevice;
-import it.usna.shellyscan.model.device.g3.AbstractG3Device;
 
 public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Integer> {
 	private final static Logger LOG = LoggerFactory.getLogger(Devices.class);
@@ -378,32 +375,32 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 						}
 					});
 				}
-				if(d instanceof AbstractProDevice || d instanceof AbstractG3Device) {
-					final JsonNode currenteComponents = d.getJSON("/rpc/Shelly.GetComponents?dynamic_only=true").path("components");
-					final Iterator<JsonNode> compIt = currenteComponents.iterator();
-					while (compIt.hasNext()) {
-						JsonNode comp = compIt.next();
-						String key = comp.path("key").asText();
-						if(key.startsWith("bthomedevice:")) {
-							createBlu(d, comp, key);
-						}
-					}
-				}
+//				if(d instanceof AbstractProDevice || d instanceof AbstractG3Device) {
+//					final JsonNode currenteComponents = d.getJSON("/rpc/Shelly.GetComponents?dynamic_only=true").path("components");
+//					final Iterator<JsonNode> compIt = currenteComponents.iterator();
+//					while (compIt.hasNext()) {
+//						JsonNode comp = compIt.next();
+//						String key = comp.path("key").asText();
+//						if(key.startsWith("bthomedevice:")) {
+//							createBlu(d, comp, key);
+//						}
+//					}
+//				}
 			}
 		} catch(Exception e) {
 			LOG.error("Unexpected-add: {}:{}; host: {}", address, port, hostName, e);
 		}
 	}
 	
-	private void createBlu(ShellyAbstractDevice parent, JsonNode info, String key) {
-		String id = key.substring(13);
-		try {
-			DevicesFactory.createBlu(parent, info, id);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
+//	private void createBlu(ShellyAbstractDevice parent, JsonNode info, String key) {
+//		String id = key.substring(13);
+//		try {
+//			DevicesFactory.createBlu(parent, info, id);
+//		} catch (IOException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+//	}
 	
 	// Add or update (existence tested by mac address) a device
 	private void newDevice(ShellyAbstractDevice d) {

@@ -50,14 +50,6 @@ public class InetAddressAndPort implements Comparable<InetAddressAndPort> {
 		return o2 != null && getClass() == o2.getClass() && address.equals(((InetAddressAndPort)o2).address) && port == ((InetAddressAndPort)o2).port;
 	}
 	
-//	public static String toString(ShellyAbstractDevice d) {
-//		if(d.getPort() == 80) {
-//			return d.getAddress().getHostAddress();
-//		} else {
-//			return d.getAddress().getHostAddress() + ":" + d.getPort();
-//		}
-//	}
-	
 	public String getRepresentation() {
 		if(port == 80) {
 			return address.getHostAddress();
