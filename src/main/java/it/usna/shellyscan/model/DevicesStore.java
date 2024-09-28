@@ -70,7 +70,8 @@ public class DevicesStore {
 					ObjectNode jsonDev = toJson(stored);
 					jsonDev.put(USER_NOTE, stored.getNote());
 					jsonDev.put(KEYWORD_NOTE, stored.getKeyNote());
-					jsonDev.put(ADDRESS, device.getAddress().getHostAddress());
+					jsonDev.put(ADDRESS, device.getAddressAndPort().getIpAsText()); // from actual device
+					jsonDev.put(PORT, device.getAddressAndPort().getPort()); // from actual device
 					toBeStored.add(jsonDev);
 				} else if(MAC_PATTERN.matcher(device.getMacAddress()).matches()) {
 					toBeStored.add(toJson(device));
@@ -98,8 +99,8 @@ public class DevicesStore {
 		jsonDev.put(TYPE_NAME, device.getTypeName());
 		jsonDev.put(HOSTNAME, device.getHostname());
 		jsonDev.put(MAC, device.getMacAddress());
-		jsonDev.put(ADDRESS, device.getAddress().getHostAddress());
-		jsonDev.put(PORT, device.getPort());
+		jsonDev.put(ADDRESS, device.getAddressAndPort().getIpAsText());
+		jsonDev.put(PORT, device.getAddressAndPort().getPort());
 		jsonDev.put(NAME, device.getName());
 		jsonDev.put(SSID, device.getSSID());
 		jsonDev.put(LAST_CON, device.getLastTime());
@@ -162,7 +163,7 @@ public class DevicesStore {
 	
 	private static GhostDevice toGhost(ShellyAbstractDevice dev) {
 		return new GhostDevice(
-				dev.getAddress(), dev.getPort(), dev.getHostname(), dev.getMacAddress(),
+				dev.getAddressAndPort().getAddress(), dev.getAddressAndPort().getPort(), dev.getHostname(), dev.getMacAddress(),
 				dev.getSSID(), dev.getTypeName(), dev.getTypeID(), gen(dev), dev.getName(), dev.getLastTime(),
 				dev instanceof BatteryDeviceInterface || (dev instanceof GhostDevice g && g.isBatteryOperated()),
 				"", "");

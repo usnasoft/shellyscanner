@@ -32,8 +32,7 @@ import it.usna.shellyscan.model.device.modules.WIFIManager;
  */
 public abstract class ShellyAbstractDevice {
 	protected HttpClient httpClient;
-	protected final InetAddress address;
-	protected final int port;
+	protected final InetAddressAndPort addressAndPort;
 	protected String hostname;
 	protected String mac;
 	protected boolean cloudEnabled;
@@ -56,8 +55,7 @@ public abstract class ShellyAbstractDevice {
 	public enum LogMode {NO, FILE, MQTT, SOCKET, UDP, UNDEFINED};
 
 	protected ShellyAbstractDevice(InetAddress address, int port, String hostname) {
-		this.address = address;
-		this.port = port;
+		addressAndPort = new InetAddressAndPort(address, port);
 		this.hostname = hostname;
 		if(address instanceof Inet6Address) {
 			if(port == 80) {
@@ -66,11 +64,7 @@ public abstract class ShellyAbstractDevice {
 				this.uriPrefix = "http://[" + address.getHostAddress() + "]:" + port;
 			}
 		} else {
-			if(port == 80) {
-				this.uriPrefix = "http://" + address.getHostAddress();
-			} else {
-				this.uriPrefix = "http://" + address.getHostAddress() + ":" + port;
-			}
+			this.uriPrefix = "http://" + addressAndPort.getRepresentation();
 		}
 	}
 	
@@ -144,12 +138,8 @@ public abstract class ShellyAbstractDevice {
 		this.mac = mac;
 	}
 	
-	public InetAddress getAddress() {
-		return address;
-	}
-	
-	public int getPort() {
-		return port;
+	public InetAddressAndPort getAddressAndPort() {
+		return addressAndPort;
 	}
 
 	public boolean getCloudEnabled() {
@@ -284,6 +274,6 @@ public abstract class ShellyAbstractDevice {
 
 	@Override
 	public String toString() {
-		return getTypeName() + "-" + name + ": " + address.getHostAddress() + " (" + hostname + ")";
+		return getTypeName() + "-" + name + ": " + addressAndPort.getRepresentation() + " (" + hostname + ")";
 	}
 } //278 - 399 - 316 - 251 - 237 - 231 - 247 - 271

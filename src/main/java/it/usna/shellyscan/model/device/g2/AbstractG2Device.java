@@ -140,7 +140,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 	@Override
 	public void refreshSettings() throws IOException {
 		fillSettings(getJSON("/rpc/Shelly.GetConfig"));
-		fillStatus(getJSON("/rpc/Shelly.GetStatus"));
+//		fillStatus(getJSON("/rpc/Shelly.GetStatus"));
 	}
 
 	@Override
@@ -312,7 +312,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 
 	public CompletableFuture<Session> connectWebSocketClient(WebSocketDeviceListener listener/*, boolean activate*/) throws IOException, InterruptedException, ExecutionException {
 		try {
-			CompletableFuture<Session> s = wsClient.connect(listener, URI.create("ws://" + address.getHostAddress() + ":" + port + "/rpc")); // this also do upgrade
+			CompletableFuture<Session> s = wsClient.connect(listener, URI.create("ws://" + addressAndPort.getRepresentation() + "/rpc")); // this also do upgrade
 			s.get().sendText("{\"id\":2, \"src\":\"S_Scanner\", \"method\":\"Shelly.GetDeviceInfo\"}", Callback.NOOP);
 			return s;
 		} catch(RuntimeException e) {
@@ -327,7 +327,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 	auth.[paramName]=paramValue. For example about the username it will be auth.username=admin&auth.cnonce=…&auth.respose=...
 	 */
 	public Future<Session> connectWebSocketLogs(WebSocketDeviceListener listener) throws IOException, InterruptedException, ExecutionException {
-		return wsClient.connect(listener, URI.create("ws://" + address.getHostAddress() + ":" + port + "/debug/log"));
+		return wsClient.connect(listener, URI.create("ws://" + addressAndPort.getRepresentation() + "/debug/log"));
 	}
 
 	@Override

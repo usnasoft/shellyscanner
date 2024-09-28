@@ -286,6 +286,20 @@ public class DialogEditRGBW extends JDialog {
 		}));
 		greenButton.setBorder(BorderFactory.createEmptyBorder(10, 12, 10, 12));
 		greenButton.setBackground(Color.GREEN);
+		JButton yellowButton = new JButton(new UsnaAction(e -> {
+			try {
+				if(light instanceof RGBWInterface rgbw) {
+					rgbw.setColor(255, 255, 0, 0);
+				} else {
+					light.setColor(255, 255, 0);
+				}
+				adjust(light);
+			} catch (IOException e1) {
+				LOG.error("color button", e1);
+			}
+		}));
+		yellowButton.setBorder(BorderFactory.createEmptyBorder(10, 12, 10, 12));
+		yellowButton.setBackground(Color.YELLOW);
 		JButton blueButton = new JButton(new UsnaAction(e -> {
 			try {
 				if(light instanceof RGBWInterface rgbw) {
@@ -300,7 +314,20 @@ public class DialogEditRGBW extends JDialog {
 		}));
 		blueButton.setBorder(BorderFactory.createEmptyBorder(10, 12, 10, 12));
 		blueButton.setBackground(Color.BLUE);
-
+		JButton violetButton = new JButton(new UsnaAction(e -> {
+			try {
+				if(light instanceof RGBWInterface rgbw) {
+					rgbw.setColor(255, 0, 255, 0);
+				} else {
+					light.setColor(255, 0, 255);
+				}
+				adjust(light);
+			} catch (IOException e1) {
+				LOG.error("color button", e1);
+			}
+		}));
+		violetButton.setBorder(BorderFactory.createEmptyBorder(10, 12, 10, 12));
+		violetButton.setBackground(new Color(255, 0, 255));
 		JButton whiteButton = new JButton(new UsnaAction(e -> {
 			try {
 				if(light instanceof RGBWInterface rgbw) {
@@ -318,7 +345,9 @@ public class DialogEditRGBW extends JDialog {
 
 		colorsPanel.add(redButton);
 		colorsPanel.add(greenButton);
+		colorsPanel.add(yellowButton);
 		colorsPanel.add(blueButton);
+		colorsPanel.add(violetButton);
 		colorsPanel.add(whiteButton);
 
 		GridBagConstraints gbc_previewColorPanel = new GridBagConstraints();

@@ -22,7 +22,6 @@ import java.util.stream.Stream;
 
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
-import javax.swing.ListSelectionModel;
 import javax.swing.RowFilter;
 import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -231,8 +230,8 @@ public class DevicesTable extends ExTooltipTable {
 				adaptTooltipLocation = false;
 				return String.format(Locale.ENGLISH, LABELS.getString("col_command_therm_tooltip"), therm.getCurrentProfile(), therm.getTargetTemp(), therm.getPosition());
 			} else if(value instanceof Meters[] meters) {
-				Component comp = getCellRenderer(r, c).getTableCellRendererComponent(this, value, false, false, r, c);
-				if(Arrays.stream(meters).anyMatch(m -> DeviceMetersCellRenderer.hasHiddenMeasures(m) || m instanceof LabelHolder || m instanceof SensorAddOn) || getCellRect(r, c, false).width <= comp.getPreferredSize().width) {
+				if(Arrays.stream(meters).anyMatch(m -> DeviceMetersCellRenderer.hasHiddenMeasures(m) || m instanceof LabelHolder || m instanceof SensorAddOn) ||
+						getCellRect(r, c, false).width <= getCellRenderer(r, c).getTableCellRendererComponent(this, value, false, false, r, c).getPreferredSize().width) {
 					adaptTooltipLocation = true;
 					String tt = "<html><table border='0' cellspacing='0' cellpadding='0'>";
 					for(Meters m: meters) {
@@ -405,11 +404,10 @@ public class DevicesTable extends ExTooltipTable {
 	public void updateRow(ShellyAbstractDevice device, GhostDevice ghost, int modelIndex) {
 		generateRow(device, ghost, ((UsnaTableModel)dataModel).getRow(modelIndex));
 		((UsnaTableModel)dataModel).fireTableRowsUpdated(modelIndex, modelIndex);
-		final ListSelectionModel lsm = getSelectionModel(); // getRowSorter().allRowsChanged() do not preserve the selected cell; this mess the selection dragging the mouse
-		final int i1 = lsm.getAnchorSelectionIndex();
+		final int i1 = selectionModel.getAnchorSelectionIndex(); // getRowSorter().allRowsChanged() do not preserve the selected cell; this mess the selection dragging the mouse
 //		final int i2 = lsm.getLeadSelectionIndex();
 		getRowSorter().allRowsChanged();
-		lsm.setAnchorSelectionIndex(i1);
+		selectionModel .setAnchorSelectionIndex(i1);
 //		lsm.setLeadSelectionIndex(i2);
 	}
 	
@@ -421,7 +419,7 @@ public class DevicesTable extends ExTooltipTable {
 			row[DevicesTable.COL_NAME] = d.getName();
 			row[DevicesTable.COL_KEYWORD] = g.getKeyNote();
 			row[DevicesTable.COL_MAC_IDX] = d.getMacAddress();
-			row[DevicesTable.COL_IP_IDX] = new InetAddressAndPort(d);
+			row[DevicesTable.COL_IP_IDX] = d.getAddressAndPort();
 			row[DevicesTable.COL_SSID_IDX] = d.getSSID();
 			Status status = d.getStatus();
 			if(status != Status.NOT_LOOGGED && status != Status.ERROR && status != Status.GHOST /*&&(d instanceof ShellyUnmanagedDevice == false || ((ShellyUnmanagedDevice)d).geException() == null)*/) {
@@ -498,4 +496,4 @@ public class DevicesTable extends ExTooltipTable {
 			return LOGIN_BULLET;
 		}
 	}
-} // 462 - 472 - 513 - 505 - 518
+} // 462 - 472 - 513 - 505 - 518 - 499

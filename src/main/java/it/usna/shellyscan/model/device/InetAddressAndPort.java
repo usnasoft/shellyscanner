@@ -1,8 +1,6 @@
-package it.usna.shellyscan.view;
+package it.usna.shellyscan.model.device;
 
 import java.net.InetAddress;
-
-import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 
 /**
  * Address and port representation with Comparable<> implementation.<br>
@@ -13,16 +11,26 @@ public class InetAddressAndPort implements Comparable<InetAddressAndPort> {
 	private final InetAddress address;
 	private final int port;
 
-//	public InetAddressAndPort(InetAddress address, int port) {
-//		this.address = address;
-//		this.port = port;
+	public InetAddressAndPort(InetAddress address, int port) {
+		this.address = address;
+		this.port = port;
+	}
+	
+//	public InetAddressAndPort(ShellyAbstractDevice d) {
+//		this.address = d.getAddress();
+//		this.port = d.getPort();
 //	}
 	
-	public InetAddressAndPort(ShellyAbstractDevice d) {
-		this.address = d.getAddress();
-		this.port = d.getPort();
-		
-		// InetAddress is not efficient (see java.net.Inet4Address implementation); an initial getAddress() and byte storage could improve performance
+	public InetAddress getAddress() {
+		return address;
+	}
+	
+	public int getPort() {
+		return port;
+	}
+	
+	public String getIpAsText() {
+		return address.getHostAddress();
 	}
 
 	@Override
@@ -39,14 +47,14 @@ public class InetAddressAndPort implements Comparable<InetAddressAndPort> {
 	
 	@Override
 	public boolean equals(Object o2) {
-		return o2 != null && o2 instanceof InetAddressAndPort && address.equals(((InetAddressAndPort)o2).address) && port == ((InetAddressAndPort)o2).port;
+		return o2 != null && getClass() == o2.getClass() && address.equals(((InetAddressAndPort)o2).address) && port == ((InetAddressAndPort)o2).port;
 	}
 	
-	public static String toString(ShellyAbstractDevice d) {
-		if(d.getPort() == 80) {
-			return d.getAddress().getHostAddress();
+	public String getRepresentation() {
+		if(port == 80) {
+			return address.getHostAddress();
 		} else {
-			return d.getAddress().getHostAddress() + ":" + d.getPort();
+			return address.getHostAddress() + ":" + port;
 		}
 	}
 	
@@ -59,3 +67,5 @@ public class InetAddressAndPort implements Comparable<InetAddressAndPort> {
 		}
 	}
 }
+
+//Note: InetAddress is not efficient (see java.net.Inet4Address implementation); an initial getAddress() and byte storage could improve performance

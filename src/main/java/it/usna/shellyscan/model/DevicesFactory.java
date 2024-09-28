@@ -15,6 +15,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import it.usna.shellyscan.Main;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.ShellyGenericUnmanagedImpl;
+import it.usna.shellyscan.model.device.blu.AbstractBluDevice;
+import it.usna.shellyscan.model.device.blu.ShellyBluUnmanaged;
 import it.usna.shellyscan.model.device.g1.AbstractG1Device;
 import it.usna.shellyscan.model.device.g1.Button1;
 import it.usna.shellyscan.model.device.g1.Shelly1;
@@ -73,7 +75,7 @@ import it.usna.shellyscan.model.device.g2.ShellyProEM50;
 import it.usna.shellyscan.model.device.g2.ShellyWallDimmer;
 import it.usna.shellyscan.model.device.g2.WallDisplay;
 import it.usna.shellyscan.model.device.g2.modules.LoginManagerG2;
-import it.usna.shellyscan.model.device.g3.Shelly0_10VPM;
+import it.usna.shellyscan.model.device.g3.Shelly0_10VPMG3;
 import it.usna.shellyscan.model.device.g3.Shelly1G3;
 import it.usna.shellyscan.model.device.g3.Shelly1PMG3;
 import it.usna.shellyscan.model.device.g3.Shelly2PMG3;
@@ -99,7 +101,7 @@ public class DevicesFactory {
 			return createG2(httpClient, wsClient, address, port, info, name);
 		} else if(gen == 0) { // gen1 (info.get("gen") == null)
 			return createG1(httpClient, address, port, info, name);
-		} else if(gen ==3) {
+		} else if(gen == 3) {
 			return createG3(httpClient, wsClient, address, port, info, name);
 		} else { // unknown gen
 			return new ShellyGenericUnmanagedImpl(address, port, name, httpClient);
@@ -241,6 +243,7 @@ public class DevicesFactory {
 				case ShellyPro4PM.ID -> new ShellyPro4PM(address, port, name);
 				case ShellyProDimmer1.ID -> new ShellyProDimmer1(address, port, name);
 				case ShellyProEM50.ID -> new ShellyProEM50(address, port, name);
+				
 				default -> new ShellyG2Unmanaged(address, port, name);
 			};
 		} catch(Exception e) { // really unexpected
@@ -289,7 +292,7 @@ public class DevicesFactory {
 			case Shelly1G3.ID -> new Shelly1G3(address, port, name);
 			case Shelly1PMG3.ID -> new Shelly1PMG3(address, port, name);
 			case Shelly2PMG3.ID -> new Shelly2PMG3(address, port, name);
-			case Shelly0_10VPM.ID -> new Shelly0_10VPM(address, port, name);
+			case Shelly0_10VPMG3.ID -> new Shelly0_10VPMG3(address, port, name);
 			case ShellyI4G3.ID -> new ShellyI4G3(address, port, name);
 			case ShellyMini1G3.ID -> new ShellyMini1G3(address, port, name);
 			case ShellyMini1PMG3.ID -> new ShellyMini1PMG3(address, port, name);
@@ -313,6 +316,11 @@ public class DevicesFactory {
 			LOG.error("create - init {}:{}", address, port, e);
 		}
 		return d;
+	}
+	
+	public static void createBlu(ShellyAbstractDevice parent, JsonNode info, String id) throws IOException {
+		AbstractBluDevice blu = new ShellyBluUnmanaged(parent, info, id);
+		System.out.println(blu + " # " + parent);
 	}
 
 	// default credentials

@@ -275,6 +275,7 @@ Shelly Pro EM-50
 Shelly Plus RGBW
 Shelly 2PM G3
 Shelly plus 1PM - Shelly plus 2PM - Shelly 1PM G3 - 24V DC
+improved miniPM & miniPMG3 restore
 bug fix rgbw2
 charts scroll
 
@@ -283,6 +284,7 @@ charts scroll
 // Xmod1 sganciare bottone se detatched (?)
 // Button push if no actions
 // add "knx" support
+// fahrenheit
 // https://shelly-api-docs.shelly.cloud/gen2/DynamicComponents/BTHome/
 // rivedere it.usna.shellyscan.model.device.g2.ShellyPlusi4 alla luce di "Input.Trigger" (?)
 // chacklist multiselection
@@ -291,11 +293,16 @@ charts scroll
 //todo Gen2 1.0.0 - triphase and monophase profiles (EDIT: to be included in next beta), add option to reverse CT direction of measurement for active power and energy
 //todo Gen2 1.0.0 - Authentication in HTTP client, supporting basic and digest schemes. This enables the HTTP service and webhooks to access password-protected URLs.
 // gestione "reading": se stato online leggo uptime, se uptime diverso dal precedente memorizzo il timestamp else Quando il time stamp corrente - memorizzato > intervallo * 3 modifico lo stato - si, ma dove?
-// InetAddressAndPort potrebbe essere dentro ogni device e mantenere direttamente i byte (sarebbe estremamente ottimizzato)
+// InetAddressAndPort potrebbe essere dentro ogni device e mantenere direttamente i byte (sarebbe estremamente ottimizzato); tuttavia attenderei l'introduzione di IPv6
 // color weel https://stackoverflow.com/questions/36252778/how-to-draw-a-rgb-color-wheel-in-java
 
 
 https://shelly-api-docs.shelly.cloud/gen2/DynamicComponents/BTHome/#bthomegetobjectinfos
+
+jmdns note:
+<jvm.version>17</jvm.version>
+<artifactId>maven-javadoc-plugin</artifactId> removed
+tests removed (-Dmaven.test.skip=true)
 
 ----------BLU-----------------
 http://192.168.1.8/rpc/Shelly.GetComponents?dynamic_only=true
@@ -306,3 +313,23 @@ lo stesso device puo' essere (virtuale) su piu' device -> occorre vedere se esis
 come indirizzo prendiamo quello del primo (minore?) dispositivo <ip>:BLU
 da device info (o altro posto) elencare i dispositivi che lo riferiscono
 
+dati:
+status.last_updated_ts
+
+on table:
+status (specific?)
+type - config.meta.ui.local_name
+Name - config.name
+<keyword> (future - initially no archive)
+MAC - config.addr
+IP (ip device + "BLU") sort by "id"
+- SSID no
+RSSI status.rssi
+- CLOUD no
+- Uptime no
+Measures
+- Debug no
+- Source no
+- Command no (actions? - future)
+
+update: asking parent

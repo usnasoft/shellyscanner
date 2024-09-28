@@ -36,6 +36,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import it.usna.shellyscan.model.device.GhostDevice;
+import it.usna.shellyscan.model.device.InetAddressAndPort;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
 import it.usna.shellyscan.model.device.ShellyUnmanagedDeviceInterface;
@@ -253,7 +254,8 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 				d.setStatus(Status.READING);
 				executor.schedule(() -> {
 					if(d instanceof ShellyUnmanagedDeviceInterface unmanaged && unmanaged.getException() != null) { // try to create proper device
-						create(d.getAddress(), d.getPort(), d.getHostname(), true);
+						InetAddressAndPort addr = d.getAddressAndPort();
+						create(addr.getAddress(), addr.getPort(), d.getHostname(), true);
 					} else {
 						try {
 							d.refreshSettings();
@@ -362,10 +364,10 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 								try {
 									JsonNode infoEx = isShelly(address, p);
 									if(infoEx != null) {
-										create(d.getAddress(), p, infoEx, d.getHostname() + "-EX" + ":" + p); // device will later correct hostname
+										create(d.getAddressAndPort().getAddress(), p, infoEx, d.getHostname() + "-EX" + ":" + p); // device will later correct hostname
 									}
 								} catch (TimeoutException | RuntimeException e) {
-									LOG.debug("timeout {}:{}", d.getAddress(), p, e);
+									LOG.debug("timeout {}:{}", d.getAddressAndPort().getAddress(), p, e);
 								}
 							});
 						} catch(RuntimeException e) {
@@ -373,11 +375,32 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 						}
 					});
 				}
+//				if(d instanceof AbstractProDevice || d instanceof AbstractG3Device) {
+//					final JsonNode currenteComponents = d.getJSON("/rpc/Shelly.GetComponents?dynamic_only=true").path("components");
+//					final Iterator<JsonNode> compIt = currenteComponents.iterator();
+//					while (compIt.hasNext()) {
+//						JsonNode comp = compIt.next();
+//						String key = comp.path("key").asText();
+//						if(key.startsWith("bthomedevice:")) {
+//							createBlu(d, comp, key);
+//						}
+//					}
+//				}
 			}
 		} catch(Exception e) {
 			LOG.error("Unexpected-add: {}:{}; host: {}", address, port, hostName, e);
 		}
 	}
+	
+//	private void createBlu(ShellyAbstractDevice parent, JsonNode info, String key) {
+//		String id = key.substring(13);
+//		try {
+//			DevicesFactory.createBlu(parent, info, id);
+//		} catch (IOException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+//	}
 	
 	// Add or update (existence tested by mac address) a device
 	private void newDevice(ShellyAbstractDevice d) {
@@ -436,10 +459,10 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 		LOG.debug("Starting ghosts reconnect");
 		int dalay = 0;
 		for(int i = 0; i < devices.size(); i++) {
-			if(devices.get(i) instanceof GhostDevice g && g.isBatteryOperated() == false && g.getPort() == 80) { // g.getPort() port is (currently) variable
+			if(devices.get(i) instanceof GhostDevice g && g.isBatteryOperated() == false /*&& g.getAddressAndPort().getPort() == 80*/) { // g.getPort() port is (currently) variable
 				executor.schedule(() -> {
 					try {
-						create(g.getAddress(), g.getPort(), g.getAddress().getHostAddress(), false);
+						create(g.getAddressAndPort().getAddress(), g.getAddressAndPort().getPort(), g.getAddressAndPort().getAddress().getHostAddress(), false);
 					} catch (RuntimeException e) {/*LOG.trace("ghosts reload {}", d.getAddress());*/}
 				}, dalay, TimeUnit.MILLISECONDS);
 				dalay += 4;

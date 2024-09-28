@@ -37,8 +37,8 @@ import it.usna.util.CLI;
 
 public class Main {
 	public final static String APP_NAME = "Shelly Scanner";
-	public final static String VERSION = "1.1.1 beta";
-	public final static String VERSION_CODE = "001.001.001r100"; // r0xx alpha; r1xx beta; r2xx stable
+	public final static String VERSION = "1.1.1";
+	public final static String VERSION_CODE = "001.001.001r200"; // r0xx alpha; r1xx beta; r2xx stable
 	public final static Image ICON = Toolkit.getDefaultToolkit().createImage(Main.class.getResource("/images/ShSc24.png"));
 	public final static String BACKUP_FILE_EXT = "sbk";
 	public final static String ARCHIVE_FILE_EXT = "arc";
@@ -50,12 +50,10 @@ public class Main {
 	public final static Color STATUS_LINE = new Color(200, 220, 255);
 	public final static String TAB_VERSION = "5"; // on version change reset table settings
 
-	private final static String PROP_FILE = System.getProperty("user.home") + File.separator + ".shellyScanner";
-
 	private final static String IP_SCAN_PAR_FORMAT = "^((?:(?:0|1\\d?\\d?|2[0-4]?\\d?|25[0-5]?|[3-9]\\d?)\\.){2}(?:0|1\\d?\\d?|2[0-4]?\\d?|25[0-5]?|[3-9]\\d?))\\.(0|1\\d?\\d?|2[0-4]?\\d?|25[0-5]?|[3-9]\\d?)-(0|1\\d?\\d?|2[0-4]?\\d?|25[0-5]?|[3-9]\\d?)$";
 
 	public static void main(final String ... args) {
-		final ScannerProperties appProp = ScannerProperties.init(PROP_FILE);
+		final ScannerProperties appProp = ScannerProperties.init(System.getProperty("user.home") + File.separator + ".shellyScanner");
 		//		final AppProperties appProp = ScannerProperties.get();
 		//		System.setProperty(SimpleLogger.DEFAULT_LOG_LEVEL_KEY, "error");
 		System.setProperty(SimpleLogger.LOG_KEY_PREFIX + "javax.jmdns", "warn");

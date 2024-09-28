@@ -111,7 +111,7 @@ public class DeviceMetersCellRenderer extends JPanel implements TableCellRendere
 	
 	public static boolean hasHiddenMeasures(Meters meters) {
 		for(Meters.Type t: meters.getTypes()) {
-			if(t == Meters.Type.VAR && t == Meters.Type.FREQ) {
+			if(t == Meters.Type.VAR || t == Meters.Type.FREQ) {
 				return true;
 			}
 		}

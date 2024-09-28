@@ -91,7 +91,7 @@ public class LoginManagerG2 implements LoginManager {
 			String msg = d.postCommand("Shelly.SetAuth", "{\"user\":\"" + LOGIN_USER + "\",\"realm\":\"" + realm + "\",\"ha1\":\"" + encodedhash + "\"}");
 			if(msg == null) {
 //				d.setCredentialsProvider(credsProvider);
-				d.setAuthentication(new DigestAuthentication(URI.create("http://" + d.getAddress().getHostAddress() + ":" + d.getPort()), DigestAuthentication.ANY_REALM, LOGIN_USER, new String(pwd)));
+				d.setAuthentication(new DigestAuthentication(URI.create("http://" + d.getAddressAndPort().getRepresentation()), DigestAuthentication.ANY_REALM, LOGIN_USER, new String(pwd)));
 			}
 			return msg;
 		} catch (NoSuchAlgorithmException e) {
