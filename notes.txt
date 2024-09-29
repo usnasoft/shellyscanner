@@ -279,6 +279,10 @@ improved miniPM & miniPMG3 restore
 bug fix rgbw2
 charts scroll
 
+1.1.1
+// BLU
+selection subtraction ctrl+shift
+
 ---
 // TODO
 // Xmod1 sganciare bottone se detatched (?)

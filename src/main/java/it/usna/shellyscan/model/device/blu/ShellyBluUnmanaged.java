@@ -4,14 +4,15 @@ import java.io.IOException;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
+import it.usna.shellyscan.model.device.InetAddressAndPort;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 
 public class ShellyBluUnmanaged extends AbstractBluDevice {
 	private String type;
 
-	public ShellyBluUnmanaged(ShellyAbstractDevice parent, JsonNode info, String id) throws IOException {
-		super(parent, info, id);
-		this.type = info.path("config").path("meta").path("ui").path("local_name").asText();
+	public ShellyBluUnmanaged(ShellyAbstractDevice parent, JsonNode info, String localName, String index) throws IOException {
+		super(parent, info, index);
+		this.type = localName;
 	}
 
 	@Override

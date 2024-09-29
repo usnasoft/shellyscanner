@@ -195,7 +195,6 @@ public class ShellyPlusRGBW extends AbstractG2Device implements ModulesHolder, I
 				light3 = new LightWhite(this, 3);
 				lights = new LightWhite[] {light0, light1, light2, light3};
 				rgbLight = null;
-				meters = new Meters[] {meters0, meters1, meters2, meters3};
 				meters = (addOn == null || addOn.getTypes().length == 0) ? new Meters[] {meters0, meters1, meters2, meters3} : new Meters[] {meters0, meters1, meters2, meters3, addOn};
 			}
 			light0.fillSettings(configuration.get("light:0"));
@@ -209,8 +208,6 @@ public class ShellyPlusRGBW extends AbstractG2Device implements ModulesHolder, I
 				rgbs = new LightRGB[] {rgbLight};
 				light0 =  light1 =  light2 = light3 = null;
 				rgbwLight = null;
-				
-				meters = new Meters[] {meters0};
 				meters = (addOn == null || addOn.getTypes().length == 0) ? new Meters[] {meters0} : new Meters[] {meters0, addOn};
 			}
 			rgbLight.fillConfig(configuration.get("rgb:0"));
@@ -221,8 +218,6 @@ public class ShellyPlusRGBW extends AbstractG2Device implements ModulesHolder, I
 				rgbws = new LightRGBW[] {rgbwLight};
 				light0 =  light1 =  light2 = light3 = null;
 				rgbLight = null;
-				
-				meters = new Meters[] {meters0};
 				meters = (addOn == null || addOn.getTypes().length == 0) ? new Meters[] {meters0} : new Meters[] {meters0, addOn};
 			}
 			rgbwLight.fillConfig(configuration.get("rgbw:0"));

@@ -243,7 +243,7 @@ public class DevicesFactory {
 				case ShellyPro4PM.ID -> new ShellyPro4PM(address, port, name);
 				case ShellyProDimmer1.ID -> new ShellyProDimmer1(address, port, name);
 				case ShellyProEM50.ID -> new ShellyProEM50(address, port, name);
-				
+
 				default -> new ShellyG2Unmanaged(address, port, name);
 			};
 		} catch(Exception e) { // really unexpected
@@ -298,6 +298,7 @@ public class DevicesFactory {
 			case ShellyMini1PMG3.ID -> new ShellyMini1PMG3(address, port, name);
 			case ShellyMiniPMG3.ID -> new ShellyMiniPMG3(address, port, name);
 			case ShellyPlusHTG3.ID -> new ShellyPlusHTG3(address, port, name);
+		
 			// X
 			case ShellyXMOD1.ID -> new ShellyXMOD1(address, port, name);
 			default -> new ShellyG3Unmanaged(address, port, name);
@@ -318,8 +319,9 @@ public class DevicesFactory {
 		return d;
 	}
 	
-	public static void createBlu(ShellyAbstractDevice parent, JsonNode info, String id) throws IOException {
-		AbstractBluDevice blu = new ShellyBluUnmanaged(parent, info, id);
+	public static void createBlu(ShellyAbstractDevice parent, JsonNode info, String index) throws IOException {
+		final String type = info.path("config").path("meta").path("ui").path("local_name").asText();
+		AbstractBluDevice blu = new ShellyBluUnmanaged(parent, info, type, index);
 		System.out.println(blu + " # " + parent);
 	}
 

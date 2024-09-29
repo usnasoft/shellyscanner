@@ -4,26 +4,28 @@ import java.io.IOException;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
+import it.usna.shellyscan.model.device.DiviceInterface;
 import it.usna.shellyscan.model.device.InetAddressAndPort;
 import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
+import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
 
-public abstract class AbstractBluDevice {
+public abstract class AbstractBluDevice implements DiviceInterface {
 	protected final ShellyAbstractDevice parent;
-	private final String id;
+	private final String index;
 	
 //	private final InetAddress parentAddress;
 //	private final int parentPort;
 	protected final InetAddressAndPort addressAndPort;
+	private final String mac;
 	private String name;
-	private String mac;
 	private int rssi;
 	private int lastConnection;
 	private int battery;
 	
-	protected AbstractBluDevice(ShellyAbstractDevice parent, JsonNode info, String id) throws IOException {
+	protected AbstractBluDevice(ShellyAbstractDevice parent, JsonNode info, String index) throws IOException {
 		this.parent = parent;
-		this.id = id;
+		this.index = index;
 		this.addressAndPort = parent.getAddressAndPort();
 //		this.parentAddress = parent.getAddress();
 //		this.parentPort = parent.getPort();
@@ -37,13 +39,28 @@ public abstract class AbstractBluDevice {
 	public abstract String getTypeID();
 	
 	public abstract String getTypeName();
+	
+
+	@Override
+	public String getHostname() {
+		return getTypeID() + "-" + mac;
+	}
+	
+	@Override
+	public InetAddressAndPort getAddressAndPort() {
+		return addressAndPort;
+	}
+	
+	public Status getStatus() {
+		return Status.BLU;
+	}
 
 	public void fillSettings() throws IOException {
-		fillSettings(parent.getJSON("/rpc/BTHomeDevice.GetConfig?id=" + id));
+		fillSettings(parent.getJSON("/rpc/BTHomeDevice.GetConfig?id=" + index));
 	}
 	
 	public void fillStatus() throws IOException {
-		fillSettings(parent.getJSON("/rpc/BTHomeDevice.GetStatus?id=" + id));
+		fillSettings(parent.getJSON("/rpc/BTHomeDevice.GetStatus?id=" + index));
 	}
 	
 	protected void fillSettings(JsonNode config) {

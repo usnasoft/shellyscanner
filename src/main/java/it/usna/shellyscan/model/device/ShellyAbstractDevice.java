@@ -30,7 +30,7 @@ import it.usna.shellyscan.model.device.modules.WIFIManager;
  * Base class for any device
  * @author usna
  */
-public abstract class ShellyAbstractDevice {
+public abstract class ShellyAbstractDevice implements DiviceInterface {
 	protected HttpClient httpClient;
 	protected final InetAddressAndPort addressAndPort;
 	protected String hostname;
@@ -51,7 +51,7 @@ public abstract class ShellyAbstractDevice {
 	protected final String uriPrefix;
 	protected final ObjectMapper jsonMapper = new ObjectMapper();
 	
-	public enum Status {ON_LINE, OFF_LINE, NOT_LOOGGED, READING, ERROR, GHOST}; // GHOST not yet detected (in store)
+	public enum Status {ON_LINE, OFF_LINE, NOT_LOOGGED, READING, ERROR, BLU, GHOST}; // GHOST not yet detected (in store)
 	public enum LogMode {NO, FILE, MQTT, SOCKET, UDP, UNDEFINED};
 
 	protected ShellyAbstractDevice(InetAddress address, int port, String hostname) {
