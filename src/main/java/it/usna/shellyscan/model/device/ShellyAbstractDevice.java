@@ -68,7 +68,15 @@ public abstract class ShellyAbstractDevice implements DiviceInterface {
 		}
 	}
 	
-	public JsonNode getJSON(final String command) throws IOException  { //JsonProcessingException extends IOException
+	/**
+	 * Non ethernet devices (Blu)
+	 */
+	protected ShellyAbstractDevice(InetAddressAndPort parentAddress) {
+		addressAndPort = parentAddress;
+		this.uriPrefix = null;
+	}
+	
+	public JsonNode getJSON(final String command) throws IOException { //JsonProcessingException extends IOException
 		ContentResponse response;
 		int statusCode;
 		try {

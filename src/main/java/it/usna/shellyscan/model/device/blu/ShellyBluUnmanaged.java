@@ -4,7 +4,6 @@ import java.io.IOException;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
-import it.usna.shellyscan.model.device.InetAddressAndPort;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 
 public class ShellyBluUnmanaged extends AbstractBluDevice {
@@ -21,11 +20,11 @@ public class ShellyBluUnmanaged extends AbstractBluDevice {
 	}
 	
 	public String getTypeName() {
-		return "Generic BLU";
+		return "Generic BTHome";
 	}
 	
 	@Override
 	public String toString() {
-		return "Shelly BLU (unmanaged) " + type + ": " + super.toString();
+		return "BTHome (unmanaged) " + type + ": " + super.toString();
 	}
 }

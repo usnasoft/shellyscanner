@@ -281,6 +281,7 @@ charts scroll
 
 1.1.1
 // BLU
+// remove: bthome comonents restore
 selection subtraction ctrl+shift
 
 ---

@@ -1,66 +1,49 @@
 package it.usna.shellyscan.model.device.blu;
 
+import java.io.File;
 import java.io.IOException;
+import java.util.List;
+import java.util.Map;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
-import it.usna.shellyscan.model.device.DiviceInterface;
-import it.usna.shellyscan.model.device.InetAddressAndPort;
-import it.usna.shellyscan.model.device.Meters;
+import it.usna.shellyscan.model.device.RestoreMsg;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
-import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
+import it.usna.shellyscan.model.device.modules.FirmwareManager;
+import it.usna.shellyscan.model.device.modules.InputResetManager;
+import it.usna.shellyscan.model.device.modules.LoginManager;
+import it.usna.shellyscan.model.device.modules.MQTTManager;
+import it.usna.shellyscan.model.device.modules.TimeAndLocationManager;
+import it.usna.shellyscan.model.device.modules.WIFIManager;
+import it.usna.shellyscan.model.device.modules.WIFIManager.Network;
 
-public abstract class AbstractBluDevice implements DiviceInterface {
+public abstract class AbstractBluDevice extends ShellyAbstractDevice {
 	protected final ShellyAbstractDevice parent;
-	private final String index;
-	
-//	private final InetAddress parentAddress;
-//	private final int parentPort;
-	protected final InetAddressAndPort addressAndPort;
-	private final String mac;
-	private String name;
-	private int rssi;
-	private int lastConnection;
+	private final String componentIndex;
 	private int battery;
 	
 	protected AbstractBluDevice(ShellyAbstractDevice parent, JsonNode info, String index) throws IOException {
+		super(parent.getAddressAndPort());
 		this.parent = parent;
-		this.index = index;
-		this.addressAndPort = parent.getAddressAndPort();
-//		this.parentAddress = parent.getAddress();
-//		this.parentPort = parent.getPort();
-		
+		this.componentIndex = index;
+		this.hostname = getTypeID() + "-" + mac;
 		final JsonNode config = info.path("config");
 		this.mac = config.path("addr").asText();
 		fillSettings(config);
 		fillStatus(info.path("status"));
 	}
-
-	public abstract String getTypeID();
-	
-	public abstract String getTypeName();
-	
-
-	@Override
-	public String getHostname() {
-		return getTypeID() + "-" + mac;
-	}
 	
 	@Override
-	public InetAddressAndPort getAddressAndPort() {
-		return addressAndPort;
-	}
-	
 	public Status getStatus() {
 		return Status.BLU;
 	}
 
 	public void fillSettings() throws IOException {
-		fillSettings(parent.getJSON("/rpc/BTHomeDevice.GetConfig?id=" + index));
+		fillSettings(parent.getJSON("/rpc/BTHomeDevice.GetConfig?id=" + componentIndex));
 	}
 	
 	public void fillStatus() throws IOException {
-		fillSettings(parent.getJSON("/rpc/BTHomeDevice.GetStatus?id=" + index));
+		fillSettings(parent.getJSON("/rpc/BTHomeDevice.GetStatus?id=" + componentIndex));
 	}
 	
 	protected void fillSettings(JsonNode config) {
@@ -73,28 +56,92 @@ public abstract class AbstractBluDevice implements DiviceInterface {
 		this.lastConnection = status.path("last_updated_ts").intValue();
 	}
 	
-	public int getRssi() {
-		return rssi;
-	}
-	
-	public long getLastTime() {
-		return lastConnection;
-	}
-	
 	public int getBattery() {
 		return battery;
 	}
 	
-	public Meters[] getMeters() {
+	@Override
+	public JsonNode getJSON(final String command) throws IOException {
+		return parent.getJSON(command);
+	}
+
+	@Override
+	public String[] getInfoRequests() {
+		// TODO define 
+		return new String[] {"/rpc/Shelly.GetComponents"};
+	}
+	
+	@Override
+	public boolean backup(File file) throws IOException {
+		// TODO define
+		return false;
+	}
+
+	@Override
+	public Map<RestoreMsg, Object> restoreCheck(Map<String, JsonNode> backupJsons) throws IOException {
+		// TODO define - remove from parent
 		return null;
 	}
-	
-	public String getName() {
-		return name == null ? "" : name;
+
+	@Override
+	public List<String> restore(Map<String, JsonNode> backupJsons, Map<RestoreMsg, String> data) throws IOException {
+		// TODO define - remove from parent
+		return null;
+	}
+
+	@Override
+	public void reboot() {
+		throw new UnsupportedOperationException();
 	}
 	
-	public String getMacAddress() {
-		return mac;
+	@Override
+	public String setCloudEnabled(boolean enable) {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public boolean setEcoMode(boolean eco) {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public void refreshSettings() {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public void refreshStatus() {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public FirmwareManager getFWManager() {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public WIFIManager getWIFIManager(Network net) {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public MQTTManager getMQTTManager() {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public LoginManager getLoginManager() {
+		throw new UnsupportedOperationException();
+	}
+	
+	@Override
+	public TimeAndLocationManager getTimeAndLocationManager() {
+		throw new UnsupportedOperationException();
+	}
+	
+	@Override
+	public InputResetManager getInputResetManager() {
+		throw new UnsupportedOperationException();
 	}
 	
 	@Override
