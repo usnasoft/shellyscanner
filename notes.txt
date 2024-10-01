@@ -286,6 +286,7 @@ selection subtraction ctrl+shift
 
 ---
 // TODO
+// portare il modello sulla tabella per semplificare il calcolo dei tooltip (e delle icone di stato)
 // Xmod1 sganciare bottone se detatched (?)
 // Button push if no actions
 // add "knx" support

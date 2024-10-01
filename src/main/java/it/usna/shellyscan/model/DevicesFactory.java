@@ -16,6 +16,7 @@ import it.usna.shellyscan.Main;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.ShellyGenericUnmanagedImpl;
 import it.usna.shellyscan.model.device.blu.AbstractBluDevice;
+import it.usna.shellyscan.model.device.blu.BluHT;
 import it.usna.shellyscan.model.device.blu.ShellyBluUnmanaged;
 import it.usna.shellyscan.model.device.g1.AbstractG1Device;
 import it.usna.shellyscan.model.device.g1.Button1;
@@ -319,10 +320,20 @@ public class DevicesFactory {
 		return d;
 	}
 	
-	public static void createBlu(ShellyAbstractDevice parent, JsonNode info, String index) throws IOException {
+	public static AbstractBluDevice createBlu(ShellyAbstractDevice parent, JsonNode info, String index) {
 		final String type = info.path("config").path("meta").path("ui").path("local_name").asText();
-		AbstractBluDevice blu = new ShellyBluUnmanaged(parent, info, type, index);
-		System.out.println(blu + " # " + parent);
+		AbstractBluDevice blu;
+		try {
+			blu = switch(type) {
+			case BluHT.ID -> new BluHT(parent, info, index);
+			default -> new ShellyBluUnmanaged(parent, info, type, index);
+			};
+		} catch(Exception e) { // really unexpected
+			LOG.error("create", e);
+			blu = new ShellyBluUnmanaged(parent, info, type, index);
+		}
+		//		System.out.println(blu + " # " + parent);
+		return blu;
 	}
 
 	// default credentials

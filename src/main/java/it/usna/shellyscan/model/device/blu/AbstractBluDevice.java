@@ -2,11 +2,19 @@ package it.usna.shellyscan.model.device.blu;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.fasterxml.jackson.databind.JsonNode;
 
+import it.usna.shellyscan.model.Devices;
+import it.usna.shellyscan.model.device.InetAddressAndPort;
 import it.usna.shellyscan.model.device.RestoreMsg;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.modules.FirmwareManager;
@@ -18,42 +26,54 @@ import it.usna.shellyscan.model.device.modules.WIFIManager;
 import it.usna.shellyscan.model.device.modules.WIFIManager.Network;
 
 public abstract class AbstractBluDevice extends ShellyAbstractDevice {
+	private final static Logger LOG = LoggerFactory.getLogger(Devices.class);
 	protected final ShellyAbstractDevice parent;
 	private final String componentIndex;
 	private int battery;
+	private ArrayList<InetAddressAndPort> alternativeParents = new ArrayList<>();
 	
-	protected AbstractBluDevice(ShellyAbstractDevice parent, JsonNode info, String index) throws IOException {
+	protected AbstractBluDevice(ShellyAbstractDevice parent, JsonNode info, String index) {
 		super(parent.getAddressAndPort());
 		this.parent = parent;
 		this.componentIndex = index;
-		this.hostname = getTypeID() + "-" + mac;
 		final JsonNode config = info.path("config");
 		this.mac = config.path("addr").asText();
+		this.hostname = getTypeID() + "-" + mac;
 		fillSettings(config);
 		fillStatus(info.path("status"));
 	}
 	
+//	public void init(JsonNode info) {
+//		final JsonNode config = info.path("config");
+//		this.mac = config.path("addr").asText();
+//		this.hostname = getTypeID() + "-" + mac;
+//		fillSettings(config);
+//		fillStatus(info.path("status"));
+//	}
+	
 	@Override
 	public Status getStatus() {
-		return Status.BLU;
+		return parent.getStatus();
 	}
 
-	public void fillSettings() throws IOException {
+	@Override
+	public void refreshSettings() throws IOException {
 		fillSettings(parent.getJSON("/rpc/BTHomeDevice.GetConfig?id=" + componentIndex));
 	}
 	
-	public void fillStatus() throws IOException {
-		fillSettings(parent.getJSON("/rpc/BTHomeDevice.GetStatus?id=" + componentIndex));
+	@Override
+	public void refreshStatus() throws IOException {
+		fillStatus(parent.getJSON("/rpc/BTHomeDevice.GetStatus?id=" + componentIndex));
 	}
 	
 	protected void fillSettings(JsonNode config) {
-		this.name = config.path("name").asText();
+		this.name = config.path("name").asText("");
 	}
 	
 	protected void fillStatus(JsonNode status) {
 		this.rssi = status.path("rssi").intValue();
 		this.battery = status.path("battery").intValue();
-		this.lastConnection = status.path("last_updated_ts").intValue();
+		this.lastConnection = status.path("last_updated_ts").intValue() * 1000L;
 	}
 	
 	public int getBattery() {
@@ -67,8 +87,46 @@ public abstract class AbstractBluDevice extends ShellyAbstractDevice {
 
 	@Override
 	public String[] getInfoRequests() {
-		// TODO define 
-		return new String[] {"/rpc/Shelly.GetComponents"};
+
+		ArrayList<String> l = new ArrayList<String>(Arrays.asList(/*"/rpc/Shelly.GetComponents?dynamic_only=true",*/
+				"/rpc/BTHomeDevice.GetConfig?id=" + componentIndex, "/rpc/BTHomeDevice.GetStatus?id=" + componentIndex, "/rpc/BTHomeDevice.GetKnownObjects?id=" + componentIndex));
+		try {
+			ArrayList<String> sensors = findSensorsID();
+			sensors.stream().filter(s -> s.startsWith("bthomesensor:")).forEach(s -> {
+				String index = s.substring(13);
+				l.add(">/rpc/BTHomeSensor.GetConfig?id=" + index);
+				l.add(">/rpc/BTHomeSensor.GetStatus?id=" + index);
+			});
+		} catch (IOException e) {
+			LOG.error("", e);
+		}
+		return l.toArray(String[]::new);
+	}
+	
+	private ArrayList<String> findSensorsID() throws IOException {
+		JsonNode objects = parent.getJSON("/rpc/BTHomeDevice.GetKnownObjects?id=" + componentIndex).path("objects");
+		final Iterator<JsonNode> compIt = objects.iterator();
+		ArrayList<String> l = new ArrayList<>();
+		while (compIt.hasNext()) {
+			String comp = compIt.next().path("component").asText();
+			if(comp != null) {
+				l.add(comp);
+			}
+		}
+		return l;
+	}
+	
+	public void addAlternativeParent(AbstractBluDevice otherBlu) {
+		alternativeParents.add(otherBlu.parent.getAddressAndPort());
+		alternativeParents.addAll(otherBlu.alternativeParents);
+	}
+	
+	public void addAlternativeParent(InetAddressAndPort parent) {
+		alternativeParents.add(parent);
+	}
+	
+	public List<InetAddressAndPort> getAlternativeParents() {
+		return alternativeParents;
 	}
 	
 	@Override
@@ -101,16 +159,6 @@ public abstract class AbstractBluDevice extends ShellyAbstractDevice {
 
 	@Override
 	public boolean setEcoMode(boolean eco) {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public void refreshSettings() {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public void refreshStatus() {
 		throw new UnsupportedOperationException();
 	}
 

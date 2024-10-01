@@ -41,6 +41,7 @@ import it.usna.shellyscan.model.device.InetAddressAndPort;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
 import it.usna.shellyscan.model.device.ShellyUnmanagedDeviceInterface;
+import it.usna.shellyscan.model.device.blu.AbstractBluDevice;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.g2.AbstractProDevice;
 import it.usna.shellyscan.model.device.g3.AbstractG3Device;
@@ -384,26 +385,16 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 					final JsonNode currenteComponents = d.getJSON("/rpc/Shelly.GetComponents?dynamic_only=true").path("components");
 					final Iterator<JsonNode> compIt = currenteComponents.iterator();
 					while (compIt.hasNext()) {
-						JsonNode comp = compIt.next();
-						String key = comp.path("key").asText();
+						JsonNode compInfo = compIt.next();
+						String key = compInfo.path("key").asText();
 						if(key.startsWith("bthomedevice:")) {
-							createBlu(d, comp, key);
+							newBluDevice(d, compInfo, key);
 						}
 					}
 				}
 			}
 		} catch(Exception e) {
 			LOG.error("Unexpected-add: {}:{}; host: {}", address, port, hostName, e);
-		}
-	}
-	
-	private void createBlu(ShellyAbstractDevice parent, JsonNode info, String key) {
-		String id = key.substring(13);
-		try {
-			DevicesFactory.createBlu(parent, info, id);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 		}
 	}
 	
@@ -429,6 +420,39 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 				fireEvent(EventType.ADD, idx);
 				refreshProcess.add(scheduleRefresh(d, idx, refreshInterval, refreshTics));
 			}
+		}
+	}
+	
+	private void newBluDevice(ShellyAbstractDevice parent, JsonNode info, String key) {
+		String id = key.substring(13);
+		try {
+			AbstractBluDevice newBlu = DevicesFactory.createBlu(parent, info, id);
+			synchronized(devices) {
+				int ind = devices.indexOf(newBlu);
+				if(ind >= 0) {
+					ShellyAbstractDevice oldBlu = devices.get(ind);
+					if(oldBlu instanceof GhostDevice || newBlu.getLastTime() > oldBlu.getLastTime()) {
+						if(refreshProcess.get(ind) != null) {
+							refreshProcess.get(ind).cancel(true);
+						}
+						devices.set(ind, newBlu);
+						if(oldBlu instanceof AbstractBluDevice old) {
+							newBlu.addAlternativeParent(old);
+						}
+						fireEvent(EventType.SUBSTITUTE, ind);
+						refreshProcess.set(ind, scheduleRefresh(newBlu, ind, refreshInterval, refreshTics));
+					} else {
+						((AbstractBluDevice)oldBlu).addAlternativeParent(parent.getAddressAndPort());
+					}
+				} else {
+					final int idx = devices.size();
+					devices.add(newBlu);
+					fireEvent(EventType.ADD, idx);
+					refreshProcess.add(scheduleRefresh(newBlu, idx, refreshInterval, refreshTics));
+				}
+			}
+		} catch (RuntimeException e) {
+			LOG.error("newBluDevice-parent: {} - key: {}", parent.getAddressAndPort(), key, e);
 		}
 	}
 
