@@ -126,9 +126,9 @@ public class DialogDeviceInfo extends JDialog implements UsnaEventListener<Devic
 			tabbedPane.removeAll();
 			for (String info : device.getInfoRequests()) {
 				String name = info.replaceFirst("\\?.*", "");
-				if(info.startsWith(">")) {
-					info = info.substring(1);
-					name = name.substring(1) + "(" + info.substring(info.indexOf("?id=") + 4) + ")";
+				if(info.startsWith("()")) {
+					info = info.substring(2);
+					name = name.substring(2) + "(" + info.substring(info.indexOf("?id=") + 4) + ")";
 				}
 				name = name.replaceFirst("^/", "").replaceFirst("^rpc/", "").replaceFirst("^Shelly\\.", "");
 				tabbedPane.add(name, getJsonGetPanel(info, device));

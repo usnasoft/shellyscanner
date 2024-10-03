@@ -42,6 +42,7 @@ import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
 import it.usna.shellyscan.model.device.ShellyUnmanagedDeviceInterface;
 import it.usna.shellyscan.model.device.blu.AbstractBluDevice;
+import it.usna.shellyscan.model.device.blu.BluInetAddressAndPort;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.g2.AbstractProDevice;
 import it.usna.shellyscan.model.device.g3.AbstractG3Device;
@@ -274,21 +275,13 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 								LOG.debug("refresh {} - {}", d, d.getStatus());
 							}
 						} finally {
-							synchronized(devices) {
-								if(refreshProcess.get(ind).isCancelled()) { // in case of many and fast "refresh"
-									refreshProcess.set(ind, scheduleRefresh(d, ind, refreshInterval, refreshTics));
-								}
-							}
+							activateRefresh(ind);
 							updateViewRow(d, ind);
 						}
 					}
 				}, MULTI_QUERY_DELAY, TimeUnit.MILLISECONDS);
 			}
 		}
-	}
-
-	public void pauseRefresh(int ind) {
-		refreshProcess.get(ind).cancel(true);
 	}
 
 	public void reboot(int ind) {
@@ -310,14 +303,24 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 					LOG.debug("reboot {} - {}", d.toString(), d.getStatus());
 				}
 			} finally {
-				synchronized(devices) {
-					if(f.isCancelled()) { // in case of many and fast "refresh"
-						refreshProcess.set(ind, scheduleRefresh(d, ind, refreshInterval, refreshTics));
-					}
-				}
+				activateRefresh(ind);
 			}
 			updateViewRow(d, ind);
 		});
+	}
+	
+	public void pauseRefresh(int ind) {
+		synchronized(devices) {
+			refreshProcess.get(ind).cancel(true);
+		}
+	}
+	
+	public void activateRefresh(int ind) {
+		synchronized(devices) {
+			if(refreshProcess.get(ind).isCancelled()) {
+				refreshProcess.set(ind, scheduleRefresh(devices.get(ind), ind, refreshInterval, refreshTics));
+			}
+		}
 	}
 
 	private void updateViewRow(final ShellyAbstractDevice d, int ind) {
@@ -426,7 +429,7 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 	private void newBluDevice(ShellyAbstractDevice parent, JsonNode info, String key) {
 		String id = key.substring(13);
 		try {
-			AbstractBluDevice newBlu = DevicesFactory.createBlu(parent, info, id);
+			AbstractBluDevice newBlu = DevicesFactory.createBlu(parent, httpClient, wsClient, info, id);
 			synchronized(devices) {
 				int ind = devices.indexOf(newBlu);
 				if(ind >= 0) {
@@ -436,13 +439,13 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 							refreshProcess.get(ind).cancel(true);
 						}
 						devices.set(ind, newBlu);
-						if(oldBlu instanceof AbstractBluDevice old) {
-							newBlu.addAlternativeParent(old);
+						if(oldBlu instanceof AbstractBluDevice old) { // could be a ghost
+							((BluInetAddressAndPort)newBlu.getAddressAndPort()).addAlternativeParent(old);
 						}
 						fireEvent(EventType.SUBSTITUTE, ind);
 						refreshProcess.set(ind, scheduleRefresh(newBlu, ind, refreshInterval, refreshTics));
 					} else {
-						((AbstractBluDevice)oldBlu).addAlternativeParent(parent.getAddressAndPort());
+						((BluInetAddressAndPort)oldBlu.getAddressAndPort()).addAlternativeParent(parent.getAddressAndPort());
 					}
 				} else {
 					final int idx = devices.size();
@@ -497,6 +500,10 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 				dalay += 4;
 			}
 		}
+	}
+	
+	public int getIndex (ShellyAbstractDevice d) {
+		return devices.indexOf(d);
 	}
 
 	public ShellyAbstractDevice get(int ind) {

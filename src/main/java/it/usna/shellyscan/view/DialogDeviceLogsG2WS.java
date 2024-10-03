@@ -45,6 +45,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import it.usna.shellyscan.Main;
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice.LogMode;
+import it.usna.shellyscan.model.device.blu.AbstractBluDevice;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.g2.WebSocketDeviceListener;
 import it.usna.shellyscan.view.util.Msg;
@@ -61,6 +62,13 @@ public class DialogDeviceLogsG2WS extends JDialog {
 	private Style bluStyle = textArea.addStyle("blue", null);
 	private JComboBox<String> comboBox = new JComboBox<>();
 
+	/**
+	 * DialogDeviceLogsG2WS constructor
+	 * @param owner Window
+	 * @param devicesModel
+	 * @param modelIndex the device model index (in case of BTHome device the it'sindex of the hosting device)
+	 * @param initLlogLevel initial log level
+	 */
 	public DialogDeviceLogsG2WS(final Window owner, Devices devicesModel, int modelIndex, int initLlogLevel) {
 		super(owner, ModalityType.MODELESS);
 		AbstractG2Device device = (AbstractG2Device) devicesModel.get(modelIndex);
@@ -122,6 +130,11 @@ public class DialogDeviceLogsG2WS extends JDialog {
 		buttonsPanel.add(btnsStopAppRefresh);
 		btnsStopAppRefresh.addActionListener(event -> {
 			devicesModel.pauseRefresh(modelIndex);
+			for(int i = 0; i < devicesModel.size(); i++) {
+				if(devicesModel.get(i) instanceof AbstractBluDevice blu && blu.getAddressAndPort().equals(device.getAddressAndPort())) {
+					devicesModel.pauseRefresh(i);
+				}
+			}
 			try {
 				document.insertString(document.getLength(), ">>>> " + Main.APP_NAME + " refresh process stopped\n", bluStyle);
 			} catch (BadLocationException e1) {}
@@ -201,6 +214,12 @@ public class DialogDeviceLogsG2WS extends JDialog {
 				public void windowClosed(WindowEvent e) {
 					if(logWasActive == false) {
 						device.setDebugMode(LogMode.SOCKET, false);
+					}
+					devicesModel.activateRefresh(modelIndex);
+					for(int i = 0; i < devicesModel.size(); i++) {
+						if(devicesModel.get(i) instanceof AbstractBluDevice blu && blu.getAddressAndPort().equals(device.getAddressAndPort())) {
+							devicesModel.activateRefresh(i);
+						}
 					}
 				}
 			});

@@ -76,6 +76,7 @@ import it.usna.shellyscan.model.device.g2.ShellyProEM50;
 import it.usna.shellyscan.model.device.g2.ShellyWallDimmer;
 import it.usna.shellyscan.model.device.g2.WallDisplay;
 import it.usna.shellyscan.model.device.g2.modules.LoginManagerG2;
+import it.usna.shellyscan.model.device.g3.AbstractG3Device;
 import it.usna.shellyscan.model.device.g3.Shelly0_10VPMG3;
 import it.usna.shellyscan.model.device.g3.Shelly1G3;
 import it.usna.shellyscan.model.device.g3.Shelly1PMG3;
@@ -113,7 +114,7 @@ public class DevicesFactory {
 		return new ShellyGenericUnmanagedImpl(address, port, name, httpClient, e);
 	}
 
-	private static ShellyAbstractDevice createG1(HttpClient httpClient, final InetAddress address, int port, JsonNode info, String name) {
+	private static AbstractG1Device createG1(HttpClient httpClient, final InetAddress address, int port, JsonNode info, String name) {
 		AbstractG1Device d;
 		try {
 			final boolean auth = info.get("auth").asBoolean();
@@ -186,7 +187,7 @@ public class DevicesFactory {
 		return d;
 	}
 
-	private static ShellyAbstractDevice createG2(HttpClient httpClient, WebSocketClient wsClient, final InetAddress address, int port, JsonNode info, String name) {
+	private static AbstractG2Device createG2(HttpClient httpClient, WebSocketClient wsClient, final InetAddress address, int port, JsonNode info, String name) {
 		AbstractG2Device d;
 		try {
 			final boolean auth = info.get("auth_en").asBoolean();
@@ -244,7 +245,6 @@ public class DevicesFactory {
 				case ShellyPro4PM.ID -> new ShellyPro4PM(address, port, name);
 				case ShellyProDimmer1.ID -> new ShellyProDimmer1(address, port, name);
 				case ShellyProEM50.ID -> new ShellyProEM50(address, port, name);
-
 				default -> new ShellyG2Unmanaged(address, port, name);
 			};
 		} catch(Exception e) { // really unexpected
@@ -263,8 +263,8 @@ public class DevicesFactory {
 		return d;
 	}
 	
-	private static ShellyAbstractDevice createG3(HttpClient httpClient, WebSocketClient wsClient, final InetAddress address, int port, JsonNode info, String name) {
-		AbstractG2Device d;
+	private static AbstractG3Device createG3(HttpClient httpClient, WebSocketClient wsClient, final InetAddress address, int port, JsonNode info, String name) {
+		AbstractG3Device d;
 		try {
 			final boolean auth = info.get("auth_en").asBoolean();
 			if(auth) {
@@ -299,7 +299,6 @@ public class DevicesFactory {
 			case ShellyMini1PMG3.ID -> new ShellyMini1PMG3(address, port, name);
 			case ShellyMiniPMG3.ID -> new ShellyMiniPMG3(address, port, name);
 			case ShellyPlusHTG3.ID -> new ShellyPlusHTG3(address, port, name);
-		
 			// X
 			case ShellyXMOD1.ID -> new ShellyXMOD1(address, port, name);
 			default -> new ShellyG3Unmanaged(address, port, name);
@@ -320,7 +319,7 @@ public class DevicesFactory {
 		return d;
 	}
 	
-	public static AbstractBluDevice createBlu(ShellyAbstractDevice parent, JsonNode info, String index) {
+	public static AbstractBluDevice createBlu(ShellyAbstractDevice parent, HttpClient httpClient, WebSocketClient wsClient, JsonNode info, String index) {
 		final String type = info.path("config").path("meta").path("ui").path("local_name").asText();
 		AbstractBluDevice blu;
 		try {
@@ -329,10 +328,19 @@ public class DevicesFactory {
 			default -> new ShellyBluUnmanaged(parent, info, type, index);
 			};
 		} catch(Exception e) { // really unexpected
-			LOG.error("create", e);
+			LOG.error("createBlu", e);
 			blu = new ShellyBluUnmanaged(parent, info, type, index);
 		}
-		//		System.out.println(blu + " # " + parent);
+				System.out.println(blu + " # " + parent);
+//		try {
+			blu.init(httpClient/*, wsClient*/);
+//		} catch(IOException e) {
+//			if("Status-401".equals(e.getMessage()) == false) {
+//				LOG.warn("create - init", e);
+//			}
+//		} catch(RuntimeException e) {
+//			LOG.error("create - init {}", parent.getAddressAndPort());
+//		}
 		return blu;
 	}
 

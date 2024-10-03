@@ -71,9 +71,19 @@ public abstract class ShellyAbstractDevice implements DiviceInterface {
 	/**
 	 * Non ethernet devices (Blu)
 	 */
-	protected ShellyAbstractDevice(InetAddressAndPort parentAddress) {
-		addressAndPort = parentAddress;
-		this.uriPrefix = null;
+	protected ShellyAbstractDevice(InetAddressAndPort address) {
+		addressAndPort = address;
+		InetAddress addr = address.getAddress();
+		if(addr instanceof Inet6Address) {
+			int port = address.getPort();
+			if(port == 80) {
+				this.uriPrefix = "http://[" + addr.getHostAddress() + "]";
+			} else {
+				this.uriPrefix = "http://[" + addr.getHostAddress() + "]:" + port;
+			}
+		} else {
+			this.uriPrefix = "http://" + addressAndPort.getRepresentation();
+		}
 	}
 	
 	public JsonNode getJSON(final String command) throws IOException { //JsonProcessingException extends IOException

@@ -379,7 +379,6 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 			} catch(Exception e) {
 				LOG.error("backup specific", e);
 			}
-			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 		} catch(InterruptedException e) {
 			LOG.error("backup", e);
 		}

@@ -8,8 +8,8 @@ import java.net.InetAddress;
  * InetAddress is assumed to be Inet4Address
  */
 public class InetAddressAndPort implements Comparable<InetAddressAndPort> {
-	private final InetAddress address;
-	private final int port;
+	protected final InetAddress address;
+	protected final int port;
 
 	public InetAddressAndPort(InetAddress address, int port) {
 		this.address = address;

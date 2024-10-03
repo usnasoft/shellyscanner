@@ -68,6 +68,7 @@ import it.usna.shellyscan.model.device.GhostDevice;
 import it.usna.shellyscan.model.device.InetAddressAndPort;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
+import it.usna.shellyscan.model.device.blu.AbstractBluDevice;
 import it.usna.shellyscan.model.device.g1.AbstractG1Device;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.g3.AbstractG3Device;
@@ -127,6 +128,8 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 	private Action infoLogAction = new UsnaSelectedAction(this, devicesTable, "action_info_log_name", "action_info_log_tooltip", null, "/images/Document2.png", i -> {
 		if(model.get(i) instanceof AbstractG2Device) {
 			new DialogDeviceLogsG2WS(MainView.this, model, i, AbstractG2Device.LOG_VERBOSE);
+		} else if(model.get(i) instanceof AbstractBluDevice blu) {
+			new DialogDeviceLogsG2WS(MainView.this, model, model.getIndex(blu.getParent()), AbstractG2Device.LOG_VERBOSE);
 		} else {
 			new DialogDeviceLogsG1(this, model.get(i));
 		}
@@ -197,7 +200,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 	
 	private Action browseAction = new UsnaSelectedAction(this, devicesTable, "action_web_name", "action_web_tooltip", "/images/Computer16.png", "/images/Computer.png", i -> {
 		try {
-			Desktop.getDesktop().browse(URI.create("http://" + model.get(i).getAddressAndPort().toString()));
+			Desktop.getDesktop().browse(URI.create("http://" + model.get(i).getAddressAndPort().getRepresentation()));
 		} catch (IOException | UnsupportedOperationException e) { // browserSupported = Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE);
 			Msg.errorMsg(this, e);
 		}
@@ -294,7 +297,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 
 		setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
 		setIconImage(Main.ICON);
-		setTitle(Main.APP_NAME + " v." + Main.VERSION);
+		setTitle(Main.APP_NAME + " " + Main.VERSION);
 
 		// Status bar
 		JPanel statusPanel = new JPanel();
@@ -369,6 +372,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 				new SelectionAction(devicesTable, "labelSelectG1", null, null, i -> model.get(i) instanceof AbstractG1Device),
 				new SelectionAction(devicesTable, "labelSelectG2", null, null, i -> model.get(i) instanceof AbstractG2Device && model.get(i) instanceof AbstractG3Device == false),
 				new SelectionAction(devicesTable, "labelSelectG3", null, null, i -> model.get(i) instanceof AbstractG3Device),
+				new SelectionAction(devicesTable, "labelSelectBLU", null, null, i -> model.get(i) instanceof AbstractBluDevice),
 				new SelectionAction(devicesTable, "labelSelectGhosts", null, null, i -> model.get(i) instanceof GhostDevice) );
 
 		btnSelectCombo.addActionListener(e -> selectionPopup.show(btnSelectCombo, 0, 0));
@@ -544,26 +548,27 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 	private void rowsSelectionManager() {
 		tableSelectionListener = e -> {
 			if(e.getValueIsAdjusting() == false) {
-				boolean singleSelection, singleSelectionNoGhost, selection, selectionNoGhost;
+				boolean singleSelection, singleSelectionNoGhost, selection, selectionNoGhost, selectionNoBLU;
 				int selectedRows = devicesTable.getSelectedRowCount();
 				singleSelection = singleSelectionNoGhost = selectedRows == 1;
-				selection = selectionNoGhost = selectedRows > 0;
+				selection = selectionNoGhost = selectionNoBLU = selectedRows > 0;
 				ShellyAbstractDevice d = null;
 				for(int idx: devicesTable.getSelectedRows()) {
 					d = model.get(devicesTable.convertRowIndexToModel(idx));
 					if(d instanceof GhostDevice) {
 						selectionNoGhost = singleSelectionNoGhost = false;
-						break;
+					} else if(d instanceof AbstractBluDevice) {
+						selectionNoBLU = false;
 					}
 				}
 				infoAction.setEnabled(singleSelection);
 				infoLogAction.setEnabled(singleSelectionNoGhost);
 				checkListAction.setEnabled(selectionNoGhost);
-				rebootAction.setEnabled(selectionNoGhost);
+				rebootAction.setEnabled(selectionNoGhost && selectionNoBLU);
 				browseAction.setEnabled(selectionNoGhost /*&& browserSupported*/);
-				backupAction.setEnabled(selection);
-				restoreAction.setEnabled(singleSelection /*&& d.getStatus() != Status.NOT_LOOGGED*/);
-				devicesSettingsAction.setEnabled(selection);
+				backupAction.setEnabled(selection /*&& selectionNoBLU*/);
+				restoreAction.setEnabled(singleSelection && selectionNoBLU /*&& d.getStatus() != Status.NOT_LOOGGED*/);
+				devicesSettingsAction.setEnabled(selection && selectionNoBLU);
 				chartAction.setEnabled(selectionNoGhost);
 				scriptManagerAction.setEnabled(singleSelectionNoGhost && d instanceof AbstractG2Device);
 				notesAction.setEnabled(singleSelection && appProp.getBoolProperty(ScannerProperties.PROP_USE_ARCHIVE, true));
