@@ -34,7 +34,7 @@ public abstract class AbstractBluDevice extends ShellyAbstractDevice {
 	private final static Logger LOG = LoggerFactory.getLogger(Devices.class);
 	protected final ShellyAbstractDevice parent;
 //	protected WebSocketClient wsClient;
-	private final String componentIndex;
+	protected final String componentIndex;
 //	private int battery;
 	
 	protected AbstractBluDevice(ShellyAbstractDevice parent, JsonNode info, String index) {
@@ -55,6 +55,10 @@ public abstract class AbstractBluDevice extends ShellyAbstractDevice {
 	
 	public ShellyAbstractDevice getParent() {
 		return parent;
+	}
+	
+	public String getIndex() {
+		return componentIndex;
 	}
 	
 	@Override

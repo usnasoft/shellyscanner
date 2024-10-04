@@ -30,7 +30,7 @@ import it.usna.shellyscan.model.device.modules.WIFIManager;
  * Base class for any device
  * @author usna
  */
-public abstract class ShellyAbstractDevice implements DiviceInterface {
+public abstract class ShellyAbstractDevice {
 	protected HttpClient httpClient;
 	protected final InetAddressAndPort addressAndPort;
 	protected String hostname;
