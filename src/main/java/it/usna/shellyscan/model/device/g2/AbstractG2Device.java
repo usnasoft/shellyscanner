@@ -395,8 +395,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 			JsonNode devInfo = backupJsons.get("Shelly.GetDeviceInfo.json");
 			JsonNode config = backupJsons.get("Shelly.GetConfig.json");
 			final String fileHostname = devInfo.get("id").asText("");
-			final String fileType = devInfo.get("app").asText();
-			if(this.getTypeID().equals(fileType) == false) {
+			if(devInfo == null || this.getTypeID().equals(devInfo.get("app").asText()) == false) {
 				res.put(RestoreMsg.ERR_RESTORE_MODEL, null);
 			} else {
 				boolean sameHost = fileHostname.equals(this.hostname);

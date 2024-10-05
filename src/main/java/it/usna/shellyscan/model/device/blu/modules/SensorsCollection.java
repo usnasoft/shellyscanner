@@ -9,36 +9,66 @@ import com.fasterxml.jackson.databind.JsonNode;
 import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.blu.AbstractBluDevice;
 
+// todo mamma type - sensor ?
+// todo mamma ID - sensor ?
+// todo measures order ? 
 public class SensorsCollection extends Meters {
+	private Sensor[] sens;
+	private Type[] mTypes;
 	
-	public SensorsCollection(AbstractBluDevice blu) {
-		
+	public SensorsCollection(AbstractBluDevice blu) throws IOException {
+		findSensorsID(blu);
 	}
 	
-	private ArrayList<String> findSensorsID(AbstractBluDevice blu) throws IOException {
+	private void findSensorsID(AbstractBluDevice blu) throws IOException {
 		JsonNode objects = blu.getJSON("/rpc/BTHomeDevice.GetKnownObjects?id=" + blu.getIndex()).path("objects");
 		final Iterator<JsonNode> compIt = objects.iterator();
-		ArrayList<String> l = new ArrayList<>();
+		
+		ArrayList<Sensor> sensors = new ArrayList<>();
+		ArrayList<Type> mt = new ArrayList<>();
 		while (compIt.hasNext()) {
-			String comp = compIt.next().path("component").asText();
+			JsonNode component = compIt.next();
+			String comp = component.path("component").asText();
 			if(comp != null && comp.startsWith("bthomesensor:")) {
-				l.add(comp);
-				new Sensor(); // todo
+				Sensor s = new Sensor(comp, component.path("obj_id").intValue());
+				Type t = s.getMeterType();
+				if(t != null) {
+					mt.add(t);
+				}
+				sensors.add(s);
 			}
 		}
-		return l;
+		sens = sensors.toArray(Sensor[]::new);
+		mTypes = mt.toArray(Type[]::new);
 	}
-
-	@Override
-	public Type[] getTypes() {
-		// TODO Auto-generated method stub
+	
+	public Sensor[] getSensors() {
+		return sens;
+	}
+	
+	public Sensor getSensor(int id) {
+		for(Sensor s: sens) {
+			if(s.getId() == id) {
+				return s;
+			}
+		}
 		return null;
 	}
 
 	@Override
-	public float getValue(Type t) {
-		// TODO Auto-generated method stub
-		return 0;
+	public Type[] getTypes() {
+		return mTypes;
 	}
 
+	@Override
+	public float getValue(Type t) {
+		for(Sensor s: sens) {
+			if(s.getMeterType() == t) {
+				return s.getValue();
+			}
+		}
+		return 0f;
+	}
 }
+
+// https://bthome.io/format/

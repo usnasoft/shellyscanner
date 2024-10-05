@@ -15,7 +15,7 @@ public class ShellyBluUnmanaged extends AbstractBluDevice implements ShellyUnman
 		this.hostname = localName + "-" + mac;
 	}
 	
-	protected ShellyBluUnmanaged(ShellyAbstractDevice parent, JsonNode info, String localName, String index, Throwable ex) {
+	public ShellyBluUnmanaged(ShellyAbstractDevice parent, JsonNode info, String localName, String index, Throwable ex) {
 		this(parent, info, localName, index);
 		this.ex = ex;
 		status = Status.ERROR;

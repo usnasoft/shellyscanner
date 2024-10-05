@@ -16,7 +16,7 @@ import it.usna.shellyscan.Main;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.ShellyGenericUnmanagedImpl;
 import it.usna.shellyscan.model.device.blu.AbstractBluDevice;
-import it.usna.shellyscan.model.device.blu.BluHT;
+import it.usna.shellyscan.model.device.blu.BTHomeDevice;
 import it.usna.shellyscan.model.device.blu.ShellyBluUnmanaged;
 import it.usna.shellyscan.model.device.g1.AbstractG1Device;
 import it.usna.shellyscan.model.device.g1.Button1;
@@ -73,6 +73,7 @@ import it.usna.shellyscan.model.device.g2.ShellyPro3;
 import it.usna.shellyscan.model.device.g2.ShellyPro4PM;
 import it.usna.shellyscan.model.device.g2.ShellyProDimmer1;
 import it.usna.shellyscan.model.device.g2.ShellyProEM50;
+import it.usna.shellyscan.model.device.g2.ShellyProRGBWW;
 import it.usna.shellyscan.model.device.g2.ShellyWallDimmer;
 import it.usna.shellyscan.model.device.g2.WallDisplay;
 import it.usna.shellyscan.model.device.g2.modules.LoginManagerG2;
@@ -80,7 +81,9 @@ import it.usna.shellyscan.model.device.g3.AbstractG3Device;
 import it.usna.shellyscan.model.device.g3.Shelly0_10VPMG3;
 import it.usna.shellyscan.model.device.g3.Shelly1G3;
 import it.usna.shellyscan.model.device.g3.Shelly1PMG3;
+import it.usna.shellyscan.model.device.g3.Shelly2LG3;
 import it.usna.shellyscan.model.device.g3.Shelly2PMG3;
+import it.usna.shellyscan.model.device.g3.ShellyDimmerG3;
 import it.usna.shellyscan.model.device.g3.ShellyG3Unmanaged;
 import it.usna.shellyscan.model.device.g3.ShellyI4G3;
 import it.usna.shellyscan.model.device.g3.ShellyMini1G3;
@@ -323,24 +326,19 @@ public class DevicesFactory {
 		final String type = info.path("config").path("meta").path("ui").path("local_name").asText();
 		AbstractBluDevice blu;
 		try {
-			blu = switch(type) {
-			case BluHT.ID -> new BluHT(parent, info, index);
-			default -> new ShellyBluUnmanaged(parent, info, type, index);
-			};
+			blu = new BTHomeDevice(parent, info, type, index);
 		} catch(Exception e) { // really unexpected
 			LOG.error("createBlu", e);
-			blu = new ShellyBluUnmanaged(parent, info, type, index);
+			blu = new ShellyBluUnmanaged(parent, info, type, index, e);
 		}
-				System.out.println(blu + " # " + parent);
-//		try {
+		System.out.println(blu + " # " + parent);
+		try {
 			blu.init(httpClient/*, wsClient*/);
-//		} catch(IOException e) {
-//			if("Status-401".equals(e.getMessage()) == false) {
-//				LOG.warn("create - init", e);
-//			}
-//		} catch(RuntimeException e) {
-//			LOG.error("create - init {}", parent.getAddressAndPort());
-//		}
+		} catch (IOException e) {
+			LOG.error("create - init", e);
+		} catch(RuntimeException e) {
+			LOG.error("create - init ", e);
+		}
 		return blu;
 	}
 
