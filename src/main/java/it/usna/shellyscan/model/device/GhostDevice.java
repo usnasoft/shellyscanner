@@ -24,14 +24,14 @@ import it.usna.shellyscan.model.device.modules.WIFIManager.Network;
 public class GhostDevice extends ShellyAbstractDevice {
 	private final static Logger LOG = LoggerFactory.getLogger(GhostDevice.class);
 	private final String typeName;
-	private final int gen;
+	private final String gen;
 	private final String typeID;
 	private final boolean battery;
 	private String note;
 	private String keyNote;
 	
 	public GhostDevice(InetAddress address, int port, String hostname,
-			String mac, String ssid, String typeName, String typeID, int gen, String name, long lastConnection, boolean battery,
+			String mac, String ssid, String typeName, String typeID, String gen, String name, long lastConnection, boolean battery,
 			String note, String keyNote) {
 		super(address, port, hostname);
 		this.mac = mac;
@@ -61,7 +61,7 @@ public class GhostDevice extends ShellyAbstractDevice {
 		return typeID;
 	}
 
-	public int getGeneration() {
+	public String getGeneration() {
 		return gen;
 	}
 	
@@ -161,6 +161,8 @@ public class GhostDevice extends ShellyAbstractDevice {
 			return restoreCheckG1(backupJsons);
 		} else if(backupJsons.containsKey("Shelly.GetConfig.json")) {
 			return restoreCheckG2(backupJsons);
+		} else if(backupJsons.containsKey("ShellyScannerBLU.json")) {
+			return null; // TODO
 		} else {
 			return Collections.singletonMap(RestoreMsg.ERR_RESTORE_MODEL, null);
 		}

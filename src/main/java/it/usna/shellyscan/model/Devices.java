@@ -429,7 +429,7 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 	private void newBluDevice(ShellyAbstractDevice parent, JsonNode info, String key) {
 		String id = key.substring(13);
 		try {
-			AbstractBluDevice newBlu = DevicesFactory.createBlu(parent, httpClient, wsClient, info, id);
+			AbstractBluDevice newBlu = DevicesFactory.createBlu(parent, httpClient, /*wsClient,*/ info, id);
 			synchronized(devices) {
 				int ind = devices.indexOf(newBlu);
 				if(ind >= 0) {
@@ -488,16 +488,18 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 	}
 
 	private void ghostsReconnect() {
-		LOG.debug("Starting ghosts reconnect");
-		int dalay = 0;
-		for(int i = 0; i < devices.size(); i++) {
-			if(devices.get(i) instanceof GhostDevice g && g.isBatteryOperated() == false /*&& g.getAddressAndPort().getPort() == 80*/) { // g.getPort() port is (currently) variable
-				executor.schedule(() -> {
-					try {
-						create(g.getAddressAndPort().getAddress(), g.getAddressAndPort().getPort(), g.getAddressAndPort().getAddress().getHostAddress(), false);
-					} catch (RuntimeException e) {/*LOG.trace("ghosts reload {}", d.getAddress());*/}
-				}, dalay, TimeUnit.MILLISECONDS);
-				dalay += 4;
+		synchronized(devices) {
+			LOG.debug("Starting ghosts reconnect");
+			int dalay = 0;
+			for(int i = 0; i < devices.size(); i++) {
+				if(devices.get(i) instanceof GhostDevice g && g.isBatteryOperated() == false && g.getGeneration().equals(AbstractBluDevice.GENERATION) == false /*&& g.getAddressAndPort().getPort() == 80*/) { // getPort() port is (currently) variable
+					executor.schedule(() -> {
+						try {
+							create(g.getAddressAndPort().getAddress(), g.getAddressAndPort().getPort(), g.getAddressAndPort().getAddress().getHostAddress(), false);
+						} catch (RuntimeException e) {/*LOG.trace("ghosts reload {}", d.getAddress());*/}
+					}, dalay, TimeUnit.MILLISECONDS);
+					dalay += 4;
+				}
 			}
 		}
 	}
@@ -524,16 +526,6 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 	public int size() {
 		return devices.size();
 	}
-
-//	private int indexOfByHostname(String hostname) {
-//		//synchronized(devices) {
-//		for(int i = 0; i < devices.size(); i++) {
-//			if(hostname.equals(devices.get(i).getHostname())) {
-//				return i;
-//			}
-//		}
-//		return -1;
-//	}
 	
 	public void loadFromStore(Path path) throws IOException {
 		loadGhosts(ghostsStore.read(path));

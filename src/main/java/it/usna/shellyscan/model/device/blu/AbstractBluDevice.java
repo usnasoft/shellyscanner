@@ -9,10 +9,13 @@ import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import org.eclipse.jetty.client.HttpClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
@@ -21,6 +24,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
+import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.RestoreMsg;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
@@ -35,7 +39,8 @@ import it.usna.shellyscan.model.device.modules.WIFIManager;
 import it.usna.shellyscan.model.device.modules.WIFIManager.Network;
 
 public abstract class AbstractBluDevice extends ShellyAbstractDevice {
-//	private final static Logger LOG = LoggerFactory.getLogger(Devices.class);
+	public final static String GENERATION = "blu";
+	private final static Logger LOG = LoggerFactory.getLogger(Devices.class);
 	protected final ShellyAbstractDevice parent;
 //	protected WebSocketClient wsClient;
 	protected final String componentIndex;
@@ -82,15 +87,10 @@ public abstract class AbstractBluDevice extends ShellyAbstractDevice {
 	}
 
 	@Override
-	// refreshStatus also refreshes settings
+	// refreshStatus also refreshes settings so this method does nothing
 	public void refreshSettings() throws IOException {
-//		fillSettings(getJSON("/rpc/BTHomeDevice.GetConfig?id=" + componentIndex));
+		// fillSettings(getJSON("/rpc/BTHomeDevice.GetConfig?id=" + componentIndex));
 	}
-	
-//	@Override
-//	public void refreshStatus() throws IOException {
-//		fillStatus(getJSON("/rpc/BTHomeDevice.GetStatus?id=" + componentIndex));
-//	}
 	
 	@Override
 	public void refreshStatus() throws IOException {
@@ -140,12 +140,12 @@ public abstract class AbstractBluDevice extends ShellyAbstractDevice {
 	@Override
 	public boolean backup(File file) throws IOException {
 		JsonFactory jsonFactory = new JsonFactory();
-		jsonFactory.configure(JsonGenerator.Feature.AUTO_CLOSE_TARGET,false);
+		jsonFactory.configure(JsonGenerator.Feature.AUTO_CLOSE_TARGET, false);
 		ObjectMapper mapper = new ObjectMapper(jsonFactory);
 		
 		try(ZipOutputStream out = new ZipOutputStream(new FileOutputStream(file), StandardCharsets.UTF_8)) {
 			// ShellyScanner.json
-			ZipEntry entry = new ZipEntry("ShellyScanner.json");
+			ZipEntry entry = new ZipEntry("ShellyScannerBLU.json");
 			out.putNextEntry(entry);
 			ObjectNode usnaData = JsonNodeFactory.instance.objectNode();
 			usnaData.put("index", componentIndex);
@@ -154,6 +154,10 @@ public abstract class AbstractBluDevice extends ShellyAbstractDevice {
 			out.closeEntry();
 			
 			sectionToStream("/rpc/Shelly.GetComponents?dynamic_only=true", "Shelly.GetComponents.json", out);
+			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+			sectionToStream("/rpc/Webhook.List", "Webhook.List.json", out);
+		} catch(InterruptedException e) {
+			LOG.error("backup", e);
 		}
 		return true;
 	}
@@ -161,7 +165,7 @@ public abstract class AbstractBluDevice extends ShellyAbstractDevice {
 	@Override
 	public Map<RestoreMsg, Object> restoreCheck(Map<String, JsonNode> backupJsons) throws IOException {
 		EnumMap<RestoreMsg, Object> res = new EnumMap<>(RestoreMsg.class);
-		JsonNode usnaInfo = backupJsons.get("ShellyScanner.json");
+		JsonNode usnaInfo = backupJsons.get("ShellyScannerBLU.json");
 		String fileLocalName;
 		if(usnaInfo == null || (fileLocalName = usnaInfo.path("type").asText("")).equals(localName) == false) {
 			res.put(RestoreMsg.ERR_RESTORE_MODEL, null);

@@ -281,7 +281,8 @@ charts scroll
 
 1.1.1
 // BLU
-// remove: bthome comonents restore
+// todo it.usna.shellyscan.model.device.GhostDevice.restoreCheck(Map<String, JsonNode>)
+// todo remove bthome components restore
 selection subtraction ctrl+shift
 
 ---
