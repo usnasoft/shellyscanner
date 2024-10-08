@@ -30,6 +30,7 @@ import it.usna.shellyscan.model.device.RestoreMsg;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.blu.modules.Sensor;
 import it.usna.shellyscan.model.device.blu.modules.SensorsCollection;
+import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.modules.FirmwareManager;
 import it.usna.shellyscan.model.device.modules.InputResetManager;
 import it.usna.shellyscan.model.device.modules.LoginManager;
@@ -41,7 +42,7 @@ import it.usna.shellyscan.model.device.modules.WIFIManager.Network;
 public abstract class AbstractBluDevice extends ShellyAbstractDevice {
 	public final static String GENERATION = "blu";
 	private final static Logger LOG = LoggerFactory.getLogger(Devices.class);
-	protected final ShellyAbstractDevice parent;
+	protected final AbstractG2Device parent;
 //	protected WebSocketClient wsClient;
 	protected final String componentIndex;
 	protected String localName;
@@ -51,7 +52,7 @@ public abstract class AbstractBluDevice extends ShellyAbstractDevice {
 	private final static String DEVICE_PREFIX = "bthomedevice:";
 	private final static String SENSOR_PREFIX = "bthomesensor:";
 	
-	protected AbstractBluDevice(ShellyAbstractDevice parent, JsonNode info, String index) {
+	protected AbstractBluDevice(AbstractG2Device parent, JsonNode info, String index) {
 		super(new BluInetAddressAndPort(parent.getAddressAndPort()));
 		this.parent = parent;
 		this.componentIndex = index;
@@ -172,10 +173,10 @@ public abstract class AbstractBluDevice extends ShellyAbstractDevice {
 			return res;
 		}
 		final String fileComponentIndex = usnaInfo.path("index").asText();
-		JsonNode components = backupJsons.get("Shelly.GetComponents.json").path("components");
-		for(JsonNode comp: components) {
-			if(comp.path("key").textValue().equals(DEVICE_PREFIX + fileComponentIndex)) { // find the component by fileComponentIndex
-				String fileMac = comp.path("config").path("addr").textValue();
+		JsonNode fileComponents = backupJsons.get("Shelly.GetComponents.json").path("components");
+		for(JsonNode fileComp: fileComponents) {
+			if(fileComp.path("key").textValue().equals(DEVICE_PREFIX + fileComponentIndex)) { // find the component by fileComponentIndex
+				String fileMac = fileComp.path("config").path("addr").textValue();
 				if(fileMac.equals(mac) == false) {
 					res.put(RestoreMsg.PRE_QUESTION_RESTORE_HOST, fileLocalName + "-" + fileMac);
 				}
@@ -187,9 +188,35 @@ public abstract class AbstractBluDevice extends ShellyAbstractDevice {
 
 	@Override
 	public List<String> restore(Map<String, JsonNode> backupJsons, Map<RestoreMsg, String> data) throws IOException {
-		// TODO define
 		// TODO remove from parent
 		final ArrayList<String> errors = new ArrayList<>();
+		JsonNode usnaInfo = backupJsons.get("ShellyScannerBLU.json");
+		String fileComponentIndex = usnaInfo.get("index").asText();
+		JsonNode fileComponents = backupJsons.get("Shelly.GetComponents.json").path("components");
+		String fileAddr = null;
+		// Device
+		for(JsonNode fileComp: fileComponents) {
+			if(fileComp.path("key").textValue().equals(DEVICE_PREFIX + fileComponentIndex)) { // find the component by fileComponentIndex
+				ObjectNode out = JsonNodeFactory.instance.objectNode();
+				out.put("id", Integer.parseInt(componentIndex));
+				ObjectNode config = (ObjectNode)fileComp.path("config").deepCopy();
+				config.remove("id");
+				config.remove("addr");
+				out.set("config", config);
+				errors.add(parent.postCommand("BTHomeDevice.SetConfig", out));
+				fileAddr = fileComp.at("/config/addr").textValue();
+				break;
+			}
+		}
+		// Sensors
+		// rimuovere i sensori legati a questo device (non quello del file) -> SensorsCollection.deleteAll()
+		for(JsonNode fileComp: fileComponents) {
+			if(fileComp.path("key").textValue().startsWith(SENSOR_PREFIX) && fileComp.at("/config/addr").textValue().equals(fileAddr)) {
+				// todo
+				System.out.println(fileComp.path("config"));
+			}
+		}
+		// Webhooks
 		return errors;
 	}
 

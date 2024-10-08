@@ -246,6 +246,7 @@ public class SensorAddOn extends Meters {
 		};
 	}
 	
+	@Override
 	public String getName(Type t) {
 		return switch(t) {
 		case EX -> switchName;

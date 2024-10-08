@@ -65,10 +65,10 @@ import it.usna.shellyscan.controller.UsnaSelectedAction;
 import it.usna.shellyscan.controller.UsnaToggleAction;
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.GhostDevice;
-import it.usna.shellyscan.model.device.InetAddressAndPort;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
 import it.usna.shellyscan.model.device.blu.AbstractBluDevice;
+import it.usna.shellyscan.model.device.blu.BTHomeDevice;
 import it.usna.shellyscan.model.device.g1.AbstractG1Device;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.g3.AbstractG3Device;
@@ -127,10 +127,10 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 
 	private Action infoLogAction = new UsnaSelectedAction(this, devicesTable, "action_info_log_name", "action_info_log_tooltip", null, "/images/Document2.png", i -> {
 		if(model.get(i) instanceof AbstractG2Device) {
-			new DialogDeviceLogsG2WS(MainView.this, model, i, AbstractG2Device.LOG_VERBOSE);
+			new DialogDeviceLogsG2(MainView.this, model, i, AbstractG2Device.LOG_VERBOSE);
 		} else if(model.get(i) instanceof AbstractBluDevice blu) {
-			new DialogDeviceLogsG2WS(MainView.this, model, model.getIndex(blu.getParent()), AbstractG2Device.LOG_VERBOSE);
-		} else {
+			new DialogDeviceLogsG2(MainView.this, model, model.getIndex(blu.getParent()), AbstractG2Device.LOG_VERBOSE);
+		} else { // G1
 			new DialogDeviceLogsG1(this, model.get(i));
 		}
 	});
@@ -210,8 +210,8 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 	
 	// also asks for credential if needed (login action)
 	private UsnaAction reloadAction = new UsnaSelectedAction(this, devicesTable, "action_name_reload", null, "/images/Loop16.png", null, i -> {
-		InetAddressAndPort addr = model.get(i).getAddressAndPort();
-		model.create(addr.getAddress(), addr.getPort(), model.get(i).getHostname(), false);
+		final ShellyAbstractDevice d = model.get(i);
+		model.create(d.getAddressAndPort().getAddress(), d.getAddressAndPort().getPort(), d instanceof BTHomeDevice blu ? blu.getParent().getHostname() : d.getHostname(), false);
 	});
 
 	private Action backupAction;

@@ -279,7 +279,7 @@ improved miniPM & miniPMG3 restore
 bug fix rgbw2
 charts scroll
 
-1.1.1
+1.2.0
 // BLU
 // todo it.usna.shellyscan.model.device.GhostDevice.restoreCheck(Map<String, JsonNode>)
 // todo remove bthome components restore

@@ -187,6 +187,7 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 	}
 
 	private JsonNode isShelly(final InetAddress address, int port) throws TimeoutException {
+		// if(name.startsWith("shelly") || name.startsWith("Shelly")) { // Shelly X devices can have different names
 		try {
 			ContentResponse response = httpClient.newRequest("http://" + address.getHostAddress() + ":" + port + "/shelly").timeout(80, TimeUnit.SECONDS).method(HttpMethod.GET).send();
 			JsonNode shellyNode = JSON_MAPPER.readTree(response.getContent());
@@ -336,16 +337,15 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 	public void create(InetAddress address, int port, String hostName, boolean force) {
 		LOG.trace("getting info (/shelly) {}:{} - {}", address, port, hostName);
 		try {
-			//ContentResponse response = httpClient.newRequest("http://" + address.getHostAddress() + ":" + port + "/shelly").timeout(80, TimeUnit.SECONDS).method(HttpMethod.GET).send();
 			JsonNode info = isShelly(address, port);
 			if(info != null) {
-				create(address, port, /*JSON_MAPPER.readTree(response.getContent())*/info, hostName);
+				create(address, port, info, hostName);
 			} else if(force && (hostName.startsWith("shelly") || hostName.startsWith("Shelly"))) { // ShellyBulbDuo-xxx, ShellyWallDisplay-xxx, ...
 				LOG.warn("create with error (info==null) {}:{}", address, port);
 				newDevice(DevicesFactory.createWithError(httpClient, address, port, hostName, new NullPointerException()));
 			}
 //			Thread.sleep(Devices.MULTI_QUERY_DELAY);
-		} catch(/*IOException |*/ TimeoutException /*| InterruptedException*/ /*| ExecutionException*/ e) { // SocketTimeoutException extends IOException
+		} catch(TimeoutException e) { // SocketTimeoutException extends IOException
 			if(force && (hostName.startsWith("shelly") || hostName.startsWith("Shelly"))) {
 				LOG.warn("create with error {}:{}", address, port, e);
 				newDevice(DevicesFactory.createWithError(httpClient, address, port, hostName, e));
@@ -606,24 +606,15 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 
 		@Override
 		public void serviceRemoved(ServiceEvent event) {
-			String hostname = event.getInfo().getName();
-//			synchronized(devices) {
-//				int ind = indexOfByHostname(hostname);
-//				if(ind >= 0) {
-//					devices.get(ind).setStatus(Status.OFF_LINE);
-//					fireEvent(EventType.UPDATE, ind);
-//				}
-//			}
-			LOG.debug("Service removed: {} - {}", event.getInfo(), hostname);
+			if(LOG.isDebugEnabled()) {
+				LOG.debug("Service removed: {} - {}", event.getInfo(), event.getInfo().getName());
+			}
 		}
 
 		@Override
 		public void serviceResolved(ServiceEvent event) {
 			ServiceInfo info = event.getInfo();
-			final String name = info.getName();
-//			if(name.startsWith("shelly") || name.startsWith("Shelly")) { // Shelly X devices can have different names
-				executor.execute(() -> create(info.getInetAddresses()[0], 80, name, true));
-//			}
+			executor.execute(() -> create(info.getInetAddresses()[0], info.getPort(), info.getName(), true));
 		}
 	}
 } // 197 - 307 - 326 - 418 - 510 - 544 - 574

@@ -2,6 +2,7 @@ package it.usna.shellyscan.model.device.blu.modules;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.Iterator;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -9,23 +10,22 @@ import com.fasterxml.jackson.databind.JsonNode;
 import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.blu.AbstractBluDevice;
 
-// todo mamma type - sensor ?
 // todo mamma ID - sensor ?
 // todo measures order ? 
 public class SensorsCollection extends Meters {
-	private Sensor[] sens;
+	private Sensor[] sensorsArray;
 	private Type[] mTypes;
+	private EnumMap<Type, Sensor> measuresMap = new EnumMap<>(Type.class);
 	
 	public SensorsCollection(AbstractBluDevice blu) throws IOException {
-		findSensorsID(blu);
+		init(blu);
 	}
 	
-	private void findSensorsID(AbstractBluDevice blu) throws IOException {
+	private void init(AbstractBluDevice blu) throws IOException {
 		JsonNode objects = blu.getJSON("/rpc/BTHomeDevice.GetKnownObjects?id=" + blu.getIndex()).path("objects");
 		final Iterator<JsonNode> compIt = objects.iterator();
 		
 		ArrayList<Sensor> sensors = new ArrayList<>();
-		ArrayList<Type> mt = new ArrayList<>();
 		while (compIt.hasNext()) {
 			JsonNode component = compIt.next();
 			String comp = component.path("component").asText();
@@ -33,21 +33,21 @@ public class SensorsCollection extends Meters {
 				Sensor s = new Sensor(comp, component.path("obj_id").intValue());
 				Type t = s.getMeterType();
 				if(t != null) {
-					mt.add(t);
+					measuresMap.put(t, s);
 				}
 				sensors.add(s);
 			}
 		}
-		sens = sensors.toArray(Sensor[]::new);
-		mTypes = mt.toArray(Type[]::new);
+		sensorsArray = sensors.toArray(Sensor[]::new);
+		mTypes = measuresMap.keySet().toArray(Type[]::new);
 	}
 	
 	public Sensor[] getSensors() {
-		return sens;
+		return sensorsArray;
 	}
 	
 	public Sensor getSensor(int id) {
-		for(Sensor s: sens) {
+		for(Sensor s: sensorsArray) {
 			if(s.getId() == id) {
 				return s;
 			}
@@ -62,12 +62,16 @@ public class SensorsCollection extends Meters {
 
 	@Override
 	public float getValue(Type t) {
-		for(Sensor s: sens) {
-			if(s.getMeterType() == t) {
-				return s.getValue();
-			}
-		}
-		return 0f;
+		return measuresMap.get(t).getValue();
+	}
+	
+	@Override
+	public String getName(Type t) {
+		return measuresMap.get(t).getName();
+	}
+	
+	public void deleteAll() {
+		//todo
 	}
 }
 

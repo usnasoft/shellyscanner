@@ -29,13 +29,28 @@ public abstract class Meters implements Comparable<Meters> {
 		NF.setMinimumFractionDigits(2);
 	}
 	
-	public abstract Type[] getTypes();
-	
 	public abstract float getValue(Type t);
+	
+	public abstract Type[] getTypes();
 	
 	public boolean hasType(Type t) {
 		for(Type type: getTypes()) {
 			if(type == t) return true;
+		}
+		return false;
+	}
+
+	/**
+	 * For named measures
+	 */
+	public String getName(Type t) {
+		return null;
+	}
+	
+	public boolean hasNames() {
+		String name;
+		for(Type type: getTypes()) {
+			if((name = getName(type)) != null && name.isEmpty() == false) return true;
 		}
 		return false;
 	}

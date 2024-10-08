@@ -4,13 +4,14 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.ShellyUnmanagedDeviceInterface;
+import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 
 public class ShellyBluUnmanaged extends AbstractBluDevice implements ShellyUnmanagedDeviceInterface {
 	private String type;
 	private Throwable ex;
 
 	public ShellyBluUnmanaged(ShellyAbstractDevice parent, JsonNode info, String localName, String componentIndex) {
-		super(parent, info, componentIndex);
+		super((AbstractG2Device)parent, info, componentIndex);
 		this.type = localName;
 		this.hostname = localName + "-" + mac;
 	}
