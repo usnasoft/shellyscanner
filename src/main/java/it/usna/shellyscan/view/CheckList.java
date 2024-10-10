@@ -62,8 +62,8 @@ import it.usna.shellyscan.model.device.InetAddressAndPort;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice.LogMode;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
-import it.usna.shellyscan.model.device.blu.AbstractBlueDevice;
-import it.usna.shellyscan.model.device.blu.BlueInetAddressAndPort;
+import it.usna.shellyscan.model.device.blu.AbstractBluDevice;
+import it.usna.shellyscan.model.device.blu.BluInetAddressAndPort;
 import it.usna.shellyscan.model.device.g1.AbstractG1Device;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.g2.RangeExtenderManager;
@@ -399,7 +399,7 @@ public class CheckList extends JDialog implements UsnaEventListener<Devices.Even
 					tModel.setRow(row, g1Row(d, d.getJSON("/settings")));
 				} else if (d instanceof AbstractG2Device) { // G2-G3
 					tModel.setRow(row, g2Row(d, d.getJSON("/rpc/Shelly.GetConfig"), d.getJSON("/rpc/Shelly.GetStatus")));
-				} else if (d instanceof AbstractBlueDevice blu) { // G2-G3
+				} else if (d instanceof AbstractBluDevice blu) { // G2-G3
 					tModel.setRow(row, bluRow(blu));
 				}
 			} catch (/* IO */Exception e) {
@@ -495,7 +495,7 @@ public class CheckList extends JDialog implements UsnaEventListener<Devices.Even
 		return new Object[] { DevicesTable.getStatusIcon(d), UtilMiscellaneous.getExtendedHostName(d), d.getAddressAndPort(), eco, "-", debug, ble, ap, roaming, wifi1, wifi2, extender };
 	}
 	
-	private static Object[] bluRow(AbstractBlueDevice d) {
+	private static Object[] bluRow(AbstractBluDevice d) {
 //		String parents = d.getAddressAndPort().toString() +
 //		d.getAlternativeParents().stream().map(InetAddressAndPort::toString).collect(Collectors.joining("/"));
 		
@@ -545,7 +545,7 @@ public class CheckList extends JDialog implements UsnaEventListener<Devices.Even
 		public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
 			JLabel ret = (JLabel)super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 			List<InetAddressAndPort> parents;
-			if(value instanceof BlueInetAddressAndPort bluAddr && (parents = bluAddr.getAlternativeParents()).size() > 0) {
+			if(value instanceof BluInetAddressAndPort bluAddr && (parents = bluAddr.getAlternativeParents()).size() > 0) {
 				ret.setText(bluAddr.getRepresentation() + parents.stream().map(InetAddressAndPort::toString).collect(Collectors.joining(" \\ ", " \\ ", "")));
 				ret.setForeground(Color.red);
 				if (isSelected) {

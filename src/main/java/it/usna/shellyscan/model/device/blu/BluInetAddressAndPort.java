@@ -5,11 +5,11 @@ import java.util.List;
 
 import it.usna.shellyscan.model.device.InetAddressAndPort;
 
-public class BlueInetAddressAndPort extends InetAddressAndPort {
+public class BluInetAddressAndPort extends InetAddressAndPort {
 	private final ArrayList<InetAddressAndPort> alternativeParents = new ArrayList<>();
 	private final int index; // the index identifying the device among the parent components
 
-	public BlueInetAddressAndPort(InetAddressAndPort address, int index) {
+	public BluInetAddressAndPort(InetAddressAndPort address, int index) {
 		super(address.getAddress(), address.getPort());
 		this.index = index;
 	}
@@ -18,9 +18,9 @@ public class BlueInetAddressAndPort extends InetAddressAndPort {
 		return index;
 	}
 	
-	public void addAlternativeParent(AbstractBlueDevice otherBlu) {
+	public void addAlternativeParent(AbstractBluDevice otherBlu) {
 		alternativeParents.add(otherBlu.parent.getAddressAndPort());
-		alternativeParents.addAll(((BlueInetAddressAndPort)otherBlu.getAddressAndPort()).getAlternativeParents());
+		alternativeParents.addAll(((BluInetAddressAndPort)otherBlu.getAddressAndPort()).getAlternativeParents());
 	}
 	
 	public void addAlternativeParent(InetAddressAndPort parent) {
@@ -41,13 +41,13 @@ public class BlueInetAddressAndPort extends InetAddressAndPort {
 		if(i1[2] != i2[2]) return (i1[2] & 0xFF) - (i2[2] & 0xFF);
 		if((cmp = (i1[3] & 0xFF) - (i2[3] & 0xFF)) != 0) return cmp;
 		if((cmp = port - o2.getPort()) != 0) return cmp;
-		if(o2 instanceof BlueInetAddressAndPort b) return index - b.index;
+		if(o2 instanceof BluInetAddressAndPort b) return index - b.index;
 		return 1; // blue is greater than non blue
 	}
 	
 	@Override
 	public boolean equals(Object o2) {
-		return o2 != null && getClass() == o2.getClass() && address.equals(((BlueInetAddressAndPort)o2).address) && port == ((BlueInetAddressAndPort)o2).port && index == ((BlueInetAddressAndPort)o2).index;
+		return o2 != null && getClass() == o2.getClass() && address.equals(((BluInetAddressAndPort)o2).address) && port == ((BluInetAddressAndPort)o2).port && index == ((BluInetAddressAndPort)o2).index;
 	}
 	
 	@Override

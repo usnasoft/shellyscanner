@@ -67,7 +67,7 @@ import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.GhostDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
-import it.usna.shellyscan.model.device.blu.AbstractBlueDevice;
+import it.usna.shellyscan.model.device.blu.AbstractBluDevice;
 import it.usna.shellyscan.model.device.blu.BTHomeDevice;
 import it.usna.shellyscan.model.device.g1.AbstractG1Device;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
@@ -128,7 +128,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 	private Action infoLogAction = new UsnaSelectedAction(this, devicesTable, "action_info_log_name", "action_info_log_tooltip", null, "/images/Document2.png", i -> {
 		if(model.get(i) instanceof AbstractG2Device) {
 			new DialogDeviceLogsG2(MainView.this, model, i, AbstractG2Device.LOG_VERBOSE);
-		} else if(model.get(i) instanceof AbstractBlueDevice blu) {
+		} else if(model.get(i) instanceof AbstractBluDevice blu) {
 			new DialogDeviceLogsG2(MainView.this, model, model.getIndex(blu.getParent()), AbstractG2Device.LOG_VERBOSE);
 		} else { // G1
 			new DialogDeviceLogsG1(this, model.get(i));
@@ -373,7 +373,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 				new SelectionAction(devicesTable, "labelSelectG2", null, null, i -> model.get(i) instanceof AbstractG2Device && model.get(i) instanceof AbstractG3Device == false),
 				new SelectionAction(devicesTable, "labelSelectG3", null, null, i -> model.get(i) instanceof AbstractG3Device),
 				new SelectionAction(devicesTable, "labelSelectWIFI", null, null, i -> model.get(i) instanceof AbstractG1Device || model.get(i) instanceof AbstractG2Device),
-				new SelectionAction(devicesTable, "labelSelectBLU", null, null, i -> model.get(i) instanceof AbstractBlueDevice),
+				new SelectionAction(devicesTable, "labelSelectBLU", null, null, i -> model.get(i) instanceof AbstractBluDevice),
 				new SelectionAction(devicesTable, "labelSelectGhosts", null, null, i -> model.get(i) instanceof GhostDevice) );
 
 		btnSelectCombo.addActionListener(e -> selectionPopup.show(btnSelectCombo, 0, 0));
@@ -558,7 +558,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 					d = model.get(devicesTable.convertRowIndexToModel(idx));
 					if(d instanceof GhostDevice) {
 						selectionNoGhost = singleSelectionNoGhost = false;
-					} else if(d instanceof AbstractBlueDevice) {
+					} else if(d instanceof AbstractBluDevice) {
 						selectionNoBLU = false;
 					}
 				}

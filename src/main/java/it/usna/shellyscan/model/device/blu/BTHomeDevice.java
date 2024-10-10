@@ -8,7 +8,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 
-public class BTHomeDevice extends AbstractBlueDevice {
+public class BTHomeDevice extends AbstractBluDevice {
 	private String typeName;
 	private final static Map<String, String> DevDictionary = Map.of(
 			"SBBT-002C", "Blu Button",

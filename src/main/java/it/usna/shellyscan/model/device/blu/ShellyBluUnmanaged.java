@@ -6,17 +6,17 @@ import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.ShellyUnmanagedDeviceInterface;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 
-public class ShellyBlueUnmanaged extends AbstractBlueDevice implements ShellyUnmanagedDeviceInterface {
+public class ShellyBluUnmanaged extends AbstractBluDevice implements ShellyUnmanagedDeviceInterface {
 	private String type;
 	private Throwable ex;
 
-	public ShellyBlueUnmanaged(ShellyAbstractDevice parent, JsonNode info, String localName, String componentIndex) {
+	public ShellyBluUnmanaged(ShellyAbstractDevice parent, JsonNode info, String localName, String componentIndex) {
 		super((AbstractG2Device)parent, info, componentIndex);
 		this.type = localName;
 		this.hostname = localName + "-" + mac;
 	}
 	
-	public ShellyBlueUnmanaged(ShellyAbstractDevice parent, JsonNode info, String localName, String index, Throwable ex) {
+	public ShellyBluUnmanaged(ShellyAbstractDevice parent, JsonNode info, String localName, String index, Throwable ex) {
 		this(parent, info, localName, index);
 		this.ex = ex;
 		status = Status.ERROR;

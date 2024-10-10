@@ -39,7 +39,7 @@ import it.usna.shellyscan.model.device.modules.TimeAndLocationManager;
 import it.usna.shellyscan.model.device.modules.WIFIManager;
 import it.usna.shellyscan.model.device.modules.WIFIManager.Network;
 
-public abstract class AbstractBlueDevice extends ShellyAbstractDevice {
+public abstract class AbstractBluDevice extends ShellyAbstractDevice {
 	public final static String GENERATION = "blu";
 	private final static Logger LOG = LoggerFactory.getLogger(Devices.class);
 	protected final AbstractG2Device parent;
@@ -52,8 +52,8 @@ public abstract class AbstractBlueDevice extends ShellyAbstractDevice {
 	private final static String DEVICE_PREFIX = "bthomedevice:";
 	private final static String SENSOR_PREFIX = "bthomesensor:";
 	
-	protected AbstractBlueDevice(AbstractG2Device parent, JsonNode info, String index) {
-		super(new BlueInetAddressAndPort(parent.getAddressAndPort(), Integer.parseInt(index)));
+	protected AbstractBluDevice(AbstractG2Device parent, JsonNode info, String index) {
+		super(new BluInetAddressAndPort(parent.getAddressAndPort(), Integer.parseInt(index)));
 		this.parent = parent;
 		this.componentIndex = index;
 		final JsonNode config = info.path("config");
@@ -121,6 +121,10 @@ public abstract class AbstractBlueDevice extends ShellyAbstractDevice {
 //		this.battery = status.path("battery").intValue();
 		this.lastConnection = status.path("last_updated_ts").intValue() * 1000L;
 	}
+	
+	public String postCommand(final String method, String payload) {
+		return parent.postCommand(method, payload);
+	}
 
 	@Override
 	public String[] getInfoRequests() {
@@ -187,36 +191,54 @@ public abstract class AbstractBlueDevice extends ShellyAbstractDevice {
 	}
 
 	@Override
-	public List<String> restore(Map<String, JsonNode> backupJsons, Map<RestoreMsg, String> data) throws IOException {
+	public List<String> restore(Map<String, JsonNode> backupJsons, Map<RestoreMsg, String> data) {
 		// TODO remove from parent
 		final ArrayList<String> errors = new ArrayList<>();
-		JsonNode usnaInfo = backupJsons.get("ShellyScannerBLU.json");
-		String fileComponentIndex = usnaInfo.get("index").asText();
-		JsonNode fileComponents = backupJsons.get("Shelly.GetComponents.json").path("components");
-		String fileAddr = null;
-		// Device
-		for(JsonNode fileComp: fileComponents) {
-			if(fileComp.path("key").textValue().equals(DEVICE_PREFIX + fileComponentIndex)) { // find the component by fileComponentIndex
-				ObjectNode out = JsonNodeFactory.instance.objectNode();
-				out.put("id", Integer.parseInt(componentIndex));
-				ObjectNode config = (ObjectNode)fileComp.path("config").deepCopy();
-				config.remove("id");
-				config.remove("addr");
-				out.set("config", config);
-				errors.add(parent.postCommand("BTHomeDevice.SetConfig", out));
-				fileAddr = fileComp.at("/config/addr").textValue();
-				break;
+		try {
+			JsonNode usnaInfo = backupJsons.get("ShellyScannerBLU.json");
+			String fileComponentIndex = usnaInfo.get("index").asText();
+			JsonNode fileComponents = backupJsons.get("Shelly.GetComponents.json").path("components");
+			String fileAddr = null;
+			// Device
+			for(JsonNode fileComp: fileComponents) {
+				if(fileComp.path("key").textValue().equals(DEVICE_PREFIX + fileComponentIndex)) { // find the component by fileComponentIndex
+					ObjectNode out = JsonNodeFactory.instance.objectNode();
+					out.put("id", Integer.parseInt(componentIndex));
+					ObjectNode config = (ObjectNode)fileComp.path("config").deepCopy();
+					config.remove("id");
+					config.remove("addr"); // new (registered on host) addr could not be the stored addr
+					out.set("config", config);
+					errors.add(parent.postCommand("BTHomeDevice.SetConfig", out));
+					fileAddr = fileComp.at("/config/addr").textValue();
+					break;
+				}
 			}
-		}
-		// Sensors
-		// rimuovere i sensori legati a questo device (non quello del file) -> SensorsCollection.deleteAll()
-		for(JsonNode fileComp: fileComponents) {
-			if(fileComp.path("key").textValue().startsWith(SENSOR_PREFIX) && fileComp.at("/config/addr").textValue().equals(fileAddr)) {
-				// todo
-				System.out.println(fileComp.path("config"));
+			// Sensors
+			errors.add(sensors.deleteAll());
+			for(JsonNode fileComp: fileComponents) {
+				if(fileComp.path("key").textValue().startsWith(SENSOR_PREFIX) && fileComp.at("/config/addr").textValue().equals(fileAddr)) {
+					// todo
+					TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+					ObjectNode out = JsonNodeFactory.instance.objectNode();
+					ObjectNode config = (ObjectNode)fileComp.path("config");
+					config.put("addr", this.mac);
+					out.set("config", config);
+					errors.add(parent.postCommand("BTHome.AddSensor", out));
+					
+//					System.out.println(fileComp.path("config"));
+				}
 			}
+			// Webhooks
+			// todo
+			
+			// init
+//		} catch(IOException e) {
+//			LOG.error("restore - RuntimeException", e);
+//			errors.add(RestoreMsg.ERR_UNKNOWN.toString());
+		} catch(RuntimeException | InterruptedException e) {
+			LOG.error("restore - RuntimeException", e);
+			errors.add(RestoreMsg.ERR_UNKNOWN.toString());
 		}
-		// Webhooks
 		return errors;
 	}
 

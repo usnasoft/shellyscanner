@@ -15,9 +15,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import it.usna.shellyscan.Main;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.ShellyGenericUnmanagedImpl;
-import it.usna.shellyscan.model.device.blu.AbstractBlueDevice;
+import it.usna.shellyscan.model.device.blu.AbstractBluDevice;
 import it.usna.shellyscan.model.device.blu.BTHomeDevice;
-import it.usna.shellyscan.model.device.blu.ShellyBlueUnmanaged;
+import it.usna.shellyscan.model.device.blu.ShellyBluUnmanaged;
 import it.usna.shellyscan.model.device.g1.AbstractG1Device;
 import it.usna.shellyscan.model.device.g1.Button1;
 import it.usna.shellyscan.model.device.g1.Shelly1;
@@ -245,7 +245,6 @@ public class DevicesFactory {
 				case ShellyPro4PM.ID -> new ShellyPro4PM(address, port, name);
 				case ShellyProDimmer1.ID -> new ShellyProDimmer1(address, port, name);
 				case ShellyProEM50.ID -> new ShellyProEM50(address, port, name);
-
 				default -> new ShellyG2Unmanaged(address, port, name);
 			};
 		} catch(Exception e) { // really unexpected
@@ -321,14 +320,14 @@ public class DevicesFactory {
 		return d;
 	}
 	
-	public static AbstractBlueDevice createBlu(ShellyAbstractDevice parent, HttpClient httpClient, /*WebSocketClient wsClient,*/ JsonNode info, String index) {
+	public static AbstractBluDevice createBlu(ShellyAbstractDevice parent, HttpClient httpClient, /*WebSocketClient wsClient,*/ JsonNode info, String index) {
 		final String type = info.path("config").path("meta").path("ui").path("local_name").asText();
-		AbstractBlueDevice blu;
+		AbstractBluDevice blu;
 		try {
 			blu = new BTHomeDevice(parent, info, type, index);
 		} catch(Exception e) { // really unexpected
 			LOG.error("createBlu", e);
-			blu = new ShellyBlueUnmanaged(parent, info, type, index, e);
+			blu = new ShellyBluUnmanaged(parent, info, type, index, e);
 		}
 		System.out.println(blu + " # " + parent);
 		try {
