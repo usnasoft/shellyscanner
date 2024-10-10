@@ -29,7 +29,7 @@ import it.usna.shellyscan.model.device.GhostDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
 import it.usna.shellyscan.model.device.ShellyUnmanagedDeviceInterface;
-import it.usna.shellyscan.model.device.blu.AbstractBluDevice;
+import it.usna.shellyscan.model.device.blu.AbstractBlueDevice;
 import it.usna.shellyscan.model.device.g1.AbstractG1Device;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.g3.AbstractG3Device;
@@ -184,8 +184,8 @@ public class DevicesStore {
 			return "2";
 		} else if(dev instanceof AbstractG1Device) {
 			return "1";
-		} else if(dev instanceof AbstractBluDevice) {
-			return AbstractBluDevice.GENERATION;
+		} else if(dev instanceof AbstractBlueDevice) {
+			return AbstractBlueDevice.GENERATION;
 		} else{
 			return "0";
 		}

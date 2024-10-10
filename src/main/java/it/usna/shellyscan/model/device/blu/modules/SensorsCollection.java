@@ -8,7 +8,7 @@ import java.util.Iterator;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import it.usna.shellyscan.model.device.Meters;
-import it.usna.shellyscan.model.device.blu.AbstractBluDevice;
+import it.usna.shellyscan.model.device.blu.AbstractBlueDevice;
 
 // todo mamma ID - sensor ?
 // todo measures order ? 
@@ -17,11 +17,11 @@ public class SensorsCollection extends Meters {
 	private Type[] mTypes;
 	private EnumMap<Type, Sensor> measuresMap = new EnumMap<>(Type.class);
 	
-	public SensorsCollection(AbstractBluDevice blu) throws IOException {
+	public SensorsCollection(AbstractBlueDevice blu) throws IOException {
 		init(blu);
 	}
 	
-	private void init(AbstractBluDevice blu) throws IOException {
+	private void init(AbstractBlueDevice blu) throws IOException {
 		JsonNode objects = blu.getJSON("/rpc/BTHomeDevice.GetKnownObjects?id=" + blu.getIndex()).path("objects");
 		final Iterator<JsonNode> compIt = objects.iterator();
 		

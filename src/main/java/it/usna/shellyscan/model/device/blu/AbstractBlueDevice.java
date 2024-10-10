@@ -39,7 +39,7 @@ import it.usna.shellyscan.model.device.modules.TimeAndLocationManager;
 import it.usna.shellyscan.model.device.modules.WIFIManager;
 import it.usna.shellyscan.model.device.modules.WIFIManager.Network;
 
-public abstract class AbstractBluDevice extends ShellyAbstractDevice {
+public abstract class AbstractBlueDevice extends ShellyAbstractDevice {
 	public final static String GENERATION = "blu";
 	private final static Logger LOG = LoggerFactory.getLogger(Devices.class);
 	protected final AbstractG2Device parent;
@@ -52,8 +52,8 @@ public abstract class AbstractBluDevice extends ShellyAbstractDevice {
 	private final static String DEVICE_PREFIX = "bthomedevice:";
 	private final static String SENSOR_PREFIX = "bthomesensor:";
 	
-	protected AbstractBluDevice(AbstractG2Device parent, JsonNode info, String index) {
-		super(new BluInetAddressAndPort(parent.getAddressAndPort()));
+	protected AbstractBlueDevice(AbstractG2Device parent, JsonNode info, String index) {
+		super(new BlueInetAddressAndPort(parent.getAddressAndPort(), Integer.parseInt(index)));
 		this.parent = parent;
 		this.componentIndex = index;
 		final JsonNode config = info.path("config");
@@ -66,7 +66,7 @@ public abstract class AbstractBluDevice extends ShellyAbstractDevice {
 		this.httpClient = httpClient;
 //		this.wsClient = wsClient;
 		sensors = new SensorsCollection(this);
-		meters = new Meters[] {sensors};
+		meters = sensors.getTypes().length > 0 ? new Meters[] {sensors} : null;
 	}
 	
 	public ShellyAbstractDevice getParent() {

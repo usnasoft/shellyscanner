@@ -42,7 +42,7 @@ import it.usna.shellyscan.model.device.ModulesHolder;
 import it.usna.shellyscan.model.device.MotionSensor;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
-import it.usna.shellyscan.model.device.blu.AbstractBluDevice;
+import it.usna.shellyscan.model.device.blu.AbstractBlueDevice;
 import it.usna.shellyscan.model.device.g1.ShellyDW;
 import it.usna.shellyscan.model.device.g1.ShellyFlood;
 import it.usna.shellyscan.model.device.g1.ShellyTRV;
@@ -415,7 +415,7 @@ public class DevicesTable extends ExTooltipTable {
 			Status status = d.getStatus();
 			if(status != Status.NOT_LOOGGED && status != Status.ERROR && status != Status.GHOST /*&&(d instanceof ShellyUnmanagedDevice == false || ((ShellyUnmanagedDevice)d).geException() == null)*/) {
 				row[DevicesTable.COL_RSSI_IDX] = d.getRssi();
-				if(d instanceof AbstractBluDevice == false) {
+				if(d instanceof AbstractBlueDevice == false) {
 					row[DevicesTable.COL_CLOUD] = (d.getCloudEnabled() ? TRUE : FALSE) + " " + (d.getCloudConnected() ? TRUE : FALSE);
 					row[DevicesTable.COL_MQTT] = (d.getMQTTEnabled() ? TRUE : FALSE) + " " + (d.getMQTTConnected() ? TRUE : FALSE);
 					row[DevicesTable.COL_UPTIME_IDX] = d.getUptime();
@@ -471,7 +471,7 @@ public class DevicesTable extends ExTooltipTable {
 	
 	public static ImageIcon getStatusIcon(ShellyAbstractDevice d) {
 		if(d.getStatus() == Status.ON_LINE) {
-			if(d instanceof AbstractBluDevice) {
+			if(d instanceof AbstractBlueDevice) {
 				return new ImageIcon(BTHOMEIMG, String.format(LABELS.getString("labelDevOnLIneBTHome"), LocalDateTime.ofInstant(Instant.ofEpochMilli(d.getLastTime()), ZoneId.systemDefault())));
 			} else {
 				return d.rebootRequired() ? ONLINE_BULLET_REBOOT : ONLINE_BULLET;
