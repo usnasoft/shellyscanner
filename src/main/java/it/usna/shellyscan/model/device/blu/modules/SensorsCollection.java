@@ -4,9 +4,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.Iterator;
+import java.util.concurrent.TimeUnit;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
+import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.blu.AbstractBluDevice;
 
@@ -29,10 +31,10 @@ public class SensorsCollection extends Meters {
 		
 		ArrayList<Sensor> sensors = new ArrayList<>();
 		while (compIt.hasNext()) {
-			JsonNode component = compIt.next();
-			String comp = component.path("component").asText();
+			JsonNode sensorConf = compIt.next();
+			String comp = sensorConf.path("component").asText();
 			if(comp != null && comp.startsWith("bthomesensor:")) {
-				Sensor s = new Sensor(comp, component.path("obj_id").intValue());
+				Sensor s = new Sensor(Integer.parseInt(comp.substring(13)), sensorConf);
 				Type t = s.getMeterType();
 				if(t != null) {
 					measuresMap.put(t, s);
@@ -72,19 +74,19 @@ public class SensorsCollection extends Meters {
 		return measuresMap.get(t).getName();
 	}
 	
-	public String deleteAll() {
-//		JsonNode objects = blue.getJSON("/rpc/BTHomeDevice.GetKnownObjects?id=" + blue.getIndex()).path("objects");
-//		final Iterator<JsonNode> compIt = objects.iterator();
-//		while (compIt.hasNext()) {
-//			JsonNode component = compIt.next();
-//			String comp = component.path("component").asText();
-//			if(comp != null && comp.startsWith("bthomesensor:")) {
-//				String idx = comp.substring(13);
-//				blue.postCommand("BTHome.DeleteSensor", "{\"id\":" + idx + "}");
-//			}
-//		}
+	public Sensor getSensor(int objID, int idx) {
+		for(Sensor s: sensorsArray) {
+			if(s.getObjId() == objID && s.getIdx() == idx) {
+				return s;
+			}
+		}
+		return null;
+	}
+	
+	public String deleteAll() throws InterruptedException {
 		String err;
 		for(Sensor s: sensorsArray) {
+			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			err = blu.postCommand("BTHome.DeleteSensor", "{\"id\":" + s.getId() + "}");
 			if(err != null) {
 				return err;

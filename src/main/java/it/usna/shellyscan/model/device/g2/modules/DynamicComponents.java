@@ -44,7 +44,7 @@ public class DynamicComponents {
 	/**
 	 * Remove all dynamic components except BTHomeDevice(s).<br>
 	 * Note: if a component is removed and it is grouped it is also removed from its group  
-	 * @return the List<String> of not removed dynamic components (usually bthome components).
+	 * @return the List<String> of (not removed) BTHomeDevice(s) mac addresses.
 	 */
 	private static List<String> deleteAll(AbstractG2Device parent) throws IOException, InterruptedException {
 		final List<String> devicesAddress = new ArrayList<>();
@@ -60,7 +60,7 @@ public class DynamicComponents {
 				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 				String typeIdx[] = key.split(":");
 				parent.postCommand("BTHome.DeleteSensor", "{\"id\":" + typeIdx[1] + "}");
-			} else { // BTHomeDevice
+			} else if(key.toLowerCase().startsWith("bthomedevice" + ":")) { // BTHomeDevice
 				devicesAddress.add(comp.at("/config/addr").asText());
 			}
 		}
@@ -106,8 +106,8 @@ public class DynamicComponents {
 			final JsonNode storedComponents = backupJsons.get("Shelly.GetComponents.json");
 			if(storedComponents != null) {
 				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-				final List<String> existingKeys = new ArrayList<>();
 				final List<String> existingDevices = deleteAll(parent);
+				final List<String> existingKeys = new ArrayList<>();
 				final List<GroupValue> groupsValues = new ArrayList<>();
 				final Iterator<JsonNode> storedIt = storedComponents.path("components").iterator();
 				while (storedIt.hasNext()) {

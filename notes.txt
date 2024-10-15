@@ -283,7 +283,10 @@ charts scroll
 // BLU
 // todo it.usna.shellyscan.model.device.GhostDevice.restoreCheck(Map<String, JsonNode>)
 // todo remove bthome components restore
+// tofo restore groups
 selection subtraction ctrl+shift
+// todo verifica gruppi restore G2; restore actions BLU? restore sensors? verifica component prima di restore actions (cid > 200) - errore nel restore delle actions (i cid potrebbero cambiare)
+ prendiamo le action con cid < 200/100 e poi i componenti dinamici fanno i loro?
 
 ---
 // TODO

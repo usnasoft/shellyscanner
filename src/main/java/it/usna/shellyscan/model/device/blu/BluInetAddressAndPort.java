@@ -18,13 +18,15 @@ public class BluInetAddressAndPort extends InetAddressAndPort {
 		return index;
 	}
 	
-	public void addAlternativeParent(AbstractBluDevice otherBlu) {
-		alternativeParents.add(otherBlu.parent.getAddressAndPort());
-		alternativeParents.addAll(((BluInetAddressAndPort)otherBlu.getAddressAndPort()).getAlternativeParents());
+	public void addAlternativeParent(AbstractBluDevice otherBlu) {	
+		addAlternativeParent(otherBlu.parent.getAddressAndPort());
+		((BluInetAddressAndPort)otherBlu.getAddressAndPort()).getAlternativeParents().forEach(a -> addAlternativeParent(a));
 	}
 	
 	public void addAlternativeParent(InetAddressAndPort parent) {
-		alternativeParents.add(parent);
+		if(alternativeParents.contains(parent) == false && this.equivalent(parent) == false) {
+			alternativeParents.add(parent);
+		}
 	}
 
 	public List<InetAddressAndPort> getAlternativeParents() {

@@ -432,9 +432,9 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 			AbstractBluDevice newBlu = DevicesFactory.createBlu(parent, httpClient, /*wsClient,*/ info, id);
 			synchronized(devices) {
 				int ind = devices.indexOf(newBlu);
-				if(ind >= 0) {
+				if(ind >= 0) { // already in list
 					ShellyAbstractDevice oldBlu = devices.get(ind);
-					if(oldBlu instanceof GhostDevice || newBlu.getLastTime() > oldBlu.getLastTime()) {
+					if(oldBlu instanceof GhostDevice || newBlu.getLastTime() > oldBlu.getLastTime() || oldBlu.getAddressAndPort().equals(newBlu.getAddressAndPort())) {
 						if(refreshProcess.get(ind) != null) {
 							refreshProcess.get(ind).cancel(true);
 						}

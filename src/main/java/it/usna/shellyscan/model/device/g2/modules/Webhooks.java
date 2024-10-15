@@ -47,10 +47,10 @@ public class Webhooks {
 		return hooks.get(index);
 	}
 
-	public static void restore(AbstractG2Device parent, long delay, JsonNode webhooks, ArrayList<String> errors) throws InterruptedException {
+	public static void restore(AbstractG2Device parent, long delay, JsonNode storedWH, ArrayList<String> errors) throws InterruptedException {
 		TimeUnit.MILLISECONDS.sleep(delay);
 		errors.add(parent.postCommand("Webhook.DeleteAll", "{}"));
-		for(JsonNode ac: webhooks.get("hooks")) {
+		for(JsonNode ac: storedWH.get("hooks")) {
 			ObjectNode thisAction = (ObjectNode)ac.deepCopy();
 			thisAction.remove("id");
 			TimeUnit.MILLISECONDS.sleep(delay);
@@ -59,6 +59,25 @@ public class Webhooks {
 				ret = "Action \"" + ac.path("name").asText("") + "\" - error: " + ret;
 			}
 			errors.add(ret);
+		}
+	}
+	
+	// restore all webhooks with a specific "cid" on a new "cid"
+	public static void restore(AbstractG2Device parent, String storedKey, /*int newCid*/ String newKey, long delay, JsonNode storedWH, ArrayList<String> errors) throws InterruptedException {
+		String typeIdxOld[] = storedKey.split(":");
+		String typeIdxNew[] = newKey.split(":");
+		for(JsonNode ac: storedWH.get("hooks")) {
+			if(ac.get("cid").intValue() == Integer.parseInt(typeIdxOld[1]) && ac.get("event").textValue().startsWith(typeIdxOld[0] + ".")) {
+				ObjectNode thisAction = (ObjectNode)ac.deepCopy();
+				thisAction.remove("id");
+				thisAction.put("cid", Integer.parseInt(typeIdxNew[1]));
+				TimeUnit.MILLISECONDS.sleep(delay);
+				String ret =  parent.postCommand("Webhook.Create", thisAction);
+				if(ret != null) {
+					ret = "Action \"" + ac.path("name").asText("") + "\" - error: " + ret;
+				}
+				errors.add(ret);
+			}
 		}
 	}
 

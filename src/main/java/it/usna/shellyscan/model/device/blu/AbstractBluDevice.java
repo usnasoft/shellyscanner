@@ -7,6 +7,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -21,6 +22,7 @@ import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
@@ -31,6 +33,7 @@ import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.blu.modules.Sensor;
 import it.usna.shellyscan.model.device.blu.modules.SensorsCollection;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
+import it.usna.shellyscan.model.device.g2.modules.Webhooks;
 import it.usna.shellyscan.model.device.modules.FirmwareManager;
 import it.usna.shellyscan.model.device.modules.InputResetManager;
 import it.usna.shellyscan.model.device.modules.LoginManager;
@@ -51,6 +54,7 @@ public abstract class AbstractBluDevice extends ShellyAbstractDevice {
 	
 	private final static String DEVICE_PREFIX = "bthomedevice:";
 	private final static String SENSOR_PREFIX = "bthomesensor:";
+	private final static String GROUP_PREFIX = "group:";
 	
 	protected AbstractBluDevice(AbstractG2Device parent, JsonNode info, String index) {
 		super(new BluInetAddressAndPort(parent.getAddressAndPort(), Integer.parseInt(index)));
@@ -65,9 +69,18 @@ public abstract class AbstractBluDevice extends ShellyAbstractDevice {
 	public void init(HttpClient httpClient/*, WebSocketClient wsClient*/) throws IOException {
 		this.httpClient = httpClient;
 //		this.wsClient = wsClient;
+		createSensors();
+	}
+	
+	private void createSensors() throws IOException {
 		sensors = new SensorsCollection(this);
 		meters = sensors.getTypes().length > 0 ? new Meters[] {sensors} : null;
 	}
+	
+//	@Override
+//	public BluInetAddressAndPort getAddressAndPort() {
+//		return (BluInetAddressAndPort)addressAndPort;
+//	}
 	
 	public ShellyAbstractDevice getParent() {
 		return parent;
@@ -176,7 +189,7 @@ public abstract class AbstractBluDevice extends ShellyAbstractDevice {
 			res.put(RestoreMsg.ERR_RESTORE_MODEL, null);
 			return res;
 		}
-		final String fileComponentIndex = usnaInfo.path("index").asText();
+		final String fileComponentIndex = usnaInfo.get("index").asText();
 		JsonNode fileComponents = backupJsons.get("Shelly.GetComponents.json").path("components");
 		for(JsonNode fileComp: fileComponents) {
 			if(fileComp.path("key").textValue().equals(DEVICE_PREFIX + fileComponentIndex)) { // find the component by fileComponentIndex
@@ -192,50 +205,83 @@ public abstract class AbstractBluDevice extends ShellyAbstractDevice {
 
 	@Override
 	public List<String> restore(Map<String, JsonNode> backupJsons, Map<RestoreMsg, String> data) {
-		// TODO remove from parent
 		final ArrayList<String> errors = new ArrayList<>();
 		try {
+			createSensors(); // in case they have been altered (from the web GUI)
+			
+			// Store groups components into HashMap<String, ArrayNode> groups (they will be removed deleting a sensor)
+			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+			JsonNode currentComponents = parent.getJSON("/rpc/Shelly.GetComponents?dynamic_only=true");
+			HashMap<String, ArrayNode> groups = new HashMap<>();
+			for (JsonNode storedComp: currentComponents.path("components")) {
+				String key = storedComp.get("key").asText();
+				if(key.startsWith(GROUP_PREFIX)) {
+					groups.put(key, (ArrayNode)storedComp.path("status").get("value"));
+				}
+			}
+
 			JsonNode usnaInfo = backupJsons.get("ShellyScannerBLU.json");
-			String fileComponentIndex = usnaInfo.get("index").asText();
+			String fileComponentIndex = usnaInfo.get("index").textValue();
 			JsonNode fileComponents = backupJsons.get("Shelly.GetComponents.json").path("components");
 			String fileAddr = null;
-			// Device
+			// BLU configuration: Device
 			for(JsonNode fileComp: fileComponents) {
 				if(fileComp.path("key").textValue().equals(DEVICE_PREFIX + fileComponentIndex)) { // find the component by fileComponentIndex
 					ObjectNode out = JsonNodeFactory.instance.objectNode();
-					out.put("id", Integer.parseInt(componentIndex));
+					out.put("id", Integer.parseInt(componentIndex)); // could be different
 					ObjectNode config = (ObjectNode)fileComp.path("config").deepCopy();
 					config.remove("id");
 					config.remove("addr"); // new (registered on host) addr could not be the stored addr
 					out.set("config", config);
+					TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 					errors.add(parent.postCommand("BTHomeDevice.SetConfig", out));
 					fileAddr = fileComp.at("/config/addr").textValue();
 					break;
 				}
 			}
+
 			// Sensors
-			errors.add(sensors.deleteAll());
+			HashMap<String, String> sensorsDictionary = new HashMap<>(); // old-new key ("bthomesensor:200"-"bthomesensor:201")
+			JsonNode storedWebHooks = backupJsons.get("Webhook.List.json");
+			errors.add(sensors.deleteAll()); // deleting a sensor all related webhooks are also deleted
 			for(JsonNode fileComp: fileComponents) {
-				if(fileComp.path("key").textValue().startsWith(SENSOR_PREFIX) && fileComp.at("/config/addr").textValue().equals(fileAddr)) {
-					// todo
-					TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+				final String fileKey = fileComp.path("key").textValue();
+				if(fileKey.startsWith(SENSOR_PREFIX) && fileComp.at("/config/addr").textValue().equals(fileAddr)) {
 					ObjectNode out = JsonNodeFactory.instance.objectNode();
 					ObjectNode config = (ObjectNode)fileComp.path("config");
 					config.put("addr", this.mac);
 					out.set("config", config);
-					errors.add(parent.postCommand("BTHome.AddSensor", out));
+					TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+					String newKey = parent.getJSON("BTHome.AddSensor", out).get("added").textValue(); // BTHome.AddSensor -> {"added":"bthomesensor:200"}
+					Webhooks.restore(parent, fileKey, newKey, Devices.MULTI_QUERY_DELAY, storedWebHooks, errors); // Webhook.Create
 					
-//					System.out.println(fileComp.path("config"));
+					sensorsDictionary.put(fileKey, newKey);
 				}
 			}
-			// Webhooks
-			// todo
 			
-			// init
-//		} catch(IOException e) {
-//			LOG.error("restore - RuntimeException", e);
-//			errors.add(RestoreMsg.ERR_UNKNOWN.toString());
-		} catch(RuntimeException | InterruptedException e) {
+			// restore groups
+			for(Map.Entry<String, ArrayNode> group: groups.entrySet()) {
+				ArrayNode conponents = group.getValue();
+				boolean change = false;
+				for(int i = 0; i < conponents.size(); i++) {
+					String newKey = sensorsDictionary.get(conponents.get(i).textValue());
+					if(newKey != null) {
+						change = true;
+						conponents.set(i, newKey);
+					}
+				}
+				if(change) {
+					ObjectNode grValue = JsonNodeFactory.instance.objectNode();
+					grValue.put("id", Integer.parseInt(group.getKey().substring(6)));
+					grValue.set("value", conponents);
+					TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+					errors.add(parent.postCommand("Group.Set", grValue));
+				}
+			}
+			
+			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+			createSensors();
+		} catch(IOException | RuntimeException | InterruptedException e) {
 			LOG.error("restore - RuntimeException", e);
 			errors.add(RestoreMsg.ERR_UNKNOWN.toString());
 		}

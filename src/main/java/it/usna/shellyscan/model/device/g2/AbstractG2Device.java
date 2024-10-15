@@ -278,6 +278,10 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 		return resp;
 	}
 
+	public JsonNode getJSON(final String method, JsonNode payload) throws IOException {
+		return getJSON(method, jsonMapper.writeValueAsString(payload));
+	}
+
 	public JsonNode getJSON(final String method, String payload) throws IOException {
 		final JsonNode resp = executeRPC(method, payload);
 		JsonNode result;
@@ -286,7 +290,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 		} else {
 			JsonNode error = resp.get("error");
 			throw new DeviceAPIException(error.get("code").intValue(), error.get("message").asText("Generic error"));
-		}	
+		}
 	}
 
 	private JsonNode executeRPC(final String method, String payload) throws IOException, StreamReadException { // StreamReadException extends ... IOException

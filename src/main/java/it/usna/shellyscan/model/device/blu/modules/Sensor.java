@@ -5,15 +5,17 @@ import com.fasterxml.jackson.databind.JsonNode;
 import it.usna.shellyscan.model.device.Meters;
 
 public class Sensor {
-	private final int id;
+	private final int id; // Id of the component instance
+	private final int idx; // BTHome object index
 	private final int objID;
 	private Meters.Type mType = null;
 	private String name;
 	private float value;
 	
-	Sensor(String component, int objID) {
-		this.id = Integer.parseInt(component.substring(13));
-		this.objID = objID;
+	Sensor(int id, JsonNode sensorConf) {
+		this.id = id;
+		this.idx = sensorConf.path("idx").intValue();
+		this.objID = sensorConf.path("obj_id").intValue();
 		this.mType = switch(objID) {
 		case 0x01 -> Meters.Type.BAT;
 		case 0x2E -> Meters.Type.H;
@@ -24,6 +26,14 @@ public class Sensor {
 	
 	public int getId() {
 		return id;
+	}
+	
+	public int getObjId() {
+		return objID;
+	}
+	
+	public int getIdx() {
+		return idx;
 	}
 	
 	public void fillSConfig(JsonNode config) {

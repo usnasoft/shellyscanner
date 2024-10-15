@@ -16,12 +16,13 @@ public class BTHomeDevice extends AbstractBluDevice {
 			"SBDW-002C", "Blu Door Window",
 			"SBHT-003C", "Blu H&T",
 			"SBBT-004CEU", "Blu Wall Switch 4",
-			"SBBT-004CUS", "Blu RC Button 4"
+			"SBBT-004CUS", "Blu RC Button 4",
+			"SBBT-USa8ac", "Blu RC Button 4" // not documented (test device?)
 			); 
 
 	public BTHomeDevice(ShellyAbstractDevice parent, JsonNode info, String localName, String index) {
 		super((AbstractG2Device)parent, info, index);
-		this.hostname = localName + "-" + mac;
+		this.hostname = localName + "/" + mac;
 		this.localName = localName;
 		typeName = Optional.ofNullable(DevDictionary.get(localName)).orElse("Generic BTHome");
 	}
