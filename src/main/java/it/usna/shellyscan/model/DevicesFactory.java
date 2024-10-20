@@ -50,6 +50,7 @@ import it.usna.shellyscan.model.device.g1.ShellyUNI;
 import it.usna.shellyscan.model.device.g1.modules.LoginManagerG1;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.g2.ShellyG2Unmanaged;
+import it.usna.shellyscan.model.device.g2.ShellyGateway;
 import it.usna.shellyscan.model.device.g2.ShellyMini1;
 import it.usna.shellyscan.model.device.g2.ShellyMini1PM;
 import it.usna.shellyscan.model.device.g2.ShellyMiniPM;
@@ -64,6 +65,7 @@ import it.usna.shellyscan.model.device.g2.ShellyPlusPlugUK;
 import it.usna.shellyscan.model.device.g2.ShellyPlusPlugUS;
 import it.usna.shellyscan.model.device.g2.ShellyPlusRGBW;
 import it.usna.shellyscan.model.device.g2.ShellyPlusSmoke;
+import it.usna.shellyscan.model.device.g2.ShellyPlusUNI;
 import it.usna.shellyscan.model.device.g2.ShellyPlusi4;
 import it.usna.shellyscan.model.device.g2.ShellyPro1;
 import it.usna.shellyscan.model.device.g2.ShellyPro1PM;
@@ -232,7 +234,9 @@ public class DevicesFactory {
 				case ShellyWallDimmer.ID -> new ShellyWallDimmer(address, port, name);
 				case ShellyPlusRGBW.ID -> new ShellyPlusRGBW(address, port, name);
 				case ShellyPlus0_10VDimmer.ID -> new ShellyPlus0_10VDimmer(address, port, name);
+				case ShellyGateway.ID -> new ShellyGateway(address, port, name);
 				case WallDisplay.ID -> new WallDisplay(address, port, name);
+				case ShellyPlusUNI.ID -> new ShellyPlusUNI(address, port, name);
 				// Plus - Battery
 				case ShellyPlusHT.ID -> new ShellyPlusHT(address, port, name);
 				case ShellyPlusSmoke.ID -> new ShellyPlusSmoke(address, port, name);
@@ -299,7 +303,6 @@ public class DevicesFactory {
 			case ShellyMini1PMG3.ID -> new ShellyMini1PMG3(address, port, name);
 			case ShellyMiniPMG3.ID -> new ShellyMiniPMG3(address, port, name);
 			case ShellyPlusHTG3.ID -> new ShellyPlusHTG3(address, port, name);
-
 			// X
 			case ShellyXMOD1.ID -> new ShellyXMOD1(address, port, name);
 			default -> new ShellyG3Unmanaged(address, port, name);
@@ -329,7 +332,7 @@ public class DevicesFactory {
 			LOG.error("createBlu", e);
 			blu = new ShellyBluUnmanaged(parent, info, type, index, e);
 		}
-		System.out.println(blu + " # " + parent);
+//		System.out.println(blu + " # " + parent);
 		try {
 			blu.init(httpClient/*, wsClient*/);
 		} catch (IOException e) {

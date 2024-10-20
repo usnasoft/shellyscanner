@@ -13,7 +13,6 @@ import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.ModulesHolder;
 import it.usna.shellyscan.model.device.RestoreMsg;
-import it.usna.shellyscan.model.device.g2.SensorAddOnHolder;
 import it.usna.shellyscan.model.device.g2.modules.Input;
 import it.usna.shellyscan.model.device.g2.modules.Relay;
 import it.usna.shellyscan.model.device.g2.modules.SensorAddOn;
@@ -23,7 +22,7 @@ import it.usna.shellyscan.model.device.modules.DeviceModule;
  * Shelly X MOD1 model
  * @author usna
  */
-public class ShellyXMOD1 extends AbstractG3Device implements ModulesHolder, SensorAddOnHolder {
+public class ShellyXMOD1 extends AbstractG3Device implements ModulesHolder {
 	public final static String ID = "XMOD1";
 	private int numInputs;
 	private int numOutputs;
@@ -104,11 +103,6 @@ public class ShellyXMOD1 extends AbstractG3Device implements ModulesHolder, Sens
 	}
 	
 	@Override
-	public SensorAddOn getSensorAddOn() {
-		return addOn;
-	}
-	
-	@Override
 	protected void fillSettings(JsonNode configuration) throws IOException {
 		super.fillSettings(configuration);
 		int i = 0;
@@ -170,7 +164,7 @@ public class ShellyXMOD1 extends AbstractG3Device implements ModulesHolder, Sens
 		if(numStoredInputs != numInputs || numStoredOutputs != numOutputs) {
 			res.put(RestoreMsg.WARN_RESTORE_XMOD_IO, null);
 		}
-		SensorAddOn.restoreCheck(this, backupJsons, res);
+		SensorAddOn.restoreCheck(this, addOn, backupJsons, res);
 	}
 
 	@Override
@@ -189,7 +183,7 @@ public class ShellyXMOD1 extends AbstractG3Device implements ModulesHolder, Sens
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 		}
 		
-		SensorAddOn.restore(this, backupJsons, errors);
+		SensorAddOn.restore(this, addOn, backupJsons, errors);
 	}
 	
 	@Override

@@ -16,7 +16,6 @@ import it.usna.shellyscan.model.device.InternalTmpHolder;
 import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.ModulesHolder;
 import it.usna.shellyscan.model.device.RestoreMsg;
-import it.usna.shellyscan.model.device.g2.SensorAddOnHolder;
 import it.usna.shellyscan.model.device.g2.modules.Input;
 import it.usna.shellyscan.model.device.g2.modules.Relay;
 import it.usna.shellyscan.model.device.g2.modules.Roller;
@@ -27,7 +26,7 @@ import it.usna.shellyscan.model.device.modules.DeviceModule;
  * Shelly 2PM G3 model 
  * @author usna
  */
-public class Shelly2PMG3 extends AbstractG3Device implements ModulesHolder, InternalTmpHolder, SensorAddOnHolder {
+public class Shelly2PMG3 extends AbstractG3Device implements ModulesHolder, InternalTmpHolder {
 	private final static Logger LOG = LoggerFactory.getLogger(Shelly2PMG3.class);
 	public final static String ID = "S2PMG3";
 	private boolean modeRelay;
@@ -245,7 +244,7 @@ public class Shelly2PMG3 extends AbstractG3Device implements ModulesHolder, Inte
 		} catch (IOException e) {
 			LOG.error("restoreCheck", e);
 		}
-		SensorAddOn.restoreCheck(this, backupJsons, res);
+		SensorAddOn.restoreCheck(this, addOn, backupJsons, res);
 	}
 
 	@Override
@@ -269,12 +268,7 @@ public class Shelly2PMG3 extends AbstractG3Device implements ModulesHolder, Inte
 		}
 
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-		SensorAddOn.restore(this, backupJsons, errors);
-	}
-	
-	@Override
-	public SensorAddOn getSensorAddOn() {
-		return addOn;
+		SensorAddOn.restore(this, addOn, backupJsons, errors);
 	}
 
 	@Override

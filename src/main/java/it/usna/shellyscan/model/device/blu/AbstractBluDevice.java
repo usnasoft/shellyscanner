@@ -52,7 +52,7 @@ public abstract class AbstractBluDevice extends ShellyAbstractDevice {
 	protected SensorsCollection sensors;
 	private Meters[] meters;
 	
-	private final static String DEVICE_PREFIX = "bthomedevice:";
+	public final static String DEVICE_PREFIX = "bthomedevice:";
 	private final static String SENSOR_PREFIX = "bthomesensor:";
 	private final static String GROUP_PREFIX = "group:";
 	

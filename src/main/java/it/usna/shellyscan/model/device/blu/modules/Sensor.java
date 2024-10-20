@@ -8,7 +8,7 @@ public class Sensor {
 	private final int id; // Id of the component instance
 	private final int idx; // BTHome object index
 	private final int objID;
-	private Meters.Type mType = null;
+	private final Meters.Type mType;
 	private String name;
 	private float value;
 	
@@ -20,6 +20,7 @@ public class Sensor {
 		case 0x01 -> Meters.Type.BAT;
 		case 0x2E -> Meters.Type.H;
 		case 0x45 -> Meters.Type.T;
+		case 0x05 -> Meters.Type.L;
 		default -> null;
 		};
 	}

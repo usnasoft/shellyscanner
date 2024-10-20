@@ -21,7 +21,8 @@ public abstract class Meters implements Comparable<Meters> {
 		T3, // temperature (celsius)
 		T4, // temperature (celsius)
 		EX, // ext switch status
-		PERC // 0-100
+		PERC, // 0-100
+		NUM // inetger
 	};
 	protected static NumberFormat NF = NumberFormat.getNumberInstance(Locale.ENGLISH);
 	static {
@@ -41,7 +42,7 @@ public abstract class Meters implements Comparable<Meters> {
 	}
 
 	/**
-	 * For named measures
+	 * Override for named measures
 	 */
 	public String getName(Type t) {
 		return null;

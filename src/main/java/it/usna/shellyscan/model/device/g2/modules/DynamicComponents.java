@@ -101,6 +101,7 @@ public class DynamicComponents {
 		}
 	}
 
+	// All components will keep stored IDs
 	public static void restore(AbstractG2Device parent, Map<String, JsonNode> backupJsons, List<String> errors) throws InterruptedException {
 		try {
 			final JsonNode storedComponents = backupJsons.get("Shelly.GetComponents.json");
@@ -112,34 +113,37 @@ public class DynamicComponents {
 				final Iterator<JsonNode> storedIt = storedComponents.path("components").iterator();
 				while (storedIt.hasNext()) {
 					JsonNode storedComp = storedIt.next();
-					String key = storedComp.get("key").asText();
+					String key = storedComp.get("key").textValue();
 					String typeIdx[] = key.split(":");
 					if(typeIdx.length == 2 && Arrays.stream(VIRTUAL_TYPES).anyMatch(typeIdx[0]::equalsIgnoreCase)) { // add virtual component
 						TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 						ObjectNode out = JsonNodeFactory.instance.objectNode();
 						out.put("type", typeIdx[0]);
-						out.put("id", Integer.parseInt(typeIdx[1]));
-						ObjectNode config = (ObjectNode)storedComp.path("config").deepCopy();
+						out.put("id", Integer.parseInt(typeIdx[1])); // keep old id
+						ObjectNode config = (ObjectNode)storedComp.path("config")/*.deepCopy()*/;
 						config.remove("id");
 						out.set("config", config);
 						errors.add(parent.postCommand("Virtual.Add", out));
 						existingKeys.add(key);
 
 						JsonNode value; // groups values are restored later
-						if(typeIdx[0].equalsIgnoreCase("Group") && (value = storedComp.path("status").get("value")) != null && value.size() > 0) {
+						if(typeIdx[0].equalsIgnoreCase("Group") && (value = storedComp.at("/status/value")) != null && value.size() > 0) {
 							groupsValues.add(new GroupValue(Integer.parseInt(typeIdx[1]), (ArrayNode)value));
 						}
 					} else if(typeIdx.length == 2 && typeIdx[0].equalsIgnoreCase(BTHOME_SENSOR) && existingDevices.contains(storedComp.at("/config/addr").asText())) { // add BTHome sensor
 						TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 						ObjectNode out = JsonNodeFactory.instance.objectNode();
-						out.set("config", storedComp.path("config"));
+						out.put("id", Integer.parseInt(typeIdx[1])); // keep old id
+						ObjectNode config = (ObjectNode)storedComp.path("config")/*.deepCopy()*/;
+						config.remove("id");
+						out.set("config", config);
 						errors.add(parent.postCommand("BTHome.AddSensor", out));
 						existingKeys.add(key);
 					} else if(typeIdx.length == 2 && typeIdx[0].equalsIgnoreCase(BTHOME_DEVICE) && existingDevices.contains(storedComp.at("/config/addr").asText())) { // add BTHome device
 						TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 						ObjectNode out = JsonNodeFactory.instance.objectNode();
-						out.put("id", Integer.parseInt(typeIdx[1]));
-						ObjectNode config = (ObjectNode)storedComp.path("config").deepCopy();
+						out.put("id", Integer.parseInt(typeIdx[1])); // keep old id
+						ObjectNode config = (ObjectNode)storedComp.path("config")/*.deepCopy()*/;
 						config.remove("id");
 						config.remove("addr");
 						out.set("config", config);
@@ -150,9 +154,9 @@ public class DynamicComponents {
 				// group values after all components have been added
 				for(GroupValue val: groupsValues) {
 					ObjectNode grValue = JsonNodeFactory.instance.objectNode();
-					groupRestoreValues(val.value, existingKeys);
+					groupRestoreValues(val.value, existingKeys); // alter val.value
 					grValue.put("id", val.groupId);
-					grValue.set("value", val.value); // todo only values included in existingKeys
+					grValue.set("value", val.value);
 					TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 					errors.add(parent.postCommand("Group.Set", grValue));
 				}
@@ -164,11 +168,11 @@ public class DynamicComponents {
 	
 	// remove non existing components from orig
 	private static void groupRestoreValues(ArrayNode orig, List<String> existing) {
-		Iterator<JsonNode> toRestore = orig.iterator();
-		while(toRestore.hasNext()) {
-			String val = toRestore.next().asText();
+		Iterator<JsonNode> origIterator = orig.iterator();
+		while(origIterator.hasNext()) {
+			String val = origIterator.next().asText();
 			if(existing.contains(val) == false) {
-				toRestore.remove();
+				origIterator.remove();
 			}
 		}
 	}

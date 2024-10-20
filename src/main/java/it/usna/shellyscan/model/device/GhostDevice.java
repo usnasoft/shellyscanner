@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
+import it.usna.shellyscan.model.device.blu.AbstractBluDevice;
 import it.usna.shellyscan.model.device.g2.modules.LoginManagerG2;
 import it.usna.shellyscan.model.device.modules.FirmwareManager;
 import it.usna.shellyscan.model.device.modules.InputResetManager;
@@ -162,7 +163,7 @@ public class GhostDevice extends ShellyAbstractDevice {
 		} else if(backupJsons.containsKey("Shelly.GetConfig.json")) {
 			return restoreCheckG2(backupJsons);
 		} else if(backupJsons.containsKey("ShellyScannerBLU.json")) {
-			return null; // TODO
+			return restoreCheckBLU(backupJsons);
 		} else {
 			return Collections.singletonMap(RestoreMsg.ERR_RESTORE_MODEL, null);
 		}
@@ -224,6 +225,30 @@ public class GhostDevice extends ShellyAbstractDevice {
 			LOG.error("restoreCheck", e);
 			res.put(RestoreMsg.ERR_RESTORE_MODEL, null);
 		}
+		return res;
+	}
+	
+	private Map<RestoreMsg, Object> restoreCheckBLU(Map<String, JsonNode> backupJsons) {
+		EnumMap<RestoreMsg, Object> res = new EnumMap<>(RestoreMsg.class);
+		JsonNode usnaInfo = backupJsons.get("ShellyScannerBLU.json");
+		String fileLocalName;
+		if(usnaInfo == null || (fileLocalName = usnaInfo.path("type").asText("")).equals(getTypeID()) == false) {
+			res.put(RestoreMsg.ERR_RESTORE_MODEL, null);
+			return res;
+		}
+		final String fileComponentIndex = usnaInfo.get("index").asText();
+		JsonNode fileComponents = backupJsons.get("Shelly.GetComponents.json").path("components");
+		for(JsonNode fileComp: fileComponents) {
+			if(fileComp.path("key").textValue().equals(AbstractBluDevice.DEVICE_PREFIX + fileComponentIndex)) { // find the component by fileComponentIndex
+				String fileMac = fileComp.path("config").path("addr").textValue();
+				if(fileMac.equals(mac) == false) {
+					res.put(RestoreMsg.PRE_QUESTION_RESTORE_HOST, fileLocalName + "-" + fileMac);
+				}
+//				break;
+				return res;
+			}
+		}
+		res.put(RestoreMsg.ERR_RESTORE_MODEL, null); // key not found;
 		return res;
 	}
 	

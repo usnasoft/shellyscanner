@@ -26,11 +26,11 @@ import it.usna.shellyscan.model.device.modules.DeviceModule;
  * Shelly plus 2PM model 
  * @author usna
  */
-public class ShellyPlus2PM extends AbstractG2Device implements ModulesHolder, InternalTmpHolder, SensorAddOnHolder {
+public class ShellyPlus2PM extends AbstractG2Device implements ModulesHolder, InternalTmpHolder {
 	private final static Logger LOG = LoggerFactory.getLogger(ShellyPlus2PM.class);
 	public final static String ID = "Plus2PM";
-	private boolean modeRelay;
 	private final static Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.W, Meters.Type.PF, Meters.Type.V, Meters.Type.I};
+	private boolean modeRelay;
 	private Relay relay0, relay1;
 	private Relay[] relaysArray;
 	private Roller roller;
@@ -244,7 +244,7 @@ public class ShellyPlus2PM extends AbstractG2Device implements ModulesHolder, In
 		} catch (IOException e) {
 			LOG.error("restoreCheck", e);
 		}
-		SensorAddOn.restoreCheck(this, backupJsons, res);
+		SensorAddOn.restoreCheck(this, addOn, backupJsons, res);
 	}
 
 	@Override
@@ -268,12 +268,7 @@ public class ShellyPlus2PM extends AbstractG2Device implements ModulesHolder, In
 			errors.add(RestoreMsg.ERR_RESTORE_MODE_COVER.name());
 		}
 
-		SensorAddOn.restore(this, backupJsons, errors);
-	}
-	
-	@Override
-	public SensorAddOn getSensorAddOn() {
-		return addOn;
+		SensorAddOn.restore(this, addOn, backupJsons, errors);
 	}
 
 	@Override

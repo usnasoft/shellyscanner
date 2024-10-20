@@ -19,7 +19,8 @@ public enum ChartType {
 	//		T4("dlgChartsTemp4Label", "dlgChartsTempYLabel", Meters.Type.T4),
 	T_ALL("dlgChartsTempAllLabel", "dlgChartsTempYLabel"),
 	H("dlgChartsHumidityLabel", "dlgChartsHumidityYLabel", Meters.Type.H),
-	LUX("dlgChartsLuxLabel", "dlgChartsLuxYLabel", Meters.Type.L);
+	LUX("dlgChartsLuxLabel", "dlgChartsLuxYLabel", Meters.Type.L),
+	FREQ("dlgChartsFreqLabel", "dlgChartsFreqYLabel", Meters.Type.FREQ);
 
 	final String yLabel;
 	final String label;

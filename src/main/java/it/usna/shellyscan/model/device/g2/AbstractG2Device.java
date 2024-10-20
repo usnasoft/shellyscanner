@@ -296,7 +296,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 	private JsonNode executeRPC(final String method, String payload) throws IOException, StreamReadException { // StreamReadException extends ... IOException
 		try {
 			ContentResponse response = httpClient.POST(uriPrefix + "/rpc")
-					.body(new StringRequestContent("application/json", "{\"id\":1, \"method\":\"" + method + "\", \"params\":" + payload + "}", StandardCharsets.UTF_8))
+					.body(new StringRequestContent("application/json", "{\"id\":1,\"method\":\"" + method + "\",\"params\":" + payload + "}", StandardCharsets.UTF_8))
 					.send();
 			int statusCode = response.getStatus(); //response.getContentAsString()
 			if(statusCode == HttpStatus.OK_200) {
@@ -483,7 +483,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 			}
 			
 			errors.add("->r_step:DynamicComponents");
-			DynamicComponents.restore(this, backupJsons, errors);
+			DynamicComponents.restore(this, backupJsons, errors); // only devices with same (existing) addr are restored; if a device is no more present, related  webooks will signal error(s)
 			
 			errors.add("->r_step:restoreCommonConfig");
 			restoreCommonConfig(config, delay, userPref, errors);

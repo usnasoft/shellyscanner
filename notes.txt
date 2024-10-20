@@ -280,16 +280,18 @@ bug fix rgbw2
 charts scroll
 
 1.2.0
-// BLU
-// todo it.usna.shellyscan.model.device.GhostDevice.restoreCheck(Map<String, JsonNode>)
-// todo remove bthome components restore
-// tofo restore groups
-selection subtraction ctrl+shift
+BLU (BTHome)
+BLU Gateway
+Plus UNI restore todo
+selection subtraction (ctrl+shift)
+// todo remove bthome components restore (?)
+
 // todo verifica gruppi restore G2; restore actions BLU? restore sensors? verifica component prima di restore actions (cid > 200) - errore nel restore delle actions (i cid potrebbero cambiare)
- prendiamo le action con cid < 200/100 e poi i componenti dinamici fanno i loro?
+ prendiamo le action con cid < 200/100 e poi i componenti dinamici fanno i loro (?)
 
 ---
 // TODO
+// Shelly Pro RGBWW PM
 // portare il modello sulla tabella per semplificare il calcolo dei tooltip (e delle icone di stato)
 // Xmod1 sganciare bottone se detatched (?)
 // Button push if no actions

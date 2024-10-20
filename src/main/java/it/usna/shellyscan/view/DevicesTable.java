@@ -205,7 +205,6 @@ public class DevicesTable extends ExTooltipTable {
 		if(((Component) evt.getSource()).isVisible() && (r = rowAtPoint(evt.getPoint())) >= 0 && (c = columnAtPoint(evt.getPoint())) >= 0 &&
 				(value = getValueAt(r, c)) != null && (getEditingColumn() == c && getEditingRow() == r) == false) {
 			final int modelCol = convertColumnIndexToModel(c);
-//			final String ret;
 			if(modelCol == COL_UPTIME_IDX) {
 				adaptTooltipLocation = false;
 				long s = ((Number)value).longValue();
@@ -220,14 +219,7 @@ public class DevicesTable extends ExTooltipTable {
 			} else if (value instanceof ImageIcon icon) {
 				adaptTooltipLocation = false;
 				return icon.getDescription();
-//			} else if(value instanceof DeviceModule[] dmArray && isColumnVisible(COL_SOURCE_IDX) == false && dmArray.length > 0 && dmArray[0].getLastSource() != null) {
-//				adaptTooltipLocation = false;
-//				return Arrays.stream(dmArray).
-//						map(rel -> String.format(LABELS.getString("col_last_source_tooltip"), rel, rel.getLastSource())).collect(Collectors.joining("<br>", "<html>", "</html>"));
-//			} else if(value instanceof DeviceModule dm && isColumnVisible(COL_SOURCE_IDX) == false && (ret = dm.getLastSource()) != null) {
-//				adaptTooltipLocation = false;
-//				return "<html>" + String.format(LABELS.getString("col_last_source_tooltip"), value, ret) + "</html>";
-			} else if(value instanceof ThermostatG1 therm) { // TRV
+			} else if(value instanceof ThermostatG1 therm) { // TRV G1
 				adaptTooltipLocation = false;
 				return String.format(Locale.ENGLISH, LABELS.getString("col_command_therm_tooltip"), therm.getCurrentProfile(), therm.getTargetTemp(), therm.getPosition());
 			} else if(value instanceof Meters[] meters) {
@@ -235,10 +227,14 @@ public class DevicesTable extends ExTooltipTable {
 						getCellRect(r, c, false).width <= getCellRenderer(r, c).getTableCellRendererComponent(this, value, false, false, r, c).getPreferredSize().width) {
 					adaptTooltipLocation = true;
 					String tt = "<html><table border='0' cellspacing='0' cellpadding='0'>";
+					boolean labelHolder = false;
 					for(Meters m: meters) {
 						tt += "<tr>";
 						if(m instanceof LabelHolder) {
 							tt += "<td><b>" + ((LabelHolder)m).getLabel() + "</b>&nbsp;</td>";
+							labelHolder = true;
+						} else if(labelHolder) { // skip first cell for alignment
+							tt += "<td></td>";
 						}
 						for(Meters.Type t: m.getTypes()) {
 							final String name = m.getName(t);

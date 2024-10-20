@@ -28,8 +28,9 @@ public class SensorsCollection extends Meters {
 	private void init() throws IOException {
 		JsonNode objects = blu.getJSON("/rpc/BTHomeDevice.GetKnownObjects?id=" + blu.getIndex()).path("objects");
 		final Iterator<JsonNode> compIt = objects.iterator();
-		
+
 		ArrayList<Sensor> sensors = new ArrayList<>();
+		Meters.Type lastT = null;
 		while (compIt.hasNext()) {
 			JsonNode sensorConf = compIt.next();
 			String comp = sensorConf.path("component").asText();
@@ -37,6 +38,19 @@ public class SensorsCollection extends Meters {
 				Sensor s = new Sensor(Integer.parseInt(comp.substring(13)), sensorConf);
 				Type t = s.getMeterType();
 				if(t != null) {
+					if(t == Meters.Type.T) { // up to 5 temperature measures
+						if(lastT == null) {
+							lastT = Meters.Type.T;
+						} else if(lastT == Meters.Type.T) {
+							t = lastT = Meters.Type.T1;
+						} else if(lastT == Meters.Type.T1) {
+							t = lastT = Meters.Type.T2;
+						} else if(lastT == Meters.Type.T2) {
+							t = lastT = Meters.Type.T3;
+						} else if(lastT == Meters.Type.T3) {
+							t = lastT = Meters.Type.T4;
+						}
+					}
 					measuresMap.put(t, s);
 				}
 				sensors.add(s);

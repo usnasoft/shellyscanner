@@ -26,7 +26,7 @@ public class LightWhite implements WhiteInterface {
 	public LightWhite(AbstractG1Device parent, final String command, int index) {
 		this.parent = parent;
 		this.prefix = command + index;
-		minBrightness = 1;
+		this.minBrightness = 1;
 	}
 	
 	public LightWhite(AbstractG1Device parent, final String command, int minBrightness, int index) {

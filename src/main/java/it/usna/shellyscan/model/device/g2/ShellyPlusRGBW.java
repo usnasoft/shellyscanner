@@ -28,7 +28,7 @@ import it.usna.shellyscan.model.device.modules.DeviceModule;
  * Shelly plus RGBW PM model 
  * @author usna
  */
-public class ShellyPlusRGBW extends AbstractG2Device implements ModulesHolder, InternalTmpHolder, SensorAddOnHolder {
+public class ShellyPlusRGBW extends AbstractG2Device implements ModulesHolder, InternalTmpHolder {
 	private final static Logger LOG = LoggerFactory.getLogger(ShellyPlusRGBW.class);
 	public enum Profile {
 		LIGHT("light"), RGB("rgb"), RGBW("rgbw");
@@ -299,7 +299,7 @@ public class ShellyPlusRGBW extends AbstractG2Device implements ModulesHolder, I
 		} catch (IOException e) {
 			LOG.error("restoreCheck", e);
 		}
-		SensorAddOn.restoreCheck(this, backupJsons, res);
+		SensorAddOn.restoreCheck(this, addOn, backupJsons, res);
 	}
 
 	@Override
@@ -338,12 +338,7 @@ public class ShellyPlusRGBW extends AbstractG2Device implements ModulesHolder, I
 		errors.add(postCommand("PlusRGBWPM.SetConfig", "{\"config\":{\"hf_mode\":" + hf + "}}"));
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 		
-		SensorAddOn.restore(this, backupJsons, errors);
-	}
-
-	@Override
-	public SensorAddOn getSensorAddOn() {
-		return addOn;
+		SensorAddOn.restore(this, addOn, backupJsons, errors);
 	}
 	
 	@Override
