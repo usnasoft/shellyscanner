@@ -31,20 +31,37 @@ public class Webhooks {
 	public void fillSettings() throws IOException {
 		hooks.clear();
 		JsonNode wh = parent.getJSON("/rpc/Webhook.List").get("hooks");
-		wh.forEach(node -> {
-			int cid = node.get("cid").asInt();
+		wh.forEach(hook -> {
+			int cid = hook.get("cid").asInt();
 			Map<String, Webhook> cidMap = hooks.get(cid);
 			if(cidMap == null) {
 				cidMap = new HashMap<>();
 				hooks.put(cid, cidMap);
 			}
-			String event = node.get("event").asText();
-			cidMap.put(event, new Webhook(node));
+			String event = hook.get("event").asText();
+			cidMap.put(event, new Webhook(hook));
 		});
 	}
 	
-	public Map<String, Webhook> getHooks(int index) {
-		return hooks.get(index);
+	public void fillDynamicComponentsSettings() throws IOException {
+		hooks.clear();
+		JsonNode wh = parent.getJSON("/rpc/Webhook.List").get("hooks");
+		wh.forEach(hook -> {
+			int cid = hook.get("cid").asInt();
+			if(cid >= DynamicComponents.MIN_ID && cid <= DynamicComponents.MAX_ID) {
+				Map<String, Webhook> cidMap = hooks.get(cid);
+				if(cidMap == null) {
+					cidMap = new HashMap<>();
+					hooks.put(cid, cidMap);
+				}
+				String event = hook.get("event").asText();
+				cidMap.put(event, new Webhook(hook));
+			}
+		});
+	}
+	
+	public Map<String, Webhook> getHooks(int cid) {
+		return hooks.get(cid);
 	}
 
 	public static void restore(AbstractG2Device parent, long delay, JsonNode storedWH, ArrayList<String> errors) throws InterruptedException {
@@ -115,4 +132,6 @@ public class Webhooks {
 			return name + " - " + enable;
 		}
 	}
+	
+	record EventHook(String event, Webhook hook) {}
 }

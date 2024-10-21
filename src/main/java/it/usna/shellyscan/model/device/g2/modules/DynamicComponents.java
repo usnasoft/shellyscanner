@@ -32,6 +32,9 @@ public class DynamicComponents {
 	private final static String BTHOME_DEVICE = "BTHomeDevice";
 	private final static String BTHOME_SENSOR = "BTHomeSensor";
 	
+	public final static int MIN_ID = 200;
+	public final static int MAX_ID = 299;
+	
 //	/**
 //	 * @param components - result of <IP>/rpc/Shelly.GetComponents?dynamic_only=true
 //	 */

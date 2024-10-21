@@ -9,20 +9,27 @@ public class Sensor {
 	private final int idx; // BTHome object index
 	private final int objID;
 	private final Meters.Type mType;
+	private final boolean digitaiInput;
 	private String name;
 	private float value;
-	
+
 	Sensor(int id, JsonNode sensorConf) {
 		this.id = id;
 		this.idx = sensorConf.path("idx").intValue();
 		this.objID = sensorConf.path("obj_id").intValue();
-		this.mType = switch(objID) {
-		case 0x01 -> Meters.Type.BAT;
-		case 0x2E -> Meters.Type.H;
-		case 0x45 -> Meters.Type.T;
-		case 0x05 -> Meters.Type.L;
-		default -> null;
-		};
+		if(objID == 0x3A) {
+			this.digitaiInput = true;
+			this.mType = null;
+		} else {
+			this.digitaiInput = false;
+			this.mType = switch(objID) {
+			case 0x01 -> Meters.Type.BAT;
+			case 0x2E -> Meters.Type.H;
+			case 0x45 -> Meters.Type.T;
+			case 0x05 -> Meters.Type.L;
+			default -> null;
+			};
+		}
 	}
 	
 	public int getId() {
@@ -55,6 +62,10 @@ public class Sensor {
 	
 	public Meters.Type getMeterType() {
 		return mType;
+	}
+	
+	public boolean isInput() {
+		return digitaiInput;
 	}
 	
 	@Override
