@@ -10,7 +10,7 @@ public class ShellyBluUnmanaged extends AbstractBluDevice implements ShellyUnman
 	private String type;
 	private Throwable ex;
 
-	public ShellyBluUnmanaged(ShellyAbstractDevice parent, JsonNode info, String localName, String componentIndex) {
+	private ShellyBluUnmanaged(ShellyAbstractDevice parent, JsonNode info, String localName, String componentIndex) {
 		super((AbstractG2Device)parent, info, componentIndex);
 		this.type = localName;
 		this.hostname = localName + "/" + mac;
@@ -28,7 +28,7 @@ public class ShellyBluUnmanaged extends AbstractBluDevice implements ShellyUnman
 	}
 	
 	public String getTypeName() {
-		return "Generic BTHome";
+		return "Unmanaged BTHome";
 	}
 	
 	@Override
