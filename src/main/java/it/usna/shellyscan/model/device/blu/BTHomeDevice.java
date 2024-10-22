@@ -3,11 +3,13 @@ package it.usna.shellyscan.model.device.blu;
 import java.io.IOException;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 import org.eclipse.jetty.client.HttpClient;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
+import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.ModulesHolder;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.blu.modules.Sensor;
@@ -30,25 +32,30 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 			"SBBT-004CUS", "Blu RC Button 4",
 			"SBBT-USa8ac", "Blu RC Button 4" // not documented (test device?)
 			);
-	private Webhooks webhooks;
+	private Webhooks webhooks = new Webhooks(parent);
 	private Input[] inputs;
 
-	public BTHomeDevice(ShellyAbstractDevice parent, JsonNode info, String localName, String index) {
-		super((AbstractG2Device)parent, info, index);
+	public BTHomeDevice(ShellyAbstractDevice parent, JsonNode compInfo, String localName, String index) {
+		super((AbstractG2Device)parent, compInfo, index);
 		this.hostname = localName + "/" + mac;
 		this.localName = localName;
 		this.typeName = Optional.ofNullable(DevDictionary.get(localName)).orElse("Generic BTHome");
+		this.webhooks = new Webhooks(this.parent);
 	}
-
+	
 	@Override
 	public void init(HttpClient httpClient) throws IOException {
-		super.init(httpClient);
+		this.httpClient = httpClient;
+		createSensors();
 		Sensor in[] = sensors.getInputSensors();
-		inputs = new Input[in.length];
+		this.inputs = new Input[in.length];
 		for(int i = 0; i < in.length; i++) {
 			inputs[i] = new Input(/*this.parent, in[i].getId()*/);
 			inputs[i].setEnabled(true);
 		}
+		try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e) {}
+		refreshStatus();
+		refreshSettings();
 	}
 
 	@Override
@@ -73,8 +80,8 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 	
 	@Override
 	public void refreshSettings() throws IOException {
-		super.refreshSettings();
-		webhooks.fillDynamicComponentsSettings();
+//		super.refreshSettings();
+		webhooks.fillBTHomesensorSettings();
 		
 		Sensor in[] = sensors.getInputSensors();
 		for(int i = 0; i < in.length; i++) {

@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -14,12 +15,13 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 
 public class Webhooks {
-	public final static String INPUT_ON = "input.toggle_on";
-	public final static String INPUT_OFF = "input.toggle_off";
-	public final static String INPUT_PUSH = "input.button_push";
-	public final static String INPUT_LONG_PUSH = "input.button_longpush";
-	public final static String INPUT_DOUBLE_PUSH = "input.button_doublepush";
-	public final static String INPUT_TRIPLE_PUSH = "input.button_triplepush";
+//	public final static String INPUT_ON = "input.toggle_on";
+//	public final static String INPUT_OFF = "input.toggle_off";
+//	public final static String INPUT_PUSH = "input.button_push";
+//	public final static String INPUT_LONG_PUSH = "input.button_longpush";
+//	public final static String INPUT_DOUBLE_PUSH = "input.button_doublepush";
+//	public final static String INPUT_TRIPLE_PUSH = "input.button_triplepush";
+	private final static String SENSOR_EVENT_PREFIX = DynamicComponents.BTHOME_SENSOR + ".";
 	
 	private final AbstractG2Device parent;
 	private Map<Integer, Map<String, Webhook>> hooks = new HashMap<>();
@@ -33,28 +35,30 @@ public class Webhooks {
 		JsonNode wh = parent.getJSON("/rpc/Webhook.List").get("hooks");
 		wh.forEach(hook -> {
 			int cid = hook.get("cid").asInt();
-			Map<String, Webhook> cidMap = hooks.get(cid);
-			if(cidMap == null) {
-				cidMap = new HashMap<>();
-				hooks.put(cid, cidMap);
+			if(cid < DynamicComponents.MIN_ID) {
+				Map<String, Webhook> cidMap = hooks.get(cid);
+				if(cidMap == null) {
+					cidMap = new LinkedHashMap<>();
+					hooks.put(cid, cidMap);
+				}
+				String event = hook.get("event").asText();
+				cidMap.put(event, new Webhook(hook));
 			}
-			String event = hook.get("event").asText();
-			cidMap.put(event, new Webhook(hook));
 		});
 	}
 	
-	public void fillDynamicComponentsSettings() throws IOException {
+	public void fillBTHomesensorSettings() throws IOException {
 		hooks.clear();
 		JsonNode wh = parent.getJSON("/rpc/Webhook.List").get("hooks");
 		wh.forEach(hook -> {
 			int cid = hook.get("cid").asInt();
-			if(cid >= DynamicComponents.MIN_ID && cid <= DynamicComponents.MAX_ID) {
+			String event;
+			if(cid >= DynamicComponents.MIN_ID && cid <= DynamicComponents.MAX_ID && (event = hook.get("event").textValue()).startsWith(SENSOR_EVENT_PREFIX)) {
 				Map<String, Webhook> cidMap = hooks.get(cid);
 				if(cidMap == null) {
-					cidMap = new HashMap<>();
+					cidMap = new LinkedHashMap<>();
 					hooks.put(cid, cidMap);
 				}
-				String event = hook.get("event").asText();
 				cidMap.put(event, new Webhook(hook));
 			}
 		});

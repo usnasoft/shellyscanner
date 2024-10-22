@@ -382,6 +382,10 @@ public class DevicesTable extends ExTooltipTable {
 		}
 	}
 	
+	public void setDevicesModel() {
+		// todo
+	}
+	
 	public void addRow(ShellyAbstractDevice device, GhostDevice ghost) {
 		((UsnaTableModel)dataModel).addRow(generateRow(device, ghost, new Object[DevicesTable.COL_COMMAND_IDX + 1]));
 		columnsWidthAdapt();

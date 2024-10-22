@@ -12,7 +12,10 @@ import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.blu.AbstractBluDevice;
 
-// todo measures order ? 
+/**
+ * Collection of BTHomeDevice related sensors and "Meters" implementation
+ */
+// todo measures order ?
 public class SensorsCollection extends Meters {
 	private final AbstractBluDevice blu;
 	private Sensor[] sensorsArray;
@@ -35,7 +38,7 @@ public class SensorsCollection extends Meters {
 		while (compIt.hasNext()) {
 			JsonNode sensorConf = compIt.next();
 			String comp = sensorConf.path("component").asText();
-			if(comp != null && comp.startsWith("bthomesensor:")) {
+			if(comp != null && comp.startsWith(AbstractBluDevice.SENSOR_KEY_PREFIX)) {
 				final int id = Integer.parseInt(comp.substring(13));
 				final Sensor s = new Sensor(id, sensorConf);
 				if(s.isInput()) {

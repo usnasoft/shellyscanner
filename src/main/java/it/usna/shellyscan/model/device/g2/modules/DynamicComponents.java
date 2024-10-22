@@ -28,9 +28,10 @@ import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 public class DynamicComponents {
 	private final static Logger LOG = LoggerFactory.getLogger(DynamicComponents.class);
 	
-	private final static String[] VIRTUAL_TYPES = {"Boolean", "Number", "Text", "Enum", "Group", "Button"};
-	private final static String BTHOME_DEVICE = "BTHomeDevice";
-	private final static String BTHOME_SENSOR = "BTHomeSensor";
+	public final static String GROUP_TYPE = "group";
+	public final static String[] VIRTUAL_TYPES = {"boolean", "number", "text", "enum", GROUP_TYPE, "button"};
+	public final static String BTHOME_DEVICE = "btHomedevice";
+	public final static String BTHOME_SENSOR = "bthomesensor";
 	
 	public final static int MIN_ID = 200;
 	public final static int MAX_ID = 299;
@@ -56,7 +57,7 @@ public class DynamicComponents {
 		while (compIt.hasNext()) {
 			JsonNode comp = compIt.next();
 			String key = comp.get("key").asText();
-			if(Arrays.stream(VIRTUAL_TYPES).anyMatch(type -> key.toLowerCase().startsWith(type.toLowerCase() + ":"))) { // VIRTUAL_TYPES
+			if(Arrays.stream(VIRTUAL_TYPES).anyMatch(type -> key/*.toLowerCase()*/.startsWith(type/*.toLowerCase()*/ + ":"))) { // VIRTUAL_TYPES
 				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 				parent.postCommand("Virtual.Delete", "{\"key\":\"" + key + "\"}");
 			} else if(key.toLowerCase().startsWith("bthomesensor" + ":")) { // BTHomeSensor
@@ -118,7 +119,7 @@ public class DynamicComponents {
 					JsonNode storedComp = storedIt.next();
 					String key = storedComp.get("key").textValue();
 					String typeIdx[] = key.split(":");
-					if(typeIdx.length == 2 && Arrays.stream(VIRTUAL_TYPES).anyMatch(typeIdx[0]::equalsIgnoreCase)) { // add virtual component
+					if(typeIdx.length == 2 && Arrays.stream(VIRTUAL_TYPES).anyMatch(typeIdx[0]::equals/*IgnoreCase*/)) { // add virtual component
 						TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 						ObjectNode out = JsonNodeFactory.instance.objectNode();
 						out.put("type", typeIdx[0]);
@@ -130,10 +131,10 @@ public class DynamicComponents {
 						existingKeys.add(key);
 
 						JsonNode value; // groups values are restored later
-						if(typeIdx[0].equalsIgnoreCase("Group") && (value = storedComp.at("/status/value")) != null && value.size() > 0) {
+						if(typeIdx[0].equals/*IgnoreCase*/(GROUP_TYPE) && (value = storedComp.at("/status/value")) != null && value.size() > 0) {
 							groupsValues.add(new GroupValue(Integer.parseInt(typeIdx[1]), (ArrayNode)value));
 						}
-					} else if(typeIdx.length == 2 && typeIdx[0].equalsIgnoreCase(BTHOME_SENSOR) && existingDevices.contains(storedComp.at("/config/addr").asText())) { // add BTHome sensor
+					} else if(typeIdx.length == 2 && typeIdx[0].equals/*IgnoreCase*/(BTHOME_SENSOR) && existingDevices.contains(storedComp.at("/config/addr").asText())) { // add BTHome sensor
 						TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 						ObjectNode out = JsonNodeFactory.instance.objectNode();
 						out.put("id", Integer.parseInt(typeIdx[1])); // keep old id
@@ -142,7 +143,7 @@ public class DynamicComponents {
 						out.set("config", config);
 						errors.add(parent.postCommand("BTHome.AddSensor", out));
 						existingKeys.add(key);
-					} else if(typeIdx.length == 2 && typeIdx[0].equalsIgnoreCase(BTHOME_DEVICE) && existingDevices.contains(storedComp.at("/config/addr").asText())) { // add BTHome device
+					} else if(typeIdx.length == 2 && typeIdx[0].equals/*IgnoreCase*/(BTHOME_DEVICE) && existingDevices.contains(storedComp.at("/config/addr").asText())) { // add BTHome device
 						TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 						ObjectNode out = JsonNodeFactory.instance.objectNode();
 						out.put("id", Integer.parseInt(typeIdx[1])); // keep old id

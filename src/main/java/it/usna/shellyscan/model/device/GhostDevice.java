@@ -239,7 +239,7 @@ public class GhostDevice extends ShellyAbstractDevice {
 		final String fileComponentIndex = usnaInfo.get("index").asText();
 		JsonNode fileComponents = backupJsons.get("Shelly.GetComponents.json").path("components");
 		for(JsonNode fileComp: fileComponents) {
-			if(fileComp.path("key").textValue().equals(AbstractBluDevice.DEVICE_PREFIX + fileComponentIndex)) { // find the component by fileComponentIndex
+			if(fileComp.path("key").textValue().equals(AbstractBluDevice.DEVICE_KEY_PREFIX + fileComponentIndex)) { // find the component by fileComponentIndex
 				String fileMac = fileComp.path("config").path("addr").textValue();
 				if(fileMac.equals(mac) == false) {
 					res.put(RestoreMsg.PRE_QUESTION_RESTORE_HOST, fileLocalName + "-" + fileMac);

@@ -426,10 +426,10 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 		}
 	}
 	
-	private void newBluDevice(ShellyAbstractDevice parent, JsonNode info, String key) {
+	private void newBluDevice(ShellyAbstractDevice parent, JsonNode compInfo, String key) {
 		String id = key.substring(13);
 		try {
-			AbstractBluDevice newBlu = DevicesFactory.createBlu(parent, httpClient, /*wsClient,*/ info, id);
+			AbstractBluDevice newBlu = DevicesFactory.createBlu(parent, httpClient, /*wsClient,*/ compInfo, id);
 			synchronized(devices) {
 				int ind = devices.indexOf(newBlu);
 				if(ind >= 0) { // already in list
