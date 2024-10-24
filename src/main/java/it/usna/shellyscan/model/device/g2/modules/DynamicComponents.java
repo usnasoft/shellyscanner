@@ -30,7 +30,7 @@ public class DynamicComponents {
 	
 	public final static String GROUP_TYPE = "group";
 	public final static String[] VIRTUAL_TYPES = {"boolean", "number", "text", "enum", GROUP_TYPE, "button"};
-	public final static String BTHOME_DEVICE = "btHomedevice";
+	public final static String BTHOME_DEVICE = "bthomedevice";
 	public final static String BTHOME_SENSOR = "bthomesensor";
 	
 	public final static int MIN_ID = 200;

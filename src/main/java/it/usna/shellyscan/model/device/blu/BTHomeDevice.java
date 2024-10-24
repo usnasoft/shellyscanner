@@ -20,6 +20,7 @@ import it.usna.shellyscan.model.device.modules.DeviceModule;
 
 /**
  * Generic BTHome device with measures and/or buttons
+ * https://shelly-api-docs.shelly.cloud/gen2/DynamicComponents/BTHome/
  */
 public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 	private String typeName;
