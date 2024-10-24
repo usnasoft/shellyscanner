@@ -98,6 +98,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 	private AppProperties temporaryProp = new AppProperties(); // normal view properties stored here on detailed view
 	private JLabel statusLabel = new JLabel();
 	private boolean statusLineReserved = false;
+	private boolean useArchive;
 	private JTextField textFieldFilter = new JTextField();
 	private Devices model;
 	private JToolBar toolBar = new JToolBar();
@@ -225,7 +226,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 			i -> new DialogDeviceScripts(MainView.this, model, i) );
 
 	private Action notesAction = new UsnaSelectedAction(null, devicesTable, "action_notes_name", "action_notes_tooltip", "/images/Write2-16.png", "/images/Write2.png",
-			i -> new NotesEditor(this, model.getGhost(i)) );
+			i -> new NotesEditor(this, model.getGhost(i), i) );
 	
 	private Action eraseGhostAction = new UsnaAction(this, "action_name_delete_ghost", null, "/images/Minus16.png", null, e -> {
 		boolean delete = true;
@@ -285,6 +286,10 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 	});
 
 	public MainView(final Devices model, final ScannerProperties appProp) {
+		setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
+		setIconImage(Main.ICON);
+		setTitle(Main.APP_NAME + " " + Main.VERSION);
+		
 		this.model = model;
 		this.appProp = appProp;
 		model.addListener(this);
@@ -294,10 +299,8 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		restoreAction = new RestoreAction(this, devicesTable, appProp, model);
 
 		loadProperties(appProp, 0.66f, 0.5f);
-
-		setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
-		setIconImage(Main.ICON);
-		setTitle(Main.APP_NAME + " " + Main.VERSION);
+		
+		useArchive = appProp.getBoolProperty(ScannerProperties.PROP_USE_ARCHIVE, true);
 
 		// Status bar
 		JPanel statusPanel = new JPanel();
@@ -572,7 +575,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 				devicesSettingsAction.setEnabled(selection && selectionNoBLU);
 				chartAction.setEnabled(selectionNoGhost);
 				scriptManagerAction.setEnabled(singleSelectionNoGhost && d instanceof AbstractG2Device);
-				notesAction.setEnabled(singleSelection && appProp.getBoolProperty(ScannerProperties.PROP_USE_ARCHIVE, true));
+				notesAction.setEnabled(singleSelection && useArchive);
 				
 				displayStatus();
 			}
@@ -655,18 +658,20 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 	}
 
 	@Override
-	public void update(Devices.EventType mesgType, Integer msgBody) {
+	public void update(Devices.EventType mesgType, Integer mIndex) {
 		SwingUtilities.invokeLater(() -> {
 			try {
 				if(mesgType == Devices.EventType.UPDATE) {
-					int modelIndex = msgBody;
+					int modelIndex = mIndex;
 					ShellyAbstractDevice d = model.get(modelIndex);
 					devicesTable.updateRow(d, model.getGhost(d, modelIndex), modelIndex);
 				} else if(mesgType == Devices.EventType.ADD) {
-					devicesTable.addRow(model.get(msgBody), model.getGhost(msgBody));
+					devicesTable.addRow(model.get(mIndex), model.getGhost(mIndex));
 					displayStatus();
 				} else if(mesgType == Devices.EventType.SUBSTITUTE) {
-					devicesTable.updateRow(model.get(msgBody), model.getGhost(msgBody), msgBody);
+					int modelIndex = mIndex;
+					ShellyAbstractDevice d = model.get(modelIndex);
+					devicesTable.updateRow(d, model.getGhost(d, modelIndex), modelIndex);
 //					devicesTable.resetRowComputedHeight(msgBody);
 					devicesTable.columnsWidthAdapt();
 					tableSelectionListener.valueChanged(new ListSelectionEvent(devicesTable, -1, -1, false));
@@ -677,7 +682,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 				} else if(mesgType == Devices.EventType.CLEAR) {
 					tabModel.clear();
 				} else if(mesgType == Devices.EventType.DELETE) {
-					tabModel.removeRow(msgBody);
+					tabModel.removeRow(mIndex);
 				}
 			} catch (IndexOutOfBoundsException ex) {
 				LOG.debug("Unexpected", ex); // rescan/shutdown
@@ -696,6 +701,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 			((UsnaTableModel)devicesTable.getModel()).fireTableDataChanged();
 			devicesTable.columnsWidthAdapt();
 		} else if(ScannerProperties.PROP_USE_ARCHIVE.equals(propKey)) {
+			useArchive = appProp.getBoolProperty(ScannerProperties.PROP_USE_ARCHIVE);
 			devicesTable.clearSelection();
 		}
 	}

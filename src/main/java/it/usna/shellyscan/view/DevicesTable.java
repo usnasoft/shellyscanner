@@ -14,7 +14,6 @@ import java.text.MessageFormat;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.stream.Collectors;
@@ -335,30 +334,31 @@ public class DevicesTable extends ExTooltipTable {
 		TableRowSorter<?> sorter = (TableRowSorter<?>)getRowSorter();
 		if(filter.length() > 0) {
 			RowFilter<TableModel, Integer> regexFilter = RowFilter.regexFilter("(?i).*\\Q" + filter.replace("\\E", "\\e") + "\\E.*", cols);
-			ArrayList<RowFilter<TableModel, Integer>> filters = new ArrayList<>();
-			filters.add(regexFilter);
-			if(cols.length > 1) {
-				filters.add(new RowFilter<TableModel, Integer>() {
-					@Override
-					public boolean include(Entry<? extends TableModel, ? extends Integer> entry) {
-						Object val = entry.getValue(COL_COMMAND_IDX);
-						if(val instanceof String) {
-							return ((String)val).toUpperCase().contains(filter.toUpperCase());
-						} else if(val instanceof LabelHolder) {
-							return ((LabelHolder)val).getLabel().toUpperCase().contains(filter.toUpperCase());
-						} else if(val instanceof LabelHolder[]) {
-							for(LabelHolder lh: (LabelHolder[])val) {
-								if(lh.getLabel().toUpperCase().contains(filter.toUpperCase())) {
-									return true;
-								}
-							}
-							return false;
-						}
-						return false;
-					}
-				});
-			}
-			sorter.setRowFilter(RowFilter.orFilter(filters));
+			sorter.setRowFilter(regexFilter);
+//			ArrayList<RowFilter<TableModel, Integer>> filters = new ArrayList<>();
+//			filters.add(regexFilter);
+//			if(cols.length > 1) {
+//				filters.add(new RowFilter<TableModel, Integer>() {
+//					@Override
+//					public boolean include(Entry<? extends TableModel, ? extends Integer> entry) {
+//						Object val = entry.getValue(COL_COMMAND_IDX);
+//						if(val instanceof String) {
+//							return ((String)val).toUpperCase().contains(filter.toUpperCase());
+//						} else if(val instanceof LabelHolder) {
+//							return ((LabelHolder)val).getLabel().toUpperCase().contains(filter.toUpperCase());
+//						} else if(val instanceof LabelHolder[]) {
+//							for(LabelHolder lh: (LabelHolder[])val) {
+//								if(lh.getLabel().toUpperCase().contains(filter.toUpperCase())) {
+//									return true;
+//								}
+//							}
+//							return false;
+//						}
+//						return false;
+//					}
+//				});
+//			}
+//			sorter.setRowFilter(RowFilter.orFilter(filters));
 		} else {
 			sorter.setRowFilter(null);
 		}

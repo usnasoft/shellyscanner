@@ -4,7 +4,6 @@ import static it.usna.shellyscan.Main.LABELS;
 
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
-import java.awt.Window;
 import java.awt.event.KeyEvent;
 
 import javax.swing.Action;
@@ -25,6 +24,7 @@ import javax.swing.undo.UndoManager;
 
 import it.usna.shellyscan.controller.UsnaAction;
 import it.usna.shellyscan.controller.UsnaTextAction;
+import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.GhostDevice;
 import it.usna.shellyscan.view.util.UtilMiscellaneous;
 import it.usna.swing.dialog.FindReplaceDialog;
@@ -38,9 +38,9 @@ public class NotesEditor extends JFrame {
 	private final static int MAX_KEYWORD_SIZE = 32;
 	private JPanel centerPanel = new JPanel(new BorderLayout());
 
-	public NotesEditor(Window owner, GhostDevice ghost) {
+	public NotesEditor(MainView mView, GhostDevice ghost, int index) {
 		super(LABELS.getString("action_notes_tooltip") + " - " + UtilMiscellaneous.getDescName(ghost));
-		setIconImages(owner.getIconImages());
+		setIconImages(mView.getIconImages());
 
 		// Notes editor
 		JTextArea notesEditor = new JTextArea();
@@ -117,14 +117,15 @@ public class NotesEditor extends JFrame {
 		JPanel buttonsPanel = new JPanel(new FlowLayout());
 		getContentPane().add(buttonsPanel, BorderLayout.SOUTH);
 
-		JButton okButton = new JButton(LABELS.getString("dlgSave"));
-		okButton.addActionListener(e -> {
+		JButton saveButton = new JButton(LABELS.getString("dlgSave"));
+		saveButton.addActionListener(e -> {
 			ghost.setNote(notesEditor.getText());
 			String keyNote = textFieldKeyword.getText();
 			ghost.setKeyNote(keyNote.substring(0, Math.min(MAX_KEYWORD_SIZE, keyNote.length())));
+			mView.update(Devices.EventType.UPDATE, index);
 			dispose();
 		});
-		buttonsPanel.add(okButton);
+		buttonsPanel.add(saveButton);
 
 		JButton closeButton = new JButton(LABELS.getString("dlgClose"));
 		closeButton.addActionListener(e -> dispose());
@@ -140,12 +141,12 @@ public class NotesEditor extends JFrame {
 
 		mapAction(KeyStroke.getKeyStroke(KeyEvent.VK_K, MainView.SHORTCUT_KEY), new UsnaAction(e -> textFieldKeyword.requestFocus()), "focusKeyword");
 		mapAction(KeyStroke.getKeyStroke(KeyEvent.VK_N, MainView.SHORTCUT_KEY), new UsnaAction(e -> notesEditor.requestFocus()), "focusNote");
-		mapAction(KeyStroke.getKeyStroke(KeyEvent.VK_S, MainView.SHORTCUT_KEY), new UsnaAction(e -> okButton.doClick()), "saveNote");
+		mapAction(KeyStroke.getKeyStroke(KeyEvent.VK_S, MainView.SHORTCUT_KEY), new UsnaAction(e -> saveButton.doClick()), "saveNote");
 
 		setSize(600, 400);
 		setVisible(true);
 		notesEditor.requestFocus();
-		setLocationRelativeTo(owner);
+		setLocationRelativeTo(mView);
 	}
 
 	private void mapAction(KeyStroke k, Action action, String name) {
