@@ -284,7 +284,7 @@ BLU (BTHome)
 BLU Gateway
 Plus UNI
 selection subtraction (ctrl+shift)
-// todo remove bthome components restore (?)
+//todo graphs disable not available measures
 
 // todo verifica gruppi restore G2; restore actions BLU? restore sensors? verifica component prima di restore actions (cid > 200) - errore nel restore delle actions (i cid potrebbero cambiare)
  prendiamo le action con cid < 200/100 e poi i componenti dinamici fanno i loro (?)
@@ -294,7 +294,6 @@ selection subtraction (ctrl+shift)
 // chacklist multiselection
 // portare il modello sulla tabella per semplificare il calcolo dei tooltip (e delle icone di stato)
 // Xmod1 sganciare bottone se detatched (?)
-// Button push if no actions
 // add "knx" support
 // fahrenheit
 // rivedere it.usna.shellyscan.model.device.g2.ShellyPlusi4 alla luce di "Input.Trigger" (?)

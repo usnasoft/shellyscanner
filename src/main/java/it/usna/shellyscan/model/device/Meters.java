@@ -6,13 +6,13 @@ import java.util.Locale;
 public abstract class Meters implements Comparable<Meters> {
 	public enum Type {
 		W, // active power
+		VA, // apparent power
 		VAR, // reactive power
 		PF, // power factor
 //		PF1, // power factor (1 decimal precision)
 		V, // voltage
 		I, // current
 		FREQ, // Frequency
-		BAT, // battery%
 		T, // temperature (celsius)
 		H, // humidity %
 		L, // lux
@@ -22,7 +22,8 @@ public abstract class Meters implements Comparable<Meters> {
 		T4, // temperature (celsius)
 		EX, // ext switch status
 		PERC, // 0-100
-		NUM // inetger
+		NUM, // inetger
+		BAT // battery %
 	};
 	protected static NumberFormat NF = NumberFormat.getNumberInstance(Locale.ENGLISH);
 	static {

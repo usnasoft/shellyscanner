@@ -109,14 +109,14 @@ public class DeviceMetersCellRenderer extends JPanel implements TableCellRendere
 	}
 	
 	private static boolean isVisible(Meters.Type t) {
-		return t != Meters.Type.VAR && t != Meters.Type.FREQ;
+		return /*t != Meters.Type.VAR &&*/ t != Meters.Type.VA && t != Meters.Type.FREQ;
 	}
 	
 	public static boolean hasHiddenMeasures(Meters meters) {
 		Type[] types = meters.getTypes();
 		if(types.length > HIDE_LIMIT) {
 			for(Meters.Type t: meters.getTypes()) {
-				if(t == Meters.Type.VAR || t == Meters.Type.FREQ) {
+				if(/*t == Meters.Type.VAR ||*/ t == Meters.Type.VA || t == Meters.Type.FREQ) {
 					return true;
 				}
 			}

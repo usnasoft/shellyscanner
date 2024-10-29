@@ -106,7 +106,13 @@ public abstract class AbstractBluDevice extends ShellyAbstractDevice {
 	
 	@Override
 	public Status getStatus() {
-		return parent.getStatus();
+		if(rssi < 0) {
+			return parent.getStatus();
+		} else if(parent.getStatus() == Status.NOT_LOOGGED) {
+			return Status.NOT_LOOGGED;
+		} else {
+			return Status.OFF_LINE;
+		}
 	}
 
 	@Override

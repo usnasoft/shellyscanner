@@ -61,7 +61,7 @@ public class EditorPanel extends SyntaxEditor {
 	
 	private final String[] implementedWords = new String[] {"String", "Number", "Function", "Array", "Math", "Date", "Object", "Exceptions"};
 	
-	private final String[] shellyWords = new String[] {"Shelly", "JSON", "Timer", "MQTT", "BLE", "HTTPServer"};
+	private final String[] shellyWords = new String[] {"Shelly", "JSON", "Timer", "MQTT", "BLE", "HTTPServer", "Virtual"};
 	
 	private final String[] othersForAutocomplete = new String[] {"print(", "console.log("};
 	

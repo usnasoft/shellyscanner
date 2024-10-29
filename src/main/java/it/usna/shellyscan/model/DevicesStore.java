@@ -82,6 +82,9 @@ public class DevicesStore {
 				if(stored != null) {
 					jsonDev.put(USER_NOTE, stored.getNote());
 					jsonDev.put(KEYWORD_NOTE, stored.getKeyNote());
+					if(device.getLastTime() < stored.getLastTime()) { // device.getLastTime() == 0 for originally off-line BLU devices 
+						jsonDev.put(LAST_CON, stored.getLastTime());
+					}
 				}
 				toBeStored.add(jsonDev);
 			}

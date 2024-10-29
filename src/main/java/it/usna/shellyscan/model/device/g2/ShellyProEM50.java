@@ -17,12 +17,12 @@ import it.usna.shellyscan.model.device.g2.modules.Relay;
 
 public class ShellyProEM50 extends AbstractProDevice implements ModulesHolder, InternalTmpHolder {
 	public final static String ID = "ProEM";
-	private final static Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.W, Meters.Type.VAR, Meters.Type.PF, Meters.Type.V, Meters.Type.I, Meters.Type.FREQ};
+	private final static Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.W, Meters.Type.VA, Meters.Type.PF, Meters.Type.V, Meters.Type.I, Meters.Type.FREQ};
 	private Relay relay = new Relay(this, 0);
 	private Relay[] relays = new Relay[] {relay};
 	private float internalTmp;
 	private float power[] = new float[2];
-	private float reactive[] = new float[2];
+	private float apparent[] = new float[2];
 	private float voltage[] = new float[2];
 	private float current[] = new float[2];
 	private float pf[] = new float[2];
@@ -48,8 +48,8 @@ public class ShellyProEM50 extends AbstractProDevice implements ModulesHolder, I
 			public float getValue(Type t) {
 				if(t == Type.W) {
 					return power[ind];
-				} else if(t == Type.VAR) {
-					return reactive[ind];
+				} else if(t == Type.VA) {
+					return apparent[ind];
 				} else if(t == Type.I) {
 					return current[ind];
 				} else if(t == Type.PF) {
@@ -122,7 +122,7 @@ public class ShellyProEM50 extends AbstractProDevice implements ModulesHolder, I
 
 		JsonNode em1_0 = status.get("em1:0");
 		power[0] = em1_0.get("act_power").floatValue();
-		reactive[0] = em1_0.get("aprt_power").floatValue();
+		apparent[0] = em1_0.get("aprt_power").floatValue();
 		current[0] = em1_0.get("current").floatValue();
 		pf[0] = em1_0.get("pf").floatValue();
 		voltage[0] = em1_0.get("voltage").floatValue();
@@ -130,7 +130,7 @@ public class ShellyProEM50 extends AbstractProDevice implements ModulesHolder, I
 		
 		JsonNode em1_1 = status.get("em1:1");
 		power[1] = em1_1.get("act_power").floatValue();
-		reactive[1] = em1_1.get("aprt_power").floatValue();
+		apparent[1] = em1_1.get("aprt_power").floatValue();
 		current[1] = em1_1.get("current").floatValue();
 		pf[1] = em1_1.get("pf").floatValue();
 		voltage[1] = em1_1.get("voltage").floatValue();

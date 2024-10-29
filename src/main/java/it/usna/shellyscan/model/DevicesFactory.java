@@ -72,6 +72,7 @@ import it.usna.shellyscan.model.device.g2.ShellyPro1PM;
 import it.usna.shellyscan.model.device.g2.ShellyPro2;
 import it.usna.shellyscan.model.device.g2.ShellyPro2PM;
 import it.usna.shellyscan.model.device.g2.ShellyPro3;
+import it.usna.shellyscan.model.device.g2.ShellyPro3EM;
 import it.usna.shellyscan.model.device.g2.ShellyPro4PM;
 import it.usna.shellyscan.model.device.g2.ShellyProDimmer1;
 import it.usna.shellyscan.model.device.g2.ShellyProEM50;
@@ -249,6 +250,8 @@ public class DevicesFactory {
 				case ShellyPro4PM.ID -> new ShellyPro4PM(address, port, name);
 				case ShellyProDimmer1.ID -> new ShellyProDimmer1(address, port, name);
 				case ShellyProEM50.ID -> new ShellyProEM50(address, port, name);
+				case ShellyPro3EM.ID -> new ShellyPro3EM(address, port, name);
+//				case ShellyProRGBWW.ID -> new ShellyProRGBWW(address, port, name); // test QA
 				default -> new ShellyG2Unmanaged(address, port, name);
 			};
 		} catch(Exception e) { // really unexpected
@@ -303,6 +306,9 @@ public class DevicesFactory {
 			case ShellyMini1PMG3.ID -> new ShellyMini1PMG3(address, port, name);
 			case ShellyMiniPMG3.ID -> new ShellyMiniPMG3(address, port, name);
 			case ShellyPlusHTG3.ID -> new ShellyPlusHTG3(address, port, name);
+//			case ShellyDimmerG3.ID -> new ShellyDimmerG3(address, port, name); // test QA
+//			case Shelly2LG3.ID -> new Shelly2LG3(address, port, name); // test QA
+//			case ShellyGatewayG3.ID -> new ShellyGatewayG3(address, port, name); // test QA
 			// X
 			case ShellyXMOD1.ID -> new ShellyXMOD1(address, port, name);
 			default -> new ShellyG3Unmanaged(address, port, name);

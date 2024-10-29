@@ -9,7 +9,8 @@ public enum ChartType {
 	RSSI("dlgChartsRSSILabel", "dlgChartsRSSIYLabel"),
 	P("dlgChartsAPowerLabel", "dlgChartsAPowerYLabel", Meters.Type.W),
 	P_SUM("dlgChartsAPowerSumLabel", "dlgChartsAPowerYLabel"),
-	Q("dlgChartsQPowerLabel", "dlgChartsQPowerYLabel", Meters.Type.VAR),
+//	Q("dlgChartsQPowerLabel", "dlgChartsQPowerYLabel", Meters.Type.VAR), // only gen1 EM
+	S("dlgChartsSPowerLabel", "dlgChartsSPowerYLabel", Meters.Type.VA),
 	V("dlgChartsVoltageLabel", "dlgChartsVoltageYLabel", Meters.Type.V),
 	I("dlgChartsCurrentLabel", "dlgChartsCurrentYLabel", Meters.Type.I),
 	//		T("dlgChartsTempLabel", "dlgChartsTempYLabel", Meters.Type.T),

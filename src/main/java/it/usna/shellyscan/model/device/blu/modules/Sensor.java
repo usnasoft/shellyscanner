@@ -17,7 +17,7 @@ public class Sensor {
 		this.id = id;
 		this.idx = sensorConf.path("idx").intValue();
 		this.objID = sensorConf.path("obj_id").intValue();
-		if(objID == 0x3A) {
+		if(objID == 0x3A) { // dec. 58
 			this.digitaiInput = true;
 			this.mType = null;
 		} else {

@@ -452,7 +452,7 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 	private JPanel getInputPanel(InputInterface inp, final Color foregroundColor) {
 		JPanel actionsPanel = new JPanel(new BorderLayout());
 		String inpName = inp.getLabel();
-		JLabel actionsLabel = new JLabel(inpName.isEmpty() ? "\u25CF" : inpName);
+		JLabel actionsLabel = new JLabel(inpName.isEmpty() ? "\u25CB" : inpName);
 		actionsLabel.setForeground(foregroundColor);
 		
 		JPanel actionsButtonsPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
