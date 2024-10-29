@@ -282,7 +282,9 @@ charts scroll
 1.2.0
 BLU (BTHome)
 BLU Gateway
+BLU Gateway Gen3
 Plus UNI
+Pro 3 EM
 selection subtraction (ctrl+shift)
 //todo graphs disable not available measures
 

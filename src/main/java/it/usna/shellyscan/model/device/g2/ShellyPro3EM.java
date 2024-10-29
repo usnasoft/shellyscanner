@@ -4,12 +4,15 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
+import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.InternalTmpHolder;
 import it.usna.shellyscan.model.device.LabelHolder;
 import it.usna.shellyscan.model.device.Meters;
+import it.usna.shellyscan.model.device.RestoreMsg;
 
 public class ShellyPro3EM extends AbstractProDevice implements InternalTmpHolder {
 	public final static String ID = "Pro3EM";
@@ -23,17 +26,20 @@ public class ShellyPro3EM extends AbstractProDevice implements InternalTmpHolder
 	private String meterName[] = new String[3];
 	private Meters meters[];
 	private boolean triphase;
+	
+	private final static String MODE_TRIPHASE = "triphase";
 
 	public ShellyPro3EM(InetAddress address, int port, String hostname) {
 		super(address, port, hostname);
 	}
 	
 	protected void init(JsonNode devInfo) throws IOException {
-		this.triphase = devInfo.get("profile").textValue().equals("triphase");
+		this.triphase = devInfo.get("profile").textValue().equals(MODE_TRIPHASE);
 		
 		class EMMeters extends Meters implements LabelHolder {
 			private final static Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.W, Meters.Type.VA, Meters.Type.PF, Meters.Type.V, Meters.Type.I, Meters.Type.FREQ};
 			private int ind;
+
 			private EMMeters(int ind) {
 				this.ind = ind;
 			}
@@ -112,7 +118,7 @@ public class ShellyPro3EM extends AbstractProDevice implements InternalTmpHolder
 
 	@Override
 	public String getTypeName() {
-		return "Shelly 3 EM";
+		return "Shelly Pro 3EM";
 	}
 
 	@Override
@@ -199,25 +205,29 @@ public class ShellyPro3EM extends AbstractProDevice implements InternalTmpHolder
 			freq[2] = em1_2.get("freq").floatValue();
 		}
 
-		internalTmp = status.get("temperature:0").get("tC").floatValue();
+		internalTmp = status.path("temperature:0").path("tC").floatValue();
+	}
+	
+	@Override
+	public void restoreCheck(Map<String, JsonNode> backupJsons, Map<RestoreMsg, Object> res) throws IOException {
+		JsonNode devInfo = backupJsons.get("Shelly.GetDeviceInfo.json");
+		boolean backModeTriphase = MODE_TRIPHASE.equals(devInfo.get("profile").asText());
+		if(backModeTriphase != triphase) {
+			res.put(RestoreMsg.ERR_RESTORE_MODE_TRIPHASE, null);
+		}
 	}
 
 	@Override
 	protected void restore(Map<String, JsonNode> backupJsons, List<String> errors) throws InterruptedException {
-//		JsonNode config = backupJsons.get("Shelly.GetConfig.json");
-//		if(triphase) {
-//
-//		} else {
-//			errors.add(postCommand("EM1.SetConfig", createIndexedRestoreNode(config, "em1", 0)));
-//			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-//			errors.add(postCommand("EM1.SetConfig", createIndexedRestoreNode(config, "em1", 1)));
-//			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-//			errors.add(postCommand("EM1.SetConfig", createIndexedRestoreNode(config, "em1", 2)));
-//		}
+		JsonNode config = backupJsons.get("Shelly.GetConfig.json");
+		if(triphase) {
+			errors.add(postCommand("EM.SetConfig", createIndexedRestoreNode(config, "em", 0)));
+		} else {
+			errors.add(postCommand("EM1.SetConfig", createIndexedRestoreNode(config, "em1", 0)));
+			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+			errors.add(postCommand("EM1.SetConfig", createIndexedRestoreNode(config, "em1", 1)));
+			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+			errors.add(postCommand("EM1.SetConfig", createIndexedRestoreNode(config, "em1", 2)));
+		}
 	}
-
-//	@Override
-//	public String toString() {
-//		return super.toString() /*+ " Relay: " + relay*/;
-//	}
 }
