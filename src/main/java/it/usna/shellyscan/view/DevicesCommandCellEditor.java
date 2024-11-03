@@ -766,7 +766,7 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 	private Component getInputPanel(final InputInterface act, JTable table) {
 		JPanel actionsPanel = new JPanel(new BorderLayout());
 		String label = act.getLabel();
-		JLabel actionsLabel = new JLabel(label.isEmpty() ? "\u25CF" : label);
+		JLabel actionsLabel = new JLabel(label == null || label.isEmpty() ? "\u25CB" : label);
 		actionsPanel.setBackground(selBackground);
 		actionsLabel.setForeground(selForeground);
 		JPanel actionsButtonsPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));

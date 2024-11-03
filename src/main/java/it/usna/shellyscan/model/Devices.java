@@ -256,7 +256,7 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 		synchronized(devices) {
 			final ShellyAbstractDevice d = devices.get(ind);
 			if(d instanceof GhostDevice == false && (d.getStatus() != Status.READING || force)) {
-				refreshProcess.get(ind).cancel(true);
+				pauseRefresh(ind);
 				d.setStatus(Status.READING);
 				executor.schedule(() -> {
 					if(d instanceof ShellyUnmanagedDeviceInterface unmanaged && unmanaged.getException() != null) { // try to create proper device
@@ -287,8 +287,7 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 
 	public void reboot(int ind) {
 		final ShellyAbstractDevice d = devices.get(ind);
-		final ScheduledFuture<?> f = refreshProcess.get(ind);
-		f.cancel(true); // Before reboot disable refresh process
+		pauseRefresh(ind); // Before reboot disable refresh process
 		d.setStatus(Status.READING);
 		updateViewRow(d, ind);
 		executor.execute/*submit*/(() -> {
@@ -390,7 +389,7 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 					while (compIt.hasNext()) {
 						JsonNode compInfo = compIt.next();
 						String key = compInfo.path("key").asText();
-						if(key.startsWith("bthomedevice:")) {
+						if(key.startsWith(AbstractBluDevice.DEVICE_KEY_PREFIX)) {
 							newBluDevice(d, compInfo, key);
 						}
 					}
@@ -617,4 +616,4 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 			executor.execute(() -> create(info.getInetAddresses()[0], info.getPort(), info.getName(), true));
 		}
 	}
-} // 197 - 307 - 326 - 418 - 510 - 544 - 574
+} // 197 - 307 - 326 - 418 - 510 - 544 - 574 - 619

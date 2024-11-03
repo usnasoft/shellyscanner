@@ -65,6 +65,7 @@ public class SensorsCollection extends Meters {
 				sensors.add(s);
 			}
 		}
+		inputs.sort((s1, s2) -> s1.getIdx() - s2.getIdx()); // order by idx
 		sensorsArray = sensors.toArray(Sensor[]::new);
 		inputSensors = inputs.toArray(Sensor[]::new);
 		mTypes = measuresMap.keySet().toArray(Type[]::new);

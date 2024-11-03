@@ -373,8 +373,7 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 			stackedPanel.removeAll();
 			for(InputInterface inp: inputs) {
 				if(inp.enabled()) {
-					JPanel actionsPanel = getInputPanel(inp, foregroundColor);
-					stackedPanel.add(actionsPanel);
+					stackedPanel.add(getInputPanel(inp, foregroundColor));
 				}
 			}
 			ret = stackedPanel;
@@ -452,7 +451,7 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 	private JPanel getInputPanel(InputInterface inp, final Color foregroundColor) {
 		JPanel actionsPanel = new JPanel(new BorderLayout());
 		String inpName = inp.getLabel();
-		JLabel actionsLabel = new JLabel(inpName.isEmpty() ? "\u25CB" : inpName);
+		JLabel actionsLabel = new JLabel(inpName == null || inpName.isEmpty() ? "\u25CB" : inpName);
 		actionsLabel.setForeground(foregroundColor);
 		
 		JPanel actionsButtonsPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));

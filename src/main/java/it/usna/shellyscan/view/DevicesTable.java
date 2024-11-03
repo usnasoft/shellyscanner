@@ -371,7 +371,7 @@ public class DevicesTable extends ExTooltipTable {
 	}
 	
 	public void resetRowComputedHeight(int modelIndex) {
-		setRowHeight(convertRowIndexToView(modelIndex), 1);
+		setRowHeight(convertRowIndexToView(modelIndex), ONLINE_BULLET.getIconHeight());
 	}
 
 	// adapt row height

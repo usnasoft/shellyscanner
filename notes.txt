@@ -286,13 +286,11 @@ BLU Gateway Gen3
 Plus UNI
 Pro 3 EM
 selection subtraction (ctrl+shift)
-//todo graphs disable not available measures
-
-// todo verifica gruppi restore G2; restore actions BLU? restore sensors? verifica component prima di restore actions (cid > 200) - errore nel restore delle actions (i cid potrebbero cambiare)
- prendiamo le action con cid < 200/100 e poi i componenti dinamici fanno i loro (?)
+//todo RestoreAction pauseRefresh
 
 ---
 // TODO
+// BLU TRV
 // chacklist multiselection
 // portare il modello sulla tabella per semplificare il calcolo dei tooltip (e delle icone di stato)
 // Xmod1 sganciare bottone se detatched (?)

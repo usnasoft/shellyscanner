@@ -91,7 +91,7 @@ public class RestoreAction extends UsnaSelectedAction {
 						Msg.warningMsg(mainView, "<html>" + warn);
 					}
 
-					mainView.getContentPane().setCursor(Cursor.getDefaultCursor());
+//					mainView.getContentPane().setCursor(Cursor.getDefaultCursor());
 					Map<RestoreMsg, String> resData = new HashMap<>();
 
 					if(test.containsKey(RestoreMsg.RESTORE_LOGIN)) {
@@ -171,14 +171,9 @@ public class RestoreAction extends UsnaSelectedAction {
 
 					mainView.getContentPane().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 					appProp.setProperty("LAST_PATH", fc.getCurrentDirectory().getCanonicalPath());
-					List<String> restoreResult = device.restore(backupJsons, resData);
-//					restoreResult = restoreResult.stream().filter(err -> { // remove warnings previously shown
-//						try {
-//							return test.containsKey(RestoreMsg.valueOf(err)) == false; // test.containsKey(RestoreMsg.valueOf(ret) ->  warning already showed
-//						} catch(RuntimeException e) {
-//							return true;
-//						}
-//					}).collect(Collectors.toList());
+					
+					model.pauseRefresh(modelRow);
+					final List<String> restoreResult = device.restore(backupJsons, resData); // Do restore
 					final String ret = erroreMsg(restoreResult);
 
 					if(ret == null || ret.length() == 0) {
@@ -235,6 +230,7 @@ public class RestoreAction extends UsnaSelectedAction {
 			} catch (InterruptedException | RuntimeException e1) {
 				Msg.errorMsg(mainView, e1);
 			} finally {
+				model.activateRefresh(modelRow);
 				mainView.getContentPane().setCursor(Cursor.getDefaultCursor());
 			}
 		});
