@@ -286,6 +286,7 @@ BLU Gateway Gen3
 Plus UNI
 Pro 3 EM
 selection subtraction (ctrl+shift)
+-graphs INT_TEMP,RSSI,P,S,V,I,T_ALL,H,LUX,FREQ
 //todo RestoreAction pauseRefresh
 
 ---

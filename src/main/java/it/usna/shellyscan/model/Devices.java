@@ -426,9 +426,9 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 	}
 	
 	private void newBluDevice(ShellyAbstractDevice parent, JsonNode compInfo, String key) {
-		String id = key.substring(13);
+//		String id = key.substring(13);
 		try {
-			AbstractBluDevice newBlu = DevicesFactory.createBlu(parent, httpClient, /*wsClient,*/ compInfo, id);
+			AbstractBluDevice newBlu = DevicesFactory.createBlu(parent, httpClient, /*wsClient,*/ compInfo, key);
 			synchronized(devices) {
 				int ind = devices.indexOf(newBlu);
 				if(ind >= 0) { // already in list
@@ -454,7 +454,7 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 				}
 			}
 		} catch (RuntimeException e) {
-			LOG.error("newBluDevice-parent: {} - key: {}", parent.getAddressAndPort(), key, e);
+			LOG.error("newBluDevice-parent: {} - key: {}", parent.getAddressAndPort(), compInfo.path("key").asText(), e);
 		}
 	}
 

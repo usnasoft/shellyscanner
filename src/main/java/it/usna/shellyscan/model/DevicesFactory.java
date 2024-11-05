@@ -327,7 +327,8 @@ public class DevicesFactory {
 		return d;
 	}
 	
-	public static AbstractBluDevice createBlu(ShellyAbstractDevice parent, HttpClient httpClient, /*WebSocketClient wsClient,*/ JsonNode info, String index) {
+	public static AbstractBluDevice createBlu(ShellyAbstractDevice parent, HttpClient httpClient, /*WebSocketClient wsClient,*/ JsonNode info, String key/*, String index*/) {
+		String index = key.substring(13);
 		final String type = info.path("config").path("meta").path("ui").path("local_name").asText();
 		AbstractBluDevice blu;
 		try {

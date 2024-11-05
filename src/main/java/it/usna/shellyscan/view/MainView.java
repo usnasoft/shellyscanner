@@ -672,7 +672,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 					int modelIndex = mIndex;
 					ShellyAbstractDevice d = model.get(modelIndex);
 					devicesTable.updateRow(d, model.getGhost(d, modelIndex), modelIndex);
-//					devicesTable.resetRowComputedHeight(msgBody);
+//					devicesTable.resetRowComputedHeight(modelIndex);
 					devicesTable.columnsWidthAdapt();
 					tableSelectionListener.valueChanged(new ListSelectionEvent(devicesTable, -1, -1, false));
 				} else if(mesgType == Devices.EventType.READY) {

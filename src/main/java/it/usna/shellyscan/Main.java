@@ -28,10 +28,12 @@ import it.usna.shellyscan.model.IPCollection;
 import it.usna.shellyscan.model.NonInteractiveDevices;
 import it.usna.shellyscan.view.DevicesTable;
 import it.usna.shellyscan.view.MainView;
+import it.usna.shellyscan.view.chart.ChartType;
 import it.usna.shellyscan.view.chart.MeasuresChart;
+import it.usna.shellyscan.view.chart.NonInteractiveMeasuresChart;
+import it.usna.shellyscan.view.util.ApplicationUpdateCHK;
 import it.usna.shellyscan.view.util.Msg;
 import it.usna.shellyscan.view.util.ScannerProperties;
-import it.usna.shellyscan.view.util.UpplicationUpdateCHK;
 import it.usna.swing.UsnaSwingUtils;
 import it.usna.util.CLI;
 
@@ -233,9 +235,23 @@ public class Main {
 					view.setCursor(Cursor.getDefaultCursor());
 				}
 			});
-			new Thread(() -> UpplicationUpdateCHK.chechForUpdates(view, appProp)).start();
+			new Thread(() -> ApplicationUpdateCHK.chechForUpdates(view, appProp)).start();
 
-			MeasuresChart.setDoOutStream(cli.hasEntry("-graphs") >= 0);
+			int graphs = cli.hasEntry("-graphs");
+			if(graphs >= 0) {
+				String gPar = cli.getParameter(graphs);
+				if(gPar != null) {
+					try {
+						ChartType type = ChartType.valueOf(gPar);
+						NonInteractiveMeasuresChart chartW = new NonInteractiveMeasuresChart(model, type);
+						model.addListener(chartW);
+					} catch(IllegalArgumentException e) {
+						cli.rejectParameter(cliIndex);
+					}
+				} else {
+					MeasuresChart.setDoOutStream(true);
+				}
+			}
 			if(cli.unused().length > 0) {
 				System.err.println("Ignored parameter(s): " + Arrays.stream(cli.unused()).collect(Collectors.joining("; ")));
 			}
