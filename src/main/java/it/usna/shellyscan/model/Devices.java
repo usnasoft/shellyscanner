@@ -42,7 +42,9 @@ import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
 import it.usna.shellyscan.model.device.ShellyUnmanagedDeviceInterface;
 import it.usna.shellyscan.model.device.blu.AbstractBluDevice;
+import it.usna.shellyscan.model.device.blu.BTHomeDevice;
 import it.usna.shellyscan.model.device.blu.BluInetAddressAndPort;
+import it.usna.shellyscan.model.device.blu.BluTRV;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.g2.AbstractProDevice;
 import it.usna.shellyscan.model.device.g3.AbstractG3Device;
@@ -386,13 +388,22 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 				if(d instanceof AbstractProDevice || d instanceof AbstractG3Device) {
 					final JsonNode currenteComponents = d.getJSON("/rpc/Shelly.GetComponents?dynamic_only=true").path("components");
 					final Iterator<JsonNode> compIt = currenteComponents.iterator();
+					HashSet<BluTRV> trvSet = new HashSet<>();
 					while (compIt.hasNext()) {
 						JsonNode compInfo = compIt.next();
 						String key = compInfo.path("key").asText();
 						if(key.startsWith(AbstractBluDevice.DEVICE_KEY_PREFIX)) {
 							newBluDevice(d, compInfo, key);
+						} else if(key.startsWith(BluTRV.DEVICE_KEY_PREFIX)) { // temporary workaround
+							trvSet.add(new BluTRV((AbstractG2Device)d, compInfo, "-1"));
 						}
 					}
+					trvSet.forEach(trv -> {  // temporary workaround
+						int ind = devices.indexOf(trv);
+						if(ind >= 0 && devices.get(ind) instanceof BTHomeDevice blu) {
+							blu.setTypeName("Blu TRV");
+						}
+					});
 				}
 			}
 		} catch(Exception e) {
@@ -426,7 +437,6 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 	}
 	
 	private void newBluDevice(ShellyAbstractDevice parent, JsonNode compInfo, String key) {
-//		String id = key.substring(13);
 		try {
 			AbstractBluDevice newBlu = DevicesFactory.createBlu(parent, httpClient, /*wsClient,*/ compInfo, key);
 			synchronized(devices) {
@@ -616,4 +626,4 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 			executor.execute(() -> create(info.getInetAddresses()[0], info.getPort(), info.getName(), true));
 		}
 	}
-} // 197 - 307 - 326 - 418 - 510 - 544 - 574 - 619
+} // 197 - 307 - 326 - 418 - 510 - 544 - 574 - 629

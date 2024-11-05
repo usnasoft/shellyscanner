@@ -72,6 +72,10 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 	public void init(HttpClient httpClient) throws IOException {
 		this.httpClient = httpClient;
 		initSensors();
+		if(localName.isEmpty()) {
+			localName = sensors.toString();
+			hostname = "B" + localName + "-" + mac;
+		}
 		try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e) {}
 		refreshStatus();
 		refreshSettings();
@@ -87,6 +91,10 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 			inputs[i] = new Input(/*this.parent, in[i].getId()*/);
 			inputs[i].setEnabled(true);
 		}
+	}
+	
+	public void setTypeName(String name) {
+		typeName = name;
 	}
 	
 	@Override
@@ -306,3 +314,5 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 		return errors;
 	}
 }
+
+//https://smarthomecircle.com/connect-xiaomi-temperature-and-humidity-bluetooth-sensor-to-home-assistant

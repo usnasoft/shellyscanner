@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.Iterator;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -122,6 +124,11 @@ public class SensorsCollection extends Meters {
 			}
 		}
 		return null;
+	}
+	
+	@Override
+	public String toString() {
+		return Stream.of(sensorsArray).map(s -> "s" + s.getObjId()).sorted().collect(Collectors.joining());
 	}
 }
 

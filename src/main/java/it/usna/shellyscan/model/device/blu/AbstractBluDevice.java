@@ -41,8 +41,7 @@ public abstract class AbstractBluDevice extends ShellyAbstractDevice {
 		super(new BluInetAddressAndPort(parent.getAddressAndPort(), Integer.parseInt(index)));
 		this.parent = parent;
 		this.componentIndex = index;
-		final JsonNode config = compInfo.path("config");
-		this.mac = config.path("addr").asText();
+		this.mac = compInfo.path("config").path("addr").asText();
 	}
 	
 	public void init(HttpClient httpClient/*, WebSocketClient wsClient*/) throws IOException {
