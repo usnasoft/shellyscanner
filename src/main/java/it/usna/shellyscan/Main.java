@@ -59,6 +59,7 @@ public class Main {
 		//		final AppProperties appProp = ScannerProperties.get();
 		//		System.setProperty(SimpleLogger.DEFAULT_LOG_LEVEL_KEY, "error");
 		System.setProperty(SimpleLogger.LOG_KEY_PREFIX + "javax.jmdns", "warn");
+		System.setProperty(SimpleLogger.LOG_KEY_PREFIX + "org.eclipse.jetty", "warn");
 		System.setProperty(SimpleLogger.SHOW_DATE_TIME_KEY, "true");
 		final Logger LOG = LoggerFactory.getLogger(Main.class);
 
@@ -203,9 +204,9 @@ public class Main {
 			DeferrablesContainer.init(model); // first model listener
 			final MainView view = new MainView(model, appProp);
 
-			final int graphs = cli.hasEntry("-graphs");
-			if(graphs >= 0) {
-				String gPar = cli.getParameter(graphs);
+			cliIndex = cli.hasEntry("-graphs");
+			if(cliIndex >= 0) {
+				String gPar = cli.getParameter(cliIndex);
 				if(gPar != null) {
 					try {
 						NonInteractiveMeasuresChart chartW = new NonInteractiveMeasuresChart(model, ChartType.valueOf(gPar));
