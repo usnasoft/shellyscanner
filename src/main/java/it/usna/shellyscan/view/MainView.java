@@ -292,8 +292,6 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		
 		this.model = model;
 		this.appProp = appProp;
-		model.addListener(this);
-		appProp.addListener(this);
 		
 		backupAction = new BackupAction(this, devicesTable, appProp, model);
 		restoreAction = new RestoreAction(this, devicesTable, appProp, model);

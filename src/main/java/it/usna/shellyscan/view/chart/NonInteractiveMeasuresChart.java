@@ -21,6 +21,7 @@ public class NonInteractiveMeasuresChart implements UsnaEventListener<Devices.Ev
 	public NonInteractiveMeasuresChart(final Devices model, ChartType currentType/*, int[] ind*/) {
 		this.model = model;
 		this.currentType = currentType;
+		model.addListener(this);
 	}
 
 	@Override

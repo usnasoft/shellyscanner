@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>it.usna</groupId>
 	<artifactId>shellyscan</artifactId>
-	<version>1.2.0beta</version>
+	<version>1.2.0</version>
 	<name>Shelly Scanner</name>
 	<packaging>jar</packaging>
 
