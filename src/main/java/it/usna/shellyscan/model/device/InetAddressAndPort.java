@@ -42,7 +42,8 @@ public class InetAddressAndPort implements Comparable<InetAddressAndPort> {
 		if(i1[1] != i2[1]) return (i1[1] & 0xFF) - (i2[1] & 0xFF);
 		if(i1[2] != i2[2]) return (i1[2] & 0xFF) - (i2[2] & 0xFF);
 		if((cmp = (i1[3] & 0xFF) - (i2[3] & 0xFF)) != 0) return cmp;
-		return port - o2.port;
+		if(o2.getClass() == InetAddressAndPort.class) return port - o2.port;
+		return -1; // base class first
 	}
 	
 	@Override

@@ -53,10 +53,10 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 			"SBBT-004CUS", "Blu RC Button 4"
 			);
 	private final static Map<String, String> DEV_DICTIONARY_NEW = Map.of(
-			"SBBT-002C", "Blu Button",
-			"SBMO-003Z", "BLU Motion",
-			"SBDW-002C", "Blu Door Window",
-			"SBHT-003C", "Blu H&T",
+			"SBBT-2C", "Blu Button",
+			"SBMO-3Z", "BLU Motion",
+			"SBDW-2C", "Blu Door Window",
+			"SBHT-3C", "Blu H&T",
 			"SBBT-EU", "Blu Wall Switch 4",
 			"SBBT-US", "Blu RC Button 4"
 			);
@@ -147,10 +147,12 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 	public void refreshStatus() throws IOException {
 		JsonNode components = getJSON("/rpc/Shelly.GetComponents?dynamic_only=true").path("components");
 		String k;
+		boolean devExists = false;
 		for(JsonNode comp: components) {
 			if(comp.path("key").textValue().equals(DEVICE_KEY_PREFIX + componentIndex)) {
 				fillSettings(comp.path("config"));
 				fillStatus(comp.path("status"));
+				devExists = true;
 			} else if((k = comp.path("key").textValue()).startsWith(SENSOR_KEY_PREFIX)) {
 				int id = Integer.parseInt(k.substring(13));
 				Sensor s = sensors.getSensor(id);
@@ -158,7 +160,11 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 					s.fillSConfig(comp.path("config"));
 					s.fillStatus(comp.path("status"));
 				}
+				devExists = true;
 			}
+		}
+		if(devExists == false) {
+			this.rssi = 0;
 		}
 	}
 	

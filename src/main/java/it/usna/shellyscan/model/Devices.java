@@ -386,7 +386,7 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 				}
 				// BTHome
 				if(d instanceof AbstractProDevice || d instanceof AbstractG3Device) {
-					final JsonNode currenteComponents = d.getJSON("/rpc/Shelly.GetComponents?dynamic_only=true").path("components");
+					final JsonNode currenteComponents = d.getJSON("/rpc/Shelly.GetComponents?dynamic_only=true").path("components"); // empty on 401
 					final Iterator<JsonNode> compIt = currenteComponents.iterator();
 					HashSet<BluTRV> trvSet = new HashSet<>();
 					while (compIt.hasNext()) {
