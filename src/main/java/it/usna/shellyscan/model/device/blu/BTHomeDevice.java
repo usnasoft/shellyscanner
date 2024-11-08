@@ -10,7 +10,6 @@ import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -53,6 +52,14 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 			"SBBT-004CEU", "Blu Wall Switch 4",
 			"SBBT-004CUS", "Blu RC Button 4"
 			);
+	private final static Map<String, String> DEV_DICTIONARY_NEW = Map.of(
+			"SBBT-002C", "Blu Button",
+			"SBMO-003Z", "BLU Motion",
+			"SBDW-002C", "Blu Door Window",
+			"SBHT-003C", "Blu H&T",
+			"SBBT-EU", "Blu Wall Switch 4",
+			"SBBT-US", "Blu RC Button 4"
+			);
 	private String typeName;
 	private String localName;
 	private SensorsCollection sensors;
@@ -62,9 +69,23 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 
 	public BTHomeDevice(ShellyAbstractDevice parent, JsonNode compInfo, String localName, String index) {
 		super((AbstractG2Device)parent, compInfo, index);
+//		this.typeName = Optional.ofNullable(DEV_DICTIONARY.get(localName)).orElse("Generic BTHome");
+
+		this.typeName = DEV_DICTIONARY.get(localName); // old fw
+		int len;
+		if(this.typeName == null && (len = localName.length()) > 4) {
+			String tmpLocalName = localName.substring(0, len -4);
+			this.typeName = DEV_DICTIONARY_NEW.get(tmpLocalName); // new fw
+			if(this.typeName != null) {
+				localName = tmpLocalName;
+			}
+		}
+		if(this.typeName == null) {
+			this.typeName = "Generic BTHome";
+		}
+		
 		this.hostname = localName + "-" + mac;
 		this.localName = localName;
-		this.typeName = Optional.ofNullable(DEV_DICTIONARY.get(localName)).orElse("Generic BTHome");
 		this.webhooks = new Webhooks(this.parent);
 	}
 
