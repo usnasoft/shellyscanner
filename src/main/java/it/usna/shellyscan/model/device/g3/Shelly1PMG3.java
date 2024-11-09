@@ -16,7 +16,6 @@ import it.usna.shellyscan.model.device.InternalTmpHolder;
 import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.ModulesHolder;
 import it.usna.shellyscan.model.device.RestoreMsg;
-import it.usna.shellyscan.model.device.g2.SensorAddOnHolder;
 import it.usna.shellyscan.model.device.g2.modules.Input;
 import it.usna.shellyscan.model.device.g2.modules.Relay;
 import it.usna.shellyscan.model.device.g2.modules.SensorAddOn;
@@ -26,7 +25,7 @@ import it.usna.shellyscan.model.device.meters.MetersWVI;
  * Shelly 1PM G3 model
  * @author usna
  */
-public class Shelly1PMG3 extends AbstractG3Device implements ModulesHolder, InternalTmpHolder, SensorAddOnHolder {
+public class Shelly1PMG3 extends AbstractG3Device implements ModulesHolder, InternalTmpHolder {
 	private final static Logger LOG = LoggerFactory.getLogger(Shelly1PMG3.class);
 	public final static String ID = "S1PMG3";
 	private Relay relay = new Relay(this, 0);
@@ -150,18 +149,13 @@ public class Shelly1PMG3 extends AbstractG3Device implements ModulesHolder, Inte
 	}
 	
 	@Override
-	public SensorAddOn getSensorAddOn() {
-		return addOn;
-	}
-	
-	@Override
 	public void restoreCheck(Map<String, JsonNode> backupJsons, Map<RestoreMsg, Object> res) throws IOException {
 		try {
 			configure(); // maybe useless in case of mDNS use since you must reboot before -> on reboot the device registers again on mDNS ad execute a reload
 		} catch (IOException e) {
 			LOG.error("restoreCheck", e);
 		}
-		SensorAddOn.restoreCheck(this, backupJsons, res);
+		SensorAddOn.restoreCheck(this, addOn, backupJsons, res);
 	}
 
 	@Override
@@ -172,7 +166,7 @@ public class Shelly1PMG3 extends AbstractG3Device implements ModulesHolder, Inte
 		errors.add(relay.restore(configuration));
 		
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-		SensorAddOn.restore(this, backupJsons, errors);
+		SensorAddOn.restore(this, addOn, backupJsons, errors);
 	}
 	
 	@Override

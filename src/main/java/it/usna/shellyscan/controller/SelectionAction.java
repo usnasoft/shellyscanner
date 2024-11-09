@@ -29,7 +29,9 @@ public class SelectionAction extends UsnaAction {
 			ListSelectionModel lsm = table.getSelectionModel();
 			lsm.setValueIsAdjusting(true);
 			for(int i = 0; i < table.getRowCount(); i++) {
-				if(test.test(table.convertRowIndexToModel(i))) {
+				if((e.getModifiers() & (ActionEvent.CTRL_MASK | ActionEvent.SHIFT_MASK)) == (ActionEvent.CTRL_MASK | ActionEvent.SHIFT_MASK) && test.test(table.convertRowIndexToModel(i))) {
+					lsm.removeSelectionInterval(i, i);
+				} else if(test.test(table.convertRowIndexToModel(i))) {
 					lsm.addSelectionInterval(i, i);
 				} else if((e.getModifiers() & ActionEvent.CTRL_MASK) != ActionEvent.CTRL_MASK) {
 					lsm.removeSelectionInterval(i, i);

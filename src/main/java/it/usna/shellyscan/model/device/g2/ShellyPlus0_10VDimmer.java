@@ -24,7 +24,7 @@ import it.usna.shellyscan.model.device.modules.DeviceModule;
  * Shelly plus dimmer 0-10 model
  * @author usna
  */
-public class ShellyPlus0_10VDimmer extends AbstractG2Device implements /*InternalTmpHolder,*/ ModulesHolder, SensorAddOnHolder {
+public class ShellyPlus0_10VDimmer extends AbstractG2Device implements /*InternalTmpHolder,*/ ModulesHolder {
 	private final static Logger LOG = LoggerFactory.getLogger(ShellyPlus0_10VDimmer.class);
 	public final static String ID = "Plus10V";
 //	private float internalTmp;
@@ -128,11 +128,6 @@ public class ShellyPlus0_10VDimmer extends AbstractG2Device implements /*Interna
 			addOn.fillStatus(status);
 		}
 	}
-	
-	@Override
-	public SensorAddOn getSensorAddOn() {
-		return addOn;
-	}
 
 	@Override
 	public void restoreCheck(Map<String, JsonNode> backupJsons, Map<RestoreMsg, Object> res) throws IOException {
@@ -141,7 +136,7 @@ public class ShellyPlus0_10VDimmer extends AbstractG2Device implements /*Interna
 		} catch (IOException e) {
 			LOG.error("restoreCheck", e);
 		}
-		SensorAddOn.restoreCheck(this, backupJsons, res);
+		SensorAddOn.restoreCheck(this, addOn, backupJsons, res);
 	}
 	
 	@Override

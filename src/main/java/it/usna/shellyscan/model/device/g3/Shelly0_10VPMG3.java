@@ -16,7 +16,6 @@ import it.usna.shellyscan.model.device.InternalTmpHolder;
 import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.ModulesHolder;
 import it.usna.shellyscan.model.device.RestoreMsg;
-import it.usna.shellyscan.model.device.g2.SensorAddOnHolder;
 import it.usna.shellyscan.model.device.g2.modules.Input;
 import it.usna.shellyscan.model.device.g2.modules.LightWhite;
 import it.usna.shellyscan.model.device.g2.modules.SensorAddOn;
@@ -27,7 +26,7 @@ import it.usna.shellyscan.model.device.modules.DeviceModule;
  * Shelly dimmer 0/1-10 G3 model
  * @author usna
  */
-public class Shelly0_10VPMG3 extends AbstractG3Device implements InternalTmpHolder, ModulesHolder, SensorAddOnHolder {
+public class Shelly0_10VPMG3 extends AbstractG3Device implements InternalTmpHolder, ModulesHolder {
 	private final static Logger LOG = LoggerFactory.getLogger(Shelly0_10VPMG3.class);
 	public final static String ID = "Dimmer0110VPMG3";
 	private float internalTmp;
@@ -131,11 +130,6 @@ public class Shelly0_10VPMG3 extends AbstractG3Device implements InternalTmpHold
 			addOn.fillStatus(status);
 		}
 	}
-	
-	@Override
-	public SensorAddOn getSensorAddOn() {
-		return addOn;
-	}
 
 	@Override
 	public void restoreCheck(Map<String, JsonNode> backupJsons, Map<RestoreMsg, Object> res) throws IOException {
@@ -144,7 +138,7 @@ public class Shelly0_10VPMG3 extends AbstractG3Device implements InternalTmpHold
 		} catch (IOException e) {
 			LOG.error("restoreCheck", e);
 		}
-		SensorAddOn.restoreCheck(this, backupJsons, res);
+		SensorAddOn.restoreCheck(this, addOn, backupJsons, res);
 	}
 	
 	@Override

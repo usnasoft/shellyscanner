@@ -65,9 +65,10 @@ import it.usna.shellyscan.controller.UsnaSelectedAction;
 import it.usna.shellyscan.controller.UsnaToggleAction;
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.GhostDevice;
-import it.usna.shellyscan.model.device.InetAddressAndPort;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
+import it.usna.shellyscan.model.device.blu.AbstractBluDevice;
+import it.usna.shellyscan.model.device.blu.BTHomeDevice;
 import it.usna.shellyscan.model.device.g1.AbstractG1Device;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.g3.AbstractG3Device;
@@ -97,6 +98,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 	private AppProperties temporaryProp = new AppProperties(); // normal view properties stored here on detailed view
 	private JLabel statusLabel = new JLabel();
 	private boolean statusLineReserved = false;
+	private boolean useArchive;
 	private JTextField textFieldFilter = new JTextField();
 	private Devices model;
 	private JToolBar toolBar = new JToolBar();
@@ -126,8 +128,10 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 
 	private Action infoLogAction = new UsnaSelectedAction(this, devicesTable, "action_info_log_name", "action_info_log_tooltip", null, "/images/Document2.png", i -> {
 		if(model.get(i) instanceof AbstractG2Device) {
-			new DialogDeviceLogsG2WS(MainView.this, model, i, AbstractG2Device.LOG_VERBOSE);
-		} else {
+			new DialogDeviceLogsG2(MainView.this, model, i, AbstractG2Device.LOG_VERBOSE);
+		} else if(model.get(i) instanceof AbstractBluDevice blu) {
+			new DialogDeviceLogsG2(MainView.this, model, model.getIndex(blu.getParent()), AbstractG2Device.LOG_VERBOSE);
+		} else { // G1
 			new DialogDeviceLogsG1(this, model.get(i));
 		}
 	});
@@ -197,7 +201,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 	
 	private Action browseAction = new UsnaSelectedAction(this, devicesTable, "action_web_name", "action_web_tooltip", "/images/Computer16.png", "/images/Computer.png", i -> {
 		try {
-			Desktop.getDesktop().browse(URI.create("http://" + model.get(i).getAddressAndPort().toString()));
+			Desktop.getDesktop().browse(URI.create("http://" + model.get(i).getAddressAndPort().getRepresentation()));
 		} catch (IOException | UnsupportedOperationException e) { // browserSupported = Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE);
 			Msg.errorMsg(this, e);
 		}
@@ -207,8 +211,8 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 	
 	// also asks for credential if needed (login action)
 	private UsnaAction reloadAction = new UsnaSelectedAction(this, devicesTable, "action_name_reload", null, "/images/Loop16.png", null, i -> {
-		InetAddressAndPort addr = model.get(i).getAddressAndPort();
-		model.create(addr.getAddress(), addr.getPort(), model.get(i).getHostname(), false);
+		final ShellyAbstractDevice d = model.get(i);
+		model.create(d.getAddressAndPort().getAddress(), d.getAddressAndPort().getPort(), d instanceof BTHomeDevice blu ? blu.getParent().getHostname() : d.getHostname(), false);
 	});
 
 	private Action backupAction;
@@ -222,7 +226,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 			i -> new DialogDeviceScripts(MainView.this, model, i) );
 
 	private Action notesAction = new UsnaSelectedAction(null, devicesTable, "action_notes_name", "action_notes_tooltip", "/images/Write2-16.png", "/images/Write2.png",
-			i -> new NotesEditor(this, model.getGhost(i)) );
+			i -> new NotesEditor(this, model.getGhost(i), i) );
 	
 	private Action eraseGhostAction = new UsnaAction(this, "action_name_delete_ghost", null, "/images/Minus16.png", null, e -> {
 		boolean delete = true;
@@ -282,19 +286,19 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 	});
 
 	public MainView(final Devices model, final ScannerProperties appProp) {
+		setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
+		setIconImage(Main.ICON);
+		setTitle(Main.APP_NAME + " " + Main.VERSION);
+		
 		this.model = model;
 		this.appProp = appProp;
-		model.addListener(this);
-		appProp.addListener(this);
 		
 		backupAction = new BackupAction(this, devicesTable, appProp, model);
 		restoreAction = new RestoreAction(this, devicesTable, appProp, model);
 
 		loadProperties(appProp, 0.66f, 0.5f);
-
-		setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
-		setIconImage(Main.ICON);
-		setTitle(Main.APP_NAME + " v." + Main.VERSION);
+		
+		useArchive = appProp.getBoolProperty(ScannerProperties.PROP_USE_ARCHIVE, true);
 
 		// Status bar
 		JPanel statusPanel = new JPanel();
@@ -369,6 +373,8 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 				new SelectionAction(devicesTable, "labelSelectG1", null, null, i -> model.get(i) instanceof AbstractG1Device),
 				new SelectionAction(devicesTable, "labelSelectG2", null, null, i -> model.get(i) instanceof AbstractG2Device && model.get(i) instanceof AbstractG3Device == false),
 				new SelectionAction(devicesTable, "labelSelectG3", null, null, i -> model.get(i) instanceof AbstractG3Device),
+				new SelectionAction(devicesTable, "labelSelectWIFI", null, null, i -> model.get(i) instanceof AbstractG1Device || model.get(i) instanceof AbstractG2Device),
+				new SelectionAction(devicesTable, "labelSelectBLU", null, null, i -> model.get(i) instanceof AbstractBluDevice),
 				new SelectionAction(devicesTable, "labelSelectGhosts", null, null, i -> model.get(i) instanceof GhostDevice) );
 
 		btnSelectCombo.addActionListener(e -> selectionPopup.show(btnSelectCombo, 0, 0));
@@ -544,29 +550,30 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 	private void rowsSelectionManager() {
 		tableSelectionListener = e -> {
 			if(e.getValueIsAdjusting() == false) {
-				boolean singleSelection, singleSelectionNoGhost, selection, selectionNoGhost;
+				boolean singleSelection, singleSelectionNoGhost, selection, selectionNoGhost, selectionNoBLU;
 				int selectedRows = devicesTable.getSelectedRowCount();
 				singleSelection = singleSelectionNoGhost = selectedRows == 1;
-				selection = selectionNoGhost = selectedRows > 0;
+				selection = selectionNoGhost = selectionNoBLU = selectedRows > 0;
 				ShellyAbstractDevice d = null;
 				for(int idx: devicesTable.getSelectedRows()) {
 					d = model.get(devicesTable.convertRowIndexToModel(idx));
 					if(d instanceof GhostDevice) {
 						selectionNoGhost = singleSelectionNoGhost = false;
-						break;
+					} else if(d instanceof AbstractBluDevice) {
+						selectionNoBLU = false;
 					}
 				}
 				infoAction.setEnabled(singleSelection);
 				infoLogAction.setEnabled(singleSelectionNoGhost);
 				checkListAction.setEnabled(selectionNoGhost);
-				rebootAction.setEnabled(selectionNoGhost);
+				rebootAction.setEnabled(selectionNoGhost && selectionNoBLU);
 				browseAction.setEnabled(selectionNoGhost /*&& browserSupported*/);
-				backupAction.setEnabled(selection);
-				restoreAction.setEnabled(singleSelection /*&& d.getStatus() != Status.NOT_LOOGGED*/);
-				devicesSettingsAction.setEnabled(selection);
+				backupAction.setEnabled(selection /*&& selectionNoBLU*/);
+				restoreAction.setEnabled(singleSelection /*&& selectionNoBLU*/ /*&& d.getStatus() != Status.NOT_LOOGGED*/);
+				devicesSettingsAction.setEnabled(selection && selectionNoBLU);
 				chartAction.setEnabled(selectionNoGhost);
 				scriptManagerAction.setEnabled(singleSelectionNoGhost && d instanceof AbstractG2Device);
-				notesAction.setEnabled(singleSelection && appProp.getBoolProperty(ScannerProperties.PROP_USE_ARCHIVE, true));
+				notesAction.setEnabled(singleSelection && useArchive);
 				
 				displayStatus();
 			}
@@ -649,19 +656,21 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 	}
 
 	@Override
-	public void update(Devices.EventType mesgType, Integer msgBody) {
+	public void update(Devices.EventType mesgType, Integer mIndex) {
 		SwingUtilities.invokeLater(() -> {
 			try {
 				if(mesgType == Devices.EventType.UPDATE) {
-					int modelIndex = msgBody;
+					int modelIndex = mIndex;
 					ShellyAbstractDevice d = model.get(modelIndex);
 					devicesTable.updateRow(d, model.getGhost(d, modelIndex), modelIndex);
 				} else if(mesgType == Devices.EventType.ADD) {
-					devicesTable.addRow(model.get(msgBody), model.getGhost(msgBody));
+					devicesTable.addRow(model.get(mIndex), model.getGhost(mIndex));
 					displayStatus();
 				} else if(mesgType == Devices.EventType.SUBSTITUTE) {
-					devicesTable.updateRow(model.get(msgBody), model.getGhost(msgBody), msgBody);
-//					devicesTable.resetRowComputedHeight(msgBody);
+					int modelIndex = mIndex;
+					ShellyAbstractDevice d = model.get(modelIndex);
+					devicesTable.updateRow(d, model.getGhost(d, modelIndex), modelIndex);
+//					devicesTable.resetRowComputedHeight(modelIndex);
 					devicesTable.columnsWidthAdapt();
 					tableSelectionListener.valueChanged(new ListSelectionEvent(devicesTable, -1, -1, false));
 				} else if(mesgType == Devices.EventType.READY) {
@@ -671,7 +680,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 				} else if(mesgType == Devices.EventType.CLEAR) {
 					tabModel.clear();
 				} else if(mesgType == Devices.EventType.DELETE) {
-					tabModel.removeRow(msgBody);
+					tabModel.removeRow(mIndex);
 				}
 			} catch (IndexOutOfBoundsException ex) {
 				LOG.debug("Unexpected", ex); // rescan/shutdown
@@ -690,6 +699,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 			((UsnaTableModel)devicesTable.getModel()).fireTableDataChanged();
 			devicesTable.columnsWidthAdapt();
 		} else if(ScannerProperties.PROP_USE_ARCHIVE.equals(propKey)) {
+			useArchive = appProp.getBoolProperty(ScannerProperties.PROP_USE_ARCHIVE);
 			devicesTable.clearSelection();
 		}
 	}

@@ -16,7 +16,6 @@ import java.util.MissingResourceException;
 
 import javax.swing.AbstractCellEditor;
 import javax.swing.BorderFactory;
-import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -40,6 +39,7 @@ import it.usna.shellyscan.model.device.modules.RollerInterface;
 import it.usna.shellyscan.model.device.modules.ThermostatInterface;
 import it.usna.shellyscan.model.device.modules.WhiteInterface;
 import it.usna.shellyscan.view.util.Msg;
+import it.usna.swing.VerticalFlowLayout;
 
 public class DevicesCommandCellEditor extends AbstractCellEditor implements TableCellEditor {
 	private static final long serialVersionUID = 1L;
@@ -567,6 +567,7 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 		relayLabel.setForeground(selForeground);
 		JPanel relayPanel = new JPanel(new BorderLayout());
 		JButton relayButton = new JButton();
+		relayButton.setBorder(DevicesCommandCellRenderer.BUTTON_BORDERS);
 		relayButton.addActionListener(e -> {
 			if(edited != null) {
 				try {
@@ -578,13 +579,9 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 			}
 		});
 		
-		JPanel relayButtonPanel = new JPanel();
-		relayButtonPanel.setLayout(new BoxLayout(relayButtonPanel, BoxLayout.Y_AXIS));
+		JPanel relayButtonPanel = new JPanel(new VerticalFlowLayout(VerticalFlowLayout.CENTER, VerticalFlowLayout.CENTER, 0, 0));
 		relayButtonPanel.setOpaque(false);
-		relayButton.setBorder(DevicesCommandCellRenderer.BUTTON_BORDERS);
-		relayButtonPanel.add(Box.createVerticalGlue());
 		relayButtonPanel.add(relayButton);
-		relayButtonPanel.add(Box.createVerticalGlue());
 
 		relayPanel.setOpaque(false);
 		relayPanel.add(relayLabel, BorderLayout.CENTER);
@@ -769,11 +766,10 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 	private Component getInputPanel(final InputInterface act, JTable table) {
 		JPanel actionsPanel = new JPanel(new BorderLayout());
 		String label = act.getLabel();
-		JLabel actionsLabel = new JLabel(label.isEmpty() ? "-" : label);
+		JLabel actionsLabel = new JLabel(label == null || label.isEmpty() ? "\u25CB" : label);
 		actionsPanel.setBackground(selBackground);
 		actionsLabel.setForeground(selForeground);
-		actionsPanel.add(actionsLabel, BorderLayout.CENTER);
-		JPanel actionsSouthPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
+		JPanel actionsButtonsPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
 		int numEvents = act.getRegisteredEventsCount();
 		if(numEvents > 0) {
 			for(String type: act.getRegisteredEvents()) {
@@ -807,9 +803,9 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 					} else {
 						b.setEnabled(false);
 					}
-					b.setBorder(bLabel.length() > 1 ? DevicesCommandCellRenderer.BUTTON_BORDERS_SMALLER : DevicesCommandCellRenderer.BUTTON_BORDERS_SMALL/*new EmptyBorder(DevicesTableRenderer.BUTTON_MARGIN_V, DevicesTableRenderer.BUTTON_MARGIN_H-2, DevicesTableRenderer.BUTTON_MARGIN_V, DevicesTableRenderer.BUTTON_MARGIN_H-2)*/);
+					b.setBorder(/*bLabel.length() > 1 ?*/ DevicesCommandCellRenderer.BUTTON_BORDERS_SMALLER /*: DevicesCommandCellRenderer.BUTTON_BORDERS_SMALL*/);
 					b.setBackground(DevicesCommandCellRenderer.BUTTON_OFF_BG_COLOR);
-					actionsSouthPanel.add(b);
+					actionsButtonsPanel.add(b);
 					if(act.isInputOn()) {
 						b.setForeground(DevicesCommandCellRenderer.BUTTON_ON_FG_COLOR);
 					}
@@ -820,8 +816,9 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 				actionsLabel.setForeground(DevicesCommandCellRenderer.BUTTON_ON_FG_COLOR);
 			}
 		}
-		actionsSouthPanel.setOpaque(false);
-		actionsPanel.add(actionsSouthPanel, BorderLayout.SOUTH);
+		actionsButtonsPanel.setOpaque(false);
+		actionsPanel.add(actionsButtonsPanel, BorderLayout.EAST);
+		actionsPanel.add(actionsLabel, BorderLayout.WEST);
 		actionsPanel.setOpaque(false);
 		stackedPanel.add(actionsPanel);
 		return actionsPanel;

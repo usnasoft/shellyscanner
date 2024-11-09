@@ -9,7 +9,6 @@ import java.awt.GridLayout;
 import java.util.MissingResourceException;
 
 import javax.swing.BorderFactory;
-import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -32,6 +31,7 @@ import it.usna.shellyscan.model.device.modules.RelayInterface;
 import it.usna.shellyscan.model.device.modules.RollerInterface;
 import it.usna.shellyscan.model.device.modules.ThermostatInterface;
 import it.usna.shellyscan.model.device.modules.WhiteInterface;
+import it.usna.swing.VerticalFlowLayout;
 
 public class DevicesCommandCellRenderer implements TableCellRenderer {
 	// Dimmer
@@ -92,7 +92,7 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 	private static final int BUTTON_MARGIN_H = 12;
 	private static final int BUTTON_MARGIN_V = 1;
 	final static Border BUTTON_BORDERS = BorderFactory.createEmptyBorder(BUTTON_MARGIN_V, BUTTON_MARGIN_H, BUTTON_MARGIN_V, BUTTON_MARGIN_H);
-	final static Border BUTTON_BORDERS_SMALL = BorderFactory.createEmptyBorder(BUTTON_MARGIN_V, BUTTON_MARGIN_H-2, BUTTON_MARGIN_V, BUTTON_MARGIN_H-2);
+//	final static Border BUTTON_BORDERS_SMALL = BorderFactory.createEmptyBorder(BUTTON_MARGIN_V, BUTTON_MARGIN_H-2, BUTTON_MARGIN_V, BUTTON_MARGIN_H-2);
 	final static Border BUTTON_BORDERS_SMALLER = BorderFactory.createEmptyBorder(BUTTON_MARGIN_V, BUTTON_MARGIN_H-5, BUTTON_MARGIN_V, BUTTON_MARGIN_H-5);
 	final static String LABEL_ON = Main.LABELS.getString("btnOnLabel");
 	final static String LABEL_OFF = Main.LABELS.getString("btnOffLabel");
@@ -101,8 +101,8 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 	public DevicesCommandCellRenderer() {
 		// Dimmer
 		lightButton.setBorder(BUTTON_BORDERS);
-		lightPanel.add(lightLabel, BorderLayout.WEST);
 		lightPanel.add(lightButton, BorderLayout.EAST);
+		lightPanel.add(lightLabel, BorderLayout.WEST);
 		lightPanel.add(lightBrightness, BorderLayout.SOUTH);
 //		lightBrightness.setPreferredSize(new Dimension(20, lightBrightness.getPreferredSize().height));
 		
@@ -373,8 +373,7 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 			stackedPanel.removeAll();
 			for(InputInterface inp: inputs) {
 				if(inp.enabled()) {
-					JPanel actionsPanel = getInputPanel(inp, foregroundColor);
-					stackedPanel.add(actionsPanel);
+					stackedPanel.add(getInputPanel(inp, foregroundColor));
 				}
 			}
 			ret = stackedPanel;
@@ -427,14 +426,11 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 		relayLabel.setForeground(foregroundColor);
 		JPanel relayPanel = new JPanel(new BorderLayout());
 		JButton relayButton = new JButton();
-		
-		JPanel relayButtonPanel = new JPanel();
-		relayButtonPanel.setLayout(new BoxLayout(relayButtonPanel, BoxLayout.Y_AXIS));
-		relayButtonPanel.setOpaque(false);
 		relayButton.setBorder(BUTTON_BORDERS);
-		relayButtonPanel.add(Box.createVerticalGlue());
+		
+		JPanel relayButtonPanel = new JPanel(new VerticalFlowLayout(VerticalFlowLayout.CENTER, VerticalFlowLayout.CENTER, 0, 0));
+		relayButtonPanel.setOpaque(false);
 		relayButtonPanel.add(relayButton);
-		relayButtonPanel.add(Box.createVerticalGlue());
 
 		relayPanel.setOpaque(false);
 		relayPanel.add(relayLabel, BorderLayout.CENTER);
@@ -455,10 +451,10 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 	private JPanel getInputPanel(InputInterface inp, final Color foregroundColor) {
 		JPanel actionsPanel = new JPanel(new BorderLayout());
 		String inpName = inp.getLabel();
-		JLabel actionsLabel = new JLabel(inpName.isEmpty() ? "-" : inpName);
+		JLabel actionsLabel = new JLabel(inpName == null || inpName.isEmpty() ? "\u25CB" : inpName);
 		actionsLabel.setForeground(foregroundColor);
-		actionsPanel.add(actionsLabel, BorderLayout.CENTER);
-		JPanel actionsSouthPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
+		
+		JPanel actionsButtonsPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
 		int numEvents = inp.getRegisteredEventsCount();
 		if(numEvents > 0) {
 			for(String type: inp.getRegisteredEvents()) { // webhooks
@@ -471,10 +467,10 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 						bLabel = "x";
 					}
 					JButton b = new JButton(bLabel);
-					b.setBorder(bLabel.length() > 1 ? BUTTON_BORDERS_SMALLER : BUTTON_BORDERS_SMALL);
+					b.setBorder(/*bLabel.length() > 1 ?*/ BUTTON_BORDERS_SMALLER /*: BUTTON_BORDERS_SMALL*/);
 					b.setEnabled(enabled);
 					b.setBackground(BUTTON_OFF_BG_COLOR);
-					actionsSouthPanel.add(b);
+					actionsButtonsPanel.add(b);
 					if(inp.isInputOn()) {
 						b.setForeground(BUTTON_ON_FG_COLOR);
 					}
@@ -485,8 +481,9 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 				actionsLabel.setForeground(BUTTON_ON_FG_COLOR);
 			}
 		}
-		actionsSouthPanel.setOpaque(false);
-		actionsPanel.add(actionsSouthPanel, BorderLayout.SOUTH);
+		actionsButtonsPanel.setOpaque(false);
+		actionsPanel.add(actionsButtonsPanel, BorderLayout.EAST);
+		actionsPanel.add(actionsLabel, BorderLayout.WEST);
 		actionsPanel.setOpaque(false);
 		return actionsPanel;
 	}

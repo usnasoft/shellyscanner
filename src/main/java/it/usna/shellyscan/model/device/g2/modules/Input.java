@@ -43,6 +43,10 @@ public class Input implements InputInterface {
 	public String getLabel() {
 		return name;
 	}
+	
+	public void setLabel(String name) {
+		this.name = name;
+	}
 
 	@Override
 	public boolean isInputOn() {
@@ -67,6 +71,10 @@ public class Input implements InputInterface {
 	@Override
 	public boolean enabled() {
 		return enable /*name.isEmpty() == false || webHooks.size() > 0*/;
+	}
+	
+	public void setEnabled(boolean enable) {
+		this.enable = enable;
 	}
 
 	@Override

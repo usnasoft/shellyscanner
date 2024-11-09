@@ -25,9 +25,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import it.usna.shellyscan.Main;
 import it.usna.util.AppProperties;
 
-public class UpplicationUpdateCHK {
+public class ApplicationUpdateCHK {
 	private final static String IGNORE = "IGNORE_VERION_DOWNLOAD";
-	private final static Logger LOG = LoggerFactory.getLogger(UpplicationUpdateCHK.class);
+	private final static Logger LOG = LoggerFactory.getLogger(ApplicationUpdateCHK.class);
 	
 	public static void chechForUpdates(final Window w) {
 		w.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));

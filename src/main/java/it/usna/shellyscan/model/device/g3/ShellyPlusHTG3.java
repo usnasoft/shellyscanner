@@ -48,7 +48,7 @@ public class ShellyPlusHTG3 extends AbstractBatteryG3Device {
 
 	@Override
 	public String getTypeName() {
-		return "Shelly +H&T G3";
+		return "Shelly H&T G3";
 	}
 	
 	@Override

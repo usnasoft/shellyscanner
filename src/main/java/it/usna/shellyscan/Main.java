@@ -28,17 +28,19 @@ import it.usna.shellyscan.model.IPCollection;
 import it.usna.shellyscan.model.NonInteractiveDevices;
 import it.usna.shellyscan.view.DevicesTable;
 import it.usna.shellyscan.view.MainView;
+import it.usna.shellyscan.view.chart.ChartType;
 import it.usna.shellyscan.view.chart.MeasuresChart;
+import it.usna.shellyscan.view.chart.NonInteractiveMeasuresChart;
+import it.usna.shellyscan.view.util.ApplicationUpdateCHK;
 import it.usna.shellyscan.view.util.Msg;
 import it.usna.shellyscan.view.util.ScannerProperties;
-import it.usna.shellyscan.view.util.UpplicationUpdateCHK;
 import it.usna.swing.UsnaSwingUtils;
 import it.usna.util.CLI;
 
 public class Main {
 	public final static String APP_NAME = "Shelly Scanner";
-	public final static String VERSION = "1.1.1";
-	public final static String VERSION_CODE = "001.001.001r200"; // r0xx alpha; r1xx beta; r2xx stable
+	public final static String VERSION = "1.2.0";
+	public final static String VERSION_CODE = "001.002.000r200"; // r0xx alpha; r1xx beta; r2xx stable
 	public final static Image ICON = Toolkit.getDefaultToolkit().createImage(Main.class.getResource("/images/ShSc24.png"));
 	public final static String BACKUP_FILE_EXT = "sbk";
 	public final static String ARCHIVE_FILE_EXT = "arc";
@@ -57,6 +59,7 @@ public class Main {
 		//		final AppProperties appProp = ScannerProperties.get();
 		//		System.setProperty(SimpleLogger.DEFAULT_LOG_LEVEL_KEY, "error");
 		System.setProperty(SimpleLogger.LOG_KEY_PREFIX + "javax.jmdns", "warn");
+		System.setProperty(SimpleLogger.LOG_KEY_PREFIX + "org.eclipse.jetty", "warn");
 		System.setProperty(SimpleLogger.SHOW_DATE_TIME_KEY, "true");
 		final Logger LOG = LoggerFactory.getLogger(Main.class);
 
@@ -181,7 +184,7 @@ public class Main {
 			}
 		}
 
-		// Go interactive
+		// Activate dynamic model - Go interactive
 		try {
 			UsnaSwingUtils.setLookAndFeel(UsnaSwingUtils.LF_NIMBUS);
 		} catch (Exception e) {
@@ -201,15 +204,33 @@ public class Main {
 			DeferrablesContainer.init(model); // first model listener
 			final MainView view = new MainView(model, appProp);
 
+			cliIndex = cli.hasEntry("-graphs");
+			if(cliIndex >= 0) {
+				String gPar = cli.getParameter(cliIndex);
+				if(gPar != null) {
+					try {
+						NonInteractiveMeasuresChart chartW = new NonInteractiveMeasuresChart(model, ChartType.valueOf(gPar));
+						model.addListener(chartW);
+						// do not activateGUI
+					} catch(IllegalArgumentException e) { // not a valid chart type
+						activateGUI(view, model, appProp);
+						MeasuresChart.setDoOutStream(true);
+						cli.rejectParameter(cliIndex);
+					}
+				} else {
+					activateGUI(view, model, appProp);
+					MeasuresChart.setDoOutStream(true);
+				}
+			} else {
+				activateGUI(view, model, appProp);
+			}
+
 			// final values for thread
 			final boolean fullScanFinal = fullScan;
 			final IPCollection ipCollectionFinal = ipCollection;
-
 			SwingUtilities.invokeLater(() -> {
-				view.setVisible(true);
 				try {
 					view.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-					view.requestFocus(); // remove random focus on toolbar button
 					boolean useArchive = appProp.getBoolProperty(ScannerProperties.PROP_USE_ARCHIVE, true);
 					if(useArchive) {
 						try {
@@ -233,9 +254,6 @@ public class Main {
 					view.setCursor(Cursor.getDefaultCursor());
 				}
 			});
-			new Thread(() -> UpplicationUpdateCHK.chechForUpdates(view, appProp)).start();
-
-			MeasuresChart.setDoOutStream(cli.hasEntry("-graphs") >= 0);
 			if(cli.unused().length > 0) {
 				System.err.println("Ignored parameter(s): " + Arrays.stream(cli.unused()).collect(Collectors.joining("; ")));
 			}
@@ -244,5 +262,13 @@ public class Main {
 			ex.printStackTrace();
 			System.exit(1);
 		}
-	} 
+	}
+	
+	private static void activateGUI(final MainView view, final Devices model, final ScannerProperties appProp) {
+		view.setVisible(true);
+		view.requestFocus(); // remove random focus on toolbar button
+		model.addListener(view);
+		appProp.addListener(view);
+		new Thread(() -> ApplicationUpdateCHK.chechForUpdates(view, appProp)).start();
+	}
 }

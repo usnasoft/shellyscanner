@@ -25,7 +25,7 @@ import it.usna.shellyscan.model.device.meters.MetersWVI;
  * Shelly Shelly Plus 1PM model
  * @author usna
  */
-public class ShellyPlus1PM extends AbstractG2Device implements ModulesHolder, InternalTmpHolder, SensorAddOnHolder {
+public class ShellyPlus1PM extends AbstractG2Device implements ModulesHolder, InternalTmpHolder {
 	private final static Logger LOG = LoggerFactory.getLogger(ShellyPlus1PM.class);
 	public final static String ID = "Plus1PM";
 	private Relay relay = new Relay(this, 0);
@@ -157,7 +157,7 @@ public class ShellyPlus1PM extends AbstractG2Device implements ModulesHolder, In
 		} catch (IOException e) {
 			LOG.error("restoreCheck", e);
 		}
-		SensorAddOn.restoreCheck(this, backupJsons, res);
+		SensorAddOn.restoreCheck(this, addOn, backupJsons, res);
 	}
 
 	@Override
@@ -168,12 +168,7 @@ public class ShellyPlus1PM extends AbstractG2Device implements ModulesHolder, In
 		errors.add(relay.restore(configuration));
 		
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-		SensorAddOn.restore(this, backupJsons, errors);
-	}
-	
-	@Override
-	public SensorAddOn getSensorAddOn() {
-		return addOn;
+		SensorAddOn.restore(this, addOn, backupJsons, errors);
 	}
 	
 	@Override

@@ -61,7 +61,7 @@ public class DialogDeviceInfo extends JDialog implements UsnaEventListener<Devic
 	private final Devices devicesModel;
 	private final int deviceIndex;
 	private final ScheduledExecutorService executor;
-	
+
 	private JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
 	private boolean pleaseUpdate = false;
 
@@ -74,7 +74,7 @@ public class DialogDeviceInfo extends JDialog implements UsnaEventListener<Devic
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		this.setSize(530, 650);
 		setLocationRelativeTo(owner);
-		
+
 		// too many concurrent requests are dangerous (device reboot - G1) or cause websocket disconnection (G2)
 		executor = Executors.newScheduledThreadPool(device instanceof AbstractBatteryG2Device ? 5 : 2);
 
@@ -125,8 +125,13 @@ public class DialogDeviceInfo extends JDialog implements UsnaEventListener<Devic
 			int selected = tabbedPane.getSelectedIndex();
 			tabbedPane.removeAll();
 			for (String info : device.getInfoRequests()) {
-				String name = info.replaceFirst("^/", "").replaceFirst("^rpc/", "").replaceFirst("^Shelly\\.", "").replaceFirst("\\?.*", "");
-				tabbedPane.add(name, getJsonPanel(info, device));
+				String name = info.replaceFirst("\\?.*", "");
+				if(info.startsWith("()")) {
+					info = info.substring(2);
+					name = name.substring(2) + "(" + info.substring(info.indexOf("?id=") + 4) + ")";
+				}
+				name = name.replaceFirst("^/", "").replaceFirst("^rpc/", "").replaceFirst("^Shelly\\.", "");
+				tabbedPane.add(name, getJsonGetPanel(info, device));
 			}
 			if(selected >= 0) {
 				tabbedPane.setSelectedIndex(selected);
@@ -136,7 +141,7 @@ public class DialogDeviceInfo extends JDialog implements UsnaEventListener<Devic
 		}
 	}
 
-	private JPanel getJsonPanel(String info, ShellyAbstractDevice device) {
+	private JPanel getJsonGetPanel(String info, ShellyAbstractDevice device) {
 		JPanel panel = new JPanel();
 		panel.setLayout(new BorderLayout(0, 0));
 		UsnaTextPane textPane = new UsnaTextPane();
@@ -145,12 +150,13 @@ public class DialogDeviceInfo extends JDialog implements UsnaEventListener<Devic
 		StyleConstants.setBold(redStyle, true);
 		textPane.setEditable(false);
 		textPane.setForeground(Color.BLUE);
-//		textPane.setBackground(new Color(254, 253, 222));
+		//		textPane.setBackground(new Color(254, 253, 222));
 		textPane.addCaretListener(e -> markDelimiters(e.getDot(), textPane.getStyledDocument(), redStyle));
-		
+
 		final ObjectWriter writer = new ObjectMapper().writerWithDefaultPrettyPrinter();
 		JsonNode storedVal;
 		final boolean preview;
+
 		if (device instanceof BatteryDeviceInterface && (storedVal = ((BatteryDeviceInterface) device).getStoredJSON(info)) != null) {
 			try {
 				String json = writer.writeValueAsString(storedVal);
@@ -171,12 +177,12 @@ public class DialogDeviceInfo extends JDialog implements UsnaEventListener<Devic
 					JsonNode val = device.getJSON(info);
 					final String json = val.isNull() ? "" : writer.writeValueAsString(val);
 					textPane.setForeground(Color.BLACK);
-//					textPane.setBackground(Color.white);
+					// textPane.setBackground(Color.white);
 					textPane.setText(json, DEF_STYLE);
 					if (device instanceof BatteryDeviceInterface) {
 						((BatteryDeviceInterface) device).setStoredJSON(info, val);
 					}
-//					textPane.setCaretPosition(0);
+					// textPane.setCaretPosition(0);
 					markDelimiters(0, textPane.getStyledDocument(), redStyle);
 				}
 			} catch (Exception e) {
@@ -203,7 +209,7 @@ public class DialogDeviceInfo extends JDialog implements UsnaEventListener<Devic
 		JScrollPane scrollPane = new JScrollPane(textPane);
 		scrollPane.getVerticalScrollBar().setUnitIncrement(16);
 		panel.add(scrollPane);
-		
+
 		// final Action topAction = new UsnaAction(e -> {
 		// scrollPane.getVerticalScrollBar().setValue(0);
 		// }
@@ -233,7 +239,7 @@ public class DialogDeviceInfo extends JDialog implements UsnaEventListener<Devic
 		executor.shutdownNow();
 		super.dispose();
 	}
-	
+
 	private static void markDelimiters(final int pos, StyledDocument doc, Style style) {
 		try {
 			String str = doc.getText(0, doc.getLength());
@@ -245,10 +251,10 @@ public class DialogDeviceInfo extends JDialog implements UsnaEventListener<Devic
 			while(matcher.find(index)) {
 				index = matcher.end();
 				if (str.charAt(index - 1) == '\n') { // "{\n"
-						start.add(index - 1);
-						if(index <= pos + 2) {
-							startIndent = start.size();
-						}
+					start.add(index - 1);
+					if(index <= pos + 2) {
+						startIndent = start.size();
+					}
 				} else /*if (str.charAt(index - 1) == '}')*/ { // "\\n\\s*\\}"
 					int sPos = start.remove(start.size() - 1);
 					if(index <= pos) {
@@ -262,7 +268,7 @@ public class DialogDeviceInfo extends JDialog implements UsnaEventListener<Devic
 			}
 		} catch(/*BadLocation*/Exception e) {}
 	}
-	
+
 	@Override
 	public void update(EventType mesgType, Integer msgBody) {
 		SwingUtilities.invokeLater(() -> {

@@ -28,9 +28,13 @@ import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 public class DynamicComponents {
 	private final static Logger LOG = LoggerFactory.getLogger(DynamicComponents.class);
 	
-	private final static String[] VIRTUAL_TYPES = {"Boolean", "Number", "Text", "Enum", "Group", "Button"};
-	private final static String BTHOME_DEVICE = "BTHomeDevice";
-	private final static String BTHOME_SENSOR = "BTHomeSensor";
+	public final static String GROUP_TYPE = "group";
+	public final static String[] VIRTUAL_TYPES = {"boolean", "number", "text", "enum", GROUP_TYPE, "button"};
+	public final static String BTHOME_DEVICE = "bthomedevice";
+	public final static String BTHOME_SENSOR = "bthomesensor";
+	
+	public final static int MIN_ID = 200;
+	public final static int MAX_ID = 299;
 	
 //	/**
 //	 * @param components - result of <IP>/rpc/Shelly.GetComponents?dynamic_only=true
@@ -44,7 +48,7 @@ public class DynamicComponents {
 	/**
 	 * Remove all dynamic components except BTHomeDevice(s).<br>
 	 * Note: if a component is removed and it is grouped it is also removed from its group  
-	 * @return the List<String> of not removed dynamic components (usually bthome components).
+	 * @return the List<String> of (not removed) BTHomeDevice(s) mac addresses.
 	 */
 	private static List<String> deleteAll(AbstractG2Device parent) throws IOException, InterruptedException {
 		final List<String> devicesAddress = new ArrayList<>();
@@ -53,14 +57,14 @@ public class DynamicComponents {
 		while (compIt.hasNext()) {
 			JsonNode comp = compIt.next();
 			String key = comp.get("key").asText();
-			if(Arrays.stream(VIRTUAL_TYPES).anyMatch(type -> key.toLowerCase().startsWith(type.toLowerCase() + ":"))) { // VIRTUAL_TYPES
+			if(Arrays.stream(VIRTUAL_TYPES).anyMatch(type -> key/*.toLowerCase()*/.startsWith(type/*.toLowerCase()*/ + ":"))) { // VIRTUAL_TYPES
 				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 				parent.postCommand("Virtual.Delete", "{\"key\":\"" + key + "\"}");
 			} else if(key.toLowerCase().startsWith("bthomesensor" + ":")) { // BTHomeSensor
 				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 				String typeIdx[] = key.split(":");
 				parent.postCommand("BTHome.DeleteSensor", "{\"id\":" + typeIdx[1] + "}");
-			} else { // BTHomeDevice
+			} else if(key.toLowerCase().startsWith("bthomedevice" + ":")) { // BTHomeDevice
 				devicesAddress.add(comp.at("/config/addr").asText());
 			}
 		}
@@ -101,45 +105,49 @@ public class DynamicComponents {
 		}
 	}
 
+	// All components will keep stored IDs
 	public static void restore(AbstractG2Device parent, Map<String, JsonNode> backupJsons, List<String> errors) throws InterruptedException {
 		try {
 			final JsonNode storedComponents = backupJsons.get("Shelly.GetComponents.json");
 			if(storedComponents != null) {
 				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-				final List<String> existingKeys = new ArrayList<>();
 				final List<String> existingDevices = deleteAll(parent);
+				final List<String> existingKeys = new ArrayList<>();
 				final List<GroupValue> groupsValues = new ArrayList<>();
 				final Iterator<JsonNode> storedIt = storedComponents.path("components").iterator();
 				while (storedIt.hasNext()) {
 					JsonNode storedComp = storedIt.next();
-					String key = storedComp.get("key").asText();
+					String key = storedComp.get("key").textValue();
 					String typeIdx[] = key.split(":");
-					if(typeIdx.length == 2 && Arrays.stream(VIRTUAL_TYPES).anyMatch(typeIdx[0]::equalsIgnoreCase)) { // add virtual component
+					if(typeIdx.length == 2 && Arrays.stream(VIRTUAL_TYPES).anyMatch(typeIdx[0]::equals/*IgnoreCase*/)) { // add virtual component
 						TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 						ObjectNode out = JsonNodeFactory.instance.objectNode();
 						out.put("type", typeIdx[0]);
-						out.put("id", Integer.parseInt(typeIdx[1]));
-						ObjectNode config = (ObjectNode)storedComp.path("config").deepCopy();
+						out.put("id", Integer.parseInt(typeIdx[1])); // keep old id
+						ObjectNode config = (ObjectNode)storedComp.path("config")/*.deepCopy()*/;
 						config.remove("id");
 						out.set("config", config);
 						errors.add(parent.postCommand("Virtual.Add", out));
 						existingKeys.add(key);
 
 						JsonNode value; // groups values are restored later
-						if(typeIdx[0].equalsIgnoreCase("Group") && (value = storedComp.path("status").get("value")) != null && value.size() > 0) {
+						if(typeIdx[0].equals/*IgnoreCase*/(GROUP_TYPE) && (value = storedComp.at("/status/value")) != null && value.size() > 0) {
 							groupsValues.add(new GroupValue(Integer.parseInt(typeIdx[1]), (ArrayNode)value));
 						}
-					} else if(typeIdx.length == 2 && typeIdx[0].equalsIgnoreCase(BTHOME_SENSOR) && existingDevices.contains(storedComp.at("/config/addr").asText())) { // add BTHome sensor
+					} else if(typeIdx.length == 2 && typeIdx[0].equals/*IgnoreCase*/(BTHOME_SENSOR) && existingDevices.contains(storedComp.at("/config/addr").asText())) { // add BTHome sensor
 						TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 						ObjectNode out = JsonNodeFactory.instance.objectNode();
-						out.set("config", storedComp.path("config"));
+						out.put("id", Integer.parseInt(typeIdx[1])); // keep old id
+						ObjectNode config = (ObjectNode)storedComp.path("config")/*.deepCopy()*/;
+						config.remove("id");
+						out.set("config", config);
 						errors.add(parent.postCommand("BTHome.AddSensor", out));
 						existingKeys.add(key);
-					} else if(typeIdx.length == 2 && typeIdx[0].equalsIgnoreCase(BTHOME_DEVICE) && existingDevices.contains(storedComp.at("/config/addr").asText())) { // add BTHome device
+					} else if(typeIdx.length == 2 && typeIdx[0].equals/*IgnoreCase*/(BTHOME_DEVICE) && existingDevices.contains(storedComp.at("/config/addr").asText())) { // add BTHome device
 						TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 						ObjectNode out = JsonNodeFactory.instance.objectNode();
-						out.put("id", Integer.parseInt(typeIdx[1]));
-						ObjectNode config = (ObjectNode)storedComp.path("config").deepCopy();
+						out.put("id", Integer.parseInt(typeIdx[1])); // keep old id
+						ObjectNode config = (ObjectNode)storedComp.path("config")/*.deepCopy()*/;
 						config.remove("id");
 						config.remove("addr");
 						out.set("config", config);
@@ -150,9 +158,9 @@ public class DynamicComponents {
 				// group values after all components have been added
 				for(GroupValue val: groupsValues) {
 					ObjectNode grValue = JsonNodeFactory.instance.objectNode();
-					groupRestoreValues(val.value, existingKeys);
+					groupRestoreValues(val.value, existingKeys); // alter val.value
 					grValue.put("id", val.groupId);
-					grValue.set("value", val.value); // todo only values included in existingKeys
+					grValue.set("value", val.value);
 					TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 					errors.add(parent.postCommand("Group.Set", grValue));
 				}
@@ -164,11 +172,11 @@ public class DynamicComponents {
 	
 	// remove non existing components from orig
 	private static void groupRestoreValues(ArrayNode orig, List<String> existing) {
-		Iterator<JsonNode> toRestore = orig.iterator();
-		while(toRestore.hasNext()) {
-			String val = toRestore.next().asText();
+		Iterator<JsonNode> origIterator = orig.iterator();
+		while(origIterator.hasNext()) {
+			String val = origIterator.next().asText();
 			if(existing.contains(val) == false) {
-				toRestore.remove();
+				origIterator.remove();
 			}
 		}
 	}

@@ -6,6 +6,7 @@ import java.net.NetworkInterface;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
@@ -40,7 +41,13 @@ import it.usna.shellyscan.model.device.InetAddressAndPort;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
 import it.usna.shellyscan.model.device.ShellyUnmanagedDeviceInterface;
+import it.usna.shellyscan.model.device.blu.AbstractBluDevice;
+import it.usna.shellyscan.model.device.blu.BTHomeDevice;
+import it.usna.shellyscan.model.device.blu.BluInetAddressAndPort;
+import it.usna.shellyscan.model.device.blu.BluTRV;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
+import it.usna.shellyscan.model.device.g2.AbstractProDevice;
+import it.usna.shellyscan.model.device.g3.AbstractG3Device;
 
 public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Integer> {
 	private final static Logger LOG = LoggerFactory.getLogger(Devices.class);
@@ -182,6 +189,7 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 	}
 
 	private JsonNode isShelly(final InetAddress address, int port) throws TimeoutException {
+		// if(name.startsWith("shelly") || name.startsWith("Shelly")) { // Shelly X devices can have different names
 		try {
 			ContentResponse response = httpClient.newRequest("http://" + address.getHostAddress() + ":" + port + "/shelly").timeout(80, TimeUnit.SECONDS).method(HttpMethod.GET).send();
 			JsonNode shellyNode = JSON_MAPPER.readTree(response.getContent());
@@ -250,7 +258,7 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 		synchronized(devices) {
 			final ShellyAbstractDevice d = devices.get(ind);
 			if(d instanceof GhostDevice == false && (d.getStatus() != Status.READING || force)) {
-				refreshProcess.get(ind).cancel(true);
+				pauseRefresh(ind);
 				d.setStatus(Status.READING);
 				executor.schedule(() -> {
 					if(d instanceof ShellyUnmanagedDeviceInterface unmanaged && unmanaged.getException() != null) { // try to create proper device
@@ -270,11 +278,7 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 								LOG.debug("refresh {} - {}", d, d.getStatus());
 							}
 						} finally {
-							synchronized(devices) {
-								if(refreshProcess.get(ind).isCancelled()) { // in case of many and fast "refresh"
-									refreshProcess.set(ind, scheduleRefresh(d, ind, refreshInterval, refreshTics));
-								}
-							}
+							activateRefresh(ind);
 							updateViewRow(d, ind);
 						}
 					}
@@ -283,14 +287,9 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 		}
 	}
 
-	public void pauseRefresh(int ind) {
-		refreshProcess.get(ind).cancel(true);
-	}
-
 	public void reboot(int ind) {
 		final ShellyAbstractDevice d = devices.get(ind);
-		final ScheduledFuture<?> f = refreshProcess.get(ind);
-		f.cancel(true); // Before reboot disable refresh process
+		pauseRefresh(ind); // Before reboot disable refresh process
 		d.setStatus(Status.READING);
 		updateViewRow(d, ind);
 		executor.execute/*submit*/(() -> {
@@ -306,14 +305,24 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 					LOG.debug("reboot {} - {}", d.toString(), d.getStatus());
 				}
 			} finally {
-				synchronized(devices) {
-					if(f.isCancelled()) { // in case of many and fast "refresh"
-						refreshProcess.set(ind, scheduleRefresh(d, ind, refreshInterval, refreshTics));
-					}
-				}
+				activateRefresh(ind);
 			}
 			updateViewRow(d, ind);
 		});
+	}
+	
+	public void pauseRefresh(int ind) {
+		synchronized(devices) {
+			refreshProcess.get(ind).cancel(true);
+		}
+	}
+	
+	public void activateRefresh(int ind) {
+		synchronized(devices) {
+			if(refreshProcess.get(ind).isCancelled()) {
+				refreshProcess.set(ind, scheduleRefresh(devices.get(ind), ind, refreshInterval, refreshTics));
+			}
+		}
 	}
 
 	private void updateViewRow(final ShellyAbstractDevice d, int ind) {
@@ -329,16 +338,15 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 	public void create(InetAddress address, int port, String hostName, boolean force) {
 		LOG.trace("getting info (/shelly) {}:{} - {}", address, port, hostName);
 		try {
-			//ContentResponse response = httpClient.newRequest("http://" + address.getHostAddress() + ":" + port + "/shelly").timeout(80, TimeUnit.SECONDS).method(HttpMethod.GET).send();
 			JsonNode info = isShelly(address, port);
 			if(info != null) {
-				create(address, port, /*JSON_MAPPER.readTree(response.getContent())*/info, hostName);
+				create(address, port, info, hostName);
 			} else if(force && (hostName.startsWith("shelly") || hostName.startsWith("Shelly"))) { // ShellyBulbDuo-xxx, ShellyWallDisplay-xxx, ...
 				LOG.warn("create with error (info==null) {}:{}", address, port);
 				newDevice(DevicesFactory.createWithError(httpClient, address, port, hostName, new NullPointerException()));
 			}
 //			Thread.sleep(Devices.MULTI_QUERY_DELAY);
-		} catch(/*IOException |*/ TimeoutException /*| InterruptedException*/ /*| ExecutionException*/ e) { // SocketTimeoutException extends IOException
+		} catch(TimeoutException e) { // SocketTimeoutException extends IOException
 			if(force && (hostName.startsWith("shelly") || hostName.startsWith("Shelly"))) {
 				LOG.warn("create with error {}:{}", address, port, e);
 				newDevice(DevicesFactory.createWithError(httpClient, address, port, hostName, e));
@@ -357,6 +365,7 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 				newDevice(d);
 				LOG.debug("Create {}:{} - {}", address, port, d);
 
+				// Rage extender
 				if(/*port == 80 &&*/ d instanceof AbstractG2Device gen2 && (gen2.isExtender() || gen2.getStatus() == Status.NOT_LOOGGED)) {
 					gen2.getRangeExtenderManager().getPorts().forEach(p -> {
 						try {
@@ -375,32 +384,32 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 						}
 					});
 				}
-//				if(d instanceof AbstractProDevice || d instanceof AbstractG3Device) {
-//					final JsonNode currenteComponents = d.getJSON("/rpc/Shelly.GetComponents?dynamic_only=true").path("components");
-//					final Iterator<JsonNode> compIt = currenteComponents.iterator();
-//					while (compIt.hasNext()) {
-//						JsonNode comp = compIt.next();
-//						String key = comp.path("key").asText();
-//						if(key.startsWith("bthomedevice:")) {
-//							createBlu(d, comp, key);
-//						}
-//					}
-//				}
+				// BTHome
+				if(d instanceof AbstractProDevice || d instanceof AbstractG3Device) {
+					final JsonNode currenteComponents = d.getJSON("/rpc/Shelly.GetComponents?dynamic_only=true").path("components"); // empty on 401
+					final Iterator<JsonNode> compIt = currenteComponents.iterator();
+					HashSet<BluTRV> trvSet = new HashSet<>();
+					while (compIt.hasNext()) {
+						JsonNode compInfo = compIt.next();
+						String key = compInfo.path("key").asText();
+						if(key.startsWith(AbstractBluDevice.DEVICE_KEY_PREFIX)) {
+							newBluDevice(d, compInfo, key);
+						} else if(key.startsWith(BluTRV.DEVICE_KEY_PREFIX)) { // temporary workaround
+							trvSet.add(new BluTRV((AbstractG2Device)d, compInfo, "-1"));
+						}
+					}
+					trvSet.forEach(trv -> {  // temporary workaround
+						int ind = devices.indexOf(trv);
+						if(ind >= 0 && devices.get(ind) instanceof BTHomeDevice blu) {
+							blu.setTypeName("Blu TRV");
+						}
+					});
+				}
 			}
 		} catch(Exception e) {
 			LOG.error("Unexpected-add: {}:{}; host: {}", address, port, hostName, e);
 		}
 	}
-	
-//	private void createBlu(ShellyAbstractDevice parent, JsonNode info, String key) {
-//		String id = key.substring(13);
-//		try {
-//			DevicesFactory.createBlu(parent, info, id);
-//		} catch (IOException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
-//	}
 	
 	// Add or update (existence tested by mac address) a device
 	private void newDevice(ShellyAbstractDevice d) {
@@ -424,6 +433,38 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 				fireEvent(EventType.ADD, idx);
 				refreshProcess.add(scheduleRefresh(d, idx, refreshInterval, refreshTics));
 			}
+		}
+	}
+	
+	private void newBluDevice(ShellyAbstractDevice parent, JsonNode compInfo, String key) {
+		try {
+			AbstractBluDevice newBlu = DevicesFactory.createBlu(parent, httpClient, /*wsClient,*/ compInfo, key);
+			synchronized(devices) {
+				int ind = devices.indexOf(newBlu);
+				if(ind >= 0) { // already in list
+					ShellyAbstractDevice oldBlu = devices.get(ind);
+					if(oldBlu instanceof GhostDevice || newBlu.getLastTime() > oldBlu.getLastTime() || oldBlu.getAddressAndPort().equals(newBlu.getAddressAndPort())) {
+						if(refreshProcess.get(ind) != null) {
+							refreshProcess.get(ind).cancel(true);
+						}
+						devices.set(ind, newBlu);
+						if(oldBlu instanceof AbstractBluDevice old) { // could be a ghost
+							((BluInetAddressAndPort)newBlu.getAddressAndPort()).addAlternativeParent(old);
+						}
+						fireEvent(EventType.SUBSTITUTE, ind);
+						refreshProcess.set(ind, scheduleRefresh(newBlu, ind, refreshInterval, refreshTics));
+					} else {
+						((BluInetAddressAndPort)oldBlu.getAddressAndPort()).addAlternativeParent(parent.getAddressAndPort());
+					}
+				} else {
+					final int idx = devices.size();
+					devices.add(newBlu);
+					fireEvent(EventType.ADD, idx);
+					refreshProcess.add(scheduleRefresh(newBlu, idx, refreshInterval, refreshTics));
+				}
+			}
+		} catch (RuntimeException e) {
+			LOG.error("newBluDevice-parent: {} - key: {}", parent.getAddressAndPort(), compInfo.path("key").asText(), e);
 		}
 	}
 
@@ -456,18 +497,24 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 	}
 
 	private void ghostsReconnect() {
-		LOG.debug("Starting ghosts reconnect");
-		int dalay = 0;
-		for(int i = 0; i < devices.size(); i++) {
-			if(devices.get(i) instanceof GhostDevice g && g.isBatteryOperated() == false /*&& g.getAddressAndPort().getPort() == 80*/) { // g.getPort() port is (currently) variable
-				executor.schedule(() -> {
-					try {
-						create(g.getAddressAndPort().getAddress(), g.getAddressAndPort().getPort(), g.getAddressAndPort().getAddress().getHostAddress(), false);
-					} catch (RuntimeException e) {/*LOG.trace("ghosts reload {}", d.getAddress());*/}
-				}, dalay, TimeUnit.MILLISECONDS);
-				dalay += 4;
+		synchronized(devices) {
+			LOG.debug("Starting ghosts reconnect");
+			int dalay = 0;
+			for(int i = 0; i < devices.size(); i++) {
+				if(devices.get(i) instanceof GhostDevice g && g.isBatteryOperated() == false && g.getGeneration().equals(AbstractBluDevice.GENERATION) == false /*&& g.getAddressAndPort().getPort() == 80*/) { // getPort() port is (currently) variable
+					executor.schedule(() -> {
+						try {
+							create(g.getAddressAndPort().getAddress(), g.getAddressAndPort().getPort(), g.getAddressAndPort().getAddress().getHostAddress(), false);
+						} catch (RuntimeException e) {/*LOG.trace("ghosts reload {}", d.getAddress());*/}
+					}, dalay, TimeUnit.MILLISECONDS);
+					dalay += 4;
+				}
 			}
 		}
+	}
+	
+	public int getIndex (ShellyAbstractDevice d) {
+		return devices.indexOf(d);
 	}
 
 	public ShellyAbstractDevice get(int ind) {
@@ -488,16 +535,6 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 	public int size() {
 		return devices.size();
 	}
-
-//	private int indexOfByHostname(String hostname) {
-//		//synchronized(devices) {
-//		for(int i = 0; i < devices.size(); i++) {
-//			if(hostname.equals(devices.get(i).getHostname())) {
-//				return i;
-//			}
-//		}
-//		return -1;
-//	}
 	
 	public void loadFromStore(Path path) throws IOException {
 		loadGhosts(ghostsStore.read(path));
@@ -578,24 +615,15 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 
 		@Override
 		public void serviceRemoved(ServiceEvent event) {
-			String hostname = event.getInfo().getName();
-//			synchronized(devices) {
-//				int ind = indexOfByHostname(hostname);
-//				if(ind >= 0) {
-//					devices.get(ind).setStatus(Status.OFF_LINE);
-//					fireEvent(EventType.UPDATE, ind);
-//				}
-//			}
-			LOG.debug("Service removed: {} - {}", event.getInfo(), hostname);
+			if(LOG.isDebugEnabled()) {
+				LOG.debug("Service removed: {} - {}", event.getInfo(), event.getInfo().getName());
+			}
 		}
 
 		@Override
 		public void serviceResolved(ServiceEvent event) {
 			ServiceInfo info = event.getInfo();
-			final String name = info.getName();
-//			if(name.startsWith("shelly") || name.startsWith("Shelly")) { // Shelly X devices can have different names
-				executor.execute(() -> create(info.getInetAddresses()[0], 80, name, true));
-//			}
+			executor.execute(() -> create(info.getInetAddresses()[0], info.getPort(), info.getName(), true));
 		}
 	}
-} // 197 - 307 - 326 - 418 - 510 - 544 - 574
+} // 197 - 307 - 326 - 418 - 510 - 544 - 574 - 629

@@ -16,7 +16,6 @@ import it.usna.shellyscan.model.device.InternalTmpHolder;
 import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.ModulesHolder;
 import it.usna.shellyscan.model.device.RestoreMsg;
-import it.usna.shellyscan.model.device.g2.SensorAddOnHolder;
 import it.usna.shellyscan.model.device.g2.modules.Input;
 import it.usna.shellyscan.model.device.g2.modules.Relay;
 import it.usna.shellyscan.model.device.g2.modules.SensorAddOn;
@@ -25,7 +24,7 @@ import it.usna.shellyscan.model.device.g2.modules.SensorAddOn;
  * Shelly 1 G3 model
  * @author usna
  */
-public class Shelly1G3 extends AbstractG3Device implements ModulesHolder, InternalTmpHolder, SensorAddOnHolder {
+public class Shelly1G3 extends AbstractG3Device implements ModulesHolder, InternalTmpHolder {
 	private final static Logger LOG = LoggerFactory.getLogger(Shelly1G3.class);
 	public final static String ID = "S1G3";
 	private Relay relay = new Relay(this, 0);
@@ -124,7 +123,7 @@ public class Shelly1G3 extends AbstractG3Device implements ModulesHolder, Intern
 		} catch (IOException e) {
 			LOG.error("restoreCheck", e);
 		}
-		SensorAddOn.restoreCheck(this, backupJsons, res);
+		SensorAddOn.restoreCheck(this, addOn, backupJsons, res);
 	}
 
 	@Override
@@ -135,12 +134,7 @@ public class Shelly1G3 extends AbstractG3Device implements ModulesHolder, Intern
 		errors.add(relay.restore(configuration));
 		
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-		SensorAddOn.restore(this, backupJsons, errors);
-	}
-
-	@Override
-	public SensorAddOn getSensorAddOn() {
-		return addOn;
+		SensorAddOn.restore(this, addOn, backupJsons, errors);
 	}
 	
 	@Override

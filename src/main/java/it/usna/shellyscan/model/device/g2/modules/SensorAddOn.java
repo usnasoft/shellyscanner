@@ -19,7 +19,6 @@ import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.RestoreMsg;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
-import it.usna.shellyscan.model.device.g2.SensorAddOnHolder;
 
 /**
  * Sensor add-on model
@@ -246,6 +245,7 @@ public class SensorAddOn extends Meters {
 		};
 	}
 	
+	@Override
 	public String getName(Type t) {
 		return switch(t) {
 		case EX -> switchName;
@@ -281,8 +281,8 @@ public class SensorAddOn extends Meters {
 		return d.postCommand("SensorAddon.AddPeripheral", "{\"type\":\"" + type + "\",\"attrs\":{\"cid\":" + id + ",\"addr\":\"" + addr + "\"}}");
 	}
 
-	public static <T extends AbstractG2Device & SensorAddOnHolder> void restoreCheck(T d, Map<String, JsonNode> backupJsons, Map<RestoreMsg, Object> res) {
-		SensorAddOn addOn = d.getSensorAddOn(); // addOn must be up to date -> the device should refresh data before this call
+	public static void restoreCheck(AbstractG2Device d, SensorAddOn addOn, Map<String, JsonNode> backupJsons, Map<RestoreMsg, Object> res) {
+//		SensorAddOn addOn = d.getSensorAddOn(); // addOn must be up to date -> the device should refresh data before this call
 		JsonNode backupAddOn = backupJsons.get(BACKUP_SECTION);
 		if(backupAddOn != null) {
 			int backupNumSensors = 0;
@@ -311,8 +311,8 @@ public class SensorAddOn extends Meters {
 		}
 	}
 
-	public static <T extends AbstractG2Device & SensorAddOnHolder> void restore(T d, Map<String, JsonNode> backupJsons, List<String> errors) throws InterruptedException {
-		SensorAddOn addOn = d.getSensorAddOn();
+	public static void restore(AbstractG2Device d, SensorAddOn addOn, Map<String, JsonNode> backupJsons, List<String> errors) throws InterruptedException {
+//		SensorAddOn addOn = d.getSensorAddOn();
 		JsonNode backupAddOn = backupJsons.get(BACKUP_SECTION);
 		if(backupAddOn == null && addOn != null) { // there is addon on the device but not on backup -> disable (must reboot)
 			errors.add(enable(d, false));

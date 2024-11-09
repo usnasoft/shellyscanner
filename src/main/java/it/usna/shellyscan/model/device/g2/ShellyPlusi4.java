@@ -20,7 +20,7 @@ import it.usna.shellyscan.model.device.g2.modules.SensorAddOn;
 import it.usna.shellyscan.model.device.g2.modules.Webhooks;
 import it.usna.shellyscan.model.device.modules.DeviceModule;
 
-public class ShellyPlusi4 extends AbstractG2Device implements ModulesHolder, SensorAddOnHolder {
+public class ShellyPlusi4 extends AbstractG2Device implements ModulesHolder {
 	private final static Logger LOG = LoggerFactory.getLogger(ShellyPlusi4.class);
 	public final static String ID = "PlusI4";
 	private Input[] inputs;
@@ -115,7 +115,7 @@ public class ShellyPlusi4 extends AbstractG2Device implements ModulesHolder, Sen
 		} catch (IOException e) {
 			LOG.error("restoreCheck", e);
 		}
-		SensorAddOn.restoreCheck(this, backupJsons, res);
+		SensorAddOn.restoreCheck(this, addOn, backupJsons, res);
 	}
 
 	@Override
@@ -130,7 +130,7 @@ public class ShellyPlusi4 extends AbstractG2Device implements ModulesHolder, Sen
 		errors.add(Input.restore(this, configuration, 3));
 		
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-		SensorAddOn.restore(this, backupJsons, errors);
+		SensorAddOn.restore(this, addOn, backupJsons, errors);
 	}
 	
 	@Override
@@ -146,10 +146,5 @@ public class ShellyPlusi4 extends AbstractG2Device implements ModulesHolder, Sen
 	@Override
 	public DeviceModule[] getModules() {
 		return inputs;
-	}
-
-	@Override
-	public SensorAddOn getSensorAddOn() {
-		return addOn;
 	}
 }

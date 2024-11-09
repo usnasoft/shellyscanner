@@ -16,19 +16,25 @@ public class LightWhite implements WhiteInterface {
 	private String name;
 	private boolean isOn;
 	private int brightness;
-//	private int minB = 0;
-//	private int maxB = 1000;
 	private String source;
 	private boolean inputIsOn;
+	private final int minBrightness;
 	
 	public LightWhite(AbstractG2Device parent, int index) {
 		this.parent = parent;
 		this.index = index;
+		this.minBrightness = 0;
+	}
+	
+	public LightWhite(AbstractG2Device parent, int minBrightness, int index) {
+		this.parent = parent;
+		this.index = index;
+		this.minBrightness = minBrightness;
 	}
 	
 	@Override
 	public int getMinBrightness() {
-		return /*minB*/0;
+		return minBrightness;
 	}
 
 	@Override

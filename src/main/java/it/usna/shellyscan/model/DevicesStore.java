@@ -28,8 +28,9 @@ import it.usna.shellyscan.model.device.BatteryDeviceInterface;
 import it.usna.shellyscan.model.device.GhostDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
-import it.usna.shellyscan.model.device.g1.AbstractG1Device;
 import it.usna.shellyscan.model.device.ShellyUnmanagedDeviceInterface;
+import it.usna.shellyscan.model.device.blu.AbstractBluDevice;
+import it.usna.shellyscan.model.device.g1.AbstractG1Device;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.g3.AbstractG3Device;
 
@@ -51,7 +52,7 @@ public class DevicesStore {
 	private final static String USER_NOTE = "note";
 	private final static String KEYWORD_NOTE = "keyword";
 
-	private final static Pattern MAC_PATTERN = Pattern.compile("^[A-F0-9]{12}$");
+	private final static Pattern MAC_PATTERN = Pattern.compile("^([a-f0-9]{12})|([a-f0-9]{2}(:[a-f0-9]{2}){5})$", Pattern.CASE_INSENSITIVE);
 	
 	private final ArrayList<GhostDevice> ghostsList = new ArrayList<>();
 
@@ -81,6 +82,9 @@ public class DevicesStore {
 				if(stored != null) {
 					jsonDev.put(USER_NOTE, stored.getNote());
 					jsonDev.put(KEYWORD_NOTE, stored.getKeyNote());
+					if(device.getLastTime() < stored.getLastTime()) { // device.getLastTime() == 0 for originally off-line BLU devices 
+						jsonDev.put(LAST_CON, stored.getLastTime());
+					}
 				}
 				toBeStored.add(jsonDev);
 			}
@@ -126,7 +130,7 @@ public class DevicesStore {
 					try {
 						ghostsList.add(new GhostDevice(
 								InetAddress.getByName(el.get(ADDRESS).asText()), el.get(PORT).intValue(), el.get(HOSTNAME).asText(), el.get(MAC).asText(),
-								el.get(SSID).asText(), el.get(TYPE_NAME).asText(), el.get(TYPE_ID).asText(), el.path(GENERATION).intValue(), el.get(NAME).asText(), el.path(LAST_CON).longValue(),
+								el.get(SSID).asText(), el.get(TYPE_NAME).asText(), el.get(TYPE_ID).asText(), el.path(GENERATION).asText(), el.get(NAME).asText(), el.path(LAST_CON).longValue(),
 								el.path(BATTERY).booleanValue(), el.path(USER_NOTE).asText(), el.path(KEYWORD_NOTE).asText()));
 					} catch (UnknownHostException | RuntimeException e) {
 						LOG.error("Archive read", e);
@@ -174,17 +178,19 @@ public class DevicesStore {
 		return ind >= 0 ? ghostsList.get(ind) : null;
 	}
 	
-	private static int gen(ShellyAbstractDevice dev) {
+	private static String gen(ShellyAbstractDevice dev) {
 		if(dev instanceof GhostDevice) {
 			return ((GhostDevice) dev).getGeneration();
 		} else if(dev instanceof AbstractG3Device) {
-			return 3;
+			return "3";
 		} else if(dev instanceof AbstractG2Device) {
-			return 2;
+			return "2";
 		} else if(dev instanceof AbstractG1Device) {
-			return 1;
+			return "1";
+		} else if(dev instanceof AbstractBluDevice) {
+			return AbstractBluDevice.GENERATION;
 		} else{
-			return 0;
+			return "0";
 		}
 	}
 	

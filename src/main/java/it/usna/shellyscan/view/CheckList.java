@@ -15,6 +15,7 @@ import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -61,6 +62,8 @@ import it.usna.shellyscan.model.device.InetAddressAndPort;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice.LogMode;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
+import it.usna.shellyscan.model.device.blu.AbstractBluDevice;
+import it.usna.shellyscan.model.device.blu.BluInetAddressAndPort;
 import it.usna.shellyscan.model.device.g1.AbstractG1Device;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.g2.RangeExtenderManager;
@@ -127,6 +130,7 @@ public class CheckList extends JDialog implements UsnaEventListener<Devices.Even
 
 				TableCellRenderer rendTrueOk = new CheckRenderer(true);
 				TableCellRenderer rendFalseOk = new CheckRenderer(false);
+				columnModel.getColumn(COL_IP).setCellRenderer(new InetAddressAndPortRenderer());
 				columnModel.getColumn(COL_ECO).setCellRenderer(rendTrueOk);
 				columnModel.getColumn(COL_LED).setCellRenderer(rendTrueOk);
 				columnModel.getColumn(COL_LOGS).setCellRenderer(rendFalseOk);
@@ -355,7 +359,7 @@ public class CheckList extends JDialog implements UsnaEventListener<Devices.Even
 		JButton btnClose = new JButton(new UsnaAction("dlgClose", e -> dispose()));
 		panelRight.add(btnClose);
 
-		setSize(860, 490);
+		setSize(900, 490);
 		setVisible(true);
 		setLocationRelativeTo(owner);
 		table.columnsWidthAdapt();
@@ -393,8 +397,10 @@ public class CheckList extends JDialog implements UsnaEventListener<Devices.Even
 			try {
 				if (d instanceof AbstractG1Device) {
 					tModel.setRow(row, g1Row(d, d.getJSON("/settings")));
-				} else { // G2-G3
+				} else if (d instanceof AbstractG2Device) { // G2-G3
 					tModel.setRow(row, g2Row(d, d.getJSON("/rpc/Shelly.GetConfig"), d.getJSON("/rpc/Shelly.GetStatus")));
+				} else if (d instanceof AbstractBluDevice blu) { // G2-G3
+					tModel.setRow(row, bluRow(blu));
 				}
 			} catch (/* IO */Exception e) {
 				if (d instanceof BatteryDeviceInterface) {
@@ -488,6 +494,13 @@ public class CheckList extends JDialog implements UsnaEventListener<Devices.Even
 		String extender = (status == null || (extClient = status.at("/wifi/ap_client_count")).isMissingNode()) ? "-" : extClient.asInt() + "";
 		return new Object[] { DevicesTable.getStatusIcon(d), UtilMiscellaneous.getExtendedHostName(d), d.getAddressAndPort(), eco, "-", debug, ble, ap, roaming, wifi1, wifi2, extender };
 	}
+	
+	private static Object[] bluRow(AbstractBluDevice d) {
+//		String parents = d.getAddressAndPort().toString() +
+//		d.getAlternativeParents().stream().map(InetAddressAndPort::toString).collect(Collectors.joining("/"));
+		
+		return new Object[] { DevicesTable.getStatusIcon(d), UtilMiscellaneous.getExtendedHostName(d), d.getAddressAndPort() };
+	}
 
 	private static Boolean boolVal(JsonNode node) {
 		return node.isMissingNode() ? null : node.asBoolean();
@@ -520,6 +533,26 @@ public class CheckList extends JDialog implements UsnaEventListener<Devices.Even
 				if (isSelected == false) {
 					ret.setForeground(table.getForeground());
 				}
+			}
+			return ret;
+		}
+	}
+	
+	private static class InetAddressAndPortRenderer extends DefaultTableCellRenderer {
+		private static final long serialVersionUID = 1L;
+
+		@Override
+		public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+			JLabel ret = (JLabel)super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+			List<InetAddressAndPort> parents;
+			if(value instanceof BluInetAddressAndPort bluAddr && (parents = bluAddr.getAlternativeParents()).size() > 0) {
+				ret.setText(bluAddr.getRepresentation() + parents.stream().map(InetAddressAndPort::toString).collect(Collectors.joining(" \\ ", " \\ ", "")));
+				ret.setForeground(Color.red);
+				if (isSelected) {
+					ret.setFont(ret.getFont().deriveFont(Font.BOLD));
+				};
+			} else if (isSelected == false) {
+				ret.setForeground(table.getForeground());
 			}
 			return ret;
 		}

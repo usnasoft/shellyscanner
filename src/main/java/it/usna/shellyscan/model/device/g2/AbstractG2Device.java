@@ -278,6 +278,10 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 		return resp;
 	}
 
+	public JsonNode getJSON(final String method, JsonNode payload) throws IOException {
+		return getJSON(method, jsonMapper.writeValueAsString(payload));
+	}
+
 	public JsonNode getJSON(final String method, String payload) throws IOException {
 		final JsonNode resp = executeRPC(method, payload);
 		JsonNode result;
@@ -286,13 +290,13 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 		} else {
 			JsonNode error = resp.get("error");
 			throw new DeviceAPIException(error.get("code").intValue(), error.get("message").asText("Generic error"));
-		}	
+		}
 	}
 
 	private JsonNode executeRPC(final String method, String payload) throws IOException, StreamReadException { // StreamReadException extends ... IOException
 		try {
 			ContentResponse response = httpClient.POST(uriPrefix + "/rpc")
-					.body(new StringRequestContent("application/json", "{\"id\":1, \"method\":\"" + method + "\", \"params\":" + payload + "}", StandardCharsets.UTF_8))
+					.body(new StringRequestContent("application/json", "{\"id\":1,\"method\":\"" + method + "\",\"params\":" + payload + "}", StandardCharsets.UTF_8))
 					.send();
 			int statusCode = response.getStatus(); //response.getContentAsString()
 			if(statusCode == HttpStatus.OK_200) {
@@ -379,7 +383,6 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 			} catch(Exception e) {
 				LOG.error("backup specific", e);
 			}
-			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 		} catch(InterruptedException e) {
 			LOG.error("backup", e);
 		}
@@ -396,8 +399,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 			JsonNode devInfo = backupJsons.get("Shelly.GetDeviceInfo.json");
 			JsonNode config = backupJsons.get("Shelly.GetConfig.json");
 			final String fileHostname = devInfo.get("id").asText("");
-			final String fileType = devInfo.get("app").asText();
-			if(this.getTypeID().equals(fileType) == false) {
+			if(devInfo == null || this.getTypeID().equals(devInfo.get("app").asText()) == false) {
 				res.put(RestoreMsg.ERR_RESTORE_MODEL, null);
 			} else {
 				boolean sameHost = fileHostname.equals(this.hostname);
@@ -481,7 +483,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 			}
 			
 			errors.add("->r_step:DynamicComponents");
-			DynamicComponents.restore(this, backupJsons, errors);
+			DynamicComponents.restore(this, backupJsons, errors); // only devices with same (existing) addr are restored; if a device is no more present, related  webooks will signal error(s)
 			
 			errors.add("->r_step:restoreCommonConfig");
 			restoreCommonConfig(config, delay, userPref, errors);

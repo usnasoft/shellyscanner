@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
+import it.usna.shellyscan.model.device.blu.AbstractBluDevice;
 import it.usna.shellyscan.model.device.g2.modules.LoginManagerG2;
 import it.usna.shellyscan.model.device.modules.FirmwareManager;
 import it.usna.shellyscan.model.device.modules.InputResetManager;
@@ -24,14 +25,14 @@ import it.usna.shellyscan.model.device.modules.WIFIManager.Network;
 public class GhostDevice extends ShellyAbstractDevice {
 	private final static Logger LOG = LoggerFactory.getLogger(GhostDevice.class);
 	private final String typeName;
-	private final int gen;
+	private final String gen;
 	private final String typeID;
 	private final boolean battery;
 	private String note;
 	private String keyNote;
 	
 	public GhostDevice(InetAddress address, int port, String hostname,
-			String mac, String ssid, String typeName, String typeID, int gen, String name, long lastConnection, boolean battery,
+			String mac, String ssid, String typeName, String typeID, String gen, String name, long lastConnection, boolean battery,
 			String note, String keyNote) {
 		super(address, port, hostname);
 		this.mac = mac;
@@ -61,7 +62,7 @@ public class GhostDevice extends ShellyAbstractDevice {
 		return typeID;
 	}
 
-	public int getGeneration() {
+	public String getGeneration() {
 		return gen;
 	}
 	
@@ -161,6 +162,8 @@ public class GhostDevice extends ShellyAbstractDevice {
 			return restoreCheckG1(backupJsons);
 		} else if(backupJsons.containsKey("Shelly.GetConfig.json")) {
 			return restoreCheckG2(backupJsons);
+		} else if(backupJsons.containsKey("ShellyScannerBLU.json")) {
+			return restoreCheckBLU(backupJsons);
 		} else {
 			return Collections.singletonMap(RestoreMsg.ERR_RESTORE_MODEL, null);
 		}
@@ -222,6 +225,30 @@ public class GhostDevice extends ShellyAbstractDevice {
 			LOG.error("restoreCheck", e);
 			res.put(RestoreMsg.ERR_RESTORE_MODEL, null);
 		}
+		return res;
+	}
+	
+	private Map<RestoreMsg, Object> restoreCheckBLU(Map<String, JsonNode> backupJsons) {
+		EnumMap<RestoreMsg, Object> res = new EnumMap<>(RestoreMsg.class);
+		JsonNode usnaInfo = backupJsons.get("ShellyScannerBLU.json");
+		String fileLocalName;
+		if(usnaInfo == null || (fileLocalName = usnaInfo.path("type").asText("")).equals(getTypeID()) == false) {
+			res.put(RestoreMsg.ERR_RESTORE_MODEL, null);
+			return res;
+		}
+		final String fileComponentIndex = usnaInfo.get("index").asText();
+		JsonNode fileComponents = backupJsons.get("Shelly.GetComponents.json").path("components");
+		for(JsonNode fileComp: fileComponents) {
+			if(fileComp.path("key").textValue().equals(AbstractBluDevice.DEVICE_KEY_PREFIX + fileComponentIndex)) { // find the component by fileComponentIndex
+				String fileMac = fileComp.path("config").path("addr").textValue();
+				if(fileMac.equals(mac) == false) {
+					res.put(RestoreMsg.PRE_QUESTION_RESTORE_HOST, fileLocalName + "-" + fileMac);
+				}
+//				break;
+				return res;
+			}
+		}
+		res.put(RestoreMsg.ERR_RESTORE_MODEL, null); // key not found;
 		return res;
 	}
 	

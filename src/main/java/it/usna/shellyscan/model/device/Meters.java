@@ -6,13 +6,13 @@ import java.util.Locale;
 public abstract class Meters implements Comparable<Meters> {
 	public enum Type {
 		W, // active power
+		VA, // apparent power
 		VAR, // reactive power
 		PF, // power factor
 //		PF1, // power factor (1 decimal precision)
 		V, // voltage
 		I, // current
 		FREQ, // Frequency
-		BAT, // battery%
 		T, // temperature (celsius)
 		H, // humidity %
 		L, // lux
@@ -21,7 +21,9 @@ public abstract class Meters implements Comparable<Meters> {
 		T3, // temperature (celsius)
 		T4, // temperature (celsius)
 		EX, // ext switch status
-		PERC // 0-100
+		PERC, // 0-100
+		NUM, // inetger
+		BAT // battery %
 	};
 	protected static NumberFormat NF = NumberFormat.getNumberInstance(Locale.ENGLISH);
 	static {
@@ -29,13 +31,28 @@ public abstract class Meters implements Comparable<Meters> {
 		NF.setMinimumFractionDigits(2);
 	}
 	
-	public abstract Type[] getTypes();
-	
 	public abstract float getValue(Type t);
+	
+	public abstract Type[] getTypes();
 	
 	public boolean hasType(Type t) {
 		for(Type type: getTypes()) {
 			if(type == t) return true;
+		}
+		return false;
+	}
+
+	/**
+	 * Override for named measures
+	 */
+	public String getName(Type t) {
+		return null;
+	}
+	
+	public boolean hasNames() {
+		String name;
+		for(Type type: getTypes()) {
+			if((name = getName(type)) != null && name.isEmpty() == false) return true;
 		}
 		return false;
 	}

@@ -14,7 +14,6 @@ import java.text.MessageFormat;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.stream.Collectors;
@@ -42,12 +41,12 @@ import it.usna.shellyscan.model.device.ModulesHolder;
 import it.usna.shellyscan.model.device.MotionSensor;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
+import it.usna.shellyscan.model.device.blu.AbstractBluDevice;
 import it.usna.shellyscan.model.device.g1.ShellyDW;
 import it.usna.shellyscan.model.device.g1.ShellyFlood;
 import it.usna.shellyscan.model.device.g1.ShellyTRV;
 import it.usna.shellyscan.model.device.g1.modules.ThermostatG1;
 import it.usna.shellyscan.model.device.g2.ShellyPlusSmoke;
-import it.usna.shellyscan.model.device.g2.modules.SensorAddOn;
 import it.usna.shellyscan.model.device.modules.DeviceModule;
 import it.usna.swing.ArrayTableCellRenderer;
 import it.usna.swing.DecimalTableCellRenderer;
@@ -59,6 +58,7 @@ public class DevicesTable extends ExTooltipTable {
 	private static final long serialVersionUID = 1L;
 	private final static URL OFFLINEIMG = MainView.class.getResource("/images/bullet_stop.png");
 	private final static URL GHOSTIMG = MainView.class.getResource("/images/bullet_ghost.png");
+	private final static URL BTHOMEIMG = MainView.class.getResource("/images/bullet_bluetooth.png");
 	public final static ImageIcon ONLINE_BULLET = new ImageIcon(MainView.class.getResource("/images/bullet_yes.png"), LABELS.getString("labelDevOnLIne"));
 	public final static ImageIcon ONLINE_BULLET_REBOOT = new ImageIcon(MainView.class.getResource("/images/bullet_yes_reboot.png"), LABELS.getString("labelDevOnLIneReboot"));
 	public final static ImageIcon OFFLINE_BULLET = new ImageIcon(OFFLINEIMG, LABELS.getString("labelDevOffLIne"));
@@ -204,7 +204,6 @@ public class DevicesTable extends ExTooltipTable {
 		if(((Component) evt.getSource()).isVisible() && (r = rowAtPoint(evt.getPoint())) >= 0 && (c = columnAtPoint(evt.getPoint())) >= 0 &&
 				(value = getValueAt(r, c)) != null && (getEditingColumn() == c && getEditingRow() == r) == false) {
 			final int modelCol = convertColumnIndexToModel(c);
-//			final String ret;
 			if(modelCol == COL_UPTIME_IDX) {
 				adaptTooltipLocation = false;
 				long s = ((Number)value).longValue();
@@ -219,43 +218,30 @@ public class DevicesTable extends ExTooltipTable {
 			} else if (value instanceof ImageIcon icon) {
 				adaptTooltipLocation = false;
 				return icon.getDescription();
-//			} else if(value instanceof DeviceModule[] dmArray && isColumnVisible(COL_SOURCE_IDX) == false && dmArray.length > 0 && dmArray[0].getLastSource() != null) {
-//				adaptTooltipLocation = false;
-//				return Arrays.stream(dmArray).
-//						map(rel -> String.format(LABELS.getString("col_last_source_tooltip"), rel, rel.getLastSource())).collect(Collectors.joining("<br>", "<html>", "</html>"));
-//			} else if(value instanceof DeviceModule dm && isColumnVisible(COL_SOURCE_IDX) == false && (ret = dm.getLastSource()) != null) {
-//				adaptTooltipLocation = false;
-//				return "<html>" + String.format(LABELS.getString("col_last_source_tooltip"), value, ret) + "</html>";
-			} else if(value instanceof ThermostatG1 therm) { // TRV
+			} else if(value instanceof ThermostatG1 therm) { // TRV G1
 				adaptTooltipLocation = false;
 				return String.format(Locale.ENGLISH, LABELS.getString("col_command_therm_tooltip"), therm.getCurrentProfile(), therm.getTargetTemp(), therm.getPosition());
 			} else if(value instanceof Meters[] meters) {
-				if(Arrays.stream(meters).anyMatch(m -> DeviceMetersCellRenderer.hasHiddenMeasures(m) || m instanceof LabelHolder || m instanceof SensorAddOn) ||
+				if(Arrays.stream(meters).anyMatch(m -> DeviceMetersCellRenderer.hasHiddenMeasures(m) || m instanceof LabelHolder || m.hasNames()) ||
 						getCellRect(r, c, false).width <= getCellRenderer(r, c).getTableCellRendererComponent(this, value, false, false, r, c).getPreferredSize().width) {
 					adaptTooltipLocation = true;
 					String tt = "<html><table border='0' cellspacing='0' cellpadding='0'>";
+					boolean labelHolder = false;
 					for(Meters m: meters) {
 						tt += "<tr>";
-						if(m instanceof SensorAddOn) {
-							for(Meters.Type t: m.getTypes()) {
-								final String name = ((SensorAddOn)m).getName(t);
-								final String tLabel = (name != null && name.length() > 0) ? " (" + name + ")": "";
-								if(t == Meters.Type.EX) {
-									tt += "<td><i>" + LABELS.getString("METER_LBL_" + t) + tLabel + "</i>&nbsp;</td><td align='right'>" + SWITCH_FORMATTER.format(new Object [] {m.getValue(t)}) + "&nbsp;</td>";
-								} else {
-									tt += "<td><i>" + LABELS.getString("METER_LBL_" + t) + tLabel + "</i>&nbsp;</td><td align='right'>" + String.format(Locale.ENGLISH, LABELS.getString("METER_VAL_" + t), m.getValue(t)) + "&nbsp;</td>";
-								}
-							}
-						} else {
-							if(m instanceof LabelHolder) {
-								tt += "<td><b>" + ((LabelHolder)m).getLabel() + "</b>&nbsp;</td>";
-							}
-							for(Meters.Type t: m.getTypes()) {
-								if(t == Meters.Type.EX) {
-									tt += "<td><i>" + LABELS.getString("METER_LBL_" + t) + "</i>&nbsp;</td><td align='right'>" + SWITCH_FORMATTER.format(new Object [] {m.getValue(t)}) + "&nbsp;</td>";
-								} else {
-									tt += "<td><i>" + LABELS.getString("METER_LBL_" + t) + "</i>&nbsp;</td><td align='right'>" + String.format(Locale.ENGLISH, LABELS.getString("METER_VAL_" + t), m.getValue(t)) + "&nbsp;</td>";
-								}
+						if(m instanceof LabelHolder) {
+							tt += "<td><b>" + ((LabelHolder)m).getLabel() + "</b>&nbsp;</td>";
+							labelHolder = true;
+						} else if(labelHolder) { // skip first cell for alignment
+							tt += "<td></td>";
+						}
+						for(Meters.Type t: m.getTypes()) {
+							final String name = m.getName(t);
+							final String tLabel = (name != null && name.isEmpty() == false) ? " (" + name + ")": "";
+							if(t == Meters.Type.EX) {
+								tt += "<td><i>" + LABELS.getString("METER_LBL_" + t) + tLabel + "</i>&nbsp;</td><td align='right'>" + SWITCH_FORMATTER.format(new Object [] {m.getValue(t)}) + "&nbsp;</td>";
+							} else {
+								tt += "<td><i>" + LABELS.getString("METER_LBL_" + t) + tLabel + "</i>&nbsp;</td><td align='right'>" + String.format(Locale.ENGLISH, LABELS.getString("METER_VAL_" + t), m.getValue(t)) + "&nbsp;</td>";
 							}
 						}
 						tt += "</tr>";
@@ -348,30 +334,31 @@ public class DevicesTable extends ExTooltipTable {
 		TableRowSorter<?> sorter = (TableRowSorter<?>)getRowSorter();
 		if(filter.length() > 0) {
 			RowFilter<TableModel, Integer> regexFilter = RowFilter.regexFilter("(?i).*\\Q" + filter.replace("\\E", "\\e") + "\\E.*", cols);
-			ArrayList<RowFilter<TableModel, Integer>> filters = new ArrayList<>();
-			filters.add(regexFilter);
-			if(cols.length > 1) {
-				filters.add(new RowFilter<TableModel, Integer>() {
-					@Override
-					public boolean include(Entry<? extends TableModel, ? extends Integer> entry) {
-						Object val = entry.getValue(COL_COMMAND_IDX);
-						if(val instanceof String) {
-							return ((String)val).toUpperCase().contains(filter.toUpperCase());
-						} else if(val instanceof LabelHolder) {
-							return ((LabelHolder)val).getLabel().toUpperCase().contains(filter.toUpperCase());
-						} else if(val instanceof LabelHolder[]) {
-							for(LabelHolder lh: (LabelHolder[])val) {
-								if(lh.getLabel().toUpperCase().contains(filter.toUpperCase())) {
-									return true;
-								}
-							}
-							return false;
-						}
-						return false;
-					}
-				});
-			}
-			sorter.setRowFilter(RowFilter.orFilter(filters));
+			sorter.setRowFilter(regexFilter);
+//			ArrayList<RowFilter<TableModel, Integer>> filters = new ArrayList<>();
+//			filters.add(regexFilter);
+//			if(cols.length > 1) {
+//				filters.add(new RowFilter<TableModel, Integer>() {
+//					@Override
+//					public boolean include(Entry<? extends TableModel, ? extends Integer> entry) {
+//						Object val = entry.getValue(COL_COMMAND_IDX);
+//						if(val instanceof String) {
+//							return ((String)val).toUpperCase().contains(filter.toUpperCase());
+//						} else if(val instanceof LabelHolder) {
+//							return ((LabelHolder)val).getLabel().toUpperCase().contains(filter.toUpperCase());
+//						} else if(val instanceof LabelHolder[]) {
+//							for(LabelHolder lh: (LabelHolder[])val) {
+//								if(lh.getLabel().toUpperCase().contains(filter.toUpperCase())) {
+//									return true;
+//								}
+//							}
+//							return false;
+//						}
+//						return false;
+//					}
+//				});
+//			}
+//			sorter.setRowFilter(RowFilter.orFilter(filters));
 		} else {
 			sorter.setRowFilter(null);
 		}
@@ -384,7 +371,7 @@ public class DevicesTable extends ExTooltipTable {
 	}
 	
 	public void resetRowComputedHeight(int modelIndex) {
-		setRowHeight(convertRowIndexToView(modelIndex), 1);
+		setRowHeight(convertRowIndexToView(modelIndex), ONLINE_BULLET.getIconHeight());
 	}
 
 	// adapt row height
@@ -393,6 +380,10 @@ public class DevicesTable extends ExTooltipTable {
 		if(getRowHeight(rowIndex) < thisH) {
 			setRowHeight(rowIndex, thisH);
 		}
+	}
+	
+	public void setDevicesModel() {
+		// todo
 	}
 	
 	public void addRow(ShellyAbstractDevice device, GhostDevice ghost) {
@@ -424,9 +415,11 @@ public class DevicesTable extends ExTooltipTable {
 			Status status = d.getStatus();
 			if(status != Status.NOT_LOOGGED && status != Status.ERROR && status != Status.GHOST /*&&(d instanceof ShellyUnmanagedDevice == false || ((ShellyUnmanagedDevice)d).geException() == null)*/) {
 				row[DevicesTable.COL_RSSI_IDX] = d.getRssi();
-				row[DevicesTable.COL_CLOUD] = (d.getCloudEnabled() ? TRUE : FALSE) + " " + (d.getCloudConnected() ? TRUE : FALSE);
-				row[DevicesTable.COL_MQTT] = (d.getMQTTEnabled() ? TRUE : FALSE) + " " + (d.getMQTTConnected() ? TRUE : FALSE);
-				row[DevicesTable.COL_UPTIME_IDX] = d.getUptime();
+				if(d instanceof AbstractBluDevice == false) {
+					row[DevicesTable.COL_CLOUD] = (d.getCloudEnabled() ? TRUE : FALSE) + " " + (d.getCloudConnected() ? TRUE : FALSE);
+					row[DevicesTable.COL_MQTT] = (d.getMQTTEnabled() ? TRUE : FALSE) + " " + (d.getMQTTConnected() ? TRUE : FALSE);
+					row[DevicesTable.COL_UPTIME_IDX] = d.getUptime();
+				}
 				row[DevicesTable.COL_INT_TEMP] = (d instanceof InternalTmpHolder) ? ((InternalTmpHolder)d).getInternalTmp() : null;
 				row[DevicesTable.COL_MEASURES_IDX] = d.getMeters();
 				row[DevicesTable.COL_DEBUG] = LABELS.getString("debug" + d.getDebugMode().name());
@@ -478,7 +471,11 @@ public class DevicesTable extends ExTooltipTable {
 	
 	public static ImageIcon getStatusIcon(ShellyAbstractDevice d) {
 		if(d.getStatus() == Status.ON_LINE) {
-			return d.rebootRequired() ? ONLINE_BULLET_REBOOT : ONLINE_BULLET;
+			if(d instanceof AbstractBluDevice) {
+				return new ImageIcon(BTHOMEIMG, String.format(LABELS.getString("labelDevOnLIneBTHome"), LocalDateTime.ofInstant(Instant.ofEpochMilli(d.getLastTime()), ZoneId.systemDefault())));
+			} else {
+				return d.rebootRequired() ? ONLINE_BULLET_REBOOT : ONLINE_BULLET;
+			}
 		} else if(d.getStatus() == Status.OFF_LINE) {
 			long lastOnline = d.getLastTime();
 			if(lastOnline > 0) {
@@ -496,4 +493,4 @@ public class DevicesTable extends ExTooltipTable {
 			return LOGIN_BULLET;
 		}
 	}
-} // 462 - 472 - 513 - 505 - 518 - 499
+} // 462 - 472 - 513 - 505 - 518 - 499 - 507

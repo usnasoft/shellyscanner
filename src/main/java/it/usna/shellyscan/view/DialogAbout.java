@@ -19,7 +19,7 @@ import javax.swing.text.html.HTMLDocument;
 
 import it.usna.shellyscan.Main;
 import it.usna.shellyscan.controller.UsnaAction;
-import it.usna.shellyscan.view.util.UpplicationUpdateCHK;
+import it.usna.shellyscan.view.util.ApplicationUpdateCHK;
 
 public class DialogAbout {
 	
@@ -44,7 +44,7 @@ public class DialogAbout {
 		// JButton Check Updates
 		JButton checkButton = new JButton(new UsnaAction("aboutCheckUpdates", e -> {
 			Window w = SwingUtilities.getWindowAncestor((Component)e.getSource());
-			UpplicationUpdateCHK.chechForUpdates(w);
+			ApplicationUpdateCHK.chechForUpdates(w);
 		}));
 		
 		// JButton OK (close)

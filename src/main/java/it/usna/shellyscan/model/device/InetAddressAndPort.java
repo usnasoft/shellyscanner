@@ -8,8 +8,8 @@ import java.net.InetAddress;
  * InetAddress is assumed to be Inet4Address
  */
 public class InetAddressAndPort implements Comparable<InetAddressAndPort> {
-	private final InetAddress address;
-	private final int port;
+	protected final InetAddress address;
+	protected final int port;
 
 	public InetAddressAndPort(InetAddress address, int port) {
 		this.address = address;
@@ -42,12 +42,18 @@ public class InetAddressAndPort implements Comparable<InetAddressAndPort> {
 		if(i1[1] != i2[1]) return (i1[1] & 0xFF) - (i2[1] & 0xFF);
 		if(i1[2] != i2[2]) return (i1[2] & 0xFF) - (i2[2] & 0xFF);
 		if((cmp = (i1[3] & 0xFF) - (i2[3] & 0xFF)) != 0) return cmp;
-		return port - o2.port;
+		if(o2.getClass() == InetAddressAndPort.class) return port - o2.port;
+		return -1; // base class first
 	}
 	
 	@Override
 	public boolean equals(Object o2) {
 		return o2 != null && getClass() == o2.getClass() && address.equals(((InetAddressAndPort)o2).address) && port == ((InetAddressAndPort)o2).port;
+	}
+	
+	// valid for subclasses
+	public boolean equivalent(InetAddressAndPort o2) {
+		return address.equals(o2.address) && port == o2.port;
 	}
 	
 	public String getRepresentation() {

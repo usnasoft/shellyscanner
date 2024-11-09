@@ -18,9 +18,11 @@ import javax.swing.table.TableCellRenderer;
 
 import it.usna.shellyscan.Main;
 import it.usna.shellyscan.model.device.Meters;
+import it.usna.shellyscan.model.device.Meters.Type;
 
 public class DeviceMetersCellRenderer extends JPanel implements TableCellRenderer {
 	private static final long serialVersionUID = 1L;
+	private final static int HIDE_LIMIT = 4;
 	private final static Insets INSETS_LABEL1 = new Insets(0, 0, 0, 2);
 	private final static Insets INSETS_LABEL2 = new Insets(0, 6, 0, 2);
 
@@ -56,8 +58,9 @@ public class DeviceMetersCellRenderer extends JPanel implements TableCellRendere
 				final Meters m = ms[i];
 				if(m != null) {
 					int j = 0;
-					for(Meters.Type t: m.getTypes()) {
-						if(isVisible(t)) {
+					Type[] types = m.getTypes();
+					for(Meters.Type t: types) {
+						if(types.length <= HIDE_LIMIT || isVisible(t)) {
 							JLabel label = new JLabel(Main.LABELS.getString("METER_LBL_" + t));
 							GridBagConstraints gbc_label = new GridBagConstraints();
 							gbc_label.insets = (j > 0) ? INSETS_LABEL2 : INSETS_LABEL1;
@@ -106,13 +109,16 @@ public class DeviceMetersCellRenderer extends JPanel implements TableCellRendere
 	}
 	
 	private static boolean isVisible(Meters.Type t) {
-		return t != Meters.Type.VAR && t != Meters.Type.FREQ;
+		return /*t != Meters.Type.VAR &&*/ t != Meters.Type.VA && t != Meters.Type.FREQ;
 	}
 	
 	public static boolean hasHiddenMeasures(Meters meters) {
-		for(Meters.Type t: meters.getTypes()) {
-			if(t == Meters.Type.VAR || t == Meters.Type.FREQ) {
-				return true;
+		Type[] types = meters.getTypes();
+		if(types.length > HIDE_LIMIT) {
+			for(Meters.Type t: meters.getTypes()) {
+				if(/*t == Meters.Type.VAR ||*/ t == Meters.Type.VA || t == Meters.Type.FREQ) {
+					return true;
+				}
 			}
 		}
 		return false;
