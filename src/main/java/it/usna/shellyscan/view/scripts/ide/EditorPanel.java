@@ -41,7 +41,7 @@ public class EditorPanel extends SyntaxEditor {
 	private final static Pattern SPACES = Pattern.compile("[ \t]*");
 	private final static Pattern FUNCTION = Pattern.compile("function\\s+(\\S*\\s*\\()");
 	private final static Pattern FUNCTION_ARGS = Pattern.compile("\\s*[\\S&&[^\\(]]+\\((.*)\\)");
-	private final boolean darkMode = ScannerProperties.get().getBoolProperty(ScannerProperties.PROP_IDE_DARK);
+	private final boolean darkMode = ScannerProperties.instance().getBoolProperty(ScannerProperties.PROP_IDE_DARK);
 	private final static int MIN_AUTOCOMPLETE = 2;
 	private final static Font AUTOCOMPLETE_FONT = new Font(Font.MONOSPACED, Font.PLAIN, 12);
 	private final static Logger LOG = LoggerFactory.getLogger(EditorPanel.class);
@@ -70,7 +70,7 @@ public class EditorPanel extends SyntaxEditor {
 	
 	EditorPanel(String initText) {
 		super(baseStyle());
-		setTabSize(ScannerProperties.get().getIntProperty(ScannerProperties.PROP_IDE_TAB_SIZE, ScannerProperties.IDE_TAB_SIZE_DEFAULT));
+		setTabSize(ScannerProperties.instance().getIntProperty(ScannerProperties.PROP_IDE_TAB_SIZE, ScannerProperties.IDE_TAB_SIZE_DEFAULT));
 		activateUndo();
 		setText(initText);
 		setCaretPosition(0);
@@ -175,8 +175,8 @@ public class EditorPanel extends SyntaxEditor {
 	private static SimpleAttributeSet baseStyle() {
 		SimpleAttributeSet style = new SimpleAttributeSet();
 		StyleConstants.setFontFamily(style, Font.MONOSPACED);
-		StyleConstants.setFontSize(style, ScannerProperties.get().getIntProperty(ScannerProperties.PROP_IDE_FONT_SIZE, ScannerProperties.IDE_FONT_SIZE_DEFAULT));
-		if(ScannerProperties.get().getBoolProperty(ScannerProperties.PROP_IDE_DARK)) {
+		StyleConstants.setFontSize(style, ScannerProperties.instance().getIntProperty(ScannerProperties.PROP_IDE_FONT_SIZE, ScannerProperties.IDE_FONT_SIZE_DEFAULT));
+		if(ScannerProperties.instance().getBoolProperty(ScannerProperties.PROP_IDE_DARK)) {
 			StyleConstants.setForeground(style, Color.WHITE);
 		}
 		return style;

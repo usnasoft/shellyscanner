@@ -44,12 +44,17 @@ public class Sensor {
 		return idx;
 	}
 	
-	public void fillSConfig(JsonNode config) {
-		name = config.path("name").asText("");
-	}
+//	public void fillSConfig(JsonNode config) {
+//		name = config.path("name").asText("");
+//	}
+//	
+//	public void fillStatus(JsonNode status) {
+//		value = status.path("value").floatValue();
+//	}
 	
-	public void fillStatus(JsonNode status) {
-		value = status.path("value").floatValue();
+	public void fill(JsonNode comp) {
+		name = comp.path("config").path("name").asText("");
+		value = comp.path("status").path("value").floatValue();
 	}
 	
 	public String getName() {

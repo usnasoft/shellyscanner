@@ -108,7 +108,7 @@ public class ScriptFrame extends JFrame {
 
 	private JTextArea logsTextArea = new JTextArea();
 	
-	private boolean darkMode = ScannerProperties.get().getBoolProperty(ScannerProperties.PROP_IDE_DARK);
+	private boolean darkMode = ScannerProperties.instance().getBoolProperty(ScannerProperties.PROP_IDE_DARK);
 	private final AbstractG2Device device;
 	private boolean logWasActive;
 	private Future<Session> wsSession;
@@ -260,11 +260,11 @@ public class ScriptFrame extends JFrame {
 			}
 		}, "autocomplete_usna");
 
-		final boolean closeCurly = ScannerProperties.get().getBoolProperty(ScannerProperties.IDE_AUTOCLOSE_CURLY, false);
-		final boolean closeBracket = ScannerProperties.get().getBoolProperty(ScannerProperties.IDE_AUTOCLOSE_BRACKET, false);
-		final boolean closeSquare = ScannerProperties.get().getBoolProperty(ScannerProperties.IDE_AUTOCLOSE_SQUARE, false);
-		final boolean closeString = ScannerProperties.get().getBoolProperty(ScannerProperties.IDE_AUTOCLOSE_STRING, false);
-		final String indentMode = ScannerProperties.get().getProperty(ScannerProperties.IDE_AUTOINDENT, "SMART");
+		final boolean closeCurly = ScannerProperties.instance().getBoolProperty(ScannerProperties.IDE_AUTOCLOSE_CURLY, false);
+		final boolean closeBracket = ScannerProperties.instance().getBoolProperty(ScannerProperties.IDE_AUTOCLOSE_BRACKET, false);
+		final boolean closeSquare = ScannerProperties.instance().getBoolProperty(ScannerProperties.IDE_AUTOCLOSE_SQUARE, false);
+		final boolean closeString = ScannerProperties.instance().getBoolProperty(ScannerProperties.IDE_AUTOCLOSE_STRING, false);
+		final String indentMode = ScannerProperties.instance().getProperty(ScannerProperties.IDE_AUTOINDENT, "SMART");
 		final boolean indent = "NO".equals(indentMode) == false;
 		final boolean smartAutoIndent = "SMART".equals(indentMode);
 		editor.addKeyListener(new KeyAdapter() {

@@ -288,6 +288,9 @@ Pro 3 EM
 selection subtraction (ctrl+shift)
 -graphs INT_TEMP,RSSI,P,S,V,I,T_ALL,H,LUX,FREQ
  e.g. java -jar C:\Users\antonio\shellyscan-1.2.0.jar -graphs V -ipscan 192.168.1.203-203
+ 
+ 1.2.0
+ todo checklist fix edit BLU
 
 ---
 // TODO

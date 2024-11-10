@@ -382,9 +382,9 @@ public class DevicesTable extends ExTooltipTable {
 		}
 	}
 	
-	public void setDevicesModel() {
-		// todo
-	}
+//	public void setDevicesModel() {
+//		// todo
+//	}
 	
 	public void addRow(ShellyAbstractDevice device, GhostDevice ghost) {
 		((UsnaTableModel)dataModel).addRow(generateRow(device, ghost, new Object[DevicesTable.COL_COMMAND_IDX + 1]));
@@ -398,7 +398,7 @@ public class DevicesTable extends ExTooltipTable {
 		final int i1 = selectionModel.getAnchorSelectionIndex(); // getRowSorter().allRowsChanged() do not preserve the selected cell; this mess the selection dragging the mouse
 //		final int i2 = lsm.getLeadSelectionIndex();
 		getRowSorter().allRowsChanged();
-		selectionModel .setAnchorSelectionIndex(i1);
+		selectionModel.setAnchorSelectionIndex(i1);
 //		lsm.setLeadSelectionIndex(i2);
 	}
 	

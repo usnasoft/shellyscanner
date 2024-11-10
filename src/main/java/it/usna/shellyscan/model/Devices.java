@@ -188,16 +188,34 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 		}
 	}
 
+//	private JsonNode isShelly(final InetAddress address, int port) throws TimeoutException {
+//		// if(name.startsWith("shelly") || name.startsWith("Shelly")) { // Shelly X devices can have different names
+//		try {
+//			ContentResponse response = httpClient.newRequest("http://" + address.getHostAddress() + ":" + port + "/shelly").timeout(80, TimeUnit.SECONDS).method(HttpMethod.GET).send();
+//			JsonNode shellyNode = JSON_MAPPER.readTree(response.getContent());
+//			int resp = response.getStatus();
+//			if(resp == HttpStatus.OK_200 && shellyNode.has("mac")) { // "mac" is common to all shelly devices
+//				return shellyNode;
+//			} else {
+//				LOG.trace("Not Shelly {}, resp {}, node ()", address, resp, shellyNode);
+//				return null;
+//			}
+//		} catch (InterruptedException | ExecutionException | IOException e) { // SocketTimeoutException extends IOException
+//			LOG.trace("Not Shelly {} - {}", address, e);
+//			return null;
+//		}
+//	}
+	
 	private JsonNode isShelly(final InetAddress address, int port) throws TimeoutException {
 		// if(name.startsWith("shelly") || name.startsWith("Shelly")) { // Shelly X devices can have different names
 		try {
 			ContentResponse response = httpClient.newRequest("http://" + address.getHostAddress() + ":" + port + "/shelly").timeout(80, TimeUnit.SECONDS).method(HttpMethod.GET).send();
-			JsonNode shellyNode = JSON_MAPPER.readTree(response.getContent());
+			JsonNode shellyNode = null;// = JSON_MAPPER.readTree(response.getContent());
 			int resp = response.getStatus();
-			if(resp == HttpStatus.OK_200 && shellyNode.has("mac")) { // "mac" is common to all shelly devices
+			if(resp == HttpStatus.OK_200 && (shellyNode = JSON_MAPPER.readTree(response.getContent())).has("mac")) { // "mac" is common to all shelly devices
 				return shellyNode;
 			} else {
-				LOG.trace("Not Shelly {}, resp {}, node ()", address, resp, shellyNode);
+				LOG.trace("Not Shelly {}, status {}, node {}", address, resp, shellyNode);
 				return null;
 			}
 		} catch (InterruptedException | ExecutionException | IOException e) { // SocketTimeoutException extends IOException
@@ -205,6 +223,7 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 			return null;
 		}
 	}
+
 
 	public void rescan(boolean useStore) throws IOException {
 		LOG.trace("rescan");

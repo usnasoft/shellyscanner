@@ -149,7 +149,7 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 		String k;
 		boolean devExists = false;
 		for(JsonNode comp: components) {
-			if(comp.path("key").textValue().equals(DEVICE_KEY_PREFIX + componentIndex)) {
+			if(devExists == false && comp.path("key").textValue().equals(DEVICE_KEY_PREFIX + componentIndex)) { // devExists == false for better efficiency
 				fillSettings(comp.path("config"));
 				fillStatus(comp.path("status"));
 				devExists = true;
@@ -157,10 +157,11 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 				int id = Integer.parseInt(k.substring(13));
 				Sensor s = sensors.getSensor(id);
 				if(s != null) {
-					s.fillSConfig(comp.path("config"));
-					s.fillStatus(comp.path("status"));
+//					s.fillSConfig(comp.path("config"));
+//					s.fillStatus(comp.path("status"));
+					s.fill(comp);
+//					devExists = true;
 				}
-				devExists = true;
 			}
 		}
 		if(devExists == false) {

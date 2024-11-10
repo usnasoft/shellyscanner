@@ -80,7 +80,7 @@ public class ScannerProperties extends AppProperties { // cannot also extend Usn
 		return ap;
 	}
 	
-	public static ScannerProperties get() {
+	public static ScannerProperties instance() {
 		return ap;
 	}
 	

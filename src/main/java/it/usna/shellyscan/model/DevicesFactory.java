@@ -86,11 +86,11 @@ import it.usna.shellyscan.model.device.g3.Shelly1PMG3;
 import it.usna.shellyscan.model.device.g3.Shelly2PMG3;
 import it.usna.shellyscan.model.device.g3.ShellyG3Unmanaged;
 import it.usna.shellyscan.model.device.g3.ShellyGatewayG3;
+import it.usna.shellyscan.model.device.g3.ShellyHTG3;
 import it.usna.shellyscan.model.device.g3.ShellyI4G3;
 import it.usna.shellyscan.model.device.g3.ShellyMini1G3;
 import it.usna.shellyscan.model.device.g3.ShellyMini1PMG3;
 import it.usna.shellyscan.model.device.g3.ShellyMiniPMG3;
-import it.usna.shellyscan.model.device.g3.ShellyPlusHTG3;
 import it.usna.shellyscan.model.device.g3.ShellyXMOD1;
 import it.usna.shellyscan.view.DialogAuthentication;
 
@@ -305,7 +305,7 @@ public class DevicesFactory {
 			case ShellyMini1G3.ID -> new ShellyMini1G3(address, port, name);
 			case ShellyMini1PMG3.ID -> new ShellyMini1PMG3(address, port, name);
 			case ShellyMiniPMG3.ID -> new ShellyMiniPMG3(address, port, name);
-			case ShellyPlusHTG3.ID -> new ShellyPlusHTG3(address, port, name);
+			case ShellyHTG3.ID -> new ShellyHTG3(address, port, name);
 			case ShellyGatewayG3.ID -> new ShellyGatewayG3(address, port, name);
 			// X
 			case ShellyXMOD1.ID -> new ShellyXMOD1(address, port, name);
@@ -327,7 +327,7 @@ public class DevicesFactory {
 		return d;
 	}
 	
-	public static AbstractBluDevice createBlu(ShellyAbstractDevice parent, HttpClient httpClient, /*WebSocketClient wsClient,*/ JsonNode info, String key/*, String index*/) {
+	public static AbstractBluDevice createBlu(ShellyAbstractDevice parent, HttpClient httpClient, /*WebSocketClient wsClient,*/ JsonNode info, String key) {
 		String index = key.substring(13);
 		final String type = info.path("config").path("meta").path("ui").path("local_name").asText();
 		AbstractBluDevice blu;
@@ -341,9 +341,9 @@ public class DevicesFactory {
 		try {
 			blu.init(httpClient/*, wsClient*/);
 		} catch (IOException e) {
-			LOG.error("create - init", e);
+			LOG.error("createBlu {} - init", key, e);
 		} catch(RuntimeException e) {
-			LOG.error("create - init ", e);
+			LOG.error("createBlu {} - init {}", key, parent.getAddressAndPort(), e);
 		}
 		return blu;
 	}
