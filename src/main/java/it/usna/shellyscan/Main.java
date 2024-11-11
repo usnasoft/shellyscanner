@@ -8,12 +8,10 @@ import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
 import java.util.Base64;
 import java.util.ResourceBundle;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import javax.swing.SwingUtilities;
 
@@ -148,7 +146,7 @@ public class Main {
 			}
 			// look for unused CLI entries
 			if(cli.unused().length > 0) {
-				System.err.println("Wrong parameter(s): " + Arrays.stream(cli.unused()).collect(Collectors.joining("; ")));
+				System.err.println("Wrong parameter(s): " + String.join("; ", cli.unused()));
 				System.exit(10);
 			}
 			LOG.info("Backup devices in {}", path);
@@ -170,7 +168,7 @@ public class Main {
 		} else if(cli.hasEntry("-list") >= 0) {
 			// look for unused CLI entries
 			if(cli.unused().length > 0) {
-				System.err.println("Wrong parameter(s): " + Arrays.stream(cli.unused()).collect(Collectors.joining("; ")));
+				System.err.println("Wrong parameter(s): " + String.join("; ", cli.unused()));
 				System.exit(10);
 			}
 			LOG.info("Retriving list ...");
@@ -255,7 +253,7 @@ public class Main {
 				}
 			});
 			if(cli.unused().length > 0) {
-				System.err.println("Ignored parameter(s): " + Arrays.stream(cli.unused()).collect(Collectors.joining("; ")));
+				System.err.println("Ignored parameter(s): " + String.join("; ", cli.unused()));
 			}
 		} catch (Throwable ex) {
 			Msg.errorMsg(ex);
