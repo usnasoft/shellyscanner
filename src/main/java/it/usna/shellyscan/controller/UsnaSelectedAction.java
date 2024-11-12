@@ -66,8 +66,7 @@ public class UsnaSelectedAction extends UsnaAction {
 		onActionPerformed = e -> {
 			if(test == null || test.getAsBoolean()) {
 				for(int ind: table.getSelectedRows()) {
-					int modelRow = table.convertRowIndexToModel(ind);
-					c.accept(modelRow);
+					c.accept(table.convertRowIndexToModel(ind));
 				}
 			}
 		};
