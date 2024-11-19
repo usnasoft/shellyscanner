@@ -208,7 +208,7 @@ public class CheckList extends JDialog implements UsnaEventListener<Devices.Even
 			updateRow(d, localRow);
 		});
 		
-		Action roamingAction = new UsnaSelectedAction(this, table, "setRoaming_action", "setRoaming_action_tooletip", null, "/images/Roaming24.png", localRow -> { // AbstractG2Device
+		Action roamingAction = new UsnaSelectedAction(this, table, "setRoaming_action", "setRoaming_action_tooletip", null, "/images/Roaming24.png", localRow -> {
 			Object roam = tModel.getValueAt(localRow, COL_ROAMING);
 			ShellyAbstractDevice d = getLocalDevice(localRow);
 			try {
@@ -249,8 +249,8 @@ public class CheckList extends JDialog implements UsnaEventListener<Devices.Even
 		
 		UsnaAction refreshAction = new UsnaAction(this, "labelRefresh", "labelRefresh", null, "/images/Refresh24.png");
 		refreshAction.setActionListener(i -> {
-			refreshAction.setEnabled(false);
 			tModel.clear();
+			refreshAction.setEnabled(false);
 			fill();
 			exeService.schedule(() -> refreshAction.setEnabled(true), 600, TimeUnit.MILLISECONDS);
 		});
@@ -270,7 +270,6 @@ public class CheckList extends JDialog implements UsnaEventListener<Devices.Even
 		getContentPane().add(scrollPane, BorderLayout.CENTER);
 
 		table.setRowHeight(table.getRowHeight() + 3);
-//		table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
 		ListSelectionListener selListener = e -> {
 			if(e.getValueIsAdjusting() == false) {
@@ -349,7 +348,7 @@ public class CheckList extends JDialog implements UsnaEventListener<Devices.Even
 		JPanel panelBottom = new JPanel(new BorderLayout(0, 0));
 		getContentPane().add(panelBottom, BorderLayout.SOUTH);
 
-		// Find panel
+		// Filter panel
 		JPanel panelRight = new JPanel(new FlowLayout(FlowLayout.RIGHT, 3, 0));
 		panelBottom.add(panelRight, BorderLayout.EAST);
 
@@ -362,11 +361,10 @@ public class CheckList extends JDialog implements UsnaEventListener<Devices.Even
 			final int[] cols = new int[] { COL_NAME, COL_IP };
 			TableRowSorter<?> sorter = (TableRowSorter<?>) table.getRowSorter();
 			String filter = textFieldFilter.getText();
-			if (filter.length() > 0) {
-				filter = filter.replace("\\E", "\\e");
-				sorter.setRowFilter(RowFilter.regexFilter("(?i).*\\Q" + filter + "\\E.*", cols));
-			} else {
+			if (filter.isEmpty()) {
 				sorter.setRowFilter(null);
+			} else {
+				sorter.setRowFilter(RowFilter.regexFilter("(?i).*\\Q" + filter.replace("\\E", "\\e") + "\\E.*", cols));
 			}
 		});
 
@@ -390,7 +388,7 @@ public class CheckList extends JDialog implements UsnaEventListener<Devices.Even
 		JButton btnClose = new JButton(new UsnaAction("dlgClose", e -> dispose()));
 		panelRight.add(btnClose);
 
-		setSize(900, 490);
+		setSize(950, 500);
 		setVisible(true);
 		setLocationRelativeTo(owner);
 		table.columnsWidthAdapt();
@@ -567,8 +565,7 @@ public class CheckList extends JDialog implements UsnaEventListener<Devices.Even
 		if(extenderEnabled.isMissingNode()) {
 			extender = NOT_APPLICABLE_STR;
 		} else {
-			JsonNode extClient;
-			extender = (status == null || (extClient = status.at("/wifi/ap_client_count")).isMissingNode()) ? FALSE_STR : extClient.asInt() + "";
+			extender = (status == null || extenderEnabled.asBoolean() == false) ? FALSE_STR : status.at("/wifi/ap_client_count").asInt() + "";
 		}
 		
 		tRow[COL_STATUS] = DevicesTable.getStatusIcon(d);
@@ -630,11 +627,11 @@ public class CheckList extends JDialog implements UsnaEventListener<Devices.Even
 			JLabel ret = (JLabel)super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 			List<InetAddressAndPort> parents;
 			if(value instanceof BluInetAddressAndPort bluAddr && (parents = bluAddr.getAlternativeParents()).size() > 0) {
-				ret.setText(bluAddr.getRepresentation() + parents.stream().map(InetAddressAndPort::toString).collect(Collectors.joining(" \\ ", " \\ ", "")));
+				ret.setText(bluAddr.getRepresentation() + parents.stream().map(InetAddressAndPort::getRepresentation).collect(Collectors.joining(" / ", " / ", "")));
 				ret.setForeground(Color.red);
 				if (isSelected) {
 					ret.setFont(ret.getFont().deriveFont(Font.BOLD));
-				};
+				}
 			} else if (isSelected == false) {
 				ret.setForeground(table.getForeground());
 			}
@@ -678,6 +675,6 @@ public class CheckList extends JDialog implements UsnaEventListener<Devices.Even
 			updateHideCaptions();
 		}
 	}
-} // 534 - 560 - 653
+} // 534 - 560 - 678
 
 // g1 "factory_reset_from_switch" : true, "pon_wifi_reset" : false,

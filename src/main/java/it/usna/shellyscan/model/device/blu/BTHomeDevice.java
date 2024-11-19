@@ -30,7 +30,6 @@ import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.ModulesHolder;
 import it.usna.shellyscan.model.device.RestoreMsg;
-import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.blu.modules.Sensor;
 import it.usna.shellyscan.model.device.blu.modules.SensorsCollection;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
@@ -67,14 +66,14 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 	private Webhooks webhooks = new Webhooks(parent);
 	private Input[] inputs;
 
-	public BTHomeDevice(ShellyAbstractDevice parent, JsonNode compInfo, String localName, String index) {
-		super((AbstractG2Device)parent, compInfo, index);
+	public BTHomeDevice(AbstractG2Device parent, JsonNode compInfo, String localName, String index) {
+		super(parent, compInfo, index);
 //		this.typeName = Optional.ofNullable(DEV_DICTIONARY.get(localName)).orElse("Generic BTHome");
 
 		this.typeName = DEV_DICTIONARY.get(localName); // old fw
 		int len;
 		if(this.typeName == null && (len = localName.length()) > 4) {
-			String tmpLocalName = localName.substring(0, len -4);
+			String tmpLocalName = localName.substring(0, len - 4);
 			this.typeName = DEV_DICTIONARY_NEW.get(tmpLocalName); // new fw
 			if(this.typeName != null) {
 				localName = tmpLocalName;
@@ -87,6 +86,7 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 		this.hostname = localName + "-" + mac;
 		this.localName = localName;
 		this.webhooks = new Webhooks(this.parent);
+		this.uptime = -1;
 	}
 
 	@Override

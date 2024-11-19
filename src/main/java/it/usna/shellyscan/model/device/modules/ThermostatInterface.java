@@ -16,4 +16,8 @@ public interface ThermostatInterface extends DeviceModule {
 	float getMaxTargetTemp();
 	
 	float getMinTargetTemp();
+	
+	default float getTargetSteps() {
+		return 0.5f;
+	}
 }

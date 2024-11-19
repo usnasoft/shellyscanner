@@ -29,10 +29,10 @@ public class ApplicationUpdateCHK {
 	private final static String IGNORE = "IGNORE_VERION_DOWNLOAD";
 	private final static Logger LOG = LoggerFactory.getLogger(ApplicationUpdateCHK.class);
 	
-	public static void chechForUpdates(final Window w) {
+	public static void checkForUpdates(final Window w) {
 		w.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 		try {
-			List<Release> rel = remoteChech(true, "000");
+			List<Release> rel = remoteCheck(true, "000");
 			if(rel.size() == 0) {
 				Msg.showMsg(w, LABELS.getString("aboutCheckUpdatesNone"), currentVersion(), JOptionPane.INFORMATION_MESSAGE);
 			} else {	
@@ -57,13 +57,13 @@ public class ApplicationUpdateCHK {
 	/**
 	 * This call manages (read/write) IGNORE_VERION_DOWNLOAD parameter
 	 */
-	public static void chechForUpdates(final Window w, final AppProperties appProp) {
+	public static void checkForUpdates(final Window w, final AppProperties appProp) {
 		String mode = appProp.getProperty(ScannerProperties.PROP_UPDATECHK_ACTION, ScannerProperties.PROP_UPDATECHK_ACTION_DEFAULT);
 		if(mode.equals("NEVER") == false) {
 			w.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 			try {
 				String ignoreRel = appProp.getProperty(IGNORE, "000");
-				List<Release> rel = remoteChech(mode.endsWith("BETA"), ignoreRel);
+				List<Release> rel = remoteCheck(mode.endsWith("BETA"), ignoreRel);
 				if(rel.size() > 0) {
 					String msg = rel.stream().map(Release::msg).collect(Collectors.joining("\n"));
 					final Object[] options = new Object[] {LABELS.getString("aboutCheckUpdatesDownload"), LABELS.getString("aboutCheckUpdatesSkip"), LABELS.getString("dlgClose")};
@@ -90,7 +90,7 @@ public class ApplicationUpdateCHK {
 		return String.format(LABELS.getString("aboutCheckUpdatesTitle"), Main.VERSION + " r." + Main.VERSION_CODE.substring(Main.VERSION_CODE.length() - 2, Main.VERSION_CODE.length()));
 	}
 	
-	private static List<Release> remoteChech(final boolean checkDev, final String ignoreRel) throws MalformedURLException, IOException {
+	private static List<Release> remoteCheck(final boolean checkDev, final String ignoreRel) throws MalformedURLException, IOException {
 		List<Release> rel = new ArrayList<>(2);
 		final URLConnection con = new URL(LABELS.getString("aboutCheckUpdatesPath")).openConnection(); // http://www.usna.it/shellyscanner/last_verion.txt
 		final JsonNode updateNode = new ObjectMapper().readTree(con.getInputStream());

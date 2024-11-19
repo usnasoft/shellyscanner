@@ -121,7 +121,7 @@ public abstract class AbstractG1Device extends ShellyAbstractDevice {
 				status = Status.ERROR;
 			}
 			String ret = response.getContentAsString();
-			return (ret == null || ret.length() == 0 || ret/*.trim()*/.startsWith("{")) ? null : ret;
+			return (ret == null || ret.isEmpty() || ret/*.trim()*/.startsWith("{")) ? null : ret;
 		} catch(InterruptedException | TimeoutException e) {
 			status = Status.OFF_LINE;
 			return "Status-OFFLINE";

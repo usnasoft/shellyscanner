@@ -30,9 +30,9 @@ public class ShellyPlusHT extends AbstractBatteryG2Device {
 
 					@Override
 					public float getValue(Type t) {
-						if(t == Meters.Type.BAT) {
+						if(t == Type.BAT) {
 							return bat;
-						} else if(t == Meters.Type.H) {
+						} else if(t == Type.H) {
 							return humidity;
 						} else {
 							return temp;
@@ -62,8 +62,8 @@ public class ShellyPlusHT extends AbstractBatteryG2Device {
 	protected void fillStatus(JsonNode status) throws IOException {
 		super.fillStatus(status);
 		this.status = status;
-		temp = (float)status.path("temperature:0").path("tC").asDouble();
-		humidity = (float)status.path("humidity:0").path("rh").asDouble();
+		temp = status.path("temperature:0").path("tC").floatValue();
+		humidity = status.path("humidity:0").path("rh").floatValue();
 		bat = status.path("devicepower:0").path("battery").path("percent").asInt();
 
 //		System.out.println(getJSON("/rpc/Shelly.CheckForUpdate")); TEST - no way to obtain data for this device

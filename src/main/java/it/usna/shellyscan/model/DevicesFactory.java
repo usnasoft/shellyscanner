@@ -17,6 +17,7 @@ import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.ShellyGenericUnmanagedImpl;
 import it.usna.shellyscan.model.device.blu.AbstractBluDevice;
 import it.usna.shellyscan.model.device.blu.BTHomeDevice;
+import it.usna.shellyscan.model.device.blu.BluTRV;
 import it.usna.shellyscan.model.device.blu.ShellyBluUnmanaged;
 import it.usna.shellyscan.model.device.g1.AbstractG1Device;
 import it.usna.shellyscan.model.device.g1.Button1;
@@ -327,14 +328,20 @@ public class DevicesFactory {
 		return d;
 	}
 	
-	public static AbstractBluDevice createBlu(ShellyAbstractDevice parent, HttpClient httpClient, /*WebSocketClient wsClient,*/ JsonNode info, String key) {
-		String index = key.substring(13);
+	public static AbstractBluDevice createBlu(AbstractG2Device parent, HttpClient httpClient, /*WebSocketClient wsClient,*/ JsonNode info, String key) {
 		final String type = info.path("config").path("meta").path("ui").path("local_name").asText();
 		AbstractBluDevice blu;
 		try {
-			blu = new BTHomeDevice(parent, info, type, index);
+			if(key.startsWith(AbstractBluDevice.DEVICE_KEY_PREFIX)) {
+				String index = key.substring(13);
+				blu = new BTHomeDevice(parent, info, type, index);
+			} else {
+				String index = key.substring(7);
+				blu = new BluTRV(parent, info, index);
+			}
 		} catch(Exception e) { // really unexpected
 			LOG.error("createBlu", e);
+			String index = key.substring(13);
 			blu = new ShellyBluUnmanaged(parent, info, type, index, e);
 		}
 //		System.out.println(blu + " # " + parent);

@@ -10,7 +10,7 @@ public class UtilMiscellaneous {
 	
 	public static String getDescName(ShellyAbstractDevice d) {
 		final String dName = d.getName();
-		return (dName != null && dName.length() > 0 ? dName : d.getHostname());
+		return (dName == null || dName.isEmpty()) ? d.getHostname() : dName;
 	}
 	
 	public static String getDescName(ShellyAbstractDevice d, int channel) {
@@ -33,15 +33,15 @@ public class UtilMiscellaneous {
 
 	public static String getFullName(ShellyAbstractDevice d) {
 		final String dName = d.getName();
-		if(dName.length() > 0) {
-			return dName + "-" + d.getHostname() + "-" + d.getTypeName();
-		} else {
+		if(dName.isEmpty()) {
 			return d.getHostname() + "-" + d.getTypeName();
+		} else {
+			return dName + "-" + d.getHostname() + "-" + d.getTypeName();
 		}
 	}
 	
 	public static String getExtendedHostName(ShellyAbstractDevice d) {
 		final String dName = d.getName();
-		return d.getHostname() + " - " + (dName != null && dName.length() > 0 ? dName : d.getTypeName());
+		return d.getHostname() + " - " + (dName == null || dName.isEmpty() ? d.getTypeName() : dName);
 	}
 }

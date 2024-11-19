@@ -44,7 +44,7 @@ public class DialogAbout {
 		// JButton Check Updates
 		JButton checkButton = new JButton(new UsnaAction("aboutCheckUpdates", e -> {
 			Window w = SwingUtilities.getWindowAncestor((Component)e.getSource());
-			ApplicationUpdateCHK.chechForUpdates(w);
+			ApplicationUpdateCHK.checkForUpdates(w);
 		}));
 		
 		// JButton OK (close)

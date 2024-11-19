@@ -267,6 +267,6 @@ public class Main {
 		view.requestFocus(); // remove random focus on toolbar button
 		model.addListener(view);
 		appProp.addListener(view);
-		new Thread(() -> ApplicationUpdateCHK.chechForUpdates(view, appProp)).start();
+		new Thread(() -> ApplicationUpdateCHK.checkForUpdates(view, appProp)).start();
 	}
 }

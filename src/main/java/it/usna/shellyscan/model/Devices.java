@@ -6,7 +6,6 @@ import java.net.NetworkInterface;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
@@ -187,24 +186,6 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 			dalay += 4;
 		}
 	}
-
-//	private JsonNode isShelly(final InetAddress address, int port) throws TimeoutException {
-//		// if(name.startsWith("shelly") || name.startsWith("Shelly")) { // Shelly X devices can have different names
-//		try {
-//			ContentResponse response = httpClient.newRequest("http://" + address.getHostAddress() + ":" + port + "/shelly").timeout(80, TimeUnit.SECONDS).method(HttpMethod.GET).send();
-//			JsonNode shellyNode = JSON_MAPPER.readTree(response.getContent());
-//			int resp = response.getStatus();
-//			if(resp == HttpStatus.OK_200 && shellyNode.has("mac")) { // "mac" is common to all shelly devices
-//				return shellyNode;
-//			} else {
-//				LOG.trace("Not Shelly {}, resp {}, node ()", address, resp, shellyNode);
-//				return null;
-//			}
-//		} catch (InterruptedException | ExecutionException | IOException e) { // SocketTimeoutException extends IOException
-//			LOG.trace("Not Shelly {} - {}", address, e);
-//			return null;
-//		}
-//	}
 	
 	private JsonNode isShelly(final InetAddress address, int port) throws TimeoutException {
 		// if(name.startsWith("shelly") || name.startsWith("Shelly")) { // Shelly X devices can have different names
@@ -404,25 +385,37 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 					});
 				}
 				// BTHome
+//				if(d instanceof AbstractProDevice || d instanceof AbstractG3Device) {
+//					final JsonNode currenteComponents = d.getJSON("/rpc/Shelly.GetComponents?dynamic_only=true").path("components"); // empty on 401
+//					HashSet<BluTRV> trvSet = new HashSet<>();
+//					for(JsonNode compInfo: currenteComponents) {
+//						String key = compInfo.path("key").asText();
+////						String kPrefix = key.substring(0, key.indexOf(':'));
+//						if(key.startsWith(AbstractBluDevice.DEVICE_KEY_PREFIX)) {
+//							newBluDevice(d, compInfo, key);
+//						} else if(key.startsWith(BluTRV.DEVICE_KEY_PREFIX)) { // temporary workaround
+//							trvSet.add(new BluTRV((AbstractG2Device)d, compInfo, "-1"));
+//						}
+//					}
+//					trvSet.forEach(trv -> { // temporary workaround
+//						int ind = devices.indexOf(trv);
+//						if(ind >= 0 && devices.get(ind) instanceof BTHomeDevice blu) {
+//							blu.setTypeName("Blu TRV");
+//						}
+//					});
+//				}
 				if(d instanceof AbstractProDevice || d instanceof AbstractG3Device) {
 					final JsonNode currenteComponents = d.getJSON("/rpc/Shelly.GetComponents?dynamic_only=true").path("components"); // empty on 401
-					final Iterator<JsonNode> compIt = currenteComponents.iterator();
-					HashSet<BluTRV> trvSet = new HashSet<>();
-					while (compIt.hasNext()) {
-						JsonNode compInfo = compIt.next();
+					for(JsonNode compInfo: currenteComponents) {
 						String key = compInfo.path("key").asText();
-						if(key.startsWith(AbstractBluDevice.DEVICE_KEY_PREFIX)) {
+						//					String kPrefix = key.substring(0, key.indexOf(':'));
+						if(key.startsWith(AbstractBluDevice.DEVICE_KEY_PREFIX) /*|| key.startsWith(BluTRV.DEVICE_KEY_PREFIX)*/) {
 							newBluDevice(d, compInfo, key);
-						} else if(key.startsWith(BluTRV.DEVICE_KEY_PREFIX)) { // temporary workaround
-							trvSet.add(new BluTRV((AbstractG2Device)d, compInfo, "-1"));
+						}
+						if( key.startsWith(BluTRV.DEVICE_KEY_PREFIX)) {
+							newBluDevice(d, compInfo, key);
 						}
 					}
-					trvSet.forEach(trv -> {  // temporary workaround
-						int ind = devices.indexOf(trv);
-						if(ind >= 0 && devices.get(ind) instanceof BTHomeDevice blu) {
-							blu.setTypeName("Blu TRV");
-						}
-					});
 				}
 			}
 		} catch(Exception e) {
@@ -457,12 +450,14 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 	
 	private void newBluDevice(ShellyAbstractDevice parent, JsonNode compInfo, String key) {
 		try {
-			AbstractBluDevice newBlu = DevicesFactory.createBlu(parent, httpClient, /*wsClient,*/ compInfo, key);
+			AbstractBluDevice newBlu = DevicesFactory.createBlu((AbstractG2Device)parent, httpClient, /*wsClient,*/ compInfo, key);
 			synchronized(devices) {
 				int ind = devices.indexOf(newBlu);
 				if(ind >= 0) { // already in list
 					ShellyAbstractDevice oldBlu = devices.get(ind);
-					if(oldBlu instanceof GhostDevice || newBlu.getLastTime() > oldBlu.getLastTime() || oldBlu.getAddressAndPort().equals(newBlu.getAddressAndPort())) {
+					if(oldBlu instanceof GhostDevice ||
+							(oldBlu instanceof BTHomeDevice && newBlu instanceof BTHomeDevice == false) || // BTHome -> blu trv
+							((newBlu.getLastTime() > oldBlu.getLastTime() || oldBlu.getAddressAndPort().equals(newBlu.getAddressAndPort())) && (oldBlu instanceof BTHomeDevice == false && newBlu instanceof BTHomeDevice) == false)) {
 						if(refreshProcess.get(ind) != null) {
 							refreshProcess.get(ind).cancel(true);
 						}

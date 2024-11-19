@@ -158,7 +158,7 @@ public class LightBulbRGB implements DeviceModule {
 	
 	@Override
 	public String getLabel() {
-		return name.length() > 0 ? name : parent.getName();
+		return name.isEmpty() ? parent.getName() : name;
 	}
 	
 	@Override

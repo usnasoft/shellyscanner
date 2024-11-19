@@ -82,7 +82,7 @@ public class FirmwareManagerG2 implements FirmwareManager {
 	public String update(boolean stable) {
 		updating = true;
 		String res = d.postCommand("Shelly.Update", stable ? "{\"stage\":\"stable\"}" : "{\"stage\":\"beta\"}");
-		if(res != null && res.length() > 0) {
+		if(res == null || res.isEmpty()) {
 			updating = false;
 		}
 //		System.out.println("res " + res + " - " + d.getStatus());

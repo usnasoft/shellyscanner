@@ -23,10 +23,10 @@ public class DeferrableTask implements Closeable {
 		try {
 			status = Status.RUNNING;
 			retValue = task.run(this, device);
-			status = (retValue == null || retValue.length() == 0) ? Status.SUCCESS : Status.FAIL;
+			status = (retValue == null || retValue.isEmpty()) ? Status.SUCCESS : Status.FAIL;
 		} catch(Exception e) {
 			String msg = e.getMessage();
-			this.retValue = msg != null && msg.length() > 0 ? msg : e.toString();
+			this.retValue = msg == null || msg.isEmpty() ? e.toString() : msg;
 			status = Status.FAIL;
 		} finally {
 			close();

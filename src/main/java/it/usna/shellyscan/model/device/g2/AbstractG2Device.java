@@ -431,7 +431,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 						}
 					}
 				}
-				if(config.at("/mqtt/enable").asBoolean() && config.at("/mqtt/user").asText("").length() > 0) {
+				if(config.at("/mqtt/enable").asBoolean() && config.at("/mqtt/user").asText("").isEmpty() == false) {
 					res.put(RestoreMsg.RESTORE_MQTT, config.at("/mqtt/user").asText());
 				}
 				JsonNode scripts = backupJsons.get("Script.List.json");
@@ -584,7 +584,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 		errors.add(postCommand("Sys.SetConfig", outConfig));
 		
 		final JsonNode mqtt = config.path("mqtt");
-		if(userPref.containsKey(RestoreMsg.RESTORE_MQTT) || mqtt.path("enable").asBoolean() == false || mqtt.path("user").asText("").length() == 0) {
+		if(userPref.containsKey(RestoreMsg.RESTORE_MQTT) || mqtt.path("enable").asBoolean() == false || mqtt.path("user").asText("").isEmpty()) {
 			TimeUnit.MILLISECONDS.sleep(delay);
 			MQTTManagerG2 mqttM = new MQTTManagerG2(this, true);
 			errors.add(mqttM.restore(mqtt, userPref.get(RestoreMsg.RESTORE_MQTT)));

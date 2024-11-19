@@ -311,7 +311,7 @@ public class DevicesTable extends ExTooltipTable {
 		Stream.Builder<String> h = Stream.builder();
 		for(int col = 0; col < getColumnCount(); col++) {
 			String name = getColumnName(col);
-			h.accept(name.length() == 0 ? LABELS.getString("col_status_exp") : name); // dirty and fast
+			h.accept(name.isEmpty() ? LABELS.getString("col_status_exp") : name); // dirty and fast
 		}
 		w.write(h.build().collect(Collectors.joining(separator)));
 		w.newLine();
@@ -332,7 +332,9 @@ public class DevicesTable extends ExTooltipTable {
 
 	public void setRowFilter(String filter, int ... cols) {
 		TableRowSorter<?> sorter = (TableRowSorter<?>)getRowSorter();
-		if(filter.length() > 0) {
+		if(filter.isEmpty()) {
+			sorter.setRowFilter(null);
+		} else {
 			RowFilter<TableModel, Integer> regexFilter = RowFilter.regexFilter("(?i).*\\Q" + filter.replace("\\E", "\\e") + "\\E.*", cols);
 			sorter.setRowFilter(regexFilter);
 //			ArrayList<RowFilter<TableModel, Integer>> filters = new ArrayList<>();
@@ -359,8 +361,6 @@ public class DevicesTable extends ExTooltipTable {
 //				});
 //			}
 //			sorter.setRowFilter(RowFilter.orFilter(filters));
-		} else {
-			sorter.setRowFilter(null);
 		}
 	}
 
@@ -418,6 +418,9 @@ public class DevicesTable extends ExTooltipTable {
 				if(d instanceof AbstractBluDevice == false) {
 					row[DevicesTable.COL_CLOUD] = (d.getCloudEnabled() ? TRUE : FALSE) + " " + (d.getCloudConnected() ? TRUE : FALSE);
 					row[DevicesTable.COL_MQTT] = (d.getMQTTEnabled() ? TRUE : FALSE) + " " + (d.getMQTTConnected() ? TRUE : FALSE);
+				}
+				int uptime = d.getUptime();
+				if(uptime >= 0) {
 					row[DevicesTable.COL_UPTIME_IDX] = d.getUptime();
 				}
 				row[DevicesTable.COL_INT_TEMP] = (d instanceof InternalTmpHolder) ? ((InternalTmpHolder)d).getInternalTmp() : null;

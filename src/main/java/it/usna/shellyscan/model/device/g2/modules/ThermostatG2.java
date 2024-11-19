@@ -40,12 +40,12 @@ public class ThermostatG2 implements ThermostatInterface {
 
 	@Override
 	public float getMaxTargetTemp() {
-		return 35;
+		return 35f;
 	}
 	
 	@Override
 	public float getMinTargetTemp() {
-		return 5;
+		return 5f;
 	}
 	
 	@Override
@@ -79,16 +79,16 @@ public class ThermostatG2 implements ThermostatInterface {
 		}
 	}
 	
+	@Override
+	public boolean isRunning() {
+		return running;
+	}
+
 	/*
 	 * return true if heating; false if cooling
 	 */
 	public boolean getType() {
 		return heatingMode;
-	}
-	
-	@Override
-	public boolean isRunning() {
-		return running;
 	}
 	
 	public String restore(JsonNode data) {
