@@ -145,8 +145,8 @@ public class BluTRV extends AbstractBluDevice implements ThermostatInterface, Mo
 	}
 	
 	@Override
-	public float getTargetSteps() {
-		return 0.1f;
+	public int getUnitDivision() {
+		return 10;
 	}
 
 	@Override
@@ -161,7 +161,7 @@ public class BluTRV extends AbstractBluDevice implements ThermostatInterface, Mo
 
 	@Override
 	public void setEnabled(boolean enabled) throws IOException {
-		String res = postCommand("BluTrv.Call", "{\"id\":200,\"method\":\"TRV.SetConfig\",\"params\":{\"id\":0,\"enable\":" + enabled + "}}");
+		String res = postCommand("BluTrv.Call", "{\"id\":" + componentIndex + ",\"method\":\"TRV.SetConfig\",\"params\":{\"id\":0,\"enable\":" + enabled + "}}");
 		if(res == null) {
 			this.enabled = enabled;
 		} else {
@@ -176,7 +176,7 @@ public class BluTRV extends AbstractBluDevice implements ThermostatInterface, Mo
 
 	@Override
 	public void setTargetTemp(float temp) throws IOException {
-		String res = postCommand("BluTrv.Call", "{\"id\":200,\"method\":\"TRV.SetTarget\",\"params\":{\"id\":0,\"target_C\":" + temp + "}}");
+		String res = postCommand("BluTrv.Call", "{\"id\":" + componentIndex + ",\"method\":\"TRV.SetTarget\",\"params\":{\"id\":0,\"target_C\":" + temp + "}}");
 		if(res == null) {
 			targetTemp = temp;
 		} else {

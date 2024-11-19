@@ -385,9 +385,9 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 			ret = trvPanel;
 		} else if(value instanceof ThermostatInterface[] thermostats) {
 			ThermostatInterface thermostat = thermostats[0]; // multiple thermostats devices currently not supported
-			thermSlider.setMinimum((int)(thermostat.getMinTargetTemp() * 2));
-			thermSlider.setMaximum((int)(thermostat.getMaxTargetTemp() * 2));
-			thermSlider.setValue((int)(thermostat.getTargetTemp() * 2));
+			thermSlider.setMinimum((int)(thermostat.getMinTargetTemp() * thermostat.getUnitDivision()));
+			thermSlider.setMaximum((int)(thermostat.getMaxTargetTemp() * thermostat.getUnitDivision()));
+			thermSlider.setValue((int)(thermostat.getTargetTemp() * thermostat.getUnitDivision()));
 			thermProfileLabel.setText(/*thermostat.getCurrentProfile()*//*thermostat.getLabel() + " " +*/ thermostat.getTargetTemp() + "°C");
 			if(thermostat.isEnabled()) {
 				thermActiveButton.setText(LABEL_ON);

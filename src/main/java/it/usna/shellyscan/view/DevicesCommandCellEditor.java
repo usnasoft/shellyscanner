@@ -465,10 +465,10 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 		thermSlider.addChangeListener(e -> {
 			if(edited != null && edited instanceof ThermostatInterface th) {
 				if(thermSlider.getValueIsAdjusting()) {
-					thermProfileLabel.setText(/*th.getCurrentProfile() + " " +*/ thermSlider.getValue() / 2f + "°C");
+					thermProfileLabel.setText(/*th.getCurrentProfile() + " " +*/ ((float)thermSlider.getValue()) / th.getUnitDivision() + "°C");
 				} else {
 					try {
-						th.setTargetTemp(thermSlider.getValue() / 2f);
+						th.setTargetTemp(((float)thermSlider.getValue()) / th.getUnitDivision());
 					} catch (/*IO*/Exception ex) {
 						LOG.error("thermSlider", ex);
 					}
@@ -489,7 +489,7 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 		thermButtonUp.addActionListener(e -> {
 			if(edited != null && edited instanceof ThermostatInterface th && th.getTargetTemp() < th.getMaxTargetTemp()) {
 				try {
-					th.setTargetTemp(th.getTargetTemp() + 0.5f);
+					th.setTargetTemp(Math.round(10 * (th.getTargetTemp() + (1f / th.getUnitDivision()))) / 10f);
 				} catch (/*IO*/Exception ex) {
 					LOG.error("thermButtonUp", ex);
 				}
@@ -499,7 +499,7 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 		thermButtonDown.addActionListener(e -> {
 			if(edited != null && edited instanceof ThermostatInterface th && th.getTargetTemp() > th.getMinTargetTemp()) {
 				try {
-					th.setTargetTemp(th.getTargetTemp() - 0.5f);
+					th.setTargetTemp(Math.round(10 * (th.getTargetTemp() - (1f / th.getUnitDivision()))) / 10f);
 				} catch (/*IO*/Exception ex) {
 					LOG.error("thermButtonDown", ex);
 				}
@@ -744,9 +744,9 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 	}
 	
 	private Component getThermostatPanel(ThermostatInterface thermostat) {
-		thermSlider.setMinimum((int)(thermostat.getMinTargetTemp() * 2));
-		thermSlider.setMaximum((int)(thermostat.getMaxTargetTemp() * 2));
-		thermSlider.setValue((int)(thermostat.getTargetTemp() * 2f));
+		thermSlider.setMinimum((int)(thermostat.getMinTargetTemp() * thermostat.getUnitDivision()));
+		thermSlider.setMaximum((int)(thermostat.getMaxTargetTemp() * thermostat.getUnitDivision()));
+		thermSlider.setValue((int)(thermostat.getTargetTemp() * thermostat.getUnitDivision()));
 		thermProfileLabel.setText(/*thermostat.getCurrentProfile() + " " +*/ thermostat.getTargetTemp() + "°C");
 		if(thermostat.isEnabled()) {
 			thermActiveButton.setText(DevicesCommandCellRenderer.LABEL_ON);
