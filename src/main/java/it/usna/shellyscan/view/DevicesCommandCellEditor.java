@@ -28,6 +28,7 @@ import javax.swing.table.TableCellEditor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import it.usna.shellyscan.model.device.blu.AbstractBluDevice;
 import it.usna.shellyscan.model.device.g1.modules.LightBulbRGB;
 import it.usna.shellyscan.model.device.g1.modules.ThermostatG1;
 import it.usna.shellyscan.model.device.modules.DeviceModule;
@@ -467,42 +468,58 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 				if(thermSlider.getValueIsAdjusting()) {
 					thermProfileLabel.setText(/*th.getCurrentProfile() + " " +*/ ((float)thermSlider.getValue()) / th.getUnitDivision() + "°C");
 				} else {
+					if(edited instanceof AbstractBluDevice) {
+						table.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+					}
 					try {
 						th.setTargetTemp(((float)thermSlider.getValue()) / th.getUnitDivision());
 					} catch (/*IO*/Exception ex) {
 						LOG.error("thermSlider", ex);
 					}
+					table.setCursor(Cursor.getDefaultCursor());
 					cancelCellEditing();
 				}
 			}
 		});
 		thermActiveButton.addActionListener(e -> {
 			if(edited != null && edited instanceof ThermostatInterface th) {
+				if(edited instanceof AbstractBluDevice) {
+					table.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+				}
 				try {
 					th.setEnabled(th.isEnabled() == false); // toggle
 				} catch (/*IO*/Exception ex) {
 					LOG.error("thermActiveButton", ex);
 				}
+				table.setCursor(Cursor.getDefaultCursor());
 				cancelCellEditing();
 			}
 		});
 		thermButtonUp.addActionListener(e -> {
 			if(edited != null && edited instanceof ThermostatInterface th && th.getTargetTemp() < th.getMaxTargetTemp()) {
+				if(edited instanceof AbstractBluDevice) {
+					table.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+				}
 				try {
-					th.setTargetTemp(Math.round(10 * (th.getTargetTemp() + (1f / th.getUnitDivision()))) / 10f);
+					th.setTargetTemp(Math.round(10 * th.getTargetTemp() + 10f / th.getUnitDivision()) / 10f);
 				} catch (/*IO*/Exception ex) {
 					LOG.error("thermButtonUp", ex);
 				}
+				table.setCursor(Cursor.getDefaultCursor());
 				cancelCellEditing();
 			}
 		});
 		thermButtonDown.addActionListener(e -> {
 			if(edited != null && edited instanceof ThermostatInterface th && th.getTargetTemp() > th.getMinTargetTemp()) {
+				if(edited instanceof AbstractBluDevice) {
+					table.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+				}
 				try {
-					th.setTargetTemp(Math.round(10 * (th.getTargetTemp() - (1f / th.getUnitDivision()))) / 10f);
+					th.setTargetTemp(Math.round(10 * th.getTargetTemp() - 10f / th.getUnitDivision()) / 10f);
 				} catch (/*IO*/Exception ex) {
 					LOG.error("thermButtonDown", ex);
 				}
+				table.setCursor(Cursor.getDefaultCursor());
 				cancelCellEditing();
 			}
 		});
@@ -543,7 +560,7 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 			edited = inputArray;
 			return stackedPanel;
 		} else if(value instanceof ThermostatG1 th) { // TRV
-			return getTrvPanel(th);
+			return getTrvG1Panel(th);
 		} else if(value instanceof ThermostatInterface[] ths) {
 			return getThermostatPanel(ths[0]);
 		} else if(value instanceof DeviceModule[] modArray) { // mixed
@@ -734,7 +751,7 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 		}
 	}
 	
-	private Component getTrvPanel(ThermostatG1 thermostat) {
+	private Component getTrvG1Panel(ThermostatG1 thermostat) {
 		trvSlider.setValue((int)(thermostat.getTargetTemp() * 2f));
 		trvProfileLabel.setText(thermostat.getCurrentProfile() + " " + thermostat.getTargetTemp() + "°C");
 		trvProfileLabel.setEnabled(thermostat.isScheduleActive());

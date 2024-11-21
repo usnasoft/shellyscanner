@@ -1,10 +1,19 @@
 package it.usna.shellyscan.model.device.blu;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.zip.ZipOutputStream;
+
+import org.eclipse.jetty.client.HttpClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -17,6 +26,7 @@ import it.usna.shellyscan.model.device.modules.DeviceModule;
 import it.usna.shellyscan.model.device.modules.ThermostatInterface;
 
 public class BluTRV extends AbstractBluDevice implements ThermostatInterface, ModulesHolder {
+	private final static Logger LOG = LoggerFactory.getLogger(AbstractBluDevice.class);
 	public final static String DEVICE_KEY_PREFIX = "blutrv:";
 	public final static String ID = "BluTRV";
 	private final static Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.T, Meters.Type.BAT};
@@ -27,11 +37,10 @@ public class BluTRV extends AbstractBluDevice implements ThermostatInterface, Mo
 	private boolean enabled;
 	private Meters[] meters;
 	private ThermostatInterface[] thermostats = new ThermostatInterface[] {this};
+	private boolean tempChanged = false;
 	
 	public BluTRV(AbstractG2Device parent, JsonNode compInfo, String index) {
 		super(parent, compInfo, index);
-		this.hostname = ID + "-" + mac;
-		
 		meters = new Meters[] {
 				new Meters() {
 					@Override
@@ -49,6 +58,13 @@ public class BluTRV extends AbstractBluDevice implements ThermostatInterface, Mo
 					}
 				}
 		};
+	}
+	
+	@Override
+	public void init(HttpClient httpClient/*, WebSocketClient wsClient*/) throws IOException {
+		super.init(httpClient);
+		try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e) {}
+		this.hostname = getJSON("/rpc/BluTrv.GetRemoteDeviceInfo?id=" + componentIndex).get("device_info").get("id").asText();
 	}
 
 	@Override
@@ -88,7 +104,11 @@ public class BluTRV extends AbstractBluDevice implements ThermostatInterface, Mo
 		this.uptime = remoteStatus.get("sys").get("uptime").asInt();
 		JsonNode trv = remoteStatus.get("trv:0");
 		this.externalTemp = trv.get("current_C").floatValue();
-		this.targetTemp = trv.get("target_C").floatValue();
+		if(tempChanged) {
+			tempChanged = false;
+		} else {
+			this.targetTemp = trv.get("target_C").floatValue();
+		}
 		this.pos = trv.get("pos").intValue();
 	}
 	
@@ -96,6 +116,11 @@ public class BluTRV extends AbstractBluDevice implements ThermostatInterface, Mo
 	public String[] getInfoRequests() {
 		return new String[] {"/rpc/BluTrv.GetRemoteDeviceInfo?id=" + componentIndex, "/rpc/BluTrv.GetConfig?id=" + componentIndex, "/rpc/BluTrv.GetRemoteConfig?id=" + componentIndex,
 				"/rpc/BluTrv.GetStatus?id=" + componentIndex, "/rpc/BluTrv.GetRemoteStatus?id=" + componentIndex, "/rpc/BluTrv.CheckForUpdates?id=" + componentIndex};
+	}
+	
+	@Override
+	public void reboot() throws IOException {
+		getJSON("/rpc/BluTrv.call?id=" + componentIndex + "&method=Shelly.Reboot");
 	}
 	
 
@@ -111,20 +136,52 @@ public class BluTRV extends AbstractBluDevice implements ThermostatInterface, Mo
 
 	@Override
 	public boolean backup(File file) throws IOException {
-		// TODO Auto-generated method stub
-		return false;
+		try(ZipOutputStream out = new ZipOutputStream(new FileOutputStream(file), StandardCharsets.UTF_8)) {
+			sectionToStream("/rpc/BluTrv.GetRemoteDeviceInfo?id=" + componentIndex, "Shelly.GetRemoteDeviceInfo.json", out);
+			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+			sectionToStream("/rpc/BluTrv.GetRemoteConfig?id=" + componentIndex, "Shelly.GetRemoteConfig.json", out);
+			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+			sectionToStream("/rpc/BluTrv.GetConfig?id=" + componentIndex, "Shelly.GetConfig.json", out);
+			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+			sectionToStream("/rpc/Webhook.List", "Webhook.List.json", out);
+		} catch(InterruptedException e) {
+			LOG.error("backup", e);
+		}
+		return true;
 	}
 
 	@Override
 	public Map<RestoreMsg, Object> restoreCheck(Map<String, JsonNode> backupJsons) throws IOException {
-		// TODO Auto-generated method stub
-		return null;
+		EnumMap<RestoreMsg, Object> res = new EnumMap<>(RestoreMsg.class);
+		try {
+			JsonNode remoteDevInfo = backupJsons.get("Shelly.GetRemoteDeviceInfo.json");
+			if(remoteDevInfo == null) {
+				res.put(RestoreMsg.ERR_RESTORE_MODEL, null);
+				return res;
+			}
+			JsonNode devInfo = remoteDevInfo.get("device_info");
+			if(devInfo == null || getTypeID().equals(devInfo.get("app").asText()) == false) {
+				res.put(RestoreMsg.ERR_RESTORE_MODEL, null);
+			} else {
+				final String fileHostname = devInfo.get("id").asText("");
+				boolean sameHost = fileHostname.equals(this.hostname);
+				if(sameHost == false) {
+					res.put(RestoreMsg.PRE_QUESTION_RESTORE_HOST, fileHostname);
+				}
+			}
+		} catch(RuntimeException e) {
+			LOG.error("restoreCheck", e);
+			res.put(RestoreMsg.ERR_RESTORE_MODEL, null);
+		}
+		return res;
 	}
 
 	@Override
 	public List<String> restore(Map<String, JsonNode> backupJsons, Map<RestoreMsg, String> data) throws IOException {
+		final ArrayList<String> errors = new ArrayList<>();
+		errors.add("Currently unsupported");
 		// TODO Auto-generated method stub
-		return null;
+		return errors;
 	}
 	
 	// --- ThermostatInterface ---
@@ -160,10 +217,10 @@ public class BluTRV extends AbstractBluDevice implements ThermostatInterface, Mo
 	}
 
 	@Override
-	public void setEnabled(boolean enabled) throws IOException {
-		String res = postCommand("BluTrv.Call", "{\"id\":" + componentIndex + ",\"method\":\"TRV.SetConfig\",\"params\":{\"id\":0,\"enable\":" + enabled + "}}");
+	public void setEnabled(boolean enable) throws IOException {
+		String res = postCommand("BluTrv.Call", "{\"id\":" + componentIndex + ",\"method\":\"TRV.SetConfig\",\"params\":{\"id\":0,\"config\":{\"enable\":" + enable + "}}}");
 		if(res == null) {
-			this.enabled = enabled;
+			this.enabled = enable;
 		} else {
 			throw new IOException(res);
 		}
@@ -179,16 +236,11 @@ public class BluTRV extends AbstractBluDevice implements ThermostatInterface, Mo
 		String res = postCommand("BluTrv.Call", "{\"id\":" + componentIndex + ",\"method\":\"TRV.SetTarget\",\"params\":{\"id\":0,\"target_C\":" + temp + "}}");
 		if(res == null) {
 			targetTemp = temp;
+			tempChanged = true;
 		} else {
 			throw new IOException(res);
 		}
 	}
 }
-//http://192.168.1.29/rpc/BluTrv.GetRemoteDeviceInfo?id=200
-//http://192.168.1.29/rpc/BluTrv.GetConfig?id=200 ("trv": "bthomedevice:200")
-//http://192.168.1.29/rpc/BluTrv.GetStatus?id=200
-//http://192.168.1.29/rpc/BluTrv.CheckForUpdates?id=200
-//http://192.168.1.29/rpc/BluTrv.GetRemoteConfig?id=200
-//http://192.168.1.29/rpc/BluTrv.GetRemoteStatus?id=200
-//http://192.168.1.29/rpc/BluTrv.Call?id=200&method="TRV.SetTarget"&params={"id":0,"target_C":24}
+
 //http://192.168.1.29/rpc/BluTrv.SetConfig?id=200&config={"name":"mytrv"}

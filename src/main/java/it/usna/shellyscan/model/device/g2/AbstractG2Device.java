@@ -140,7 +140,6 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 	@Override
 	public void refreshSettings() throws IOException {
 		fillSettings(getJSON("/rpc/Shelly.GetConfig"));
-//		fillStatus(getJSON("/rpc/Shelly.GetStatus"));
 	}
 
 	@Override
@@ -397,11 +396,11 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 		EnumMap<RestoreMsg, Object> res = new EnumMap<>(RestoreMsg.class);
 		try {
 			JsonNode devInfo = backupJsons.get("Shelly.GetDeviceInfo.json");
-			JsonNode config = backupJsons.get("Shelly.GetConfig.json");
-			final String fileHostname = devInfo.get("id").asText("");
 			if(devInfo == null || this.getTypeID().equals(devInfo.get("app").asText()) == false) {
 				res.put(RestoreMsg.ERR_RESTORE_MODEL, null);
 			} else {
+				JsonNode config = backupJsons.get("Shelly.GetConfig.json");
+				final String fileHostname = devInfo.get("id").asText("");
 				boolean sameHost = fileHostname.equals(this.hostname);
 				if(sameHost == false) {
 					res.put(RestoreMsg.PRE_QUESTION_RESTORE_HOST, fileHostname);

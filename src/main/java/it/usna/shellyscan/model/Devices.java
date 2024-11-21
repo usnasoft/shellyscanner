@@ -200,7 +200,7 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 				return null;
 			}
 		} catch (InterruptedException | ExecutionException | IOException e) { // SocketTimeoutException extends IOException
-			LOG.trace("Not Shelly {} - {}", address, e);
+			LOG.trace("Not Shelly {} - {}", address, port, e);
 			return null;
 		}
 	}

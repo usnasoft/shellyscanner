@@ -550,10 +550,10 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 	private void rowsSelectionManager() {
 		tableSelectionListener = e -> {
 			if(e.getValueIsAdjusting() == false) {
-				boolean singleSelection, singleSelectionNoGhost, selection, selectionNoGhost, selectionNoBLU;
+				boolean singleSelection, singleSelectionNoGhost, selection, selectionNoGhost, selectionNoBLU, selectionNnoBTHome;
 				int selectedRows = devicesTable.getSelectedRowCount();
 				singleSelection = singleSelectionNoGhost = selectedRows == 1;
-				selection = selectionNoGhost = selectionNoBLU = selectedRows > 0;
+				selection = selectionNoGhost = selectionNoBLU = selectionNnoBTHome = selectedRows > 0;
 				ShellyAbstractDevice d = null;
 				for(int idx: devicesTable.getSelectedRows()) {
 					d = model.get(devicesTable.convertRowIndexToModel(idx));
@@ -561,12 +561,15 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 						selectionNoGhost = singleSelectionNoGhost = false;
 					} else if(d instanceof AbstractBluDevice) {
 						selectionNoBLU = false;
+						if(d instanceof BTHomeDevice) {
+							selectionNnoBTHome = false;
+						}
 					}
 				}
 				infoAction.setEnabled(singleSelection);
 				infoLogAction.setEnabled(singleSelectionNoGhost);
 				checkListAction.setEnabled(selectionNoGhost);
-				rebootAction.setEnabled(selectionNoGhost && selectionNoBLU);
+				rebootAction.setEnabled(selectionNoGhost && selectionNnoBTHome);
 				browseAction.setEnabled(selectionNoGhost /*&& browserSupported*/);
 				backupAction.setEnabled(selection /*&& selectionNoBLU*/);
 				restoreAction.setEnabled(singleSelection /*&& selectionNoBLU*/ /*&& d.getStatus() != Status.NOT_LOOGGED*/);
@@ -715,10 +718,10 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 	
 	private synchronized void displayStatus() {
 		if(statusLineReserved == false) {
-			if(textFieldFilter.getText().length() > 0) {
-				statusLabel.setText(String.format(LABELS.getString("filter_status"), model.size(), devicesTable.getRowCount(), devicesTable.getSelectedRowCount()));
-			} else {
+			if(textFieldFilter.getText().isEmpty()) {
 				statusLabel.setText(String.format(LABELS.getString("scanning_end"), model.size(), devicesTable.getSelectedRowCount()));
+			} else {
+				statusLabel.setText(String.format(LABELS.getString("filter_status"), model.size(), devicesTable.getRowCount(), devicesTable.getSelectedRowCount()));
 			}
 		}
 	}

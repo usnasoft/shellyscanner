@@ -329,22 +329,19 @@ public class DevicesFactory {
 	}
 	
 	public static AbstractBluDevice createBlu(AbstractG2Device parent, HttpClient httpClient, /*WebSocketClient wsClient,*/ JsonNode info, String key) {
-		final String type = info.path("config").path("meta").path("ui").path("local_name").asText();
 		AbstractBluDevice blu;
 		try {
 			if(key.startsWith(AbstractBluDevice.DEVICE_KEY_PREFIX)) {
-				String index = key.substring(13);
-				blu = new BTHomeDevice(parent, info, type, index);
-			} else {
-				String index = key.substring(7);
-				blu = new BluTRV(parent, info, index);
+				final String type = info.path("config").path("meta").path("ui").path("local_name").asText();
+				blu = new BTHomeDevice(parent, info, type, key.substring(13));
+			} else { // currently only BluTRV
+				blu = new BluTRV(parent, info, key.substring(7));
 			}
 		} catch(Exception e) { // really unexpected
 			LOG.error("createBlu", e);
-			String index = key.substring(13);
-			blu = new ShellyBluUnmanaged(parent, info, type, index, e);
+			String index = key.substring(key.indexOf(':') + 1);
+			blu = new ShellyBluUnmanaged(parent, info, index, e);
 		}
-//		System.out.println(blu + " # " + parent);
 		try {
 			blu.init(httpClient/*, wsClient*/);
 		} catch (IOException e) {

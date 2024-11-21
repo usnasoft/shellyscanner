@@ -1,11 +1,22 @@
 package it.usna.shellyscan.model.device.blu;
 
 import java.io.IOException;
+import java.net.SocketTimeoutException;
+import java.nio.charset.StandardCharsets;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
 
+import org.eclipse.jetty.client.ContentResponse;
 import org.eclipse.jetty.client.HttpClient;
+import org.eclipse.jetty.client.StringRequestContent;
+import org.eclipse.jetty.http.HttpStatus;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.core.exc.StreamReadException;
 import com.fasterxml.jackson.databind.JsonNode;
 
+import it.usna.shellyscan.model.device.DeviceOfflineException;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.g2.modules.DynamicComponents;
@@ -19,13 +30,10 @@ import it.usna.shellyscan.model.device.modules.WIFIManager.Network;
 
 public abstract class AbstractBluDevice extends ShellyAbstractDevice {
 	public final static String GENERATION = "blu";
-//	private final static Logger LOG = LoggerFactory.getLogger(AbstractBluDevice.class);
+	private final static Logger LOG = LoggerFactory.getLogger(AbstractBluDevice.class);
 	protected final AbstractG2Device parent;
 //	protected WebSocketClient wsClient;
 	protected final String componentIndex;
-//	protected String localName;
-//	protected SensorsCollection sensors;
-//	private Meters[] meters;
 	
 	public final static String DEVICE_KEY_PREFIX = DynamicComponents.BTHOME_DEVICE + ":"; // "bthomedevice:";
 	public final static String SENSOR_KEY_PREFIX = DynamicComponents.BTHOME_SENSOR + ":"; // "bthomesensor:";
@@ -34,7 +42,7 @@ public abstract class AbstractBluDevice extends ShellyAbstractDevice {
 	/**
 	 * AbstractBluDevice constructor
 	 * @param parent
-	 * @param info
+	 * @param compInfo
 	 * @param index
 	 */
 	protected AbstractBluDevice(AbstractG2Device parent, JsonNode compInfo, String index) {
@@ -66,26 +74,65 @@ public abstract class AbstractBluDevice extends ShellyAbstractDevice {
 	
 	@Override
 	public Status getStatus() {
-		if(rssi < 0) {
-			return parent.getStatus();
-		} else if(parent.getStatus() == Status.NOT_LOOGGED) {
-			return Status.NOT_LOOGGED;
-		} else {
-			return Status.OFF_LINE;
+		return (rssi < 0) ? status : Status.OFF_LINE;
+	}
+	
+	/**
+	 * return null if ok or error description in case of error; cannot use parent.postCommand becouse of the status
+	 */
+	public String postCommand(final String method, String payload) {
+		try {
+			final JsonNode resp = executeRPC(method, payload);
+			JsonNode error;
+			if((error = resp.get("error")) == null) { // {"id":1,"src":"shellyplusi4-xxx","result":{"restart_required":true}}
+				if(resp.path("result").path("restart_required").asBoolean(false)) {
+					rebootRequired = true;
+				}
+				if(status == Status.NOT_LOOGGED) {
+					return "Status-PROTECTED";
+				} else if(status == Status.ERROR) {
+					return "Status-ERROR";
+				} else {
+					return null;
+				}
+			} else {
+				return error.path("message").asText("Generic error");
+			}
+		} catch(IOException e) {
+			return "Status-OFFLINE";
+		} catch(RuntimeException e) {
+			return e.getMessage();
 		}
 	}
-	
-	public String postCommand(final String method, String payload) {
-		return parent.postCommand(method, payload);
+
+	private JsonNode executeRPC(final String method, String payload) throws IOException, StreamReadException { // StreamReadException extends ... IOException
+		try {
+			ContentResponse response = httpClient.POST(uriPrefix + "/rpc")
+					.body(new StringRequestContent("application/json", "{\"id\":1,\"method\":\"" + method + "\",\"params\":" + payload + "}", StandardCharsets.UTF_8))
+					.send();
+			int statusCode = response.getStatus();
+			if(statusCode == HttpStatus.OK_200) {
+				status = Status.ON_LINE;
+			} else if(statusCode == HttpStatus.UNAUTHORIZED_401) {
+				status = Status.NOT_LOOGGED;
+			} else {
+				status = Status.ERROR;
+				LOG.debug("executeRPC - reponse code: {}", statusCode);
+			}
+			return jsonMapper.readTree(response.getContent());
+		} catch(InterruptedException | ExecutionException | TimeoutException | SocketTimeoutException e) {
+			status = Status.OFF_LINE;
+			throw new DeviceOfflineException(e);
+		}
 	}
-	
+
 	@Override
 	public String[] getInfoRequests() {
 		return new String[] {"/rpc/BTHomeDevice.GetConfig?id=" + componentIndex, "/rpc/BTHomeDevice.GetStatus?id=" + componentIndex, "/rpc/BTHomeDevice.GetKnownObjects?id=" + componentIndex};
 	}
 
 	@Override
-	public void reboot() {
+	public void reboot() throws IOException {
 		throw new UnsupportedOperationException();
 	}
 	

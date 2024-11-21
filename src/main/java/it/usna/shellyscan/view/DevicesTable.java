@@ -58,7 +58,7 @@ public class DevicesTable extends ExTooltipTable {
 	private static final long serialVersionUID = 1L;
 	private final static URL OFFLINEIMG = MainView.class.getResource("/images/bullet_stop.png");
 	private final static URL GHOSTIMG = MainView.class.getResource("/images/bullet_ghost.png");
-	private final static URL BTHOMEIMG = MainView.class.getResource("/images/bullet_bluetooth.png");
+	private final static URL BLUIMG = MainView.class.getResource("/images/bullet_bluetooth.png");
 	public final static ImageIcon ONLINE_BULLET = new ImageIcon(MainView.class.getResource("/images/bullet_yes.png"), LABELS.getString("labelDevOnLIne"));
 	public final static ImageIcon ONLINE_BULLET_REBOOT = new ImageIcon(MainView.class.getResource("/images/bullet_yes_reboot.png"), LABELS.getString("labelDevOnLIneReboot"));
 	public final static ImageIcon OFFLINE_BULLET = new ImageIcon(OFFLINEIMG, LABELS.getString("labelDevOffLIne"));
@@ -475,7 +475,7 @@ public class DevicesTable extends ExTooltipTable {
 	public static ImageIcon getStatusIcon(ShellyAbstractDevice d) {
 		if(d.getStatus() == Status.ON_LINE) {
 			if(d instanceof AbstractBluDevice) {
-				return new ImageIcon(BTHOMEIMG, String.format(LABELS.getString("labelDevOnLIneBTHome"), LocalDateTime.ofInstant(Instant.ofEpochMilli(d.getLastTime()), ZoneId.systemDefault())));
+				return new ImageIcon(BLUIMG, String.format(LABELS.getString("labelDevOnLIneBTHome"), LocalDateTime.ofInstant(Instant.ofEpochMilli(d.getLastTime()), ZoneId.systemDefault())));
 			} else {
 				return d.rebootRequired() ? ONLINE_BULLET_REBOOT : ONLINE_BULLET;
 			}
