@@ -212,7 +212,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 	// also asks for credential if needed (login action)
 	private UsnaAction reloadAction = new UsnaSelectedAction(this, devicesTable, "action_name_reload", null, "/images/Loop16.png", null, i -> {
 		final ShellyAbstractDevice d = model.get(i);
-		model.create(d.getAddressAndPort().getAddress(), d.getAddressAndPort().getPort(), d instanceof BTHomeDevice blu ? blu.getParent().getHostname() : d.getHostname(), false);
+		model.create(d.getAddressAndPort().getAddress(), d.getAddressAndPort().getPort(), d instanceof AbstractBluDevice blu ? blu.getParent().getHostname() : d.getHostname(), false);
 	});
 
 	private Action backupAction;

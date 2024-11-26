@@ -195,8 +195,8 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 		ArrayList<String> l = new ArrayList<String>(Arrays.asList(
 				"/rpc/BTHomeDevice.GetConfig?id=" + componentIndex, "/rpc/BTHomeDevice.GetStatus?id=" + componentIndex, "/rpc/BTHomeDevice.GetKnownObjects?id=" + componentIndex));
 		for(Sensor s: sensors.getSensors()) {
-			l.add("()/rpc/BTHomeSensor.GetConfig?id=" + s.getId());
-			l.add("()/rpc/BTHomeSensor.GetStatus?id=" + s.getId());
+			l.add("(BTHomeSensor.GetConfig [" + s.getId() + "])/rpc/BTHomeSensor.GetConfig?id=" + s.getId());
+			l.add("(BTHomeSensor.GetStatus [" + s.getId() + "])/rpc/BTHomeSensor.GetStatus?id=" + s.getId());
 		}
 		return l.toArray(String[]::new);
 	}

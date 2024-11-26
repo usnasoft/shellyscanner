@@ -13,6 +13,7 @@ import org.eclipse.jetty.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.exc.StreamReadException;
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -75,6 +76,14 @@ public abstract class AbstractBluDevice extends ShellyAbstractDevice {
 	@Override
 	public Status getStatus() {
 		return (rssi < 0) ? status : Status.OFF_LINE;
+	}
+	
+	public String postCommand(final String method, JsonNode payload) {
+		try {
+			return postCommand(method, jsonMapper.writeValueAsString(payload));
+		} catch (JsonProcessingException e) {
+			return e.toString();
+		}
 	}
 	
 	/**

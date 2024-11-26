@@ -16,6 +16,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.Meters;
@@ -105,17 +107,19 @@ public class BluTRV extends AbstractBluDevice implements ThermostatInterface, Mo
 		JsonNode trv = remoteStatus.get("trv:0");
 		this.externalTemp = trv.get("current_C").floatValue();
 		if(tempChanged) {
-			tempChanged = false;
+			tempChanged = false; // do not overwrite after a GUI command
 		} else {
 			this.targetTemp = trv.get("target_C").floatValue();
 		}
 		this.pos = trv.get("pos").intValue();
+		//http://192.168.1.29/rpc/BluTrv.Call?id=200&method="TRV.ListScheduleRules"&params={"id":0}
 	}
 	
 	@Override
 	public String[] getInfoRequests() {
 		return new String[] {"/rpc/BluTrv.GetRemoteDeviceInfo?id=" + componentIndex, "/rpc/BluTrv.GetConfig?id=" + componentIndex, "/rpc/BluTrv.GetRemoteConfig?id=" + componentIndex,
-				"/rpc/BluTrv.GetStatus?id=" + componentIndex, "/rpc/BluTrv.GetRemoteStatus?id=" + componentIndex, "/rpc/BluTrv.CheckForUpdates?id=" + componentIndex};
+				"/rpc/BluTrv.GetStatus?id=" + componentIndex, "/rpc/BluTrv.GetRemoteStatus?id=" + componentIndex, "/rpc/BluTrv.CheckForUpdates?id=" + componentIndex,
+				"(TRV.ListScheduleRules)/rpc/BluTrv.Call?id=" + componentIndex + "&method=%22TRV.ListScheduleRules%22&params=%7B%22id%22:0%7D"};
 	}
 	
 	@Override
@@ -123,7 +127,6 @@ public class BluTRV extends AbstractBluDevice implements ThermostatInterface, Mo
 		getJSON("/rpc/BluTrv.call?id=" + componentIndex + "&method=Shelly.Reboot");
 	}
 	
-
 	@Override
 	public DeviceModule getModule(int index) {
 		return this;
@@ -142,6 +145,8 @@ public class BluTRV extends AbstractBluDevice implements ThermostatInterface, Mo
 			sectionToStream("/rpc/BluTrv.GetRemoteConfig?id=" + componentIndex, "Shelly.GetRemoteConfig.json", out);
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			sectionToStream("/rpc/BluTrv.GetConfig?id=" + componentIndex, "Shelly.GetConfig.json", out);
+			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+			sectionToStream("/rpc/BluTrv.Call?id=" + componentIndex + "&method=%22TRV.ListScheduleRules%22&params=%7B%22id%22:0%7D", "TRV.ListScheduleRules.json", out);
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			sectionToStream("/rpc/Webhook.List", "Webhook.List.json", out);
 		} catch(InterruptedException e) {
@@ -179,8 +184,43 @@ public class BluTRV extends AbstractBluDevice implements ThermostatInterface, Mo
 	@Override
 	public List<String> restore(Map<String, JsonNode> backupJsons, Map<RestoreMsg, String> data) throws IOException {
 		final ArrayList<String> errors = new ArrayList<>();
-		errors.add("Currently unsupported");
-		// TODO Auto-generated method stub
+		
+		// BluTrv.SetConfig
+		ObjectNode out = JsonNodeFactory.instance.objectNode();
+		out.put("id", Integer.parseInt(componentIndex));
+		JsonNode storedConfig = backupJsons.get("Shelly.GetConfig.json");
+		ObjectNode outConfig = JsonNodeFactory.instance.objectNode();
+		outConfig.set("name", storedConfig.get("name"));
+		out.set("config", outConfig);
+		errors.add(postCommand("BluTrv.SetConfig", out)); // http://192.168.1.29/rpc/BluTrv.SetConfig?id=200&config={%22name%22:%22xxx%22}
+		
+		JsonNode storedRemoteConfig = backupJsons.get("Shelly.GetRemoteConfig.json").get("config");
+		out = JsonNodeFactory.instance.objectNode();
+		out.put("id", Integer.parseInt(componentIndex));
+		
+		// BluTrv.Call - Sys.SetConfig
+		ObjectNode sysParams = JsonNodeFactory.instance.objectNode();
+		sysParams.put("id", 0);
+		ObjectNode sys = JsonNodeFactory.instance.objectNode();
+		sys.set("ui", storedRemoteConfig.get("sys").get("ui"));
+		sysParams.set("config", sys);
+		out.put("method", "Sys.SetConfig");
+		out.set("params", sysParams);
+		errors.add(postCommand("BluTrv.Call", out));
+		
+		// BluTrv.Call - Temperature.SetConfig
+		ObjectNode tempParams = JsonNodeFactory.instance.objectNode();
+		tempParams.put("id", 0);
+		ObjectNode temp0 = ((ObjectNode)storedRemoteConfig.get("temperature:0"));
+		temp0.remove("id");
+		tempParams.set("config", temp0);
+		out.set("params", tempParams);
+		out.put("method", "Temperature.SetConfig");
+		errors.add(postCommand("BluTrv.Call", out));
+		
+		//{"method":"blutrv.call","id":40,"src":"47c7bab5-807a-4e3a-8d08-9d71225b57fb","params":{"id":200,"method":"TRV.SetConfig","params":{"id":0,"config":{"flags":["floor_heating","accel"]}}}}
+		
+//		errors.add("Currently unsupported");
 		return errors;
 	}
 	
