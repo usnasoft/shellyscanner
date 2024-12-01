@@ -294,7 +294,7 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 			// Sensors
 			HashMap<String, String> sensorsDictionary = new HashMap<>(); // old-new key ("bthomesensor:200"-"bthomesensor:201")
 			JsonNode storedWebHooks = backupJsons.get("Webhook.List.json");
-			errors.add(sensors.deleteAll()); // deleting a sensor all related webhooks are also deleted
+			errors.add(sensors.deleteAll()); // deleting a sensor all related webhooks are removed
 			for(JsonNode fileComp: fileComponents) {
 				final String fileKey = fileComp.path("key").textValue();
 				if(fileKey.startsWith(SENSOR_KEY_PREFIX) && fileComp.at("/config/addr").textValue().equals(fileAddr)) {
@@ -304,7 +304,7 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 					out.set("config", config);
 					TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 					String newKey = parent.getJSON("BTHome.AddSensor", out).get("added").textValue(); // BTHome.AddSensor -> {"added":"bthomesensor:200"}
-					Webhooks.restore(parent, fileKey, newKey, Devices.MULTI_QUERY_DELAY, storedWebHooks, errors); // Webhook.Create
+					Webhooks.restore(parent, fileKey, newKey, Devices.MULTI_QUERY_DELAY, storedWebHooks, errors); // Webhook.Create - deleting a sensor all related webhooks are removed
 					
 					sensorsDictionary.put(fileKey, newKey);
 				}

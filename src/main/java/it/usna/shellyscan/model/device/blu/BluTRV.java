@@ -184,47 +184,93 @@ public class BluTRV extends AbstractBluDevice implements ThermostatInterface, Mo
 	@Override
 	public List<String> restore(Map<String, JsonNode> backupJsons, Map<RestoreMsg, String> data) throws IOException {
 		final ArrayList<String> errors = new ArrayList<>();
-		
-		// BluTrv.SetConfig
-		ObjectNode out = JsonNodeFactory.instance.objectNode();
-		out.put("id", Integer.parseInt(componentIndex));
-		JsonNode storedConfig = backupJsons.get("Shelly.GetConfig.json");
-		ObjectNode outConfig = JsonNodeFactory.instance.objectNode();
-		outConfig.set("name", storedConfig.get("name"));
-		out.set("config", outConfig);
-		errors.add(postCommand("BluTrv.SetConfig", out)); // http://192.168.1.29/rpc/BluTrv.SetConfig?id=200&config={%22name%22:%22xxx%22}
-		
-		JsonNode storedRemoteConfig = backupJsons.get("Shelly.GetRemoteConfig.json").get("config");
-		out = JsonNodeFactory.instance.objectNode();
-		out.put("id", Integer.parseInt(componentIndex));
-		
-		// BluTrv.Call - Sys.SetConfig
-		ObjectNode sysParams = JsonNodeFactory.instance.objectNode();
-		sysParams.put("id", 0);
-		ObjectNode sys = JsonNodeFactory.instance.objectNode();
-		sys.set("ui", storedRemoteConfig.get("sys").get("ui"));
-		sysParams.set("config", sys);
-		out.put("method", "Sys.SetConfig");
-		out.set("params", sysParams);
-		errors.add(postCommand("BluTrv.Call", out));
-		
-		// BluTrv.Call - Temperature.SetConfig
-		ObjectNode tempParams = JsonNodeFactory.instance.objectNode();
-		tempParams.put("id", 0);
-		ObjectNode temp0 = ((ObjectNode)storedRemoteConfig.get("temperature:0"));
-		temp0.remove("id");
-		tempParams.set("config", temp0);
-		out.set("params", tempParams);
-		out.put("method", "Temperature.SetConfig");
-		errors.add(postCommand("BluTrv.Call", out));
-		
-		//{"method":"blutrv.call","id":40,"src":"47c7bab5-807a-4e3a-8d08-9d71225b57fb","params":{"id":200,"method":"TRV.SetConfig","params":{"id":0,"config":{"flags":["floor_heating","accel"]}}}}
-		
-//		errors.add("Currently unsupported");
+		try {
+			// BluTrv.SetConfig
+			JsonNode storedConfig = backupJsons.get("Shelly.GetConfig.json");
+			ObjectNode out = JsonNodeFactory.instance.objectNode();
+			out.put("id", Integer.parseInt(componentIndex));
+			ObjectNode outConfig = JsonNodeFactory.instance.objectNode();
+			outConfig.set("name", storedConfig.get("name"));
+			out.set("config", outConfig);
+			errors.add(postCommand("BluTrv.SetConfig", out)); // http://192.168.1.29/rpc/BluTrv.SetConfig?id=200&config={%22name%22:%22xxx%22}
+			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+
+			JsonNode storedRemoteConfig = backupJsons.get("Shelly.GetRemoteConfig.json").get("config");
+			out = JsonNodeFactory.instance.objectNode();
+			out.put("id", Integer.parseInt(componentIndex));
+
+			// BluTrv.Call - Sys.SetConfig
+			ObjectNode sysParams = JsonNodeFactory.instance.objectNode();
+			sysParams.put("id", 0);
+			ObjectNode sys = JsonNodeFactory.instance.objectNode();
+			sys.set("ui", storedRemoteConfig.get("sys").get("ui"));
+			sysParams.set("config", sys);
+			out.put("method", "Sys.SetConfig");
+			out.set("params", sysParams);
+			errors.add(postCommand("BluTrv.Call", out));
+			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+
+			// BluTrv.Call - Temperature.SetConfig
+			ObjectNode tempParams = JsonNodeFactory.instance.objectNode();
+			tempParams.put("id", 0);
+			ObjectNode temp0 = ((ObjectNode)storedRemoteConfig.get("temperature:0"));
+			temp0.remove("id");
+			tempParams.set("config", temp0);
+			out.set("params", tempParams);
+			out.put("method", "Temperature.SetConfig");
+			errors.add(postCommand("BluTrv.Call", out));
+			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+
+			// BluTrv.Call - TRV.SetConfig
+			ObjectNode trvParams = JsonNodeFactory.instance.objectNode();
+			trvParams.put("id", 0);
+			ObjectNode trv = ((ObjectNode)storedRemoteConfig.get("trv:0"));
+			trv.remove("id");
+			trvParams.set("config", trv);
+			out.set("params", trvParams);
+			out.put("method", "TRV.SetConfig");
+			errors.add(postCommand("BluTrv.Call", out));
+			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+
+			// BluTrv.Call - TRV.RemoveScheduleRule
+			JsonNode existingRules = getJSON("/rpc/BluTrv.Call?id=" + componentIndex + "&method=%22TRV.ListScheduleRules%22&params=%7B%22id%22:0%7D").get("rules");
+			ObjectNode scheduleParams = JsonNodeFactory.instance.objectNode();
+			scheduleParams.put("id", 0);
+			out.put("method", "TRV.RemoveScheduleRule");
+			for(JsonNode rule: existingRules) {
+				scheduleParams.set("rule_id", rule.get("rule_id"));
+				out.set("params", scheduleParams);
+				errors.add(postCommand("BluTrv.Call", out));
+				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+			}
+
+			// BluTrv.Call - TRV.AddScheduleRule
+			JsonNode storedSchedule = backupJsons.get("TRV.ListScheduleRules.json").get("rules");
+			/*ObjectNode*/ scheduleParams = JsonNodeFactory.instance.objectNode();
+			scheduleParams.put("id", 0);
+			out.put("method", "TRV.AddScheduleRule");
+			for(JsonNode rule: storedSchedule) {
+				((ObjectNode)rule).remove("rule_id");
+				scheduleParams.set("rule", rule);
+				out.set("params", scheduleParams);
+				errors.add(postCommand("BluTrv.Call", out));
+				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+			}
+
+			// todo
+//			String storedId = storedConfig.get("id").asText();
+//			JsonNode storedWebHooks = backupJsons.get("Webhook.List.json");
+//			Webhooks.deleteByCid(parent, DynamicComponents.BTHOME_SENSOR, /*elenco cid sensori*/);
+//			Webhooks.restore(parent, storedId, /*per cid sensore*/, Devices.MULTI_QUERY_DELAY, storedWebHooks, errors);
+
+		} catch(RuntimeException | InterruptedException e) {
+			LOG.error("restore - RuntimeException", e);
+			errors.add(RestoreMsg.ERR_UNKNOWN.toString());
+		}
 		return errors;
 	}
 	
-	// --- ThermostatInterface ---
+	// --- ThermostatInterface implementation ---
 	
 	@Override
 	public String getLabel() {
@@ -282,5 +328,3 @@ public class BluTRV extends AbstractBluDevice implements ThermostatInterface, Mo
 		}
 	}
 }
-
-//http://192.168.1.29/rpc/BluTrv.SetConfig?id=200&config={"name":"mytrv"}

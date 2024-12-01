@@ -3,7 +3,6 @@ package it.usna.shellyscan.model.device.blu.modules;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.EnumMap;
-import java.util.Iterator;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -17,7 +16,6 @@ import it.usna.shellyscan.model.device.blu.AbstractBluDevice;
 /**
  * Collection of BTHomeDevice related sensors and "Meters" implementation
  */
-// todo measures order ?
 public class SensorsCollection extends Meters {
 	private final AbstractBluDevice blu;
 	private Sensor[] sensorsArray;
@@ -32,13 +30,11 @@ public class SensorsCollection extends Meters {
 	
 	private void init() throws IOException {
 		JsonNode objects = blu.getJSON("/rpc/BTHomeDevice.GetKnownObjects?id=" + blu.getIndex()).path("objects");
-		final Iterator<JsonNode> compIt = objects.iterator();
 
 		ArrayList<Sensor> sensors = new ArrayList<>();
 		ArrayList<Sensor> inputs = new ArrayList<>();
 		Meters.Type lastT = null;
-		while (compIt.hasNext()) {
-			JsonNode sensorConf = compIt.next();
+		for(JsonNode sensorConf: objects) {
 			String comp = sensorConf.path("component").asText();
 			if(comp != null && comp.startsWith(AbstractBluDevice.SENSOR_KEY_PREFIX)) {
 				final int id = Integer.parseInt(comp.substring(13));

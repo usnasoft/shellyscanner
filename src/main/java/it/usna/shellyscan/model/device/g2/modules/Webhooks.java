@@ -68,6 +68,15 @@ public class Webhooks {
 		return hooks.get(cid);
 	}
 
+//	public static void deleteByCid(AbstractG2Device parent, String type, int cid) throws IOException {
+//		JsonNode wh = parent.getJSON("/rpc/Webhook.List").get("hooks");
+//		wh.forEach(hook -> {
+//			if(hook.get("cid").asInt() == cid && hook.get("event").textValue().startsWith(type + ".")) {
+//				parent.postCommand("Webhook.Delete", "{\"id\":" + hook.get("id").asInt() + "}");
+//			}
+//		});
+//	}
+
 	public static void restore(AbstractG2Device parent, long delay, JsonNode storedWH, ArrayList<String> errors) throws InterruptedException {
 		TimeUnit.MILLISECONDS.sleep(delay);
 		errors.add(parent.postCommand("Webhook.DeleteAll", "{}"));

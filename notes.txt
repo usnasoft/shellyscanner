@@ -295,6 +295,7 @@ checklis - roaming editabile; for G2 interval 60s - 0s
 Blu TRV support
 // TODO TRV restore (schedule included)
 // TODO TRV fw update
+consecutive fw updates progress fixed
 
 
 ---

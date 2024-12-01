@@ -29,6 +29,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.table.TableColumn;
 
 import org.eclipse.jetty.websocket.api.Session;
+import org.eclipse.jetty.websocket.api.exceptions.WebSocketTimeoutException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -378,6 +379,20 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 				LOG.debug("onMessage {}", msg, e);
 			}
 		}
+		
+		@Override
+		public void onWebSocketError(Throwable cause) {
+			if(cause instanceof WebSocketTimeoutException) {
+				LOG.trace("ws-timeout -> reopen");
+				try {
+					devicesFWData.get(index).wsSession = wsEventListener(index, (AbstractG2Device)parent.getLocalDevice(index));
+				} catch (IOException | InterruptedException | ExecutionException e) {
+					LOG.debug("ws-timeout -> reopen error", e);
+				}
+			} else {
+				super.onWebSocketError(cause);
+			}
+		}
 	}
 
 	private static class DeviceFirmware {
@@ -417,11 +432,11 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 									fwInfo.fwModule = device.getFWManager();
 									tModel.setRow(localIndex, createTableRow(localIndex));
 									countSelection();
-									if(device instanceof AbstractG2Device && fwInfo.wsSession.get().isOpen() == false) { // should be (closed on reboot)
-										fwInfo.wsSession = wsEventListener(localIndex, (AbstractG2Device)device);
-									}
-									fwInfo.rebootTime = Long.MAX_VALUE; // reset
-									fwInfo.uptime = -1; // reset
+//									if(device instanceof AbstractG2Device && fwInfo.wsSession.get().isOpen() == false) { // should be (closed on reboot)
+//										fwInfo.wsSession = wsEventListener(localIndex, (AbstractG2Device)device);
+//									}
+									fwInfo.rebootTime = Long.MAX_VALUE; // reset value
+									fwInfo.uptime = -1; // reset value
 								} catch (Throwable ex) {
 									LOG.error("Unexpected", ex);
 								}
