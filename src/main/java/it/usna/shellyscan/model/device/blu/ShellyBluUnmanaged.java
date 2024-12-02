@@ -11,6 +11,7 @@ import it.usna.shellyscan.model.device.RestoreMsg;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.ShellyUnmanagedDeviceInterface;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
+import it.usna.shellyscan.model.device.modules.FirmwareManager;
 
 public class ShellyBluUnmanaged extends AbstractBluDevice implements ShellyUnmanagedDeviceInterface {
 	private String type;
@@ -59,6 +60,11 @@ public class ShellyBluUnmanaged extends AbstractBluDevice implements ShellyUnman
 	@Override
 	public void refreshStatus() throws IOException {
 		// no universal data
+	}
+	
+	@Override
+	public FirmwareManager getFWManager() {
+		throw new UnsupportedOperationException();
 	}
 
 	@Override

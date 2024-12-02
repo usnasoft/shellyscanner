@@ -36,6 +36,7 @@ import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.g2.modules.Input;
 import it.usna.shellyscan.model.device.g2.modules.Webhooks;
 import it.usna.shellyscan.model.device.modules.DeviceModule;
+import it.usna.shellyscan.model.device.modules.FirmwareManager;
 
 /**
  * Generic BTHome device with measures and/or buttons
@@ -204,6 +205,11 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 	@Override
 	public Meters[] getMeters() {
 		return meters;
+	}
+	
+	@Override
+	public FirmwareManager getFWManager() {
+		throw new UnsupportedOperationException();
 	}
 	
 	@Override

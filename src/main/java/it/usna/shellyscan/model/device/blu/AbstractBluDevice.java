@@ -21,7 +21,6 @@ import it.usna.shellyscan.model.device.DeviceOfflineException;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.g2.modules.DynamicComponents;
-import it.usna.shellyscan.model.device.modules.FirmwareManager;
 import it.usna.shellyscan.model.device.modules.InputResetManager;
 import it.usna.shellyscan.model.device.modules.LoginManager;
 import it.usna.shellyscan.model.device.modules.MQTTManager;
@@ -152,11 +151,6 @@ public abstract class AbstractBluDevice extends ShellyAbstractDevice {
 
 	@Override
 	public boolean setEcoMode(boolean eco) {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public FirmwareManager getFWManager() {
 		throw new UnsupportedOperationException();
 	}
 

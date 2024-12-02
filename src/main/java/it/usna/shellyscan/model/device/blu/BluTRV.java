@@ -23,8 +23,10 @@ import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.ModulesHolder;
 import it.usna.shellyscan.model.device.RestoreMsg;
+import it.usna.shellyscan.model.device.blu.modules.FirmwareManagerTRV;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.modules.DeviceModule;
+import it.usna.shellyscan.model.device.modules.FirmwareManager;
 import it.usna.shellyscan.model.device.modules.ThermostatInterface;
 
 public class BluTRV extends AbstractBluDevice implements ThermostatInterface, ModulesHolder {
@@ -135,6 +137,11 @@ public class BluTRV extends AbstractBluDevice implements ThermostatInterface, Mo
 	@Override
 	public DeviceModule[] getModules() {
 		return thermostats;
+	}
+	
+	@Override
+	public FirmwareManager getFWManager() {
+		return new FirmwareManagerTRV(this);
 	}
 
 	@Override
