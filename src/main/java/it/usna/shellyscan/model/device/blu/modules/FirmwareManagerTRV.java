@@ -1,15 +1,20 @@
 package it.usna.shellyscan.model.device.blu.modules;
 
+import java.io.IOException;
 import java.util.concurrent.TimeUnit;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
 import it.usna.shellyscan.model.Devices;
+import it.usna.shellyscan.model.device.DeviceOfflineException;
 import it.usna.shellyscan.model.device.blu.BluTRV;
 import it.usna.shellyscan.model.device.modules.FirmwareManager;
 
-//https://shelly-api-docs.shelly.cloud/gen2/Overview/CommonServices/Shelly#shellyupdate
 public class FirmwareManagerTRV implements FirmwareManager {
+	private final static Logger LOG = LoggerFactory.getLogger(FirmwareManagerTRV.class);
 
 	private final BluTRV d;
 	private String current;
@@ -24,21 +29,23 @@ public class FirmwareManagerTRV implements FirmwareManager {
 	}
 
 	private void init() {
+		updating = false;
 		try {
-			JsonNode deviceInfoNode = d.getJSON("/rpc/BluTrv.GetRemoteDeviceInfo?id=\"" + d.getIndex());
-			current = deviceInfoNode.path("fw_id").textValue();
+			JsonNode deviceInfoNode = d.getJSON("/rpc/BluTrv.GetRemoteDeviceInfo?id=" + d.getIndex());
+			current = deviceInfoNode.at("/device_info/fw_id").textValue();
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			
 			JsonNode newFwNode = d.getJSON("/rpc/BluTrv.CheckForUpdates?id=" + d.getIndex());
 			String lastFW = newFwNode.path("fw_id").textValue();
 			
-			if(lastFW != null && lastFW.equals(current) == false) {
+			if(lastFW != null && lastFW.isEmpty() == false && lastFW.equals(current) == false) {
 				this.stable = lastFW;
+			} else {
+				this.stable = null;
 			}
 			valid = true;
-			updating = false;
 		} catch(/*IO*/Exception e) {
-			valid = updating = false;
+			valid = false;
 		}
 	}
 
@@ -69,8 +76,17 @@ public class FirmwareManagerTRV implements FirmwareManager {
 //		if(res == null || res.isEmpty()) {
 //			updating = false;
 //		}
-//		System.out.println("res " + res + " - " + d.getStatus());
-		return "res";
+//		return res;
+		new Thread(() -> {
+			try {
+				d.getJSON("/rpc/BluTrv.UpdateFirmware?id=" + d.getIndex()); // this call is blocking -> DeviceOfflineException
+			} catch (DeviceOfflineException e) {
+				LOG.trace("FirmwareManagerTRV.update timeout");
+			} catch (IOException | RuntimeException e) {
+				LOG.error("FirmwareManagerTRV.update", e);
+			}
+		}).start();
+		return null;
 	}
 
 	@Override

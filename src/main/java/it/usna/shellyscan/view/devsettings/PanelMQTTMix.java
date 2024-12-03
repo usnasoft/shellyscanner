@@ -17,6 +17,7 @@ import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JScrollPane;
@@ -32,8 +33,10 @@ import it.usna.shellyscan.controller.DeferrablesContainer;
 import it.usna.shellyscan.model.device.GhostDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
+import it.usna.shellyscan.model.device.blu.AbstractBluDevice;
 import it.usna.shellyscan.model.device.modules.MQTTManager;
 import it.usna.shellyscan.view.DialogDeviceSelection;
+import it.usna.shellyscan.view.util.Msg;
 import it.usna.shellyscan.view.util.UtilMiscellaneous;
 import it.usna.util.UsnaEventListener;
 
@@ -234,8 +237,14 @@ public class PanelMQTTMix extends AbstractSettingsPanel implements UsnaEventList
 
 	@Override
 	public String showing() throws InterruptedException {
+		return fill(true);
+	}
+
+	private String fill(boolean showExcluded) throws InterruptedException {
 		mqttModule.clear();
 		ShellyAbstractDevice d = null;
+		String exclude = "<html>" + LABELS.getString("dlgExcludedDevicesMsg");
+		int excludeCount = 0;
 		try {
 			btnCopy.setEnabled(false);
 			chckbxEnabled.setEnabled(false);
@@ -249,6 +258,12 @@ public class PanelMQTTMix extends AbstractSettingsPanel implements UsnaEventList
 			for(int i = 0; i < parent.getLocalSize(); i++) {
 				try {
 					d = parent.getLocalDevice(i);
+					if(d instanceof AbstractBluDevice) {
+						mqttModule.add(null);
+						exclude += "<br>" + UtilMiscellaneous.getFullName(d);
+						excludeCount++;
+						continue;
+					}
 					MQTTManager mqttm = d.getMQTTManager();
 					if(Thread.interrupted()) {
 						throw new InterruptedException();
@@ -275,11 +290,17 @@ public class PanelMQTTMix extends AbstractSettingsPanel implements UsnaEventList
 				} catch(IOException | RuntimeException e) { // UnsupportedOperationException (RuntimeException) for GhostDevice
 					mqttModule.add(null);
 					idGlobal = "";
+					exclude += "<br>" + UtilMiscellaneous.getFullName(d);
+					excludeCount++;
 				}
 			}
-			//			if(Thread.interrupted()) {
-			//				throw new InterruptedException();
-			//			}
+			if(showExcluded) {
+				if(excludeCount == parent.getLocalSize() && isShowing()) {
+					return LABELS.getString("msgAllDevicesExcluded");
+				} else if (excludeCount > 0 && isShowing()) {
+					Msg.showHtmlMessageDialog(this, exclude, LABELS.getString("dlgExcludedDevicesTitle"), JOptionPane.WARNING_MESSAGE);
+				}
+			}
 			chckbxEnabled.setEnabled(true); // form is active
 			chckbxEnabled.setSelected(enabledGlobal);
 			textFieldServer.setText(serverGlobal);
@@ -334,36 +355,38 @@ public class PanelMQTTMix extends AbstractSettingsPanel implements UsnaEventList
 		String res = "<html>";
 		for(int i = 0; i < parent.getLocalSize(); i++) {
 			ShellyAbstractDevice device = parent.getLocalDevice(i);
-			MQTTManager mqttM = mqttModule.get(i);
-			if(mqttM != null) {
-				String msg;
-				if(enabled) {
-					msg = mqttM.set(server, user, pwd, prefix);
-				} else {
-					msg = mqttM.disable();
-				}
-				if(msg != null) {
-					res += String.format(LABELS.getString("dlgSetMultiMsgFail"), device.getHostname()) + " (" + msg + ")<br>";
-				} else {
-					res += String.format(LABELS.getString("dlgSetMultiMsgOk"), device.getHostname()) + "<br>";
-				}
-			} else if(device.getStatus() == Status.OFF_LINE || device instanceof GhostDevice) { // defer
-				res += String.format(LABELS.getString("dlgSetMultiMsgQueue"), device.getHostname()) + "<br>";
-				DeferrablesContainer dc = DeferrablesContainer.getInstance();
-				dc.addOrUpdate(parent.getModelIndex(i), DeferrableTask.Type.MQTT, LABELS.getString(enabled ? "dlgSetMQTTTaskDescEnable" : "dlgSetMQTTTaskDescDisable"), (def, dev) -> {
-					final MQTTManager mqttManager = dev.getMQTTManager();
+			if(device instanceof AbstractBluDevice == false) { // not blu
+				MQTTManager mqttM = mqttModule.get(i);
+				if(mqttM != null) {
+					String msg;
 					if(enabled) {
-						return mqttManager.set(server, user, pwd, prefix);
+						msg = mqttM.set(server, user, pwd, prefix);
 					} else {
-						return mqttManager.disable();
+						msg = mqttM.disable();
 					}
-				});
-			} else {
-				res += String.format(LABELS.getString("dlgSetMultiMsgExclude"), device.getHostname()) + "<br>";
+					if(msg != null) {
+						res += String.format(LABELS.getString("dlgSetMultiMsgFail"), device.getHostname()) + " (" + msg + ")<br>";
+					} else {
+						res += String.format(LABELS.getString("dlgSetMultiMsgOk"), device.getHostname()) + "<br>";
+					}
+				} else if(device.getStatus() == Status.OFF_LINE || device instanceof GhostDevice) { // defer
+					res += String.format(LABELS.getString("dlgSetMultiMsgQueue"), device.getHostname()) + "<br>";
+					DeferrablesContainer dc = DeferrablesContainer.getInstance();
+					dc.addOrUpdate(parent.getModelIndex(i), DeferrableTask.Type.MQTT, LABELS.getString(enabled ? "dlgSetMQTTTaskDescEnable" : "dlgSetMQTTTaskDescDisable"), (def, dev) -> {
+						final MQTTManager mqttManager = dev.getMQTTManager();
+						if(enabled) {
+							return mqttManager.set(server, user, pwd, prefix);
+						} else {
+							return mqttManager.disable();
+						}
+					});
+				} else {
+					res += String.format(LABELS.getString("dlgSetMultiMsgExclude"), device.getHostname()) + "<br>";
+				}
 			}
 		}
 		try {
-			showing();
+			fill(false);
 		} catch (InterruptedException e) {}
 		return res;
 	}
@@ -383,4 +406,4 @@ public class PanelMQTTMix extends AbstractSettingsPanel implements UsnaEventList
 			}
 		}
 	}
-} // 370
+}

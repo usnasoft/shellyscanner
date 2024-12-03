@@ -44,9 +44,9 @@ import it.usna.shellyscan.model.Devices.EventType;
 import it.usna.shellyscan.model.device.GhostDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
+import it.usna.shellyscan.model.device.blu.AbstractBluDevice;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.g2.WebSocketDeviceListener;
-import it.usna.shellyscan.model.device.g2.modules.FirmwareManagerG2;
 import it.usna.shellyscan.model.device.modules.FirmwareManager;
 import it.usna.shellyscan.view.DevicesTable;
 import it.usna.shellyscan.view.util.UtilMiscellaneous;
@@ -261,9 +261,9 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 		if(fm.upadating()) {
 			fwInfo.uptime = d.getUptime();
 		}
-		if(d instanceof AbstractG2Device) {
+		if(d instanceof AbstractG2Device || d instanceof AbstractBluDevice) { // G3 extends G2
 			try {
-				fwInfo.wsSession = wsEventListener(index, (AbstractG2Device)d);
+				fwInfo.wsSession = wsEventListener(index, /*(AbstractG2Device)*/d);
 			} catch (IOException | InterruptedException | ExecutionException e) {
 				LOG.debug("PanelFWUpdate ws: {}", d, e);
 			}
@@ -311,7 +311,7 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 			} else { // success
 				try {
 					if(fwInfo.wsSession != null && fwInfo.wsSession.get().isOpen() == false) {
-						fwInfo.wsSession = wsEventListener(i, (AbstractG2Device)device);
+						fwInfo.wsSession = wsEventListener(i, device);
 					}
 				} catch (InterruptedException | ExecutionException | IOException e) {}
 				return "";
@@ -342,17 +342,24 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 		return countS + countB;
 	}
 
-	private Future<Session> wsEventListener(int index, AbstractG2Device d) throws IOException, InterruptedException, ExecutionException {
-		return d.connectWebSocketClient(new FMUpdateListener(index));
+	private Future<Session> wsEventListener(int index, ShellyAbstractDevice d) throws IOException, InterruptedException, ExecutionException {
+		if(d instanceof AbstractBluDevice blu) {
+			return ((AbstractG2Device)blu.getParent()).connectWebSocketClient(new FMUpdateListener(index, AbstractBluDevice.DEVICE_KEY_PREFIX + blu.getIndex()));
+		} else {
+			return ((AbstractG2Device)d).connectWebSocketClient(new FMUpdateListener(index, "sys"));
+		}
 	}
 	
 	// "Jetty uses MethodHandles to instantiate WebSocket endpoints and invoke WebSocket event methods, so WebSocket endpoint classes and WebSocket event methods must be public"
 	// -> no anonymous class
 	public class FMUpdateListener extends WebSocketDeviceListener {
 		private final int index;
-		public FMUpdateListener(int index) {
+		private final String component;
+		
+		public FMUpdateListener(int index, String component) {
 			super(json -> json.path("method").asText().equals(WebSocketDeviceListener.NOTIFY_EVENT));
 			this.index = index;
+			this.component = component;
 		}
 
 		@Override
@@ -360,14 +367,15 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 			try {
 				for(JsonNode event: msg.path("params").path("events")) {
 					String eventType = event.path("event").asText();
-					if(eventType.equals("ota_progress")) { // dowloading
-						((FirmwareManagerG2)getFirmwareManager(index)).upadating(true);
+					String comp = event.path("component").asText();
+					if(eventType.equals("ota_progress") && component.equals(comp)) { // dowloading
+						getFirmwareManager(index).upadating(true);
 						int progress = event.path("progress_percent").asInt();
 						tModel.setValueAt(DevicesTable.UPDATING_BULLET, index, FWUpdateTable.COL_STATUS);
 						tModel.setValueAt(String.format(Main.LABELS.getString("lbl_downloading"), progress), index, FWUpdateTable.COL_STABLE);
 						tModel.setValueAt(null, index, FWUpdateTable.COL_BETA);
 						break;
-					} else if(/*eventType.equals("ota_success") ||*/ eventType.equals("scheduled_restart")) { // rebooting
+					} else if((eventType.equals("ota_success") || eventType.equals("scheduled_restart")) && component.equals(comp)) { // rebooting
 						tModel.setValueAt(DevicesTable.OFFLINE_BULLET, index, FWUpdateTable.COL_STATUS);
 						tModel.setValueAt(LABELS.getString("lbl_rebooting"), index, FWUpdateTable.COL_STABLE);
 						tModel.setValueAt(null, index, FWUpdateTable.COL_BETA);
@@ -385,7 +393,7 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 			if(cause instanceof WebSocketTimeoutException) {
 				LOG.trace("ws-timeout -> reopen");
 				try {
-					devicesFWData.get(index).wsSession = wsEventListener(index, (AbstractG2Device)parent.getLocalDevice(index));
+					devicesFWData.get(index).wsSession = wsEventListener(index, parent.getLocalDevice(index));
 				} catch (IOException | InterruptedException | ExecutionException e) {
 					LOG.debug("ws-timeout -> reopen error", e);
 				}
@@ -398,7 +406,7 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 	private static class DeviceFirmware {
 		private FirmwareManager fwModule;
 		private Future<Session> wsSession;
-		private long rebootTime = Long.MAX_VALUE; // g2
+		private long rebootTime = Long.MAX_VALUE; // g2+
 		private int uptime = -1; // g1
 		private ShellyAbstractDevice.Status status;
 	}

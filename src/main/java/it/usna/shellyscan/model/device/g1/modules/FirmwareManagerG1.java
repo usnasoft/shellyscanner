@@ -92,6 +92,11 @@ public class FirmwareManagerG1 implements FirmwareManager {
 	}
 	
 	@Override
+	public void upadating(boolean upd) {
+		updating = upd;
+	}
+	
+	@Override
 	public boolean isValid() {
 		return valid;
 	}

@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import javax.swing.BorderFactory;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
@@ -22,9 +23,12 @@ import it.usna.shellyscan.controller.DeferrablesContainer;
 import it.usna.shellyscan.model.device.GhostDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
+import it.usna.shellyscan.model.device.blu.AbstractBluDevice;
 import it.usna.shellyscan.model.device.g2.modules.LoginManagerG2;
 import it.usna.shellyscan.model.device.modules.LoginManager;
 import it.usna.shellyscan.view.devsettings.DialogDeviceSettings.Gen;
+import it.usna.shellyscan.view.util.Msg;
+import it.usna.shellyscan.view.util.UtilMiscellaneous;
 
 public class PanelResLogin extends AbstractSettingsPanel {
 	private static final long serialVersionUID = 1L;
@@ -118,9 +122,15 @@ public class PanelResLogin extends AbstractSettingsPanel {
 		textFieldPwd.setEnabled(enabled);
 		chckbxShowPwd.setEnabled(enabled);
 	}
-
+	
 	@Override
 	public String showing() throws InterruptedException {
+		return fill(true);
+	}
+
+	private String fill(boolean showExcluded) throws InterruptedException {
+		String exclude = "<html>" + LABELS.getString("dlgExcludedDevicesMsg");
+		int excludeCount = 0;
 		loginModule.clear();
 		chckbxEnabled.setEnabled(false);
 		setEnabledLogin(false);
@@ -130,6 +140,12 @@ public class PanelResLogin extends AbstractSettingsPanel {
 		for(int i = 0; i < parent.getLocalSize(); i++) {
 			try {
 				ShellyAbstractDevice d = parent.getLocalDevice(i);
+				if(d instanceof AbstractBluDevice) {
+					exclude += "<br>" + UtilMiscellaneous.getFullName(d);
+					excludeCount++;
+					loginModule.add(null);
+					continue;
+				}
 				LoginManager lm = d.getLoginManager();
 				if(Thread.interrupted()) {
 					throw new InterruptedException();
@@ -147,6 +163,13 @@ public class PanelResLogin extends AbstractSettingsPanel {
 				loginModule.add(lm);
 			} catch(IOException | RuntimeException e) { // UnsupportedOperationException (RuntimeException) for GhostDevice
 				loginModule.add(null);
+			}
+		}
+		if(showExcluded) {
+			if(excludeCount == parent.getLocalSize() && isShowing()) {
+				return LABELS.getString("msgAllDevicesExcluded");
+			} else if (excludeCount > 0 && isShowing()) {
+				Msg.showHtmlMessageDialog(this, exclude, LABELS.getString("dlgExcludedDevicesTitle"), JOptionPane.WARNING_MESSAGE);
 			}
 		}
 		chckbxEnabled.setSelected(enabledGlobal);
@@ -170,40 +193,42 @@ public class PanelResLogin extends AbstractSettingsPanel {
 		String res = "<html>";
 		for(int i = 0; i < parent.getLocalSize(); i++) {
 			final ShellyAbstractDevice device = parent.getLocalDevice(i);
-			final LoginManager lm = loginModule.get(i);
-			if(lm != null) {
-				String msg;
-				if(enabled) {
-					msg = lm.set(user, pwd);
-				} else {
-					msg = lm.disable();
-				}
-				if(msg != null) {
-					if(LABELS.containsKey(msg)) {
-						msg = LABELS.getString(msg);
-					}
-					res += String.format(LABELS.getString("dlgSetMultiMsgFail"), device.getHostname()) + " (" + msg + ")<br>";
-				} else {
-					res += String.format(LABELS.getString("dlgSetMultiMsgOk"), device.getHostname()) + "<br>";
-				}
-			} else if(device.getStatus() == Status.OFF_LINE || device instanceof GhostDevice) { // defer
-				res += String.format(LABELS.getString("dlgSetMultiMsgQueue"), device.getHostname()) + "<br>";
-				DeferrablesContainer dc = DeferrablesContainer.getInstance();
-				dc.addOrUpdate(parent.getModelIndex(i), DeferrableTask.Type.LOGIN, LABELS.getString(enabled ? "RestrictedLoginTaskEnable" : "RestrictedLoginTaskDisable"), (def, dev) -> {
-					final LoginManager loginManager = dev.getLoginManager();
+			if(device instanceof AbstractBluDevice == false) { // not blu
+				final LoginManager lm = loginModule.get(i);
+				if(lm != null) {
+					String msg;
 					if(enabled) {
-						return loginManager.set(user, pwd);
+						msg = lm.set(user, pwd);
 					} else {
-						return loginManager.disable();
+						msg = lm.disable();
 					}
-				});
-			} else {
-				res += String.format(LABELS.getString("dlgSetMultiMsgExclude"), device.getHostname()) + "<br>";
+					if(msg != null) {
+						if(LABELS.containsKey(msg)) {
+							msg = LABELS.getString(msg);
+						}
+						res += String.format(LABELS.getString("dlgSetMultiMsgFail"), device.getHostname()) + " (" + msg + ")<br>";
+					} else {
+						res += String.format(LABELS.getString("dlgSetMultiMsgOk"), device.getHostname()) + "<br>";
+					}
+				} else if(device.getStatus() == Status.OFF_LINE || device instanceof GhostDevice) { // defer
+					res += String.format(LABELS.getString("dlgSetMultiMsgQueue"), device.getHostname()) + "<br>";
+					DeferrablesContainer dc = DeferrablesContainer.getInstance();
+					dc.addOrUpdate(parent.getModelIndex(i), DeferrableTask.Type.LOGIN, LABELS.getString(enabled ? "RestrictedLoginTaskEnable" : "RestrictedLoginTaskDisable"), (def, dev) -> {
+						final LoginManager loginManager = dev.getLoginManager();
+						if(enabled) {
+							return loginManager.set(user, pwd);
+						} else {
+							return loginManager.disable();
+						}
+					});
+				} else {
+					res += String.format(LABELS.getString("dlgSetMultiMsgExclude"), device.getHostname()) + "<br>";
+				}
 			}
 		}
 		try {
-			showing();
+			fill(false);
 		} catch (InterruptedException e) {}
 		return res;
 	}
-} // 213
+}

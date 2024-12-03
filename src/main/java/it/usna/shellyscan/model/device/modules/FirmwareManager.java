@@ -23,6 +23,8 @@ public interface FirmwareManager {
 	
 	boolean upadating();
 	
+	void upadating(boolean upd);
+	
 	boolean isValid();
 	
 	static String getShortVersion(String fw) {

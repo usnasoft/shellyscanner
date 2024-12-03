@@ -73,12 +73,12 @@ public class DialogDeviceSettings extends JDialog implements UsnaEventListener<D
 		PanelResLogin panelResLogin = new PanelResLogin(this, devTypes);
 		tabbedPane.add(LABELS.getString("dlgSetRestrictedLogin"), panelResLogin);
 		final AbstractSettingsPanel panelMQTT;
-		if(devTypes == Gen.MIX || existsOffLine()) { // PanelMQTTMix allows deferred execution (one day we could implement type specific deferred executions and remove existsOffLine()
-			panelMQTT = new PanelMQTTMix(this);
-		} else if(devTypes == Gen.G1) {
+		if(devTypes == Gen.G1 && existsOffLine() == false) { // existsOffLine() == false -> deferred mqtt on PanelMQTTMix only
 			panelMQTT = new PanelMQTTG1(this);
-		} else /*if(devTypes == Gen.G2)*/ {
+		} else if(devTypes == Gen.G2 && existsOffLine() == false) {
 			panelMQTT = new PanelMQTTG2(this);
+		} else /*if(devTypes == Gen.MIX || existsOffLine())*/{
+			panelMQTT = new PanelMQTTMix(this);
 		}
 		tabbedPane.add(LABELS.getString("dlgSetMQTT"), panelMQTT);
 		PanelOthers others = new PanelOthers(this);

@@ -311,9 +311,13 @@ public class PanelMQTTG2 extends AbstractSettingsPanel implements UsnaEventListe
 
 		setPasswordRequired(enabled && chckbxNoPWD.isSelected() == false);
 	}
-
+	
 	@Override
 	public String showing() throws InterruptedException {
+		return fill(true);
+	}
+
+	private String fill(boolean showExcluded) throws InterruptedException {
 		mqttModule.clear();
 		ShellyAbstractDevice d = null;
 		String exclude = "<html>" + LABELS.getString("dlgExcludedDevicesMsg");
@@ -368,13 +372,12 @@ public class PanelMQTTG2 extends AbstractSettingsPanel implements UsnaEventListe
 					excludeCount++;
 				}
 			}
-//			if(Thread.interrupted()) {
-//				throw new InterruptedException();
-//			}
-			if(excludeCount == parent.getLocalSize() && isShowing()) {
-				return LABELS.getString("msgAllDevicesExcluded");
-			} else if (excludeCount > 0 && isShowing()) {
-				Msg.showHtmlMessageDialog(this, exclude, LABELS.getString("dlgExcludedDevicesTitle"), JOptionPane.WARNING_MESSAGE);
+			if(showExcluded) {
+				if(excludeCount == parent.getLocalSize() && isShowing()) {
+					return LABELS.getString("msgAllDevicesExcluded");
+				} else if (excludeCount > 0 && isShowing()) {
+					Msg.showHtmlMessageDialog(this, exclude, LABELS.getString("dlgExcludedDevicesTitle"), JOptionPane.WARNING_MESSAGE);
+				}
 			}
 			if(rpcStatusGlobal != null) {
 				rdbtnRPCNoChange.setVisible(false);
@@ -464,7 +467,7 @@ public class PanelMQTTG2 extends AbstractSettingsPanel implements UsnaEventListe
 			}
 		}
 		try {
-			showing();
+			fill(false);
 		} catch (InterruptedException e) {}
 		return res;
 	}
@@ -496,4 +499,4 @@ public class PanelMQTTG2 extends AbstractSettingsPanel implements UsnaEventListe
 			}
 		}
 	}
-} // 371 - 497
+}
