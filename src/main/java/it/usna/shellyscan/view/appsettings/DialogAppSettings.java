@@ -102,6 +102,9 @@ public class DialogAppSettings extends JDialog {
 				appProp.setProperty(ScannerProperties.PROP_UPTIME_MODE, "FROM");
 			}
 			
+			// Temp unit
+			appProp.setProperty(ScannerProperties.PROP_TEMP_UNIT, panelGUI.rdbtnNewRadioButtonTC.isSelected() ? "C" : "F");
+			
 			// Filter
 			appProp.setIntProperty(ScannerProperties.PROP_DEFAULT_FILTER_IDX, panelGUI.comboFilterCol.getSelectedIndex());
 

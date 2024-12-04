@@ -23,6 +23,9 @@ public class ScannerProperties extends AppProperties { // cannot also extend Usn
 	public final static String PROP_UPTIME_MODE = "UPTIME_MODE";
 	public final static String PROP_UPTIME_MODE_DEFAULT = "SEC";
 	
+	public final static String PROP_TEMP_UNIT = "TEMP_UNIT";
+	private final static String PROP_TEMP_UNIT_DEFAULT = "C";
+	
 	public final static String PROP_UPDATECHK_ACTION = "UPDATE_CHK";
 	public final static String PROP_UPDATECHK_ACTION_DEFAULT = "STABLE";
 	
@@ -73,6 +76,7 @@ public class ScannerProperties extends AppProperties { // cannot also extend Usn
 	
 	private ScannerProperties(String file) {
 		super(file);
+		defaultProperty(PROP_TEMP_UNIT, PROP_TEMP_UNIT_DEFAULT);
 	}
 	
 	public static ScannerProperties init(String file) {
