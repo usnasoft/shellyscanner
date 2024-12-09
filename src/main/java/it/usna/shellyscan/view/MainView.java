@@ -79,6 +79,7 @@ import it.usna.shellyscan.view.scripts.DialogDeviceScripts;
 import it.usna.shellyscan.view.util.Msg;
 import it.usna.shellyscan.view.util.ScannerProperties;
 import it.usna.shellyscan.view.util.ScannerProperties.PropertyEvent;
+import it.usna.swing.DecimalTableCellRenderer;
 import it.usna.swing.UsnaPopupMenu;
 import it.usna.swing.table.UsnaTableModel;
 import it.usna.swing.texteditor.TextDocumentListener;
@@ -707,6 +708,11 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		} else if(ScannerProperties.PROP_USE_ARCHIVE.equals(propKey)) {
 			useArchive = appProp.getBoolProperty(ScannerProperties.PROP_USE_ARCHIVE);
 			devicesTable.clearSelection();
+		} else if(ScannerProperties.PROP_TEMP_UNIT.equals(propKey)) {
+			boolean celsius = appProp.getProperty(ScannerProperties.PROP_TEMP_UNIT).equals("C");
+			devicesTable.getColumnModel().getColumn(devicesTable.convertColumnIndexToView(DevicesTable.COL_INT_TEMP)).setCellRenderer(celsius ? new DecimalTableCellRenderer(2) : new FahrenheitTableCellRenderer());
+			((UsnaTableModel)devicesTable.getModel()).fireTableDataChanged();
+			devicesTable.columnsWidthAdapt();
 		}
 	}
 	

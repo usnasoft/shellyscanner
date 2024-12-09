@@ -1,11 +1,19 @@
 package it.usna.shellyscan.view.util;
 
+import java.text.NumberFormat;
+
 import it.usna.shellyscan.model.device.ModulesHolder;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.modules.DeviceModule;
 import it.usna.shellyscan.model.device.modules.RelayInterface;
 
 public class UtilMiscellaneous {
+	private final static NumberFormat formatterN2 = NumberFormat.getInstance();
+	static {
+		formatterN2.setMaximumFractionDigits(2);
+		formatterN2.setMinimumFractionDigits(2);
+	}
+	
 	private UtilMiscellaneous() {}
 	
 	public static String getDescName(ShellyAbstractDevice d) {
@@ -43,5 +51,9 @@ public class UtilMiscellaneous {
 	public static String getExtendedHostName(ShellyAbstractDevice d) {
 		final String dName = d.getName();
 		return d.getHostname() + " - " + (dName == null || dName.isEmpty() ? d.getTypeName() : dName);
+	}
+	
+	public static String celsiusToFahrenheit(float celsius) {
+		return formatterN2.format(celsius * 1.8f + 32f);
 	}
 }

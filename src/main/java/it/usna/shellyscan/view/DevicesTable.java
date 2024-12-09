@@ -48,6 +48,8 @@ import it.usna.shellyscan.model.device.g1.ShellyTRV;
 import it.usna.shellyscan.model.device.g1.modules.ThermostatG1;
 import it.usna.shellyscan.model.device.g2.ShellyPlusSmoke;
 import it.usna.shellyscan.model.device.modules.DeviceModule;
+import it.usna.shellyscan.view.util.ScannerProperties;
+import it.usna.shellyscan.view.util.UtilMiscellaneous;
 import it.usna.swing.ArrayTableCellRenderer;
 import it.usna.swing.DecimalTableCellRenderer;
 import it.usna.swing.table.ExTooltipTable;
@@ -101,9 +103,10 @@ public class DevicesTable extends ExTooltipTable {
 
 	public DevicesTable(TableModel tm) {
 		super(tm, true);
+		boolean celsius = ScannerProperties.instance().getProperty(ScannerProperties.PROP_TEMP_UNIT).equals("C");
 		columnModel.getColumn(COL_STATUS_IDX).setMaxWidth(ONLINE_BULLET.getIconWidth() + 4);
 		columnModel.getColumn(COL_MEASURES_IDX).setCellRenderer(new DeviceMetersCellRenderer());
-		columnModel.getColumn(COL_INT_TEMP).setCellRenderer(new DecimalTableCellRenderer(2));
+		columnModel.getColumn(COL_INT_TEMP).setCellRenderer(celsius ? new DecimalTableCellRenderer(2) : new FahrenheitTableCellRenderer());
 		DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
 		centerRenderer.setHorizontalAlignment(JLabel.CENTER);
 		columnModel.getColumn(COL_CLOUD).setCellRenderer(centerRenderer);
@@ -254,6 +257,19 @@ public class DevicesTable extends ExTooltipTable {
 			}
 		}
 		return null;
+	}
+	
+	@Override
+	protected String cellTooltipValue(Object value, boolean cellTooSmall, int row, int column) {
+		if(cellTooSmall) {
+			final int modelCol = convertColumnIndexToModel(column);
+			if(value == null) return "";
+			else if(modelCol == COL_INT_TEMP && ScannerProperties.instance().getProperty(ScannerProperties.PROP_TEMP_UNIT).equals("F")) return UtilMiscellaneous.celsiusToFahrenheit((Float)value); 
+			else if(value instanceof Object[]) return Stream.of((Object[])value).filter(v -> v != null).map(v -> v.toString()).collect(Collectors.joining(" + "));
+			else return value.toString();
+		} else {
+			return null;
+		}
 	}
 
 	@Override

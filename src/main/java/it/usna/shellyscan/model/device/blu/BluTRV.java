@@ -25,6 +25,7 @@ import it.usna.shellyscan.model.device.ModulesHolder;
 import it.usna.shellyscan.model.device.RestoreMsg;
 import it.usna.shellyscan.model.device.blu.modules.FirmwareManagerTRV;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
+import it.usna.shellyscan.model.device.g2.modules.Webhooks;
 import it.usna.shellyscan.model.device.modules.DeviceModule;
 import it.usna.shellyscan.model.device.modules.FirmwareManager;
 import it.usna.shellyscan.model.device.modules.ThermostatInterface;
@@ -151,11 +152,14 @@ public class BluTRV extends AbstractBluDevice implements ThermostatInterface, Mo
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			sectionToStream("/rpc/BluTrv.GetRemoteConfig?id=" + componentIndex, "Shelly.GetRemoteConfig.json", out);
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-			sectionToStream("/rpc/BluTrv.GetConfig?id=" + componentIndex, "Shelly.GetConfig.json", out);
+			byte[] config = sectionToStream("/rpc/BluTrv.GetConfig?id=" + componentIndex, "Shelly.GetConfig.json", out);
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			sectionToStream("/rpc/BluTrv.Call?id=" + componentIndex + "&method=%22TRV.ListScheduleRules%22&params=%7B%22id%22:0%7D", "TRV.ListScheduleRules.json", out);
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			sectionToStream("/rpc/Webhook.List", "Webhook.List.json", out);
+			String bthome = jsonMapper.readTree(config).path("trv").asText();
+			String bhtIndex = bthome.substring(bthome.indexOf(':') + 1);
+			sectionToStream("/rpc/BTHomeDevice.GetKnownObjects?id=" + bhtIndex, "BTHomeDevice.GetKnownObjects.json", out);
 		} catch(InterruptedException e) {
 			LOG.error("backup", e);
 		}
@@ -264,10 +268,30 @@ public class BluTRV extends AbstractBluDevice implements ThermostatInterface, Mo
 				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			}
 
-			// todo
-//			String storedId = storedConfig.get("id").asText();
-//			JsonNode storedWebHooks = backupJsons.get("Webhook.List.json");
-//			Webhooks.deleteByCid(parent, DynamicComponents.BTHOME_SENSOR, /*elenco cid sensori*/);
+			final int storedId = storedConfig.get("id").intValue();
+			final int currentId = Integer.parseInt(componentIndex);
+			JsonNode storedWebHooks = backupJsons.get("Webhook.List.json");
+			Webhooks.delete(parent,"blutrv", currentId);
+			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+			Webhooks.restore(parent, "blutrv", storedId, Integer.parseInt(componentIndex), Devices.MULTI_QUERY_DELAY, storedWebHooks, errors);
+			
+			// todo bthomesensor actions restore
+			JsonNode storedBTHSensors = backupJsons.get("BTHomeDevice.GetKnownObjects.json").get("objects");
+			final String storedBtHome = storedConfig.get("trv").asText();
+			String bhtIndex = storedBtHome.substring(storedBtHome.indexOf(':') + 1);
+			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+			JsonNode existingBTHSensors = getJSON("/rpc/BTHomeDevice.GetKnownObjects?id=" + bhtIndex).get("objects");
+			
+			for(JsonNode sensorConf: storedBTHSensors) {
+				String comp = sensorConf.path("component").asText();
+				if(comp != null && comp.startsWith(SENSOR_KEY_PREFIX)) {
+//					confronto tra storedBTHSensors e existingBTHSensors
+//					TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+//					Webhooks.delete
+//					TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+//					Webhooks.restore
+				}
+			}
 //			Webhooks.restore(parent, storedId, /*per cid sensore*/, Devices.MULTI_QUERY_DELAY, storedWebHooks, errors);
 
 		} catch(RuntimeException | InterruptedException e) {

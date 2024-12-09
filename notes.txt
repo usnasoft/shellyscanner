@@ -293,7 +293,8 @@ selection subtraction (ctrl+shift)
 checklis - extender "-" -> non applicabile, X non attivo
 checklis - roaming editabile; for G2 interval 60s - 0s
 Blu TRV support
-// TODO TRV restore (schedule included)
+// TODO TRV restore
+// TODO TRV ghost restore
 TRV fw update
 consecutive fw updates progress fixed
 

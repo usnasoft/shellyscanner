@@ -60,6 +60,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 import it.usna.shellyscan.Main;
 import it.usna.shellyscan.controller.UsnaAction;
+import it.usna.shellyscan.controller.UsnaTextAction;
 import it.usna.shellyscan.controller.UsnaToggleAction;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice.LogMode;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
@@ -222,12 +223,26 @@ public class ScriptFrame extends JFrame {
 		redoAction.putValue(Action.SMALL_ICON, new ImageIcon(ScriptFrame.class.getResource("/images/Redo24.png")));
 		editor.mapAction(KeyStroke.getKeyStroke(KeyEvent.VK_Y, MainView.SHORTCUT_KEY), redoAction, "redo_usna");
 		
-		findAction = new UsnaAction(null, "btnFind", "/images/Search24.png", e -> {
-			FindReplaceDialog f = new FindReplaceDialog(this, editor, true);
+		findAction = new UsnaTextAction("btnFind", "btnFind", "/images/Search24.png", (textComponent, e) -> {
+			FindReplaceDialog f;
+			if(textComponent == logsTextArea || logsTextArea.hasFocus()) {
+				f = new FindReplaceDialog(this, logsTextArea, false);
+			} else {
+				f = new FindReplaceDialog(this, editor, true);
+			}
 			f.setLocationRelativeTo(this);
 			f.setVisible(true);
 		});
-		editor.mapAction(KeyStroke.getKeyStroke(KeyEvent.VK_F, MainView.SHORTCUT_KEY), findAction, "find_usna");
+		editor.mapAction(KeyStroke.getKeyStroke(KeyEvent.VK_F, MainView.SHORTCUT_KEY), findAction, "btnFind");
+		
+		Action windowFocusAction = new UsnaAction(e -> {
+			if(editor.hasFocus() == false) {
+				editor.requestFocus();
+			} else {
+				logsTextArea.requestFocus();
+			}
+		});
+		editor.mapAction(KeyStroke.getKeyStroke(KeyEvent.VK_W, InputEvent.CTRL_DOWN_MASK), windowFocusAction, "usna_focus");
 		
 		Action commentAction = new UsnaAction(e -> {
 			editor.commentSelected();
@@ -560,6 +575,7 @@ public class ScriptFrame extends JFrame {
 		@Override
 		public void onMessage(JsonNode msg) {
 			logsTextArea.append(msg.path("data").asText() + "\n");
+			logsTextArea.setCaretPosition(logsTextArea.getDocument().getLength());
 		}
 	}
 	

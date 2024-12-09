@@ -313,13 +313,17 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 	
 	public void pauseRefresh(int ind) {
 		synchronized(devices) {
-			refreshProcess.get(ind).cancel(true);
+			ScheduledFuture<?> future = refreshProcess.get(ind);
+			if(future != null) {
+				future.cancel(true);
+			}
 		}
 	}
 	
 	public void activateRefresh(int ind) {
 		synchronized(devices) {
-			if(refreshProcess.get(ind).isCancelled()) {
+			ScheduledFuture<?> future = refreshProcess.get(ind);
+			if(future != null && future.isCancelled()) {
 				refreshProcess.set(ind, scheduleRefresh(devices.get(ind), ind, refreshInterval, refreshTics));
 			}
 		}
@@ -384,37 +388,15 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 						}
 					});
 				}
-				// BTHome
-//				if(d instanceof AbstractProDevice || d instanceof AbstractG3Device) {
-//					final JsonNode currenteComponents = d.getJSON("/rpc/Shelly.GetComponents?dynamic_only=true").path("components"); // empty on 401
-//					HashSet<BluTRV> trvSet = new HashSet<>();
-//					for(JsonNode compInfo: currenteComponents) {
-//						String key = compInfo.path("key").asText();
-////						String kPrefix = key.substring(0, key.indexOf(':'));
-//						if(key.startsWith(AbstractBluDevice.DEVICE_KEY_PREFIX)) {
-//							newBluDevice(d, compInfo, key);
-//						} else if(key.startsWith(BluTRV.DEVICE_KEY_PREFIX)) { // temporary workaround
-//							trvSet.add(new BluTRV((AbstractG2Device)d, compInfo, "-1"));
-//						}
-//					}
-//					trvSet.forEach(trv -> { // temporary workaround
-//						int ind = devices.indexOf(trv);
-//						if(ind >= 0 && devices.get(ind) instanceof BTHomeDevice blu) {
-//							blu.setTypeName("Blu TRV");
-//						}
-//					});
-//				}
+				// BTHome (BLU)
 				if(d instanceof AbstractProDevice || d instanceof AbstractG3Device) {
 					final JsonNode currenteComponents = d.getJSON("/rpc/Shelly.GetComponents?dynamic_only=true").path("components"); // empty on 401
 					for(JsonNode compInfo: currenteComponents) {
 						String key = compInfo.path("key").asText();
-						//					String kPrefix = key.substring(0, key.indexOf(':'));
-						if(key.startsWith(AbstractBluDevice.DEVICE_KEY_PREFIX) /*|| key.startsWith(BluTRV.DEVICE_KEY_PREFIX)*/) {
+						if(key.startsWith(AbstractBluDevice.DEVICE_KEY_PREFIX) || key.startsWith(BluTRV.DEVICE_KEY_PREFIX)) {
 							newBluDevice(d, compInfo, key);
 						}
-						if( key.startsWith(BluTRV.DEVICE_KEY_PREFIX)) {
-							newBluDevice(d, compInfo, key);
-						}
+//						if(key.startsWith(BluTRV.DEVICE_KEY_PREFIX)) { newBluDevice(d, compInfo, key); }
 					}
 				}
 			}

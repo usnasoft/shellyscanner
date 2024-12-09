@@ -77,6 +77,7 @@ import it.usna.shellyscan.model.device.g2.ShellyPro3EM;
 import it.usna.shellyscan.model.device.g2.ShellyPro4PM;
 import it.usna.shellyscan.model.device.g2.ShellyProDimmer1;
 import it.usna.shellyscan.model.device.g2.ShellyProEM50;
+import it.usna.shellyscan.model.device.g2.ShellyProRGBWW;
 import it.usna.shellyscan.model.device.g2.ShellyWallDimmer;
 import it.usna.shellyscan.model.device.g2.WallDisplay;
 import it.usna.shellyscan.model.device.g2.modules.LoginManagerG2;
@@ -84,7 +85,9 @@ import it.usna.shellyscan.model.device.g3.AbstractG3Device;
 import it.usna.shellyscan.model.device.g3.Shelly0_10VPMG3;
 import it.usna.shellyscan.model.device.g3.Shelly1G3;
 import it.usna.shellyscan.model.device.g3.Shelly1PMG3;
+import it.usna.shellyscan.model.device.g3.Shelly2LG3;
 import it.usna.shellyscan.model.device.g3.Shelly2PMG3;
+import it.usna.shellyscan.model.device.g3.ShellyDimmerG3;
 import it.usna.shellyscan.model.device.g3.ShellyG3Unmanaged;
 import it.usna.shellyscan.model.device.g3.ShellyGatewayG3;
 import it.usna.shellyscan.model.device.g3.ShellyHTG3;
@@ -108,7 +111,7 @@ public class DevicesFactory {
 			return createG2(httpClient, wsClient, address, port, info, name);
 		} else if(gen == 0) { // gen1 (info.get("gen") == null)
 			return createG1(httpClient, address, port, info, name);
-		} else if(gen == 3) {
+		} else if(gen >= 3) {
 			return createG3(httpClient, wsClient, address, port, info, name);
 		} else { // unknown gen
 			return new ShellyGenericUnmanagedImpl(address, port, name, httpClient);
@@ -253,6 +256,7 @@ public class DevicesFactory {
 				case ShellyProDimmer1.ID -> new ShellyProDimmer1(address, port, name);
 				case ShellyProEM50.ID -> new ShellyProEM50(address, port, name);
 				case ShellyPro3EM.ID -> new ShellyPro3EM(address, port, name);
+				case ShellyProRGBWW.ID -> new ShellyProRGBWW(address, port, name); // test QA
 				default -> new ShellyG2Unmanaged(address, port, name);
 			};
 		} catch(Exception e) { // really unexpected
@@ -307,6 +311,8 @@ public class DevicesFactory {
 			case ShellyMini1PMG3.ID -> new ShellyMini1PMG3(address, port, name);
 			case ShellyMiniPMG3.ID -> new ShellyMiniPMG3(address, port, name);
 			case ShellyHTG3.ID -> new ShellyHTG3(address, port, name);
+			case ShellyDimmerG3.ID -> new ShellyDimmerG3(address, port, name); // test QA
+			case Shelly2LG3.ID -> new Shelly2LG3(address, port, name); // test QA
 			case ShellyGatewayG3.ID -> new ShellyGatewayG3(address, port, name);
 			// X
 			case ShellyXMOD1.ID -> new ShellyXMOD1(address, port, name);
