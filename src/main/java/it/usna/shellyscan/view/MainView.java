@@ -263,7 +263,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		if(fc.showSaveDialog(MainView.this) == JFileChooser.APPROVE_OPTION) {
 			Path outPath = IOFile.addExtension(fc.getSelectedFile().toPath(), "csv");
 			try (BufferedWriter writer = Files.newBufferedWriter(outPath)) {
-				devicesTable.csvExport(writer, appProp.getProperty(ScannerProperties.PROP_CSV_SEPARATOR, ScannerProperties.PROP_CSV_SEPARATOR_DEFAULT));
+				devicesTable.csvExport(writer, appProp.getProperty(ScannerProperties.PROP_CSV_SEPARATOR/*, ScannerProperties.PROP_CSV_SEPARATOR_DEFAULT*/));
 				JOptionPane.showMessageDialog(MainView.this, LABELS.getString("msgFileSaved"), Main.APP_NAME, JOptionPane.INFORMATION_MESSAGE);
 			} catch (IOException ex) {
 				Msg.errorMsg(this, ex);
@@ -392,7 +392,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		getContentPane().add(scrollPane, BorderLayout.CENTER);
 		devicesTable.sortByColumn(DevicesTable.COL_IP_IDX, SortOrder.ASCENDING);
 		devicesTable.loadColPos(appProp);
-		devicesTable.setUptimeRenderMode(appProp.getProperty(ScannerProperties.PROP_UPTIME_MODE, ScannerProperties.PROP_UPTIME_MODE_DEFAULT));
+		devicesTable.setUptimeRenderMode(appProp.getProperty(ScannerProperties.PROP_UPTIME_MODE/*, ScannerProperties.PROP_UPTIME_MODE_DEFAULT*/));
 		
 		scrollPane.setViewportView(devicesTable);
 		scrollPane.getViewport().setBackground(Main.BG_COLOR);
@@ -436,7 +436,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 			@Override
 			public void mousePressed(MouseEvent e) {
 		        if (e.getClickCount() == 2 && devicesTable.getSelectedRow() >= 0 && devicesTable.isCellEditable(devicesTable.getSelectedRow(), devicesTable.getSelectedColumn()) == false) {
-		        	if(appProp.getProperty(ScannerProperties.PROP_DCLICK_ACTION, ScannerProperties.PROP_DCLICK_ACTION_DEFAULT).equals("DET") && infoAction.isEnabled()) {
+		        	if(appProp.getProperty(ScannerProperties.PROP_DCLICK_ACTION/*, ScannerProperties.PROP_DCLICK_ACTION_DEFAULT*/).equals("DET") && infoAction.isEnabled()) {
 		        		infoAction.actionPerformed(null);
 		        	} else if(browseAction.isEnabled()) {
 		        		browseAction.actionPerformed(null);
@@ -532,7 +532,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 	}
 	
 	private void updateHideCaptions() {
-		boolean en = appProp.getBoolProperty(ScannerProperties.PROP_TOOLBAR_CAPTIONS, true) == false;
+		boolean en = appProp.getBoolProperty(ScannerProperties.PROP_TOOLBAR_CAPTIONS/*, true*/) == false;
 		Stream.of(toolBar.getComponents()).filter(c -> c instanceof AbstractButton).forEach(b -> ((AbstractButton)b).setHideActionText(en));
 	}
 	
@@ -601,7 +601,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 			devicesTable.resetRowsComputedHeight();
 			devicesTable.loadColPos(appProp, DevicesTable.STORE_EXT_PREFIX);
 			
-			String detScreenMode = appProp.getProperty(ScannerProperties.PROP_DETAILED_VIEW_SCREEN, ScannerProperties.PROP_DETAILED_VIEW_SCREEN_DEFAULT);
+			String detScreenMode = appProp.getProperty(ScannerProperties.PROP_DETAILED_VIEW_SCREEN/*, ScannerProperties.PROP_DETAILED_VIEW_SCREEN_DEFAULT*/);
 			if(getExtendedState() != JFrame.MAXIMIZED_BOTH) {
 				if(detScreenMode.equals(ScannerProperties.PROP_DETAILED_VIEW_SCREEN_FULL)) {
 					setExtendedState(JFrame.MAXIMIZED_BOTH);

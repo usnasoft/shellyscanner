@@ -132,10 +132,10 @@ public class PanelNetwork extends JPanel {
 		add(btnIPEdit, gbc_btnIPEdit);
 
 		String mode = appProp.getProperty(ScannerProperties.PROP_SCAN_MODE);
-		if(mode == null) {
-			appProp.setProperty(ScannerProperties.PROP_SCAN_MODE, ScannerProperties.PROP_SCAN_MODE_DEFAULT);
-			mode = ScannerProperties.PROP_SCAN_MODE_DEFAULT;
-		}
+//		if(mode == null) {
+//			appProp.setProperty(ScannerProperties.PROP_SCAN_MODE, ScannerProperties.PROP_SCAN_MODE_DEFAULT);
+//			mode = ScannerProperties.PROP_SCAN_MODE_DEFAULT;
+//		}
 		if(mode.equals("LOCAL")) {
 			localScanButton.setSelected(true);
 			scanByIP(false);
@@ -242,7 +242,7 @@ public class PanelNetwork extends JPanel {
 		gbc_lblNewLabel_rt.gridy = 7;
 		add(lblNewLabel_rt, gbc_lblNewLabel_rt);
 		
-		refreshTextField = new IntegerTextFieldPanel(appProp.getIntProperty(ScannerProperties.PROP_REFRESH_ITERVAL, ScannerProperties.PROP_REFRESH_ITERVAL_DEFAULT), 1, 3600, false);
+		refreshTextField = new IntegerTextFieldPanel(appProp.getIntProperty(ScannerProperties.PROP_REFRESH_ITERVAL/*, ScannerProperties.PROP_REFRESH_ITERVAL_DEFAULT*/), 1, 3600, false);
 		GridBagConstraints gbc_refreshtextField = new GridBagConstraints();
 		gbc_refreshtextField.anchor = GridBagConstraints.WEST;
 		gbc_refreshtextField.insets = new Insets(0, 0, 5, 5);
@@ -260,7 +260,7 @@ public class PanelNetwork extends JPanel {
 		gbc_lblNewLabel_4.gridy = 8;
 		add(lblNewLabel_4, gbc_lblNewLabel_4);
 		
-		confRefreshtextField = new IntegerTextFieldPanel(appProp.getIntProperty(ScannerProperties.PROP_REFRESH_CONF, ScannerProperties.PROP_REFRESH_CONF_DEFAULT), 1, 9999, false);
+		confRefreshtextField = new IntegerTextFieldPanel(appProp.getIntProperty(ScannerProperties.PROP_REFRESH_CONF/*, ScannerProperties.PROP_REFRESH_CONF_DEFAULT*/), 1, 9999, false);
 		GridBagConstraints gbc_confRefreshtextField = new GridBagConstraints();
 		gbc_confRefreshtextField.insets = new Insets(0, 0, 5, 5);
 		gbc_confRefreshtextField.anchor = GridBagConstraints.WEST;

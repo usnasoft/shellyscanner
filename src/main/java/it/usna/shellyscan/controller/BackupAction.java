@@ -49,6 +49,7 @@ public class BackupAction extends UsnaAction {
 						final File outFile = (ind.length > 1) ?
 								new File(fc.getSelectedFile(), hostName.replaceAll("[^\\w_-]+", "_") + "." + Main.BACKUP_FILE_EXT) : fc.getSelectedFile();
 						try {
+							model.pauseRefresh(modelRow);
 							final boolean connected = d.backup(outFile);
 							res += String.format(LABELS.getString(connected ? "dlgSetMultiMsgOk" : "dlgSetMultiMsgStored"), hostName) + "<br>";
 						} catch (IOException | RuntimeException e1) {
@@ -64,6 +65,8 @@ public class BackupAction extends UsnaAction {
 								LOG.debug("Backup error {}", d.getHostname(), e1);
 								res += String.format(LABELS.getString("dlgSetMultiMsgFail"), hostName) + "<br>";	
 							}
+						} finally {
+							model.activateRefresh(modelRow);
 						}
 					}
 					return res;

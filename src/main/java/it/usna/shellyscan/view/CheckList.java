@@ -442,7 +442,7 @@ public class CheckList extends JDialog implements UsnaEventListener<Devices.Even
 	}
 	
 	private void updateHideCaptions() {
-		boolean en = properties.getBoolProperty(ScannerProperties.PROP_TOOLBAR_CAPTIONS, true) == false;
+		boolean en = properties.getBoolProperty(ScannerProperties.PROP_TOOLBAR_CAPTIONS/*, true*/) == false;
 		Stream.of(toolBar.getComponents()).filter(c -> c instanceof AbstractButton).forEach(b -> ((AbstractButton)b).setHideActionText(en));
 	}
 

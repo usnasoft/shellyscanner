@@ -74,7 +74,9 @@ public class DeviceMetersCellRenderer extends JPanel implements TableCellRendere
 
 							JLabel val;
 							float metValue = m.getValue(t);
-							if(t == Meters.Type.EX) {
+							if(t == Meters.Type.T || t == Meters.Type.T1 || t == Meters.Type.T2 || t == Meters.Type.T3 || t == Meters.Type.T4) {
+								val = new JLabel(String.format(Locale.ENGLISH, Main.LABELS.getString("METER_VAL_T"), metValue));
+							} else if(t == Meters.Type.EX) {
 								singleArrayObj[0] = metValue;
 								val = new JLabel(SWITCH_FORMATTER.format(singleArrayObj));
 							} else {

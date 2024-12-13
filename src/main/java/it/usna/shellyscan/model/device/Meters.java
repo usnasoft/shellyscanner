@@ -13,13 +13,13 @@ public abstract class Meters implements Comparable<Meters> {
 		V, // voltage
 		I, // current
 		FREQ, // Frequency
-		T, // temperature (celsius)
+		T, // temperature
 		H, // humidity %
 		L, // lux
-		T1, // temperature (celsius)
-		T2, // temperature (celsius)
-		T3, // temperature (celsius)
-		T4, // temperature (celsius)
+		T1, // temperature
+		T2, // temperature
+		T3, // temperature
+		T4, // temperature
 		EX, // ext switch status
 		PERC, // 0-100
 		NUM, // inetger

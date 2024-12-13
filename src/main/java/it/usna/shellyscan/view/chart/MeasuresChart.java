@@ -208,9 +208,9 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 					File out = fc.getSelectedFile();
 					DateRange range = btnPause.isSelected() ? (DateRange)xAxis.getRange() : null;
 					if("V".equals(appProp.getProperty(ScannerProperties.PROP_CHARTS_EXPORT))) {
-						exp.exportAsVerticalCSV(out, currentType.yLabel, appProp.getProperty(ScannerProperties.PROP_CSV_SEPARATOR, ScannerProperties.PROP_CSV_SEPARATOR_DEFAULT), range);
+						exp.exportAsVerticalCSV(out, currentType.yLabel, appProp.getProperty(ScannerProperties.PROP_CSV_SEPARATOR/*, ScannerProperties.PROP_CSV_SEPARATOR_DEFAULT*/), range);
 					} else {
-						exp.exportAsHorizontalCSV(out, appProp.getProperty(ScannerProperties.PROP_CSV_SEPARATOR, ScannerProperties.PROP_CSV_SEPARATOR_DEFAULT), range);
+						exp.exportAsHorizontalCSV(out, appProp.getProperty(ScannerProperties.PROP_CSV_SEPARATOR/*, ScannerProperties.PROP_CSV_SEPARATOR_DEFAULT*/), range);
 					}
 					appProp.setProperty("LAST_PATH", fc.getCurrentDirectory().getPath());
 					JOptionPane.showMessageDialog(this, LABELS.getString("msgFileSaved"), Main.APP_NAME, JOptionPane.INFORMATION_MESSAGE);

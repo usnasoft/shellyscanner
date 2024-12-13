@@ -61,14 +61,6 @@ public class Main {
 		System.setProperty(SimpleLogger.SHOW_DATE_TIME_KEY, "true");
 		final Logger LOG = LoggerFactory.getLogger(Main.class);
 
-		LOG.info(APP_NAME + " " + VERSION_CODE);
-		//		System.setProperty("java.net.preferIPv4Stack" , "true");
-		try { // in case of error or no file (true) use default configuration
-			appProp.load(true);
-		} catch (Exception e) {
-			Msg.errorMsg(e);
-		}
-
 		CLI cli = new CLI(args);
 
 		boolean fullScan = false;
@@ -105,7 +97,7 @@ public class Main {
 		} else if((cliIndex = cli.hasEntry("-noscan")) >= 0) { // only archive (it's actually an IP scan with firstIP > lastIP)
 			ipCollection = new IPCollection();
 		} else {
-			final String scanMode = appProp.getProperty(ScannerProperties.PROP_SCAN_MODE, ScannerProperties.PROP_SCAN_MODE_DEFAULT);
+			final String scanMode = appProp.getProperty(ScannerProperties.PROP_SCAN_MODE/*, ScannerProperties.PROP_SCAN_MODE_DEFAULT*/);
 			if(scanMode.equals("IP")) {
 				ipCollection = new IPCollection();
 				for(int i = 0; i < 10; i++) {
@@ -238,8 +230,8 @@ public class Main {
 							Msg.errorMsg(view, e);
 						}
 					}
-					final int refreshStatusInterval = appProp.getIntProperty(ScannerProperties.PROP_REFRESH_ITERVAL, ScannerProperties.PROP_REFRESH_ITERVAL_DEFAULT) * 1000;
-					final int refreshConfigTics = appProp.getIntProperty(ScannerProperties.PROP_REFRESH_CONF, ScannerProperties.PROP_REFRESH_CONF_DEFAULT);
+					final int refreshStatusInterval = appProp.getIntProperty(ScannerProperties.PROP_REFRESH_ITERVAL/*, ScannerProperties.PROP_REFRESH_ITERVAL_DEFAULT*/) * 1000;
+					final int refreshConfigTics = appProp.getIntProperty(ScannerProperties.PROP_REFRESH_CONF/*, ScannerProperties.PROP_REFRESH_CONF_DEFAULT*/);
 					if(ipCollectionFinal != null) {
 						model.scannerInit(ipCollectionFinal, refreshStatusInterval, refreshConfigTics);
 					} else {

@@ -75,7 +75,7 @@ public class PanelGUI extends JPanel {
 		ButtonGroup dClickGroup = new ButtonGroup();
 		dClickGroup.add(detailsButton);
 		dClickGroup.add(webUIButton);
-		if(appProp.getProperty(ScannerProperties.PROP_DCLICK_ACTION, ScannerProperties.PROP_DCLICK_ACTION_DEFAULT).equals("DET")) {
+		if(appProp.getProperty(ScannerProperties.PROP_DCLICK_ACTION/*, ScannerProperties.PROP_DCLICK_ACTION_DEFAULT*/).equals("DET")) {
 			detailsButton.setSelected(true);
 		} else {
 			webUIButton.setSelected(true);
@@ -128,7 +128,7 @@ public class PanelGUI extends JPanel {
 		uptimeGroup.add(rdbtnUptimeSeconds);
 		uptimeGroup.add(rdbtnUptimeDay);
 		uptimeGroup.add(rdbtnUptimeSince);
-		String utimeMode = appProp.getProperty(ScannerProperties.PROP_UPTIME_MODE, ScannerProperties.PROP_UPTIME_MODE_DEFAULT);
+		String utimeMode = appProp.getProperty(ScannerProperties.PROP_UPTIME_MODE/*, ScannerProperties.PROP_UPTIME_MODE_DEFAULT*/);
 		if(utimeMode.equals("SEC")) {
 			rdbtnUptimeSeconds.setSelected(true);
 		} else if(utimeMode.equals("DAY")) {
@@ -206,7 +206,7 @@ public class PanelGUI extends JPanel {
 		gbc_chckbxToolbarCaptiosn.gridx = 1;
 		gbc_chckbxToolbarCaptiosn.gridy = 6;
 		add(chckbxToolbarCaptions, gbc_chckbxToolbarCaptiosn);
-		chckbxToolbarCaptions.setSelected(appProp.getBoolProperty(ScannerProperties.PROP_TOOLBAR_CAPTIONS, true));
+		chckbxToolbarCaptions.setSelected(appProp.getBoolProperty(ScannerProperties.PROP_TOOLBAR_CAPTIONS/*, true*/));
 		
 		JSeparator separator_1 = new JSeparator();
 		GridBagConstraints gbc_separator_1 = new GridBagConstraints();
@@ -287,7 +287,7 @@ public class PanelGUI extends JPanel {
 		updCHKGroup.add(updNoCHK);
 		updCHKGroup.add(updStableCHK);
 		updCHKGroup.add(updBetaCHK);
-		String updChkMode = appProp.getProperty(ScannerProperties.PROP_UPDATECHK_ACTION, ScannerProperties.PROP_UPDATECHK_ACTION_DEFAULT);
+		String updChkMode = appProp.getProperty(ScannerProperties.PROP_UPDATECHK_ACTION/*, ScannerProperties.PROP_UPDATECHK_ACTION_DEFAULT*/);
 		if(updChkMode.equals("NEVER")) {
 			updNoCHK.setSelected(true);
 		} else if(updChkMode.equals("STABLE")) {
@@ -353,7 +353,7 @@ public class PanelGUI extends JPanel {
 		detailedViewGroup.add(rdbtnDetailedViewAsIs);
 		detailedViewGroup.add(rdbtnNDetailedViewEstimate);
 		detailedViewGroup.add(rdbtnDetailedViewHorizontal);
-		String detailsViewMode = appProp.getProperty(ScannerProperties.PROP_DETAILED_VIEW_SCREEN, ScannerProperties.PROP_DETAILED_VIEW_SCREEN_DEFAULT);
+		String detailsViewMode = appProp.getProperty(ScannerProperties.PROP_DETAILED_VIEW_SCREEN/*, ScannerProperties.PROP_DETAILED_VIEW_SCREEN_DEFAULT*/);
 		if(detailsViewMode.equals(ScannerProperties.PROP_DETAILED_VIEW_SCREEN_FULL)) {
 			rdbtnDetailedViewFull.setSelected(true);
 		} else if(detailsViewMode.equals(ScannerProperties.PROP_DETAILED_VIEW_SCREEN_HORIZONTAL)) {
@@ -390,7 +390,7 @@ public class PanelGUI extends JPanel {
 		gbc_lblNewLabel_4.gridy = 15;
 		add(lblNewLabel_4, gbc_lblNewLabel_4);
 		
-		csvTextField = new JTextField(appProp.getProperty(ScannerProperties.PROP_CSV_SEPARATOR, ScannerProperties.PROP_CSV_SEPARATOR_DEFAULT));
+		csvTextField = new JTextField(appProp.getProperty(ScannerProperties.PROP_CSV_SEPARATOR/*, ScannerProperties.PROP_CSV_SEPARATOR_DEFAULT*/));
 		GridBagConstraints gbc_csvTextField = new GridBagConstraints();
 		gbc_csvTextField.anchor = GridBagConstraints.WEST;
 		gbc_csvTextField.insets = new Insets(0, 0, 5, 5);

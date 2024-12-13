@@ -97,19 +97,6 @@ public class Webhooks {
 		String typeIdxOld[] = storedKey.split(":");
 		String typeIdxNew[] = newKey.split(":");
 		restore(parent, typeIdxOld[0], Integer.parseInt(typeIdxOld[1]), Integer.parseInt(typeIdxNew[1]), delay, storedWH, errors);
-//		for(JsonNode ac: storedWH.get("hooks")) {
-//			if(ac.get("cid").intValue() == Integer.parseInt(typeIdxOld[1]) && ac.get("event").textValue().startsWith(typeIdxOld[0] + ".")) {
-//				ObjectNode thisAction = (ObjectNode)ac.deepCopy();
-//				thisAction.remove("id");
-//				thisAction.put("cid", Integer.parseInt(typeIdxNew[1]));
-//				TimeUnit.MILLISECONDS.sleep(delay);
-//				String ret =  parent.postCommand("Webhook.Create", thisAction);
-//				if(ret != null) {
-//					ret = "Action \"" + ac.path("name").asText("") + "\" - error: " + ret;
-//				}
-//				errors.add(ret);
-//			}
-//		}
 	}
 	
 	public static void restore(AbstractG2Device parent, String eventType, int storedCid, int newCid, long delay, JsonNode storedWH, ArrayList<String> errors) throws InterruptedException {

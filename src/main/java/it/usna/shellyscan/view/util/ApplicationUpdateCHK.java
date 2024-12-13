@@ -58,7 +58,7 @@ public class ApplicationUpdateCHK {
 	 * This call manages (read/write) IGNORE_VERION_DOWNLOAD parameter
 	 */
 	public static void checkForUpdates(final Window w, final AppProperties appProp) {
-		String mode = appProp.getProperty(ScannerProperties.PROP_UPDATECHK_ACTION, ScannerProperties.PROP_UPDATECHK_ACTION_DEFAULT);
+		String mode = appProp.getProperty(ScannerProperties.PROP_UPDATECHK_ACTION/*, ScannerProperties.PROP_UPDATECHK_ACTION_DEFAULT*/);
 		if(mode.equals("NEVER") == false) {
 			w.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 			try {
