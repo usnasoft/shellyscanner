@@ -12,6 +12,7 @@ import java.awt.KeyboardFocusManager;
 import java.awt.Window;
 import java.io.IOException;
 import java.util.EventObject;
+import java.util.Locale;
 import java.util.MissingResourceException;
 
 import javax.swing.AbstractCellEditor;
@@ -98,8 +99,10 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 	
 	private final Color selBackground;
 	private final Color selForeground;
+	
+	private boolean tempUnitCelsius;
 
-	public DevicesCommandCellEditor(JTable table) {
+	public DevicesCommandCellEditor(JTable table, boolean celsius) {
 		this.selBackground = table.getSelectionBackground();
 		this.selForeground = table.getSelectionForeground();
 		
@@ -464,15 +467,19 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 		thermPanel.add(thermButtonPanel, BorderLayout.EAST);
 		thermProfileLabel.setForeground(selForeground);
 		thermSlider.addChangeListener(e -> {
-			if(edited != null && edited instanceof ThermostatInterface th) {
+			if(edited != null && edited instanceof ThermostatInterface[] th) {
 				if(thermSlider.getValueIsAdjusting()) {
-					thermProfileLabel.setText(/*th.getCurrentProfile() + " " +*/ ((float)thermSlider.getValue()) / th.getUnitDivision() + "°C");
+					if(tempUnitCelsius) {
+						thermProfileLabel.setText(/*thermostat.getCurrentProfile() + " " +*/ ((float)thermSlider.getValue()) / th[0].getUnitDivision() + "°C");
+					} else {
+						thermProfileLabel.setText(/*thermostat.getCurrentProfile() + " " +*/ String.format(Locale.ENGLISH, "%.1f°F", (((float)thermSlider.getValue()) / th[0].getUnitDivision()) * 1.8f + 32f));
+					}
 				} else {
-					if(edited instanceof AbstractBluDevice) {
+					if(th[0] instanceof AbstractBluDevice) {
 						table.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 					}
 					try {
-						th.setTargetTemp(((float)thermSlider.getValue()) / th.getUnitDivision());
+						th[0].setTargetTemp(((float)thermSlider.getValue()) / th[0].getUnitDivision());
 					} catch (/*IO*/Exception ex) {
 						LOG.error("thermSlider", ex);
 					}
@@ -482,12 +489,12 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 			}
 		});
 		thermActiveButton.addActionListener(e -> {
-			if(edited != null && edited instanceof ThermostatInterface th) {
-				if(edited instanceof AbstractBluDevice) {
+			if(edited != null && edited instanceof ThermostatInterface[] th) {
+				if(th[0] instanceof AbstractBluDevice) {
 					table.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 				}
 				try {
-					th.setEnabled(th.isEnabled() == false); // toggle
+					th[0].setEnabled(th[0].isEnabled() == false); // toggle
 				} catch (/*IO*/Exception ex) {
 					LOG.error("thermActiveButton", ex);
 				}
@@ -496,12 +503,12 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 			}
 		});
 		thermButtonUp.addActionListener(e -> {
-			if(edited != null && edited instanceof ThermostatInterface th && th.getTargetTemp() < th.getMaxTargetTemp()) {
-				if(edited instanceof AbstractBluDevice) {
+			if(edited != null && edited instanceof ThermostatInterface[] th && th[0].getTargetTemp() < th[0].getMaxTargetTemp()) {
+				if(th[0] instanceof AbstractBluDevice) {
 					table.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 				}
 				try {
-					th.setTargetTemp(Math.round(10 * th.getTargetTemp() + 10f / th.getUnitDivision()) / 10f);
+					th[0].setTargetTemp(Math.round(10 * th[0].getTargetTemp() + 10f / th[0].getUnitDivision()) / 10f);
 				} catch (/*IO*/Exception ex) {
 					LOG.error("thermButtonUp", ex);
 				}
@@ -510,12 +517,12 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 			}
 		});
 		thermButtonDown.addActionListener(e -> {
-			if(edited != null && edited instanceof ThermostatInterface th && th.getTargetTemp() > th.getMinTargetTemp()) {
-				if(edited instanceof AbstractBluDevice) {
+			if(edited != null && edited instanceof ThermostatInterface[] th && th[0].getTargetTemp() > th[0].getMinTargetTemp()) {
+				if(th[0] instanceof AbstractBluDevice) {
 					table.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 				}
 				try {
-					th.setTargetTemp(Math.round(10 * th.getTargetTemp() - 10f / th.getUnitDivision()) / 10f);
+					th[0].setTargetTemp(Math.round(10 * th[0].getTargetTemp() - 10f / th[0].getUnitDivision()) / 10f);
 				} catch (/*IO*/Exception ex) {
 					LOG.error("thermButtonDown", ex);
 				}
@@ -562,7 +569,7 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 		} else if(value instanceof ThermostatG1 th) { // TRV
 			return getTrvG1Panel(th);
 		} else if(value instanceof ThermostatInterface[] ths) {
-			return getThermostatPanel(ths[0]);
+			return getThermostatPanel(ths);
 		} else if(value instanceof DeviceModule[] modArray) { // mixed
 			stackedPanel.removeAll();
 			for(DeviceModule module: modArray) {
@@ -760,11 +767,16 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 		return trvPanel;
 	}
 	
-	private Component getThermostatPanel(ThermostatInterface thermostat) {
+	private Component getThermostatPanel(ThermostatInterface therm[]) {
+		ThermostatInterface thermostat = therm[0];
 		thermSlider.setMinimum((int)(thermostat.getMinTargetTemp() * thermostat.getUnitDivision()));
 		thermSlider.setMaximum((int)(thermostat.getMaxTargetTemp() * thermostat.getUnitDivision()));
 		thermSlider.setValue((int)(thermostat.getTargetTemp() * thermostat.getUnitDivision()));
-		thermProfileLabel.setText(/*thermostat.getCurrentProfile() + " " +*/ thermostat.getTargetTemp() + "°C");
+		if(tempUnitCelsius) {
+			thermProfileLabel.setText(/*thermostat.getCurrentProfile() + " " +*/ thermostat.getTargetTemp() + "°C");
+		} else {
+			thermProfileLabel.setText(/*thermostat.getCurrentProfile() + " " +*/ String.format(Locale.ENGLISH, "%.1f°F", thermostat.getTargetTemp() * 1.8f + 32f));
+		}
 		if(thermostat.isEnabled()) {
 			thermActiveButton.setText(DevicesCommandCellRenderer.LABEL_ON);
 			thermActiveButton.setBackground(DevicesCommandCellRenderer.BUTTON_ON_BG_COLOR);
@@ -776,7 +788,7 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 			thermProfileLabel.setEnabled(false);
 			thermActiveButton.setForeground(null);
 		}
-		edited = thermostat;
+		edited = therm;
 		return thermPanel;
 	}
 	
@@ -855,5 +867,9 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 	@Override
 	public boolean isCellEditable(EventObject anEvent) {
 		return true;
+	}
+	
+	public void setTempUnit(boolean celsius) {
+		tempUnitCelsius = celsius;
 	}
 }

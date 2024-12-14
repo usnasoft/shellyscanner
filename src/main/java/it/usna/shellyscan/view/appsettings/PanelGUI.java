@@ -288,11 +288,11 @@ public class PanelGUI extends JPanel {
 		updCHKGroup.add(updStableCHK);
 		updCHKGroup.add(updBetaCHK);
 		String updChkMode = appProp.getProperty(ScannerProperties.PROP_UPDATECHK_ACTION/*, ScannerProperties.PROP_UPDATECHK_ACTION_DEFAULT*/);
-		if(updChkMode.equals("NEVER")) {
+		if(updChkMode.equals(ScannerProperties.PROP_UPDATECHK_NEVER)) {
 			updNoCHK.setSelected(true);
-		} else if(updChkMode.equals("STABLE")) {
+		} else if(updChkMode.equals(ScannerProperties.PROP_UPDATECHK_STABLE)) {
 			updStableCHK.setSelected(true);
-		} else {
+		} else { // ScannerProperties.PROP_UPDATECHK_DEV
 			updBetaCHK.setSelected(true);
 		}
 		

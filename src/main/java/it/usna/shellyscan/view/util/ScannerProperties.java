@@ -28,7 +28,9 @@ public class ScannerProperties extends AppProperties { // cannot also extend Usn
 	private final static String PROP_TEMP_UNIT_DEFAULT = "C";
 	
 	public final static String PROP_UPDATECHK_ACTION = "UPDATE_CHK";
-	private final static String PROP_UPDATECHK_ACTION_DEFAULT = "STABLE";
+	public final static String PROP_UPDATECHK_NEVER = "NEVER";
+	public final static String PROP_UPDATECHK_STABLE = "STABLE";
+	public final static String PROP_UPDATECHK_DEV = "BETA";
 	
 	public final static String PROP_CHARTS_START = "CHART_DEF";
 	public final static String PROP_CHARTS_EXPORT = "CHART_EXPORT";
@@ -87,7 +89,7 @@ public class ScannerProperties extends AppProperties { // cannot also extend Usn
 		defaultProperty(PROP_DCLICK_ACTION, PROP_DCLICK_ACTION_DEFAULT);
 		defaultProperty(PROP_TEMP_UNIT, PROP_TEMP_UNIT_DEFAULT);
 		defaultProperty(PROP_UPTIME_MODE, PROP_UPTIME_MODE_DEFAULT);
-		defaultProperty(PROP_UPDATECHK_ACTION, PROP_UPDATECHK_ACTION_DEFAULT);
+		defaultProperty(PROP_UPDATECHK_ACTION, PROP_UPDATECHK_DEV);
 		defaultProperty(PROP_DETAILED_VIEW_SCREEN, PROP_DETAILED_VIEW_SCREEN_FULL);
 		defaultIntProperty(PROP_REFRESH_ITERVAL, PROP_REFRESH_ITERVAL_DEFAULT);
 		defaultIntProperty(PROP_REFRESH_CONF, PROP_REFRESH_CONF_DEFAULT);

@@ -99,14 +99,16 @@ public class DevicesTable extends ExTooltipTable {
 
 	private boolean adaptTooltipLocation = false;
 	
+	private boolean tempUnitCelsius;
+	
 	private final static Logger LOG = LoggerFactory.getLogger(DevicesTable.class);
 
 	public DevicesTable(TableModel tm) {
 		super(tm, true);
-		boolean celsius = ScannerProperties.instance().getProperty(ScannerProperties.PROP_TEMP_UNIT).equals("C");
+		tempUnitCelsius = ScannerProperties.instance().getProperty(ScannerProperties.PROP_TEMP_UNIT).equals("C");
 		columnModel.getColumn(COL_STATUS_IDX).setMaxWidth(ONLINE_BULLET.getIconWidth() + 4);
-		columnModel.getColumn(COL_MEASURES_IDX).setCellRenderer(new DeviceMetersCellRenderer());
-		columnModel.getColumn(COL_INT_TEMP).setCellRenderer(celsius ? new DecimalTableCellRenderer(2) : new FahrenheitTableCellRenderer());
+		columnModel.getColumn(COL_MEASURES_IDX).setCellRenderer(new DeviceMetersCellRenderer(tempUnitCelsius));
+		columnModel.getColumn(COL_INT_TEMP).setCellRenderer(tempUnitCelsius ? new DecimalTableCellRenderer(2) : new FahrenheitTableCellRenderer());
 		DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
 		centerRenderer.setHorizontalAlignment(JLabel.CENTER);
 		columnModel.getColumn(COL_CLOUD).setCellRenderer(centerRenderer);
@@ -115,8 +117,8 @@ public class DevicesTable extends ExTooltipTable {
 		columnModel.getColumn(COL_DEBUG).setCellRenderer(centerRenderer);
 		columnModel.getColumn(COL_SOURCE_IDX).setCellRenderer(new ArrayTableCellRenderer());
 		final TableColumn colCommand = columnModel.getColumn(COL_COMMAND_IDX);
-		colCommand.setCellRenderer(new DevicesCommandCellRenderer());
-		colCommand.setCellEditor(new DevicesCommandCellEditor(this));
+		colCommand.setCellRenderer(new DevicesCommandCellRenderer(tempUnitCelsius));
+		colCommand.setCellEditor(new DevicesCommandCellEditor(this, tempUnitCelsius));
 
 		TableRowSorter<?> sorter = (TableRowSorter<?>)getRowSorter();
 		
@@ -198,6 +200,17 @@ public class DevicesTable extends ExTooltipTable {
 	
 	public void setUptimeRenderMode(String mode) {
 		uptimeRenderer.setMode(mode);
+		((UsnaTableModel)getModel()).fireTableDataChanged();
+		columnsWidthAdapt();
+	}
+	
+	public void setTempRenderMode(boolean celsius) {
+		this.tempUnitCelsius = celsius;
+		columnModel.getColumn(convertColumnIndexToView(COL_INT_TEMP)).setCellRenderer(celsius ? new DecimalTableCellRenderer(2) : new FahrenheitTableCellRenderer());
+		((DeviceMetersCellRenderer)columnModel.getColumn(convertColumnIndexToView(COL_MEASURES_IDX)).getCellRenderer()).setTempUnit(celsius);
+		((DevicesCommandCellRenderer)columnModel.getColumn(convertColumnIndexToView(COL_COMMAND_IDX)).getCellRenderer()).setTempUnit(celsius);
+		((DevicesCommandCellEditor)columnModel.getColumn(convertColumnIndexToView(COL_COMMAND_IDX)).getCellEditor()).setTempUnit(celsius);
+		((UsnaTableModel)getModel()).fireTableDataChanged();
 	}
 
 	@Override
@@ -241,7 +254,13 @@ public class DevicesTable extends ExTooltipTable {
 						for(Meters.Type t: m.getTypes()) {
 							final String name = m.getName(t);
 							final String tLabel = (name != null && name.isEmpty() == false) ? " (" + name + ")": "";
-							if(t == Meters.Type.EX) {
+							if(t == Meters.Type.T || t == Meters.Type.T1 || t == Meters.Type.T2 || t == Meters.Type.T3 || t == Meters.Type.T4) {
+								if(tempUnitCelsius) {
+									tt += "<td><i>" + LABELS.getString("METER_LBL_" + t) + tLabel + "</i>&nbsp;</td><td align='right'>" + String.format(Locale.ENGLISH, LABELS.getString("METER_VAL_T"), m.getValue(t)) + "&nbsp;</td>";
+								} else { // fahrenheit 
+									tt += "<td><i>" + LABELS.getString("METER_LBL_" + t) + tLabel + "</i>&nbsp;</td><td align='right'>" + String.format(Locale.ENGLISH, LABELS.getString("METER_VAL_T_F"), m.getValue(t) * 1.8f + 32f) + "&nbsp;</td>";
+								}
+							} else if(t == Meters.Type.EX) {
 								tt += "<td><i>" + LABELS.getString("METER_LBL_" + t) + tLabel + "</i>&nbsp;</td><td align='right'>" + SWITCH_FORMATTER.format(new Object [] {m.getValue(t)}) + "&nbsp;</td>";
 							} else {
 								tt += "<td><i>" + LABELS.getString("METER_LBL_" + t) + tLabel + "</i>&nbsp;</td><td align='right'>" + String.format(Locale.ENGLISH, LABELS.getString("METER_VAL_" + t), m.getValue(t)) + "&nbsp;</td>";
