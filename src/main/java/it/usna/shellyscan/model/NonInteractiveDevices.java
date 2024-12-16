@@ -20,6 +20,7 @@ import javax.jmdns.ServiceInfo;
 
 import org.eclipse.jetty.client.ContentResponse;
 import org.eclipse.jetty.client.HttpClient;
+import org.eclipse.jetty.http.HttpMethod;
 import org.eclipse.jetty.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,7 +30,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
+import it.usna.shellyscan.model.device.blu.AbstractBluDevice;
+import it.usna.shellyscan.model.device.blu.BluTRV;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
+import it.usna.shellyscan.model.device.g2.AbstractProDevice;
+import it.usna.shellyscan.model.device.g3.AbstractG3Device;
 
 /**
  * Devices model intended for CLI non iteractive use
@@ -161,18 +166,19 @@ public class NonInteractiveDevices implements Closeable {
 	}
 
 	private JsonNode isShelly(final InetAddress address, int port) throws TimeoutException {
+		// if(name.startsWith("shelly") || name.startsWith("Shelly")) { // Shelly X devices can have different names
 		try {
-			ContentResponse response = httpClient.newRequest("http://" + address.getHostAddress() + ":" + port + "/shelly").timeout(15, TimeUnit.SECONDS).send();
-			JsonNode shellyNode = JSON_MAPPER.readTree(response.getContent());
+			ContentResponse response = httpClient.newRequest("http://" + address.getHostAddress() + ":" + port + "/shelly").timeout(80, TimeUnit.SECONDS).method(HttpMethod.GET).send();
+			JsonNode shellyNode = null;// = JSON_MAPPER.readTree(response.getContent());
 			int resp = response.getStatus();
-			if(resp == HttpStatus.OK_200 && shellyNode.has("mac")) { // "mac" is common to all shelly devices
+			if(resp == HttpStatus.OK_200 && (shellyNode = JSON_MAPPER.readTree(response.getContent())).has("mac")) { // "mac" is common to all shelly devices
 				return shellyNode;
 			} else {
-				LOG.trace("Not Shelly {}, resp {}, node ()", address, resp, shellyNode);
+				LOG.trace("Not Shelly {}, status {}, node {}", address, resp, shellyNode);
 				return null;
 			}
-		} catch (InterruptedException | ExecutionException | IOException e) {
-			LOG.trace("Not Shelly {} - {}", address, e);
+		} catch (InterruptedException | ExecutionException | IOException e) { // SocketTimeoutException extends IOException
+			LOG.trace("Not Shelly {} - {}", address, port, e);
 			return null;
 		}
 	}
@@ -201,36 +207,74 @@ public class NonInteractiveDevices implements Closeable {
 		LOG.debug("end scan");
 	}
 
-	private void create(InetAddress address, int port, JsonNode info, String hostName, Consumer<ShellyAbstractDevice> c) {
-		LOG.trace("Creating {} - {}", address, hostName);
+//	private void create(InetAddress address, int port, JsonNode info, String hostName, Consumer<ShellyAbstractDevice> c) {
+//		LOG.trace("Creating {} - {}", address, hostName);
+//		try {
+//			ShellyAbstractDevice d = DevicesFactory.create(httpClient, /*wsClient*/null, address, port, info, hostName);
+//			if(devices.contains(d) == false) {
+//				devices.add(d);
+//				c.accept(d);
+//				LOG.debug("Create {} - {}", address, d);
+//
+//				if(d instanceof AbstractG2Device gen2 && (gen2.isExtender() || d.getStatus() == Status.NOT_LOOGGED)) {
+//					((AbstractG2Device)d).getRangeExtenderManager().getPorts().forEach(p -> {
+//						try {
+//							//							executor.execute(() -> {
+//							try {
+//								JsonNode infoEx = isShelly(address, p);
+//								if(infoEx != null) {
+//									create(d.getAddressAndPort().getAddress(), p, infoEx, d.getHostname() + "-EX" + ":" + p, c); // fillOnce will later correct hostname
+//								}
+//							} catch (TimeoutException | RuntimeException e) {
+//								LOG.debug("timeout {}:{}", d.getAddressAndPort().getAddress(), p, e);
+//							}
+//							//							});
+//						} catch(RuntimeException e) {
+//							LOG.error("Unexpected-add-ext: {}; host: {}:{}", address, hostName, p, e);
+//						}
+//					});
+//				}
+//			}
+//		} catch(Exception e) {
+//			LOG.error("Unexpected-add: {}; host: {}", address, hostName, e);
+//		}
+//	}
+	
+	private void create(InetAddress address, int port, JsonNode info, String hostName, Consumer<ShellyAbstractDevice> consumer) {
+		LOG.trace("Creating {}:{} - {}", address, port, hostName);
 		try {
 			ShellyAbstractDevice d = DevicesFactory.create(httpClient, /*wsClient*/null, address, port, info, hostName);
 			if(devices.contains(d) == false) {
 				devices.add(d);
-				c.accept(d);
-				LOG.debug("Create {} - {}", address, d);
+				LOG.debug("Create {}:{} - {}", address, port, d);
 
-				if(d instanceof AbstractG2Device gen2 && (gen2.isExtender() || d.getStatus() == Status.NOT_LOOGGED)) {
-					((AbstractG2Device)d).getRangeExtenderManager().getPorts().forEach(p -> {
+				// Rage extender
+				if(/*port == 80 &&*/ d instanceof AbstractG2Device gen2 && (gen2.isExtender() || gen2.getStatus() == Status.NOT_LOOGGED)) {
+					gen2.getRangeExtenderManager().getPorts().forEach(p -> {
 						try {
-							//							executor.execute(() -> {
-							try {
-								JsonNode infoEx = isShelly(address, p);
-								if(infoEx != null) {
-									create(d.getAddressAndPort().getAddress(), p, infoEx, d.getHostname() + "-EX" + ":" + p, c); // fillOnce will later correct hostname
-								}
-							} catch (TimeoutException | RuntimeException e) {
-								LOG.debug("timeout {}:{}", d.getAddressAndPort().getAddress(), p, e);
+							JsonNode infoEx = isShelly(address, p);
+							if(infoEx != null) {
+								create(d.getAddressAndPort().getAddress(), p, infoEx, d.getHostname() + "-EX" + ":" + p, consumer); // device will later correct hostname
 							}
-							//							});
-						} catch(RuntimeException e) {
-							LOG.error("Unexpected-add-ext: {}; host: {}:{}", address, hostName, p, e);
+						} catch (TimeoutException | RuntimeException e) {
+							LOG.debug("timeout {}:{}", d.getAddressAndPort().getAddress(), p, e);
 						}
 					});
 				}
+				// BTHome (BLU)
+				if(d instanceof AbstractProDevice || d instanceof AbstractG3Device) {
+					final JsonNode currenteComponents = d.getJSON("/rpc/Shelly.GetComponents?dynamic_only=true").path("components"); // empty on 401
+					for(JsonNode compInfo: currenteComponents) {
+						String key = compInfo.path("key").asText();
+						if(key.startsWith(AbstractBluDevice.DEVICE_KEY_PREFIX) || key.startsWith(BluTRV.DEVICE_KEY_PREFIX)) {
+							AbstractBluDevice newBlu = DevicesFactory.createBlu((AbstractG2Device)d, httpClient, /*wsClient,*/ compInfo, key);
+							consumer.accept(newBlu);
+						}
+					}
+				}
 			}
 		} catch(Exception e) {
-			LOG.error("Unexpected-add: {}; host: {}", address, hostName, e);
+			LOG.error("Unexpected-add: {}:{}; host: {}", address, port, hostName, e);
 		}
 	}
 

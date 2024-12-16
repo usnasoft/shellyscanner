@@ -205,7 +205,6 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 		}
 	}
 
-
 	public void rescan(boolean useStore) throws IOException {
 		LOG.trace("rescan");
 		List<GhostDevice> ghosts = null;
