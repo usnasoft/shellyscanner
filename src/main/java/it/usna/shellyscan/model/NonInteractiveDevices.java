@@ -49,9 +49,6 @@ public class NonInteractiveDevices implements Closeable {
 	private Set<JmDNS> bjServices = new HashSet<>();
 
 	private IPCollection ipCollection = null;
-//	private byte[] baseScanIP;
-//	private int lowerIP;
-//	private int higherIP;
 
 	private final static String SERVICE_TYPE1 = "_http._tcp.local.";
 //	private final static String SERVICE_TYPE2 = "_shelly._tcp.local.";
@@ -93,45 +90,9 @@ public class NonInteractiveDevices implements Closeable {
 	}
 
 	public void scannerInit(IPCollection ipCollection) throws IOException {
-//		this.baseScanIP = ip;
-//		this.lowerIP = first;
-//		this.higherIP = last;
 		this.ipCollection = ipCollection;
 		LOG.debug("IP scan: {}", ipCollection);
-//		scanByIP();
 	}
-
-//	private void scanByIP(Consumer<ShellyAbstractDevice> c) throws IOException {
-//		ScheduledExecutorService executor = Executors.newScheduledThreadPool(EXECUTOR_POOL_SIZE);
-//		try {
-//			for(int dalay = 0, ip4 = lowerIP; ip4 <= higherIP; dalay +=4, ip4++) {
-//				baseScanIP[3] = (byte)ip4;
-//				final InetAddress addr = InetAddress.getByAddress(baseScanIP);
-//				executor.schedule(() -> {
-//					try {
-//						if(addr.isReachable(5_000)) {
-//							Thread.sleep(Devices.MULTI_QUERY_DELAY);
-//							JsonNode info = isShelly(addr, 80);
-//							if(info != null) {
-//								Thread.sleep(Devices.MULTI_QUERY_DELAY);
-//								create(addr, 80, info, addr.getHostAddress(), c);
-//							}
-//						} else {
-//							LOG.trace("no ping {}", addr);
-//						}
-//					} catch (TimeoutException e) {
-//						LOG.trace("timeout {}", addr);
-//					} catch (IOException | InterruptedException e) {
-//						LOG.error("ip scan error {} {}", addr, e.toString());
-//					}
-//				}, dalay, TimeUnit.MILLISECONDS);
-//			}
-//			executor.shutdown();
-//			executor.awaitTermination(60, TimeUnit.MINUTES);
-//		} catch (Exception e) {
-//			LOG.error("ip scan error {}", e.toString());
-//		}
-//	}
 	
 	private void scanByIP(Consumer<ShellyAbstractDevice> c) throws IOException {
 		ScheduledExecutorService executor = Executors.newScheduledThreadPool(EXECUTOR_POOL_SIZE);
@@ -206,39 +167,6 @@ public class NonInteractiveDevices implements Closeable {
 		}
 		LOG.debug("end scan");
 	}
-
-//	private void create(InetAddress address, int port, JsonNode info, String hostName, Consumer<ShellyAbstractDevice> c) {
-//		LOG.trace("Creating {} - {}", address, hostName);
-//		try {
-//			ShellyAbstractDevice d = DevicesFactory.create(httpClient, /*wsClient*/null, address, port, info, hostName);
-//			if(devices.contains(d) == false) {
-//				devices.add(d);
-//				c.accept(d);
-//				LOG.debug("Create {} - {}", address, d);
-//
-//				if(d instanceof AbstractG2Device gen2 && (gen2.isExtender() || d.getStatus() == Status.NOT_LOOGGED)) {
-//					((AbstractG2Device)d).getRangeExtenderManager().getPorts().forEach(p -> {
-//						try {
-//							//							executor.execute(() -> {
-//							try {
-//								JsonNode infoEx = isShelly(address, p);
-//								if(infoEx != null) {
-//									create(d.getAddressAndPort().getAddress(), p, infoEx, d.getHostname() + "-EX" + ":" + p, c); // fillOnce will later correct hostname
-//								}
-//							} catch (TimeoutException | RuntimeException e) {
-//								LOG.debug("timeout {}:{}", d.getAddressAndPort().getAddress(), p, e);
-//							}
-//							//							});
-//						} catch(RuntimeException e) {
-//							LOG.error("Unexpected-add-ext: {}; host: {}:{}", address, hostName, p, e);
-//						}
-//					});
-//				}
-//			}
-//		} catch(Exception e) {
-//			LOG.error("Unexpected-add: {}; host: {}", address, hostName, e);
-//		}
-//	}
 	
 	private void create(InetAddress address, int port, JsonNode info, String hostName, Consumer<ShellyAbstractDevice> consumer) {
 		LOG.trace("Creating {}:{} - {}", address, port, hostName);
@@ -246,6 +174,7 @@ public class NonInteractiveDevices implements Closeable {
 			ShellyAbstractDevice d = DevicesFactory.create(httpClient, /*wsClient*/null, address, port, info, hostName);
 			if(devices.contains(d) == false) {
 				devices.add(d);
+				consumer.accept(d);
 				LOG.debug("Create {}:{} - {}", address, port, d);
 
 				// Rage extender

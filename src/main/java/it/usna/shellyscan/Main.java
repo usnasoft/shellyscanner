@@ -199,7 +199,7 @@ public class Main {
 				String gPar = cli.getParameter(cliIndex);
 				if(gPar != null) {
 					try {
-						NonInteractiveMeasuresChart chartW = new NonInteractiveMeasuresChart(model, ChartType.valueOf(gPar));
+						NonInteractiveMeasuresChart chartW = new NonInteractiveMeasuresChart(model, ChartType.valueOf(gPar), appProp);
 						model.addListener(chartW);
 						// do not activateGUI
 					} catch(IllegalArgumentException e) { // not a valid chart type

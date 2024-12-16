@@ -5,7 +5,7 @@ import static it.usna.shellyscan.Main.LABELS;
 import it.usna.shellyscan.model.device.Meters;
 
 public enum ChartType {
-	INT_TEMP("dlgChartsIntTempLabel", "dlgChartsIntTempYLabel"),
+	INT_TEMP("dlgChartsIntTempLabel", "dlgChartsTempYLabel"),
 	RSSI("dlgChartsRSSILabel", "dlgChartsRSSIYLabel"),
 	P("dlgChartsAPowerLabel", "dlgChartsAPowerYLabel", Meters.Type.W),
 	P_SUM("dlgChartsAPowerSumLabel", "dlgChartsAPowerYLabel"),
