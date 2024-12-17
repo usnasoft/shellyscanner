@@ -8,7 +8,7 @@ import java.awt.Component;
 import java.awt.Desktop;
 import java.awt.FlowLayout;
 import java.awt.Font;
-import java.awt.Window;
+import java.awt.Frame;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -22,12 +22,14 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import javax.swing.AbstractButton;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
@@ -68,6 +70,7 @@ import it.usna.shellyscan.model.device.g1.AbstractG1Device;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.g2.RangeExtenderManager;
 import it.usna.shellyscan.model.device.g2.modules.WIFIManagerG2;
+import it.usna.shellyscan.view.devsettings.DialogDeviceSettings;
 import it.usna.shellyscan.view.util.Msg;
 import it.usna.shellyscan.view.util.ScannerProperties;
 import it.usna.shellyscan.view.util.ScannerProperties.PropertyEvent;
@@ -105,7 +108,7 @@ public class CheckList extends JDialog implements UsnaEventListener<Devices.Even
 	private final UsnaTableModel tModel;
 	private ScheduledExecutorService exeService /* = Executors.newFixedThreadPool(20) */;
 
-	public CheckList(final Window owner, Devices appModel, int[] devicesInd, final SortOrder ipSort) {
+	public CheckList(final Frame owner, Devices appModel, int[] devicesInd, final SortOrder ipSort) {
 		super(owner, LABELS.getString("dlgChecklistTitle"));
 		this.appModel = appModel;
 		this.devicesInd = devicesInd;
@@ -235,7 +238,7 @@ public class CheckList extends JDialog implements UsnaEventListener<Devices.Even
 		}, modelRow -> {
 			ShellyAbstractDevice d = getLocalDevice(modelRow);
 			d.setStatus(Status.READING);
-			tModel.setValueAt(DevicesTable.UPDATING_BULLET, modelRow, DevicesTable.COL_STATUS_IDX);
+			tModel.setValueAt(DevicesTable.UPDATING_BULLET, modelRow, COL_STATUS);
 			SwingUtilities.invokeLater(() -> appModel.reboot(devicesInd[modelRow]));
 		});
 
@@ -248,14 +251,14 @@ public class CheckList extends JDialog implements UsnaEventListener<Devices.Even
 		});
 		
 		UsnaAction refreshAction = new UsnaAction(this, "labelRefresh", "labelRefresh", null, "/images/Refresh24.png");
-		refreshAction.setActionListener(i -> {
+		refreshAction.setActionListener(e -> {
 			tModel.clear();
 			refreshAction.setEnabled(false);
 			fill();
 			exeService.schedule(() -> refreshAction.setEnabled(true), 600, TimeUnit.MILLISECONDS);
 		});
-		
-		Action helpAction = new UsnaAction(this, "helpBtnTooltip", "helpBtnTooltip", null, "/images/Question24.png", i -> {
+
+		Action helpAction = new UsnaAction(this, "helpBtnTooltip", "helpBtnTooltip", null, "/images/Question24.png", e -> {
 			try {
 				Desktop.getDesktop().browse(URI.create(LABELS.getString("dlgChecklistManualUrl")));
 			} catch (IOException | UnsupportedOperationException ex) {
@@ -300,7 +303,6 @@ public class CheckList extends JDialog implements UsnaEventListener<Devices.Even
 		table.getSelectionModel().addListSelectionListener(selListener);
 		selListener.valueChanged(new ListSelectionEvent(table.getSelectionModel(), -1, -1, false));
 
-		UsnaPopupMenu tablePopup = new UsnaPopupMenu(ecoModeAction, ledAction, logsAction, bleAction, apModeAction, roamingAction, rangeExtenderAction, null, browseAction, rebootAction);
 		table.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mousePressed(MouseEvent evt) {
@@ -317,10 +319,30 @@ public class CheckList extends JDialog implements UsnaEventListener<Devices.Even
 			}
 			
 			private void doPopup(MouseEvent evt) {
-				final int r;
-				if (evt.isPopupTrigger() && (r = table.rowAtPoint(evt.getPoint())) >= 0) {
-					if(table.isRowSelected(r) == false) {
-						table.setRowSelectionInterval(r, r);
+				final int row;
+				if (evt.isPopupTrigger() && (row = table.rowAtPoint(evt.getPoint())) >= 0) {
+					UsnaPopupMenu tablePopup = null;
+					if(table.isRowSelected(row) == false) {
+						table.setRowSelectionInterval(row, row);
+					}
+					int col = table.convertColumnIndexToModel(table.columnAtPoint(evt.getPoint()));
+					if(col == COL_WIFI1 || col == COL_WIFI2) {
+						UsnaAction wifiEditAction = new UsnaAction(CheckList.this, "edit", null, null, null);
+						wifiEditAction.setActionListener(e -> {
+							int devIdx[] = IntStream.of(table.getSelectedModelRows()).map(i -> devicesInd[i]).toArray();
+							DialogDeviceSettings w = new DialogDeviceSettings(CheckList.this, appModel, devIdx, (col == COL_WIFI1) ? DialogDeviceSettings.WIFI1 : DialogDeviceSettings.WIFI2);
+							w.addPropertyChangeListener("S_APPLY", propertyChangeEvent -> {
+								try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e1) {}
+								for(int localRow: table.getSelectedModelRows()) {
+									table.setValueAt(DevicesTable.UPDATING_BULLET, localRow, COL_STATUS);
+									updateRow(getLocalDevice(localRow), localRow);
+								}
+							});
+						});
+						wifiEditAction.putValue(Action.NAME, LABELS.getString("edit") + " (" + tModel.getColumnName(col) + ")");
+						tablePopup = new UsnaPopupMenu(ecoModeAction, ledAction, logsAction, bleAction, apModeAction, roamingAction, rangeExtenderAction, wifiEditAction, null, browseAction, rebootAction);
+					} else {
+						tablePopup = new UsnaPopupMenu(ecoModeAction, ledAction, logsAction, bleAction, apModeAction, roamingAction, rangeExtenderAction, null, browseAction, rebootAction);
 					}
 					tablePopup.show(table, evt.getX(), evt.getY());
 				}
@@ -442,7 +464,7 @@ public class CheckList extends JDialog implements UsnaEventListener<Devices.Even
 	}
 	
 	private void updateHideCaptions() {
-		boolean en = properties.getBoolProperty(ScannerProperties.PROP_TOOLBAR_CAPTIONS/*, true*/) == false;
+		boolean en = properties.getBoolProperty(ScannerProperties.PROP_TOOLBAR_CAPTIONS) == false;
 		Stream.of(toolBar.getComponents()).filter(c -> c instanceof AbstractButton).forEach(b -> ((AbstractButton)b).setHideActionText(en));
 	}
 
@@ -660,10 +682,18 @@ public class CheckList extends JDialog implements UsnaEventListener<Devices.Even
 			try {
 				final int localRow = getLocalIndex(pos);
 				if (localRow >= 0 /*&& tModel.getValueAt(index, COL_STATUS) !=  DevicesTable.UPDATING_BULLET*/) {
-					final int i1 = table.getSelectionModel().getAnchorSelectionIndex();
-					tModel.setValueAt(DevicesTable.getStatusIcon(appModel.get(pos)), localRow, COL_STATUS);
-//					table.getRowSorter().allRowsChanged();
-					table.getSelectionModel().setAnchorSelectionIndex(i1);
+					ShellyAbstractDevice device = appModel.get(pos);
+					ImageIcon oldStatusIcon = (ImageIcon)tModel.getValueAt(localRow, COL_STATUS);
+					ImageIcon newStatusIcon = DevicesTable.getStatusIcon(device);
+					if(oldStatusIcon != newStatusIcon) {
+						final int i1 = table.getSelectionModel().getAnchorSelectionIndex();
+						tModel.setValueAt(newStatusIcon, localRow, COL_STATUS);
+						if(device.getStatus() == Status.ON_LINE && oldStatusIcon.getImage() != newStatusIcon.getImage()) { // was not ON_LINE; now is
+							updateRow(device, localRow);
+						}
+						table.getSelectionModel().setAnchorSelectionIndex(i1);
+//						table.getRowSorter().allRowsChanged();
+					}
 				}
 			} catch (RuntimeException e) { } // on "refresh" table row could non exists
 		}

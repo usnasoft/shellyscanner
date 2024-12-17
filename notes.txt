@@ -290,19 +290,17 @@ selection subtraction (ctrl+shift)
  e.g. java -jar C:\Users\antonio\shellyscan-1.2.0.jar -graphs V -ipscan 192.168.1.203-203
  
 1.2.1
+chacklist multiselection
 checklis - extender "-" -> non applicabile, X non attivo
 checklis - roaming editabile; for G2 interval 60s - 0s
-Blu TRV support
-TRV restore
-TRV fw update
+checklis - wi-fi edit
+full Blu TRV support (also fw update)
+optional fahrenheit temperature unit
 consecutive fw updates progress fixed
-fahrenheit
-
 
 ---
 // TODO
 // BLU TRV
-// chacklist multiselection
 // portare il modello sulla tabella per semplificare il calcolo dei tooltip (e delle icone di stato)
 // Xmod1 sganciare bottone se detatched (?)
 // add "knx" support
