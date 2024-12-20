@@ -295,12 +295,13 @@ checklis - extender "-" -> non applicabile, X non attivo
 checklis - roaming editabile; for G2 interval 60s - 0s
 checklis - wi-fi edit
 full Blu TRV support (also fw update)
+improved Shelly Pro 3EM support
 optional fahrenheit temperature unit
 consecutive fw updates progress fixed
 
 ---
 // TODO
-// BLU TRV
+// checklist - script number (check enabled)
 // portare il modello sulla tabella per semplificare il calcolo dei tooltip (e delle icone di stato)
 // Xmod1 sganciare bottone se detatched (?)
 // add "knx" support

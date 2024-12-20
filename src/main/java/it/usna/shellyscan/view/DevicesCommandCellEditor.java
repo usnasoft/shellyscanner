@@ -103,6 +103,7 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 	private boolean tempUnitCelsius;
 
 	public DevicesCommandCellEditor(JTable table, boolean celsius) {
+		this.tempUnitCelsius = celsius;
 		this.selBackground = table.getSelectionBackground();
 		this.selForeground = table.getSelectionForeground();
 		

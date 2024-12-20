@@ -102,6 +102,7 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 	private boolean tempUnitCelsius;
 
 	public DevicesCommandCellRenderer(boolean celsius) {
+		this.tempUnitCelsius = celsius;
 		// Dimmer
 		lightButton.setBorder(BUTTON_BORDERS);
 		lightPanel.add(lightButton, BorderLayout.EAST);

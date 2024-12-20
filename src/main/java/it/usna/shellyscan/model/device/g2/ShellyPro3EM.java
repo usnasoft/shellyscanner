@@ -17,10 +17,10 @@ import it.usna.shellyscan.model.device.RestoreMsg;
 public class ShellyPro3EM extends AbstractProDevice implements InternalTmpHolder {
 	public final static String ID = "Pro3EM";
 	private float internalTmp;
-	private float power[] = new float[3 /*+ 1*/]; // +1 -> total
-	private float apparent[] = new float[3 /*+ 1*/];
+	private float power[] = new float[4]; // 3 + total
+	private float apparent[] = new float[4]; // 3 + total
 	private float voltage[] = new float[3];
-	private float current[] = new float[3 /*+ 1*/];
+	private float current[] = new float[4]; // 3 + total
 	private float pf[] = new float[3];
 	private float freq[] = new float[3];
 	private String meterName[] = new String[3];
@@ -34,86 +34,17 @@ public class ShellyPro3EM extends AbstractProDevice implements InternalTmpHolder
 	}
 	
 	protected void init(JsonNode devInfo) throws IOException {
-		this.triphase = devInfo.get("profile").textValue().equals(MODE_TRIPHASE);
-		
-		class EMMeters extends Meters implements LabelHolder {
-			private final static Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.W, Meters.Type.VA, Meters.Type.PF, Meters.Type.V, Meters.Type.I, Meters.Type.FREQ};
-			private int ind;
-
-			private EMMeters(int ind) {
-				this.ind = ind;
-			}
-			
-			@Override
-			public Type[] getTypes() {
-				return SUPPORTED_MEASURES;
-			}
-
-			@Override
-			public float getValue(Type t) {
-				if(t == Type.W) {
-					return power[ind];
-				} else if(t == Type.VA) {
-					return apparent[ind];
-				} else if(t == Type.I) {
-					return current[ind];
-				} else if(t == Type.PF) {
-					return pf[ind];
-				} else if(t == Type.FREQ) {
-					return freq[ind];
-				} else {
-					return voltage[ind];
-				}
-			}
-
-			@Override
-			public String getLabel() {
-				return meterName[ind];
-			}
-			
-			@Override
-			public String toString() {
-				return meterName[ind] + ": " + Type.W + "=" + power[ind] + " " + Type.I + "=" + current[ind] + " " + Type.PF + "=" + pf[ind] + " " + Type.V + "=" + voltage[ind];
-			}
-		}
-		
-//		class EMTotal extends Meters implements LabelHolder {
-//			private final static Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.W, Meters.Type.VA, Meters.Type.I};
-//			private int ind;
-//
-//			@Override
-//			public Type[] getTypes() {
-//				return SUPPORTED_MEASURES;
-//			}
-//
-//			@Override
-//			public float getValue(Type t) {
-//				if(t == Type.W) {
-//					return power[3];
-//				} else if(t == Type.VA) {
-//					return apparent[3];
-//				} else /*if(t == Type.I)*/ {
-//					return current[3];
-//				}
-//			}
-//
-//			@Override
-//			public String getLabel() {
-//				return meterName[ind];
-//			}
-//			
-//			@Override
-//			public String toString() {
-//				return Type.W + "=" + power[ind] + " " + Type.VA + "=" + apparent[ind] + " " + Type.I + "=" + current[ind];
-//			}
-//		}
-		
-//		if(triphase) {
-//			meters = new Meters[] {new EMMeters(0), new EMMeters(1), new EMMeters(2), new EMTotal()};
-//		} else {
-			meters = new Meters[] {new EMMeters(0), new EMMeters(1), new EMMeters(2)};
-//		}
+		this.init(devInfo.get("profile").textValue().equals(MODE_TRIPHASE));
 		super.init(devInfo);
+	}
+	
+	private void init(boolean triphase) {
+		this.triphase = triphase;
+		if(triphase) {
+			meters = new Meters[] {new EMMeters(0), new EMMeters(1), new EMMeters(2), new TotalEMMeters()};
+		} else {
+			meters = new Meters[] {new EMMeters(0), new EMMeters(1), new EMMeters(2)};
+		}
 	}
 
 	@Override
@@ -139,6 +70,10 @@ public class ShellyPro3EM extends AbstractProDevice implements InternalTmpHolder
 	@Override
 	protected void fillSettings(JsonNode configuration) throws IOException {
 		super.fillSettings(configuration);
+		boolean tmp3phase = configuration.get("sys").get("device").get("profile").asText().equals(MODE_TRIPHASE);
+		if(tmp3phase != triphase) {
+			init(tmp3phase);
+		}
 		if(triphase) {
 			meterName[0] = configuration.get("em:0").get("name").asText("");
 			meterName[1] = meterName[2] = "";
@@ -176,9 +111,9 @@ public class ShellyPro3EM extends AbstractProDevice implements InternalTmpHolder
 			voltage[2] = em_0.get("c_voltage").floatValue();
 			freq[2] = em_0.get("c_freq").floatValue();
 
-//			power[3] = em_0.get("total_act_power").floatValue();
-//			apparent[3] = em_0.get("total_aprt_power").floatValue();
-//			current[3] = em_0.get("total_current").floatValue();
+			power[3] = em_0.get("total_act_power").floatValue();
+			apparent[3] = em_0.get("total_aprt_power").floatValue();
+			current[3] = em_0.get("total_current").floatValue();
 		} else {
 			JsonNode em1_0 = status.get("em1:0");
 			power[0] = em1_0.get("act_power").floatValue();
@@ -206,6 +141,72 @@ public class ShellyPro3EM extends AbstractProDevice implements InternalTmpHolder
 		}
 
 		internalTmp = status.path("temperature:0").path("tC").floatValue();
+	}
+	
+	private class EMMeters extends Meters implements LabelHolder {
+		private final static Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.W, Meters.Type.VA, Meters.Type.PF, Meters.Type.V, Meters.Type.I, Meters.Type.FREQ};
+		private int ind;
+
+		private EMMeters(int ind) {
+			this.ind = ind;
+		}
+		
+		@Override
+		public Type[] getTypes() {
+			return SUPPORTED_MEASURES;
+		}
+
+		@Override
+		public float getValue(Type t) {
+			if(t == Type.W) {
+				return power[ind];
+			} else if(t == Type.VA) {
+				return apparent[ind];
+			} else if(t == Type.I) {
+				return current[ind];
+			} else if(t == Type.PF) {
+				return pf[ind];
+			} else if(t == Type.FREQ) {
+				return freq[ind];
+			} else {
+				return voltage[ind];
+			}
+		}
+
+		@Override
+		public String getLabel() {
+			return meterName[ind];
+		}
+		
+		@Override
+		public String toString() {
+			return meterName[ind] + ": " + Type.W + "=" + power[ind] + " " + Type.I + "=" + current[ind] + " " + Type.PF + "=" + pf[ind] + " " + Type.V + "=" + voltage[ind];
+		}
+	}
+
+	private class TotalEMMeters extends Meters {
+		private final static Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.W, Meters.Type.VA, Meters.Type.I};
+
+		@Override
+		public Type[] getTypes() {
+			return SUPPORTED_MEASURES;
+		}
+
+		@Override
+		public float getValue(Type t) {
+			if(t == Type.W) {
+				return power[3];
+			} else if(t == Type.VA) {
+				return apparent[3];
+			} else { //if(t == Type.I)
+				return current[3];
+			}
+		}
+		
+		@Override
+		public String toString() {
+			return Type.W + "=" + power[3] + " " + Type.VA + "=" + apparent[3] + " " + Type.I + "=" + current[3];
+		}
 	}
 	
 	@Override
