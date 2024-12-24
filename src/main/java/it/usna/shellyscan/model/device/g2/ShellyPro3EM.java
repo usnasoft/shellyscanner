@@ -17,10 +17,10 @@ import it.usna.shellyscan.model.device.RestoreMsg;
 public class ShellyPro3EM extends AbstractProDevice implements InternalTmpHolder {
 	public final static String ID = "Pro3EM";
 	private float internalTmp;
-	private float power[] = new float[4]; // 3 + total
-	private float apparent[] = new float[4]; // 3 + total
+	private float power[] = new float[3], totPower;
+	private float apparent[] = new float[3], totApparent;
 	private float voltage[] = new float[3];
-	private float current[] = new float[4]; // 3 + total
+	private float current[] = new float[3], totCurrent;
 	private float pf[] = new float[3];
 	private float freq[] = new float[3];
 	private String meterName[] = new String[3];
@@ -42,6 +42,7 @@ public class ShellyPro3EM extends AbstractProDevice implements InternalTmpHolder
 		this.triphase = triphase;
 		if(triphase) {
 			meters = new Meters[] {new EMMeters(0), new EMMeters(1), new EMMeters(2), new TotalEMMeters()};
+			meterName[1] = meterName[2] = "";
 		} else {
 			meters = new Meters[] {new EMMeters(0), new EMMeters(1), new EMMeters(2)};
 		}
@@ -70,13 +71,12 @@ public class ShellyPro3EM extends AbstractProDevice implements InternalTmpHolder
 	@Override
 	protected void fillSettings(JsonNode configuration) throws IOException {
 		super.fillSettings(configuration);
-		boolean tmp3phase = configuration.get("sys").get("device").get("profile").asText().equals(MODE_TRIPHASE);
-		if(tmp3phase != triphase) {
-			init(tmp3phase);
+		boolean current3phase = configuration.get("sys").get("device").get("profile").asText().equals(MODE_TRIPHASE);
+		if(current3phase != triphase) {
+			init(current3phase);
 		}
-		if(triphase) {
+		if(current3phase) {
 			meterName[0] = configuration.get("em:0").get("name").asText("");
-			meterName[1] = meterName[2] = "";
 		} else {
 			meterName[0] = configuration.get("em1:0").get("name").asText("");
 			meterName[1] = configuration.get("em1:1").get("name").asText("");
@@ -111,9 +111,9 @@ public class ShellyPro3EM extends AbstractProDevice implements InternalTmpHolder
 			voltage[2] = em_0.get("c_voltage").floatValue();
 			freq[2] = em_0.get("c_freq").floatValue();
 
-			power[3] = em_0.get("total_act_power").floatValue();
-			apparent[3] = em_0.get("total_aprt_power").floatValue();
-			current[3] = em_0.get("total_current").floatValue();
+			totPower = em_0.path("total_act_power").floatValue();
+			totApparent = em_0.path("total_aprt_power").floatValue();
+			totCurrent = em_0.path("total_current").floatValue();
 		} else {
 			JsonNode em1_0 = status.get("em1:0");
 			power[0] = em1_0.get("act_power").floatValue();
@@ -195,17 +195,17 @@ public class ShellyPro3EM extends AbstractProDevice implements InternalTmpHolder
 		@Override
 		public float getValue(Type t) {
 			if(t == Type.W) {
-				return power[3];
+				return totPower;
 			} else if(t == Type.VA) {
-				return apparent[3];
+				return totApparent;
 			} else { //if(t == Type.I)
-				return current[3];
+				return totCurrent;
 			}
 		}
 		
 		@Override
 		public String toString() {
-			return Type.W + "=" + power[3] + " " + Type.VA + "=" + apparent[3] + " " + Type.I + "=" + current[3];
+			return Type.W + "=" + totPower + " " + Type.VA + "=" + totApparent + " " + Type.I + "=" + totCurrent;
 		}
 	}
 	

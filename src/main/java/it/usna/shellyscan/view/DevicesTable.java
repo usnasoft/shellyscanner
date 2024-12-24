@@ -200,7 +200,7 @@ public class DevicesTable extends ExTooltipTable {
 	
 	public void setUptimeRenderMode(String mode) {
 		uptimeRenderer.setMode(mode);
-		((UsnaTableModel)getModel()).fireTableDataChanged();
+		((UsnaTableModel)dataModel).fireTableDataChanged();
 		columnsWidthAdapt();
 	}
 	
@@ -210,7 +210,7 @@ public class DevicesTable extends ExTooltipTable {
 		((DeviceMetersCellRenderer)columnModel.getColumn(convertColumnIndexToView(COL_MEASURES_IDX)).getCellRenderer()).setTempUnit(celsius);
 		((DevicesCommandCellRenderer)columnModel.getColumn(convertColumnIndexToView(COL_COMMAND_IDX)).getCellRenderer()).setTempUnit(celsius);
 		((DevicesCommandCellEditor)columnModel.getColumn(convertColumnIndexToView(COL_COMMAND_IDX)).getCellEditor()).setTempUnit(celsius);
-		((UsnaTableModel)getModel()).fireTableDataChanged();
+		((UsnaTableModel)dataModel).fireTableDataChanged();
 	}
 
 	@Override

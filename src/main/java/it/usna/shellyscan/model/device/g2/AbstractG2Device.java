@@ -433,16 +433,13 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 				if(config.at("/mqtt/enable").asBoolean() && config.at("/mqtt/user").asText("").isEmpty() == false) {
 					res.put(RestoreMsg.RESTORE_MQTT, config.at("/mqtt/user").asText());
 				}
-				JsonNode scripts = backupJsons.get("Script.List.json");
-				if(scripts != null && scripts.path("scripts").size() > 0) {
+				JsonNode storedScripts = backupJsons.get("Script.List.json");
+				if(storedScripts != null && storedScripts.path("scripts").size() > 0) {
+					List<Script> existingScripts = Script.list(this);
 					List<String> scriptsEnabledByDefault = new ArrayList<>();
 					List<String> scriptsWithSameName = new ArrayList<>();
-					JsonNode existingScripts = Script.list(this);
-					List<String> existingScriptsNames = new ArrayList<>();
-					for(JsonNode existingScript: existingScripts) {
-						existingScriptsNames.add(existingScript.get("name").asText());
-					}
-					for(JsonNode jsonScript: scripts.get("scripts")) {
+					List<String> existingScriptsNames = existingScripts.stream().map(s -> s.getName()).toList();
+					for(JsonNode jsonScript: storedScripts.get("scripts")) {
 						if(existingScriptsNames.contains(jsonScript.get("name").asText()))
 							scriptsWithSameName.add(jsonScript.get("name").asText());
 						if(jsonScript.get("enable").asBoolean())

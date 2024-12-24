@@ -42,8 +42,6 @@ import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
 import it.usna.shellyscan.Main;
 import it.usna.shellyscan.controller.UsnaAction;
 import it.usna.shellyscan.controller.UsnaToggleAction;
@@ -225,8 +223,7 @@ public class ScriptsPanel extends JPanel {
 		table.addMouseListener(tablePopup.getMouseListener());
 
 		// Fill table
-		for (JsonNode scriptDesc : Script.list(device)) {
-			Script sc = new Script(device, scriptDesc);
+		for (Script sc: Script.list(device)) {
 			scripts.add(new ScriptAndEditor(sc));
 			tModel.addRow(sc.getName(), sc.isEnabled(), sc.isRunning());
 		}
