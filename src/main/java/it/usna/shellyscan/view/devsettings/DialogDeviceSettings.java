@@ -46,6 +46,9 @@ public class DialogDeviceSettings extends JDialog implements UsnaEventListener<D
 	private Devices model;
 	private int[] devicesInd;
 
+	/**
+	 * @wbp.parser.constructor
+	 */
 	public DialogDeviceSettings(final Frame owner, Devices model, int[] devicesInd) {
 		super(owner, false);
 		init(owner, model, devicesInd, FW);

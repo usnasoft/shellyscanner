@@ -35,7 +35,6 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
-import it.usna.shellyscan.Main;
 import it.usna.shellyscan.controller.DeferrableTask;
 import it.usna.shellyscan.controller.DeferrablesContainer;
 import it.usna.shellyscan.controller.UsnaAction;
@@ -177,7 +176,8 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 		FirmwareManager fw = getFirmwareManager(localIndex);
 		if(fw != null) {
 			if(fw.upadating()) {
-				return new Object[] {DevicesTable.UPDATING_BULLET, UtilMiscellaneous.getExtendedHostName(d), FirmwareManager.getShortVersion(fw.current()), LABELS.getString("labelUpdating"), null}; // DevicesTable.UPDATING_BULLET
+				return new Object[] {DevicesTable.UPDATING_BULLET, UtilMiscellaneous.getExtendedHostName(d), FirmwareManager.getShortVersion(fw.current()),
+						(d instanceof AbstractG2Device) ? String.format(LABELS.getString("lbl_downloading"), 0) : LABELS.getString("labelUpdating"), null};
 			} else {
 				Boolean stableCell = (fw != null && fw.newStable() != null) ? Boolean.TRUE : null;
 				Boolean betaCell = (fw != null && fw.newBeta() != null) ? Boolean.FALSE : null;
@@ -372,7 +372,7 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 						getFirmwareManager(index).upadating(true);
 						int progress = event.path("progress_percent").asInt();
 						tModel.setValueAt(DevicesTable.UPDATING_BULLET, index, FWUpdateTable.COL_STATUS);
-						tModel.setValueAt(String.format(Main.LABELS.getString("lbl_downloading"), progress), index, FWUpdateTable.COL_STABLE);
+						tModel.setValueAt(String.format(LABELS.getString("lbl_downloading"), progress), index, FWUpdateTable.COL_STABLE);
 						tModel.setValueAt(null, index, FWUpdateTable.COL_BETA);
 						break;
 					} else if((eventType.equals("ota_success") || eventType.equals("scheduled_restart")) && component.equals(comp)) { // rebooting
