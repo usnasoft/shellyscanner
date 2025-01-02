@@ -7,8 +7,6 @@ import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.event.MouseEvent;
-import java.io.BufferedWriter;
-import java.io.IOException;
 import java.net.URL;
 import java.text.MessageFormat;
 import java.time.Instant;
@@ -214,80 +212,101 @@ public class DevicesTable extends ExTooltipTable {
 	}
 
 	@Override
-	public String getToolTipText(final MouseEvent evt) {
-		final int r, c;
-		final Object value;
-		if(((Component) evt.getSource()).isVisible() && (r = rowAtPoint(evt.getPoint())) >= 0 && (c = columnAtPoint(evt.getPoint())) >= 0 &&
-				(value = getValueAt(r, c)) != null && (getEditingColumn() == c && getEditingRow() == r) == false) {
-			final int modelCol = convertColumnIndexToModel(c);
-			if(modelCol == COL_UPTIME_IDX) {
-				adaptTooltipLocation = false;
-				long s = ((Number)value).longValue();
-				final int gg = (int)(s / (3600 * 24));
-				s = s % (3600 * 24);
-				int hh = (int)(s / 3600);
-				s = s % 3600;
-				int mm = (int)(s / 60);
-				s = s % 60;
-				LocalDateTime since = LocalDateTime.now().minusSeconds(((Number)value).longValue());
-				return String.format(LABELS.getString("col_uptime_tooltip"), gg, hh, mm, s, since);
-			} else if (value instanceof ImageIcon icon) {
-				adaptTooltipLocation = false;
-				return icon.getDescription();
-			} else if(value instanceof ThermostatG1 therm) { // TRV G1
-				adaptTooltipLocation = false;
-				return String.format(Locale.ENGLISH, LABELS.getString("col_command_therm_tooltip"), therm.getCurrentProfile(), therm.getTargetTemp(), therm.getPosition());
-			} else if(value instanceof Meters[] meters) {
-				if(Arrays.stream(meters).anyMatch(m -> DeviceMetersCellRenderer.hasHiddenMeasures(m) || m instanceof LabelHolder || m.hasNames()) ||
-						getCellRect(r, c, false).width <= getCellRenderer(r, c).getTableCellRendererComponent(this, value, false, false, r, c).getPreferredSize().width) {
-					adaptTooltipLocation = true;
-					String tt = "<html><table border='0' cellspacing='0' cellpadding='0'>";
-					boolean labelHolder = false;
-					for(Meters m: meters) {
-						tt += "<tr>";
-						if(m instanceof LabelHolder) {
-							tt += "<td><b>" + ((LabelHolder)m).getLabel() + "</b>&nbsp;</td>";
-							labelHolder = true;
-						} else if(labelHolder) { // skip first cell for alignment
-							tt += "<td></td>";
-						}
-						for(Meters.Type t: m.getTypes()) {
-							final String name = m.getName(t);
-							final String tLabel = (name != null && name.isEmpty() == false) ? " (" + name + ")": "";
-							if(t == Meters.Type.T || t == Meters.Type.T1 || t == Meters.Type.T2 || t == Meters.Type.T3 || t == Meters.Type.T4) {
-								if(tempUnitCelsius) {
-									tt += "<td><i>" + LABELS.getString("METER_LBL_" + t) + tLabel + "</i>&nbsp;</td><td align='right'>" + String.format(Locale.ENGLISH, LABELS.getString("METER_VAL_T"), m.getValue(t)) + "&nbsp;</td>";
-								} else { // fahrenheit 
-									tt += "<td><i>" + LABELS.getString("METER_LBL_" + t) + tLabel + "</i>&nbsp;</td><td align='right'>" + String.format(Locale.ENGLISH, LABELS.getString("METER_VAL_T_F"), m.getValue(t) * 1.8f + 32f) + "&nbsp;</td>";
-								}
-							} else if(t == Meters.Type.EX) {
-								tt += "<td><i>" + LABELS.getString("METER_LBL_" + t) + tLabel + "</i>&nbsp;</td><td align='right'>" + SWITCH_FORMATTER.format(new Object [] {m.getValue(t)}) + "&nbsp;</td>";
-							} else {
-								tt += "<td><i>" + LABELS.getString("METER_LBL_" + t) + tLabel + "</i>&nbsp;</td><td align='right'>" + String.format(Locale.ENGLISH, LABELS.getString("METER_VAL_" + t), m.getValue(t)) + "&nbsp;</td>";
-							}
-						}
-						tt += "</tr>";
-					}
-					return tt + "</table></html>";
-				}
-			} else {
+	protected String getToolTipText(Object value, boolean cellTooSmall, int r, int c) {
+		final int modelCol = convertColumnIndexToModel(c);
+		if(modelCol == COL_UPTIME_IDX) {
+			adaptTooltipLocation = false;
+			long s = ((Number)value).longValue();
+			final int gg = (int)(s / (3600 * 24));
+			s = s % (3600 * 24);
+			int hh = (int)(s / 3600);
+			s = s % 3600;
+			int mm = (int)(s / 60);
+			s = s % 60;
+			LocalDateTime since = LocalDateTime.now().minusSeconds(((Number)value).longValue());
+			return String.format(LABELS.getString("col_uptime_tooltip"), gg, hh, mm, s, since);
+		} else if (value instanceof ImageIcon icon) {
+			adaptTooltipLocation = false;
+			return icon.getDescription();
+		} else if(value instanceof ThermostatG1 therm) { // TRV G1
+			adaptTooltipLocation = false;
+			return String.format(Locale.ENGLISH, LABELS.getString("col_command_therm_tooltip"), therm.getCurrentProfile(), therm.getTargetTemp(), therm.getPosition());
+		} else if(value instanceof Meters[] meters) {
+			if(Arrays.stream(meters).anyMatch(m -> DeviceMetersCellRenderer.hasHiddenMeasures(m) || m instanceof LabelHolder || m.hasNames()) || cellTooSmall) {
 				adaptTooltipLocation = true;
-				return super.getToolTipText(evt);
+				String tt = "<html><table border='0' cellspacing='0' cellpadding='0'>";
+				boolean labelHolder = false;
+				for(Meters m: meters) {
+					tt += "<tr>";
+					if(m instanceof LabelHolder) {
+						tt += "<td><b>" + ((LabelHolder)m).getLabel() + "</b>&nbsp;</td>";
+						labelHolder = true;
+					} else if(labelHolder) { // skip first cell for alignment
+						tt += "<td></td>";
+					}
+					for(Meters.Type t: m.getTypes()) {
+						final String name = m.getName(t);
+						final String tLabel = (name != null && name.isEmpty() == false) ? " (" + name + ")": "";
+						if(t == Meters.Type.T || t == Meters.Type.T1 || t == Meters.Type.T2 || t == Meters.Type.T3 || t == Meters.Type.T4) {
+							if(tempUnitCelsius) {
+								tt += "<td><i>" + LABELS.getString("METER_LBL_" + t) + tLabel + "</i>&nbsp;</td><td align='right'>" + String.format(Locale.ENGLISH, LABELS.getString("METER_VAL_T"), m.getValue(t)) + "&nbsp;</td>";
+							} else { // fahrenheit 
+								tt += "<td><i>" + LABELS.getString("METER_LBL_" + t) + tLabel + "</i>&nbsp;</td><td align='right'>" + String.format(Locale.ENGLISH, LABELS.getString("METER_VAL_T_F"), m.getValue(t) * 1.8f + 32f) + "&nbsp;</td>";
+							}
+						} else if(t == Meters.Type.EX) {
+							tt += "<td><i>" + LABELS.getString("METER_LBL_" + t) + tLabel + "</i>&nbsp;</td><td align='right'>" + SWITCH_FORMATTER.format(new Object [] {m.getValue(t)}) + "&nbsp;</td>";
+						} else {
+							tt += "<td><i>" + LABELS.getString("METER_LBL_" + t) + tLabel + "</i>&nbsp;</td><td align='right'>" + String.format(Locale.ENGLISH, LABELS.getString("METER_VAL_" + t), m.getValue(t)) + "&nbsp;</td>";
+						}
+					}
+					tt += "</tr>";
+				}
+				return tt + "</table></html>";
 			}
+			return null;
+		} else {
+			adaptTooltipLocation = true;
+			return super.getToolTipText(value, cellTooSmall, r, c);
 		}
-		return null;
 	}
 	
 	@Override
-	protected String cellTooltipValue(Object value, boolean cellTooSmall, int row, int column) {
-		if(cellTooSmall) {
-			final int modelCol = convertColumnIndexToModel(column);
-			if(value == null) return "";
-			else if(modelCol == COL_INT_TEMP && ScannerProperties.instance().getProperty(ScannerProperties.PROP_TEMP_UNIT).equals("F")) return UtilMiscellaneous.celsiusToFahrenheit((Float)value); 
-			else if(value instanceof Object[]) return Stream.of((Object[])value).filter(v -> v != null).map(v -> v.toString()).collect(Collectors.joining(" + "));
-			else return value.toString();
+	public String cellValueAsString(Object value, int row, int column) {
+		final int modelCol = convertColumnIndexToModel(column);
+		if(value == null) {
+			return "";
+		} else if(modelCol == COL_INT_TEMP && tempUnitCelsius) {
+			return UtilMiscellaneous.celsiusToFahrenheit((Float)value);
+		} else if(modelCol == COL_MEASURES_IDX) {
+			String ret = "";
+			for(Meters m: (Meters[])value) {
+				if(m instanceof LabelHolder lh) {
+					ret += lh.getLabel() + " ";
+				}
+				for(Meters.Type t: m.getTypes()) {
+					final String name = m.getName(t);
+					final String tLabel = (name != null && name.isEmpty() == false) ? " (" + name + ")": "";
+					if(t == Meters.Type.T || t == Meters.Type.T1 || t == Meters.Type.T2 || t == Meters.Type.T3 || t == Meters.Type.T4) {
+						if(tempUnitCelsius) {
+							ret += LABELS.getString("METER_LBL_" + t) + tLabel + " " + String.format(Locale.ENGLISH, LABELS.getString("METER_VAL_T"), m.getValue(t)) + " ";
+						} else { // fahrenheit 
+							ret += LABELS.getString("METER_LBL_" + t) + tLabel + " " + String.format(Locale.ENGLISH, LABELS.getString("METER_VAL_T_F"), m.getValue(t) * 1.8f + 32f) + " ";
+						}
+					} else if(t == Meters.Type.EX) {
+						ret += LABELS.getString("METER_LBL_" + t) + tLabel + " " + SWITCH_FORMATTER.format(new Object [] {m.getValue(t)}) + " ";
+					} else {
+						ret += LABELS.getString("METER_LBL_" + t) + tLabel + " " + String.format(Locale.ENGLISH, LABELS.getString("METER_VAL_" + t), m.getValue(t)) + " ";
+					}
+				}
+				ret += "+ ";
+			}
+			return ret.replaceAll("[ +]+$", "");
+		} else if(modelCol == COL_COMMAND_IDX && value instanceof DeviceModule[] dm) {
+			return Stream.of(dm).filter(d -> d != null).map(d -> d.getLabel()).filter(s -> !s.isEmpty()).collect(Collectors.joining(" + "));
+		} else if(value instanceof Object[]) {
+			return Stream.of((Object[])value).filter(v -> v != null).map(v -> v.toString()).collect(Collectors.joining(" + "));
 		} else {
-			return null;
+			return value.toString();
 		}
 	}
 
@@ -338,29 +357,6 @@ public class DevicesTable extends ExTooltipTable {
 					}
 				}
 				tc.setPreferredWidth(width);
-			}
-		}
-	}
-
-	public void csvExport(BufferedWriter w, String separator) throws IOException {
-		Stream.Builder<String> h = Stream.builder();
-		for(int col = 0; col < getColumnCount(); col++) {
-			String name = getColumnName(col);
-			h.accept(name.isEmpty() ? LABELS.getString("col_status_exp") : name); // dirty and fast
-		}
-		w.write(h.build().collect(Collectors.joining(separator)));
-		w.newLine();
-
-		for(int row = 0; row < getRowCount(); row++) {
-			try {
-				Stream.Builder<String> r = Stream.builder();
-				for(int col = 0; col < getColumnCount(); col++) {
-					r.accept(cellTooltipValue(getValueAt(row, col), true, row, col));
-				}
-				w.write(r.build().collect(Collectors.joining(separator)));
-				w.newLine();
-			} catch(RuntimeException e) {
-				LOG.error("csvExport", e);
 			}
 		}
 	}

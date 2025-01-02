@@ -365,12 +365,10 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			// Scripts
 			if(scripts != null) {
-				JsonNode scrList = jsonMapper.readTree(scripts).get("scripts");
-				for(JsonNode scr: scrList) {
+				for(Script script: Script.list(this, jsonMapper.readTree(scripts))) {
 					try {
-						Script script = new Script(this, scr);
 						byte[] code =  script.getCode().getBytes();
-						ZipEntry entry = new ZipEntry(scr.get("name").asText() + ".mjs");
+						ZipEntry entry = new ZipEntry(script.getName() + ".mjs");
 						out.putNextEntry(entry);
 						out.write(code, 0, code.length);
 					} catch(IOException e) {}

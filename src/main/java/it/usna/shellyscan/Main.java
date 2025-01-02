@@ -38,7 +38,7 @@ import it.usna.util.CLI;
 public class Main {
 	public final static String APP_NAME = "Shelly Scanner";
 	public final static String VERSION = "1.2.1 beta 2";
-	public final static String VERSION_CODE = "001.002.001r101"; // r0xx alpha; r1xx beta; r2xx stable
+	public final static String VERSION_CODE = "001.002.001r102"; // r0xx alpha; r1xx beta; r2xx stable
 	public final static Image ICON = Toolkit.getDefaultToolkit().createImage(Main.class.getResource("/images/ShSc24.png"));
 	public final static String BACKUP_FILE_EXT = "sbk";
 	public final static String ARCHIVE_FILE_EXT = "arc";
@@ -221,7 +221,7 @@ public class Main {
 			SwingUtilities.invokeLater(() -> {
 				try {
 					view.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-					boolean useArchive = appProp.getBoolProperty(ScannerProperties.PROP_USE_ARCHIVE, true);
+					boolean useArchive = appProp.getBoolProperty(ScannerProperties.PROP_USE_ARCHIVE);
 					if(useArchive) {
 						try {
 							model.loadFromStore(Paths.get(appProp.getProperty(ScannerProperties.PROP_ARCHIVE_FILE, ScannerProperties.PROP_ARCHIVE_FILE_DEFAULT)));
@@ -235,7 +235,7 @@ public class Main {
 					if(ipCollectionFinal != null) {
 						model.scannerInit(ipCollectionFinal, refreshStatusInterval, refreshConfigTics);
 					} else {
-						model.scannerInit(fullScanFinal, refreshStatusInterval, refreshConfigTics, appProp.getBoolProperty(ScannerProperties.PROP_AUTORELOAD_ARCHIVE, false) && useArchive);
+						model.scannerInit(fullScanFinal, refreshStatusInterval, refreshConfigTics, appProp.getBoolProperty(ScannerProperties.PROP_AUTORELOAD_ARCHIVE) && useArchive);
 					}
 				} catch (/*IO*/Exception e) {
 					Msg.errorMsg(e);
@@ -256,7 +256,7 @@ public class Main {
 	
 	private static void activateGUI(final MainView view, final Devices model, final ScannerProperties appProp) {
 		view.setVisible(true);
-		view.requestFocus(); // remove random focus on toolbar button
+//		view.requestFocus(); // remove random focus on toolbar button
 		model.addListener(view);
 		appProp.addListener(view);
 		new Thread(() -> ApplicationUpdateCHK.checkForUpdates(view, appProp)).start();

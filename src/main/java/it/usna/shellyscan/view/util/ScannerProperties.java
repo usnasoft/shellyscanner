@@ -93,6 +93,8 @@ public class ScannerProperties extends AppProperties { // cannot also extend Usn
 		defaultProperty(PROP_DETAILED_VIEW_SCREEN, PROP_DETAILED_VIEW_SCREEN_FULL);
 		defaultIntProperty(PROP_REFRESH_ITERVAL, PROP_REFRESH_ITERVAL_DEFAULT);
 		defaultIntProperty(PROP_REFRESH_CONF, PROP_REFRESH_CONF_DEFAULT);
+		defaultBoolProperty(PROP_USE_ARCHIVE, true);
+		defaultBoolProperty(PROP_AUTORELOAD_ARCHIVE, false);
 	}
 	
 	public static ScannerProperties init(String file) {

@@ -20,7 +20,7 @@ public class Script {
 	private boolean enabled;
 	private boolean running;
 
-	public Script(AbstractG2Device device, JsonNode script) {
+	private Script(AbstractG2Device device, JsonNode script) {
 		this.device = device;
 		name = script.get("name").asText();
 		id = script.get("id").asInt();
@@ -28,15 +28,18 @@ public class Script {
 		running = script.path("running").asBoolean(false);
 	}
 
-	public Script(AbstractG2Device device, int id) throws IOException {
+	private Script(AbstractG2Device device, int id) throws IOException {
 		this(device, device.getJSON("/rpc/Script.GetConfig?id=" + id));
 	}
 	
 	public static List<Script> list(AbstractG2Device device) throws IOException {
+		return list(device, device.getJSON("/rpc/Script.List"));
+	}
+	
+	public static List<Script> list(AbstractG2Device device, JsonNode jsonList) {
 		List<Script> ret = new ArrayList<>();
-		JsonNode jsonList = device.getJSON("/rpc/Script.List").get("scripts");
-		for (JsonNode scriptDesc: jsonList) {
-			ret.add(new Script(device, scriptDesc));
+		for(JsonNode scr: jsonList.get("scripts")) {
+			ret.add(new Script(device, scr));
 		}
 		return ret;
 	}

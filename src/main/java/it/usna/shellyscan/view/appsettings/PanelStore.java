@@ -62,7 +62,7 @@ public class PanelStore extends JPanel {
 		gbc_chckbxUseStore.gridx = 1;
 		gbc_chckbxUseStore.gridy = 0;
 		add(chckbxUseStore, gbc_chckbxUseStore);
-		chckbxUseStore.setSelected(appProp.getBoolProperty(ScannerProperties.PROP_USE_ARCHIVE, true));
+		chckbxUseStore.setSelected(appProp.getBoolProperty(ScannerProperties.PROP_USE_ARCHIVE));
 		
 		JLabel lblStoreFile = new JLabel(LABELS.getString("dlgAppStoreFileLabel"));
 		lblStoreFile.setFont(new Font("Tahoma", Font.BOLD, 11));
@@ -135,7 +135,7 @@ public class PanelStore extends JPanel {
 				removeGhosts(model);
 			}
 		});
-		autoReloadCheckBox.setSelected(appProp.getBoolProperty(ScannerProperties.PROP_AUTORELOAD_ARCHIVE, false));
+		autoReloadCheckBox.setSelected(appProp.getBoolProperty(ScannerProperties.PROP_AUTORELOAD_ARCHIVE));
 		
 		ChangeListener enableListener = e -> {
 			textFieldStoreFileName.setEnabled(chckbxUseStore.isSelected());

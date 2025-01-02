@@ -13,11 +13,8 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.io.BufferedWriter;
 import java.io.IOException;
 import java.net.URI;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collections;
@@ -32,7 +29,6 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
-import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -48,7 +44,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import javax.swing.filechooser.FileNameExtensionFilter;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,6 +53,7 @@ import it.usna.shellyscan.Main;
 import it.usna.shellyscan.controller.BackupAction;
 import it.usna.shellyscan.controller.DeferrableTask;
 import it.usna.shellyscan.controller.DeferrablesContainer;
+import it.usna.shellyscan.controller.ExportCSVAction;
 import it.usna.shellyscan.controller.RestoreAction;
 import it.usna.shellyscan.controller.SelectionAction;
 import it.usna.shellyscan.controller.UsnaAction;
@@ -83,7 +79,6 @@ import it.usna.swing.UsnaPopupMenu;
 import it.usna.swing.table.UsnaTableModel;
 import it.usna.swing.texteditor.TextDocumentListener;
 import it.usna.util.AppProperties;
-import it.usna.util.IOFile;
 import it.usna.util.UsnaEventListener;
 
 public class MainView extends MainWindow implements UsnaEventListener<Devices.EventType, Integer>, ScannerProperties.AppPropertyListener {
@@ -146,7 +141,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		SwingUtilities.invokeLater(() -> {
 			setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 			try {
-				model.rescan(appProp.getBoolProperty(ScannerProperties.PROP_USE_ARCHIVE, true));
+				model.rescan(appProp.getBoolProperty(ScannerProperties.PROP_USE_ARCHIVE));
 				Thread.sleep(500); // too many call disturb some devices
 			} catch (IOException e1) {
 				Msg.errorMsg(this, e1);
@@ -245,7 +240,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 	private UsnaToggleAction detailedViewAction;
 	
 	private Action appSettingsAction = new UsnaAction(this, "action_appsettings_name", "action_appsettings_tooltip", null, "/images/Gear.png",
-			e -> new DialogAppSettings(MainView.this, devicesTable, model, detailedViewAction.isSelected(), appProp) );
+			e -> new DialogAppSettings(this, devicesTable, model, detailedViewAction.isSelected(), appProp) );
 	
 	private Action printAction = new UsnaAction(this, "action_print_name", "action_print_tooltip", null, "/images/Printer.png", e -> {
 		try {
@@ -256,20 +251,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		}
 	});
 	
-	private Action csvExportAction = new UsnaAction(this, "action_csv_name", "action_csv_tooltip", null, "/images/Table.png", e -> {
-		final JFileChooser fc = new JFileChooser(appProp.getProperty("LAST_PATH"));
-		fc.setFileFilter(new FileNameExtensionFilter(LABELS.getString("filetype_csv_desc"), "csv"));
-		if(fc.showSaveDialog(MainView.this) == JFileChooser.APPROVE_OPTION) {
-			Path outPath = IOFile.addExtension(fc.getSelectedFile().toPath(), "csv");
-			try (BufferedWriter writer = Files.newBufferedWriter(outPath)) {
-				devicesTable.csvExport(writer, appProp.getProperty(ScannerProperties.PROP_CSV_SEPARATOR/*, ScannerProperties.PROP_CSV_SEPARATOR_DEFAULT*/));
-				JOptionPane.showMessageDialog(MainView.this, LABELS.getString("msgFileSaved"), Main.APP_NAME, JOptionPane.INFORMATION_MESSAGE);
-			} catch (IOException ex) {
-				Msg.errorMsg(this, ex);
-			}
-			appProp.setProperty("LAST_PATH", fc.getCurrentDirectory().getPath());
-		}
-	});
+	private Action csvExportAction = new ExportCSVAction(this, devicesTable);
 
 	private Action devicesSettingsAction = new UsnaAction(this, "action_general_conf_name", "action_general_conf_tooltip", null, "/images/Tool.png", e -> {
 		new DialogDeviceSettings(this, model, devicesTable.getSelectedModelRows());
@@ -638,7 +620,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 	}
 
 	private void storeProperties() {
-		if(appProp.getBoolProperty(ScannerProperties.PROP_USE_ARCHIVE, true)) {
+		if(appProp.getBoolProperty(ScannerProperties.PROP_USE_ARCHIVE)) {
 			try {
 				model.saveToStore(Paths.get(appProp.getProperty(ScannerProperties.PROP_ARCHIVE_FILE, ScannerProperties.PROP_ARCHIVE_FILE_DEFAULT)));
 			} catch (IOException | RuntimeException ex) {
