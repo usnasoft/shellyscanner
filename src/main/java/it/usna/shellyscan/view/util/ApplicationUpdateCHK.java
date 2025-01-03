@@ -40,9 +40,9 @@ public class ApplicationUpdateCHK {
 				Object[] options = new Object[] {LABELS.getString("aboutCheckUpdatesDownload"), LABELS.getString("dlgClose")};
 				if(JOptionPane.showOptionDialog(w, msg, currentVersion(), JOptionPane.OK_CANCEL_OPTION, JOptionPane.INFORMATION_MESSAGE, null, options, null) == 0) {
 					try {
-						Desktop.getDesktop().browse(URI.create(LABELS.getString("aboutCheckUpdatesDownloadURL")));
+						Desktop.getDesktop().browse(URI.create(LABELS.getString("downloadURL")));
 					} catch (IOException ex) {
-						Msg.errorMsg(w, LABELS.getString("aboutCheckUpdatesDownloadURL"));
+						Msg.errorMsg(w, LABELS.getString("downloadURL"));
 					}
 				}
 			}
@@ -66,15 +66,21 @@ public class ApplicationUpdateCHK {
 				List<Release> rel = remoteCheck(mode.endsWith("BETA"), ignoreRel);
 				if(rel.size() > 0) {
 					String msg = rel.stream().map(Release::msg).collect(Collectors.joining("\n"));
-					final Object[] options = new Object[] {LABELS.getString("aboutCheckUpdatesDownload"), LABELS.getString("aboutCheckUpdatesSkip"), LABELS.getString("dlgClose")};
-					int choice = JOptionPane.showOptionDialog(w, msg, currentVersion(), JOptionPane.OK_CANCEL_OPTION, JOptionPane.INFORMATION_MESSAGE, null, options, null);
+					final Object[] options = new Object[] {LABELS.getString("aboutCheckUpdatesDownload"), LABELS.getString("aboutCheckUpdatesChangelog"), LABELS.getString("aboutCheckUpdatesSkip"), LABELS.getString("dlgClose")};
+					int choice = JOptionPane.showOptionDialog(w, msg, currentVersion(), JOptionPane.YES_NO_CANCEL_OPTION , JOptionPane.INFORMATION_MESSAGE, null, options, null);
 					if(choice == 0) { // download
 						try {
-							Desktop.getDesktop().browse(URI.create(LABELS.getString("aboutCheckUpdatesDownloadURL")));
+							Desktop.getDesktop().browse(URI.create(LABELS.getString("downloadURL")));
 						} catch (IOException ex) {
-							Msg.errorMsg(w, LABELS.getString("aboutCheckUpdatesDownloadURL"));
+							Msg.errorMsg(w, LABELS.getString("downloadURL"));
 						}
-					} else if(choice == 1) { // skip
+					} else if(choice == 1) { // changelog
+						try {
+							Desktop.getDesktop().browse(URI.create(LABELS.getString("changelogdURL")));
+						} catch (IOException ex) {
+							Msg.errorMsg(w, LABELS.getString("changelogdURL"));
+						}
+					} else if(choice == 2) { // skip
 						appProp.setProperty(IGNORE, rel.stream().map(r -> r.relId()).collect(Collectors.maxBy(String.CASE_INSENSITIVE_ORDER)).get()); // new ignore
 					}
 				}
