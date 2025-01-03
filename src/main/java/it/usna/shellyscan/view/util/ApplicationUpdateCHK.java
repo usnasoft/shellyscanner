@@ -76,9 +76,9 @@ public class ApplicationUpdateCHK {
 						}
 					} else if(choice == 1) { // changelog
 						try {
-							Desktop.getDesktop().browse(URI.create(LABELS.getString("changelogdURL")));
+							Desktop.getDesktop().browse(URI.create(LABELS.getString("changelogURL")));
 						} catch (IOException ex) {
-							Msg.errorMsg(w, LABELS.getString("changelogdURL"));
+							Msg.errorMsg(w, LABELS.getString("changelogURL"));
 						}
 					} else if(choice == 2) { // skip
 						appProp.setProperty(IGNORE, rel.stream().map(r -> r.relId()).collect(Collectors.maxBy(String.CASE_INSENSITIVE_ORDER)).get()); // new ignore
