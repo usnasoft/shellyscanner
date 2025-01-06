@@ -71,6 +71,8 @@ public class ScannerProperties extends AppProperties { // cannot also extend Usn
 	public final static String IDE_AUTOCLOSE_STRING = "CL_STRING";
 	public final static String PROP_IDE_DARK = "IDE_DARK";
 	
+	public final static String VERSION_IGNORE = "IGNORE_VERION_DOWNLOAD";
+	
 	public enum PropertyEvent {CHANGE};
 	
 	private static ArrayList<AppPropertyListener> listeners = new ArrayList<>();

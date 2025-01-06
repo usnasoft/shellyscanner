@@ -1,4 +1,4 @@
-package it.usna.shellyscan.model.device.g2;
+package it.usna.shellyscan.model.device.g3;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -17,8 +17,8 @@ import it.usna.shellyscan.model.device.ModulesHolder;
 import it.usna.shellyscan.model.device.g2.modules.Relay;
 import it.usna.shellyscan.model.device.meters.MetersWVI;
 
-public class ShellyPlusPlugS extends AbstractG2Device implements ModulesHolder, InternalTmpHolder {
-	public final static String ID = "PlusPlugS";
+public class ShellyPlugSG3 extends AbstractG3Device implements ModulesHolder, InternalTmpHolder {
+	public final static String ID = "PlugSG3";
 	private Relay relay = new Relay(this, 0);
 	private float internalTmp;
 	private float power;
@@ -26,7 +26,7 @@ public class ShellyPlusPlugS extends AbstractG2Device implements ModulesHolder, 
 	private float current;
 	private Meters[] meters;
 
-	public ShellyPlusPlugS(InetAddress address, int port, String hostname) {
+	public ShellyPlugSG3(InetAddress address, int port, String hostname) {
 		super(address, port, hostname);
 		
 		meters = new MetersWVI[] {
@@ -47,7 +47,7 @@ public class ShellyPlusPlugS extends AbstractG2Device implements ModulesHolder, 
 	
 	@Override
 	public String getTypeName() {
-		return "Plug +S";
+		return "Plug S G3";
 	}
 	
 	@Override

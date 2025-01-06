@@ -92,6 +92,7 @@ import it.usna.shellyscan.model.device.g3.ShellyI4G3;
 import it.usna.shellyscan.model.device.g3.ShellyMini1G3;
 import it.usna.shellyscan.model.device.g3.ShellyMini1PMG3;
 import it.usna.shellyscan.model.device.g3.ShellyMiniPMG3;
+import it.usna.shellyscan.model.device.g3.ShellyPlugSG3;
 import it.usna.shellyscan.model.device.g3.ShellyXMOD1;
 import it.usna.shellyscan.view.DialogAuthentication;
 
@@ -306,6 +307,7 @@ public class DevicesFactory {
 			case ShellyMini1G3.ID -> new ShellyMini1G3(address, port, name);
 			case ShellyMini1PMG3.ID -> new ShellyMini1PMG3(address, port, name);
 			case ShellyMiniPMG3.ID -> new ShellyMiniPMG3(address, port, name);
+			case ShellyPlugSG3.ID -> new ShellyPlugSG3(address, port, name);
 			case ShellyHTG3.ID -> new ShellyHTG3(address, port, name);
 			case ShellyGatewayG3.ID -> new ShellyGatewayG3(address, port, name);
 			// X

@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import javax.swing.JButton;
 import javax.swing.JOptionPane;
 
 import org.slf4j.Logger;
@@ -23,10 +24,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import it.usna.shellyscan.Main;
-import it.usna.util.AppProperties;
 
 public class ApplicationUpdateCHK {
-	private final static String IGNORE = "IGNORE_VERION_DOWNLOAD";
 	private final static Logger LOG = LoggerFactory.getLogger(ApplicationUpdateCHK.class);
 	
 	public static void checkForUpdates(final Window w) {
@@ -37,11 +36,13 @@ public class ApplicationUpdateCHK {
 				Msg.showMsg(w, LABELS.getString("aboutCheckUpdatesNone"), currentVersion(), JOptionPane.INFORMATION_MESSAGE);
 			} else {	
 				String msg = rel.stream().map(Release::msg).collect(Collectors.joining("\n"));
-				Object[] options = new Object[] {LABELS.getString("aboutCheckUpdatesDownload"), LABELS.getString("dlgClose")};
-				if(JOptionPane.showOptionDialog(w, msg, currentVersion(), JOptionPane.OK_CANCEL_OPTION, JOptionPane.INFORMATION_MESSAGE, null, options, null) == 0) {
+				
+				Object[] options = new Object[] {LABELS.getString("aboutCheckUpdatesDownload"), changelogBtn(w), LABELS.getString("dlgClose")};
+				int choice = JOptionPane.showOptionDialog(w, msg, currentVersion(), JOptionPane.OK_CANCEL_OPTION, JOptionPane.INFORMATION_MESSAGE, null, options, null);
+				if(choice == 0) { // download
 					try {
 						Desktop.getDesktop().browse(URI.create(LABELS.getString("downloadURL")));
-					} catch (IOException ex) {
+					} catch (IOException | UnsupportedOperationException ex) {
 						Msg.errorMsg(w, LABELS.getString("downloadURL"));
 					}
 				}
@@ -57,31 +58,25 @@ public class ApplicationUpdateCHK {
 	/**
 	 * This call manages (read/write) IGNORE_VERION_DOWNLOAD parameter
 	 */
-	public static void checkForUpdates(final Window w, final AppProperties appProp) {
-		String mode = appProp.getProperty(ScannerProperties.PROP_UPDATECHK_ACTION/*, ScannerProperties.PROP_UPDATECHK_ACTION_DEFAULT*/);
+	public static void checkForUpdates(final Window w, final ScannerProperties appProp) {
+		String mode = appProp.getProperty(ScannerProperties.PROP_UPDATECHK_ACTION);
 		if(mode.equals("NEVER") == false) {
 			w.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 			try {
-				String ignoreRel = appProp.getProperty(IGNORE, "000");
+				String ignoreRel = appProp.getProperty(ScannerProperties.VERSION_IGNORE, "000");
 				List<Release> rel = remoteCheck(mode.endsWith("BETA"), ignoreRel);
 				if(rel.size() > 0) {
 					String msg = rel.stream().map(Release::msg).collect(Collectors.joining("\n"));
-					final Object[] options = new Object[] {LABELS.getString("aboutCheckUpdatesDownload"), LABELS.getString("aboutCheckUpdatesChangelog"), LABELS.getString("aboutCheckUpdatesSkip"), LABELS.getString("dlgClose")};
+					final Object[] options = new Object[] {LABELS.getString("aboutCheckUpdatesDownload"), changelogBtn(w), LABELS.getString("aboutCheckUpdatesSkip"), LABELS.getString("dlgClose")};
 					int choice = JOptionPane.showOptionDialog(w, msg, currentVersion(), JOptionPane.YES_NO_CANCEL_OPTION , JOptionPane.INFORMATION_MESSAGE, null, options, null);
 					if(choice == 0) { // download
 						try {
 							Desktop.getDesktop().browse(URI.create(LABELS.getString("downloadURL")));
-						} catch (IOException ex) {
+						} catch (IOException | UnsupportedOperationException ex) {
 							Msg.errorMsg(w, LABELS.getString("downloadURL"));
 						}
-					} else if(choice == 1) { // changelog
-						try {
-							Desktop.getDesktop().browse(URI.create(LABELS.getString("changelogURL")));
-						} catch (IOException ex) {
-							Msg.errorMsg(w, LABELS.getString("changelogURL"));
-						}
 					} else if(choice == 2) { // skip
-						appProp.setProperty(IGNORE, rel.stream().map(r -> r.relId()).collect(Collectors.maxBy(String.CASE_INSENSITIVE_ORDER)).get()); // new ignore
+						appProp.setProperty(ScannerProperties.VERSION_IGNORE, rel.stream().map(r -> r.relId()).collect(Collectors.maxBy(String.CASE_INSENSITIVE_ORDER)).get()); // new ignore
 					}
 				}
 			} catch(IOException e) {
@@ -90,6 +85,19 @@ public class ApplicationUpdateCHK {
 				w.setCursor(Cursor.getDefaultCursor());
 			}
 		}
+	}
+	
+	// This will not automatically dispose the OptionDialog
+	private static JButton changelogBtn(final Window w) {
+		JButton changelog = new JButton(LABELS.getString("aboutCheckUpdatesChangelog"));
+		changelog.addActionListener(e -> {
+			try {
+				Desktop.getDesktop().browse(URI.create(LABELS.getString("changelogURL")));
+			} catch (IOException | UnsupportedOperationException ex) {
+				Msg.errorMsg(w, LABELS.getString("changelogURL"));
+			}
+		});
+		return changelog;
 	}
 	
 	private static String currentVersion() {
