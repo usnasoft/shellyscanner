@@ -59,6 +59,9 @@ public class DevicesTable extends ExTooltipTable {
 	private final static URL OFFLINEIMG = MainView.class.getResource("/images/bullet_stop.png");
 	private final static URL GHOSTIMG = MainView.class.getResource("/images/bullet_ghost.png");
 	private final static URL BLUIMG = MainView.class.getResource("/images/bullet_bluetooth.png");
+//	private final static Image OFFLINEIMG = new ImageIcon(MainView.class.getResource("/images/bullet_stop.png")).getImage(); // better: Toolkit.getDefaultToolkit().getImage(MainView.class.getResource("/images/bullet_stop.png"))); 
+//	private final static Image GHOSTIMG = new ImageIcon(MainView.class.getResource("/images/bullet_ghost.png")).getImage();
+//	private final static Image BLUIMG = new ImageIcon(MainView.class.getResource("/images/bullet_bluetooth.png")).getImage();
 	public final static ImageIcon ONLINE_BULLET = new ImageIcon(MainView.class.getResource("/images/bullet_yes.png"), LABELS.getString("labelDevOnLIne"));
 	public final static ImageIcon ONLINE_BULLET_REBOOT = new ImageIcon(MainView.class.getResource("/images/bullet_yes_reboot.png"), LABELS.getString("labelDevOnLIneReboot"));
 	public final static ImageIcon OFFLINE_BULLET = new ImageIcon(OFFLINEIMG, LABELS.getString("labelDevOffLIne"));
@@ -69,7 +72,7 @@ public class DevicesTable extends ExTooltipTable {
 	private final static String FALSE = LABELS.getString("false_yn");
 	private final static String YES = LABELS.getString("true_yna");
 	private final static String NO = LABELS.getString("false_yna");
-	private final static MessageFormat SWITCH_FORMATTER = new MessageFormat(Main.LABELS.getString("METER_VAL_EX"), Locale.ENGLISH); // tooltip
+	private final static MessageFormat SWITCH_FORMATTER = new MessageFormat(Main.LABELS.getString("METER_VAL_EX"), Locale.ENGLISH); // tooltip/cell value as String
 	
 	// model columns indexes
 	public final static int COL_STATUS_IDX = 0;
@@ -333,24 +336,23 @@ public class DevicesTable extends ExTooltipTable {
 		if(g != null) {
 			final FontMetrics fm = g.getFontMetrics();
 			final int columnCount = getColumnCount();
-			final int rowCount =  getRowCount();
+			final int rowCount = getRowCount();
 			for(int c = 0; c < columnCount; c++) {
 				TableColumn tc = columnModel.getColumn(c);
-				Object val = tc.getHeaderValue();
-				int width = (val != null) ? SwingUtilities.computeStringWidth(fm, val.toString()) >> 1 /*/ 2*/ : 1;
-				if(c == convertColumnIndexToView(COL_UPTIME_IDX)) {
-					width = Math.max(width, uptimeRenderer.getPreferredWidth(fm));
-				} else if(c == convertColumnIndexToView(COL_STATUS_IDX)) {
-					width = Math.max(width, ONLINE_BULLET.getIconWidth() + 1);
+				int modelCol = convertColumnIndexToModel(c);
+				if(modelCol == COL_UPTIME_IDX) {
+					tc.setPreferredWidth(uptimeRenderer.getPreferredWidth(fm));
+				} else if(modelCol == COL_STATUS_IDX) {
+					tc.setPreferredWidth(ONLINE_BULLET.getIconWidth() + 1);
 				} else {
+					int width = SwingUtilities.computeStringWidth(fm, tc.getHeaderValue().toString()) >> 1;
 					for(int r = 0; r < rowCount; r++) {
-						val = getValueAt(r, c);
+						Object val = getValueAt(r, c);
 						if(val != null) {
 							if(val instanceof Object[] arr) {
 								for(Object v: arr) {
 									if(v != null) {
-										int w = SwingUtilities.computeStringWidth(fm, v.toString());
-										width = Math.max(width, w);
+										width = Math.max(width, SwingUtilities.computeStringWidth(fm, v.toString()));
 									}
 								}
 							} else {
@@ -358,8 +360,8 @@ public class DevicesTable extends ExTooltipTable {
 							}
 						}
 					}
+					tc.setPreferredWidth(width);
 				}
-				tc.setPreferredWidth(width);
 			}
 		}
 	}

@@ -17,7 +17,7 @@ public class ThermostatG2 implements ThermostatInterface {
 	private boolean heatingMode; // or cooling
 	private boolean running; // or cooling
 	private float targetTemp;
-	// id = 0
+	// private int id = 0
 
 	public ThermostatG2(AbstractG2Device parent) {
 		this.parent = parent;
@@ -85,10 +85,10 @@ public class ThermostatG2 implements ThermostatInterface {
 		return running;
 	}
 
-	/*
+	/**
 	 * return true if heating; false if cooling
 	 */
-	public boolean getType() {
+	public boolean isHeating() {
 		return heatingMode;
 	}
 	
@@ -143,7 +143,8 @@ public class ThermostatG2 implements ThermostatInterface {
 	
 	@Override
 	public String toString() {
-		return "Target temp:" + targetTemp;
+		return "Target temp (" + running + "): " + targetTemp;
+//		return "Prof:" + getCurrentProfile() + "; Temp:" + targetTemp; - G1
 	}
 }
 
