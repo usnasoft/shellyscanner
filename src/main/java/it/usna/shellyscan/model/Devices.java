@@ -496,11 +496,12 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 			LOG.debug("Starting ghosts reconnect");
 			int dalay = 0;
 			for(int i = 0; i < devices.size(); i++) {
-				if(devices.get(i) instanceof GhostDevice g && g.isBatteryOperated() == false && g.getGeneration().equals(AbstractBluDevice.GENERATION) == false /*&& g.getAddressAndPort().getPort() == 80*/) { // getPort() port is (currently) variable
+				if(devices.get(i) instanceof GhostDevice g && g.isBatteryOperated() == false && g.getGeneration().equals(AbstractBluDevice.GENERATION) == false && g.getGeneration().equals(BTHomeDevice.GENERATION) == false) { // getPort() port is (currently) variable
+					// && g.getAddressAndPort().getPort() == 80 -- the port may change
 					executor.schedule(() -> {
 						try {
 							create(g.getAddressAndPort().getAddress(), g.getAddressAndPort().getPort(), g.getAddressAndPort().getAddress().getHostAddress(), false);
-						} catch (RuntimeException e) {/*LOG.trace("ghosts reload {}", d.getAddress());*/}
+						} catch (RuntimeException e) { /*LOG.trace("ghosts reload {}", d.getAddress());*/ }
 					}, dalay, TimeUnit.MILLISECONDS);
 					dalay += 4;
 				}

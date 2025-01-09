@@ -302,6 +302,7 @@ consecutive fw updates progress fixed
 
 ---
 // TODO
+// it.usna.shellyscan.model.Devices.ghostsReconnect() try to reconnect also "generic" with error
 // wall display restore profiles and rules (/rpc/Thermostat.Schedule.ListRules?id=0&profile_id=1)
 // portare il modello sulla tabella per semplificare il calcolo dei tooltip (e delle icone di stato)
 // Xmod1 sganciare bottone se detatched (?)

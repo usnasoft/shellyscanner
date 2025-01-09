@@ -76,7 +76,7 @@ public class DialogDeviceScripts extends JDialog {
 	
 	@Override
 	public void dispose() {
-		firePropertyChange("S_CLOSE", null, null);
 		super.dispose();
+		firePropertyChange("S_CLOSE", null, null);
 	}
 }

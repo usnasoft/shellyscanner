@@ -43,6 +43,7 @@ import it.usna.shellyscan.model.device.modules.FirmwareManager;
  * https://shelly-api-docs.shelly.cloud/gen2/DynamicComponents/BTHome/
  */
 public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
+	public final static String GENERATION = "bth";
 	private final static Logger LOG = LoggerFactory.getLogger(BTHomeDevice.class);
 	private final static Map<String, String> DEV_DICTIONARY = Map.of(
 			"SBBT-002C", "Blu Button",

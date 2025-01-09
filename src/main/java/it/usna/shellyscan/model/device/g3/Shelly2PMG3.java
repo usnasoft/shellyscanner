@@ -207,7 +207,7 @@ public class Shelly2PMG3 extends AbstractG3Device implements ModulesHolder, Inte
 			current1 = switchStatus1.path("current").floatValue();
 			pf1 = switchStatus1.path("pf").floatValue();
 
-			internalTmp = (float)switchStatus0.path("temperature").path("tC").floatValue();
+			internalTmp = switchStatus0.path("temperature").path("tC").floatValue();
 		} else {
 			JsonNode cover = status.get("cover:0");
 			power0 = cover.path("apower").floatValue();

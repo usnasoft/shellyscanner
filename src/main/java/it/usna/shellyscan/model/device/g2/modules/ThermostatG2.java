@@ -143,8 +143,7 @@ public class ThermostatG2 implements ThermostatInterface {
 	
 	@Override
 	public String toString() {
-		return "Target temp (" + running + "): " + targetTemp;
-//		return "Prof:" + getCurrentProfile() + "; Temp:" + targetTemp; - G1
+		return "Target temp: " + targetTemp + (running ? " (on)" : " (off)"); // profile
 	}
 }
 

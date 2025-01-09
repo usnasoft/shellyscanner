@@ -171,6 +171,7 @@ public class CheckList extends JDialog implements UsnaEventListener<Devices.Even
 				rowSorter.setComparator(COL_WIFI1, sorter);
 				rowSorter.setComparator(COL_WIFI2, sorter);
 				rowSorter.setComparator(COL_EXTENDER, sorter);
+				rowSorter.setComparator(COL_SCRIPTS, sorter);
 
 				if (ipSort != SortOrder.UNSORTED) {
 					sortByColumn(COL_IP, ipSort);
@@ -328,7 +329,6 @@ public class CheckList extends JDialog implements UsnaEventListener<Devices.Even
 			private void doPopup(MouseEvent evt) {
 				final int row;
 				if (evt.isPopupTrigger() && (row = table.rowAtPoint(evt.getPoint())) >= 0) {
-					UsnaPopupMenu tablePopup = null;
 					if(table.isRowSelected(row) == false) {
 						table.setRowSelectionInterval(row, row);
 					}
@@ -340,48 +340,44 @@ public class CheckList extends JDialog implements UsnaEventListener<Devices.Even
 					case COL_BLE -> bleAction;
 					case COL_AP -> apModeAction;
 					case COL_ROAMING -> roamingAction;
-					case COL_WIFI1, COL_WIFI2 -> {
-						AbstractAction wifiEditAction = new AbstractAction(LABELS.getString("edit") + " (" + tModel.getColumnName(col) + ")") {
+					case COL_WIFI1, COL_WIFI2 -> new AbstractAction(LABELS.getString("edit") + " (" + tModel.getColumnName(col) + ")") {
+						private static final long serialVersionUID = 1L;
+						@Override
+						public void actionPerformed(ActionEvent e) {
+							final int[] modelRows =  table.getSelectedModelRows();
+							int devIdx[] = IntStream.of(modelRows).map(i -> devicesInd[i]).toArray();
+							DialogDeviceSettings w = new DialogDeviceSettings(CheckList.this, appModel, devIdx, (col == COL_WIFI1) ? DialogDeviceSettings.WIFI1 : DialogDeviceSettings.WIFI2);
+							w.addPropertyChangeListener("S_APPLY", propertyChangeEvent -> {
+								try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e1) {}
+								for(int localRow: modelRows) {
+									tModel.setValueAt(DevicesTable.UPDATING_BULLET, localRow, COL_STATUS);
+									updateRow(getLocalDevice(localRow), localRow);
+								}
+							});
+						}
+					};
+					case COL_EXTENDER -> rangeExtenderAction;
+					case COL_SCRIPTS -> {
+						AbstractAction scriptsEditAction = new AbstractAction(LABELS.getString("edit") + " (" + tModel.getColumnName(col) + ")") {
 							private static final long serialVersionUID = 1L;
 							@Override
 							public void actionPerformed(ActionEvent e) {
-								final int[] modelRows =  table.getSelectedModelRows();
-								int devIdx[] = IntStream.of(modelRows).map(i -> devicesInd[i]).toArray();
-								DialogDeviceSettings w = new DialogDeviceSettings(CheckList.this, appModel, devIdx, (col == COL_WIFI1) ? DialogDeviceSettings.WIFI1 : DialogDeviceSettings.WIFI2);
-								w.addPropertyChangeListener("S_APPLY", propertyChangeEvent -> {
+								DialogDeviceScripts w = new DialogDeviceScripts(CheckList.this, appModel, devicesInd[table.getSelectedModelRow()]);
+								final int localRow = table.getSelectedModelRow();
+								w.addPropertyChangeListener("S_CLOSE", propertyChangeEvent -> {
 									try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e1) {}
-									for(int localRow: modelRows) {
-										tModel.setValueAt(DevicesTable.UPDATING_BULLET, localRow, COL_STATUS);
-										updateRow(getLocalDevice(localRow), localRow);
-									}
+									tModel.setValueAt(DevicesTable.UPDATING_BULLET, localRow, COL_STATUS);
+									updateRow(getLocalDevice(localRow), localRow);
 								});
 							}
 						};
-						yield wifiEditAction;
+						Object val;
+						scriptsEditAction.setEnabled(table.getSelectedRowCount() == 1 && (val = table.getValueAt(row, col)) != null && val.equals(NOT_APPLICABLE_STR) == false);
+						yield scriptsEditAction;
 					}
-					case COL_SCRIPTS -> {
-						if(table.getSelectedRowCount() == 1) {
-							AbstractAction scriptsEditAction = new AbstractAction(LABELS.getString("edit") + " (" + tModel.getColumnName(col) + ")") {
-								private static final long serialVersionUID = 1L;
-								@Override
-								public void actionPerformed(ActionEvent e) {
-									DialogDeviceScripts w = new DialogDeviceScripts(CheckList.this, appModel, devicesInd[table.getSelectedModelRow()]);
-									final int localRow = table.getSelectedModelRow();
-									w.addPropertyChangeListener("S_CLOSE", propertyChangeEvent -> {
-										try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e1) {}
-										tModel.setValueAt(DevicesTable.UPDATING_BULLET, localRow, COL_STATUS);
-										updateRow(getLocalDevice(localRow), localRow);
-									});
-								}
-							};
-							yield scriptsEditAction;
-						} else {
-							yield null;
-						}
-					}
-					case COL_EXTENDER -> rangeExtenderAction;
 					default -> null;
 					};
+					final UsnaPopupMenu tablePopup;
 					if(colAction != null) {
 						tablePopup = new UsnaPopupMenu(colAction, null, browseAction, rebootAction);
 					} else {
@@ -482,8 +478,8 @@ public class CheckList extends JDialog implements UsnaEventListener<Devices.Even
 	public void dispose() {
 		properties.removeListener(this);
 		appModel.removeListener(this);
-		exeService.shutdownNow();
 		super.dispose();
+		exeService.shutdownNow();
 	}
 
 	private void fill() {
@@ -755,6 +751,6 @@ public class CheckList extends JDialog implements UsnaEventListener<Devices.Even
 			updateHideCaptions();
 		}
 	}
-} // 534 - 560 - 678 - 708
+} // 534 - 560 - 678 - 708 - 753
 
 // g1 "factory_reset_from_switch" : true, "pon_wifi_reset" : false,
