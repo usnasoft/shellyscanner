@@ -290,6 +290,7 @@ selection subtraction (ctrl+shift)
  e.g. java -jar C:\Users\antonio\shellyscan-1.2.0.jar -graphs V -ipscan 192.168.1.203-203
  
 1.2.1
+Support for Plug S Gen3
 chacklist multiselection
 checklis - extender: "-" non applicabile, X non attivo
 checklis - roaming editabile; for G2 interval 60s - 0s
@@ -299,6 +300,12 @@ full Blu TRV support (also fw update)
 improved Shelly Pro 3EM support
 optional fahrenheit temperature unit
 consecutive fw updates progress fixed
+
+1.2.1
+Shelly Pro Dimmer 2PM
+3EM-63 G3
+Shelly Pro RGBWW PM - todo
+Shelly Dimmer Gen3
 
 ---
 // TODO

@@ -37,8 +37,8 @@ import it.usna.util.CLI;
 
 public class Main {
 	public final static String APP_NAME = "Shelly Scanner";
-	public final static String VERSION = "1.2.1";
-	public final static String VERSION_CODE = "001.002.001r200"; // r0xx alpha; r1xx beta; r2xx stable
+	public final static String VERSION = "1.2.2 alpha";
+	public final static String VERSION_CODE = "001.002.002r000"; // r0xx alpha; r1xx beta; r2xx stable
 	public final static Image ICON = Toolkit.getDefaultToolkit().createImage(Main.class.getResource("/images/ShSc24.png"));
 	public final static String BACKUP_FILE_EXT = "sbk";
 	public final static String ARCHIVE_FILE_EXT = "arc";
@@ -54,7 +54,6 @@ public class Main {
 
 	public static void main(final String ... args) {
 		final ScannerProperties appProp = ScannerProperties.init(System.getProperty("user.home") + File.separator + ".shellyScanner");
-		//		final AppProperties appProp = ScannerProperties.get();
 		//		System.setProperty(SimpleLogger.DEFAULT_LOG_LEVEL_KEY, "error");
 		System.setProperty(SimpleLogger.LOG_KEY_PREFIX + "javax.jmdns", "warn");
 		System.setProperty(SimpleLogger.LOG_KEY_PREFIX + "org.eclipse.jetty", "warn");
