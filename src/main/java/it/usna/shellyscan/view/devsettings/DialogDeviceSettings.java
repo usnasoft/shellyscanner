@@ -4,6 +4,8 @@ import static it.usna.shellyscan.Main.LABELS;
 
 import java.awt.BorderLayout;
 import java.awt.Cursor;
+import java.awt.Frame;
+import java.awt.Window;
 import java.util.concurrent.TimeUnit;
 
 import javax.swing.JButton;
@@ -22,7 +24,6 @@ import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
 import it.usna.shellyscan.model.device.g1.AbstractG1Device;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.modules.WIFIManager;
-import it.usna.shellyscan.view.MainView;
 import it.usna.shellyscan.view.util.Msg;
 import it.usna.shellyscan.view.util.UtilMiscellaneous;
 import it.usna.util.UsnaEventListener;
@@ -38,11 +39,27 @@ public class DialogDeviceSettings extends JDialog implements UsnaEventListener<D
 	private Thread showCurrentThread;
 	private AbstractSettingsPanel currentPanel = null;
 	
+	public final static int FW = 0;
+	public final static int WIFI1 = 1;
+	public final static int WIFI2 = 2;
+	
 	private Devices model;
 	private int[] devicesInd;
 
-	public DialogDeviceSettings(final MainView owner, Devices model, int[] devicesInd) {
+	/**
+	 * @wbp.parser.constructor
+	 */
+	public DialogDeviceSettings(final Frame owner, Devices model, int[] devicesInd) {
 		super(owner, false);
+		init(owner, model, devicesInd, FW);
+	}
+	
+	public DialogDeviceSettings(final JDialog owner, Devices model, int[] devicesInd, int defaultPanel) {
+		super(owner, false);
+		init(owner, model, devicesInd, defaultPanel);
+	}
+
+	private void init(final Window owner, Devices model, int[] devicesInd, int defaultPanel) {
 		setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 		this.model = model;
 		this.devicesInd = devicesInd;
@@ -73,12 +90,12 @@ public class DialogDeviceSettings extends JDialog implements UsnaEventListener<D
 		PanelResLogin panelResLogin = new PanelResLogin(this, devTypes);
 		tabbedPane.add(LABELS.getString("dlgSetRestrictedLogin"), panelResLogin);
 		final AbstractSettingsPanel panelMQTT;
-		if(devTypes == Gen.MIX || existsOffLine()) { // PanelMQTTMix allows deferred execution (one day we could implement type specific deferred executions and remove existsOffLine()
-			panelMQTT = new PanelMQTTMix(this);
-		} else if(devTypes == Gen.G1) {
+		if(devTypes == Gen.G1 && existsOffLine() == false) { // existsOffLine() == false -> deferred mqtt on PanelMQTTMix only
 			panelMQTT = new PanelMQTTG1(this);
-		} else /*if(devTypes == Gen.G2)*/ {
+		} else if(devTypes == Gen.G2 && existsOffLine() == false) {
 			panelMQTT = new PanelMQTTG2(this);
+		} else /*if(devTypes == Gen.MIX || existsOffLine())*/{
+			panelMQTT = new PanelMQTTMix(this);
 		}
 		tabbedPane.add(LABELS.getString("dlgSetMQTT"), panelMQTT);
 		PanelOthers others = new PanelOthers(this);
@@ -100,6 +117,8 @@ public class DialogDeviceSettings extends JDialog implements UsnaEventListener<D
 		panel_1.add(btnOKButton);
 		panel_1.add(btnApplyClose);
 		panel_1.add(btnClose);
+		
+		tabbedPane.setSelectedIndex(defaultPanel);
 
 		tabbedPane.addChangeListener(e -> {
 			showCurrent();
@@ -155,6 +174,7 @@ public class DialogDeviceSettings extends JDialog implements UsnaEventListener<D
 		setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 		try {
 			String msg = panel.apply();
+			firePropertyChange("S_APPLY", null, null);
 			if(msg != null && msg.length() > 0) {
 				Msg.showHtmlMessageDialog(this, msg, name, JOptionPane.INFORMATION_MESSAGE);
 			}

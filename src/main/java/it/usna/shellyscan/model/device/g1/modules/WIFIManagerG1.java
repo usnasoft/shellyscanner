@@ -11,7 +11,7 @@ import it.usna.shellyscan.model.device.g1.AbstractG1Device;
 import it.usna.shellyscan.model.device.modules.WIFIManager;
 
 public class WIFIManagerG1 implements WIFIManager {
-	private final String net;
+	private String net;
 	private final AbstractG1Device d;
 	private boolean enabled;
 	private String dSSID;
@@ -22,17 +22,19 @@ public class WIFIManagerG1 implements WIFIManager {
 	private String dns;
 	
 	public WIFIManagerG1(AbstractG1Device d, Network network) throws IOException {
-		if(network == Network.PRIMARY) {
-			net = "sta";
-		} else if(network == Network.SECONDARY) {
-			net = "sta1";
-		} else {
-			net = "err";
-		}
 		this.d = d;
-		init();
+		if(network != null) {
+			if(network == Network.PRIMARY) {
+				net = "sta";
+			} else if(network == Network.SECONDARY) {
+				net = "sta1";
+			} else {
+				net = "err";
+			}
+			init();
+		}
 	}
-	
+
 	public WIFIManagerG1(AbstractG1Device d, Network network, boolean noInit) throws IOException {
 		net = (network == Network.PRIMARY) ? "sta" : "sta1";
 		this.d = d;
@@ -122,6 +124,11 @@ public class WIFIManagerG1 implements WIFIManager {
 		} catch (UnsupportedEncodingException e) {
 			return e.getMessage();
 		}
+	}
+	
+	@Override
+	public String enableRoaming(boolean enable) {
+		return d.sendCommand("/settings?ap_roaming_enabled=" + enable);
 	}
 	
 	public static Network currentConnection(AbstractG1Device d) {

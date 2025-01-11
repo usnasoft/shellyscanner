@@ -30,19 +30,20 @@ import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.ModulesHolder;
 import it.usna.shellyscan.model.device.RestoreMsg;
-import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.blu.modules.Sensor;
 import it.usna.shellyscan.model.device.blu.modules.SensorsCollection;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.g2.modules.Input;
 import it.usna.shellyscan.model.device.g2.modules.Webhooks;
 import it.usna.shellyscan.model.device.modules.DeviceModule;
+import it.usna.shellyscan.model.device.modules.FirmwareManager;
 
 /**
  * Generic BTHome device with measures and/or buttons
  * https://shelly-api-docs.shelly.cloud/gen2/DynamicComponents/BTHome/
  */
 public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
+	public final static String GENERATION = "bth";
 	private final static Logger LOG = LoggerFactory.getLogger(BTHomeDevice.class);
 	private final static Map<String, String> DEV_DICTIONARY = Map.of(
 			"SBBT-002C", "Blu Button",
@@ -67,14 +68,14 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 	private Webhooks webhooks = new Webhooks(parent);
 	private Input[] inputs;
 
-	public BTHomeDevice(ShellyAbstractDevice parent, JsonNode compInfo, String localName, String index) {
-		super((AbstractG2Device)parent, compInfo, index);
+	public BTHomeDevice(AbstractG2Device parent, JsonNode compInfo, String localName, String index) {
+		super(parent, compInfo, index);
 //		this.typeName = Optional.ofNullable(DEV_DICTIONARY.get(localName)).orElse("Generic BTHome");
 
 		this.typeName = DEV_DICTIONARY.get(localName); // old fw
 		int len;
 		if(this.typeName == null && (len = localName.length()) > 4) {
-			String tmpLocalName = localName.substring(0, len -4);
+			String tmpLocalName = localName.substring(0, len - 4);
 			this.typeName = DEV_DICTIONARY_NEW.get(tmpLocalName); // new fw
 			if(this.typeName != null) {
 				localName = tmpLocalName;
@@ -87,6 +88,7 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 		this.hostname = localName + "-" + mac;
 		this.localName = localName;
 		this.webhooks = new Webhooks(this.parent);
+		this.uptime = -1;
 	}
 
 	@Override
@@ -149,7 +151,7 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 		String k;
 		boolean devExists = false;
 		for(JsonNode comp: components) {
-			if(comp.path("key").textValue().equals(DEVICE_KEY_PREFIX + componentIndex)) {
+			if(devExists == false && comp.path("key").textValue().equals(DEVICE_KEY_PREFIX + componentIndex)) { // devExists == false for better efficiency
 				fillSettings(comp.path("config"));
 				fillStatus(comp.path("status"));
 				devExists = true;
@@ -157,10 +159,11 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 				int id = Integer.parseInt(k.substring(13));
 				Sensor s = sensors.getSensor(id);
 				if(s != null) {
-					s.fillSConfig(comp.path("config"));
-					s.fillStatus(comp.path("status"));
+//					s.fillSConfig(comp.path("config"));
+//					s.fillStatus(comp.path("status"));
+					s.fill(comp);
+//					devExists = true;
 				}
-				devExists = true;
 			}
 		}
 		if(devExists == false) {
@@ -194,8 +197,8 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 		ArrayList<String> l = new ArrayList<String>(Arrays.asList(
 				"/rpc/BTHomeDevice.GetConfig?id=" + componentIndex, "/rpc/BTHomeDevice.GetStatus?id=" + componentIndex, "/rpc/BTHomeDevice.GetKnownObjects?id=" + componentIndex));
 		for(Sensor s: sensors.getSensors()) {
-			l.add("()/rpc/BTHomeSensor.GetConfig?id=" + s.getId());
-			l.add("()/rpc/BTHomeSensor.GetStatus?id=" + s.getId());
+			l.add("(BTHomeSensor.GetConfig [" + s.getId() + "])/rpc/BTHomeSensor.GetConfig?id=" + s.getId());
+			l.add("(BTHomeSensor.GetStatus [" + s.getId() + "])/rpc/BTHomeSensor.GetStatus?id=" + s.getId());
 		}
 		return l.toArray(String[]::new);
 	}
@@ -203,6 +206,11 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 	@Override
 	public Meters[] getMeters() {
 		return meters;
+	}
+	
+	@Override
+	public FirmwareManager getFWManager() {
+		throw new UnsupportedOperationException();
 	}
 	
 	@Override
@@ -293,7 +301,7 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 			// Sensors
 			HashMap<String, String> sensorsDictionary = new HashMap<>(); // old-new key ("bthomesensor:200"-"bthomesensor:201")
 			JsonNode storedWebHooks = backupJsons.get("Webhook.List.json");
-			errors.add(sensors.deleteAll()); // deleting a sensor all related webhooks are also deleted
+			errors.add(sensors.deleteAll()); // deleting a sensor all related webhooks are removed
 			for(JsonNode fileComp: fileComponents) {
 				final String fileKey = fileComp.path("key").textValue();
 				if(fileKey.startsWith(SENSOR_KEY_PREFIX) && fileComp.at("/config/addr").textValue().equals(fileAddr)) {
@@ -303,7 +311,7 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 					out.set("config", config);
 					TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 					String newKey = parent.getJSON("BTHome.AddSensor", out).get("added").textValue(); // BTHome.AddSensor -> {"added":"bthomesensor:200"}
-					Webhooks.restore(parent, fileKey, newKey, Devices.MULTI_QUERY_DELAY, storedWebHooks, errors); // Webhook.Create
+					Webhooks.restore(parent, fileKey, newKey, Devices.MULTI_QUERY_DELAY, storedWebHooks, errors); // Webhook.Create - deleting a sensor all related webhooks are removed
 					
 					sensorsDictionary.put(fileKey, newKey);
 				}

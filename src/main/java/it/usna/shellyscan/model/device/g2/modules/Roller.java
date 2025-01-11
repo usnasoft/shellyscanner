@@ -82,7 +82,7 @@ public class Roller implements RollerInterface {
 	
 	@Override
 	public String getLabel() {
-		return name.length() > 0 ? name : parent.getName();
+		return (name == null || name.isEmpty()) ? parent.getName() : name;
 	}
 	
 	public String restore(JsonNode config) {

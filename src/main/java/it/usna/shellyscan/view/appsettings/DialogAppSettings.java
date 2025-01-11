@@ -86,11 +86,11 @@ public class DialogAppSettings extends JDialog {
 			
 			// Check for new Shelly Scanner release
 			if(panelGUI.updNoCHK.isSelected()) {
-				appProp.setProperty(ScannerProperties.PROP_UPDATECHK_ACTION, "NEVER");
+				appProp.setProperty(ScannerProperties.PROP_UPDATECHK_ACTION, ScannerProperties.PROP_UPDATECHK_NEVER);
 			} else if(panelGUI.updStableCHK.isSelected()) {
-				appProp.setProperty(ScannerProperties.PROP_UPDATECHK_ACTION, "STABLE");
+				appProp.setProperty(ScannerProperties.PROP_UPDATECHK_ACTION, ScannerProperties.PROP_UPDATECHK_STABLE);
 			} else { // updBetaCHK
-				appProp.setProperty(ScannerProperties.PROP_UPDATECHK_ACTION, "BETA");
+				appProp.setProperty(ScannerProperties.PROP_UPDATECHK_ACTION, ScannerProperties.PROP_UPDATECHK_DEV);
 			}
 			
 			// Uptime
@@ -101,6 +101,9 @@ public class DialogAppSettings extends JDialog {
 			} else { // updBetaCHK
 				appProp.setProperty(ScannerProperties.PROP_UPTIME_MODE, "FROM");
 			}
+			
+			// Temp unit
+			appProp.setProperty(ScannerProperties.PROP_TEMP_UNIT, panelGUI.rdbtnNewRadioButtonTC.isSelected() ? "C" : "F");
 			
 			// Filter
 			appProp.setIntProperty(ScannerProperties.PROP_DEFAULT_FILTER_IDX, panelGUI.comboFilterCol.getSelectedIndex());

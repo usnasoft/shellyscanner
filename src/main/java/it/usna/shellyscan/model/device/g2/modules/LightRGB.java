@@ -46,7 +46,7 @@ public class LightRGB implements RGBInterface {
 
 	@Override
 	public String getLabel() {
-		return (name != null && name.length() > 0) ? name : parent.getName();
+		return (name == null || name.isEmpty()) ? parent.getName() : name;
 	}
 
 	@Override

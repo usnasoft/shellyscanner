@@ -38,8 +38,10 @@ public class DeviceMetersCellRenderer extends JPanel implements TableCellRendere
 		EMPTY.setOpaque(true);
 		GBC_FILLER.weightx = 1.0;
 	}
+	private boolean tempUnitCelsius;
 
-	public DeviceMetersCellRenderer() {
+	public DeviceMetersCellRenderer(boolean celsius) {
+		this.tempUnitCelsius = celsius;
 		GridBagLayout gridBagLayout = new GridBagLayout();
 		gridBagLayout.rowWeights = new double[] {1.0, 1.0, 1.0, 1.0, 1.0}; // up to 5 rows
 		setLayout(gridBagLayout);
@@ -74,7 +76,13 @@ public class DeviceMetersCellRenderer extends JPanel implements TableCellRendere
 
 							JLabel val;
 							float metValue = m.getValue(t);
-							if(t == Meters.Type.EX) {
+							if(t == Meters.Type.T || t == Meters.Type.T1 || t == Meters.Type.T2 || t == Meters.Type.T3 || t == Meters.Type.T4) {
+								if(tempUnitCelsius) {
+									val = new JLabel(String.format(Locale.ENGLISH, Main.LABELS.getString("METER_VAL_T"), metValue));
+								} else { // fahrenheit 
+									val = new JLabel(String.format(Locale.ENGLISH, Main.LABELS.getString("METER_VAL_T_F"), metValue * 1.8f + 32f));
+								}
+							} else if(t == Meters.Type.EX) {
 								singleArrayObj[0] = metValue;
 								val = new JLabel(SWITCH_FORMATTER.format(singleArrayObj));
 							} else {
@@ -106,6 +114,10 @@ public class DeviceMetersCellRenderer extends JPanel implements TableCellRendere
 //			e.printStackTrace();
 //			return this;
 //		}
+	}
+	
+	public void setTempUnit(boolean celsius) {
+		tempUnitCelsius = celsius;
 	}
 	
 	private static boolean isVisible(Meters.Type t) {

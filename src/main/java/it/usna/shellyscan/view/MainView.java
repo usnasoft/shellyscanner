@@ -13,11 +13,8 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.io.BufferedWriter;
 import java.io.IOException;
 import java.net.URI;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collections;
@@ -32,7 +29,6 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
-import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -48,7 +44,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import javax.swing.filechooser.FileNameExtensionFilter;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,6 +53,7 @@ import it.usna.shellyscan.Main;
 import it.usna.shellyscan.controller.BackupAction;
 import it.usna.shellyscan.controller.DeferrableTask;
 import it.usna.shellyscan.controller.DeferrablesContainer;
+import it.usna.shellyscan.controller.ExportCSVAction;
 import it.usna.shellyscan.controller.RestoreAction;
 import it.usna.shellyscan.controller.SelectionAction;
 import it.usna.shellyscan.controller.UsnaAction;
@@ -83,7 +79,6 @@ import it.usna.swing.UsnaPopupMenu;
 import it.usna.swing.table.UsnaTableModel;
 import it.usna.swing.texteditor.TextDocumentListener;
 import it.usna.util.AppProperties;
-import it.usna.util.IOFile;
 import it.usna.util.UsnaEventListener;
 
 public class MainView extends MainWindow implements UsnaEventListener<Devices.EventType, Integer>, ScannerProperties.AppPropertyListener {
@@ -146,7 +141,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		SwingUtilities.invokeLater(() -> {
 			setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 			try {
-				model.rescan(appProp.getBoolProperty(ScannerProperties.PROP_USE_ARCHIVE, true));
+				model.rescan(appProp.getBoolProperty(ScannerProperties.PROP_USE_ARCHIVE));
 				Thread.sleep(500); // too many call disturb some devices
 			} catch (IOException e1) {
 				Msg.errorMsg(this, e1);
@@ -195,7 +190,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 	private Action checkListAction = new UsnaAction(this, "action_checklist_name", "action_checklist_tooltip", null, "/images/Ok.png", e -> {
 		List<? extends RowSorter.SortKey> k = devicesTable.getRowSorter().getSortKeys();
 		new CheckList(this, model, devicesTable.getSelectedModelRows(), k.get(0).getColumn() == DevicesTable.COL_IP_IDX ? k.get(0).getSortOrder() : SortOrder.UNSORTED);
-		// too many call disturb some devices (especially gen1)
+		// too many consecutive calls disturb some devices (especially gen1)
 		try { Thread.sleep(250); } catch (InterruptedException e1) {}
 	});
 	
@@ -212,7 +207,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 	// also asks for credential if needed (login action)
 	private UsnaAction reloadAction = new UsnaSelectedAction(this, devicesTable, "action_name_reload", null, "/images/Loop16.png", null, i -> {
 		final ShellyAbstractDevice d = model.get(i);
-		model.create(d.getAddressAndPort().getAddress(), d.getAddressAndPort().getPort(), d instanceof BTHomeDevice blu ? blu.getParent().getHostname() : d.getHostname(), false);
+		model.create(d.getAddressAndPort().getAddress(), d.getAddressAndPort().getPort(), d instanceof AbstractBluDevice blu ? blu.getParent().getHostname() : d.getHostname(), false);
 	});
 
 	private Action backupAction;
@@ -245,7 +240,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 	private UsnaToggleAction detailedViewAction;
 	
 	private Action appSettingsAction = new UsnaAction(this, "action_appsettings_name", "action_appsettings_tooltip", null, "/images/Gear.png",
-			e -> new DialogAppSettings(MainView.this, devicesTable, model, detailedViewAction.isSelected(), appProp) );
+			e -> new DialogAppSettings(this, devicesTable, model, detailedViewAction.isSelected(), appProp) );
 	
 	private Action printAction = new UsnaAction(this, "action_print_name", "action_print_tooltip", null, "/images/Printer.png", e -> {
 		try {
@@ -256,20 +251,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		}
 	});
 	
-	private Action csvExportAction = new UsnaAction(this, "action_csv_name", "action_csv_tooltip", null, "/images/Table.png", e -> {
-		final JFileChooser fc = new JFileChooser(appProp.getProperty("LAST_PATH"));
-		fc.setFileFilter(new FileNameExtensionFilter(LABELS.getString("filetype_csv_desc"), "csv"));
-		if(fc.showSaveDialog(MainView.this) == JFileChooser.APPROVE_OPTION) {
-			Path outPath = IOFile.addExtension(fc.getSelectedFile().toPath(), "csv");
-			try (BufferedWriter writer = Files.newBufferedWriter(outPath)) {
-				devicesTable.csvExport(writer, appProp.getProperty(ScannerProperties.PROP_CSV_SEPARATOR, ScannerProperties.PROP_CSV_SEPARATOR_DEFAULT));
-				JOptionPane.showMessageDialog(MainView.this, LABELS.getString("msgFileSaved"), Main.APP_NAME, JOptionPane.INFORMATION_MESSAGE);
-			} catch (IOException ex) {
-				Msg.errorMsg(this, ex);
-			}
-			appProp.setProperty("LAST_PATH", fc.getCurrentDirectory().getPath());
-		}
-	});
+	private Action csvExportAction = new ExportCSVAction(this, devicesTable);
 
 	private Action devicesSettingsAction = new UsnaAction(this, "action_general_conf_name", "action_general_conf_tooltip", null, "/images/Tool.png", e -> {
 		new DialogDeviceSettings(this, model, devicesTable.getSelectedModelRows());
@@ -391,7 +373,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		getContentPane().add(scrollPane, BorderLayout.CENTER);
 		devicesTable.sortByColumn(DevicesTable.COL_IP_IDX, SortOrder.ASCENDING);
 		devicesTable.loadColPos(appProp);
-		devicesTable.setUptimeRenderMode(appProp.getProperty(ScannerProperties.PROP_UPTIME_MODE, ScannerProperties.PROP_UPTIME_MODE_DEFAULT));
+		devicesTable.setUptimeRenderMode(appProp.getProperty(ScannerProperties.PROP_UPTIME_MODE/*, ScannerProperties.PROP_UPTIME_MODE_DEFAULT*/));
 		
 		scrollPane.setViewportView(devicesTable);
 		scrollPane.getViewport().setBackground(Main.BG_COLOR);
@@ -435,7 +417,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 			@Override
 			public void mousePressed(MouseEvent e) {
 		        if (e.getClickCount() == 2 && devicesTable.getSelectedRow() >= 0 && devicesTable.isCellEditable(devicesTable.getSelectedRow(), devicesTable.getSelectedColumn()) == false) {
-		        	if(appProp.getProperty(ScannerProperties.PROP_DCLICK_ACTION, ScannerProperties.PROP_DCLICK_ACTION_DEFAULT).equals("DET") && infoAction.isEnabled()) {
+		        	if(appProp.getProperty(ScannerProperties.PROP_DCLICK_ACTION/*, ScannerProperties.PROP_DCLICK_ACTION_DEFAULT*/).equals("DET") && infoAction.isEnabled()) {
 		        		infoAction.actionPerformed(null);
 		        	} else if(browseAction.isEnabled()) {
 		        		browseAction.actionPerformed(null);
@@ -531,7 +513,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 	}
 	
 	private void updateHideCaptions() {
-		boolean en = appProp.getBoolProperty(ScannerProperties.PROP_TOOLBAR_CAPTIONS, true) == false;
+		boolean en = appProp.getBoolProperty(ScannerProperties.PROP_TOOLBAR_CAPTIONS/*, true*/) == false;
 		Stream.of(toolBar.getComponents()).filter(c -> c instanceof AbstractButton).forEach(b -> ((AbstractButton)b).setHideActionText(en));
 	}
 	
@@ -550,31 +532,36 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 	private void rowsSelectionManager() {
 		tableSelectionListener = e -> {
 			if(e.getValueIsAdjusting() == false) {
-				boolean singleSelection, singleSelectionNoGhost, selection, selectionNoGhost, selectionNoBLU;
+				boolean singleSelection, singleSelectionNoGhost, selection, selectionNoGhost, /*selectionNoBLU,*/ selectionNoBTHome;
 				int selectedRows = devicesTable.getSelectedRowCount();
 				singleSelection = singleSelectionNoGhost = selectedRows == 1;
-				selection = selectionNoGhost = selectionNoBLU = selectedRows > 0;
+				selection = selectionNoGhost = /*selectionNoBLU =*/ selectionNoBTHome = selectedRows > 0;
 				ShellyAbstractDevice d = null;
 				for(int idx: devicesTable.getSelectedRows()) {
 					d = model.get(devicesTable.convertRowIndexToModel(idx));
 					if(d instanceof GhostDevice) {
 						selectionNoGhost = singleSelectionNoGhost = false;
-					} else if(d instanceof AbstractBluDevice) {
-						selectionNoBLU = false;
+					} else if(d instanceof BTHomeDevice) {
+						selectionNoBTHome = false;
 					}
+					/*else if(d instanceof AbstractBluDevice) {
+						selectionNoBLU = false;
+						if(d instanceof BTHomeDevice) {
+							selectionNnoBTHome = false;
+						}
+					}*/
 				}
 				infoAction.setEnabled(singleSelection);
 				infoLogAction.setEnabled(singleSelectionNoGhost);
 				checkListAction.setEnabled(selectionNoGhost);
-				rebootAction.setEnabled(selectionNoGhost && selectionNoBLU);
+				rebootAction.setEnabled(selectionNoGhost && selectionNoBTHome);
 				browseAction.setEnabled(selectionNoGhost /*&& browserSupported*/);
 				backupAction.setEnabled(selection /*&& selectionNoBLU*/);
 				restoreAction.setEnabled(singleSelection /*&& selectionNoBLU*/ /*&& d.getStatus() != Status.NOT_LOOGGED*/);
-				devicesSettingsAction.setEnabled(selection && selectionNoBLU);
+				devicesSettingsAction.setEnabled(selection && /*selectionNoBLU*/selectionNoBTHome);
 				chartAction.setEnabled(selectionNoGhost);
 				scriptManagerAction.setEnabled(singleSelectionNoGhost && d instanceof AbstractG2Device);
 				notesAction.setEnabled(singleSelection && useArchive);
-				
 				displayStatus();
 			}
 		};
@@ -594,7 +581,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 			devicesTable.resetRowsComputedHeight();
 			devicesTable.loadColPos(appProp, DevicesTable.STORE_EXT_PREFIX);
 			
-			String detScreenMode = appProp.getProperty(ScannerProperties.PROP_DETAILED_VIEW_SCREEN, ScannerProperties.PROP_DETAILED_VIEW_SCREEN_DEFAULT);
+			String detScreenMode = appProp.getProperty(ScannerProperties.PROP_DETAILED_VIEW_SCREEN/*, ScannerProperties.PROP_DETAILED_VIEW_SCREEN_DEFAULT*/);
 			if(getExtendedState() != JFrame.MAXIMIZED_BOTH) {
 				if(detScreenMode.equals(ScannerProperties.PROP_DETAILED_VIEW_SCREEN_FULL)) {
 					setExtendedState(JFrame.MAXIMIZED_BOTH);
@@ -633,7 +620,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 	}
 
 	private void storeProperties() {
-		if(appProp.getBoolProperty(ScannerProperties.PROP_USE_ARCHIVE, true)) {
+		if(appProp.getBoolProperty(ScannerProperties.PROP_USE_ARCHIVE)) {
 			try {
 				model.saveToStore(Paths.get(appProp.getProperty(ScannerProperties.PROP_ARCHIVE_FILE, ScannerProperties.PROP_ARCHIVE_FILE_DEFAULT)));
 			} catch (IOException | RuntimeException ex) {
@@ -696,11 +683,12 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 			updateHideCaptions();
 		} else if(ScannerProperties.PROP_UPTIME_MODE.equals(propKey)) {
 			devicesTable.setUptimeRenderMode(appProp.getProperty(ScannerProperties.PROP_UPTIME_MODE));
-			((UsnaTableModel)devicesTable.getModel()).fireTableDataChanged();
-			devicesTable.columnsWidthAdapt();
 		} else if(ScannerProperties.PROP_USE_ARCHIVE.equals(propKey)) {
 			useArchive = appProp.getBoolProperty(ScannerProperties.PROP_USE_ARCHIVE);
 			devicesTable.clearSelection();
+		} else if(ScannerProperties.PROP_TEMP_UNIT.equals(propKey)) {
+			boolean celsius = appProp.getProperty(ScannerProperties.PROP_TEMP_UNIT).equals("C");
+			devicesTable.setTempRenderMode(celsius);
 		}
 	}
 	
@@ -715,10 +703,10 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 	
 	private synchronized void displayStatus() {
 		if(statusLineReserved == false) {
-			if(textFieldFilter.getText().length() > 0) {
-				statusLabel.setText(String.format(LABELS.getString("filter_status"), model.size(), devicesTable.getRowCount(), devicesTable.getSelectedRowCount()));
-			} else {
+			if(textFieldFilter.getText().isEmpty()) {
 				statusLabel.setText(String.format(LABELS.getString("scanning_end"), model.size(), devicesTable.getSelectedRowCount()));
+			} else {
+				statusLabel.setText(String.format(LABELS.getString("filter_status"), model.size(), devicesTable.getRowCount(), devicesTable.getSelectedRowCount()));
 			}
 		}
 	}

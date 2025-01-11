@@ -8,12 +8,10 @@ import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
 import java.util.Base64;
 import java.util.ResourceBundle;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import javax.swing.SwingUtilities;
 
@@ -39,8 +37,8 @@ import it.usna.util.CLI;
 
 public class Main {
 	public final static String APP_NAME = "Shelly Scanner";
-	public final static String VERSION = "1.2.0";
-	public final static String VERSION_CODE = "001.002.000r200"; // r0xx alpha; r1xx beta; r2xx stable
+	public final static String VERSION = "1.2.1";
+	public final static String VERSION_CODE = "001.002.001r200"; // r0xx alpha; r1xx beta; r2xx stable
 	public final static Image ICON = Toolkit.getDefaultToolkit().createImage(Main.class.getResource("/images/ShSc24.png"));
 	public final static String BACKUP_FILE_EXT = "sbk";
 	public final static String ARCHIVE_FILE_EXT = "arc";
@@ -62,14 +60,8 @@ public class Main {
 		System.setProperty(SimpleLogger.LOG_KEY_PREFIX + "org.eclipse.jetty", "warn");
 		System.setProperty(SimpleLogger.SHOW_DATE_TIME_KEY, "true");
 		final Logger LOG = LoggerFactory.getLogger(Main.class);
-
 		LOG.info(APP_NAME + " " + VERSION_CODE);
-		//		System.setProperty("java.net.preferIPv4Stack" , "true");
-		try { // in case of error or no file (true) use default configuration
-			appProp.load(true);
-		} catch (Exception e) {
-			Msg.errorMsg(e);
-		}
+//		LOG.debug(Runtime.version().toString() + " / " + System.getProperties().getProperty("java.vendor"));
 
 		CLI cli = new CLI(args);
 
@@ -107,7 +99,7 @@ public class Main {
 		} else if((cliIndex = cli.hasEntry("-noscan")) >= 0) { // only archive (it's actually an IP scan with firstIP > lastIP)
 			ipCollection = new IPCollection();
 		} else {
-			final String scanMode = appProp.getProperty(ScannerProperties.PROP_SCAN_MODE, ScannerProperties.PROP_SCAN_MODE_DEFAULT);
+			final String scanMode = appProp.getProperty(ScannerProperties.PROP_SCAN_MODE/*, ScannerProperties.PROP_SCAN_MODE_DEFAULT*/);
 			if(scanMode.equals("IP")) {
 				ipCollection = new IPCollection();
 				for(int i = 0; i < 10; i++) {
@@ -148,7 +140,7 @@ public class Main {
 			}
 			// look for unused CLI entries
 			if(cli.unused().length > 0) {
-				System.err.println("Wrong parameter(s): " + Arrays.stream(cli.unused()).collect(Collectors.joining("; ")));
+				System.err.println("Wrong parameter(s): " + String.join("; ", cli.unused()));
 				System.exit(10);
 			}
 			LOG.info("Backup devices in {}", path);
@@ -170,7 +162,7 @@ public class Main {
 		} else if(cli.hasEntry("-list") >= 0) {
 			// look for unused CLI entries
 			if(cli.unused().length > 0) {
-				System.err.println("Wrong parameter(s): " + Arrays.stream(cli.unused()).collect(Collectors.joining("; ")));
+				System.err.println("Wrong parameter(s): " + String.join("; ", cli.unused()));
 				System.exit(10);
 			}
 			LOG.info("Retriving list ...");
@@ -209,7 +201,7 @@ public class Main {
 				String gPar = cli.getParameter(cliIndex);
 				if(gPar != null) {
 					try {
-						NonInteractiveMeasuresChart chartW = new NonInteractiveMeasuresChart(model, ChartType.valueOf(gPar));
+						NonInteractiveMeasuresChart chartW = new NonInteractiveMeasuresChart(model, ChartType.valueOf(gPar), appProp);
 						model.addListener(chartW);
 						// do not activateGUI
 					} catch(IllegalArgumentException e) { // not a valid chart type
@@ -231,7 +223,7 @@ public class Main {
 			SwingUtilities.invokeLater(() -> {
 				try {
 					view.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-					boolean useArchive = appProp.getBoolProperty(ScannerProperties.PROP_USE_ARCHIVE, true);
+					boolean useArchive = appProp.getBoolProperty(ScannerProperties.PROP_USE_ARCHIVE);
 					if(useArchive) {
 						try {
 							model.loadFromStore(Paths.get(appProp.getProperty(ScannerProperties.PROP_ARCHIVE_FILE, ScannerProperties.PROP_ARCHIVE_FILE_DEFAULT)));
@@ -240,12 +232,12 @@ public class Main {
 							Msg.errorMsg(view, e);
 						}
 					}
-					final int refreshStatusInterval = appProp.getIntProperty(ScannerProperties.PROP_REFRESH_ITERVAL, ScannerProperties.PROP_REFRESH_ITERVAL_DEFAULT) * 1000;
-					final int refreshConfigTics = appProp.getIntProperty(ScannerProperties.PROP_REFRESH_CONF, ScannerProperties.PROP_REFRESH_CONF_DEFAULT);
+					final int refreshStatusInterval = appProp.getIntProperty(ScannerProperties.PROP_REFRESH_ITERVAL/*, ScannerProperties.PROP_REFRESH_ITERVAL_DEFAULT*/) * 1000;
+					final int refreshConfigTics = appProp.getIntProperty(ScannerProperties.PROP_REFRESH_CONF/*, ScannerProperties.PROP_REFRESH_CONF_DEFAULT*/);
 					if(ipCollectionFinal != null) {
 						model.scannerInit(ipCollectionFinal, refreshStatusInterval, refreshConfigTics);
 					} else {
-						model.scannerInit(fullScanFinal, refreshStatusInterval, refreshConfigTics, appProp.getBoolProperty(ScannerProperties.PROP_AUTORELOAD_ARCHIVE, false) && useArchive);
+						model.scannerInit(fullScanFinal, refreshStatusInterval, refreshConfigTics, appProp.getBoolProperty(ScannerProperties.PROP_AUTORELOAD_ARCHIVE) && useArchive);
 					}
 				} catch (/*IO*/Exception e) {
 					Msg.errorMsg(e);
@@ -255,7 +247,7 @@ public class Main {
 				}
 			});
 			if(cli.unused().length > 0) {
-				System.err.println("Ignored parameter(s): " + Arrays.stream(cli.unused()).collect(Collectors.joining("; ")));
+				System.err.println("Ignored parameter(s): " + String.join("; ", cli.unused()));
 			}
 		} catch (Throwable ex) {
 			Msg.errorMsg(ex);
@@ -266,9 +258,9 @@ public class Main {
 	
 	private static void activateGUI(final MainView view, final Devices model, final ScannerProperties appProp) {
 		view.setVisible(true);
-		view.requestFocus(); // remove random focus on toolbar button
+//		view.requestFocus(); // remove random focus on toolbar button
 		model.addListener(view);
 		appProp.addListener(view);
-		new Thread(() -> ApplicationUpdateCHK.chechForUpdates(view, appProp)).start();
+		new Thread(() -> ApplicationUpdateCHK.checkForUpdates(view, appProp)).start();
 	}
 }

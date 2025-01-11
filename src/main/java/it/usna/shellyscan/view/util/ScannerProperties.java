@@ -1,5 +1,6 @@
 package it.usna.shellyscan.view.util;
 
+import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 
@@ -13,18 +14,23 @@ public class ScannerProperties extends AppProperties { // cannot also extend Usn
 	private static final long serialVersionUID = 1L;
 	public final static String PROP_TOOLBAR_CAPTIONS = "T_CAPTIONS";
 	public final static String PROP_CSV_SEPARATOR = "CSV_SEPARATOR";
-	public final static String PROP_CSV_SEPARATOR_DEFAULT = ",";
+	private final static String PROP_CSV_SEPARATOR_DEFAULT = ",";
 	public final static String PROP_SCAN_MODE = "SCAN_MODE";
-	public final static String PROP_SCAN_MODE_DEFAULT = "FULL";
+	private final static String PROP_SCAN_MODE_DEFAULT = "FULL";
 	public final static String PROP_DCLICK_ACTION = "DCLICK_ACTION";
-	public final static String PROP_DCLICK_ACTION_DEFAULT = "DET";
+	private final static String PROP_DCLICK_ACTION_DEFAULT = "DET";
 	public final static String PROP_DEFAULT_FILTER_IDX = "DEFAULT_FILTER";
 	
 	public final static String PROP_UPTIME_MODE = "UPTIME_MODE";
-	public final static String PROP_UPTIME_MODE_DEFAULT = "SEC";
+	private final static String PROP_UPTIME_MODE_DEFAULT = "SEC";
+	
+	public final static String PROP_TEMP_UNIT = "TEMP_UNIT";
+	private final static String PROP_TEMP_UNIT_DEFAULT = "C";
 	
 	public final static String PROP_UPDATECHK_ACTION = "UPDATE_CHK";
-	public final static String PROP_UPDATECHK_ACTION_DEFAULT = "STABLE";
+	public final static String PROP_UPDATECHK_NEVER = "NEVER";
+	public final static String PROP_UPDATECHK_STABLE = "STABLE";
+	public final static String PROP_UPDATECHK_DEV = "BETA";
 	
 	public final static String PROP_CHARTS_START = "CHART_DEF";
 	public final static String PROP_CHARTS_EXPORT = "CHART_EXPORT";
@@ -34,15 +40,14 @@ public class ScannerProperties extends AppProperties { // cannot also extend Usn
 	public final static String PROP_DETAILED_VIEW_SCREEN_AS_IS = "ASIS";
 	public final static String PROP_DETAILED_VIEW_SCREEN_HORIZONTAL = "HOR";
 	public final static String PROP_DETAILED_VIEW_SCREEN_ESTIMATE = "COMP";
-	public final static String PROP_DETAILED_VIEW_SCREEN_DEFAULT = PROP_DETAILED_VIEW_SCREEN_FULL;
 	
 	public final static String PROP_LOGIN_USER = "RLUSER";
 	public final static String PROP_LOGIN_PWD = "RLPWD";
 	
 	public final static String PROP_REFRESH_ITERVAL = "REFRESH_INTERVAL";
-	public final static int PROP_REFRESH_ITERVAL_DEFAULT = 2;
+	private final static int PROP_REFRESH_ITERVAL_DEFAULT = 2;
 	public final static String PROP_REFRESH_CONF = "REFRESH_SETTINGS";
-	public final static int PROP_REFRESH_CONF_DEFAULT = 5;
+	private final static int PROP_REFRESH_CONF_DEFAULT = 5;
 	
 	public final static String PROP_USE_ARCHIVE = "USE_ARCHIVE";
 	public final static String PROP_ARCHIVE_FILE = "USE_ARCHIVE_FILENAME";
@@ -66,6 +71,8 @@ public class ScannerProperties extends AppProperties { // cannot also extend Usn
 	public final static String IDE_AUTOCLOSE_STRING = "CL_STRING";
 	public final static String PROP_IDE_DARK = "IDE_DARK";
 	
+	public final static String VERSION_IGNORE = "IGNORE_VERION_DOWNLOAD";
+	
 	public enum PropertyEvent {CHANGE};
 	
 	private static ArrayList<AppPropertyListener> listeners = new ArrayList<>();
@@ -73,6 +80,23 @@ public class ScannerProperties extends AppProperties { // cannot also extend Usn
 	
 	private ScannerProperties(String file) {
 		super(file);
+		try { // in case of error or no file (true) use default configuration
+			load(true);
+		} catch (IOException e) {
+			Msg.errorMsg(e);
+		}
+		defaultBoolProperty(PROP_TOOLBAR_CAPTIONS, true);
+		defaultProperty(PROP_CSV_SEPARATOR, PROP_CSV_SEPARATOR_DEFAULT);
+		defaultProperty(PROP_SCAN_MODE, PROP_SCAN_MODE_DEFAULT);
+		defaultProperty(PROP_DCLICK_ACTION, PROP_DCLICK_ACTION_DEFAULT);
+		defaultProperty(PROP_TEMP_UNIT, PROP_TEMP_UNIT_DEFAULT);
+		defaultProperty(PROP_UPTIME_MODE, PROP_UPTIME_MODE_DEFAULT);
+		defaultProperty(PROP_UPDATECHK_ACTION, PROP_UPDATECHK_DEV);
+		defaultProperty(PROP_DETAILED_VIEW_SCREEN, PROP_DETAILED_VIEW_SCREEN_FULL);
+		defaultIntProperty(PROP_REFRESH_ITERVAL, PROP_REFRESH_ITERVAL_DEFAULT);
+		defaultIntProperty(PROP_REFRESH_CONF, PROP_REFRESH_CONF_DEFAULT);
+		defaultBoolProperty(PROP_USE_ARCHIVE, true);
+		defaultBoolProperty(PROP_AUTORELOAD_ARCHIVE, false);
 	}
 	
 	public static ScannerProperties init(String file) {
@@ -80,7 +104,7 @@ public class ScannerProperties extends AppProperties { // cannot also extend Usn
 		return ap;
 	}
 	
-	public static ScannerProperties get() {
+	public static ScannerProperties instance() {
 		return ap;
 	}
 	

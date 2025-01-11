@@ -7,6 +7,7 @@ import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 public class DeferrableTask implements Closeable {
 	public enum Status {WAITING, CANCELLED, RUNNING, SUCCESS, FAIL};
 	public enum Type {FW_UPDATE, RESTORE, BACKUP, MQTT, LOGIN, NTP, CLOUD_ENABLE, INPUT_RESET_ENABLE};
+	
 	private final Type type;
 	private final String description;
 	private Task task;
@@ -23,10 +24,10 @@ public class DeferrableTask implements Closeable {
 		try {
 			status = Status.RUNNING;
 			retValue = task.run(this, device);
-			status = (retValue == null || retValue.length() == 0) ? Status.SUCCESS : Status.FAIL;
+			status = (retValue == null || retValue.isEmpty()) ? Status.SUCCESS : Status.FAIL;
 		} catch(Exception e) {
 			String msg = e.getMessage();
-			this.retValue = msg != null && msg.length() > 0 ? msg : e.toString();
+			this.retValue = msg == null || msg.isEmpty() ? e.toString() : msg;
 			status = Status.FAIL;
 		} finally {
 			close();

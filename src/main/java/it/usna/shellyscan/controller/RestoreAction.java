@@ -176,7 +176,7 @@ public class RestoreAction extends UsnaSelectedAction {
 					final List<String> restoreResult = device.restore(backupJsons, resData); // Do restore
 					final String ret = erroreMsg(restoreResult);
 
-					if(ret == null || ret.length() == 0) {
+					if(ret == null || ret.isEmpty()) {
 						Thread.sleep(Devices.MULTI_QUERY_DELAY);
 						device.refreshSettings();
 						Thread.sleep(Devices.MULTI_QUERY_DELAY);

@@ -98,7 +98,7 @@ public class ShellyPlusPlugS extends AbstractG2Device implements ModulesHolder, 
 		super.fillStatus(status);
 		JsonNode switchStatus = status.get("switch:0");
 		relay.fillStatus(switchStatus);
-		internalTmp = (float)switchStatus.path("temperature").path("tC").floatValue();
+		internalTmp = switchStatus.path("temperature").path("tC").floatValue();
 		power = switchStatus.get("apower").floatValue();
 		voltage = switchStatus.get("voltage").floatValue();
 		current = switchStatus.get("current").floatValue();

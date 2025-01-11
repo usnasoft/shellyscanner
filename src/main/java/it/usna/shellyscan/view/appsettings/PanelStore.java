@@ -62,7 +62,7 @@ public class PanelStore extends JPanel {
 		gbc_chckbxUseStore.gridx = 1;
 		gbc_chckbxUseStore.gridy = 0;
 		add(chckbxUseStore, gbc_chckbxUseStore);
-		chckbxUseStore.setSelected(appProp.getBoolProperty(ScannerProperties.PROP_USE_ARCHIVE, true));
+		chckbxUseStore.setSelected(appProp.getBoolProperty(ScannerProperties.PROP_USE_ARCHIVE));
 		
 		JLabel lblStoreFile = new JLabel(LABELS.getString("dlgAppStoreFileLabel"));
 		lblStoreFile.setFont(new Font("Tahoma", Font.BOLD, 11));
@@ -135,7 +135,7 @@ public class PanelStore extends JPanel {
 				removeGhosts(model);
 			}
 		});
-		autoReloadCheckBox.setSelected(appProp.getBoolProperty(ScannerProperties.PROP_AUTORELOAD_ARCHIVE, false));
+		autoReloadCheckBox.setSelected(appProp.getBoolProperty(ScannerProperties.PROP_AUTORELOAD_ARCHIVE));
 		
 		ChangeListener enableListener = e -> {
 			textFieldStoreFileName.setEnabled(chckbxUseStore.isSelected());
@@ -146,7 +146,7 @@ public class PanelStore extends JPanel {
 		enableListener.stateChanged(null);
 	}
 	
-	static void removeGhosts(final Devices model) {
+	private static void removeGhosts(final Devices model) {
 		for(int i = model.size() - 1; i >= 0; i--) {
 			if(model.get(i) instanceof GhostDevice) {
 				model.remove(i);
@@ -154,20 +154,22 @@ public class PanelStore extends JPanel {
 		}
 	}
 	
-	public void store(AppProperties appProp, Devices model) {
+	void store(AppProperties appProp, Devices model) {
 		boolean useStore = chckbxUseStore.isSelected();
 		boolean changedUse = appProp.setBoolProperty(ScannerProperties.PROP_USE_ARCHIVE, useStore);
 		String fileName = textFieldStoreFileName.getText();
 		boolean changeArcFile = appProp.changeProperty(ScannerProperties.PROP_ARCHIVE_FILE, fileName);
 		if(useStore && (changedUse || changeArcFile)) {
 			try {
-				PanelStore.removeGhosts(model);
+				removeGhosts(model);
 				model.loadFromStore(Paths.get(fileName));
 			} catch(Exception e) {
 				appProp.setBoolProperty(ScannerProperties.PROP_USE_ARCHIVE, false);
 				LOG.error("Archive read", e);
 				Msg.errorMsg(this, String.format(LABELS.getString("dlgAppStoreerrorReadingStore"), fileName));
 			}
+		} else if(changedUse && useStore == false) {
+			removeGhosts(model);
 		}
 		boolean autoReload = autoReloadCheckBox.isSelected();
 		appProp.setBoolProperty(ScannerProperties.PROP_AUTORELOAD_ARCHIVE, autoReload);

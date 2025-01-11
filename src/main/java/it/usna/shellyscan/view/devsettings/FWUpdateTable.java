@@ -74,8 +74,32 @@ public class FWUpdateTable extends ExTooltipTable {
 		fwPanel.countSelection();
 	}
 
+//	@Override
+//	public String getToolTipText(final MouseEvent evt) {
+//		if(this.isVisible()) {
+//			final int row, col;
+//			final Object value;
+//			if ((row = rowAtPoint(evt.getPoint())) >= 0 && (col = columnAtPoint(evt.getPoint())) >= 0 && (value = getValueAt(row, col)) != null &&
+//					(col == COL_CURRENT || col == COL_STABLE || col == COL_BETA)) {
+//				return cellValueAsString(value, row, col);
+//			} else {
+//				return super.getToolTipText(evt);
+//			}
+//		}
+//		return null;
+//	}
+	
 	@Override
-	protected String cellTooltipValue(Object value, boolean cellTooSmall, int row, int column) {
+	protected String getToolTipText(Object value, boolean cellTooSmall, int row, int col) {
+		if (value != null && (col == COL_CURRENT || col == COL_STABLE || col == COL_BETA)) {
+			return cellValueAsString(value, row, col);
+		} else {
+			return super.getToolTipText(value, cellTooSmall, row, col);
+		}
+	}
+
+	@Override
+	protected String cellValueAsString(Object value, int row, int column) {
 		FirmwareManager fw = fwPanel.getFirmwareManager(convertRowIndexToModel(row));
 		if(column == COL_CURRENT && fw != null) {
 			return fw.current();
@@ -84,7 +108,7 @@ public class FWUpdateTable extends ExTooltipTable {
 		} else if(column == COL_BETA && fw != null) {
 			return fw.newBeta();
 		}
-		return super.cellTooltipValue(value, cellTooSmall, row, column);
+		return super.cellValueAsString(value, row, column);
 	}
 
 	@Override

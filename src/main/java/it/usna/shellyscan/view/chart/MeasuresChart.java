@@ -86,13 +86,13 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 	private final ValueAxis xAxis;
 	private final Map<Integer, TimeSeries[]> seriesMap = new HashMap<>(); // device index, TimeSeries (one or more)
 
-	private ChartType currentType;
-	
 	private final JComboBox<String> seriesCombo = new JComboBox<>();
 	private final JScrollBar scrollBar = new JScrollBar(JScrollBar.HORIZONTAL, 0, 0, 0, 0);
 	
+	private ChartType currentType;
+	private final boolean fahrenheit;
 	private static boolean outStream = false;
-	
+
 	public MeasuresChart(JFrame owner, final Devices model, int[] ind, AppProperties appProp) {
 		setIconImages(owner.getIconImages());
 		if(ind.length == 1) {
@@ -102,6 +102,7 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 		}
 		setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 		this.model = model;
+		this.fahrenheit = appProp.getProperty(ScannerProperties.PROP_TEMP_UNIT).equals("F");
 
 		JPanel mainPanel = new JPanel(new BorderLayout());
 		this.setContentPane(mainPanel);
@@ -208,9 +209,9 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 					File out = fc.getSelectedFile();
 					DateRange range = btnPause.isSelected() ? (DateRange)xAxis.getRange() : null;
 					if("V".equals(appProp.getProperty(ScannerProperties.PROP_CHARTS_EXPORT))) {
-						exp.exportAsVerticalCSV(out, currentType.yLabel, appProp.getProperty(ScannerProperties.PROP_CSV_SEPARATOR, ScannerProperties.PROP_CSV_SEPARATOR_DEFAULT), range);
+						exp.exportAsVerticalCSV(out, yAxis.getLabel(), appProp.getProperty(ScannerProperties.PROP_CSV_SEPARATOR/*, ScannerProperties.PROP_CSV_SEPARATOR_DEFAULT*/), range);
 					} else {
-						exp.exportAsHorizontalCSV(out, appProp.getProperty(ScannerProperties.PROP_CSV_SEPARATOR, ScannerProperties.PROP_CSV_SEPARATOR_DEFAULT), range);
+						exp.exportAsHorizontalCSV(out, appProp.getProperty(ScannerProperties.PROP_CSV_SEPARATOR/*, ScannerProperties.PROP_CSV_SEPARATOR_DEFAULT*/), range);
 					}
 					appProp.setProperty("LAST_PATH", fc.getCurrentDirectory().getPath());
 					JOptionPane.showMessageDialog(this, LABELS.getString("msgFileSaved"), Main.APP_NAME, JOptionPane.INFORMATION_MESSAGE);
@@ -350,10 +351,10 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 
 	private void initDataSet(ValueAxis yAxis, TimeSeriesCollection dataset, final Devices model, int[] modelIndexes) {
 		dataset.removeAllSeries();
-		yAxis.setLabel(currentType.yLabel);
 		for(int ind: modelIndexes) {
 			final ShellyAbstractDevice d = model.get(ind);
 			if(currentType == ChartType.T_ALL) {
+				yAxis.setLabel(LABELS.getString(fahrenheit ? "dlgChartsTempFYLabel" : "dlgChartsTempYLabel"));
 				final ArrayList<TimeSeries> temp = new ArrayList<>(5);
 				final Meters[] meters = d.getMeters();
 				if(meters != null) {
@@ -389,11 +390,18 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 					dataset.addSeries(new TimeSeries(uniqueName(dataset, UtilMiscellaneous.getDescName(d)))); // legend
 				}
 				seriesMap.put(ind, temp.toArray(TimeSeries[]::new));
-			} else if(currentType.mType == null) { // device property (INT_TEMP & RSSI), not from "Meters" or P_SUM
+			} else if(currentType == ChartType.INT_TEMP) {
+				yAxis.setLabel(LABELS.getString(fahrenheit ? "dlgChartsTempFYLabel" : "dlgChartsTempYLabel"));
+				TimeSeries ts = new TimeSeries(uniqueName(dataset, UtilMiscellaneous.getDescName(d)));
+				dataset.addSeries(ts);
+				seriesMap.put(ind, new TimeSeries[] {ts});
+			} else if(currentType.mType == null) { // device property (RSSI), not from "Meters" or P_SUM
+				yAxis.setLabel(currentType.yLabel);
 				TimeSeries ts = new TimeSeries(uniqueName(dataset, UtilMiscellaneous.getDescName(d)));
 				dataset.addSeries(ts);
 				seriesMap.put(ind, new TimeSeries[] {ts});
 			} else {
+				yAxis.setLabel(currentType.yLabel);
 				ArrayList<TimeSeries> temp = new ArrayList<>(5);
 				Meters[] meters = d.getMeters();
 				if(meters != null) {
@@ -447,8 +455,10 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 						final Millisecond timestamp = new Millisecond(new Date(d.getLastTime()));
 						Meters[] m;
 						if(currentType == ChartType.INT_TEMP && d instanceof InternalTmpHolder tempH) {
-							ts[0].addOrUpdate(timestamp, tempH.getInternalTmp());
-							outStream(d, 0, currentType.name(), timestamp, tempH.getInternalTmp());
+							float val = tempH.getInternalTmp();
+							if(fahrenheit) val = val*1.8f + 32f;
+							ts[0].addOrUpdate(timestamp, val);
+							outStream(d, 0, currentType.name(), timestamp, val);
 						} else if(currentType == ChartType.RSSI) {
 							ts[0].addOrUpdate(timestamp, d.getRssi());
 							outStream(d, 0, currentType.name(), timestamp, d.getRssi());
@@ -457,26 +467,31 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 							for(int i = 0; i < m.length; i++) {
 								if(m[i].hasType(Meters.Type.T)) {
 									float val = m[i].getValue(Meters.Type.T);
+									if(fahrenheit) val = val*1.8f + 32f;
 									ts[j++].addOrUpdate(timestamp, val);
 									outStream(d, 0, /*ChartType.T*/"T", timestamp, val);
 								}
 								if(m[i].hasType(Meters.Type.T1)) {
 									float val = m[i].getValue(Meters.Type.T1);
+									if(fahrenheit) val = val*1.8f + 32f;
 									ts[j++].addOrUpdate(timestamp, val);
 									outStream(d, 0, /*ChartType.T1*/"T1", timestamp, val);
 								}
 								if(m[i].hasType(Meters.Type.T2)) {
 									float val = m[i].getValue(Meters.Type.T2);
+									if(fahrenheit) val = val*1.8f + 32f;
 									ts[j++].addOrUpdate(timestamp, val);
 									outStream(d, 0, /*ChartType.T2*/"T2", timestamp, val);
 								}
 								if(m[i].hasType(Meters.Type.T3)) {
 									float val = m[i].getValue(Meters.Type.T3);
+									if(fahrenheit) val = val*1.8f + 32f;
 									ts[j++].addOrUpdate(timestamp, val);
 									outStream(d, 0, /*ChartType.T3*/"T3", timestamp, val);
 								}
 								if(m[i].hasType(Meters.Type.T4)) {
 									float val = m[i].getValue(Meters.Type.T4);
+									if(fahrenheit) val = val*1.8f + 32f;
 									ts[j/*++*/].addOrUpdate(timestamp, val);
 									outStream(d, 0, /*ChartType.T4*/"T4", timestamp, val);
 								}

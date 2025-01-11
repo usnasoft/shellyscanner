@@ -80,7 +80,7 @@ public class FirmwareManagerG1 implements FirmwareManager {
 	public String update(boolean stable) {
 		updating = true;
 		String res = d.sendCommand(stable ? "/ota?update=true" : "/ota?beta=true");
-		if(res != null && res.length() > 0) {
+		if(res != null && res.isEmpty() == false) {
 			updating = false;
 		}
 		return res;
@@ -89,6 +89,11 @@ public class FirmwareManagerG1 implements FirmwareManager {
 	@Override
 	public boolean upadating() {
 		return updating;
+	}
+	
+	@Override
+	public void upadating(boolean upd) {
+		updating = upd;
 	}
 	
 	@Override

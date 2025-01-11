@@ -3,7 +3,8 @@ package it.usna.shellyscan.view.scripts;
 import static it.usna.shellyscan.Main.LABELS;
 
 import java.awt.BorderLayout;
-import java.io.IOException;
+import java.awt.Frame;
+import java.awt.Window;
 import java.util.concurrent.TimeUnit;
 
 import javax.swing.JButton;
@@ -15,7 +16,6 @@ import it.usna.shellyscan.controller.UsnaAction;
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.g2.AbstractBatteryG2Device;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
-import it.usna.shellyscan.view.MainView;
 import it.usna.shellyscan.view.util.Msg;
 import it.usna.shellyscan.view.util.UtilMiscellaneous;
 
@@ -23,9 +23,17 @@ public class DialogDeviceScripts extends JDialog {
 	private static final long serialVersionUID = 1L;
 	public final static String FILE_EXTENSION = "js";
 
-	public DialogDeviceScripts(final MainView owner, Devices model, int modelIndex) {
+	public DialogDeviceScripts(final Frame owner, Devices model, int modelIndex) {
 		super(owner, false);
-		// try {
+		init(owner, model, modelIndex);
+	}
+	
+	public DialogDeviceScripts(final JDialog owner, Devices model, int modelIndex) {
+		super(owner, false);
+		init(owner, model, modelIndex);
+	}
+		
+	private void init(final Window owner, Devices model, int modelIndex) {
 		AbstractG2Device device = (AbstractG2Device) model.get(modelIndex);
 		setTitle(String.format(LABELS.getString("dlgScriptTitle"), UtilMiscellaneous.getExtendedHostName(device)));
 		setDefaultCloseOperation(/* DO_NOTHING_ON_CLOSE */DISPOSE_ON_CLOSE);
@@ -44,16 +52,16 @@ public class DialogDeviceScripts extends JDialog {
 				JPanel scriptsPanel = new ScriptsPanel(this, model, modelIndex);
 				tabs.addTab(LABELS.getString("lblScriptsTab"), scriptsPanel);
 				try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e) {}
-			} catch (IOException e) {
-				Msg.errorMsg(e);
+			} catch (/*IO*/Exception e) {
+				Msg.errorMsg(owner, e);
 			}
 		}
 
 		try {
 			JPanel kvsPanel = new KVSPanel(device);
 			tabs.addTab(LABELS.getString("lblKVSTab"), kvsPanel);
-		} catch (IOException e) {
-			Msg.errorMsg(e);
+		} catch (/*IO*/Exception e) {
+			Msg.errorMsg(owner, e);
 		}
 
 		if(tabs.getComponentCount() > 0) {
@@ -64,8 +72,11 @@ public class DialogDeviceScripts extends JDialog {
 		} else {
 			dispose();
 		}
-		// } catch (IOException e) {
-		// Msg.errorMsg(e);
-		// }
+	}
+	
+	@Override
+	public void dispose() {
+		super.dispose();
+		firePropertyChange("S_CLOSE", null, null);
 	}
 }

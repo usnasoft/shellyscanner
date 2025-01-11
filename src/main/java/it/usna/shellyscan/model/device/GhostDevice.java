@@ -160,6 +160,8 @@ public class GhostDevice extends ShellyAbstractDevice {
 	public Map<RestoreMsg, Object> restoreCheck(Map<String, JsonNode> backupJsons) {
 		if(backupJsons.containsKey("settings.json")) {
 			return restoreCheckG1(backupJsons);
+		} else if(backupJsons.containsKey("Shelly.GetRemoteDeviceInfo.json")) {
+			return restoreCheckBluTRV(backupJsons);
 		} else if(backupJsons.containsKey("Shelly.GetConfig.json")) {
 			return restoreCheckG2(backupJsons);
 		} else if(backupJsons.containsKey("ShellyScannerBLU.json")) {
@@ -232,7 +234,7 @@ public class GhostDevice extends ShellyAbstractDevice {
 		EnumMap<RestoreMsg, Object> res = new EnumMap<>(RestoreMsg.class);
 		JsonNode usnaInfo = backupJsons.get("ShellyScannerBLU.json");
 		String fileLocalName;
-		if(usnaInfo == null || (fileLocalName = usnaInfo.path("type").asText("")).equals(getTypeID()) == false) {
+		if(/*usnaInfo == null ||*/ (fileLocalName = usnaInfo.path("type").asText("")).equals(getTypeID()) == false) {
 			res.put(RestoreMsg.ERR_RESTORE_MODEL, null);
 			return res;
 		}
@@ -249,6 +251,27 @@ public class GhostDevice extends ShellyAbstractDevice {
 			}
 		}
 		res.put(RestoreMsg.ERR_RESTORE_MODEL, null); // key not found;
+		return res;
+	}
+	
+	private Map<RestoreMsg, Object> restoreCheckBluTRV(Map<String, JsonNode> backupJsons) {
+		EnumMap<RestoreMsg, Object> res = new EnumMap<>(RestoreMsg.class);
+		try {
+			JsonNode remoteDevInfo = backupJsons.get("Shelly.GetRemoteDeviceInfo.json");
+			JsonNode devInfo = remoteDevInfo.get("device_info");
+			if(devInfo == null || getTypeID().equals(devInfo.get("app").asText()) == false) {
+				res.put(RestoreMsg.ERR_RESTORE_MODEL, null);
+			} else {
+				final String fileHostname = devInfo.get("id").asText("");
+				boolean sameHost = fileHostname.equals(this.hostname);
+				if(sameHost == false) {
+					res.put(RestoreMsg.PRE_QUESTION_RESTORE_HOST, fileHostname);
+				}
+			}
+		} catch(RuntimeException e) {
+			LOG.error("restoreCheck", e);
+			res.put(RestoreMsg.ERR_RESTORE_MODEL, null);
+		}
 		return res;
 	}
 	

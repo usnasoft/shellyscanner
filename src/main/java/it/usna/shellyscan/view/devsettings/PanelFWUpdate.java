@@ -29,12 +29,12 @@ import javax.swing.SwingUtilities;
 import javax.swing.table.TableColumn;
 
 import org.eclipse.jetty.websocket.api.Session;
+import org.eclipse.jetty.websocket.api.exceptions.WebSocketTimeoutException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
-import it.usna.shellyscan.Main;
 import it.usna.shellyscan.controller.DeferrableTask;
 import it.usna.shellyscan.controller.DeferrablesContainer;
 import it.usna.shellyscan.controller.UsnaAction;
@@ -43,9 +43,9 @@ import it.usna.shellyscan.model.Devices.EventType;
 import it.usna.shellyscan.model.device.GhostDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
+import it.usna.shellyscan.model.device.blu.AbstractBluDevice;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.g2.WebSocketDeviceListener;
-import it.usna.shellyscan.model.device.g2.modules.FirmwareManagerG2;
 import it.usna.shellyscan.model.device.modules.FirmwareManager;
 import it.usna.shellyscan.view.DevicesTable;
 import it.usna.shellyscan.view.util.UtilMiscellaneous;
@@ -176,7 +176,8 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 		FirmwareManager fw = getFirmwareManager(localIndex);
 		if(fw != null) {
 			if(fw.upadating()) {
-				return new Object[] {DevicesTable.UPDATING_BULLET, UtilMiscellaneous.getExtendedHostName(d), FirmwareManager.getShortVersion(fw.current()), LABELS.getString("labelUpdating"), null}; // DevicesTable.UPDATING_BULLET
+				return new Object[] {DevicesTable.UPDATING_BULLET, UtilMiscellaneous.getExtendedHostName(d), FirmwareManager.getShortVersion(fw.current()),
+						(d instanceof AbstractG2Device) ? String.format(LABELS.getString("lbl_downloading"), 0) : LABELS.getString("labelUpdating"), null};
 			} else {
 				Boolean stableCell = (fw != null && fw.newStable() != null) ? Boolean.TRUE : null;
 				Boolean betaCell = (fw != null && fw.newBeta() != null) ? Boolean.FALSE : null;
@@ -260,9 +261,9 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 		if(fm.upadating()) {
 			fwInfo.uptime = d.getUptime();
 		}
-		if(d instanceof AbstractG2Device) {
+		if(d instanceof AbstractG2Device || d instanceof AbstractBluDevice) { // G3 extends G2
 			try {
-				fwInfo.wsSession = wsEventListener(index, (AbstractG2Device)d);
+				fwInfo.wsSession = wsEventListener(index, /*(AbstractG2Device)*/d);
 			} catch (IOException | InterruptedException | ExecutionException e) {
 				LOG.debug("PanelFWUpdate ws: {}", d, e);
 			}
@@ -310,7 +311,7 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 			} else { // success
 				try {
 					if(fwInfo.wsSession != null && fwInfo.wsSession.get().isOpen() == false) {
-						fwInfo.wsSession = wsEventListener(i, (AbstractG2Device)device);
+						fwInfo.wsSession = wsEventListener(i, device);
 					}
 				} catch (InterruptedException | ExecutionException | IOException e) {}
 				return "";
@@ -341,17 +342,24 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 		return countS + countB;
 	}
 
-	private Future<Session> wsEventListener(int index, AbstractG2Device d) throws IOException, InterruptedException, ExecutionException {
-		return d.connectWebSocketClient(new FMUpdateListener(index));
+	private Future<Session> wsEventListener(int index, ShellyAbstractDevice d) throws IOException, InterruptedException, ExecutionException {
+		if(d instanceof AbstractBluDevice blu) {
+			return ((AbstractG2Device)blu.getParent()).connectWebSocketClient(new FMUpdateListener(index, AbstractBluDevice.DEVICE_KEY_PREFIX + blu.getIndex()));
+		} else {
+			return ((AbstractG2Device)d).connectWebSocketClient(new FMUpdateListener(index, "sys"));
+		}
 	}
 	
 	// "Jetty uses MethodHandles to instantiate WebSocket endpoints and invoke WebSocket event methods, so WebSocket endpoint classes and WebSocket event methods must be public"
 	// -> no anonymous class
 	public class FMUpdateListener extends WebSocketDeviceListener {
 		private final int index;
-		public FMUpdateListener(int index) {
+		private final String component;
+		
+		public FMUpdateListener(int index, String component) {
 			super(json -> json.path("method").asText().equals(WebSocketDeviceListener.NOTIFY_EVENT));
 			this.index = index;
+			this.component = component;
 		}
 
 		@Override
@@ -359,14 +367,15 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 			try {
 				for(JsonNode event: msg.path("params").path("events")) {
 					String eventType = event.path("event").asText();
-					if(eventType.equals("ota_progress")) { // dowloading
-						((FirmwareManagerG2)getFirmwareManager(index)).upadating(true);
+					String comp = event.path("component").asText();
+					if(eventType.equals("ota_progress") && component.equals(comp)) { // dowloading
+						getFirmwareManager(index).upadating(true);
 						int progress = event.path("progress_percent").asInt();
 						tModel.setValueAt(DevicesTable.UPDATING_BULLET, index, FWUpdateTable.COL_STATUS);
-						tModel.setValueAt(String.format(Main.LABELS.getString("lbl_downloading"), progress), index, FWUpdateTable.COL_STABLE);
+						tModel.setValueAt(String.format(LABELS.getString("lbl_downloading"), progress), index, FWUpdateTable.COL_STABLE);
 						tModel.setValueAt(null, index, FWUpdateTable.COL_BETA);
 						break;
-					} else if(/*eventType.equals("ota_success") ||*/ eventType.equals("scheduled_restart")) { // rebooting
+					} else if((eventType.equals("ota_success") || eventType.equals("scheduled_restart")) && component.equals(comp)) { // rebooting
 						tModel.setValueAt(DevicesTable.OFFLINE_BULLET, index, FWUpdateTable.COL_STATUS);
 						tModel.setValueAt(LABELS.getString("lbl_rebooting"), index, FWUpdateTable.COL_STABLE);
 						tModel.setValueAt(null, index, FWUpdateTable.COL_BETA);
@@ -378,12 +387,26 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 				LOG.debug("onMessage {}", msg, e);
 			}
 		}
+		
+		@Override
+		public void onWebSocketError(Throwable cause) {
+			if(cause instanceof WebSocketTimeoutException) {
+				LOG.trace("ws-timeout -> reopen");
+				try {
+					devicesFWData.get(index).wsSession = wsEventListener(index, parent.getLocalDevice(index));
+				} catch (IOException | InterruptedException | ExecutionException e) {
+					LOG.debug("ws-timeout -> reopen error", e);
+				}
+			} else {
+				super.onWebSocketError(cause);
+			}
+		}
 	}
 
 	private static class DeviceFirmware {
 		private FirmwareManager fwModule;
 		private Future<Session> wsSession;
-		private long rebootTime = Long.MAX_VALUE; // g2
+		private long rebootTime = Long.MAX_VALUE; // g2+
 		private int uptime = -1; // g1
 		private ShellyAbstractDevice.Status status;
 	}
@@ -417,11 +440,11 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 									fwInfo.fwModule = device.getFWManager();
 									tModel.setRow(localIndex, createTableRow(localIndex));
 									countSelection();
-									if(device instanceof AbstractG2Device && fwInfo.wsSession.get().isOpen() == false) { // should be (closed on reboot)
-										fwInfo.wsSession = wsEventListener(localIndex, (AbstractG2Device)device);
-									}
-									fwInfo.rebootTime = Long.MAX_VALUE; // reset
-									fwInfo.uptime = -1; // reset
+//									if(device instanceof AbstractG2Device && fwInfo.wsSession.get().isOpen() == false) { // should be (closed on reboot)
+//										fwInfo.wsSession = wsEventListener(localIndex, (AbstractG2Device)device);
+//									}
+									fwInfo.rebootTime = Long.MAX_VALUE; // reset value
+									fwInfo.uptime = -1; // reset value
 								} catch (Throwable ex) {
 									LOG.error("Unexpected", ex);
 								}
@@ -437,6 +460,7 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 	}
 } // 346 - 362 - 462 - 476 - 509 - 418 - 438
 
-//{"src":"shellyplusi4-a8032ab1fe78","dst":"S_Scanner","method":"NotifyEvent","params":{"ts":1677696108.45,"events":[{"component":"sys", "event":"ota_progress", "msg":"Waiting for data", "progress_percent":99, "ts":1677696108.45}]}}
-//{"src":"shellyplusi4-a8032ab1fe78","dst":"S_Scanner","method":"NotifyEvent","params":{"ts":1677696109.49,"events":[{"component":"sys", "event":"ota_success", "msg":"Update applied, rebooting", "ts":1677696109.49}]}}
-//{"src":"shellyplusi4-a8032ab1fe78","dst":"S_Scanner","method":"NotifyEvent","params":{"ts":1677696109.57,"events":[{"component":"sys", "event":"scheduled_restart", "time_ms": 435, "ts":1677696109.57}]}}
+// {"src":"shellyplusi4-a8032ab1fe78","dst":"S_Scanner","method":"NotifyEvent","params":{"ts":1677696108.45,"events":[{"component":"sys", "event":"ota_progress", "msg":"Waiting for data", "progress_percent":99, "ts":1677696108.45}]}}
+// {"src":"shellyplusi4-a8032ab1fe78","dst":"S_Scanner","method":"NotifyEvent","params":{"ts":1677696109.49,"events":[{"component":"sys", "event":"ota_success", "msg":"Update applied, rebooting", "ts":1677696109.49}]}}
+// {"src":"shellyplusi4-a8032ab1fe78","dst":"S_Scanner","method":"NotifyEvent","params":{"ts":1677696109.57,"events":[{"component":"sys", "event":"scheduled_restart", "time_ms": 435, "ts":1677696109.57}]}}
+// BluTRV ... {"component":"bthomedevice:200","event":"ota_progress","msg":"Updating","progress_percent":100,"ts":1.73229721333E9}

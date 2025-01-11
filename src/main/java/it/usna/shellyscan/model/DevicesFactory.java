@@ -17,6 +17,7 @@ import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.ShellyGenericUnmanagedImpl;
 import it.usna.shellyscan.model.device.blu.AbstractBluDevice;
 import it.usna.shellyscan.model.device.blu.BTHomeDevice;
+import it.usna.shellyscan.model.device.blu.BluTRV;
 import it.usna.shellyscan.model.device.blu.ShellyBluUnmanaged;
 import it.usna.shellyscan.model.device.g1.AbstractG1Device;
 import it.usna.shellyscan.model.device.g1.Button1;
@@ -86,11 +87,12 @@ import it.usna.shellyscan.model.device.g3.Shelly1PMG3;
 import it.usna.shellyscan.model.device.g3.Shelly2PMG3;
 import it.usna.shellyscan.model.device.g3.ShellyG3Unmanaged;
 import it.usna.shellyscan.model.device.g3.ShellyGatewayG3;
+import it.usna.shellyscan.model.device.g3.ShellyHTG3;
 import it.usna.shellyscan.model.device.g3.ShellyI4G3;
 import it.usna.shellyscan.model.device.g3.ShellyMini1G3;
 import it.usna.shellyscan.model.device.g3.ShellyMini1PMG3;
 import it.usna.shellyscan.model.device.g3.ShellyMiniPMG3;
-import it.usna.shellyscan.model.device.g3.ShellyPlusHTG3;
+import it.usna.shellyscan.model.device.g3.ShellyPlugSG3;
 import it.usna.shellyscan.model.device.g3.ShellyXMOD1;
 import it.usna.shellyscan.view.DialogAuthentication;
 
@@ -107,7 +109,7 @@ public class DevicesFactory {
 			return createG2(httpClient, wsClient, address, port, info, name);
 		} else if(gen == 0) { // gen1 (info.get("gen") == null)
 			return createG1(httpClient, address, port, info, name);
-		} else if(gen == 3) {
+		} else if(gen >= 3) {
 			return createG3(httpClient, wsClient, address, port, info, name);
 		} else { // unknown gen
 			return new ShellyGenericUnmanagedImpl(address, port, name, httpClient);
@@ -305,7 +307,8 @@ public class DevicesFactory {
 			case ShellyMini1G3.ID -> new ShellyMini1G3(address, port, name);
 			case ShellyMini1PMG3.ID -> new ShellyMini1PMG3(address, port, name);
 			case ShellyMiniPMG3.ID -> new ShellyMiniPMG3(address, port, name);
-			case ShellyPlusHTG3.ID -> new ShellyPlusHTG3(address, port, name);
+			case ShellyPlugSG3.ID -> new ShellyPlugSG3(address, port, name);
+			case ShellyHTG3.ID -> new ShellyHTG3(address, port, name);
 			case ShellyGatewayG3.ID -> new ShellyGatewayG3(address, port, name);
 			// X
 			case ShellyXMOD1.ID -> new ShellyXMOD1(address, port, name);
@@ -327,23 +330,26 @@ public class DevicesFactory {
 		return d;
 	}
 	
-	public static AbstractBluDevice createBlu(ShellyAbstractDevice parent, HttpClient httpClient, /*WebSocketClient wsClient,*/ JsonNode info, String key/*, String index*/) {
-		String index = key.substring(13);
-		final String type = info.path("config").path("meta").path("ui").path("local_name").asText();
+	public static AbstractBluDevice createBlu(AbstractG2Device parent, HttpClient httpClient, /*WebSocketClient wsClient,*/ JsonNode info, String key) {
 		AbstractBluDevice blu;
 		try {
-			blu = new BTHomeDevice(parent, info, type, index);
+			if(key.startsWith(AbstractBluDevice.DEVICE_KEY_PREFIX)) {
+				final String type = info.path("config").path("meta").path("ui").path("local_name").asText();
+				blu = new BTHomeDevice(parent, info, type, key.substring(13));
+			} else { // currently only BluTRV
+				blu = new BluTRV(parent, info, key.substring(7));
+			}
 		} catch(Exception e) { // really unexpected
 			LOG.error("createBlu", e);
-			blu = new ShellyBluUnmanaged(parent, info, type, index, e);
+			String index = key.substring(key.indexOf(':') + 1);
+			blu = new ShellyBluUnmanaged(parent, info, index, e);
 		}
-//		System.out.println(blu + " # " + parent);
 		try {
 			blu.init(httpClient/*, wsClient*/);
 		} catch (IOException e) {
-			LOG.error("create - init", e);
+			LOG.error("createBlu {} - init", key, e);
 		} catch(RuntimeException e) {
-			LOG.error("create - init ", e);
+			LOG.error("createBlu {} - init {}", key, parent.getAddressAndPort(), e);
 		}
 		return blu;
 	}

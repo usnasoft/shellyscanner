@@ -10,7 +10,7 @@ import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.modules.WIFIManager;
 
 public class WIFIManagerG2 implements WIFIManager {
-	private final String net;
+	private String net;
 	private final AbstractG2Device d;
 	private boolean enabled;
 	private String dSSID;
@@ -22,14 +22,16 @@ public class WIFIManagerG2 implements WIFIManager {
 	
 	public WIFIManagerG2(AbstractG2Device d, Network network) throws IOException {
 		this.d = d;
-		if(network == Network.PRIMARY) {
-			net = "sta";
-		} else if(network == Network.SECONDARY) {
-			net = "sta1";
-		} else {
-			net = "err";
+		if(network != null) {
+			if(network == Network.PRIMARY) {
+				net = "sta";
+			} else if(network == Network.SECONDARY) {
+				net = "sta1";
+			} else {
+				net = "err";
+			}
+			init();
 		}
-		init();
 	}
 	
 	public WIFIManagerG2(AbstractG2Device d, Network network, boolean noInit) throws IOException {
@@ -131,6 +133,12 @@ public class WIFIManagerG2 implements WIFIManager {
 		ObjectNode config = JsonNodeFactory.instance.objectNode();
 		config.set("config", network);
 		return d.postCommand("Wifi.SetConfig", config);
+	}
+	
+	@Override
+	public String enableRoaming(boolean enable) {
+		int interval = enable ? 60 : 0;
+		return d.postCommand("WiFi.SetConfig", "{\"config\":{\"roam\":{\"interval\":" + interval + "}}}");
 	}
 	
 	public static Network currentConnection(AbstractG2Device d) {

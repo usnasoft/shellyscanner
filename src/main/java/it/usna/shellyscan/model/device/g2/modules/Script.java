@@ -1,6 +1,7 @@
 package it.usna.shellyscan.model.device.g2.modules;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,7 +20,7 @@ public class Script {
 	private boolean enabled;
 	private boolean running;
 
-	public Script(AbstractG2Device device, JsonNode script) {
+	private Script(AbstractG2Device device, JsonNode script) {
 		this.device = device;
 		name = script.get("name").asText();
 		id = script.get("id").asInt();
@@ -27,8 +28,20 @@ public class Script {
 		running = script.path("running").asBoolean(false);
 	}
 
-	public Script(AbstractG2Device device, int id) throws IOException {
+	private Script(AbstractG2Device device, int id) throws IOException {
 		this(device, device.getJSON("/rpc/Script.GetConfig?id=" + id));
+	}
+	
+	public static List<Script> list(AbstractG2Device device) throws IOException {
+		return list(device, device.getJSON("/rpc/Script.List"));
+	}
+	
+	public static List<Script> list(AbstractG2Device device, JsonNode jsonList) {
+		List<Script> ret = new ArrayList<>();
+		for(JsonNode scr: jsonList.get("scripts")) {
+			ret.add(new Script(device, scr));
+		}
+		return ret;
 	}
 
 	public static Script create(AbstractG2Device device, String name) throws IOException {
@@ -40,10 +53,6 @@ public class Script {
 			id = device.getJSON("Script.Create", "{}");
 		}
 		return new Script(device, id.get("id").asInt());
-	}
-
-	public static JsonNode list(AbstractG2Device device) throws IOException {
-		return device.getJSON("/rpc/Script.List").get("scripts");
 	}
 
 	public String getName() {
@@ -131,7 +140,7 @@ public class Script {
 			if(scriptsBackup != null && scriptsBackup.path("scripts").size() > 0) {
 				//check for existing scripts
 				TimeUnit.MILLISECONDS.sleep(delay);
-				JsonNode existingScripts = Script.list(device);
+				JsonNode existingScripts = device.getJSON("/rpc/Script.List").get("scripts");
 				HashMap<String, Integer> existingScriptsNamesIds = new HashMap<>();
 				for(JsonNode existingScript: existingScripts) {
 					existingScriptsNamesIds.put(existingScript.get("name").asText(), existingScript.get("id").asInt());

@@ -11,6 +11,7 @@ import it.usna.shellyscan.model.device.RestoreMsg;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.ShellyUnmanagedDeviceInterface;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
+import it.usna.shellyscan.model.device.modules.FirmwareManager;
 
 public class ShellyBluUnmanaged extends AbstractBluDevice implements ShellyUnmanagedDeviceInterface {
 	private String type;
@@ -22,8 +23,8 @@ public class ShellyBluUnmanaged extends AbstractBluDevice implements ShellyUnman
 		this.hostname = localName + "-" + mac;
 	}
 	
-	public ShellyBluUnmanaged(ShellyAbstractDevice parent, JsonNode info, String localName, String index, Throwable ex) {
-		this(parent, info, localName, index);
+	public ShellyBluUnmanaged(ShellyAbstractDevice parent, JsonNode info, String index, Throwable ex) {
+		this(parent, info, info.path("config").path("meta").path("ui").path("local_name").asText(""), index);
 		this.ex = ex;
 		status = Status.ERROR;
 	}
@@ -59,6 +60,11 @@ public class ShellyBluUnmanaged extends AbstractBluDevice implements ShellyUnman
 	@Override
 	public void refreshStatus() throws IOException {
 		// no universal data
+	}
+	
+	@Override
+	public FirmwareManager getFWManager() {
+		throw new UnsupportedOperationException();
 	}
 
 	@Override

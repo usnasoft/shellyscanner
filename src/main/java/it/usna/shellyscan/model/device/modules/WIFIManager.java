@@ -18,13 +18,15 @@ public interface WIFIManager {
 	public String getDNS();
 	
 	public String disable();
-	
+
 	/** set dhcp values */
 	public String set(String ssid, String pwd);
 
 	/** set static ip values (if ip == null do not alter ip)*/
 	public String set(String ssid, String pwd, String ip, String netmask, String gw, String dns);
-	
+
+	public String enableRoaming(boolean enable);
+
 //	default String copyFrom(WIFIManager fromWF, String pwd) {
 //		if(fromWF.isStaticIP()) {
 //			return set(fromWF.getSSID(), pwd, fromWF.getIP(), fromWF.getMask(), fromWF.getGateway(), fromWF.getDNS());

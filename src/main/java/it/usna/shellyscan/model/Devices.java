@@ -6,7 +6,6 @@ import java.net.NetworkInterface;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
@@ -187,21 +186,21 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 			dalay += 4;
 		}
 	}
-
+	
 	private JsonNode isShelly(final InetAddress address, int port) throws TimeoutException {
 		// if(name.startsWith("shelly") || name.startsWith("Shelly")) { // Shelly X devices can have different names
 		try {
 			ContentResponse response = httpClient.newRequest("http://" + address.getHostAddress() + ":" + port + "/shelly").timeout(80, TimeUnit.SECONDS).method(HttpMethod.GET).send();
-			JsonNode shellyNode = JSON_MAPPER.readTree(response.getContent());
+			JsonNode shellyNode = null;// = JSON_MAPPER.readTree(response.getContent());
 			int resp = response.getStatus();
-			if(resp == HttpStatus.OK_200 && shellyNode.has("mac")) { // "mac" is common to all shelly devices
+			if(resp == HttpStatus.OK_200 && (shellyNode = JSON_MAPPER.readTree(response.getContent())).has("mac")) { // "mac" is common to all shelly devices
 				return shellyNode;
 			} else {
-				LOG.trace("Not Shelly {}, resp {}, node ()", address, resp, shellyNode);
+				LOG.trace("Not Shelly {}, status {}, node {}", address, resp, shellyNode);
 				return null;
 			}
 		} catch (InterruptedException | ExecutionException | IOException e) { // SocketTimeoutException extends IOException
-			LOG.trace("Not Shelly {} - {}", address, e);
+			LOG.trace("Not Shelly {} - {}", address, port, e);
 			return null;
 		}
 	}
@@ -313,13 +312,17 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 	
 	public void pauseRefresh(int ind) {
 		synchronized(devices) {
-			refreshProcess.get(ind).cancel(true);
+			ScheduledFuture<?> future = refreshProcess.get(ind);
+			if(future != null) {
+				future.cancel(true);
+			}
 		}
 	}
 	
 	public void activateRefresh(int ind) {
 		synchronized(devices) {
-			if(refreshProcess.get(ind).isCancelled()) {
+			ScheduledFuture<?> future = refreshProcess.get(ind);
+			if(future != null && future.isCancelled()) {
 				refreshProcess.set(ind, scheduleRefresh(devices.get(ind), ind, refreshInterval, refreshTics));
 			}
 		}
@@ -384,26 +387,16 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 						}
 					});
 				}
-				// BTHome
+				// BTHome (BLU)
 				if(d instanceof AbstractProDevice || d instanceof AbstractG3Device) {
 					final JsonNode currenteComponents = d.getJSON("/rpc/Shelly.GetComponents?dynamic_only=true").path("components"); // empty on 401
-					final Iterator<JsonNode> compIt = currenteComponents.iterator();
-					HashSet<BluTRV> trvSet = new HashSet<>();
-					while (compIt.hasNext()) {
-						JsonNode compInfo = compIt.next();
+					for(JsonNode compInfo: currenteComponents) {
 						String key = compInfo.path("key").asText();
-						if(key.startsWith(AbstractBluDevice.DEVICE_KEY_PREFIX)) {
+						if(key.startsWith(AbstractBluDevice.DEVICE_KEY_PREFIX) || key.startsWith(BluTRV.DEVICE_KEY_PREFIX)) {
 							newBluDevice(d, compInfo, key);
-						} else if(key.startsWith(BluTRV.DEVICE_KEY_PREFIX)) { // temporary workaround
-							trvSet.add(new BluTRV((AbstractG2Device)d, compInfo, "-1"));
 						}
+//						if(key.startsWith(BluTRV.DEVICE_KEY_PREFIX)) { newBluDevice(d, compInfo, key); }
 					}
-					trvSet.forEach(trv -> {  // temporary workaround
-						int ind = devices.indexOf(trv);
-						if(ind >= 0 && devices.get(ind) instanceof BTHomeDevice blu) {
-							blu.setTypeName("Blu TRV");
-						}
-					});
 				}
 			}
 		} catch(Exception e) {
@@ -438,12 +431,14 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 	
 	private void newBluDevice(ShellyAbstractDevice parent, JsonNode compInfo, String key) {
 		try {
-			AbstractBluDevice newBlu = DevicesFactory.createBlu(parent, httpClient, /*wsClient,*/ compInfo, key);
+			AbstractBluDevice newBlu = DevicesFactory.createBlu((AbstractG2Device)parent, httpClient, /*wsClient,*/ compInfo, key);
 			synchronized(devices) {
 				int ind = devices.indexOf(newBlu);
 				if(ind >= 0) { // already in list
 					ShellyAbstractDevice oldBlu = devices.get(ind);
-					if(oldBlu instanceof GhostDevice || newBlu.getLastTime() > oldBlu.getLastTime() || oldBlu.getAddressAndPort().equals(newBlu.getAddressAndPort())) {
+					if(oldBlu instanceof GhostDevice ||
+							(oldBlu instanceof BTHomeDevice && newBlu instanceof BTHomeDevice == false) || // BTHome -> blu trv
+							((newBlu.getLastTime() > oldBlu.getLastTime() || oldBlu.getAddressAndPort().equals(newBlu.getAddressAndPort())) && (oldBlu instanceof BTHomeDevice == false && newBlu instanceof BTHomeDevice) == false)) {
 						if(refreshProcess.get(ind) != null) {
 							refreshProcess.get(ind).cancel(true);
 						}
@@ -501,11 +496,12 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 			LOG.debug("Starting ghosts reconnect");
 			int dalay = 0;
 			for(int i = 0; i < devices.size(); i++) {
-				if(devices.get(i) instanceof GhostDevice g && g.isBatteryOperated() == false && g.getGeneration().equals(AbstractBluDevice.GENERATION) == false /*&& g.getAddressAndPort().getPort() == 80*/) { // getPort() port is (currently) variable
+				if(devices.get(i) instanceof GhostDevice g && g.isBatteryOperated() == false && g.getGeneration().equals(AbstractBluDevice.GENERATION) == false && g.getGeneration().equals(BTHomeDevice.GENERATION) == false) { // getPort() port is (currently) variable
+					// && g.getAddressAndPort().getPort() == 80 -- the port may change
 					executor.schedule(() -> {
 						try {
 							create(g.getAddressAndPort().getAddress(), g.getAddressAndPort().getPort(), g.getAddressAndPort().getAddress().getHostAddress(), false);
-						} catch (RuntimeException e) {/*LOG.trace("ghosts reload {}", d.getAddress());*/}
+						} catch (RuntimeException e) { /*LOG.trace("ghosts reload {}", d.getAddress());*/ }
 					}, dalay, TimeUnit.MILLISECONDS);
 					dalay += 4;
 				}

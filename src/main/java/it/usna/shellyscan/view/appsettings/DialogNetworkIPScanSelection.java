@@ -34,7 +34,7 @@ public class DialogNetworkIPScanSelection extends JDialog {
 	IntegerTextFieldPanel[] firstIP = new IntegerTextFieldPanel[10];
 	IntegerTextFieldPanel[] lastIP = new IntegerTextFieldPanel[10];
 	
-	private final AppProperties appProp = ScannerProperties.get();
+	private final AppProperties appProp = ScannerProperties.instance();
 
 	public DialogNetworkIPScanSelection(final JDialog owner) {
 		super(owner, LABELS.getString("dlgAppSetIPScan"), true);

@@ -6,6 +6,7 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
+import java.util.Locale;
 import java.util.MissingResourceException;
 
 import javax.swing.BorderFactory;
@@ -97,8 +98,11 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 	final static String LABEL_ON = Main.LABELS.getString("btnOnLabel");
 	final static String LABEL_OFF = Main.LABELS.getString("btnOffLabel");
 	final static ImageIcon EDIT_IMG = new ImageIcon(DevicesCommandCellRenderer.class.getResource("/images/Write16.png"));
+	
+	private boolean tempUnitCelsius;
 
-	public DevicesCommandCellRenderer() {
+	public DevicesCommandCellRenderer(boolean celsius) {
+		this.tempUnitCelsius = celsius;
 		// Dimmer
 		lightButton.setBorder(BUTTON_BORDERS);
 		lightPanel.add(lightButton, BorderLayout.EAST);
@@ -385,10 +389,14 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 			ret = trvPanel;
 		} else if(value instanceof ThermostatInterface[] thermostats) {
 			ThermostatInterface thermostat = thermostats[0]; // multiple thermostats devices currently not supported
-			thermSlider.setMinimum((int)(thermostat.getMinTargetTemp() * 2));
-			thermSlider.setMaximum((int)(thermostat.getMaxTargetTemp() * 2));
-			thermSlider.setValue((int)(thermostat.getTargetTemp() * 2));
-			thermProfileLabel.setText(/*thermostat.getCurrentProfile()*//*thermostat.getLabel() + " " +*/ thermostat.getTargetTemp() + "°C");
+			thermSlider.setMinimum((int)(thermostat.getMinTargetTemp() * thermostat.getUnitDivision()));
+			thermSlider.setMaximum((int)(thermostat.getMaxTargetTemp() * thermostat.getUnitDivision()));
+			thermSlider.setValue((int)(thermostat.getTargetTemp() * thermostat.getUnitDivision()));
+			if(tempUnitCelsius) {
+				thermProfileLabel.setText(/*thermostat.getCurrentProfile() + " " +*/ thermostat.getTargetTemp() + "°C");
+			} else {
+				thermProfileLabel.setText(/*thermostat.getCurrentProfile() + " " +*/ String.format(Locale.ENGLISH, "%.1f°F", thermostat.getTargetTemp() * 1.8f + 32f));
+			}
 			if(thermostat.isEnabled()) {
 				thermActiveButton.setText(LABEL_ON);
 				thermActiveButton.setBackground(BUTTON_ON_BG_COLOR);
@@ -486,5 +494,9 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 		actionsPanel.add(actionsLabel, BorderLayout.WEST);
 		actionsPanel.setOpaque(false);
 		return actionsPanel;
+	}
+	
+	public void setTempUnit(boolean celsius) {
+		tempUnitCelsius = celsius;
 	}
 }

@@ -15,14 +15,14 @@ import it.usna.shellyscan.model.device.Meters;
  * Shelly H&T G3 model
  * @author usna
  */
-public class ShellyPlusHTG3 extends AbstractBatteryG3Device {
+public class ShellyHTG3 extends AbstractBatteryG3Device {
 	public final static String ID = "HTG3";
 	private final static Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.T, Meters.Type.H, Meters.Type.BAT};
 	private float temp;
 	private float humidity;
 	private Meters[] meters;
 	
-	public ShellyPlusHTG3(InetAddress address, int port, String hostname) {
+	public ShellyHTG3(InetAddress address, int port, String hostname) {
 		super(address, port, hostname);
 
 		meters = new Meters[] {
@@ -66,8 +66,8 @@ public class ShellyPlusHTG3 extends AbstractBatteryG3Device {
 	protected void fillStatus(JsonNode status) throws IOException {
 		super.fillStatus(status);
 		this.status = status;
-		temp = (float)status.path("temperature:0").path("tC").asDouble();
-		humidity = (float)status.path("humidity:0").path("rh").asDouble();
+		temp = status.path("temperature:0").path("tC").floatValue();
+		humidity = status.path("humidity:0").path("rh").floatValue();
 		bat = status.path("devicepower:0").path("battery").path("percent").asInt();
 
 //		System.out.println(getJSON("/rpc/Shelly.CheckForUpdate")); TEST - no way to obtain data for this device

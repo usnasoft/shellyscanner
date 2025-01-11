@@ -140,7 +140,6 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 	@Override
 	public void refreshSettings() throws IOException {
 		fillSettings(getJSON("/rpc/Shelly.GetConfig"));
-//		fillStatus(getJSON("/rpc/Shelly.GetStatus"));
 	}
 
 	@Override
@@ -366,12 +365,10 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			// Scripts
 			if(scripts != null) {
-				JsonNode scrList = jsonMapper.readTree(scripts).get("scripts");
-				for(JsonNode scr: scrList) {
+				for(Script script: Script.list(this, jsonMapper.readTree(scripts))) {
 					try {
-						Script script = new Script(this, scr);
 						byte[] code =  script.getCode().getBytes();
-						ZipEntry entry = new ZipEntry(scr.get("name").asText() + ".mjs");
+						ZipEntry entry = new ZipEntry(script.getName() + ".mjs");
 						out.putNextEntry(entry);
 						out.write(code, 0, code.length);
 					} catch(IOException e) {}
@@ -397,11 +394,11 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 		EnumMap<RestoreMsg, Object> res = new EnumMap<>(RestoreMsg.class);
 		try {
 			JsonNode devInfo = backupJsons.get("Shelly.GetDeviceInfo.json");
-			JsonNode config = backupJsons.get("Shelly.GetConfig.json");
-			final String fileHostname = devInfo.get("id").asText("");
 			if(devInfo == null || this.getTypeID().equals(devInfo.get("app").asText()) == false) {
 				res.put(RestoreMsg.ERR_RESTORE_MODEL, null);
 			} else {
+				JsonNode config = backupJsons.get("Shelly.GetConfig.json");
+				final String fileHostname = devInfo.get("id").asText("");
 				boolean sameHost = fileHostname.equals(this.hostname);
 				if(sameHost == false) {
 					res.put(RestoreMsg.PRE_QUESTION_RESTORE_HOST, fileHostname);
@@ -431,19 +428,16 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 						}
 					}
 				}
-				if(config.at("/mqtt/enable").asBoolean() && config.at("/mqtt/user").asText("").length() > 0) {
+				if(config.at("/mqtt/enable").asBoolean() && config.at("/mqtt/user").asText("").isEmpty() == false) {
 					res.put(RestoreMsg.RESTORE_MQTT, config.at("/mqtt/user").asText());
 				}
-				JsonNode scripts = backupJsons.get("Script.List.json");
-				if(scripts != null && scripts.path("scripts").size() > 0) {
+				JsonNode storedScripts = backupJsons.get("Script.List.json");
+				if(storedScripts != null && storedScripts.path("scripts").size() > 0) {
+					List<Script> existingScripts = Script.list(this);
 					List<String> scriptsEnabledByDefault = new ArrayList<>();
 					List<String> scriptsWithSameName = new ArrayList<>();
-					JsonNode existingScripts = Script.list(this);
-					List<String> existingScriptsNames = new ArrayList<>();
-					for(JsonNode existingScript: existingScripts) {
-						existingScriptsNames.add(existingScript.get("name").asText());
-					}
-					for(JsonNode jsonScript: scripts.get("scripts")) {
+					List<String> existingScriptsNames = existingScripts.stream().map(s -> s.getName()).toList();
+					for(JsonNode jsonScript: storedScripts.get("scripts")) {
 						if(existingScriptsNames.contains(jsonScript.get("name").asText()))
 							scriptsWithSameName.add(jsonScript.get("name").asText());
 						if(jsonScript.get("enable").asBoolean())
@@ -584,7 +578,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 		errors.add(postCommand("Sys.SetConfig", outConfig));
 		
 		final JsonNode mqtt = config.path("mqtt");
-		if(userPref.containsKey(RestoreMsg.RESTORE_MQTT) || mqtt.path("enable").asBoolean() == false || mqtt.path("user").asText("").length() == 0) {
+		if(userPref.containsKey(RestoreMsg.RESTORE_MQTT) || mqtt.path("enable").asBoolean() == false || mqtt.path("user").asText("").isEmpty()) {
 			TimeUnit.MILLISECONDS.sleep(delay);
 			MQTTManagerG2 mqttM = new MQTTManagerG2(this, true);
 			errors.add(mqttM.restore(mqtt, userPref.get(RestoreMsg.RESTORE_MQTT)));
