@@ -99,6 +99,7 @@ import it.usna.shellyscan.model.device.g3.ShellyMiniPMG3;
 import it.usna.shellyscan.model.device.g3.ShellyPlugSG3;
 import it.usna.shellyscan.model.device.g3.ShellyXMOD1;
 import it.usna.shellyscan.model.device.g4.AbstractG4Device;
+import it.usna.shellyscan.model.device.g4.Shelly1G4;
 import it.usna.shellyscan.model.device.g4.ShellyG4Unmanaged;
 import it.usna.shellyscan.view.DialogAuthentication;
 
@@ -305,9 +306,7 @@ public class DevicesFactory {
 				digestAuthentication(httpClient, address, port, name);
 			}
 			d = switch(info.get("app").asText()) {
-//			case Shelly1G3.ID -> new Shelly1G3(address, port, name);
-//			case Shelly1PMG3.ID -> new Shelly1PMG3(address, port, name);
-//			case Shelly2PMG3.ID -> new Shelly2PMG3(address, port, name);
+			case Shelly1G4.ID -> new Shelly1G4(address, port, name);
 			default -> new ShellyG4Unmanaged(address, port, name);
 			};
 		} catch(Exception e) { // really unexpected
