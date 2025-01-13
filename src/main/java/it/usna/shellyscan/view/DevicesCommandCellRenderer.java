@@ -35,6 +35,9 @@ import it.usna.shellyscan.model.device.modules.WhiteInterface;
 import it.usna.swing.VerticalFlowLayout;
 
 public class DevicesCommandCellRenderer implements TableCellRenderer {
+	// Generic
+	private JButton onOffButton0 = new JButton();
+	
 	// Dimmer
 	private JPanel lightPanel = new JPanel(new BorderLayout());
 	private JLabel lightLabel = new JLabel();
@@ -103,6 +106,9 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 
 	public DevicesCommandCellRenderer(boolean celsius) {
 		this.tempUnitCelsius = celsius;
+		// Generic
+		onOffButton0.setBorder(BUTTON_BORDERS);
+		
 		// Dimmer
 		lightButton.setBorder(BUTTON_BORDERS);
 		lightPanel.add(lightButton, BorderLayout.EAST);
@@ -258,8 +264,8 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 		final Color foregroundColor = isSelected ? table.getSelectionForeground() : table.getForeground();
 		if(value instanceof RelayInterface[] riArray) {
 			stackedPanel.removeAll();
-			for(RelayInterface rel: riArray) { // 1, 1PM, EM, 2.5 ...
-				stackedPanel.add(getRelayPanel(rel, foregroundColor));
+			for(int i = 0; i < riArray.length; i++) { // 1, 1PM, EM, 2.5 ...
+				stackedPanel.add(getRelayPanel(riArray[i], foregroundColor, i));
 			}
 			ret = stackedPanel;
 		} else if(value instanceof RollerInterface[] rollers) { // 2.5 ...
@@ -346,11 +352,16 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 					WhiteInterface light = lights[i];
 					JLabel relayLabel = new JLabel(light.getLabel() + " " + light.getBrightness() + "%");
 					JPanel relayPanel = new JPanel(new BorderLayout());
-					JButton button = new JButton();
 					relayPanel.setOpaque(false);
-					button.setBorder(BUTTON_BORDERS);
 					relayPanel.add(relayLabel, BorderLayout.CENTER);
 					relayLabel.setForeground(foregroundColor);
+					JButton button;
+					if(i == 0) {
+						button = onOffButton0;
+					} else {
+						button = new JButton();
+						button.setBorder(BUTTON_BORDERS);
+					}
 					if(light.isOn()) {
 						button.setText(LABEL_ON);
 						button.setBackground(BUTTON_ON_BG_COLOR);
@@ -358,9 +369,7 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 						button.setText(LABEL_OFF);
 						button.setBackground(BUTTON_OFF_BG_COLOR);
 					}
-					if(light.isInputOn()) {
-						button.setForeground(BUTTON_ON_FG_COLOR);
-					}
+					button.setForeground(light.isInputOn() ? BUTTON_ON_FG_COLOR : null);
 					if(++i < lights.length) {
 						relayPanel.add(button, BorderLayout.EAST);
 					} else {
@@ -412,9 +421,10 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 			ret = thermPanel;
 		} else if(value instanceof DeviceModule[] devArray) { // mixed modules
 			stackedPanel.removeAll();
-			for(DeviceModule module: devArray) {
+			for(int i = 0; i < devArray.length; i++) {
+				DeviceModule module = devArray[i];
 				if(module instanceof RelayInterface rel) {
-					stackedPanel.add(getRelayPanel(rel, foregroundColor));
+					stackedPanel.add(getRelayPanel(rel, foregroundColor, i));
 				} else if(module instanceof InputInterface input && input.enabled()) {
 					stackedPanel.add(getInputPanel(input, foregroundColor));
 				}
@@ -429,30 +439,32 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 //		} catch(Exception e) {e.printStackTrace(); return null;}
 	}
 
-	private JPanel getRelayPanel(RelayInterface rel, final Color foregroundColor) {
+	private JPanel getRelayPanel(RelayInterface rel, final Color foregroundColor, final int index) {
 		JLabel relayLabel = new JLabel(rel.getLabel());
 		relayLabel.setForeground(foregroundColor);
 		JPanel relayPanel = new JPanel(new BorderLayout());
-		JButton relayButton = new JButton();
-		relayButton.setBorder(BUTTON_BORDERS);
-		
+		final JButton button;
+		if(index == 0) {
+			button = onOffButton0;
+		} else {
+			button = new JButton();
+			button.setBorder(BUTTON_BORDERS);
+		}
 		JPanel relayButtonPanel = new JPanel(new VerticalFlowLayout(VerticalFlowLayout.CENTER, VerticalFlowLayout.CENTER, 0, 0));
 		relayButtonPanel.setOpaque(false);
-		relayButtonPanel.add(relayButton);
+		relayButtonPanel.add(button);
 
 		relayPanel.setOpaque(false);
 		relayPanel.add(relayLabel, BorderLayout.CENTER);
 		relayPanel.add(relayButtonPanel, BorderLayout.EAST);
 		if(rel.isOn()) {
-			relayButton.setText(LABEL_ON);
-			relayButton.setBackground(BUTTON_ON_BG_COLOR);
+			button.setText(LABEL_ON);
+			button.setBackground(BUTTON_ON_BG_COLOR);
 		} else {
-			relayButton.setText(LABEL_OFF);
-			relayButton.setBackground(BUTTON_OFF_BG_COLOR);
+			button.setText(LABEL_OFF);
+			button.setBackground(BUTTON_OFF_BG_COLOR);
 		}
-		if(rel.isInputOn()) {
-			relayButton.setForeground(BUTTON_ON_FG_COLOR);
-		}
+		button.setForeground(rel.isInputOn() ? BUTTON_ON_FG_COLOR : null);
 		return relayPanel;
 	}
 	

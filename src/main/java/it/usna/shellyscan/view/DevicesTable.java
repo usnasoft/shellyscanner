@@ -455,7 +455,7 @@ public class DevicesTable extends ExTooltipTable {
 				}
 				int uptime = d.getUptime();
 				if(uptime >= 0) {
-					row[DevicesTable.COL_UPTIME_IDX] = d.getUptime();
+					row[DevicesTable.COL_UPTIME_IDX] = uptime;
 				}
 				row[DevicesTable.COL_INT_TEMP] = (d instanceof InternalTmpHolder) ? ((InternalTmpHolder)d).getInternalTmp() : null;
 				row[DevicesTable.COL_MEASURES_IDX] = d.getMeters();

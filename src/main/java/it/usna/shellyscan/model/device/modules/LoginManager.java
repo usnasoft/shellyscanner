@@ -1,12 +1,11 @@
 package it.usna.shellyscan.model.device.modules;
 
 public interface LoginManager {
+	boolean isEnabled();
 	
-	public boolean isEnabled();
+	String getUser();
 	
-	public String getUser();
-	
-	public String disable();
+	String disable();
 
-	public String set(String user, char[] pwd);
+	String set(String user, char[] pwd);
 }

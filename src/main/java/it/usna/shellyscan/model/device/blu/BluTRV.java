@@ -308,7 +308,7 @@ public class BluTRV extends AbstractBluDevice implements ThermostatInterface, Mo
 	
 	@Override
 	public String getLabel() {
-		return null;
+		return "";
 	}
 	
 	@Override

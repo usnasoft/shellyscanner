@@ -1,31 +1,31 @@
 package it.usna.shellyscan.model.device.modules;
 
 public interface WIFIManager {
-	public enum Network {PRIMARY, SECONDARY, ETHERNET, UNKNOWN, AP}; 
+	enum Network {PRIMARY, SECONDARY, ETHERNET, UNKNOWN, AP}; 
 
-	public boolean isEnabled();
+	boolean isEnabled();
 	
-	public String getSSID();
+	String getSSID();
 	
-	public boolean isStaticIP();
+	boolean isStaticIP();
 	
-	public String getIP();
+	String getIP();
 	
-	public String getMask();
+	String getMask();
 	
-	public String getGateway();
+	String getGateway();
 	
-	public String getDNS();
+	String getDNS();
 	
-	public String disable();
+	String disable();
 
 	/** set dhcp values */
-	public String set(String ssid, String pwd);
+	String set(String ssid, String pwd);
 
 	/** set static ip values (if ip == null do not alter ip)*/
-	public String set(String ssid, String pwd, String ip, String netmask, String gw, String dns);
+	String set(String ssid, String pwd, String ip, String netmask, String gw, String dns);
 
-	public String enableRoaming(boolean enable);
+	String enableRoaming(boolean enable);
 
 //	default String copyFrom(WIFIManager fromWF, String pwd) {
 //		if(fromWF.isStaticIP()) {
