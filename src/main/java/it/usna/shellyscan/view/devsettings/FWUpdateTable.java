@@ -46,18 +46,24 @@ public class FWUpdateTable extends ExTooltipTable {
 	}
 
 	@Override
+	// On update COL_STABLE value is String for the updating row, if this is the first not null row ... see UsnaTableModel.getColumnClass(...))
+	public Class<?> getColumnClass(int c) {
+		return c == COL_STABLE ? Boolean.class : super.getColumnClass(c);
+	}
+	
+	@Override
 	public Component prepareEditor(TableCellEditor editor, int row, int column) {
-		JCheckBox comp = (JCheckBox)super.prepareEditor(editor, row, column);
+		JCheckBox editorComponent = (JCheckBox)super.prepareEditor(editor, row, column);
 		FirmwareManager fw = fwPanel.getFirmwareManager(convertRowIndexToModel(row));
 		if(fw != null) {
-			comp.setText(FirmwareManager.getShortVersion(column == COL_STABLE ? fw.newStable() : fw.newBeta()));
-		} else if(column == COL_STABLE) { // non info -> try update
-			comp.setText(Main.LABELS.getString("labelUpdateToAny"));
+			editorComponent.setText(FirmwareManager.getShortVersion(column == COL_STABLE ? fw.newStable() : fw.newBeta()));
+		} else if(column == COL_STABLE) { // no info -> try update
+			editorComponent.setText(Main.LABELS.getString("labelUpdateToAny"));
 		}
-		comp.setBackground(getSelectionBackground());
-		comp.setForeground(getSelectionForeground());
-		comp.setHorizontalAlignment(JLabel.LEFT);
-		return comp;
+		editorComponent.setBackground(getSelectionBackground());
+		editorComponent.setForeground(getSelectionForeground());
+		editorComponent.setHorizontalAlignment(JLabel.LEFT);
+		return editorComponent;
 	}
 
 	@Override
@@ -73,21 +79,6 @@ public class FWUpdateTable extends ExTooltipTable {
 		}
 		fwPanel.countSelection();
 	}
-
-//	@Override
-//	public String getToolTipText(final MouseEvent evt) {
-//		if(this.isVisible()) {
-//			final int row, col;
-//			final Object value;
-//			if ((row = rowAtPoint(evt.getPoint())) >= 0 && (col = columnAtPoint(evt.getPoint())) >= 0 && (value = getValueAt(row, col)) != null &&
-//					(col == COL_CURRENT || col == COL_STABLE || col == COL_BETA)) {
-//				return cellValueAsString(value, row, col);
-//			} else {
-//				return super.getToolTipText(evt);
-//			}
-//		}
-//		return null;
-//	}
 	
 	@Override
 	protected String getToolTipText(Object value, boolean cellTooSmall, int row, int col) {
@@ -136,7 +127,7 @@ public class FWUpdateTable extends ExTooltipTable {
 					FirmwareManager fw = fwPanel.getFirmwareManager(convertRowIndexToModel(row));
 					if(fw != null) {
 						comp.setText(FirmwareManager.getShortVersion(column == COL_STABLE ? fw.newStable() : fw.newBeta()));
-					} else if(column == COL_STABLE) { // non info -> try update
+					} else if(column == COL_STABLE) { // no info -> try update
 						comp.setText(Main.LABELS.getString("labelUpdateToAny"));
 					}
 				}

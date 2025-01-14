@@ -301,11 +301,12 @@ improved Shelly Pro 3EM support
 optional fahrenheit temperature unit
 consecutive fw updates progress fixed
 
-1.2.1
+1.2.2
 Shelly Pro Dimmer 2PM
 3EM-63 G3
 Shelly Pro RGBWW PM - todo
 Shelly Dimmer Gen3
+Shelly gen4 generic
 
 ---
 // TODO
