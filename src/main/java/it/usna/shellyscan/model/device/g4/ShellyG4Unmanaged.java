@@ -46,7 +46,9 @@ public class ShellyG4Unmanaged extends AbstractG4Device implements ShellyUnmanag
 				status = Status.ERROR;
 			}
 			this.ex = e;
-			name = "";
+			if(name == null) {
+				name = "";
+			}
 		}
 	}
 	

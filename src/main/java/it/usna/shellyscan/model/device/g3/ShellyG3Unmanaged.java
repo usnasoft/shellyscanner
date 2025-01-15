@@ -46,7 +46,9 @@ public class ShellyG3Unmanaged extends AbstractG3Device implements ShellyUnmanag
 				status = Status.ERROR;
 			}
 			this.ex = e;
-			name = "";
+			if(name == null) {
+				name = "";
+			}
 		}
 	}
 	
