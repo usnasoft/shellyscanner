@@ -8,7 +8,6 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.net.InetAddress;
-import java.net.UnknownHostException;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -86,7 +85,7 @@ public class DialogNetworkIPScanSelection extends JDialog {
 			try {
 				baseIPProp = InetAddress.getLocalHost().getHostAddress();
 				baseIPProp = baseIPProp.substring(0, baseIPProp.lastIndexOf('.'));
-			} catch (UnknownHostException e) {
+			} catch (/*UnknownHost*/Exception e) { // Found (logs) a case with baseIPProp.lastIndexOf('.') == -1 (IPV6?)
 				baseIPProp = "";
 			}
 		}
