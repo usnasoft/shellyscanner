@@ -140,6 +140,7 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 		}
 		fireEvent(EventType.READY);
 		
+		executor.schedule(() -> errorsReconnect(), 30, TimeUnit.SECONDS);
 		if(autorelod) {
 			executor.schedule(() -> ghostsReconnect(), 45, TimeUnit.SECONDS);
 		}
@@ -152,6 +153,8 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 		LOG.debug("IP scan: {}", ipCollection);
 		scanByIP();
 		fireEvent(EventType.READY);
+		
+		executor.schedule(() -> errorsReconnect(), 30, TimeUnit.SECONDS);
 	}
 	
 	public void setRefreshTime(int refreshInterval, int refreshTics) {
@@ -492,16 +495,32 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 	}
 
 	private void ghostsReconnect() {
+		LOG.debug("Starting ghosts reconnect");
 		synchronized(devices) {
-			LOG.debug("Starting ghosts reconnect");
 			int dalay = 0;
-			for(int i = 0; i < devices.size(); i++) {
-				if(devices.get(i) instanceof GhostDevice g && g.isBatteryOperated() == false && g.getGeneration().equals(AbstractBluDevice.GENERATION) == false && g.getGeneration().equals(BTHomeDevice.GENERATION) == false) { // getPort() port is (currently) variable
-					// && g.getAddressAndPort().getPort() == 80 -- the port may change
+			for(ShellyAbstractDevice d: devices) {
+				if(d instanceof GhostDevice g && g.isBatteryOperated() == false && g.getGeneration().equals(AbstractBluDevice.GENERATION) == false && g.getGeneration().equals(BTHomeDevice.GENERATION) == false) { // getPort() port is (potentially if!=80) variable
 					executor.schedule(() -> {
 						try {
 							create(g.getAddressAndPort().getAddress(), g.getAddressAndPort().getPort(), g.getAddressAndPort().getAddress().getHostAddress(), false);
 						} catch (RuntimeException e) { /*LOG.trace("ghosts reload {}", d.getAddress());*/ }
+					}, dalay, TimeUnit.MILLISECONDS);
+					dalay += 4;
+				}
+			}
+		}
+	}
+	
+	private void errorsReconnect() {
+		LOG.debug("Starting unmanaged err reconnect");
+		synchronized(devices) {
+			int dalay = 0;
+			for(ShellyAbstractDevice d: devices) {
+				if(d instanceof ShellyUnmanagedDeviceInterface u && u.getException() != null) {
+					executor.schedule(() -> {
+						try {
+							create(d.getAddressAndPort().getAddress(), d.getAddressAndPort().getPort(), d.getAddressAndPort().getAddress().getHostAddress(), false);
+						} catch (RuntimeException e) {}
 					}, dalay, TimeUnit.MILLISECONDS);
 					dalay += 4;
 				}

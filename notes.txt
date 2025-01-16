@@ -307,10 +307,12 @@ Shelly Pro Dimmer 2PM
 Shelly Pro RGBWW PM - todo
 Shelly Dimmer Gen3
 Shelly gen4 generic
+g2+ AP retore ssid (fw 1.5.0)
+executor.schedule(() -> errorsReconnect(), 25, TimeUnit.SECONDS);
 
 ---
 // TODO
-// it.usna.shellyscan.model.Devices.ghostsReconnect() try to reconnect also "generic" with error
+// checklist AP ssid != mac (fw 1.5.0 stable)
 // wall display restore profiles and rules (/rpc/Thermostat.Schedule.ListRules?id=0&profile_id=1)
 // portare il modello sulla tabella per semplificare il calcolo dei tooltip (e delle icone di stato)
 // Xmod1 sganciare bottone se detatched (?)

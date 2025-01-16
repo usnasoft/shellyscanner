@@ -31,14 +31,11 @@ public class FWUpdateTable extends ExTooltipTable {
 		super(tm);
 		this.fwPanel = fwPanel;
 		getTableHeader().setReorderingAllowed(false);
-//		JCheckBox booleanRenderer = (JCheckBox)getDefaultRenderer(Boolean.class);
-//		booleanRenderer.setOpaque(true);
-//		booleanRenderer.setHorizontalAlignment(JCheckBox.LEFT);
 		TableCellRenderer fwRendered = new FWCellRendered();
 		columnModel.getColumn(COL_STABLE).setCellRenderer(fwRendered);
 		columnModel.getColumn(COL_BETA).setCellRenderer(fwRendered);
 		columnModel.getColumn(COL_STATUS).setMaxWidth(DevicesTable.ONLINE_BULLET.getIconWidth() + 4);
-		// On update COL_STABLE value is String for the updating row, if this is the first not null row ... see UsnaTableModel.getColumnClass(...))
+		// On update COL_STABLE value class is String for the updating row, if this is the first row ... see UsnaTableModel.getColumnClass(...))
 		columnModel.getColumn(COL_STABLE).setCellEditor(getDefaultEditor(Boolean.class));
 		activateSingleCellStringCopy();
 	}
@@ -47,12 +44,6 @@ public class FWUpdateTable extends ExTooltipTable {
 	public boolean isCellEditable(final int row, final int column) {
 		return getValueAt(row, column) instanceof Boolean;
 	}
-
-//	@Override
-//	// On update COL_STABLE value is String for the updating row, if this is the first not null row ... see UsnaTableModel.getColumnClass(...))
-//	public Class<?> getColumnClass(int c) {
-//		return c == COL_STABLE ? Boolean.class : super.getColumnClass(c);
-//	}
 	
 	@Override
 	public Component prepareEditor(TableCellEditor editor, int row, int column) {
@@ -118,7 +109,7 @@ public class FWUpdateTable extends ExTooltipTable {
 	}
 
 	private class FWCellRendered implements TableCellRenderer {
-		public FWCellRendered() {
+		private FWCellRendered() {
 			JCheckBox booleanRenderer = (JCheckBox)getDefaultRenderer(Boolean.class);
 			booleanRenderer.setOpaque(true);
 			booleanRenderer.setHorizontalAlignment(JCheckBox.LEFT);	

@@ -178,7 +178,7 @@ public class WIFIManagerG2 implements WIFIManager {
 		JsonNode ap = (ObjectNode)wifi.path("ap");
 		if(ap.isMissingNode() == false) {
 			ObjectNode outAP = (ObjectNode)ap.deepCopy();
-			outAP.remove("ssid");
+//			outAP.remove("ssid");
 			if(ap.path("is_open").booleanValue() == false) {
 				outAP.put("pass", pwd);
 			}

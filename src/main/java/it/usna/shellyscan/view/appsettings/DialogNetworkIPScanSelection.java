@@ -85,7 +85,7 @@ public class DialogNetworkIPScanSelection extends JDialog {
 			try {
 				baseIPProp = InetAddress.getLocalHost().getHostAddress();
 				baseIPProp = baseIPProp.substring(0, baseIPProp.lastIndexOf('.'));
-			} catch (/*UnknownHost*/Exception e) { // Found (logs) a case with baseIPProp.lastIndexOf('.') == -1 (IPV6?)
+			} catch (/*UnknownHost*/Exception e) { // IPV6 -> baseIPProp.lastIndexOf('.') == -1
 				baseIPProp = "";
 			}
 		}
@@ -117,15 +117,15 @@ public class DialogNetworkIPScanSelection extends JDialog {
 		panel.add(lastIP[0], gbc_lastIP);
 		lastIP[0].setColumns(3);
 
-		for(int i = 1; i < 10; i++) {
+		for(int i = 1; i < baseIP.length; i++) {
 			row(panel, i);
 		}
 		
 		JPanel panel_1 = new JPanel();
 		getContentPane().add(panel_1, BorderLayout.SOUTH);
-		JButton btnNewButton = new JButton(LABELS.getString("dlgOK"));
-		btnNewButton.addActionListener(e -> dispose());
-		panel_1.add(btnNewButton);
+		JButton btnOk = new JButton(LABELS.getString("dlgOK"));
+		btnOk.addActionListener(e -> dispose());
+		panel_1.add(btnOk);
 
 		pack();
 		setLocationRelativeTo(owner);

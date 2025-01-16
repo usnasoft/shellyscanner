@@ -9,8 +9,6 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.Insets;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.Base64;
 
 import javax.swing.ButtonGroup;
@@ -97,16 +95,6 @@ public class PanelNetwork extends JPanel {
 		scanModeGroup.add(offlineButton);
 
 		ipScanButton.addChangeListener(e -> scanByIP(ipScanButton.isSelected()));
-
-		String baseIPProp = appProp.getProperty(ScannerProperties.BASE_SCAN_IP);
-		if(baseIPProp == null) {
-			try {
-				baseIPProp = InetAddress.getLocalHost().getHostAddress();
-				baseIPProp = baseIPProp.substring(0, baseIPProp.lastIndexOf('.'));
-			} catch (UnknownHostException e) {
-				baseIPProp = "";
-			}
-		}
 		
 		JScrollPane scrollPane = new JScrollPane();
 		GridBagConstraints gbc_scrollPane = new GridBagConstraints();
@@ -132,10 +120,6 @@ public class PanelNetwork extends JPanel {
 		add(btnIPEdit, gbc_btnIPEdit);
 
 		String mode = appProp.getProperty(ScannerProperties.PROP_SCAN_MODE);
-//		if(mode == null) {
-//			appProp.setProperty(ScannerProperties.PROP_SCAN_MODE, ScannerProperties.PROP_SCAN_MODE_DEFAULT);
-//			mode = ScannerProperties.PROP_SCAN_MODE_DEFAULT;
-//		}
 		if(mode.equals("LOCAL")) {
 			localScanButton.setSelected(true);
 			scanByIP(false);
@@ -281,10 +265,7 @@ public class PanelNetwork extends JPanel {
 		add(lblNewLabel_5, gbc_lblNewLabel_5);
 		
 		final char pwdEchoChar = passwordFieldRL.getEchoChar();
-		chckbxShowPwd.addItemListener(e -> {
-			passwordFieldRL.setEchoChar((e.getStateChange() == java.awt.event.ItemEvent.SELECTED) ? '\0' : pwdEchoChar);
-			passwordFieldRL.setEchoChar((e.getStateChange() == java.awt.event.ItemEvent.SELECTED) ? '\0' : pwdEchoChar);
-		});
+		chckbxShowPwd.addItemListener(e -> passwordFieldRL.setEchoChar((e.getStateChange() == java.awt.event.ItemEvent.SELECTED) ? '\0' : pwdEchoChar));
 	}
 	
 	private void fillIPPanel() {
