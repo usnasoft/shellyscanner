@@ -67,9 +67,9 @@ public class DialogEditLightsArray extends JDialog {
 		panel.add(onButton);
 		offButton.addActionListener(e -> {
 			try {
-				for(WhiteInterface l: lights) {
-					l.change(false);
-					adjust(lights);
+				for(int i = 0; i < lights.length; i++) {
+					lights[i].change(false);
+					adjust(lights[i], i);
 					TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 				}
 			} catch (IOException | InterruptedException e1) {
@@ -78,9 +78,9 @@ public class DialogEditLightsArray extends JDialog {
 		});
 		onButton.addActionListener(e -> {
 			try {
-				for(WhiteInterface l: lights) {
-					l.change(true);
-					adjust(lights);
+				for(int i = 0; i < lights.length; i++) {
+					lights[i].change(true);
+					adjust(lights[i], i);
 					TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 				}
 			} catch (IOException | InterruptedException e1) {
@@ -97,6 +97,7 @@ public class DialogEditLightsArray extends JDialog {
 		stackedPanel.setBorder(BorderFactory.createEmptyBorder(0, 8, 10, 8));
 
 		for(int i = 0; i < lights.length; i++) {
+			final int index = i;
 			final WhiteInterface light = lights[i];
 			final JPanel lp = new JPanel(new BorderLayout(10, 0));
 			final JLabel label = new JLabel();
@@ -118,7 +119,7 @@ public class DialogEditLightsArray extends JDialog {
 				} catch (IOException e1) {
 					LOG.error("toggle", e1);
 				}
-				adjust(light, label, switchButton, brightness);
+				adjust(light, index);
 			});
 			lp.add(switchButton, BorderLayout.EAST);
 			brightness.addChangeListener(e -> {
@@ -128,27 +129,21 @@ public class DialogEditLightsArray extends JDialog {
 					} catch (IOException e1) {
 						LOG.error("brightness", e1);
 					}
-					adjust(light, label, switchButton, brightness);
+					adjust(light, index);
 				} else {
 					label.setText(light.getLabel() + " " + brightness.getValue() + "%");
 				}
 			});
 			lp.add(brightness, BorderLayout.CENTER);
-			adjust(light, label, switchButton, brightness);
+			adjust(light, i);
 			stackedPanel.add(lp);
 		}
 		return stackedPanel;
 	}
 	
-	private static void adjust(WhiteInterface light, JLabel label, JToggleButton button, JSlider brightness) {
-		label.setText(light.getLabel() + " " + light.getBrightness() + "%");
-		button.setSelected(light.isOn());
-		brightness.setValue(light.getBrightness());
-	}
-	
-	private void adjust(WhiteInterface[] lights) {
-		for(int i = 0; i < lights.length; i++) {
-			adjust(lights[i], labels[i], buttons[i], sliders[i]);
-		}
+	private void adjust(WhiteInterface light, int index) {
+		labels[index].setText(light.getLabel() + " " + light.getBrightness() + "%");
+		buttons[index].setSelected(light.isOn());
+		sliders[index].setValue(light.getBrightness());
 	}
 }

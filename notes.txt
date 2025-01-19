@@ -312,6 +312,7 @@ executor.schedule(() -> errorsReconnect(), 25, TimeUnit.SECONDS);
 
 ---
 // TODO
+// rgb_xx panel listener (?)
 // checklist AP ssid != mac (fw 1.5.0 stable)
 // wall display restore profiles and rules (/rpc/Thermostat.Schedule.ListRules?id=0&profile_id=1)
 // portare il modello sulla tabella per semplificare il calcolo dei tooltip (e delle icone di stato)

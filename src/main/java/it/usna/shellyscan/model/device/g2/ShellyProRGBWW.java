@@ -14,8 +14,8 @@ import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.ModulesHolder;
 import it.usna.shellyscan.model.device.RestoreMsg;
 import it.usna.shellyscan.model.device.g2.modules.Input;
+import it.usna.shellyscan.model.device.g2.modules.LightCCT;
 import it.usna.shellyscan.model.device.g2.modules.LightRGB;
-import it.usna.shellyscan.model.device.g2.modules.LightRGBW;
 import it.usna.shellyscan.model.device.g2.modules.LightWhite;
 import it.usna.shellyscan.model.device.meters.MetersWVI;
 import it.usna.shellyscan.model.device.modules.DeviceModule;
@@ -24,11 +24,13 @@ import it.usna.shellyscan.model.device.modules.DeviceModule;
  * Shelly PRO RGBWW PM model 
  * @author usna
  */
-// TODO a lot (CCT)
 public class ShellyProRGBWW extends AbstractProDevice implements ModulesHolder, InternalTmpHolder {
 //	private final static Logger LOG = LoggerFactory.getLogger(ShellyProRGBWW.class);
 	public enum Profile {
-		LIGHT("light"), RGB("rgb"), RGBW("rgbw");
+		LIGHT("light"),
+		RGB2L("rgbx2light"),
+		RGB_CCT("rgbcct"),
+		CCT_CCT("cctx2");
 		
 		private final String code;
 		
@@ -45,9 +47,9 @@ public class ShellyProRGBWW extends AbstractProDevice implements ModulesHolder, 
 	private LightWhite light0, light1, light2, light3, light4;
 	private LightWhite[] lights;
 	private LightRGB rgbLight;
-	private LightRGB[] rgbs;
-	private LightRGBW rgbwLight;
-	private LightRGBW[] rgbws;
+//	private LightRGB[] rgbs;
+	private LightCCT cct0, cct1;
+//	private LightCCT[] cct;
 	
 	private Meters meters0, meters1, meters2, meters3, meters4;
 	private Meters[] meters;
@@ -125,7 +127,7 @@ public class ShellyProRGBWW extends AbstractProDevice implements ModulesHolder, 
 		fillSettings(getJSON("/rpc/Shelly.GetConfig"));
 		fillStatus(getJSON("/rpc/Shelly.GetStatus"));
 	}
-
+	
 	@Override
 	public String getTypeName() {
 		return "Shelly Pro RGBWW PM";
@@ -140,8 +142,10 @@ public class ShellyProRGBWW extends AbstractProDevice implements ModulesHolder, 
 	public int getModulesCount() {
 		if(profile == Profile.LIGHT) {
 			return 5;
-		} else {
-			return 1;
+		} else if(profile == Profile.RGB2L) {
+			return 3;
+		} else { // RGB_CCT - CCT_CCT
+			return 2;
 		}
 	}
 
@@ -149,10 +153,10 @@ public class ShellyProRGBWW extends AbstractProDevice implements ModulesHolder, 
 	public DeviceModule getModule(int index) {
 		if(profile != Profile.LIGHT) {
 			return lights[index];
-		} else if(profile == Profile.RGBW) {
-			return rgbwLight;
+		/*} else if(profile == Profile.CCT_CCT) {
+			return rgbwLight;*/
 		} else {
-			return rgbLight;
+			return null;
 		}
 	}
 
@@ -160,10 +164,10 @@ public class ShellyProRGBWW extends AbstractProDevice implements ModulesHolder, 
 	public DeviceModule[] getModules() {
 		if(profile == Profile.LIGHT) {
 			return lights;
-		} else if(profile == Profile.RGBW) {
-			return rgbws;
+		/*} else if(profile == Profile.CCT_CCT) {
+			return rgbws;*/
 		} else {
-			return rgbs;
+			return null;
 		}
 	}
 
@@ -191,34 +195,51 @@ public class ShellyProRGBWW extends AbstractProDevice implements ModulesHolder, 
 				light4 = new LightWhite(this, 4);
 				lights = new LightWhite[] {light0, light1, light2, light3, light4};
 				rgbLight = null;
+				cct0 = cct1 = null;
 				meters = new Meters[] {meters0, meters1, meters2, meters3, meters4};
 			}
 			light0.fillSettings(configuration.get("light:0"));
 			light1.fillSettings(configuration.get("light:1"));
 			light2.fillSettings(configuration.get("light:2"));
 			light3.fillSettings(configuration.get("light:3"));
-		} else if(prof.equals(Profile.RGB.code)) {
-			if(profile != Profile.RGB) {
-				profile = Profile.RGB;
+			light4.fillSettings(configuration.get("light:4"));
+		} else if(prof.equals(Profile.RGB_CCT.code)) {
+			if(profile != Profile.RGB_CCT) {
+				profile = Profile.RGB_CCT;
 				rgbLight = new LightRGB(this, 0);
-				rgbs = new LightRGB[] {rgbLight};
-				light0 =  light1 =  light2 = light3 = null;
-				rgbwLight = null;
-				meters = new Meters[] {meters0};
+//				rgbs = new LightRGB[] {rgbLight};
+				cct0 = new LightCCT(null, 0);
+				light0 = light1 = light2 = light3 = light4 = null;
+				cct1 = null;
+				meters = new Meters[] {meters0, meters2};
 			}
 			rgbLight.fillConfig(configuration.get("rgb:0"));
-		} else if(prof.equals(Profile.RGBW.code)) {
-			if(profile != Profile.RGBW) {
-				profile = Profile.RGBW;
-				rgbwLight = new LightRGBW(this, 0);
-				rgbws = new LightRGBW[] {rgbwLight};
-				light0 =  light1 =  light2 = light3 = null;
+			cct0.fillSettings(configuration.get("cct:0"));
+		} else if(prof.equals(Profile.CCT_CCT.code)) {
+			if(profile != Profile.CCT_CCT) {
+				profile = Profile.CCT_CCT;
+				cct0 = new LightCCT(null, 0);
+				cct1 = new LightCCT(null, 1);
+				light0 = light1 = light2 = light3 = light4 = null;
 				rgbLight = null;
-				meters = new Meters[] {meters0};
+				meters = new Meters[] {meters0, meters2}; // meter indexes as input indexes
 			}
-			rgbwLight.fillConfig(configuration.get("rgbw:0"));
-		} else {
-			// todo
+			cct0.fillSettings(configuration.get("cct:0"));
+			cct1.fillSettings(configuration.get("cct:1"));
+		} else if(prof.equals(Profile.RGB2L.code)) {
+			if(profile != Profile.RGB2L) {
+				profile = Profile.RGB2L;
+				rgbLight = new LightRGB(this, 0);
+				light0 = new LightWhite(this, 0);
+				light1 = new LightWhite(this, 1);
+//				rgbs = new LightRGB[] {rgbLight};
+				light2 = light3 = light4 = null;
+				cct0 = cct1 = null;
+				meters = new Meters[] {meters0, meters2, meters3}; // meter indexes as input indexes
+			}
+			rgbLight.fillConfig(configuration.get("rgb:0"));
+			light0.fillSettings(configuration.get("light:0"));
+			light1.fillSettings(configuration.get("light:1"));
 		}
 	}
 
@@ -257,22 +278,54 @@ public class ShellyProRGBWW extends AbstractProDevice implements ModulesHolder, 
 			light4.fillStatus(lightStatus4, status.get("input:4"));
 			
 			internalTmp = lightStatus0.get("temperature").path("tC").floatValue();
-		} else if(profile == Profile.RGB) {
+		} else if(profile == Profile.RGB_CCT) {
 			JsonNode rgb = status.get("rgb:0");
 			voltage0 = rgb.get("voltage").floatValue();
 			current0 = rgb.path("current").floatValue();
 			power0 = rgb.path("apower").floatValue();
 			rgbLight.fillStatus(rgb, status.get("input:0"));
 			
-			internalTmp = rgb.get("temperature").path("tC").floatValue();
-		} else if(profile == Profile.RGBW) {
-			JsonNode rgbw = status.get("rgbw:0");
-			voltage0 = rgbw.get("voltage").floatValue();
-			current0 = rgbw.path("current").floatValue();
-			power0 = rgbw.path("apower").floatValue();
-			rgbwLight.fillStatus(rgbw, status.get("input:0"));
+			JsonNode lightStatus0 = status.get("cct:0");
+			voltage2 = lightStatus0.get("voltage").floatValue();
+			current2 = lightStatus0.path("current").floatValue();
+			power2 = lightStatus0.path("apower").floatValue();
+			cct0.fillStatus(lightStatus0, status.get("input:2")); // cct:0 - input:2
 			
-			internalTmp = rgbw.get("temperature").path("tC").floatValue();
+			internalTmp = rgb.get("temperature").path("tC").floatValue();
+		} else if(profile == Profile.CCT_CCT) {
+			JsonNode lightStatus0 = status.get("cct:0");
+			voltage0 = lightStatus0.get("voltage").floatValue();
+			current0 = lightStatus0.path("current").floatValue();
+			power0 = lightStatus0.path("apower").floatValue();
+			cct0.fillStatus(lightStatus0, status.get("input:0")); // cct:0 - input:0
+			
+			JsonNode lightStatus1 = status.get("cct:1");
+			voltage2 = lightStatus1.get("voltage").floatValue();
+			current2 = lightStatus1.path("current").floatValue();
+			power2 = lightStatus1.path("apower").floatValue();
+			cct1.fillStatus(lightStatus1, status.get("input:2")); // cct:1 - input:2
+			
+			internalTmp = lightStatus0.get("temperature").path("tC").floatValue();
+		} else if(profile == Profile.RGB2L) {
+			JsonNode rgb = status.get("rgb:0");
+			voltage0 = rgb.get("voltage").floatValue();
+			current0 = rgb.path("current").floatValue();
+			power0 = rgb.path("apower").floatValue();
+			rgbLight.fillStatus(rgb, status.get("input:0"));
+			
+			JsonNode lightStatus0 = status.get("light:0");
+			voltage2 = lightStatus0.get("voltage").floatValue();
+			current2 = lightStatus0.path("current").floatValue();
+			power2 = lightStatus0.path("apower").floatValue();
+			light0.fillStatus(lightStatus0, status.get("input:2")); // light:0 - input:2
+			
+			JsonNode lightStatus1 = status.get("light:1");
+			voltage3 = lightStatus1.get("voltage").floatValue();
+			current3 = lightStatus1.path("current").floatValue();
+			power3 = lightStatus1.path("apower").floatValue();
+			light1.fillStatus(lightStatus1, status.get("input:3")); // light:1 - input:3
+			
+			internalTmp = rgb.get("temperature").path("tC").floatValue();
 		}
 	}
 
@@ -314,11 +367,11 @@ public class ShellyProRGBWW extends AbstractProDevice implements ModulesHolder, 
 				errors.add(light3.restore(configuration));
 				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 				errors.add(light4.restore(configuration));
-			} else if(profile == Profile.RGBW) {
-				errors.add(rgbwLight.restore(configuration));
+			} else if(profile == Profile.CCT_CCT) {
+//				errors.add(rgbwLight.restore(configuration));
 			} else /*if(profile == Mode.RGB)*/ {
-				errors.add(rgbLight.restore(configuration));
-			}
+//				errors.add(rgbLight.restore(configuration));
+			} // todo
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 		} else {
 			errors.add(RestoreMsg.ERR_RESTORE_MODE_COLOR.name());
@@ -331,11 +384,13 @@ public class ShellyProRGBWW extends AbstractProDevice implements ModulesHolder, 
 	@Override
 	public String toString() {
 		if(profile == Profile.LIGHT) {
-			return super.toString() + ": " + light0 + " / " + light1 + " / " + light2 + " / " +  light3;
-		} else if(profile == Profile.RGBW) {
-			return super.toString() + ": " + rgbwLight;
-		} else {
-			return super.toString() + ": " + rgbLight;
+			return super.toString() + ": " + light0 + " / " + light1 + " / " + light2 + " / " +  light3 + " / " +  light4;
+		} else if(profile == Profile.CCT_CCT) {
+			return super.toString() + ": " + cct0 + " / " + cct1;
+		} else if(profile == Profile.RGB_CCT) {
+			return super.toString() + ": " + rgbLight + ": " + cct0;
+		} else { // RGB2L
+			return super.toString() + ": " + rgbLight + " / " + light0 + " / " + light1;
 		}
 	}
 }

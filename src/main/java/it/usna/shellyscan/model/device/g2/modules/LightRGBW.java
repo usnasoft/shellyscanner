@@ -53,8 +53,6 @@ public class LightRGBW implements RGBWInterface {
 
 	@Override
 	public boolean toggle() throws IOException {
-		/*final JsonNode resp =*/ parent.getJSON("/rpc/RGBW.Toggle?id=" + index); // no return value
-//		isOn = resp.get("was_on").asBoolean() == false;
 		change(! isOn);
 		return isOn;
 	}
