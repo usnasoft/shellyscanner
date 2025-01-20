@@ -45,7 +45,7 @@ public class ShellyProRGBWW extends AbstractProDevice implements ModulesHolder, 
 	private float voltage0, voltage1, voltage2, voltage3, voltage4;
 	private float current0, current1, current2, current3, current4; // if calibrated (white)
 	private LightWhite light0, light1, light2, light3, light4;
-	private LightWhite[] lights;
+	private DeviceModule[] commands;
 	private LightRGB rgbLight;
 //	private LightRGB[] rgbs;
 	private LightCCT cct0, cct1;
@@ -140,35 +140,36 @@ public class ShellyProRGBWW extends AbstractProDevice implements ModulesHolder, 
 
 	@Override
 	public int getModulesCount() {
-		if(profile == Profile.LIGHT) {
-			return 5;
-		} else if(profile == Profile.RGB2L) {
-			return 3;
-		} else { // RGB_CCT - CCT_CCT
-			return 2;
-		}
+//		if(profile == Profile.LIGHT) {
+//			return 5;
+//		} else if(profile == Profile.RGB2L) {
+//			return 3;
+//		} else { // RGB_CCT - CCT_CCT
+//			return 2;
+//		}
+		return commands.length;
 	}
 
 	@Override
 	public DeviceModule getModule(int index) {
-		if(profile != Profile.LIGHT) {
-			return lights[index];
+//		if(profile != Profile.LIGHT) {
+			return commands[index];
 		/*} else if(profile == Profile.CCT_CCT) {
-			return rgbwLight;*/
+			return rgbwLight;
 		} else {
 			return null;
-		}
+		}*/
 	}
 
 	@Override
 	public DeviceModule[] getModules() {
-		if(profile == Profile.LIGHT) {
-			return lights;
+//		if(profile == Profile.LIGHT) {
+			return commands;
 		/*} else if(profile == Profile.CCT_CCT) {
-			return rgbws;*/
+			return rgbws;
 		} else {
 			return null;
-		}
+		}*/
 	}
 
 	@Override
@@ -193,7 +194,7 @@ public class ShellyProRGBWW extends AbstractProDevice implements ModulesHolder, 
 				light2 = new LightWhite(this, 2);
 				light3 = new LightWhite(this, 3);
 				light4 = new LightWhite(this, 4);
-				lights = new LightWhite[] {light0, light1, light2, light3, light4};
+				commands = new LightWhite[] {light0, light1, light2, light3, light4};
 				rgbLight = null;
 				cct0 = cct1 = null;
 				meters = new Meters[] {meters0, meters1, meters2, meters3, meters4};
@@ -207,8 +208,8 @@ public class ShellyProRGBWW extends AbstractProDevice implements ModulesHolder, 
 			if(profile != Profile.RGB_CCT) {
 				profile = Profile.RGB_CCT;
 				rgbLight = new LightRGB(this, 0);
-//				rgbs = new LightRGB[] {rgbLight};
-				cct0 = new LightCCT(null, 0);
+				cct0 = new LightCCT(this, 0);
+				commands = new LightRGB[] {rgbLight /*,*/};
 				light0 = light1 = light2 = light3 = light4 = null;
 				cct1 = null;
 				meters = new Meters[] {meters0, meters2};
@@ -218,8 +219,9 @@ public class ShellyProRGBWW extends AbstractProDevice implements ModulesHolder, 
 		} else if(prof.equals(Profile.CCT_CCT.code)) {
 			if(profile != Profile.CCT_CCT) {
 				profile = Profile.CCT_CCT;
-				cct0 = new LightCCT(null, 0);
-				cct1 = new LightCCT(null, 1);
+				cct0 = new LightCCT(this, 0);
+				cct1 = new LightCCT(this, 1);
+				commands = new LightCCT[] {/**/};
 				light0 = light1 = light2 = light3 = light4 = null;
 				rgbLight = null;
 				meters = new Meters[] {meters0, meters2}; // meter indexes as input indexes
@@ -232,7 +234,7 @@ public class ShellyProRGBWW extends AbstractProDevice implements ModulesHolder, 
 				rgbLight = new LightRGB(this, 0);
 				light0 = new LightWhite(this, 0);
 				light1 = new LightWhite(this, 1);
-//				rgbs = new LightRGB[] {rgbLight};
+				commands = new LightRGB[] {rgbLight /*,*/};
 				light2 = light3 = light4 = null;
 				cct0 = cct1 = null;
 				meters = new Meters[] {meters0, meters2, meters3}; // meter indexes as input indexes
@@ -337,7 +339,7 @@ public class ShellyProRGBWW extends AbstractProDevice implements ModulesHolder, 
 	public void restoreCheck(Map<String, JsonNode> backupJsons, Map<RestoreMsg, Object> res) throws IOException {
 		JsonNode devInfo = backupJsons.get("Shelly.GetDeviceInfo.json");
 		if(profile.code.equals(devInfo.get("profile").asText()) == false) {
-			res.put(RestoreMsg.ERR_RESTORE_MODE_COLOR, profile.code);
+			res.put(RestoreMsg.ERR_RESTORE_PROFILE, new String[] {profile.code, devInfo.get("profile").asText()}); // todo - test
 		}
 	}
 
@@ -354,7 +356,7 @@ public class ShellyProRGBWW extends AbstractProDevice implements ModulesHolder, 
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 		errors.add(Input.restore(this, configuration, 4));
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-		
+
 		final String backMode = configuration.at("/sys/device/profile").asText();
 		if(profile.code.equals(backMode)) {
 			if(profile == Profile.LIGHT) {
@@ -367,28 +369,39 @@ public class ShellyProRGBWW extends AbstractProDevice implements ModulesHolder, 
 				errors.add(light3.restore(configuration));
 				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 				errors.add(light4.restore(configuration));
+			} else if(profile == Profile.RGB_CCT) {
+				errors.add(rgbLight.restore(configuration));
+				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+				errors.add(cct0.restore(configuration));
 			} else if(profile == Profile.CCT_CCT) {
-//				errors.add(rgbwLight.restore(configuration));
-			} else /*if(profile == Mode.RGB)*/ {
-//				errors.add(rgbLight.restore(configuration));
-			} // todo
+				errors.add(cct0.restore(configuration));
+				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+				errors.add(cct1.restore(configuration));
+			} else /*if(profile == Profile.RGB2L)*/ {
+				errors.add(rgbLight.restore(configuration));
+				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+				errors.add(light0.restore(configuration));
+				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+				errors.add(light1.restore(configuration));
+			}
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 		} else {
-			errors.add(RestoreMsg.ERR_RESTORE_MODE_COLOR.name());
+			errors.add(RestoreMsg.ERR_RESTORE_PROFILE.name());
 		}
 		
-		final boolean hf = configuration.get("plusrgbwpm").get("hf_mode").booleanValue();
-		errors.add(postCommand("PlusRGBWPM.SetConfig", "{\"config\":{\"hf_mode\":" + hf + "}}"));
+		// TODO
+//		final boolean hf = configuration.get("plusrgbwpm").get("hf_mode").booleanValue();
+//		errors.add(postCommand("PlusRGBWPM.SetConfig", "{\"config\":{\"hf_mode\":" + hf + "}}"));
 	}
 	
 	@Override
 	public String toString() {
 		if(profile == Profile.LIGHT) {
 			return super.toString() + ": " + light0 + " / " + light1 + " / " + light2 + " / " +  light3 + " / " +  light4;
-		} else if(profile == Profile.CCT_CCT) {
-			return super.toString() + ": " + cct0 + " / " + cct1;
 		} else if(profile == Profile.RGB_CCT) {
 			return super.toString() + ": " + rgbLight + ": " + cct0;
+		} else if(profile == Profile.CCT_CCT) {
+			return super.toString() + ": " + cct0 + " / " + cct1;
 		} else { // RGB2L
 			return super.toString() + ": " + rgbLight + " / " + light0 + " / " + light1;
 		}
