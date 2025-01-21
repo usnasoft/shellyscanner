@@ -292,7 +292,7 @@ public class ShellyPlusRGBW extends AbstractG2Device implements ModulesHolder, I
 	public void restoreCheck(Map<String, JsonNode> backupJsons, Map<RestoreMsg, Object> res) throws IOException {
 		JsonNode devInfo = backupJsons.get("Shelly.GetDeviceInfo.json");
 		if(profile.code.equals(devInfo.get("profile").asText()) == false) {
-			res.put(RestoreMsg.ERR_RESTORE_MODE_COLOR, profile.code);
+			res.put(RestoreMsg.ERR_RESTORE_PROFILE, new String[] {profile.code, devInfo.get("profile").asText()});
 		}
 		try {
 			configure(); // maybe useless in case of mDNS use since you must reboot before -> on reboot the device registers again on mDNS ad execute a reload
@@ -331,7 +331,7 @@ public class ShellyPlusRGBW extends AbstractG2Device implements ModulesHolder, I
 			}
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 		} else {
-			errors.add(RestoreMsg.ERR_RESTORE_MODE_COLOR.name());
+			errors.add(RestoreMsg.ERR_RESTORE_PROFILE.name());
 		}
 		
 		final boolean hf = configuration.get("plusrgbwpm").get("hf_mode").booleanValue();

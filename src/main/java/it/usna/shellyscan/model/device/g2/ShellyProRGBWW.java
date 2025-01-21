@@ -27,10 +27,7 @@ import it.usna.shellyscan.model.device.modules.DeviceModule;
 public class ShellyProRGBWW extends AbstractProDevice implements ModulesHolder, InternalTmpHolder {
 //	private final static Logger LOG = LoggerFactory.getLogger(ShellyProRGBWW.class);
 	public enum Profile {
-		LIGHT("light"),
-		RGB2L("rgbx2light"),
-		RGB_CCT("rgbcct"),
-		CCT_CCT("cctx2");
+		LIGHT("light"), RGB2L("rgbx2light"), RGB_CCT("rgbcct"), CCT_CCT("cctx2");
 		
 		private final String code;
 		
@@ -47,9 +44,7 @@ public class ShellyProRGBWW extends AbstractProDevice implements ModulesHolder, 
 	private LightWhite light0, light1, light2, light3, light4;
 	private DeviceModule[] commands;
 	private LightRGB rgbLight;
-//	private LightRGB[] rgbs;
 	private LightCCT cct0, cct1;
-//	private LightCCT[] cct;
 	
 	private Meters meters0, meters1, meters2, meters3, meters4;
 	private Meters[] meters;
@@ -209,7 +204,7 @@ public class ShellyProRGBWW extends AbstractProDevice implements ModulesHolder, 
 				profile = Profile.RGB_CCT;
 				rgbLight = new LightRGB(this, 0);
 				cct0 = new LightCCT(this, 0);
-				commands = new LightRGB[] {rgbLight /*,*/};
+				commands = new DeviceModule[] {rgbLight, cct0};
 				light0 = light1 = light2 = light3 = light4 = null;
 				cct1 = null;
 				meters = new Meters[] {meters0, meters2};
@@ -221,7 +216,7 @@ public class ShellyProRGBWW extends AbstractProDevice implements ModulesHolder, 
 				profile = Profile.CCT_CCT;
 				cct0 = new LightCCT(this, 0);
 				cct1 = new LightCCT(this, 1);
-				commands = new LightCCT[] {/**/};
+				commands = new DeviceModule[] {cct0, cct1};
 				light0 = light1 = light2 = light3 = light4 = null;
 				rgbLight = null;
 				meters = new Meters[] {meters0, meters2}; // meter indexes as input indexes
@@ -234,7 +229,7 @@ public class ShellyProRGBWW extends AbstractProDevice implements ModulesHolder, 
 				rgbLight = new LightRGB(this, 0);
 				light0 = new LightWhite(this, 0);
 				light1 = new LightWhite(this, 1);
-				commands = new LightRGB[] {rgbLight /*,*/};
+				commands = new DeviceModule[] {rgbLight, light0, light1};
 				light2 = light3 = light4 = null;
 				cct0 = cct1 = null;
 				meters = new Meters[] {meters0, meters2, meters3}; // meter indexes as input indexes
@@ -339,7 +334,7 @@ public class ShellyProRGBWW extends AbstractProDevice implements ModulesHolder, 
 	public void restoreCheck(Map<String, JsonNode> backupJsons, Map<RestoreMsg, Object> res) throws IOException {
 		JsonNode devInfo = backupJsons.get("Shelly.GetDeviceInfo.json");
 		if(profile.code.equals(devInfo.get("profile").asText()) == false) {
-			res.put(RestoreMsg.ERR_RESTORE_PROFILE, new String[] {profile.code, devInfo.get("profile").asText()}); // todo - test
+			res.put(RestoreMsg.ERR_RESTORE_PROFILE, new String[] {profile.code, devInfo.get("profile").asText()});
 		}
 	}
 
