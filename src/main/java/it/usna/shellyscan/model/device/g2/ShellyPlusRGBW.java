@@ -46,11 +46,12 @@ public class ShellyPlusRGBW extends AbstractG2Device implements ModulesHolder, I
 	private float voltage0, voltage1, voltage2, voltage3;
 	private float current0, current1, current2, current3; // if calibrated (white)
 	private LightWhite light0, light1, light2, light3;
-	private LightWhite[] lights;
+//	private LightWhite[] lights;
 	private LightRGB rgbLight;
-	private LightRGB[] rgbs;
+//	private LightRGB[] rgbs;
 	private LightRGBW rgbwLight;
-	private LightRGBW[] rgbws;
+//	private LightRGBW[] rgbws;
+	private DeviceModule[] commands;
 	
 	private Meters meters0, meters1, meters2, meters3;
 	private Meters[] meters;
@@ -143,33 +144,36 @@ public class ShellyPlusRGBW extends AbstractG2Device implements ModulesHolder, I
 
 	@Override
 	public int getModulesCount() {
-		if(profile == Profile.LIGHT) {
-			return 4;
-		} else {
-			return 1;
-		}
+//		if(profile == Profile.LIGHT) {
+//			return 4;
+//		} else {
+//			return 1;
+//		}
+		return commands.length;
 	}
 
 	@Override
 	public DeviceModule getModule(int index) {
-		if(profile != Profile.LIGHT) {
-			return lights[index];
-		} else if(profile == Profile.RGBW) {
-			return rgbwLight;
-		} else {
-			return rgbLight;
-		}
+//		if(profile != Profile.LIGHT) {
+//			return lights[index];
+//		} else if(profile == Profile.RGBW) {
+//			return rgbwLight;
+//		} else {
+//			return rgbLight;
+//		}
+		return commands[index];
 	}
 
 	@Override
 	public DeviceModule[] getModules() {
-		if(profile == Profile.LIGHT) {
-			return lights;
-		} else if(profile == Profile.RGBW) {
-			return rgbws;
-		} else {
-			return rgbs;
-		}
+//		if(profile == Profile.LIGHT) {
+//			return lights;
+//		} else if(profile == Profile.RGBW) {
+//			return rgbws;
+//		} else {
+//			return rgbs;
+//		}
+		return commands;
 	}
 
 	@Override
@@ -193,7 +197,7 @@ public class ShellyPlusRGBW extends AbstractG2Device implements ModulesHolder, I
 				light1 = new LightWhite(this, 1);
 				light2 = new LightWhite(this, 2);
 				light3 = new LightWhite(this, 3);
-				lights = new LightWhite[] {light0, light1, light2, light3};
+				/*lights*/commands = new LightWhite[] {light0, light1, light2, light3};
 				rgbLight = null;
 				meters = (addOn == null || addOn.getTypes().length == 0) ? new Meters[] {meters0, meters1, meters2, meters3} : new Meters[] {meters0, meters1, meters2, meters3, addOn};
 			}
@@ -205,7 +209,7 @@ public class ShellyPlusRGBW extends AbstractG2Device implements ModulesHolder, I
 			if(profile != Profile.RGB) {
 				profile = Profile.RGB;
 				rgbLight = new LightRGB(this, 0);
-				rgbs = new LightRGB[] {rgbLight};
+				/*rgbs*/commands = new LightRGB[] {rgbLight};
 				light0 =  light1 =  light2 = light3 = null;
 				rgbwLight = null;
 				meters = (addOn == null || addOn.getTypes().length == 0) ? new Meters[] {meters0} : new Meters[] {meters0, addOn};
@@ -215,7 +219,7 @@ public class ShellyPlusRGBW extends AbstractG2Device implements ModulesHolder, I
 			if(profile != Profile.RGBW) {
 				profile = Profile.RGBW;
 				rgbwLight = new LightRGBW(this, 0);
-				rgbws = new LightRGBW[] {rgbwLight};
+				/*rgbws*/commands = new LightRGBW[] {rgbwLight};
 				light0 =  light1 =  light2 = light3 = null;
 				rgbLight = null;
 				meters = (addOn == null || addOn.getTypes().length == 0) ? new Meters[] {meters0} : new Meters[] {meters0, addOn};
