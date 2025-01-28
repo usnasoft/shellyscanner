@@ -26,7 +26,6 @@ import javax.swing.JRadioButton;
 import javax.swing.JSlider;
 import javax.swing.JToggleButton;
 import javax.swing.SwingConstants;
-import javax.swing.border.LineBorder;
 import javax.swing.event.ChangeListener;
 
 import org.slf4j.Logger;
@@ -71,7 +70,7 @@ public class DialogEditBulbRGB extends JDialog {
 		getContentPane().setLayout(new BorderLayout(0, 10));
 		
 		sliderBrightness = new JSlider(0, 100, light.getBrightness()); // set sliders value before "addChangeListener" to avoid call on initial change
-		sliderTemp = new JSlider(LightBulbRGB.MIN_TEMP, LightBulbRGB.MAX_TEMP, light.getTemp());
+		sliderTemp = new JSlider(LightBulbRGB.MIN_TEMP, LightBulbRGB.MAX_TEMP, light.getTemperature());
 		sliderGain = new JSlider(0, 100, light.getGain());
 		sliderRed = new JSlider(0, 255, light.getRed());
 		sliderGreen = new JSlider(0, 255, light.getGreen());
@@ -158,8 +157,8 @@ public class DialogEditBulbRGB extends JDialog {
 		GridBagLayout gbl_panelWhite = new GridBagLayout();
 		gbl_panelWhite.columnWidths = new int[] {10, 0, 0, 10};
 		gbl_panelWhite.rowHeights = new int[] {0, 0, 0, 0, 40};
-		gbl_panelWhite.columnWeights = new double[]{1.0, 0.0, 0.0, 1.0};
-		gbl_panelWhite.rowWeights = new double[]{0.0, 0.0, 1.0, 1.0, Double.MIN_VALUE};
+		gbl_panelWhite.columnWeights = new double[]{0.0, 0, 0.0, 1.0};
+		gbl_panelWhite.rowWeights = new double[]{0.0, 0.0, 1.0, 1.0, Double.MAX_VALUE};
 		panelWhite.setLayout(gbl_panelWhite);
 		
 		JLabel lblNewLabel = new JLabel(LABELS.getString("labelBrightness"));
@@ -199,7 +198,7 @@ public class DialogEditBulbRGB extends JDialog {
 		gbc_slider.gridy = 0;
 		panelWhite.add(sliderBrightness, gbc_slider);
 		
-		JLabel lblNewLabel_1 = new JLabel(LABELS.getString("labelTemperature"));
+		JLabel lblNewLabel_1 = new JLabel(LABELS.getString("labelTemperatureBulb"));
 		GridBagConstraints gbc_lblNewLabel_1 = new GridBagConstraints();
 		gbc_lblNewLabel_1.anchor = GridBagConstraints.NORTHWEST;
 		gbc_lblNewLabel_1.fill = GridBagConstraints.HORIZONTAL;
@@ -220,7 +219,7 @@ public class DialogEditBulbRGB extends JDialog {
 		sliderTemp.addChangeListener(e -> {
 			if(sliderTemp.getValueIsAdjusting() == false) {
 				try {
-					light.setTemp(sliderTemp.getValue());
+					light.setTemperature(sliderTemp.getValue());
 					adjust(light);
 				} catch (IOException e1) {
 					LOG.error("sliderTemp", e1);
@@ -266,7 +265,7 @@ public class DialogEditBulbRGB extends JDialog {
 		gbc_previewWhitePanel.fill = GridBagConstraints.BOTH;
 		gbc_previewWhitePanel.gridx = 0;
 		gbc_previewWhitePanel.gridy = 3;
-		previewWhitePanel.setBorder(new LineBorder(new Color(0, 0, 0), 1, true));
+		previewWhitePanel.setBorder(BorderFactory.createLineBorder(Color.GRAY));
 		panelWhite.add(previewWhitePanel, gbc_previewWhitePanel);
 		return panelWhite;
 	}
@@ -277,10 +276,10 @@ public class DialogEditBulbRGB extends JDialog {
 	private JPanel pColor(LightBulbRGB light) {
 		JPanel colorPanel = new JPanel();
 		GridBagLayout gbl_panelC = new GridBagLayout();
-		gbl_panelC.columnWidths = new int[] {0, 30, 30};
+		gbl_panelC.columnWidths = new int[] {0, 40, 0};
 		gbl_panelC.rowHeights = new int[] {0, 0, 0, 0, 30};
 		gbl_panelC.columnWeights = new double[]{0.0, 0.0, 1.0};
-		gbl_panelC.rowWeights = new double[]{0.0, 0.0, 0.0, Double.MIN_VALUE, 1.0};
+		gbl_panelC.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 1.0};
 		colorPanel.setLayout(gbl_panelC);
 		
 		JLabel lblNewLabel = new JLabel(LABELS.getString("labelBrightness"));
@@ -314,7 +313,7 @@ public class DialogEditBulbRGB extends JDialog {
 			}
 		});
 		GridBagConstraints gbc_sliderB = new GridBagConstraints();
-		gbc_sliderB.weightx = 10.0;
+//		gbc_sliderB.weightx = 10.0;
 		gbc_sliderB.anchor = GridBagConstraints.NORTH;
 		gbc_sliderB.fill = GridBagConstraints.HORIZONTAL;
 		gbc_sliderB.insets = new Insets(0, 10, 5, 10);
@@ -432,7 +431,7 @@ public class DialogEditBulbRGB extends JDialog {
 		} else {
 			whiteButton.setSelected(true);
 			adjustBrightness(light.getBrightness());
-			adjustLightTemp(light.getTemp());
+			adjustLightTemp(light.getTemperature());
 			cards.show(panelCard, "WhitePanel");
 		}
 		switchButton.setSelected(light.isOn());
@@ -446,18 +445,18 @@ public class DialogEditBulbRGB extends JDialog {
 	
 	private void adjustBrightness(int br) {
 		sliderBrightness.setValue(br);
-		labelBrightness.setText(br + "");
+		labelBrightness.setText(br + "%");
 	}
 	
 	private void adjustLightTemp(int temp) {
 		sliderTemp.setValue(temp);
-		labelTemp.setText(temp + "");
+		labelTemp.setText(temp + "K");
 		previewWhitePanel.setBackground(Kelvin2RGB.kelvinToColor(temp));
 	}
 	
 	private void adjustGain(int g) {
 		sliderGain.setValue(g);
-		labelGain.setText(g + "");
+		labelGain.setText(g + "%");
 	}
 	
 	private void adjustLightRGB(int red, int green, int blue) {

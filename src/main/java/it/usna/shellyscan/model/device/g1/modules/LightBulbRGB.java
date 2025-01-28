@@ -67,6 +67,11 @@ public class LightBulbRGB implements DeviceModule {
 		return isOn;
 	}
 	
+	public void change(boolean on) throws IOException {
+		final JsonNode status = parent.getJSON("/light/?turn=" + (on ? "on" : "off"));
+		fillStatus(status);
+	}
+	
 	public void setColor(int r, int g, int b/*, int w*/) throws IOException {
 		final JsonNode status = parent.getJSON("/light/" + index + "?red=" + r + "&green=" + g + "&blue=" + b);
 		fillStatus(status);
@@ -110,7 +115,7 @@ public class LightBulbRGB implements DeviceModule {
 		fillStatus(status);
 	}
 	
-	public void setTemp(int t) throws JsonProcessingException, IOException {
+	public void setTemperature(int t) throws JsonProcessingException, IOException {
 		final JsonNode status = parent.getJSON("/light/" + index + "?temp=" + t);
 		fillStatus(status);
 	}
@@ -127,13 +132,9 @@ public class LightBulbRGB implements DeviceModule {
 		return gain;
 	}
 	
-	public int getTemp() {
+	public int getTemperature() {
 		return temp;
 	}
-	
-//	public void refresh() throws IOException {
-//		fillStatus(parent.getJSON("/light/" + index));
-//	}
 	
 	public String getLastSource() {
 		return source;

@@ -8,7 +8,7 @@ import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.modules.CCTInterface;
 
 /**
- * Used by wall dimmer, dimmer 0/1-10, RGBW, ...
+ * Used by Pro RGBWW
  */
 public class LightCCT implements CCTInterface {
 	private final AbstractG2Device parent;
@@ -103,7 +103,7 @@ public class LightCCT implements CCTInterface {
 	@Override
 	public void setTemperature(int ct) throws IOException {
 		parent.getJSON("/rpc/CCT.Set?id=" + index + "&ct=" + ct);
-		brightness = ct;
+		temperature = ct;
 	}
 
 	@Override

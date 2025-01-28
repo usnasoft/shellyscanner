@@ -28,7 +28,7 @@ import javax.swing.border.EmptyBorder;
 
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.DevicesFactory;
-import it.usna.shellyscan.view.IntegerTextFieldPanel;
+import it.usna.shellyscan.view.util.IntegerTextFieldPanel;
 import it.usna.shellyscan.view.util.ScannerProperties;
 import it.usna.util.AppProperties;
 

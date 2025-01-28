@@ -1,4 +1,4 @@
-package it.usna.shellyscan.view;
+package it.usna.shellyscan.view.util;
 
 import java.awt.FlowLayout;
 

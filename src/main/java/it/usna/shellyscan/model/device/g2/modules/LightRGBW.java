@@ -138,6 +138,11 @@ public class LightRGBW implements RGBWInterface {
 	}
 	
 	@Override
+	public AbstractG2Device getParent() {
+		return parent;
+	}
+	
+	@Override
 	public String toString() {
 		return getLabel() + "-" + gain + (isOn ? "-ON" : "-OFF");
 	}

@@ -36,7 +36,7 @@ public class LightWhite implements WhiteInterface {
 	}
 	
 	@Override
-	// Brightness, 1..100 - seems wrong: 0 seems valid for RGBW2, not for dimmer
+	// On some devices 0 is not valid; e.g.: 0 is ok for RGBW2, not for dimmer (where min is 1)
 	public int getMinBrightness() {
 		return minBrightness;
 	}
