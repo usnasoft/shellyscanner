@@ -4,6 +4,7 @@ import static it.usna.shellyscan.Main.LABELS;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Cursor;
 import java.awt.Dialog;
 import java.awt.FlowLayout;
 import java.awt.Window;
@@ -90,12 +91,15 @@ public class DialogEditLights extends JDialog {
 	
 	private void switchAll(DeviceModule[] lights, boolean on) {
 		try {
+			setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 			for(int i = 0; i < lights.length; i++) {
 				commandPanels[i].change(on);
 				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			}
 		} catch (IOException | InterruptedException e1) {
 			LOG.error("switchAll", e1);
+		} finally {
+			setCursor(Cursor.getDefaultCursor());
 		}
 	}
 	
@@ -112,7 +116,7 @@ public class DialogEditLights extends JDialog {
 			commandPanels[i].setBackground(i % 2 == 0 ? Main.TAB_LINE1 : Main.TAB_LINE2);
 		}
 		return stackedPanel;
-	}	
+	}
 }
 
 abstract class LightPanel extends JPanel {

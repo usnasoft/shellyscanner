@@ -130,7 +130,7 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 			win.setCursor(Cursor.getDefaultCursor());
 		});
 		
-		// Dimmer
+		// Dimmer (single)
 		lightPanel.setBackground(selBackground);
 		lightLabel.setForeground(selForeground);
 		lightPanel.add(lightLabel, BorderLayout.WEST);
@@ -148,12 +148,12 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 		});
 		lightPanel.add(lightBrightness, BorderLayout.SOUTH);
 		lightBrightness.addChangeListener(e -> {
-			if(edited != null && edited instanceof WhiteInterface[] w) {
+			if(edited != null && edited instanceof WhiteInterface[] wi) {
 				if(lightBrightness.getValueIsAdjusting()) {
-					lightLabel.setText(w[0].getLabel() + " " + lightBrightness.getValue() + "%");
+					lightLabel.setText(wi[0].getLabel() + " " + lightBrightness.getValue() + "%");
 				} else {
 					try {
-						w[0].setBrightness(lightBrightness.getValue());
+						wi[0].setBrightness(lightBrightness.getValue());
 					} catch (IOException ex) {
 						LOG.error("lightBrightness", ex);
 					}
@@ -555,8 +555,7 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 			stackedPanel.removeAll();
 			for(InputInterface act: inputArray) {
 				if(act.enabled()) {
-					Component actionsPanel = getInputPanel(act, table);
-					stackedPanel.add(actionsPanel);
+					stackedPanel.add(getInputPanel(act, table));
 				}
 			}
 			edited = inputArray;
@@ -898,7 +897,6 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 		actionsPanel.add(actionsButtonsPanel, BorderLayout.EAST);
 		actionsPanel.add(actionsLabel, BorderLayout.WEST);
 		actionsPanel.setOpaque(false);
-//		stackedPanel.add(actionsPanel);
 		return actionsPanel;
 	}
 

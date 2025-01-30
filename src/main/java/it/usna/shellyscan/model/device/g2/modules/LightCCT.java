@@ -38,11 +38,6 @@ public class LightCCT implements CCTInterface {
 		return minBrightness;
 	}
 
-	@Override
-	public int getMaxBrightness() {
-		return /*maxB*/100;
-	}
-
 	public void fillSettings(JsonNode settingsCt) {
 		name = settingsCt.get("name").asText("");
 	}

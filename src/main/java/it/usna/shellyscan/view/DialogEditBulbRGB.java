@@ -11,20 +11,25 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.Window;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 import java.io.IOException;
 
+import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JSlider;
 import javax.swing.JToggleButton;
+import javax.swing.KeyStroke;
 import javax.swing.SwingConstants;
 import javax.swing.event.ChangeListener;
 
@@ -65,7 +70,6 @@ public class DialogEditBulbRGB extends JDialog {
 	
 	public DialogEditBulbRGB(final Window owner, LightBulbRGB light) {
 		super(owner, light.getLabel(), Dialog.ModalityType.MODELESS);
-//		this.setSize(350, 210);
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		getContentPane().setLayout(new BorderLayout(0, 10));
 		
@@ -84,6 +88,15 @@ public class DialogEditBulbRGB extends JDialog {
 
 		getContentPane().add(modePanel(light), BorderLayout.NORTH);
 		getContentPane().add(panelCard, BorderLayout.CENTER);
+		
+		((JPanel)getContentPane()).getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "escape_close");
+		((JPanel)getContentPane()).getActionMap().put("escape_close", new AbstractAction() {
+			private static final long serialVersionUID = 1L;
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				dispose();
+			}
+		});
 
 		pack();
 		setLocationRelativeTo(owner);
@@ -141,7 +154,6 @@ public class DialogEditBulbRGB extends JDialog {
 		typePanel.add(colorButton);
 		typePanel.add(Box.createHorizontalGlue());
 		typePanel.add(switchButton);
-//		typePanel.add(Box.createHorizontalStrut(10));
 
 		ButtonGroup btnGroup = new ButtonGroup();
 		btnGroup.add(whiteButton);
@@ -313,7 +325,6 @@ public class DialogEditBulbRGB extends JDialog {
 			}
 		});
 		GridBagConstraints gbc_sliderB = new GridBagConstraints();
-//		gbc_sliderB.weightx = 10.0;
 		gbc_sliderB.anchor = GridBagConstraints.NORTH;
 		gbc_sliderB.fill = GridBagConstraints.HORIZONTAL;
 		gbc_sliderB.insets = new Insets(0, 10, 5, 10);
@@ -438,7 +449,6 @@ public class DialogEditBulbRGB extends JDialog {
 //		
 //		adjustBrightness(light.getBrightness());
 //		adjustLightTemp(light.getTemp());
-//
 //		adjustGain(light.getGain());
 //		adjustLightRGB(light.getRed(), light.getGreen(), light.getBlue());
 	}

@@ -189,11 +189,6 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 		rollerSouthPanel.setOpaque(false);
 		rollerButtonPanel.setOpaque(false);
 		rollerPanel.add(rollerSouthPanel, BorderLayout.SOUTH);
-		
-		// LightWhite[] - rgbw2 white
-//		editSwitchPanel.setOpaque(false);
-//		editLightWhiteButton.setBorder(BorderFactory.createEmptyBorder(0, 3, 0, 3));
-//		editLightWhiteButton.setContentAreaFilled(false);
 
 		// Thermostat G1 (TRV)
 		trvPanel.add(trvProfileLabel, BorderLayout.CENTER);

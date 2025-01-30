@@ -7,6 +7,7 @@ import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.net.Inet4Address;
 import java.net.InetAddress;
 
 import javax.swing.BorderFactory;
@@ -83,9 +84,9 @@ public class DialogNetworkIPScanSelection extends JDialog {
 		String baseIPProp = appProp.getProperty(ScannerProperties.BASE_SCAN_IP + "0");
 		if(baseIPProp == null) {
 			try {
-				baseIPProp = InetAddress.getLocalHost().getHostAddress();
+				baseIPProp = ((Inet4Address)InetAddress.getLocalHost()).getHostAddress(); // I want an exception in case of IPV6
 				baseIPProp = baseIPProp.substring(0, baseIPProp.lastIndexOf('.'));
-			} catch (/*UnknownHost*/Exception e) { // IPV6 -> baseIPProp.lastIndexOf('.') == -1
+			} catch (/*UnknownHost*/Exception e) {
 				baseIPProp = "";
 			}
 		}

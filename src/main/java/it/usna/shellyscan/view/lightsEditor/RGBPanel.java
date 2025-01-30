@@ -27,6 +27,9 @@ import it.usna.shellyscan.model.device.modules.RGBInterface;
 import it.usna.shellyscan.model.device.modules.RGBWInterface;
 import it.usna.swing.VerticalFlowLayout;
 
+/**
+ * RGB(W)Panel
+ */
 public class RGBPanel extends LightPanel {
 	private static final long serialVersionUID = 1L;
 	private final static Logger LOG = LoggerFactory.getLogger(RGBPanel.class);
@@ -49,7 +52,7 @@ public class RGBPanel extends LightPanel {
 
 	public RGBPanel(final RGBInterface light) {
 		this.light = light;
-		setBorder(BorderFactory.createEmptyBorder(4, 8, 8, 8));
+		setBorder(BorderFactory.createEmptyBorder(4, 8, 10, 8));
 		setLayout(new VerticalFlowLayout(VerticalFlowLayout.CENTER, VerticalFlowLayout.CENTER, 0, 0));
 
 		// set initial values to avoid listeners to call the device in initial adjust
@@ -80,9 +83,10 @@ public class RGBPanel extends LightPanel {
 		JPanel switchPanel = new JPanel(new BorderLayout(10, 0));
 		switchPanel.setOpaque(false);
 		switchPanel.add(labelGain, BorderLayout.NORTH);
-		switchAction = new UsnaToggleAction(this, "/images/Standby24.png", "/images/StandbyOn24.png", e -> {
+		switchAction = new UsnaToggleAction(null, "/images/Standby24.png", "/images/StandbyOn24.png", e -> {
 			try {
 				light.toggle();
+				adjust();
 			} catch (IOException e1) {
 				LOG.error("toggle", e1);
 			}
@@ -110,7 +114,6 @@ public class RGBPanel extends LightPanel {
 		redPanel.add(labelRed, BorderLayout.NORTH);
 		redPanel.add(sliderRed, BorderLayout.CENTER);
 		redPanel.add(Box.createHorizontalStrut(DialogEditLights.offImg.getIconWidth()), BorderLayout.EAST);
-		sliderRed.addChangeListener(rgbSliderListener);
 		this.add(redPanel);
 
 		JPanel greenPanel = new JPanel(new BorderLayout(10, 0));
@@ -118,7 +121,6 @@ public class RGBPanel extends LightPanel {
 		greenPanel.add(labelGreen, BorderLayout.NORTH);
 		greenPanel.add(sliderGreen, BorderLayout.CENTER);
 		greenPanel.add(Box.createHorizontalStrut(DialogEditLights.offImg.getIconWidth()), BorderLayout.EAST);
-		sliderGreen.addChangeListener(rgbSliderListener);
 		this.add(greenPanel);
 
 		JPanel bluePanel = new JPanel(new BorderLayout(10, 0));
@@ -126,7 +128,6 @@ public class RGBPanel extends LightPanel {
 		bluePanel.add(labelBlue, BorderLayout.NORTH);
 		bluePanel.add(sliderBlue, BorderLayout.CENTER);
 		bluePanel.add(Box.createHorizontalStrut(DialogEditLights.offImg.getIconWidth()), BorderLayout.EAST);
-		sliderBlue.addChangeListener(rgbSliderListener);
 		this.add(bluePanel);
 		
 		if(light instanceof RGBWInterface rgbw) {
@@ -148,7 +149,6 @@ public class RGBPanel extends LightPanel {
 			whitePanel.add(labelWhite, BorderLayout.NORTH);
 			whitePanel.add(sliderWhite, BorderLayout.CENTER);
 			whitePanel.add(Box.createHorizontalStrut(DialogEditLights.offImg.getIconWidth()), BorderLayout.EAST);
-			sliderWhite.addChangeListener(whiteSliderListener);
 			this.add(whitePanel);
 		}
 

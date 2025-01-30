@@ -7,6 +7,7 @@ import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JSlider;
+import javax.swing.event.ChangeListener;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,18 +21,20 @@ public class WhitePanel extends LightPanel {
 	private final WhiteInterface light;
 	private final JLabel label = new JLabel();
 	private final UsnaToggleAction switchAction;
-	private final JSlider brightness;
+	private final JSlider brightnessSlider;
+	private final ChangeListener brightenessSliderListener;
 	
 	public WhitePanel(final WhiteInterface light) {
 		this.light = light;
-		setBorder(BorderFactory.createEmptyBorder(4, 8, 8, 8));
+		setBorder(BorderFactory.createEmptyBorder(4, 8, 10, 8));
 
 		setLayout(new BorderLayout(10, 0));
-		brightness = new JSlider(light.getMinBrightness(), light.getMaxBrightness(), light.getBrightness());
+		brightnessSlider = new JSlider(light.getMinBrightness(), light.getMaxBrightness(), light.getBrightness());
 		add(label, BorderLayout.NORTH);
-		switchAction = new UsnaToggleAction(this, "/images/Standby24.png", "/images/StandbyOn24.png", e -> {
+		switchAction = new UsnaToggleAction(null, "/images/Standby24.png", "/images/StandbyOn24.png", e -> {
 			try {
 				light.toggle();
+				adjust();
 			} catch (IOException e1) {
 				LOG.error("toggle", e1);
 			}
@@ -40,19 +43,19 @@ public class WhitePanel extends LightPanel {
 		switchButton.setContentAreaFilled(false);
 		switchButton.setBorder(BorderFactory.createEmptyBorder());
 		add(switchButton, BorderLayout.EAST);
-		brightness.addChangeListener(e -> {
-			if(brightness.getValueIsAdjusting() == false) {
+		brightenessSliderListener = e -> {
+			if(brightnessSlider.getValueIsAdjusting() == false) {
 				try {
-					light.setBrightness(brightness.getValue());
+					light.setBrightness(brightnessSlider.getValue());
 				} catch (IOException e1) {
 					LOG.error("brightness", e1);
 				}
 				adjust();
 			} else {
-				label.setText(light.getLabel() + " " + brightness.getValue() + "%");
+				label.setText(light.getLabel() + " " + brightnessSlider.getValue() + "%");
 			}
-		});
-		add(brightness, BorderLayout.CENTER);
+		};
+		add(brightnessSlider, BorderLayout.CENTER);
 		adjust();
 	}
 	
@@ -63,8 +66,12 @@ public class WhitePanel extends LightPanel {
 	}
 
 	private void adjust() {
+		brightnessSlider.removeChangeListener(brightenessSliderListener);
+		
 		switchAction.setSelected(light.isOn());
 		label.setText(light.getLabel() + " " + light.getBrightness() + "%");
-		brightness.setValue(light.getBrightness());
+		brightnessSlider.setValue(light.getBrightness());
+		
+		brightnessSlider.addChangeListener(brightenessSliderListener);
 	}
 }

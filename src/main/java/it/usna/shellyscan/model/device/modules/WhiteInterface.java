@@ -11,7 +11,9 @@ public interface WhiteInterface extends DeviceModule {
 	
 	int getMinBrightness();
 	
-	int getMaxBrightness();
+	default int getMaxBrightness() {
+		return 100;
+	}
 
 	boolean toggle() throws IOException;
 
