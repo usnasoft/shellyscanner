@@ -38,14 +38,14 @@ public class Relay implements RelayInterface {
 	}
 	
 	public void fillStatus(JsonNode relay) { // Ralay
-		isOn = relay.get("output").asBoolean();
+		isOn = relay.get("output").booleanValue();
 		source = relay.get("source").asText("-");
 	}
 	
 	public void fillStatus(JsonNode relay, JsonNode input) { // Ralay + Input
-		isOn = relay.get("output").asBoolean();
+		isOn = relay.get("output").booleanValue();
 		source = relay.get("source").asText("-");
-		inputIsOn = input.get("state").asBoolean();
+		inputIsOn = input.get("state").booleanValue();
 	}
 	
 	@Override

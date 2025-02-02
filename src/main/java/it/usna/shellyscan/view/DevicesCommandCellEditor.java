@@ -118,9 +118,9 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 			if(edited != null && edited instanceof DeviceModule[] modules) {
 				final String title;
 				if(modules[0] instanceof WhiteInterface w) {
-					title = /*modules.length > 1 ? UtilMiscellaneous.getDescName(w.getParent()) :*/ UtilMiscellaneous.getDescName(w.getParent());
+					title = UtilMiscellaneous.getDescName(w.getParent());
 				} else if(modules[0] instanceof RGBInterface rgb) {
-					title = /*modules.length > 1 ? UtilMiscellaneous.getDescName(rgb.getParent()) :*/ UtilMiscellaneous.getDescName(rgb.getParent());
+					title = UtilMiscellaneous.getDescName(rgb.getParent());
 				} else {
 					title = modules[0].getLabel();
 				}
@@ -526,7 +526,6 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 			}
 		});
 		
-		// used for Relay[]
 		BoxLayout stackedPanelLO = new BoxLayout(stackedPanel, BoxLayout.Y_AXIS);
 		stackedPanel.setLayout(stackedPanelLO);
 		stackedPanel.setBackground(selBackground);
