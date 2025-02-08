@@ -37,17 +37,20 @@ import it.usna.util.CLI;
 
 public class Main {
 	public final static String APP_NAME = "Shelly Scanner";
-	public final static String VERSION = "1.2.2 alpha";
-	public final static String VERSION_CODE = "001.002.002r002"; // r0xx alpha; r1xx beta; r2xx stable
+	public final static String VERSION = "1.2.2 beta";
+	public final static String VERSION_CODE = "001.002.002r100"; // r0xx alpha; r1xx beta; r2xx stable
 	public final static Image ICON = Toolkit.getDefaultToolkit().createImage(Main.class.getResource("/images/ShSc24.png"));
 	public final static String BACKUP_FILE_EXT = "sbk";
 	public final static String ARCHIVE_FILE_EXT = "arc";
 
 	public final static ResourceBundle LABELS = ResourceBundle.getBundle("LabelsBundle");
-	public final static Color BG_COLOR = new Color(50, 60, 65);
-	public final static Color TAB_LINE1 = new Color(240, 240, 240);
-	public final static Color TAB_LINE2 = new Color(160, 180, 255)/*Color.lightGray*/;
-	public final static Color STATUS_LINE = new Color(200, 220, 255);
+//	public final static Color BG_COLOR = new Color(50, 60, 65);
+	public final static Color BG_COLOR = new Color(60, 70, 90);
+	public final static Color TAB_LINE1_COLOR = new Color(240, 240, 240);
+//	public final static Color TAB_LINE2 = new Color(160, 180, 255);
+	public final static Color TAB_LINE2_COLOR = new Color(212, 218, 255);
+//	public final static Color STATUS_LINE = new Color(200, 220, 255);
+	public final static Color STATUS_LINE_COLOR = new Color(180, 195, 255);
 	public final static String TAB_VERSION = "5"; // on version change reset table settings
 
 	private final static String IP_SCAN_PAR_FORMAT = "^((?:(?:0|1\\d?\\d?|2[0-4]?\\d?|25[0-5]?|[3-9]\\d?)\\.){2}(?:0|1\\d?\\d?|2[0-4]?\\d?|25[0-5]?|[3-9]\\d?))\\.(0|1\\d?\\d?|2[0-4]?\\d?|25[0-5]?|[3-9]\\d?)-(0|1\\d?\\d?|2[0-4]?\\d?|25[0-5]?|[3-9]\\d?)$";
@@ -257,7 +260,7 @@ public class Main {
 	
 	private static void activateGUI(final MainView view, final Devices model, final ScannerProperties appProp) {
 		view.setVisible(true);
-//		view.requestFocus(); // remove random focus on toolbar button
+		view.requestFocus(); // remove random focus on toolbar button
 		model.addListener(view);
 		appProp.addListener(view);
 		new Thread(() -> ApplicationUpdateCHK.checkForUpdates(view, appProp)).start();

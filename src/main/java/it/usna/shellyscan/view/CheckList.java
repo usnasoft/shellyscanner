@@ -5,6 +5,7 @@ import static it.usna.shellyscan.Main.LABELS;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.Desktop;
 import java.awt.FlowLayout;
 import java.awt.Font;
@@ -58,6 +59,7 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
+import it.usna.shellyscan.Main;
 import it.usna.shellyscan.controller.UsnaAction;
 import it.usna.shellyscan.controller.UsnaSelectedAction;
 import it.usna.shellyscan.model.Devices;
@@ -118,9 +120,10 @@ public class CheckList extends JDialog implements UsnaEventListener<Devices.Even
 		super(owner, LABELS.getString("dlgChecklistTitle"));
 		this.appModel = appModel;
 		this.devicesInd = devicesInd;
-
-		BorderLayout borderLayout = (BorderLayout) getContentPane().getLayout();
-		borderLayout.setVgap(2);
+		
+		Container contentPane = getContentPane();
+		contentPane.setBackground(Main.STATUS_LINE_COLOR);
+		
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 
 		tModel = new UsnaTableModel("",
@@ -137,7 +140,8 @@ public class CheckList extends JDialog implements UsnaEventListener<Devices.Even
 		table = new ExTooltipTable(tModel, true) {
 			private static final long serialVersionUID = 1L;
 			{
-				columnModel.getColumn(COL_STATUS).setMaxWidth(DevicesTable.ONLINE_BULLET.getIconWidth() + 4);
+				columnModel.getColumn(COL_STATUS).setMaxWidth(DevicesTable.ONLINE_BULLET.getIconWidth() + 2);
+				columnModel.getColumn(COL_STATUS).setMinWidth(DevicesTable.ONLINE_BULLET.getIconWidth() + 2);
 				setHeadersTooltip(LABELS.getString("col_status_exp"), null, null, LABELS.getString("col_eco_tooltip"), LABELS.getString("col_ledoff_tooltip"), LABELS.getString("col_logs_tooltip"), LABELS.getString("col_blt_tooltip"),
 						LABELS.getString("col_AP_tooltip"), LABELS.getString("col_roaming_tooltip"), LABELS.getString("col_wifi1_tooltip"), LABELS.getString("col_wifi2_tooltip"), LABELS.getString("col_extender_tooltip"), LABELS.getString("col_scripts_tooltip"));
 
@@ -176,6 +180,15 @@ public class CheckList extends JDialog implements UsnaEventListener<Devices.Even
 				if (ipSort != SortOrder.UNSORTED) {
 					sortByColumn(COL_IP, ipSort);
 				}
+			}
+			
+			@Override
+			public Component prepareRenderer(TableCellRenderer renderer, int row, int column) {
+				Component comp = super.prepareRenderer(renderer, row, column);
+				if(isRowSelected(row) == false) {
+					comp.setBackground((row % 2 == 0) ? Main.TAB_LINE1_COLOR : Main.TAB_LINE2_COLOR);
+				}
+				return comp;
 			}
 		};
 
@@ -277,8 +290,10 @@ public class CheckList extends JDialog implements UsnaEventListener<Devices.Even
 		fill();
 
 		JScrollPane scrollPane = new JScrollPane();
+		scrollPane.setBorder(BorderFactory.createEmptyBorder(2, 0, 1, 0));
+		scrollPane.getViewport().setBackground(Main.BG_COLOR);
 		scrollPane.setViewportView(table);
-		getContentPane().add(scrollPane, BorderLayout.CENTER);
+		contentPane.add(scrollPane, BorderLayout.CENTER);
 
 		table.setRowHeight(table.getRowHeight() + 3);
 
@@ -389,6 +404,7 @@ public class CheckList extends JDialog implements UsnaEventListener<Devices.Even
 		});
 		
 		toolBar.setBorder(BorderFactory.createEmptyBorder());
+		toolBar.setBackground(Main.STATUS_LINE_COLOR);
 		toolBar.add(refreshAction);
 		toolBar.addSeparator();
 		toolBar.add(ecoModeAction);
@@ -404,19 +420,22 @@ public class CheckList extends JDialog implements UsnaEventListener<Devices.Even
 		toolBar.add(Box.createHorizontalGlue());
 		toolBar.add(helpAction);
 		updateHideCaptions();
-		getContentPane().add(toolBar, BorderLayout.NORTH);
+		contentPane.add(toolBar, BorderLayout.NORTH);
 
 		JPanel panelBottom = new JPanel(new BorderLayout(0, 0));
-		getContentPane().add(panelBottom, BorderLayout.SOUTH);
+		panelBottom.setBorder(BorderFactory.createEmptyBorder(2, 0, 3, 0));
+		panelBottom.setBackground(Main.STATUS_LINE_COLOR);
+		contentPane.add(panelBottom, BorderLayout.SOUTH);
 
 		// Filter panel
 		JPanel panelRight = new JPanel(new FlowLayout(FlowLayout.RIGHT, 3, 0));
+		panelRight.setOpaque(false);
 		panelBottom.add(panelRight, BorderLayout.EAST);
 
 		panelRight.add(new JLabel(LABELS.getString("lblFilter")));
 		JTextField textFieldFilter = new JTextField();
 		textFieldFilter.setColumns(20);
-		textFieldFilter.setBorder(BorderFactory.createEmptyBorder(2, 1, 2, 1));
+		textFieldFilter.setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));
 		panelRight.add(textFieldFilter);
 		textFieldFilter.getDocument().addDocumentListener((TextDocumentListener)e -> {
 			final int[] cols = new int[] { COL_NAME, COL_IP };
@@ -443,6 +462,7 @@ public class CheckList extends JDialog implements UsnaEventListener<Devices.Even
 		panelRight.add(Box.createHorizontalStrut(12));
 
 		JButton btnClose = new JButton(new UsnaAction("dlgClose", e -> dispose()));
+		btnClose.setBorder(BorderFactory.createEmptyBorder(2, 7, 2, 8));
 		panelRight.add(btnClose);
 
 		setSize(980, 600);
@@ -656,6 +676,7 @@ public class CheckList extends JDialog implements UsnaEventListener<Devices.Even
 	}
 
 	private static class CheckRenderer extends DefaultTableCellRenderer {
+		private final static Color GREEN_OK = new Color(0, 192, 0);
 		private static final long serialVersionUID = 1L;
 		private final boolean goodVal;
 
@@ -669,10 +690,10 @@ public class CheckList extends JDialog implements UsnaEventListener<Devices.Even
 			if (value instanceof Boolean val) {
 				if (val) {
 					ret = super.getTableCellRendererComponent(table, TRUE_STR, isSelected, hasFocus, row, column);
-					ret.setForeground(goodVal ? Color.green : Color.red);
+					ret.setForeground(goodVal ? GREEN_OK : Color.red);
 				} else {
 					ret = super.getTableCellRendererComponent(table, FALSE_STR, isSelected, hasFocus, row, column);
-					ret.setForeground(goodVal ? Color.red : Color.green);
+					ret.setForeground(goodVal ? Color.red : GREEN_OK);
 				}
 				if (isSelected) {
 					ret.setFont(ret.getFont().deriveFont(Font.BOLD));

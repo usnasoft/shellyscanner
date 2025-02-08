@@ -87,7 +87,7 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 	
 	private JLabel labelPlain = new JLabel();
 	
-	static final Color BUTTON_ON_BG_COLOR = new Color(120, 212, 233);
+	static final Color BUTTON_ON_BG_COLOR = new Color(125, 217, 240);
 	static final Color BUTTON_OFF_BG_COLOR = Color.WHITE;
 	static final Color BUTTON_ON_FG_COLOR = new Color(210, 120, 0);
 	static final int MAX_ACTIONS_SHOWN = 5; // if supported actions <= then show also disabled buttons

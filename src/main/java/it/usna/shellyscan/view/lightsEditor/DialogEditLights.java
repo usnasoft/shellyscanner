@@ -113,7 +113,7 @@ public class DialogEditLights extends JDialog {
 			} else if(lights[i] instanceof WhiteInterface w) {
 				stackedPanel.add((commandPanels[i] = new WhitePanel(w)));
 			} 
-			commandPanels[i].setBackground(i % 2 == 0 ? Main.TAB_LINE1 : Main.TAB_LINE2);
+			commandPanels[i].setBackground(i % 2 == 0 ? Main.TAB_LINE1_COLOR : Main.TAB_LINE2_COLOR);
 		}
 		return stackedPanel;
 	}

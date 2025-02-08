@@ -105,7 +105,8 @@ public class DevicesTable extends ExTooltipTable {
 	public DevicesTable(TableModel tm) {
 		super(tm, true);
 		tempUnitCelsius = ScannerProperties.instance().getProperty(ScannerProperties.PROP_TEMP_UNIT).equals("C");
-		columnModel.getColumn(COL_STATUS_IDX).setMaxWidth(ONLINE_BULLET.getIconWidth() + 4);
+		columnModel.getColumn(COL_STATUS_IDX).setMaxWidth(ONLINE_BULLET.getIconWidth() + 2);
+		columnModel.getColumn(COL_STATUS_IDX).setMinWidth(ONLINE_BULLET.getIconWidth() + 2);
 		columnModel.getColumn(COL_MEASURES_IDX).setCellRenderer(new DeviceMetersCellRenderer(tempUnitCelsius));
 		columnModel.getColumn(COL_INT_TEMP).setCellRenderer(tempUnitCelsius ? new DecimalTableCellRenderer(2) : new FahrenheitTableCellRenderer());
 		DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
@@ -181,8 +182,9 @@ public class DevicesTable extends ExTooltipTable {
 
 	@Override
 	public boolean isCellEditable(final int row, final int column) {
-		Object val = getValueAt(row, column);
-		return val instanceof DeviceModule || val instanceof DeviceModule[];
+//		Object val = getValueAt(row, column);
+//		return val instanceof DeviceModule || val instanceof DeviceModule[];
+		return convertColumnIndexToModel(column) == COL_COMMAND_IDX;
 	}
 
 	@Override
@@ -191,7 +193,7 @@ public class DevicesTable extends ExTooltipTable {
 		if(isRowSelected(row)) {
 			comp.setBackground(getSelectionBackground());
 		} else {
-			comp.setBackground((row % 2 == 0) ? Main.TAB_LINE1 : Main.TAB_LINE2);
+			comp.setBackground((row % 2 == 0) ? Main.TAB_LINE1_COLOR : Main.TAB_LINE2_COLOR);
 		}
 		computeRowHeight(row, comp);
 		return comp;
@@ -304,7 +306,7 @@ public class DevicesTable extends ExTooltipTable {
 				}
 				return ret.replaceAll("[ +]+$", "");
 			} else if(modelCol == COL_COMMAND_IDX && value instanceof DeviceModule[] dm) {
-				return Stream.of(dm).filter(d -> d != null).map(d -> d.getLabel()).filter(s -> !s.isEmpty()).collect(Collectors.joining(" + "));
+				return Stream.of(dm).filter(d -> d != null).map(d -> d.getLabel()).filter(label -> label != null && label.isEmpty() == false).collect(Collectors.joining(" + "));
 			} else if(value instanceof Object[]) {
 				return Stream.of((Object[])value).filter(v -> v != null).map(v -> v.toString()).collect(Collectors.joining(" + "));
 			} else {
@@ -331,34 +333,34 @@ public class DevicesTable extends ExTooltipTable {
 	@Override
 	public void columnsWidthAdapt() {
 		Graphics g = getGraphics();
-		if(g != null) {
+		if (g != null) {
 			final FontMetrics fm = g.getFontMetrics();
 			final int columnCount = getColumnCount();
 			final int rowCount = getRowCount();
-			for(int c = 0; c < columnCount; c++) {
-				TableColumn tc = columnModel.getColumn(c);
+			for (int c = 0; c < columnCount; c++) {
 				int modelCol = convertColumnIndexToModel(c);
-				if(modelCol == COL_UPTIME_IDX) {
-					tc.setPreferredWidth(uptimeRenderer.getPreferredWidth(fm));
-				} else if(modelCol == COL_STATUS_IDX) {
-					tc.setPreferredWidth(ONLINE_BULLET.getIconWidth() + 1);
-				} else {
-					int width = SwingUtilities.computeStringWidth(fm, tc.getHeaderValue().toString()) >> 1;
-					for(int r = 0; r < rowCount; r++) {
-						Object val = getValueAt(r, c);
-						if(val != null) {
-							if(val instanceof Object[] arr) {
-								for(Object v: arr) {
-									if(v != null) {
-										width = Math.max(width, SwingUtilities.computeStringWidth(fm, v.toString()));
+				if (modelCol != COL_STATUS_IDX) { // COL_STATUS_IDX has fixed width
+					TableColumn tc = columnModel.getColumn(c);
+					if (modelCol == COL_UPTIME_IDX) {
+						tc.setPreferredWidth(uptimeRenderer.getPreferredWidth(fm));
+					} else {
+						int width = SwingUtilities.computeStringWidth(fm, tc.getHeaderValue().toString()) >> 1;
+						for (int r = 0; r < rowCount; r++) {
+							Object val = getValueAt(r, c);
+							if (val != null) {
+								if (val instanceof Object[] arr) {
+									for (Object v : arr) {
+										if (v != null) {
+											width = Math.max(width, SwingUtilities.computeStringWidth(fm, v.toString()));
+										}
 									}
+								} else {
+									width = Math.max(width, SwingUtilities.computeStringWidth(fm, val.toString()));
 								}
-							} else {
-								width = Math.max(width, SwingUtilities.computeStringWidth(fm, val.toString()));
 							}
 						}
+						tc.setPreferredWidth(width);
 					}
-					tc.setPreferredWidth(width);
 				}
 			}
 		}

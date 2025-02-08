@@ -12,6 +12,7 @@ import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.InternalTmpHolder;
 import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.ModulesHolder;
+import it.usna.shellyscan.model.device.RestoreMsg;
 import it.usna.shellyscan.model.device.g2.modules.Input;
 import it.usna.shellyscan.model.device.g2.modules.LightWhite;
 import it.usna.shellyscan.model.device.meters.MetersWVI;
@@ -96,6 +97,14 @@ public class ShellyProDimmer1 extends AbstractProDevice implements InternalTmpHo
 		voltage = lightStatus.get("voltage").floatValue();
 		current = lightStatus.get("current").floatValue();
 		light.fillStatus(lightStatus, status.get("input:0"));
+	}
+	
+	@Override
+	protected void restoreCheck(Map<String, JsonNode> backupJsons, Map<RestoreMsg, Object> resp) {
+		JsonNode devInfo = backupJsons.get("Shelly.GetDeviceInfo.json");
+		if(MODEL.equals(devInfo.get("model").textValue()) == false) {
+			resp.put(RestoreMsg.ERR_RESTORE_MODEL, null);
+		}
 	}
 
 	@Override

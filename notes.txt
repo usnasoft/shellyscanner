@@ -309,6 +309,7 @@ Shelly Dimmer Gen3
 Shelly gen4 generic
 g2+ AP retore ssid (fw 1.5.0)
 executor.schedule(() -> errorsReconnect(), 25, TimeUnit.SECONDS);
+windows installer
 
 ---
 // TODO
