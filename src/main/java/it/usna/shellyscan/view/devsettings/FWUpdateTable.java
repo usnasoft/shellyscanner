@@ -34,7 +34,8 @@ public class FWUpdateTable extends ExTooltipTable {
 		TableCellRenderer fwRendered = new FWCellRendered();
 		columnModel.getColumn(COL_STABLE).setCellRenderer(fwRendered);
 		columnModel.getColumn(COL_BETA).setCellRenderer(fwRendered);
-		columnModel.getColumn(COL_STATUS).setMaxWidth(DevicesTable.ONLINE_BULLET.getIconWidth() + 4);
+		columnModel.getColumn(COL_STATUS).setMaxWidth(DevicesTable.ONLINE_BULLET.getIconWidth() + 2);
+		columnModel.getColumn(COL_STATUS).setMinWidth(DevicesTable.ONLINE_BULLET.getIconWidth() + 2);
 		// On update COL_STABLE value class is String for the updating row, if this is the first row ... see UsnaTableModel.getColumnClass(...))
 		columnModel.getColumn(COL_STABLE).setCellEditor(getDefaultEditor(Boolean.class));
 		activateSingleCellStringCopy();

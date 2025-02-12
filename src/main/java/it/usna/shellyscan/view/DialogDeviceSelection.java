@@ -4,6 +4,7 @@ import static it.usna.shellyscan.Main.LABELS;
 
 import java.awt.BorderLayout;
 import java.awt.Cursor;
+import java.awt.FlowLayout;
 import java.awt.Window;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
@@ -14,6 +15,7 @@ import java.util.concurrent.Future;
 
 import javax.swing.Action;
 import javax.swing.BorderFactory;
+import javax.swing.Box;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
@@ -43,8 +45,6 @@ public class DialogDeviceSelection extends JDialog {
 
 	public DialogDeviceSelection(final Window owner, UsnaEventListener<ShellyAbstractDevice, Future<?>> listener, Devices model) {
 		super(owner, LABELS.getString("dlgSelectorTitle"));
-		BorderLayout borderLayout = (BorderLayout) getContentPane().getLayout();
-		borderLayout.setVgap(2);
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		
 		UsnaTableModel tModel = new UsnaTableModel(LABELS.getString("col_device"), LABELS.getString("col_ip"));
@@ -64,28 +64,27 @@ public class DialogDeviceSelection extends JDialog {
 
 		table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		
-		JPanel panel = new JPanel(new BorderLayout(0, 0));
-		getContentPane().add(panel, BorderLayout.SOUTH);
-		
 		JButton btnClose = new JButton(LABELS.getString("dlgClose"));
+		btnClose.setBorder(BorderFactory.createEmptyBorder(2, 7, 2, 8));
 		btnClose.addActionListener(e -> dispose());
 		
-		JPanel panelFind = new JPanel();
-		panel.add(panelFind, BorderLayout.EAST);
+		JPanel panelFind = new JPanel(new FlowLayout(FlowLayout.RIGHT, 3, 0));
+		panelFind.setBorder(BorderFactory.createEmptyBorder(1, 0, 3, 0));
+		getContentPane().add(panelFind, BorderLayout.SOUTH);
 		
-		JLabel label = new JLabel("Filter:");
+		JLabel label = new JLabel(LABELS.getString("lblFilter"));
 		panelFind.add(label);
 		
 		JTextField textFieldFilter = new JTextField();
 		textFieldFilter.setColumns(18);
-		textFieldFilter.setBorder(BorderFactory.createEmptyBorder(2, 1, 2, 1));
+		textFieldFilter.setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));
 		panelFind.add(textFieldFilter);
 		
 		textFieldFilter.getDocument().addDocumentListener((TextDocumentListener)e -> {
 			final int[] cols = new int[] {0, 1};
 			String filter = textFieldFilter.getText();
 			TableRowSorter<?> sorter = (TableRowSorter<?>)table.getRowSorter();
-			if(filter.length() > 0) {
+			if(filter.isEmpty() == false) {
 				filter = filter.replace("\\E", "\\e");
 				sorter.setRowFilter(RowFilter.regexFilter("(?i).*\\Q" + filter + "\\E.*", cols));
 			} else {
@@ -104,9 +103,11 @@ public class DialogDeviceSelection extends JDialog {
 		eraseFilterButton.setContentAreaFilled(false);
 		eraseFilterButton.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_E, MainView.SHORTCUT_KEY), "find_erase");
 		eraseFilterButton.getActionMap().put("find_erase", eraseFilterAction);
-		eraseFilterButton.setBorder(BorderFactory.createEmptyBorder(0, 2, 0, 2));
+		eraseFilterButton.setBorder(BorderFactory.createEmptyBorder(1, 2, 1, 2));
+		
 		panelFind.add(eraseFilterButton);
-		panel.add(btnClose, BorderLayout.WEST);
+		panelFind.add(Box.createHorizontalStrut(12));
+		panelFind.add(btnClose);
 		
 		// Selection
 		ExecutorService exeService = Executors.newFixedThreadPool(1);

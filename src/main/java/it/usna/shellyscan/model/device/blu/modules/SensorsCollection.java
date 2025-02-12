@@ -38,11 +38,11 @@ public class SensorsCollection extends Meters {
 			String comp = sensorConf.path("component").asText();
 			if(comp != null && comp.startsWith(AbstractBluDevice.SENSOR_KEY_PREFIX)) {
 				final int id = Integer.parseInt(comp.substring(13));
-				final Sensor s = new Sensor(id, sensorConf);
-				if(s.isInput()) {
-					inputs.add(s);
+				final Sensor sensor = new Sensor(id, sensorConf);
+				if(sensor.isInput()) {
+					inputs.add(sensor);
 				} else {
-					Type t = s.getMeterType();
+					Type t = sensor.getMeterType();
 					if(t != null) {
 						if(t == Meters.Type.T) { // up to 5 temperature measures
 							if(lastT == null) {
@@ -57,10 +57,10 @@ public class SensorsCollection extends Meters {
 								t = lastT = Meters.Type.T4;
 							}
 						}
-						measuresMap.put(t, s);
+						measuresMap.put(t, sensor);
 					}
 				}
-				sensors.add(s);
+				sensors.add(sensor);
 			}
 		}
 		inputs.sort((s1, s2) -> s1.getIdx() - s2.getIdx()); // order by idx

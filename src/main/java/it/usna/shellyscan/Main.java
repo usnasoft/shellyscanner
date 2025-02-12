@@ -48,9 +48,9 @@ public class Main {
 	public final static Color BG_COLOR = new Color(60, 70, 90);
 	public final static Color TAB_LINE1_COLOR = new Color(240, 240, 240);
 //	public final static Color TAB_LINE2 = new Color(160, 180, 255);
-	public final static Color TAB_LINE2_COLOR = new Color(212, 218, 255);
+	public final static Color TAB_LINE2_COLOR = new Color(210, 218, 255);
 //	public final static Color STATUS_LINE = new Color(200, 220, 255);
-	public final static Color STATUS_LINE_COLOR = new Color(180, 195, 255);
+	public final static Color STATUS_LINE_COLOR = new Color(172, 195, 230);
 	public final static String TAB_VERSION = "5"; // on version change reset table settings
 
 	private final static String IP_SCAN_PAR_FORMAT = "^((?:(?:0|1\\d?\\d?|2[0-4]?\\d?|25[0-5]?|[3-9]\\d?)\\.){2}(?:0|1\\d?\\d?|2[0-4]?\\d?|25[0-5]?|[3-9]\\d?))\\.(0|1\\d?\\d?|2[0-4]?\\d?|25[0-5]?|[3-9]\\d?)-(0|1\\d?\\d?|2[0-4]?\\d?|25[0-5]?|[3-9]\\d?)$";
