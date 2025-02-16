@@ -145,16 +145,16 @@ public class ShellyProRGBWW extends AbstractProDevice implements ModulesHolder, 
 		return commands.length;
 	}
 
-	@Override
-	public DeviceModule getModule(int index) {
-//		if(profile != Profile.LIGHT) {
-			return commands[index];
-		/*} else if(profile == Profile.CCT_CCT) {
-			return rgbwLight;
-		} else {
-			return null;
-		}*/
-	}
+//	@Override
+//	public DeviceModule getModule(int index) {
+////		if(profile != Profile.LIGHT) {
+//			return commands[index];
+//		/*} else if(profile == Profile.CCT_CCT) {
+//			return rgbwLight;
+//		} else {
+//			return null;
+//		}*/
+//	}
 
 	@Override
 	public DeviceModule[] getModules() {

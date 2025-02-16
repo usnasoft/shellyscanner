@@ -69,11 +69,6 @@ public class Shelly1G4 extends AbstractG4Device implements ModulesHolder, Intern
 	public String getTypeID() {
 		return ID;
 	}
-	
-	@Override
-	public Relay getModule(int index) {
-		return relay;
-	}
 
 	@Override
 	public Relay[] getModules() {

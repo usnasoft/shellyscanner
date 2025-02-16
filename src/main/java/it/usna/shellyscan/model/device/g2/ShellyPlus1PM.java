@@ -88,10 +88,10 @@ public class ShellyPlus1PM extends AbstractG2Device implements ModulesHolder, In
 		return ID;
 	}
 	
-	@Override
-	public Relay getModule(int index) {
-		return relay;
-	}
+//	@Override
+//	public Relay getModule(int index) {
+//		return relay;
+//	}
 
 	@Override
 	public Relay[] getModules() {

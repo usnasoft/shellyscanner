@@ -44,10 +44,10 @@ public class ShellyDUO extends AbstractG1Device implements ModulesHolder {
 		return ID;
 	}
 	
-	@Override
-	public DeviceModule getModule(int index) {
-		return light;
-	}
+//	@Override
+//	public DeviceModule getModule(int index) {
+//		return light;
+//	}
 
 	@Override
 	public DeviceModule[] getModules() {

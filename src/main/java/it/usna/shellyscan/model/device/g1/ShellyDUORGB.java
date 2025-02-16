@@ -57,10 +57,10 @@ public class ShellyDUORGB extends AbstractG1Device implements ModulesHolder {
 		return meters;
 	}
 	
-	@Override
-	public DeviceModule getModule(int index) {
-		return light;
-	}
+//	@Override
+//	public DeviceModule getModule(int index) {
+//		return light;
+//	}
 	
 	@Override
 	public DeviceModule[] getModules() {

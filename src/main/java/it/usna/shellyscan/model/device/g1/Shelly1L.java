@@ -45,10 +45,10 @@ public class Shelly1L extends AbstractG1Device implements ModulesHolder, Interna
 		return ID;
 	}
 	
-	@Override
-	public Relay getModule(int index) {
-		return relay;
-	}
+//	@Override
+//	public Relay getModule(int index) {
+//		return relay;
+//	}
 
 	@Override
 	public Relay[] getModules() {

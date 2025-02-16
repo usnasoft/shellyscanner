@@ -1,5 +1,7 @@
 package it.usna.shellyscan.view;
 
+import static it.usna.shellyscan.Main.LABELS;
+
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -26,6 +28,7 @@ import it.usna.shellyscan.model.device.g1.modules.LightBulbRGB;
 import it.usna.shellyscan.model.device.g1.modules.ThermostatG1;
 import it.usna.shellyscan.model.device.modules.DeviceModule;
 import it.usna.shellyscan.model.device.modules.InputInterface;
+import it.usna.shellyscan.model.device.modules.MotionSensor;
 import it.usna.shellyscan.model.device.modules.RGBInterface;
 import it.usna.shellyscan.model.device.modules.RGBWInterface;
 import it.usna.shellyscan.model.device.modules.RelayInterface;
@@ -362,6 +365,10 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 			}
 			thermProfileLabel.setForeground(foregroundColor);
 			ret = thermPanel;
+		} else if(value instanceof MotionSensor[] pirs) {
+			labelPlain.setText(LABELS.getString(pirs[0].motion() ? "lableStatusMotion_true" : "lableStatusMotion_false"));
+			labelPlain.setForeground(foregroundColor);
+			ret = labelPlain;
 		} else if(value instanceof DeviceModule[] modArray) { // mixed modules
 			stackedPanel.removeAll();
 			for(int i = 0; i < modArray.length; i++) {

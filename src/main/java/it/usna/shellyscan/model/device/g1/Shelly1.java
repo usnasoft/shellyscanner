@@ -129,10 +129,10 @@ public class Shelly1 extends AbstractG1Device implements ModulesHolder {
 		return meters;
 	}
 
-	@Override
-	public Relay getModule(int index) {
-		return relay;
-	}
+//	@Override
+//	public Relay getModule(int index) {
+//		return relay;
+//	}
 
 	@Override
 	public Relay[] getModules() {

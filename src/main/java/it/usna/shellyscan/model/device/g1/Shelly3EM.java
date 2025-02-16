@@ -85,10 +85,10 @@ public class Shelly3EM extends AbstractG1Device implements ModulesHolder {
 //		return new RelayInterface[] {relay};
 //	}
 	
-	@Override
-	public Relay getModule(int index) {
-		return relay;
-	}
+//	@Override
+//	public Relay getModule(int index) {
+//		return relay;
+//	}
 
 	@Override
 	public Relay[] getModules() {

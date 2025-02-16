@@ -83,11 +83,6 @@ public class ShellyXMOD1 extends AbstractG3Device implements ModulesHolder {
 	}
 
 	@Override
-	public DeviceModule getModule(int index) {
-		return inputOutput[index];
-	}
-
-	@Override
 	public DeviceModule[] getModules() {
 		return inputOutput;
 	}

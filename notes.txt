@@ -308,6 +308,7 @@ Shelly Pro RGBWW PM
 Shelly Dimmer Gen3
 Shelly gen4 generic
 g2+ AP retore ssid (fw 1.5.0)
+fix G2+ did not restore roaming parameters on some occasions
 executor.schedule(() -> errorsReconnect(), 25, TimeUnit.SECONDS);
 windows installer
 
@@ -326,6 +327,7 @@ windows installer
 // InetAddressAndPort potrebbe essere dentro ogni device e mantenere direttamente i byte (sarebbe estremamente ottimizzato); tuttavia attenderei l'introduzione di IPv6
 // color weel https://stackoverflow.com/questions/36252778/how-to-draw-a-rgb-color-wheel-in-java
 // in case of new bulbs (render of single CCT - bulbs as CCT/RGB)
+// batch restore
 
 -------java 21-------
 ThreadFactory factory = Thread.ofVirtual().factory();

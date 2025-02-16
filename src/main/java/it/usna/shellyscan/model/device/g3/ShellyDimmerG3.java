@@ -99,11 +99,6 @@ public class ShellyDimmerG3 extends AbstractG3Device implements InternalTmpHolde
 	}
 
 	@Override
-	public DeviceModule getModule(int index) {
-		return light;
-	}
-
-	@Override
 	public DeviceModule[] getModules() {
 		return lightArray;
 	}

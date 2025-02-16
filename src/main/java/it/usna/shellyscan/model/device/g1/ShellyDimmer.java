@@ -47,10 +47,10 @@ public class ShellyDimmer extends AbstractG1Device implements ModulesHolder, Int
 		return ID;
 	}
 	
-	@Override
-	public DeviceModule getModule(int index) {
-		return light;
-	}
+//	@Override
+//	public DeviceModule getModule(int index) {
+//		return light;
+//	}
 
 	@Override
 	public DeviceModule[] getModules() {

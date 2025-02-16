@@ -144,10 +144,10 @@ public class ShellyPlusRGBW extends AbstractG2Device implements ModulesHolder, I
 		return commands.length;
 	}
 
-	@Override
-	public DeviceModule getModule(int index) {
-		return commands[index];
-	}
+//	@Override
+//	public DeviceModule getModule(int index) {
+//		return commands[index];
+//	}
 
 	@Override
 	public DeviceModule[] getModules() {

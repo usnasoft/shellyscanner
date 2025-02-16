@@ -159,6 +159,10 @@ public class WIFIManagerG2 implements WIFIManager {
 		}
 	}
 
+	public static String enableAP(AbstractG2Device d, boolean enable) {
+		return d.postCommand("WiFi.SetConfig", "{\"config\":{\"ap\":{\"enable\":" + enable + "}}}");
+	}
+
 	public String restore(JsonNode wifi, String pwd) {
 		if(wifi.get("enable").asBoolean()) {
 			if(wifi.get("ipv4mode").asText().equals("static")) {
@@ -199,7 +203,17 @@ public class WIFIManagerG2 implements WIFIManager {
 		}
 	}
 	
-	public static String enableAP(AbstractG2Device d, boolean enable) {
-		return d.postCommand("WiFi.SetConfig", "{\"config\":{\"ap\":{\"enable\":" + enable + "}}}");
+	// restore /wifi/roam
+	public static String restoreRoam(AbstractG2Device d, JsonNode wifi) {
+		JsonNode roam = wifi.path("roam");
+		if(roam.isMissingNode() == false) {
+			ObjectNode outWifi = JsonNodeFactory.instance.objectNode();
+			outWifi.set("roam", roam.deepCopy());
+			ObjectNode outConfig = JsonNodeFactory.instance.objectNode();
+			outConfig.set("config", outWifi);
+			return d.postCommand("WiFi.SetConfig", outConfig);
+		} else {
+			return null;
+		}
 	}
 }

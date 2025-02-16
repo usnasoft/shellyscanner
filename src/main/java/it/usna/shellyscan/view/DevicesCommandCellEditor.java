@@ -578,7 +578,7 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 				}
 			}
 			edited = modArray;
-			return stackedPanel;
+			return stackedPanel.getComponentCount() > 0 ? stackedPanel : null;
 		}
 		return null;
 	}

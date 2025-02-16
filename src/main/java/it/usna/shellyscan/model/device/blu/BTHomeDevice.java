@@ -30,10 +30,10 @@ import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.ModulesHolder;
 import it.usna.shellyscan.model.device.RestoreMsg;
+import it.usna.shellyscan.model.device.blu.modules.InputSensor;
 import it.usna.shellyscan.model.device.blu.modules.Sensor;
 import it.usna.shellyscan.model.device.blu.modules.SensorsCollection;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
-import it.usna.shellyscan.model.device.g2.modules.Input;
 import it.usna.shellyscan.model.device.g2.modules.Webhooks;
 import it.usna.shellyscan.model.device.modules.DeviceModule;
 import it.usna.shellyscan.model.device.modules.FirmwareManager;
@@ -66,7 +66,7 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 	private SensorsCollection sensors;
 	private Meters[] meters;
 	private Webhooks webhooks = new Webhooks(parent);
-	private Input[] inputs;
+	private InputSensor[] inputs;
 
 	public BTHomeDevice(AbstractG2Device parent, JsonNode compInfo, String localName, String index) {
 		super(parent, compInfo, index);
@@ -105,15 +105,9 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 	}
 	
 	private void initSensors() throws IOException {
-		sensors = new SensorsCollection(this);
-		meters = sensors.getTypes().length > 0 ? new Meters[] {sensors} : null;
-		
-		int numInputs = sensors.getInputSensors().length;
-		this.inputs = new Input[numInputs];
-		for(int i = 0; i < numInputs; i++) {
-			inputs[i] = new Input(/*this.parent, in[i].getId()*/);
-			inputs[i].setEnabled(true);
-		}
+		this.sensors = new SensorsCollection(this);
+		this.meters = sensors.getTypes().length > 0 ? new Meters[] {sensors} : null;
+		this.inputs = sensors.getInputSensors();
 	}
 	
 	public void setTypeName(String name) {
@@ -133,11 +127,6 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 	@Override
 	public int getModulesCount() {
 		return inputs.length;
-	}
-
-	@Override
-	public DeviceModule getModule(int index) {
-		return inputs[index];
 	}
 
 	@Override
@@ -174,11 +163,8 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 	@Override
 	public void refreshSettings() throws IOException {
 		webhooks.fillBTHomesensorSettings();
-		
-		Sensor in[] = sensors.getInputSensors();
-		for(int i = 0; i < in.length; i++) {
-			inputs[i].setLabel(in[i].getName());
-			inputs[i].associateWH(webhooks.getHooks(in[i].getId()));
+		for(int i = 0; i < inputs.length; i++) {
+			inputs[i].associateWH(webhooks.getHooks(inputs[i].getId()));
 		}
 	}
 	
@@ -226,6 +212,7 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 			ObjectNode usnaData = JsonNodeFactory.instance.objectNode();
 			usnaData.put("index", componentIndex);
 			usnaData.put("type", localName);
+			usnaData.put("mac", mac);
 			mapper.writeValue(out, usnaData);
 			out.closeEntry();
 			
@@ -239,7 +226,7 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 	}
 	
 	@Override
-	public Map<RestoreMsg, Object> restoreCheck(Map<String, JsonNode> backupJsons) throws IOException {
+	public Map<RestoreMsg, Object> restoreCheck(Map<String, JsonNode> backupJsons) {
 		EnumMap<RestoreMsg, Object> res = new EnumMap<>(RestoreMsg.class);
 		JsonNode usnaInfo = backupJsons.get("ShellyScannerBLU.json");
 		String fileLocalName;

@@ -9,7 +9,6 @@ import java.awt.Image;
 import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.event.MouseEvent;
-import java.text.MessageFormat;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -37,7 +36,6 @@ import it.usna.shellyscan.model.device.InternalTmpHolder;
 import it.usna.shellyscan.model.device.LabelHolder;
 import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.ModulesHolder;
-import it.usna.shellyscan.model.device.MotionSensor;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
 import it.usna.shellyscan.model.device.blu.AbstractBluDevice;
@@ -70,7 +68,6 @@ public class DevicesTable extends ExTooltipTable {
 	private final static String FALSE = LABELS.getString("false_yn");
 	private final static String YES = LABELS.getString("true_yna");
 	private final static String NO = LABELS.getString("false_yna");
-	private final static MessageFormat SWITCH_FORMATTER = new MessageFormat(Main.LABELS.getString("METER_VAL_EX"), Locale.ENGLISH); // tooltip/cell value as String
 	
 	// model columns indexes
 	public final static int COL_STATUS_IDX = 0;
@@ -258,7 +255,7 @@ public class DevicesTable extends ExTooltipTable {
 									tt += "<td><i>" + LABELS.getString("METER_LBL_" + t) + tLabel + "</i>&nbsp;</td><td align='right'>" + String.format(Locale.ENGLISH, LABELS.getString("METER_VAL_T_F"), m.getValue(t) * 1.8f + 32f) + "&nbsp;</td>";
 								}
 							} else if(t == Meters.Type.EX) {
-								tt += "<td><i>" + LABELS.getString("METER_LBL_" + t) + tLabel + "</i>&nbsp;</td><td align='right'>" + SWITCH_FORMATTER.format(new Object [] {m.getValue(t)}) + "&nbsp;</td>";
+								tt += "<td><i>" + LABELS.getString("METER_LBL_" + t) + tLabel + "</i>&nbsp;</td><td align='right'>" + LABELS.getString((m.getValue(t) == 0f) ? "METER_VAL_EX_0" : "METER_VAL_EX_1") + "&nbsp;</td>";
 							} else {
 								tt += "<td><i>" + LABELS.getString("METER_LBL_" + t) + tLabel + "</i>&nbsp;</td><td align='right'>" + String.format(Locale.ENGLISH, LABELS.getString("METER_VAL_" + t), m.getValue(t)) + "&nbsp;</td>";
 							}
@@ -297,7 +294,7 @@ public class DevicesTable extends ExTooltipTable {
 								ret += LABELS.getString("METER_LBL_" + t) + tLabel + " " + String.format(Locale.ENGLISH, LABELS.getString("METER_VAL_T_F"), m.getValue(t) * 1.8f + 32f) + " ";
 							}
 						} else if(t == Meters.Type.EX) {
-							ret += LABELS.getString("METER_LBL_" + t) + tLabel + " " + SWITCH_FORMATTER.format(new Object [] {m.getValue(t)}) + " ";
+							ret += LABELS.getString("METER_LBL_" + t) + tLabel + " " + LABELS.getString((m.getValue(t) == 0f) ? "METER_VAL_EX_0" : "METER_VAL_EX_1") + " ";
 						} else {
 							ret += LABELS.getString("METER_LBL_" + t) + tLabel + " " + String.format(Locale.ENGLISH, LABELS.getString("METER_VAL_" + t), m.getValue(t)) + " ";
 						}
@@ -469,8 +466,6 @@ public class DevicesTable extends ExTooltipTable {
 					row[DevicesTable.COL_COMMAND_IDX] = LABELS.getString("lableStatusOpen") + ": " + (dw.isOpen() ? YES : NO);
 				} else if(d instanceof ShellyFlood flood) {
 					row[DevicesTable.COL_COMMAND_IDX] = LABELS.getString("lableStatusFlood") + ": " + (flood.flood() ? YES : NO);
-				} else if(d instanceof MotionSensor motion) {
-					row[DevicesTable.COL_COMMAND_IDX] = String.format(LABELS.getString("lableStatusMotion"), motion.motion() ? YES : NO);
 				} else if(d instanceof ShellyPlusSmoke smoke) {
 					row[DevicesTable.COL_COMMAND_IDX] = String.format(LABELS.getString("lableStatusSmoke"), smoke.getAlarm() ? YES : NO);
 				} else if(d instanceof ShellyTRV trv) { // very specific

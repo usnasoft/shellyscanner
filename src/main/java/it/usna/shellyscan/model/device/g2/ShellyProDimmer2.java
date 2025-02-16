@@ -85,10 +85,10 @@ public class ShellyProDimmer2 extends AbstractProDevice implements InternalTmpHo
 		return meters;
 	}
 
-	@Override
-	public DeviceModule getModule(int index) {
-		return index == 0 ? light0 : light1;
-	}
+//	@Override
+//	public DeviceModule getModule(int index) {
+//		return index == 0 ? light0 : light1;
+//	}
 
 	@Override
 	public DeviceModule[] getModules() {

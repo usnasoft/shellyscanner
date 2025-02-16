@@ -12,6 +12,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.blu.AbstractBluDevice;
+import it.usna.shellyscan.model.device.modules.InputInterface;
 
 /**
  * Collection of BTHomeDevice related sensors and "Meters" implementation
@@ -19,7 +20,7 @@ import it.usna.shellyscan.model.device.blu.AbstractBluDevice;
 public class SensorsCollection extends Meters {
 	private final AbstractBluDevice blu;
 	private Sensor[] sensorsArray;
-	private Sensor[] inputSensors;
+	private InputSensor[] inputSensors;
 	private Type[] mTypes;
 	private EnumMap<Type, Sensor> measuresMap = new EnumMap<>(Type.class);
 	
@@ -38,8 +39,8 @@ public class SensorsCollection extends Meters {
 			String comp = sensorConf.path("component").asText();
 			if(comp != null && comp.startsWith(AbstractBluDevice.SENSOR_KEY_PREFIX)) {
 				final int id = Integer.parseInt(comp.substring(13));
-				final Sensor sensor = new Sensor(id, sensorConf);
-				if(sensor.isInput()) {
+				final Sensor sensor = Sensor.create(id, sensorConf); // create
+				if(sensor instanceof InputInterface) {
 					inputs.add(sensor);
 				} else {
 					Type t = sensor.getMeterType();
@@ -65,7 +66,7 @@ public class SensorsCollection extends Meters {
 		}
 		inputs.sort((s1, s2) -> s1.getIdx() - s2.getIdx()); // order by idx
 		sensorsArray = sensors.toArray(Sensor[]::new);
-		inputSensors = inputs.toArray(Sensor[]::new);
+		inputSensors = inputs.toArray(InputSensor[]::new);
 		mTypes = measuresMap.keySet().toArray(Type[]::new);
 	}
 	
@@ -73,7 +74,7 @@ public class SensorsCollection extends Meters {
 		return sensorsArray;
 	}
 	
-	public Sensor[] getInputSensors() {
+	public InputSensor[] getInputSensors() {
 		return inputSensors;
 	}
 	

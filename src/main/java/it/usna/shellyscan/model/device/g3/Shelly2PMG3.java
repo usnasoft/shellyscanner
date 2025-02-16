@@ -122,15 +122,6 @@ public class Shelly2PMG3 extends AbstractG3Device implements ModulesHolder, Inte
 	public int getModulesCount() {
 		return modeRelay ? 2 : 1;
 	}
-	
-	@Override
-	public DeviceModule getModule(int index) {
-		if(modeRelay) {
-			return (index == 0) ? relay0 : relay1;
-		} else {
-			return roller;
-		}
-	}
 
 	@Override
 	public DeviceModule[] getModules() {

@@ -131,20 +131,20 @@ public class ShellyRGBW2 extends AbstractG1Device implements ModulesHolder/*, RG
 		return modeColor;
 	}
 	
-	@Override
-	public DeviceModule getModule(int index) {
-		if(modeColor) {
-			return color;
-		} else if(index == 0) {
-			return white0;
-		} else if(index == 1) {
-			return white1;
-		} else if(index == 2) {
-			return white2;
-		} else {
-			return white3;
-		}
-	}
+//	@Override
+//	public DeviceModule getModule(int index) {
+//		if(modeColor) {
+//			return color;
+//		} else if(index == 0) {
+//			return white0;
+//		} else if(index == 1) {
+//			return white1;
+//		} else if(index == 2) {
+//			return white2;
+//		} else {
+//			return white3;
+//		}
+//	}
 
 	@Override
 	public DeviceModule[] getModules() {
