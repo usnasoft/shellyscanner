@@ -9,7 +9,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.ModulesHolder;
 import it.usna.shellyscan.model.device.modules.DeviceModule;
-import it.usna.shellyscan.model.device.modules.MotionSensor;
+import it.usna.shellyscan.model.device.modules.MotionInterface;
 
 public class ShellyMotion extends AbstractG1Device implements ModulesHolder {
 	public final static String ID = "SHMOS-01";
@@ -18,7 +18,7 @@ public class ShellyMotion extends AbstractG1Device implements ModulesHolder {
 	private boolean motion;
 	private int bat;
 	private final Meters[] meters;
-	private final MotionSensor[] sensors;
+	private final MotionInterface[] sensors;
 
 	public ShellyMotion(InetAddress address, int port, String hostname) {
 		super(address, port, hostname);
@@ -41,8 +41,8 @@ public class ShellyMotion extends AbstractG1Device implements ModulesHolder {
 				}
 		};
 		
-		sensors = new MotionSensor[] {
-				new MotionSensor() {
+		sensors = new MotionInterface[] {
+				new MotionInterface() {
 					@Override
 					public boolean motion() {
 						return motion;

@@ -99,7 +99,7 @@ public class SensorsCollection extends Meters {
 	
 	@Override
 	public String getName(Type t) {
-		return measuresMap.get(t).getName();
+		return measuresMap.get(t).getLabel();
 	}
 	
 //	public Sensor getSensor(int objID, int idx) {

@@ -13,12 +13,11 @@ public class Sensor {
 	protected int objID;
 	protected Meters.Type mType;
 	protected String name;
-	private float value;
-	public final static int INPUT_OID = 0x3A; // dec. 58
-	
+	protected float value;
+
 	static Sensor create(int id, JsonNode sensorConf) {
 		int objId = sensorConf.path("obj_id").intValue();
-		if(objId == INPUT_OID) {
+		if(objId == InputSensor.OBJ_ID) {
 			return new InputSensor(id, sensorConf);
 		} else {
 			return new Sensor(id, objId, sensorConf);
@@ -68,7 +67,7 @@ public class Sensor {
 		value = comp.path("status").path("value").floatValue();
 	}
 	
-	public String getName() {
+	public String getLabel() {
 		return name;
 	}
 	
