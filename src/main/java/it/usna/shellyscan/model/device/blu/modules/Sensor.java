@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import it.usna.shellyscan.model.device.Meters;
 
 /**
- * Generic BTHSensor / Measure BTHSensor
+ * Sensor factory / Generic BTHSensor / Measure BTHSensor
  */
 public class Sensor {
 	private final int id; // Id of the component instance
@@ -31,8 +31,8 @@ public class Sensor {
 	
 	Sensor(int id, int objID, JsonNode sensorConf) {
 		this.id = id;
-		this.idx = sensorConf.path("idx").intValue();
 		this.objID = objID;
+		this.idx = sensorConf.path("idx").intValue();
 		this.mType = switch(objID) {
 		case 0x01 -> Meters.Type.BAT;
 		case 0x2E -> Meters.Type.H;

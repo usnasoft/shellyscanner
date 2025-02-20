@@ -65,7 +65,7 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 	private String localName;
 	private SensorsCollection sensors;
 	private Meters[] meters;
-	private Webhooks webhooks = new Webhooks(parent);
+	private Webhooks webhooks;
 	private InputSensor[] inputs;
 
 	public BTHomeDevice(AbstractG2Device parent, JsonNode compInfo, String localName, String index) {
@@ -87,7 +87,7 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 		
 		this.hostname = localName + "-" + mac;
 		this.localName = localName;
-		this.webhooks = new Webhooks(this.parent);
+		this.webhooks = new Webhooks(parent);
 		this.uptime = -1;
 	}
 
@@ -140,18 +140,17 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 		String k;
 		boolean devExists = false;
 		for(JsonNode comp: components) {
-			if(devExists == false && comp.path("key").textValue().equals(DEVICE_KEY_PREFIX + componentIndex)) { // devExists == false for better efficiency
+			if(devExists == false && comp.path("key").textValue().equals(DEVICE_KEY_PREFIX + componentIndex)) { // devExists == false for efficiency
 				fillSettings(comp.path("config"));
 				fillStatus(comp.path("status"));
 				devExists = true;
 			} else if((k = comp.path("key").textValue()).startsWith(SENSOR_KEY_PREFIX)) {
 				int id = Integer.parseInt(k.substring(13));
-				Sensor s = sensors.getSensor(id);
-				if(s != null) {
-//					s.fillSConfig(comp.path("config"));
-//					s.fillStatus(comp.path("status"));
-					s.fill(comp);
-//					devExists = true;
+				Sensor sensor = sensors.getSensor(id);
+				if(sensor != null) {
+//					sensor.fillSConfig(comp.path("config"));
+//					sensor.fillStatus(comp.path("status"));
+					sensor.fill(comp);
 				}
 			}
 		}
@@ -162,9 +161,11 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 	
 	@Override
 	public void refreshSettings() throws IOException {
-		webhooks.fillBTHomesensorSettings();
-		for(int i = 0; i < inputs.length; i++) {
-			inputs[i].associateWH(webhooks.getHooks(inputs[i].getId()));
+		if(inputs.length > 0) {
+			webhooks.fillBTHomesensorSettings();
+			for(int i = 0; i < inputs.length; i++) {
+				inputs[i].associateWH(webhooks.getHooks(inputs[i].getId()));
+			}
 		}
 	}
 	

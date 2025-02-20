@@ -78,7 +78,7 @@ public class SensorsCollection extends Meters {
 		return inputSensors;
 	}
 	
-	public Sensor getSensor(int id) {
+	public Sensor getSensor(int id) { // HashMap<Integer, Sensor> ?
 		for(Sensor s: sensorsArray) {
 			if(s.getId() == id) {
 				return s;

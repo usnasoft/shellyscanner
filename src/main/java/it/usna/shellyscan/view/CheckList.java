@@ -151,7 +151,7 @@ public class CheckList extends JDialog implements UsnaEventListener<Devices.Even
 				columnModel.getColumn(COL_ECO).setCellRenderer(rendTrueOk);
 				columnModel.getColumn(COL_LED).setCellRenderer(rendTrueOk);
 				columnModel.getColumn(COL_LOGS).setCellRenderer(rendFalseOk);
-				columnModel.getColumn(COL_BLE).setCellRenderer(rendFalseOk);
+//				columnModel.getColumn(COL_BLE).setCellRenderer(rendFalseOk);
 				columnModel.getColumn(COL_AP).setCellRenderer(rendFalseOk);
 				columnModel.getColumn(COL_ROAMING).setCellRenderer(rendFalseOk);
 				columnModel.getColumn(COL_WIFI1).setCellRenderer(rendTrueOk);
@@ -217,9 +217,9 @@ public class CheckList extends JDialog implements UsnaEventListener<Devices.Even
 		});
 
 		Action bleAction = new UsnaSelectedAction(this, table, "setBLE_action", "setBLE_action_tooletip", null, "/images/Bluetooth24.png", localRow -> { // AbstractG2Device
-			Boolean ble = (Boolean) tModel.getValueAt(localRow, COL_BLE);
+			Object ble = tModel.getValueAt(localRow, COL_BLE);
 			AbstractG2Device d = (AbstractG2Device) getLocalDevice(localRow);
-			d.setBLEMode(!ble);
+			d.setBLEMode(FALSE_STR.equals(ble));
 			try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e1) {}
 			updateRow(d, localRow);
 		});
@@ -304,7 +304,7 @@ public class CheckList extends JDialog implements UsnaEventListener<Devices.Even
 					ecoModeAction.setEnabled(sameValues(modelRow, COL_ECO, null));
 					ledAction.setEnabled(sameValues(modelRow, COL_LED, AbstractG1Device.class));
 					logsAction.setEnabled(sameValues(modelRow, COL_LOGS, AbstractG1Device.class));
-					bleAction.setEnabled(sameValues(modelRow, COL_BLE, AbstractG2Device.class));
+					bleAction.setEnabled(sameStringValues(modelRow, COL_BLE/*, AbstractG2Device.class*/));
 					apModeAction.setEnabled(sameValues(modelRow, COL_AP, AbstractG2Device.class));
 					roamingAction.setEnabled(sameStringValues(modelRow, COL_ROAMING/*, AbstractG2Device.class*/));
 					rangeExtenderAction.setEnabled(sameStringValues(modelRow, COL_EXTENDER/*, AbstractG2Device.class*/));
@@ -483,6 +483,7 @@ public class CheckList extends JDialog implements UsnaEventListener<Devices.Even
 		return ret /*&& val0 != null*/;
 	}
 	
+	/** true if all values == FALSE_STR or all values != FALSE_STR but none is NOT_APPLICABLE_STR */
 	private boolean sameStringValues(int modelRows[], int col/*, Class<?> allowedDeviceClass*/) {
 		Object val0 = tModel.getValueAt(modelRows[0], col);
 		boolean ret = val0 instanceof String && val0.equals(NOT_APPLICABLE_STR) == false /*&& (allowedDeviceClass == null || allowedDeviceClass.isInstance(getLocalDevice(modelRows[0])))*/;
@@ -615,9 +616,19 @@ public class CheckList extends JDialog implements UsnaEventListener<Devices.Even
 			logModes.add(LogMode.UDP);
 		}
 		Object debug = (logModes.size() == 0) ? Boolean.FALSE : logModes.stream().map(log -> LABELS.getString("debug" + log.name())).collect(Collectors.joining(", "));
-		Object ble = boolVal(config.at("/ble/enable"));
-		if (ble == Boolean.TRUE && boolVal(config.at("/ble/observer/enable")) == Boolean.TRUE) {
-			ble = "OBS"; // used as observer
+		
+		
+		String ble;
+		boolean bleEnabled = boolVal(config.at("/ble/enable"));
+		if(bleEnabled) {
+			try {
+				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+				ble = d.getJSON("/rpc/BLE.CloudRelay.ListInfos").path("total").asText();
+			} catch (/*IO*/Exception e) {
+				ble = NOT_APPLICABLE_STR;
+			}
+		} else {
+			ble = FALSE_STR;
 		}
 		String roaming;
 		if (config.at("/wifi/roam").isMissingNode()) {
