@@ -17,7 +17,7 @@ public class MotionSensor extends Sensor implements MotionInterface {
 	@Override
 	public void fill(JsonNode comp) {
 		name = comp.path("config").path("name").asText("");
-		motion = comp.path("status").path("value").booleanValue();
+		motion = comp.path("status").path("value").asBoolean(); // description: 0 (False = Clear) - 1 (True = Detected) but real boolean found
 	}
 	
 //	@Override

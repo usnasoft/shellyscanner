@@ -312,8 +312,8 @@ g2+ AP retore ssid (fw 1.5.0)
 fix G2+ did not restore roaming parameters on some occasions
 executor.schedule(() -> errorsReconnect(), 25, TimeUnit.SECONDS);
 /rpc/BLE.CloudRelay.ListInfos
-semantica checklist: Solo dispositivi di seconda generazione o generazione successiva; se il bluetooth è attivo appare un numero corrispondente ai dispositivi connessi (0 in rosso; in caso di non utilizzo è preferibile spegnere il BLE), appare una ✗ verde altrimenti.
-semantica checklist: Solo dispositivi di seconda generazione o generazione successiva; appare "-" se non è applicabile; ✗ (in verde) se non è abilitato; il numero di dispositivi collegati se è abilitato (0 in rosso; in caso di non utilizzo è preferibile spegnere l'extender)
+semantica BLE checklist: Solo dispositivi di seconda generazione o generazione successiva; se il bluetooth è attivo appare un numero corrispondente ai dispositivi connessi (0 in rosso; in caso di non utilizzo è preferibile spegnere il BLE), appare una ✗ verde altrimenti.
+semantica Extender checklist: Solo dispositivi di seconda generazione o generazione successiva; appare "-" se non è applicabile; ✗ (in verde) se non è abilitato; il numero di dispositivi collegati se è abilitato (0 in rosso; in caso di non utilizzo è preferibile spegnere l'extender)
 windows installer
 
 ---
