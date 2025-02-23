@@ -5,16 +5,28 @@ import com.fasterxml.jackson.databind.JsonNode;
 import it.usna.shellyscan.model.device.modules.MotionInterface;
 
 public class MotionSensor extends Sensor implements MotionInterface {
-	private final static int OBJ_ID = 0x21; // dec. 33
+	public final static int OBJ_ID = 0x21; // dec. 33
+	private boolean motion;
 
 	MotionSensor(int id, JsonNode sensorConf) {
 		super(id, sensorConf);
 		this.objID = OBJ_ID;
 		this.mType = null;
 	}
+	
+	@Override
+	public void fill(JsonNode comp) {
+		name = comp.path("config").path("name").asText("");
+		motion = comp.path("status").path("value").booleanValue();
+	}
+	
+//	@Override
+//	public String getLabel() {
+//		return name.isEmpty() ?  "Motion: " + motion : name + ": " + motion;
+//	}
 
 	@Override
 	public boolean motion() {
-		return value != 0f;
+		return motion;
 	}
 }

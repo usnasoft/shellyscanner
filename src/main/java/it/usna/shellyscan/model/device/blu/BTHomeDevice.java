@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -67,6 +68,7 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 	private Meters[] meters;
 	private Webhooks webhooks;
 	private InputSensor[] inputs;
+	private DeviceModule[] moduleSensors;
 
 	public BTHomeDevice(AbstractG2Device parent, JsonNode compInfo, String localName, String index) {
 		super(parent, compInfo, index);
@@ -107,7 +109,8 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 	private void initSensors() throws IOException {
 		this.sensors = new SensorsCollection(this);
 		this.meters = sensors.getTypes().length > 0 ? new Meters[] {sensors} : null;
-		this.inputs = sensors.getInputSensors();
+		this.moduleSensors = sensors.getModuleSensors();
+		this.inputs = Stream.of(moduleSensors).filter(s -> s instanceof InputSensor).toArray(InputSensor[]::new);
 	}
 	
 	public void setTypeName(String name) {
@@ -126,12 +129,12 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 	
 	@Override
 	public int getModulesCount() {
-		return inputs.length;
+		return moduleSensors.length;
 	}
 
 	@Override
 	public DeviceModule[] getModules() {
-		return inputs;
+		return /*inputs*/moduleSensors;
 	}
 	
 	@Override
@@ -148,8 +151,6 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 				int id = Integer.parseInt(k.substring(13));
 				Sensor sensor = sensors.getSensor(id);
 				if(sensor != null) {
-//					sensor.fillSConfig(comp.path("config"));
-//					sensor.fillStatus(comp.path("status"));
 					sensor.fill(comp);
 				}
 			}

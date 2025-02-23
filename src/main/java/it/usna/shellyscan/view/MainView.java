@@ -167,8 +167,9 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 				}
 			}
 			// too many call disturb some devices especially gen1
-			try { Thread.sleep(250); } catch (InterruptedException e1) {}
 			devicesTable.resetRowsComputedHeight();
+			try { Thread.sleep(300); } catch (InterruptedException e1) {}
+			devicesTable.columnsWidthAdapt();
 			setEnabled(true);
 			setCursor(Cursor.getDefaultCursor());
 		});

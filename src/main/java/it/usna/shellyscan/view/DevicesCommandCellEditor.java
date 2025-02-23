@@ -550,15 +550,6 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 			return getRGBColorPanel(rgbs);
 		} else if(value instanceof WhiteInterface[] whitesArray) {
 			return getWhitePanel(whitesArray);
-		} else if(value instanceof InputInterface[] inputArray) {
-			stackedPanel.removeAll();
-			for(InputInterface act: inputArray) {
-				if(act.enabled()) {
-					stackedPanel.add(getInputPanel(act, table));
-				}
-			}
-			edited = inputArray;
-			return stackedPanel;
 		} else if(value instanceof ThermostatG1 th) { // TRV
 			return getTrvG1Panel(th);
 		} else if(value instanceof ThermostatInterface[] ths) {
@@ -860,7 +851,7 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 					JButton b = new JButton(bLabel);
 					if(enabled) {
 						b.addActionListener(e -> {
-							if(edited != null && edited instanceof InputInterface[]) {
+							if(edited != null /*&& edited instanceof InputInterface[]*/) {
 								table.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 								try {
 									new Thread(() -> {

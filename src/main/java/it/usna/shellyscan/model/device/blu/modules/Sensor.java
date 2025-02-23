@@ -15,21 +15,23 @@ public class Sensor {
 	protected String name;
 	protected float value;
 
-	static Sensor create(int id, JsonNode sensorConf) {
+	public static Sensor create(int id, JsonNode sensorConf) {
 		int objId = sensorConf.path("obj_id").intValue();
 		if(objId == InputSensor.OBJ_ID) {
 			return new InputSensor(id, sensorConf);
+		} else if(objId == MotionSensor.OBJ_ID) {
+			return new MotionSensor(id, sensorConf);
 		} else {
 			return new Sensor(id, objId, sensorConf);
 		}
 	}
 
-	Sensor(int id, JsonNode sensorConf) {
+	protected Sensor(int id, JsonNode sensorConf) {
 		this.id = id;
 		this.idx = sensorConf.path("idx").intValue();
 	}
 	
-	Sensor(int id, int objID, JsonNode sensorConf) {
+	private Sensor(int id, int objID, JsonNode sensorConf) {
 		this.id = id;
 		this.objID = objID;
 		this.idx = sensorConf.path("idx").intValue();

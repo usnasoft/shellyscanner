@@ -105,7 +105,8 @@
 		<dependency>
 			<groupId>org.jmdns</groupId>
 			<artifactId>jmdns</artifactId>
-			<version>3.6.1-SNAPSHOT</version>
+			<version>3.6.0</version>
+			<!--<version>3.6.1-SNAPSHOT</version>-->
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>

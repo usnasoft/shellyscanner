@@ -41,6 +41,7 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 	// Generic
 	final static ImageIcon EDIT_IMG = new ImageIcon(DevicesCommandCellRenderer.class.getResource("/images/Write16.png"));
 	private JButton onOffButton0 = new JButton();
+	private JLabel label0 = new JLabel();
 	private JButton editDialogButton = new JButton(EDIT_IMG);
 	
 	// Dimmer
@@ -328,14 +329,14 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 				}
 				ret = stackedPanel;
 			}
-		} else if(value instanceof InputInterface[] inputs) { // Button1 - I3 - I4
-			stackedPanel.removeAll();
-			for(InputInterface inp: inputs) {
-				if(inp.enabled()) {
-					stackedPanel.add(getInputPanel(inp, foregroundColor));
-				}
-			}
-			ret = stackedPanel;
+//		} else if(value instanceof InputInterface[] inputs) { // Button1 - I3 - I4
+//			stackedPanel.removeAll();
+//			for(InputInterface inp: inputs) {
+//				if(inp.enabled()) {
+//					stackedPanel.add(getInputPanel(inp, foregroundColor));
+//				}
+//			}
+//			ret = stackedPanel;
 		} else if(value instanceof ThermostatG1 thermostat) { // TRV
 			trvSlider.setValue((int)(thermostat.getTargetTemp() * 2));
 			trvProfileLabel.setText(thermostat.getCurrentProfile() + " " + thermostat.getTargetTemp() + "°C");
@@ -365,22 +366,24 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 			}
 			thermProfileLabel.setForeground(foregroundColor);
 			ret = thermPanel;
-		} else if(value instanceof MotionInterface[] pirs) {
-			labelPlain.setText(LABELS.getString(pirs[0].motion() ? "lableStatusMotion_true" : "lableStatusMotion_false"));
-			labelPlain.setForeground(foregroundColor);
-			ret = labelPlain;
 		} else if(value instanceof DeviceModule[] modArray) { // mixed modules
 			stackedPanel.removeAll();
 			for(int i = 0; i < modArray.length; i++) {
 				DeviceModule module = modArray[i];
 				if(module instanceof RelayInterface rel) {
 					stackedPanel.add(getRelayPanel(rel, foregroundColor, i == 0));
-				} else if(module instanceof InputInterface input && input.enabled()) {
-					stackedPanel.add(getInputPanel(input, foregroundColor));
+				} else if(module instanceof InputInterface input) {
+					if(input.enabled()) {
+						stackedPanel.add(getInputPanel(input, foregroundColor));
+					}
 				} else if(module instanceof WhiteInterface white) {
 					stackedPanel.add(getWhiteSyntheticPanel(white, foregroundColor, i == 0, i == modArray.length - 1));
 				} else if(module instanceof RGBInterface rgb) {
 					stackedPanel.add(getRGBSyntheticPanel(rgb, foregroundColor, i == 0, i == modArray.length - 1));
+				} else if(module instanceof MotionInterface pir) {
+					label0.setText(LABELS.getString(pir.motion() ? "lableStatusMotion_true" : "lableStatusMotion_false")); // one only per device
+					label0.setForeground(foregroundColor);
+					stackedPanel.add(label0);
 				}
 			}
 			ret = stackedPanel;

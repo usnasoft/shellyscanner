@@ -90,6 +90,7 @@ import it.usna.util.UsnaEventListener;
 public class CheckList extends JDialog implements UsnaEventListener<Devices.EventType, Integer>, ScannerProperties.AppPropertyListener {
 	private static final long serialVersionUID = 1L;
 	private final static Logger LOG = LoggerFactory.getLogger(CheckList.class);
+	private final static Color GREEN_OK = new Color(0, 192, 0);
 	private final static String TRUE_STR = LABELS.getString("true_yn");
 	private final static String FALSE_STR = LABELS.getString("false_yn");
 	private final static String NOT_APPLICABLE_STR = "-";
@@ -107,7 +108,6 @@ public class CheckList extends JDialog implements UsnaEventListener<Devices.Even
 	private final static int COL_EXTENDER = 11;
 	private final static int COL_SCRIPTS = 12;
 	private final static int COL_LAST = COL_SCRIPTS;
-
 	private final ScannerProperties properties = ScannerProperties.instance();
 	private final Devices appModel;
 	private final int[] devicesInd;
@@ -118,13 +118,12 @@ public class CheckList extends JDialog implements UsnaEventListener<Devices.Even
 
 	public CheckList(final Frame owner, Devices appModel, int[] devicesInd, final SortOrder ipSort) {
 		super(owner, LABELS.getString("dlgChecklistTitle"));
+		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		this.appModel = appModel;
 		this.devicesInd = devicesInd;
 		
 		Container contentPane = getContentPane();
 		contentPane.setBackground(Main.STATUS_LINE_COLOR);
-		
-		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 
 		tModel = new UsnaTableModel("",
 				LABELS.getString("col_device"), LABELS.getString("col_ip"), LABELS.getString("col_eco"), LABELS.getString("col_ledoff"), LABELS.getString("col_logs"), LABELS.getString("col_blt"),
@@ -151,13 +150,13 @@ public class CheckList extends JDialog implements UsnaEventListener<Devices.Even
 				columnModel.getColumn(COL_ECO).setCellRenderer(rendTrueOk);
 				columnModel.getColumn(COL_LED).setCellRenderer(rendTrueOk);
 				columnModel.getColumn(COL_LOGS).setCellRenderer(rendFalseOk);
-//				columnModel.getColumn(COL_BLE).setCellRenderer(rendFalseOk);
+				columnModel.getColumn(COL_BLE).setCellRenderer(new StringJudgedRenderer("0", FALSE_STR));
 				columnModel.getColumn(COL_AP).setCellRenderer(rendFalseOk);
 				columnModel.getColumn(COL_ROAMING).setCellRenderer(rendFalseOk);
 				columnModel.getColumn(COL_WIFI1).setCellRenderer(rendTrueOk);
 				columnModel.getColumn(COL_WIFI2).setCellRenderer(rendTrueOk);
-				columnModel.getColumn(COL_EXTENDER).setCellRenderer(rendTrueOk); // null -> "-"
-				columnModel.getColumn(COL_SCRIPTS).setCellRenderer(rendTrueOk); // null -> "-"
+				columnModel.getColumn(COL_EXTENDER).setCellRenderer(new StringJudgedRenderer("0", FALSE_STR));
+				columnModel.getColumn(COL_SCRIPTS).setCellRenderer(new StringJudgedRenderer(null, null));
 
 				TableRowSorter<?> rowSorter = ((TableRowSorter<?>) getRowSorter());
 				rowSorter.setSortsOnUpdates(true);
@@ -438,10 +437,9 @@ public class CheckList extends JDialog implements UsnaEventListener<Devices.Even
 		textFieldFilter.setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));
 		panelRight.add(textFieldFilter);
 		textFieldFilter.getDocument().addDocumentListener((TextDocumentListener)e -> {
-			final int[] cols = new int[] { COL_NAME, COL_IP };
 			TableRowSorter<?> sorter = (TableRowSorter<?>) table.getRowSorter();
 			String filter = textFieldFilter.getText();
-			sorter.setRowFilter(filter.isEmpty() ? null : RowFilter.regexFilter("(?i).*\\Q" + filter.replace("\\E", "\\e") + "\\E.*", cols));
+			sorter.setRowFilter(filter.isEmpty() ? null : RowFilter.regexFilter("(?i).*\\Q" + filter.replace("\\E", "\\e") + "\\E.*", new int[] {COL_NAME, COL_IP}));
 		});
 
 		textFieldFilter.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_F, MainView.SHORTCUT_KEY), "find_focus_mw");
@@ -616,16 +614,15 @@ public class CheckList extends JDialog implements UsnaEventListener<Devices.Even
 			logModes.add(LogMode.UDP);
 		}
 		Object debug = (logModes.size() == 0) ? Boolean.FALSE : logModes.stream().map(log -> LABELS.getString("debug" + log.name())).collect(Collectors.joining(", "));
-		
-		
-		String ble;
-		boolean bleEnabled = boolVal(config.at("/ble/enable"));
-		if(bleEnabled) {
+		Object ble = boolVal(config.at("/ble/enable"));
+		if(ble == null) {
+			ble = NOT_APPLICABLE_STR;
+		} else if(ble == Boolean.TRUE) {
 			try {
 				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 				ble = d.getJSON("/rpc/BLE.CloudRelay.ListInfos").path("total").asText();
 			} catch (/*IO*/Exception e) {
-				ble = NOT_APPLICABLE_STR;
+				ble = TRUE_STR;
 			}
 		} else {
 			ble = FALSE_STR;
@@ -655,7 +652,7 @@ public class CheckList extends JDialog implements UsnaEventListener<Devices.Even
 		if(extenderEnabled.isMissingNode()) {
 			extender = NOT_APPLICABLE_STR;
 		} else {
-			extender = (status == null || extenderEnabled.asBoolean() == false) ? FALSE_STR : status.at("/wifi/ap_client_count").asInt() + "";
+			extender = (status == null || extenderEnabled.asBoolean() == false) ? FALSE_STR : status.at("/wifi/ap_client_count").asText();
 		}
 		String scripts = NOT_APPLICABLE_STR;
 		if (d instanceof BatteryDeviceInterface == false) {
@@ -685,9 +682,35 @@ public class CheckList extends JDialog implements UsnaEventListener<Devices.Even
 	private static Boolean boolVal(JsonNode node) {
 		return node.isMissingNode() ? null : node.asBoolean();
 	}
+	
+	private static class StringJudgedRenderer extends DefaultTableCellRenderer {
+		private static final long serialVersionUID = 1L;
+		private String redValue;
+		private String greenValue;
+		
+		public StringJudgedRenderer(final String redValue, final String greenValue) {
+			this.redValue = redValue;
+			this.greenValue = greenValue;
+		}
+
+		@Override
+		public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+			JLabel ret = (JLabel)super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+			if(value == null) {
+				ret.setText(NOT_APPLICABLE_STR);
+				ret.setForeground(table.getForeground());
+			} else if(value.toString().equals(redValue)) {
+				ret.setForeground(Color.red);
+			} else if(value.toString().equals(greenValue)) {
+				ret.setForeground(GREEN_OK);
+			} else {
+				ret.setForeground(table.getForeground());
+			}
+			return ret;
+		}
+	}
 
 	private static class CheckRenderer extends DefaultTableCellRenderer {
-		private final static Color GREEN_OK = new Color(0, 192, 0);
 		private static final long serialVersionUID = 1L;
 		private final boolean goodVal;
 
