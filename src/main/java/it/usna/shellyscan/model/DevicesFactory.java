@@ -83,9 +83,11 @@ import it.usna.shellyscan.model.device.g2.ShellyWallDimmer;
 import it.usna.shellyscan.model.device.g2.WallDisplay;
 import it.usna.shellyscan.model.device.g2.modules.LoginManagerG2;
 import it.usna.shellyscan.model.device.g3.AbstractG3Device;
+import it.usna.shellyscan.model.device.g3.PbSOgemraySW40;
 import it.usna.shellyscan.model.device.g3.Shelly0_10VPMG3;
 import it.usna.shellyscan.model.device.g3.Shelly1G3;
 import it.usna.shellyscan.model.device.g3.Shelly1PMG3;
+import it.usna.shellyscan.model.device.g3.Shelly2LG3;
 import it.usna.shellyscan.model.device.g3.Shelly2PMG3;
 import it.usna.shellyscan.model.device.g3.Shelly3EM63;
 import it.usna.shellyscan.model.device.g3.ShellyDimmerG3;
@@ -98,6 +100,7 @@ import it.usna.shellyscan.model.device.g3.ShellyMini1PMG3;
 import it.usna.shellyscan.model.device.g3.ShellyMiniPMG3;
 import it.usna.shellyscan.model.device.g3.ShellyPlugSG3;
 import it.usna.shellyscan.model.device.g3.ShellyXMOD1;
+import it.usna.shellyscan.model.device.g3.XT1;
 import it.usna.shellyscan.model.device.g4.AbstractG4Device;
 import it.usna.shellyscan.model.device.g4.Shelly1G4;
 import it.usna.shellyscan.model.device.g4.ShellyG4Unmanaged;
@@ -278,10 +281,14 @@ public class DevicesFactory {
 			case ShellyHTG3.ID -> new ShellyHTG3(address, port, name);
 			case ShellyDimmerG3.ID -> new ShellyDimmerG3(address, port, name);
 			case Shelly3EM63.ID -> new Shelly3EM63(address, port, name);
+			case Shelly2LG3.ID -> new Shelly2LG3(address, port, name); // QA
 			case ShellyGatewayG3.ID -> new ShellyGatewayG3(address, port, name);
 			// X
 			case ShellyXMOD1.ID -> new ShellyXMOD1(address, port, name);
 			default -> new ShellyG3Unmanaged(address, port, name);
+			// Powered by Shelly
+			case XT1.ID -> new XT1(address, port, name);
+			case PbSOgemraySW40.ID -> new PbSOgemraySW40(address, port, name); // QA
 			};
 		} catch(Exception e) { // really unexpected
 			LOG.error("create", e);

@@ -19,17 +19,16 @@ import it.usna.shellyscan.model.device.modules.DeviceModule;
  * Shelly 2L G3 model 
  * @author usna
  */
-public class Shelly2LG3 extends AbstractG3Device implements ModulesHolder, InternalTmpHolder {
+public class Shelly1LG3 extends AbstractG3Device implements ModulesHolder, InternalTmpHolder {
 //	private final static Logger LOG = LoggerFactory.getLogger(Shelly2LG3.class);
-//	public final static String ID = "S2LG3";
+//	public final static String ID = "S1LG3";
 //	public final static String ID = "xLG3";
 	public final static String ID = "???";
 	private Relay relay0 = new Relay(this, 0);
-	private Relay relay1 = new Relay(this, 1);
-	private Relay[] relaysArray = new Relay[] {relay0, relay1};
+	private Relay[] relaysArray = new Relay[] {relay0};
 	private float internalTmp;
 
-	public Shelly2LG3(InetAddress address, int port, String hostname) {
+	public Shelly1LG3(InetAddress address, int port, String hostname) {
 		super(address, port, hostname);
 	}
 
@@ -62,7 +61,6 @@ public class Shelly2LG3 extends AbstractG3Device implements ModulesHolder, Inter
 	protected void fillSettings(JsonNode configuration) throws IOException {
 		super.fillSettings(configuration);
 		relay0.fillSettings(configuration.get("switch:0"), configuration.get("input:0"));
-		relay1.fillSettings(configuration.get("switch:1"), configuration.get("input:1"));
 	}
 
 	@Override
@@ -70,7 +68,6 @@ public class Shelly2LG3 extends AbstractG3Device implements ModulesHolder, Inter
 		super.fillStatus(status);
 		JsonNode switchStatus0 = status.get("switch:0");
 		relay0.fillStatus(switchStatus0, status.get("input:0"));
-		relay1.fillStatus(status.get("switch:1"), status.get("input:1"));
 
 		internalTmp = switchStatus0.path("temperature").path("tC").floatValue();
 	}
@@ -80,15 +77,11 @@ public class Shelly2LG3 extends AbstractG3Device implements ModulesHolder, Inter
 		JsonNode configuration = backupJsons.get("Shelly.GetConfig.json");
 		errors.add(Input.restore(this,configuration, 0));
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-		errors.add(Input.restore(this,configuration, 1));
-		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 		errors.add(relay0.restore(configuration));
-		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-		errors.add(relay1.restore(configuration));
 	}
 
 	@Override
 	public String toString() {
-		return super.toString() + " Relay0: " + relay0 + "; Relay1: " + relay1;
+		return super.toString() + " Relay0: " + relay0;
 	}
 }

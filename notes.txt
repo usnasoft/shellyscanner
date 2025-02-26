@@ -307,6 +307,7 @@ Shelly Pro Dimmer 2PM
 Shelly Pro RGBWW PM
 Shelly Dimmer Gen3
 Shelly BLU Motion
+Ogemray SW40
 Shelly gen4 generic
 g2+ AP retore ssid (fw 1.5.0)
 fix G2+ did not restore roaming parameters on some occasions
