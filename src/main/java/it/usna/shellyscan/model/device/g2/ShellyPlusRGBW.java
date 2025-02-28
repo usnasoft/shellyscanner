@@ -40,6 +40,7 @@ public class ShellyPlusRGBW extends AbstractG2Device implements ModulesHolder, I
 		}
 	};
 	public final static String ID = "PlusRGBWPM";
+	public final static String MODEL = "SNDC-0D4P10WW";
 	private Profile profile;
 	private float internalTmp;
 	private float power0, power1, power2, power3; // if calibrated (white)

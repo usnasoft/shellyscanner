@@ -313,8 +313,9 @@ g2+ AP retore ssid (fw 1.5.0)
 fix G2+ did not restore roaming parameters on some occasions
 executor.schedule(() -> errorsReconnect(), 25, TimeUnit.SECONDS);
 /rpc/BLE.CloudRelay.ListInfos
-semantica BLE checklist: Solo dispositivi di seconda generazione o generazione successiva; se il bluetooth è attivo appare un numero corrispondente ai dispositivi connessi (0 in rosso; in caso di non utilizzo è preferibile spegnere il BLE), appare una ✗ verde altrimenti.
-semantica Extender checklist: Solo dispositivi di seconda generazione o generazione successiva; appare "-" se non è applicabile; ✗ (in verde) se non è abilitato; il numero di dispositivi collegati se è abilitato (0 in rosso; in caso di non utilizzo è preferibile spegnere l'extender)
+checklist - semantica BLE: Solo dispositivi di seconda generazione o generazione successiva; se il bluetooth è attivo appare un numero corrispondente ai dispositivi connessi (<span class="text-danger">0</span> in rosso; in caso di non utilizzo è preferibile spegnere il BLE), appare una <span class="text-success">✗</span> verde altrimenti.
+checklist - semantica Extender checklist
+KVS.GetMany changed from fw 1.5.x
 windows installer
 
 ---
@@ -333,7 +334,11 @@ windows installer
 // color weel https://stackoverflow.com/questions/36252778/how-to-draw-a-rgb-color-wheel-in-java
 // in case of new bulbs (render of single CCT - bulbs as CCT/RGB)
 // batch restore senza Wi-Fi, AP, e restricted. Il restore viene chiamato con apposito flag
+// https://smarthomecircle.com/connect-xiaomi-temperature-and-humidity-bluetooth-sensor-to-home-assistant
+// addon dimmer gen3 (currently not supported by fw)
 
 -------java 21-------
 ThreadFactory factory = Thread.ofVirtual().factory();
 ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(0, factory);
+
+it.usna.shellyscan.model.device.g2.AbstractG2Device.backup(File) script xt1

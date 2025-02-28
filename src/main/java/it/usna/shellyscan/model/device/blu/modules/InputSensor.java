@@ -24,7 +24,7 @@ public class InputSensor extends Sensor implements InputInterface {
 	@Override
 	public void fill(JsonNode comp) {
 		name = comp.path("config").path("name").asText("");
-//		value = comp.path("status").path("value").floatValue();
+//		value = comp.path("status").path("value")...Value();
 	}
 	
 	public void associateWH(Map<String, Webhook> wh) {

@@ -140,7 +140,7 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 					final int row = i;
 					exeService.schedule(() -> {
 						fwModule.chech();
-						tModel.setRow(row, createTableRow(row));
+						tModel.setRow(row, createTableRow(row, true));
 					}, i , TimeUnit.MILLISECONDS);
 				}
 			}
@@ -159,11 +159,11 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 		return devicesFWData.get(index).fwModule;
 	}
 
-	private void fillTable() {
+	private void fillTable(boolean select) {
 		tModel.clear();
 		for(int i = 0; i < parent.getLocalSize(); i++) {
 			if(Thread.interrupted() == false) {
-				tModel.addRow(createTableRow(i));
+				tModel.addRow(createTableRow(i, select));
 			}
 		}
 		if(Thread.interrupted() == false) {
@@ -171,7 +171,7 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 		}
 	}
 
-	private Object[] createTableRow(int localIndex) {
+	private Object[] createTableRow(int localIndex, boolean select) {
 		ShellyAbstractDevice d = parent.getLocalDevice(localIndex);
 		FirmwareManager fw = getFirmwareManager(localIndex);
 		if(fw != null) {
@@ -179,8 +179,8 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 				return new Object[] {DevicesTable.UPDATING_BULLET, UtilMiscellaneous.getExtendedHostName(d), FirmwareManager.getShortVersion(fw.current()),
 						(d instanceof AbstractG2Device) ? String.format(LABELS.getString("lbl_downloading"), 0) : LABELS.getString("labelUpdating"), ""};
 			} else {
-				Boolean stableCell = (fw != null && fw.newStable() != null) ? Boolean.TRUE : null;
-				Boolean betaCell = (fw != null && fw.newBeta() != null) ? Boolean.FALSE : null;
+				Boolean stableCell = (fw.newStable() != null) ? select : null;
+				Boolean betaCell = (fw.newBeta() != null) ? Boolean.FALSE : null;
 				return new Object[] {DevicesTable.getStatusIcon(d), UtilMiscellaneous.getExtendedHostName(d), FirmwareManager.getShortVersion(fw.current()), stableCell, betaCell};
 			}
 		} else {
@@ -206,7 +206,7 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 				calls.add(new GetFWManagerCaller(i));
 			}
 			retriveFutures = exeService.invokeAll(calls);
-			fillTable();
+			fillTable(true);
 			parent.getModel().addListener(this);
 
 			table.columnsWidthAdapt();
@@ -286,7 +286,7 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 					res += updateDeviceFW(i, false);
 				}
 			}
-			fillTable();
+			fillTable(false);
 			return res;
 		}
 		return null;
@@ -423,7 +423,7 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 					// Awakened
 					retriveFutures.set(localIndex, exeService.submit(() -> {
 						initDevice(localIndex);
-						tModel.setRow(localIndex, createTableRow(localIndex));
+						tModel.setRow(localIndex, createTableRow(localIndex, true));
 					}, null));
 				} else if(newStatus != ShellyAbstractDevice.Status.ERROR) {
 					// Updating?
@@ -438,7 +438,7 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 									tModel.setValueAt(DevicesTable.ONLINE_BULLET, localIndex, FWUpdateTable.COL_STATUS);
 									Thread.sleep(Devices.MULTI_QUERY_DELAY);
 									fwInfo.fwModule = device.getFWManager();
-									tModel.setRow(localIndex, createTableRow(localIndex));
+									tModel.setRow(localIndex, createTableRow(localIndex, true));
 									countSelection();
 //									if(device instanceof AbstractG2Device && fwInfo.wsSession.get().isOpen() == false) { // should be (closed on reboot)
 //										fwInfo.wsSession = wsEventListener(localIndex, (AbstractG2Device)device);

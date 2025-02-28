@@ -127,16 +127,18 @@ public class DevicesStore {
 			final JsonNode arc = JSON_MAPPER.readTree(r);
 			if(arc.path("ver").asInt() == STORE_VERSION) {
 				final ArrayNode array = (ArrayNode) arc.get("dev");
-				array.forEach(el -> {
-					try {
-						ghostsList.add(new GhostDevice(
-								InetAddress.getByName(el.get(ADDRESS).asText()), el.get(PORT).intValue(), el.get(HOSTNAME).asText(), el.get(MAC).asText(),
-								el.get(SSID).asText(), el.get(TYPE_NAME).asText(), el.get(TYPE_ID).asText(), el.path(GENERATION).asText(), el.get(NAME).asText(), el.path(LAST_CON).longValue(),
-								el.path(BATTERY).booleanValue(), el.path(USER_NOTE).asText(), el.path(KEYWORD_NOTE).asText()));
-					} catch (UnknownHostException | RuntimeException e) {
-						LOG.error("Archive read", e);
-					}
-				});
+				if(array != null) {
+					array.forEach(el -> {
+						try {
+							ghostsList.add(new GhostDevice(
+									InetAddress.getByName(el.get(ADDRESS).asText()), el.get(PORT).intValue(), el.get(HOSTNAME).asText(), el.get(MAC).asText(),
+									el.get(SSID).asText(), el.get(TYPE_NAME).asText(), el.get(TYPE_ID).asText(), el.path(GENERATION).asText(), el.get(NAME).asText(), el.path(LAST_CON).longValue(),
+									el.path(BATTERY).booleanValue(), el.path(USER_NOTE).asText(), el.path(KEYWORD_NOTE).asText()));
+						} catch (UnknownHostException | RuntimeException e) {
+							LOG.error("Archive read", e);
+						}
+					});
+				}
 			} else {
 				LOG.info("Archive version is {}; " + STORE_VERSION + " expected", arc.path("ver").asText());
 			}

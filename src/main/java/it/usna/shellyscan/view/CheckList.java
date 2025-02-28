@@ -656,11 +656,15 @@ public class CheckList extends JDialog implements UsnaEventListener<Devices.Even
 		}
 		String scripts = NOT_APPLICABLE_STR;
 		if (d instanceof BatteryDeviceInterface == false) {
+			Status oldStatus = d.getStatus();
 			try {
 				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 				List<Script> sList = Script.list(d);
 				scripts = sList.size() + " / " + sList.stream().filter(Script::isEnabled).count();
-			} catch (Exception e) {}
+			} catch (Exception e) {
+				d.setStatus(oldStatus); // restore the old status; now is probably Status.ERROR (some devices do not support scripts)
+				LOG.debug("scripts", e);
+			}
 		}
 		
 		tRow[COL_STATUS] = DevicesTable.getStatusIcon(d);
@@ -698,12 +702,20 @@ public class CheckList extends JDialog implements UsnaEventListener<Devices.Even
 			JLabel ret = (JLabel)super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 			if(value == null) {
 				ret.setText(NOT_APPLICABLE_STR);
-				ret.setForeground(table.getForeground());
+				if (isSelected == false) {
+					ret.setForeground(table.getForeground());
+				}
 			} else if(value.toString().equals(redValue)) {
 				ret.setForeground(Color.red);
+				if (isSelected) {
+					ret.setFont(ret.getFont().deriveFont(Font.BOLD));
+				}
 			} else if(value.toString().equals(greenValue)) {
 				ret.setForeground(GREEN_OK);
-			} else {
+				if (isSelected) {
+					ret.setFont(ret.getFont().deriveFont(Font.BOLD));
+				}
+			} else if (isSelected == false) {
 				ret.setForeground(table.getForeground());
 			}
 			return ret;

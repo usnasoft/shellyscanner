@@ -463,10 +463,10 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 	protected void restoreCheck(Map<String, JsonNode> backupJsons, Map<RestoreMsg, Object> resp) throws IOException {}
 
 	@Override
-	public final List<String> restore(Map<String, JsonNode> backupJsons, Map<RestoreMsg, String> userPref) throws IOException {
+	public List<String> restore(Map<String, JsonNode> backupJsons, Map<RestoreMsg, String> userPref) throws IOException {
 		final ArrayList<String> errors = new ArrayList<>();
 		try {
-			final long delay = this instanceof BatteryDeviceInterface ? Devices.MULTI_QUERY_DELAY / 2: Devices.MULTI_QUERY_DELAY;
+			final long delay = this instanceof BatteryDeviceInterface ? (Devices.MULTI_QUERY_DELAY / 2) : Devices.MULTI_QUERY_DELAY;
 
 			JsonNode config = backupJsons.get("Shelly.GetConfig.json");
 			errors.add("->r_step:specific");
@@ -474,7 +474,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 			if(status == Status.OFF_LINE) {
 				return errors.size() > 0 ? errors : List.of(RestoreMsg.ERR_UNKNOWN.toString());
 			}
-			
+
 			errors.add("->r_step:DynamicComponents");
 			DynamicComponents.restore(this, backupJsons, errors); // only devices with same (existing) addr are restored; if a device is no more present, related  webooks will signal error(s)
 			
@@ -519,11 +519,6 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 					errors.add(wm.restore(config.at("/wifi/sta"), userPref.get(RestoreMsg.RESTORE_WI_FI1)));
 				}
 				
-//				JsonNode apNode = config.at("/wifi/ap"); // wall display -> isMissingNode() (?)
-//				if(apNode.isMissingNode() == false && ((userPref.containsKey(RestoreMsg.RESTORE_WI_FI_AP) || apNode.path("is_open").asBoolean() || apNode.path("enable").asBoolean() == false) && currentConnection != Network.AP)) {
-//					TimeUnit.MILLISECONDS.sleep(delay);
-//					errors.add(WIFIManagerG2.restoreAP_roam(this, config.get("wifi"), userPref.get(RestoreMsg.RESTORE_WI_FI_AP)));
-//				}
 				TimeUnit.MILLISECONDS.sleep(delay);
 				JsonNode apNode = config.at("/wifi/ap"); // e.g. wall display -> isMissingNode()
 				if(currentConnection != Network.AP && apNode.isMissingNode() == false &&
@@ -552,7 +547,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 	}
 
 	// Shelly.GetConfig.json
-	void restoreCommonConfig(JsonNode config, final long delay, Map<RestoreMsg, String> userPref, List<String> errors) throws InterruptedException, IOException {
+	protected void restoreCommonConfig(JsonNode config, final long delay, Map<RestoreMsg, String> userPref, List<String> errors) throws InterruptedException, IOException {
 		ObjectNode outConfig = JsonNodeFactory.instance.objectNode();
 
 		// BLE.SetConfig
@@ -592,7 +587,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 		}
 	}
 
-	private void restoreSchedule(JsonNode schedule, final long delay, ArrayList<String> errors) throws InterruptedException {
+	protected void restoreSchedule(JsonNode schedule, final long delay, ArrayList<String> errors) throws InterruptedException {
 		TimeUnit.MILLISECONDS.sleep(delay);
 		errors.add(postCommand("Schedule.DeleteAll", "{}"));
 		for(JsonNode sc: schedule.get("jobs")) {

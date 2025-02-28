@@ -338,5 +338,3 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 		return errors;
 	}
 }
-
-//https://smarthomecircle.com/connect-xiaomi-temperature-and-humidity-bluetooth-sensor-to-home-assistant

@@ -4,9 +4,7 @@ import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -25,13 +23,22 @@ public class KVS {
 		refresh();
 	}
 	
+//	public void refresh() throws IOException {
+//		kvItems.clear();
+//		JsonNode kvsItems = device.getJSON("/rpc/KVS.GetMany");
+//		Iterator<Entry<String, JsonNode>> fields = kvsItems.path("items").fields();
+//		while(fields.hasNext()) {
+//			Entry<String, JsonNode> item = fields.next();
+//			kvItems.add(new KVItem(item.getKey(), item.getValue().get("etag").asText(), item.getValue().get("value").asText()));
+//		}
+//	}
+	
+	// From 1.5.0
 	public void refresh() throws IOException {
 		kvItems.clear();
 		JsonNode kvsItems = device.getJSON("/rpc/KVS.GetMany");
-		Iterator<Entry<String, JsonNode>> fields = kvsItems.path("items").fields();
-		while(fields.hasNext()) {
-			Entry<String, JsonNode> item = fields.next();
-			kvItems.add(new KVItem(item.getKey(), item.getValue().get("etag").asText(), item.getValue().get("value").asText()));
+		for(JsonNode item: kvsItems.path("items")) {
+			kvItems.add(new KVItem(item.get("key").asText(), item.get("etag").asText(), item.get("value").asText()));
 		}
 	}
 	
@@ -79,11 +86,25 @@ public class KVS {
 	 * @param errors
 	 * @throws InterruptedException
 	 */
+//	public void restoreKVS(JsonNode kvsMany, List<String> errors) throws InterruptedException {
+//		Iterator<Entry<String, JsonNode>> fields = kvsMany.path("items").fields(); // wall display: {"code":-114,"message":"Method KVS.GetMany failed: No such component"}
+//		while(fields.hasNext()) {
+//			Entry<String, JsonNode> entry = fields.next();		
+//			KVItem storedItem = new KVItem(entry.getKey(), entry.getValue().get("etag").asText(), entry.getValue().get("value").asText());
+//			if(kvItems.contains(storedItem) == false) {
+//				ObjectNode out = JsonNodeFactory.instance.objectNode();
+//				out.put("key", storedItem.key);
+//				out.put("value", storedItem.value);
+//				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+//				errors.add(device.postCommand("KVS.Set", out));
+//			}
+//		}
+//	}
+
+	// From 1.5.0
 	public void restoreKVS(JsonNode kvsMany, List<String> errors) throws InterruptedException {
-		Iterator<Entry<String, JsonNode>> fields = kvsMany.path("items").fields(); // wall display: {"code":-114,"message":"Method KVS.GetMany failed: No such component"}
-		while(fields.hasNext()) {
-			Entry<String, JsonNode> entry = fields.next();		
-			KVItem storedItem = new KVItem(entry.getKey(), entry.getValue().get("etag").asText(), entry.getValue().get("value").asText());
+		for(JsonNode item: kvsMany.path("items")) { // wall display: {"code":-114,"message":"Method KVS.GetMany failed: No such component"}
+			KVItem storedItem = new KVItem(item.get("key").asText(), item.get("etag").asText(), item.get("value").asText());
 			if(kvItems.contains(storedItem) == false) {
 				ObjectNode out = JsonNodeFactory.instance.objectNode();
 				out.put("key", storedItem.key);
