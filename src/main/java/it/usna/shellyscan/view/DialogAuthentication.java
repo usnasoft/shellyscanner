@@ -6,10 +6,13 @@ import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.KeyboardFocusManager;
 import java.awt.Window;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.Arrays;
 
+import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -19,6 +22,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
+import javax.swing.KeyStroke;
 
 import it.usna.shellyscan.Main;
 import it.usna.swing.texteditor.TextDocumentListener;
@@ -57,17 +61,17 @@ public class DialogAuthentication extends JDialog {
 	
 	private void init(String userLabelText, String pwdLabelText, String confLabelText, String noPwdLabel) {
 		setIconImage(Main.ICON);
-		BorderLayout borderLayout = (BorderLayout) getContentPane().getLayout();
-		borderLayout.setVgap(10);
-		borderLayout.setHgap(5);
-		((JComponent)getContentPane()).setBorder(BorderFactory.createEmptyBorder(6, 6, 0, 6));
+		
+		JPanel jContentPane = new JPanel(new BorderLayout(5, 8));
+		this.setContentPane(jContentPane);
+		jContentPane.setBorder(BorderFactory.createEmptyBorder(6, 6, 0, 6));
 		
 		JPanel panelLabels = new JPanel();
-		getContentPane().add(panelLabels, BorderLayout.WEST);
+		jContentPane.add(panelLabels, BorderLayout.WEST);
 		panelLabels.setLayout(new GridLayout(0, 1, 0, 5));
 		
 		JPanel panelFields = new JPanel();
-		getContentPane().add(panelFields, BorderLayout.CENTER);
+		jContentPane.add(panelFields, BorderLayout.CENTER);
 		panelFields.setLayout(new GridLayout(0, 1, 0, 5));
 
 		if(userLabelText != null) {
@@ -98,10 +102,10 @@ public class DialogAuthentication extends JDialog {
 		}
 		panelFields.add(chKPanel);
 
-		getContentPane().add(messageLabel, BorderLayout.NORTH);
+		jContentPane.add(messageLabel, BorderLayout.NORTH);
 		
 		JPanel buttonsPanel = new JPanel();
-		getContentPane().add(buttonsPanel, BorderLayout.SOUTH);
+		jContentPane.add(buttonsPanel, BorderLayout.SOUTH);
 
 		JButton okButton = new JButton(Main.LABELS.getString("dlgOK"));
 		okButton.setEnabled(false);
@@ -152,6 +156,15 @@ public class DialogAuthentication extends JDialog {
 		addWindowListener(new WindowAdapter() {
 			@Override
 			public void windowClosing(WindowEvent e) {
+				cancelButton.doClick();
+			}
+		});
+		
+		jContentPane.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "escape_close");
+		jContentPane.getActionMap().put("escape_close", new AbstractAction() {
+			private static final long serialVersionUID = 1L;
+			@Override
+			public void actionPerformed(ActionEvent e) {
 				cancelButton.doClick();
 			}
 		});

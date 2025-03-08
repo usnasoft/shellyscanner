@@ -17,6 +17,7 @@ import org.slf4j.LoggerFactory;
 
 import it.usna.shellyscan.controller.UsnaAction;
 import it.usna.shellyscan.model.Devices;
+import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
 import it.usna.shellyscan.model.device.g2.AbstractBatteryG2Device;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.view.CheckList;
@@ -27,6 +28,7 @@ public class DialogDeviceScripts extends JDialog {
 	private final static Logger LOG = LoggerFactory.getLogger(CheckList.class);
 	private static final long serialVersionUID = 1L;
 	public final static String FILE_EXTENSION = "js";
+	private JPanel kvsPanel;
 
 	public DialogDeviceScripts(final Frame owner, Devices model, int modelIndex) {
 		super(owner, false);
@@ -64,7 +66,7 @@ public class DialogDeviceScripts extends JDialog {
 		}
 
 		try {
-			JPanel kvsPanel = new KVSPanel(device);
+			kvsPanel = new KVSPanel(device);
 			tabs.addTab(LABELS.getString("lblKVSTab"), kvsPanel);
 		} catch (/*IO*/Exception e) {
 			//Msg.errorMsg(owner, e);
@@ -77,13 +79,16 @@ public class DialogDeviceScripts extends JDialog {
 			setLocationRelativeTo(owner);
 			setVisible(true);
 		} else {
-			Msg.errorMsg(owner, LABELS.getString("msgScriptKVSNotSupported"));
+			Msg.errorMsg(owner, LABELS.getString(device.getStatus() == Status.OFF_LINE ? "Status-OFFLINE" : "msgScriptKVSNotSupported"));
 			dispose();
 		}
 	}
 	
 	@Override
 	public void dispose() {
+		if(kvsPanel != null) {
+			kvsPanel.setVisible(false);
+		}
 		super.dispose();
 		firePropertyChange("S_CLOSE", null, null);
 	}

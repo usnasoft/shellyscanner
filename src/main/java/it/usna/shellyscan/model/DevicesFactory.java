@@ -287,7 +287,14 @@ public class DevicesFactory {
 			case ShellyXMOD1.ID -> new ShellyXMOD1(address, port, name);
 			default -> new ShellyG3Unmanaged(address, port, name);
 			// Powered by Shelly
-			case XT1.ID -> new XT1(address, port, name);
+			case XT1.ID -> {
+//				String model = info.get("model").asText();
+//				if(PbSXT1St1820.MODEL.equals(model)) {
+//					yield new PbSXT1St1820(address, port, name);
+//				} else {
+					yield new XT1(address, port, name);
+//				}
+			}
 			case PbSOgemraySW40.ID -> new PbSOgemraySW40(address, port, name); // QA
 			};
 		} catch(Exception e) { // really unexpected

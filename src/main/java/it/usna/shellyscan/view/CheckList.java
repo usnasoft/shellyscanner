@@ -463,7 +463,7 @@ public class CheckList extends JDialog implements UsnaEventListener<Devices.Even
 		btnClose.setBorder(BorderFactory.createEmptyBorder(2, 7, 2, 8));
 		panelRight.add(btnClose);
 
-		setSize(980, 600);
+		setSize(980, 598);
 		setVisible(true);
 		setLocationRelativeTo(owner);
 		table.columnsWidthAdapt();
@@ -610,19 +610,24 @@ public class CheckList extends JDialog implements UsnaEventListener<Devices.Even
 		if(config.at("/sys/debug/mqtt/enable").booleanValue()) {
 			logModes.add(LogMode.MQTT);
 		}
-		if(config.at("/sys/debug/udp").isMissingNode() == false && config.at("/sys/debug/udp/addr").isNull() == false) {
+		if(config.at("/sys/debug/udp").hasNonNull("addr")) {
 			logModes.add(LogMode.UDP);
 		}
 		Object debug = (logModes.size() == 0) ? Boolean.FALSE : logModes.stream().map(log -> LABELS.getString("debug" + log.name())).collect(Collectors.joining(", "));
-		Object ble = boolVal(config.at("/ble/enable"));
-		if(ble == null) {
+		Object ble;
+		JsonNode bleEnableNode = config.at("/ble/enable");
+		if(bleEnableNode.isMissingNode()) {
 			ble = NOT_APPLICABLE_STR;
-		} else if(ble == Boolean.TRUE) {
+		} else if(bleEnableNode.asBoolean()) {
 			try {
 				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-				ble = d.getJSON("/rpc/BLE.CloudRelay.ListInfos").path("total").asText();
+				ble = d.getJSON("/rpc/BLE.CloudRelay.ListInfos").get("total").asText(); // fw >= 1.5.0
 			} catch (/*IO*/Exception e) {
-				ble = TRUE_STR;
+				if (config.at("/ble/observer/enable").booleanValue()) { // fw < 1.5.0
+					ble = "OBS"; // used as observer
+				} else {
+					ble = TRUE_STR;
+				}
 			}
 		} else {
 			ble = FALSE_STR;
