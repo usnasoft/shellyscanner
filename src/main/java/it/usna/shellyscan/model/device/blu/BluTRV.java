@@ -129,11 +129,6 @@ public class BluTRV extends AbstractBluDevice implements ThermostatInterface, Mo
 	public void reboot() throws IOException {
 		getJSON("/rpc/BluTrv.call?id=" + componentIndex + "&method=Shelly.Reboot");
 	}
-	
-	@Override
-	public DeviceModule getModule(int index) {
-		return this;
-	}
 
 	@Override
 	public DeviceModule[] getModules() {
@@ -308,7 +303,7 @@ public class BluTRV extends AbstractBluDevice implements ThermostatInterface, Mo
 	
 	@Override
 	public String getLabel() {
-		return null;
+		return "";
 	}
 	
 	@Override

@@ -7,8 +7,8 @@ import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.net.Inet4Address;
 import java.net.InetAddress;
-import java.net.UnknownHostException;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -22,7 +22,7 @@ import javax.swing.JTextField;
 import it.usna.shellyscan.controller.UsnaAction;
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.IPCollection;
-import it.usna.shellyscan.view.IntegerTextFieldPanel;
+import it.usna.shellyscan.view.util.IntegerTextFieldPanel;
 import it.usna.shellyscan.view.util.ScannerProperties;
 import it.usna.util.AppProperties;
 
@@ -84,9 +84,9 @@ public class DialogNetworkIPScanSelection extends JDialog {
 		String baseIPProp = appProp.getProperty(ScannerProperties.BASE_SCAN_IP + "0");
 		if(baseIPProp == null) {
 			try {
-				baseIPProp = InetAddress.getLocalHost().getHostAddress();
+				baseIPProp = ((Inet4Address)InetAddress.getLocalHost()).getHostAddress(); // I want an exception in case of IPV6
 				baseIPProp = baseIPProp.substring(0, baseIPProp.lastIndexOf('.'));
-			} catch (UnknownHostException e) {
+			} catch (/*UnknownHost*/Exception e) {
 				baseIPProp = "";
 			}
 		}
@@ -118,15 +118,15 @@ public class DialogNetworkIPScanSelection extends JDialog {
 		panel.add(lastIP[0], gbc_lastIP);
 		lastIP[0].setColumns(3);
 
-		for(int i = 1; i < 10; i++) {
+		for(int i = 1; i < baseIP.length; i++) {
 			row(panel, i);
 		}
 		
 		JPanel panel_1 = new JPanel();
 		getContentPane().add(panel_1, BorderLayout.SOUTH);
-		JButton btnNewButton = new JButton(LABELS.getString("dlgOK"));
-		btnNewButton.addActionListener(e -> dispose());
-		panel_1.add(btnNewButton);
+		JButton btnOk = new JButton(LABELS.getString("dlgOK"));
+		btnOk.addActionListener(e -> dispose());
+		panel_1.add(btnOk);
 
 		pack();
 		setLocationRelativeTo(owner);

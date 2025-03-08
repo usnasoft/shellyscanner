@@ -3,6 +3,7 @@ package it.usna.shellyscan.view;
 import static it.usna.shellyscan.Main.LABELS;
 
 import java.awt.BorderLayout;
+import java.awt.Container;
 import java.awt.Cursor;
 import java.awt.Desktop;
 import java.awt.FlowLayout;
@@ -67,7 +68,6 @@ import it.usna.shellyscan.model.device.blu.AbstractBluDevice;
 import it.usna.shellyscan.model.device.blu.BTHomeDevice;
 import it.usna.shellyscan.model.device.g1.AbstractG1Device;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
-import it.usna.shellyscan.model.device.g3.AbstractG3Device;
 import it.usna.shellyscan.view.appsettings.DialogAppSettings;
 import it.usna.shellyscan.view.chart.MeasuresChart;
 import it.usna.shellyscan.view.devsettings.DialogDeviceSettings;
@@ -167,8 +167,9 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 				}
 			}
 			// too many call disturb some devices especially gen1
-			try { Thread.sleep(250); } catch (InterruptedException e1) {}
 			devicesTable.resetRowsComputedHeight();
+			try { Thread.sleep(300); } catch (InterruptedException e1) {}
+			devicesTable.columnsWidthAdapt();
 			setEnabled(true);
 			setCursor(Cursor.getDefaultCursor());
 		});
@@ -282,6 +283,9 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		
 		useArchive = appProp.getBoolProperty(ScannerProperties.PROP_USE_ARCHIVE, true);
 
+		Container contentPane = getContentPane();
+		contentPane.setBackground(Main.STATUS_LINE_COLOR);
+		
 		// Status bar
 		JPanel statusPanel = new JPanel();
 		statusPanel.setLayout(new BorderLayout(6, 0));
@@ -310,7 +314,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		JPanel statusFilterPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 2, 0));
 		statusFilterPanel.setOpaque(false);
 		statusFilterPanel.add(new JLabel(LABELS.getString("lblFilter")));
-		textFieldFilter.setBorder(BorderFactory.createEmptyBorder(2, 0, 2, 0));
+		textFieldFilter.setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));
 		textFieldFilter.setColumns(16);
 		
 		JComboBox<String> comboFilterCol = new JComboBox<>();
@@ -353,8 +357,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		UsnaPopupMenu selectionPopup = new UsnaPopupMenu(selectAll, selectOnLine,
 				new SelectionAction(devicesTable, "labelSelectOnLineReboot", null, null, i -> model.get(i).getStatus() == Status.ON_LINE && model.get(i).rebootRequired()),
 				new SelectionAction(devicesTable, "labelSelectG1", null, null, i -> model.get(i) instanceof AbstractG1Device),
-				new SelectionAction(devicesTable, "labelSelectG2", null, null, i -> model.get(i) instanceof AbstractG2Device && model.get(i) instanceof AbstractG3Device == false),
-				new SelectionAction(devicesTable, "labelSelectG3", null, null, i -> model.get(i) instanceof AbstractG3Device),
+				new SelectionAction(devicesTable, "labelSelectG2", null, null, i -> model.get(i) instanceof AbstractG2Device /*&& model.get(i) instanceof AbstractG3Device == false*/), // G2+
 				new SelectionAction(devicesTable, "labelSelectWIFI", null, null, i -> model.get(i) instanceof AbstractG1Device || model.get(i) instanceof AbstractG2Device),
 				new SelectionAction(devicesTable, "labelSelectBLU", null, null, i -> model.get(i) instanceof AbstractBluDevice),
 				new SelectionAction(devicesTable, "labelSelectGhosts", null, null, i -> model.get(i) instanceof GhostDevice) );
@@ -362,15 +365,16 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		btnSelectCombo.addActionListener(e -> selectionPopup.show(btnSelectCombo, 0, 0));
 		
 		statusPanel.add(statusFilterPanel, BorderLayout.EAST);
-		statusPanel.setBackground(Main.STATUS_LINE);
-		getContentPane().add(statusPanel, BorderLayout.SOUTH);
+		statusPanel.setBackground(Main.STATUS_LINE_COLOR);
+		contentPane.add(statusPanel, BorderLayout.SOUTH);
 		
 		detailedViewAction = new UsnaToggleAction(null, "action_show_detail_name", "action_show_detail_tooltip", "action_show_detail_tooltip", "/images/Plus.png", "/images/Minus.png",
 				e -> SwingUtilities.invokeLater(() -> detailedView(detailedViewAction.isSelected()) ) );
 		
 		// Table
 		JScrollPane scrollPane = new JScrollPane();
-		getContentPane().add(scrollPane, BorderLayout.CENTER);
+		scrollPane.setBorder(BorderFactory.createEmptyBorder(2, 0, 1, 0));
+		contentPane.add(scrollPane, BorderLayout.CENTER);
 		devicesTable.sortByColumn(DevicesTable.COL_IP_IDX, SortOrder.ASCENDING);
 		devicesTable.loadColPos(appProp);
 		devicesTable.setUptimeRenderMode(appProp.getProperty(ScannerProperties.PROP_UPTIME_MODE/*, ScannerProperties.PROP_UPTIME_MODE_DEFAULT*/));
@@ -380,7 +384,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 
 		// Toolbar
 		toolBar.setBorder(BorderFactory.createEmptyBorder());
-		
+		toolBar.setBackground(Main.STATUS_LINE_COLOR);
 		toolBar.add(rescanAction);
 		toolBar.add(refreshAction);
 		toolBar.addSeparator();
@@ -406,7 +410,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		toolBar.add(appSettingsAction);
 		toolBar.add(aboutAction);
 		updateHideCaptions();
-		getContentPane().add(toolBar, BorderLayout.NORTH);
+		contentPane.add(toolBar, BorderLayout.NORTH);
 
 		// devices popup
 		UsnaPopupMenu tablePopup = new UsnaPopupMenu(infoAction, browseAction, backupAction, restoreAction, notesAction, reloadAction/*, loginAction*/);

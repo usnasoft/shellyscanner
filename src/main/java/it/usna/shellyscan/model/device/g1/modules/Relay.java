@@ -43,14 +43,14 @@ public class Relay implements RelayInterface {
 //	}
 	
 	public void fillStatus(JsonNode relay) {
-		isOn = relay.get("ison").asBoolean();
+		isOn = relay.get("ison").booleanValue();
 		source = relay.get("source").asText("-");
 	}
 	
 	public void fillStatus(JsonNode relay, JsonNode inputs) {
-		isOn = relay.get("ison").asBoolean();
+		isOn = relay.get("ison").booleanValue();
 		source = relay.path("source").asText("-"); //old fw miss "source"
-		inputIsOn = inputs.path("input").asBoolean();
+		inputIsOn = inputs.path("input").booleanValue();
 	}
 	
 	@Override
@@ -61,7 +61,7 @@ public class Relay implements RelayInterface {
 	@Override
 	public boolean toggle() throws IOException {
 		final JsonNode relay = parent.getJSON("/relay/" + index + "?turn=toggle");
-		isOn = relay.get("ison").asBoolean();
+		isOn = relay.get("ison").booleanValue();
 		source = relay.get("source").asText("-");
 		return isOn;
 	}
@@ -69,7 +69,7 @@ public class Relay implements RelayInterface {
 	@Override
 	public void change(boolean on) throws IOException {
 		final JsonNode relay = parent.getJSON("/relay/" + index + "?turn=" + (on ? "on" : "off"));
-		isOn = relay.get("ison").asBoolean();
+		isOn = relay.get("ison").booleanValue();
 		source = relay.get("source").asText("-");
 	}
 	

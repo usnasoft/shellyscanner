@@ -12,6 +12,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.blu.AbstractBluDevice;
+import it.usna.shellyscan.model.device.modules.DeviceModule;
 
 /**
  * Collection of BTHomeDevice related sensors and "Meters" implementation
@@ -19,7 +20,7 @@ import it.usna.shellyscan.model.device.blu.AbstractBluDevice;
 public class SensorsCollection extends Meters {
 	private final AbstractBluDevice blu;
 	private Sensor[] sensorsArray;
-	private Sensor[] inputSensors;
+	private DeviceModule[] moduleSensors;
 	private Type[] mTypes;
 	private EnumMap<Type, Sensor> measuresMap = new EnumMap<>(Type.class);
 	
@@ -32,17 +33,17 @@ public class SensorsCollection extends Meters {
 		JsonNode objects = blu.getJSON("/rpc/BTHomeDevice.GetKnownObjects?id=" + blu.getIndex()).path("objects");
 
 		ArrayList<Sensor> sensors = new ArrayList<>();
-		ArrayList<Sensor> inputs = new ArrayList<>();
+		ArrayList<Sensor> modules = new ArrayList<>();
 		Meters.Type lastT = null;
 		for(JsonNode sensorConf: objects) {
 			String comp = sensorConf.path("component").asText();
 			if(comp != null && comp.startsWith(AbstractBluDevice.SENSOR_KEY_PREFIX)) {
 				final int id = Integer.parseInt(comp.substring(13));
-				final Sensor s = new Sensor(id, sensorConf);
-				if(s.isInput()) {
-					inputs.add(s);
+				final Sensor sensor = Sensor.create(id, sensorConf); // create
+				if(sensor instanceof DeviceModule) {
+					modules.add(sensor);
 				} else {
-					Type t = s.getMeterType();
+					Type t = sensor.getMeterType();
 					if(t != null) {
 						if(t == Meters.Type.T) { // up to 5 temperature measures
 							if(lastT == null) {
@@ -57,15 +58,15 @@ public class SensorsCollection extends Meters {
 								t = lastT = Meters.Type.T4;
 							}
 						}
-						measuresMap.put(t, s);
+						measuresMap.put(t, sensor);
 					}
 				}
-				sensors.add(s);
+				sensors.add(sensor);
 			}
 		}
-		inputs.sort((s1, s2) -> s1.getIdx() - s2.getIdx()); // order by idx
+		modules.sort((s1, s2) -> s1.getIdx() - s2.getIdx()); // order by idx
 		sensorsArray = sensors.toArray(Sensor[]::new);
-		inputSensors = inputs.toArray(Sensor[]::new);
+		moduleSensors = modules.toArray(DeviceModule[]::new);
 		mTypes = measuresMap.keySet().toArray(Type[]::new);
 	}
 	
@@ -73,11 +74,11 @@ public class SensorsCollection extends Meters {
 		return sensorsArray;
 	}
 	
-	public Sensor[] getInputSensors() {
-		return inputSensors;
+	public DeviceModule[] getModuleSensors() {
+		return moduleSensors;
 	}
 	
-	public Sensor getSensor(int id) {
+	public Sensor getSensor(int id) { // HashMap<Integer, Sensor> ?
 		for(Sensor s: sensorsArray) {
 			if(s.getId() == id) {
 				return s;
@@ -98,7 +99,7 @@ public class SensorsCollection extends Meters {
 	
 	@Override
 	public String getName(Type t) {
-		return measuresMap.get(t).getName();
+		return measuresMap.get(t).getLabel();
 	}
 	
 //	public Sensor getSensor(int objID, int idx) {

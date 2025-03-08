@@ -18,20 +18,26 @@ import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 
 public class KVS {
 	private final AbstractG2Device device;
-	private ArrayList<KVItem> kvItems = new ArrayList<>();
+	private final ArrayList<KVItem> kvItems = new ArrayList<>();
 	
 	public KVS(AbstractG2Device device) throws IOException {
 		this.device = device;
 		refresh();
 	}
-	
+
 	public void refresh() throws IOException {
 		kvItems.clear();
-		JsonNode kvsItems = device.getJSON("/rpc/KVS.GetMany");
-		Iterator<Entry<String, JsonNode>> fields = kvsItems.path("items").fields();
-		while(fields.hasNext()) {
-			Entry<String, JsonNode> item = fields.next();
-			kvItems.add(new KVItem(item.getKey(), item.getValue().get("etag").asText(), item.getValue().get("value").asText()));
+		JsonNode kvsItems = device.getJSON("/rpc/KVS.GetMany").path("items"); // wall display: {"code":-114,"message":"Method KVS.GetMany failed: No such component"}
+		if(kvsItems.isArray()) { // fw >= 1.5.0
+			for(JsonNode item: kvsItems) {
+				kvItems.add(new KVItem(item.get("key").asText(), item.get("etag").asText(), item.get("value").asText()));
+			}
+		} else { // fw < 1.5.0
+			Iterator<Entry<String, JsonNode>> fields = kvsItems.fields();
+			while(fields.hasNext()) {
+				Entry<String, JsonNode> item = fields.next();
+				kvItems.add(new KVItem(item.getKey(), item.getValue().get("etag").asText(), item.getValue().get("value").asText()));
+			}
 		}
 	}
 	
@@ -49,13 +55,19 @@ public class KVS {
 	}
 	
 	public KVItem edit(int index, String value) throws IOException {
+		ObjectNode pars = JsonNodeFactory.instance.objectNode();
 		String key = kvItems.get(index).key;
-		JsonNode node = device.getJSON("/rpc/KVS.Set?key=" + URLEncoder.encode(key, StandardCharsets.UTF_8.name()) + "&value=" + URLEncoder.encode(value, StandardCharsets.UTF_8.name()));
+		pars.put("key", key);
+		pars.put("value", value);
+		JsonNode node = device.getJSON("KVS.Set", pars);
 		return kvItems.set(index, new KVItem(key, node.get("etag").asText(), value));
 	}
 	
 	public KVItem add(String key, String value) throws IOException {
-		JsonNode node = device.getJSON("/rpc/KVS.Set?key=" + URLEncoder.encode(key, StandardCharsets.UTF_8.name()) + "&value=" + URLEncoder.encode(value, StandardCharsets.UTF_8.name()));
+		ObjectNode pars = JsonNodeFactory.instance.objectNode();
+		pars.put("key", key);
+		pars.put("value", value);
+		JsonNode node = device.getJSON("KVS.Set", pars);
 		KVItem item = new KVItem(key, node.get("etag").asText(), value);
 		kvItems.add(item);
 		return item;
@@ -73,6 +85,7 @@ public class KVS {
 		}
 		return -1;
 	}
+
 	/**
 	 * Restore missing or modified values; call refresh() at the end if KVS must still be used
 	 * @param kvsMany
@@ -80,16 +93,30 @@ public class KVS {
 	 * @throws InterruptedException
 	 */
 	public void restoreKVS(JsonNode kvsMany, List<String> errors) throws InterruptedException {
-		Iterator<Entry<String, JsonNode>> fields = kvsMany.path("items").fields(); // wall display: {"code":-114,"message":"Method KVS.GetMany failed: No such component"}
-		while(fields.hasNext()) {
-			Entry<String, JsonNode> entry = fields.next();		
-			KVItem storedItem = new KVItem(entry.getKey(), entry.getValue().get("etag").asText(), entry.getValue().get("value").asText());
-			if(kvItems.contains(storedItem) == false) {
-				ObjectNode out = JsonNodeFactory.instance.objectNode();
-				out.put("key", storedItem.key);
-				out.put("value", storedItem.value);
-				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-				errors.add(device.postCommand("KVS.Set", out));
+		JsonNode kvsItems = kvsMany.path("items");
+		if(kvsItems.isArray()) { // fw >= 1.5.0
+			for(JsonNode item: kvsItems) {
+				KVItem storedItem = new KVItem(item.get("key").asText(), item.get("etag").asText(), item.get("value").asText());
+				if(kvItems.contains(storedItem) == false) {
+					ObjectNode out = JsonNodeFactory.instance.objectNode();
+					out.put("key", storedItem.key);
+					out.put("value", storedItem.value);
+					TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+					errors.add(device.postCommand("KVS.Set", out));
+				}
+			}
+		} else { // fw < 1.5.0
+			Iterator<Entry<String, JsonNode>> fields = kvsItems.fields();
+			while(fields.hasNext()) {
+				Entry<String, JsonNode> entry = fields.next();		
+				KVItem storedItem = new KVItem(entry.getKey(), entry.getValue().get("etag").asText(), entry.getValue().get("value").asText());
+				if(kvItems.contains(storedItem) == false) {
+					ObjectNode out = JsonNodeFactory.instance.objectNode();
+					out.put("key", storedItem.key);
+					out.put("value", storedItem.value);
+					TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+					errors.add(device.postCommand("KVS.Set", out));
+				}
 			}
 		}
 	}

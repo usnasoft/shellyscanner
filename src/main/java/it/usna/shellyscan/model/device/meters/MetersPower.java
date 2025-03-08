@@ -2,6 +2,10 @@ package it.usna.shellyscan.model.device.meters;
 
 import it.usna.shellyscan.model.device.Meters;
 
+/**
+ * For many gen 1 devices
+ * SUPPORTED_MEASURES = W
+ */
 public abstract class MetersPower extends Meters {
 	private final static Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Type.W};
 	

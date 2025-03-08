@@ -37,11 +37,6 @@ public class LightWhite implements WhiteInterface {
 		return minBrightness;
 	}
 
-	@Override
-	public int getMaxBrightness() {
-		return /*maxB*/100;
-	}
-
 	public void fillSettings(JsonNode settingsWhite) {
 		name = settingsWhite.get("name").asText("");
 //		JsonNode range = settingsWhite.get("range_map");
@@ -124,6 +119,6 @@ public class LightWhite implements WhiteInterface {
 	
 	@Override
 	public String toString() {
-		return getLabel() + ":" + brightness + (isOn ? "-ON" : "-OFF");
+		return getLabel() + ":" + brightness + (isOn ? "%-ON" : "%-OFF");
 	}
 }

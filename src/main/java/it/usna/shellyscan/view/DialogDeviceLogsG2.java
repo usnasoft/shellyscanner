@@ -42,7 +42,6 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
-import it.usna.shellyscan.Main;
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice.LogMode;
 import it.usna.shellyscan.model.device.blu.AbstractBluDevice;
@@ -87,7 +86,7 @@ public class DialogDeviceLogsG2 extends JDialog {
 		StyleConstants.setForeground(bluStyle, Color.BLUE);
 		textArea.setEditable(false);
 
-		final Action findAction = new AbstractAction(Main.LABELS.getString("btnFind")) {
+		final Action findAction = new AbstractAction(LABELS.getString("btnFind")) {
 			private static final long serialVersionUID = 1L;
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -100,7 +99,7 @@ public class DialogDeviceLogsG2 extends JDialog {
 		jButtonFind.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_F, MainView.SHORTCUT_KEY), "find_act");
 		jButtonFind.getActionMap().put("find_act", findAction);
 
-		JButton jButtonCopyAll = new JButton(Main.LABELS.getString("btnCopyAll"));
+		JButton jButtonCopyAll = new JButton(LABELS.getString("btnCopyAll"));
 		jButtonCopyAll.addActionListener(event -> {
 			final String cp = textArea.getText();
 			if (cp != null && cp.length() > 0) {
@@ -110,7 +109,7 @@ public class DialogDeviceLogsG2 extends JDialog {
 			}
 		});
 
-		JButton jButtonClose = new JButton(Main.LABELS.getString("dlgClose"));
+		JButton jButtonClose = new JButton(LABELS.getString("dlgClose"));
 		jButtonClose.addActionListener(event -> dispose());
 
 		buttonsPanel.add(jButtonFind);
@@ -120,13 +119,13 @@ public class DialogDeviceLogsG2 extends JDialog {
 		Component horizontalStrut = Box.createHorizontalStrut(25);
 		buttonsPanel.add(horizontalStrut);
 
-		JButton btnActivateLog = new JButton(Main.LABELS.getString("dlgLogG2Activate"));
+		JButton btnActivateLog = new JButton(LABELS.getString("dlgLogG2Activate"));
 		buttonsPanel.add(btnActivateLog);
 
-		JButton btnStopLog = new JButton(Main.LABELS.getString("dlgLogG2Deactivate"));
+		JButton btnStopLog = new JButton(LABELS.getString("dlgLogG2Deactivate"));
 		buttonsPanel.add(btnStopLog);
 
-		JButton btnsStopAppRefresh = new JButton(Main.LABELS.getString("dlgLogG2PauseRefresh"));
+		JButton btnsStopAppRefresh = new JButton(LABELS.getString("dlgLogG2PauseRefresh"));
 		buttonsPanel.add(btnsStopAppRefresh);
 		btnsStopAppRefresh.addActionListener(event -> {
 			devicesModel.pauseRefresh(modelIndex);
@@ -136,11 +135,11 @@ public class DialogDeviceLogsG2 extends JDialog {
 				}
 			}
 			try {
-				document.insertString(document.getLength(), ">>>> " + Main.APP_NAME + " refresh process stopped\n", bluStyle);
+				document.insertString(document.getLength(), ">>>> " + LABELS.getString("dlgLogG2PauseRefreshMsg") + "\n", bluStyle);
 			} catch (BadLocationException e1) {}
 		});
 
-		JLabel lblNewLabel = new JLabel(Main.LABELS.getString("dlgLogG2Level"));
+		JLabel lblNewLabel = new JLabel(LABELS.getString("dlgLogG2Level"));
 		buttonsPanel.add(lblNewLabel);
 
 		comboBox.addItem(LABELS.getString("dlgLogG2Lev0")); // error

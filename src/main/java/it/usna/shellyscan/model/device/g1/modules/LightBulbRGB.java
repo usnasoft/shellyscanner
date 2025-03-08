@@ -8,13 +8,15 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
+import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.g1.AbstractG1Device;
-import it.usna.shellyscan.model.device.modules.DeviceModule;
+import it.usna.shellyscan.model.device.modules.CCTInterface;
+import it.usna.shellyscan.model.device.modules.RGBInterface;
 
 /**
  * Used by RGBW Bulbs
  */
-public class LightBulbRGB implements DeviceModule {
+public class LightBulbRGB implements CCTInterface, RGBInterface {
 	private final AbstractG1Device parent;
 	private final int index;
 	private String name = "";
@@ -23,7 +25,6 @@ public class LightBulbRGB implements DeviceModule {
 	private int red; // 0..255
 	private int green; // 0..255
 	private int blue; // 0..255
-//	private int white; // White brightness, 0..255, applies in mode="color"
 	private int temp = 3000; //Color temperature in K, 3000..6500, applies in mode="white"
 	private int brightness; // Brightness, 0..100, applies in mode="white"
 	private int gain; // Gain for all channels, 0..100, applies in mode="color"
@@ -51,7 +52,6 @@ public class LightBulbRGB implements DeviceModule {
 			blue = statuslight.get("blue").intValue();
 			gain = statuslight.get("gain").intValue();
 //		} else {
-//			white = statuslight.get("white").asInt();
 			temp = statuslight.get("temp").intValue();
 			brightness = statuslight.get("brightness").intValue();
 //		}
@@ -61,32 +61,61 @@ public class LightBulbRGB implements DeviceModule {
 		return name;
 	}
 
+	@Override
 	public boolean toggle() throws IOException {
 		final JsonNode status = parent.getJSON("/light/" + index + "?turn=toggle");
 		fillStatus(status);
 		return isOn;
 	}
 	
+	@Override
+	public void change(boolean on) throws IOException {
+		final JsonNode status = parent.getJSON("/light/?turn=" + (on ? "on" : "off"));
+		fillStatus(status);
+	}
+	
+	@Override
 	public void setColor(int r, int g, int b/*, int w*/) throws IOException {
 		final JsonNode status = parent.getJSON("/light/" + index + "?red=" + r + "&green=" + g + "&blue=" + b);
 		fillStatus(status);
 	}
 	
+	@Override
 	public int getRed() {
 		return red;
 	}
 	
+	@Override
 	public int getGreen() {
 		return green;
 	}
 	
+	@Override
 	public int getBlue() {
 		return blue;
 	}
 	
-//	public int getWhite() {
-//		return white;
-//	}
+	@Override
+	// CCTInterface
+	public int getMinBrightness() {
+		return 0;
+	}
+	
+	@Override
+	// CCTInterface
+	public int getMinTemperature() {
+		return MIN_TEMP;
+	}
+
+	@Override
+	public boolean isInputOn() {
+		return false;
+	}
+
+	@Override
+	public ShellyAbstractDevice getParent() {
+		return parent;
+	}
 	
 	public boolean isColorMode() {
 		return modeColor;
@@ -100,6 +129,7 @@ public class LightBulbRGB implements DeviceModule {
 		modeColor = "color".equals(setting.get("mode").asText());
 	}
 
+	@Override
 	public void setBrightness(int b) throws IOException {
 		final JsonNode status = parent.getJSON("/light/" + index + "?brightness=" + b);
 		fillStatus(status);
@@ -110,31 +140,33 @@ public class LightBulbRGB implements DeviceModule {
 		fillStatus(status);
 	}
 	
-	public void setTemp(int t) throws JsonProcessingException, IOException {
+	@Override
+	public void setTemperature(int t) throws JsonProcessingException, IOException {
 		final JsonNode status = parent.getJSON("/light/" + index + "?temp=" + t);
 		fillStatus(status);
 	}
 	
+	@Override
 	public boolean isOn() {
 		return isOn;
 	}
 	
+	@Override
 	public int getBrightness() {
 		return brightness;
 	}
 	
+	@Override
 	public int getGain() {
 		return gain;
 	}
 	
-	public int getTemp() {
+	@Override
+	public int getTemperature() {
 		return temp;
 	}
 	
-//	public void refresh() throws IOException {
-//		fillStatus(parent.getJSON("/light/" + index));
-//	}
-	
+	@Override
 	public String getLastSource() {
 		return source;
 	}

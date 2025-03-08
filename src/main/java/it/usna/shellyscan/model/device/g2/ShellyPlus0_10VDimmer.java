@@ -96,10 +96,10 @@ public class ShellyPlus0_10VDimmer extends AbstractG2Device implements /*Interna
 		return meters;
 	}
 	
-	@Override
-	public DeviceModule getModule(int index) {
-		return light;
-	}
+//	@Override
+//	public DeviceModule getModule(int index) {
+//		return light;
+//	}
 
 	@Override
 	public DeviceModule[] getModules() {

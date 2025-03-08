@@ -58,11 +58,6 @@ public class ShellyMini1PMG3 extends AbstractG3Device implements ModulesHolder, 
 	public String getTypeID() {
 		return ID;
 	}
-	
-	@Override
-	public Relay getModule(int index) {
-		return relay;
-	}
 
 	@Override
 	public Relay[] getModules() {

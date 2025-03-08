@@ -71,10 +71,10 @@ public class Button1 extends AbstractBatteryG1Device implements ModulesHolder {
 		return meters;
 	}
 	
-	@Override
-	public DeviceModule getModule(int index) {
-		return actions.getInput(0);
-	}
+//	@Override
+//	public DeviceModule getModule(int index) {
+//		return actions.getInput(0);
+//	}
 
 	@Override
 	public DeviceModule[] getModules() {

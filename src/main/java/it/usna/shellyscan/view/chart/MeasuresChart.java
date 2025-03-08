@@ -282,12 +282,12 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 				} else if(xAxis.isAutoRange() == false || yAxis.isAutoRange() == false) { // zoom (drag)
 					if(scrollBar.isVisible() == false) {
 						scrollBar.setVisible(true);
-						adjustScrollBar();
 					}
 					if(btnPause.isSelected() == false) {
 						btnPause.setSelected(true);
 						chartPanel.setMouseWheelEnabled(true);
 					}
+					adjustScrollBar();
 				}
 			}
 		});
@@ -314,7 +314,11 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 		} , KeyStroke.getKeyStroke(KeyEvent.VK_R, MainView.SHORTCUT_KEY), JComponent.WHEN_IN_FOCUSED_WINDOW);
 		getRootPane().registerKeyboardAction(e -> btnPause.doClick(), KeyStroke.getKeyStroke(KeyEvent.VK_P, MainView.SHORTCUT_KEY), JComponent.WHEN_IN_FOCUSED_WINDOW);
 		getRootPane().registerKeyboardAction(e -> chartPanel.doCopy(), KeyStroke.getKeyStroke(KeyEvent.VK_C, MainView.SHORTCUT_KEY), JComponent.WHEN_IN_FOCUSED_WINDOW);
-
+		
+//		yAxis.addChangeListener(e -> { //zoom (mouse wheel) update
+//			adjustScrollBar();
+//		});
+		
 		model.addListener(this);
 
 		setSize(920, 480);

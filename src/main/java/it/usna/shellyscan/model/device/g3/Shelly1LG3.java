@@ -1,0 +1,87 @@
+package it.usna.shellyscan.model.device.g3;
+
+import java.io.IOException;
+import java.net.InetAddress;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
+
+import com.fasterxml.jackson.databind.JsonNode;
+
+import it.usna.shellyscan.model.Devices;
+import it.usna.shellyscan.model.device.InternalTmpHolder;
+import it.usna.shellyscan.model.device.ModulesHolder;
+import it.usna.shellyscan.model.device.g2.modules.Input;
+import it.usna.shellyscan.model.device.g2.modules.Relay;
+import it.usna.shellyscan.model.device.modules.DeviceModule;
+
+/**
+ * Shelly 2L G3 model 
+ * @author usna
+ */
+public class Shelly1LG3 extends AbstractG3Device implements ModulesHolder, InternalTmpHolder {
+//	private final static Logger LOG = LoggerFactory.getLogger(Shelly2LG3.class);
+//	public final static String ID = "S1LG3";
+//	public final static String ID = "xLG3";
+	public final static String ID = "???";
+	private Relay relay0 = new Relay(this, 0);
+	private Relay[] relaysArray = new Relay[] {relay0};
+	private float internalTmp;
+
+	public Shelly1LG3(InetAddress address, int port, String hostname) {
+		super(address, port, hostname);
+	}
+
+	@Override
+	public String getTypeName() {
+		return "Shelly 2L G3";
+	}
+
+	@Override
+	public String getTypeID() {
+		return ID;
+	}
+	
+	@Override
+	public int getModulesCount() {
+		return 2/*modeRelay ? 2 : 1*/;
+	}
+
+	@Override
+	public DeviceModule[] getModules() {
+		return relaysArray /*modeRelay ? relaysArray : rollersArray*/;
+	}
+
+	@Override
+	public float getInternalTmp() {
+		return internalTmp;
+	}
+
+	@Override
+	protected void fillSettings(JsonNode configuration) throws IOException {
+		super.fillSettings(configuration);
+		relay0.fillSettings(configuration.get("switch:0"), configuration.get("input:0"));
+	}
+
+	@Override
+	protected void fillStatus(JsonNode status) throws IOException {
+		super.fillStatus(status);
+		JsonNode switchStatus0 = status.get("switch:0");
+		relay0.fillStatus(switchStatus0, status.get("input:0"));
+
+		internalTmp = switchStatus0.path("temperature").path("tC").floatValue();
+	}
+
+	@Override
+	protected void restore(Map<String, JsonNode> backupJsons, List<String> errors) throws InterruptedException {
+		JsonNode configuration = backupJsons.get("Shelly.GetConfig.json");
+		errors.add(Input.restore(this,configuration, 0));
+		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+		errors.add(relay0.restore(configuration));
+	}
+
+	@Override
+	public String toString() {
+		return super.toString() + " Relay0: " + relay0;
+	}
+}

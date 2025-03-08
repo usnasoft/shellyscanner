@@ -187,8 +187,8 @@ public class KVSPanel extends JPanel {
 	@Override
 	public void setVisible(boolean v) {
 		super.setVisible(v);
-		if (v) {
-			SwingUtilities.invokeLater(() -> {
+		SwingUtilities.invokeLater(() -> {
+			if (v) {
 				table.columnsWidthAdapt();
 				TableColumn col0 = table.getColumnModel().getColumn(0);
 				col0.setPreferredWidth(col0.getPreferredWidth() * 120 / 100);
@@ -201,7 +201,11 @@ public class KVSPanel extends JPanel {
 				} else {
 					table.setAutoResizeMode(ExTooltipTable.AUTO_RESIZE_OFF);
 				}
-			});
-		}
+			} else {
+				if(table.isEditing()) {
+					table.getCellEditor().stopCellEditing();
+				}
+			}
+		});
 	}
 }

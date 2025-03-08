@@ -77,8 +77,11 @@ public class RestoreAction extends UsnaSelectedAction {
 					
 					for(Map.Entry<RestoreMsg, Object> e: test.entrySet()) {
 						if(e.getKey().getType() == RestoreMsg.Type.ERROR) {
-							if(e.getValue() != null) {
-								Msg.errorMsg(mainView, String.format(LABELS.getString(CHECK_MSG_PREFIX + e.getKey().name()), e.getValue()));
+							Object val = e.getValue();
+							if(val != null) {
+								Stream<Object> args = val instanceof Object[] arr ? Stream.of(arr) : Stream.of(val);
+								args = args.map(v -> LABELS.containsKey("lbl_" + device.getTypeID() + v) ? LABELS.getString("lbl_" + device.getTypeID() + v) : v);
+								Msg.errorMsg(mainView, String.format(LABELS.getString(CHECK_MSG_PREFIX + e.getKey().name()), args.toArray()));
 							} else {
 								Msg.errorMsg(mainView, LABELS.getString(CHECK_MSG_PREFIX + e.getKey().name()));
 							}

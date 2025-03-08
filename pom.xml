@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>it.usna</groupId>
 	<artifactId>shellyscan</artifactId>
-	<version>1.2.1</version>
+	<version>1.2.2beta</version>
 	<name>Shelly Scanner</name>
 	<packaging>jar</packaging>
 
@@ -34,7 +34,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-dependency-plugin</artifactId>
-				<version>3.7.1</version>
+				<version>3.8.1</version>
 				<executions>
 					<execution>
 						<id>copy-dependencies</id>
@@ -89,7 +89,7 @@
 		<dependency>
 			<groupId>it.usna</groupId>
 			<artifactId>usnalib</artifactId>
-			<version>1.3.0-SNAPSHOT</version>
+			<version>1.3.1-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
@@ -106,6 +106,7 @@
 			<groupId>org.jmdns</groupId>
 			<artifactId>jmdns</artifactId>
 			<version>3.6.0</version>
+			<!--<version>3.6.1-SNAPSHOT</version>-->
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>

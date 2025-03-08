@@ -12,16 +12,23 @@ import javax.swing.JDialog;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import it.usna.shellyscan.controller.UsnaAction;
 import it.usna.shellyscan.model.Devices;
+import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
 import it.usna.shellyscan.model.device.g2.AbstractBatteryG2Device;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
+import it.usna.shellyscan.view.CheckList;
 import it.usna.shellyscan.view.util.Msg;
 import it.usna.shellyscan.view.util.UtilMiscellaneous;
 
 public class DialogDeviceScripts extends JDialog {
+	private final static Logger LOG = LoggerFactory.getLogger(CheckList.class);
 	private static final long serialVersionUID = 1L;
 	public final static String FILE_EXTENSION = "js";
+	private JPanel kvsPanel;
 
 	public DialogDeviceScripts(final Frame owner, Devices model, int modelIndex) {
 		super(owner, false);
@@ -52,16 +59,18 @@ public class DialogDeviceScripts extends JDialog {
 				JPanel scriptsPanel = new ScriptsPanel(this, model, modelIndex);
 				tabs.addTab(LABELS.getString("lblScriptsTab"), scriptsPanel);
 				try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e) {}
-			} catch (/*IO*/Exception e) {
-				Msg.errorMsg(owner, e);
+			} catch (/*IO*/Exception e) { // XT1 (and ...?) do not support scripts
+//				Msg.errorMsg(owner, e);
+				LOG.debug("ScriptsPanel", e);
 			}
 		}
 
 		try {
-			JPanel kvsPanel = new KVSPanel(device);
+			kvsPanel = new KVSPanel(device);
 			tabs.addTab(LABELS.getString("lblKVSTab"), kvsPanel);
 		} catch (/*IO*/Exception e) {
-			Msg.errorMsg(owner, e);
+			//Msg.errorMsg(owner, e);
+			LOG.debug("KVSPanel", e);
 		}
 
 		if(tabs.getComponentCount() > 0) {
@@ -70,12 +79,16 @@ public class DialogDeviceScripts extends JDialog {
 			setLocationRelativeTo(owner);
 			setVisible(true);
 		} else {
+			Msg.errorMsg(owner, LABELS.getString(device.getStatus() == Status.OFF_LINE ? "Status-OFFLINE" : "msgScriptKVSNotSupported"));
 			dispose();
 		}
 	}
 	
 	@Override
 	public void dispose() {
+		if(kvsPanel != null) {
+			kvsPanel.setVisible(false);
+		}
 		super.dispose();
 		firePropertyChange("S_CLOSE", null, null);
 	}

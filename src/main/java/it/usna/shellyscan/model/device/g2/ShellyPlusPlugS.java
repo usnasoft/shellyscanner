@@ -55,10 +55,10 @@ public class ShellyPlusPlugS extends AbstractG2Device implements ModulesHolder, 
 		return ID;
 	}
 	
-	@Override
-	public Relay getModule(int index) {
-		return relay;
-	}
+//	@Override
+//	public Relay getModule(int index) {
+//		return relay;
+//	}
 
 	@Override
 	public Relay[] getModules() {

@@ -71,10 +71,10 @@ public class WallDisplay extends AbstractG2Device implements ModulesHolder {
 		return ID;
 	}
 	
-	@Override
-	public DeviceModule getModule(int index) {
-		return relay != null ? relay : thermostat;
-	}
+//	@Override
+//	public DeviceModule getModule(int index) {
+//		return relay != null ? relay : thermostat;
+//	}
 
 	@Override
 	public DeviceModule[] getModules() {

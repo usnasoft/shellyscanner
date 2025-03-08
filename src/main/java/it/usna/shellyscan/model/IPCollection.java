@@ -64,14 +64,14 @@ public class IPCollection implements Iterable<InetAddress> {
 		}
 	}
 	
-	public static void main(String ...strings) {
-		IPCollection c = new IPCollection();
-		c.add(new byte[] {(byte)192, (byte)168, (byte)1, (byte)0}, 10, 20);
-		c.add(new byte[] {(byte)192, (byte)168, (byte)2, (byte)0}, 15, 18);
-		c.add("192.168.3", 30, 31);
-		System.out.println(c);
-		for(InetAddress a: c) {
-			System.out.println(a);
-		}
-	}
+//	public static void main(String ...strings) {
+//		IPCollection c = new IPCollection();
+//		c.add(new byte[] {(byte)192, (byte)168, (byte)1, (byte)0}, 10, 20);
+//		c.add(new byte[] {(byte)192, (byte)168, (byte)2, (byte)0}, 15, 18);
+//		c.add("192.168.3", 30, 31);
+//		System.out.println(c);
+//		for(InetAddress a: c) {
+//			System.out.println(a);
+//		}
+//	}
 }

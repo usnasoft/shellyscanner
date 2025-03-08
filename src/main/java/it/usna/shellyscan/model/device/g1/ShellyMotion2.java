@@ -7,16 +7,19 @@ import java.util.List;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import it.usna.shellyscan.model.device.Meters;
-import it.usna.shellyscan.model.device.MotionSensor;
+import it.usna.shellyscan.model.device.ModulesHolder;
+import it.usna.shellyscan.model.device.modules.DeviceModule;
+import it.usna.shellyscan.model.device.modules.MotionInterface;
 
-public class ShellyMotion2 extends AbstractG1Device implements MotionSensor {
+public class ShellyMotion2 extends AbstractG1Device implements ModulesHolder {
 	public final static String ID = "SHMOS-02";
 	private final static Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.T, Meters.Type.L, Meters.Type.BAT};
 	private int lux;
 	private float temp;
-	private Meters[] meters;
 	private boolean motion;
 	protected int bat;
+	private final Meters[] meters;
+	private final MotionInterface[] sensors;
 
 	public ShellyMotion2(InetAddress address, int port, String hostname) {
 		super(address, port, hostname);
@@ -40,6 +43,20 @@ public class ShellyMotion2 extends AbstractG1Device implements MotionSensor {
 					}
 				}
 		};
+		
+		sensors = new MotionInterface[] {
+				new MotionInterface() {
+					@Override
+					public boolean motion() {
+						return motion;
+					}
+					
+					@Override
+					public String toString() {
+						return "motion: " + motion; 
+					}
+				}
+		};
 	}
 	
 	@Override
@@ -51,23 +68,28 @@ public class ShellyMotion2 extends AbstractG1Device implements MotionSensor {
 	public String getTypeID() {
 		return ID;
 	}
-	
-	@Override
-	public boolean motion() {
-		return motion;
-	}
 
 	@Override
 	public Meters[] getMeters() {
 		return meters;
 	}
 	
+//	@Override
+//	public DeviceModule getModule(int index) {
+//		return sensors[0];
+//	}
+
+	@Override
+	public DeviceModule[] getModules() {
+		return sensors;
+	}
+	
 	@Override
 	protected void fillStatus(JsonNode status) throws IOException {
 		super.fillStatus(status);
-		motion = status.get("sensor").get("motion").asBoolean();
-		bat = status.get("bat").get("value").asInt();
-		lux = status.get("lux").get("value").asInt();
+		motion = status.get("sensor").get("motion").booleanValue();
+		bat = status.get("bat").get("value").intValue();
+		lux = status.get("lux").get("value").intValue();
 		temp = status.get("tmp").get("value").floatValue();
 	}
 

@@ -130,10 +130,10 @@ public class Shelly1PM extends AbstractG1Device implements ModulesHolder, Intern
 		return ID;
 	}
 	
-	@Override
-	public Relay getModule(int index) {
-		return relay;
-	}
+//	@Override
+//	public Relay getModule(int index) {
+//		return relay;
+//	}
 
 	@Override
 	public Relay[] getModules() {

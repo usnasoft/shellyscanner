@@ -290,6 +290,7 @@ selection subtraction (ctrl+shift)
  e.g. java -jar C:\Users\antonio\shellyscan-1.2.0.jar -graphs V -ipscan 192.168.1.203-203
  
 1.2.1
+Support for Plug S Gen3
 chacklist multiselection
 checklis - extender: "-" non applicabile, X non attivo
 checklis - roaming editabile; for G2 interval 60s - 0s
@@ -300,9 +301,28 @@ improved Shelly Pro 3EM support
 optional fahrenheit temperature unit
 consecutive fw updates progress fixed
 
+1.2.2
+Shelly Pro Dimmer 2PM
+3EM-63 G3
+Shelly Pro RGBWW PM
+Shelly Dimmer Gen3
+Shelly BLU Motion
+Ogemray SW40
+Shelly gen4 generic
+G2+ AP retore ssid (fw 1.5.0)
+fix G2+ did not restore roaming parameters on some circumstances
+executor.schedule(() -> errorsReconnect(), 25, TimeUnit.SECONDS);
+/rpc/BLE.CloudRelay.ListInfos
+checklist - semantica BLE: Solo dispositivi di seconda generazione o generazione successiva; se il bluetooth è attivo appare un numero corrispondente ai dispositivi connessi (<span class="text-danger">0</span> in rosso; in caso di non utilizzo è preferibile spegnere il BLE), appare una <span class="text-success">✗</span> verde altrimenti.
+checklist - semantica Extender checklist
+KVS.GetMany compatibility with fw 1.5.x
+windows installer
+
 ---
 // TODO
-// it.usna.shellyscan.model.Devices.ghostsReconnect() try to reconnect also "generic" with error
+// batch restore senza Wi-Fi, AP, e restricted. Il restore viene chiamato con apposito flag (si seleziona la cartella dove saranno contenuti i file con nome standard)
+// rgb_xx panel listener (?)
+// checklist AP ssid != mac (fw 1.5.0 stable)
 // wall display restore profiles and rules (/rpc/Thermostat.Schedule.ListRules?id=0&profile_id=1)
 // portare il modello sulla tabella per semplificare il calcolo dei tooltip (e delle icone di stato)
 // Xmod1 sganciare bottone se detatched (?)
@@ -313,7 +333,12 @@ consecutive fw updates progress fixed
 // gestione "reading": se stato online leggo uptime, se uptime diverso dal precedente memorizzo il timestamp else Quando il time stamp corrente - memorizzato > intervallo * 3 modifico lo stato - si, ma dove?
 // InetAddressAndPort potrebbe essere dentro ogni device e mantenere direttamente i byte (sarebbe estremamente ottimizzato); tuttavia attenderei l'introduzione di IPv6
 // color weel https://stackoverflow.com/questions/36252778/how-to-draw-a-rgb-color-wheel-in-java
+// in case of new bulbs (render of single CCT - bulbs as CCT/RGB)
+// https://smarthomecircle.com/connect-xiaomi-temperature-and-humidity-bluetooth-sensor-to-home-assistant
+// addon dimmer gen3 (currently not supported by fw)
 
 -------java 21-------
 ThreadFactory factory = Thread.ofVirtual().factory();
 ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(0, factory);
+
+it.usna.shellyscan.model.device.g2.AbstractG2Device.backup(File) script xt1

@@ -12,6 +12,7 @@ import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.InternalTmpHolder;
 import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.ModulesHolder;
+import it.usna.shellyscan.model.device.RestoreMsg;
 import it.usna.shellyscan.model.device.g2.modules.Input;
 import it.usna.shellyscan.model.device.g2.modules.LightWhite;
 import it.usna.shellyscan.model.device.meters.MetersWVI;
@@ -23,6 +24,7 @@ import it.usna.shellyscan.model.device.modules.DeviceModule;
  */
 public class ShellyProDimmer1 extends AbstractProDevice implements InternalTmpHolder, ModulesHolder {
 	public final static String ID = "ProDimmerx";
+	public final static String MODEL = "SPDM-001PE01EU";
 	private float internalTmp;
 	private float power;
 	private float voltage;
@@ -52,7 +54,7 @@ public class ShellyProDimmer1 extends AbstractProDevice implements InternalTmpHo
 	
 	@Override
 	public String getTypeName() {
-		return "Shelly Pro Dimmer 1";
+		return "Shelly Pro Dimmer 1PM";
 	}
 	
 	@Override
@@ -70,10 +72,10 @@ public class ShellyProDimmer1 extends AbstractProDevice implements InternalTmpHo
 		return meters;
 	}
 
-	@Override
-	public DeviceModule getModule(int index) {
-		return light;
-	}
+//	@Override
+//	public DeviceModule getModule(int index) {
+//		return light;
+//	}
 
 	@Override
 	public DeviceModule[] getModules() {
@@ -95,6 +97,14 @@ public class ShellyProDimmer1 extends AbstractProDevice implements InternalTmpHo
 		voltage = lightStatus.get("voltage").floatValue();
 		current = lightStatus.get("current").floatValue();
 		light.fillStatus(lightStatus, status.get("input:0"));
+	}
+	
+	@Override
+	protected void restoreCheck(Map<String, JsonNode> backupJsons, Map<RestoreMsg, Object> resp) {
+		JsonNode devInfo = backupJsons.get("Shelly.GetDeviceInfo.json");
+		if(MODEL.equals(devInfo.get("model").textValue()) == false) {
+			resp.put(RestoreMsg.ERR_RESTORE_MODEL, null);
+		}
 	}
 
 	@Override

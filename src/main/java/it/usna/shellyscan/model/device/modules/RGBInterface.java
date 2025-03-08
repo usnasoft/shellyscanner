@@ -2,6 +2,8 @@ package it.usna.shellyscan.model.device.modules;
 
 import java.io.IOException;
 
+import it.usna.shellyscan.model.device.ShellyAbstractDevice;
+
 public interface RGBInterface extends DeviceModule {
 	boolean toggle() throws IOException;
 	
@@ -22,4 +24,6 @@ public interface RGBInterface extends DeviceModule {
 	int getGain();
 	
 	boolean isInputOn();
+	
+	ShellyAbstractDevice getParent();
 }

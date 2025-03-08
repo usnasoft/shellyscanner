@@ -136,7 +136,6 @@ public class LightRGBW implements RGBWInterface {
 			while(pars.hasNext()) {
 				command += "&" + AbstractG1Device.jsonEntryToURLPar(pars.next());
 			}
-//			System.out.println(command);
 			return parent.sendCommand(command);
 		}
 		return null;
@@ -148,7 +147,12 @@ public class LightRGBW implements RGBWInterface {
 	}
 	
 	@Override
+	public AbstractG1Device getParent() {
+		return parent;
+	}
+	
+	@Override
 	public String toString() {
-		return getLabel() + /*"-" + gain +*/ (isOn ? "-ON" : "-OFF");
+		return getLabel() + (isOn ? "-ON" : "-OFF");
 	}
 }

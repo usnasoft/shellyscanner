@@ -45,6 +45,10 @@ public class GhostDevice extends ShellyAbstractDevice {
 		this.battery = battery;
 		this.note = note;
 		this.keyNote = keyNote;
+		
+//		if(BTHomeDevice.GENERATION.equals(gen)) {
+//			addressAndPort = ;
+//		}
 	}
 
 	@Override

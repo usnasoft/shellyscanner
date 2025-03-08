@@ -40,17 +40,16 @@ public class ShellyPlusRGBW extends AbstractG2Device implements ModulesHolder, I
 		}
 	};
 	public final static String ID = "PlusRGBWPM";
+	public final static String MODEL = "SNDC-0D4P10WW";
 	private Profile profile;
 	private float internalTmp;
 	private float power0, power1, power2, power3; // if calibrated (white)
 	private float voltage0, voltage1, voltage2, voltage3;
 	private float current0, current1, current2, current3; // if calibrated (white)
 	private LightWhite light0, light1, light2, light3;
-	private LightWhite[] lights;
 	private LightRGB rgbLight;
-	private LightRGB[] rgbs;
 	private LightRGBW rgbwLight;
-	private LightRGBW[] rgbws;
+	private DeviceModule[] commands;
 	
 	private Meters meters0, meters1, meters2, meters3;
 	private Meters[] meters;
@@ -143,33 +142,17 @@ public class ShellyPlusRGBW extends AbstractG2Device implements ModulesHolder, I
 
 	@Override
 	public int getModulesCount() {
-		if(profile == Profile.LIGHT) {
-			return 4;
-		} else {
-			return 1;
-		}
+		return commands.length;
 	}
 
-	@Override
-	public DeviceModule getModule(int index) {
-		if(profile != Profile.LIGHT) {
-			return lights[index];
-		} else if(profile == Profile.RGBW) {
-			return rgbwLight;
-		} else {
-			return rgbLight;
-		}
-	}
+//	@Override
+//	public DeviceModule getModule(int index) {
+//		return commands[index];
+//	}
 
 	@Override
 	public DeviceModule[] getModules() {
-		if(profile == Profile.LIGHT) {
-			return lights;
-		} else if(profile == Profile.RGBW) {
-			return rgbws;
-		} else {
-			return rgbs;
-		}
+		return commands;
 	}
 
 	@Override
@@ -193,7 +176,7 @@ public class ShellyPlusRGBW extends AbstractG2Device implements ModulesHolder, I
 				light1 = new LightWhite(this, 1);
 				light2 = new LightWhite(this, 2);
 				light3 = new LightWhite(this, 3);
-				lights = new LightWhite[] {light0, light1, light2, light3};
+				commands = new LightWhite[] {light0, light1, light2, light3};
 				rgbLight = null;
 				meters = (addOn == null || addOn.getTypes().length == 0) ? new Meters[] {meters0, meters1, meters2, meters3} : new Meters[] {meters0, meters1, meters2, meters3, addOn};
 			}
@@ -205,7 +188,7 @@ public class ShellyPlusRGBW extends AbstractG2Device implements ModulesHolder, I
 			if(profile != Profile.RGB) {
 				profile = Profile.RGB;
 				rgbLight = new LightRGB(this, 0);
-				rgbs = new LightRGB[] {rgbLight};
+				commands = new LightRGB[] {rgbLight};
 				light0 =  light1 =  light2 = light3 = null;
 				rgbwLight = null;
 				meters = (addOn == null || addOn.getTypes().length == 0) ? new Meters[] {meters0} : new Meters[] {meters0, addOn};
@@ -215,7 +198,7 @@ public class ShellyPlusRGBW extends AbstractG2Device implements ModulesHolder, I
 			if(profile != Profile.RGBW) {
 				profile = Profile.RGBW;
 				rgbwLight = new LightRGBW(this, 0);
-				rgbws = new LightRGBW[] {rgbwLight};
+				commands = new LightRGBW[] {rgbwLight};
 				light0 =  light1 =  light2 = light3 = null;
 				rgbLight = null;
 				meters = (addOn == null || addOn.getTypes().length == 0) ? new Meters[] {meters0} : new Meters[] {meters0, addOn};
@@ -292,7 +275,7 @@ public class ShellyPlusRGBW extends AbstractG2Device implements ModulesHolder, I
 	public void restoreCheck(Map<String, JsonNode> backupJsons, Map<RestoreMsg, Object> res) throws IOException {
 		JsonNode devInfo = backupJsons.get("Shelly.GetDeviceInfo.json");
 		if(profile.code.equals(devInfo.get("profile").asText()) == false) {
-			res.put(RestoreMsg.ERR_RESTORE_MODE_COLOR, profile.code);
+			res.put(RestoreMsg.ERR_RESTORE_PROFILE, new String[] {profile.code, devInfo.get("profile").asText()});
 		}
 		try {
 			configure(); // maybe useless in case of mDNS use since you must reboot before -> on reboot the device registers again on mDNS ad execute a reload
@@ -331,7 +314,7 @@ public class ShellyPlusRGBW extends AbstractG2Device implements ModulesHolder, I
 			}
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 		} else {
-			errors.add(RestoreMsg.ERR_RESTORE_MODE_COLOR.name());
+			errors.add(RestoreMsg.ERR_RESTORE_PROFILE.name());
 		}
 		
 		final boolean hf = configuration.get("plusrgbwpm").get("hf_mode").booleanValue();

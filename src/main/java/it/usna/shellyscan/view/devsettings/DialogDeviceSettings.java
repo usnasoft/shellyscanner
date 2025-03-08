@@ -14,7 +14,6 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.SwingUtilities;
-import javax.swing.WindowConstants;
 
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.Devices.EventType;
@@ -60,7 +59,7 @@ public class DialogDeviceSettings extends JDialog implements UsnaEventListener<D
 	}
 
 	private void init(final Window owner, Devices model, int[] devicesInd, int defaultPanel) {
-		setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		this.model = model;
 		this.devicesInd = devicesInd;
 		model.addListener(this);
@@ -73,7 +72,6 @@ public class DialogDeviceSettings extends JDialog implements UsnaEventListener<D
 
 		BorderLayout borderLayout = (BorderLayout) getContentPane().getLayout();
 		borderLayout.setVgap(5);
-		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 
 		this.setSize(610, 420);
 		setLocationRelativeTo(owner);

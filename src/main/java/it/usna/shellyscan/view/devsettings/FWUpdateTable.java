@@ -31,12 +31,13 @@ public class FWUpdateTable extends ExTooltipTable {
 		super(tm);
 		this.fwPanel = fwPanel;
 		getTableHeader().setReorderingAllowed(false);
-		((JCheckBox) getDefaultRenderer(Boolean.class)).setOpaque(true);
-		((JCheckBox) getDefaultRenderer(Boolean.class)).setHorizontalAlignment(JCheckBox.LEFT);
 		TableCellRenderer fwRendered = new FWCellRendered();
-		getColumnModel().getColumn(COL_STABLE).setCellRenderer(fwRendered);
-		getColumnModel().getColumn(COL_BETA).setCellRenderer(fwRendered);
-		columnModel.getColumn(COL_STATUS).setMaxWidth(DevicesTable.ONLINE_BULLET.getIconWidth() + 4);
+		columnModel.getColumn(COL_STABLE).setCellRenderer(fwRendered);
+		columnModel.getColumn(COL_BETA).setCellRenderer(fwRendered);
+		columnModel.getColumn(COL_STATUS).setMaxWidth(DevicesTable.ONLINE_BULLET.getIconWidth() + 2);
+		columnModel.getColumn(COL_STATUS).setMinWidth(DevicesTable.ONLINE_BULLET.getIconWidth() + 2);
+		// On update COL_STABLE value class is String for the updating row, if this is the first row ... see UsnaTableModel.getColumnClass(...))
+		columnModel.getColumn(COL_STABLE).setCellEditor(getDefaultEditor(Boolean.class));
 		activateSingleCellStringCopy();
 	}
 
@@ -44,20 +45,20 @@ public class FWUpdateTable extends ExTooltipTable {
 	public boolean isCellEditable(final int row, final int column) {
 		return getValueAt(row, column) instanceof Boolean;
 	}
-
+	
 	@Override
 	public Component prepareEditor(TableCellEditor editor, int row, int column) {
-		JCheckBox comp = (JCheckBox)super.prepareEditor(editor, row, column);
+		JCheckBox editorComponent = (JCheckBox)super.prepareEditor(editor, row, column);
 		FirmwareManager fw = fwPanel.getFirmwareManager(convertRowIndexToModel(row));
 		if(fw != null) {
-			comp.setText(FirmwareManager.getShortVersion(column == COL_STABLE ? fw.newStable() : fw.newBeta()));
-		} else if(column == COL_STABLE) { // non info -> try update
-			comp.setText(Main.LABELS.getString("labelUpdateToAny"));
+			editorComponent.setText(FirmwareManager.getShortVersion(column == COL_STABLE ? fw.newStable() : fw.newBeta()));
+		} else if(column == COL_STABLE) { // no info -> try update
+			editorComponent.setText(Main.LABELS.getString("labelUpdateToAny"));
 		}
-		comp.setBackground(getSelectionBackground());
-		comp.setForeground(getSelectionForeground());
-		comp.setHorizontalAlignment(JLabel.LEFT);
-		return comp;
+		editorComponent.setBackground(getSelectionBackground());
+		editorComponent.setForeground(getSelectionForeground());
+		editorComponent.setHorizontalAlignment(JLabel.LEFT);
+		return editorComponent;
 	}
 
 	@Override
@@ -73,21 +74,6 @@ public class FWUpdateTable extends ExTooltipTable {
 		}
 		fwPanel.countSelection();
 	}
-
-//	@Override
-//	public String getToolTipText(final MouseEvent evt) {
-//		if(this.isVisible()) {
-//			final int row, col;
-//			final Object value;
-//			if ((row = rowAtPoint(evt.getPoint())) >= 0 && (col = columnAtPoint(evt.getPoint())) >= 0 && (value = getValueAt(row, col)) != null &&
-//					(col == COL_CURRENT || col == COL_STABLE || col == COL_BETA)) {
-//				return cellValueAsString(value, row, col);
-//			} else {
-//				return super.getToolTipText(evt);
-//			}
-//		}
-//		return null;
-//	}
 	
 	@Override
 	protected String getToolTipText(Object value, boolean cellTooSmall, int row, int col) {
@@ -124,6 +110,12 @@ public class FWUpdateTable extends ExTooltipTable {
 	}
 
 	private class FWCellRendered implements TableCellRenderer {
+		private FWCellRendered() {
+			JCheckBox booleanRenderer = (JCheckBox)getDefaultRenderer(Boolean.class);
+			booleanRenderer.setOpaque(true);
+			booleanRenderer.setHorizontalAlignment(JCheckBox.LEFT);	
+		}
+		
 		@Override
 		public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
 			if(value == null || value instanceof Boolean) {
@@ -136,7 +128,7 @@ public class FWUpdateTable extends ExTooltipTable {
 					FirmwareManager fw = fwPanel.getFirmwareManager(convertRowIndexToModel(row));
 					if(fw != null) {
 						comp.setText(FirmwareManager.getShortVersion(column == COL_STABLE ? fw.newStable() : fw.newBeta()));
-					} else if(column == COL_STABLE) { // non info -> try update
+					} else if(column == COL_STABLE) { // no info -> try update
 						comp.setText(Main.LABELS.getString("labelUpdateToAny"));
 					}
 				}

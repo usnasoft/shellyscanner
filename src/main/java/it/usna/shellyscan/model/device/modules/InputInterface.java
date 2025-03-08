@@ -4,10 +4,7 @@ import java.io.IOException;
 import java.util.Collection;
 
 public interface InputInterface extends DeviceModule {
-
 	boolean isInputOn();
-	
-	/* Actions/webhooks */
 	
 	int getRegisteredEventsCount();
 	
