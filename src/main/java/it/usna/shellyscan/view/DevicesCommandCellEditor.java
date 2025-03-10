@@ -335,8 +335,8 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 		rollerSouthPanel.add(rollerPerc, BorderLayout.CENTER);
 		JPanel rollerButtonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 3, 0));
 		rollerSouthPanel.add(rollerButtonPanel, BorderLayout.EAST);
-		JButton rollerButtonUp = new JButton(new ImageIcon(getClass().getResource("/images/Arrow16up.png")));
-		JButton rollerButtonDown = new JButton(new ImageIcon(getClass().getResource("/images/Arrow16down.png")));
+		JButton rollerButtonUp = new JButton(DevicesCommandCellRenderer.UP_IMG);
+		JButton rollerButtonDown = new JButton(DevicesCommandCellRenderer.DOWN_IMG);
 		JButton rollerButtonStop = new JButton(new ImageIcon(getClass().getResource("/images/PlayerStop.png")));
 		rollerButtonUp.setBorder(BorderFactory.createEmptyBorder());
 		rollerButtonStop.setBorder(BorderFactory.createEmptyBorder());
@@ -401,9 +401,9 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 		JPanel trvButtonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 3, 0));
 		trvButtonPanel.setBorder(BorderFactory.createEmptyBorder(1, 0, 0, 0));
 		trvButtonPanel.setOpaque(false);
-		JButton trvButtonUp = new JButton(new ImageIcon(getClass().getResource("/images/Arrow16up.png")));
+		JButton trvButtonUp = new JButton(DevicesCommandCellRenderer.UP_IMG);
 		trvButtonUp.setBorder(BorderFactory.createEmptyBorder());
-		JButton trvButtonDown = new JButton(new ImageIcon(getClass().getResource("/images/Arrow16down.png")));
+		JButton trvButtonDown = new JButton(DevicesCommandCellRenderer.DOWN_IMG);
 		trvButtonDown.setBorder(BorderFactory.createEmptyBorder());
 		trvButtonPanel.add(trvButtonUp);
 		trvButtonPanel.add(trvButtonDown);
@@ -451,9 +451,9 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 		JPanel thermButtonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 3, 0));
 		thermButtonPanel.setBorder(BorderFactory.createEmptyBorder(1, 0, 0, 0));
 		thermButtonPanel.setOpaque(false);
-		JButton thermButtonUp = new JButton(new ImageIcon(getClass().getResource("/images/Arrow16up.png")));
+		JButton thermButtonUp = new JButton(DevicesCommandCellRenderer.UP_IMG);
 		thermButtonUp.setBorder(BorderFactory.createEmptyBorder());
-		JButton thermButtonDown = new JButton(new ImageIcon(getClass().getResource("/images/Arrow16down.png")));
+		JButton thermButtonDown = new JButton(DevicesCommandCellRenderer.DOWN_IMG);
 		thermButtonDown.setBorder(BorderFactory.createEmptyBorder());
 		thermActiveButton.setBorder(DevicesCommandCellRenderer.BUTTON_BORDERS_SMALLER);
 		thermButtonPanel.add(thermActiveButton);

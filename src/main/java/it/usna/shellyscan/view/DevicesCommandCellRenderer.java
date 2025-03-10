@@ -40,6 +40,8 @@ import it.usna.swing.VerticalFlowLayout;
 public class DevicesCommandCellRenderer implements TableCellRenderer {
 	// Generic
 	final static ImageIcon EDIT_IMG = new ImageIcon(DevicesCommandCellRenderer.class.getResource("/images/Write16.png"));
+	final static ImageIcon UP_IMG = new ImageIcon(DevicesCommandCellRenderer.class.getResource("/images/Arrow16up.png"));
+	final static ImageIcon DOWN_IMG = new ImageIcon(DevicesCommandCellRenderer.class.getResource("/images/Arrow16down.png"));
 	private JButton onOffButton0 = new JButton();
 	private JLabel label0 = new JLabel();
 	private JButton editDialogButton = new JButton(EDIT_IMG);
@@ -181,8 +183,8 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 		rollerSouthPanel.add(rollerPerc, BorderLayout.CENTER);
 		rollerPerc.setPreferredSize(new Dimension(20, rollerPerc.getPreferredSize().height));
 		rollerSouthPanel.add(rollerButtonPanel, BorderLayout.EAST);
-		JButton rollerButtonUp = new JButton(new ImageIcon(getClass().getResource("/images/Arrow16up.png")));
-		JButton rollerButtonDown = new JButton(new ImageIcon(getClass().getResource("/images/Arrow16down.png")));
+		JButton rollerButtonUp = new JButton(UP_IMG);
+		JButton rollerButtonDown = new JButton(DOWN_IMG);
 		JButton rollerButtonStop = new JButton(new ImageIcon(getClass().getResource("/images/PlayerStop.png")));
 		rollerButtonUp.setBorder(BorderFactory.createEmptyBorder());
 		rollerButtonStop.setBorder(BorderFactory.createEmptyBorder());
@@ -201,9 +203,9 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 		JPanel trvButtonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 3, 0));
 		trvButtonPanel.setBorder(BorderFactory.createEmptyBorder(1, 0, 0, 0));
 		trvButtonPanel.setOpaque(false);
-		JButton trvButtonUp = new JButton(new ImageIcon(getClass().getResource("/images/Arrow16up.png")));
+		JButton trvButtonUp = new JButton(UP_IMG);
 		trvButtonUp.setBorder(BorderFactory.createEmptyBorder());
-		JButton trvButtonDown = new JButton(new ImageIcon(getClass().getResource("/images/Arrow16down.png")));
+		JButton trvButtonDown = new JButton(DOWN_IMG);
 		trvButtonDown.setBorder(BorderFactory.createEmptyBorder());
 		trvButtonPanel.add(trvButtonUp);
 		trvButtonPanel.add(trvButtonDown);
@@ -216,9 +218,9 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 		JPanel thermButtonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 3, 0));
 		thermButtonPanel.setBorder(BorderFactory.createEmptyBorder(1, 0, 0, 0));
 		thermButtonPanel.setOpaque(false);
-		JButton thermButtonUp = new JButton(new ImageIcon(getClass().getResource("/images/Arrow16up.png")));
+		JButton thermButtonUp = new JButton(UP_IMG);
 		thermButtonUp.setBorder(BorderFactory.createEmptyBorder());
-		JButton thermButtonDown = new JButton(new ImageIcon(getClass().getResource("/images/Arrow16down.png")));
+		JButton thermButtonDown = new JButton(DOWN_IMG);
 		thermButtonDown.setBorder(BorderFactory.createEmptyBorder());
 		thermActiveButton.setBorder(BUTTON_BORDERS_SMALLER);
 		thermButtonPanel.add(thermActiveButton);
@@ -337,7 +339,7 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 //				}
 //			}
 //			ret = stackedPanel;
-		} else if(value instanceof ThermostatG1 thermostat) { // TRV
+		} else if(value instanceof ThermostatG1 thermostat) { // TRV gen1
 			trvSlider.setValue((int)(thermostat.getTargetTemp() * 2));
 			trvProfileLabel.setText(thermostat.getCurrentProfile() + " " + thermostat.getTargetTemp() + "°C");
 			trvProfileLabel.setEnabled(thermostat.isScheduleActive());
