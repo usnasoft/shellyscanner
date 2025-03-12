@@ -305,9 +305,11 @@ consecutive fw updates progress fixed
 Shelly Pro Dimmer 2PM
 3EM-63 G3
 Shelly Pro RGBWW PM
+Shelly Pro Dual Cover (partial)
 Shelly Dimmer Gen3
 Shelly BLU Motion
 Ogemray SW40
+LinkedGo ST1820 - LinkedGo ST802 minimal support (measures only)
 Shelly gen4 generic
 G2+ AP retore ssid (fw 1.5.0)
 fix G2+ did not restore roaming parameters on some circumstances

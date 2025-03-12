@@ -77,6 +77,7 @@ import it.usna.shellyscan.model.device.g2.ShellyPro3EM;
 import it.usna.shellyscan.model.device.g2.ShellyPro4PM;
 import it.usna.shellyscan.model.device.g2.ShellyProDimmer1;
 import it.usna.shellyscan.model.device.g2.ShellyProDimmer2;
+import it.usna.shellyscan.model.device.g2.ShellyProDualCover;
 import it.usna.shellyscan.model.device.g2.ShellyProEM50;
 import it.usna.shellyscan.model.device.g2.ShellyProRGBWW;
 import it.usna.shellyscan.model.device.g2.ShellyWallDimmer;
@@ -84,6 +85,8 @@ import it.usna.shellyscan.model.device.g2.WallDisplay;
 import it.usna.shellyscan.model.device.g2.modules.LoginManagerG2;
 import it.usna.shellyscan.model.device.g3.AbstractG3Device;
 import it.usna.shellyscan.model.device.g3.PbSOgemraySW40;
+import it.usna.shellyscan.model.device.g3.PbSXT1St1820;
+import it.usna.shellyscan.model.device.g3.PbSXT1St802;
 import it.usna.shellyscan.model.device.g3.Shelly0_10VPMG3;
 import it.usna.shellyscan.model.device.g3.Shelly1G3;
 import it.usna.shellyscan.model.device.g3.Shelly1PMG3;
@@ -239,8 +242,8 @@ public class DevicesFactory {
 				case ShellyPro2PM.ID -> new ShellyPro2PM(address, port, name);
 				case ShellyPro2.ID -> new ShellyPro2(address, port, name);
 				case ShellyPro3.ID -> new ShellyPro3(address, port, name);
-				case ShellyPro4PM.ID -> new ShellyPro4PM(address, port, name);
-				case ShellyProDimmer1.ID -> info.get("model").asText().equals(ShellyProDimmer2.MODEL) ? new ShellyProDimmer2(address, port, name) : new ShellyProDimmer1(address, port, name);
+				case ShellyPro4PM.ID -> ShellyProDualCover.MODEL.equals(info.get("model").asText()) ? new ShellyProDualCover(address, port, name) : new ShellyPro4PM(address, port, name);
+				case ShellyProDimmer1.ID -> ShellyProDimmer2.MODEL.equals(info.get("model").asText()) ? new ShellyProDimmer2(address, port, name) : new ShellyProDimmer1(address, port, name);
 				case ShellyProEM50.ID -> new ShellyProEM50(address, port, name);
 				case ShellyPro3EM.ID -> new ShellyPro3EM(address, port, name);
 				case ShellyProRGBWW.ID -> new ShellyProRGBWW(address, port, name);
@@ -288,12 +291,14 @@ public class DevicesFactory {
 			default -> new ShellyG3Unmanaged(address, port, name);
 			// Powered by Shelly
 			case XT1.ID -> {
-//				String model = info.get("model").asText();
-//				if(PbSXT1St1820.MODEL.equals(model)) {
-//					yield new PbSXT1St1820(address, port, name);
-//				} else {
+				String type = info.path("svc0").path("type").asText();
+				if(PbSXT1St1820.SVC0_TYPE.equals(type)) {
+					yield new PbSXT1St1820(address, port, name);
+				} else if(PbSXT1St802.SVC0_TYPE.equals(type)) {
+					yield new PbSXT1St802(address, port, name);
+				} else {
 					yield new XT1(address, port, name);
-//				}
+				}
 			}
 			case PbSOgemraySW40.ID -> new PbSOgemraySW40(address, port, name); // QA
 			};

@@ -42,6 +42,7 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 	final static ImageIcon EDIT_IMG = new ImageIcon(DevicesCommandCellRenderer.class.getResource("/images/Write16.png"));
 	final static ImageIcon UP_IMG = new ImageIcon(DevicesCommandCellRenderer.class.getResource("/images/Arrow16up.png"));
 	final static ImageIcon DOWN_IMG = new ImageIcon(DevicesCommandCellRenderer.class.getResource("/images/Arrow16down.png"));
+	final static ImageIcon STOP_IMG = new ImageIcon(DevicesCommandCellRenderer.class.getResource("/images/PlayerStop.png"));
 	private JButton onOffButton0 = new JButton();
 	private JLabel label0 = new JLabel();
 	private JButton editDialogButton = new JButton(EDIT_IMG);
@@ -74,9 +75,9 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 	private JLabel colorRGBWhiteLabel = new JLabel();
 	
 	// Roller
-	private JPanel rollerPanel = new JPanel(new BorderLayout());
-	private JLabel rollerLabel = new JLabel();
-	private JSlider rollerPerc = new JSlider(0, 100);
+//	private JPanel rollerPanel = new JPanel(new BorderLayout());
+//	private JLabel rollerLabel = new JLabel();
+//	private JSlider rollerPerc = new JSlider(0, 100);
 	
 	// Thermostat G1 (TRV)
 	private JPanel trvPanel = new JPanel(new BorderLayout());
@@ -177,24 +178,24 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 		colorRGBWPanel.add(colorRGBWSlidersPanel, BorderLayout.SOUTH);
 		
 		// Roller
-		JPanel rollerSouthPanel = new JPanel(new BorderLayout());
-		JPanel rollerButtonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 3, 0));
-		rollerPanel.add(rollerLabel, BorderLayout.CENTER);
-		rollerSouthPanel.add(rollerPerc, BorderLayout.CENTER);
-		rollerPerc.setPreferredSize(new Dimension(20, rollerPerc.getPreferredSize().height));
-		rollerSouthPanel.add(rollerButtonPanel, BorderLayout.EAST);
-		JButton rollerButtonUp = new JButton(UP_IMG);
-		JButton rollerButtonDown = new JButton(DOWN_IMG);
-		JButton rollerButtonStop = new JButton(new ImageIcon(getClass().getResource("/images/PlayerStop.png")));
-		rollerButtonUp.setBorder(BorderFactory.createEmptyBorder());
-		rollerButtonStop.setBorder(BorderFactory.createEmptyBorder());
-		rollerButtonDown.setBorder(BorderFactory.createEmptyBorder());
-		rollerButtonPanel.add(rollerButtonUp);
-		rollerButtonPanel.add(rollerButtonStop);
-		rollerButtonPanel.add(rollerButtonDown);
-		rollerSouthPanel.setOpaque(false);
-		rollerButtonPanel.setOpaque(false);
-		rollerPanel.add(rollerSouthPanel, BorderLayout.SOUTH);
+//		JPanel rollerSouthPanel = new JPanel(new BorderLayout());
+//		JPanel rollerButtonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 3, 0));
+//		rollerPanel.add(rollerLabel, BorderLayout.CENTER);
+//		rollerSouthPanel.add(rollerPerc, BorderLayout.CENTER);
+//		rollerPerc.setPreferredSize(new Dimension(20, rollerPerc.getPreferredSize().height));
+//		rollerSouthPanel.add(rollerButtonPanel, BorderLayout.EAST);
+//		JButton rollerButtonUp = new JButton(UP_IMG);
+//		JButton rollerButtonDown = new JButton(DOWN_IMG);
+//		JButton rollerButtonStop = new JButton(new ImageIcon(getClass().getResource("/images/PlayerStop.png")));
+//		rollerButtonUp.setBorder(BorderFactory.createEmptyBorder());
+//		rollerButtonStop.setBorder(BorderFactory.createEmptyBorder());
+//		rollerButtonDown.setBorder(BorderFactory.createEmptyBorder());
+//		rollerButtonPanel.add(rollerButtonUp);
+//		rollerButtonPanel.add(rollerButtonStop);
+//		rollerButtonPanel.add(rollerButtonDown);
+//		rollerSouthPanel.setOpaque(false);
+//		rollerButtonPanel.setOpaque(false);
+//		rollerPanel.add(rollerSouthPanel, BorderLayout.SOUTH);
 
 		// Thermostat G1 (TRV)
 		trvPanel.add(trvProfileLabel, BorderLayout.CENTER);
@@ -246,19 +247,24 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 			}
 			ret = stackedPanel;
 		} else if(value instanceof RollerInterface[] rollers) { // 2.5 ...
-			RollerInterface roller = rollers[0]; // multiple rollers devices currently not supported
-			String labelText;
-			if(roller.isCalibrated()) {
-				labelText = roller.getLabel() + " " + roller.getPosition() + "%";
-				rollerPerc.setVisible(true);
-			} else {
-				labelText = roller.getLabel();
-				rollerPerc.setVisible(false);
+//			RollerInterface roller = rollers[0]; // multiple rollers devices currently not supported
+//			String labelText;
+//			if(roller.isCalibrated()) {
+//				labelText = roller.getLabel() + " " + roller.getPosition() + "%";
+//				rollerPerc.setVisible(true);
+//			} else {
+//				labelText = roller.getLabel();
+//				rollerPerc.setVisible(false);
+//			}
+//			rollerPerc.setValue(roller.getPosition());
+//			rollerLabel.setText(labelText);
+//			rollerLabel.setForeground(foregroundColor);
+//			ret = rollerPanel;
+			stackedPanel.removeAll();
+			for(int i = 0; i < rollers.length; i++) { // 1, 1PM, EM, 2.5 ...
+				stackedPanel.add(getRollerPanel(rollers[i], foregroundColor, i == 0));
 			}
-			rollerPerc.setValue(roller.getPosition());
-			rollerLabel.setText(labelText);
-			rollerLabel.setForeground(foregroundColor);
-			ret = rollerPanel;
+			ret = stackedPanel;
 		} else if(value instanceof LightBulbRGB[] lights) { // RGBW Bulbs
 			LightBulbRGB light = lights[0]; // multiple bulbs devices currently not supported
 			if(light.isOn()) {
@@ -383,9 +389,10 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 				} else if(module instanceof RGBInterface rgb) {
 					stackedPanel.add(getRGBSyntheticPanel(rgb, foregroundColor, i == 0, i == modArray.length - 1));
 				} else if(module instanceof MotionInterface pir) {
-					label0.setText(LABELS.getString(pir.motion() ? "lableStatusMotion_true" : "lableStatusMotion_false")); // one only per device
-					label0.setForeground(foregroundColor);
-					stackedPanel.add(label0);
+					JLabel motionLabel = (i == 0) ? label0 : new JLabel();
+					motionLabel.setText(LABELS.getString(pir.motion() ? "lableStatusMotion_true" : "lableStatusMotion_false"));
+					motionLabel.setForeground(foregroundColor);
+					stackedPanel.add(motionLabel);
 				}
 			}
 			ret = stackedPanel;
@@ -398,17 +405,20 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 //		} catch(Exception e) {e.printStackTrace(); return null;}
 	}
 
-	private JPanel getRelayPanel(RelayInterface rel, final Color foregroundColor, boolean useButton0) {
+	private JPanel getRelayPanel(RelayInterface rel, final Color foregroundColor, boolean ind0) {
 		JPanel relayPanel = new JPanel(new BorderLayout());
-		JLabel relayLabel = new JLabel(rel.getLabel());
-		relayLabel.setForeground(foregroundColor);
+		final JLabel relayLabel;// = new JLabel(rel.getLabel());
 		final JButton button;
-		if(useButton0) {
+		if(ind0) {
+			relayLabel = label0;
+			relayLabel.setText(rel.getLabel());
 			button = onOffButton0;
 		} else {
+			relayLabel = new JLabel(rel.getLabel());
 			button = new JButton();
 			button.setBorder(BUTTON_BORDERS);
 		}
+		relayLabel.setForeground(foregroundColor);
 		JPanel relayButtonPanel = new JPanel(new VerticalFlowLayout(VerticalFlowLayout.CENTER, VerticalFlowLayout.CENTER, 0, 0));
 		relayButtonPanel.setOpaque(false);
 		relayButtonPanel.add(button);
@@ -425,6 +435,40 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 		}
 		button.setForeground(rel.isInputOn() ? BUTTON_ON_FG_COLOR : null);
 		return relayPanel;
+	}
+	
+	private JPanel getRollerPanel(RollerInterface roller, final Color foregroundColor, boolean ind0) {
+		JPanel rollerPanel = new JPanel(new BorderLayout());
+		rollerPanel.setOpaque(false);
+		JLabel rollerLabel = (ind0) ? label0 : new JLabel();
+		
+		JPanel rollerSouthPanel = new JPanel(new BorderLayout());
+		rollerSouthPanel.setOpaque(false);
+		JPanel rollerButtonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 3, 0));
+		rollerButtonPanel.setOpaque(false);
+		rollerPanel.add(rollerLabel, BorderLayout.CENTER);
+		rollerSouthPanel.add(rollerButtonPanel, BorderLayout.EAST);
+		JButton rollerButtonUp = new JButton(UP_IMG);
+		JButton rollerButtonDown = new JButton(DOWN_IMG);
+		JButton rollerButtonStop = new JButton(STOP_IMG);
+		rollerButtonUp.setBorder(BorderFactory.createEmptyBorder());
+		rollerButtonStop.setBorder(BorderFactory.createEmptyBorder());
+		rollerButtonDown.setBorder(BorderFactory.createEmptyBorder());
+		rollerButtonPanel.add(rollerButtonUp);
+		rollerButtonPanel.add(rollerButtonStop);
+		rollerButtonPanel.add(rollerButtonDown);
+		rollerPanel.add(rollerSouthPanel, BorderLayout.SOUTH);
+		
+		if(roller.isCalibrated()) {
+			rollerLabel.setText(roller.getLabel() + " " + roller.getPosition() + "%");
+			JSlider rollerSlider = new JSlider(0, 100, roller.getPosition());
+			rollerSlider.setPreferredSize(new Dimension(20, rollerSlider.getPreferredSize().height));
+			rollerSouthPanel.add(rollerSlider, BorderLayout.CENTER);
+		} else {
+			rollerLabel.setText(roller.getLabel());
+		}
+		rollerLabel.setForeground(foregroundColor);
+		return rollerPanel;
 	}
 	
 	private JPanel getInputPanel(InputInterface inp, final Color foregroundColor) {
