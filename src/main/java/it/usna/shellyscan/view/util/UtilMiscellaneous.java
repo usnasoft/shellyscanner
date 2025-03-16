@@ -56,4 +56,14 @@ public class UtilMiscellaneous {
 	public static String celsiusToFahrenheit(float celsius) {
 		return formatterN2.format(celsius * 1.8f + 32f);
 	}
+	
+	public static int clamp(int value, int min, int max) {
+		if(value >= max) {
+			return max;
+		}
+		if(value <= min) {
+			return min;
+		}
+		return value;
+	}
 }

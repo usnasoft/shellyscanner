@@ -8,7 +8,9 @@ import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.modules.CCTInterface;
 
 /**
+ * CCTInterface implementation for gen 2+ devices.
  * Used by Pro RGBWW
+ * @author usna
  */
 public class LightCCT implements CCTInterface {
 	private final AbstractG2Device parent;
@@ -20,6 +22,8 @@ public class LightCCT implements CCTInterface {
 	private String source;
 	private boolean inputIsOn;
 	private final int minBrightness;
+	private int mintemperature = 2700;
+	private int maxtemperature = 6500;
 	
 	public LightCCT(AbstractG2Device parent, int index) {
 		this.parent = parent;
@@ -40,6 +44,9 @@ public class LightCCT implements CCTInterface {
 
 	public void fillSettings(JsonNode settingsCt) {
 		name = settingsCt.get("name").asText("");
+		final JsonNode ctRange = settingsCt.get("ct_range");
+		mintemperature = ctRange.get(0).asInt();
+		maxtemperature = ctRange.get(1).asInt();
 	}
 	
 	public void fillStatus(JsonNode statusCt) {
@@ -104,6 +111,16 @@ public class LightCCT implements CCTInterface {
 	@Override
 	public int getTemperature() {
 		return temperature;
+	}
+	
+	@Override
+	public int getMinTemperature() {
+		return mintemperature;
+	}
+	
+	@Override
+	public int getMaxTemperature() {
+		return maxtemperature;
 	}
 	
 	@Override

@@ -22,6 +22,7 @@ import org.slf4j.LoggerFactory;
 import it.usna.shellyscan.controller.UsnaToggleAction;
 import it.usna.shellyscan.model.device.modules.CCTInterface;
 import it.usna.shellyscan.view.util.Kelvin2RGB;
+import it.usna.shellyscan.view.util.UtilMiscellaneous;
 import it.usna.swing.VerticalFlowLayout;
 
 public class CCTPanel extends LightPanel {
@@ -107,15 +108,15 @@ public class CCTPanel extends LightPanel {
 		k4500.setBorder(BorderFactory.createEmptyBorder(2, 7, 2, 7));
 		k6000.setBorder(BorderFactory.createEmptyBorder(2, 7, 2, 7));
 		k3000.addActionListener(e -> {
-			temperatureSlider.setValue(3000); // slider listener will call the device
+			temperatureSlider.setValue(UtilMiscellaneous.clamp(3000, light.getMinTemperature(), light.getMaxTemperature())); // slider listener will call the device
 			adjust();
 		});
 		k4500.addActionListener(e -> {
-			temperatureSlider.setValue(4500); // slider listener will call the device
+			temperatureSlider.setValue(UtilMiscellaneous.clamp(4500, light.getMinTemperature(), light.getMaxTemperature())); // slider listener will call the device
 			adjust();
 		});
 		k6000.addActionListener(e -> {
-			temperatureSlider.setValue(6000); // slider listener will call the device
+			temperatureSlider.setValue(UtilMiscellaneous.clamp(6000, light.getMinTemperature(), light.getMaxTemperature())); // slider listener will call the device
 			adjust();
 		});
 		kbuttonsPanel.add(k3000);

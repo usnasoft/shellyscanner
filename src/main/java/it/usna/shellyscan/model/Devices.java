@@ -620,7 +620,7 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 		LOG.debug("Model closed");
 	}
 
-	private class MDNSListener implements ServiceListener {
+	private final class MDNSListener implements ServiceListener {
 		@Override
 		public void serviceAdded(ServiceEvent event) {
 			if(LOG.isTraceEnabled()) {

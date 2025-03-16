@@ -20,12 +20,11 @@ import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
 import it.usna.shellyscan.model.device.g2.AbstractBatteryG2Device;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
-import it.usna.shellyscan.view.CheckList;
 import it.usna.shellyscan.view.util.Msg;
 import it.usna.shellyscan.view.util.UtilMiscellaneous;
 
 public class DialogDeviceScripts extends JDialog {
-	private final static Logger LOG = LoggerFactory.getLogger(CheckList.class);
+	private final static Logger LOG = LoggerFactory.getLogger(DialogDeviceScripts.class);
 	private static final long serialVersionUID = 1L;
 	public final static String FILE_EXTENSION = "js";
 	private JPanel kvsPanel;
