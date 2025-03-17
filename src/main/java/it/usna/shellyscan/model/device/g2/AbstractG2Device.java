@@ -109,13 +109,13 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 		JsonNode udp;
 		JsonNode debugNode = sysNode.path("debug");
 		if(debugNode.path("websocket").path("enable").booleanValue()) {
-			this.debugEnabled = LogMode.SOCKET;
+			this.debugMode = LogMode.SOCKET;
 		} else if(debugNode.path("mqtt").path("enable").booleanValue()) {
-			this.debugEnabled = LogMode.MQTT;
+			this.debugMode = LogMode.MQTT;
 		} else if((udp = debugNode.get("udp")) != null && udp.get("addr").isNull() == false) {  // no "udp" on wall display ???
-			this.debugEnabled = LogMode.UDP;
+			this.debugMode = LogMode.UDP;
 		} else {
-			this.debugEnabled = LogMode.NO;
+			this.debugMode = LogMode.NONE;
 		}
 
 		this.cloudEnabled = config.path("cloud").path("enable").booleanValue();
@@ -164,12 +164,13 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 		return postCommand("Sys.SetConfig", "{\"config\":{\"device\":{\"eco_mode\":" + eco + "}}}") == null;
 	}
 
+	@Override
 	public boolean setDebugMode(LogMode mode, boolean enable) {
 		if(mode == LogMode.SOCKET) {
 			return postCommand("Sys.SetConfig", "{\"config\": {\"debug\":{\"websocket\":{\"enable\": " + (enable ? "true" : "false") + "}}}}") == null;
 		} else if(mode == LogMode.MQTT) {
 			return postCommand("Sys.SetConfig", "{\"config\": {\"debug\":{\"mqtt\":{\"enable\": " + (enable ? "true" : "false") + "}}}}") == null;
-		} else if(mode == LogMode.NO) {
+		} else if(mode == LogMode.NONE) {
 			return postCommand("Sys.SetConfig", "{\"config\": {\"debug\":{\"websocket\":{\"enable\": false}, \"mqtt\":{\"enable\": false}, \"udp\":{\"addr\": null}} } }") == null;
 		} else {
 			return false;

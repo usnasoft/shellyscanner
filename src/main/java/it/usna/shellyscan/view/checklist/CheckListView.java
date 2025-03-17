@@ -135,7 +135,7 @@ public class CheckListView extends JDialog implements UsnaEventListener<Devices.
 		Action logsAction = new UsnaSelectedAction(this, table, "setLogs_action", "setLogs_action_tooletip", null, "/images/Document2_24.png", localRow -> { // AbstractG1Device
 			Boolean logs = (Boolean) tModel.getValueAt(localRow, CheckListTable.COL_LOGS);
 			AbstractG1Device d = (AbstractG1Device) getLocalDevice(localRow);
-			d.setDebugMode(logs ? LogMode.NO : LogMode.FILE);
+			d.setDebugMode(LogMode.FILE, !logs);
 			try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e1) {}
 			updateRow(d, localRow);
 		});
@@ -498,7 +498,7 @@ public class CheckListView extends JDialog implements UsnaEventListener<Devices.
 	private static void g1Row(AbstractG1Device d, JsonNode settings, Object[] tRow) {
 		Boolean eco = boolVal(settings.path("eco_mode_enabled"));
 		Boolean ledOff = boolVal(settings.path("led_status_disable"));
-		Object debug = d.getDebugMode() == LogMode.UNDEFINED ? "-" : d.getDebugMode() != LogMode.NO;
+		Object debug = d.getDebugMode() == LogMode.UNDEFINED ? "-" : d.getDebugMode() != LogMode.NONE;
 		String roaming;
 		if (settings.path("ap_roaming").isMissingNode()) {
 			roaming = "-";

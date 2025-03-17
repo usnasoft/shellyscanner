@@ -39,7 +39,7 @@ public abstract class ShellyAbstractDevice {
 	protected boolean cloudConnected;
 	protected boolean mqttEnabled;
 	protected boolean mqttConnected;
-	protected LogMode debugEnabled = LogMode.NO;
+	protected LogMode debugMode = LogMode.NONE;
 	protected int rssi;
 	protected String ssid;
 	protected int uptime;
@@ -52,7 +52,7 @@ public abstract class ShellyAbstractDevice {
 	protected final ObjectMapper jsonMapper = new ObjectMapper();
 	
 	public enum Status {ON_LINE, OFF_LINE, NOT_LOOGGED, READING, ERROR, GHOST}; // GHOST not yet detected (in store)
-	public enum LogMode {NO, FILE, MQTT, SOCKET, UDP, UNDEFINED};
+	public enum LogMode {NONE, FILE, MQTT, SOCKET, UDP, UNDEFINED};
 
 	protected ShellyAbstractDevice(InetAddress address, int port, String hostname) {
 		addressAndPort = new InetAddressAndPort(address, port);
@@ -164,6 +164,12 @@ public abstract class ShellyAbstractDevice {
 		return cloudEnabled;
 	}
 	
+	public abstract boolean setDebugMode(LogMode mode, boolean enable);
+	
+	public LogMode getDebugMode() {
+		return debugMode;
+	}
+	
 	public abstract String setCloudEnabled(boolean enable);
 
 	public boolean getCloudConnected() {
@@ -184,10 +190,6 @@ public abstract class ShellyAbstractDevice {
 	
 	public String getSSID() {
 		return ssid;
-	}
-
-	public LogMode getDebugMode() {
-		return debugEnabled;
 	}
 
 	public int getUptime() {

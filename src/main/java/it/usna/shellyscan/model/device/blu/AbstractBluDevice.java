@@ -145,6 +145,11 @@ public abstract class AbstractBluDevice extends ShellyAbstractDevice {
 	}
 	
 	@Override
+	public boolean setDebugMode(LogMode mode, boolean enable) {
+		throw new UnsupportedOperationException();
+	}
+	
+	@Override
 	public String setCloudEnabled(boolean enable) {
 		throw new UnsupportedOperationException();
 	}
