@@ -200,7 +200,7 @@ public class DevicesFactory {
 			d.init(httpClient, info);
 		} catch(IOException e) {
 			if("Status-401".equals(e.getMessage()) == false) {
-				LOG.warn("create - init", e);
+				LOG.warn("create - init {}:{}, address, port", e);
 			}
 		} catch(RuntimeException e) {
 			LOG.error("create - init {}:{}", address, port, e);
@@ -257,7 +257,7 @@ public class DevicesFactory {
 			d.init(httpClient, wsClient, info);
 		} catch(IOException e) {
 			if("Status-401".equals(e.getMessage()) == false) {
-				LOG.warn("create - init", e);
+				LOG.warn("create - init {}:{}", address, port, e);
 			}
 		} catch(RuntimeException e) {
 			LOG.error("create - init {}:{}", address, port, e);
@@ -310,7 +310,7 @@ public class DevicesFactory {
 			d.init(httpClient, wsClient, info);
 		} catch(IOException e) {
 			if("Status-401".equals(e.getMessage()) == false) {
-				LOG.warn("create - init", e);
+				LOG.warn("create - init {}:{}", address, port, e);
 			}
 		} catch(RuntimeException e) {
 			LOG.error("create - init {}:{}", address, port, e);
@@ -336,7 +336,7 @@ public class DevicesFactory {
 			d.init(httpClient, wsClient, info);
 		} catch(IOException e) {
 			if("Status-401".equals(e.getMessage()) == false) {
-				LOG.warn("create - init", e);
+				LOG.warn("create - init {}:{}", address, port, e);
 			}
 		} catch(RuntimeException e) {
 			LOG.error("create - init {}:{}", address, port, e);

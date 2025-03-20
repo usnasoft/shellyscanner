@@ -58,6 +58,7 @@ import it.usna.shellyscan.controller.ExportCSVAction;
 import it.usna.shellyscan.controller.RestoreAction;
 import it.usna.shellyscan.controller.SelectionAction;
 import it.usna.shellyscan.controller.UsnaAction;
+import it.usna.shellyscan.controller.UsnaDropdownAction;
 import it.usna.shellyscan.controller.UsnaSelectedAction;
 import it.usna.shellyscan.controller.UsnaToggleAction;
 import it.usna.shellyscan.model.Devices;
@@ -196,9 +197,12 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		try { Thread.sleep(250); } catch (InterruptedException e1) {}
 	});
 	
-	private Action browseAction = new UsnaSelectedAction(this, devicesTable, "action_web_name", "action_web_tooltip", "/images/Computer16.png", "/images/Computer.png", i -> {
+	private Action browseAction = new UsnaSelectedAction(this, devicesTable, "action_web_name", "action_web_tooltip", "/images/Computer16.png", "/images/Computer.png", () -> {
+		return devicesTable.getSelectedRowCount() <= 8 || JOptionPane.showConfirmDialog(MainView.this, LABELS.getString("action_web_confirm"), LABELS.getString("action_web_name"),
+				JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE) == JOptionPane.OK_OPTION;
+	}, ind -> {
 		try {
-			Desktop.getDesktop().browse(URI.create("http://" + model.get(i).getAddressAndPort().getRepresentation()));
+			Desktop.getDesktop().browse(URI.create("http://" + model.get(ind).getAddressAndPort().getRepresentation()));
 		} catch (IOException | UnsupportedOperationException e) { // browserSupported = Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE);
 			Msg.errorMsg(this, e);
 		}
@@ -350,20 +354,18 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		statusFilterPanel.add(btnSelectOnline);
 		
 		// Selection popup
-		JButton btnSelectCombo = new JButton(new ImageIcon(MainView.class.getResource("/images/expand-more.png")));
-		btnSelectCombo.setContentAreaFilled(false);
-		btnSelectCombo.setBorder(BorderFactory.createEmptyBorder(1, 0, 1, 3));
-		statusFilterPanel.add(btnSelectCombo);
-
-		UsnaPopupMenu selectionPopup = new UsnaPopupMenu(selectAll, selectOnLine,
+		JButton btnSelectCombo = new JButton();
+		btnSelectCombo.setAction(new UsnaDropdownAction(btnSelectCombo, "/images/expand-more.png", "labelSelectDevices", new Object[] {
 				new SelectionAction(devicesTable, "labelSelectOnLineReboot", null, null, i -> model.get(i).getStatus() == Status.ON_LINE && model.get(i).rebootRequired()),
 				new SelectionAction(devicesTable, "labelSelectG1", null, null, i -> model.get(i) instanceof AbstractG1Device),
 				new SelectionAction(devicesTable, "labelSelectG2", null, null, i -> model.get(i) instanceof AbstractG2Device /*&& model.get(i) instanceof AbstractG3Device == false*/), // G2+
 				new SelectionAction(devicesTable, "labelSelectWIFI", null, null, i -> model.get(i) instanceof AbstractG1Device || model.get(i) instanceof AbstractG2Device),
 				new SelectionAction(devicesTable, "labelSelectBLU", null, null, i -> model.get(i) instanceof AbstractBluDevice),
-				new SelectionAction(devicesTable, "labelSelectGhosts", null, null, i -> model.get(i) instanceof GhostDevice) );
-
-		btnSelectCombo.addActionListener(e -> selectionPopup.show(btnSelectCombo, 0, 0));
+				new SelectionAction(devicesTable, "labelSelectGhosts", null, null, i -> model.get(i) instanceof GhostDevice)
+		}));
+		btnSelectCombo.setContentAreaFilled(false);
+		btnSelectCombo.setBorder(BorderFactory.createEmptyBorder(1, 0, 1, 3));
+		statusFilterPanel.add(btnSelectCombo);
 		
 		statusPanel.add(statusFilterPanel, BorderLayout.EAST);
 		statusPanel.setBackground(Main.STATUS_LINE_COLOR);
@@ -518,7 +520,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 	}
 	
 	private void updateHideCaptions() {
-		boolean en = appProp.getBoolProperty(ScannerProperties.PROP_TOOLBAR_CAPTIONS/*, true*/) == false;
+		boolean en = appProp.getBoolProperty(ScannerProperties.PROP_TOOLBAR_CAPTIONS) == false;
 		Stream.of(toolBar.getComponents()).filter(c -> c instanceof AbstractButton).forEach(b -> ((AbstractButton)b).setHideActionText(en));
 	}
 	
@@ -715,4 +717,4 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 			}
 		}
 	}
-} //557 - 614 - 620 - 669 - 705 - 727 - 699 - 760 - 782 - 811 - 805 - 646 - 699 - 706 - 688 - 698 - 707
+} //557 - 614 - 620 - 669 - 705 - 727 - 699 - 760 - 782 - 811 - 805 - 646 - 699 - 706 - 688 - 698 - 707 - 720

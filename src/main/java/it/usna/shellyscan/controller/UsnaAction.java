@@ -59,7 +59,7 @@ public class UsnaAction extends AbstractAction {
 	/**
 	 * This constructor must be followed by a setActionListener call
 	 */
-	protected UsnaAction(Component w, String icon, String tooltipId) {
+	public UsnaAction(Component w, String icon, String tooltipId) {
 		this.w = w;
 		if(icon != null) {
 			putValue(LARGE_ICON_KEY, new ImageIcon(UsnaAction.class.getResource(icon)));
