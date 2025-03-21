@@ -89,9 +89,9 @@ public abstract class AbstractG1Device extends ShellyAbstractDevice {
 		this.name = settings.path("name").asText("");
 		JsonNode dubugNode;
 		if((dubugNode = settings.get("debug_enable")) != null) {
-			this.debugEnabled = dubugNode.booleanValue() ? LogMode.FILE : LogMode.NO; // missing in flood (20201128-102432/v1.9.2@e83f7025)
+			this.debugMode = dubugNode.booleanValue() ? LogMode.FILE : LogMode.NONE; // missing in flood (20201128-102432/v1.9.2@e83f7025)
 		} else {
-			this.debugEnabled = LogMode.UNDEFINED;
+			this.debugMode = LogMode.UNDEFINED;
 		}
 		this.mqttEnabled = settings.path("mqtt").path("enable").booleanValue();
 	}
@@ -173,11 +173,17 @@ public abstract class AbstractG1Device extends ShellyAbstractDevice {
 		sendCommand("/settings?led_status_disable=" + on);
 	}
 	
-	public void setDebugMode(LogMode mode) {
+	@Override
+	public boolean setDebugMode(LogMode mode, boolean enable) {
 		try {
-			this.debugEnabled = getJSON("/settings?debug_enable=" + (mode != LogMode.NO)).path("debug_enable").asBoolean(false) ? LogMode.FILE : LogMode.NO;
+			if(enable == false) {
+				mode = LogMode.NONE;
+			}
+			this.debugMode = getJSON("/settings?debug_enable=" + (mode != LogMode.NONE)).path("debug_enable").asBoolean(false) ? LogMode.FILE : LogMode.NONE;
+			return debugMode == mode;
 		} catch (IOException e) {
 			LOG.warn("setDebugMode: {}", mode, e);
+			return false;
 		}
 	}
 	

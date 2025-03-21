@@ -20,6 +20,7 @@ import it.usna.shellyscan.model.device.modules.DeviceModule;
 
 public class ShellyPro2PM extends AbstractProDevice implements ModulesHolder, InternalTmpHolder {
 	public final static String ID = "Pro2PM";
+	public final static String MODEL = "SPSW-202PE16EU";
 	private boolean modeRelay;
 	private final static Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.W, Meters.Type.PF, Meters.Type.V, Meters.Type.I};
 	private Relay relay0, relay1;
@@ -91,15 +92,6 @@ public class ShellyPro2PM extends AbstractProDevice implements ModulesHolder, In
 	public int getModulesCount() {
 		return modeRelay ? 2 : 1;
 	}
-	
-//	@Override
-//	public DeviceModule getModule(int index) {
-//		if(modeRelay) {
-//			return (index == 0) ? relay0 : relay1;
-//		} else {
-//			return roller;
-//		}
-//	}
 
 	@Override
 	public DeviceModule[] getModules() {
@@ -134,8 +126,8 @@ public class ShellyPro2PM extends AbstractProDevice implements ModulesHolder, In
 		} else {
 			if(roller == null) {
 				roller = new Roller(this, 0);
-				rollersArray = new Roller[] {roller};
-				meters = new Meters[] {meters0};
+				rollersArray = new Roller[] {roller/*, roller*/};
+				meters = new Meters[] {meters0/*, meters1*/};
 				relay0 = relay1 = null; // modeRelay change
 				relaysArray = null;
 			}

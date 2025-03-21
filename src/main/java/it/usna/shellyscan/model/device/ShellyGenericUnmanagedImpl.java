@@ -94,6 +94,11 @@ public class ShellyGenericUnmanagedImpl extends ShellyAbstractDevice implements 
 	}
 	
 	@Override
+	public boolean setDebugMode(LogMode mode, boolean enable) {
+		throw new UnsupportedOperationException();
+	}
+	
+	@Override
 	public String setCloudEnabled(boolean enable) {
 		throw new UnsupportedOperationException();
 	}

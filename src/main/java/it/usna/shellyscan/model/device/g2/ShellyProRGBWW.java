@@ -58,6 +58,15 @@ public class ShellyProRGBWW extends AbstractProDevice implements ModulesHolder, 
 		this.hostname = devInfo.get("id").asText("");
 		this.mac = devInfo.get("mac").asText();
 
+// I could assign the profile here but I prefer it as null so that fillSettings(...) will create the corresponding modules
+//		String profDesc = devInfo.get("profile").asText();
+//		for(Profile p: Profile.values()) {
+//			if(p.code.equals(profDesc)) {
+//				profile = p;
+//				break;
+//			}
+//		}
+
 		meters0 = new MetersWVI() {
 			@Override
 			public float getValue(Type t) {
@@ -135,36 +144,12 @@ public class ShellyProRGBWW extends AbstractProDevice implements ModulesHolder, 
 
 	@Override
 	public int getModulesCount() {
-//		if(profile == Profile.LIGHT) {
-//			return 5;
-//		} else if(profile == Profile.RGB2L) {
-//			return 3;
-//		} else { // RGB_CCT - CCT_CCT
-//			return 2;
-//		}
 		return commands.length;
 	}
 
-//	@Override
-//	public DeviceModule getModule(int index) {
-////		if(profile != Profile.LIGHT) {
-//			return commands[index];
-//		/*} else if(profile == Profile.CCT_CCT) {
-//			return rgbwLight;
-//		} else {
-//			return null;
-//		}*/
-//	}
-
 	@Override
 	public DeviceModule[] getModules() {
-//		if(profile == Profile.LIGHT) {
-			return commands;
-		/*} else if(profile == Profile.CCT_CCT) {
-			return rgbws;
-		} else {
-			return null;
-		}*/
+		return commands;
 	}
 
 	@Override
@@ -384,7 +369,7 @@ public class ShellyProRGBWW extends AbstractProDevice implements ModulesHolder, 
 			errors.add(RestoreMsg.ERR_RESTORE_PROFILE.name());
 		}
 		
-		// TODO
+		// TODO ?
 //		final boolean hf = configuration.get("plusrgbwpm").get("hf_mode").booleanValue();
 //		errors.add(postCommand("PlusRGBWPM.SetConfig", "{\"config\":{\"hf_mode\":" + hf + "}}"));
 	}

@@ -276,7 +276,7 @@ public class DevicesTable extends ExTooltipTable {
 	public String cellValueAsString(Object value, int row, int column) {
 		if(value != null) {
 			final int modelCol = convertColumnIndexToModel(column);
-			if(modelCol == COL_INT_TEMP && tempUnitCelsius) {
+			if(modelCol == COL_INT_TEMP && tempUnitCelsius == false) {
 				return UtilMiscellaneous.celsiusToFahrenheit((Float)value);
 			} else if(modelCol == COL_MEASURES_IDX) {
 				String ret = "";

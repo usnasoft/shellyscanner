@@ -18,7 +18,6 @@ import java.util.MissingResourceException;
 import javax.swing.AbstractCellEditor;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -82,9 +81,9 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 	private JLabel colorRGBWhiteLabel = new JLabel();
 	
 	// Roller
-	private JPanel rollerPanel = new JPanel(new BorderLayout());
-	private JLabel rollerLabel = new JLabel();
-	private JSlider rollerPerc = new JSlider(0, 100);
+//	private JPanel rollerPanel = new JPanel(new BorderLayout());
+//	private JLabel rollerLabel = new JLabel();
+//	private JSlider rollerPerc = new JSlider(0, 100);
 
 	// Thermostat G1 (TRV)
 	private JPanel trvPanel = new JPanel(new BorderLayout());
@@ -328,71 +327,71 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 		colorRGBWPanel.add(colorRGBWSlidersPanel, BorderLayout.SOUTH);
 		
 		// Roller
-		rollerPanel.setBackground(selBackground);
-		rollerLabel.setForeground(selForeground);
-		rollerPanel.add(rollerLabel, BorderLayout.CENTER);
-		JPanel rollerSouthPanel = new JPanel(new BorderLayout());
-		rollerSouthPanel.add(rollerPerc, BorderLayout.CENTER);
-		JPanel rollerButtonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 3, 0));
-		rollerSouthPanel.add(rollerButtonPanel, BorderLayout.EAST);
-		JButton rollerButtonUp = new JButton(new ImageIcon(getClass().getResource("/images/Arrow16up.png")));
-		JButton rollerButtonDown = new JButton(new ImageIcon(getClass().getResource("/images/Arrow16down.png")));
-		JButton rollerButtonStop = new JButton(new ImageIcon(getClass().getResource("/images/PlayerStop.png")));
-		rollerButtonUp.setBorder(BorderFactory.createEmptyBorder());
-		rollerButtonStop.setBorder(BorderFactory.createEmptyBorder());
-		rollerButtonDown.setBorder(BorderFactory.createEmptyBorder());
-		rollerButtonPanel.add(rollerButtonUp);
-		rollerButtonPanel.add(rollerButtonStop);
-		rollerButtonPanel.add(rollerButtonDown);
-		rollerSouthPanel.setOpaque(false);
-		rollerButtonPanel.setOpaque(false);
-		rollerPanel.add(rollerSouthPanel, BorderLayout.SOUTH);
-		rollerButtonUp.addActionListener(e -> {
-			if(edited != null && edited instanceof RollerInterface[] rollers) {
-				try {
-					rollers[0].open();
-				} catch (IOException ex) {
-					LOG.error("rollerButtonUp", ex);
-				}
-				cancelCellEditing();
-			}
-		});
-		rollerButtonStop.addActionListener(e -> {
-			if(edited != null && edited instanceof RollerInterface[] rollers) {
-				try {
-					rollers[0].stop();
-				} catch (IOException ex) {
-					LOG.error("rollerButtonStop", ex);
-				}
-				cancelCellEditing();
-			}
-		});
-		rollerButtonDown.addActionListener(e -> {
-			if(edited != null && edited instanceof RollerInterface[] rollers) {
-				try {
-					rollers[0].close();
-				} catch (IOException ex) {
-					LOG.error("rollerButtonDown", ex);
-				}
-				cancelCellEditing();
-			}
-		});
-		rollerPerc.addChangeListener(e -> {
-			if(edited != null && edited instanceof RollerInterface[] rollers) {
-				if(rollerPerc.getValueIsAdjusting()) {
-					if(rollers[0].isCalibrated()) {
-						rollerLabel.setText(rollers[0].getLabel() + " " + rollerPerc.getValue() + "%");
-					}
-				} else {
-					try {
-						rollers[0].setPosition(rollerPerc.getValue());
-					} catch (IOException ex) {
-						LOG.error("rollerPerc", ex);
-					}
-					cancelCellEditing();
-				}
-			}
-		});
+//		rollerPanel.setBackground(selBackground);
+//		rollerLabel.setForeground(selForeground);
+//		rollerPanel.add(rollerLabel, BorderLayout.CENTER);
+//		JPanel rollerSouthPanel = new JPanel(new BorderLayout());
+//		rollerSouthPanel.add(rollerPerc, BorderLayout.CENTER);
+//		JPanel rollerButtonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 3, 0));
+//		rollerSouthPanel.add(rollerButtonPanel, BorderLayout.EAST);
+//		JButton rollerButtonUp = new JButton(DevicesCommandCellRenderer.UP_IMG);
+//		JButton rollerButtonDown = new JButton(DevicesCommandCellRenderer.DOWN_IMG);
+//		JButton rollerButtonStop = new JButton(DevicesCommandCellRenderer.STOP_IMG);
+//		rollerButtonUp.setBorder(BorderFactory.createEmptyBorder());
+//		rollerButtonStop.setBorder(BorderFactory.createEmptyBorder());
+//		rollerButtonDown.setBorder(BorderFactory.createEmptyBorder());
+//		rollerButtonPanel.add(rollerButtonUp);
+//		rollerButtonPanel.add(rollerButtonStop);
+//		rollerButtonPanel.add(rollerButtonDown);
+//		rollerSouthPanel.setOpaque(false);
+//		rollerButtonPanel.setOpaque(false);
+//		rollerPanel.add(rollerSouthPanel, BorderLayout.SOUTH);
+//		rollerButtonUp.addActionListener(e -> {
+//			if(edited != null && edited instanceof RollerInterface[] rollers) {
+//				try {
+//					rollers[0].open();
+//				} catch (IOException ex) {
+//					LOG.error("rollerButtonUp", ex);
+//				}
+//				cancelCellEditing();
+//			}
+//		});
+//		rollerButtonStop.addActionListener(e -> {
+//			if(edited != null && edited instanceof RollerInterface[] rollers) {
+//				try {
+//					rollers[0].stop();
+//				} catch (IOException ex) {
+//					LOG.error("rollerButtonStop", ex);
+//				}
+//				cancelCellEditing();
+//			}
+//		});
+//		rollerButtonDown.addActionListener(e -> {
+//			if(edited != null && edited instanceof RollerInterface[] rollers) {
+//				try {
+//					rollers[0].close();
+//				} catch (IOException ex) {
+//					LOG.error("rollerButtonDown", ex);
+//				}
+//				cancelCellEditing();
+//			}
+//		});
+//		rollerPerc.addChangeListener(e -> {
+//			if(edited != null && edited instanceof RollerInterface[] rollers) {
+//				if(rollerPerc.getValueIsAdjusting()) {
+//					if(rollers[0].isCalibrated()) {
+//						rollerLabel.setText(rollers[0].getLabel() + " " + rollerPerc.getValue() + "%");
+//					}
+//				} else {
+//					try {
+//						rollers[0].setPosition(rollerPerc.getValue());
+//					} catch (IOException ex) {
+//						LOG.error("rollerPerc", ex);
+//					}
+//					cancelCellEditing();
+//				}
+//			}
+//		});
 		
 		// Thermostat G1 (TRV)
 		trvPanel.setBackground(selBackground);
@@ -401,9 +400,9 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 		JPanel trvButtonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 3, 0));
 		trvButtonPanel.setBorder(BorderFactory.createEmptyBorder(1, 0, 0, 0));
 		trvButtonPanel.setOpaque(false);
-		JButton trvButtonUp = new JButton(new ImageIcon(getClass().getResource("/images/Arrow16up.png")));
+		JButton trvButtonUp = new JButton(DevicesCommandCellRenderer.UP_IMG);
 		trvButtonUp.setBorder(BorderFactory.createEmptyBorder());
-		JButton trvButtonDown = new JButton(new ImageIcon(getClass().getResource("/images/Arrow16down.png")));
+		JButton trvButtonDown = new JButton(DevicesCommandCellRenderer.DOWN_IMG);
 		trvButtonDown.setBorder(BorderFactory.createEmptyBorder());
 		trvButtonPanel.add(trvButtonUp);
 		trvButtonPanel.add(trvButtonDown);
@@ -451,9 +450,9 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 		JPanel thermButtonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 3, 0));
 		thermButtonPanel.setBorder(BorderFactory.createEmptyBorder(1, 0, 0, 0));
 		thermButtonPanel.setOpaque(false);
-		JButton thermButtonUp = new JButton(new ImageIcon(getClass().getResource("/images/Arrow16up.png")));
+		JButton thermButtonUp = new JButton(DevicesCommandCellRenderer.UP_IMG);
 		thermButtonUp.setBorder(BorderFactory.createEmptyBorder());
-		JButton thermButtonDown = new JButton(new ImageIcon(getClass().getResource("/images/Arrow16down.png")));
+		JButton thermButtonDown = new JButton(DevicesCommandCellRenderer.DOWN_IMG);
 		thermButtonDown.setBorder(BorderFactory.createEmptyBorder());
 		thermActiveButton.setBorder(DevicesCommandCellRenderer.BUTTON_BORDERS_SMALLER);
 		thermButtonPanel.add(thermActiveButton);
@@ -541,7 +540,13 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 			edited = riArray;
 			return stackedPanel;
 		} else if(value instanceof RollerInterface[] rollersArray) {
-			return getRollerPanel(rollersArray);
+//			return getRollerPanel(rollersArray);
+			stackedPanel.removeAll();
+			for(RollerInterface rel: rollersArray) {
+				stackedPanel.add(getRollerPanel(rel));
+			}
+			edited = rollersArray;
+			return stackedPanel;
 		} else if(value instanceof LightBulbRGB[] bulbsArray) { // RGBW Bulbs
 			return getLightRGBWPanel(bulbsArray);
 		} else if(value instanceof RGBWInterface[] rgbws) {
@@ -612,19 +617,97 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 		return relayPanel;
 	}
 	
-	private Component getRollerPanel(RollerInterface[] rollers) {
-		RollerInterface roller = rollers[0]; // multiple rollers devices currently not supported
-		final String labelText;
+//	private Component getRollerPanel(RollerInterface[] rollers) {
+//		RollerInterface roller = rollers[0]; // multiple rollers devices currently not supported
+//		final String labelText;
+//		if(roller.isCalibrated()) {
+//			labelText = roller.getLabel() + " " + roller.getPosition() + "%";
+//			rollerPerc.setVisible(true);
+//		} else {
+//			labelText = roller.getLabel();
+//			rollerPerc.setVisible(false);
+//		}
+//		rollerPerc.setValue(roller.getPosition());
+//		rollerLabel.setText(labelText);
+//		edited = rollers;
+//		return rollerPanel;
+//	}
+	
+	private Component getRollerPanel(RollerInterface roller) {
+		JPanel rollerPanel = new JPanel(new BorderLayout());
+		JLabel rollerLabel = new JLabel();
+		
+		rollerPanel.setBackground(selBackground);
+		rollerLabel.setForeground(selForeground);
+		rollerPanel.add(rollerLabel, BorderLayout.CENTER);
+		JPanel rollerSouthPanel = new JPanel(new BorderLayout());
+		rollerSouthPanel.setOpaque(false);
+		JPanel rollerButtonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 3, 0));
+		rollerButtonPanel.setOpaque(false);
+		rollerSouthPanel.add(rollerButtonPanel, BorderLayout.EAST);
+		JButton rollerButtonUp = new JButton(DevicesCommandCellRenderer.UP_IMG);
+		JButton rollerButtonDown = new JButton(DevicesCommandCellRenderer.DOWN_IMG);
+		JButton rollerButtonStop = new JButton(DevicesCommandCellRenderer.STOP_IMG);
+		rollerButtonUp.setBorder(BorderFactory.createEmptyBorder());
+		rollerButtonStop.setBorder(BorderFactory.createEmptyBorder());
+		rollerButtonDown.setBorder(BorderFactory.createEmptyBorder());
+		rollerButtonPanel.add(rollerButtonUp);
+		rollerButtonPanel.add(rollerButtonStop);
+		rollerButtonPanel.add(rollerButtonDown);
+		rollerPanel.add(rollerSouthPanel, BorderLayout.SOUTH);
+		rollerButtonUp.addActionListener(e -> {
+			if(edited != null && edited instanceof RollerInterface[]) {
+				try {
+					roller.open();
+				} catch (IOException ex) {
+					LOG.error("rollerButtonUp", ex);
+				}
+				cancelCellEditing();
+			}
+		});
+		rollerButtonStop.addActionListener(e -> {
+			if(edited != null && edited instanceof RollerInterface[]) {
+				try {
+					roller.stop();
+				} catch (IOException ex) {
+					LOG.error("rollerButtonStop", ex);
+				}
+				cancelCellEditing();
+			}
+		});
+		rollerButtonDown.addActionListener(e -> {
+			if(edited != null && edited instanceof RollerInterface[]) {
+				try {
+					roller.close();
+				} catch (IOException ex) {
+					LOG.error("rollerButtonDown", ex);
+				}
+				cancelCellEditing();
+			}
+		});
+
 		if(roller.isCalibrated()) {
-			labelText = roller.getLabel() + " " + roller.getPosition() + "%";
-			rollerPerc.setVisible(true);
+			rollerLabel.setText(roller.getLabel() + " " + roller.getPosition() + "%");
+			
+			JSlider rollerPerc = new JSlider(0, 100, roller.getPosition());
+			rollerSouthPanel.add(rollerPerc, BorderLayout.CENTER);
+			rollerPerc.addChangeListener(e -> {
+				if(edited != null && edited instanceof RollerInterface[]) {
+					if(rollerPerc.getValueIsAdjusting()) {
+						rollerLabel.setText(roller.getLabel() + " " + rollerPerc.getValue() + "%");
+					} else {
+						try {
+							roller.setPosition(rollerPerc.getValue());
+						} catch (IOException ex) {
+							LOG.error("rollerPerc", ex);
+						}
+						cancelCellEditing();
+					}
+				}
+			});
 		} else {
-			labelText = roller.getLabel();
-			rollerPerc.setVisible(false);
+			rollerLabel.setText(roller.getLabel());
 		}
-		rollerPerc.setValue(roller.getPosition());
-		rollerLabel.setText(labelText);
-		edited = rollers;
 		return rollerPanel;
 	}
 	

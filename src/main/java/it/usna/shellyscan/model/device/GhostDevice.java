@@ -106,6 +106,11 @@ public class GhostDevice extends ShellyAbstractDevice {
 	}
 	
 	@Override
+	public boolean setDebugMode(LogMode mode, boolean enable) {
+		throw new UnsupportedOperationException();
+	}
+	
+	@Override
 	public String setCloudEnabled(boolean enable) {
 		throw new UnsupportedOperationException();
 	}
