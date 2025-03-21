@@ -320,8 +320,8 @@ KVS.GetMany compatibility with fw 1.5.x
 1.2.3
 Shelly Pro Dual Cover (partial)
 LinkedGo ST1820 - LinkedGo ST802 minimal support (measures only)
-windows installer
 checklist - logs editable also for G2+ devices
+windows installer
 
 ---
 // TODO
