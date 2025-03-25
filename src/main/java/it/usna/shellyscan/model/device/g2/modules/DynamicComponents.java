@@ -181,5 +181,11 @@ public class DynamicComponents {
 		}
 	}
 	
+//	public static String  restoreConfig(AbstractG2Device parent, String type, String id, JsonNode orig) /*throws InterruptedException*/ {
+//		ObjectNode out = JsonNodeFactory.instance.objectNode();
+//		out.put("id", Integer.parseInt(id));
+//		return parent.postCommand(type + ".SetConfig", out);
+//	}
+	
 	private record GroupValue(Integer groupId, ArrayNode value) {}
 }

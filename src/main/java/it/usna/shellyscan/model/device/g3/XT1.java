@@ -40,11 +40,6 @@ public class XT1 extends AbstractG3Device {
 	public String getTypeID() {
 		return ID;
 	}
-
-	@Override
-	protected void restore(Map<String, JsonNode> backupJsons, List<String> errors) /*throws IOException, InterruptedException*/ {
-		// TODO Auto-generated method stub
-	}
 	
 	// No DynamicComponents & Script
 	@Override
@@ -129,6 +124,11 @@ public class XT1 extends AbstractG3Device {
 			errors.add(RestoreMsg.ERR_UNKNOWN.toString());
 		}
 		return errors;
+	}
+	
+	@Override
+	protected void restore(Map<String, JsonNode> backupJsons, List<String> errors) throws IOException, InterruptedException {
+		// @Override on subclasses if needed
 	}
 }
 

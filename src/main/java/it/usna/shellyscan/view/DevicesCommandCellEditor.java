@@ -12,7 +12,6 @@ import java.awt.KeyboardFocusManager;
 import java.awt.Window;
 import java.io.IOException;
 import java.util.EventObject;
-import java.util.Locale;
 import java.util.MissingResourceException;
 
 import javax.swing.AbstractCellEditor;
@@ -466,7 +465,8 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 					if(tempUnitCelsius) {
 						thermProfileLabel.setText(/*thermostat.getCurrentProfile() + " " +*/ ((float)thermSlider.getValue()) / th[0].getUnitDivision() + "°C");
 					} else {
-						thermProfileLabel.setText(/*thermostat.getCurrentProfile() + " " +*/ String.format(Locale.ENGLISH, "%.1f°F", (((float)thermSlider.getValue()) / th[0].getUnitDivision()) * 1.8f + 32f));
+						thermProfileLabel.setText(/*thermostat.getCurrentProfile() + " " +*/ (Math.round((((float)thermSlider.getValue()) / th[0].getUnitDivision()) * 18f + 320f) / 10f) + "°F");
+//						thermProfileLabel.setText(/*thermostat.getCurrentProfile() + " " +*/ String.format(Locale.ENGLISH, "%.1f°F", (((float)thermSlider.getValue()) / th[0].getUnitDivision()) * 1.8f + 32f));
 					}
 				} else {
 					if(th[0] instanceof AbstractBluDevice) {
@@ -896,7 +896,8 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 		if(tempUnitCelsius) {
 			thermProfileLabel.setText(/*thermostat.getCurrentProfile() + " " +*/ thermostat.getTargetTemp() + "°C");
 		} else {
-			thermProfileLabel.setText(/*thermostat.getCurrentProfile() + " " +*/ String.format(Locale.ENGLISH, "%.1f°F", thermostat.getTargetTemp() * 1.8f + 32f));
+			thermProfileLabel.setText(/*thermostat.getCurrentProfile() + " " +*/ (Math.round(thermostat.getTargetTemp() * 18f + 320f) / 10f) + "°F");
+//			thermProfileLabel.setText(/*thermostat.getCurrentProfile() + " " +*/ String.format(Locale.ENGLISH, "%.1f°F", thermostat.getTargetTemp() * 1.8f + 32f));
 		}
 		if(thermostat.isEnabled()) {
 			thermActiveButton.setText(DevicesCommandCellRenderer.LABEL_ON);

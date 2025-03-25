@@ -26,6 +26,8 @@ import it.usna.shellyscan.model.device.modules.DeviceModule;
  */
 public class ShellyProRGBWW extends AbstractProDevice implements ModulesHolder, InternalTmpHolder {
 //	private final static Logger LOG = LoggerFactory.getLogger(ShellyProRGBWW.class);
+	public final static String ID = "ProRGBWWPM";
+	public final static String MODEL ="SPDC-0D5PE16EU";
 	public enum Profile {
 		LIGHT("light"), RGB2L("rgbx2light"), RGB_CCT("rgbcct"), CCT_CCT("cctx2");
 		
@@ -35,7 +37,6 @@ public class ShellyProRGBWW extends AbstractProDevice implements ModulesHolder, 
 			this.code = code;
 		}
 	};
-	public final static String ID = "ProRGBWWPM";
 	private Profile profile;
 	private float internalTmp;
 	private float power0, power1, power2, power3, power4; // if calibrated (white)

@@ -301,7 +301,7 @@ improved Shelly Pro 3EM support
 optional fahrenheit temperature unit
 consecutive fw updates progress fixed
 
-1.2.2
+1.2.2/1.2.3
 Shelly Pro Dimmer 2PM
 3EM-63 G3
 Shelly Pro RGBWW PM
@@ -316,12 +316,19 @@ executor.schedule(() -> errorsReconnect(), 25, TimeUnit.SECONDS);
 checklist - semantica BLE: Solo dispositivi di seconda generazione o generazione successiva; se il bluetooth è attivo appare un numero corrispondente ai dispositivi connessi (<span class="text-danger">0</span> in rosso; in caso di non utilizzo è preferibile spegnere il BLE), appare una <span class="text-success">✗</span> verde altrimenti.
 checklist - semantica Extender checklist
 KVS.GetMany compatibility with fw 1.5.x
-
-1.2.3
+-
 Shelly Pro Dual Cover (partial)
 LinkedGo ST1820 - LinkedGo ST802 minimal support (measures only)
 checklist - logs editable also for G2+ devices
 windows installer
+
+1.2.4
+Shelly 1 Gen4
+Shelly 1PM Gen4
+Shelly 1 Mini Gen4
+Shelly 1PM Mini Gen4
+LinkedGo ST1820 thermostat - todo restore
+LinkedGo ST802 thermostat (no humidity, no fan)
 
 ---
 // TODO

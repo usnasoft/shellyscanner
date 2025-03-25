@@ -8,7 +8,6 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
-import java.util.Locale;
 import java.util.MissingResourceException;
 
 import javax.swing.BorderFactory;
@@ -359,7 +358,8 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 			if(tempUnitCelsius) {
 				thermProfileLabel.setText(/*thermostat.getCurrentProfile() + " " +*/ thermostat.getTargetTemp() + "°C");
 			} else {
-				thermProfileLabel.setText(/*thermostat.getCurrentProfile() + " " +*/ String.format(Locale.ENGLISH, "%.1f°F", thermostat.getTargetTemp() * 1.8f + 32f));
+				thermProfileLabel.setText(/*thermostat.getCurrentProfile() + " " +*/ (Math.round(thermostat.getTargetTemp() * 18f + 320f) / 10f) + "°F");
+//				thermProfileLabel.setText(/*thermostat.getCurrentProfile() + " " +*/ String.format(Locale.ENGLISH, "%.1f°F", thermostat.getTargetTemp() * 1.8f + 32f));
 			}
 			if(thermostat.isEnabled()) {
 				thermActiveButton.setText(LABEL_ON);
