@@ -13,11 +13,11 @@ import it.usna.shellyscan.model.device.InternalTmpHolder;
 import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.ModulesHolder;
 import it.usna.shellyscan.model.device.RestoreMsg;
+import it.usna.shellyscan.model.device.g2.meters.MetersWVI;
 import it.usna.shellyscan.model.device.g2.modules.Input;
 import it.usna.shellyscan.model.device.g2.modules.LightCCT;
 import it.usna.shellyscan.model.device.g2.modules.LightRGB;
 import it.usna.shellyscan.model.device.g2.modules.LightWhite;
-import it.usna.shellyscan.model.device.meters.MetersWVI;
 import it.usna.shellyscan.model.device.modules.DeviceModule;
 
 /**
@@ -39,15 +39,16 @@ public class ShellyProRGBWW extends AbstractProDevice implements ModulesHolder, 
 	};
 	private Profile profile;
 	private float internalTmp;
-	private float power0, power1, power2, power3, power4; // if calibrated (white)
-	private float voltage0, voltage1, voltage2, voltage3, voltage4;
-	private float current0, current1, current2, current3, current4; // if calibrated (white)
 	private LightWhite light0, light1, light2, light3, light4;
 	private DeviceModule[] commands;
 	private LightRGB rgbLight;
 	private LightCCT cct0, cct1;
-	
-	private Meters meters0, meters1, meters2, meters3, meters4;
+
+	private MetersWVI meters0 = new MetersWVI(); // power0 if calibrated (white); current0 if calibrated (white)
+	private MetersWVI meters1 = new MetersWVI();
+	private MetersWVI meters2 = new MetersWVI();
+	private MetersWVI meters3 = new MetersWVI();
+	private MetersWVI meters4 = new MetersWVI();
 	private Meters[] meters;
 
 	public ShellyProRGBWW(InetAddress address, int port, String hostname) {
@@ -59,76 +60,6 @@ public class ShellyProRGBWW extends AbstractProDevice implements ModulesHolder, 
 		this.hostname = devInfo.get("id").asText("");
 		this.mac = devInfo.get("mac").asText();
 
-// I could assign the profile here but I prefer it as null so that fillSettings(...) will create the corresponding modules
-//		String profDesc = devInfo.get("profile").asText();
-//		for(Profile p: Profile.values()) {
-//			if(p.code.equals(profDesc)) {
-//				profile = p;
-//				break;
-//			}
-//		}
-
-		meters0 = new MetersWVI() {
-			@Override
-			public float getValue(Type t) {
-				if(t == Meters.Type.W) {
-					return power0;
-				} else if(t == Meters.Type.I) {
-					return current0;
-				} else {
-					return voltage0;
-				}
-			}
-		};
-		meters1 = new MetersWVI() {
-			@Override
-			public float getValue(Type t) {
-				if(t == Meters.Type.W) {
-					return power1;
-				} else if(t == Meters.Type.I) {
-					return current1;
-				} else {
-					return voltage1;
-				}
-			}
-
-		};
-		meters2 = new MetersWVI() {
-			@Override
-			public float getValue(Type t) {
-				if(t == Meters.Type.W) {
-					return power2;
-				} else if(t == Meters.Type.I) {
-					return current2;
-				} else {
-					return voltage2;
-				}
-			}
-		};
-		meters3 = new MetersWVI() {
-			@Override
-			public float getValue(Type t) {
-				if(t == Meters.Type.W) {
-					return power3;
-				} else if(t == Meters.Type.I) {
-					return current3;
-				} else {
-					return voltage3;
-				}
-			}
-		};
-		meters4 = new MetersWVI() {
-			@Override
-			public float getValue(Type t) {
-				if(t == Meters.Type.W) {
-					return power4;
-				} else if(t == Meters.Type.I) {
-					return current4;
-				} else {
-					return voltage4;
-				}
-			}
-		};
 		fillSettings(getJSON("/rpc/Shelly.GetConfig"));
 		fillStatus(getJSON("/rpc/Shelly.GetStatus"));
 	}
@@ -231,81 +162,57 @@ public class ShellyProRGBWW extends AbstractProDevice implements ModulesHolder, 
 		super.fillStatus(status);
 		if(profile == Profile.LIGHT) {
 			JsonNode lightStatus0 = status.get("light:0");
-			voltage0 = lightStatus0.get("voltage").floatValue();
-			current0 = lightStatus0.path("current").floatValue();
-			power0 = lightStatus0.path("apower").floatValue();
+			meters0.fill(lightStatus0);
 			light0.fillStatus(lightStatus0, status.get("input:0"));
 			
 			JsonNode lightStatus1 = status.get("light:1");
-			voltage1 = lightStatus1.get("voltage").floatValue();
-			current1 = lightStatus1.path("current").floatValue();
-			power1 = lightStatus1.path("apower").floatValue();
+			meters1.fill(lightStatus1);
 			light1.fillStatus(lightStatus1, status.get("input:1"));
 			
 			JsonNode lightStatus2 = status.get("light:2");
-			voltage2 = lightStatus2.get("voltage").floatValue();
-			current2 = lightStatus2.path("current").floatValue();
-			power2 = lightStatus2.path("apower").floatValue();
+			meters2.fill(lightStatus2);
 			light2.fillStatus(lightStatus2, status.get("input:2"));
 			
 			JsonNode lightStatus3 = status.get("light:3");
-			voltage3 = lightStatus3.get("voltage").floatValue();
-			current3 = lightStatus3.path("current").floatValue();
-			power3 = lightStatus3.path("apower").floatValue();
+			meters3.fill(lightStatus3);
 			light3.fillStatus(lightStatus3, status.get("input:3"));
 			
 			JsonNode lightStatus4 = status.get("light:4");
-			voltage4 = lightStatus4.get("voltage").floatValue();
-			current4 = lightStatus4.path("current").floatValue();
-			power4 = lightStatus4.path("apower").floatValue();
+			meters4.fill(lightStatus4);
 			light4.fillStatus(lightStatus4, status.get("input:4"));
 			
 			internalTmp = lightStatus0.get("temperature").path("tC").floatValue();
 		} else if(profile == Profile.RGB_CCT) {
 			JsonNode rgb = status.get("rgb:0");
-			voltage0 = rgb.get("voltage").floatValue();
-			current0 = rgb.path("current").floatValue();
-			power0 = rgb.path("apower").floatValue();
+			meters0.fill(rgb);
 			rgbLight.fillStatus(rgb, status.get("input:0"));
 			
 			JsonNode lightStatus0 = status.get("cct:0");
-			voltage2 = lightStatus0.get("voltage").floatValue();
-			current2 = lightStatus0.path("current").floatValue();
-			power2 = lightStatus0.path("apower").floatValue();
+			meters2.fill(lightStatus0);
 			cct0.fillStatus(lightStatus0, status.get("input:2")); // cct:0 - input:2
 			
 			internalTmp = rgb.get("temperature").path("tC").floatValue();
 		} else if(profile == Profile.CCT_CCT) {
-			JsonNode lightStatus0 = status.get("cct:0");
-			voltage0 = lightStatus0.get("voltage").floatValue();
-			current0 = lightStatus0.path("current").floatValue();
-			power0 = lightStatus0.path("apower").floatValue();
-			cct0.fillStatus(lightStatus0, status.get("input:0")); // cct:0 - input:0
+			JsonNode cctStatus0 = status.get("cct:0");
+			meters0.fill(cctStatus0);
+			cct0.fillStatus(cctStatus0, status.get("input:0")); // cct:0 - input:0
 			
-			JsonNode lightStatus1 = status.get("cct:1");
-			voltage2 = lightStatus1.get("voltage").floatValue();
-			current2 = lightStatus1.path("current").floatValue();
-			power2 = lightStatus1.path("apower").floatValue();
-			cct1.fillStatus(lightStatus1, status.get("input:2")); // cct:1 - input:2
+			JsonNode cctStatus1 = status.get("cct:1");
+			meters2.fill(cctStatus1);
+			cct1.fillStatus(cctStatus1, status.get("input:2")); // cct:1 - input:2
 			
-			internalTmp = lightStatus0.get("temperature").path("tC").floatValue();
+			internalTmp = cctStatus0.get("temperature").path("tC").floatValue();
 		} else if(profile == Profile.RGB2L) {
 			JsonNode rgb = status.get("rgb:0");
-			voltage0 = rgb.get("voltage").floatValue();
-			current0 = rgb.path("current").floatValue();
-			power0 = rgb.path("apower").floatValue();
+			meters0.fill(rgb);
 			rgbLight.fillStatus(rgb, status.get("input:0"));
 			
 			JsonNode lightStatus0 = status.get("light:0");
-			voltage2 = lightStatus0.get("voltage").floatValue();
-			current2 = lightStatus0.path("current").floatValue();
-			power2 = lightStatus0.path("apower").floatValue();
+			meters2.fill(lightStatus0);
 			light0.fillStatus(lightStatus0, status.get("input:2")); // light:0 - input:2
 			
 			JsonNode lightStatus1 = status.get("light:1");
-			voltage3 = lightStatus1.get("voltage").floatValue();
-			current3 = lightStatus1.path("current").floatValue();
-			power3 = lightStatus1.path("apower").floatValue();
+			meters3.fill(lightStatus1);
 			light1.fillStatus(lightStatus1, status.get("input:3")); // light:1 - input:3
 			
 			internalTmp = rgb.get("temperature").path("tC").floatValue();

@@ -70,11 +70,6 @@ public class ShellyMotion extends AbstractG1Device implements ModulesHolder {
 	public Meters[] getMeters() {
 		return meters;
 	}
-	
-//	@Override
-//	public DeviceModule getModule(int index) {
-//		return sensors[0];
-//	}
 
 	@Override
 	public DeviceModule[] getModules() {

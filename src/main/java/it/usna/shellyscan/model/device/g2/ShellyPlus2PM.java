@@ -122,15 +122,6 @@ public class ShellyPlus2PM extends AbstractG2Device implements ModulesHolder, In
 	public int getModulesCount() {
 		return modeRelay ? 2 : 1;
 	}
-	
-//	@Override
-//	public DeviceModule getModule(int index) {
-//		if(modeRelay) {
-//			return (index == 0) ? relay0 : relay1;
-//		} else {
-//			return roller;
-//		}
-//	}
 
 	@Override
 	public DeviceModule[] getModules() {

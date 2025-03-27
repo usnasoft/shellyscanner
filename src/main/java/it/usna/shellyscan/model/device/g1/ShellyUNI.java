@@ -93,20 +93,11 @@ public class ShellyUNI extends AbstractG1Device implements ModulesHolder {
 	public int getModulesCount() {
 		return 2;
 	}
-	
-//	@Override
-//	public Relay getModule(int index) {
-//		return index == 0 ? relay0 : relay1;
-//	}
 
 	@Override
 	public Relay[] getModules() {
 		return new Relay[] {relay0, relay1};
 	}
-	
-//	public float getVoltage() {
-//		return voltage;
-//	}
 	
 	@Override
 	public Meters[] getMeters() {

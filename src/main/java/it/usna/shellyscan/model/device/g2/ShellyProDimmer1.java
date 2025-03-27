@@ -13,9 +13,9 @@ import it.usna.shellyscan.model.device.InternalTmpHolder;
 import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.ModulesHolder;
 import it.usna.shellyscan.model.device.RestoreMsg;
+import it.usna.shellyscan.model.device.g2.meters.MetersWVI;
 import it.usna.shellyscan.model.device.g2.modules.Input;
 import it.usna.shellyscan.model.device.g2.modules.LightWhite;
-import it.usna.shellyscan.model.device.meters.MetersWVI;
 import it.usna.shellyscan.model.device.modules.DeviceModule;
 
 /**
@@ -26,30 +26,13 @@ public class ShellyProDimmer1 extends AbstractProDevice implements InternalTmpHo
 	public final static String ID = "ProDimmerx";
 	public final static String MODEL = "SPDM-001PE01EU";
 	private float internalTmp;
-	private float power;
-	private float voltage;
-	private float current;
-	private Meters[] meters;
+	private MetersWVI meters = new MetersWVI();
+	private Meters[] metersArray = new Meters[] {meters};
 	private LightWhite light = new LightWhite(this, 0);
 	private LightWhite[] lightArray = new LightWhite[] {light};
 
 	public ShellyProDimmer1(InetAddress address, int port, String hostname) {
 		super(address, port, hostname);
-		
-		meters = new MetersWVI[] {
-				new MetersWVI() {
-					@Override
-					public float getValue(Type t) {
-						if(t == Meters.Type.W) {
-							return power;
-						} else if(t == Meters.Type.I) {
-							return current;
-						} else {
-							return voltage;
-						}
-					}
-				}
-		};
 	}
 	
 	@Override
@@ -69,13 +52,8 @@ public class ShellyProDimmer1 extends AbstractProDevice implements InternalTmpHo
 	
 	@Override
 	public Meters[] getMeters() {
-		return meters;
+		return metersArray;
 	}
-
-//	@Override
-//	public DeviceModule getModule(int index) {
-//		return light;
-//	}
 
 	@Override
 	public DeviceModule[] getModules() {
@@ -93,9 +71,7 @@ public class ShellyProDimmer1 extends AbstractProDevice implements InternalTmpHo
 		super.fillStatus(status);
 		JsonNode lightStatus = status.get("light:0");
 		internalTmp = lightStatus.get("temperature").get("tC").floatValue();
-		power = lightStatus.get("apower").floatValue();
-		voltage = lightStatus.get("voltage").floatValue();
-		current = lightStatus.get("current").floatValue();
+		meters.fill(lightStatus);
 		light.fillStatus(lightStatus, status.get("input:0"));
 	}
 	

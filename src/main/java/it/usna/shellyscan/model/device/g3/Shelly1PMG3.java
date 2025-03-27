@@ -16,10 +16,10 @@ import it.usna.shellyscan.model.device.InternalTmpHolder;
 import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.ModulesHolder;
 import it.usna.shellyscan.model.device.RestoreMsg;
+import it.usna.shellyscan.model.device.g2.meters.MetersWVI;
 import it.usna.shellyscan.model.device.g2.modules.Input;
 import it.usna.shellyscan.model.device.g2.modules.Relay;
 import it.usna.shellyscan.model.device.g2.modules.SensorAddOn;
-import it.usna.shellyscan.model.device.meters.MetersWVI;
 
 /**
  * Shelly 1PM G3 model
@@ -30,10 +30,8 @@ public class Shelly1PMG3 extends AbstractG3Device implements ModulesHolder, Inte
 	public final static String ID = "S1PMG3";
 	private Relay relay = new Relay(this, 0);
 	private float internalTmp;
-	private float power;
-	private float voltage;
-	private float current;
 	private Relay[] relays = new Relay[] {relay};
+	private MetersWVI baseMeasures = new MetersWVI();
 	private Meters[] meters;
 	private SensorAddOn addOn;
 
@@ -52,20 +50,7 @@ public class Shelly1PMG3 extends AbstractG3Device implements ModulesHolder, Inte
 		fillStatus(getJSON("/rpc/Shelly.GetStatus"));
 	}
 	
-	private JsonNode configure() throws IOException {
-		Meters baseMeasures = new MetersWVI() {
-			@Override
-			public float getValue(Type t) {
-				if(t == Meters.Type.W) {
-					return power;
-				} else if(t == Meters.Type.I) {
-					return current;
-				} else {
-					return voltage;
-				}
-			}
-		};
-		
+	private JsonNode configure() throws IOException {	
 		final JsonNode config = getJSON("/rpc/Shelly.GetConfig");
 		if(SensorAddOn.ADDON_TYPE.equals(config.get("sys").get("device").path("addon_type").asText())) {
 			addOn = new SensorAddOn(this);
@@ -97,18 +82,6 @@ public class Shelly1PMG3 extends AbstractG3Device implements ModulesHolder, Inte
 		return internalTmp;
 	}
 	
-	public float getPower() {
-		return power;
-	}
-	
-	public float getVoltage() {
-		return voltage;
-	}
-	
-	public float getCurrent() {
-		return current;
-	}
-	
 	@Override
 	public Meters[] getMeters() {
 		return meters;
@@ -129,9 +102,7 @@ public class Shelly1PMG3 extends AbstractG3Device implements ModulesHolder, Inte
 		JsonNode switchStatus = status.get("switch:0");
 		relay.fillStatus(switchStatus, status.get("input:0"));
 		internalTmp = switchStatus.path("temperature").path("tC").floatValue();
-		power = switchStatus.path("apower").floatValue();
-		voltage = switchStatus.path("voltage").floatValue();
-		current = switchStatus.path("current").floatValue();
+		baseMeasures.fill(switchStatus);
 		if(addOn != null) {
 			addOn.fillStatus(status);
 		}

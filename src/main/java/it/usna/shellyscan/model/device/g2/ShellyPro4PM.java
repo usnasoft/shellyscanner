@@ -126,11 +126,6 @@ public class ShellyPro4PM extends AbstractProDevice implements ModulesHolder, In
 		return 4;
 	}
 
-//	@Override
-//	public Relay getModule(int index) {
-//		return relays[index];
-//	}
-
 	@Override
 	public Relay[] getModules() {
 		return relays;

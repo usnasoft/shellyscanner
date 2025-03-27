@@ -26,7 +26,7 @@ import it.usna.shellyscan.model.device.g2.modules.SensorAddOn;
  */
 public class Shelly1G4 extends AbstractG4Device implements ModulesHolder, InternalTmpHolder {
 	private final static Logger LOG = LoggerFactory.getLogger(Shelly1G4.class);
-	public final static String ID = "S1G4"; // S1G4ZB
+	public final static String ID = "S1G4";
 	private Relay relay = new Relay(this, 0);
 	private Relay[] relays = new Relay[] {relay};
 	private float internalTmp;

@@ -50,11 +50,6 @@ public class ShellyWallDimmer extends AbstractG2Device implements ModulesHolder 
 		errors.add(postCommand("WD_UI.SetConfig", "{\"config\":" + jsonMapper.writeValueAsString(configuration.get("wd_ui")) + "}"));
 	}
 
-//	@Override
-//	public DeviceModule getModule(int index) {
-//		return light;
-//	}
-
 	@Override
 	public DeviceModule[] getModules() {
 		return lightArray;

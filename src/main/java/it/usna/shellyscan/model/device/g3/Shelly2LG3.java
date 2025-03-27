@@ -24,6 +24,7 @@ public class Shelly2LG3 extends AbstractG3Device implements ModulesHolder, Inter
 //	public final static String ID = "S2LG3";
 //	public final static String ID = "xLG3";
 	public final static String ID = "???";
+	public final static String MODEL = "S3SW-0A2X4EUL";
 	private Relay relay0 = new Relay(this, 0);
 	private Relay relay1 = new Relay(this, 1);
 	private Relay[] relaysArray = new Relay[] {relay0, relay1};

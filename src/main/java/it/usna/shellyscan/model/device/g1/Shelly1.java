@@ -11,8 +11,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.ModulesHolder;
+import it.usna.shellyscan.model.device.g1.meters.MetersPower;
 import it.usna.shellyscan.model.device.g1.modules.Relay;
-import it.usna.shellyscan.model.device.meters.MetersPower;
 
 /**
  * Shelly 1 model
@@ -128,11 +128,6 @@ public class Shelly1 extends AbstractG1Device implements ModulesHolder {
 	public Meters[] getMeters() {
 		return meters;
 	}
-
-//	@Override
-//	public Relay getModule(int index) {
-//		return relay;
-//	}
 
 	@Override
 	public Relay[] getModules() {

@@ -34,7 +34,7 @@ public class PbSXT1St802 extends XT1 implements ModulesHolder {
 	private final static String CURRENT_HUM_KEY = "number:200";
 	private final static String TARGET_TEMP_ID = "203";
 	private final static String TARGET_TEMP_KEY = "number:" + TARGET_TEMP_ID;
-//	private final static String TARGET_HUM_KEY = "number:202";
+	private final static String TARGET_HUM_KEY = "number:202";
 	private final static String ENABLED_ID = "201";
 	private final static String ENABLED_KEY = "boolean:" + ENABLED_ID;
 	private final static String MODE_KEY = "enum:201";
@@ -43,7 +43,7 @@ public class PbSXT1St802 extends XT1 implements ModulesHolder {
 	private Meters[] meters;
 	private final XT1Thermostat thermostat;
 	private XT1Thermostat[] thermostats;
-	private RelayInterface humOnOff;
+	private ThermostatHumOnOff humOnOff;
 	private RelayInterface[] HumOnOffArray;
 
 	public PbSXT1St802(InetAddress address, int port, String hostname) {
@@ -106,6 +106,8 @@ public class PbSXT1St802 extends XT1 implements ModulesHolder {
 					humidity = sensor.path("status").path("value").floatValue();
 				} else if(TARGET_TEMP_KEY.equals(key)) {
 					thermostat.configTargetTemperature(sensor);
+				} else if(TARGET_HUM_KEY.equals(key)) {
+					humOnOff.setHumidity(sensor);
 				} else if(ENABLED_KEY.equals(key)) {
 					thermostat.configEnabled(sensor);
 				}
@@ -126,31 +128,36 @@ public class PbSXT1St802 extends XT1 implements ModulesHolder {
 	}
 	
 	@Override
-	protected void backup(ZipOutputStream out) throws IOException, InterruptedException {
+	protected void backup(ZipOutputStream out) throws IOException {
 		sectionToStream("/rpc/Service.GetConfig?id=0", "Service.GetConfig.json", out);
 	}
 	
 	@Override
-	protected void restore(Map<String, JsonNode> backupJsons, List<String> errors) throws IOException, InterruptedException {
+	protected void restore(Map<String, JsonNode> backupJsons, List<String> errors) throws IOException {
 		ObjectNode out = JsonNodeFactory.instance.objectNode();
 		out.put("id", 0);
 		ObjectNode config = (ObjectNode)backupJsons.get("Service.GetConfig.json");
 		config.remove("id");
-		config.remove("thermostat_mode"); // do not restore mode
+		config.remove("thermostat_mode"); // do not restore "mode"
 		out.set("config", config);
 		errors.add(postCommand("Service.SetConfig", out));
 	}
 	
-	
+	/** Humidity DeviceModule implementation - only enable/disable */
 	private class ThermostatHumOnOff implements RelayInterface {
+		private int targetHumidity;
 //		private ThermostatInterface thermostat;
 //		public ThermostatHumOnOff(ThermostatInterface thermostat) {
 //			this.thermostat = thermostat;
 //		}
+		
+		private void setHumidity(JsonNode sensor) {
+			targetHumidity = sensor.path("status").path("value").intValue();
+		}
 
 		@Override
 		public String getLabel() {
-			return "Humidity";
+			return "Humidity: " + targetHumidity + "%";
 		}
 
 		@Override

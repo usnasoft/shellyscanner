@@ -10,9 +10,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.ModulesHolder;
+import it.usna.shellyscan.model.device.g1.meters.MetersPower;
 import it.usna.shellyscan.model.device.g1.modules.Relay;
 import it.usna.shellyscan.model.device.g1.modules.Roller;
-import it.usna.shellyscan.model.device.meters.MetersPower;
 import it.usna.shellyscan.model.device.modules.DeviceModule;
 
 public class Shelly2 extends AbstractG1Device implements ModulesHolder {
@@ -52,15 +52,6 @@ public class Shelly2 extends AbstractG1Device implements ModulesHolder {
 	public int getModulesCount() {
 		return modeRelay ? 2 : 1;
 	}
-	
-//	@Override
-//	public DeviceModule getModule(int index) {
-//		if(modeRelay) {
-//			return (index == 0) ? relay0 : relay1;
-//		} else {
-//			return roller;
-//		}
-//	}
 
 	@Override
 	public DeviceModule[] getModules() {

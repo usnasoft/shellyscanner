@@ -12,9 +12,9 @@ import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.InternalTmpHolder;
 import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.ModulesHolder;
+import it.usna.shellyscan.model.device.g2.meters.MetersWVI;
 import it.usna.shellyscan.model.device.g2.modules.Input;
 import it.usna.shellyscan.model.device.g2.modules.Relay;
-import it.usna.shellyscan.model.device.meters.MetersWVI;
 
 /**
  * Shelly Shelly Plus mini 1PM model
@@ -23,30 +23,13 @@ import it.usna.shellyscan.model.device.meters.MetersWVI;
 public class ShellyMini1PM extends AbstractG2Device implements ModulesHolder, InternalTmpHolder {
 	public final static String ID = "Plus1PMMini";
 	private float internalTmp;
-	private float power;
-	private float voltage;
-	private float current;
-	private Meters[] meters;
+	private MetersWVI meters = new MetersWVI();
+	private Meters[] metersArray = new Meters[] {meters};
 	private Relay relay = new Relay(this, 0);
 	private Relay[] relays = new Relay[] {relay};
 
 	public ShellyMini1PM(InetAddress address, int port, String hostname) {
 		super(address, port, hostname);
-
-		meters = new MetersWVI[] {
-				new MetersWVI() {
-					@Override
-					public float getValue(Type t) {
-						if(t == Meters.Type.W) {
-							return power;
-						} else if(t == Meters.Type.I) {
-							return current;
-						} else {
-							return voltage;
-						}
-					}
-				}
-		};
 	}
 
 	@Override
@@ -58,11 +41,6 @@ public class ShellyMini1PM extends AbstractG2Device implements ModulesHolder, In
 	public String getTypeID() {
 		return ID;
 	}
-	
-//	@Override
-//	public Relay getModule(int index) {
-//		return relay;
-//	}
 
 	@Override
 	public Relay[] getModules() {
@@ -76,7 +54,7 @@ public class ShellyMini1PM extends AbstractG2Device implements ModulesHolder, In
 
 	@Override
 	public Meters[] getMeters() {
-		return meters;
+		return metersArray;
 	}
 
 	@Override
@@ -90,9 +68,7 @@ public class ShellyMini1PM extends AbstractG2Device implements ModulesHolder, In
 		super.fillStatus(status);
 		JsonNode switchStatus = status.get("switch:0");
 		relay.fillStatus(switchStatus, status.get("input:0"));
-		power = switchStatus.get("apower").floatValue();
-		voltage = switchStatus.get("voltage").floatValue();
-		current = switchStatus.get("current").floatValue();
+		meters.fill(switchStatus);
 
 		internalTmp = switchStatus.get("temperature").get("tC").floatValue();
 	}

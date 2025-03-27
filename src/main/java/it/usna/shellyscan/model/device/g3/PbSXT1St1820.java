@@ -29,9 +29,9 @@ public class PbSXT1St1820 extends XT1 implements ModulesHolder {
 	private final static Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.T, Meters.Type.H};
 	private final static String CURRENT_TEMP_KEY = "number:201";
 	private final static String CURRENT_HUM_KEY = "number:200";
-	public final static String TARGET_TEMP_ID = "202";
+	private final static String TARGET_TEMP_ID = "202";
 	private final static String TARGET_TEMP_KEY = "number:" + TARGET_TEMP_ID;
-	public final static String ENABLED_ID = "202";
+	private final static String ENABLED_ID = "202";
 	private final static String ENABLED_KEY = "boolean:" + ENABLED_ID;
 	private float temp;
 	private float humidity;
@@ -108,12 +108,12 @@ public class PbSXT1St1820 extends XT1 implements ModulesHolder {
 	}
 	
 	@Override
-	protected void backup(ZipOutputStream out) throws IOException, InterruptedException {
+	protected void backup(ZipOutputStream out) throws IOException {
 		sectionToStream("/rpc/Service.GetConfig?id=0", "Service.GetConfig.json", out);
 	}
 	
 	@Override
-	protected void restore(Map<String, JsonNode> backupJsons, List<String> errors) throws IOException, InterruptedException {
+	protected void restore(Map<String, JsonNode> backupJsons, List<String> errors) throws IOException {
 		ObjectNode out = JsonNodeFactory.instance.objectNode();
 		out.put("id", 0);
 		ObjectNode config = (ObjectNode)backupJsons.get("Service.GetConfig.json");

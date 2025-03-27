@@ -16,10 +16,10 @@ import it.usna.shellyscan.model.device.InternalTmpHolder;
 import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.ModulesHolder;
 import it.usna.shellyscan.model.device.RestoreMsg;
+import it.usna.shellyscan.model.device.g2.meters.MetersWVI;
 import it.usna.shellyscan.model.device.g2.modules.Input;
 import it.usna.shellyscan.model.device.g2.modules.LightWhite;
 import it.usna.shellyscan.model.device.g2.modules.SensorAddOn;
-import it.usna.shellyscan.model.device.meters.MetersWVI;
 import it.usna.shellyscan.model.device.modules.DeviceModule;
 
 /**
@@ -30,9 +30,7 @@ public class ShellyDimmerG3 extends AbstractG3Device implements InternalTmpHolde
 	private final static Logger LOG = LoggerFactory.getLogger(ShellyDimmerG3.class);
 	public final static String ID = "DimmerG3";
 	private float internalTmp;
-	private float power;
-	private float voltage;
-	private float current;
+	private MetersWVI baseMeasures = new MetersWVI();
 	private Meters[] meters;
 	private LightWhite light = new LightWhite(this, 0);
 	private LightWhite[] lightArray = new LightWhite[] {light};
@@ -53,20 +51,7 @@ public class ShellyDimmerG3 extends AbstractG3Device implements InternalTmpHolde
 		fillStatus(getJSON("/rpc/Shelly.GetStatus"));
 	}
 	
-	private JsonNode configure() throws IOException {
-		Meters baseMeasures = new MetersWVI() {
-			@Override
-			public float getValue(Type t) {
-				if(t == Meters.Type.W) {
-					return power;
-				} else if(t == Meters.Type.I) {
-					return current;
-				} else {
-					return voltage;
-				}
-			}
-		};
-		
+	private JsonNode configure() throws IOException {	
 		final JsonNode config = getJSON("/rpc/Shelly.GetConfig");
 		if(SensorAddOn.ADDON_TYPE.equals(config.get("sys").get("device").path("addon_type").asText())) {
 			addOn = new SensorAddOn(this);
@@ -117,9 +102,7 @@ public class ShellyDimmerG3 extends AbstractG3Device implements InternalTmpHolde
 		super.fillStatus(status);
 		JsonNode lightStatus = status.get("light:0");
 		internalTmp = lightStatus.get("temperature").get("tC").floatValue();
-		power = lightStatus.path("apower").floatValue();
-		voltage = lightStatus.path("voltage").floatValue();
-		current = lightStatus.path("current").floatValue();
+		baseMeasures.fill(lightStatus);
 		light.fillStatus(lightStatus, status.get("input:0"));
 		if(addOn != null) {
 			addOn.fillStatus(status);

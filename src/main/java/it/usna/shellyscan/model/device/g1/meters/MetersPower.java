@@ -1,4 +1,4 @@
-package it.usna.shellyscan.model.device.meters;
+package it.usna.shellyscan.model.device.g1.meters;
 
 import it.usna.shellyscan.model.device.Meters;
 

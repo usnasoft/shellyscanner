@@ -16,10 +16,10 @@ import it.usna.shellyscan.model.device.InternalTmpHolder;
 import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.ModulesHolder;
 import it.usna.shellyscan.model.device.RestoreMsg;
+import it.usna.shellyscan.model.device.g2.meters.MetersWVI;
 import it.usna.shellyscan.model.device.g2.modules.Input;
 import it.usna.shellyscan.model.device.g2.modules.Relay;
 import it.usna.shellyscan.model.device.g2.modules.SensorAddOn;
-import it.usna.shellyscan.model.device.meters.MetersWVI;
 
 /**
  * Shelly Shelly Plus 1PM model
@@ -30,11 +30,8 @@ public class ShellyPlus1PM extends AbstractG2Device implements ModulesHolder, In
 	public final static String ID = "Plus1PM";
 	private Relay relay = new Relay(this, 0);
 	private float internalTmp;
-	private float power;
-	private float voltage;
-	private float current;
-//	private float pf;
 	private Relay[] relays = new Relay[] {relay};
+	private MetersWVI baseMeasures = new MetersWVI();
 	private Meters[] meters;
 	private SensorAddOn addOn;
 
@@ -54,19 +51,6 @@ public class ShellyPlus1PM extends AbstractG2Device implements ModulesHolder, In
 	}
 	
 	private JsonNode configure() throws IOException {
-		Meters baseMeasures = new MetersWVI() {
-			@Override
-			public float getValue(Type t) {
-				if(t == Meters.Type.W) {
-					return power;
-				} else if(t == Meters.Type.I) {
-					return current;
-				} else {
-					return voltage;
-				}
-			}
-		};
-		
 		final JsonNode config = getJSON("/rpc/Shelly.GetConfig");
 		if(SensorAddOn.ADDON_TYPE.equals(config.get("sys").get("device").path("addon_type").asText())) {
 			addOn = new SensorAddOn(this);
@@ -87,11 +71,6 @@ public class ShellyPlus1PM extends AbstractG2Device implements ModulesHolder, In
 	public String getTypeID() {
 		return ID;
 	}
-	
-//	@Override
-//	public Relay getModule(int index) {
-//		return relay;
-//	}
 
 	@Override
 	public Relay[] getModules() {
@@ -101,18 +80,6 @@ public class ShellyPlus1PM extends AbstractG2Device implements ModulesHolder, In
 	@Override
 	public float getInternalTmp() {
 		return internalTmp;
-	}
-	
-	public float getPower() {
-		return power;
-	}
-	
-	public float getVoltage() {
-		return voltage;
-	}
-	
-	public float getCurrent() {
-		return current;
 	}
 	
 	@Override
@@ -135,10 +102,7 @@ public class ShellyPlus1PM extends AbstractG2Device implements ModulesHolder, In
 		JsonNode switchStatus = status.get("switch:0");
 		relay.fillStatus(switchStatus, status.get("input:0"));
 		internalTmp = switchStatus.path("temperature").path("tC").floatValue();
-		power = switchStatus.path("apower").floatValue();
-		voltage = switchStatus.path("voltage").floatValue();
-		current = switchStatus.path("current").floatValue();
-//		pf = switchStatus.path("pf").floatValue();
+		baseMeasures.fill(switchStatus);
 		if(addOn != null) {
 			addOn.fillStatus(status);
 		}

@@ -13,9 +13,9 @@ import it.usna.shellyscan.model.device.InternalTmpHolder;
 import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.ModulesHolder;
 import it.usna.shellyscan.model.device.RestoreMsg;
+import it.usna.shellyscan.model.device.g2.meters.MetersWVI;
 import it.usna.shellyscan.model.device.g2.modules.Input;
 import it.usna.shellyscan.model.device.g2.modules.LightWhite;
-import it.usna.shellyscan.model.device.meters.MetersWVI;
 import it.usna.shellyscan.model.device.modules.DeviceModule;
 
 /**
@@ -26,43 +26,15 @@ public class ShellyProDimmer2 extends AbstractProDevice implements InternalTmpHo
 	public final static String ID = "ProDimmerx";
 	public final static String MODEL = "SPDM-002PE01EU";
 	private float internalTmp;
-	private float power0, power1;
-	private float voltage0, voltage1;
-	private float current0, current1;
-	private Meters[] meters;
-	private LightWhite light0 = new LightWhite(this, 0);
-	private LightWhite light1 = new LightWhite(this, 1);
-	private LightWhite[] lightArray = new LightWhite[] {light0, light1};
+	private final MetersWVI meters0 = new MetersWVI();
+	private final MetersWVI meters1 = new MetersWVI();
+	private final Meters[] meters = new Meters[] {meters0, meters1};
+	private final LightWhite light0 = new LightWhite(this, 0);
+	private final LightWhite light1 = new LightWhite(this, 1);
+	private final LightWhite[] lightArray = new LightWhite[] {light0, light1};
 
 	public ShellyProDimmer2(InetAddress address, int port, String hostname) {
 		super(address, port, hostname);
-		
-		meters = new MetersWVI[] {
-				new MetersWVI() {
-					@Override
-					public float getValue(Type t) {
-						if(t == Meters.Type.W) {
-							return power0;
-						} else if(t == Meters.Type.I) {
-							return current0;
-						} else {
-							return voltage0;
-						}
-					}
-				},
-				new MetersWVI() {
-					@Override
-					public float getValue(Type t) {
-						if(t == Meters.Type.W) {
-							return power1;
-						} else if(t == Meters.Type.I) {
-							return current1;
-						} else {
-							return voltage1;
-						}
-					}
-				}
-		};
 	}
 	
 	@Override
@@ -85,11 +57,6 @@ public class ShellyProDimmer2 extends AbstractProDevice implements InternalTmpHo
 		return meters;
 	}
 
-//	@Override
-//	public DeviceModule getModule(int index) {
-//		return index == 0 ? light0 : light1;
-//	}
-
 	@Override
 	public DeviceModule[] getModules() {
 		return lightArray;
@@ -106,18 +73,14 @@ public class ShellyProDimmer2 extends AbstractProDevice implements InternalTmpHo
 	protected void fillStatus(JsonNode status) throws IOException {
 		super.fillStatus(status);
 		JsonNode lightStatus0 = status.get("light:0");
-		internalTmp = lightStatus0.get("temperature").get("tC").floatValue();
-
-		power0 = lightStatus0.get("apower").floatValue();
-		voltage0 = lightStatus0.get("voltage").floatValue();
-		current0 = lightStatus0.get("current").floatValue();
+		meters0.fill(lightStatus0);
 		light0.fillStatus(lightStatus0, status.get("input:0"));
 		
 		JsonNode lightStatus1 = status.get("light:1");
-		power1 = lightStatus1.get("apower").floatValue();
-		voltage1 = lightStatus1.get("voltage").floatValue();
-		current1 = lightStatus1.get("current").floatValue();
+		meters1.fill(lightStatus1);
 		light1.fillStatus(lightStatus1, status.get("input:2"));
+		
+		internalTmp = lightStatus0.get("temperature").get("tC").floatValue();
 	}
 	
 	@Override

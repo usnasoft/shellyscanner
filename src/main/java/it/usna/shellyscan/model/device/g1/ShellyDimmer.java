@@ -11,8 +11,8 @@ import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.InternalTmpHolder;
 import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.ModulesHolder;
+import it.usna.shellyscan.model.device.g1.meters.MetersPower;
 import it.usna.shellyscan.model.device.g1.modules.LightWhite;
-import it.usna.shellyscan.model.device.meters.MetersPower;
 import it.usna.shellyscan.model.device.modules.DeviceModule;
 
 public class ShellyDimmer extends AbstractG1Device implements ModulesHolder, InternalTmpHolder {
@@ -46,11 +46,6 @@ public class ShellyDimmer extends AbstractG1Device implements ModulesHolder, Int
 	public String getTypeID() {
 		return ID;
 	}
-	
-//	@Override
-//	public DeviceModule getModule(int index) {
-//		return light;
-//	}
 
 	@Override
 	public DeviceModule[] getModules() {

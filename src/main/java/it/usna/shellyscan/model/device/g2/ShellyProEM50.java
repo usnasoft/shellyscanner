@@ -84,11 +84,6 @@ public class ShellyProEM50 extends AbstractProDevice implements ModulesHolder, I
 	public String getTypeID() {
 		return ID;
 	}
-	
-//	@Override
-//	public Relay getModule(int index) {
-//		return relay;
-//	}
 
 	@Override
 	public Relay[] getModules() {

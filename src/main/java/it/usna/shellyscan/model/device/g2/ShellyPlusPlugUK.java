@@ -14,35 +14,18 @@ import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.InternalTmpHolder;
 import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.ModulesHolder;
+import it.usna.shellyscan.model.device.g2.meters.MetersWVI;
 import it.usna.shellyscan.model.device.g2.modules.Relay;
-import it.usna.shellyscan.model.device.meters.MetersWVI;
 
 public class ShellyPlusPlugUK extends AbstractG2Device implements ModulesHolder, InternalTmpHolder {
 	public final static String ID = "PlusPlugUK";
 	private Relay relay = new Relay(this, 0);
 	private float internalTmp;
-	private float power;
-	private float voltage;
-	private float current;
-	private Meters[] meters;
+	private MetersWVI meters = new MetersWVI();
+	private Meters[] metersArray = new Meters[] {meters};
 
 	public ShellyPlusPlugUK(InetAddress address, int port, String hostname) {
 		super(address, port, hostname);
-
-		meters = new MetersWVI[] {
-				new MetersWVI() {
-					@Override
-					public float getValue(Type t) {
-						if(t == Meters.Type.W) {
-							return power;
-						} else if(t == Meters.Type.I) {
-							return current;
-						} else {
-							return voltage;
-						}
-					}
-				}
-		};
 	}
 	
 	@Override
@@ -54,11 +37,6 @@ public class ShellyPlusPlugUK extends AbstractG2Device implements ModulesHolder,
 	public String getTypeID() {
 		return ID;
 	}
-	
-//	@Override
-//	public Relay getModule(int index) {
-//		return relay;
-//	}
 
 	@Override
 	public Relay[] getModules() {
@@ -70,21 +48,9 @@ public class ShellyPlusPlugUK extends AbstractG2Device implements ModulesHolder,
 		return internalTmp;
 	}
 	
-	public float getPower() {
-		return power;
-	}
-	
-	public float getVoltage() {
-		return voltage;
-	}
-	
-	public float getCurrent() {
-		return current;
-	}
-	
 	@Override
 	public Meters[] getMeters() {
-		return meters;
+		return metersArray;
 	}
 	
 	@Override
@@ -99,9 +65,7 @@ public class ShellyPlusPlugUK extends AbstractG2Device implements ModulesHolder,
 		JsonNode switchStatus = status.get("switch:0");
 		relay.fillStatus(switchStatus);
 		internalTmp = switchStatus.path("temperature").path("tC").floatValue();
-		power = switchStatus.get("apower").floatValue();
-		voltage = switchStatus.get("voltage").floatValue();
-		current = switchStatus.get("current").floatValue();
+		meters.fill(switchStatus);
 	}
 
 	@Override

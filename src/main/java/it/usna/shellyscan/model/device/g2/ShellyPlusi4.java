@@ -137,11 +137,6 @@ public class ShellyPlusi4 extends AbstractG2Device implements ModulesHolder {
 	public int getModulesCount() {
 		return 4;
 	}
-	
-//	@Override
-//	public DeviceModule getModule(int index) {
-//		return inputs[index];
-//	}
 
 	@Override
 	public DeviceModule[] getModules() {

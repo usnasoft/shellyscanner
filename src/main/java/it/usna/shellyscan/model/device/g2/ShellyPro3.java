@@ -40,11 +40,6 @@ public class ShellyPro3 extends AbstractProDevice implements ModulesHolder, Inte
 	public int getModulesCount() {
 		return 3;
 	}
-	
-//	@Override
-//	public Relay getModule(int index) {
-//		return relays[index];
-//	}
 
 	@Override
 	public Relay[] getModules() {

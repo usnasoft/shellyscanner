@@ -14,35 +14,18 @@ import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.InternalTmpHolder;
 import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.ModulesHolder;
+import it.usna.shellyscan.model.device.g2.meters.MetersWVI;
 import it.usna.shellyscan.model.device.g2.modules.Relay;
-import it.usna.shellyscan.model.device.meters.MetersWVI;
 
 public class ShellyPlugSG3 extends AbstractG3Device implements ModulesHolder, InternalTmpHolder {
 	public final static String ID = "PlugSG3";
 	private Relay relay = new Relay(this, 0);
 	private float internalTmp;
-	private float power;
-	private float voltage;
-	private float current;
-	private Meters[] meters;
+	private MetersWVI meters = new MetersWVI();
+	private Meters[] metersArray = new Meters[] {meters};
 
 	public ShellyPlugSG3(InetAddress address, int port, String hostname) {
 		super(address, port, hostname);
-		
-		meters = new MetersWVI[] {
-				new MetersWVI() {
-					@Override
-					public float getValue(Type t) {
-						if(t == Meters.Type.W) {
-							return power;
-						} else if(t == Meters.Type.I) {
-							return current;
-						} else {
-							return voltage;
-						}
-					}
-				}
-		};
 	}
 	
 	@Override
@@ -65,21 +48,9 @@ public class ShellyPlugSG3 extends AbstractG3Device implements ModulesHolder, In
 		return internalTmp;
 	}
 	
-	public float getPower() {
-		return power;
-	}
-	
-	public float getVoltage() {
-		return voltage;
-	}
-	
-	public float getCurrent() {
-		return current;
-	}
-	
 	@Override
 	public Meters[] getMeters() {
-		return meters;
+		return metersArray;
 	}
 	
 	@Override
@@ -94,9 +65,7 @@ public class ShellyPlugSG3 extends AbstractG3Device implements ModulesHolder, In
 		JsonNode switchStatus = status.get("switch:0");
 		relay.fillStatus(switchStatus);
 		internalTmp = switchStatus.path("temperature").path("tC").floatValue();
-		power = switchStatus.get("apower").floatValue();
-		voltage = switchStatus.get("voltage").floatValue();
-		current = switchStatus.get("current").floatValue();
+		meters.fill(switchStatus);
 	}
 
 	@Override

@@ -10,8 +10,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.ModulesHolder;
+import it.usna.shellyscan.model.device.g1.meters.MetersPower;
 import it.usna.shellyscan.model.device.g1.modules.LightBulbRGB;
-import it.usna.shellyscan.model.device.meters.MetersPower;
 import it.usna.shellyscan.model.device.modules.DeviceModule;
 
 public class ShellyBulb extends AbstractG1Device implements ModulesHolder {
@@ -52,11 +52,6 @@ public class ShellyBulb extends AbstractG1Device implements ModulesHolder {
 	public Meters[] getMeters() {
 		return meters;
 	}
-	
-//	@Override
-//	public DeviceModule getModule(int index) {
-//		return light;
-//	}
 	
 	@Override
 	public DeviceModule[] getModules() {

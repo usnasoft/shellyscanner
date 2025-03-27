@@ -47,11 +47,6 @@ public class ShellyI3 extends AbstractG1Device implements ModulesHolder {
 	public int getModulesCount() {
 		return 3;
 	}
-	
-//	@Override
-//	public DeviceModule getModule(int index) {
-//		return actions.getInput(index);
-//	}
 
 	@Override
 	public DeviceModule[] getModules() {

@@ -43,11 +43,6 @@ public class ShellyPro2 extends AbstractProDevice implements ModulesHolder, Inte
 	public int getModulesCount() {
 		return 2;
 	}
-	
-//	@Override
-//	public Relay getModule(int index) {
-//		return (index == 0) ? relay0 : relay1;
-//	}
 
 	@Override
 	public Relay[] getModules() {

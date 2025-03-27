@@ -10,9 +10,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.ModulesHolder;
+import it.usna.shellyscan.model.device.g1.meters.MetersPower;
 import it.usna.shellyscan.model.device.g1.modules.LightRGBW;
 import it.usna.shellyscan.model.device.g1.modules.LightWhite;
-import it.usna.shellyscan.model.device.meters.MetersPower;
 import it.usna.shellyscan.model.device.modules.DeviceModule;
 
 public class ShellyRGBW2 extends AbstractG1Device implements ModulesHolder/*, RGBWCommander, WhiteCommander*/ {
@@ -130,21 +130,6 @@ public class ShellyRGBW2 extends AbstractG1Device implements ModulesHolder/*, RG
 	public boolean isColorMode() {
 		return modeColor;
 	}
-	
-//	@Override
-//	public DeviceModule getModule(int index) {
-//		if(modeColor) {
-//			return color;
-//		} else if(index == 0) {
-//			return white0;
-//		} else if(index == 1) {
-//			return white1;
-//		} else if(index == 2) {
-//			return white2;
-//		} else {
-//			return white3;
-//		}
-//	}
 
 	@Override
 	public DeviceModule[] getModules() {

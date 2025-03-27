@@ -16,12 +16,12 @@ import it.usna.shellyscan.model.device.InternalTmpHolder;
 import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.ModulesHolder;
 import it.usna.shellyscan.model.device.RestoreMsg;
+import it.usna.shellyscan.model.device.g2.meters.MetersWVI;
 import it.usna.shellyscan.model.device.g2.modules.Input;
 import it.usna.shellyscan.model.device.g2.modules.LightRGB;
 import it.usna.shellyscan.model.device.g2.modules.LightRGBW;
 import it.usna.shellyscan.model.device.g2.modules.LightWhite;
 import it.usna.shellyscan.model.device.g2.modules.SensorAddOn;
-import it.usna.shellyscan.model.device.meters.MetersWVI;
 import it.usna.shellyscan.model.device.modules.DeviceModule;
 
 /**
@@ -43,15 +43,15 @@ public class ShellyPlusRGBW extends AbstractG2Device implements ModulesHolder, I
 	public final static String MODEL = "SNDC-0D4P10WW";
 	private Profile profile;
 	private float internalTmp;
-	private float power0, power1, power2, power3; // if calibrated (white)
-	private float voltage0, voltage1, voltage2, voltage3;
-	private float current0, current1, current2, current3; // if calibrated (white)
 	private LightWhite light0, light1, light2, light3;
 	private LightRGB rgbLight;
 	private LightRGBW rgbwLight;
 	private DeviceModule[] commands;
 	
-	private Meters meters0, meters1, meters2, meters3;
+	private MetersWVI meters0 = new MetersWVI(); // power if calibrated (white); current if calibrated (white)
+	private MetersWVI meters1 = new MetersWVI();
+	private MetersWVI meters2 = new MetersWVI();
+	private MetersWVI meters3 = new MetersWVI();
 	private Meters[] meters;
 	private SensorAddOn addOn;
 
@@ -65,57 +65,6 @@ public class ShellyPlusRGBW extends AbstractG2Device implements ModulesHolder, I
 		this.mac = devInfo.get("mac").asText();
 
 		final JsonNode config = configure();
-
-		meters0 = new MetersWVI() {
-			@Override
-			public float getValue(Type t) {
-				if(t == Meters.Type.W) {
-					return power0;
-				} else if(t == Meters.Type.I) {
-					return current0;
-				} else {
-					return voltage0;
-				}
-			}
-		};
-		meters1 = new MetersWVI() {
-			@Override
-			public float getValue(Type t) {
-				if(t == Meters.Type.W) {
-					return power1;
-				} else if(t == Meters.Type.I) {
-					return current1;
-				} else {
-					return voltage1;
-				}
-			}
-
-		};
-		meters2 = new MetersWVI() {
-			@Override
-			public float getValue(Type t) {
-				if(t == Meters.Type.W) {
-					return power2;
-				} else if(t == Meters.Type.I) {
-					return current2;
-				} else {
-					return voltage2;
-				}
-			}
-		};
-		meters3 = new MetersWVI() {
-			@Override
-			public float getValue(Type t) {
-				if(t == Meters.Type.W) {
-					return power3;
-				} else if(t == Meters.Type.I) {
-					return current3;
-				} else {
-					return voltage3;
-				}
-			}
-		};
-
 		fillSettings(config);
 		fillStatus(getJSON("/rpc/Shelly.GetStatus"));
 	}
@@ -144,11 +93,6 @@ public class ShellyPlusRGBW extends AbstractG2Device implements ModulesHolder, I
 	public int getModulesCount() {
 		return commands.length;
 	}
-
-//	@Override
-//	public DeviceModule getModule(int index) {
-//		return commands[index];
-//	}
 
 	@Override
 	public DeviceModule[] getModules() {
@@ -215,43 +159,31 @@ public class ShellyPlusRGBW extends AbstractG2Device implements ModulesHolder, I
 		super.fillStatus(status);
 		if(profile == Profile.LIGHT) {
 			JsonNode lightStatus0 = status.get("light:0");
-			voltage0 = lightStatus0.get("voltage").floatValue();
-			current0 = lightStatus0.path("current").floatValue();
-			power0 = lightStatus0.path("apower").floatValue();
+			meters0.fill(lightStatus0);
 			light0.fillStatus(lightStatus0, status.get("input:0"));
 			
 			JsonNode lightStatus1 = status.get("light:1");
-			voltage1 = lightStatus1.get("voltage").floatValue();
-			current1 = lightStatus1.path("current").floatValue();
-			power1 = lightStatus1.path("apower").floatValue();
+			meters1.fill(lightStatus1);
 			light1.fillStatus(lightStatus1, status.get("input:1"));
 			
 			JsonNode lightStatus2 = status.get("light:2");
-			voltage2 = lightStatus2.get("voltage").floatValue();
-			current2 = lightStatus2.path("current").floatValue();
-			power2 = lightStatus2.path("apower").floatValue();
+			meters2.fill(lightStatus2);
 			light2.fillStatus(lightStatus2, status.get("input:2"));
 			
 			JsonNode lightStatus3 = status.get("light:3");
-			voltage3 = lightStatus3.get("voltage").floatValue();
-			current3 = lightStatus3.path("current").floatValue();
-			power3 = lightStatus3.path("apower").floatValue();
+			meters3.fill(lightStatus3);
 			light3.fillStatus(lightStatus3, status.get("input:3"));
 			
 			internalTmp = lightStatus0.get("temperature").path("tC").floatValue();
 		} else if(profile == Profile.RGB) {
 			JsonNode rgb = status.get("rgb:0");
-			voltage0 = rgb.get("voltage").floatValue();
-			current0 = rgb.path("current").floatValue();
-			power0 = rgb.path("apower").floatValue();
+			meters0.fill(rgb);
 			rgbLight.fillStatus(rgb, status.get("input:0"));
 			
 			internalTmp = rgb.get("temperature").path("tC").floatValue();
 		} else /*if(profile == Mode.RGBW)*/ {
 			JsonNode rgbw = status.get("rgbw:0");
-			voltage0 = rgbw.get("voltage").floatValue();
-			current0 = rgbw.path("current").floatValue();
-			power0 = rgbw.path("apower").floatValue();
+			meters0.fill(rgbw);
 			rgbwLight.fillStatus(rgbw, status.get("input:0"));
 			
 			internalTmp = rgbw.get("temperature").path("tC").floatValue();

@@ -12,8 +12,8 @@ import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.InternalTmpHolder;
 import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.ModulesHolder;
+import it.usna.shellyscan.model.device.g1.meters.MetersPower;
 import it.usna.shellyscan.model.device.g1.modules.Relay;
-import it.usna.shellyscan.model.device.meters.MetersPower;
 
 public class Shelly1PM extends AbstractG1Device implements ModulesHolder, InternalTmpHolder {
 	public final static String ID = "SHSW-PM";
@@ -129,11 +129,6 @@ public class Shelly1PM extends AbstractG1Device implements ModulesHolder, Intern
 	public String getTypeID() {
 		return ID;
 	}
-	
-//	@Override
-//	public Relay getModule(int index) {
-//		return relay;
-//	}
 
 	@Override
 	public Relay[] getModules() {
