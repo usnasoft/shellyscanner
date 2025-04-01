@@ -329,6 +329,8 @@ Shelly 1 Mini Gen4
 Shelly 1PM Mini Gen4
 LinkedGo ST1820 thermostat - todo restore
 LinkedGo ST802 thermostat (no humidity, no fan)
+multi restore: no enable restricted login, no wi-fi (1/2) password, no AP password, no MQTT password, Script override, no reboot offer
+multi restore todo: updatind progress dialog
 
 ---
 // TODO

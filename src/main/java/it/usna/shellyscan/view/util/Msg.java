@@ -47,7 +47,7 @@ public class Msg {
 		showHtmlMessageDialog(parentComponent, message, title, messageType, DEF_ROWS_MAX);
 	}
 	
-	public static void showMsg(Component owner, String msg, String title, int type) /*throws HeadlessException*/ {
+	public static void showMsg(Component owner, String msg, String title, int type) {
 		try {
 			if((msg == null || msg.isEmpty())) {
 				if(title == null || title.isEmpty()) {
@@ -101,13 +101,16 @@ public class Msg {
 		showMsg(owner, msg, Main.LABELS.getString("warningTitle"), JOptionPane.WARNING_MESSAGE);
 	}
 	
-	public static void errorStatusMsg(Component owner, final ShellyAbstractDevice device, IOException e) {
+	public static boolean errorStatusMsg(Component owner, final ShellyAbstractDevice device, IOException e) {
 		if(device.getStatus() == Status.OFF_LINE) {
 			showMsg(owner, Main.LABELS.getString("Status-OFFLINE") + ".", Main.LABELS.getString("errorTitle"), JOptionPane.ERROR_MESSAGE);
+			return true;
 		} else if(device.getStatus() == Status.NOT_LOOGGED) {
 			showMsg(owner, Main.LABELS.getString("Status-PROTECTED") + ".", Main.LABELS.getString("errorTitle"), JOptionPane.ERROR_MESSAGE);
+			return true;
 		} else {
 			errorMsg(owner, e);
+			return false;
 		}
 	}
 	

@@ -564,7 +564,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 				rebootAction.setEnabled(selectionNoGhost && selectionNoBTHome);
 				browseAction.setEnabled(selectionNoGhost /*&& browserSupported*/);
 				backupAction.setEnabled(selection /*&& selectionNoBLU*/);
-				restoreAction.setEnabled(singleSelection /*&& selectionNoBLU*/ /*&& d.getStatus() != Status.NOT_LOOGGED*/);
+				restoreAction.setEnabled(selection/*singleSelection*/ /*&& selectionNoBLU*/ /*&& d.getStatus() != Status.NOT_LOOGGED*/);
 				devicesSettingsAction.setEnabled(selection && /*selectionNoBLU*/selectionNoBTHome);
 				chartAction.setEnabled(selectionNoGhost);
 				scriptManagerAction.setEnabled(singleSelectionNoGhost && d instanceof AbstractG2Device);
