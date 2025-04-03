@@ -94,8 +94,7 @@ public class BackupAction extends UsnaAction {
 			if(ind.length > 1) {
 				fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 				if(fc.showSaveDialog(mainView) == JFileChooser.APPROVE_OPTION) {
-					worker = new BackWorker();
-					worker.execute();
+					new BackWorker().execute();
 					appProp.setProperty("LAST_PATH", fc.getSelectedFile().getPath());
 				}
 			} else if(ind.length == 1) {
@@ -105,7 +104,11 @@ public class BackupAction extends UsnaAction {
 				fc.setSelectedFile(new File(defFileName(device)));
 				if(fc.showSaveDialog(mainView) == JFileChooser.APPROVE_OPTION) {
 					new BackWorker().execute();
-					appProp.setProperty("LAST_PATH", fc.getCurrentDirectory().getPath());
+					try {
+						appProp.setProperty("LAST_PATH", fc.getCurrentDirectory().getCanonicalPath());
+					} catch (IOException e1) {
+						LOG.error("BackupAction - LAST_PATH", e);
+					}
 				}
 			}
 		});

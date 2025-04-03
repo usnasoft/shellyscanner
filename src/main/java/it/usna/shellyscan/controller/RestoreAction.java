@@ -21,6 +21,7 @@ import java.util.stream.Stream;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
+import javax.swing.SwingWorker;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 import org.slf4j.Logger;
@@ -46,46 +47,41 @@ public class RestoreAction extends UsnaAction {
 	private final static Logger LOG = LoggerFactory.getLogger(RestoreAction.class);
 	private final static String CHECK_MSG_PREFIX = "msgRestore";
 	private final static String ERROR_MSG_PREFIX = "errRestore";
+	private SwingWorker<String, Object> worker;
 
 	public RestoreAction(MainView mainView, DevicesTable devicesTable, AppProperties appProp, Devices model) {
 		super(mainView, "action_restore_name", "action_restore_tooltip", "/images/Upload16.png", "/images/Upload.png");
 
 		setActionListener(event -> {
-			try {
-				mainView.getContentPane().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-				//			mainView.reserveStatusLine(true);
-				final int[] sel = devicesTable.getSelectedModelRows();
-				final JFileChooser fc = new JFileChooser(appProp.getProperty("LAST_PATH"));
-				if(sel.length == 1) {
-					fc.setAcceptAllFileFilterUsed(false);
-					fc.setFileFilter(new FileNameExtensionFilter(LABELS.getString("filetype_sbk_desc"), Main.BACKUP_FILE_EXT));
-					ShellyAbstractDevice device = model.get(sel[0]);
+			if(worker != null && worker.isDone() == false) {
+				Msg.showMsg(mainView, "msgRestoreRunning", LABELS.getString("action_restore_tooltip"), JOptionPane.INFORMATION_MESSAGE);
+				return;
+			}
+			final int[] sel = devicesTable.getSelectedModelRows();
+			final JFileChooser fc = new JFileChooser(appProp.getProperty("LAST_PATH"));
+			if(sel.length == 1) {
+				fc.setAcceptAllFileFilterUsed(false);
+				fc.setFileFilter(new FileNameExtensionFilter(LABELS.getString("filetype_sbk_desc"), Main.BACKUP_FILE_EXT));
+				ShellyAbstractDevice device = model.get(sel[0]);
 
-					fc.setSelectedFile(new File(BackupAction.defFileName(device)));
-					if(fc.showOpenDialog(mainView) == JFileChooser.APPROVE_OPTION) {
-						try {
-							mainView.getContentPane().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-							restoreDevice(mainView, model, sel[0], fc.getSelectedFile().toPath(), false);
-							appProp.setProperty("LAST_PATH", fc.getCurrentDirectory().getCanonicalPath());
-						} catch (FileNotFoundException | NoSuchFileException e1) {
-							Msg.errorMsg(mainView, String.format(LABELS.getString("action_restore_error_file"), fc.getSelectedFile().getName()));
-						} catch (IOException e1) {
-							if(Msg.errorStatusMsg(mainView, device, e1) == false) {
-								LOG.error("Restore error", e1);
-							}
-						} catch (InterruptedException | RuntimeException e1) {
-							Msg.errorMsg(mainView, e1);
-						}
-					}
-				} else { // multiple restore
-					fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-					if(fc.showOpenDialog(mainView) == JFileChooser.APPROVE_OPTION) {
-						mainView.getContentPane().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-						for(int modelRow: sel) {
-							ShellyAbstractDevice device = model.get(modelRow);
+				fc.setSelectedFile(new File(BackupAction.defFileName(device)));
+			} else { // multiple restore
+				fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+			}
+
+			if(fc.showOpenDialog(mainView) == JFileChooser.APPROVE_OPTION) {
+
+				class RestoreWorker extends SwingWorker<String, Object> {
+					@Override
+					protected String doInBackground() {
+						mainView.getRootPane().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+						mainView.reserveStatusLine(true);
+						if(sel.length == 1) {
+							ShellyAbstractDevice device = model.get(sel[0]);
+							mainView.setStatus(String.format(LABELS.getString("statusRestore"), 1, 1, device.getHostname()));
 							try {
-								final File inFile = new File(fc.getSelectedFile(), BackupAction.defFileName(device));
-								restoreDevice(mainView, model, modelRow, inFile.toPath(), true);
+								restoreDevice(mainView, device, model, sel[0], fc.getSelectedFile().toPath(), false);
+								appProp.setProperty("LAST_PATH", fc.getCurrentDirectory().getCanonicalPath());
 							} catch (FileNotFoundException | NoSuchFileException e1) {
 								Msg.errorMsg(mainView, String.format(LABELS.getString("action_restore_error_file"), fc.getSelectedFile().getName()));
 							} catch (IOException e1) {
@@ -95,27 +91,53 @@ public class RestoreAction extends UsnaAction {
 							} catch (InterruptedException | RuntimeException e1) {
 								Msg.errorMsg(mainView, e1);
 							}
+						} else { // multiple restore
+							for(int i = 0; i < sel.length; i++) {
+								ShellyAbstractDevice device = model.get(sel[i]);
+								mainView.setStatus(String.format(LABELS.getString("statusRestore"), i + 1, sel.length, device.getHostname()));
+								final File inFile = new File(fc.getSelectedFile(), BackupAction.defFileName(device));
+								try {
+									restoreDevice(mainView, device, model, sel[i], inFile.toPath(), true);
+								} catch (FileNotFoundException | NoSuchFileException e1) {
+									Msg.errorMsg(mainView, String.format(LABELS.getString("action_restore_error_file"), inFile.getName()));
+								} catch (IOException e1) {
+									if(Msg.errorStatusMsg(mainView, device, e1) == false) {
+										LOG.error("Restore error", e1);
+									}
+								} catch (InterruptedException | RuntimeException e1) {
+									Msg.errorMsg(mainView, e1);
+								}
+							}
+							appProp.setProperty("LAST_PATH", fc.getSelectedFile().getPath());
 						}
-						appProp.setProperty("LAST_PATH", fc.getSelectedFile().getPath());
+						return null; // todo msg
+					}
+
+					@Override
+					protected void done() {
+//						try {
+							mainView.reserveStatusLine(false);
+//						} finally {
+							mainView.getRootPane().setCursor(Cursor.getDefaultCursor());
+							worker = null;
+//						}
 					}
 				}
-			} finally {
-				mainView.getContentPane().setCursor(Cursor.getDefaultCursor());
+				
+				new RestoreWorker().execute();
 			}
 		});
 	}
 
-	private static void restoreDevice(MainView mainView, Devices model, final int modelRow, final Path file, boolean multi) throws IOException, InterruptedException {
-		ShellyAbstractDevice device = model.get(modelRow);
+	private static void restoreDevice(MainView mainView, final ShellyAbstractDevice device, Devices model, final int modelRow, final Path file, boolean multi) throws IOException, InterruptedException {
 		try {
 			final Map<String, JsonNode> backupJsons = readBackupFile(file);
 			final Map<RestoreMsg, Object> test = device.restoreCheck(backupJsons);
-			//		mainView.getContentPane().setCursor(Cursor.getDefaultCursor());
 
 			for(Map.Entry<RestoreMsg, Object> e: test.entrySet()) {
 				if(e.getKey().getType() == RestoreMsg.Type.PRE &&
 						JOptionPane.showConfirmDialog(mainView, String.format(LABELS.getString(CHECK_MSG_PREFIX + e.getKey().name()), e.getValue()),
-								LABELS.getString("msgRestoreTitle"), JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE) != JOptionPane.YES_OPTION) {
+								LABELS.getString("msgRestoreTitle") + " - " + device.getHostname(), JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE) != JOptionPane.YES_OPTION) {
 					return;
 				}
 			}
@@ -126,9 +148,9 @@ public class RestoreAction extends UsnaAction {
 					if(val != null) {
 						Stream<Object> args = val instanceof Object[] arr ? Stream.of(arr) : Stream.of(val);
 						args = args.map(v -> LABELS.containsKey("lbl_" + device.getTypeID() + v) ? LABELS.getString("lbl_" + device.getTypeID() + v) : v);
-						Msg.errorMsg(mainView, String.format(LABELS.getString(CHECK_MSG_PREFIX + e.getKey().name()), args.toArray()));
+						Msg.showMsg(mainView, String.format(LABELS.getString(CHECK_MSG_PREFIX + e.getKey().name()), args.toArray()), LABELS.getString("msgRestoreTitle") + " - " + device.getHostname(), JOptionPane.ERROR_MESSAGE);
 					} else {
-						Msg.errorMsg(mainView, LABELS.getString(CHECK_MSG_PREFIX + e.getKey().name()));
+						Msg.showMsg(mainView, LABELS.getString(CHECK_MSG_PREFIX + e.getKey().name()), LABELS.getString("msgRestoreTitle") + " - " + device.getHostname(), JOptionPane.ERROR_MESSAGE);
 					}
 					return;
 				}
@@ -139,7 +161,6 @@ public class RestoreAction extends UsnaAction {
 				Msg.warningMsg(mainView, "<html>" + warn);
 			}
 
-			//		mainView.getContentPane().setCursor(Cursor.getDefaultCursor());
 			Map<RestoreMsg, String> resData = new HashMap<>();
 
 			if(test.containsKey(RestoreMsg.RESTORE_LOGIN) && multi == false) {
@@ -221,8 +242,6 @@ public class RestoreAction extends UsnaAction {
 					resData.put(RestoreMsg.QUESTION_RESTORE_SCRIPTS_ENABLE_LIKE_BACKED_UP, "true");
 				}
 			}
-
-			mainView.getContentPane().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 
 			model.pauseRefresh(modelRow);
 			final List<String> restoreResult = device.restore(backupJsons, resData); // Do restore

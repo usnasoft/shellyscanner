@@ -17,7 +17,6 @@ import java.awt.event.WindowEvent;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Paths;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Stream;
@@ -239,7 +238,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 			}
 		}
 		if(delete) {
-			Arrays.stream(devicesTable.getSelectedRows()).map(devicesTable::convertRowIndexToModel).boxed().sorted(Collections.reverseOrder()).forEach(i-> model.remove(i));
+			devicesTable.getSelectedModelRowsStream().boxed().sorted(Collections.reverseOrder()).forEach(i-> model.remove(i));
 		}
 	});
 	
