@@ -4,7 +4,9 @@ import static it.usna.shellyscan.Main.LABELS;
 
 import java.awt.BorderLayout;
 import java.awt.Cursor;
+import java.awt.FlowLayout;
 import java.awt.FontMetrics;
+import java.awt.event.KeyEvent;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -19,12 +21,14 @@ import java.util.stream.Stream;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
-import javax.swing.BoxLayout;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTextField;
+import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.table.TableColumn;
 
@@ -48,18 +52,20 @@ import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.g2.WebSocketDeviceListener;
 import it.usna.shellyscan.model.device.modules.FirmwareManager;
 import it.usna.shellyscan.view.DevicesTable;
+import it.usna.shellyscan.view.MainView;
 import it.usna.shellyscan.view.util.UtilMiscellaneous;
-import it.usna.swing.table.ExTooltipTable;
 import it.usna.swing.table.UsnaTableModel;
+import it.usna.swing.texteditor.TextDocumentListener;
 import it.usna.util.UsnaEventListener;
 
 public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventListener<Devices.EventType, Integer> {
 	private static final long serialVersionUID = 1L;
-	private ExTooltipTable table;
+	private FWUpdateTable table;
 	private UsnaTableModel tModel = new UsnaTableModel("", LABELS.getString("col_device"), LABELS.getString("dlgSetColCurrentV"), LABELS.getString("dlgSetColLastV"), LABELS.getString("dlgSetColBetaV"));
 	private List<DeviceFirmware> devicesFWData;
 
 	private JLabel lblCount = new JLabel();
+	private JTextField textFieldFilter = new JTextField();
 	private JButton btnCheck;
 
 	private ScheduledExecutorService exeService = Executors.newScheduledThreadPool(35);
@@ -74,14 +80,19 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 		table = new FWUpdateTable(tModel, this);
 
 		JScrollPane scrollPane = new JScrollPane();
+		scrollPane.setBorder(BorderFactory.createEmptyBorder(0, 0, 3, 0));
 		scrollPane.setViewportView(table);
 		add(scrollPane, BorderLayout.CENTER);
 
-		JPanel panel = new JPanel();
-		add(panel, BorderLayout.SOUTH);
-		panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
+		JPanel btnPanel = new JPanel(new BorderLayout());
+		JPanel btnPanelLeft = new JPanel(new FlowLayout(FlowLayout.CENTER, 1, 0));
+		btnPanel.add(btnPanelLeft, BorderLayout.WEST);
+		JPanel btnPanelRight = new JPanel(new FlowLayout(FlowLayout.CENTER, 1, 0));
+		btnPanel.add(btnPanelRight, BorderLayout.EAST);
+		add(btnPanel, BorderLayout.SOUTH);
+//		btnPanel.setLayout(new BoxLayout(btnPanel, BoxLayout.X_AXIS));
 
-		panel.add(Box.createHorizontalStrut(2));
+//		btnPanel.add(Box.createHorizontalStrut(2));
 
 		JButton btnUnselectAll = new JButton(new UsnaAction("btn_unselectAll", event -> {
 			for(int i= 0; i < tModel.getRowCount(); i++) {
@@ -95,7 +106,7 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 			countSelection();
 		}));
 		btnUnselectAll.setBorder(BorderFactory.createEmptyBorder(4, 7, 4, 7));
-		panel.add(btnUnselectAll);
+		btnPanelLeft.add(btnUnselectAll);
 
 		JButton btnSelectStable = new JButton(new UsnaAction("btn_selectAllSta", event -> {
 			for(int i= 0; i < tModel.getRowCount(); i++) {
@@ -109,7 +120,7 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 			countSelection();
 		}));
 		btnSelectStable.setBorder(BorderFactory.createEmptyBorder(4, 7, 4, 7));
-		panel.add(btnSelectStable);
+		btnPanelLeft.add(btnSelectStable);
 
 		JButton btnSelectBeta = new JButton(new UsnaAction("btn_selectAllbeta", event -> {
 			for(int i= 0; i < tModel.getRowCount(); i++) {
@@ -123,11 +134,33 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 			countSelection();
 		}));
 		btnSelectBeta.setBorder(BorderFactory.createEmptyBorder(4, 7, 4, 7));
-		panel.add(btnSelectBeta);
+		btnPanelLeft.add(btnSelectBeta);
 
-		panel.add(Box.createHorizontalStrut(12));
-		panel.add(lblCount);
-		panel.add(Box.createHorizontalGlue());
+		btnPanelLeft.add(Box.createHorizontalStrut(6));
+		btnPanelLeft.add(lblCount);
+//		btnPanel.add(Box.createHorizontalGlue());
+		
+		textFieldFilter.setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));
+		textFieldFilter.setColumns(12);
+		textFieldFilter.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_F, MainView.SHORTCUT_KEY), "find_focus_fw");
+		textFieldFilter.getActionMap().put("find_focus_fw", new UsnaAction(e -> textFieldFilter.requestFocus()));
+		btnPanelRight.add(textFieldFilter);
+		
+		UsnaAction eraseFilterAction =  new UsnaAction(null, null, "/images/erase-9-16.png", e -> {
+			textFieldFilter.setText("");
+			textFieldFilter.requestFocusInWindow();
+		});
+		JButton eraseFilterButton = new JButton(eraseFilterAction);
+		eraseFilterButton.setBorder(BorderFactory.createEmptyBorder(0, 2, 0, 2));
+		eraseFilterButton.setContentAreaFilled(false);
+		eraseFilterButton.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_E, MainView.SHORTCUT_KEY), "find_erase_fw");
+		eraseFilterButton.getActionMap().put("find_erase_fw", eraseFilterAction);
+		btnPanelRight.add(eraseFilterButton);
+		
+		textFieldFilter.getDocument().addDocumentListener( (TextDocumentListener)event -> {
+			table.setRowFilter(textFieldFilter.getText());
+			countSelection();
+		});
 
 		btnCheck = new JButton(new UsnaAction("btn_check", event -> {
 			setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
@@ -150,9 +183,10 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 			}, i + 1000, TimeUnit.MILLISECONDS);
 		}));
 		btnCheck.setBorder(BorderFactory.createEmptyBorder(4, 7, 4, 7));
-		panel.add(btnCheck);
+		btnPanelRight.add(Box.createHorizontalStrut(6));
+		btnPanelRight.add(btnCheck);
 
-		panel.add(Box.createHorizontalStrut(2));
+//		btnPanel.add(Box.createHorizontalStrut(2));
 	}
 	
 	FirmwareManager getFirmwareManager(int index) {
@@ -179,7 +213,7 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 				return new Object[] {DevicesTable.UPDATING_BULLET, UtilMiscellaneous.getExtendedHostName(d), FirmwareManager.getShortVersion(fw.current()),
 						(d instanceof AbstractG2Device) ? String.format(LABELS.getString("lbl_downloading"), 0) : LABELS.getString("labelUpdating"), ""};
 			} else {
-				Boolean stableCell = (fw.newStable() != null) ? select : null;
+				Boolean stableCell = (fw.newStable() != null) ? (select && (fw.current() == null || fw.newStable().compareTo(fw.current()) > 0)) : null;
 				Boolean betaCell = (fw.newBeta() != null) ? Boolean.FALSE : null;
 				return new Object[] {DevicesTable.getStatusIcon(d), UtilMiscellaneous.getExtendedHostName(d), FirmwareManager.getShortVersion(fw.current()), stableCell, betaCell};
 			}
@@ -277,13 +311,15 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 				String.format(LABELS.getString("dlgSetConfirmUpdate"), count), LABELS.getString("dlgSetFWUpdate"),
 				JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION) {
 			String res = "";
-			for(int i = 0; i < parent.getLocalSize(); i++) {
-				Object update = tModel.getValueAt(i, FWUpdateTable.COL_STABLE);
-				Object beta = tModel.getValueAt(i, FWUpdateTable.COL_BETA);
-				if(update instanceof Boolean && ((Boolean)update) == Boolean.TRUE) {
-					res += updateDeviceFW(i, true);
-				} else if(beta instanceof Boolean && ((Boolean)beta) == Boolean.TRUE) {
-					res += updateDeviceFW(i, false);
+			for(int i = 0; i < tModel.getRowCount(); i++) {
+				if(table.convertRowIndexToView(i) >= 0) { // included in filter
+					Object update = tModel.getValueAt(i, FWUpdateTable.COL_STABLE);
+					Object beta = tModel.getValueAt(i, FWUpdateTable.COL_BETA);
+					if(update instanceof Boolean && ((Boolean)update) == Boolean.TRUE) {
+						res += updateDeviceFW(i, true);
+					} else if(beta instanceof Boolean && ((Boolean)beta) == Boolean.TRUE) {
+						res += updateDeviceFW(i, false);
+					}
 				}
 			}
 			fillTable(false);
@@ -333,10 +369,12 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 		int countS = 0;
 		int countB = 0;
 		for(int i = 0; i < tModel.getRowCount(); i++) {
-			Object update = tModel.getValueAt(i, FWUpdateTable.COL_STABLE);
-			Object beta = tModel.getValueAt(i, FWUpdateTable.COL_BETA);
-			if(update == Boolean.TRUE) countS++;
-			if(beta == Boolean.TRUE) countB++;
+			if(table.convertRowIndexToView(i) >= 0) {
+				Object update = tModel.getValueAt(i, FWUpdateTable.COL_STABLE);
+				Object beta = tModel.getValueAt(i, FWUpdateTable.COL_BETA);
+				if(update == Boolean.TRUE) countS++;
+				if(beta == Boolean.TRUE) countB++;
+			}
 		}
 		lblCount.setText(String.format(LABELS.getString("lbl_update_count"), countS, countB));
 		return countS + countB;

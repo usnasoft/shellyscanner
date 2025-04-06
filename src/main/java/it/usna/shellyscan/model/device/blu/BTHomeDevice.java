@@ -338,3 +338,23 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 		return errors;
 	}
 }
+
+/*
+"BTHomeSensor.SetConfig",
+"BTHomeSensor.GetConfig",
+"BTHomeSensor.GetStatus",
+"BTHomeDevice.UpdateFirmware",
+"BTHomeDevice.GetKnownObjects",
+"BTHomeDevice.SetConfig",
+"BTHomeDevice.GetConfig",
+"BTHomeDevice.GetStatus",
+"BTHome.GetObjectInfos",
+"BTHome.DeleteSensor",
+"BTHome.AddSensor",
+"BTHome.DeleteDevice",
+"BTHome.AddDevice",
+"BTHome.StartDeviceDiscovery",
+"BTHome.SetConfig",
+"BTHome.GetConfig",
+"BTHome.GetStatus"
+*/

@@ -49,7 +49,7 @@ public class FirmwareManagerG2 implements FirmwareManager {
 					stable = node.at("/stable/version").textValue(); // not id
 					beta = node.at("/beta/version").textValue(); // not id
 				}
-				if((node = batteryDevice.getStoredJSON("/rpc/Shelly.GetConfig")) != null) { // this could fresher than "/rpc/Shelly.GetDeviceInfo"
+				if((node = batteryDevice.getStoredJSON("/rpc/Shelly.GetConfig")) != null) { // probably fresher than "/rpc/Shelly.GetDeviceInfo"
 					current = node.at("/sys/device/fw_id").asText();
 				} else if((node = batteryDevice.getStoredJSON("/shelly")) != null) {
 					current = node.path("fw_id").asText();
@@ -82,7 +82,6 @@ public class FirmwareManagerG2 implements FirmwareManager {
 	public String update(boolean stable) {
 		updating = true;
 		String res = d.postCommand("Shelly.Update", stable ? "{\"stage\":\"stable\"}" : "{\"stage\":\"beta\"}");
-//		if(res == null || res.isEmpty()) {
 		if(res != null && res.isEmpty() == false) {
 			updating = false;
 		}

@@ -5,13 +5,16 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
 
+import javax.swing.DefaultRowSorter;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JTable;
+import javax.swing.RowFilter;
 import javax.swing.event.ChangeEvent;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableModel;
+import javax.swing.table.TableRowSorter;
 
 import it.usna.shellyscan.Main;
 import it.usna.shellyscan.model.device.modules.FirmwareManager;
@@ -21,6 +24,7 @@ import it.usna.swing.table.ExTooltipTable;
 public class FWUpdateTable extends ExTooltipTable {
 	private static final long serialVersionUID = 1L;
 	final static int COL_STATUS = 0;
+	final static int COL_ID = 1;
 	final static int COL_CURRENT = 2;
 	final static int COL_STABLE = 3;
 	final static int COL_BETA = 4;
@@ -28,7 +32,14 @@ public class FWUpdateTable extends ExTooltipTable {
 	private final PanelFWUpdate fwPanel;
 
 	public FWUpdateTable(TableModel tm, PanelFWUpdate fwPanel) {
-		super(tm);
+		super(tm, true);
+		DefaultRowSorter<?,?> sorter = (DefaultRowSorter<?,?>)getRowSorter();
+		sorter.setSortable(COL_STATUS, false);
+		sorter.setSortable(COL_ID, false);
+		sorter.setSortable(COL_CURRENT, false);
+		sorter.setSortable(COL_STABLE, false);
+		sorter.setSortable(COL_BETA, false);
+
 		this.fwPanel = fwPanel;
 		getTableHeader().setReorderingAllowed(false);
 		TableCellRenderer fwRendered = new FWCellRendered();
@@ -106,6 +117,16 @@ public class FWUpdateTable extends ExTooltipTable {
 			return new Point(cellRec.x + 16, cellRec.y); // +16 -> do not overlap to checkbox
 		} else {
 			return super.getToolTipLocation(evt);
+		}
+	}
+	
+	public void setRowFilter(String filter) {
+		TableRowSorter<?> sorter = (TableRowSorter<?>)getRowSorter();
+		if(filter.isEmpty()) {
+			sorter.setRowFilter(null);
+		} else {
+			RowFilter<TableModel, Integer> regexFilter = RowFilter.regexFilter("(?i).*\\Q" + filter.replace("\\E", "\\e") + "\\E.*", COL_ID, COL_CURRENT);
+			sorter.setRowFilter(regexFilter);
 		}
 	}
 
