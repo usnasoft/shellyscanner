@@ -4,6 +4,7 @@ import static it.usna.shellyscan.Main.LABELS;
 
 import java.awt.BorderLayout;
 import java.awt.Cursor;
+import java.awt.FlowLayout;
 import java.awt.Frame;
 import java.awt.Window;
 import java.util.concurrent.TimeUnit;
@@ -76,8 +77,9 @@ public class DialogDeviceSettings extends JDialog implements UsnaEventListener<D
 		this.setSize(610, 420);
 		setLocationRelativeTo(owner);
 
-		JPanel panel_1 = new JPanel();
-		getContentPane().add(panel_1, BorderLayout.SOUTH);
+		JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 5, 3));
+//		btnPanel.setBackground(Main.STATUS_LINE_COLOR);
+		getContentPane().add(btnPanel, BorderLayout.SOUTH);
 		Gen devTypes = getTypes();
 		PanelFWUpdate panelFW = new PanelFWUpdate(this);
 		tabbedPane.add(LABELS.getString("dlgSetFWUpdate"), panelFW);
@@ -112,9 +114,9 @@ public class DialogDeviceSettings extends JDialog implements UsnaEventListener<D
 				}
 			});
 		});
-		panel_1.add(btnOKButton);
-		panel_1.add(btnApplyClose);
-		panel_1.add(btnClose);
+		btnPanel.add(btnOKButton);
+		btnPanel.add(btnApplyClose);
+		btnPanel.add(btnClose);
 		
 		tabbedPane.setSelectedIndex(defaultPanel);
 
