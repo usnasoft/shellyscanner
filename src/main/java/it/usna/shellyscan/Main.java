@@ -181,12 +181,12 @@ public class Main {
 		// Activate dynamic model - Go interactive
 		try {
 			UsnaSwingUtils.setLookAndFeel(UsnaSwingUtils.LF_NIMBUS);
+//			UIManager.getLookAndFeelDefaults().put("Table:\"Table.cellRenderer\".alternateRowColor", TAB_LINE2_COLOR); // genera strani log
 		} catch (Exception e) {
 			Msg.errorMsg(e);
 		}
 		//		UIManager.put("Table.background", new ColorUIResource(TAB_LINE1));
 		//		UIManager.put("Table.alternateRowColor", TAB_LINE2);
-		//		UIManager.getLookAndFeelDefaults().put("Table:\"Table.cellRenderer\".background", new ColorUIResource(TAB_LINE1));
 
 		if(TAB_VERSION.equals(appProp.getProperty("TAB_VER")) == false) {
 			appProp.setProperty("TAB_VER", TAB_VERSION);

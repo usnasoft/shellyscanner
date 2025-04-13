@@ -81,7 +81,7 @@ public class BackupAction extends UsnaAction {
 				protected void done() {
 					try {
 						mainView.reserveStatusLine(false);
-						Msg.showHtmlMessageDialog(mainView, get(), LABELS.getString("titleBackupDone"), JOptionPane.INFORMATION_MESSAGE);
+						Msg.showHtmlMessageDialog(mainView, get(), LABELS.getString("titleBackupDone"), JOptionPane.PLAIN_MESSAGE);
 					} catch (Exception e) {
 						Msg.errorMsg(e);
 					} finally {

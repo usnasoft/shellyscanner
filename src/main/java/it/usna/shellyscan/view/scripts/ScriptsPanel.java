@@ -89,13 +89,15 @@ public class ScriptsPanel extends JPanel {
 				return mCol == COL_ENABLED || scripts.get(mRow).hasOpenEditor() == false;
 			}
 
-			@Override
-			public Component prepareEditor(TableCellEditor editor, int row, int column) {
-				JComponent comp = (JComponent) super.prepareEditor(editor, row, column);
-				comp.setBackground(table.getSelectionBackground());
-				comp.setForeground(table.getSelectionForeground());
-				return comp;
-			}
+			// @Override // very bad when loose focus
+			// public Component prepareEditor(TableCellEditor editor, int row,
+			// int column) {
+			// JComponent comp = (JComponent) super.prepareEditor(editor, row,
+			// column);
+			// comp.setBackground(table.getSelectionBackground());
+			// comp.setForeground(table.getSelectionForeground());
+			// return comp;
+			// }
 
 			@Override
 			public void editingStopped(ChangeEvent e) {
@@ -169,6 +171,7 @@ public class ScriptsPanel extends JPanel {
 			if (fc.showSaveDialog(ScriptsPanel.this) == JFileChooser.APPROVE_OPTION) {
 				try (FileWriter w = new FileWriter(fc.getSelectedFile())) {
 					w.write(sc.getCode());
+					Msg.showMsg(ScriptsPanel.this, "btnDownloadSuccess", LABELS.getString("btnDownload"), JOptionPane.INFORMATION_MESSAGE);
 				} catch (IOException e1) {
 					Msg.errorMsg(ScriptsPanel.this, LABELS.getString("msgScrNoCode"));
 				}
@@ -223,7 +226,7 @@ public class ScriptsPanel extends JPanel {
 		table.addMouseListener(tablePopup.getMouseListener());
 
 		// Fill table
-		for (Script sc: Script.list(device)) {
+		for (Script sc : Script.list(device)) {
 			scripts.add(new ScriptAndEditor(sc));
 			tModel.addRow(sc.getName(), sc.isEnabled(), sc.isRunning());
 		}
@@ -263,7 +266,9 @@ public class ScriptsPanel extends JPanel {
 				String code = IOFile.readFile(in.toPath());
 				res = sc.putCode(code);
 			}
-			if (res != null) {
+			if (res == null) {
+				Msg.showMsg(ScriptsPanel.this, "btnUploadSuccess", LABELS.getString("btnUpload"), JOptionPane.INFORMATION_MESSAGE);
+			} else {
 				Msg.errorMsg(this, res);
 			}
 		} catch (/* IO */Exception e1) {

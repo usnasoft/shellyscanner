@@ -327,23 +327,28 @@ Shelly 1 Gen4
 Shelly 1PM Gen4
 Shelly 1 Mini Gen4
 Shelly 1PM Mini Gen4
-LinkedGo ST1820 thermostat - todo restore
+LinkedGo ST1820 thermostat
 LinkedGo ST802 thermostat (no humidity, no fan)
-device info gen4: matter 
+device info gen4: matter (todo gen3)
 search on fw update
 multi restore: no enable restricted login, no wi-fi (1/2) password, no AP password, no MQTT password, Script override, no reboot offer
 multi restore todo: updatind progress dialog
 
+todo: reload blu after restore (?), rivedere con fw 1.6.0
+todo: blu button, rivedere restore con fw 1.6.0
+todo: LoRa: restore
+https://shelly-api-docs.shelly.cloud/gen2/DynamicComponents/BTHome/ (1.6.0)
+
 ---
 // TODO
-// batch restore senza Wi-Fi, AP, MQTT e restricted login. Il restore viene chiamato con apposito flag (si seleziona la cartella dove saranno contenuti i file con nome standard)
+// schedule editor
 // rgb_xx panel listener (?)
 // checklist AP ssid != mac (fw 1.5.0 stable)
 // wall display restore profiles and rules (/rpc/Thermostat.Schedule.ListRules?id=0&profile_id=1)
 // portare il modello sulla tabella per semplificare il calcolo dei tooltip (e delle icone di stato)
 // Xmod1 sganciare bottone se detatched (?)
 // add "knx" support
-// rivedere it.usna.shellyscan.model.device.g2.ShellyPlusi4 alla luce di "Input.Trigger" (?)
+// rivedere it.usna.shellyscan.model.device.g2.ShellyPlusi4 alla luce di "Input.Trigger" (?) no, al momento è gestibile solo il push
 // grafico energia
 // inclusione massiva
 // gestione "reading": se stato online leggo uptime, se uptime diverso dal precedente memorizzo il timestamp else Quando il time stamp corrente - memorizzato > intervallo * 3 modifico lo stato - si, ma dove?

@@ -9,11 +9,11 @@ import java.awt.Window;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.JButton;
@@ -38,6 +38,10 @@ import it.usna.swing.table.UsnaTableModel;
 import it.usna.swing.texteditor.TextDocumentListener;
 import it.usna.util.UsnaEventListener;
 
+/**
+ * Single device selection dialog - only ShellyAbstractDevice.Status.ON_LINE are listed
+ * @author usna
+ */
 public class DialogDeviceSelection extends JDialog {
 	private static final long serialVersionUID = 1L;
 
@@ -54,11 +58,13 @@ public class DialogDeviceSelection extends JDialog {
 		scrollPane.setViewportView(table);
 		getContentPane().add(scrollPane, BorderLayout.CENTER);
 
+		ArrayList<ShellyAbstractDevice> modelMap = new ArrayList<>();
 		for(int i = 0; i < model.size(); i++) {
 			ShellyAbstractDevice d = model.get(i);
-//			if(d.getStatus() == ShellyAbstractDevice.Status.ON_LINE) {
+			if(d.getStatus() == ShellyAbstractDevice.Status.ON_LINE) {
 				tModel.addRow(UtilMiscellaneous.getExtendedHostName(d), d.getAddressAndPort());
-//			}
+				modelMap.add(d);
+			}
 		}
 		table.sortByColumn(1, SortOrder.ASCENDING);
 
@@ -84,25 +90,25 @@ public class DialogDeviceSelection extends JDialog {
 			final int[] cols = new int[] {0, 1};
 			String filter = textFieldFilter.getText();
 			TableRowSorter<?> sorter = (TableRowSorter<?>)table.getRowSorter();
-			if(filter.isEmpty() == false) {
+			if(filter.isEmpty()) {
+				sorter.setRowFilter(null);
+			} else {
 				filter = filter.replace("\\E", "\\e");
 				sorter.setRowFilter(RowFilter.regexFilter("(?i).*\\Q" + filter + "\\E.*", cols));
-			} else {
-				sorter.setRowFilter(null);
 			}
 		});
-		textFieldFilter.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_F, MainView.SHORTCUT_KEY), "find_focus_mw");
-		textFieldFilter.getActionMap().put("find_focus_mw", new UsnaAction(e -> textFieldFilter.requestFocus()));
+		textFieldFilter.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_F, MainView.SHORTCUT_KEY), "find_focus_sel");
+		textFieldFilter.getActionMap().put("find_focus_sel", new UsnaAction(e -> textFieldFilter.requestFocus()));
 		
-		final Action eraseFilterAction = new UsnaAction(this, null, "/images/erase-9-16.png", e -> {
+		final UsnaAction eraseFilterAction = new UsnaAction(this, null, "/images/erase-9-16.png", e -> {
 			textFieldFilter.setText("");
 			textFieldFilter.requestFocusInWindow();
 			table.clearSelection();
 		});
 		JButton eraseFilterButton = new JButton(eraseFilterAction);
 		eraseFilterButton.setContentAreaFilled(false);
-		eraseFilterButton.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_E, MainView.SHORTCUT_KEY), "find_erase");
-		eraseFilterButton.getActionMap().put("find_erase", eraseFilterAction);
+		eraseFilterButton.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_E, MainView.SHORTCUT_KEY), "find_erase_sel");
+		eraseFilterButton.getActionMap().put("find_erase_sel", eraseFilterAction);
 		eraseFilterButton.setBorder(BorderFactory.createEmptyBorder(1, 2, 1, 2));
 		
 		panelFind.add(eraseFilterButton);
@@ -119,7 +125,10 @@ public class DialogDeviceSelection extends JDialog {
 				updateTaskFuture = exeService.submit(() -> {
 					setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 					try {
-						listener.update(model.get(table.getSelectedModelRow()), updateTaskFuture);
+						int row = table.getSelectedModelRow();
+						if(row >= 0) {
+							listener.update(modelMap.get(row), updateTaskFuture);
+						}
 					} finally {
 						setCursor(Cursor.getDefaultCursor());
 					}
