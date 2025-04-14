@@ -21,7 +21,6 @@ import java.util.stream.Stream;
 
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
-import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
@@ -48,7 +47,8 @@ public class RestoreAction extends UsnaAction {
 	private final static Logger LOG = LoggerFactory.getLogger(RestoreAction.class);
 	private final static String CHECK_MSG_PREFIX = "msgRestore";
 	private final static String ERROR_MSG_PREFIX = "errRestore";
-	private final static String QUEUE_RET = "Q";
+	private final static String QUEUE_RET = "QUEUE";
+	private final static String CANCEL_RET = "CANC";
 	private SwingWorker<String, Object> worker;
 
 	public RestoreAction(MainView mainView, DevicesTable devicesTable, AppProperties appProp, Devices model) {
@@ -78,19 +78,18 @@ public class RestoreAction extends UsnaAction {
 					protected String doInBackground() {
 						mainView.getRootPane().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 						mainView.reserveStatusLine(true);
-//						String res = "<html>";
-						if(sel.length == 1) {
+						if(sel.length == 1) { // single device
 							ShellyAbstractDevice device = model.get(sel[0]);
 							mainView.setStatus(String.format(LABELS.getString("statusRestore"), 1, 1, device.getHostname()));
 							try {
 								appProp.setProperty("LAST_PATH", fc.getCurrentDirectory().getCanonicalPath());
-								String res = restoreDevice(mainView, device, model, sel[0], fc.getSelectedFile().toPath(), false);
-								if(res == null) {
+								String restoreRet = restoreDevice(mainView, device, model, sel[0], fc.getSelectedFile().toPath(), false);
+								if(restoreRet == null) {
 									Msg.showHtmlMessageDialog(mainView, "<html>" + String.format(LABELS.getString("dlgSetMultiMsgOk"), device.getHostname()), LABELS.getString("titleRestoreDone"), JOptionPane.INFORMATION_MESSAGE);
-								} else if(QUEUE_RET.equals(res)) {
+								} else if(QUEUE_RET.equals(restoreRet)) {
 									JOptionPane.showMessageDialog(mainView, LABELS.getString("msgRestoreQueue"), device.getHostname(), JOptionPane.WARNING_MESSAGE);
-								} else {
-									Msg.showMsg(mainView, res, LABELS.getString("msgRestoreTitle") + " - " + device.getHostname(), JOptionPane.ERROR_MESSAGE);
+								} else if(CANCEL_RET.equals(restoreRet) == false) { // CANCEL_RET follows a showConfirmDialog -> no message here
+									Msg.showMsg(mainView, restoreRet, LABELS.getString("msgRestoreTitle") + " - " + device.getHostname(), JOptionPane.ERROR_MESSAGE);
 								}
 							} catch (FileNotFoundException | NoSuchFileException e1) {
 								Msg.errorMsg(mainView, String.format(LABELS.getString("action_restore_error_file"), fc.getSelectedFile().getName()));
@@ -101,7 +100,7 @@ public class RestoreAction extends UsnaAction {
 							} catch (InterruptedException | RuntimeException e1) {
 								Msg.errorMsg(mainView, e1);
 							}
-						} else { // multiple restore
+						} else { // multiple devices
 							appProp.setProperty("LAST_PATH", fc.getSelectedFile().getPath());
 							String res = "<html>";
 							for(int i = 0; i < sel.length; i++) {
@@ -109,18 +108,19 @@ public class RestoreAction extends UsnaAction {
 								mainView.setStatus(String.format(LABELS.getString("statusRestore"), i + 1, sel.length, device.getHostname()));
 								final File inFile = new File(fc.getSelectedFile(), BackupAction.defFileName(device));
 								try {
-									String ret = restoreDevice(mainView, device, model, sel[i], inFile.toPath(), true);
-									if(ret == null || ret.isEmpty()) {
-										res += String.format(LABELS.getString("dlgSetMultiMsgOk"), device.getHostname(), ret) + "<br>";
-									} else if(QUEUE_RET.equals(ret)) {
-										res += String.format(LABELS.getString("dlgSetMultiMsgQueue"), device.getHostname(), ret) + "<br>";
-									} else if(ret.length() < 50) {
-										res += String.format(LABELS.getString("dlgSetMultiMsgFailReason"), device.getHostname(), ret) + "<br>";
+									String restoreRet = restoreDevice(mainView, device, model, sel[i], inFile.toPath(), true);
+									if(restoreRet == null) {
+										res += String.format(LABELS.getString("dlgSetMultiMsgOk"), device.getHostname(), restoreRet) + "<br>";
+									} else if(QUEUE_RET.equals(restoreRet)) {
+										res += String.format(LABELS.getString("dlgSetMultiMsgQueue"), device.getHostname(), restoreRet) + "<br>";
+									} else if(CANCEL_RET.equals(restoreRet)) {
+										res += String.format(LABELS.getString("dlgSetMultiMsgCancel"), device.getHostname(), restoreRet) + "<br>";
+									} else if(restoreRet.length() < 50) {
+										res += String.format(LABELS.getString("dlgSetMultiMsgFailReason"), device.getHostname(), restoreRet) + "<br>";
 									} else {
 										res += String.format(LABELS.getString("dlgSetMultiMsgFail"), device.getHostname()) + "<br>";
 									}
 								} catch (FileNotFoundException | NoSuchFileException e1) {
-//									Msg.errorMsg(mainView, String.format(LABELS.getString("action_restore_error_file"), inFile.getName()));
 									res += String.format(LABELS.getString("dlgSetMultiMsgFailReason"), device.getHostname(), String.format(LABELS.getString("action_restore_error_file"), inFile.getName())) + "<br>";
 								} catch (IOException | InterruptedException | RuntimeException e1) {
 									res += String.format(LABELS.getString("dlgSetMultiMsgFail"), device.getHostname()) + "<br>";
@@ -154,7 +154,7 @@ public class RestoreAction extends UsnaAction {
 				if(e.getKey().getType() == RestoreMsg.Type.PRE &&
 						JOptionPane.showConfirmDialog(mainView, String.format(LABELS.getString(CHECK_MSG_PREFIX + e.getKey().name()), e.getValue()),
 								LABELS.getString("msgRestoreTitle") + " - " + device.getHostname(), JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE) != JOptionPane.YES_OPTION) {
-					return null;
+					return CANCEL_RET;
 				}
 			}
 
@@ -164,16 +164,14 @@ public class RestoreAction extends UsnaAction {
 					if(val != null) {
 						Stream<Object> args = val instanceof Object[] arr ? Stream.of(arr) : Stream.of(val);
 						args = args.map(v -> LABELS.containsKey("lbl_" + device.getTypeID() + v) ? LABELS.getString("lbl_" + device.getTypeID() + v) : v);
-//						Msg.showMsg(mainView, String.format(LABELS.getString(CHECK_MSG_PREFIX + e.getKey().name()), args.toArray()), LABELS.getString("msgRestoreTitle") + " - " + device.getHostname(), JOptionPane.ERROR_MESSAGE);
 						return String.format(LABELS.getString(CHECK_MSG_PREFIX + e.getKey().name()), args.toArray());
 					} else {
-//						Msg.showMsg(mainView, LABELS.getString(CHECK_MSG_PREFIX + e.getKey().name()), LABELS.getString("msgRestoreTitle") + " - " + device.getHostname(), JOptionPane.ERROR_MESSAGE);
 						return LABELS.getString(CHECK_MSG_PREFIX + e.getKey().name());
 					}
 				}
 			}
-			String warn = test.entrySet().stream().filter(e -> e.getKey().getType() == RestoreMsg.Type.WARN).
-					map(e -> LABELS.getString(CHECK_MSG_PREFIX + e.getKey().name())).collect(Collectors.joining("<br><br>"));
+			String warn = test.entrySet().stream().filter(e -> e.getKey().getType() == RestoreMsg.Type.WARN).map(e -> LABELS.getString(CHECK_MSG_PREFIX + e.getKey().name()))
+					.collect(Collectors.joining("<br><br>"));
 			if(warn.isEmpty() == false) {
 				Msg.warningMsg(mainView, "<html>" + warn);
 			}
@@ -276,17 +274,15 @@ public class RestoreAction extends UsnaAction {
 							JOptionPane.OK_CANCEL_OPTION, JOptionPane.INFORMATION_MESSAGE, null, new Object[] {ok, LABELS.getString("action_reboot_name")}, ok) == 1 /*reboot*/) {
 						device.setStatus(Status.READING);
 						//	devicesTable.getModel().setValueAt(DevicesTable.UPDATING_BULLET, modelRow, DevicesTable.COL_STATUS_IDX);
-						SwingUtilities.invokeLater(() -> model.reboot(modelRow));
+//						SwingUtilities.invokeLater(() -> model.reboot(modelRow));
+						model.reboot(modelRow);
 					}
-				} /*else {
-					JOptionPane.showMessageDialog(mainView, LABELS.getString("msgRestoreSuccess"), device.getHostname(), JOptionPane.INFORMATION_MESSAGE);
-				}*/
+				}
 				mainView.update(Devices.EventType.UPDATE, modelRow);
 				return null;
 			} else {
-				if(device.getStatus() == Status.OFF_LINE || device.getStatus() == Status.NOT_LOOGGED || device.getStatus() == Status.GHOST) { // if error happened because the device is off-line -> try to queue action in DeferrablesContainer
+				if(device.getStatus() == Status.OFF_LINE || device.getStatus() == Status.NOT_LOOGGED || device.getStatus() == Status.GHOST) { // if error caused by "device is off-line" -> try to queue action in DeferrablesContainer
 					LOG.debug("Interactive Restore error {} {}", device, ret);
-//					SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(mainView, LABELS.getString("msgRestoreQueue"), device.getHostname(), JOptionPane.WARNING_MESSAGE));
 
 					DeferrablesContainer dc = DeferrablesContainer.getInstance();
 					dc.addOrUpdate(modelRow, DeferrableTask.Type.RESTORE, LABELS.getString("action_restore_tooltip"), (def, dev) -> {
@@ -305,11 +301,9 @@ public class RestoreAction extends UsnaAction {
 						} catch(Exception e) {}
 						return restoreError;
 					});
-//					mainView.update(Devices.EventType.UPDATE, modelRow);
 					return QUEUE_RET;
 				} else {
 					LOG.error("Restore error {} {}", device, ret);
-//					Msg.showMsg(mainView, ret, device.getHostname(), JOptionPane.ERROR_MESSAGE);
 					mainView.update(Devices.EventType.UPDATE, modelRow);
 					return ret;
 				}
