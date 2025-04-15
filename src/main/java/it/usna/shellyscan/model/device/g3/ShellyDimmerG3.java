@@ -29,12 +29,13 @@ import it.usna.shellyscan.model.device.modules.DeviceModule;
 public class ShellyDimmerG3 extends AbstractG3Device implements InternalTmpHolder, ModulesHolder {
 	private final static Logger LOG = LoggerFactory.getLogger(ShellyDimmerG3.class);
 	public final static String ID = "DimmerG3";
+	public final static String MODEL = "S3DM-0A101WWL";
 	private float internalTmp;
 	private MetersWVI baseMeasures = new MetersWVI();
 	private Meters[] meters;
 	private LightWhite light = new LightWhite(this, 0);
 	private LightWhite[] lightArray = new LightWhite[] {light};
-	private SensorAddOn addOn;
+	private SensorAddOn sensorAddOn;
 
 	public ShellyDimmerG3(InetAddress address, int port, String hostname) {
 		super(address, port, hostname);
@@ -54,10 +55,10 @@ public class ShellyDimmerG3 extends AbstractG3Device implements InternalTmpHolde
 	private JsonNode configure() throws IOException {	
 		final JsonNode config = getJSON("/rpc/Shelly.GetConfig");
 		if(SensorAddOn.ADDON_TYPE.equals(config.get("sys").get("device").path("addon_type").asText())) {
-			addOn = new SensorAddOn(this);
-			meters = (addOn.getTypes().length > 0) ? new Meters[] {baseMeasures, addOn} : new Meters[] {baseMeasures};
+			sensorAddOn = new SensorAddOn(this);
+			meters = (sensorAddOn.getTypes().length > 0) ? new Meters[] {baseMeasures, sensorAddOn} : new Meters[] {baseMeasures};
 		} else {
-			addOn = null;
+			sensorAddOn = null;
 			meters = new Meters[] {baseMeasures};
 		}
 		return config;
@@ -92,8 +93,8 @@ public class ShellyDimmerG3 extends AbstractG3Device implements InternalTmpHolde
 	protected void fillSettings(JsonNode configuration) throws IOException {
 		super.fillSettings(configuration);
 		light.fillSettings(configuration.get("light:0"));
-		if(addOn != null) {
-			addOn.fillSettings(configuration);
+		if(sensorAddOn != null) {
+			sensorAddOn.fillSettings(configuration);
 		}
 	}
 	
@@ -104,8 +105,8 @@ public class ShellyDimmerG3 extends AbstractG3Device implements InternalTmpHolde
 		internalTmp = lightStatus.get("temperature").get("tC").floatValue();
 		baseMeasures.fill(lightStatus);
 		light.fillStatus(lightStatus, status.get("input:0"));
-		if(addOn != null) {
-			addOn.fillStatus(status);
+		if(sensorAddOn != null) {
+			sensorAddOn.fillStatus(status);
 		}
 	}
 
@@ -116,7 +117,7 @@ public class ShellyDimmerG3 extends AbstractG3Device implements InternalTmpHolde
 		} catch (IOException e) {
 			LOG.error("restoreCheck", e);
 		}
-		SensorAddOn.restoreCheck(this, addOn, backupJsons, res);
+		SensorAddOn.restoreCheck(this, sensorAddOn, backupJsons, res);
 	}
 	
 	@Override

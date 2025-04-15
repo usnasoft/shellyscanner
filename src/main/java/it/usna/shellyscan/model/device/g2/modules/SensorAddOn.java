@@ -312,7 +312,6 @@ public class SensorAddOn extends Meters {
 	}
 
 	public static void restore(AbstractG2Device d, SensorAddOn addOn, Map<String, JsonNode> backupJsons, List<String> errors) throws InterruptedException {
-//		SensorAddOn addOn = d.getSensorAddOn();
 		JsonNode backupAddOn = backupJsons.get(BACKUP_SECTION);
 		if(backupAddOn == null && addOn != null) { // there is addon on the device but not on backup -> disable (must reboot)
 			errors.add(enable(d, false));
@@ -353,7 +352,7 @@ public class SensorAddOn extends Meters {
 	private static void restoreAddoOnConfig(AbstractG2Device d, JsonNode backupAddOn, JsonNode backConfig, List<String> errors) throws InterruptedException {
 		try {
 			if(backupAddOn != null) {
-				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+//				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 				JsonNode config = d.getJSON("/rpc/Shelly.GetConfig");
 				Iterator<Entry<String, JsonNode>> nodes = backupAddOn.fields();
 				while(nodes.hasNext()) {

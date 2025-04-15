@@ -20,6 +20,7 @@ import it.usna.shellyscan.model.device.g2.modules.Input;
 import it.usna.shellyscan.model.device.g2.modules.Relay;
 import it.usna.shellyscan.model.device.g2.modules.Roller;
 import it.usna.shellyscan.model.device.g2.modules.SensorAddOn;
+import it.usna.shellyscan.model.device.g3.modules.LoRaAddOn;
 import it.usna.shellyscan.model.device.modules.DeviceModule;
 
 /**
@@ -29,6 +30,7 @@ import it.usna.shellyscan.model.device.modules.DeviceModule;
 public class Shelly2PMG3 extends AbstractG3Device implements ModulesHolder, InternalTmpHolder {
 	private final static Logger LOG = LoggerFactory.getLogger(Shelly2PMG3.class);
 	public final static String ID = "S2PMG3";
+	public final static String MODEL = "S3SW-002P16EU";
 	private boolean modeRelay;
 	private final static Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.W, Meters.Type.PF, Meters.Type.V, Meters.Type.I};
 	private Relay relay0, relay1;
@@ -42,7 +44,8 @@ public class Shelly2PMG3 extends AbstractG3Device implements ModulesHolder, Inte
 	private Meters meters0, meters1;
 	private float pf0, pf1;
 	private Meters[] meters;
-	private SensorAddOn addOn;
+	private SensorAddOn sensorAddOn;
+	private boolean loraAddOn;
 
 	private final static String MODE_RELAY = "switch";
 
@@ -100,11 +103,13 @@ public class Shelly2PMG3 extends AbstractG3Device implements ModulesHolder, Inte
 	
 	private JsonNode configure() throws IOException {
 		final JsonNode config = getJSON("/rpc/Shelly.GetConfig");
-		if(SensorAddOn.ADDON_TYPE.equals(config.get("sys").get("device").path("addon_type").asText())) {
-			addOn = new SensorAddOn(this);
+		final String addOn = config.get("sys").get("device").path("addon_type").asText();
+		if(SensorAddOn.ADDON_TYPE.equals(addOn)) {
+			sensorAddOn = new SensorAddOn(this);
 		} else {
-			addOn = null;
+			sensorAddOn = null;
 		}
+		loraAddOn = LoRaAddOn.ADDON_TYPE.equals(addOn);
 		return config;
 	}
 
@@ -159,7 +164,7 @@ public class Shelly2PMG3 extends AbstractG3Device implements ModulesHolder, Inte
 				relay0 = new Relay(this, 0);
 				relay1 = new Relay(this, 1);
 				relaysArray = new Relay[] {relay0, relay1};
-				meters = (addOn == null || addOn.getTypes().length == 0) ? new Meters[] {meters0, meters1} : new Meters[] {meters0, meters1, addOn};
+				meters = (sensorAddOn == null || sensorAddOn.getTypes().length == 0) ? new Meters[] {meters0, meters1} : new Meters[] {meters0, meters1, sensorAddOn};
 				roller = null; // modeRelay change
 				rollersArray = null;
 			}
@@ -169,14 +174,14 @@ public class Shelly2PMG3 extends AbstractG3Device implements ModulesHolder, Inte
 			if(roller == null) {
 				roller = new Roller(this, 0);
 				rollersArray = new Roller[] {roller};
-				meters = (addOn == null || addOn.getTypes().length == 0) ? new Meters[] {meters0} : new Meters[] {meters0, addOn};
+				meters = (sensorAddOn == null || sensorAddOn.getTypes().length == 0) ? new Meters[] {meters0} : new Meters[] {meters0, sensorAddOn};
 				relay0 = relay1 = null; // modeRelay change
 				relaysArray = null;
 			}
 			roller.fillSettings(configuration.get("cover:0"));
 		}
-		if(addOn != null) {
-			addOn.fillSettings(configuration);
+		if(sensorAddOn != null) {
+			sensorAddOn.fillSettings(configuration);
 		}
 	}
 
@@ -208,15 +213,21 @@ public class Shelly2PMG3 extends AbstractG3Device implements ModulesHolder, Inte
 			internalTmp = cover.path("temperature").path("tC").floatValue();
 			roller.fillStatus(cover);
 		}
-		if(addOn != null) {
-			addOn.fillStatus(status);
+		if(sensorAddOn != null) {
+			sensorAddOn.fillStatus(status);
 		}
 	}
 	
 	@Override
 	public String[] getInfoRequests() {
 		final String[] cmd = super.getInfoRequests();
-		return (addOn != null) ? SensorAddOn.getInfoRequests(cmd) : cmd;
+		if(sensorAddOn != null) {
+			return SensorAddOn.getInfoRequests(cmd);
+		} else if(loraAddOn) {
+			return LoRaAddOn.getInfoRequests(cmd);
+		} else {
+			return cmd;
+		}
 	}
 	
 	public void setProfile(boolean cover) {
@@ -235,7 +246,7 @@ public class Shelly2PMG3 extends AbstractG3Device implements ModulesHolder, Inte
 		} catch (IOException e) {
 			LOG.error("restoreCheck", e);
 		}
-		SensorAddOn.restoreCheck(this, addOn, backupJsons, res);
+		SensorAddOn.restoreCheck(this, sensorAddOn, backupJsons, res);
 	}
 
 	@Override
@@ -259,7 +270,7 @@ public class Shelly2PMG3 extends AbstractG3Device implements ModulesHolder, Inte
 		}
 
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-		SensorAddOn.restore(this, addOn, backupJsons, errors);
+		SensorAddOn.restore(this, sensorAddOn, backupJsons, errors);
 	}
 
 	@Override

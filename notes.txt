@@ -11,6 +11,8 @@ https://www.w3schools.com/colors/colors_picker.asp
 
 //-D"org.slf4j.simpleLogger.log.it.usna=debug" -D"org.slf4j.simpleLogger.showDateTime=true"
 
+http://192.168.1.xxx/rpc/Shelly.ListMethods
+
 
 //0.5.5
 // aggiunto Plug
@@ -329,15 +331,22 @@ Shelly 1 Mini Gen4
 Shelly 1PM Mini Gen4
 LinkedGo ST1820 thermostat
 LinkedGo ST802 thermostat (no humidity, no fan)
-device info gen4: matter (todo gen3)
+device info gen4: matter
 search on fw update
 multi restore: no enable restricted login, no wi-fi (1/2) password, no AP password, no MQTT password, Script override, no reboot offer
-multi restore todo: updatind progress dialog
+matter "enable" restore
 
 todo: reload blu after restore (?), rivedere con fw 1.6.0
 todo: blu button, rivedere restore con fw 1.6.0
-todo: LoRa: restore
-https://shelly-api-docs.shelly.cloud/gen2/DynamicComponents/BTHome/ (1.6.0)
+
+1.6.0 ->
+https://shelly-api-docs.shelly.cloud/gen2/DynamicComponents/BTHome/
+Matter Add support for Shelly 1 Gen3, 1PM Gen3, 1 Mini Gen3, 1PM Mini Gen3, 2PM Gen3
+
+LoRa Add-On Add support for Shelly 1 Gen3, 1PM Gen3, 2PM Gen3, EM Gen3, Dimmer 0/1-10V PM Gen3, D Dimmer Gen3, 1 Gen4, 1PM Gen4 - details todo restore
+Scripting Add ArrayBuffer and AES for Gen3 and Gen4 devices - OK, added to EditorPanel
+Cover Add maintenance_mode config property - OK
+Switch, Cover Add physical control locking (in_locked config property) - OK
 
 ---
 // TODO

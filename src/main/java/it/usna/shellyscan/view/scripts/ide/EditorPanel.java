@@ -59,9 +59,9 @@ public class EditorPanel extends SyntaxEditor {
 			"super", "switch", "synchronized", "this", "throw", "throws", "transient", "true",
 			"try", "typeof", "var", "void", "volatile", "while", "with", "yield"};
 	
-	private final String[] implementedWords = new String[] {"String", "Number", "Function", "Array", "Math", "Date", "Object", "Exceptions"};
+	private final String[] implementedWords = new String[] {"String", "Number", "Function", "Array", "Math", "Date", "Object", "Exceptions", "ArrayBuffer"};
 	
-	private final String[] shellyWords = new String[] {"Shelly", "JSON", "Timer", "MQTT", "BLE", "HTTPServer", "Virtual"};
+	private final String[] shellyWords = new String[] {"Shelly", "JSON", "Timer", "MQTT", "BLE", "HTTPServer", "Virtual", "AES"};
 	
 	private final String[] othersForAutocomplete = new String[] {"print(", "console.log("};
 	

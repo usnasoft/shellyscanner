@@ -27,6 +27,7 @@ import it.usna.shellyscan.model.device.modules.DeviceModule;
 public class ShellyI4G3 extends AbstractG3Device implements ModulesHolder {
 	private final static Logger LOG = LoggerFactory.getLogger(ShellyI4G3.class);
 	public final static String ID = "I4G3";
+	public final static String MODEL = "S3SN-0024X";
 	private Input[] inputs;
 	private Webhooks webhooks;
 	private Meters[] meters;

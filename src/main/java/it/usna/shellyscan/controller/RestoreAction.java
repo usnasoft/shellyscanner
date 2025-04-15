@@ -85,7 +85,16 @@ public class RestoreAction extends UsnaAction {
 								appProp.setProperty("LAST_PATH", fc.getCurrentDirectory().getCanonicalPath());
 								String restoreRet = restoreDevice(mainView, device, model, sel[0], fc.getSelectedFile().toPath(), false);
 								if(restoreRet == null) {
-									Msg.showHtmlMessageDialog(mainView, "<html>" + String.format(LABELS.getString("dlgSetMultiMsgOk"), device.getHostname()), LABELS.getString("titleRestoreDone"), JOptionPane.INFORMATION_MESSAGE);
+									if(device.rebootRequired())	{
+										String ok = LABELS.getString("dlgOK");
+										if(JOptionPane.showOptionDialog(mainView, LABELS.getString("msgRestoreSuccessReboot"), LABELS.getString("msgRestoreTitle") + " - " + device.getHostname(),
+												JOptionPane.OK_CANCEL_OPTION, JOptionPane.INFORMATION_MESSAGE, null, new Object[] {ok, LABELS.getString("action_reboot_name")}, ok) == 1 /*reboot*/) {
+											device.setStatus(Status.READING);
+											model.reboot(sel[0]);
+										}
+									} else {
+										Msg.showHtmlMessageDialog(mainView, "<html>" + String.format(LABELS.getString("dlgSetMultiMsgOk"), device.getHostname()), LABELS.getString("titleRestoreDone"), JOptionPane.INFORMATION_MESSAGE);
+									}
 								} else if(QUEUE_RET.equals(restoreRet)) {
 									JOptionPane.showMessageDialog(mainView, LABELS.getString("msgRestoreQueue"), device.getHostname(), JOptionPane.WARNING_MESSAGE);
 								} else if(CANCEL_RET.equals(restoreRet) == false) { // CANCEL_RET follows a showConfirmDialog -> no message here
@@ -267,17 +276,6 @@ public class RestoreAction extends UsnaAction {
 				device.refreshSettings();
 				Thread.sleep(Devices.MULTI_QUERY_DELAY);
 				device.refreshStatus();
-
-				if(device.rebootRequired() && multi == false)	{
-					String ok = LABELS.getString("dlgOK");
-					if(JOptionPane.showOptionDialog(mainView, LABELS.getString("msgRestoreSuccessReboot"), device.getHostname(),
-							JOptionPane.OK_CANCEL_OPTION, JOptionPane.INFORMATION_MESSAGE, null, new Object[] {ok, LABELS.getString("action_reboot_name")}, ok) == 1 /*reboot*/) {
-						device.setStatus(Status.READING);
-						//	devicesTable.getModel().setValueAt(DevicesTable.UPDATING_BULLET, modelRow, DevicesTable.COL_STATUS_IDX);
-//						SwingUtilities.invokeLater(() -> model.reboot(modelRow));
-						model.reboot(modelRow);
-					}
-				}
 				mainView.update(Devices.EventType.UPDATE, modelRow);
 				return null;
 			} else {

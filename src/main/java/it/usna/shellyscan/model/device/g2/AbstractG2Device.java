@@ -580,12 +580,21 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 		TimeUnit.MILLISECONDS.sleep(delay);
 		errors.add(postCommand("Sys.SetConfig", outConfig));
 		
+		JsonNode matter = config.get("matter");
+		if(matter != null) {
+			outConfig.set("config", matter.deepCopy());
+			TimeUnit.MILLISECONDS.sleep(delay);
+			errors.add(postCommand("Matter.SetConfig", outConfig));
+		}
+		
 		final JsonNode mqtt = config.path("mqtt");
 		if(userPref.containsKey(RestoreMsg.RESTORE_MQTT) || mqtt.path("enable").asBoolean() == false || mqtt.path("user").asText("").isEmpty()) {
 			TimeUnit.MILLISECONDS.sleep(delay);
 			MQTTManagerG2 mqttM = new MQTTManagerG2(this, true);
 			errors.add(mqttM.restore(mqtt, userPref.get(RestoreMsg.RESTORE_MQTT)));
 		}
+		
+		
 	}
 
 	protected void restoreSchedule(JsonNode schedule, final long delay, ArrayList<String> errors) throws InterruptedException {

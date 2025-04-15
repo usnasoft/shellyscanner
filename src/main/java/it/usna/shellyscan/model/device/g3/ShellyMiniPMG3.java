@@ -17,6 +17,7 @@ import it.usna.shellyscan.model.device.Meters;
  */
 public class ShellyMiniPMG3 extends AbstractG3Device {
 	public final static String ID = "MiniPMG3";
+	public final static String MODEL = "S3PM-001PCEU16";
 	private final static Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.W, Meters.Type.V, Meters.Type.I, Meters.Type.FREQ};
 	private float power;
 	private float voltage;

@@ -20,6 +20,7 @@ import it.usna.shellyscan.model.device.g2.meters.MetersWVI;
 import it.usna.shellyscan.model.device.g2.modules.Input;
 import it.usna.shellyscan.model.device.g2.modules.LightWhite;
 import it.usna.shellyscan.model.device.g2.modules.SensorAddOn;
+import it.usna.shellyscan.model.device.g3.modules.LoRaAddOn;
 import it.usna.shellyscan.model.device.modules.DeviceModule;
 
 /**
@@ -29,12 +30,14 @@ import it.usna.shellyscan.model.device.modules.DeviceModule;
 public class Shelly0_10VPMG3 extends AbstractG3Device implements InternalTmpHolder, ModulesHolder {
 	private final static Logger LOG = LoggerFactory.getLogger(Shelly0_10VPMG3.class);
 	public final static String ID = "Dimmer0110VPMG3";
+	public final static String MODEL = "S3DM-0010WW";
 	private float internalTmp;
 	private MetersWVI baseMeasures = new MetersWVI();
 	private Meters[] meters;
 	private LightWhite light = new LightWhite(this, 0);
 	private LightWhite[] lightArray = new LightWhite[] {light};
-	private SensorAddOn addOn;
+	private SensorAddOn sensorAddOn;
+	private boolean loraAddOn;
 
 	public Shelly0_10VPMG3(InetAddress address, int port, String hostname) {
 		super(address, port, hostname);
@@ -53,13 +56,15 @@ public class Shelly0_10VPMG3 extends AbstractG3Device implements InternalTmpHold
 	
 	private JsonNode configure() throws IOException {
 		final JsonNode config = getJSON("/rpc/Shelly.GetConfig");
-		if(SensorAddOn.ADDON_TYPE.equals(config.get("sys").get("device").path("addon_type").asText())) {
-			addOn = new SensorAddOn(this);
-			meters = (addOn.getTypes().length > 0) ? new Meters[] {baseMeasures, addOn} : new Meters[] {baseMeasures};
+		final String addOn = config.get("sys").get("device").path("addon_type").asText();
+		if(SensorAddOn.ADDON_TYPE.equals(addOn)) {
+			sensorAddOn = new SensorAddOn(this);
+			meters = (sensorAddOn.getTypes().length > 0) ? new Meters[] {baseMeasures, sensorAddOn} : new Meters[] {baseMeasures};
 		} else {
-			addOn = null;
+			sensorAddOn = null;
 			meters = new Meters[] {baseMeasures};
 		}
+		loraAddOn = LoRaAddOn.ADDON_TYPE.equals(addOn);
 		return config;
 	}
 	
@@ -92,8 +97,8 @@ public class Shelly0_10VPMG3 extends AbstractG3Device implements InternalTmpHold
 	protected void fillSettings(JsonNode configuration) throws IOException {
 		super.fillSettings(configuration);
 		light.fillSettings(configuration.get("light:0"));
-		if(addOn != null) {
-			addOn.fillSettings(configuration);
+		if(sensorAddOn != null) {
+			sensorAddOn.fillSettings(configuration);
 		}
 	}
 	
@@ -104,8 +109,20 @@ public class Shelly0_10VPMG3 extends AbstractG3Device implements InternalTmpHold
 		internalTmp = lightStatus.get("temperature").get("tC").floatValue();
 		baseMeasures.fill(lightStatus);
 		light.fillStatus(lightStatus, status.get("input:0"));
-		if(addOn != null) {
-			addOn.fillStatus(status);
+		if(sensorAddOn != null) {
+			sensorAddOn.fillStatus(status);
+		}
+	}
+	
+	@Override
+	public String[] getInfoRequests() {
+		final String[] cmd = super.getInfoRequests();
+		if(sensorAddOn != null) {
+			return SensorAddOn.getInfoRequests(cmd);
+		} else if(loraAddOn) {
+			return LoRaAddOn.getInfoRequests(cmd);
+		} else {
+			return cmd;
 		}
 	}
 
@@ -116,7 +133,7 @@ public class Shelly0_10VPMG3 extends AbstractG3Device implements InternalTmpHold
 		} catch (IOException e) {
 			LOG.error("restoreCheck", e);
 		}
-		SensorAddOn.restoreCheck(this, addOn, backupJsons, res);
+		SensorAddOn.restoreCheck(this, sensorAddOn, backupJsons, res);
 	}
 	
 	@Override

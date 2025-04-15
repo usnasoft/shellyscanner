@@ -20,6 +20,7 @@ import it.usna.shellyscan.model.device.g2.meters.MetersWVI;
 import it.usna.shellyscan.model.device.g2.modules.Input;
 import it.usna.shellyscan.model.device.g2.modules.Relay;
 import it.usna.shellyscan.model.device.g2.modules.SensorAddOn;
+import it.usna.shellyscan.model.device.g3.modules.LoRaAddOn;
 
 /**
  * Shelly 1PM G3 model
@@ -28,12 +29,14 @@ import it.usna.shellyscan.model.device.g2.modules.SensorAddOn;
 public class Shelly1PMG3 extends AbstractG3Device implements ModulesHolder, InternalTmpHolder {
 	private final static Logger LOG = LoggerFactory.getLogger(Shelly1PMG3.class);
 	public final static String ID = "S1PMG3";
+	public final static String MODEL = "S3SW-001P16EU";
 	private Relay relay = new Relay(this, 0);
 	private float internalTmp;
 	private Relay[] relays = new Relay[] {relay};
 	private MetersWVI baseMeasures = new MetersWVI();
 	private Meters[] meters;
-	private SensorAddOn addOn;
+	private SensorAddOn sensorAddOn;
+	private boolean loraAddOn ;
 
 	public Shelly1PMG3(InetAddress address, int port, String hostname) {
 		super(address, port, hostname);
@@ -52,13 +55,15 @@ public class Shelly1PMG3 extends AbstractG3Device implements ModulesHolder, Inte
 	
 	private JsonNode configure() throws IOException {	
 		final JsonNode config = getJSON("/rpc/Shelly.GetConfig");
-		if(SensorAddOn.ADDON_TYPE.equals(config.get("sys").get("device").path("addon_type").asText())) {
-			addOn = new SensorAddOn(this);
-			meters = (addOn.getTypes().length > 0) ? new Meters[] {baseMeasures, addOn} : new Meters[] {baseMeasures};
+		final String addOn = config.get("sys").get("device").path("addon_type").asText();
+		if(SensorAddOn.ADDON_TYPE.equals(addOn)) {
+			sensorAddOn = new SensorAddOn(this);
+			meters = (sensorAddOn.getTypes().length > 0) ? new Meters[] {baseMeasures, sensorAddOn} : new Meters[] {baseMeasures};
 		} else {
-			addOn = null;
+			sensorAddOn = null;
 			meters = new Meters[] {baseMeasures};
 		}
+		loraAddOn = LoRaAddOn.ADDON_TYPE.equals(addOn);
 		return config;
 	}
 	
@@ -91,8 +96,8 @@ public class Shelly1PMG3 extends AbstractG3Device implements ModulesHolder, Inte
 	protected void fillSettings(JsonNode configuration) throws IOException {
 		super.fillSettings(configuration);
 		relay.fillSettings(configuration.get("switch:0"), configuration.get("input:0"));
-		if(addOn != null) {
-			addOn.fillSettings(configuration);
+		if(sensorAddOn != null) {
+			sensorAddOn.fillSettings(configuration);
 		}
 	}
 	
@@ -103,15 +108,21 @@ public class Shelly1PMG3 extends AbstractG3Device implements ModulesHolder, Inte
 		relay.fillStatus(switchStatus, status.get("input:0"));
 		internalTmp = switchStatus.path("temperature").path("tC").floatValue();
 		baseMeasures.fill(switchStatus);
-		if(addOn != null) {
-			addOn.fillStatus(status);
+		if(sensorAddOn != null) {
+			sensorAddOn.fillStatus(status);
 		}
 	}
 	
 	@Override
 	public String[] getInfoRequests() {
 		final String[] cmd = super.getInfoRequests();
-		return (addOn != null) ? SensorAddOn.getInfoRequests(cmd) : cmd;
+		if(sensorAddOn != null) {
+			return SensorAddOn.getInfoRequests(cmd);
+		} else if(loraAddOn) {
+			return LoRaAddOn.getInfoRequests(cmd);
+		} else {
+			return cmd;
+		}
 	}
 	
 	@Override
@@ -121,7 +132,7 @@ public class Shelly1PMG3 extends AbstractG3Device implements ModulesHolder, Inte
 		} catch (IOException e) {
 			LOG.error("restoreCheck", e);
 		}
-		SensorAddOn.restoreCheck(this, addOn, backupJsons, res);
+		SensorAddOn.restoreCheck(this, sensorAddOn, backupJsons, res);
 	}
 
 	@Override
@@ -132,7 +143,7 @@ public class Shelly1PMG3 extends AbstractG3Device implements ModulesHolder, Inte
 		errors.add(relay.restore(configuration));
 		
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-		SensorAddOn.restore(this, addOn, backupJsons, errors);
+		SensorAddOn.restore(this, sensorAddOn, backupJsons, errors);
 	}
 	
 	@Override
