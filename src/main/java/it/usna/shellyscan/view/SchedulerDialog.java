@@ -7,11 +7,14 @@ import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.Insets;
 import java.awt.Window;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.time.DayOfWeek;
 import java.time.Month;
 import java.time.format.TextStyle;
 import java.util.Locale;
 
+import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -24,10 +27,7 @@ import javax.swing.SwingConstants;
 
 public class SchedulerDialog extends JDialog {
 	private static final long serialVersionUID = 1L;
-	private JTextField hoursTextField;
-	private JTextField minutesTextField;
-	private JTextField secondsTextField;
-	private JTextField daysTextField;
+	
 
 	public SchedulerDialog(Window owner) {
 		super(owner, "sch", Dialog.ModalityType.APPLICATION_MODAL);
@@ -134,6 +134,12 @@ public class SchedulerDialog extends JDialog {
 	
 	private class ScheduleLine extends JPanel {
 		private static final long serialVersionUID = 1L;
+		private JTextField hoursTextField;
+		private JTextField minutesTextField;
+		private JTextField secondsTextField;
+		private JTextField daysTextField;
+		private JPanel monthsPanel;
+		private JPanel daysOfWeekPanel;
 		
 		private ScheduleLine() {
 			GridBagLayout gbl_panel = new GridBagLayout();
@@ -207,31 +213,35 @@ public class SchedulerDialog extends JDialog {
 			add(daysTextField, gbc_daysTextField);
 			daysTextField.setColumns(10);
 
+			daysOfWeekPanel = daysOfWeekPanel();
 			GridBagConstraints gbc_daysOfWeek = new GridBagConstraints();
 			gbc_daysOfWeek.gridheight = 2;
 			gbc_daysOfWeek.insets = new Insets(0, 0, 5, 5);
 			gbc_daysOfWeek.fill = GridBagConstraints.BOTH;
 			gbc_daysOfWeek.gridx = 4;
 			gbc_daysOfWeek.gridy = 0;
-			add(daysOfWeekPanel(), gbc_daysOfWeek);
+			add(daysOfWeekPanel, gbc_daysOfWeek);
 
+			monthsPanel = monthsPanel();
 			GridBagConstraints gbc_months = new GridBagConstraints();
 			gbc_months.gridheight = 2;
 			gbc_months.insets = new Insets(0, 0, 5, 0);
 			gbc_months.fill = GridBagConstraints.VERTICAL;
 			gbc_months.gridx = 5;
 			gbc_months.gridy = 0;
-			add(monthsPanel(), gbc_months);
+			add(monthsPanel, gbc_months);
 		}
 
 		private JPanel monthsPanel() {
 			JPanel months = new JPanel();
+			ActionListener change = e -> asString();
 			months.setLayout(new GridLayout(1, 0, 0, 0));
 			for(Month m: Month.values()) {
 				JCheckBox chckbxNewCheckBox = new JCheckBox(m.getDisplayName(TextStyle.SHORT, Locale.ENGLISH));
 				chckbxNewCheckBox.setVerticalTextPosition(SwingConstants.TOP);
 				chckbxNewCheckBox.setHorizontalTextPosition(SwingConstants.CENTER);
 				chckbxNewCheckBox.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 1));
+				chckbxNewCheckBox.addActionListener(change);
 				months.add(chckbxNewCheckBox);
 			}
 			return months;
@@ -239,15 +249,53 @@ public class SchedulerDialog extends JDialog {
 
 		private JPanel daysOfWeekPanel() {
 			JPanel days = new JPanel();
+			ActionListener change = e -> asString();
 			days.setLayout(new GridLayout(1, 0, 0, 0));
 			for(DayOfWeek m: DayOfWeek.values()) {
 				JCheckBox chckbxNewCheckBox = new JCheckBox(m.getDisplayName(TextStyle.SHORT, Locale.ENGLISH));
 				chckbxNewCheckBox.setVerticalTextPosition(SwingConstants.TOP);
 				chckbxNewCheckBox.setHorizontalTextPosition(SwingConstants.CENTER);
 				chckbxNewCheckBox.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 1));
+				chckbxNewCheckBox.addActionListener(change);
 				days.add(chckbxNewCheckBox);
 			}
 			return days;
+		}
+		
+		public String asString() {
+			String res = "";
+			System.out.println(checkboxAsString(monthsPanel) + " " + checkboxAsString(daysOfWeekPanel));
+			return res;
+		}
+		
+		// todo sun -sat / day of week 0-6 or SUN-SAT
+		private String checkboxAsString(JPanel panel) {
+			String res = "";
+			int init = -1;
+			int countChk = panel.getComponentCount();
+			int selectedCount = 0;
+			for(int i = 0; i <= countChk; i++) {
+				boolean selected = i < countChk && ((JCheckBox) panel.getComponent(i)).isSelected();
+				if(selected) {
+					selectedCount++;
+				}
+				if(selected && init < 0) {
+					init = i;
+				} else if(selected == false && init >= 0 && i - init == 1) {
+					res += res.isEmpty() ? (init + 1) : "," + (init + 1);
+					init = -1;
+				} else if(selected == false && init >= 0 && i - init == 2) {
+					res += res.isEmpty() ? (init + 1) + "," + i : "," + (init + 1) + "," + i;
+					init = -1;
+				} else if(selected == false && init >= 0 && i - init > 2) {
+					res += res.isEmpty() ? (init + 1) + "-" + i : "," + (init + 1) + "-" + i;
+					init = -1;
+				}
+			}
+			if(res.isEmpty() || selectedCount == countChk) {
+				res = "*";
+			}
+			return res;
 		}
 	}
 	
