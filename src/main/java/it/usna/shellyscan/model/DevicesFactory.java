@@ -89,6 +89,7 @@ import it.usna.shellyscan.model.device.g3.PbSXT1St1820;
 import it.usna.shellyscan.model.device.g3.PbSXT1St802;
 import it.usna.shellyscan.model.device.g3.Shelly0_10VPMG3;
 import it.usna.shellyscan.model.device.g3.Shelly1G3;
+import it.usna.shellyscan.model.device.g3.Shelly1LG3;
 import it.usna.shellyscan.model.device.g3.Shelly1PMG3;
 import it.usna.shellyscan.model.device.g3.Shelly2LG3;
 import it.usna.shellyscan.model.device.g3.Shelly2PMG3;
@@ -288,7 +289,8 @@ public class DevicesFactory {
 			case ShellyHTG3.ID -> new ShellyHTG3(address, port, name);
 			case ShellyDimmerG3.ID -> new ShellyDimmerG3(address, port, name);
 			case Shelly3EM63.ID -> new Shelly3EM63(address, port, name);
-			case Shelly2LG3.ID -> new Shelly2LG3(address, port, name); // QA
+			case Shelly1LG3.ID -> new Shelly1LG3(address, port, name);
+			case Shelly2LG3.ID -> new Shelly2LG3(address, port, name);
 			case ShellyGatewayG3.ID -> new ShellyGatewayG3(address, port, name);
 			// X
 			case ShellyXMOD1.ID -> new ShellyXMOD1(address, port, name);
@@ -304,7 +306,7 @@ public class DevicesFactory {
 					yield new XT1(address, port, name);
 				}
 			}
-			case PbSOgemraySW40.ID -> new PbSOgemraySW40(address, port, name); // QA
+			case PbSOgemraySW40.ID -> new PbSOgemraySW40(address, port, name);
 			};
 		} catch(Exception e) { // really unexpected
 			LOG.error("create", e);

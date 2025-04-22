@@ -117,8 +117,8 @@ public class Shelly1PMG4 extends AbstractG4Device implements ModulesHolder, Inte
 		final String[] cmd = super.getInfoRequests();
 		if(sensorAddOn != null) {
 			return SensorAddOn.getInfoRequests(cmd);
-		} else if(loraAddOn) {
-			return LoRaAddOn.getInfoRequests(cmd);
+//		} else if(loraAddOn) {
+//			return LoRaAddOn.getInfoRequests(cmd);
 		} else {
 			return cmd;
 		}
@@ -132,6 +132,7 @@ public class Shelly1PMG4 extends AbstractG4Device implements ModulesHolder, Inte
 			LOG.error("restoreCheck", e);
 		}
 		SensorAddOn.restoreCheck(this, sensorAddOn, backupJsons, res);
+		LoRaAddOn.restoreCheck(this, loraAddOn, backupJsons, res);
 	}
 
 	@Override
@@ -140,9 +141,9 @@ public class Shelly1PMG4 extends AbstractG4Device implements ModulesHolder, Inte
 		errors.add(Input.restore(this, configuration, 0));
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 		errors.add(relay.restore(configuration));
-		
-		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+
 		SensorAddOn.restore(this, sensorAddOn, backupJsons, errors);
+		LoRaAddOn.restore(this, loraAddOn, configuration, errors);
 	}
 	
 	@Override

@@ -119,8 +119,8 @@ public class Shelly0_10VPMG3 extends AbstractG3Device implements InternalTmpHold
 		final String[] cmd = super.getInfoRequests();
 		if(sensorAddOn != null) {
 			return SensorAddOn.getInfoRequests(cmd);
-		} else if(loraAddOn) {
-			return LoRaAddOn.getInfoRequests(cmd);
+//		} else if(loraAddOn) {
+//			return LoRaAddOn.getInfoRequests(cmd);
 		} else {
 			return cmd;
 		}
@@ -134,6 +134,7 @@ public class Shelly0_10VPMG3 extends AbstractG3Device implements InternalTmpHold
 			LOG.error("restoreCheck", e);
 		}
 		SensorAddOn.restoreCheck(this, sensorAddOn, backupJsons, res);
+		LoRaAddOn.restoreCheck(this, loraAddOn, backupJsons, res);
 	}
 	
 	@Override
@@ -145,6 +146,9 @@ public class Shelly0_10VPMG3 extends AbstractG3Device implements InternalTmpHold
 		errors.add(Input.restore(this, configuration, 1));
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 		errors.add(light.restore(configuration));
+		
+		SensorAddOn.restore(this, sensorAddOn, backupJsons, errors);
+		LoRaAddOn.restore(this, loraAddOn, configuration, errors);
 	}
 
 	@Override

@@ -151,7 +151,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 	public String[] getInfoRequests() {
 		return new String[] {
 				"/rpc/Shelly.GetDeviceInfo?ident=true", "/rpc/Shelly.GetConfig", "/rpc/Shelly.GetStatus", "/rpc/Shelly.CheckForUpdate", "/rpc/Schedule.List", "/rpc/Webhook.List",
-				"/rpc/Script.List", "/rpc/WiFi.ListAPClients" /*, "/rpc/Sys.GetStatus",*/, "/rpc/KVS.GetMany", "/rpc/Shelly.GetComponents", "/rpc/BLE.CloudRelay.ListInfos"};
+				"/rpc/Script.List", "/rpc/WiFi.ListAPClients", "/rpc/KVS.GetMany", "/rpc/Shelly.GetComponents", "/rpc/BLE.CloudRelay.ListInfos"};
 	}
 
 	@Override
@@ -339,7 +339,8 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 		try(ZipOutputStream out = new ZipOutputStream(new FileOutputStream(file), StandardCharsets.UTF_8)) {
 			sectionToStream("/rpc/Shelly.GetDeviceInfo", "Shelly.GetDeviceInfo.json", out);
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-			sectionToStream("/rpc/Shelly.GetConfig", "Shelly.GetConfig.json", out);
+//			sectionToStream("/rpc/Shelly.GetConfig", "Shelly.GetConfig.json", out);
+			JsonNode config = jsonMapper.readTree(sectionToStream("/rpc/Shelly.GetConfig", "Shelly.GetConfig.json", out));
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			try { // unmanaged battery device
 				sectionToStream("/rpc/Schedule.List", "Schedule.List.json", out);
@@ -360,10 +361,15 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 				sectionToStream("/rpc/Shelly.GetComponents?dynamic_only=true", "Shelly.GetComponents.json", out);
 			} catch(Exception e) {}
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-			try { // On devices with active sensor add-on
+//			try { // On devices with active sensor add-on
+//				sectionToStream("/rpc/SensorAddon.GetPeripherals", SensorAddOn.BACKUP_SECTION, out);
+//			} catch(Exception e) {}
+//			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+			String addon = config.get("sys").get("device").path("addon_type").asText();
+			if(SensorAddOn.ADDON_TYPE.equals(addon)) {
 				sectionToStream("/rpc/SensorAddon.GetPeripherals", SensorAddOn.BACKUP_SECTION, out);
-			} catch(Exception e) {}
-			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+			}
 			// Scripts
 			if(scripts != null) {
 				for(Script script: Script.list(this, jsonMapper.readTree(scripts))) {

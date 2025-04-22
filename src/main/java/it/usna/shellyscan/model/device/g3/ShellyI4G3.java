@@ -134,7 +134,6 @@ public class ShellyI4G3 extends AbstractG3Device implements ModulesHolder {
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 		errors.add(Input.restore(this, configuration, 3));
 		
-		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 		SensorAddOn.restore(this, addOn, backupJsons, errors);
 	}
 	

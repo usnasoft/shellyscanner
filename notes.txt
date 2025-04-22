@@ -335,6 +335,7 @@ device info gen4: matter
 search on fw update
 multi restore: no enable restricted login, no wi-fi (1/2) password, no AP password, no MQTT password, Script override, no reboot offer
 matter "enable" restore
+LoRa restore
 
 todo: reload blu after restore (?), rivedere con fw 1.6.0
 todo: blu button, rivedere restore con fw 1.6.0
@@ -343,14 +344,18 @@ todo: blu button, rivedere restore con fw 1.6.0
 https://shelly-api-docs.shelly.cloud/gen2/DynamicComponents/BTHome/
 Matter Add support for Shelly 1 Gen3, 1PM Gen3, 1 Mini Gen3, 1PM Mini Gen3, 2PM Gen3
 
-LoRa Add-On Add support for Shelly 1 Gen3, 1PM Gen3, 2PM Gen3, EM Gen3, Dimmer 0/1-10V PM Gen3, D Dimmer Gen3, 1 Gen4, 1PM Gen4 - details todo restore
 Scripting Add ArrayBuffer and AES for Gen3 and Gen4 devices - OK, added to EditorPanel
 Cover Add maintenance_mode config property - OK
 Switch, Cover Add physical control locking (in_locked config property) - OK
 
 ---
+Schedule
+https://next-api-docs.shelly.cloud/gen2/ComponentsAndServices/Schedule
+https://github.com/mongoose-os-libs/cron
+https://crontab.guru/
+
 // TODO
-// schedule editor
+// schedule editor (Webhook.ListSupported) / semplicemente elenco azioni (?)
 // rgb_xx panel listener (?)
 // checklist AP ssid != mac (fw 1.5.0 stable)
 // wall display restore profiles and rules (/rpc/Thermostat.Schedule.ListRules?id=0&profile_id=1)

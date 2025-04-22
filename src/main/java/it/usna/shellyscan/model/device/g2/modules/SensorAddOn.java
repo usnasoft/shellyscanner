@@ -282,7 +282,6 @@ public class SensorAddOn extends Meters {
 	}
 
 	public static void restoreCheck(AbstractG2Device d, SensorAddOn addOn, Map<String, JsonNode> backupJsons, Map<RestoreMsg, Object> res) {
-//		SensorAddOn addOn = d.getSensorAddOn(); // addOn must be up to date -> the device should refresh data before this call
 		JsonNode backupAddOn = backupJsons.get(BACKUP_SECTION);
 		if(backupAddOn != null) {
 			int backupNumSensors = 0;
@@ -294,7 +293,7 @@ public class SensorAddOn extends Meters {
 				}
 			}
 			if(addOn == null && backupNumSensors > 0) { // NO addon on the device but addon on backup -> enable (must reboot and later install sensors)
-				res.put(RestoreMsg.WARN_RESTORE_ADDON_ENABLE, null);// msg: Please reboot the device at the restore process end and restore again to install sensors
+				res.put(RestoreMsg.WARN_RESTORE_ADDON_ENABLE, null);// msg: Please reboot the device at the end of the restore process and restore again to install sensors
 			} else if(addOn != null && addOn.getTypes().length > 0 && backupNumSensors > 0) { // will restore configuration (if possible)
 				try {
 					TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
@@ -314,9 +313,11 @@ public class SensorAddOn extends Meters {
 	public static void restore(AbstractG2Device d, SensorAddOn addOn, Map<String, JsonNode> backupJsons, List<String> errors) throws InterruptedException {
 		JsonNode backupAddOn = backupJsons.get(BACKUP_SECTION);
 		if(backupAddOn == null && addOn != null) { // there is addon on the device but not on backup -> disable (must reboot)
+			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			errors.add(enable(d, false));
 		} else if(backupAddOn != null && addOn == null) { // NO addon on the device but addon on backup -> enable (must reboot)
-			enable(d, true);
+			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+			errors.add(enable(d, true));
 		} else if(backupAddOn != null && addOn.getTypes().length == 0) { // addon on backup and on device but no sensor installed on the device -> install backup sensors (must reboot)
 			Iterator<Entry<String, JsonNode>> nodes = backupAddOn.fields();
 			while(nodes.hasNext()) {
@@ -344,36 +345,34 @@ public class SensorAddOn extends Meters {
 					}
 				}
 			}
-		} else { // backupAddOn != null && addOn.getTypes().length > 0 -> restore sensor config
+		} else if(backupAddOn != null) { // backupAddOn != null && addOn.getTypes().length > 0 -> restore sensor config
+			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			restoreAddoOnConfig(d, backupAddOn,  backupJsons.get("Shelly.GetConfig.json"), errors); // device must reboot before configuration can be restored
 		}
 	}
 	
 	private static void restoreAddoOnConfig(AbstractG2Device d, JsonNode backupAddOn, JsonNode backConfig, List<String> errors) throws InterruptedException {
 		try {
-			if(backupAddOn != null) {
-//				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-				JsonNode config = d.getJSON("/rpc/Shelly.GetConfig");
-				Iterator<Entry<String, JsonNode>> nodes = backupAddOn.fields();
-				while(nodes.hasNext()) {
-					Map.Entry<String, JsonNode> entry = (Map.Entry<String, JsonNode>) nodes.next();
-					if(entry.getValue() != null && entry.getValue().isEmpty() == false) {
-						Iterator<Entry<String, JsonNode>> id = entry.getValue().fields();
-						while(id.hasNext()) {
-							Entry<String, JsonNode> input = id.next();
-							String inputKey = input.getKey();
-							if(config.has(inputKey)) {
-								TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-								String typeIdx[] = inputKey.split(":");
-								if(typeIdx[0].equals("temperature")) {
-									errors.add(d.postCommand("Temperature.SetConfig", AbstractG2Device.createIndexedRestoreNode(backConfig, "temperature", Integer.parseInt(typeIdx[1]))));
-								} else if(typeIdx[0].equals("humidity")) {
-									errors.add(d.postCommand("Humidity.SetConfig", AbstractG2Device.createIndexedRestoreNode(backConfig, "humidity", Integer.parseInt(typeIdx[1]))));
-								} else if(typeIdx[0].equals("input")) {
-									errors.add(d.postCommand("Input.SetConfig", AbstractG2Device.createIndexedRestoreNode(backConfig, "input", Integer.parseInt(typeIdx[1]))));
-								} else if(typeIdx[0].equals("voltmeter")) {
-									errors.add(d.postCommand("Voltmeter.SetConfig", AbstractG2Device.createIndexedRestoreNode(backConfig, "voltmeter", Integer.parseInt(typeIdx[1]))));
-								}
+			JsonNode config = d.getJSON("/rpc/Shelly.GetConfig");
+			Iterator<Entry<String, JsonNode>> nodes = backupAddOn.fields();
+			while(nodes.hasNext()) {
+				Map.Entry<String, JsonNode> entry = (Map.Entry<String, JsonNode>) nodes.next();
+				if(entry.getValue() != null && entry.getValue().isEmpty() == false) {
+					Iterator<Entry<String, JsonNode>> id = entry.getValue().fields();
+					while(id.hasNext()) {
+						Entry<String, JsonNode> input = id.next();
+						String inputKey = input.getKey();
+						if(config.has(inputKey)) {
+							TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+							String typeIdx[] = inputKey.split(":");
+							if(typeIdx[0].equals("temperature")) {
+								errors.add(d.postCommand("Temperature.SetConfig", AbstractG2Device.createIndexedRestoreNode(backConfig, "temperature", Integer.parseInt(typeIdx[1]))));
+							} else if(typeIdx[0].equals("humidity")) {
+								errors.add(d.postCommand("Humidity.SetConfig", AbstractG2Device.createIndexedRestoreNode(backConfig, "humidity", Integer.parseInt(typeIdx[1]))));
+							} else if(typeIdx[0].equals("input")) {
+								errors.add(d.postCommand("Input.SetConfig", AbstractG2Device.createIndexedRestoreNode(backConfig, "input", Integer.parseInt(typeIdx[1]))));
+							} else if(typeIdx[0].equals("voltmeter")) {
+								errors.add(d.postCommand("Voltmeter.SetConfig", AbstractG2Device.createIndexedRestoreNode(backConfig, "voltmeter", Integer.parseInt(typeIdx[1]))));
 							}
 						}
 					}

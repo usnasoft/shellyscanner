@@ -20,10 +20,9 @@ import it.usna.shellyscan.model.device.modules.DeviceModule;
  * @author usna
  */
 public class Shelly1LG3 extends AbstractG3Device implements ModulesHolder, InternalTmpHolder {
-//	private final static Logger LOG = LoggerFactory.getLogger(Shelly2LG3.class);
-//	public final static String ID = "S1LG3";
-//	public final static String ID = "xLG3";
-	public final static String ID = "???";
+//	private final static Logger LOG = LoggerFactory.getLogger(Shelly1LG3.class);
+	public final static String ID = "S1LG3";
+	public final static String MODEL = "S3SW-0A1X1EUL";
 	private Relay relay0 = new Relay(this, 0);
 	private Relay[] relaysArray = new Relay[] {relay0};
 	private float internalTmp;
@@ -34,22 +33,17 @@ public class Shelly1LG3 extends AbstractG3Device implements ModulesHolder, Inter
 
 	@Override
 	public String getTypeName() {
-		return "Shelly 2L G3";
+		return "Shelly 1L G3";
 	}
 
 	@Override
 	public String getTypeID() {
 		return ID;
 	}
-	
-	@Override
-	public int getModulesCount() {
-		return 2/*modeRelay ? 2 : 1*/;
-	}
 
 	@Override
 	public DeviceModule[] getModules() {
-		return relaysArray /*modeRelay ? relaysArray : rollersArray*/;
+		return relaysArray;
 	}
 
 	@Override

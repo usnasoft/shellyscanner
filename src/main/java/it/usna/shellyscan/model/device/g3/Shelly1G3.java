@@ -115,8 +115,8 @@ public class Shelly1G3 extends AbstractG3Device implements ModulesHolder, Intern
 		final String[] cmd = super.getInfoRequests();
 		if(sensorAddOn != null) {
 			return SensorAddOn.getInfoRequests(cmd);
-		} else if(loraAddOn) {
-			return LoRaAddOn.getInfoRequests(cmd);
+//		} else if(loraAddOn) {
+//			return LoRaAddOn.getInfoRequests(cmd);
 		} else {
 			return cmd;
 		}
@@ -130,6 +130,7 @@ public class Shelly1G3 extends AbstractG3Device implements ModulesHolder, Intern
 			LOG.error("restoreCheck", e);
 		}
 		SensorAddOn.restoreCheck(this, sensorAddOn, backupJsons, res);
+		LoRaAddOn.restoreCheck(this, loraAddOn, backupJsons, res);
 	}
 
 	@Override
@@ -139,8 +140,8 @@ public class Shelly1G3 extends AbstractG3Device implements ModulesHolder, Intern
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 		errors.add(relay.restore(configuration));
 		
-		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 		SensorAddOn.restore(this, sensorAddOn, backupJsons, errors);
+		LoRaAddOn.restore(this, loraAddOn, configuration, errors);
 	}
 	
 	@Override

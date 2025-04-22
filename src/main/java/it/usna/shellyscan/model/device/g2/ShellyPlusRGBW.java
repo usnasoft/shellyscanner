@@ -251,7 +251,6 @@ public class ShellyPlusRGBW extends AbstractG2Device implements ModulesHolder, I
 		
 		final boolean hf = configuration.get("plusrgbwpm").get("hf_mode").booleanValue();
 		errors.add(postCommand("PlusRGBWPM.SetConfig", "{\"config\":{\"hf_mode\":" + hf + "}}"));
-		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 		
 		SensorAddOn.restore(this, addOn, backupJsons, errors);
 	}
