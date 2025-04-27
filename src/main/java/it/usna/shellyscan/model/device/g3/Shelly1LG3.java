@@ -16,11 +16,10 @@ import it.usna.shellyscan.model.device.g2.modules.Relay;
 import it.usna.shellyscan.model.device.modules.DeviceModule;
 
 /**
- * Shelly 2L G3 model 
+ * Shelly 1L G3 model 
  * @author usna
  */
 public class Shelly1LG3 extends AbstractG3Device implements ModulesHolder, InternalTmpHolder {
-//	private final static Logger LOG = LoggerFactory.getLogger(Shelly1LG3.class);
 	public final static String ID = "S1LG3";
 	public final static String MODEL = "S3SW-0A1X1EUL";
 	private Relay relay0 = new Relay(this, 0);
@@ -66,6 +65,7 @@ public class Shelly1LG3 extends AbstractG3Device implements ModulesHolder, Inter
 		internalTmp = switchStatus0.path("temperature").path("tC").floatValue();
 	}
 
+	// todo second input?
 	@Override
 	protected void restore(Map<String, JsonNode> backupJsons, List<String> errors) throws InterruptedException {
 		JsonNode configuration = backupJsons.get("Shelly.GetConfig.json");

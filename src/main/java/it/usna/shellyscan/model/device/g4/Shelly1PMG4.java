@@ -29,6 +29,7 @@ import it.usna.shellyscan.model.device.g3.modules.LoRaAddOn;
 public class Shelly1PMG4 extends AbstractG4Device implements ModulesHolder, InternalTmpHolder {
 	private final static Logger LOG = LoggerFactory.getLogger(Shelly1PMG4.class);
 	public final static String ID = "S1PMG4";
+	public final static String MODEL = "S4SW-001P16EU";
 	private Relay relay = new Relay(this, 0);
 	private float internalTmp;
 	private Relay[] relays = new Relay[] {relay};

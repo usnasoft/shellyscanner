@@ -20,6 +20,7 @@ import it.usna.shellyscan.model.device.g2.modules.Relay;
  */
 public class ShellyMini1G3 extends AbstractG3Device implements ModulesHolder, InternalTmpHolder {
 	public final static String ID = "Mini1G3";
+	public final static String MODEL = "S4SW-001X8EU";
 	private Relay relay = new Relay(this, 0);
 	private Relay[] relays = new Relay[] {relay};
 	private float internalTmp;

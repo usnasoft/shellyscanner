@@ -143,6 +143,8 @@ public class ShellyPlus0_10VDimmer extends AbstractG2Device implements /*Interna
 		errors.add(Input.restore(this, configuration, 1));
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 		errors.add(light.restore(configuration));
+		
+		SensorAddOn.restore(this, addOn, backupJsons, errors);
 	}
 
 	@Override

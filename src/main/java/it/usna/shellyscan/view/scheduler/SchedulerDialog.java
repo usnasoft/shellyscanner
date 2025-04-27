@@ -12,7 +12,11 @@ import javax.swing.JPanel;
 
 public class SchedulerDialog extends JDialog {
 	private static final long serialVersionUID = 1L;
-	private final static String INITIAL_VAL = "0 * * * * *";
+//	private final static String INITIAL_VAL = "0 * 1 * 2,3,5-7,dec *";
+	private final static String INITIAL_VAL = "@sunset+1h30m 1 dec sun";
+//	private final static String INITIAL_VAL = "@sunrise-1h30m";
+//	private final static String INITIAL_VAL = "@sunrise+1h";
+//	private final static String INITIAL_VAL = "@sunrise";
 	
 	public SchedulerDialog(Window owner) {
 		super(owner, "sch", Dialog.ModalityType.APPLICATION_MODAL);
@@ -29,7 +33,8 @@ public class SchedulerDialog extends JDialog {
 		mainPanel.add(panel);
 		
 		getContentPane().add(mainPanel, BorderLayout.NORTH);
-		setSize(800, 200);
+		setSize(1100, 200);
+		setLocationRelativeTo(owner);
 	}
 
 	public static void main(final String ... args) {
@@ -38,6 +43,15 @@ public class SchedulerDialog extends JDialog {
 	}
 }
 
-//https://next-api-docs.shelly.cloud/gen2/ComponentsAndServices/Schedule
-//https://github.com/mongoose-os-libs/cron
-//https://crontab.guru/
+// https://next-api-docs.shelly.cloud/gen2/ComponentsAndServices/Schedule
+// https://github.com/mongoose-os-libs/cron
+// https://crontab.guru/
+// https://regex101.com/
+
+// http://<ip>/rpc/Schedule.DeleteAll
+// http://<ip>/rpc/Schedule.Create?timespec="0 0 22 * * FRI"&calls=[{"method":"Shelly.GetDeviceInfo"}]
+// http://<ip>/rpc/Schedule.Create?timespec="10/100 * * * * *"&calls=[{"method":"light.toggle?id=0"}]
+
+// notes: 10 not working (do 0); 100 not working (do 60)
+
+// todo asString @sun...

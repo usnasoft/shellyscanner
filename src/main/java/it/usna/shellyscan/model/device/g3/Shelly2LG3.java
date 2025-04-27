@@ -20,9 +20,7 @@ import it.usna.shellyscan.model.device.modules.DeviceModule;
  * @author usna
  */
 public class Shelly2LG3 extends AbstractG3Device implements ModulesHolder, InternalTmpHolder {
-//	private final static Logger LOG = LoggerFactory.getLogger(Shelly2LG3.class);
 	public final static String ID = "S2LG3";
-//	public final static String ID = "xLG3";
 	public final static String MODEL = "S3SW-0A2X4EUL";
 	private Relay relay0 = new Relay(this, 0);
 	private Relay relay1 = new Relay(this, 1);
