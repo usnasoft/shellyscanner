@@ -6,7 +6,6 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
@@ -285,9 +284,10 @@ public class SensorAddOn extends Meters {
 		JsonNode backupAddOn = backupJsons.get(BACKUP_SECTION);
 		if(backupAddOn != null) {
 			int backupNumSensors = 0;
-			Iterator<Entry<String, JsonNode>> nodes = backupAddOn.fields();
-			while(nodes.hasNext()) {
-				Map.Entry<String, JsonNode> entry = (Map.Entry<String, JsonNode>) nodes.next();
+//			Iterator<Entry<String, JsonNode>> nodes = backupAddOn.fields();
+//			while(nodes.hasNext()) {
+//				Map.Entry<String, JsonNode> entry = (Map.Entry<String, JsonNode>) nodes.next();
+			for(Map.Entry<String, JsonNode> entry: backupAddOn.properties()) {
 				if(entry.getValue() != null && entry.getValue().isEmpty() == false) {
 					backupNumSensors++;
 				}
@@ -319,19 +319,13 @@ public class SensorAddOn extends Meters {
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			errors.add(enable(d, true));
 		} else if(backupAddOn != null && addOn.getTypes().length == 0) { // addon on backup and on device but no sensor installed on the device -> install backup sensors (must reboot)
-			Iterator<Entry<String, JsonNode>> nodes = backupAddOn.fields();
-			while(nodes.hasNext()) {
-				Map.Entry<String, JsonNode> entry = (Map.Entry<String, JsonNode>) nodes.next();
+			for(Map.Entry<String, JsonNode> entry: backupAddOn.properties()) {
 				if(entry.getValue() != null && entry.getValue().isEmpty() == false) {
 					String sensor = entry.getKey();
-					//System.out.println(sensor);
-					Iterator<Entry<String, JsonNode>> id = entry.getValue().fields();
 					String prevIndex = "";
-					while(id.hasNext()) {
-						Entry<String, JsonNode> input = id.next();
+					for(Map.Entry<String, JsonNode> input: entry.getValue().properties()) {
 						String inputKey = input.getKey();
 						JsonNode inputValue = input.getValue();
-						//System.out.println(id.next().getKey());
 						TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 						String index = inputKey.substring(inputKey.indexOf(':') + 1);
 						if(index.equals(prevIndex) == false) { // dht22 have 2 entries but must be added once
@@ -354,13 +348,9 @@ public class SensorAddOn extends Meters {
 	private static void restoreAddoOnConfig(AbstractG2Device d, JsonNode backupAddOn, JsonNode backConfig, List<String> errors) throws InterruptedException {
 		try {
 			JsonNode config = d.getJSON("/rpc/Shelly.GetConfig");
-			Iterator<Entry<String, JsonNode>> nodes = backupAddOn.fields();
-			while(nodes.hasNext()) {
-				Map.Entry<String, JsonNode> entry = (Map.Entry<String, JsonNode>) nodes.next();
+			for(Map.Entry<String, JsonNode> entry: backupAddOn.properties()) {
 				if(entry.getValue() != null && entry.getValue().isEmpty() == false) {
-					Iterator<Entry<String, JsonNode>> id = entry.getValue().fields();
-					while(id.hasNext()) {
-						Entry<String, JsonNode> input = id.next();
+					for(Map.Entry<String, JsonNode> input: entry.getValue().properties()) {
 						String inputKey = input.getKey();
 						if(config.has(inputKey)) {
 							TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);

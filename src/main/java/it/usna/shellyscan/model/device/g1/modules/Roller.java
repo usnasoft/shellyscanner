@@ -1,8 +1,6 @@
 package it.usna.shellyscan.model.device.g1.modules;
 
 import java.io.IOException;
-import java.util.Iterator;
-import java.util.Map.Entry;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -91,8 +89,9 @@ public class Roller implements RollerInterface {
 		
 		((ObjectNode)data).remove("positioning"); // not useful (calibration must be performed manually)
 
-		Iterator<Entry<String, JsonNode>> pars = data.fields();
-		String command = "/settings/roller/" + index + "?" + AbstractG1Device.jsonEntryIteratorToURLPar(pars);
+//		Iterator<Entry<String, JsonNode>> pars = data.fields();
+//		String command = "/settings/roller/" + index + "?" + AbstractG1Device.jsonEntryIteratorToURLPar(pars);
+		String command = "/settings/roller/" + index + "?" + AbstractG1Device.jsonEntrySetToURLPar(data.properties());
 		return parent.sendCommand(command);
 	}
 	

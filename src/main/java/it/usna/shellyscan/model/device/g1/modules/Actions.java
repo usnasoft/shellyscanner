@@ -16,7 +16,6 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ContainerNode;
 
 import it.usna.shellyscan.model.device.g1.AbstractG1Device;
 import it.usna.shellyscan.model.device.modules.InputInterface;
@@ -46,17 +45,13 @@ public class Actions {
 	public JsonNode fillSettings(JsonNode inputs) throws IOException {
 		inputMap.clear();
 		JsonNode actions = parent.getJSON("/settings/actions");
-		Iterator<Entry<String, JsonNode>> events = actions.get("actions").fields();
-		while(events.hasNext()) {
-			Entry<String, JsonNode> ev = events.next();
+		for(Entry<String, JsonNode> ev: actions.get("actions").properties()) {
 			Iterator<JsonNode> itIdx = ev.getValue().iterator();
 			while(itIdx.hasNext()) {
-				Iterator<Entry<String, JsonNode>> pars = itIdx.next().fields();
 				List<String> urls = new ArrayList<>();
 				boolean enabled = false;
 				int index = 0;
-				while(pars.hasNext()) {
-					Entry<String, JsonNode> entry = pars.next();
+				for(Entry<String, JsonNode> entry: itIdx.next().properties()) {
 					final String key = entry.getKey();
 					final JsonNode val = entry.getValue();
 					if(key.equals("urls")) {
@@ -96,15 +91,12 @@ public class Actions {
 	}
 	
 	public static void restore(AbstractG1Device parent, JsonNode actions, long delay, ArrayList<String> errors) throws IOException, InterruptedException {
-		Iterator<Entry<String, JsonNode>> events = actions.get("actions").fields();
-		while(events.hasNext()) {
-			Entry<String, JsonNode> ev = events.next();
+		for(Entry<String, JsonNode> ev: actions.get("actions").properties()) {
 			Iterator<JsonNode> itIdx = ev.getValue().iterator();
 			while(itIdx.hasNext()) {
 				String command = "/settings/actions?name=" + ev.getKey();
-				Iterator<Entry<String, JsonNode>> pars = itIdx.next().fields();
-				while(pars.hasNext()) {
-					command += /*"&" +*/ actionJsonEntryToURLPar(pars.next());
+				for(Entry<String, JsonNode> par: itIdx.next().properties()) {
+					command += /*"&" +*/ actionJsonEntryToURLPar(par);
 				}
 				TimeUnit.MILLISECONDS.sleep(delay);
 				errors.add(parent.sendCommand(command));
@@ -120,9 +112,7 @@ public class Actions {
 			if(val.size() > 0) {
 				for(int i=0; i < val.size(); i++) {
 					if(val.get(i).isContainerNode()) {
-						Iterator<Entry<String, JsonNode>> fields = ((ContainerNode<?>)val.get(i)).fields();
-						while(fields.hasNext()) {
-							Entry<String, JsonNode> field = fields.next();
+						for(Entry<String, JsonNode> field: val.get(i).properties()) {
 							res += "&" + name + "[" + i + "][" + field.getKey() + "]=" + URLEncoder.encode(field.getValue().asText(""), StandardCharsets.UTF_8.name());
 						}
 					} else {

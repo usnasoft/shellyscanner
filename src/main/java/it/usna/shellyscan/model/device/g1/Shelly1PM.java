@@ -192,15 +192,17 @@ public class Shelly1PM extends AbstractG1Device implements ModulesHolder, Intern
 //		errors.add(sendCommand("/settings?ext_sensors_temperature_unit=" + settings.path("ext_sensors").path("temperature_unit")));
 		for(int i = 0; i < 3; i++) {
 			JsonNode extT = settings.path("ext_temperature").path(i + "");
-//			if(extT.isEmpty() == false) {
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-			errors.add(sendCommand("/settings/ext_temperature/" + i + "?" + jsonEntryIteratorToURLPar(extT.fields())));
-//			}
+//			errors.add(sendCommand("/settings/ext_temperature/" + i + "?" + jsonEntryIteratorToURLPar(extT.fields())));
+			errors.add(sendCommand("/settings/ext_temperature/" + i + "?" + jsonEntrySetToURLPar(extT.properties())));
 		}
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-		errors.add(sendCommand("/settings/ext_humidity/0?" + jsonEntryIteratorToURLPar(settings.path("ext_humidity").path("0").fields())));
+//		errors.add(sendCommand("/settings/ext_humidity/0?" + jsonEntryIteratorToURLPar(settings.path("ext_humidity").path("0").fields())));
+		errors.add(sendCommand("/settings/ext_humidity/0?" + jsonEntrySetToURLPar(settings.path("ext_humidity").path("0").properties())));
+		
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-		errors.add(sendCommand("/settings/ext_switch/0?" + jsonEntryIteratorToURLPar(settings.path("ext_switch").path("0").fields())));
+//		errors.add(sendCommand("/settings/ext_switch/0?" + jsonEntryIteratorToURLPar(settings.path("ext_switch").path("0").fields())));
+		errors.add(sendCommand("/settings/ext_switch/0?" + jsonEntrySetToURLPar(settings.path("ext_switch").path("0").properties())));
 	}
 
 	@Override

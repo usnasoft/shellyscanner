@@ -102,7 +102,8 @@ public class Relay implements RelayInterface {
 //			return parent.sendCommand(command);
 //		}
 //		return null;
-		return parent.sendCommand("/settings/relay/" + index + "?" + AbstractG1Device.jsonEntryIteratorToURLPar(data.fields()));
+//		return parent.sendCommand("/settings/relay/" + index + "?" + AbstractG1Device.jsonEntryIteratorToURLPar(data.fields()));
+		return parent.sendCommand("/settings/relay/" + index + "?" + AbstractG1Device.jsonEntrySetToURLPar(data.properties()));
 	}
 	
 	@Override

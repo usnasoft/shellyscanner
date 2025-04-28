@@ -1,11 +1,10 @@
 package it.usna.shellyscan.model.device.g2.modules;
 
 import java.io.IOException;
-import java.util.Iterator;
+import java.util.ArrayList;
 import java.util.Map.Entry;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.modules.InputResetManager;
@@ -13,6 +12,7 @@ import it.usna.shellyscan.model.device.modules.InputResetManager;
 public class InputResetManagerG2 implements InputResetManager {
 	private final AbstractG2Device parent;
 	private Status mode = Status.NOT_APPLICABLE;
+	private ArrayList<Integer> ids = new ArrayList<>();
 	
 	public InputResetManagerG2(AbstractG2Device d) throws IOException {
 		this(d, d.getJSON("/rpc/Shelly.GetConfig"));
@@ -21,18 +21,19 @@ public class InputResetManagerG2 implements InputResetManager {
 	public InputResetManagerG2(AbstractG2Device d, JsonNode config) {
 		this.parent = d;
 		Status currentMode;
-		Iterator<Entry<String, JsonNode>> iter = ((ObjectNode)config).fields();
-		while(iter.hasNext()) {
-			Entry<String, JsonNode> node = iter.next();
+		for(Entry<String, JsonNode> node: config.properties()) {
 			String name;
-			if((name = node.getKey()).startsWith("input:") && Integer.parseInt(name.split(":")[1]) < 100) {
+			int id;
+			if((name = node.getKey()).startsWith("input:") && (id = Integer.parseInt(name.split(":")[1])) < 100) {
 				JsonNode reset = node.getValue().path("factory_reset");
 				if(reset.isMissingNode()) {
 					currentMode = Status.NOT_APPLICABLE;
 				} else if(reset.booleanValue()) {
 					currentMode = Status.TRUE;
+					ids.add(id);
 				} else {
 					currentMode = Status.FALSE;
+					ids.add(id);
 				}
 				if(mode == Status.TRUE && currentMode == Status.FALSE || mode == Status.FALSE && currentMode == Status.TRUE) {
 					mode = Status.MIX;
@@ -65,28 +66,14 @@ public class InputResetManagerG2 implements InputResetManager {
 		if(mode == Status.NOT_APPLICABLE) {
 			return "notApplicable";
 		} else {
-			try {
-				JsonNode config = parent.getJSON("/rpc/Shelly.GetConfig");
-				Iterator<Entry<String, JsonNode>> iter = ((ObjectNode)config).fields();
-				String msg = null;
-				while(iter.hasNext()) {
-					Entry<String, JsonNode> node = iter.next();
-					String name = node.getKey(); // input:0
-					String nameId[] = name.split(":");
-					if(nameId.length == 2 && nameId[0].equals("input") && Integer.parseInt(nameId[1]) < 100) {
-						JsonNode reset = node.getValue().path("factory_reset");
-						if(reset.isMissingNode() == false && reset.booleanValue() != enable) {
-							String localMsg = parent.postCommand("Input.SetConfig", "{\"id\":" + nameId[1] + ",\"config\":{\"factory_reset\":" + enable + "}");
-							if(localMsg != null) {
-								msg = localMsg;
-							}
-						}
-					}
+			String msg = null;
+			for(int id: ids) {
+				String localMsg = parent.postCommand("Input.SetConfig", "{\"id\":" + id + ",\"config\":{\"factory_reset\":" + enable + "}");
+				if(localMsg != null) {
+					msg = localMsg;
 				}
-				return msg;
-			} catch (IOException e) {
-				return e.getMessage();
 			}
+			return msg;
 		}
 	}
 }

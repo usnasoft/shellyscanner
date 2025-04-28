@@ -11,10 +11,10 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.EnumMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -387,15 +387,24 @@ public abstract class AbstractG1Device extends ShellyAbstractDevice {
 		}
 	}
 	
-	public static String jsonEntryIteratorToURLPar(Iterator<Entry<String, JsonNode>> pars) throws UnsupportedEncodingException {
-		if(pars.hasNext()) {
-			String command = AbstractG1Device.jsonEntryToURLPar(pars.next());
-			while(pars.hasNext()) {
-				command += "&" + AbstractG1Device.jsonEntryToURLPar(pars.next());
-			}
-			return command;
+//	public static String jsonEntryIteratorToURLPar(Iterator<Entry<String, JsonNode>> pars) throws UnsupportedEncodingException {
+//		if(pars.hasNext()) {
+//			String command = AbstractG1Device.jsonEntryToURLPar(pars.next());
+//			while(pars.hasNext()) {
+//				command += "&" + AbstractG1Device.jsonEntryToURLPar(pars.next());
+//			}
+//			return command;
+//		}
+//		return "";
+//	}
+	
+	public static String jsonEntrySetToURLPar(Set<Entry<String, JsonNode>> pars) throws UnsupportedEncodingException {
+		String command = "";
+		for(Entry<String, JsonNode> par: pars) {
+			command = (command.isEmpty()) ?
+					AbstractG1Device.jsonEntryToURLPar(par) : command + "&" + AbstractG1Device.jsonEntryToURLPar(par);
 		}
-		return "";
+		return command;
 	}
 
 	public static String jsonNodeToURLPar(JsonNode jNode, String ... pars) throws UnsupportedEncodingException {

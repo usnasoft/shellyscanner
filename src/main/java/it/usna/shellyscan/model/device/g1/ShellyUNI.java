@@ -149,14 +149,16 @@ public class ShellyUNI extends AbstractG1Device implements ModulesHolder {
 			JsonNode extT = settings.path("ext_temperature").path(i + "");
 			if(extT.isNull() == false && extT.get(0) != null) {
 				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-				String ret = sendCommand("/settings/ext_temperature/" + i + "?" + jsonEntryIteratorToURLPar(extT.get(0).fields()));
+//				String ret = sendCommand("/settings/ext_temperature/" + i + "?" + jsonEntryIteratorToURLPar(extT.get(0).fields()));
+				String ret = sendCommand("/settings/ext_temperature/" + i + "?" + jsonEntrySetToURLPar(extT.get(0).properties()));
 				errors.add((ret == null || ret.startsWith("[")) ? null : ret);
 			}
 		}
 		JsonNode hum0 = settings.path("ext_humidity").path("0");
 		if(hum0.isNull() == false && hum0.get(0) != null) {
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-			String ret = sendCommand("/settings/ext_humidity/0?" + jsonEntryIteratorToURLPar(hum0.get(0).fields()));
+//			String ret = sendCommand("/settings/ext_humidity/0?" + jsonEntryIteratorToURLPar(hum0.get(0).fields()));
+			String ret = sendCommand("/settings/ext_humidity/0?" + jsonEntrySetToURLPar(hum0.get(0).properties()));
 			errors.add((ret == null || ret.startsWith("[")) ? null : ret);
 		}
 		
@@ -172,7 +174,8 @@ public class ShellyUNI extends AbstractG1Device implements ModulesHolder {
 
 		for(int index = 0; index < relAct.size(); index++) {
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-			errors.add(sendCommand("/settings/adc/0/relay_actions." + index + "?" + AbstractG1Device.jsonEntryIteratorToURLPar(relAct.get(index).fields())));
+//			errors.add(sendCommand("/settings/adc/0/relay_actions." + index + "?" + AbstractG1Device.jsonEntryIteratorToURLPar(relAct.get(index).fields())));
+			errors.add(sendCommand("/settings/adc/0/relay_actions." + index + "?" + AbstractG1Device.jsonEntrySetToURLPar(relAct.get(index).properties())));
 		}
 	}
 

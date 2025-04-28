@@ -32,10 +32,7 @@ public class KVS {
 				kvItems.add(new KVItem(item.get("key").asText(), item.get("etag").asText(), item.get("value").asText()));
 			}
 		} else { // fw < 1.5.0
-//			Iterator<Entry<String, JsonNode>> fields = kvsItems.fields();
-//			while(fields.hasNext()) {
 			for(Entry<String, JsonNode> entry: kvsItems.properties()) {
-//				Entry<String, JsonNode> item = fields.next();
 				kvItems.add(new KVItem(entry.getKey(), entry.getValue().get("etag").asText(), entry.getValue().get("value").asText()));
 			}
 		}
@@ -106,29 +103,16 @@ public class KVS {
 				}
 			}
 		} else { // fw < 1.5.0
-			 for(Entry<String, JsonNode> entry: kvsItems.properties()) {
-				 KVItem storedItem = new KVItem(entry.getKey(), entry.getValue().get("etag").asText(), entry.getValue().get("value").asText());
-					if(kvItems.contains(storedItem) == false) {
-						ObjectNode out = JsonNodeFactory.instance.objectNode();
-						out.put("key", storedItem.key);
-						out.put("value", storedItem.value);
-						TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-						errors.add(device.postCommand("KVS.Set", out));
-					} 
-			 }
-			
-//			Iterator<Entry<String, JsonNode>> fields = kvsItems.fields();
-//			while(fields.hasNext()) {
-//				Entry<String, JsonNode> entry = fields.next();		
-//				KVItem storedItem = new KVItem(entry.getKey(), entry.getValue().get("etag").asText(), entry.getValue().get("value").asText());
-//				if(kvItems.contains(storedItem) == false) {
-//					ObjectNode out = JsonNodeFactory.instance.objectNode();
-//					out.put("key", storedItem.key);
-//					out.put("value", storedItem.value);
-//					TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-//					errors.add(device.postCommand("KVS.Set", out));
-//				}
-//			}
+			for(Entry<String, JsonNode> entry: kvsItems.properties()) {
+				KVItem storedItem = new KVItem(entry.getKey(), entry.getValue().get("etag").asText(), entry.getValue().get("value").asText());
+				if(kvItems.contains(storedItem) == false) {
+					ObjectNode out = JsonNodeFactory.instance.objectNode();
+					out.put("key", storedItem.key);
+					out.put("value", storedItem.value);
+					TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+					errors.add(device.postCommand("KVS.Set", out));
+				} 
+			}
 		}
 	}
 	

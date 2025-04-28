@@ -1,7 +1,6 @@
 package it.usna.shellyscan.model.device.g1.modules;
 
 import java.io.IOException;
-import java.util.Iterator;
 import java.util.Map.Entry;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -19,7 +18,7 @@ public class LightWhite implements WhiteInterface {
 	private boolean isOn;
 	private int brightness;
 	private String source;
-	private String prefix; // "/white/", "/light/"
+	private String prefix; // "/white/<id>", "/light/<id>"
 	private boolean inputIsOn;
 	private final int minBrightness;
 	
@@ -105,16 +104,26 @@ public class LightWhite implements WhiteInterface {
 		((ObjectNode)data).remove("ison");
 //		((ObjectNode)data).remove("has_timer"); // not a parameter
 //		((ObjectNode)data).remove("mode"); // duplicated (settings)
-
-		Iterator<Entry<String, JsonNode>> pars = data.fields();
-		if(pars.hasNext()) {
-			String command = "/settings" + prefix + "?" + AbstractG1Device.jsonEntryToURLPar(pars.next());
-			while(pars.hasNext()) {
-				command += "&" + AbstractG1Device.jsonEntryToURLPar(pars.next());
+		
+		String command = null;
+		for(Entry<String, JsonNode> par: data.properties()) {
+			if(command == null) {
+				command = "/settings" + prefix + "?" + AbstractG1Device.jsonEntryToURLPar(par);
+			} else {
+				command += "&" + AbstractG1Device.jsonEntryToURLPar(par);
 			}
-			return parent.sendCommand(command);
 		}
-		return null;
+		return (command == null) ? null : parent.sendCommand(command);
+
+//		Iterator<Entry<String, JsonNode>> pars = data.fields();
+//		if(pars.hasNext()) {
+//			String command = "/settings" + prefix + "?" + AbstractG1Device.jsonEntryToURLPar(pars.next());
+//			while(pars.hasNext()) {
+//				command += "&" + AbstractG1Device.jsonEntryToURLPar(pars.next());
+//			}
+//			return parent.sendCommand(command);
+//		}
+//		return null;
 	}
 	
 	@Override

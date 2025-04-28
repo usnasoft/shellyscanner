@@ -1,7 +1,6 @@
 package it.usna.shellyscan.model.device.g1.modules;
 
 import java.io.IOException;
-import java.util.Iterator;
 import java.util.Map.Entry;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -176,16 +175,25 @@ public class LightBulbRGB implements CCTInterface, RGBInterface {
 		((ObjectNode)data).remove("has_timer"); // maybe not present
 		((ObjectNode)data).remove("mode"); // duplicated (settings)
 
-		Iterator<Entry<String, JsonNode>> pars = data.fields();
-		if(pars.hasNext()) {
-			String command = "/settings/light/" + index + "?" + AbstractG1Device.jsonEntryToURLPar(pars.next());
-			while(pars.hasNext()) {
-				command += "&" + AbstractG1Device.jsonEntryToURLPar(pars.next());
+		String command = null;
+		for(Entry<String, JsonNode> par: data.properties()) {
+			if(command == null) {
+				command = "/settings/light/" + index + "?" + AbstractG1Device.jsonEntryToURLPar(par);
+			} else {
+				command += "&" + AbstractG1Device.jsonEntryToURLPar(par);
 			}
-//			System.out.println(command);
-			return parent.sendCommand(command);
 		}
-		return null;
+		return (command == null) ? null : parent.sendCommand(command);
+		
+//		Iterator<Entry<String, JsonNode>> pars = data.fields();
+//		if(pars.hasNext()) {
+//			String command = "/settings/light/" + index + "?" + AbstractG1Device.jsonEntryToURLPar(pars.next());
+//			while(pars.hasNext()) {
+//				command += "&" + AbstractG1Device.jsonEntryToURLPar(pars.next());
+//			}
+//			return parent.sendCommand(command);
+//		}
+//		return null;
 	}
 	
 	@Override
