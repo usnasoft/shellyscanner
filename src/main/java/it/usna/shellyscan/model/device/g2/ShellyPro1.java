@@ -20,6 +20,7 @@ import it.usna.shellyscan.model.device.g2.modules.Relay;
  */
 public class ShellyPro1 extends AbstractProDevice implements ModulesHolder, InternalTmpHolder {
 	public final static String ID = "Pro1";
+	public final static String MODEL = "SPSW-201XE15UL";
 	private Relay relay = new Relay(this, 0);
 	private float internalTmp;
 	private Relay[] relays = new Relay[] {relay};
@@ -66,6 +67,8 @@ public class ShellyPro1 extends AbstractProDevice implements ModulesHolder, Inte
 	protected void restore(Map<String, JsonNode> backupJsons, List<String> errors) throws InterruptedException {
 		JsonNode configuration = backupJsons.get("Shelly.GetConfig.json");
 		errors.add(Input.restore(this, configuration, 0));
+		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+		errors.add(Input.restore(this, configuration, 1));
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 		errors.add(relay.restore(configuration));
 	}

@@ -1,5 +1,4 @@
 package it.usna.shellyscan.view.scheduler;
-
 import java.awt.Color;
 import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
@@ -13,12 +12,14 @@ import java.time.DayOfWeek;
 import java.time.Month;
 import java.time.format.TextStyle;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
@@ -26,6 +27,8 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
+
+import com.fasterxml.jackson.databind.JsonNode;
 
 public class ScheduleLine extends JPanel {
 	private static final long serialVersionUID = 1L;
@@ -43,6 +46,8 @@ public class ScheduleLine extends JPanel {
 	private JRadioButton afterRiseRadio;
 	private JRadioButton beforeSetRadio;
 	private JRadioButton afterSetRadio;
+	private JPanel callsPanel;
+	private JPanel callsParameterPanel;
 	
 	private final static String REX_0_59 = "([1-5]?\\d)";
 	private final static String REX_0_23 = "(1\\d|2[0-3]|\\d)";
@@ -73,21 +78,46 @@ public class ScheduleLine extends JPanel {
 	private final static Pattern SECONDS_PATTERN = Pattern.compile(REX_SECONDS);
 	private final static Pattern DAYS_PATTERN = Pattern.compile(REX_MONTHDAYS);
 
-	private final static Pattern MONTHS_FIND_PATTERN = Pattern.compile(",?" + REX_MONTH);
-	private final static Pattern WEEKDAYS_FIND_PATTERN = Pattern.compile(",?" + REX_WEEKDAY);
-
 	private final static Pattern CRON_PATTERN = Pattern.compile("(" + REX_SECONDS + ") (" + REX_MINUTES + ") (" + REX_SECONDS + ") (" + REX_MONTHDAYS + ") (" + REX_MONTHS + ") (" + REX_WEEKDAYS + ")");
 	private final static Pattern SUNSET_PATTERN = Pattern.compile("@(sunset|sunrise)((\\+|-)(?<HOUR>" + REX_0_23 + ")h((?<MINUTE>" + REX_0_59 + ")m)?)?( (?<DAY>" + REX_MONTHDAYS + ") (?<MONTH>" + REX_MONTHS + ") (?<WDAY>" + REX_WEEKDAYS + "))?");
+	
+	/**
+	 * @wbp.parser.constructor
+	 */
+	ScheduleLine() {
+		init("0 * * * * *");
+	}
+	
+	ScheduleLine(JsonNode scheduleNode) {
+		init(scheduleNode.path("timespec").asText());
+		Iterator<JsonNode> callsIt = scheduleNode.path("calls").iterator();
+		while(callsIt.hasNext()) {
+			JsonNode call = callsIt.next();
+			String params = call.path("params").toString();
+			addCall(call.path("method").asText(), params.isEmpty() ? "" :  params.substring(1, params.length() - 1));
+		}
+	}
+	
+	private void addCall(String method, String params) {
+//		System.out.println(method + " " + params);
+//		JPanel rowPanel = new JPanel(new BorderLayout(10, 0));
+		JTextField methodTF = new JTextField(method);
+		JTextField paramsTF = new JTextField(params);
+//		methodTF.setColumns(20);
+//		paramsTF.setColumns(60);
+//		rowPanel.add(methodTF, BorderLayout.WEST);
+//		rowPanel.add(paramsTF, BorderLayout.CENTER);
+		callsPanel.add(methodTF);
+		callsParameterPanel.add(paramsTF);
+//		callsPanel.setBackground(Color.red);
+	}
 
-	private final static String[] WEEK_DAYS = new String[] {"SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"};
-	private final static String[] MONTHS = new String[] {"JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"};
-
-	ScheduleLine(String cronLine) {
+	private void init(String cronLine) {
 		GridBagLayout gbl_panel = new GridBagLayout();
 //		gbl_panel.columnWidths = new int[]{10, 10, 10, 10, 10, 0, 10};
 		// gbl_panel.rowHeights = new int[]{0, 0, 0, 0};
-		gbl_panel.columnWeights = new double[] { 1.0, 1.0, 1.0, 1.0, 0.5, 0.0, 0 };
-		gbl_panel.rowWeights = new double[] { 1.0, 1.0, 1.0 };
+		gbl_panel.columnWeights = new double[] { 1.0, 1.0, 1.0, 1.0, 0.5, 0.0 };
+		gbl_panel.rowWeights = new double[] { 1.0, 1.0, 1.0, 1.0 };
 		setLayout(gbl_panel);
 
 		JLabel lblNewLabel = new JLabel("Hours");
@@ -166,7 +196,7 @@ public class ScheduleLine extends JPanel {
 		daysOfWeekPanel = daysOfWeekPanel();
 		GridBagConstraints gbc_daysOfWeek = new GridBagConstraints();
 		gbc_daysOfWeek.gridheight = 2;
-		gbc_daysOfWeek.insets = new Insets(0, 0, 5, 5);
+		gbc_daysOfWeek.insets = new Insets(0, 0, 5, 0);
 		gbc_daysOfWeek.fill = GridBagConstraints.BOTH;
 		gbc_daysOfWeek.gridx = 5;
 		gbc_daysOfWeek.gridy = 0;
@@ -177,11 +207,25 @@ public class ScheduleLine extends JPanel {
 		flowLayout.setAlignment(FlowLayout.LEFT);
 		GridBagConstraints gbc_panel = new GridBagConstraints();
 		gbc_panel.gridwidth = 4;
-		gbc_panel.insets = new Insets(0, 0, 0, 5);
+		gbc_panel.insets = new Insets(0, 0, 5, 5);
 		gbc_panel.fill = GridBagConstraints.BOTH;
 		gbc_panel.gridx = 0;
 		gbc_panel.gridy = 2;
 		add(panel, gbc_panel);
+		
+		callsPanel = new JPanel();
+		GridBagConstraints gbc_callsPanel = new GridBagConstraints();
+		gbc_callsPanel.gridwidth = 2;
+		gbc_callsPanel.insets = new Insets(0, 0, 0, 5);
+		gbc_callsPanel.fill = GridBagConstraints.BOTH;
+		gbc_callsPanel.gridx = 0;
+		gbc_callsPanel.gridy = 3;
+		add(callsPanel, gbc_callsPanel);
+		callsPanel.setLayout(new BoxLayout(callsPanel, BoxLayout.Y_AXIS));
+		callsPanel.setOpaque(true);
+		
+		JLabel lblNewLabel_4 = new JLabel("Method");
+		callsPanel.add(lblNewLabel_4);
 		
 		ActionListener changeType = e -> { // cron <-> sunset/sunrise
 			if(((JRadioButton)e.getSource()).isSelected()) {
@@ -232,17 +276,30 @@ public class ScheduleLine extends JPanel {
 		
 		expressionField = new JTextField();
 		GridBagConstraints gbc_textField = new GridBagConstraints();
-		gbc_textField.insets = new Insets(0, 0, 0, 5);
+		gbc_textField.insets = new Insets(0, 0, 5, 0);
 		gbc_textField.gridwidth = 2;
 		gbc_textField.fill = GridBagConstraints.HORIZONTAL;
 		gbc_textField.gridx = 4;
 		gbc_textField.gridy = 2;
 		add(expressionField, gbc_textField);
+		
+		callsParameterPanel = new JPanel();
+		GridBagConstraints gbc_callsParameterPanel = new GridBagConstraints();
+		gbc_callsParameterPanel.gridwidth = 3;
+		gbc_callsParameterPanel.insets = new Insets(0, 0, 0, 5);
+		gbc_callsParameterPanel.fill = GridBagConstraints.BOTH;
+		gbc_callsParameterPanel.gridx = 2;
+		gbc_callsParameterPanel.gridy = 3;
+		add(callsParameterPanel, gbc_callsParameterPanel);
+		callsParameterPanel.setLayout(new BoxLayout(callsParameterPanel, BoxLayout.Y_AXIS));
+		
+		JLabel lblNewLabel_5 = new JLabel("Parameters");
+		callsParameterPanel.add(lblNewLabel_5);
 
 		expressionField.addFocusListener(new FocusListener() {
 			@Override
 			public void focusLost(FocusEvent e) {
-				String exp = fragStrToNum(expressionField.getText());
+				String exp = CronUtils.fragStrToNum(expressionField.getText());
 				expressionField.setText(exp);
 				if((CRON_PATTERN.matcher(exp).matches() || SUNSET_PATTERN.matcher(exp).matches())) {
 					expressionField.setForeground(null);
@@ -308,7 +365,7 @@ public class ScheduleLine extends JPanel {
 				seq.add(i + 1);
 			}
 		}
-		months = (seq.size() == 12 || seq.isEmpty()) ? "*" : listAsCronString(seq);
+		months = (seq.size() == 12 || seq.isEmpty()) ? "*" : CronUtils.listAsCronString(seq);
 	}
 
 	private JPanel daysOfWeekPanel() {
@@ -339,12 +396,12 @@ public class ScheduleLine extends JPanel {
 				seq.add(i + 1);
 			}
 		}
-		daysOfWeek = (seq.size() == 7 || seq.isEmpty()) ? "*" : listAsCronString(seq);
+		daysOfWeek = (seq.size() == 7 || seq.isEmpty()) ? "*" : CronUtils.listAsCronString(seq);
 	}
 
 	public void setCron(String cronLine) {
 		// assume cronLine is correct
-		cronLine = fragStrToNum(cronLine);
+		cronLine = CronUtils.fragStrToNum(cronLine);
 		
 		final String[] values;
 		Matcher sm = SUNSET_PATTERN.matcher(cronLine);
@@ -394,7 +451,7 @@ public class ScheduleLine extends JPanel {
 			if(months.equals("*")) {
 				months ="1-12";
 			}
-			for(int month: fragmentToInt(MONTHS_FIND_PATTERN.matcher(months))) {
+			for(int month: CronUtils.fragmentToInt(/*MONTHS_FIND_PATTERN.matcher(months)*/months)) {
 				((JCheckBox) monthsPanel.getComponent(month - 1)).setSelected(true);
 			}
 			computeMonths();
@@ -414,7 +471,7 @@ public class ScheduleLine extends JPanel {
 			if(daysOfWeek.equals("*")) {
 				daysOfWeek ="0-6";
 			}
-			for(int weekDay: fragmentToInt(WEEKDAYS_FIND_PATTERN.matcher(daysOfWeek))) {
+			for(int weekDay: CronUtils.fragmentToInt(/*WEEKDAYS_FIND_PATTERN.matcher(daysOfWeek)*/daysOfWeek)) {
 				((JCheckBox) daysOfWeekPanel.getComponent((weekDay + 6) % 7)).setSelected(true);
 			}
 			computeDaysOfWeek();
@@ -457,55 +514,8 @@ public class ScheduleLine extends JPanel {
 		expressionField.setText(res);
 		expressionField.setForeground((CRON_PATTERN.matcher(res).matches() || SUNSET_PATTERN.matcher(res).matches()) ? null : Color.red);
 	}
-	
-	private static List<Integer> fragmentToInt(Matcher m) {
-		List<Integer> res = new ArrayList<>();
-		while(m.find()) {
-			String frag = m.group(1);
-			if(frag.contains("-")) {
-				String[] split = frag.split("-");
-				for(int val = Integer.parseInt(split[0]); val <= Integer.parseInt(split[1]); val++) {
-					res.add(val);
-				}
-			} else {
-				res.add(Integer.parseInt(frag));
-			}
-		}
-		return res;
-	}
-
-	// MON -> 1, DEC -> 12, ...
-	private static String fragStrToNum(String in) {
-		for(int i = 0; i < MONTHS.length; i++) {
-			in = in.replaceAll("(?i)" + MONTHS[i], String.valueOf(i + 1));
-		}
-		for(int i = 0; i < WEEK_DAYS.length; i++) {
-			in = in.replaceAll("(?i)([^@])" + WEEK_DAYS[i], "$1" + String.valueOf(i)); // ([^@]) -> @sunrise / @sunset
-		}
-		return in;
-	}
-
-	private static String listAsCronString(List<Integer> list) {
-		list.add(Integer.MAX_VALUE); // tail
-		String res = "";
-		int init = list.get(0);
-		int last = init;
-		for (int i = 1; i < list.size(); i++) {
-			if (list.get(i) > last + 1) {
-				if (init == last) {
-					res += res.isEmpty() ? init : "," + init;
-					init = last = list.get(i);
-				} else if (init == last - 1) {
-					res += res.isEmpty() ? init + "," + last : "," + init + "," + last;
-					init = last = list.get(i);
-				} else if (init < last - 1) {
-					res += res.isEmpty() ? init + "-" + last : "," + init + "-" + last;
-					init = last = list.get(i);
-				}
-			} else {
-				last = list.get(i);
-			}
-		}
-		return res;
-	}
 }
+
+//todo add/remove method
+//todo store id
+//todo create json (id >= 0 -> update else new)

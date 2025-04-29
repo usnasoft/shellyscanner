@@ -17,6 +17,7 @@ import it.usna.shellyscan.model.device.g2.modules.Relay;
 
 public class ShellyPro1PM extends AbstractProDevice implements ModulesHolder, InternalTmpHolder {
 	public final static String ID = "Pro1PM";
+	public final static String MODEL = "SPSW-201PE16EU";
 	private final static Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.W, Meters.Type.PF, Meters.Type.V, Meters.Type.I};
 	private Relay relay = new Relay(this, 0);
 	private float internalTmp;
@@ -72,18 +73,6 @@ public class ShellyPro1PM extends AbstractProDevice implements ModulesHolder, In
 		return internalTmp;
 	}
 
-	//	public float getPower() {
-	//		return power0;
-	//	}
-	//
-	//	public float getVoltage() {
-	//		return voltage0;
-	//	}
-	//
-	//	public float getCurrent() {
-	//		return current0;
-	//	}
-
 	@Override
 	public Meters[] getMeters() {
 		return meters;
@@ -111,7 +100,9 @@ public class ShellyPro1PM extends AbstractProDevice implements ModulesHolder, In
 	@Override
 	protected void restore(Map<String, JsonNode> backupJsons, List<String> errors) throws InterruptedException {
 		JsonNode configuration = backupJsons.get("Shelly.GetConfig.json");
-		errors.add(Input.restore(this,configuration, 0));
+		errors.add(Input.restore(this, configuration, 0));
+		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+		errors.add(Input.restore(this, configuration, 1));
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 		errors.add(relay.restore(configuration));
 	}

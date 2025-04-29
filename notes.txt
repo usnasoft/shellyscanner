@@ -9,6 +9,8 @@ https://community.shelly.cloud/forum/94-qa-group/
 https://coolors.co/
 https://www.w3schools.com/colors/colors_picker.asp
 
+https://kb.shelly.cloud/knowledge-base/
+
 //-D"org.slf4j.simpleLogger.log.it.usna=debug" -D"org.slf4j.simpleLogger.showDateTime=true"
 
 http://192.168.1.xxx/rpc/Shelly.ListMethods
