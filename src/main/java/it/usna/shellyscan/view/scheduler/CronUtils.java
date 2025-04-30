@@ -15,22 +15,6 @@ public class CronUtils {
 	
 	private CronUtils() {}
 	
-//	public static List<Integer> fragmentToInt(Matcher m) {
-//		List<Integer> res = new ArrayList<>();
-//		while(m.find()) {
-//			String frag = m.group(1);
-//			if(frag.contains("-")) {
-//				String[] split = frag.split("-");
-//				for(int val = Integer.parseInt(split[0]); val <= Integer.parseInt(split[1]); val++) {
-//					res.add(val);
-//				}
-//			} else {
-//				res.add(Integer.parseInt(frag));
-//			}
-//		}
-//		return res;
-//	}
-	
 	// currently ignore */x and x/y
 	public static List<Integer> fragmentToInt(String f) {
 		List<Integer> res = new ArrayList<>();
