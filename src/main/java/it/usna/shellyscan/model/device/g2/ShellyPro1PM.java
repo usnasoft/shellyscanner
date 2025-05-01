@@ -20,6 +20,7 @@ public class ShellyPro1PM extends AbstractProDevice implements ModulesHolder, In
 	public final static String MODEL = "SPSW-201PE16EU";
 	private final static Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.W, Meters.Type.PF, Meters.Type.V, Meters.Type.I};
 	private Relay relay = new Relay(this, 0);
+	private String inputKey;
 	private float internalTmp;
 	private float power;
 	private float voltage;
@@ -81,14 +82,17 @@ public class ShellyPro1PM extends AbstractProDevice implements ModulesHolder, In
 	@Override
 	protected void fillSettings(JsonNode configuration) throws IOException {
 		super.fillSettings(configuration);
-		relay.fillSettings(configuration.get("switch:0"), configuration.get("input:0"));
+		
+		JsonNode switchConf0 = configuration.get("switch:0");
+		inputKey = switchConf0.path("input_id").intValue() == 0 ? "input:0" : "input:1";;
+		relay.fillSettings(switchConf0, configuration.get(inputKey));
 	}
 
 	@Override
 	protected void fillStatus(JsonNode status) throws IOException {
 		super.fillStatus(status);
 		JsonNode switchStatus0 = status.get("switch:0");
-		relay.fillStatus(switchStatus0, status.get("input:0"));
+		relay.fillStatus(switchStatus0, status.get(inputKey));
 		power = switchStatus0.get("apower").floatValue();
 		voltage = switchStatus0.get("voltage").floatValue();
 		current = switchStatus0.get("current").floatValue();

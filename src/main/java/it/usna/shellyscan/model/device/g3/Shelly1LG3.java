@@ -24,6 +24,7 @@ public class Shelly1LG3 extends AbstractG3Device implements ModulesHolder, Inter
 	public final static String MODEL = "S3SW-0A1X1EUL";
 	private Relay relay0 = new Relay(this, 0);
 	private Relay[] relaysArray = new Relay[] {relay0};
+	private String inputKey;
 	private float internalTmp;
 
 	public Shelly1LG3(InetAddress address, int port, String hostname) {
@@ -53,14 +54,17 @@ public class Shelly1LG3 extends AbstractG3Device implements ModulesHolder, Inter
 	@Override
 	protected void fillSettings(JsonNode configuration) throws IOException {
 		super.fillSettings(configuration);
-		relay0.fillSettings(configuration.get("switch:0"), configuration.get("input:0"));
+		
+		JsonNode switchConf0 = configuration.get("switch:0");
+		inputKey = switchConf0.path("input_id").intValue() == 0 ? "input:0" : "input:1";;
+		relay0.fillSettings(switchConf0, configuration.get(inputKey));
 	}
 
 	@Override
 	protected void fillStatus(JsonNode status) throws IOException {
 		super.fillStatus(status);
 		JsonNode switchStatus0 = status.get("switch:0");
-		relay0.fillStatus(switchStatus0, status.get("input:0"));
+		relay0.fillStatus(switchStatus0, status.get(inputKey));
 
 		internalTmp = switchStatus0.path("temperature").path("tC").floatValue();
 	}
@@ -69,7 +73,9 @@ public class Shelly1LG3 extends AbstractG3Device implements ModulesHolder, Inter
 	@Override
 	protected void restore(Map<String, JsonNode> backupJsons, List<String> errors) throws InterruptedException {
 		JsonNode configuration = backupJsons.get("Shelly.GetConfig.json");
-		errors.add(Input.restore(this,configuration, 0));
+		errors.add(Input.restore(this, configuration, 0));
+		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+		errors.add(Input.restore(this, configuration, 1));
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 		errors.add(relay0.restore(configuration));
 	}

@@ -30,6 +30,7 @@ import it.usna.shellyscan.model.device.modules.DeviceModule;
 public class Shelly2PMG4 extends AbstractG4Device implements ModulesHolder, InternalTmpHolder {
 	private final static Logger LOG = LoggerFactory.getLogger(Shelly2PMG4.class);
 	public final static String ID = "S2PMG4";
+	public final static String MODEL = "S4SW-002P16EU";
 	private boolean modeRelay;
 	private final static Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.W, Meters.Type.PF, Meters.Type.V, Meters.Type.I};
 	private Relay relay0, relay1;

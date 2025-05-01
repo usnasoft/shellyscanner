@@ -338,6 +338,7 @@ search on fw update
 multi restore: no enable restricted login, no wi-fi (1/2) password, no AP password, no MQTT password, Script override, no reboot offer
 matter "enable" restore
 LoRa restore
+existence of input:1 pro1 and pro1PM
 
 todo: reload blu after restore (?), rivedere con fw 1.6.0
 todo: blu button, rivedere restore con fw 1.6.0
@@ -349,6 +350,10 @@ Matter Add support for Shelly 1 Gen3, 1PM Gen3, 1 Mini Gen3, 1PM Mini Gen3, 2PM 
 Scripting Add ArrayBuffer and AES for Gen3 and Gen4 devices - OK, added to EditorPanel
 Cover Add maintenance_mode config property - OK
 Switch, Cover Add physical control locking (in_locked config property) - OK
+
+blu ->
+"attrs"."model_id" : 7 - new device identifier?
+"config"."objects" : "[{\"3\":58},{\"2\":58},{\"1\":58},{\"0\":58}]"
 
 ---
 Schedule

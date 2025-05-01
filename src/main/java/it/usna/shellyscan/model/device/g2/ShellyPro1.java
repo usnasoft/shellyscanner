@@ -22,6 +22,7 @@ public class ShellyPro1 extends AbstractProDevice implements ModulesHolder, Inte
 	public final static String ID = "Pro1";
 	public final static String MODEL = "SPSW-201XE15UL";
 	private Relay relay = new Relay(this, 0);
+	private String inputKey;
 	private float internalTmp;
 	private Relay[] relays = new Relay[] {relay};
 
@@ -52,14 +53,17 @@ public class ShellyPro1 extends AbstractProDevice implements ModulesHolder, Inte
 	@Override
 	protected void fillSettings(JsonNode configuration) throws IOException {
 		super.fillSettings(configuration);
-		relay.fillSettings(configuration.get("switch:0"), configuration.get("input:0"));
+		
+		JsonNode switchConf0 = configuration.get("switch:0");
+		inputKey = switchConf0.path("input_id").intValue() == 0 ? "input:0" : "input:1";;
+		relay.fillSettings(switchConf0, configuration.get(inputKey));
 	}
 	
 	@Override
 	protected void fillStatus(JsonNode status) throws IOException {
 		super.fillStatus(status);
 		JsonNode switchStatus = status.get("switch:0");
-		relay.fillStatus(switchStatus, status.get("input:0"));
+		relay.fillStatus(switchStatus, status.get(inputKey));
 		internalTmp = switchStatus.get("temperature").get("tC").floatValue();
 	}
 

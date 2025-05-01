@@ -29,6 +29,7 @@ public class Sensor {
 	protected Sensor(int id, JsonNode sensorConf) {
 		this.id = id;
 		this.idx = sensorConf.path("idx").intValue();
+		this.mType = null;
 	}
 	
 	private Sensor(int id, int objID, JsonNode sensorConf) {
