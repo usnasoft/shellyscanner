@@ -22,6 +22,7 @@ import java.util.regex.Pattern;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
@@ -91,22 +92,37 @@ public class ScheduleLine extends JPanel {
 	private final static Pattern CRON_PATTERN = Pattern.compile("(" + REX_SECONDS + ") (" + REX_MINUTES + ") (" + REX_SECONDS + ") (" + REX_MONTHDAYS + ") (" + REX_MONTHS + ") (" + REX_WEEKDAYS + ")");
 	private final static Pattern SUNSET_PATTERN = Pattern.compile("@(sunset|sunrise)((\\+|-)(?<HOUR>" + REX_0_23 + ")h((?<MINUTE>" + REX_0_59 + ")m)?)?( (?<DAY>" + REX_MONTHDAYS + ") (?<MONTH>" + REX_MONTHS + ") (?<WDAY>" + REX_WEEKDAYS + "))?");
 	
+	private final static ObjectMapper JSON_MAPPER = new ObjectMapper();
+	
 	/**
 	 * @wbp.parser.constructor
 	 */
 	ScheduleLine() {
 		setOpaque(false);
 		setBorder(BorderFactory.createEmptyBorder(2, 2, 4, 2));
-		init("0 * * * * *");
+		init();
+		setCron("0 * * * * *");
 		addCall("", "", 0);
 	}
 	
 	ScheduleLine(JsonNode scheduleNode) {
 		setOpaque(false);
 		setBorder(BorderFactory.createEmptyBorder(2, 2, 4, 2));
-		init(scheduleNode.path("timespec").asText());
-		Iterator<JsonNode> callsIt = scheduleNode.path("calls").iterator();
-		for(int i = 0; callsIt.hasNext(); i++) {
+		init();
+		setCron(scheduleNode.path("timespec").asText());
+		setCalls(scheduleNode.path("calls"));
+	}
+	
+	public void setCalls(JsonNode calls) {
+		int iniIdx = callsPanel.getComponentCount();
+		if(iniIdx > 0 && calls.size() > 0 && ((JTextField)callsPanel.getComponent(iniIdx - 1)).getText().isEmpty() && ((JTextField)callsParameterPanel.getComponent(iniIdx - 1)).getText().isEmpty()) {
+			iniIdx--;
+			callsPanel.remove(iniIdx);
+			callsParameterPanel.remove(iniIdx);
+			callsOperationsPanel.remove(iniIdx);
+		}
+		Iterator<JsonNode> callsIt = calls.iterator();
+		for(int i = iniIdx; callsIt.hasNext(); i++) {
 			JsonNode call = callsIt.next();
 			String params = call.path("params").toString();
 			addCall(call.path("method").asText(), params.isEmpty() ? "" :  params.substring(1, params.length() - 1), i);
@@ -119,10 +135,10 @@ public class ScheduleLine extends JPanel {
 		callsPanel.add(methodTF, index);
 		callsParameterPanel.add(paramsTF, index);
 		
-		JPanel callOpPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
+		JPanel callOpPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
 		callOpPanel.setOpaque(false);
-		JButton addB = new JButton("+");
-		addB.setBorder(BorderFactory.createEmptyBorder(2, 6, 2, 6));
+		JButton addB = new JButton(new ImageIcon(getClass().getResource("/images/plus10.png")));
+		addB.setBorder(BorderFactory.createEmptyBorder(6, 6, 6, 6));
 		addB.addActionListener(e ->  {
 			Component[] list = callsOperationsPanel.getComponents();
 			int i;
@@ -131,8 +147,8 @@ public class ScheduleLine extends JPanel {
 			callsOperationsPanel.revalidate();
 		});
 		callOpPanel.add(addB);
-		JButton minusB = new JButton("-");
-		minusB.setBorder(BorderFactory.createEmptyBorder(2, 6, 2, 6));
+		JButton minusB = new JButton(new ImageIcon(getClass().getResource("/images/minus10.png")));
+		minusB.setBorder(BorderFactory.createEmptyBorder(6, 6, 6, 6));
 		minusB.addActionListener(e ->  {
 			Component[] list = callsOperationsPanel.getComponents();
 			if(list.length > 1) {
@@ -149,7 +165,7 @@ public class ScheduleLine extends JPanel {
 		callsOperationsPanel.add(callOpPanel, index);
 	}
 
-	private void init(String cronLine) {
+	private void init() {
 		GridBagLayout gbl_panel = new GridBagLayout();
 //		gbl_panel.columnWidths = new int[]{10, 10, 10, 10, 10, 0, 10};
 		// gbl_panel.rowHeights = new int[]{0, 0, 0, 0};
@@ -348,12 +364,14 @@ public class ScheduleLine extends JPanel {
 		
 		callsOperationsPanel = new JPanel();
 		GridBagConstraints gbc_callsOperations = new GridBagConstraints();
+		gbc_callsOperations.fill = GridBagConstraints.VERTICAL;
 		gbc_callsOperations.anchor = GridBagConstraints.WEST;
 		gbc_callsOperations.insets = new Insets(0, 0, 0, 5);
 		gbc_callsOperations.gridx = 5;
 		gbc_callsOperations.gridy = 4;
 		add(callsOperationsPanel, gbc_callsOperations);
 		callsOperationsPanel.setOpaque(false);
+//		callsOperationsPanel.setBackground(Color.red);
 		callsOperationsPanel.setLayout(new BoxLayout(callsOperationsPanel, BoxLayout.Y_AXIS));
 		
 		expressionField.addFocusListener(new FocusListener() {
@@ -396,8 +414,6 @@ public class ScheduleLine extends JPanel {
 		minutesTextField.addFocusListener(fragmentsFocusListener);
 		secondsTextField.addFocusListener(fragmentsFocusListener);
 		daysTextField.addFocusListener(fragmentsFocusListener);
-
-		setCron(cronLine);
 	}
 
 	private JPanel monthsPanel() {
@@ -578,28 +594,55 @@ public class ScheduleLine extends JPanel {
 		expressionField.setText(res);
 		expressionField.setForeground((CRON_PATTERN.matcher(res).matches() || SUNSET_PATTERN.matcher(res).matches()) ? null : Color.red);
 	}
-
-	public JsonNode getJsonCalls() {
-		final ObjectMapper jsonMapper = new ObjectMapper();
-		final ArrayNode out = JsonNodeFactory.instance.arrayNode();
+	
+	public boolean validateData() {
+		String exp = expressionField.getText();
+		if(CRON_PATTERN.matcher(exp).matches() == false && SUNSET_PATTERN.matcher(exp).matches() == false) {
+			expressionField.requestFocus();
+			Msg.errorMsg(this, "schErrorInvalidExpression");
+			return false;
+		}
+		for(int i = 0; i < callsPanel.getComponentCount(); i++) {
+			if(((JTextField)callsPanel.getComponent(i)).getText().trim().isEmpty()) {
+				callsPanel.getComponent(i).requestFocus();
+				Msg.errorMsg(this, "schErrorInvalidMethod");
+				return false;
+			}
+			String parameters = ((JTextField)callsParameterPanel.getComponent(i)).getText();
+			if(parameters.trim().isEmpty() == false) {
+				try {
+					JSON_MAPPER.readTree("{" + parameters + "}");
+				} catch (JsonProcessingException e) {
+					callsParameterPanel.getComponent(i).requestFocus();
+					Msg.errorMsg(this, "schErrorInvalidParameters");
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+	
+	public JsonNode getJson() {
+		final ObjectNode out = JsonNodeFactory.instance.objectNode();
+		out.put("timespec", expressionField.getText());
+		
+		final ArrayNode calls = JsonNodeFactory.instance.arrayNode();
 		for(int i = 0; i < callsPanel.getComponentCount(); i++) {
 			final ObjectNode call = JsonNodeFactory.instance.objectNode();
 			call.put("method", ((JTextField)callsPanel.getComponent(i)).getText());
 			String parameters = ((JTextField)callsParameterPanel.getComponent(i)).getText();
 			if(parameters.trim().isEmpty() == false) {
 				try {
-					call.set("params", jsonMapper.readTree("{" + parameters + "}"));
+					call.set("params", JSON_MAPPER.readTree("{" + parameters + "}"));
 				} catch (JsonProcessingException e) {
-					Msg.errorMsg(this, "Invalid parameters");
+					Msg.errorMsg(this, "schErrorInvalidParameters");
 					callsParameterPanel.getComponent(i).requestFocus();
 					return null;
 				}
 			}
-			out.add(call);
+			calls.add(call);
 		}
+		out.set("calls", calls);
 		return out;
 	}
 }
-
-//todo store id
-//todo create json (id >= 0 -> update else new)

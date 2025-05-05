@@ -4,7 +4,12 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dialog;
 import java.awt.FlowLayout;
+import java.awt.Toolkit;
 import java.awt.Window;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.StringSelection;
+import java.util.ArrayList;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -19,6 +24,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import it.usna.shellyscan.Main;
 import it.usna.shellyscan.controller.UsnaAction;
+import it.usna.shellyscan.controller.UsnaToggleAction;
+import it.usna.shellyscan.model.device.g2.AbstractG2Device;
+import it.usna.shellyscan.view.util.Msg;
+import it.usna.shellyscan.view.util.UtilMiscellaneous;
+import it.usna.swing.UsnaSwingUtils;
 import it.usna.swing.VerticalFlowLayout;
 
 public class SchedulerDialog extends JDialog {
@@ -29,21 +39,29 @@ public class SchedulerDialog extends JDialog {
 	//	private final static String INITIAL_VAL = "@sunrise+1h";
 	//	private final static String INITIAL_VAL = "@sunrise";
 
-	private JPanel schedulesPanel = new JPanel(new VerticalFlowLayout(VerticalFlowLayout.TOP, VerticalFlowLayout.CENTER));
-	JScrollPane scrollPane = new JScrollPane();
+	private final AbstractG2Device device;
+	private ArrayList<Schedule> originalValues = new ArrayList<>();
+	private final JPanel schedulesPanel = new JPanel(new VerticalFlowLayout(VerticalFlowLayout.TOP, VerticalFlowLayout.CENTER, 0, 0));
+//	JScrollPane scrollPane = new JScrollPane();
 
-	public SchedulerDialog(Window owner) {
-		super(owner, "sch", Dialog.ModalityType.APPLICATION_MODAL);
+	public SchedulerDialog(Window owner, AbstractG2Device device) {
+		super(owner, Main.LABELS.getString("schTitle") /*+ " - " + UtilMiscellaneous.getExtendedHostName(device)*/, Dialog.ModalityType.APPLICATION_MODAL);
+		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+		this.device = device;
 
-//		JScrollPane scrollPane = new JScrollPane();
-//		scrollPane.setBorder(BorderFactory.createEmptyBorder());
+		JScrollPane scrollPane = new JScrollPane(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+		scrollPane.getVerticalScrollBar().setUnitIncrement(16);
+//		scrollPane.getViewport().setBackground(Color.red);
+		schedulesPanel.setBackground(Main.BG_COLOR);
+		
+		scrollPane.setBorder(BorderFactory.createEmptyBorder());
 		getContentPane().add(scrollPane, BorderLayout.CENTER);
 		
 		final ObjectMapper jsonMapper = new ObjectMapper();
 		try {
 			JsonNode node = jsonMapper.readTree("		{\r\n"
 					+ "		    \"id\" : 3,\r\n"
-					+ "		    \"enable\" : false,\r\n"
+					+ "		    \"enable\" : true,\r\n"
 					+ "		    \"timespec\" : \"0 * 1 * 2,3,5-7,dec *\",\r\n"
 					+ "		    \"calls\" : [ {\r\n"
 					+ "		      \"method\" : \"light.toggle\",\r\n"
@@ -52,7 +70,7 @@ public class SchedulerDialog extends JDialog {
 					+ "		      }\r\n"
 					+ "		    } , {\"method\":\"xxx\"}]\r\n"
 					+ "		  }");
-			addLine(node);
+			addLine(node, 0);
 			lineColors();
 		} catch (JsonMappingException e) {
 			// TODO Auto-generated catch block
@@ -67,73 +85,127 @@ public class SchedulerDialog extends JDialog {
 		JPanel buttonsPanel = new JPanel();
 		getContentPane().add(buttonsPanel, BorderLayout.SOUTH);
 
-		JButton btnNewButton = new JButton("Ok");
-		btnNewButton.addActionListener(e -> {
+		JButton okButton = new JButton("Ok");
+		okButton.addActionListener(e -> {
 			for(int i = 0; i < schedulesPanel.getComponentCount(); i++) {
 				ScheduleLine sl = (ScheduleLine)((JPanel)schedulesPanel.getComponent(i)).getComponent(0);
-				System.out.println(sl.getJsonCalls());
+				boolean valid = sl.validateData(); 
+				System.out.println(valid);
+				if(valid == false) {
+					return;
+				}
+			}
+			for(int i = 0; i < schedulesPanel.getComponentCount(); i++) {
+				ScheduleLine sl = (ScheduleLine)((JPanel)schedulesPanel.getComponent(i)).getComponent(0);
+				System.out.println(sl.getJson());
+				System.out.println(originalValues.get(i).orig);
+				System.out.println(originalValues.get(i).id + " -- " + sl.getJson().equals(originalValues.get(i).orig));
 			}
 		});
-		buttonsPanel.add(btnNewButton);
-
+		JButton jButtonClose = new JButton(new UsnaAction("dlgClose", e -> dispose()));
+		buttonsPanel.add(okButton);
+		buttonsPanel.add(jButtonClose);
 
 		pack();
 		setSize(getWidth(), 500);
-		//		validate();
 		setLocationRelativeTo(owner);
 	}
 
-	private void addLine(JsonNode node) {
-		JPanel linePanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
-		JButton remove = new JButton(new UsnaAction(null, null, "/images/erase-9-16.png", e -> {
+	private void addLine(JsonNode node, int pos) {
+		JPanel linePanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
+		ScheduleLine line = (node == null) ? new ScheduleLine() : new ScheduleLine(node);
+		linePanel.add(line);
+		
+		UsnaToggleAction switchAction = new UsnaToggleAction(null, "/images/Standby24.png", "/images/StandbyOn24.png", e -> {
+//			try {
+//				light.toggle();
+//				adjust();
+//			} catch (IOException e1) {
+//				LOG.error("toggle", e1);
+//			}
+		});
+		JButton switchButton = new JButton(switchAction);
+		switchButton.setContentAreaFilled(false);
+		switchButton.setBorder(BorderFactory.createEmptyBorder());
+		switchAction.setSelected(node != null && node.path("enable").booleanValue());
+		linePanel.add(switchButton);
+
+		JButton addBtn = new JButton(new UsnaAction(null, "schAdd", "/images/plus_transp16.png", e -> {
+			int i;
+			for(i = 0; schedulesPanel.getComponent(i) != linePanel; i++);
+			addLine(null, i + 1);
+			lineColors();
+			schedulesPanel.revalidate();
+		}));
+		addBtn.setContentAreaFilled(false);
+		addBtn.setBorder(BorderFactory.createEmptyBorder(2, 3, 2, 3));
+		
+		JButton removeBtn = new JButton(new UsnaAction(null, "schRemove", "/images/erase-9-16.png", e -> {
 			Component[] list = schedulesPanel.getComponents();
 			if(list.length > 1) {
-				int i;
-				for(i = 0; list[i] != linePanel; i++);
-				schedulesPanel.remove(i);
+				schedulesPanel.remove(linePanel);
 				lineColors();
 				schedulesPanel.revalidate();
 				schedulesPanel.repaint(); // last one ... do not know why
 			}
 		}));
-		remove.setContentAreaFilled(false);
-		remove.setBorder(BorderFactory.createEmptyBorder(2, 3, 2, 3));
+		removeBtn.setContentAreaFilled(false);
+		removeBtn.setBorder(BorderFactory.createEmptyBorder(2, 3, 2, 3));
 
-		JButton add = new JButton(new UsnaAction(null, null, "/images/plus_transp16.png", e -> {
-			Component[] list = schedulesPanel.getComponents();
+		JButton duplicateBtn = new JButton(new UsnaAction(null, "schDuplicate", "/images/duplicate_trasp16.png", e -> {
 			int i;
-			for(i = 0; list[i] != linePanel; i++);
-			addLine(null);
+			for(i = 0; schedulesPanel.getComponent(i) != linePanel; i++);
+			addLine(line.getJson(), i + 1);
 			lineColors();
 			schedulesPanel.revalidate();
 		}));
-		add.setContentAreaFilled(false);
-		add.setBorder(BorderFactory.createEmptyBorder(2, 3, 2, 3));
+		duplicateBtn.setContentAreaFilled(false);
+		duplicateBtn.setBorder(BorderFactory.createEmptyBorder(2, 3, 2, 3));
 		
-		JButton duplicate = new JButton(new UsnaAction(null, null, "/images/documents_duplicate.png", e -> {
-			Component[] list = schedulesPanel.getComponents();
-			int i;
-			for(i = 0; list[i] != linePanel; i++);
-			      // todo ((ScheduleLine)((JPanel)list[i]).getComponent(0)).getJsonCalls();
-			addLine(null);
-			lineColors();
-			schedulesPanel.revalidate();
+		JButton copyBtn = new JButton(new UsnaAction(null, "schCopy", "/images/copy_trasp16.png", e -> {
+			final Clipboard cb = Toolkit.getDefaultToolkit().getSystemClipboard();
+			StringSelection selection = new StringSelection(line.getJson().toString());
+			cb.setContents(selection, selection);
 		}));
-		duplicate.setContentAreaFilled(false);
-		duplicate.setBorder(BorderFactory.createEmptyBorder(2, 3, 2, 3));
+		copyBtn.setContentAreaFilled(false);
+		copyBtn.setBorder(BorderFactory.createEmptyBorder(2, 3, 2, 3));
 
-		ScheduleLine line = (node == null) ? new ScheduleLine() : new ScheduleLine(node);
-		linePanel.add(line, BorderLayout.CENTER);
+		JButton pasteBtn = new JButton(new UsnaAction(null, "schPaste", "/images/paste_trasp16.png", e -> {
+			final Clipboard cb = Toolkit.getDefaultToolkit().getSystemClipboard();
+			try {
+				String sch = cb.getContents(this).getTransferData(DataFlavor.stringFlavor).toString();
+				final ObjectMapper jsonMapper = new ObjectMapper();
+
+				JsonNode pastedNode = jsonMapper.readTree(sch);
+//				if(pastedNode.hasNonNull("timespec") && pastedNode.hasNonNull("calls")) {
+					line.setCron(pastedNode.get("timespec").asText());
+					line.setCalls(pastedNode.get("calls"));
+					line.revalidate();
+//				}
+			} catch (Exception e1) {
+				Msg.errorMsg(this, "schErrorInvalidPaste");
+			}
+		}));
+		pasteBtn.setContentAreaFilled(false);
+		pasteBtn.setBorder(BorderFactory.createEmptyBorder(2, 3, 2, 3));
 		
 		JPanel opPanel = new JPanel(new VerticalFlowLayout());
 		opPanel.setOpaque(false);
-		opPanel.add(add);
-		opPanel.add(remove);
-		opPanel.add(duplicate);
+		opPanel.add(addBtn);
+		opPanel.add(duplicateBtn);
+		opPanel.add(removeBtn);
+		opPanel.add(copyBtn);
+		opPanel.add(pasteBtn);
 		linePanel.add(opPanel, BorderLayout.EAST);
 
-		schedulesPanel.add(linePanel);
-		linePanel.setBackground(it.usna.shellyscan.Main.TAB_LINE2_COLOR);
+		schedulesPanel.add(linePanel, pos);
+		
+		Schedule s = new Schedule(line.getJson(), (node != null) ? node.path("id").asInt(-1) : -1);
+		if(pos == originalValues.size()) {
+			originalValues.add(s);
+		} else {
+			originalValues.add(pos, s);
+		}
 	}
 	
 	private void lineColors() {
@@ -142,9 +214,12 @@ public class SchedulerDialog extends JDialog {
 			list[i].setBackground((i % 2 == 1) ? Main.TAB_LINE2_COLOR : Main.TAB_LINE1_COLOR);
 		}
 	}
+	
+	record Schedule(JsonNode orig, int id) {}
 
-	public static void main(final String ... args) throws JsonMappingException, JsonProcessingException {
-		SchedulerDialog s = new SchedulerDialog(null);
+	public static void main(final String ... args) throws Exception {
+		UsnaSwingUtils.setLookAndFeel(UsnaSwingUtils.LF_NIMBUS);
+		SchedulerDialog s = new SchedulerDialog(null, null);
 		s.setVisible(true);
 	}
 }
