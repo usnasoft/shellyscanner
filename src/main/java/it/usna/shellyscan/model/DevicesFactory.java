@@ -384,8 +384,9 @@ public class DevicesFactory {
 		AbstractBluDevice blu;
 		try {
 			if(key.startsWith(AbstractBluDevice.DEVICE_KEY_PREFIX)) {
-				final String type = info.path("config").path("meta").path("ui").path("local_name").asText();
-				blu = new BTHomeDevice(parent, info, type, key.substring(13));
+//				final String type = info.path("config").path("meta").path("ui").path("local_name").asText();
+				int model = info.path("attrs").path("model_id").asInt(-1);
+				blu = new BTHomeDevice(parent, info, model, key.substring(13));
 			} else { // currently only BluTRV
 				blu = new BluTRV(parent, info, key.substring(7));
 			}

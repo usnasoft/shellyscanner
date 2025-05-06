@@ -25,6 +25,7 @@ import javax.swing.ButtonGroup;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
@@ -59,6 +60,7 @@ public class ScheduleLine extends JPanel {
 	private JPanel callsPanel;
 	private JPanel callsParameterPanel;
 	private JPanel callsOperationsPanel;
+	private JDialog parent;
 	
 	private final static String REX_0_59 = "([1-5]?\\d)";
 	private final static String REX_0_23 = "(1\\d|2[0-3]|\\d)";
@@ -97,20 +99,18 @@ public class ScheduleLine extends JPanel {
 	/**
 	 * @wbp.parser.constructor
 	 */
-	ScheduleLine() {
+	ScheduleLine(JDialog parent, JsonNode scheduleNode) {
+		this.parent = parent;
 		setOpaque(false);
 		setBorder(BorderFactory.createEmptyBorder(2, 2, 4, 2));
 		init();
-		setCron("0 * * * * *");
-		addCall("", "", 0);
-	}
-	
-	ScheduleLine(JsonNode scheduleNode) {
-		setOpaque(false);
-		setBorder(BorderFactory.createEmptyBorder(2, 2, 4, 2));
-		init();
-		setCron(scheduleNode.path("timespec").asText());
-		setCalls(scheduleNode.path("calls"));
+		if(scheduleNode == null) {
+			setCron("0 0 * * * *");
+			addCall("", "", 0);
+		} else {
+			setCron(scheduleNode.path("timespec").asText());
+			setCalls(scheduleNode.path("calls"));
+		}
 	}
 	
 	public void setCalls(JsonNode calls) {
@@ -599,13 +599,13 @@ public class ScheduleLine extends JPanel {
 		String exp = expressionField.getText();
 		if(CRON_PATTERN.matcher(exp).matches() == false && SUNSET_PATTERN.matcher(exp).matches() == false) {
 			expressionField.requestFocus();
-			Msg.errorMsg(this, "schErrorInvalidExpression");
+			Msg.errorMsg(parent, "schErrorInvalidExpression");
 			return false;
 		}
 		for(int i = 0; i < callsPanel.getComponentCount(); i++) {
 			if(((JTextField)callsPanel.getComponent(i)).getText().trim().isEmpty()) {
 				callsPanel.getComponent(i).requestFocus();
-				Msg.errorMsg(this, "schErrorInvalidMethod");
+				Msg.errorMsg(parent, "schErrorInvalidMethod");
 				return false;
 			}
 			String parameters = ((JTextField)callsParameterPanel.getComponent(i)).getText();
@@ -614,7 +614,7 @@ public class ScheduleLine extends JPanel {
 					JSON_MAPPER.readTree("{" + parameters + "}");
 				} catch (JsonProcessingException e) {
 					callsParameterPanel.getComponent(i).requestFocus();
-					Msg.errorMsg(this, "schErrorInvalidParameters");
+					Msg.errorMsg(parent, "schErrorInvalidParameters");
 					return false;
 				}
 			}
@@ -635,7 +635,7 @@ public class ScheduleLine extends JPanel {
 				try {
 					call.set("params", JSON_MAPPER.readTree("{" + parameters + "}"));
 				} catch (JsonProcessingException e) {
-					Msg.errorMsg(this, "schErrorInvalidParameters");
+					Msg.errorMsg(parent, "schErrorInvalidParameters");
 					callsParameterPanel.getComponent(i).requestFocus();
 					return null;
 				}

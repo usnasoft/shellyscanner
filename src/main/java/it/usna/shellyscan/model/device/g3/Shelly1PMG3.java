@@ -36,7 +36,7 @@ public class Shelly1PMG3 extends AbstractG3Device implements ModulesHolder, Inte
 	private MetersWVI baseMeasures = new MetersWVI();
 	private Meters[] meters;
 	private SensorAddOn sensorAddOn;
-	private boolean loraAddOn ;
+	private boolean loraAddOn;
 
 	public Shelly1PMG3(InetAddress address, int port, String hostname) {
 		super(address, port, hostname);
@@ -118,8 +118,8 @@ public class Shelly1PMG3 extends AbstractG3Device implements ModulesHolder, Inte
 		final String[] cmd = super.getInfoRequests();
 		if(sensorAddOn != null) {
 			return SensorAddOn.getInfoRequests(cmd);
-//		} else if(loraAddOn) {
-//			return LoRaAddOn.getInfoRequests(cmd);
+		} else if(loraAddOn) {
+			return LoRaAddOn.getInfoRequests(cmd);
 		} else {
 			return cmd;
 		}

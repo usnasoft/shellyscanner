@@ -46,61 +46,82 @@ import it.usna.shellyscan.model.device.modules.FirmwareManager;
 public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 	public final static String GENERATION = "bth";
 	private final static Logger LOG = LoggerFactory.getLogger(BTHomeDevice.class);
-	private final static Map<String, String> DEV_DICTIONARY = Map.of(
-			"SBBT-002C", "Blu Button",
-			"SBMO-003Z", "BLU Motion",
-			"SBDW-002C", "Blu Door Window",
-			"SBHT-003C", "Blu H&T",
-			"SBBT-004CEU", "Blu Wall Switch 4",
-			"SBBT-004CUS", "Blu RC Button 4"
-			);
-	private final static Map<String, String> DEV_DICTIONARY_NEW = Map.of(
-			"SBBT-2C", "Blu Button",
-			"SBMO-3Z", "BLU Motion",
-			"SBDW-2C", "Blu Door Window",
-			"SBHT-3C", "Blu H&T",
-			"SBBT-EU", "Blu Wall Switch 4",
-			"SBBT-US", "Blu RC Button 4"
+//	private final static Map<String, String> DEV_DICTIONARY = Map.of(
+//			"SBBT-002C", "Blu Button",
+//			"SBMO-003Z", "BLU Motion",
+//			"SBDW-002C", "Blu Door Window",
+//			"SBHT-003C", "Blu H&T",
+//			"SBBT-004CEU", "Blu Wall Switch 4",
+//			"SBBT-004CUS", "Blu RC Button 4"
+//			);
+//	private final static Map<String, String> DEV_DICTIONARY_NEW = Map.of(
+//			"SBBT-2C", "Blu Button",
+//			"SBMO-3Z", "BLU Motion",
+//			"SBDW-2C", "Blu Door Window",
+//			"SBHT-3C", "Blu H&T",
+//			"SBBT-EU", "Blu Wall Switch 4",
+//			"SBBT-US", "Blu RC Button 4"
+//			);
+	private final static Map<Integer, String> MODELS_DICTIONARY = Map.of(
+			1, "Blu Button",
+			2, "Blu Door Window",
+			3, "Blu H&T",
+			5, "Blu Motion",
+			6, "Blu Wall Switch 4", // Square
+			7, "Blu RC Button 4", // line
+			8, "Blu TRV"
 			);
 	private String typeName;
-	private String localName;
+	private String typeID;
+//	private String localName;
 	private SensorsCollection sensors;
 	private Meters[] meters;
 	private Webhooks webhooks;
 	private InputSensor[] inputs;
 	private DeviceModule[] moduleSensors;
 
-	public BTHomeDevice(AbstractG2Device parent, JsonNode compInfo, String localName, String index) {
+	public BTHomeDevice(AbstractG2Device parent, JsonNode compInfo, int modelId, String index) {
 		super(parent, compInfo, index);
+		typeID = "BLU" + modelId;
 //		this.typeName = Optional.ofNullable(DEV_DICTIONARY.get(localName)).orElse("Generic BTHome");
 
-		this.typeName = DEV_DICTIONARY.get(localName); // old fw
-		int len;
-		if(this.typeName == null && (len = localName.length()) > 4) {
-			String tmpLocalName = localName.substring(0, len - 4);
-			this.typeName = DEV_DICTIONARY_NEW.get(tmpLocalName); // new fw
-			if(this.typeName != null) {
-				localName = tmpLocalName;
-			}
-		}
-		if(this.typeName == null) {
-			this.typeName = "Generic BTHome";
-		}
+//		this.typeName = DEV_DICTIONARY.get(localName); // old fw
+//		int len;
+//		if(this.typeName == null && (len = localName.length()) > 4) {
+//			String tmpLocalName = localName.substring(0, len - 4);
+//			this.typeName = DEV_DICTIONARY_NEW.get(tmpLocalName); // new fw
+//			if(this.typeName != null) {
+//				localName = tmpLocalName;
+//			}
+//		}
+//		if(this.typeName == null) {
+//			int model = compInfo.path("attrs").path("model_id").intValue();
+			String modelDesc = MODELS_DICTIONARY.get(modelId);
+			this.typeName = (modelDesc == null) ? "Generic BTHome" : modelDesc;
+//		}
 		
-		this.hostname = localName + "-" + mac;
-		this.localName = localName;
+//		this.hostname = localName + "-" + mac;
+//		this.localName = localName;
 		this.webhooks = new Webhooks(parent);
+//		inputs(compInfo.get("config").get("objects"));
 		this.uptime = -1;
 	}
+	
+//	private void inputs(JsonNode objects) {
+//		if(objects != null && objects instanceof ArrayNode an) {
+//			an.get(0);
+//		}
+//	}
 
 	@Override
 	public void init(HttpClient httpClient) throws IOException {
 		this.httpClient = httpClient;
 		initSensors();
-		if(localName.isEmpty()) {
-			localName = sensors.toString();
-			hostname = "B" + localName + "-" + mac;
-		}
+//		if(localName.isEmpty()) {
+//			localName = sensors.toString();
+//			hostname = "B" + localName + "-" + mac;
+//		}
+		hostname = "B" + sensors.toString() + "-" + mac;
 		try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e) {}
 		refreshStatus();
 		refreshSettings();
@@ -119,7 +140,7 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 	
 	@Override
 	public String getTypeID() {
-		return localName;
+		return typeID;
 	}
 	
 	@Override
@@ -213,7 +234,7 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 			out.putNextEntry(entry);
 			ObjectNode usnaData = JsonNodeFactory.instance.objectNode();
 			usnaData.put("index", componentIndex);
-			usnaData.put("type", localName);
+			usnaData.put("type", typeID);
 			usnaData.put("mac", mac);
 			mapper.writeValue(out, usnaData);
 			out.closeEntry();
@@ -232,7 +253,7 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 		EnumMap<RestoreMsg, Object> res = new EnumMap<>(RestoreMsg.class);
 		JsonNode usnaInfo = backupJsons.get("ShellyScannerBLU.json");
 		String fileLocalName;
-		if(usnaInfo == null || (fileLocalName = usnaInfo.path("type").asText("")).equals(localName) == false) {
+		if(usnaInfo == null || (fileLocalName = usnaInfo.path("type").asText("")).equals(typeID) == false) {
 			res.put(RestoreMsg.ERR_RESTORE_MODEL, null);
 			return res;
 		}

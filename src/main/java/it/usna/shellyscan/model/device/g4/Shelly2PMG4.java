@@ -223,8 +223,8 @@ public class Shelly2PMG4 extends AbstractG4Device implements ModulesHolder, Inte
 		final String[] cmd = super.getInfoRequests();
 		if(sensorAddOn != null) {
 			return SensorAddOn.getInfoRequests(cmd);
-//		} else if(loraAddOn) {
-//			return LoRaAddOn.getInfoRequests(cmd);
+		} else if(loraAddOn) {
+			return LoRaAddOn.getInfoRequests(cmd);
 		} else {
 			return cmd;
 		}

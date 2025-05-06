@@ -1,5 +1,6 @@
 package it.usna.shellyscan.model.device.g3.modules;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -21,13 +22,12 @@ public class LoRaAddOn {
 		return d.postCommand("Sys.SetConfig", "{\"config\":{\"device\":{\"addon_type\":" + (enable ? "\"" + ADDON_TYPE + "\"" : "null") + "}}}");
 	}
 
-//	public static String[] getInfoRequests(String [] cmd) {
-//		int lgt = cmd.length;
-//		String[] newArray = Arrays.copyOf(cmd, lgt + 2);
-//		newArray[lgt] = "/rpc/LoRa.GetConfig?id=" + ID;
-//		newArray[lgt + 1] = "/rpc/LoRa.GetStatus?id=" + ID;
-//		return newArray;
-//	}
+	public static String[] getInfoRequests(String [] cmd) {
+		int lgt = cmd.length;
+		String[] newArray = Arrays.copyOf(cmd, lgt + 2);
+		newArray[lgt] = "/rpc/AddOn.GetInfo";
+		return newArray;
+	}
 	
 	public static void restoreCheck(AbstractG3Device d, boolean addOn, Map<String, JsonNode> backupJsons, Map<RestoreMsg, Object> res) {
 		boolean backupAddOn = backupJsons.get("Shelly.GetConfig.json").hasNonNull("lora:" + ID);

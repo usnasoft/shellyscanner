@@ -115,8 +115,8 @@ public class Shelly1G4 extends AbstractG4Device implements ModulesHolder, Intern
 		final String[] cmd = super.getInfoRequests();
 		if(sensorAddOn != null) {
 			return SensorAddOn.getInfoRequests(cmd);
-//		} else if(loraAddOn) {
-//			return LoRaAddOn.getInfoRequests(cmd);
+		} else if(loraAddOn) {
+			return LoRaAddOn.getInfoRequests(cmd);
 		} else {
 			return cmd;
 		}

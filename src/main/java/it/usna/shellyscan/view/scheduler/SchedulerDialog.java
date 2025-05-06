@@ -9,7 +9,9 @@ import java.awt.Window;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Iterator;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -17,8 +19,6 @@ import javax.swing.JDialog;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -26,6 +26,7 @@ import it.usna.shellyscan.Main;
 import it.usna.shellyscan.controller.UsnaAction;
 import it.usna.shellyscan.controller.UsnaToggleAction;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
+import it.usna.shellyscan.model.device.g2.modules.ScheduleManager;
 import it.usna.shellyscan.view.util.Msg;
 import it.usna.shellyscan.view.util.UtilMiscellaneous;
 import it.usna.swing.UsnaSwingUtils;
@@ -39,95 +40,110 @@ public class SchedulerDialog extends JDialog {
 	//	private final static String INITIAL_VAL = "@sunrise+1h";
 	//	private final static String INITIAL_VAL = "@sunrise";
 
-	private final AbstractG2Device device;
-	private ArrayList<Schedule> originalValues = new ArrayList<>();
+	private ScheduleManager sceduleManager;
+	private ArrayList<ScheduleData> originalValues = new ArrayList<>();
+	private ArrayList<Integer> removedId = new ArrayList<>();
 	private final JPanel schedulesPanel = new JPanel(new VerticalFlowLayout(VerticalFlowLayout.TOP, VerticalFlowLayout.CENTER, 0, 0));
-//	JScrollPane scrollPane = new JScrollPane();
 
 	public SchedulerDialog(Window owner, AbstractG2Device device) {
-		super(owner, Main.LABELS.getString("schTitle") /*+ " - " + UtilMiscellaneous.getExtendedHostName(device)*/, Dialog.ModalityType.APPLICATION_MODAL);
+		super(owner, Main.LABELS.getString("schTitle") + " - " + UtilMiscellaneous.getExtendedHostName(device), Dialog.ModalityType.APPLICATION_MODAL);
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-		this.device = device;
+		this.sceduleManager = new ScheduleManager(device);
 
 		JScrollPane scrollPane = new JScrollPane(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		scrollPane.getVerticalScrollBar().setUnitIncrement(16);
-//		scrollPane.getViewport().setBackground(Color.red);
+		scrollPane.setViewportView(schedulesPanel);
 		schedulesPanel.setBackground(Main.BG_COLOR);
 		
 		scrollPane.setBorder(BorderFactory.createEmptyBorder());
 		getContentPane().add(scrollPane, BorderLayout.CENTER);
 		
-		final ObjectMapper jsonMapper = new ObjectMapper();
+		boolean exist = false;
 		try {
-			JsonNode node = jsonMapper.readTree("		{\r\n"
-					+ "		    \"id\" : 3,\r\n"
-					+ "		    \"enable\" : true,\r\n"
-					+ "		    \"timespec\" : \"0 * 1 * 2,3,5-7,dec *\",\r\n"
-					+ "		    \"calls\" : [ {\r\n"
-					+ "		      \"method\" : \"light.toggle\",\r\n"
-					+ "		      \"params\" : {\r\n"
-					+ "		        \"id\" : 0\r\n"
-					+ "		      }\r\n"
-					+ "		    } , {\"method\":\"xxx\"}]\r\n"
-					+ "		  }");
-			addLine(node, 0);
-			lineColors();
-		} catch (JsonMappingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (JsonProcessingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			Iterator<JsonNode> scIt = sceduleManager.getSchedules().iterator();
+			while(scIt.hasNext()) {
+				addLine(scIt.next(), Integer.MAX_VALUE);
+				exist = true;
+			}
+		} catch (IOException e) {
+			Msg.errorMsg(e);
 		}
-
-		scrollPane.setViewportView(schedulesPanel);
+		if(exist == false) {
+			addLine(null, Integer.MAX_VALUE);
+		}
+		lineColors();
 
 		JPanel buttonsPanel = new JPanel();
 		getContentPane().add(buttonsPanel, BorderLayout.SOUTH);
-
-		JButton okButton = new JButton("Ok");
-		okButton.addActionListener(e -> {
-			for(int i = 0; i < schedulesPanel.getComponentCount(); i++) {
-				ScheduleLine sl = (ScheduleLine)((JPanel)schedulesPanel.getComponent(i)).getComponent(0);
-				boolean valid = sl.validateData(); 
-				System.out.println(valid);
-				if(valid == false) {
-					return;
-				}
-			}
-			for(int i = 0; i < schedulesPanel.getComponentCount(); i++) {
-				ScheduleLine sl = (ScheduleLine)((JPanel)schedulesPanel.getComponent(i)).getComponent(0);
-				System.out.println(sl.getJson());
-				System.out.println(originalValues.get(i).orig);
-				System.out.println(originalValues.get(i).id + " -- " + sl.getJson().equals(originalValues.get(i).orig));
-			}
-		});
+		JButton applyButton = new JButton(new UsnaAction("dlgApply", e -> apply()) );
+		JButton applyCloseButton = new JButton(new UsnaAction("dlgApplyClose", e -> {apply(); dispose();}) );
 		JButton jButtonClose = new JButton(new UsnaAction("dlgClose", e -> dispose()));
-		buttonsPanel.add(okButton);
+		buttonsPanel.add(applyButton);
+		buttonsPanel.add(applyCloseButton);
 		buttonsPanel.add(jButtonClose);
 
 		pack();
 		setSize(getWidth(), 500);
 		setLocationRelativeTo(owner);
+		setVisible(true);
+	}
+	
+	/** test & design */
+	public SchedulerDialog() {
+		super(null, Main.LABELS.getString("schTitle"), Dialog.ModalityType.APPLICATION_MODAL);
+		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+
+		JScrollPane scrollPane = new JScrollPane(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+		scrollPane.getVerticalScrollBar().setUnitIncrement(16);
+		scrollPane.setViewportView(schedulesPanel);
+		schedulesPanel.setBackground(Main.BG_COLOR);
+		
+		scrollPane.setBorder(BorderFactory.createEmptyBorder());
+		getContentPane().add(scrollPane, BorderLayout.CENTER);
+		addLine(null, Integer.MAX_VALUE);
+		lineColors();
+
+		JPanel buttonsPanel = new JPanel();
+		getContentPane().add(buttonsPanel, BorderLayout.SOUTH);
+		JButton applyButton = new JButton(new UsnaAction("dlgApply", e -> apply()) );
+		JButton applyCloseButton = new JButton(new UsnaAction("dlgApplyClose", e -> {apply(); dispose();}) );
+		JButton jButtonClose = new JButton(new UsnaAction("dlgClose", e -> dispose()));
+		buttonsPanel.add(applyButton);
+		buttonsPanel.add(applyCloseButton);
+		buttonsPanel.add(jButtonClose);
+
+		pack();
+		setSize(getWidth(), 500);
+		setLocationRelativeTo(null);
+		setVisible(true);
+	}
+	
+	private void apply() {
+		for(int i = 0; i < schedulesPanel.getComponentCount(); i++) {
+			ScheduleLine sl = (ScheduleLine)((JPanel)schedulesPanel.getComponent(i)).getComponent(0);
+			boolean valid = sl.validateData(); 
+			System.out.println(valid);
+			if(valid == false) {
+				sl.scrollRectToVisible(sl.getBounds());
+				return;
+			}
+		}
+		for(int i = 0; i < schedulesPanel.getComponentCount(); i++) {
+			ScheduleLine sl = (ScheduleLine)((JPanel)schedulesPanel.getComponent(i)).getComponent(0);
+			System.out.println(sl.getJson());
+			System.out.println(originalValues.get(i).orig);
+			System.out.println(originalValues.get(i).id + " -- " + sl.getJson().equals(originalValues.get(i).orig));
+		}
 	}
 
 	private void addLine(JsonNode node, int pos) {
 		JPanel linePanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
-		ScheduleLine line = (node == null) ? new ScheduleLine() : new ScheduleLine(node);
+		ScheduleLine line = new ScheduleLine(this, node);
 		linePanel.add(line);
-		
-		UsnaToggleAction switchAction = new UsnaToggleAction(null, "/images/Standby24.png", "/images/StandbyOn24.png", e -> {
-//			try {
-//				light.toggle();
-//				adjust();
-//			} catch (IOException e1) {
-//				LOG.error("toggle", e1);
-//			}
-		});
-		JButton switchButton = new JButton(switchAction);
+
+		JButton switchButton = new JButton();
 		switchButton.setContentAreaFilled(false);
 		switchButton.setBorder(BorderFactory.createEmptyBorder());
-		switchAction.setSelected(node != null && node.path("enable").booleanValue());
 		linePanel.add(switchButton);
 
 		JButton addBtn = new JButton(new UsnaAction(null, "schAdd", "/images/plus_transp16.png", e -> {
@@ -141,12 +157,10 @@ public class SchedulerDialog extends JDialog {
 		addBtn.setBorder(BorderFactory.createEmptyBorder(2, 3, 2, 3));
 		
 		JButton removeBtn = new JButton(new UsnaAction(null, "schRemove", "/images/erase-9-16.png", e -> {
-			Component[] list = schedulesPanel.getComponents();
-			if(list.length > 1) {
-				schedulesPanel.remove(linePanel);
-				lineColors();
-				schedulesPanel.revalidate();
-				schedulesPanel.repaint(); // last one ... do not know why
+			if(schedulesPanel.getComponentCount() > 1) {
+				int i;
+				for(i = 0; schedulesPanel.getComponent(i) != linePanel; i++);
+				removeLine(i);
 			}
 		}));
 		removeBtn.setContentAreaFilled(false);
@@ -197,14 +211,41 @@ public class SchedulerDialog extends JDialog {
 		opPanel.add(copyBtn);
 		opPanel.add(pasteBtn);
 		linePanel.add(opPanel, BorderLayout.EAST);
-
-		schedulesPanel.add(linePanel, pos);
 		
-		Schedule s = new Schedule(line.getJson(), (node != null) ? node.path("id").asInt(-1) : -1);
-		if(pos == originalValues.size()) {
-			originalValues.add(s);
+		ScheduleData thisScheduleLine = new ScheduleData(line.getJson(), (node != null) ? node.path("id").asInt(-1) : -1);
+		if(pos >= originalValues.size()) {
+			schedulesPanel.add(linePanel);
+			originalValues.add(thisScheduleLine);
 		} else {
-			originalValues.add(pos, s);
+			schedulesPanel.add(linePanel, pos);
+			originalValues.add(pos, thisScheduleLine);
+		}
+
+		UsnaToggleAction switchAction = new UsnaToggleAction(this, "/images/Standby24.png", "/images/StandbyOn24.png",
+				e -> enableSchedule(thisScheduleLine, true), e -> enableSchedule(thisScheduleLine, false) );
+		
+		switchAction.setSelected(node != null && node.path("enable").booleanValue());
+		switchButton.setAction(switchAction);
+	}
+	
+	private void removeLine(int lineIndex) {
+		schedulesPanel.remove(lineIndex);
+		lineColors();
+		
+		ScheduleData data = originalValues.remove(lineIndex);
+		if(data.id >= 0) {
+			removedId.add(data.id);
+		}
+		schedulesPanel.revalidate();
+		schedulesPanel.repaint(); // last one need this ... do not know why
+	}
+	
+	private void enableSchedule(ScheduleData s, boolean enable) {
+		if(s.id >= 0) {
+			String res = sceduleManager.enable(s.id, enable);
+			if(res != null) {
+				Msg.errorMsg(this, res);
+			}
 		}
 	}
 	
@@ -215,12 +256,11 @@ public class SchedulerDialog extends JDialog {
 		}
 	}
 	
-	record Schedule(JsonNode orig, int id) {}
+	record ScheduleData(JsonNode orig, int id) {}
 
 	public static void main(final String ... args) throws Exception {
 		UsnaSwingUtils.setLookAndFeel(UsnaSwingUtils.LF_NIMBUS);
-		SchedulerDialog s = new SchedulerDialog(null, null);
-		s.setVisible(true);
+		new SchedulerDialog();
 	}
 }
 
@@ -235,4 +275,4 @@ public class SchedulerDialog extends JDialog {
 
 // notes: 10 not working (do 0); 100 not working (do 60)
 
-// todo asString @sun...
+// todo remove line -> ArrayList<Schedule> originalValues + lista id da rimuovere

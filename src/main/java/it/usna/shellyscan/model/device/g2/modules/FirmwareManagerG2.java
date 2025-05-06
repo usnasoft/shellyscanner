@@ -103,3 +103,11 @@ public class FirmwareManagerG2 implements FirmwareManager {
 		return valid;
 	}
 }
+
+// autoupdate
+// -----------
+//schedule.create - params:
+//calls: 
+//[{method: "Shelly.Update", params: {stage: "beta"}, origin: "shelly_service"}]
+//timespec: 
+//"0 0 0 * * 0,1,2,3,4,5,6"
