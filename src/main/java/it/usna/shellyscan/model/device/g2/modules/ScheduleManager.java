@@ -41,6 +41,7 @@ public class ScheduleManager {
 	}
 	
 	public String delete(int id) {
+//		todo test
 		return device.postCommand("Schedule.Delete", "{\"id\":" + id + "}");
 	}
 }
