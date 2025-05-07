@@ -12,6 +12,7 @@ import java.awt.datatransfer.StringSelection;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.concurrent.TimeUnit;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -46,7 +47,7 @@ public class SchedulerDialog extends JDialog {
 	private final JPanel schedulesPanel = new JPanel(new VerticalFlowLayout(VerticalFlowLayout.TOP, VerticalFlowLayout.CENTER, 0, 0));
 
 	public SchedulerDialog(Window owner, AbstractG2Device device) {
-		super(owner, Main.LABELS.getString("schTitle") + " - " + UtilMiscellaneous.getExtendedHostName(device), Dialog.ModalityType.APPLICATION_MODAL);
+		super(owner, Main.LABELS.getString("schTitle") + " - " + UtilMiscellaneous.getExtendedHostName(device), Dialog.ModalityType.MODELESS);
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		this.sceduleManager = new ScheduleManager(device);
 
@@ -176,15 +177,16 @@ public class SchedulerDialog extends JDialog {
 		duplicateBtn.setContentAreaFilled(false);
 		duplicateBtn.setBorder(BorderFactory.createEmptyBorder(2, 3, 2, 3));
 		
-		JButton copyBtn = new JButton(new UsnaAction(null, "schCopy", "/images/copy_trasp16.png", e -> {
+		JButton copyBtn = new JButton(new UsnaAction(this, "schCopy", "/images/copy_trasp16.png", e -> {
 			final Clipboard cb = Toolkit.getDefaultToolkit().getSystemClipboard();
 			StringSelection selection = new StringSelection(line.getJson().toString());
 			cb.setContents(selection, selection);
+			try { TimeUnit.MILLISECONDS.sleep(300); } catch (InterruptedException e1) {} // a small time to show busy pointer
 		}));
 		copyBtn.setContentAreaFilled(false);
 		copyBtn.setBorder(BorderFactory.createEmptyBorder(2, 3, 2, 3));
 
-		JButton pasteBtn = new JButton(new UsnaAction(null, "schPaste", "/images/paste_trasp16.png", e -> {
+		JButton pasteBtn = new JButton(new UsnaAction(this, "schPaste", "/images/paste_trasp16.png", e -> {
 			final Clipboard cb = Toolkit.getDefaultToolkit().getSystemClipboard();
 			try {
 				String sch = cb.getContents(this).getTransferData(DataFlavor.stringFlavor).toString();
@@ -195,6 +197,7 @@ public class SchedulerDialog extends JDialog {
 					line.setCron(pastedNode.get("timespec").asText());
 					line.setCalls(pastedNode.get("calls"));
 					line.revalidate();
+					try { TimeUnit.MILLISECONDS.sleep(300); } catch (InterruptedException e1) {} // a small time to show busy pointer
 //				}
 			} catch (Exception e1) {
 				Msg.errorMsg(this, "schErrorInvalidPaste");

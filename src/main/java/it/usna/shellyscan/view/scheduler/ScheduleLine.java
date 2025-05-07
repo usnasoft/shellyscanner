@@ -1,4 +1,7 @@
 package it.usna.shellyscan.view.scheduler;
+
+import static it.usna.shellyscan.Main.LABELS;
+
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.FlowLayout;
@@ -17,7 +20,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
@@ -43,6 +45,7 @@ import it.usna.shellyscan.view.util.Msg;
 
 public class ScheduleLine extends JPanel {
 	private static final long serialVersionUID = 1L;
+	private final static ImageIcon EDIT_IMG = new ImageIcon(ScheduleLine.class.getResource("/images/Write16.png"));
 	private JTextField hoursTextField;
 	private JTextField minutesTextField;
 	private JTextField secondsTextField;
@@ -62,40 +65,8 @@ public class ScheduleLine extends JPanel {
 	private JPanel callsOperationsPanel;
 	private JDialog parent;
 	
-	private final static String REX_0_59 = "([1-5]?\\d)";
-	private final static String REX_0_23 = "(1\\d|2[0-3]|\\d)";
-	private final static String REX_1_31 = "([12]\\d|3[01]|[1-9])";
-	private final static String REX_1_9999 = "([1-9]\\d{0,3})";
-	private final static String REX_1_12 = "(1[0-2]|[1-9])";
-	private final static String REX_0_6 = "([0-6])";
-
-	private final static String REX_HOUR = "(" + REX_0_23 + "-" + REX_0_23 + "|\\*/" + REX_1_9999 + "|" + REX_0_23 + "/" + REX_1_9999 + "|" + REX_0_23 + ")";
-	private final static String REX_MINUTE = "(" + REX_0_59 + "-" + REX_0_59 +  "|\\*/" + REX_1_9999 + "|" + REX_0_59 + "/" + REX_1_9999 + "|" + REX_0_59  + ")";
-	private final static String REX_SECOND = "(" + REX_0_59 + "-" + REX_0_59 +  "|\\*/" + REX_1_9999 + "|" + REX_0_59 + "/" + REX_1_9999 + "|" + REX_0_59  + ")";
-	private final static String REX_MONTHDAY = "(" + REX_1_31 + "-" + REX_1_31 +  "|\\*/" + REX_1_9999 + "|" + REX_1_31 + "/" + REX_1_9999 + "|" + REX_1_31 + ")";
-	private final static String REX_MONTH = "(" + REX_1_12 + "-" + REX_1_12 +  "|\\*/" + REX_1_9999 + "|" + REX_1_12 + "/" + REX_1_9999 + "|" + REX_1_12 + ")";
-	private final static String REX_WEEKDAY = "(" + REX_0_6 + "-" + REX_0_6 +  "|\\*/" + REX_1_9999 + "|" + REX_0_6 + "/" + REX_1_9999 + "|" + REX_0_6 + ")";
-
-	private final static String REX_HOURS = "\\*|" + REX_HOUR + "(," + REX_HOUR + ")*";
-	private final static String REX_MINUTES = "\\*|" + REX_MINUTE + "(," + REX_MINUTE + ")*";
-	private final static String REX_SECONDS = "\\*|" + REX_SECOND + "(," + REX_SECOND + ")*";
-	private final static String REX_MONTHDAYS = "\\*|" + REX_MONTHDAY + "(," + REX_MONTHDAY + ")*";
-	private final static String REX_MONTHS = "\\*|" + REX_MONTH + "(," + REX_MONTH + ")*";
-	private final static String REX_WEEKDAYS = "\\*|" + REX_WEEKDAY + "(," + REX_WEEKDAY + ")*";
-	
-	private final static Pattern HOUR_0_23_PATTERN = Pattern.compile(REX_0_23);
-	private final static Pattern MINUTE_0_59_PATTERN = Pattern.compile(REX_0_59);
-
-	private final static Pattern HOURS_PATTERN = Pattern.compile(REX_HOURS);
-	private final static Pattern MINUTES_PATTERN = Pattern.compile(REX_MINUTES);
-	private final static Pattern SECONDS_PATTERN = Pattern.compile(REX_SECONDS);
-	private final static Pattern DAYS_PATTERN = Pattern.compile(REX_MONTHDAYS);
-
-	private final static Pattern CRON_PATTERN = Pattern.compile("(" + REX_SECONDS + ") (" + REX_MINUTES + ") (" + REX_SECONDS + ") (" + REX_MONTHDAYS + ") (" + REX_MONTHS + ") (" + REX_WEEKDAYS + ")");
-	private final static Pattern SUNSET_PATTERN = Pattern.compile("@(sunset|sunrise)((\\+|-)(?<HOUR>" + REX_0_23 + ")h((?<MINUTE>" + REX_0_59 + ")m)?)?( (?<DAY>" + REX_MONTHDAYS + ") (?<MONTH>" + REX_MONTHS + ") (?<WDAY>" + REX_WEEKDAYS + "))?");
-	
 	private final static ObjectMapper JSON_MAPPER = new ObjectMapper();
-	
+
 	/**
 	 * @wbp.parser.constructor
 	 */
@@ -169,33 +140,77 @@ public class ScheduleLine extends JPanel {
 		GridBagLayout gbl_panel = new GridBagLayout();
 //		gbl_panel.columnWidths = new int[]{10, 10, 10, 10, 10, 0, 10};
 		// gbl_panel.rowHeights = new int[]{0, 0, 0, 0};
-		gbl_panel.columnWeights = new double[] { 1.0, 1.0, 1.0, 1.0, 0.5, 1.0, 0.0 };
+		gbl_panel.columnWeights = new double[] { 1.0, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0, 0.0, 0.5, 1.0, 0.0 };
 		gbl_panel.rowWeights = new double[] { 1.0, 1.0, 1.0, 0.0, 1.0};
 		setLayout(gbl_panel);
 
-		JLabel lblNewLabel = new JLabel("Hours");
+		JLabel lblNewLabel = new JLabel(LABELS.getString("lblHours"));
 		GridBagConstraints gbc_lblNewLabel = new GridBagConstraints();
+		gbc_lblNewLabel.anchor = GridBagConstraints.WEST;
 		gbc_lblNewLabel.insets = new Insets(0, 0, 5, 5);
 		gbc_lblNewLabel.gridx = 0;
 		gbc_lblNewLabel.gridy = 0;
 		add(lblNewLabel, gbc_lblNewLabel);
+		
+		JButton btnHoursSelec = new JButton(EDIT_IMG);
+		btnHoursSelec.setContentAreaFilled(false);
+		btnHoursSelec.setBorder(BorderFactory.createEmptyBorder());
+		GridBagConstraints gbc_btnHoursSelec = new GridBagConstraints();
+		gbc_btnHoursSelec.insets = new Insets(1, 0, 1, 10);
+		gbc_btnHoursSelec.gridx = 1;
+		gbc_btnHoursSelec.gridy = 0;
+		add(btnHoursSelec, gbc_btnHoursSelec);
+		btnHoursSelec.addActionListener(e -> new CronValuesDialog(parent, hoursTextField, 0, 24));
+		
+		JButton btnMinutesSelec = new JButton(EDIT_IMG);
+		btnMinutesSelec.setContentAreaFilled(false);
+		btnMinutesSelec.setBorder(BorderFactory.createEmptyBorder());
+		GridBagConstraints gbc_btnMinutesSelec = new GridBagConstraints();
+		gbc_btnMinutesSelec.insets = new Insets(1, 0, 1, 10);
+		gbc_btnMinutesSelec.gridx = 3;
+		gbc_btnMinutesSelec.gridy = 0;
+		add(btnMinutesSelec, gbc_btnMinutesSelec);
+		btnMinutesSelec.addActionListener(e -> new CronValuesDialog(parent, minutesTextField, 0, 60));
 
-		JLabel lblNewLabel_2 = new JLabel("Seconds");
+		JLabel lblNewLabel_2 = new JLabel(LABELS.getString("lblSeconds"));
 		GridBagConstraints gbc_lblNewLabel_2 = new GridBagConstraints();
+		gbc_lblNewLabel_2.anchor = GridBagConstraints.WEST;
 		gbc_lblNewLabel_2.insets = new Insets(0, 0, 5, 5);
-		gbc_lblNewLabel_2.gridx = 2;
+		gbc_lblNewLabel_2.gridx = 4;
 		gbc_lblNewLabel_2.gridy = 0;
 		add(lblNewLabel_2, gbc_lblNewLabel_2);
+		
+		JButton btnSecondsSelec = new JButton(EDIT_IMG);
+		btnSecondsSelec.setContentAreaFilled(false);
+		btnSecondsSelec.setBorder(BorderFactory.createEmptyBorder());
+		GridBagConstraints gbc_btnSecondsSelec = new GridBagConstraints();
+		gbc_btnSecondsSelec.insets = new Insets(1, 0, 1, 10);
+		gbc_btnSecondsSelec.gridx = 5;
+		gbc_btnSecondsSelec.gridy = 0;
+		add(btnSecondsSelec, gbc_btnSecondsSelec);
+		btnSecondsSelec.addActionListener(e -> new CronValuesDialog(parent, secondsTextField, 0, 60));
 
-		JLabel lblNewLabel_3 = new JLabel("Days");
+		JLabel lblNewLabel_3 = new JLabel(LABELS.getString("lblDays"));
 		GridBagConstraints gbc_lblNewLabel_3 = new GridBagConstraints();
+		gbc_lblNewLabel_3.anchor = GridBagConstraints.WEST;
 		gbc_lblNewLabel_3.insets = new Insets(0, 0, 5, 5);
-		gbc_lblNewLabel_3.gridx = 3;
+		gbc_lblNewLabel_3.gridx = 6;
 		gbc_lblNewLabel_3.gridy = 0;
 		add(lblNewLabel_3, gbc_lblNewLabel_3);
+		
+		JButton btnDaysSelec = new JButton(EDIT_IMG);
+		btnDaysSelec.setContentAreaFilled(false);
+		btnDaysSelec.setBorder(BorderFactory.createEmptyBorder());
+		GridBagConstraints gbc_btnDaysSelec = new GridBagConstraints();
+		gbc_btnDaysSelec.insets = new Insets(1, 0, 1, 10);
+		gbc_btnDaysSelec.gridx = 7;
+		gbc_btnDaysSelec.gridy = 0;
+		add(btnDaysSelec, gbc_btnDaysSelec);
+		btnDaysSelec.addActionListener(e -> new CronValuesDialog(parent, daysTextField, 1, 32));
 
 		hoursTextField = new JTextField();
 		GridBagConstraints gbc_hoursTextField = new GridBagConstraints();
+		gbc_hoursTextField.gridwidth = 2;
 		gbc_hoursTextField.insets = new Insets(0, 0, 5, 5);
 		gbc_hoursTextField.fill = GridBagConstraints.HORIZONTAL;
 		gbc_hoursTextField.gridx = 0;
@@ -203,36 +218,40 @@ public class ScheduleLine extends JPanel {
 		add(hoursTextField, gbc_hoursTextField);
 		hoursTextField.setColumns(10);
 
-		JLabel lblNewLabel_1 = new JLabel("Minutes");
+		JLabel lblNewLabel_1 = new JLabel(LABELS.getString("lblMinutes"));
 		GridBagConstraints gbc_lblNewLabel_1 = new GridBagConstraints();
+		gbc_lblNewLabel_1.anchor = GridBagConstraints.WEST;
 		gbc_lblNewLabel_1.insets = new Insets(0, 0, 5, 5);
-		gbc_lblNewLabel_1.gridx = 1;
+		gbc_lblNewLabel_1.gridx = 2;
 		gbc_lblNewLabel_1.gridy = 0;
 		add(lblNewLabel_1, gbc_lblNewLabel_1);
 
 		minutesTextField = new JTextField();
 		GridBagConstraints gbc_minutesTextField = new GridBagConstraints();
+		gbc_minutesTextField.gridwidth = 2;
 		gbc_minutesTextField.insets = new Insets(0, 0, 5, 5);
 		gbc_minutesTextField.fill = GridBagConstraints.HORIZONTAL;
-		gbc_minutesTextField.gridx = 1;
+		gbc_minutesTextField.gridx = 2;
 		gbc_minutesTextField.gridy = 1;
 		add(minutesTextField, gbc_minutesTextField);
 		minutesTextField.setColumns(10);
 
 		secondsTextField = new JTextField();
 		GridBagConstraints gbc_secondsTextField = new GridBagConstraints();
+		gbc_secondsTextField.gridwidth = 2;
 		gbc_secondsTextField.insets = new Insets(0, 0, 5, 5);
 		gbc_secondsTextField.fill = GridBagConstraints.HORIZONTAL;
-		gbc_secondsTextField.gridx = 2;
+		gbc_secondsTextField.gridx = 4;
 		gbc_secondsTextField.gridy = 1;
 		add(secondsTextField, gbc_secondsTextField);
 		secondsTextField.setColumns(10);
 
 		daysTextField = new JTextField();
 		GridBagConstraints gbc_daysTextField = new GridBagConstraints();
+		gbc_daysTextField.gridwidth = 2;
 		gbc_daysTextField.insets = new Insets(0, 0, 5, 5);
 		gbc_daysTextField.fill = GridBagConstraints.HORIZONTAL;
-		gbc_daysTextField.gridx = 3;
+		gbc_daysTextField.gridx = 6;
 		gbc_daysTextField.gridy = 1;
 		add(daysTextField, gbc_daysTextField);
 		daysTextField.setColumns(10);
@@ -241,9 +260,9 @@ public class ScheduleLine extends JPanel {
 		GridBagConstraints gbc_months = new GridBagConstraints();
 		gbc_months.anchor = GridBagConstraints.WEST;
 		gbc_months.gridheight = 2;
-		gbc_months.insets = new Insets(0, 0, 5, 15);
+//		gbc_months.insets = new Insets(0, 0, 5, 5);
 		gbc_months.fill = GridBagConstraints.HORIZONTAL;
-		gbc_months.gridx = 4;
+		gbc_months.gridx = 9;
 		gbc_months.gridy = 0;
 		add(monthsPanel, gbc_months);
 
@@ -251,17 +270,17 @@ public class ScheduleLine extends JPanel {
 		GridBagConstraints gbc_daysOfWeek = new GridBagConstraints();
 		gbc_daysOfWeek.anchor = GridBagConstraints.WEST;
 		gbc_daysOfWeek.gridheight = 2;
-		gbc_daysOfWeek.insets = new Insets(0, 0, 5, 5);
+		gbc_daysOfWeek.insets = new Insets(0, 5, 5, 15);
 		gbc_daysOfWeek.fill = GridBagConstraints.HORIZONTAL;
-		gbc_daysOfWeek.gridx = 5;
+		gbc_daysOfWeek.gridx = 8;
 		gbc_daysOfWeek.gridy = 0;
 		add(daysOfWeekPanel, gbc_daysOfWeek);
 
 		JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
 		panel.setOpaque(false);
 		GridBagConstraints gbc_panel = new GridBagConstraints();
-		gbc_panel.gridwidth = 4;
-		gbc_panel.insets = new Insets(0, 0, 5, 5);
+		gbc_panel.gridwidth = 7;
+//		gbc_panel.insets = new Insets(0, 0, 5, 5);
 		gbc_panel.gridx = 0;
 		gbc_panel.gridy = 2;
 		add(panel, gbc_panel);
@@ -274,15 +293,16 @@ public class ScheduleLine extends JPanel {
 		add(new JLabel("Method"), gbc_lblNewLabel_5);
 		
 		GridBagConstraints gbc_lblNewLabel_6 = new GridBagConstraints();
+		gbc_lblNewLabel_6.gridwidth = 2;
 		gbc_lblNewLabel_6.anchor = GridBagConstraints.WEST;
 		gbc_lblNewLabel_6.insets = new Insets(0, 0, 5, 5);
-		gbc_lblNewLabel_6.gridx = 2;
+		gbc_lblNewLabel_6.gridx = 3;
 		gbc_lblNewLabel_6.gridy = 3;
 		add(new JLabel("Parameters"), gbc_lblNewLabel_6);
 		
 		callsPanel = new JPanel();
 		GridBagConstraints gbc_callsPanel = new GridBagConstraints();
-		gbc_callsPanel.gridwidth = 2;
+		gbc_callsPanel.gridwidth = 3;
 		gbc_callsPanel.insets = new Insets(0, 0, 0, 5);
 		gbc_callsPanel.fill = GridBagConstraints.BOTH;
 		gbc_callsPanel.gridx = 0;
@@ -298,11 +318,11 @@ public class ScheduleLine extends JPanel {
 				} else {
 					secondsTextField.setEnabled(false);
 					secondsTextField.setText("0");
-					if(HOUR_0_23_PATTERN.matcher(hoursTextField.getText()).matches() == false) {
+					if(CronUtils.HOUR_0_23_PATTERN.matcher(hoursTextField.getText()).matches() == false) {
 						hoursTextField.setText("0");
 						hoursTextField.setForeground(null);
 					}
-					if(MINUTE_0_59_PATTERN.matcher(minutesTextField.getText()).matches() == false) {
+					if(CronUtils.MINUTE_0_59_PATTERN.matcher(minutesTextField.getText()).matches() == false) {
 						minutesTextField.setText("0");
 						minutesTextField.setForeground(null);
 					}
@@ -311,27 +331,27 @@ public class ScheduleLine extends JPanel {
 			}
 		};
 
-		cronRadio = new JRadioButton("Time");
+		cronRadio = new JRadioButton(LABELS.getString("lblTime"));
 		cronRadio.setOpaque(false);
 		cronRadio.addActionListener(changeType);
 		panel.add(cronRadio);
 
-		beforeRiseRadio = new JRadioButton("Before sunrise");
+		beforeRiseRadio = new JRadioButton(LABELS.getString("lblBeforeSunrise"));
 		beforeRiseRadio.setOpaque(false);
 		beforeRiseRadio.addActionListener(changeType);
 		panel.add(beforeRiseRadio);
 
-		afterRiseRadio = new JRadioButton("After sunrise");
+		afterRiseRadio = new JRadioButton(LABELS.getString("lblAfterSunrise"));
 		afterRiseRadio.setOpaque(false);
 		afterRiseRadio.addActionListener(changeType);
 		panel.add(afterRiseRadio);
 
-		beforeSetRadio = new JRadioButton("Before sunset");
+		beforeSetRadio = new JRadioButton(LABELS.getString("lblBeforeSunset"));
 		beforeSetRadio.setOpaque(false);
 		beforeSetRadio.addActionListener(changeType);
 		panel.add(beforeSetRadio);
 		
-		afterSetRadio = new JRadioButton("After sunset");
+		afterSetRadio = new JRadioButton(LABELS.getString("lblAfterSunset"));
 		afterSetRadio.setOpaque(false);
 		afterSetRadio.addActionListener(changeType);
 		panel.add(afterSetRadio);
@@ -348,16 +368,16 @@ public class ScheduleLine extends JPanel {
 		gbc_textField.insets = new Insets(0, 0, 5, 0);
 		gbc_textField.gridwidth = 3;
 		gbc_textField.fill = GridBagConstraints.HORIZONTAL;
-		gbc_textField.gridx = 4;
+		gbc_textField.gridx = 8;
 		gbc_textField.gridy = 2;
 		add(expressionField, gbc_textField);
 		
 		callsParameterPanel = new JPanel();
 		GridBagConstraints gbc_callsParameterPanel = new GridBagConstraints();
-		gbc_callsParameterPanel.gridwidth = 3;
+		gbc_callsParameterPanel.gridwidth = 6;
 		gbc_callsParameterPanel.insets = new Insets(0, 0, 0, 5);
 		gbc_callsParameterPanel.fill = GridBagConstraints.BOTH;
-		gbc_callsParameterPanel.gridx = 2;
+		gbc_callsParameterPanel.gridx = 3;
 		gbc_callsParameterPanel.gridy = 4;
 		add(callsParameterPanel, gbc_callsParameterPanel);
 		callsParameterPanel.setLayout(new BoxLayout(callsParameterPanel, BoxLayout.Y_AXIS));
@@ -367,7 +387,7 @@ public class ScheduleLine extends JPanel {
 		gbc_callsOperations.fill = GridBagConstraints.VERTICAL;
 		gbc_callsOperations.anchor = GridBagConstraints.WEST;
 		gbc_callsOperations.insets = new Insets(0, 0, 0, 5);
-		gbc_callsOperations.gridx = 5;
+		gbc_callsOperations.gridx = 9;
 		gbc_callsOperations.gridy = 4;
 		add(callsOperationsPanel, gbc_callsOperations);
 		callsOperationsPanel.setOpaque(false);
@@ -379,7 +399,7 @@ public class ScheduleLine extends JPanel {
 			public void focusLost(FocusEvent e) {
 				String exp = CronUtils.fragStrToNum(expressionField.getText());
 				expressionField.setText(exp);
-				if((CRON_PATTERN.matcher(exp).matches() || SUNSET_PATTERN.matcher(exp).matches())) {
+				if((CronUtils.CRON_PATTERN.matcher(exp).matches() || CronUtils.SUNSET_PATTERN.matcher(exp).matches())) {
 					expressionField.setForeground(null);
 					setCron(exp);
 				} else {
@@ -484,7 +504,7 @@ public class ScheduleLine extends JPanel {
 		cronLine = CronUtils.fragStrToNum(cronLine);
 		
 		final String[] values;
-		Matcher sm = SUNSET_PATTERN.matcher(cronLine);
+		Matcher sm = CronUtils.SUNSET_PATTERN.matcher(cronLine);
 		if(sm.matches()) {
 			secondsTextField.setEnabled(false);
 			String hours = sm.group("HOUR");
@@ -566,38 +586,38 @@ public class ScheduleLine extends JPanel {
 		if(cronRadio.isSelected()) {
 			String seconds = secondsTextField.getText();
 			res = seconds + " " + minutes + " " + hours;
-			secondsTextField.setForeground(SECONDS_PATTERN.matcher(seconds).matches() ? null : Color.red);
-			minutesTextField.setForeground(MINUTES_PATTERN.matcher(minutes).matches() ? null : Color.red);
-			hoursTextField.setForeground(HOURS_PATTERN.matcher(hours).matches() ? null : Color.red);
+			secondsTextField.setForeground(CronUtils.SECONDS_PATTERN.matcher(seconds).matches() ? null : Color.red);
+			minutesTextField.setForeground(CronUtils.MINUTES_PATTERN.matcher(minutes).matches() ? null : Color.red);
+			hoursTextField.setForeground(CronUtils.HOURS_PATTERN.matcher(hours).matches() ? null : Color.red);
 		} else if(beforeRiseRadio.isSelected()) {
 			res = "@sunrise-" + hours + "h" + minutes + "m";
-			hoursTextField.setForeground(HOUR_0_23_PATTERN.matcher(hours).matches() ? null : Color.red);
-			minutesTextField.setForeground(MINUTE_0_59_PATTERN.matcher(minutes).matches() ? null : Color.red);
+			hoursTextField.setForeground(CronUtils.HOUR_0_23_PATTERN.matcher(hours).matches() ? null : Color.red);
+			minutesTextField.setForeground(CronUtils.MINUTE_0_59_PATTERN.matcher(minutes).matches() ? null : Color.red);
 		} else if(afterRiseRadio.isSelected()) {
 			res = "@sunrise+" + hours + "h" + minutes + "m";
-			hoursTextField.setForeground(HOUR_0_23_PATTERN.matcher(hours).matches() ? null : Color.red);
-			minutesTextField.setForeground(MINUTE_0_59_PATTERN.matcher(minutes).matches() ? null : Color.red);
+			hoursTextField.setForeground(CronUtils.HOUR_0_23_PATTERN.matcher(hours).matches() ? null : Color.red);
+			minutesTextField.setForeground(CronUtils.MINUTE_0_59_PATTERN.matcher(minutes).matches() ? null : Color.red);
 		} else if(beforeSetRadio.isSelected()) {
 			res = "@sunset-" + hours + "h" + minutes + "m";
-			hoursTextField.setForeground(HOUR_0_23_PATTERN.matcher(hours).matches() ? null : Color.red);
-			minutesTextField.setForeground(MINUTE_0_59_PATTERN.matcher(minutes).matches() ? null : Color.red);
+			hoursTextField.setForeground(CronUtils.HOUR_0_23_PATTERN.matcher(hours).matches() ? null : Color.red);
+			minutesTextField.setForeground(CronUtils.MINUTE_0_59_PATTERN.matcher(minutes).matches() ? null : Color.red);
 		} else if(afterSetRadio.isSelected()) {
 			res = "@sunset+" + hours + "h" + minutes + "m";
-			hoursTextField.setForeground(HOUR_0_23_PATTERN.matcher(hours).matches() ? null : Color.red);
-			minutesTextField.setForeground(MINUTE_0_59_PATTERN.matcher(minutes).matches() ? null : Color.red);
+			hoursTextField.setForeground(CronUtils.HOUR_0_23_PATTERN.matcher(hours).matches() ? null : Color.red);
+			minutesTextField.setForeground(CronUtils.MINUTE_0_59_PATTERN.matcher(minutes).matches() ? null : Color.red);
 		}
 
 		String days = daysTextField.getText();
-		daysTextField.setForeground(DAYS_PATTERN.matcher(days).matches() ? null : Color.red);
+		daysTextField.setForeground(CronUtils.DAYS_PATTERN.matcher(days).matches() ? null : Color.red);
 		res += " " + days + " " + months + " " + daysOfWeek;
 
 		expressionField.setText(res);
-		expressionField.setForeground((CRON_PATTERN.matcher(res).matches() || SUNSET_PATTERN.matcher(res).matches()) ? null : Color.red);
+		expressionField.setForeground((CronUtils.CRON_PATTERN.matcher(res).matches() || CronUtils.SUNSET_PATTERN.matcher(res).matches()) ? null : Color.red);
 	}
 	
 	public boolean validateData() {
 		String exp = expressionField.getText();
-		if(CRON_PATTERN.matcher(exp).matches() == false && SUNSET_PATTERN.matcher(exp).matches() == false) {
+		if(CronUtils.CRON_PATTERN.matcher(exp).matches() == false && CronUtils.SUNSET_PATTERN.matcher(exp).matches() == false) {
 			expressionField.requestFocus();
 			Msg.errorMsg(parent, "schErrorInvalidExpression");
 			return false;
