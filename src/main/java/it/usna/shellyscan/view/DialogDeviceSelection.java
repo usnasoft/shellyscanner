@@ -27,12 +27,14 @@ import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.RowFilter;
 import javax.swing.SortOrder;
+import javax.swing.SwingConstants;
 import javax.swing.table.TableRowSorter;
 
 import it.usna.shellyscan.controller.UsnaAction;
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.view.util.UtilMiscellaneous;
+import it.usna.swing.UsnaSwingUtils;
 import it.usna.swing.table.ExTooltipTable;
 import it.usna.swing.table.UsnaTableModel;
 import it.usna.swing.texteditor.TextDocumentListener;
@@ -145,9 +147,9 @@ public class DialogDeviceSelection extends JDialog {
 		    }
 		});
 
-		setSize(450, 400);
+		setSize(450, owner.getHeight());		UsnaSwingUtils.setLocationRelativeTo(this, owner, SwingConstants.RIGHT, -8, 0);
+//		setLocationRelativeTo(owner);
 		setVisible(true);
-		setLocationRelativeTo(owner);
 		table.columnsWidthAdapt();
 	}
 }

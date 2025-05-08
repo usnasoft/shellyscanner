@@ -35,13 +35,12 @@ public class ScheduleManager {
 		return res.get("id").asInt(-1);
 	}
 	
-	public String update(int id, JsonNode def) {
-//		todo
-		return null;
+	public String update(int id, ObjectNode def) {
+		def.put("id", id);
+		return device.postCommand("Schedule.Update", def);
 	}
 	
 	public String delete(int id) {
-//		todo test
 		return device.postCommand("Schedule.Delete", "{\"id\":" + id + "}");
 	}
 }

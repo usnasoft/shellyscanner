@@ -22,6 +22,7 @@ import javax.swing.JScrollPane;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import it.usna.shellyscan.Main;
 import it.usna.shellyscan.controller.UsnaAction;
@@ -129,11 +130,36 @@ public class SchedulerDialog extends JDialog {
 				return;
 			}
 		}
-		for(int i = 0; i < schedulesPanel.getComponentCount(); i++) {
-			ScheduleLine sl = (ScheduleLine)((JPanel)schedulesPanel.getComponent(i)).getComponent(0);
-			System.out.println(sl.getJson());
-			System.out.println(originalValues.get(i).orig);
-			System.out.println(originalValues.get(i).id + " -- " + sl.getJson().equals(originalValues.get(i).orig));
+		try {
+			for(int i = 0; i < schedulesPanel.getComponentCount(); i++) {
+				ScheduleLine sl = (ScheduleLine)((JPanel)schedulesPanel.getComponent(i)).getComponent(0);
+				System.out.println(sl.getJson());
+				System.out.println(originalValues.get(i).orig);
+				System.out.println(originalValues.get(i).id + " -- " + sl.getJson().equals(originalValues.get(i).orig));
+
+				if(originalValues.get(i).id < 0) {
+					JButton enableBtn = (JButton)((JPanel)schedulesPanel.getComponent(i)).getComponent(1);
+					int id = sceduleManager.create((ObjectNode)sl.getJson(), ((UsnaToggleAction)enableBtn.getAction()).isSelected());
+					originalValues.set(i, new ScheduleData(sl.getJson(), id));
+				} else {
+					String res = sceduleManager.update(originalValues.get(i).id, (ObjectNode)sl.getJson());
+					originalValues.set(i, new ScheduleData(sl.getJson(), originalValues.get(i).id));
+					if(res != null) {
+						Msg.errorMsg(this, res);
+						return;
+					}
+				}
+			}
+			for(int id: removedId) {
+				String res = sceduleManager.delete(id);
+				if(res != null) {
+					Msg.errorMsg(this, res);
+					break;
+				}
+			}
+			removedId.clear();
+		} catch (IOException e) {
+			Msg.errorMsg(this, e);
 		}
 	}
 
@@ -225,7 +251,7 @@ public class SchedulerDialog extends JDialog {
 		}
 
 		UsnaToggleAction switchAction = new UsnaToggleAction(this, "/images/Standby24.png", "/images/StandbyOn24.png",
-				e -> enableSchedule(thisScheduleLine, true), e -> enableSchedule(thisScheduleLine, false) );
+				e -> enableSchedule(linePanel, true), e -> enableSchedule(linePanel, false) );
 		
 		switchAction.setSelected(node != null && node.path("enable").booleanValue());
 		switchButton.setAction(switchAction);
@@ -243,9 +269,12 @@ public class SchedulerDialog extends JDialog {
 		schedulesPanel.repaint(); // last one need this ... do not know why
 	}
 	
-	private void enableSchedule(ScheduleData s, boolean enable) {
-		if(s.id >= 0) {
-			String res = sceduleManager.enable(s.id, enable);
+	private void enableSchedule(JPanel line, boolean enable) {
+		int i;
+		for(i = 0; schedulesPanel.getComponent(i) != line; i++);
+		ScheduleData data = originalValues.get(i);
+		if(data.id >= 0) {
+			String res = sceduleManager.enable(data.id, enable);
 			if(res != null) {
 				Msg.errorMsg(this, res);
 			}
