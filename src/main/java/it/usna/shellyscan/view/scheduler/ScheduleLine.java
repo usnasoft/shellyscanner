@@ -41,6 +41,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
+import it.usna.shellyscan.controller.UsnaDropdownAction;
 import it.usna.shellyscan.view.util.Msg;
 
 public class ScheduleLine extends JPanel {
@@ -65,13 +66,15 @@ public class ScheduleLine extends JPanel {
 	private JPanel callsOperationsPanel;
 	private JDialog parent;
 	
+	private final MethodHints mHints;// = new MethodHints();
 	private final static ObjectMapper JSON_MAPPER = new ObjectMapper();
 
 	/**
 	 * @wbp.parser.constructor
 	 */
-	ScheduleLine(JDialog parent, JsonNode scheduleNode) {
+	ScheduleLine(JDialog parent, JsonNode scheduleNode, MethodHints mHints) {
 		this.parent = parent;
+		this.mHints = mHints;
 		setOpaque(false);
 		setBorder(BorderFactory.createEmptyBorder(2, 2, 4, 2));
 		init();
@@ -108,8 +111,9 @@ public class ScheduleLine extends JPanel {
 		
 		JPanel callOpPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
 		callOpPanel.setOpaque(false);
-		JButton addB = new JButton(new ImageIcon(getClass().getResource("/images/plus10.png")));
-		addB.setBorder(BorderFactory.createEmptyBorder(6, 6, 6, 6));
+		JButton addB = new JButton(new ImageIcon(getClass().getResource("/images/plus_transp16.png")));
+		addB.setContentAreaFilled(false);
+		addB.setBorder(BorderFactory.createEmptyBorder(4, 3, 4, 3));
 		addB.addActionListener(e ->  {
 			Component[] list = callsOperationsPanel.getComponents();
 			int i;
@@ -118,8 +122,9 @@ public class ScheduleLine extends JPanel {
 			callsOperationsPanel.revalidate();
 		});
 		callOpPanel.add(addB);
-		JButton minusB = new JButton(new ImageIcon(getClass().getResource("/images/minus10.png")));
-		minusB.setBorder(BorderFactory.createEmptyBorder(6, 6, 6, 6));
+		JButton minusB = new JButton(new ImageIcon(getClass().getResource("/images/erase-9-16.png")));
+		minusB.setContentAreaFilled(false);
+		minusB.setBorder(BorderFactory.createEmptyBorder(4, 3, 4, 3));
 		minusB.addActionListener(e ->  {
 			Component[] list = callsOperationsPanel.getComponents();
 			if(list.length > 1) {
@@ -132,6 +137,22 @@ public class ScheduleLine extends JPanel {
 			}
 		});
 		callOpPanel.add(minusB);
+		
+		JButton btnSelectCombo = new JButton();
+//		btnSelectCombo.setAction(new UsnaDropdownAction(btnSelectCombo, "/images/expand-more.png", "lblMethodSelect", new Object[] {
+//				new AbstractAction("input 0") {
+//
+//					@Override
+//					public void actionPerformed(ActionEvent e) {
+//						methodTF.setText("input");
+//						paramsTF.setText("\"id\"=0");
+//					}
+//				}
+//		}));
+		btnSelectCombo.setAction(new UsnaDropdownAction(btnSelectCombo, "/images/expand-more.png", "lblMethodSelect", () -> mHints.get(methodTF, paramsTF)));
+		btnSelectCombo.setContentAreaFilled(false);
+		btnSelectCombo.setBorder(BorderFactory.createEmptyBorder(4, 3, 4, 3));
+		callOpPanel.add(btnSelectCombo);
 		
 		callsOperationsPanel.add(callOpPanel, index);
 	}
@@ -290,7 +311,7 @@ public class ScheduleLine extends JPanel {
 		gbc_lblNewLabel_5.insets = new Insets(0, 0, 5, 5);
 		gbc_lblNewLabel_5.gridx = 0;
 		gbc_lblNewLabel_5.gridy = 3;
-		add(new JLabel("Method"), gbc_lblNewLabel_5);
+		add(new JLabel(LABELS.getString("lblMethod")), gbc_lblNewLabel_5);
 		
 		GridBagConstraints gbc_lblNewLabel_6 = new GridBagConstraints();
 		gbc_lblNewLabel_6.gridwidth = 2;
@@ -298,7 +319,7 @@ public class ScheduleLine extends JPanel {
 		gbc_lblNewLabel_6.insets = new Insets(0, 0, 5, 5);
 		gbc_lblNewLabel_6.gridx = 3;
 		gbc_lblNewLabel_6.gridy = 3;
-		add(new JLabel("Parameters"), gbc_lblNewLabel_6);
+		add(new JLabel(LABELS.getString("lblParameters")), gbc_lblNewLabel_6);
 		
 		callsPanel = new JPanel();
 		GridBagConstraints gbc_callsPanel = new GridBagConstraints();

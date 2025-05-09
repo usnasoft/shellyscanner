@@ -42,15 +42,17 @@ public class SchedulerDialog extends JDialog {
 	//	private final static String INITIAL_VAL = "@sunrise+1h";
 	//	private final static String INITIAL_VAL = "@sunrise";
 
-	private ScheduleManager sceduleManager;
-	private ArrayList<ScheduleData> originalValues = new ArrayList<>();
-	private ArrayList<Integer> removedId = new ArrayList<>();
+	private final ScheduleManager sceduleManager;
+	private final MethodHints mHints;
+	private final ArrayList<ScheduleData> originalValues = new ArrayList<>();
+	private final ArrayList<Integer> removedId = new ArrayList<>();
 	private final JPanel schedulesPanel = new JPanel(new VerticalFlowLayout(VerticalFlowLayout.TOP, VerticalFlowLayout.CENTER, 0, 0));
 
 	public SchedulerDialog(Window owner, AbstractG2Device device) {
 		super(owner, Main.LABELS.getString("schTitle") + " - " + UtilMiscellaneous.getExtendedHostName(device), Dialog.ModalityType.MODELESS);
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		this.sceduleManager = new ScheduleManager(device);
+		this.mHints = new MethodHints(device);
 
 		JScrollPane scrollPane = new JScrollPane(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		scrollPane.getVerticalScrollBar().setUnitIncrement(16);
@@ -94,6 +96,8 @@ public class SchedulerDialog extends JDialog {
 	public SchedulerDialog() {
 		super(null, Main.LABELS.getString("schTitle"), Dialog.ModalityType.APPLICATION_MODAL);
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+		sceduleManager = null;
+		mHints = null;
 
 		JScrollPane scrollPane = new JScrollPane(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		scrollPane.getVerticalScrollBar().setUnitIncrement(16);
@@ -133,17 +137,18 @@ public class SchedulerDialog extends JDialog {
 		try {
 			for(int i = 0; i < schedulesPanel.getComponentCount(); i++) {
 				ScheduleLine sl = (ScheduleLine)((JPanel)schedulesPanel.getComponent(i)).getComponent(0);
+				ScheduleData original = originalValues.get(i);
 				System.out.println(sl.getJson());
-				System.out.println(originalValues.get(i).orig);
-				System.out.println(originalValues.get(i).id + " -- " + sl.getJson().equals(originalValues.get(i).orig));
+				System.out.println(original.orig);
+				System.out.println(original.id + " -- " + sl.getJson().equals(original.orig));
 
-				if(originalValues.get(i).id < 0) {
+				if(original.id < 0) {
 					JButton enableBtn = (JButton)((JPanel)schedulesPanel.getComponent(i)).getComponent(1);
 					int id = sceduleManager.create((ObjectNode)sl.getJson(), ((UsnaToggleAction)enableBtn.getAction()).isSelected());
 					originalValues.set(i, new ScheduleData(sl.getJson(), id));
-				} else {
-					String res = sceduleManager.update(originalValues.get(i).id, (ObjectNode)sl.getJson());
-					originalValues.set(i, new ScheduleData(sl.getJson(), originalValues.get(i).id));
+				} else if(sl.getJson().equals(original.orig) == false) { // id >= 0 -> existed
+					String res = sceduleManager.update(original.id, (ObjectNode)sl.getJson());
+					originalValues.set(i, new ScheduleData(sl.getJson(), original.id));
 					if(res != null) {
 						Msg.errorMsg(this, res);
 						return;
@@ -165,7 +170,7 @@ public class SchedulerDialog extends JDialog {
 
 	private void addLine(JsonNode node, int pos) {
 		JPanel linePanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
-		ScheduleLine line = new ScheduleLine(this, node);
+		ScheduleLine line = new ScheduleLine(this, node, mHints);
 		linePanel.add(line);
 
 		JButton switchButton = new JButton();
