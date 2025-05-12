@@ -279,12 +279,12 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 			
 			// Store groups components into HashMap<String, ArrayNode> groups (they will be removed deleting a sensor)
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-			JsonNode currentComponents = parent.getJSON("/rpc/Shelly.GetComponents?dynamic_only=true");
-			HashMap<String, ArrayNode> groups = new HashMap<>();
-			for (JsonNode storedComp: currentComponents.path("components")) {
-				String key = storedComp.get("key").asText();
+			JsonNode currentComponents = parent.getJSON("/rpc/Shelly.GetComponents?dynamic_only=true&include=[%22status%22]");
+			HashMap<String, ArrayNode> existingGroups = new HashMap<>();
+			for (JsonNode comp: currentComponents.path("components")) {
+				String key = comp.get("key").asText();
 				if(key.startsWith(GROUP_KEY_PREFIX)) {
-					groups.put(key, (ArrayNode)storedComp.path("status").get("value"));
+					existingGroups.put(key, (ArrayNode)comp.path("status").get("value"));
 				}
 			}
 
@@ -328,7 +328,7 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 			}
 			
 			// restore groups
-			for(Map.Entry<String, ArrayNode> group: groups.entrySet()) {
+			for(Map.Entry<String, ArrayNode> group: existingGroups.entrySet()) {
 				ArrayNode conponents = group.getValue();
 				boolean change = false;
 				for(int i = 0; i < conponents.size(); i++) {

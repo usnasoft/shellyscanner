@@ -687,3 +687,5 @@ public class ScheduleLine extends JPanel {
 		return out;
 	}
 }
+
+// todo casi speciali (e.g. auto firmware update)

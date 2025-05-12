@@ -463,17 +463,17 @@ public class DevicesTable extends ExTooltipTable {
 				if(d instanceof ModulesHolder mh && mh.getModulesCount() > 0) {
 					row[DevicesTable.COL_COMMAND_IDX] = command = mh.getModules();
 				} else if(d instanceof ShellyDW dw) {
-					row[DevicesTable.COL_COMMAND_IDX] = LABELS.getString("lableStatusOpen") + ": " + (dw.isOpen() ? YES : NO);
+					row[DevicesTable.COL_COMMAND_IDX] = LABELS.getString("labelStatusOpen") + ": " + (dw.isOpen() ? YES : NO);
 				} else if(d instanceof ShellyFlood flood) {
-					row[DevicesTable.COL_COMMAND_IDX] = LABELS.getString("lableStatusFlood") + ": " + (flood.flood() ? YES : NO);
+					row[DevicesTable.COL_COMMAND_IDX] = LABELS.getString("labelStatusFlood") + ": " + (flood.flood() ? YES : NO);
 				} else if(d instanceof ShellyPlusSmoke smoke) {
-					row[DevicesTable.COL_COMMAND_IDX] = String.format(LABELS.getString("lableStatusSmoke"), smoke.getAlarm() ? YES : NO);
+					row[DevicesTable.COL_COMMAND_IDX] = String.format(LABELS.getString("labelStatusSmoke"), smoke.getAlarm() ? YES : NO);
 				} else if(d instanceof ShellyTRV trv) { // very specific
 					ThermostatG1 thermostat = trv.getThermostat();
 					if(thermostat.isEnabled()) {
 						row[DevicesTable.COL_COMMAND_IDX] = thermostat;
 					} else {
-						row[DevicesTable.COL_COMMAND_IDX] = String.format(LABELS.getString("lableStatusTRV"), thermostat.getPosition());
+						row[DevicesTable.COL_COMMAND_IDX] = String.format(LABELS.getString("labelStatusTRV"), thermostat.getPosition());
 					}
 				}
 				if(command != null) {

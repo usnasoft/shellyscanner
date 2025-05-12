@@ -94,7 +94,7 @@ public class SchedulerDialog extends JDialog {
 	
 	/** test & design */
 	public SchedulerDialog() {
-		super(null, Main.LABELS.getString("schTitle"), Dialog.ModalityType.APPLICATION_MODAL);
+		super(null, "schTitle", Dialog.ModalityType.APPLICATION_MODAL);
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		sceduleManager = null;
 		mHints = null;

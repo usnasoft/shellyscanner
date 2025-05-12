@@ -390,7 +390,7 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 					stackedPanel.add(getRGBSyntheticPanel(rgb, foregroundColor, i == 0, i == modArray.length - 1));
 				} else if(module instanceof MotionInterface pir) {
 					JLabel motionLabel = (i == 0) ? label0 : new JLabel();
-					motionLabel.setText(LABELS.getString(pir.motion() ? "lableStatusMotion_true" : "lableStatusMotion_false"));
+					motionLabel.setText(LABELS.getString(pir.motion() ? "labelStatusMotion_true" : "labelStatusMotion_false"));
 					motionLabel.setForeground(foregroundColor);
 					stackedPanel.add(motionLabel);
 				}

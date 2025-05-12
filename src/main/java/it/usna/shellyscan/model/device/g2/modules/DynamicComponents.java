@@ -52,7 +52,7 @@ public class DynamicComponents {
 	 */
 	private static List<String> deleteAll(AbstractG2Device parent) throws IOException, InterruptedException {
 		final List<String> devicesAddress = new ArrayList<>();
-		final JsonNode currenteComponents = parent.getJSON("/rpc/Shelly.GetComponents?dynamic_only=true").path("components");
+		final JsonNode currenteComponents = parent.getJSON("/rpc/Shelly.GetComponents?dynamic_only=true&include=[%22config%22]").path("components");
 		final Iterator<JsonNode> compIt = currenteComponents.iterator();
 		while (compIt.hasNext()) {
 			JsonNode comp = compIt.next();
@@ -76,7 +76,7 @@ public class DynamicComponents {
 			JsonNode storedComponentsFile = backupJsons.get("Shelly.GetComponents.json");
 			JsonNode storedComponents;
 			if(storedComponentsFile != null && (storedComponents = storedComponentsFile.get("components")).size() > 0) {
-				JsonNode currenteComponents = parent.getJSON("/rpc/Shelly.GetComponents?dynamic_only=true").path("components");
+				JsonNode currenteComponents = parent.getJSON("/rpc/Shelly.GetComponents?dynamic_only=true&include=[%22config%22]").path("components");
 
 				// BTHomeDevice -> stored ones are already installed on the device?
 				Iterator<JsonNode> storedIt = storedComponents.iterator();
