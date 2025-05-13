@@ -311,5 +311,3 @@ public class SchedulerDialog extends JDialog {
 // http://<ip>/rpc/Schedule.Create?timespec="10/100 * * * * *"&calls=[{"method":"light.toggle?id=0"}]
 
 // notes: 10 not working (do 0); 100 not working (do 60)
-
-// todo remove line -> ArrayList<Schedule> originalValues + lista id da rimuovere

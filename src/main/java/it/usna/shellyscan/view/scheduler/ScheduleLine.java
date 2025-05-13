@@ -4,6 +4,7 @@ import static it.usna.shellyscan.Main.LABELS;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Cursor;
 import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -139,17 +140,14 @@ public class ScheduleLine extends JPanel {
 		callOpPanel.add(minusB);
 		
 		JButton btnSelectCombo = new JButton();
-//		btnSelectCombo.setAction(new UsnaDropdownAction(btnSelectCombo, "/images/expand-more.png", "lblMethodSelect", new Object[] {
-//				new AbstractAction("input 0") {
-//
-//					@Override
-//					public void actionPerformed(ActionEvent e) {
-//						methodTF.setText("input");
-//						paramsTF.setText("\"id\"=0");
-//					}
-//				}
-//		}));
-		btnSelectCombo.setAction(new UsnaDropdownAction(btnSelectCombo, "/images/expand-more.png", "lblMethodSelect", () -> mHints.get(methodTF, paramsTF)));
+		btnSelectCombo.setAction(new UsnaDropdownAction(btnSelectCombo, "/images/expand-more.png", "lblMethodSelect", () -> {
+			try {
+				this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+				return mHints.get(methodTF, paramsTF);
+			} finally {
+				this.setCursor(Cursor.getDefaultCursor());
+			}
+		}));
 		btnSelectCombo.setContentAreaFilled(false);
 		btnSelectCombo.setBorder(BorderFactory.createEmptyBorder(4, 3, 4, 3));
 		callOpPanel.add(btnSelectCombo);

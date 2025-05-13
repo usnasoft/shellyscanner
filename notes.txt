@@ -341,6 +341,9 @@ matter "enable" restore
 LoRa restore
 existence of input:1 pro1 and pro1PM
 
+Shelly.GetComponents pagination
+BLE.CloudRelay.ListInfos pagination
+KVS.GetMany pagination
 todo: reload blu after restore (?), rivedere con fw 1.6.0
 todo: blu button, rivedere restore con fw 1.6.0
 
@@ -353,8 +356,7 @@ Cover Add maintenance_mode config property - OK
 Switch, Cover Add physical control locking (in_locked config property) - OK
 
 blu ->
-"attrs"."model_id" : 7 - new device identifier?
-"config"."objects" : "[{\"3\":58},{\"2\":58},{\"1\":58},{\"0\":58}]"
+"config"."objects" : "[{\"3\":58},{\"2\":58},{\"1\":58},{\"0\":58}]" spariti
 
 ---
 Schedule

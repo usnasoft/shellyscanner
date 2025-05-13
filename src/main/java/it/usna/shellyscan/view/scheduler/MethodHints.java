@@ -65,6 +65,7 @@ public class MethodHints {
 					methodsList.add(new Method(nameBase + "Open", "Cover.Open", "\"id\":" + id));
 					methodsList.add(new Method(nameBase + "Close", "Cover.Close", "\"id\":" + id));
 					methodsList.add(new Method(nameBase + "Go 50%", "Cover.GoToPosition", "\"id\":" + id + ",\"pos\":50"));
+					// config/slat/slat == true ...
 				} else if(key.startsWith("light:")) {
 					int id = comp.get("config").path("id").intValue();
 					String nameBase = actionBaseName(comp);

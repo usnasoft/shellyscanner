@@ -22,7 +22,9 @@ public abstract class Meters implements Comparable<Meters> {
 		T4, // temperature
 		EX, // ext switch status
 		PERC, // 0-100
-		NUM, // inetger
+		NUM, // integer
+		DMM, // distance [mm]
+		VIB, // vibration - 0=false; 1=true
 		BAT // battery %
 	};
 	protected static NumberFormat NF = NumberFormat.getNumberInstance(Locale.ENGLISH);

@@ -8,6 +8,7 @@ import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -57,7 +58,7 @@ public class DialogDeviceInfo extends JDialog implements UsnaEventListener<Devic
 	private static final long serialVersionUID = 1L;
 	private final static Logger LOG = LoggerFactory.getLogger(MainWindow.class);
 	private final static Style DEF_STYLE = StyleContext.getDefaultStyleContext().getStyle(StyleContext.DEFAULT_STYLE);
-	private final static Pattern DELIMITERS_PATTERN = Pattern.compile("(\\{\n)|(\\n\\s*\\})");
+	private final static Pattern DELIMITERS_PATTERN = Pattern.compile("(\\{[\\n\\r])|([\\n\\r]\\s*\\})");
 	private final Devices devicesModel;
 	private final int deviceIndex;
 	private final ScheduledExecutorService executor;
@@ -76,7 +77,7 @@ public class DialogDeviceInfo extends JDialog implements UsnaEventListener<Devic
 		setLocationRelativeTo(owner);
 
 		// too many concurrent requests are dangerous (device reboot - G1) or cause websocket disconnection (G2)
-		executor = Executors.newScheduledThreadPool(device instanceof AbstractBatteryG2Device ? 5 : 2);
+		executor = Executors.newScheduledThreadPool(device instanceof AbstractBatteryG2Device ? 8 : 2);
 
 		getContentPane().add(tabbedPane, BorderLayout.CENTER);
 
@@ -143,50 +144,68 @@ public class DialogDeviceInfo extends JDialog implements UsnaEventListener<Devic
 		}
 	}
 
-	private JPanel getJsonGetPanel(String info, ShellyAbstractDevice device) {
+	private JPanel getJsonGetPanel(final String info, final ShellyAbstractDevice device) {
 		JPanel panel = new JPanel();
 		panel.setLayout(new BorderLayout(0, 0));
 		UsnaTextPane textPane = new UsnaTextPane();
-		Style redStyle = textPane.addStyle("red", null);
-		StyleConstants.setForeground(redStyle, Color.RED);
-		StyleConstants.setBold(redStyle, true);
+		Style curlyStyle = textPane.addStyle("curly", null);
+		StyleConstants.setForeground(curlyStyle, Color.RED);
+		StyleConstants.setBold(curlyStyle, true);
+		Style pageStyle = textPane.addStyle("page", null);
+		StyleConstants.setForeground(pageStyle, Color.MAGENTA);
+		Style temporaryStyle = textPane.addStyle("temp", null);
+		StyleConstants.setForeground(temporaryStyle, Color.BLUE);
 		textPane.setEditable(false);
-		textPane.setForeground(Color.BLUE);
-		//		textPane.setBackground(new Color(254, 253, 222));
-		textPane.addCaretListener(e -> markDelimiters(e.getDot(), textPane.getStyledDocument(), redStyle));
+		textPane.addCaretListener(e -> markDelimiters(e.getDot(), textPane, curlyStyle));
 
 		final ObjectWriter writer = new ObjectMapper().writerWithDefaultPrettyPrinter();
 		JsonNode storedVal;
-		final boolean preview;
 
-		if (device instanceof BatteryDeviceInterface && (storedVal = ((BatteryDeviceInterface) device).getStoredJSON(info)) != null) {
+		// todo includere BatteryDeviceInterface nel ciclo
+		if (device instanceof BatteryDeviceInterface && (storedVal = ((BatteryDeviceInterface)device).getStoredJSON(info)) != null) {
 			try {
 				String json = writer.writeValueAsString(storedVal);
-				textPane.setText(json, DEF_STYLE);
+				textPane.setText(json, /*DEF_STYLE*/temporaryStyle);
 				textPane.setCaretPosition(0);
 			} catch (JsonProcessingException e) {}
-			preview = true;
 		} else {
-			textPane.setText(Main.LABELS.getString("lblLoading"));
-			preview = false;
+			textPane.setText(Main.LABELS.getString("lblLoading"), temporaryStyle);
 		}
 		panel.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 
 		executor.schedule(() -> {
 			try {
-				if (Thread.interrupted() == false) {
-					// Retrive current data
-					JsonNode val = device.getJSON(info);
-					final String json = val.isNull() ? "" : writer.writeValueAsString(val);
-					textPane.setForeground(Color.BLACK);
-					// textPane.setBackground(Color.white);
-					textPane.setText(json, DEF_STYLE);
-					if (device instanceof BatteryDeviceInterface) {
-						((BatteryDeviceInterface) device).setStoredJSON(info, val);
+				String req = info;
+				int offset = 0;
+				for(;;) {
+					if (Thread.interrupted() == false) {
+						// Retrive current data
+						JsonNode val = device.getJSON(req);
+						final String json = val.isNull() ? "" : writer.writeValueAsString(val);
+						if(offset == 0) {
+							textPane.setText(json, DEF_STYLE);
+						} else {
+							textPane.append(json/*, DEF_STYLE*/);
+						}
+						if (device instanceof BatteryDeviceInterface) {
+							((BatteryDeviceInterface) device).setStoredJSON(req, val);
+						}
+						int tot = val.path("total").intValue();
+						if(tot > 0 && val.has("offset")) {
+							offset = val.get("offset").intValue();
+							int retrived = findArrayNode(val).size();
+							if(retrived + offset < tot) {
+								offset += retrived;
+								textPane.append("\n\n <paging - offset=" + offset + ">\n\n", pageStyle);
+								req = info + "?offset=" + offset;
+								continue;
+							}
+						}
 					}
-					// textPane.setCaretPosition(0);
-					markDelimiters(0, textPane.getStyledDocument(), redStyle);
+					break;
 				}
+//				textPane.setCaretPosition(0);
+				markDelimiters(0, textPane, curlyStyle);
 			} catch (Exception e) {
 				if (Thread.interrupted() == false) {
 					String msg;
@@ -199,10 +218,10 @@ public class DialogDeviceInfo extends JDialog implements UsnaEventListener<Devic
 					} else {
 						msg = "<" + e.getMessage() + ">";
 					}
-					if (preview) {
-						textPane.insert(msg + "\n\n", 0);
+					if (/*preview*/textPane.getText().startsWith("{")) {
+						textPane.insert(msg + "\n\n", 0, DEF_STYLE);
 					} else {
-						textPane.setText(msg);
+						textPane.setText(msg, DEF_STYLE);
 					}
 				}
 			}
@@ -234,6 +253,18 @@ public class DialogDeviceInfo extends JDialog implements UsnaEventListener<Devic
 		// textArea.getActionMap().put("down_act", downAction);
 		return panel;
 	}
+	
+	private JsonNode findArrayNode(JsonNode val) {
+		Iterator<JsonNode> it = val.iterator();
+		while(it.hasNext()) {
+			JsonNode node = it.next();
+			if(node.isArray()) {node.size()
+				;
+				return node;
+			}
+		}
+		return null;
+	}
 
 	@Override
 	public void dispose() {
@@ -242,17 +273,18 @@ public class DialogDeviceInfo extends JDialog implements UsnaEventListener<Devic
 		super.dispose();
 	}
 
-	private static void markDelimiters(final int pos, StyledDocument doc, Style style) {
+	private static void markDelimiters(final int pos, UsnaTextPane textPane, Style style) {
 		try {
+			StyledDocument doc = textPane.getStyledDocument();
 			String str = doc.getText(0, doc.getLength());
-			doc.setCharacterAttributes(0, str.length(), DEF_STYLE, true);
 			ArrayList<Integer> start = new ArrayList<>();
 			int index = 0;
 			int startIndent = 0;
 			Matcher matcher = DELIMITERS_PATTERN.matcher(str);
 			while(matcher.find(index)) {
 				index = matcher.end();
-				if (str.charAt(index - 1) == '\n') { // "{\n"
+				doc.setCharacterAttributes(matcher.start(), index - matcher.start(), DEF_STYLE, true);
+				if (/*str.charAt(index - 1) == '\n'*/str.charAt(matcher.start()) == '{') { // "{\n"
 					start.add(index - 1);
 					if(index <= pos + 2) {
 						startIndent = start.size();
@@ -268,19 +300,25 @@ public class DialogDeviceInfo extends JDialog implements UsnaEventListener<Devic
 					}
 				}
 			}
+			while(matcher.find(index)) {
+				index = matcher.end();
+				doc.setCharacterAttributes(matcher.start(),index - matcher.start(), DEF_STYLE, true);
+			}
 		} catch(/*BadLocation*/Exception e) {}
 	}
 
 	@Override
 	public void update(EventType mesgType, Integer msgBody) {
-		SwingUtilities.invokeLater(() -> {
-			if(pleaseUpdate && msgBody != null && msgBody.intValue() == deviceIndex && ((ScheduledThreadPoolExecutor)executor).getQueue().size() == 0 && (
-					mesgType == EventType.SUBSTITUTE || (mesgType == EventType.UPDATE && devicesModel.get(deviceIndex).getStatus() == Status.ON_LINE)) ) {
-				pleaseUpdate = false;
-				fill();
-			} else if(mesgType == Devices.EventType.CLEAR) {
-				dispose();
-			}
-		});
+		if(pleaseUpdate && msgBody != null && msgBody.intValue() == deviceIndex) {
+			SwingUtilities.invokeLater(() -> {
+				if(((ScheduledThreadPoolExecutor)executor).getQueue().size() == 0 && (
+						mesgType == EventType.SUBSTITUTE || (mesgType == EventType.UPDATE && devicesModel.get(deviceIndex).getStatus() == Status.ON_LINE)) ) {
+					pleaseUpdate = false;
+					fill();
+				} else if(mesgType == Devices.EventType.CLEAR) {
+					dispose();
+				}
+			});
+		}
 	}
 }

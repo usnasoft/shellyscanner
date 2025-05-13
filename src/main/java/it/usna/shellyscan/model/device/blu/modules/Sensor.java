@@ -41,6 +41,8 @@ public class Sensor {
 		case 0x2E -> Meters.Type.H;
 		case 0x45 -> Meters.Type.T;
 		case 0x05 -> Meters.Type.L;
+		case 0x2C -> Meters.Type.VIB; // dec 44 - vibration (0-1; on shelly is boolean)
+		case 0x40 -> Meters.Type.DMM; // dec 64 - distance mm
 		default -> null;
 		};
 	}
@@ -67,7 +69,12 @@ public class Sensor {
 	
 	public void fill(JsonNode comp) {
 		name = comp.path("config").path("name").asText("");
-		value = comp.path("status").path("value").floatValue();
+		JsonNode valNode = comp.path("status").path("value");
+		if(valNode.isBoolean()) {
+			value = valNode.asBoolean() ? 1f : 0f;
+		} else {
+			value = comp.path("status").path("value").floatValue();
+		}
 	}
 	
 	public String getLabel() {

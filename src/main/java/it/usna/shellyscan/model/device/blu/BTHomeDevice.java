@@ -54,14 +54,6 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 //			"SBBT-004CEU", "Blu Wall Switch 4",
 //			"SBBT-004CUS", "Blu RC Button 4"
 //			);
-//	private final static Map<String, String> DEV_DICTIONARY_NEW = Map.of(
-//			"SBBT-2C", "Blu Button",
-//			"SBMO-3Z", "BLU Motion",
-//			"SBDW-2C", "Blu Door Window",
-//			"SBHT-3C", "Blu H&T",
-//			"SBBT-EU", "Blu Wall Switch 4",
-//			"SBBT-US", "Blu RC Button 4"
-//			);
 	private final static Map<Integer, String> MODELS_DICTIONARY = Map.of(
 			1, "Blu Button",
 			2, "Blu Door Window",
@@ -70,10 +62,11 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 			6, "Blu Wall Switch 4", // Square
 			7, "Blu RC Button 4", // line
 			8, "Blu TRV"
+//			9. "??",
+//			10, "Blu Distance"
 			);
 	private String typeName;
 	private String typeID;
-//	private String localName;
 	private SensorsCollection sensors;
 	private Meters[] meters;
 	private Webhooks webhooks;
@@ -83,25 +76,10 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 	public BTHomeDevice(AbstractG2Device parent, JsonNode compInfo, int modelId, String index) {
 		super(parent, compInfo, index);
 		typeID = "BLU" + modelId;
-//		this.typeName = Optional.ofNullable(DEV_DICTIONARY.get(localName)).orElse("Generic BTHome");
 
-//		this.typeName = DEV_DICTIONARY.get(localName); // old fw
-//		int len;
-//		if(this.typeName == null && (len = localName.length()) > 4) {
-//			String tmpLocalName = localName.substring(0, len - 4);
-//			this.typeName = DEV_DICTIONARY_NEW.get(tmpLocalName); // new fw
-//			if(this.typeName != null) {
-//				localName = tmpLocalName;
-//			}
-//		}
-//		if(this.typeName == null) {
-//			int model = compInfo.path("attrs").path("model_id").intValue();
-			String modelDesc = MODELS_DICTIONARY.get(modelId);
-			this.typeName = (modelDesc == null) ? "Generic BTHome" : modelDesc;
-//		}
-		
-//		this.hostname = localName + "-" + mac;
-//		this.localName = localName;
+		String modelDesc = MODELS_DICTIONARY.get(modelId);
+		this.typeName = (modelDesc == null) ? "Generic BTHome" : modelDesc;
+
 		this.webhooks = new Webhooks(parent);
 //		inputs(compInfo.get("config").get("objects"));
 		this.uptime = -1;
@@ -117,10 +95,6 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 	public void init(HttpClient httpClient) throws IOException {
 		this.httpClient = httpClient;
 		initSensors();
-//		if(localName.isEmpty()) {
-//			localName = sensors.toString();
-//			hostname = "B" + localName + "-" + mac;
-//		}
 		hostname = "B" + sensors.toString() + "-" + mac;
 		try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e) {}
 		refreshStatus();
