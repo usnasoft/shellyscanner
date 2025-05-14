@@ -26,10 +26,25 @@ public class KVS {
 
 	public void refresh() throws IOException {
 		kvItems.clear();
-		JsonNode kvsItems = device.getJSON("/rpc/KVS.GetMany").path("items"); // wall display: {"code":-114,"message":"Method KVS.GetMany failed: No such component"}
+		JsonNode many = device.getJSON("/rpc/KVS.GetMany"); // wall display: {"code":-114,"message":"Method KVS.GetMany failed: No such component"}
+		JsonNode kvsItems = many.path("items");
 		if(kvsItems.isArray()) { // fw >= 1.5.0
-			for(JsonNode item: kvsItems) {
-				kvItems.add(new KVItem(item.get("key").asText(), item.get("etag").asText(), item.get("value").asText()));
+			int offset = 0;
+			for(;;) {
+				for(JsonNode item: kvsItems) {
+					kvItems.add(new KVItem(item.get("key").asText(), item.get("etag").asText(), item.get("value").asText()));
+				}
+				int tot = many.path("total").intValue();
+				if(tot > 0 && many.has("offset")) {
+					offset = many.get("offset").intValue();
+					int retrived = kvsItems.size();
+					if(retrived < tot - offset) {
+						offset += retrived;
+						many = device.getJSON("/rpc/KVS.GetMany?offset=" + offset);
+						kvsItems = many.path("items");
+						continue;
+					}
+				}
 			}
 		} else { // fw < 1.5.0
 			for(Entry<String, JsonNode> entry: kvsItems.properties()) {

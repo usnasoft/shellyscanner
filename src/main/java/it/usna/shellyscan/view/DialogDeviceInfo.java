@@ -99,6 +99,14 @@ public class DialogDeviceInfo extends JDialog implements UsnaEventListener<Devic
 		jButtonFind.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_F, MainView.SHORTCUT_KEY), "find_act");
 		jButtonFind.getActionMap().put("find_act", findAction);
 
+//		final Action topAction = new UsnaAction(e -> {
+//			ta.get().setCaretPosition(0);
+//		});
+//		jButtonFind.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).remove(KeyStroke.getKeyStroke(KeyEvent.VK_HOME, MainView.SHORTCUT_KEY));
+//		jButtonFind.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_HOME, MainView.SHORTCUT_KEY), "top_act");
+//		jButtonFind.getActionMap().put(DefaultEditorKit.beginLineAction, topAction);
+//		jButtonFind.getActionMap().put(DefaultEditorKit.beginAction, topAction);
+
 		JButton jButtonCopyAll = new JButton(new UsnaAction("btnCopyAll", e -> {
 			final String cp = ta.get().getText();
 			if (cp != null && cp.length() > 0) {
@@ -161,12 +169,13 @@ public class DialogDeviceInfo extends JDialog implements UsnaEventListener<Devic
 		final ObjectWriter writer = new ObjectMapper().writerWithDefaultPrettyPrinter();
 		JsonNode storedVal;
 
-		// todo includere BatteryDeviceInterface nel ciclo
+		// only offset=0 if is an array
 		if (device instanceof BatteryDeviceInterface && (storedVal = ((BatteryDeviceInterface)device).getStoredJSON(info)) != null) {
 			try {
 				String json = writer.writeValueAsString(storedVal);
-				textPane.setText(json, /*DEF_STYLE*/temporaryStyle);
+				textPane.setText(json, temporaryStyle);
 				textPane.setCaretPosition(0);
+//				markDelimiters(0, textPane, curlyStyle);
 			} catch (JsonProcessingException e) {}
 		} else {
 			textPane.setText(Main.LABELS.getString("lblLoading"), temporaryStyle);
@@ -193,8 +202,8 @@ public class DialogDeviceInfo extends JDialog implements UsnaEventListener<Devic
 						int tot = val.path("total").intValue();
 						if(tot > 0 && val.has("offset")) {
 							offset = val.get("offset").intValue();
-							int retrived = findArrayNode(val).size();
-							if(retrived + offset < tot) {
+							int retrived = retrivedArraySize(val);
+							if(retrived < tot - offset) {
 								offset += retrived;
 								textPane.append("\n\n <paging - offset=" + offset + ">\n\n", pageStyle);
 								req = info + "?offset=" + offset;
@@ -218,8 +227,8 @@ public class DialogDeviceInfo extends JDialog implements UsnaEventListener<Devic
 					} else {
 						msg = "<" + e.getMessage() + ">";
 					}
-					if (/*preview*/textPane.getText().startsWith("{")) {
-						textPane.insert(msg + "\n\n", 0, DEF_STYLE);
+					if (textPane.getText().startsWith("{")) {
+						textPane.insert(msg + "\n\n", 0, DEF_STYLE); // todo verificare
 					} else {
 						textPane.setText(msg, DEF_STYLE);
 					}
@@ -227,43 +236,22 @@ public class DialogDeviceInfo extends JDialog implements UsnaEventListener<Devic
 			}
 			panel.setCursor(Cursor.getDefaultCursor());
 		}, Devices.MULTI_QUERY_DELAY, TimeUnit.MILLISECONDS);
+
 		JScrollPane scrollPane = new JScrollPane(textPane);
 		scrollPane.getVerticalScrollBar().setUnitIncrement(16);
 		panel.add(scrollPane);
-
-		// final Action topAction = new UsnaAction(e -> {
-		// scrollPane.getVerticalScrollBar().setValue(0);
-		// }
-		// );
-		// final Action bottomAction = new UsnaAction(e ->
-		// scrollPane.getVerticalScrollBar().setValue(Integer.MAX_VALUE)
-		// );
-		// final Action downAction = new UsnaAction(e -> {
-		// JScrollBar sb = scrollPane.getVerticalScrollBar();
-		// sb.setValue(sb.getValue() + sb.getBlockIncrement());
-		// });
-		// textArea.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_HOME,
-		// 0), "top_act");
-		// textArea.getActionMap().put("top_act", topAction);
-		// textArea.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_END,
-		// 0), "bottom_act");
-		// textArea.getActionMap().put("bottom_act", bottomAction);
-		// textArea.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN,
-		// SHORTCUT_KEY), "down_act");
-		// textArea.getActionMap().put("down_act", downAction);
 		return panel;
 	}
 	
-	private JsonNode findArrayNode(JsonNode val) {
+	private int retrivedArraySize(JsonNode val) {
 		Iterator<JsonNode> it = val.iterator();
 		while(it.hasNext()) {
 			JsonNode node = it.next();
-			if(node.isArray()) {node.size()
-				;
-				return node;
+			if(node.isArray()) {
+				return node.size();
 			}
 		}
-		return null;
+		return Integer.MAX_VALUE;
 	}
 
 	@Override
@@ -284,7 +272,7 @@ public class DialogDeviceInfo extends JDialog implements UsnaEventListener<Devic
 			while(matcher.find(index)) {
 				index = matcher.end();
 				doc.setCharacterAttributes(matcher.start(), index - matcher.start(), DEF_STYLE, true);
-				if (/*str.charAt(index - 1) == '\n'*/str.charAt(matcher.start()) == '{') { // "{\n"
+				if (str.charAt(matcher.start()) == '{') {
 					start.add(index - 1);
 					if(index <= pos + 2) {
 						startIndent = start.size();
@@ -302,7 +290,7 @@ public class DialogDeviceInfo extends JDialog implements UsnaEventListener<Devic
 			}
 			while(matcher.find(index)) {
 				index = matcher.end();
-				doc.setCharacterAttributes(matcher.start(),index - matcher.start(), DEF_STYLE, true);
+				doc.setCharacterAttributes(matcher.start(), index - matcher.start(), DEF_STYLE, true);
 			}
 		} catch(/*BadLocation*/Exception e) {}
 	}
