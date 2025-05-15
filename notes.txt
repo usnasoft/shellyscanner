@@ -347,6 +347,9 @@ KVS.GetMany pagination
 todo: reload blu after restore (?), rivedere con fw 1.6.0
 todo: blu button, rivedere restore con fw 1.6.0
 
+todo: it.usna.shellyscan.model.device.ShellyAbstractDevice.sectionToStream(String, String, ZipOutputStream) con offset
+      lettura dati per array (itarator) su restore e su GET
+
 1.6.0 ->
 https://shelly-api-docs.shelly.cloud/gen2/DynamicComponents/BTHome/
 Matter Add support for Shelly 1 Gen3, 1PM Gen3, 1 Mini Gen3, 1PM Mini Gen3, 2PM Gen3

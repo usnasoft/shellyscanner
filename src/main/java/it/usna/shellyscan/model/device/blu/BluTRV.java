@@ -147,12 +147,12 @@ public class BluTRV extends AbstractBluDevice implements ThermostatInterface, Mo
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			sectionToStream("/rpc/BluTrv.GetRemoteConfig?id=" + componentIndex, "Shelly.GetRemoteConfig.json", out);
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-			byte[] config = sectionToStream("/rpc/BluTrv.GetConfig?id=" + componentIndex, "Shelly.GetConfig.json", out);
+			JsonNode config = sectionToStream("/rpc/BluTrv.GetConfig?id=" + componentIndex, "Shelly.GetConfig.json", out);
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			sectionToStream("/rpc/BluTrv.Call?id=" + componentIndex + "&method=%22TRV.ListScheduleRules%22&params=%7B%22id%22:0%7D", "TRV.ListScheduleRules.json", out);
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			sectionToStream("/rpc/Webhook.List", "Webhook.List.json", out);
-			String bthome = jsonMapper.readTree(config).path("trv").asText();
+			String bthome = config.path("trv").asText();
 			String bhtIndex = bthome.substring(bthome.indexOf(':') + 1);
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			sectionToStream("/rpc/BTHomeDevice.GetKnownObjects?id=" + bhtIndex, "BTHomeDevice.GetKnownObjects.json", out);

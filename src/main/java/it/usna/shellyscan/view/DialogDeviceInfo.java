@@ -77,16 +77,14 @@ public class DialogDeviceInfo extends JDialog implements UsnaEventListener<Devic
 		setLocationRelativeTo(owner);
 
 		// too many concurrent requests are dangerous (device reboot - G1) or cause websocket disconnection (G2)
-		executor = Executors.newScheduledThreadPool(device instanceof AbstractBatteryG2Device ? 8 : 2);
+		executor = Executors.newScheduledThreadPool(device instanceof AbstractBatteryG2Device ? 6 : 2);
 
 		getContentPane().add(tabbedPane, BorderLayout.CENTER);
 
 		JPanel buttonsPanel = new JPanel();
 		getContentPane().add(buttonsPanel, BorderLayout.SOUTH);
 
-		JButton btnRefresh = new JButton(new UsnaAction("labelRefresh", e -> {
-			fill();
-		}));
+		JButton btnRefresh = new JButton(new UsnaAction("labelRefresh", e -> fill() ));
 
 		final Supplier<JTextComponent> ta = () -> (JTextComponent) ((JScrollPane) ((JPanel) tabbedPane.getSelectedComponent()).getComponent(0)).getViewport().getView();
 		final Action findAction = new UsnaAction("btnFind", e -> {
@@ -186,35 +184,43 @@ public class DialogDeviceInfo extends JDialog implements UsnaEventListener<Devic
 			try {
 				String req = info;
 				int offset = 0;
-				for(;;) {
-					if (Thread.interrupted() == false) {
-						// Retrive current data
-						JsonNode val = device.getJSON(req);
-						final String json = val.isNull() ? "" : writer.writeValueAsString(val);
-						if(offset == 0) {
-							textPane.setText(json, DEF_STYLE);
-						} else {
-							textPane.append(json/*, DEF_STYLE*/);
-						}
-						if (device instanceof BatteryDeviceInterface) {
-							((BatteryDeviceInterface) device).setStoredJSON(req, val);
-						}
-						int tot = val.path("total").intValue();
-						if(tot > 0 && val.has("offset")) {
-							offset = val.get("offset").intValue();
-							int retrived = retrivedArraySize(val);
-							if(retrived < tot - offset) {
-								offset += retrived;
-								textPane.append("\n\n <paging - offset=" + offset + ">\n\n", pageStyle);
-								req = info + "?offset=" + offset;
-								continue;
-							}
-						}
+				int tot;
+				do {
+					if(Thread.interrupted()) {
+						break;
 					}
-					break;
-				}
-//				textPane.setCaretPosition(0);
-				markDelimiters(0, textPane, curlyStyle);
+					// Retrive current data
+					JsonNode val;
+					if(offset == 0) {
+						val = device.getJSON(req);
+						final String json = val.isNull() ? "" : writer.writeValueAsString(val);
+						textPane.setText(json, DEF_STYLE);
+					} else {
+						TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+						val = device.getJSON(req);
+						final String json = val.isNull() ? "" : writer.writeValueAsString(val);
+						textPane.append("\n\n <paging - offset=" + offset + ">\n\n", pageStyle);
+						textPane.append(json, DEF_STYLE);
+					}
+					if (device instanceof BatteryDeviceInterface bd) {
+						bd.setStoredJSON(req, val);
+					}
+					tot = val.path("total").intValue();
+					JsonNode offsetNode;
+					if(tot > 0 && (offsetNode = val.get("offset")) != null) { // potentially needs multiple calls
+						int retrived = retrivedArraySize(val);
+						offset = offsetNode.intValue() + retrived;
+						if(info.contains("?")) {
+							req = info + "&offset=" + offset;
+						} else {
+							req = info + "?offset=" + offset;
+						}
+						
+					}
+				} while(tot > offset);
+				
+				textPane.setCaretPosition(0);
+//				markDelimiters(0, textPane, curlyStyle);
 			} catch (Exception e) {
 				if (Thread.interrupted() == false) {
 					String msg;
@@ -228,9 +234,9 @@ public class DialogDeviceInfo extends JDialog implements UsnaEventListener<Devic
 						msg = "<" + e.getMessage() + ">";
 					}
 					if (textPane.getText().startsWith("{")) {
-						textPane.insert(msg + "\n\n", 0, DEF_STYLE); // todo verificare
+						textPane.insert(msg + "\n\n", 0, DEF_STYLE);
 					} else {
-						textPane.setText(msg, DEF_STYLE);
+						textPane.setText(msg, DEF_STYLE); // removes "loading ..."
 					}
 				}
 			}

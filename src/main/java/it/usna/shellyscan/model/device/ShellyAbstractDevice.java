@@ -259,12 +259,13 @@ public abstract class ShellyAbstractDevice {
 	public abstract List<String> restore(Map<String, JsonNode> backupJsons, Map<RestoreMsg, String> data) throws IOException;
 
 	/**
+	 * Backup basic operation
 	 * @param section call whose returned json must be stored
 	 * @param entryName ZipEntry name
 	 * @param out zip file
 	 * @throws IOException on error or response.getStatus() != HttpStatus.OK_200
 	 */
-	protected byte[] sectionToStream(String section, String entryName, ZipOutputStream out) throws IOException {
+	protected JsonNode sectionToStream(String section, String entryName, ZipOutputStream out) throws IOException {
 		try {
 			ContentResponse response = httpClient.GET(uriPrefix + section);
 			if(response.getStatus() != HttpStatus.OK_200) {
@@ -275,13 +276,40 @@ public abstract class ShellyAbstractDevice {
 			byte[] buffer = response.getContent();
 			out.write(buffer, 0, buffer.length);
 			out.closeEntry();
-			return buffer;
+			return jsonMapper.readTree(buffer);
 		} catch (InterruptedException | ExecutionException | TimeoutException | SocketTimeoutException e) {
 			status = Status.OFF_LINE;
 			throw new DeviceOfflineException(e);
 		}
 	}
-	
+//	protected JsonNode sectionToStream(String section, String entryName, ZipOutputStream out) throws IOException {
+//		try {
+//			byte[] buffer;
+//			int offset = 0;
+//			int tot;
+//			do {
+//				ContentResponse response = httpClient.GET(uriPrefix + section);
+//				if(response.getStatus() != HttpStatus.OK_200) {
+//					throw new IOException(response.getReason());
+//				}
+//				ZipEntry entry = new ZipEntry(entryName);
+//				out.putNextEntry(entry);
+//				response.getContent();
+//				out.write(buffer, 0, buffer.length);
+//				out.closeEntry();
+//				tot = many.path("total").intValue();
+//	JsonNode offsetNode;
+//				if(tot > 0 && (offsetNode = many.get("offset")) != null) {
+//					offset = offsetNode.intValue() + kvsItems.size();
+//				} else {break;}
+//			} while(tot > offset);
+//			return jsonMapper.readTree(buffer);
+//		} catch (InterruptedException | ExecutionException | TimeoutException | SocketTimeoutException e) {
+//			status = Status.OFF_LINE;
+//			throw new DeviceOfflineException(e);
+//		}
+//	}
+
 	@Override
 	public int hashCode() {
 		return mac.hashCode();

@@ -340,7 +340,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 			sectionToStream("/rpc/Shelly.GetDeviceInfo", "Shelly.GetDeviceInfo.json", out);
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 //			sectionToStream("/rpc/Shelly.GetConfig", "Shelly.GetConfig.json", out);
-			JsonNode config = jsonMapper.readTree(sectionToStream("/rpc/Shelly.GetConfig", "Shelly.GetConfig.json", out));
+			JsonNode config = sectionToStream("/rpc/Shelly.GetConfig", "Shelly.GetConfig.json", out);
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			try { // unmanaged battery device
 				sectionToStream("/rpc/Schedule.List", "Schedule.List.json", out);
@@ -352,7 +352,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 				sectionToStream("/rpc/KVS.GetMany", "KVS.GetMany.json", out);
 			} catch(Exception e) {}
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-			byte[] scripts = null;
+			JsonNode scripts = null;
 			try {
 				scripts = sectionToStream("/rpc/Script.List", "Script.List.json", out);
 			} catch(Exception e) {}
@@ -372,7 +372,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 			}
 			// Scripts
 			if(scripts != null) {
-				for(Script script: Script.list(this, jsonMapper.readTree(scripts))) {
+				for(Script script: Script.list(this, scripts)) {
 					try {
 						byte[] code =  script.getCode().getBytes();
 						ZipEntry entry = new ZipEntry(script.getName() + ".mjs");

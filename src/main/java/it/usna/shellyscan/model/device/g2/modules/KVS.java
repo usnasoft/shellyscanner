@@ -30,22 +30,21 @@ public class KVS {
 		JsonNode kvsItems = many.path("items");
 		if(kvsItems.isArray()) { // fw >= 1.5.0
 			int offset = 0;
-			for(;;) {
+			int tot;
+			do {
+				if(offset > 0) {
+					try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e) { }
+					many = device.getJSON("/rpc/KVS.GetMany?offset=" + offset);
+					kvsItems = many.path("items");
+				}
 				for(JsonNode item: kvsItems) {
 					kvItems.add(new KVItem(item.get("key").asText(), item.get("etag").asText(), item.get("value").asText()));
 				}
-				int tot = many.path("total").intValue();
-				if(tot > 0 && many.has("offset")) {
-					offset = many.get("offset").intValue();
-					int retrived = kvsItems.size();
-					if(retrived < tot - offset) {
-						offset += retrived;
-						many = device.getJSON("/rpc/KVS.GetMany?offset=" + offset);
-						kvsItems = many.path("items");
-						continue;
-					}
+				tot = many.get("total").intValue();
+				if(tot > 0) {
+					offset = many.get("offset").intValue() + kvsItems.size();
 				}
-			}
+			} while(tot > offset);
 		} else { // fw < 1.5.0
 			for(Entry<String, JsonNode> entry: kvsItems.properties()) {
 				kvItems.add(new KVItem(entry.getKey(), entry.getValue().get("etag").asText(), entry.getValue().get("value").asText()));
@@ -133,3 +132,14 @@ public class KVS {
 	
 	public record KVItem(String key, String etag, String value) {}
 }
+
+/* -- fw < 1.5.0 --
+{
+"items" : {
+  "scripts-library" : {
+    "etag" : "64qBCCQKaCeLdQ8KPW4E+JzA==",
+    "value" : "{\"url\":\"https://raw.githubusercontent.com/ALLTERCO/shelly-script-examples/main/SHELLY_MJS.md\"}"
+  }
+}
+}
+*/
