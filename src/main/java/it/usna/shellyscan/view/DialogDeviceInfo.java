@@ -184,7 +184,7 @@ public class DialogDeviceInfo extends JDialog implements UsnaEventListener<Devic
 			try {
 				String req = info;
 				int offset = 0;
-				int tot;
+				int tot = 0;
 				do {
 					if(Thread.interrupted()) {
 						break;
@@ -205,17 +205,11 @@ public class DialogDeviceInfo extends JDialog implements UsnaEventListener<Devic
 					if (device instanceof BatteryDeviceInterface bd) {
 						bd.setStoredJSON(req, val);
 					}
-					tot = val.path("total").intValue();
 					JsonNode offsetNode;
-					if(tot > 0 && (offsetNode = val.get("offset")) != null) { // potentially needs multiple calls
+					if((offsetNode = val.get("offset")) != null && (tot = val.path("total").intValue()) > 0) { // potentially needs multiple calls
 						int retrived = retrivedArraySize(val);
 						offset = offsetNode.intValue() + retrived;
-						if(info.contains("?")) {
-							req = info + "&offset=" + offset;
-						} else {
-							req = info + "?offset=" + offset;
-						}
-						
+						req = info + ((info.contains("?")) ? "&offset=" : "?offset=") + offset;
 					}
 				} while(tot > offset);
 				

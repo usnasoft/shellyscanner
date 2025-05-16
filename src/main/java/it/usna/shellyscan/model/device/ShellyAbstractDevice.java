@@ -8,6 +8,7 @@ import java.net.SocketTimeoutException;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -18,7 +19,9 @@ import org.eclipse.jetty.http.HttpStatus;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 
+import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.modules.FirmwareManager;
 import it.usna.shellyscan.model.device.modules.InputResetManager;
 import it.usna.shellyscan.model.device.modules.LoginManager;
@@ -282,32 +285,48 @@ public abstract class ShellyAbstractDevice {
 			throw new DeviceOfflineException(e);
 		}
 	}
-//	protected JsonNode sectionToStream(String section, String entryName, ZipOutputStream out) throws IOException {
-//		try {
-//			byte[] buffer;
-//			int offset = 0;
-//			int tot;
-//			do {
-//				ContentResponse response = httpClient.GET(uriPrefix + section);
-//				if(response.getStatus() != HttpStatus.OK_200) {
-//					throw new IOException(response.getReason());
-//				}
-//				ZipEntry entry = new ZipEntry(entryName);
-//				out.putNextEntry(entry);
-//				response.getContent();
-//				out.write(buffer, 0, buffer.length);
-//				out.closeEntry();
-//				tot = many.path("total").intValue();
-//	JsonNode offsetNode;
-//				if(tot > 0 && (offsetNode = many.get("offset")) != null) {
-//					offset = offsetNode.intValue() + kvsItems.size();
-//				} else {break;}
-//			} while(tot > offset);
-//			return jsonMapper.readTree(buffer);
-//		} catch (InterruptedException | ExecutionException | TimeoutException | SocketTimeoutException e) {
+	
+	protected JsonNode sectionToStream(final String section, final String arrayKey, final String entryName, final ZipOutputStream out) throws IOException {
+		try {
+			String req = section;
+			int offset = 0;
+			int tot = 0;
+			JsonNode resp = getJSON(uriPrefix + req);
+			JsonNode arrayNode = resp.path(arrayKey);
+			do {
+				if(offset > 0) {
+					TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+					JsonNode fragment = getJSON(uriPrefix + req);
+					ArrayNode fragmentArrayNode = (ArrayNode)fragment.path(arrayKey);
+					((ArrayNode)arrayNode).addAll(fragmentArrayNode);
+				}
+				JsonNode offsetNode;
+				if((offsetNode = resp.get("offset")) != null && (tot = resp.path("total").intValue()) > 0) { // potentially needs multiple calls
+					offset = offsetNode.intValue() + arrayNode.size();
+					req = section + ((section.contains("?")) ? "&offset=" : "?offset=") + offset;
+				}
+			} while(tot > offset);
+			ZipEntry entry = new ZipEntry(entryName);
+			out.putNextEntry(entry);
+			byte[] buffer = resp.toString().getBytes();
+			out.write(buffer, 0, buffer.length);
+			out.closeEntry();
+			return resp;
+		} catch (InterruptedException e) {
 //			status = Status.OFF_LINE;
-//			throw new DeviceOfflineException(e);
+			throw new DeviceOfflineException(e);
+		}
+	}
+	
+//	private int retrivedArraySize(JsonNode val) {
+//		Iterator<JsonNode> it = val.iterator();
+//		while(it.hasNext()) {
+//			JsonNode node = it.next();
+//			if(node.isArray()) {
+//				return node.size();
+//			}
 //		}
+//		return Integer.MAX_VALUE;
 //	}
 
 	@Override
