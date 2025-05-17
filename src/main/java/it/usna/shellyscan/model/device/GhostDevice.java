@@ -1,7 +1,7 @@
 package it.usna.shellyscan.model.device;
 
-import java.io.File;
 import java.net.InetAddress;
+import java.nio.file.Path;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.List;
@@ -161,7 +161,7 @@ public class GhostDevice extends ShellyAbstractDevice {
 	}
 
 	@Override
-	public boolean backup(File file) {
+	public boolean backup(Path file) {
 		throw new UnsupportedOperationException();
 	}
 

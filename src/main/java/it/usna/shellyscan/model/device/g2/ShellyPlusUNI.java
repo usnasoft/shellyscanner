@@ -2,10 +2,10 @@ package it.usna.shellyscan.model.device.g2;
 
 import java.io.IOException;
 import java.net.InetAddress;
+import java.nio.file.FileSystem;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import java.util.zip.ZipOutputStream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -111,7 +111,7 @@ public class ShellyPlusUNI extends AbstractG2Device implements ModulesHolder {
 	
 	@Override
 	// integrated addon
-	protected void backup(ZipOutputStream out) throws IOException, InterruptedException {
+	protected void backup(FileSystem out) throws IOException, InterruptedException {
 		sectionToStream("/rpc/SensorAddon.GetPeripherals", SensorAddOn.BACKUP_SECTION, out);
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 	}

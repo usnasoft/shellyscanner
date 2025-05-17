@@ -149,7 +149,7 @@ public class Main {
 			try (NonInteractiveDevices model = (ipCollection == null) ? new NonInteractiveDevices(fullScan) : new NonInteractiveDevices(ipCollection)) {
 				model.execute(d -> {
 					try {
-						d.backup(new File(dirPath.toFile(), d.getHostname().replaceAll("[^\\w_-]+", "_") + "." + Main.BACKUP_FILE_EXT));
+						d.backup(new File(dirPath.toFile(), d.getHostname().replaceAll("[^\\w_-]+", "_") + "." + Main.BACKUP_FILE_EXT).toPath());
 						System.out.println(d.getHostname() + " success");
 					} catch (Exception e) {
 						System.out.println(d.getHostname() + " error - " + e.toString());

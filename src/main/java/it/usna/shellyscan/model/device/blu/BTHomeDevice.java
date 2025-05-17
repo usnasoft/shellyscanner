@@ -1,9 +1,11 @@
 package it.usna.shellyscan.model.device.blu;
 
-import java.io.File;
-import java.io.FileOutputStream;
+import java.io.BufferedWriter;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumMap;
@@ -12,17 +14,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
 
 import org.eclipse.jetty.client.HttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -197,25 +194,23 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 	}
 	
 	@Override
-	public boolean backup(File file) throws IOException {
-		JsonFactory jsonFactory = new JsonFactory();
-		jsonFactory.configure(JsonGenerator.Feature.AUTO_CLOSE_TARGET, false);
-		ObjectMapper mapper = new ObjectMapper(jsonFactory);
+	public boolean backup(Path file) throws IOException {
+//		JsonFactory jsonFactory = new JsonFactory();
+//		jsonFactory.configure(JsonGenerator.Feature.AUTO_CLOSE_TARGET, false);
+//		ObjectMapper mapper = new ObjectMapper(jsonFactory);
 		
-		try(ZipOutputStream out = new ZipOutputStream(new FileOutputStream(file), StandardCharsets.UTF_8)) {
-			// ShellyScanner.json
-			ZipEntry entry = new ZipEntry("ShellyScannerBLU.json");
-			out.putNextEntry(entry);
+		try(FileSystem fs = FileSystems.newFileSystem(file)) {
 			ObjectNode usnaData = JsonNodeFactory.instance.objectNode();
 			usnaData.put("index", componentIndex);
 			usnaData.put("type", typeID);
 			usnaData.put("mac", mac);
-			mapper.writeValue(out, usnaData);
-			out.closeEntry();
+			try(BufferedWriter writer = Files.newBufferedWriter(fs.getPath("ShellyScannerBLU.json"))) {
+				jsonMapper.writer().writeValue(writer, usnaData);
+			} catch(IOException e) {}
 			
-			sectionToStream("/rpc/Shelly.GetComponents?dynamic_only=true", "Shelly.GetComponents.json", out);
+			sectionToStream("/rpc/Shelly.GetComponents?dynamic_only=true", "Shelly.GetComponents.json", fs);
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-			sectionToStream("/rpc/Webhook.List", "Webhook.List.json", out);
+			sectionToStream("/rpc/Webhook.List", "Webhook.List.json", fs);
 		} catch(InterruptedException e) {
 			LOG.error("backup", e);
 		}

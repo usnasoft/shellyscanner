@@ -1,20 +1,25 @@
 package it.usna.shellyscan.model.device.g1;
 
-import java.io.File;
-import java.io.FileOutputStream;
+import java.io.BufferedWriter;
 import java.io.IOException;
 import java.net.InetAddress;
-import java.nio.charset.StandardCharsets;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.eclipse.jetty.client.HttpClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
 import it.usna.shellyscan.model.device.BatteryDeviceInterface;
 
 public abstract class AbstractBatteryG1Device extends AbstractG1Device implements BatteryDeviceInterface {
+	private final static Logger LOG = LoggerFactory.getLogger(AbstractBatteryG1Device.class);
 	protected JsonNode shelly;
 	protected JsonNode settings;
 	protected JsonNode status;
@@ -67,18 +72,22 @@ public abstract class AbstractBatteryG1Device extends AbstractG1Device implement
 	}
 	
 	@Override
-	public boolean backup(final File file) throws IOException {
+	public boolean backup(final Path file) throws IOException {
 		try {
 			return super.backup(file);
 		} catch (/*java.net.SocketTimeout*/Exception e) {
 			if(getStatus() != Status.ON_LINE && settings != null && settingsActions != null) {
-				try(ZipOutputStream out = new ZipOutputStream(new FileOutputStream(file), StandardCharsets.UTF_8)) {
-					out.putNextEntry(new ZipEntry("settings.json"));
-					out.write(settings.toString().getBytes());
-					out.closeEntry();
-					out.putNextEntry(new ZipEntry("actions.json"));
-					out.write(settingsActions.toString().getBytes());
-					out.closeEntry();
+				Map<String, String> providerProps = new HashMap<>();
+		        providerProps.put("create", "true");
+				try(FileSystem fs = FileSystems.newFileSystem(file, providerProps)) {
+					try(BufferedWriter writer = Files.newBufferedWriter(fs.getPath("settings.json"))) {
+						jsonMapper.writer().writeValue(writer, settings);
+					}
+					try(BufferedWriter writer = Files.newBufferedWriter(fs.getPath("Shelly.GetDeviceInfo.json"))) {
+						jsonMapper.writer().writeValue(writer, settingsActions);
+					}
+				} catch(IOException ex) {
+					LOG.error("backup script {script.getName()}", e);
 				}
 				return false;
 			} else {

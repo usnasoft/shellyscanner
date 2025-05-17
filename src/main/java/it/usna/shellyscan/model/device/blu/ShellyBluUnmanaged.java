@@ -1,7 +1,7 @@
 package it.usna.shellyscan.model.device.blu;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 
@@ -68,7 +68,7 @@ public class ShellyBluUnmanaged extends AbstractBluDevice implements ShellyUnman
 	}
 
 	@Override
-	public boolean backup(File file) throws IOException {
+	public boolean backup(Path file) throws IOException {
 		throw new UnsupportedOperationException();
 	}
 

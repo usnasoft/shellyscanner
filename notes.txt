@@ -392,3 +392,9 @@ ThreadFactory factory = Thread.ofVirtual().factory();
 ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(0, factory);
 
 it.usna.shellyscan.model.device.g2.AbstractG2Device.backup(File) script xt1
+
+
+
+jsonFactory.configure(JsonGenerator.Feature.AUTO_CLOSE_TARGET, false);
+ObjectMapper mapper = new ObjectMapper(jsonFactory);
+test integrale backup: g1, battery g1, g2, deferred battery g2, deferred battery g3, scripts, bthome, blu trv

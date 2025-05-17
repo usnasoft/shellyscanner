@@ -55,14 +55,14 @@ public class BackupAction extends UsnaAction {
 								new File(fc.getSelectedFile(), defFileName(d)) : fc.getSelectedFile();
 						try {
 							model.pauseRefresh(modelRow);
-							final boolean connected = d.backup(outFile);
+							final boolean connected = d.backup(outFile.toPath());
 							res += String.format(LABELS.getString(connected ? "dlgSetMultiMsgOk" : "dlgSetMultiMsgStored"), hostName) + "<br>";
 						} catch (IOException | RuntimeException e1) {
 							if(d.getStatus() == Status.OFF_LINE || d.getStatus() == Status.NOT_LOOGGED || d instanceof GhostDevice) { // if error happened because the device is off-line -> try to queue action in DeferrablesContainer
 								LOG.debug("Interactive Backup error {}", d, e1);
 								DeferrablesContainer dc = DeferrablesContainer.getInstance();
 								dc.addOrUpdate(modelRow, DeferrableTask.Type.BACKUP, LABELS.getString("action_back_tooltip"), (def, dev) -> {
-									dev.backup(outFile);
+									dev.backup(outFile.toPath());
 									return null;
 								});
 								res += String.format(LABELS.getString("dlgSetMultiMsgQueue"), hostName) + "<br>";

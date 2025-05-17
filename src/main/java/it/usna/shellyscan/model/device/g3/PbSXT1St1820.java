@@ -2,9 +2,9 @@ package it.usna.shellyscan.model.device.g3;
 
 import java.io.IOException;
 import java.net.InetAddress;
+import java.nio.file.FileSystem;
 import java.util.List;
 import java.util.Map;
-import java.util.zip.ZipOutputStream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -108,7 +108,7 @@ public class PbSXT1St1820 extends XT1 implements ModulesHolder {
 	}
 	
 	@Override
-	protected void backup(ZipOutputStream out) throws IOException {
+	protected void backup(FileSystem out) throws IOException {
 		sectionToStream("/rpc/Service.GetConfig?id=0", "Service.GetConfig.json", out);
 	}
 	

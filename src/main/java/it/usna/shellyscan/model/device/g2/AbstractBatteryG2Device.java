@@ -1,15 +1,15 @@
 package it.usna.shellyscan.model.device.g2;
 
-import java.io.File;
-import java.io.FileOutputStream;
+import java.io.BufferedWriter;
 import java.io.IOException;
 import java.net.InetAddress;
-import java.nio.charset.StandardCharsets;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
 
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.websocket.client.WebSocketClient;
@@ -85,34 +85,38 @@ public abstract class AbstractBatteryG2Device extends AbstractG2Device implement
 	/**
 	 * No scripts, No Schedule
 	 */
-	public boolean backup(final File file) throws IOException {
-		try(ZipOutputStream out = new ZipOutputStream(new FileOutputStream(file), StandardCharsets.UTF_8)) {
-			sectionToStream("/rpc/Shelly.GetDeviceInfo", "Shelly.GetDeviceInfo.json", out);
+	public boolean backup(final Path file) throws IOException {
+		Map<String, String> providerProps = new HashMap<>();
+        providerProps.put("create", "true");
+		try(FileSystem fs = FileSystems.newFileSystem(file, providerProps)) {
+			sectionToStream("/rpc/Shelly.GetDeviceInfo", "Shelly.GetDeviceInfo.json", fs);
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-			sectionToStream("/rpc/Shelly.GetConfig", "Shelly.GetConfig.json", out);
+			sectionToStream("/rpc/Shelly.GetConfig", "Shelly.GetConfig.json", fs);
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-			sectionToStream("/rpc/Webhook.List", "Webhook.List.json", out);
+			sectionToStream("/rpc/Webhook.List", "Webhook.List.json", fs);
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			try {
-				sectionToStream("/rpc/KVS.GetMany", "KVS.GetMany.json", out);
+				sectionToStream("/rpc/KVS.GetMany", "KVS.GetMany.json", fs);
 			} catch(Exception e) {}
 		} catch(InterruptedException e) {
 			LOG.error("backup", e);
 		} catch(Exception e) {
 			if(getStatus() != Status.ON_LINE && getStoredJSON("/rpc/Shelly.GetDeviceInfo") != null && getStoredJSON("/rpc/Shelly.GetConfig") != null && getStoredJSON("/rpc/Webhook.List") != null && getStoredJSON("/rpc/KVS.GetMany") != null) {
-				try(ZipOutputStream out = new ZipOutputStream(new FileOutputStream(file), StandardCharsets.UTF_8)) {
-					out.putNextEntry(new ZipEntry("Shelly.GetDeviceInfo.json"));
-					out.write(getStoredJSON("/rpc/Shelly.GetDeviceInfo").toString().getBytes());
-					out.closeEntry();
-					out.putNextEntry(new ZipEntry("Shelly.GetConfig.json"));
-					out.write(getStoredJSON("/rpc/Shelly.GetConfig").toString().getBytes());
-					out.closeEntry();
-					out.putNextEntry(new ZipEntry("Webhook.List.json"));
-					out.write(getStoredJSON("/rpc/Webhook.List").toString().getBytes());
-					out.closeEntry();
-					out.putNextEntry(new ZipEntry("KVS.GetMany.json"));
-					out.write(getStoredJSON("/rpc/KVS.GetMany").toString().getBytes());
-					out.closeEntry();
+				try(FileSystem fs = FileSystems.newFileSystem(file)) {
+					try(BufferedWriter writer = Files.newBufferedWriter(fs.getPath("Shelly.GetDeviceInfo.json"))) {
+						jsonMapper.writer().writeValue(writer, getStoredJSON("/rpc/Shelly.GetDeviceInfo"));
+					}
+					try(BufferedWriter writer = Files.newBufferedWriter(fs.getPath("Shelly.GetConfig.json"))) {
+						jsonMapper.writer().writeValue(writer, getStoredJSON("/rpc/Shelly.GetConfig"));
+					}
+					try(BufferedWriter writer = Files.newBufferedWriter(fs.getPath("Webhook.List.json"))) {
+						jsonMapper.writer().writeValue(writer, getStoredJSON("/rpc/Webhook.List"));
+					}
+					try(BufferedWriter writer = Files.newBufferedWriter(fs.getPath("KVS.GetMany.json"))) {
+						jsonMapper.writer().writeValue(writer, getStoredJSON("/rpc/KVS.GetMany"));
+					}
+				} catch(IOException ex) {
+					LOG.error("backup script {script.getName()}", e);
 				}
 				return false;
 			} else {
@@ -121,7 +125,7 @@ public abstract class AbstractBatteryG2Device extends AbstractG2Device implement
 		}
 		return true;
 	}
-	
+
 //	public void copyFrom(BatteryDeviceInterface dev) {
 //		AbstractBatteryG2Device devG2 = (AbstractBatteryG2Device)dev;
 //		if(shelly == null) {

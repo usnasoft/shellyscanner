@@ -1,8 +1,8 @@
 package it.usna.shellyscan.model.device;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -139,7 +139,7 @@ public class ShellyGenericUnmanagedImpl extends ShellyAbstractDevice implements 
 	}
 
 	@Override
-	public boolean backup(File file) {
+	public boolean backup(Path file) {
 		throw new UnsupportedOperationException();
 	}
 

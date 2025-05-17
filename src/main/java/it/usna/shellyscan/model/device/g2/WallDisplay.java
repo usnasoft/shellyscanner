@@ -2,12 +2,12 @@ package it.usna.shellyscan.model.device.g2;
 
 import java.io.IOException;
 import java.net.InetAddress;
+import java.nio.file.FileSystem;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import java.util.zip.ZipOutputStream;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
@@ -149,7 +149,7 @@ public class WallDisplay extends AbstractG2Device implements ModulesHolder {
 	}
 	
 	@Override
-	protected void backup(ZipOutputStream out) throws IOException, InterruptedException {
+	protected void backup(FileSystem out) throws IOException, InterruptedException {
 		if(thermostat != null) {
 			JsonNode profiles = sectionToStream("/rpc/Thermostat.Schedule.ListProfiles?id=0", "Thermostat.Schedule.ListProfiles_id-0.json", out);
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
