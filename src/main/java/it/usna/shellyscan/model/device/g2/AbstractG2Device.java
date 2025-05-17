@@ -1,5 +1,6 @@
 package it.usna.shellyscan.model.device.g2;
 
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -7,6 +8,10 @@ import java.net.InetAddress;
 import java.net.SocketTimeoutException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
@@ -16,6 +21,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -349,7 +355,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 			sectionToStream("/rpc/Webhook.List", "Webhook.List.json", out);
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			try {
-				sectionToStream("/rpc/KVS.GetMany", "KVS.GetMany.json", out);
+				sectionToStream("/rpc/KVS.GetMany", "items", "KVS.GetMany.json", out);
 			} catch(Exception e) {}
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			JsonNode scripts = null;
@@ -357,14 +363,10 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 				scripts = sectionToStream("/rpc/Script.List", "Script.List.json", out);
 			} catch(Exception e) {}
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-			try { // Virtual components (PRO & gen3)
-				sectionToStream("/rpc/Shelly.GetComponents?dynamic_only=true", "Shelly.GetComponents.json", out);
+			try { // Virtual components (PRO & gen3+)
+				sectionToStream("/rpc/Shelly.GetComponents?dynamic_only=true", "components", "Shelly.GetComponents.json", out);
 			} catch(Exception e) {}
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-//			try { // On devices with active sensor add-on
-//				sectionToStream("/rpc/SensorAddon.GetPeripherals", SensorAddOn.BACKUP_SECTION, out);
-//			} catch(Exception e) {}
-//			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			String addon = config.get("sys").get("device").path("addon_type").asText();
 			if(SensorAddOn.ADDON_TYPE.equals(addon)) {
 				sectionToStream("/rpc/SensorAddon.GetPeripherals", SensorAddOn.BACKUP_SECTION, out);
@@ -393,8 +395,61 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 		return true;
 	}
 	
+
+	public boolean backup(final Path file) throws IOException {
+		try(FileSystem fs = FileSystems.newFileSystem(file)) {
+			sectionToStream("/rpc/Shelly.GetDeviceInfo", "Shelly.GetDeviceInfo.json", fs);
+			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+			JsonNode config = sectionToStream("/rpc/Shelly.GetConfig", "Shelly.GetConfig.json", fs);
+			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+			try { // unmanaged battery device
+				sectionToStream("/rpc/Schedule.List", "Schedule.List.json", fs);
+			} catch(Exception e) {}
+			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+			sectionToStream("/rpc/Webhook.List", "Webhook.List.json", fs);
+			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+			try {
+				sectionToStream("/rpc/KVS.GetMany", "items", "KVS.GetMany.json", fs);
+			} catch(Exception e) {}
+			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+			JsonNode scripts = null;
+			try {
+				scripts = sectionToStream("/rpc/Script.List", "Script.List.json", fs);
+			} catch(Exception e) {}
+			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+			try { // Virtual components (PRO & gen3+)
+				sectionToStream("/rpc/Shelly.GetComponents?dynamic_only=true", "components", "Shelly.GetComponents.json", fs);
+			} catch(Exception e) {}
+			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+			String addon = config.get("sys").get("device").path("addon_type").asText();
+			if(SensorAddOn.ADDON_TYPE.equals(addon)) {
+				sectionToStream("/rpc/SensorAddon.GetPeripherals", SensorAddOn.BACKUP_SECTION, fs);
+				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+			}
+			// Scripts
+			if(scripts != null) {
+				for(Script script: Script.list(this, scripts)) {
+					try(BufferedWriter writer = Files.newBufferedWriter(fs.getPath(script.getName() + ".mjs"))) {
+						writer.write(script.getCode());
+					} catch(IOException e) {}
+					TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+				}
+			}
+			try { // Device specific
+				backup(fs);
+			} catch(Exception e) {
+				LOG.error("backup specific", e);
+			}
+		} catch(InterruptedException e) {
+			LOG.error("backup", e);
+		}
+		return true;
+	}
+	
 	/** implement for devices that need additional information */
 	protected void backup(ZipOutputStream out) throws IOException, InterruptedException {}
+	
+	protected void backup(FileSystem fs) throws IOException, InterruptedException {}
 
 	@Override
 	public Map<RestoreMsg, Object> restoreCheck(Map<String, JsonNode> backupJsons) throws IOException {
@@ -599,8 +654,6 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 			MQTTManagerG2 mqttM = new MQTTManagerG2(this, true);
 			errors.add(mqttM.restore(mqtt, userPref.get(RestoreMsg.RESTORE_MQTT)));
 		}
-		
-		
 	}
 
 	protected void restoreSchedule(JsonNode schedule, final long delay, ArrayList<String> errors) throws InterruptedException {

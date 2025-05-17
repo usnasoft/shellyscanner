@@ -1,10 +1,13 @@
 package it.usna.shellyscan.model.device;
 
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.SocketTimeoutException;
+import java.nio.file.FileSystem;
+import java.nio.file.Files;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
@@ -16,6 +19,8 @@ import java.util.zip.ZipOutputStream;
 import org.eclipse.jetty.client.ContentResponse;
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.http.HttpStatus;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -34,6 +39,7 @@ import it.usna.shellyscan.model.device.modules.WIFIManager;
  * @author usna
  */
 public abstract class ShellyAbstractDevice {
+	private final static Logger LOG = LoggerFactory.getLogger(ShellyAbstractDevice.class);
 	protected HttpClient httpClient;
 	protected final InetAddressAndPort addressAndPort;
 	protected String hostname;
@@ -268,6 +274,24 @@ public abstract class ShellyAbstractDevice {
 	 * @param out zip file
 	 * @throws IOException on error or response.getStatus() != HttpStatus.OK_200
 	 */
+	protected JsonNode sectionToStream(String section, String entryName, FileSystem fs) throws IOException {
+		try(BufferedWriter writer = Files.newBufferedWriter(fs.getPath(entryName))) {
+			JsonNode resp = getJSON(section);
+			jsonMapper.writer().writeValue(writer, resp);
+			return resp;
+		} catch (Exception e) {
+			LOG.debug("sectionToStream {}", section, e);
+			throw new DeviceOfflineException(e);
+		}
+	}
+	
+	/**
+	 * Backup basic operation
+	 * @param section call whose returned json must be stored
+	 * @param entryName ZipEntry name
+	 * @param out zip file
+	 * @throws IOException on error or response.getStatus() != HttpStatus.OK_200
+	 */
 	protected JsonNode sectionToStream(String section, String entryName, ZipOutputStream out) throws IOException {
 		try {
 			ContentResponse response = httpClient.GET(uriPrefix + section);
@@ -286,17 +310,45 @@ public abstract class ShellyAbstractDevice {
 		}
 	}
 	
+	protected JsonNode sectionToStream(final String section, final String arrayKey, final String entryName, FileSystem fs) throws IOException {
+		try(BufferedWriter writer = Files.newBufferedWriter(fs.getPath(entryName))) {
+			String req = section;
+			int offset = 0;
+			int tot = 0;
+			JsonNode resp = getJSON(req);
+			JsonNode arrayNode = resp.path(arrayKey);
+			do {
+				if(offset > 0) {
+					TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+					JsonNode fragment = getJSON(req);
+					ArrayNode fragmentArrayNode = (ArrayNode)fragment.path(arrayKey);
+					((ArrayNode)arrayNode).addAll(fragmentArrayNode);
+				}
+				JsonNode offsetNode;
+				if((offsetNode = resp.get("offset")) != null && (tot = resp.path("total").intValue()) > 0) { // potentially needs multiple calls
+					offset = offsetNode.intValue() + arrayNode.size();
+					req = section + ((section.contains("?")) ? "&offset=" : "?offset=") + offset;
+				}
+			} while(tot > offset);
+			jsonMapper.writer().writeValue(writer, resp);
+			return resp;
+		} catch (InterruptedException e) {
+			LOG.debug("sectionToStream {}-{}", section, arrayKey, e);
+			throw new DeviceOfflineException(e);
+		}
+	}
+	
 	protected JsonNode sectionToStream(final String section, final String arrayKey, final String entryName, final ZipOutputStream out) throws IOException {
 		try {
 			String req = section;
 			int offset = 0;
 			int tot = 0;
-			JsonNode resp = getJSON(uriPrefix + req);
+			JsonNode resp = getJSON(req);
 			JsonNode arrayNode = resp.path(arrayKey);
 			do {
 				if(offset > 0) {
 					TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-					JsonNode fragment = getJSON(uriPrefix + req);
+					JsonNode fragment = getJSON(req);
 					ArrayNode fragmentArrayNode = (ArrayNode)fragment.path(arrayKey);
 					((ArrayNode)arrayNode).addAll(fragmentArrayNode);
 				}
@@ -308,26 +360,15 @@ public abstract class ShellyAbstractDevice {
 			} while(tot > offset);
 			ZipEntry entry = new ZipEntry(entryName);
 			out.putNextEntry(entry);
-			byte[] buffer = resp.toString().getBytes();
+			byte[] buffer = resp.toString().getBytes(); //jsonMapper.writer().writeValue(out, resp); closes the stream
 			out.write(buffer, 0, buffer.length);
 			out.closeEntry();
 			return resp;
 		} catch (InterruptedException e) {
-//			status = Status.OFF_LINE;
+			LOG.debug("sectionToStream {}-{}", section, arrayKey, e);
 			throw new DeviceOfflineException(e);
 		}
 	}
-	
-//	private int retrivedArraySize(JsonNode val) {
-//		Iterator<JsonNode> it = val.iterator();
-//		while(it.hasNext()) {
-//			JsonNode node = it.next();
-//			if(node.isArray()) {
-//				return node.size();
-//			}
-//		}
-//		return Integer.MAX_VALUE;
-//	}
 
 	@Override
 	public int hashCode() {
