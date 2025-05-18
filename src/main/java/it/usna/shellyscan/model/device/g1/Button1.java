@@ -55,14 +55,14 @@ public class Button1 extends AbstractBatteryG1Device implements ModulesHolder {
 	@Override
 	protected void fillSettings(JsonNode settings) throws IOException {
 		super.fillSettings(settings);
-		this.settings = settings;
-		this.settingsActions = actions.fillSettings(settings.get("inputs"));
+		this.stSettings = settings;
+		this.stSettingsActions = actions.fillSettings(settings.get("inputs"));
 	}
 	
 	@Override
 	protected void fillStatus(JsonNode status) throws IOException {
 		super.fillStatus(status);
-		this.status = status;
+		this.stStatus = status;
 		bat = status.get("bat").get("value").intValue();
 	}
 	

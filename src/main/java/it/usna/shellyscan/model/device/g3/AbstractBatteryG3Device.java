@@ -3,6 +3,7 @@ package it.usna.shellyscan.model.device.g3;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.net.InetAddress;
+import java.net.URI;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
@@ -86,9 +87,8 @@ public abstract class AbstractBatteryG3Device extends AbstractG3Device implement
 	 * No scripts, No Schedule
 	 */
 	public boolean backup(final Path file) throws IOException {
-		Map<String, String> providerProps = new HashMap<>();
-        providerProps.put("create", "true");
-		try(FileSystem fs = FileSystems.newFileSystem(file, providerProps)) {
+		Files.deleteIfExists(file);
+		try(FileSystem fs = FileSystems.newFileSystem(URI.create("jar:" + file.toUri()), Map.of("create", "true"))) {
 			sectionToStream("/rpc/Shelly.GetDeviceInfo", "Shelly.GetDeviceInfo.json", fs);
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			sectionToStream("/rpc/Shelly.GetConfig", "Shelly.GetConfig.json", fs);
@@ -96,13 +96,13 @@ public abstract class AbstractBatteryG3Device extends AbstractG3Device implement
 			sectionToStream("/rpc/Webhook.List", "Webhook.List.json", fs);
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			try {
-				sectionToStream("/rpc/KVS.GetMany", "KVS.GetMany.json", fs);
+				sectionToStream("/rpc/KVS.GetMany", "items", "KVS.GetMany.json", fs);
 			} catch(Exception e) {}
 		} catch(InterruptedException e) {
 			LOG.error("backup", e);
 		} catch(Exception e) {
 			if(getStatus() != Status.ON_LINE && getStoredJSON("/rpc/Shelly.GetDeviceInfo") != null && getStoredJSON("/rpc/Shelly.GetConfig") != null && getStoredJSON("/rpc/Webhook.List") != null && getStoredJSON("/rpc/KVS.GetMany") != null) {
-				try(FileSystem fs = FileSystems.newFileSystem(file, providerProps)) {
+				try(FileSystem fs = FileSystems.newFileSystem(URI.create("jar:" + file.toUri()), Map.of("create", "true"))) {
 					try(BufferedWriter writer = Files.newBufferedWriter(fs.getPath("Shelly.GetDeviceInfo.json"))) {
 						jsonMapper.writer().writeValue(writer, getStoredJSON("/rpc/Shelly.GetDeviceInfo"));
 					}
@@ -116,7 +116,7 @@ public abstract class AbstractBatteryG3Device extends AbstractG3Device implement
 						jsonMapper.writer().writeValue(writer, getStoredJSON("/rpc/KVS.GetMany"));
 					}
 				} catch(IOException ex) {
-					LOG.error("backup script {script.getName()}", e);
+					LOG.error("backup battery ()", e, ex);
 				}
 				return false;
 			} else {

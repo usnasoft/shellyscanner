@@ -7,7 +7,6 @@ import java.awt.Toolkit;
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Base64;
 import java.util.ResourceBundle;
 import java.util.regex.Matcher;
@@ -130,12 +129,12 @@ public class Main {
 
 		// Non interactive commands
 		if((cliIndex = cli.hasEntry("-backup")) >= 0) {
-			String path = cli.getParameter(cliIndex);
+			final String path = cli.getParameter(cliIndex);
 			if(path == null) {
 				System.err.println("mandatory parameter after -backup (must be an existing path)");
 				System.exit(1);
 			}
-			Path dirPath = Paths.get(path);
+			Path dirPath = Path.of(path);
 			if(path == null || Files.exists(dirPath) == false || Files.isDirectory(dirPath) == false) {
 				System.err.println("parameter after -backup must be an existing path");
 				System.exit(1);
@@ -149,7 +148,7 @@ public class Main {
 			try (NonInteractiveDevices model = (ipCollection == null) ? new NonInteractiveDevices(fullScan) : new NonInteractiveDevices(ipCollection)) {
 				model.execute(d -> {
 					try {
-						d.backup(new File(dirPath.toFile(), d.getHostname().replaceAll("[^\\w_-]+", "_") + "." + Main.BACKUP_FILE_EXT).toPath());
+						d.backup(Path.of(path, d.getHostname().replaceAll("[^\\w_-]+", "_") + "." + Main.BACKUP_FILE_EXT));
 						System.out.println(d.getHostname() + " success");
 					} catch (Exception e) {
 						System.out.println(d.getHostname() + " error - " + e.toString());
@@ -228,7 +227,7 @@ public class Main {
 					boolean useArchive = appProp.getBoolProperty(ScannerProperties.PROP_USE_ARCHIVE);
 					if(useArchive) {
 						try {
-							model.loadFromStore(Paths.get(appProp.getProperty(ScannerProperties.PROP_ARCHIVE_FILE, ScannerProperties.PROP_ARCHIVE_FILE_DEFAULT)));
+							model.loadFromStore(Path.of(appProp.getProperty(ScannerProperties.PROP_ARCHIVE_FILE, ScannerProperties.PROP_ARCHIVE_FILE_DEFAULT)));
 						} catch (/*IO*/Exception e) {
 							appProp.setBoolProperty(ScannerProperties.PROP_USE_ARCHIVE, false);
 							Msg.errorMsg(view, e);

@@ -6,6 +6,7 @@ import java.awt.Cursor;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
@@ -247,15 +248,17 @@ public class RestoreAction extends UsnaAction {
 				}
 				credentials.dispose();
 			}
-			boolean overwriteScriptNames = false;
 			if(multi) {
 				resData.put(RestoreMsg.QUESTION_RESTORE_SCRIPTS_OVERRIDE, "true");
 				resData.put(RestoreMsg.QUESTION_RESTORE_SCRIPTS_ENABLE_LIKE_BACKED_UP, "true");
 			} else {
+				boolean overwriteScriptNames = false;
+				String rename = LABELS.getString("lblRename");
 				if(test.containsKey(RestoreMsg.QUESTION_RESTORE_SCRIPTS_OVERRIDE) && 
-						JOptionPane.showConfirmDialog(mainView,
+						JOptionPane.showOptionDialog(mainView,
 								String.format(LABELS.getString(CHECK_MSG_PREFIX + "QUESTION_RESTORE_SCRIPTS_OVERRIDE"), test.get(RestoreMsg.QUESTION_RESTORE_SCRIPTS_OVERRIDE)),
-								LABELS.getString("msgRestoreTitle"), JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE) == JOptionPane.NO_OPTION) {
+								LABELS.getString("msgRestoreTitle"), JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE,
+								null, new Object[] {rename, LABELS.getString("lblOverwrite")}, rename) == 1 /*overwrite*/) {
 					resData.put(RestoreMsg.QUESTION_RESTORE_SCRIPTS_OVERRIDE, "true");
 					overwriteScriptNames = true;
 				}
@@ -322,7 +325,7 @@ public class RestoreAction extends UsnaAction {
 
 	private static Map<String, JsonNode> readBackupFile(final Path file) throws IOException {
 		final Map<String, JsonNode> backupJsons = new HashMap<>();
-		try(FileSystem fs = FileSystems.newFileSystem(file); Stream<Path> pathStream = Files.list(fs.getPath("/"))) {
+		try(FileSystem fs = FileSystems.newFileSystem(URI.create("jar:" + file.toUri()), Map.of()); Stream<Path> pathStream = Files.list(fs.getPath("/"))) {
 			final ObjectMapper jsonMapper = new ObjectMapper();
 			pathStream.forEach(p -> {
 				try {
@@ -339,8 +342,8 @@ public class RestoreAction extends UsnaAction {
 		} catch(ProviderNotFoundException e) {
 			return backupJsons; // will result in a "different device" error
 		} catch(RuntimeException e) {
-			if(e.getCause() instanceof IOException) {
-				throw (IOException)e.getCause();
+			if(e.getCause() instanceof IOException ioe) {
+				throw ioe;
 			} 
 			throw e;
 		}

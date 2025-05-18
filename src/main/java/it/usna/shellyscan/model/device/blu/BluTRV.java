@@ -1,8 +1,10 @@
 package it.usna.shellyscan.model.device.blu;
 
 import java.io.IOException;
+import java.net.URI;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.EnumMap;
@@ -141,7 +143,8 @@ public class BluTRV extends AbstractBluDevice implements ThermostatInterface, Mo
 
 	@Override
 	public boolean backup(Path file) throws IOException {
-		try(FileSystem fs = FileSystems.newFileSystem(file)) {
+		Files.deleteIfExists(file);
+		try(FileSystem fs = FileSystems.newFileSystem(URI.create("jar:" + file.toUri()), Map.of("create", "true"))) {
 			sectionToStream("/rpc/BluTrv.GetRemoteDeviceInfo?id=" + componentIndex, "Shelly.GetRemoteDeviceInfo.json", fs);
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			sectionToStream("/rpc/BluTrv.GetRemoteConfig?id=" + componentIndex, "Shelly.GetRemoteConfig.json", fs);

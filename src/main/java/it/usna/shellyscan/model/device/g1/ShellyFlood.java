@@ -50,13 +50,13 @@ public class ShellyFlood extends AbstractBatteryG1Device {
 	@Override
 	protected void fillSettings(JsonNode settings) throws IOException {
 		super.fillSettings(settings);
-		this.settings = settings;
+		this.stSettings = settings;
 	}
 	
 	@Override
 	protected void fillStatus(JsonNode status) throws IOException {
 		super.fillStatus(status);
-		this.status = status;
+		this.stStatus = status;
 		flood = status.get("flood").asBoolean();
 		temp = (float)status.get("tmp").get("tC").doubleValue();
 		bat = status.get("bat").get("value").asInt();

@@ -2,6 +2,7 @@ package it.usna.shellyscan.model.device.blu;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.net.URI;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
@@ -195,11 +196,8 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 	
 	@Override
 	public boolean backup(Path file) throws IOException {
-//		JsonFactory jsonFactory = new JsonFactory();
-//		jsonFactory.configure(JsonGenerator.Feature.AUTO_CLOSE_TARGET, false);
-//		ObjectMapper mapper = new ObjectMapper(jsonFactory);
-		
-		try(FileSystem fs = FileSystems.newFileSystem(file)) {
+		Files.deleteIfExists(file);
+		try(FileSystem fs = FileSystems.newFileSystem(URI.create("jar:" + file.toUri()), Map.of("create", "true"))) {
 			ObjectNode usnaData = JsonNodeFactory.instance.objectNode();
 			usnaData.put("index", componentIndex);
 			usnaData.put("type", typeID);

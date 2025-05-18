@@ -3,11 +3,11 @@ package it.usna.shellyscan.model.device.g1;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.net.InetAddress;
+import java.net.URI;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashMap;
 import java.util.Map;
 
 import org.eclipse.jetty.client.HttpClient;
@@ -20,10 +20,10 @@ import it.usna.shellyscan.model.device.BatteryDeviceInterface;
 
 public abstract class AbstractBatteryG1Device extends AbstractG1Device implements BatteryDeviceInterface {
 	private final static Logger LOG = LoggerFactory.getLogger(AbstractBatteryG1Device.class);
-	protected JsonNode shelly;
-	protected JsonNode settings;
-	protected JsonNode status;
-	protected JsonNode settingsActions;
+	protected JsonNode stShelly;
+	protected JsonNode stSettings;
+	protected JsonNode stStatus;
+	protected JsonNode stSettingsActions;
 	protected int bat;
 
 	protected AbstractBatteryG1Device(InetAddress address, int port, String hostname) {
@@ -34,7 +34,7 @@ public abstract class AbstractBatteryG1Device extends AbstractG1Device implement
 	public final void init(HttpClient httpClient, JsonNode shelly) throws IOException {
 		this.httpClient = httpClient;
 		this.mac = shelly.get("mac").asText();
-		this.shelly = shelly;
+		this.stShelly = shelly;
 		init();
 	}
 	
@@ -46,13 +46,13 @@ public abstract class AbstractBatteryG1Device extends AbstractG1Device implement
 	@Override
 	public JsonNode getStoredJSON(final String command) {
 		if(command.equals("/shelly")) {
-			return shelly;
+			return stShelly;
 		} else if(command.equals("/settings")) {
-			return settings;
+			return stSettings;
 		} else if(command.equals("/status")) {
-			return status;
+			return stStatus;
 		} else if(command.equals("/settings/actions")) {
-			return settingsActions;
+			return stSettingsActions;
 		}
 		return null;
 	}
@@ -60,13 +60,13 @@ public abstract class AbstractBatteryG1Device extends AbstractG1Device implement
 	@Override
 	public void setStoredJSON(final String command, JsonNode val) {
 		if(command.equals("/shelly")) {
-			this.shelly = val;
+			this.stShelly = val;
 		} else if(command.equals("/settings")) {
-			this.settings = val;
+			this.stSettings = val;
 		} else if(command.equals("/status")) {
-			this.status = val;
+			this.stStatus = val;
 		} else if(command.equals("/settings/actions")) {
-			this.settingsActions = val;
+			this.stSettingsActions = val;
 		}
 		lastConnection = System.currentTimeMillis();
 	}
@@ -76,15 +76,13 @@ public abstract class AbstractBatteryG1Device extends AbstractG1Device implement
 		try {
 			return super.backup(file);
 		} catch (/*java.net.SocketTimeout*/Exception e) {
-			if(getStatus() != Status.ON_LINE && settings != null && settingsActions != null) {
-				Map<String, String> providerProps = new HashMap<>();
-		        providerProps.put("create", "true");
-				try(FileSystem fs = FileSystems.newFileSystem(file, providerProps)) {
+			if(getStatus() != Status.ON_LINE && stSettings != null && stSettingsActions != null) {
+				try(FileSystem fs = FileSystems.newFileSystem(URI.create("jar:" + file.toUri()), Map.of("create", "true"))) {
 					try(BufferedWriter writer = Files.newBufferedWriter(fs.getPath("settings.json"))) {
-						jsonMapper.writer().writeValue(writer, settings);
+						jsonMapper.writer().writeValue(writer, stSettings);
 					}
-					try(BufferedWriter writer = Files.newBufferedWriter(fs.getPath("Shelly.GetDeviceInfo.json"))) {
-						jsonMapper.writer().writeValue(writer, settingsActions);
+					try(BufferedWriter writer = Files.newBufferedWriter(fs.getPath("actions.json"))) {
+						jsonMapper.writer().writeValue(writer, stSettingsActions);
 					}
 				} catch(IOException ex) {
 					LOG.error("backup script {script.getName()}", e);

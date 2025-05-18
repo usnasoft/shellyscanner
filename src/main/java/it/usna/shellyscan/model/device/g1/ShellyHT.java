@@ -52,13 +52,13 @@ public class ShellyHT extends AbstractBatteryG1Device {
 	@Override
 	protected void fillSettings(JsonNode settings) throws IOException {
 		super.fillSettings(settings);
-		this.settings = settings;
+		this.stSettings = settings;
 	}
 	
 	@Override
 	protected void fillStatus(JsonNode status) throws IOException {
 		super.fillStatus(status);
-		this.status = status;
+		this.stStatus = status;
 		temp = status.get("tmp").get("tC").floatValue();
 		humidity = status.get("hum").get("value").intValue();
 		bat = status.get("bat").get("value").intValue();

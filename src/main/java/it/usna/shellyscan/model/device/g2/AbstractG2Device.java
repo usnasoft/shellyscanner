@@ -12,7 +12,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.EnumMap;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -338,9 +337,8 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 
 	@Override
 	public boolean backup(final Path file) throws IOException {
-		Map<String, String> providerProps = new HashMap<>();
-        providerProps.put("create", "true");
-		try(FileSystem fs = FileSystems.newFileSystem(file, providerProps)) {
+		Files.deleteIfExists(file);
+		try(FileSystem fs = FileSystems.newFileSystem(URI.create("jar:" + file.toUri()), Map.of("create", "true"))) {
 			sectionToStream("/rpc/Shelly.GetDeviceInfo", "Shelly.GetDeviceInfo.json", fs);
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			JsonNode config = sectionToStream("/rpc/Shelly.GetConfig", "Shelly.GetConfig.json", fs);
@@ -558,7 +556,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 		ObjectNode outConfig = JsonNodeFactory.instance.objectNode();
 
 		// BLE.SetConfig
-		outConfig.set("config", config.get("ble").deepCopy());
+		outConfig.set("config", config.get("ble")/*.deepCopy()*/);
 		TimeUnit.MILLISECONDS.sleep(delay);
 		errors.add(postCommand("BLE.SetConfig", outConfig));
 
@@ -573,14 +571,16 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 		JsonNode sys = config.get("sys");
 		ObjectNode outSys = JsonNodeFactory.instance.objectNode();
 		
-		ObjectNode outDevice = sys.get("device").deepCopy(); // todo test (anche caso name = null)
+		ObjectNode outDevice = (ObjectNode)sys.get("device")/*.deepCopy()*/; // todo test (anche caso name = null)
 		outDevice.remove("mac");
 		outDevice.remove("fw_id");
 		outDevice.remove("addon_type");
 		outDevice.remove("profile"); // postCommand("Shelly.setprofile", "{\"name\":\"" + shelly.get("profile") +"\"}");
 		outSys.set("device", outDevice);
 
-		outSys.set("sntp", sys.get("sntp").deepCopy());
+		outSys.set("sntp", sys.get("sntp")/*.deepCopy()*/);
+		
+		outSys.set("debug", sys.get("debug"));
 
 		outConfig.set("config", outSys);
 		TimeUnit.MILLISECONDS.sleep(delay);
@@ -588,7 +588,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 		
 		JsonNode matter = config.get("matter");
 		if(matter != null) {
-			outConfig.set("config", matter.deepCopy());
+			outConfig.set("config", matter/*.deepCopy()*/);
 			TimeUnit.MILLISECONDS.sleep(delay);
 			errors.add(postCommand("Matter.SetConfig", outConfig));
 		}

@@ -66,13 +66,13 @@ public class ShellyDW2 extends AbstractBatteryG1Device {
 	@Override
 	protected void fillSettings(JsonNode settings) throws IOException {
 		super.fillSettings(settings);
-		this.settings = settings;
+		this.stSettings = settings;
 	}
 	
 	@Override
 	protected void fillStatus(JsonNode status) throws IOException {
 		super.fillStatus(status);
-		this.status = status;
+		this.stStatus = status;
 		open = status.get("sensor").get("state").asText("").equals("open");
 		bat = status.get("bat").get("value").asInt();
 		lux = status.get("lux").get("value").asInt();

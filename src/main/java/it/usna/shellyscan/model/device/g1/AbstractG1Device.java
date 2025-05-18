@@ -1,4 +1,5 @@
 package it.usna.shellyscan.model.device.g1;
+
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
@@ -8,10 +9,10 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.EnumMap;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -228,9 +229,8 @@ public abstract class AbstractG1Device extends ShellyAbstractDevice {
 	
 	@Override
 	public boolean backup(final Path file) throws IOException {
-		Map<String, String> providerProps = new HashMap<>();
-        providerProps.put("create", "true");
-		try(FileSystem fs = FileSystems.newFileSystem(file, providerProps)) {
+		Files.deleteIfExists(file);
+		try(FileSystem fs = FileSystems.newFileSystem(URI.create("jar:" + file.toUri()), Map.of("create", "true"))) {
 			sectionToStream("/settings", "settings.json", fs);
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			sectionToStream("/settings/actions", "actions.json", fs);
