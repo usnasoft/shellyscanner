@@ -21,28 +21,65 @@ public class Webhooks {
 //	public final static String INPUT_LONG_PUSH = "input.button_longpush";
 //	public final static String INPUT_DOUBLE_PUSH = "input.button_doublepush";
 //	public final static String INPUT_TRIPLE_PUSH = "input.button_triplepush";
-	private final static String SENSOR_EVENT_PREFIX = DynamicComponents.BTHOME_SENSOR + ".";
+//	private final static String SENSOR_EVENT_PREFIX = DynamicComponents.BTHOME_SENSOR + ".";
+//	private final static String BTDEVICE_EVENT_PREFIX = DynamicComponents.BTHOME_DEVICE + ".";
 	
 	private final AbstractG2Device parent;
-	private Map<Integer, Map<String, Webhook>> hooks = new HashMap<>();
+//	private Map<Integer, Map<String, Webhook>> hooks = new HashMap<>();
+	private Map<String, Map<String, Webhook>> hooks = new HashMap<>();
+
+	/*
+	<eventOrigin><cid>: <event>:hookObj - e.g.
+
+	 {
+        "cid": 3,
+        "condition": null,
+        "enable": true,
+        "event": "input.button_push",
+        "id": 2,
+        "name": "action input",
+        "repeat_period": 0,
+        "ssl_ca": "ca.pem",
+        "urls": [ "http://xxx.x ]
+    }
+    
+	input3 -> {button_push -> hookObj}
+	
+	input3 -> [hookObj]
+	*/
 
 	public Webhooks(AbstractG2Device parent) {
 		this.parent = parent;
 	}
 
-	public void fillSettings() throws IOException {
+	public void fillSettings(/*String eventOrigin*/) throws IOException {
 		hooks.clear();
 		JsonNode wh = parent.getJSON("/rpc/Webhook.List").get("hooks");
 		wh.forEach(hook -> {
 			int cid = hook.get("cid").asInt();
-			if(cid < DynamicComponents.MIN_ID) {
-				Map<String, Webhook> cidMap = hooks.get(cid);
+			if(cid < DynamicComponents.MIN_ID /*&& (event = hook.get("event").asText()).startsWith(eventOrigin)*/) {
+				String event = hook.get("event").asText();
+				int dotpos = event.indexOf('.');
+				final String eventOrigin;
+//				final String eventType;
+				if(dotpos > 0) {
+					eventOrigin = event.substring(0, dotpos);
+//					eventType =event.substring(dotpos + 1);
+				} else {
+					eventOrigin = "";
+//					eventType = event;
+				}
+				
+				// old model
+				Map<String, Webhook> cidMap = hooks.get(eventOrigin + cid);
 				if(cidMap == null) {
 					cidMap = new LinkedHashMap<>();
-					hooks.put(cid, cidMap);
+//					hooks.put(cid, cidMap);
+					hooks.put(eventOrigin + cid, cidMap);
 				}
-				String event = hook.get("event").asText();
 				cidMap.put(event, new Webhook(hook));
+				
+
 			}
 		});
 	}
@@ -52,21 +89,40 @@ public class Webhooks {
 		JsonNode wh = parent.getJSON("/rpc/Webhook.List").get("hooks");
 		wh.forEach(hook -> {
 			int cid = hook.get("cid").asInt();
-			String event;
-			if(cid >= DynamicComponents.MIN_ID && cid <= DynamicComponents.MAX_ID && (event = hook.get("event").textValue()).startsWith(SENSOR_EVENT_PREFIX)) {
-				Map<String, Webhook> cidMap = hooks.get(cid);
-				if(cidMap == null) {
-					cidMap = new LinkedHashMap<>();
-					hooks.put(cid, cidMap);
+			if(cid >= DynamicComponents.MIN_ID && cid <= DynamicComponents.MAX_ID) {
+				String event = hook.get("event").asText();
+				int dotpos = event.indexOf('.');
+				final String eventOrigin;
+//				final String eventType;
+				if(dotpos > 0) {
+					eventOrigin = event.substring(0, dotpos);
+//					eventType = event.substring(dotpos + 1);
+				} else {
+					eventOrigin = "";
+//					eventType = event;
 				}
-				cidMap.put(event, new Webhook(hook));
+//				if(event.startsWith(SENSOR_EVENT_PREFIX)) {
+					Map<String, Webhook> cidMap = hooks.get(eventOrigin + cid);
+					if(cidMap == null) {
+						cidMap = new LinkedHashMap<>();
+//						hooks.put(cid, cidMap);
+						hooks.put(eventOrigin + cid, cidMap);
+					}
+					cidMap.put(event, new Webhook(hook));
+//				}
 			}
 		});
 	}
 	
-	public Map<String, Webhook> getHooks(int cid) {
-		return hooks.get(cid);
+	public Map<String, Webhook> getHooks(/*int*/String id) {
+		return hooks.get(id);
 	}
+	
+
+	
+//	public Map<String, Webhook> getHooks(String origin, int cid) {
+//		return hooks.get(cid);
+//	}
 
 	public static void delete(AbstractG2Device parent, String eventType, int cid) throws IOException {
 		JsonNode wh = parent.getJSON("/rpc/Webhook.List").get("hooks");
@@ -118,15 +174,17 @@ public class Webhooks {
 	public static class Webhook {
 //		private int id;
 		private boolean enable;
-//		private String event;
+		private String event;
 		private String name;
+		private String condition;
 		private List<String> urls = new ArrayList<>();
 
 		private Webhook(JsonNode wh) {
 //			id = wh.get("id").asInt();
 			enable = wh.get("enable").asBoolean();
-//			event = wh.get("event").asText();
+			event = wh.get("event").asText();
 			name = wh.get("name").asText();
+			condition = wh.path("condition").textValue();
 			wh.get("urls").forEach(url -> urls.add(url.asText()));
 		}
 		
@@ -134,9 +192,13 @@ public class Webhooks {
 			return enable;
 		}
 		
-//		public String getEvent() {
-//			return event;
-//		}
+		public String getEvent() {
+			return event;
+		}
+		
+		public String getCondition() {
+			return condition;
+		}
 		
 		public void execute() throws IOException {
 			for(String url: urls) {
@@ -146,9 +208,10 @@ public class Webhooks {
 		}
 		
 		public String toString() {
-			return name + " - " + enable;
+			return name + " - " + condition + " - " + enable;
 		}
 	}
 	
-	record EventHook(String event, Webhook hook) {}
+//	record EventHook(String event, Webhook hook) {}
 }
+// todo serve una classificazione elemento/cid per esempio "input0" invece di "0"; dove "input" e' prese da "event fino al '.'

@@ -3,7 +3,6 @@ package it.usna.shellyscan.view.chart;
 import static it.usna.shellyscan.Main.LABELS;
 
 import java.io.BufferedWriter;
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -27,8 +26,8 @@ public class TimeChartsExporter {
 		this.dataset = dataset;
 	}
 
-	void exportAsHorizontalCSV(File out/*, String meas*/, String separator, DateRange range) throws IOException {
-		Path outPath = IOFile.addExtension(out.toPath(), "csv");
+	void exportAsHorizontalCSV(Path out/*, String meas*/, String separator, DateRange range) throws IOException {
+		Path outPath = IOFile.addExtension(out, "csv");
 		try (BufferedWriter w = Files.newBufferedWriter(outPath)) {
 			@SuppressWarnings("unchecked")
 			List<TimeSeries> tsList = dataset.getSeries();
@@ -60,8 +59,8 @@ public class TimeChartsExporter {
 		}
 	}
 	
-	void exportAsVerticalCSV(File out, String meas, String separator, DateRange range) throws IOException {
-		Path outPath = IOFile.addExtension(out.toPath(), "csv");
+	void exportAsVerticalCSV(Path out, String meas, String separator, DateRange range) throws IOException {
+		Path outPath = IOFile.addExtension(out, "csv");
 		Stream.Builder<String> firstRowCollector = Stream.builder();
 		Stream.Builder<String> labelRowCollector = Stream.builder();
 		int seriesCount = dataset.getSeriesCount();

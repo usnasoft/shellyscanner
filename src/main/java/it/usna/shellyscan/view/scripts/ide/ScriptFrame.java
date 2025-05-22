@@ -11,20 +11,20 @@ import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.io.BufferedReader;
-import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.net.URI;
-import java.nio.charset.StandardCharsets;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
+import java.nio.file.ProviderNotFoundException;
 import java.time.Duration;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.stream.Collectors;
-import java.util.zip.ZipException;
-import java.util.zip.ZipFile;
+import java.util.stream.Stream;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -101,7 +101,7 @@ public class ScriptFrame extends JFrame {
 	private Action findAction;
 	private Action gotoAction;
 
-	private File path = null;
+	private Path path = null;
 	private boolean canOverwriteFile = false;
 	
 	private EditorPanel editor;
@@ -325,44 +325,44 @@ public class ScriptFrame extends JFrame {
 		});
 		
 		openAction = new UsnaAction(ScriptFrame.this, "dlgOpen", "/images/Open24.png", e -> {
-			final JFileChooser fc = (path == null) ? new JFileChooser() : new JFileChooser(path.getParentFile());
+			final JFileChooser fc = (path == null) ? new JFileChooser() : new JFileChooser(path.getParent().toFile());
 			fc.setFileFilter(new FileNameExtensionFilter(LABELS.getString("filetype_js_desc"), DialogDeviceScripts.FILE_EXTENSION));
 			fc.addChoosableFileFilter(new FileNameExtensionFilter(LABELS.getString("filetype_sbk_desc"), Main.BACKUP_FILE_EXT));
 			if(fc.showOpenDialog(ScriptFrame.this) == JFileChooser.APPROVE_OPTION) {
-				File thisFile = fc.getSelectedFile();
+				Path thisFile = fc.getSelectedFile().toPath();
 				String text = loadCodeFromFile(thisFile);
 				if(text != null) {
 					editor.setText(text);
 					editor.resetUndo();
 					editor.setCaretPosition(0);
 					editor.requestFocus();
-					setTitle(script.getName() + " - " + thisFile.getName());
+					setTitle(script.getName() + " - " + thisFile.getFileName());
 				}
 				path = thisFile;
 			}
 		});
 		
 		saveAsAction = new UsnaAction(ScriptFrame.this, "dlgSaveAs", "/images/SaveAs24.png", e -> {
-			final JFileChooser fc = (path == null) ? new JFileChooser() : new JFileChooser(path.getParentFile());
+			final JFileChooser fc = (path == null) ? new JFileChooser() : new JFileChooser(path.getParent().toFile());
 			fc.setFileFilter(new FileNameExtensionFilter(LABELS.getString("filetype_js_desc"), DialogDeviceScripts.FILE_EXTENSION));
 			if(fc.showSaveDialog(ScriptFrame.this) == JFileChooser.APPROVE_OPTION) {
 				try {
 					Path toSave = IOFile.addExtension(fc.getSelectedFile().toPath(), DialogDeviceScripts.FILE_EXTENSION);
-					IOFile.writeFile(toSave, editor.getText());
+					Files.writeString(toSave, editor.getText());
 					JOptionPane.showMessageDialog(ScriptFrame.this, LABELS.getString("msgFileSaved"), LABELS.getString("dlgScriptEditorTitle"), JOptionPane.INFORMATION_MESSAGE);
 					setTitle(script.getName() + " - " + toSave.getFileName());
 					canOverwriteFile = true;
 				} catch (IOException e1) {
 					Msg.errorMsg(e1);
 				}
-				path = fc.getSelectedFile();
+				path = fc.getSelectedFile().toPath();
 			}
 		});
 		
 		saveAction = new UsnaAction(ScriptFrame.this, "dlgSave", "/images/Save24.png", e -> {
 			if(canOverwriteFile) {
 				try {
-					IOFile.writeFile(path, editor.getText());
+					Files.writeString(path, editor.getText());
 					JOptionPane.showMessageDialog(ScriptFrame.this, LABELS.getString("msgFileSaved"), LABELS.getString("dlgScriptEditorTitle"), JOptionPane.INFORMATION_MESSAGE);
 				} catch (IOException e1) {
 					Msg.errorMsg(e1);
@@ -579,29 +579,29 @@ public class ScriptFrame extends JFrame {
 		}
 	}
 	
-	private String loadCodeFromFile(File in) {
+	private String loadCodeFromFile(Path in) {
 		try {
-			try (ZipFile inZip = new ZipFile(in, StandardCharsets.UTF_8)) { // backup
-				String[] scriptList = inZip.stream().filter(z -> z.getName().endsWith(".mjs")).map(z -> z.getName().substring(0, z.getName().length() - 4)).toArray(String[]::new);
+			try(FileSystem fs = FileSystems.newFileSystem(URI.create("jar:" + in.toUri()), Map.of()); Stream<Path> pathStream = Files.list(fs.getPath("/"))) {
+				String[] scriptList = pathStream.filter(p -> p.getFileName().toString().endsWith(".mjs")).map(p -> p.getFileName().toString().substring(0, p.getFileName().toString().length() - 4)).toArray(String[]::new);
 				if(scriptList.length > 0) {
 					Object sName = JOptionPane.showInputDialog(this, LABELS.getString("scrSelectionMsg"), LABELS.getString("scrSelectionTitle"), JOptionPane.PLAIN_MESSAGE, null, scriptList, null);
 					if(sName != null) {
 						canOverwriteFile = false;
-						try (InputStream is = inZip.getInputStream(inZip.getEntry(sName + ".mjs"))) {
-							return new BufferedReader(new InputStreamReader(is)).lines().collect(Collectors.joining("\n")).replaceAll("\\r+\\n", "\n");
-						}
+						return Files.readString(fs.getPath(sName + ".mjs")).replaceAll("\\r+\\n", "\n");
 					}
 				} else {
 					JOptionPane.showMessageDialog(this, LABELS.getString("scrNoneInZipFile"), LABELS.getString("btnUpload"), JOptionPane.INFORMATION_MESSAGE);
 				}
-				
-			} catch (ZipException e1) { // no zip (backup) -> text file
+			} catch (ProviderNotFoundException e) { // no zip (backup) -> text file
 				canOverwriteFile = true;
-				return IOFile.readFile(in).replaceAll("\\r+\\n", "\n");
+				return Files.readString(in).replaceAll("\\r+\\n", "\n");
 			}
-		} catch (/*IO*/Exception e1) {
+		} catch (FileNotFoundException | NoSuchFileException e) {
 			canOverwriteFile = false;
-			Msg.errorMsg(this, e1);
+			Msg.errorMsg(this, String.format(LABELS.getString("msgFileNotFound"), in.getFileName().toString()));
+		} catch (/*IO*/Exception e) {
+			canOverwriteFile = false;
+			Msg.errorMsg(this, e);
 		} finally {
 			setCursor(Cursor.getDefaultCursor());
 		}
@@ -609,7 +609,7 @@ public class ScriptFrame extends JFrame {
 	}
 	
 	public static void main(String ...strings) throws IOException {
-		ScannerProperties.init(System.getProperty("user.home") + File.separator + ".shellyScanner").load(true);
+		ScannerProperties.init(Path.of(System.getProperty("user.home"), ".shellyScanner")).load(true);
 		new ScriptFrame();
 	}
 }

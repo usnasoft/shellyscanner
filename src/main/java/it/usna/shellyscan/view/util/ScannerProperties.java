@@ -1,7 +1,7 @@
 package it.usna.shellyscan.view.util;
 
 import java.io.IOException;
-import java.nio.file.Paths;
+import java.nio.file.Path;
 import java.util.ArrayList;
 
 import it.usna.util.AppProperties;
@@ -51,7 +51,7 @@ public class ScannerProperties extends AppProperties { // cannot also extend Usn
 	
 	public final static String PROP_USE_ARCHIVE = "USE_ARCHIVE";
 	public final static String PROP_ARCHIVE_FILE = "USE_ARCHIVE_FILENAME";
-	public final static String PROP_ARCHIVE_FILE_DEFAULT = Paths.get(System.getProperty("user.home"), "ShellyStore.arc").toString();
+	public final static String PROP_ARCHIVE_FILE_DEFAULT = Path.of(System.getProperty("user.home"), "ShellyStore.arc").toString();
 	public final static String PROP_AUTORELOAD_ARCHIVE = "AUTORELOAD";
 	
 	public final static String BASE_SCAN_IP = "BASE_SCAN";
@@ -78,7 +78,7 @@ public class ScannerProperties extends AppProperties { // cannot also extend Usn
 	private static ArrayList<AppPropertyListener> listeners = new ArrayList<>();
 	private static ScannerProperties ap;
 	
-	private ScannerProperties(String file) {
+	private ScannerProperties(Path file) {
 		super(file);
 		try { // in case of error or no file (true) use default configuration
 			load(true);
@@ -99,7 +99,7 @@ public class ScannerProperties extends AppProperties { // cannot also extend Usn
 		defaultBoolProperty(PROP_AUTORELOAD_ARCHIVE, false);
 	}
 	
-	public static ScannerProperties init(String file) {
+	public static ScannerProperties init(Path file) {
 		ap = new ScannerProperties(file);
 		return ap;
 	}

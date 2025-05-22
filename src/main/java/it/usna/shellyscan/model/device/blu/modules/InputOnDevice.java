@@ -4,34 +4,28 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Map;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
 import it.usna.shellyscan.model.device.g2.modules.DynamicComponents;
 import it.usna.shellyscan.model.device.g2.modules.Input;
 import it.usna.shellyscan.model.device.g2.modules.InputActionInterface;
 import it.usna.shellyscan.model.device.g2.modules.Webhooks;
 import it.usna.shellyscan.model.device.g2.modules.Webhooks.Webhook;
 
-public class InputSensor extends Sensor implements InputActionInterface {
-	public final static int OBJ_ID = 0x3A; // dec. 58
+public class InputOnDevice implements InputActionInterface {
 	private final Input input;
+	private final int id;
+	private final String hookId;
+	private String name;
 
-	InputSensor(int id, JsonNode sensorConf) {
-		super(id, sensorConf);
+	public InputOnDevice(int id, String parentId) {
+		this.id = id;
+		this.hookId = DynamicComponents.BTHOME_DEVICE + parentId;
+		this.name = id + "";
 		this.input = new Input();
-		this.objID = OBJ_ID;
-		this.mType = null;
 	}
 	
 	@Override
-	public void fill(JsonNode comp) {
-		name = comp.path("config").path("name").asText("");
-//		value = comp.path("status").path("value")...Value();
-	}
-
-	@Override
 	public void associateWH(Webhooks webhooks) {
-		input.associateWH(webhooks.getHooks(DynamicComponents.BTHOME_SENSOR + this.id));
+		input.associateWH(webhooks.getHooks(hookId));
 	}
 
 	@Override
@@ -68,4 +62,28 @@ public class InputSensor extends Sensor implements InputActionInterface {
 	public void execute(String type) throws IOException {
 		input.execute(type);
 	}
+	
+	public int getId() {
+		return id;
+	}
+
+	@Override
+	public String getLabel() {
+		return name;
+	}
+	
+	@Override
+	public String toString() {
+		return name + " - " + id;
+	}
+	
+//	@Override
+//	public boolean equals(Object o) {
+//		return id == ((InputOnDevice)o).id;
+//	}
+//	
+//	@Override
+//	public int hashCode() {
+//		return id;
+//	}
 }

@@ -8,7 +8,7 @@ import it.usna.shellyscan.model.device.Meters;
  * Sensor factory / Generic BTHSensor / Measure BTHSensor
  */
 public class Sensor {
-	private final int id; // Id of the component instance
+	protected final int id; // Id of the component instance
 	private final int idx; // BTHome object index
 	protected int objID;
 	protected Meters.Type mType;

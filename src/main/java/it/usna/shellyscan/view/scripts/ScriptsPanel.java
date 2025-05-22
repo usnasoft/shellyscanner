@@ -9,17 +9,18 @@ import java.awt.Cursor;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.event.MouseEvent;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileWriter;
+import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
+import java.net.URI;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
+import java.nio.file.Path;
+import java.nio.file.ProviderNotFoundException;
 import java.util.ArrayList;
-import java.util.stream.Collectors;
-import java.util.zip.ZipException;
-import java.util.zip.ZipFile;
+import java.util.Map;
+import java.util.stream.Stream;
 
 import javax.swing.AbstractCellEditor;
 import javax.swing.BorderFactory;
@@ -53,7 +54,6 @@ import it.usna.shellyscan.view.util.Msg;
 import it.usna.swing.UsnaPopupMenu;
 import it.usna.swing.table.ExTooltipTable;
 import it.usna.swing.table.UsnaTableModel;
-import it.usna.util.IOFile;
 
 public class ScriptsPanel extends JPanel {
 	private static final long serialVersionUID = 1L;
@@ -167,10 +167,10 @@ public class ScriptsPanel extends JPanel {
 			final Script sc = scripts.get(mRow).script;
 			final JFileChooser fc = new JFileChooser();
 			fc.setFileFilter(new FileNameExtensionFilter(LABELS.getString("filetype_js_desc"), DialogDeviceScripts.FILE_EXTENSION));
-			fc.setSelectedFile(new File(sc.getName()));
+			fc.setSelectedFile(new java.io.File(sc.getName()));
 			if (fc.showSaveDialog(ScriptsPanel.this) == JFileChooser.APPROVE_OPTION) {
-				try (FileWriter w = new FileWriter(fc.getSelectedFile())) {
-					w.write(sc.getCode());
+				try {
+					Files.writeString(fc.getSelectedFile().toPath(), sc.getCode());
 					Msg.showMsg(ScriptsPanel.this, "btnDownloadSuccess", LABELS.getString("btnDownload"), JOptionPane.INFORMATION_MESSAGE);
 				} catch (IOException e1) {
 					Msg.errorMsg(ScriptsPanel.this, LABELS.getString("msgScrNoCode"));
@@ -185,9 +185,9 @@ public class ScriptsPanel extends JPanel {
 			final JFileChooser fc = new JFileChooser();
 			fc.setFileFilter(new FileNameExtensionFilter(LABELS.getString("filetype_js_desc"), DialogDeviceScripts.FILE_EXTENSION));
 			fc.addChoosableFileFilter(new FileNameExtensionFilter(LABELS.getString("filetype_sbk_desc"), Main.BACKUP_FILE_EXT));
-			fc.setSelectedFile(new File(sc.getName()));
+			fc.setSelectedFile(new java.io.File(sc.getName()));
 			if (fc.showOpenDialog(ScriptsPanel.this) == JFileChooser.APPROVE_OPTION) {
-				loadCodeFromFile(fc.getSelectedFile(), sc);
+				loadCodeFromFile(fc.getSelectedFile().toPath(), sc);
 			}
 		}));
 		operationsPanel.add(btnUpload);
@@ -245,25 +245,23 @@ public class ScriptsPanel extends JPanel {
 		table.getSelectionModel().addListSelectionListener(l);
 		l.valueChanged(null);
 	}
-
-	private void loadCodeFromFile(File in, Script sc) {
+	
+	private void loadCodeFromFile(Path in, Script sc) {
 		try {
 			String res = null;
-			try (ZipFile inZip = new ZipFile(in, StandardCharsets.UTF_8)) { // backup
-				String[] scriptList = inZip.stream().filter(z -> z.getName().endsWith(".mjs")).map(z -> z.getName().substring(0, z.getName().length() - 4)).toArray(String[]::new);
-				if (scriptList.length > 0) {
+			try(FileSystem fs = FileSystems.newFileSystem(URI.create("jar:" + in.toUri()), Map.of()); Stream<Path> pathStream = Files.list(fs.getPath("/"))) {
+				String[] scriptList = pathStream.filter(p -> p.getFileName().toString().endsWith(".mjs")).map(p -> p.getFileName().toString().substring(0, p.getFileName().toString().length() - 4)).toArray(String[]::new);
+				if(scriptList.length > 0) {
 					Object sName = JOptionPane.showInputDialog(this, LABELS.getString("scrSelectionMsg"), LABELS.getString("scrSelectionTitle"), JOptionPane.PLAIN_MESSAGE, null, scriptList, null);
-					if (sName != null) {
-						try (InputStream is = inZip.getInputStream(inZip.getEntry(sName + ".mjs"))) {
-							String code = new BufferedReader(new InputStreamReader(is)).lines().collect(Collectors.joining("\n"));
-							res = sc.putCode(code);
-						}
+					if(sName != null) {
+						String code = Files.readString(fs.getPath(sName + ".mjs")).replaceAll("\\r+\\n", "\n");
+						res = sc.putCode(code);
 					}
 				} else {
 					JOptionPane.showMessageDialog(this, LABELS.getString("scrNoneInZipFile"), LABELS.getString("btnUpload"), JOptionPane.INFORMATION_MESSAGE);
 				}
-			} catch (ZipException e1) { // no zip (backup) -> text file
-				String code = IOFile.readFile(in.toPath());
+			} catch (ProviderNotFoundException e) { // no zip (backup) -> text file
+				String code = Files.readString(in).replaceAll("\\r+\\n", "\n");
 				res = sc.putCode(code);
 			}
 			if (res == null) {
@@ -271,8 +269,10 @@ public class ScriptsPanel extends JPanel {
 			} else {
 				Msg.errorMsg(this, res);
 			}
-		} catch (/* IO */Exception e1) {
-			Msg.errorMsg(e1);
+		} catch (FileNotFoundException | NoSuchFileException e) {
+			Msg.errorMsg(this, String.format(LABELS.getString("msgFileNotFound"), in.getFileName().toString()));
+		} catch (/*IO*/Exception e) {
+			Msg.errorMsg(this, e);
 		}
 	}
 

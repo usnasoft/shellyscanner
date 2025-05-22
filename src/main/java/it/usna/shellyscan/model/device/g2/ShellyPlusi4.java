@@ -80,11 +80,11 @@ public class ShellyPlusi4 extends AbstractG2Device implements ModulesHolder {
 		inputs[2].fillSettings(configuration.get("input:2"));
 		inputs[3].fillSettings(configuration.get("input:3"));
 		try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e) {}
-		webhooks.fillSettings();
-		inputs[0].associateWH(webhooks.getHooks(0));
-		inputs[1].associateWH(webhooks.getHooks(1));
-		inputs[2].associateWH(webhooks.getHooks(2));
-		inputs[3].associateWH(webhooks.getHooks(3));
+		webhooks.fillSettings(/*"input"*/);
+		inputs[0].associateWH(webhooks.getHooks("input0"));
+		inputs[1].associateWH(webhooks.getHooks("input1"));
+		inputs[2].associateWH(webhooks.getHooks("input2"));
+		inputs[3].associateWH(webhooks.getHooks("input3"));
 		if(addOn != null) {
 			addOn.fillSettings(configuration);
 		}

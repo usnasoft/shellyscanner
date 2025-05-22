@@ -566,7 +566,9 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 				if(module instanceof RelayInterface rel) {
 					stackedPanel.add(getRelayPanel(rel));
 				} else if(module instanceof InputInterface input) {
-					stackedPanel.add(getInputPanel(input, table));
+					if(input.enabled()) {
+						stackedPanel.add(getInputPanel(input, table));
+					}
 				} else if(module instanceof WhiteInterface white) {
 					stackedPanel.add(getWhiteSyntheticPanel(white, i == modArray.length - 1));
 				} else if(module instanceof RGBInterface rgb) {
@@ -914,17 +916,17 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 		return thermPanel;
 	}
 	
-	private Component getInputPanel(final InputInterface act, JTable table) {
+	private Component getInputPanel(final InputInterface inp, JTable table) {
 		JPanel actionsPanel = new JPanel(new BorderLayout());
-		String label = act.getLabel();
+		String label = inp.getLabel();
 		JLabel actionsLabel = new JLabel(label == null || label.isEmpty() ? "\u25CB" : label);
 		actionsPanel.setBackground(selBackground);
 		actionsLabel.setForeground(selForeground);
 		JPanel actionsButtonsPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
-		int numEvents = act.getRegisteredEventsCount();
+		int numEvents = inp.getRegisteredEventsCount();
 		if(numEvents > 0) {
-			for(String type: act.getRegisteredEvents()) {
-				boolean enabled = act.enabled(type);
+			for(String type: inp.getRegisteredEvents()) {
+				boolean enabled = inp.enabled(type);
 				if(enabled || numEvents <= DevicesCommandCellRenderer.MAX_ACTIONS_SHOWN) {
 					String bLabel;
 					try {
@@ -940,7 +942,7 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 								try {
 									new Thread(() -> {
 										try {
-											act.execute(type);
+											inp.execute(type);
 										} catch (IOException ex) {
 											Msg.errorMsg(ex);
 										}
@@ -957,13 +959,13 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 					b.setBorder(/*bLabel.length() > 1 ?*/ DevicesCommandCellRenderer.BUTTON_BORDERS_SMALLER /*: DevicesCommandCellRenderer.BUTTON_BORDERS_SMALL*/);
 					b.setBackground(DevicesCommandCellRenderer.BUTTON_OFF_BG_COLOR);
 					actionsButtonsPanel.add(b);
-					if(act.isInputOn()) {
+					if(inp.isInputOn()) {
 						b.setForeground(DevicesCommandCellRenderer.BUTTON_ON_FG_COLOR);
 					}
 				}
 			}
 		} else {
-			if(act.isInputOn()) {
+			if(inp.isInputOn()) {
 				actionsLabel.setForeground(DevicesCommandCellRenderer.BUTTON_ON_FG_COLOR);
 			}
 		}

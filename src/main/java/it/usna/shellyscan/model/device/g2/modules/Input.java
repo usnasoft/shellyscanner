@@ -9,9 +9,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.g2.modules.Webhooks.Webhook;
-import it.usna.shellyscan.model.device.modules.InputInterface;
 
-public class Input implements InputInterface {
+public class Input implements InputActionInterface {
 	private AbstractG2Device parent;
 	private int id;
 	private String name;
@@ -86,6 +85,12 @@ public class Input implements InputInterface {
 		parent.getJSON("/rpc/Input.Trigger?id=" + id + "&event_type=" + command);
 	}
 	
+	@Override
+	public void associateWH(Webhooks webhooks) {
+		associateWH(webhooks.getHooks("input" + id));
+	}
+	
+	@Override
 	public void associateWH(Map<String, Webhook> wh) {
 		this.webHooks = (wh == null) ? Collections.<String, Webhook>emptyMap() : wh;
 	}

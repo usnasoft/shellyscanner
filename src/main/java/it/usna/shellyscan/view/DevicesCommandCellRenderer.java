@@ -485,7 +485,7 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 				if(enabled || numEvents <= MAX_ACTIONS_SHOWN) {
 					String bLabel;
 					try {
-						bLabel = Main.LABELS.getString(type);
+						bLabel = LABELS.getString(type);
 					} catch( MissingResourceException e) {
 						bLabel = "x";
 					}

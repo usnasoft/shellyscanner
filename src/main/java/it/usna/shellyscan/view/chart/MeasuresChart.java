@@ -8,9 +8,9 @@ import java.awt.Desktop;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.event.KeyEvent;
-import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.nio.file.Path;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -206,7 +206,7 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 				fc.setFileFilter(new FileNameExtensionFilter(LABELS.getString("filetype_csv_desc"), "csv"));
 				if(fc.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
 					TimeChartsExporter exp = new TimeChartsExporter(dataset);
-					File out = fc.getSelectedFile();
+					Path out = fc.getSelectedFile().toPath();
 					DateRange range = btnPause.isSelected() ? (DateRange)xAxis.getRange() : null;
 					if("V".equals(appProp.getProperty(ScannerProperties.PROP_CHARTS_EXPORT))) {
 						exp.exportAsVerticalCSV(out, yAxis.getLabel(), appProp.getProperty(ScannerProperties.PROP_CSV_SEPARATOR/*, ScannerProperties.PROP_CSV_SEPARATOR_DEFAULT*/), range);

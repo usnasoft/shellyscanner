@@ -11,10 +11,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Stream;
+import java.util.stream.Collectors;
 
 import org.eclipse.jetty.client.HttpClient;
 import org.slf4j.Logger;
@@ -29,11 +30,14 @@ import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.ModulesHolder;
 import it.usna.shellyscan.model.device.RestoreMsg;
-import it.usna.shellyscan.model.device.blu.modules.InputSensor;
+import it.usna.shellyscan.model.device.blu.modules.InputOnDevice;
 import it.usna.shellyscan.model.device.blu.modules.Sensor;
 import it.usna.shellyscan.model.device.blu.modules.SensorsCollection;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
+import it.usna.shellyscan.model.device.g2.modules.DynamicComponents;
+import it.usna.shellyscan.model.device.g2.modules.InputActionInterface;
 import it.usna.shellyscan.model.device.g2.modules.Webhooks;
+import it.usna.shellyscan.model.device.g2.modules.Webhooks.Webhook;
 import it.usna.shellyscan.model.device.modules.DeviceModule;
 import it.usna.shellyscan.model.device.modules.FirmwareManager;
 
@@ -59,17 +63,17 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 			5, "Blu Motion",
 			6, "Blu Wall Switch 4", // Square
 			7, "Blu RC Button 4", // line
-			8, "Blu TRV"
+			8, "Blu TRV",
 //			9. "??",
-//			10, "Blu Distance"
+			10, "Blu Distance"
 			);
 	private String typeName;
 	private String typeID;
 	private SensorsCollection sensors;
 	private Meters[] meters;
 	private Webhooks webhooks;
-	private InputSensor[] inputs;
-	private DeviceModule[] moduleSensors;
+	private InputActionInterface[] inputs;
+	private DeviceModule[] modules;
 
 	public BTHomeDevice(AbstractG2Device parent, JsonNode compInfo, int modelId, String index) {
 		super(parent, compInfo, index);
@@ -96,14 +100,51 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 		hostname = "B" + sensors.toString() + "-" + mac;
 		try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e) {}
 		refreshStatus();
+		try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e) {}
 		refreshSettings();
 	}
 	
 	private void initSensors() throws IOException {
 		this.sensors = new SensorsCollection(this);
+		
 		this.meters = sensors.getTypes().length > 0 ? new Meters[] {sensors} : null;
-		this.moduleSensors = sensors.getModuleSensors();
-		this.inputs = Stream.of(moduleSensors).filter(s -> s instanceof InputSensor).toArray(InputSensor[]::new);
+		
+		ArrayList<DeviceModule> tmpModules = sensors.getModuleSensors();
+//		this.modules = sensors.getModuleSensors();
+//		this.inputs = tmpModules.stream().filter(s -> s instanceof InputSensor).toArray(InputSensor[]::new);
+		// todo add input from actions
+		List<InputActionInterface> tmpInputs = tmpModules.stream().filter(InputActionInterface.class::isInstance).map(InputActionInterface.class::cast).collect(Collectors.toList());
+		
+		try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e) {}
+		webhooks.fillBTHomesensorSettings();
+		// device inputs
+		Map<String, Webhook> devActions = webhooks.getHooks(DynamicComponents.BTHOME_DEVICE + componentIndex);
+		if(devActions != null) {
+			List<InputOnDevice> devIn = deviceInputs(devActions);
+			tmpInputs.addAll(devIn);
+			tmpModules.addAll(devIn);
+		}
+		this.inputs = tmpInputs.toArray(InputActionInterface[]::new);
+		this.modules = tmpModules.toArray(DeviceModule[]::new);
+		
+	}
+	
+	private List<InputOnDevice> deviceInputs(Map<String, Webhook> devActions) {
+//		HashSet<InputOnDevice> set = new HashSet<>();
+		HashSet<Integer> set = new HashSet<>();
+		for(Webhook hook: devActions.values()) {
+			String condition = hook.getCondition();
+			if(condition == null || condition.isEmpty()) {
+//				set.add(-1);
+			} else if(condition.startsWith("ev.idx == ")) { //  "condition" : "ev.idx == 0",
+				try {
+					set.add(Integer.parseInt(condition.substring(10)));
+				} catch(RuntimeException e) {
+					LOG.error("Unexpected contition {}", condition);
+				}
+			}
+		}
+		return set.stream().map(i -> new InputOnDevice(i, componentIndex)).toList();
 	}
 	
 	public void setTypeName(String name) {
@@ -122,12 +163,12 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 	
 	@Override
 	public int getModulesCount() {
-		return moduleSensors.length;
+		return modules.length;
 	}
 
 	@Override
 	public DeviceModule[] getModules() {
-		return /*inputs*/moduleSensors;
+		return /*inputs*/modules;
 	}
 	
 	@Override
@@ -158,7 +199,7 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 		if(inputs.length > 0) {
 			webhooks.fillBTHomesensorSettings();
 			for(int i = 0; i < inputs.length; i++) {
-				inputs[i].associateWH(webhooks.getHooks(inputs[i].getId()));
+				inputs[i].associateWH(webhooks);
 			}
 		}
 	}

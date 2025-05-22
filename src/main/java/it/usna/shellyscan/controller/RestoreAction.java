@@ -3,11 +3,9 @@ package it.usna.shellyscan.controller;
 import static it.usna.shellyscan.Main.LABELS;
 
 import java.awt.Cursor;
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URI;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
@@ -67,7 +65,7 @@ public class RestoreAction extends UsnaAction {
 				fc.setFileFilter(new FileNameExtensionFilter(LABELS.getString("filetype_sbk_desc"), Main.BACKUP_FILE_EXT));
 				ShellyAbstractDevice device = model.get(sel[0]);
 
-				fc.setSelectedFile(new File(BackupAction.defFileName(device)));
+				fc.setSelectedFile(new java.io.File(BackupAction.defFileName(device)));
 			} else { // multiple restore
 				fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 			}
@@ -102,7 +100,7 @@ public class RestoreAction extends UsnaAction {
 									Msg.showMsg(mainView, restoreRet, LABELS.getString("msgRestoreTitle") + " - " + device.getHostname(), JOptionPane.ERROR_MESSAGE);
 								}
 							} catch (FileNotFoundException | NoSuchFileException e1) {
-								Msg.errorMsg(mainView, String.format(LABELS.getString("action_restore_error_file"), fc.getSelectedFile().getName()));
+								Msg.errorMsg(mainView, String.format(LABELS.getString("msgFileNotFound"), fc.getSelectedFile().getName()));
 							} catch (IOException e1) {
 								if(Msg.errorStatusMsg(mainView, device, e1) == false) {
 									LOG.error("Restore error", e1);
@@ -116,9 +114,10 @@ public class RestoreAction extends UsnaAction {
 							for(int i = 0; i < sel.length; i++) {
 								ShellyAbstractDevice device = model.get(sel[i]);
 								mainView.setStatus(String.format(LABELS.getString("statusRestore"), i + 1, sel.length, device.getHostname()));
-								final File inFile = new File(fc.getSelectedFile(), BackupAction.defFileName(device));
+//								final File inFile = new File(fc.getSelectedFile(), BackupAction.defFileName(device));
+								final Path inFile = fc.getSelectedFile().toPath().resolve(BackupAction.defFileName(device));
 								try {
-									String restoreRet = restoreDevice(mainView, device, model, sel[i], inFile.toPath(), true);
+									String restoreRet = restoreDevice(mainView, device, model, sel[i], inFile, true);
 									if(restoreRet == null) {
 										res += String.format(LABELS.getString("dlgSetMultiMsgOk"), device.getHostname(), restoreRet) + "<br>";
 									} else if(QUEUE_RET.equals(restoreRet)) {
@@ -131,7 +130,7 @@ public class RestoreAction extends UsnaAction {
 										res += String.format(LABELS.getString("dlgSetMultiMsgFail"), device.getHostname()) + "<br>";
 									}
 								} catch (FileNotFoundException | NoSuchFileException e1) {
-									res += String.format(LABELS.getString("dlgSetMultiMsgFailReason"), device.getHostname(), String.format(LABELS.getString("action_restore_error_file"), inFile.getName())) + "<br>";
+									res += String.format(LABELS.getString("dlgSetMultiMsgFailReason"), device.getHostname(), String.format(LABELS.getString("msgFileNotFound"), inFile.getFileName().toString())) + "<br>";
 								} catch (IOException | InterruptedException | RuntimeException e1) {
 									res += String.format(LABELS.getString("dlgSetMultiMsgFail"), device.getHostname()) + "<br>";
 									LOG.error("restore", e1);
@@ -332,7 +331,7 @@ public class RestoreAction extends UsnaAction {
 					if(p.toString().endsWith(".json")) {
 						backupJsons.put(p.getFileName().toString(), jsonMapper.readTree(Files.readString(p)));
 					} else {
-						backupJsons.put(p.getFileName().toString() + ".json", jsonMapper.createObjectNode().put("code", Files.readString(p, StandardCharsets.UTF_8)));
+						backupJsons.put(p.getFileName().toString() + ".json", jsonMapper.createObjectNode().put("code", Files.readString(p/*, StandardCharsets.UTF_8*/)));
 					}
 				} catch(IOException e) {
 					throw new RuntimeException(e);

@@ -20,7 +20,8 @@ import it.usna.shellyscan.model.device.modules.DeviceModule;
 public class SensorsCollection extends Meters {
 	private final AbstractBluDevice blu;
 	private Sensor[] sensorsArray;
-	private DeviceModule[] moduleSensors;
+//	private DeviceModule[] moduleSensors;
+	private ArrayList<DeviceModule> modules;
 	private Type[] mTypes;
 	private EnumMap<Type, Sensor> measuresMap = new EnumMap<>(Type.class);
 	
@@ -33,15 +34,15 @@ public class SensorsCollection extends Meters {
 		JsonNode objects = blu.getJSON("/rpc/BTHomeDevice.GetKnownObjects?id=" + blu.getIndex()).path("objects");
 
 		ArrayList<Sensor> sensors = new ArrayList<>();
-		ArrayList<Sensor> modules = new ArrayList<>();
+		/*ArrayList<Sensor>*/ modules = new ArrayList<>();
 		Meters.Type lastT = null;
 		for(JsonNode sensorConf: objects) {
 			String comp = sensorConf.path("component").asText();
 			if(comp != null && comp.startsWith(AbstractBluDevice.SENSOR_KEY_PREFIX)) {
 				final int id = Integer.parseInt(comp.substring(13));
 				final Sensor sensor = Sensor.create(id, sensorConf); // create
-				if(sensor instanceof DeviceModule) {
-					modules.add(sensor);
+				if(sensor instanceof DeviceModule dm) {
+					modules.add(dm);
 				} else {
 					Type t = sensor.getMeterType();
 					if(t != null) {
@@ -64,9 +65,9 @@ public class SensorsCollection extends Meters {
 				sensors.add(sensor);
 			}
 		}
-		modules.sort((s1, s2) -> s1.getIdx() - s2.getIdx()); // order by idx
+		modules.sort((s1, s2) -> ((Sensor)s1).getIdx() - ((Sensor)s2).getIdx()); // order by idx
 		sensorsArray = sensors.toArray(Sensor[]::new);
-		moduleSensors = modules.toArray(DeviceModule[]::new);
+//		moduleSensors = modules.toArray(DeviceModule[]::new);
 		mTypes = measuresMap.keySet().toArray(Type[]::new);
 	}
 	
@@ -74,8 +75,8 @@ public class SensorsCollection extends Meters {
 		return sensorsArray;
 	}
 	
-	public DeviceModule[] getModuleSensors() {
-		return moduleSensors;
+	public ArrayList<DeviceModule> getModuleSensors() {
+		return modules;
 	}
 	
 	public Sensor getSensor(int id) { // HashMap<Integer, Sensor> ?

@@ -3,8 +3,8 @@ package it.usna.shellyscan.controller;
 import static it.usna.shellyscan.Main.LABELS;
 
 import java.awt.Cursor;
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
@@ -51,18 +51,18 @@ public class BackupAction extends UsnaAction {
 						final ShellyAbstractDevice d = model.get(modelRow);
 						final String hostName = d.getHostname();
 						mainView.setStatus(String.format(LABELS.getString("statusBackup"), j + 1, ind.length, hostName));
-						final File outFile = (ind.length > 1) ?
-								new File(fc.getSelectedFile(), defFileName(d)) : fc.getSelectedFile();
+						final Path outFile = (ind.length > 1) ?
+								fc.getSelectedFile().toPath().resolve(defFileName(d)) : fc.getSelectedFile().toPath();
 						try {
 							model.pauseRefresh(modelRow);
-							final boolean connected = d.backup(outFile.toPath());
+							final boolean connected = d.backup(outFile);
 							res += String.format(LABELS.getString(connected ? "dlgSetMultiMsgOk" : "dlgSetMultiMsgStored"), hostName) + "<br>";
 						} catch (IOException | RuntimeException e1) {
 							if(d.getStatus() == Status.OFF_LINE || d.getStatus() == Status.NOT_LOOGGED || d instanceof GhostDevice) { // if error happened because the device is off-line -> try to queue action in DeferrablesContainer
 								LOG.debug("Interactive Backup error {}", d, e1);
 								DeferrablesContainer dc = DeferrablesContainer.getInstance();
 								dc.addOrUpdate(modelRow, DeferrableTask.Type.BACKUP, LABELS.getString("action_back_tooltip"), (def, dev) -> {
-									dev.backup(outFile.toPath());
+									dev.backup(outFile);
 									return null;
 								});
 								res += String.format(LABELS.getString("dlgSetMultiMsgQueue"), hostName) + "<br>";
@@ -83,7 +83,7 @@ public class BackupAction extends UsnaAction {
 						mainView.reserveStatusLine(false);
 						Msg.showHtmlMessageDialog(mainView, get(), LABELS.getString("titleBackupDone"), JOptionPane.PLAIN_MESSAGE);
 					} catch (Exception e) {
-						Msg.errorMsg(e);
+						Msg.errorMsg(mainView, e);
 					} finally {
 						mainView.getRootPane().setCursor(Cursor.getDefaultCursor());
 						worker = null;
@@ -101,7 +101,7 @@ public class BackupAction extends UsnaAction {
 				fc.setAcceptAllFileFilterUsed(false);
 				fc.setFileFilter(new FileNameExtensionFilter(LABELS.getString("filetype_sbk_desc"), Main.BACKUP_FILE_EXT));
 				ShellyAbstractDevice device = model.get(devicesTable.convertRowIndexToModel(ind[0]));
-				fc.setSelectedFile(new File(defFileName(device)));
+				fc.setSelectedFile(new java.io.File(defFileName(device)));
 				if(fc.showSaveDialog(mainView) == JFileChooser.APPROVE_OPTION) {
 					new BackWorker().execute();
 					try {

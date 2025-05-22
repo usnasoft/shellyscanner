@@ -93,8 +93,7 @@ public class DevicesStore {
 		root.set("dev", toBeStored);
 
 		try (Writer w = Files.newBufferedWriter(storeFile, StandardCharsets.UTF_8)) {
-			w.write(root.toString());
-//			System.out.println(JSON_MAPPER.writerWithDefaultPrettyPrinter().writeValueAsString(root));
+			JSON_MAPPER.writer().writeValue(w, root);
 		}
 	}
 	

@@ -4,7 +4,6 @@ import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Image;
 import java.awt.Toolkit;
-import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Base64;
@@ -55,7 +54,7 @@ public class Main {
 	private final static String IP_SCAN_PAR_FORMAT = "^((?:(?:0|1\\d?\\d?|2[0-4]?\\d?|25[0-5]?|[3-9]\\d?)\\.){2}(?:0|1\\d?\\d?|2[0-4]?\\d?|25[0-5]?|[3-9]\\d?))\\.(0|1\\d?\\d?|2[0-4]?\\d?|25[0-5]?|[3-9]\\d?)-(0|1\\d?\\d?|2[0-4]?\\d?|25[0-5]?|[3-9]\\d?)$";
 
 	public static void main(final String ... args) {
-		final ScannerProperties appProp = ScannerProperties.init(System.getProperty("user.home") + File.separator + ".shellyScanner");
+		final ScannerProperties appProp = ScannerProperties.init(Path.of(System.getProperty("user.home"), ".shellyScanner"));
 		// System.setProperty(SimpleLogger.DEFAULT_LOG_LEVEL_KEY, "error");
 		System.setProperty(SimpleLogger.LOG_KEY_PREFIX + "javax.jmdns", "warn");
 		System.setProperty(SimpleLogger.LOG_KEY_PREFIX + "org.eclipse.jetty", "warn");
