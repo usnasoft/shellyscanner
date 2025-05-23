@@ -16,8 +16,10 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Locale;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import javax.swing.BorderFactory;
 import javax.swing.GrayFilter;
@@ -166,10 +168,7 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 		westCommandPanel.add(rangeCombo);
 		westCommandPanel.add(new JLabel(LABELS.getString("dlgChartsTypeComboLabel")));
 
-		JComboBox<ChartType> typeCombo = new JComboBox<>();
-		for(ChartType t: ChartType.values()) {
-			typeCombo.addItem(t);
-		}
+		JComboBox<ChartType> typeCombo = new JComboBox<>(typeComboContent(ind));
 		westCommandPanel.add(typeCombo);
 
 		JToggleButton btnPause = new JToggleButton(new ImageIcon(MeasuresChart.class.getResource("/images/Pause16.png")));
@@ -351,6 +350,28 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 			int ext = (int)xAxis.getRange().getLength();
 			scrollBar.setValues((int)(xAxis.getLowerBound() - xRange.getLowerBound()), ext, 0, max);
 		}
+	}
+	
+	private ChartType[] typeComboContent(int[] modelIndexes) {
+		HashSet<ChartType> available = new HashSet<>();
+		for(int ind: modelIndexes) {
+			final ShellyAbstractDevice d = model.get(ind);
+			for(Meters ms: d.getMeters()) {
+				for(Meters.Type m: ms.getTypes()) {
+					if(m == Meters.Type.W) {
+						available.add(ChartType.P);
+						available.add(ChartType.P_SUM);
+					} else if(m != null) {
+						Stream.of(ChartType.values()).filter(t -> m == t.mType).findAny().ifPresent(ct -> available.add(ct));
+					}
+				}
+			}
+			if(d instanceof InternalTmpHolder) {
+				available.add(ChartType.INT_TEMP);
+			}
+		}
+		available.add(ChartType.RSSI);
+		return available.stream().sorted().toArray(ChartType[]::new);
 	}
 
 	private void initDataSet(ValueAxis yAxis, TimeSeriesCollection dataset, final Devices model, int[] modelIndexes) {

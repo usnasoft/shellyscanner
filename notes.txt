@@ -345,11 +345,12 @@ gen2+ restore "debug"
 Shelly.GetComponents pagination
 BLE.CloudRelay.ListInfos pagination
 KVS.GetMany pagination
+Graphs: types combo only have pertinent values (vetificare T_ALL, DMM. D_SUM)
+
 todo: reload blu after restore (?), rivedere con fw 1.6.0
 todo: blu button, rivedere restore con fw 1.6.0
 
-todo: it.usna.shellyscan.model.device.ShellyAbstractDevice.sectionToStream(String, String, ZipOutputStream) con offset
-      lettura dati per array (itarator) su restore e su GET
+todo: lettura dati per array (itarator) su restore e su GET (offset)
 
 1.6.0 ->
 https://shelly-api-docs.shelly.cloud/gen2/DynamicComponents/BTHome/
