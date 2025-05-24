@@ -1,8 +1,6 @@
 package it.usna.shellyscan.model.device.blu.modules;
 
 import java.io.IOException;
-import java.util.Collection;
-import java.util.Map;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -10,7 +8,6 @@ import it.usna.shellyscan.model.device.g2.modules.DynamicComponents;
 import it.usna.shellyscan.model.device.g2.modules.Input;
 import it.usna.shellyscan.model.device.g2.modules.InputActionInterface;
 import it.usna.shellyscan.model.device.g2.modules.Webhooks;
-import it.usna.shellyscan.model.device.g2.modules.Webhooks.Webhook;
 
 public class InputSensor extends Sensor implements InputActionInterface {
 	public final static int OBJ_ID = 0x3A; // dec. 58
@@ -28,15 +25,10 @@ public class InputSensor extends Sensor implements InputActionInterface {
 		name = comp.path("config").path("name").asText("");
 //		value = comp.path("status").path("value")...Value();
 	}
-
+	
 	@Override
 	public void associateWH(Webhooks webhooks) {
-		input.associateWH(webhooks.getHooks(DynamicComponents.BTHOME_SENSOR + this.id));
-	}
-
-	@Override
-	public void associateWH(Map<String, Webhook> wh) {
-		input.associateWH(wh);
+		input.associateWH(webhooks.getHooksList(DynamicComponents.BTHOME_SENSOR + this.id));
 	}
 
 	@Override
@@ -48,10 +40,10 @@ public class InputSensor extends Sensor implements InputActionInterface {
 	public int getRegisteredEventsCount() {
 		return input.getRegisteredEventsCount();
 	}
-
+	
 	@Override
-	public Collection<String> getRegisteredEvents() {
-		return input.getRegisteredEvents();
+	public String getEvent(int i) {
+		return input.getEvent(i);
 	}
 
 	@Override
@@ -60,12 +52,12 @@ public class InputSensor extends Sensor implements InputActionInterface {
 	}
 
 	@Override
-	public boolean enabled(String type) { // action type
-		return input.enabled(type);
+	public boolean enabled(int i) { // action type
+		return input.enabled(i);
 	}
-
+	
 	@Override
-	public void execute(String type) throws IOException {
-		input.execute(type);
+	public void execute(int i) throws IOException {
+		input.execute(i);
 	}
 }

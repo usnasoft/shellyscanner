@@ -83,15 +83,8 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 		this.typeName = (modelDesc == null) ? "Generic BTHome" : modelDesc;
 
 		this.webhooks = new Webhooks(parent);
-//		inputs(compInfo.get("config").get("objects"));
 		this.uptime = -1;
 	}
-	
-//	private void inputs(JsonNode objects) {
-//		if(objects != null && objects instanceof ArrayNode an) {
-//			an.get(0);
-//		}
-//	}
 
 	@Override
 	public void init(HttpClient httpClient) throws IOException {
@@ -106,19 +99,16 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 	
 	private void initSensors() throws IOException {
 		this.sensors = new SensorsCollection(this);
-		
 		this.meters = sensors.getTypes().length > 0 ? new Meters[] {sensors} : null;
 		
 		ArrayList<DeviceModule> tmpModules = sensors.getModuleSensors();
-//		this.modules = sensors.getModuleSensors();
-//		this.inputs = tmpModules.stream().filter(s -> s instanceof InputSensor).toArray(InputSensor[]::new);
-		// todo add input from actions
-		List<InputActionInterface> tmpInputs = tmpModules.stream().filter(InputActionInterface.class::isInstance).map(InputActionInterface.class::cast).collect(Collectors.toList());
+		List<InputActionInterface> tmpInputs = tmpModules.stream().filter(m -> m instanceof InputActionInterface).map(InputActionInterface.class::cast).collect(Collectors.toList());
 		
 		try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e) {}
-		webhooks.fillBTHomesensorSettings();
+		
 		// device inputs
-		Map<String, Webhook> devActions = webhooks.getHooks(DynamicComponents.BTHOME_DEVICE + componentIndex);
+		webhooks.fillBTHomesensorSettings();
+		List<Webhook> devActions = webhooks.getHooksList(DynamicComponents.BTHOME_DEVICE + componentIndex);
 		if(devActions != null) {
 			List<InputOnDevice> devIn = deviceInputs(devActions);
 			tmpInputs.addAll(devIn);
@@ -126,25 +116,23 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 		}
 		this.inputs = tmpInputs.toArray(InputActionInterface[]::new);
 		this.modules = tmpModules.toArray(DeviceModule[]::new);
-		
 	}
 	
-	private List<InputOnDevice> deviceInputs(Map<String, Webhook> devActions) {
-//		HashSet<InputOnDevice> set = new HashSet<>();
-		HashSet<Integer> set = new HashSet<>();
-		for(Webhook hook: devActions.values()) {
+	private List<InputOnDevice> deviceInputs(List<Webhook> devActions) {
+		HashSet<String> set = new HashSet<>();
+		for(Webhook hook: devActions) {
 			String condition = hook.getCondition();
 			if(condition == null || condition.isEmpty()) {
-//				set.add(-1);
+				set.add(""); // need a string to sort 
 			} else if(condition.startsWith("ev.idx == ")) { //  "condition" : "ev.idx == 0",
 				try {
-					set.add(Integer.parseInt(condition.substring(10)));
+					set.add(condition);
 				} catch(RuntimeException e) {
 					LOG.error("Unexpected contition {}", condition);
 				}
 			}
 		}
-		return set.stream().map(i -> new InputOnDevice(i, componentIndex)).toList();
+		return set.stream().sorted().map(cond -> new InputOnDevice(cond, componentIndex)).toList();
 	}
 	
 	public void setTypeName(String name) {

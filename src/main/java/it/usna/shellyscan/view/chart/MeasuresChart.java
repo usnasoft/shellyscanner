@@ -263,8 +263,8 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 			}
 		});
 
-		this.currentType = ChartType.valueOf(appProp.getProperty(ScannerProperties.PROP_CHARTS_START, ChartType.INT_TEMP.name()));
-		typeCombo.setSelectedItem(currentType);
+		typeCombo.setSelectedItem(ChartType.valueOf(appProp.getProperty(ScannerProperties.PROP_CHARTS_START, ChartType.INT_TEMP.name())));
+		this.currentType = (ChartType)typeCombo.getSelectedItem(); // could be not the one on properties if it do not applies to the devices set
 
 		initDataSet(plot.getRangeAxis(), dataset, model, ind);
 		
@@ -356,11 +356,15 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 		HashSet<ChartType> available = new HashSet<>();
 		for(int ind: modelIndexes) {
 			final ShellyAbstractDevice d = model.get(ind);
+			boolean powerFound = false;
 			for(Meters ms: d.getMeters()) {
 				for(Meters.Type m: ms.getTypes()) {
 					if(m == Meters.Type.W) {
 						available.add(ChartType.P);
-						available.add(ChartType.P_SUM);
+						if(powerFound) {
+							available.add(ChartType.P_SUM);
+						}
+						powerFound = true;
 					} else if(m != null) {
 						Stream.of(ChartType.values()).filter(t -> m == t.mType).findAny().ifPresent(ct -> available.add(ct));
 					}

@@ -8,11 +8,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -21,19 +19,19 @@ import it.usna.shellyscan.model.device.g1.AbstractG1Device;
 import it.usna.shellyscan.model.device.modules.InputInterface;
 
 public class Actions {
-	public final static String PUSH = "shortpush_url";
-	public final static String DOUBLE_PUSH = "double_shortpush_url";
-	public final static String TRIPLE_PUSH = "triple_shortpush_url";
-	public final static String LONG_PUSH = "longpush_url";
-	public final static String BUTTON_ON = "btn_on_url";
-	public final static String BUTTON_OFF = "btn_off_url";
-	public final static String OUT_ON = "out_on_url";
-	public final static String OUT_OFF = "out_off_url";
-	public final static String SHORT_LONG_PUSH = "shortpush_longpush_url";
-	public final static String LONG_SHORT_PUSH = "longpush_shortpush_url";
-	public final static String ROLLER_OPEN = "roller_open_url";
-	public final static String ROLLER_CLOSE = "roller_close_url";
-	public final static String ROLLER_STOP = "roller_stop_url";
+//	public final static String PUSH = "shortpush_url";
+//	public final static String DOUBLE_PUSH = "double_shortpush_url";
+//	public final static String TRIPLE_PUSH = "triple_shortpush_url";
+//	public final static String LONG_PUSH = "longpush_url";
+//	public final static String BUTTON_ON = "btn_on_url";
+//	public final static String BUTTON_OFF = "btn_off_url";
+//	public final static String OUT_ON = "out_on_url";
+//	public final static String OUT_OFF = "out_off_url";
+//	public final static String SHORT_LONG_PUSH = "shortpush_longpush_url";
+//	public final static String LONG_SHORT_PUSH = "longpush_shortpush_url";
+//	public final static String ROLLER_OPEN = "roller_open_url";
+//	public final static String ROLLER_CLOSE = "roller_close_url";
+//	public final static String ROLLER_STOP = "roller_stop_url";
 	
 	private final AbstractG1Device parent;
 	private Map<Integer, Input> inputMap = new HashMap<>();
@@ -73,7 +71,7 @@ public class Actions {
 					inputMap.put(index, input);
 				}
 				// if(enabled || urls.size() > 0)
-				input.addAction(ev.getKey(), new Action(enabled, urls));
+				input.addAction(new Action(enabled, ev.getKey(), urls));
 			}
 		}
 		return actions;
@@ -157,7 +155,7 @@ public class Actions {
 		private final String name;
 //		private boolean reverse;
 		private boolean inputIsOn;
-		private final Map<String, Action> act = new LinkedHashMap<>();
+		private final ArrayList<Action> act = new ArrayList<>();
 		
 		private Input(String name) {
 			this.name = name;
@@ -168,34 +166,14 @@ public class Actions {
 			return /*reverse ^*/ inputIsOn;
 		}
 		
-		private void addAction(String type, Action a) {
-			act.put(type, a);
-		}
-		
-		@Override
-		public boolean enabled(String type) {
-			Action action;
-			return act != null && (action = act.get(type)) != null && action.isActive();
+		private void addAction(Action a) {
+			act.add(a);
 		}
 		
 		@Override
 		public boolean enabled() {
 //			return name.isEmpty() == false || (act != null && act.size() > 0);
 			return true;
-		}
-		
-		@Override
-		public void execute(String type) throws IOException {
-			act.get(type).execute();
-		}
-		
-//		public Action getAction(String type) {
-//			return act.get(type);
-//		}
-		
-		@Override
-		public Set<String> getRegisteredEvents() {
-			return act.keySet();
 		}
 		
 		@Override
@@ -220,14 +198,31 @@ public class Actions {
 		private void setInputIsOn(boolean on) {
 			this.inputIsOn = on;
 		}
+
+		@Override
+		public String getEvent(int i) {
+			return act.get(i).event;
+		}
+
+		@Override
+		public boolean enabled(int i) {
+			return act.get(i).isActive();
+		}
+
+		@Override
+		public void execute(int i) throws IOException {
+			act.get(i).execute();
+		}
 	}
 	
 	private static class Action {
 		private boolean enabled;
+		private String event;
 		private List<String> url;
 		
-		private Action(boolean enabled, List<String> urls) {
+		private Action(boolean enabled, String event, List<String> urls) {
 			this.enabled = enabled;
+			this.event = event;
 			this.url = urls;
 		}
 		

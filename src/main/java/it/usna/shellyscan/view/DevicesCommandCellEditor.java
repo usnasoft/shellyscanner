@@ -925,24 +925,25 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 		JPanel actionsButtonsPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
 		int numEvents = inp.getRegisteredEventsCount();
 		if(numEvents > 0) {
-			for(String type: inp.getRegisteredEvents()) {
-				boolean enabled = inp.enabled(type);
+			for(int i = 0; i < numEvents; i++) {
+				boolean enabled = inp.enabled(i);
 				if(enabled || numEvents <= DevicesCommandCellRenderer.MAX_ACTIONS_SHOWN) {
 					String bLabel;
 					try {
-						bLabel = LABELS.getString(type);
+						bLabel = LABELS.getString(inp.getEvent(i));
 					} catch( MissingResourceException e) {
 						bLabel = "x";
 					}
 					JButton b = new JButton(bLabel);
 					if(enabled) {
+						final int index = i;
 						b.addActionListener(e -> {
 							if(edited != null /*&& edited instanceof InputInterface[]*/) {
 								table.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 								try {
 									new Thread(() -> {
 										try {
-											inp.execute(type);
+											inp.execute(index);
 										} catch (IOException ex) {
 											Msg.errorMsg(ex);
 										}

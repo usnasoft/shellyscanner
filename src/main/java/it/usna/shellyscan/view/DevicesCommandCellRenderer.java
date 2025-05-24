@@ -480,12 +480,12 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 		JPanel actionsButtonsPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
 		int numEvents = inp.getRegisteredEventsCount();
 		if(numEvents > 0) {
-			for(String type: inp.getRegisteredEvents()) { // webhooks
-				boolean enabled = inp.enabled(type);
+			for(int i = 0; i < numEvents; i++) {
+				boolean enabled = inp.enabled(i);
 				if(enabled || numEvents <= MAX_ACTIONS_SHOWN) {
 					String bLabel;
 					try {
-						bLabel = LABELS.getString(type);
+						bLabel = LABELS.getString(inp.getEvent(i));
 					} catch( MissingResourceException e) {
 						bLabel = "x";
 					}

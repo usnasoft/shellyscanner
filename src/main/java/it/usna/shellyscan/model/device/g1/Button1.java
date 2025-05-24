@@ -16,7 +16,7 @@ import it.usna.shellyscan.model.device.modules.InputInterface;
 
 /**
  * Button 1 model
- * usna
+ * @author usna
  */
 public class Button1 extends AbstractBatteryG1Device implements ModulesHolder {
 	public final static String ID = "SHBTN-2";
@@ -73,7 +73,7 @@ public class Button1 extends AbstractBatteryG1Device implements ModulesHolder {
 
 	@Override
 	public DeviceModule[] getModules() {
-		return new  InputInterface[] {actions.getInput(0)};
+		return new InputInterface[] {actions.getInput(0)};
 	}
 
 	@Override
@@ -86,8 +86,8 @@ public class Button1 extends AbstractBatteryG1Device implements ModulesHolder {
 		errors.add(sendCommand("/settings/input/0?name=" + settings.get("inputs").get(0).get("name").asText()));
 	}
 	
-	@Override
-	public String toString() {
-		return super.toString();
-	}
+//	@Override
+//	public String toString() {
+//		return super.toString();
+//	}
 }

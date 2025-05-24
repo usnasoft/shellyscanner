@@ -86,10 +86,10 @@ public class ShellyI4G3 extends AbstractG3Device implements ModulesHolder {
 		inputs[3].fillSettings(configuration.get("input:3"));
 		try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e) {}
 		webhooks.fillSettings(/*"input"*/);
-		inputs[0].associateWH(webhooks.getHooks("input0"));
-		inputs[1].associateWH(webhooks.getHooks("input1"));
-		inputs[2].associateWH(webhooks.getHooks("input2"));
-		inputs[3].associateWH(webhooks.getHooks("input3"));
+		inputs[0].associateWH(webhooks.getHooksList("input0"));
+		inputs[1].associateWH(webhooks.getHooksList("input1"));
+		inputs[2].associateWH(webhooks.getHooksList("input2"));
+		inputs[3].associateWH(webhooks.getHooksList("input3"));
 		if(addOn != null) {
 			addOn.fillSettings(configuration);
 		}

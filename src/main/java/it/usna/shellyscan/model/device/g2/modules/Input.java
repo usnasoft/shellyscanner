@@ -1,9 +1,8 @@
 package it.usna.shellyscan.model.device.g2.modules;
 
 import java.io.IOException;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.Map;
+import java.util.List;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -17,12 +16,12 @@ public class Input implements InputActionInterface {
 	private boolean enable;
 //	private boolean reverse;
 	private boolean inputIsOn;
-	private Map<String, Webhook> webHooks;
+	private List<Webhook> webHooks;
 
 	public Input(AbstractG2Device parent, int id) {
 		this.parent = parent;
 		this.id = id;
-		webHooks = Collections.<String, Webhook>emptyMap();
+		webHooks = Collections.<Webhook>emptyList();
 	}
 	
 	public Input() {
@@ -54,17 +53,17 @@ public class Input implements InputActionInterface {
 
 	@Override
 	public int getRegisteredEventsCount() {
-		return webHooks.size();
+		return webHooks == null ? 0 : webHooks.size();
 	}
-
+	
 	@Override
-	public Collection<String> getRegisteredEvents() {
-		return webHooks.keySet();
+	public String getEvent(int i) {
+		return webHooks.get(i).getEvent();
 	}
-
+	
 	@Override
-	public boolean enabled(String type) {
-		return webHooks.get(type).isEnabled();
+	public boolean enabled(int i) {
+		return webHooks.get(i).isEnabled();
 	}
 	
 	@Override
@@ -75,10 +74,10 @@ public class Input implements InputActionInterface {
 	public void setEnabled(boolean enable) {
 		this.enable = enable;
 	}
-
+	
 	@Override
-	public void execute(String type) throws IOException {
-		webHooks.get(type).execute();
+	public void execute(int i) throws IOException {
+		webHooks.get(i).execute();
 	}
 	
 	public void trigger(String command) throws IOException {
@@ -87,12 +86,11 @@ public class Input implements InputActionInterface {
 	
 	@Override
 	public void associateWH(Webhooks webhooks) {
-		associateWH(webhooks.getHooks("input" + id));
+		associateWH(webhooks.getHooksList("input" + id));
 	}
-	
-	@Override
-	public void associateWH(Map<String, Webhook> wh) {
-		this.webHooks = (wh == null) ? Collections.<String, Webhook>emptyMap() : wh;
+
+	public void associateWH(List<Webhook> wh) {
+		this.webHooks = (wh == null) ? Collections.<Webhook>emptyList() : wh;
 	}
 	
 	public static String restore(AbstractG2Device parent, JsonNode config, int index) {
