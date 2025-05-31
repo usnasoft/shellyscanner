@@ -63,16 +63,17 @@ public class Webhooks {
 		return hooks.get(id);
 	}
 
-	public static void delete(AbstractG2Device parent, String eventType, int cid) throws IOException {
+	public static void delete(AbstractG2Device parent, String eventType, int cid, long delay) throws IOException {
 		JsonNode whList = parent.getJSON("/rpc/Webhook.List").get("hooks");
 		whList.forEach(hook -> {
 			if(hook.get("cid").asInt() == cid && hook.get("event").textValue().startsWith(eventType + ".")) {
+				try { TimeUnit.MILLISECONDS.sleep(delay); } catch (InterruptedException e) {}
 				parent.postCommand("Webhook.Delete", "{\"id\":" + hook.get("id").asInt() + "}");
 			}
 		});
 	}
 
-	public static void restore(AbstractG2Device parent, long delay, JsonNode storedWH, ArrayList<String> errors) throws InterruptedException {
+	public static void restore(AbstractG2Device parent, JsonNode storedWH, long delay, ArrayList<String> errors) throws InterruptedException {
 		TimeUnit.MILLISECONDS.sleep(delay);
 		errors.add(parent.postCommand("Webhook.DeleteAll", "{}"));
 		for(JsonNode ac: storedWH.get("hooks")) {
@@ -88,13 +89,13 @@ public class Webhooks {
 	}
 	
 	// restore all webhooks with a specific "cid" on a new "cid"
-	public static void restore(AbstractG2Device parent, String storedKey, /*int newCid*/ String newKey, long delay, JsonNode storedWH, ArrayList<String> errors) throws InterruptedException {
+	public static void restore(AbstractG2Device parent, String storedKey, /*int newCid*/ String newKey, JsonNode storedWH, long delay, ArrayList<String> errors) throws InterruptedException {
 		String typeIdxOld[] = storedKey.split(":");
 		String typeIdxNew[] = newKey.split(":");
-		restore(parent, typeIdxOld[0], Integer.parseInt(typeIdxOld[1]), Integer.parseInt(typeIdxNew[1]), delay, storedWH, errors);
+		restore(parent, typeIdxOld[0], Integer.parseInt(typeIdxOld[1]), Integer.parseInt(typeIdxNew[1]), storedWH, delay, errors);
 	}
 	
-	public static void restore(AbstractG2Device parent, String eventType, int storedCid, int newCid, long delay, JsonNode storedWH, ArrayList<String> errors) throws InterruptedException {
+	public static void restore(AbstractG2Device parent, String eventType, int storedCid, int newCid, JsonNode storedWH, long delay, ArrayList<String> errors) throws InterruptedException {
 		for(JsonNode ac: storedWH.get("hooks")) {
 			if(ac.get("cid").intValue() == storedCid && ac.get("event").textValue().startsWith(eventType + ".")) {
 				ObjectNode thisAction = (ObjectNode)ac.deepCopy();

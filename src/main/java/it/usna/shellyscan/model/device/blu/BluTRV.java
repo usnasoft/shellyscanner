@@ -33,7 +33,8 @@ import it.usna.shellyscan.model.device.modules.ThermostatInterface;
 
 public class BluTRV extends AbstractBluDevice implements ThermostatInterface, ModulesHolder {
 	private final static Logger LOG = LoggerFactory.getLogger(AbstractBluDevice.class);
-	public final static String DEVICE_KEY_PREFIX = "blutrv:";
+	private final static String TRV_DEVICE = "blutrv";
+	public final static String DEVICE_KEY_PREFIX = TRV_DEVICE + ":";
 	public final static String ID = "BluTRV";
 	private final static Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.T, Meters.Type.BAT};
 	private int battery;
@@ -269,9 +270,9 @@ public class BluTRV extends AbstractBluDevice implements ThermostatInterface, Mo
 			final int storedId = storedConfig.get("id").intValue();
 			final int currentId = Integer.parseInt(componentIndex);
 			JsonNode storedWebHooks = backupJsons.get("Webhook.List.json");
-			Webhooks.delete(parent,"blutrv", currentId);
+			Webhooks.delete(parent, TRV_DEVICE, currentId, Devices.MULTI_QUERY_DELAY);
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-			Webhooks.restore(parent, "blutrv", storedId, currentId, Devices.MULTI_QUERY_DELAY, storedWebHooks, errors);
+			Webhooks.restore(parent, TRV_DEVICE, storedId, currentId, storedWebHooks, Devices.MULTI_QUERY_DELAY, errors);
 			
 //			// todo bthomesensor actions restore
 //          come distinguere tra i 2 sensori "obj_id" : 69 ?

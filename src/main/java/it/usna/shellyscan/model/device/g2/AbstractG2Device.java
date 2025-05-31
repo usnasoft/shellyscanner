@@ -506,7 +506,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 			}
 			
 			errors.add("->r_step:Webhooks");
-			Webhooks.restore(this, delay, backupJsons.get("Webhook.List.json"), errors);
+			Webhooks.restore(this, backupJsons.get("Webhook.List.json"), delay, errors);
 
 			errors.add("->r_step:WIFIManagerG2");
 			TimeUnit.MILLISECONDS.sleep(delay);

@@ -49,13 +49,9 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 	public final static String GENERATION = "bth";
 	private final static Logger LOG = LoggerFactory.getLogger(BTHomeDevice.class);
 //	private final static Map<String, String> DEV_DICTIONARY = Map.of(
-//			"SBBT-002C", "Blu Button",
-//			"SBMO-003Z", "BLU Motion",
-//			"SBDW-002C", "Blu Door Window",
-//			"SBHT-003C", "Blu H&T",
-//			"SBBT-004CEU", "Blu Wall Switch 4",
-//			"SBBT-004CUS", "Blu RC Button 4"
-//			);
+//			"SBBT-002C", "Blu Button", "SBMO-003Z", "BLU Motion",
+//			"SBDW-002C", "Blu Door Window", "SBHT-003C", "Blu H&T",
+//			"SBBT-004CEU", "Blu Wall Switch 4", "SBBT-004CUS", "Blu RC Button 4");
 	private final static Map<Integer, String> MODELS_DICTIONARY = Map.of(
 			1, "Blu Button",
 			2, "Blu Door Window",
@@ -199,7 +195,7 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 	private void fillStatus(JsonNode status) {
 		this.rssi = status.path("rssi").intValue();
 		this.lastConnection = status.path("last_updated_ts").intValue() * 1000L;
-		//	this.battery = status.path("battery").intValue();
+		//	this.battery = status.path("battery").intValue(); // there is a specific sensor for this
 	}
 
 	@Override
@@ -225,17 +221,16 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 	
 	@Override
 	public boolean backup(Path file) throws IOException {
+		ObjectNode usnaData = JsonNodeFactory.instance.objectNode();
+		usnaData.put("index", componentIndex);
+		usnaData.put("type", typeID);
+		usnaData.put("mac", mac);
 		Files.deleteIfExists(file);
-		try(FileSystem fs = FileSystems.newFileSystem(URI.create("jar:" + file.toUri()), Map.of("create", "true"))) {
-			ObjectNode usnaData = JsonNodeFactory.instance.objectNode();
-			usnaData.put("index", componentIndex);
-			usnaData.put("type", typeID);
-			usnaData.put("mac", mac);
-			try(BufferedWriter writer = Files.newBufferedWriter(fs.getPath("ShellyScannerBLU.json"))) {
-				jsonMapper.writer().writeValue(writer, usnaData);
-			} catch(IOException e) {}
-			
-			sectionToStream("/rpc/Shelly.GetComponents?dynamic_only=true", "Shelly.GetComponents.json", fs);
+		try(FileSystem fs = FileSystems.newFileSystem(URI.create("jar:" + file.toUri()), Map.of("create", "true"));
+			BufferedWriter writer = Files.newBufferedWriter(fs.getPath("ShellyScannerBLU.json"))) {
+			jsonMapper.writer().writeValue(writer, usnaData);
+
+			sectionToStream("/rpc/Shelly.GetComponents?dynamic_only=true", "Shelly.GetComponents.json", fs); // "status" is used for groups
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			sectionToStream("/rpc/Webhook.List", "Webhook.List.json", fs);
 		} catch(InterruptedException e) {
@@ -248,22 +243,27 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 	public Map<RestoreMsg, Object> restoreCheck(Map<String, JsonNode> backupJsons) {
 		EnumMap<RestoreMsg, Object> res = new EnumMap<>(RestoreMsg.class);
 		JsonNode usnaInfo = backupJsons.get("ShellyScannerBLU.json");
-		String fileLocalName;
-		if(usnaInfo == null || (fileLocalName = usnaInfo.path("type").asText("")).equals(typeID) == false) {
+		if(usnaInfo == null || usnaInfo.path("type").asText("?").equals(typeID) == false) {
 			res.put(RestoreMsg.ERR_RESTORE_MODEL, null);
 			return res;
 		}
-		final String fileComponentIndex = usnaInfo.get("index").asText();
-		JsonNode fileComponents = backupJsons.get("Shelly.GetComponents.json").path("components");
-		for(JsonNode fileComp: fileComponents) {
-			if(fileComp.path("key").textValue().equals(DEVICE_KEY_PREFIX + fileComponentIndex)) { // find the component by fileComponentIndex
-				String fileMac = fileComp.path("config").path("addr").textValue();
-				if(fileMac.equals(mac) == false) {
-					res.put(RestoreMsg.PRE_QUESTION_RESTORE_HOST, fileLocalName + "-" + fileMac);
-				}
-				break;
-			}
+		// questo ...
+		String fileMac;
+		if((fileMac = usnaInfo.path("mac").asText("?")).equals(mac) == false) {
+			res.put(RestoreMsg.PRE_QUESTION_RESTORE_HOST, "mac: " + fileMac);
 		}
+//		// invece di questo
+//		final String fileComponentIndex = usnaInfo.get("index").asText();
+//		JsonNode fileComponents = backupJsons.get("Shelly.GetComponents.json").path("components");
+//		for(JsonNode fileComp: fileComponents) {
+//			if(fileComp.path("key").textValue().equals(DEVICE_KEY_PREFIX + fileComponentIndex)) { // find the component by fileComponentIndex
+//				/*String*/ fileMac = fileComp.path("config").path("addr").textValue();
+//				if(fileMac.equals(mac) == false) {
+//					res.put(RestoreMsg.PRE_QUESTION_RESTORE_HOST, "mac: " + fileMac);
+//				}
+//				break;
+//			}
+//		}
 		return res;
 	}
 
@@ -287,12 +287,14 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 			JsonNode usnaInfo = backupJsons.get("ShellyScannerBLU.json");
 			String fileComponentIndex = usnaInfo.get("index").textValue();
 			JsonNode fileComponents = backupJsons.get("Shelly.GetComponents.json").path("components");
+			JsonNode storedWebHooks = backupJsons.get("Webhook.List.json");
 			String fileAddr = null;
 			// BLU configuration: Device
 			for(JsonNode fileComp: fileComponents) {
 				if(fileComp.path("key").textValue().equals(DEVICE_KEY_PREFIX + fileComponentIndex)) { // find the component by fileComponentIndex
 					ObjectNode out = JsonNodeFactory.instance.objectNode();
-					out.put("id", Integer.parseInt(componentIndex)); // could be different
+					final int currentComponentIndex = Integer.parseInt(componentIndex);
+					out.put("id", currentComponentIndex); // could be different
 					ObjectNode config = (ObjectNode)fileComp.path("config").deepCopy();
 					config.remove("id");
 					config.remove("addr"); // new (registered on host) addr could not be the stored addr
@@ -300,13 +302,18 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 					TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 					errors.add(parent.postCommand("BTHomeDevice.SetConfig", out));
 					fileAddr = fileComp.at("/config/addr").textValue();
+					
+					// todo /attrs/flags ? Valuable values here?
+
+					Webhooks.delete(parent, DynamicComponents.BTHOME_DEVICE, currentComponentIndex, Devices.MULTI_QUERY_DELAY);//					Webhooks.restore(parent, DEVICE_KEY_PREFIX + fileComponentIndex, DEVICE_KEY_PREFIX + componentIndex, Devices.MULTI_QUERY_DELAY, storedWebHooks, errors);
+					Webhooks.restore(parent, DynamicComponents.BTHOME_DEVICE, Integer.parseInt(fileComponentIndex), currentComponentIndex, storedWebHooks, Devices.MULTI_QUERY_DELAY, errors);
+					
 					break;
 				}
 			}
 
-			// Sensors
+			// Sensors (look for MAC)
 			HashMap<String, String> sensorsDictionary = new HashMap<>(); // old-new key ("bthomesensor:200"-"bthomesensor:201")
-			JsonNode storedWebHooks = backupJsons.get("Webhook.List.json");
 			errors.add(sensors.deleteAll()); // deleting a sensor all related webhooks are removed
 			for(JsonNode fileComp: fileComponents) {
 				final String fileKey = fileComp.path("key").textValue();
@@ -317,7 +324,7 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 					out.set("config", config);
 					TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 					String newKey = parent.getJSON("BTHome.AddSensor", out).get("added").textValue(); // BTHome.AddSensor -> {"added":"bthomesensor:200"}
-					Webhooks.restore(parent, fileKey, newKey, Devices.MULTI_QUERY_DELAY, storedWebHooks, errors); // Webhook.Create - deleting a sensor all related webhooks are removed
+					Webhooks.restore(parent, fileKey, newKey, storedWebHooks, Devices.MULTI_QUERY_DELAY, errors); // Webhook.Create - deleting a sensor all related webhooks are removed
 					
 					sensorsDictionary.put(fileKey, newKey);
 				}

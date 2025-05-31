@@ -345,7 +345,7 @@ gen2+ restore "debug"
 Shelly.GetComponents pagination
 BLE.CloudRelay.ListInfos pagination
 KVS.GetMany pagination
-Graphs: types combo only have pertinent values (vetificare T_ALL, DMM. D_SUM)
+Graphs: types combo only have pertinent values
 
 todo: reload blu after restore (?), rivedere con fw 1.6.0
 todo: blu button, rivedere restore con fw 1.6.0
