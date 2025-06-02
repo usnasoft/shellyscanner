@@ -4,7 +4,6 @@ import static it.usna.shellyscan.Main.LABELS;
 
 import java.awt.Component;
 import java.awt.FontMetrics;
-import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.Point;
 import java.awt.Toolkit;
@@ -18,7 +17,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.swing.ImageIcon;
-import javax.swing.JLabel;
 import javax.swing.RowFilter;
 import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -107,7 +105,7 @@ public class DevicesTable extends ExTooltipTable {
 		columnModel.getColumn(COL_MEASURES_IDX).setCellRenderer(new DeviceMetersCellRenderer(tempUnitCelsius));
 		columnModel.getColumn(COL_INT_TEMP).setCellRenderer(tempUnitCelsius ? new DecimalTableCellRenderer(2) : new FahrenheitTableCellRenderer());
 		DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
-		centerRenderer.setHorizontalAlignment(JLabel.CENTER);
+		centerRenderer.setHorizontalAlignment(DefaultTableCellRenderer.CENTER);
 		columnModel.getColumn(COL_CLOUD).setCellRenderer(centerRenderer);
 		columnModel.getColumn(COL_MQTT).setCellRenderer(centerRenderer);
 		columnModel.getColumn(COL_UPTIME_IDX).setCellRenderer(uptimeRenderer);
@@ -329,9 +327,10 @@ public class DevicesTable extends ExTooltipTable {
 
 	@Override
 	public void columnsWidthAdapt() {
-		Graphics g = getGraphics();
-		if (g != null) {
-			final FontMetrics fm = g.getFontMetrics();
+//		Graphics g = getGraphics();
+//		if (g != null) {
+			final FontMetrics fm = getFontMetrics(getFont());
+//			final FontMetrics fm = g.getFontMetrics();
 			final int columnCount = getColumnCount();
 			final int rowCount = getRowCount();
 			for (int c = 0; c < columnCount; c++) {
@@ -360,7 +359,7 @@ public class DevicesTable extends ExTooltipTable {
 					}
 				}
 			}
-		}
+//		}
 	}
 
 	public void setRowFilter(String filter, int ... cols) {
