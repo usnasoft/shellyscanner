@@ -14,8 +14,8 @@ public class UsnaToggleAction extends UsnaAction {
 	private final ActionListener deactivate;
 	private final ImageIcon imageInactive;
 	private final ImageIcon imageActive;
-	private final String toolTipInactive;
-	private final String toolTipActive;
+	private String toolTipInactive;
+	private String toolTipActive;
 	private boolean selected = false;
 	
 	public UsnaToggleAction(Component w, String nameId, String tooltipInactiveId, String tooltipActiveId, String iconInactive, String iconActive, final ActionListener activate, final ActionListener deactivate) {
@@ -37,11 +37,16 @@ public class UsnaToggleAction extends UsnaAction {
 		imageInactive = (ImageIcon)getValue(LARGE_ICON_KEY);
 //		toolTipInactive = (String)getValue(SHORT_DESCRIPTION);
 		imageActive = new ImageIcon(UsnaToggleAction.class.getResource(iconActive));
-		toolTipActive = toolTipInactive = null;
 	}
 	
 	public UsnaToggleAction(Component w, String iconInactive, String iconActive, final ActionListener listener) {
 		this(w, iconInactive, iconActive, listener, listener);
+	}
+	
+	public void setTooltip(String tooltipInactiveId, String tooltipActiveId) {
+		toolTipInactive = LABELS.getString(tooltipInactiveId);
+		toolTipActive =  LABELS.getString(tooltipActiveId);
+		putValue(SHORT_DESCRIPTION, selected ? toolTipActive : toolTipInactive);
 	}
 	
 	public void setSelected(boolean sel) {

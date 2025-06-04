@@ -147,7 +147,7 @@ public class SchedulerDialog extends JDialog {
 					int id = sceduleManager.create((ObjectNode)sl.getJson(), ((UsnaToggleAction)enableBtn.getAction()).isSelected());
 					originalValues.set(i, new ScheduleData(sl.getJson(), id));
 				} else if(sl.getJson().equals(original.orig) == false) { // id >= 0 -> existed
-					String res = sceduleManager.update(original.id, (ObjectNode)sl.getJson());
+					String res = sceduleManager.update(original.id, sl.getJson());
 					originalValues.set(i, new ScheduleData(sl.getJson(), original.id));
 					if(res != null) {
 						Msg.errorMsg(this, res);
@@ -257,6 +257,7 @@ public class SchedulerDialog extends JDialog {
 
 		UsnaToggleAction switchAction = new UsnaToggleAction(this, "/images/Standby24.png", "/images/StandbyOn24.png",
 				e -> enableSchedule(linePanel, true), e -> enableSchedule(linePanel, false) );
+		switchAction.setTooltip("lblDisabled", "lblEnabled");
 		
 		switchAction.setSelected(node != null && node.path("enable").booleanValue());
 		switchButton.setAction(switchAction);

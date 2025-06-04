@@ -104,7 +104,7 @@ public class ScheduleLine extends JPanel {
 		}
 	}
 	
-	private void addCall(String method, String params, int index) {
+	private void addCall(String method, String params/*, String origin*/, int index) {
 		JTextField methodTF = new JTextField(method);
 		JTextField paramsTF = new JTextField(params);
 		callsPanel.add(methodTF, index);
@@ -661,7 +661,7 @@ public class ScheduleLine extends JPanel {
 		return true;
 	}
 	
-	public JsonNode getJson() {
+	public ObjectNode getJson() {
 		final ObjectNode out = JsonNodeFactory.instance.objectNode();
 		out.put("timespec", expressionField.getText());
 		
@@ -686,4 +686,4 @@ public class ScheduleLine extends JPanel {
 	}
 }
 
-// todo casi speciali (e.g. auto firmware update)
+// todo manage cases like "origin" : "shelly_service" (auto firmware update)
