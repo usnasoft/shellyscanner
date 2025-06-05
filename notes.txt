@@ -372,6 +372,7 @@ https://github.com/mongoose-os-libs/cron
 https://crontab.guru/
 
 // TODO
+// intercept cmd-Q on OSX (shutdown) - -Dapple.eawt.quitStrategy=CLOSE_ALL_WINDOWS
 // schedule editor (Webhook.ListSupported) / semplicemente elenco azioni (?)
 // rgb_xx panel listener (?)
 // checklist AP ssid != mac (fw 1.5.0 stable)

@@ -189,11 +189,22 @@ public class SchedulerDialog extends JDialog {
 		addBtn.setBorder(BorderFactory.createEmptyBorder(2, 3, 2, 3));
 		
 		JButton removeBtn = new JButton(new UsnaAction(null, "schRemove", "/images/erase-9-16.png", e -> {
+			ScheduleData data = null;
 			if(schedulesPanel.getComponentCount() > 1) {
 				int i;
 				for(i = 0; schedulesPanel.getComponent(i) != linePanel; i++);
-				removeLine(i);
+				schedulesPanel.remove(i);
+				lineColors();
+				data = originalValues.remove(i);
+			} else if(schedulesPanel.getComponentCount() == 1) {
+				line.clean();
+				data = originalValues.get(0);
 			}
+			if(data != null && data.id >= 0) {
+				removedId.add(data.id);
+			}
+			schedulesPanel.revalidate();
+			schedulesPanel.repaint(); // last one need this ... do not know why
 		}));
 		removeBtn.setContentAreaFilled(false);
 		removeBtn.setBorder(BorderFactory.createEmptyBorder(2, 3, 2, 3));
@@ -263,17 +274,17 @@ public class SchedulerDialog extends JDialog {
 		switchButton.setAction(switchAction);
 	}
 	
-	private void removeLine(int lineIndex) {
-		schedulesPanel.remove(lineIndex);
-		lineColors();
-		
-		ScheduleData data = originalValues.remove(lineIndex);
-		if(data.id >= 0) {
-			removedId.add(data.id);
-		}
-		schedulesPanel.revalidate();
-		schedulesPanel.repaint(); // last one need this ... do not know why
-	}
+//	private void removeLine(int lineIndex) {
+//		schedulesPanel.remove(lineIndex);
+//		lineColors();
+//		
+//		ScheduleData data = originalValues.remove(lineIndex);
+//		if(data.id >= 0) {
+//			removedId.add(data.id);
+//		}
+//		schedulesPanel.revalidate();
+//		schedulesPanel.repaint(); // last one need this ... do not know why
+//	}
 	
 	private void enableSchedule(JPanel line, boolean enable) {
 		int i;

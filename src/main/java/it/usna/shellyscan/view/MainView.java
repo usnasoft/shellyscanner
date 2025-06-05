@@ -648,9 +648,10 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 			super.storeProperties(appProp);
 		}
 		try {
+			LOG.debug("Storing properties to {}", appProp.getFile());
 			appProp.store(false);
-		} catch (IOException | RuntimeException ex) {
-			LOG.error("Unexpected", ex);
+		} catch (/*IOException | RuntimeException |*/ Throwable ex) {
+			LOG.error("Unexpected-store-settings", ex);
 		}
 	}
 

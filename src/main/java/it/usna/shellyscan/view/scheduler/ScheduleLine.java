@@ -68,6 +68,7 @@ public class ScheduleLine extends JPanel {
 	private JDialog parent;
 	
 	private final MethodHints mHints;// = new MethodHints();
+	private final static String DEF_CRON = "0 0 * * * *";
 	private final static ObjectMapper JSON_MAPPER = new ObjectMapper();
 
 	/**
@@ -80,7 +81,7 @@ public class ScheduleLine extends JPanel {
 		setBorder(BorderFactory.createEmptyBorder(2, 2, 4, 2));
 		init();
 		if(scheduleNode == null) {
-			setCron("0 0 * * * *");
+			setCron(DEF_CRON);
 			addCall("", "", 0);
 		} else {
 			setCron(scheduleNode.path("timespec").asText());
@@ -153,6 +154,14 @@ public class ScheduleLine extends JPanel {
 		callOpPanel.add(btnSelectCombo);
 		
 		callsOperationsPanel.add(callOpPanel, index);
+	}
+	
+	public void clean() {
+		callsPanel.removeAll();
+		callsParameterPanel.removeAll();
+		callsOperationsPanel.removeAll();
+		setCron(DEF_CRON);
+		addCall("", "", 0);
 	}
 
 	private void init() {
