@@ -34,9 +34,6 @@ import it.usna.swing.UsnaSwingUtils;
 import it.usna.util.CLI;
 
 public class Main {
-	static {
-		System.setProperty("apple.eawt.quitStrategy", "CLOSE_ALL_WINDOWS"); // OSX specific - cmd-Q / -Dapple.eawt.quitStrategy=CLOSE_ALL_WINDOWS
-	}
 	public final static String APP_NAME = "Shelly Scanner";
 	public final static String VERSION = "1.2.4";
 	public final static String VERSION_CODE = "001.002.004r200"; // r0xx alpha; r1xx beta; r2xx stable
