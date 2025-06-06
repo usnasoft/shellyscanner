@@ -35,7 +35,7 @@ import it.usna.util.CLI;
 
 public class Main {
 	static {
-		System.setProperty("apple.eawt.quitStrategy", "CLOSE_ALL_WINDOWS"); // OSX specific - cmd-Q / -Dapple.eawt.quitStrategy=CLOSE_ALL_WINDOWS
+		System.setProperty("apple.eawt.quitStrategy", "CLOSE_ALL_WINDOWS");  // OSX specific - cmd-Q / -Dapple.eawt.quitStrategy=CLOSE_ALL_WINDOWS
 	}
 	public final static String APP_NAME = "Shelly Scanner";
 	public final static String VERSION = "1.2.4";
