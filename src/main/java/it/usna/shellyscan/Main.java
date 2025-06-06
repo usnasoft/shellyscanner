@@ -34,9 +34,12 @@ import it.usna.swing.UsnaSwingUtils;
 import it.usna.util.CLI;
 
 public class Main {
+	static {
+		System.setProperty("apple.eawt.quitStrategy", "CLOSE_ALL_WINDOWS"); // OSX specific - cmd-Q / -Dapple.eawt.quitStrategy=CLOSE_ALL_WINDOWS
+	}
 	public final static String APP_NAME = "Shelly Scanner";
-	public final static String VERSION = "1.2.4 beta2";
-	public final static String VERSION_CODE = "001.002.004r103"; // r0xx alpha; r1xx beta; r2xx stable
+	public final static String VERSION = "1.2.4";
+	public final static String VERSION_CODE = "001.002.004r200"; // r0xx alpha; r1xx beta; r2xx stable
 	public final static Image ICON = Toolkit.getDefaultToolkit().createImage(Main.class.getResource("/images/ShSc24.png"));
 	public final static String BACKUP_FILE_EXT = "sbk";
 	public final static String ARCHIVE_FILE_EXT = "arc";
@@ -54,7 +57,6 @@ public class Main {
 	private final static String IP_SCAN_PAR_FORMAT = "^((?:(?:0|1\\d?\\d?|2[0-4]?\\d?|25[0-5]?|[3-9]\\d?)\\.){2}(?:0|1\\d?\\d?|2[0-4]?\\d?|25[0-5]?|[3-9]\\d?))\\.(0|1\\d?\\d?|2[0-4]?\\d?|25[0-5]?|[3-9]\\d?)-(0|1\\d?\\d?|2[0-4]?\\d?|25[0-5]?|[3-9]\\d?)$";
 
 	public static void main(final String ... args) {
-		System.setProperty("apple.eawt.quitStrategy", "CLOSE_ALL_WINDOWS"); // OSX specific - cmd-Q
 		// System.setProperty(SimpleLogger.DEFAULT_LOG_LEVEL_KEY, "error");
 		System.setProperty(SimpleLogger.LOG_KEY_PREFIX + "javax.jmdns", "warn");
 		System.setProperty(SimpleLogger.LOG_KEY_PREFIX + "org.eclipse.jetty", "warn");
