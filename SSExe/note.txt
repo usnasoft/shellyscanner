@@ -2,6 +2,7 @@ https://launch4j.sourceforge.net/
 
 jpackage --type exe -n ShellyScanner --app-version 1.2.2 --copyright usnasoft --vendor usnasoft --icon /Users/Administrator/git/shellyscanner/SSExe/ShSc.ico --win-menu --win-shortcut --win-shortcut-prompt --main-class it.usna.shellyscan.Main -i /Users/Administrator/git/shellyscanner/target-exe --main-jar ShellyScan_1_2_3_sj.jar
 
-ShellyScan_1_2_3_sj
+C:\Program Files\Java\jdk-17\bin\jpackage.exe" --type exe -n ShellyScanner --app-version 1.2.4 --copyright usnasoft --vendor usnasoft --icon /Users/Administrator/git/shellyscanner/SSExe/ShSc.ico --win-menu --win-shortcut --win-shortcut-prompt --main-class it.usna.shellyscan.Main -i /Users/Administrator/git/shellyscanner/target-exe --main-jar ShellyScan_1_2_4_sj.jar
+
 
 https://github.com/wixtoolset/wix3/releases/tag/wix3141rtm

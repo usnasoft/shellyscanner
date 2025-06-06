@@ -66,7 +66,7 @@ public class ScheduleLine extends JPanel {
 	private JPanel callsParameterPanel;
 	private JPanel callsOperationsPanel;
 	private JDialog parent;
-	
+
 	private final MethodHints mHints;// = new MethodHints();
 	private final static String DEF_CRON = "0 0 * * * *";
 	private final static ObjectMapper JSON_MAPPER = new ObjectMapper();
@@ -88,7 +88,7 @@ public class ScheduleLine extends JPanel {
 			setCalls(scheduleNode.path("calls"));
 		}
 	}
-	
+
 	public void setCalls(JsonNode calls) {
 		int iniIdx = callsPanel.getComponentCount();
 		if(iniIdx > 0 && calls.size() > 0 && ((JTextField)callsPanel.getComponent(iniIdx - 1)).getText().isEmpty() && ((JTextField)callsParameterPanel.getComponent(iniIdx - 1)).getText().isEmpty()) {
@@ -104,13 +104,13 @@ public class ScheduleLine extends JPanel {
 			addCall(call.path("method").asText(), params.isEmpty() ? "" :  params.substring(1, params.length() - 1), i);
 		}
 	}
-	
+
 	private void addCall(String method, String params/*, String origin*/, int index) {
 		JTextField methodTF = new JTextField(method);
 		JTextField paramsTF = new JTextField(params);
 		callsPanel.add(methodTF, index);
 		callsParameterPanel.add(paramsTF, index);
-		
+
 		JPanel callOpPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
 		callOpPanel.setOpaque(false);
 		JButton addB = new JButton(new ImageIcon(getClass().getResource("/images/plus_transp16.png")));
@@ -139,7 +139,7 @@ public class ScheduleLine extends JPanel {
 			}
 		});
 		callOpPanel.add(minusB);
-		
+
 		JButton btnSelectCombo = new JButton();
 		btnSelectCombo.setAction(new UsnaDropdownAction(btnSelectCombo, "/images/expand-more.png", "lblMethodSelect", () -> {
 			try {
@@ -152,10 +152,10 @@ public class ScheduleLine extends JPanel {
 		btnSelectCombo.setContentAreaFilled(false);
 		btnSelectCombo.setBorder(BorderFactory.createEmptyBorder(4, 3, 4, 3));
 		callOpPanel.add(btnSelectCombo);
-		
+
 		callsOperationsPanel.add(callOpPanel, index);
 	}
-	
+
 	public void clean() {
 		callsPanel.removeAll();
 		callsParameterPanel.removeAll();
@@ -166,7 +166,7 @@ public class ScheduleLine extends JPanel {
 
 	private void init() {
 		GridBagLayout gbl_panel = new GridBagLayout();
-//		gbl_panel.columnWidths = new int[]{10, 10, 10, 10, 10, 0, 10};
+		//		gbl_panel.columnWidths = new int[]{10, 10, 10, 10, 10, 0, 10};
 		// gbl_panel.rowHeights = new int[]{0, 0, 0, 0};
 		gbl_panel.columnWeights = new double[] { 1.0, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0, 0.0, 0.5, 1.0, 0.0 };
 		gbl_panel.rowWeights = new double[] { 1.0, 1.0, 1.0, 0.0, 1.0};
@@ -179,7 +179,7 @@ public class ScheduleLine extends JPanel {
 		gbc_lblNewLabel.gridx = 0;
 		gbc_lblNewLabel.gridy = 0;
 		add(lblNewLabel, gbc_lblNewLabel);
-		
+
 		JButton btnHoursSelec = new JButton(EDIT_IMG);
 		btnHoursSelec.setContentAreaFilled(false);
 		btnHoursSelec.setBorder(BorderFactory.createEmptyBorder());
@@ -189,7 +189,7 @@ public class ScheduleLine extends JPanel {
 		gbc_btnHoursSelec.gridy = 0;
 		add(btnHoursSelec, gbc_btnHoursSelec);
 		btnHoursSelec.addActionListener(e -> new CronValuesDialog(parent, hoursTextField, 0, 24));
-		
+
 		JButton btnMinutesSelec = new JButton(EDIT_IMG);
 		btnMinutesSelec.setContentAreaFilled(false);
 		btnMinutesSelec.setBorder(BorderFactory.createEmptyBorder());
@@ -207,7 +207,7 @@ public class ScheduleLine extends JPanel {
 		gbc_lblNewLabel_2.gridx = 4;
 		gbc_lblNewLabel_2.gridy = 0;
 		add(lblNewLabel_2, gbc_lblNewLabel_2);
-		
+
 		JButton btnSecondsSelec = new JButton(EDIT_IMG);
 		btnSecondsSelec.setContentAreaFilled(false);
 		btnSecondsSelec.setBorder(BorderFactory.createEmptyBorder());
@@ -225,7 +225,7 @@ public class ScheduleLine extends JPanel {
 		gbc_lblNewLabel_3.gridx = 6;
 		gbc_lblNewLabel_3.gridy = 0;
 		add(lblNewLabel_3, gbc_lblNewLabel_3);
-		
+
 		JButton btnDaysSelec = new JButton(EDIT_IMG);
 		btnDaysSelec.setContentAreaFilled(false);
 		btnDaysSelec.setBorder(BorderFactory.createEmptyBorder());
@@ -288,7 +288,7 @@ public class ScheduleLine extends JPanel {
 		GridBagConstraints gbc_months = new GridBagConstraints();
 		gbc_months.anchor = GridBagConstraints.WEST;
 		gbc_months.gridheight = 2;
-//		gbc_months.insets = new Insets(0, 0, 5, 5);
+		//		gbc_months.insets = new Insets(0, 0, 5, 5);
 		gbc_months.fill = GridBagConstraints.HORIZONTAL;
 		gbc_months.gridx = 9;
 		gbc_months.gridy = 0;
@@ -308,7 +308,7 @@ public class ScheduleLine extends JPanel {
 		panel.setOpaque(false);
 		GridBagConstraints gbc_panel = new GridBagConstraints();
 		gbc_panel.gridwidth = 7;
-//		gbc_panel.insets = new Insets(0, 0, 5, 5);
+		//		gbc_panel.insets = new Insets(0, 0, 5, 5);
 		gbc_panel.gridx = 0;
 		gbc_panel.gridy = 2;
 		add(panel, gbc_panel);
@@ -319,7 +319,7 @@ public class ScheduleLine extends JPanel {
 		gbc_lblNewLabel_5.gridx = 0;
 		gbc_lblNewLabel_5.gridy = 3;
 		add(new JLabel(LABELS.getString("lblMethod")), gbc_lblNewLabel_5);
-		
+
 		GridBagConstraints gbc_lblNewLabel_6 = new GridBagConstraints();
 		gbc_lblNewLabel_6.gridwidth = 2;
 		gbc_lblNewLabel_6.anchor = GridBagConstraints.WEST;
@@ -327,7 +327,7 @@ public class ScheduleLine extends JPanel {
 		gbc_lblNewLabel_6.gridx = 3;
 		gbc_lblNewLabel_6.gridy = 3;
 		add(new JLabel(LABELS.getString("lblParameters")), gbc_lblNewLabel_6);
-		
+
 		callsPanel = new JPanel();
 		GridBagConstraints gbc_callsPanel = new GridBagConstraints();
 		gbc_callsPanel.gridwidth = 3;
@@ -338,7 +338,7 @@ public class ScheduleLine extends JPanel {
 		add(callsPanel, gbc_callsPanel);
 		callsPanel.setLayout(new BoxLayout(callsPanel, BoxLayout.Y_AXIS));
 		callsPanel.setOpaque(true);
-		
+
 		ActionListener changeType = e -> { // cron <-> sunset/sunrise
 			if(((JRadioButton)e.getSource()).isSelected()) {
 				if(e.getSource() == cronRadio) {
@@ -378,19 +378,19 @@ public class ScheduleLine extends JPanel {
 		beforeSetRadio.setOpaque(false);
 		beforeSetRadio.addActionListener(changeType);
 		panel.add(beforeSetRadio);
-		
+
 		afterSetRadio = new JRadioButton(LABELS.getString("lblAfterSunset"));
 		afterSetRadio.setOpaque(false);
 		afterSetRadio.addActionListener(changeType);
 		panel.add(afterSetRadio);
-		
+
 		ButtonGroup modeGroup = new ButtonGroup();
 		modeGroup.add(cronRadio);
 		modeGroup.add(beforeRiseRadio);
 		modeGroup.add(afterRiseRadio);
 		modeGroup.add(beforeSetRadio);
 		modeGroup.add(afterSetRadio);
-		
+
 		expressionField = new JTextField();
 		GridBagConstraints gbc_textField = new GridBagConstraints();
 		gbc_textField.insets = new Insets(0, 0, 5, 0);
@@ -399,7 +399,7 @@ public class ScheduleLine extends JPanel {
 		gbc_textField.gridx = 8;
 		gbc_textField.gridy = 2;
 		add(expressionField, gbc_textField);
-		
+
 		callsParameterPanel = new JPanel();
 		GridBagConstraints gbc_callsParameterPanel = new GridBagConstraints();
 		gbc_callsParameterPanel.gridwidth = 6;
@@ -409,7 +409,7 @@ public class ScheduleLine extends JPanel {
 		gbc_callsParameterPanel.gridy = 4;
 		add(callsParameterPanel, gbc_callsParameterPanel);
 		callsParameterPanel.setLayout(new BoxLayout(callsParameterPanel, BoxLayout.Y_AXIS));
-		
+
 		callsOperationsPanel = new JPanel();
 		GridBagConstraints gbc_callsOperations = new GridBagConstraints();
 		gbc_callsOperations.fill = GridBagConstraints.VERTICAL;
@@ -419,9 +419,9 @@ public class ScheduleLine extends JPanel {
 		gbc_callsOperations.gridy = 4;
 		add(callsOperationsPanel, gbc_callsOperations);
 		callsOperationsPanel.setOpaque(false);
-//		callsOperationsPanel.setBackground(Color.red);
+		//		callsOperationsPanel.setBackground(Color.red);
 		callsOperationsPanel.setLayout(new BoxLayout(callsOperationsPanel, BoxLayout.Y_AXIS));
-		
+
 		expressionField.addFocusListener(new FocusListener() {
 			@Override
 			public void focusLost(FocusEvent e) {
@@ -530,7 +530,7 @@ public class ScheduleLine extends JPanel {
 	public void setCron(String cronLine) {
 		// assume cronLine is correct
 		cronLine = CronUtils.fragStrToNum(cronLine);
-		
+
 		final String[] values;
 		Matcher sm = CronUtils.SUNSET_PATTERN.matcher(cronLine);
 		if(sm.matches()) {
@@ -559,7 +559,7 @@ public class ScheduleLine extends JPanel {
 			secondsTextField.setEnabled(true);
 			values = cronLine.split(" ");
 		}
-		
+
 		secondsTextField.setText(values[0]);
 		minutesTextField.setText(values[1]);
 		hoursTextField.setText(values[2]);
@@ -606,7 +606,7 @@ public class ScheduleLine extends JPanel {
 		}
 		asString();
 	}
-	
+
 	public void asString() {
 		String res = "";
 		String minutes = minutesTextField.getText();
@@ -642,7 +642,14 @@ public class ScheduleLine extends JPanel {
 		expressionField.setText(res);
 		expressionField.setForeground((CronUtils.CRON_PATTERN.matcher(res).matches() || CronUtils.SUNSET_PATTERN.matcher(res).matches()) ? null : Color.red);
 	}
-	
+
+	public boolean isNullLine() {
+		return expressionField.getText().equals(DEF_CRON) &&
+				callsPanel.getComponentCount() == 1 &&
+				((JTextField)callsPanel.getComponent(0)).getText().isBlank() &&
+				((JTextField)callsParameterPanel.getComponent(0)).getText().isBlank();
+	}
+
 	public boolean validateData() {
 		String exp = expressionField.getText();
 		if(CronUtils.CRON_PATTERN.matcher(exp).matches() == false && CronUtils.SUNSET_PATTERN.matcher(exp).matches() == false) {
@@ -651,13 +658,13 @@ public class ScheduleLine extends JPanel {
 			return false;
 		}
 		for(int i = 0; i < callsPanel.getComponentCount(); i++) {
-			if(((JTextField)callsPanel.getComponent(i)).getText().trim().isEmpty()) {
+			if(((JTextField)callsPanel.getComponent(i)).getText().isBlank()) {
 				callsPanel.getComponent(i).requestFocus();
 				Msg.errorMsg(parent, "schErrorInvalidMethod");
 				return false;
 			}
 			String parameters = ((JTextField)callsParameterPanel.getComponent(i)).getText();
-			if(parameters.trim().isEmpty() == false) {
+			if(parameters.isBlank() == false) {
 				try {
 					JSON_MAPPER.readTree("{" + parameters + "}");
 				} catch (JsonProcessingException e) {
@@ -669,17 +676,17 @@ public class ScheduleLine extends JPanel {
 		}
 		return true;
 	}
-	
+
 	public ObjectNode getJson() {
 		final ObjectNode out = JsonNodeFactory.instance.objectNode();
 		out.put("timespec", expressionField.getText());
-		
+
 		final ArrayNode calls = JsonNodeFactory.instance.arrayNode();
 		for(int i = 0; i < callsPanel.getComponentCount(); i++) {
 			final ObjectNode call = JsonNodeFactory.instance.objectNode();
 			call.put("method", ((JTextField)callsPanel.getComponent(i)).getText());
 			String parameters = ((JTextField)callsParameterPanel.getComponent(i)).getText();
-			if(parameters.trim().isEmpty() == false) {
+			if(parameters.isBlank() == false) {
 				try {
 					call.set("params", JSON_MAPPER.readTree("{" + parameters + "}"));
 				} catch (JsonProcessingException e) {

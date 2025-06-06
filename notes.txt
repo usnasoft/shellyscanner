@@ -370,6 +370,7 @@ Schedule
 https://next-api-docs.shelly.cloud/gen2/ComponentsAndServices/Schedule
 https://github.com/mongoose-os-libs/cron
 https://crontab.guru/
+todo: virtual components paging
 
 // TODO
 // intercept cmd-Q on OSX (shutdown) - -Dapple.eawt.quitStrategy=CLOSE_ALL_WINDOWS
