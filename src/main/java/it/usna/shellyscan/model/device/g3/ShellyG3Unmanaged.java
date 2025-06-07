@@ -53,7 +53,7 @@ public class ShellyG3Unmanaged extends AbstractG3Device implements ShellyUnmanag
 	}
 	
 	public String getTypeName() {
-		return "Generic G3";
+		return (type == null || type.isEmpty()) ? "Generic G3" : "Generic (" + type + ")";
 	}
 	
 	@Override

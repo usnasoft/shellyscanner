@@ -45,9 +45,9 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import it.usna.shellyscan.controller.UsnaDropdownAction;
 import it.usna.shellyscan.view.util.Msg;
 
-public class ScheduleLine extends JPanel {
+public class JobPanel extends JPanel {
 	private static final long serialVersionUID = 1L;
-	private final static ImageIcon EDIT_IMG = new ImageIcon(ScheduleLine.class.getResource("/images/Write16.png"));
+	private final static ImageIcon EDIT_IMG = new ImageIcon(JobPanel.class.getResource("/images/Write16.png"));
 	private JTextField hoursTextField;
 	private JTextField minutesTextField;
 	private JTextField secondsTextField;
@@ -74,7 +74,7 @@ public class ScheduleLine extends JPanel {
 	/**
 	 * @wbp.parser.constructor
 	 */
-	ScheduleLine(JDialog parent, JsonNode scheduleNode, MethodHints mHints) {
+	JobPanel(JDialog parent, JsonNode scheduleNode, MethodHints mHints) {
 		this.parent = parent;
 		this.mHints = mHints;
 		setOpaque(false);
@@ -643,7 +643,7 @@ public class ScheduleLine extends JPanel {
 		expressionField.setForeground((CronUtils.CRON_PATTERN.matcher(res).matches() || CronUtils.SUNSET_PATTERN.matcher(res).matches()) ? null : Color.red);
 	}
 
-	public boolean isNullLine() {
+	public boolean isNullJob() {
 		return expressionField.getText().equals(DEF_CRON) &&
 				callsPanel.getComponentCount() == 1 &&
 				((JTextField)callsPanel.getComponent(0)).getText().isBlank() &&

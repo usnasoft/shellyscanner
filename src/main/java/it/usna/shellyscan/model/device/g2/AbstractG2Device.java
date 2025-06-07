@@ -12,6 +12,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.EnumMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -36,6 +37,7 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.exc.StreamReadException;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
@@ -51,6 +53,7 @@ import it.usna.shellyscan.model.device.g2.modules.InputResetManagerG2;
 import it.usna.shellyscan.model.device.g2.modules.KVS;
 import it.usna.shellyscan.model.device.g2.modules.LoginManagerG2;
 import it.usna.shellyscan.model.device.g2.modules.MQTTManagerG2;
+import it.usna.shellyscan.model.device.g2.modules.RangeExtenderManager;
 import it.usna.shellyscan.model.device.g2.modules.Script;
 import it.usna.shellyscan.model.device.g2.modules.SensorAddOn;
 import it.usna.shellyscan.model.device.g2.modules.TimeAndLocationManagerG2;
@@ -292,6 +295,20 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 			JsonNode error = resp.get("error");
 			throw new DeviceAPIException(error.get("code").intValue(), error.get("message").asText("Generic error"));
 		}
+	}
+	
+	/**
+	 * example: <code> {
+	 *  "items" : [ {"key" : "key", "etag" : "xxxyyy", "value" : "{}"} ],
+	 *  "offset" : 0, "total" : 1
+	 * } </code>
+	 * @param method - e.g. /rpc/KVS.GetMany
+	 * @param arrayKey - e.g. items
+	 * @return an Iterator&lt;JsonNode&gt; navigating through pages
+	 * @throws IOException
+	 */
+	public Iterator<JsonNode> getJSONIterator(final String method, final String arrayKey) throws IOException {
+		return new PageIterator(this, method, arrayKey);
 	}
 
 	private JsonNode executeRPC(final String method, String payload) throws IOException, StreamReadException { // StreamReadException extends ... IOException
@@ -623,6 +640,34 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 
 	/** device specific */
 	protected abstract void restore(Map<String, JsonNode> backupJsons, List<String> errors) throws IOException, InterruptedException;
+	
+	protected JsonNode sectionToStream(final String section, final String arrayKey, final String entryName, FileSystem fs) throws IOException {
+		try(BufferedWriter writer = Files.newBufferedWriter(fs.getPath(entryName))) {
+			String req = section;
+			int offset = 0;
+			int tot = 0;
+			JsonNode resp = getJSON(req);
+			JsonNode arrayNode = resp.path(arrayKey);
+			do {
+				if(offset > 0) {
+					TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+					JsonNode fragment = getJSON(req);
+					ArrayNode fragmentArrayNode = (ArrayNode)fragment.path(arrayKey);
+					((ArrayNode)arrayNode).addAll(fragmentArrayNode);
+				}
+				JsonNode offsetNode;
+				if((offsetNode = resp.get("offset")) != null && (tot = resp.path("total").intValue()) > 0) { // potentially needs multiple calls
+					offset = offsetNode.intValue() + arrayNode.size();
+					req = section + ((section.contains("?")) ? "&offset=" : "?offset=") + offset;
+				}
+			} while(tot > offset);
+			jsonMapper.writer().writeValue(writer, resp);
+			return resp;
+		} catch (InterruptedException e) {
+			LOG.debug("sectionToStream {}-{}", section, arrayKey, e);
+			throw new DeviceOfflineException(e);
+		}
+	}
 	
 	/* experimental */
 //	public Future<Session> connectWebSocketLogs2(WebSocketDeviceListener listener) throws IOException, InterruptedException, ExecutionException {

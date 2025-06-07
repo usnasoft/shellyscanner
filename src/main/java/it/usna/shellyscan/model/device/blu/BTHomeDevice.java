@@ -12,6 +12,7 @@ import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -157,16 +158,17 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 	
 	@Override
 	public void refreshStatus() throws IOException {
-		JsonNode components = getJSON("/rpc/Shelly.GetComponents?dynamic_only=true").path("components");
-		String k;
+		Iterator<JsonNode> componentsIt = getJSONIterator("/rpc/Shelly.GetComponents?dynamic_only=true", "components");
+		String compKey;
 		boolean devExists = false;
-		for(JsonNode comp: components) {
+		while(componentsIt.hasNext()) {
+			JsonNode comp = componentsIt.next();
 			if(devExists == false && comp.path("key").textValue().equals(DEVICE_KEY_PREFIX + componentIndex)) { // devExists == false for efficiency
 				fillSettings(comp.path("config"));
 				fillStatus(comp.path("status"));
 				devExists = true;
-			} else if((k = comp.path("key").textValue()).startsWith(SENSOR_KEY_PREFIX)) {
-				int id = Integer.parseInt(k.substring(13));
+			} else if((compKey = comp.path("key").textValue()).startsWith(SENSOR_KEY_PREFIX)) {
+				int id = Integer.parseInt(compKey.substring(13));
 				Sensor sensor = sensors.getSensor(id);
 				if(sensor != null) {
 					sensor.fill(comp);

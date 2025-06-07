@@ -94,7 +94,7 @@ public class MethodHints {
 					methodsList.add(new Method(nameBase + "On, green", "RGBW.Set", "\"id\":" + id + ",\"on\":true,\"white\":0,\"rgb\":[0,255,0]"));
 					methodsList.add(new Method(nameBase + "On, blu", "RGBW.Set", "\"id\":" + id + ",\"on\":true,\"white\":0,\"rgb\":[0,0,255]"));
 					methodsList.add(new Method(nameBase + "On, white", "RGBW.Set", "\"id\":" + id + ",\"on\":true,\"rgb\":[0,0,0],\"white\":255"));
-				} else if(key.startsWith("cct")) {
+				} else if(key.startsWith("cct:")) {
 					int id = comp.get("config").path("id").intValue();
 					String nameBase = actionBaseName(comp);
 					methodsList.add(new Method(nameBase + "On", "CCT.Set", "\"id\":" + id + ",\"on\":true"));
