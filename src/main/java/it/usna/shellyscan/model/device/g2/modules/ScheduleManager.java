@@ -25,18 +25,17 @@ public class ScheduleManager {
 	/**
 	 * @param def
 	 * @param enable
-	 * @return the new id
+	 * @return the new id; < 0 in case of errpr
 	 * @throws IOException 
 	 */
-	public int create(ObjectNode def, boolean enable) throws IOException {
-//		todo test
-		def.put("enable", enable);
+	public int create(JsonNode def, boolean enable) throws IOException {
+		((ObjectNode)def).put("enable", enable);
 		JsonNode res = device.getJSON("Schedule.Create", def);
-		return res.get("id").asInt(-1);
+		return res.path("id").asInt(-1);
 	}
 	
-	public String update(int id, ObjectNode def) {
-		def.put("id", id);
+	public String update(int id, JsonNode def) {
+		((ObjectNode)def).put("id", id);
 		return device.postCommand("Schedule.Update", def);
 	}
 	

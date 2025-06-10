@@ -169,20 +169,30 @@ public class SchedulerDialog extends JDialog {
 
 				if(/*i > 0 ||*/ sl.isNullJob() == false) {
 					ObjectNode jobJson = sl.getJson();
+					String res = null;
 					if(original.id < 0) {
 						JButton enableBtn = (JButton)((JPanel)schedulesPanel.getComponent(i)).getComponent(1);
 						int newId = sceduleManager.create(jobJson, ((UsnaToggleAction)enableBtn.getAction()).isSelected());
 						originalValues.set(i, new ScheduleData(newId, jobJson));
-					} else if(jobJson.get("timespec").equals(original.orig.get("timespec")) == false || jobJson.get("calls").equals(original.orig.get("calls")) == false) { // id >= 0 -> existed
-						String res = sceduleManager.update(original.id, jobJson);
-						originalValues.set(i, new ScheduleData(original.id, jobJson));
-						if(res != null) {
-							Msg.errorMsg(this, res);
-							return false;
+						if(newId < 0) {
+							res = "creation error";
 						}
+					} else if(sl.hasSystemCalls() && jobJson.get("timespec").equals(original.orig.get("timespec")) == false) {
+						jobJson.remove("calls");
+						res = sceduleManager.update(original.id, jobJson);
+						originalValues.set(i, new ScheduleData(original.id, jobJson));
+					} else if(sl.hasSystemCalls() == false &&
+							(jobJson.get("timespec").equals(original.orig.get("timespec")) == false || jobJson.get("calls").equals(original.orig.get("calls")) == false)) { // id >= 0 -> existed
+						res = sceduleManager.update(original.id, jobJson);
+						originalValues.set(i, new ScheduleData(original.id, jobJson));
+					}
+					if(res != null) {
+						Msg.errorMsg(this, res);
+						return false;
 					}
 				}
 			}
+			try { TimeUnit.MILLISECONDS.sleep(300); } catch (InterruptedException e1) {} // a small time to show busy pointer
 			return true;
 		} catch (IOException e) {
 			Msg.errorMsg(this, e);
@@ -276,10 +286,14 @@ public class SchedulerDialog extends JDialog {
 		JPanel opPanel = new JPanel(new VerticalFlowLayout());
 		opPanel.setOpaque(false);
 		opPanel.add(addBtn);
-		opPanel.add(duplicateBtn);
+		if(job.hasSystemCalls() == false) {
+			opPanel.add(duplicateBtn);
+		}
 		opPanel.add(removeBtn);
 		opPanel.add(copyBtn);
-		opPanel.add(pasteBtn);
+		if(job.hasSystemCalls() == false) {
+			opPanel.add(pasteBtn);
+		}
 		linePanel.add(opPanel, BorderLayout.EAST);
 		
 		ScheduleData thisScheduleLine = new ScheduleData((node != null) ? node.path("id").asInt(-1) : -1, job.getJson());

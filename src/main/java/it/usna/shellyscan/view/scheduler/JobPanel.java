@@ -66,6 +66,8 @@ public class JobPanel extends JPanel {
 	private JPanel callsParameterPanel;
 	private JPanel callsOperationsPanel;
 	private JDialog parent;
+	
+	private boolean systemJob = false;
 
 	private final MethodHints mHints;// = new MethodHints();
 	private final static String DEF_CRON = "0 0 * * * *";
@@ -102,6 +104,14 @@ public class JobPanel extends JPanel {
 			JsonNode call = callsIt.next();
 			String params = call.path("params").toString();
 			addCall(call.path("method").asText(), params.isEmpty() ? "" :  params.substring(1, params.length() - 1), i);
+			if(call.hasNonNull("origin")) {
+				systemJob = true;
+			}
+		}
+		if(systemJob) {
+			enableEdit(callsPanel, false);
+			enableEdit(callsParameterPanel, false);
+			enableEdit(callsOperationsPanel, false);
 		}
 	}
 
@@ -572,9 +582,7 @@ public class JobPanel extends JPanel {
 		String months = values[4];
 		if(months.contains("/")) {
 			this.months = months;
-			for(int i = 0; i < 12; i++) {
-				monthsPanel.getComponent(i).setEnabled(false);
-			}
+			enableEdit(monthsPanel, false);
 		} else {
 			if(months.equals("*")) {
 				months ="1-12";
@@ -592,9 +600,7 @@ public class JobPanel extends JPanel {
 		String daysOfWeek = values[5];
 		if(daysOfWeek.contains("/")) {
 			this.daysOfWeek = daysOfWeek;
-			for(int i = 0; i < 7; i++) {
-				daysOfWeekPanel.getComponent(i).setEnabled(false);
-			}
+			enableEdit(daysOfWeekPanel, false);
 		} else {
 			if(daysOfWeek.equals("*")) {
 				daysOfWeek ="0-6";
@@ -605,6 +611,16 @@ public class JobPanel extends JPanel {
 			computeDaysOfWeek();
 		}
 		asString();
+	}
+	
+	private static void enableEdit(JPanel panel, boolean enable) {
+		for(Component c: panel.getComponents()) {
+			if(c instanceof JPanel p) {
+				enableEdit(p, enable);
+			} else {
+				c.setEnabled(enable);
+			}
+		}
 	}
 
 	public void asString() {
@@ -676,11 +692,14 @@ public class JobPanel extends JPanel {
 		}
 		return true;
 	}
+	
+	public boolean hasSystemCalls() {
+		return systemJob;
+	}
 
 	public ObjectNode getJson() {
 		final ObjectNode out = JsonNodeFactory.instance.objectNode();
 		out.put("timespec", expressionField.getText());
-
 		final ArrayNode calls = JsonNodeFactory.instance.arrayNode();
 		for(int i = 0; i < callsPanel.getComponentCount(); i++) {
 			final ObjectNode call = JsonNodeFactory.instance.objectNode();
@@ -702,4 +721,5 @@ public class JobPanel extends JPanel {
 	}
 }
 
-// todo manage cases like "origin" : "shelly_service" (auto firmware update)
+// 0 0 2-7,10 1 * * KO
+// 0 0 10,2-7 1 * * OK
