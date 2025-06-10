@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class CronUtils {
 	private final static String[] WEEK_DAYS = new String[] {"SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"};
@@ -77,27 +78,58 @@ public class CronUtils {
 		return in;
 	}
 
+//	public static String listAsCronString(List<Integer> list) {
+//		list.add(Integer.MAX_VALUE); // tail
+//		String res = "";
+//		int init = list.get(0);
+//		int last = init;
+//		for (int i = 1; i < list.size(); i++) {
+//			if (list.get(i) > last + 1) {
+//				if (init == last) {
+//					res += res.isEmpty() ? init : "," + init;
+//					init = last = list.get(i);
+//				} else if (init == last - 1) {
+//					res += res.isEmpty() ? init + "," + last : "," + init + "," + last;
+//					init = last = list.get(i);
+//				} else if (init < last - 1) {
+//					res += res.isEmpty() ? init + "-" + last : "," + init + "-" + last;
+//					init = last = list.get(i);
+//				}
+//			} else {
+//				last = list.get(i);
+//			}
+//		}
+//		return res;
+//	}
+	
+	/**
+	 * Shelly implementation want single values before groups (5,1-3 instead of 1-3,5)
+	 * @param list list of single valued (Integer)
+	 * @return a string in cron format
+	 */
 	public static String listAsCronString(List<Integer> list) {
+		List<String> single = new ArrayList<>();
+		List<String> group = new ArrayList<>();
 		list.add(Integer.MAX_VALUE); // tail
-		String res = "";
 		int init = list.get(0);
 		int last = init;
 		for (int i = 1; i < list.size(); i++) {
 			if (list.get(i) > last + 1) {
 				if (init == last) {
-					res += res.isEmpty() ? init : "," + init;
+					single.add(init + "");
 					init = last = list.get(i);
 				} else if (init == last - 1) {
-					res += res.isEmpty() ? init + "," + last : "," + init + "," + last;
+					single.add(init + "," + last);
 					init = last = list.get(i);
 				} else if (init < last - 1) {
-					res += res.isEmpty() ? init + "-" + last : "," + init + "-" + last;
+					group.add(init + "-" + last);
 					init = last = list.get(i);
 				}
 			} else {
 				last = list.get(i);
 			}
 		}
-		return res;
+		single.addAll(group);
+		return single.stream().collect(Collectors.joining(","));
 	}
 }
