@@ -344,6 +344,7 @@ public class SchedulerDialog extends JDialog {
 // https://github.com/mongoose-os-libs/cron
 // https://crontab.guru/
 // https://regex101.com/
+// https://www.freeformatter.com/regex-tester.html
 
 // http://<ip>/rpc/Schedule.DeleteAll
 // http://<ip>/rpc/Schedule.Create?timespec="0 0 22 * * FRI"&calls=[{"method":"Shelly.GetDeviceInfo"}]

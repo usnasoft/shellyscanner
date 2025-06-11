@@ -39,8 +39,10 @@ public class CronUtils {
 	public final static Pattern SECONDS_PATTERN = Pattern.compile(REX_SECONDS);
 	public final static Pattern DAYS_PATTERN = Pattern.compile(REX_MONTHDAYS);
 
-	public final static Pattern CRON_PATTERN = Pattern.compile("(" + REX_SECONDS + ") (" + REX_MINUTES + ") (" + REX_SECONDS + ") (" + REX_MONTHDAYS + ") (" + REX_MONTHS + ") (" + REX_WEEKDAYS + ")");
+	public final static Pattern CRON_PATTERN = Pattern.compile("(" + REX_SECONDS + ") (" + REX_MINUTES + ") (" + REX_HOURS + ") (" + REX_MONTHDAYS + ") (" + REX_MONTHS + ") (" + REX_WEEKDAYS + ")");
 	public final static Pattern SUNSET_PATTERN = Pattern.compile("@(sunset|sunrise)((\\+|-)(?<HOUR>" + REX_0_23 + ")h((?<MINUTE>" + REX_0_59 + ")m)?)?( (?<DAY>" + REX_MONTHDAYS + ") (?<MONTH>" + REX_MONTHS + ") (?<WDAY>" + REX_WEEKDAYS + "))?");
+	
+	public final static Pattern RANDOM_PATTERN =  Pattern.compile("@random:\\{\"from\":\"" + REX_0_59 + " " + REX_0_59 + "\", *\"to\":\"" + REX_0_59 + " " + REX_0_59 + "\", *\"number\":\\d+\\}");
 	
 //	private final static Pattern FIND_PATTERN = Pattern.compile("(\\d+-\\d+|\\*/\\d+|\\d+/\\d+|\\d+)");
 	private final static Pattern FIND_PATTERN = Pattern.compile("(\\d+-\\d+|\\d+)");
@@ -57,7 +59,8 @@ public class CronUtils {
 			String frag = m.group(1);
 			if(frag.contains("-")) {
 				String[] split = frag.split("-");
-				for(int val = Integer.parseInt(split[0]); val <= Integer.parseInt(split[1]); val++) {
+				int max = Integer.parseInt(split[1]);
+				for(int val = Integer.parseInt(split[0]); val <= max; val++) {
 					res.add(val);
 				}
 			} else {
@@ -77,30 +80,6 @@ public class CronUtils {
 		}
 		return in;
 	}
-
-//	public static String listAsCronString(List<Integer> list) {
-//		list.add(Integer.MAX_VALUE); // tail
-//		String res = "";
-//		int init = list.get(0);
-//		int last = init;
-//		for (int i = 1; i < list.size(); i++) {
-//			if (list.get(i) > last + 1) {
-//				if (init == last) {
-//					res += res.isEmpty() ? init : "," + init;
-//					init = last = list.get(i);
-//				} else if (init == last - 1) {
-//					res += res.isEmpty() ? init + "," + last : "," + init + "," + last;
-//					init = last = list.get(i);
-//				} else if (init < last - 1) {
-//					res += res.isEmpty() ? init + "-" + last : "," + init + "-" + last;
-//					init = last = list.get(i);
-//				}
-//			} else {
-//				last = list.get(i);
-//			}
-//		}
-//		return res;
-//	}
 	
 	/**
 	 * Shelly implementation want single values before groups (5,1-3 instead of 1-3,5)
