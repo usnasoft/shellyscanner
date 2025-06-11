@@ -37,11 +37,6 @@ import it.usna.swing.VerticalFlowLayout;
 
 public class SchedulerDialog extends JDialog {
 	private static final long serialVersionUID = 1L;
-	//	private final static String INITIAL_VAL = "0 * 1 * 2,3,5-7,dec *";
-	//	private final static String INITIAL_VAL = "@sunset+1h30m 1 dec sun";
-	//	private final static String INITIAL_VAL = "@sunrise-1h30m";
-	//	private final static String INITIAL_VAL = "@sunrise+1h";
-	//	private final static String INITIAL_VAL = "@sunrise";
 
 	private final ScheduleManager sceduleManager;
 	private final MethodHints mHints;
