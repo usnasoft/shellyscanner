@@ -13,6 +13,7 @@ import java.awt.Insets;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.awt.event.ItemListener;
 import java.time.DayOfWeek;
 import java.time.Month;
 import java.time.format.TextStyle;
@@ -185,7 +186,7 @@ public class JobPanel extends JPanel {
 		JLabel lblNewLabel = new JLabel(LABELS.getString("lblHours"));
 		GridBagConstraints gbc_lblNewLabel = new GridBagConstraints();
 		gbc_lblNewLabel.anchor = GridBagConstraints.WEST;
-		gbc_lblNewLabel.insets = new Insets(0, 0, 5, 5);
+		gbc_lblNewLabel.insets = new Insets(0, 3, 5, 5);
 		gbc_lblNewLabel.gridx = 0;
 		gbc_lblNewLabel.gridy = 0;
 		add(lblNewLabel, gbc_lblNewLabel);
@@ -194,7 +195,7 @@ public class JobPanel extends JPanel {
 		btnHoursSelec.setContentAreaFilled(false);
 		btnHoursSelec.setBorder(BorderFactory.createEmptyBorder());
 		GridBagConstraints gbc_btnHoursSelec = new GridBagConstraints();
-		gbc_btnHoursSelec.insets = new Insets(1, 0, 1, 10);
+		gbc_btnHoursSelec.insets = new Insets(1, 0, 1, 8);
 		gbc_btnHoursSelec.gridx = 1;
 		gbc_btnHoursSelec.gridy = 0;
 		add(btnHoursSelec, gbc_btnHoursSelec);
@@ -204,7 +205,7 @@ public class JobPanel extends JPanel {
 		btnMinutesSelec.setContentAreaFilled(false);
 		btnMinutesSelec.setBorder(BorderFactory.createEmptyBorder());
 		GridBagConstraints gbc_btnMinutesSelec = new GridBagConstraints();
-		gbc_btnMinutesSelec.insets = new Insets(1, 0, 1, 10);
+		gbc_btnMinutesSelec.insets = new Insets(1, 0, 1, 8);
 		gbc_btnMinutesSelec.gridx = 3;
 		gbc_btnMinutesSelec.gridy = 0;
 		add(btnMinutesSelec, gbc_btnMinutesSelec);
@@ -213,7 +214,7 @@ public class JobPanel extends JPanel {
 		JLabel lblNewLabel_2 = new JLabel(LABELS.getString("lblSeconds"));
 		GridBagConstraints gbc_lblNewLabel_2 = new GridBagConstraints();
 		gbc_lblNewLabel_2.anchor = GridBagConstraints.WEST;
-		gbc_lblNewLabel_2.insets = new Insets(0, 0, 5, 5);
+		gbc_lblNewLabel_2.insets = new Insets(0, 3, 5, 5);
 		gbc_lblNewLabel_2.gridx = 4;
 		gbc_lblNewLabel_2.gridy = 0;
 		add(lblNewLabel_2, gbc_lblNewLabel_2);
@@ -222,7 +223,7 @@ public class JobPanel extends JPanel {
 		btnSecondsSelec.setContentAreaFilled(false);
 		btnSecondsSelec.setBorder(BorderFactory.createEmptyBorder());
 		GridBagConstraints gbc_btnSecondsSelec = new GridBagConstraints();
-		gbc_btnSecondsSelec.insets = new Insets(1, 0, 1, 10);
+		gbc_btnSecondsSelec.insets = new Insets(1, 0, 1, 8);
 		gbc_btnSecondsSelec.gridx = 5;
 		gbc_btnSecondsSelec.gridy = 0;
 		add(btnSecondsSelec, gbc_btnSecondsSelec);
@@ -231,7 +232,7 @@ public class JobPanel extends JPanel {
 		JLabel lblNewLabel_3 = new JLabel(LABELS.getString("lblDays"));
 		GridBagConstraints gbc_lblNewLabel_3 = new GridBagConstraints();
 		gbc_lblNewLabel_3.anchor = GridBagConstraints.WEST;
-		gbc_lblNewLabel_3.insets = new Insets(0, 0, 5, 5);
+		gbc_lblNewLabel_3.insets = new Insets(0, 3, 5, 5);
 		gbc_lblNewLabel_3.gridx = 6;
 		gbc_lblNewLabel_3.gridy = 0;
 		add(lblNewLabel_3, gbc_lblNewLabel_3);
@@ -240,7 +241,7 @@ public class JobPanel extends JPanel {
 		btnDaysSelec.setContentAreaFilled(false);
 		btnDaysSelec.setBorder(BorderFactory.createEmptyBorder());
 		GridBagConstraints gbc_btnDaysSelec = new GridBagConstraints();
-		gbc_btnDaysSelec.insets = new Insets(1, 0, 1, 10);
+		gbc_btnDaysSelec.insets = new Insets(1, 0, 1, 8);
 		gbc_btnDaysSelec.gridx = 7;
 		gbc_btnDaysSelec.gridy = 0;
 		add(btnDaysSelec, gbc_btnDaysSelec);
@@ -259,7 +260,7 @@ public class JobPanel extends JPanel {
 		JLabel lblNewLabel_1 = new JLabel(LABELS.getString("lblMinutes"));
 		GridBagConstraints gbc_lblNewLabel_1 = new GridBagConstraints();
 		gbc_lblNewLabel_1.anchor = GridBagConstraints.WEST;
-		gbc_lblNewLabel_1.insets = new Insets(0, 0, 5, 5);
+		gbc_lblNewLabel_1.insets = new Insets(0, 3, 5, 5);
 		gbc_lblNewLabel_1.gridx = 2;
 		gbc_lblNewLabel_1.gridy = 0;
 		add(lblNewLabel_1, gbc_lblNewLabel_1);
@@ -314,14 +315,14 @@ public class JobPanel extends JPanel {
 		gbc_daysOfWeek.gridy = 0;
 		add(daysOfWeekPanel, gbc_daysOfWeek);
 
-		JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-		panel.setOpaque(false);
+		JPanel radioPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+		radioPanel.setOpaque(false);
 		GridBagConstraints gbc_panel = new GridBagConstraints();
 		gbc_panel.gridwidth = 7;
 		//		gbc_panel.insets = new Insets(0, 0, 5, 5);
 		gbc_panel.gridx = 0;
 		gbc_panel.gridy = 2;
-		add(panel, gbc_panel);
+		add(radioPanel, gbc_panel);
 
 		GridBagConstraints gbc_lblNewLabel_5 = new GridBagConstraints();
 		gbc_lblNewLabel_5.anchor = GridBagConstraints.WEST;
@@ -348,13 +349,15 @@ public class JobPanel extends JPanel {
 		add(callsPanel, gbc_callsPanel);
 		callsPanel.setLayout(new BoxLayout(callsPanel, BoxLayout.Y_AXIS));
 		callsPanel.setOpaque(true);
-
-		ActionListener changeType = e -> { // cron <-> sunset/sunrise
-			if(((JRadioButton)e.getSource()).isSelected()) {
+		
+		ItemListener changeType = e -> {
+			if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {
 				if(e.getSource() == cronRadio) {
 					secondsTextField.setEnabled(true);
+					btnSecondsSelec.setEnabled(true);
 				} else {
 					secondsTextField.setEnabled(false);
+					btnSecondsSelec.setEnabled(false);
 					secondsTextField.setText("0");
 					if(CronUtils.HOUR_0_23_PATTERN.matcher(hoursTextField.getText()).matches() == false) {
 						hoursTextField.setText("0");
@@ -371,28 +374,28 @@ public class JobPanel extends JPanel {
 
 		cronRadio = new JRadioButton(LABELS.getString("lblTime"));
 		cronRadio.setOpaque(false);
-		cronRadio.addActionListener(changeType);
-		panel.add(cronRadio);
+		cronRadio.addItemListener(changeType);
+		radioPanel.add(cronRadio);
 
 		beforeRiseRadio = new JRadioButton(LABELS.getString("lblBeforeSunrise"));
 		beforeRiseRadio.setOpaque(false);
-		beforeRiseRadio.addActionListener(changeType);
-		panel.add(beforeRiseRadio);
+		beforeRiseRadio.addItemListener(changeType);
+		radioPanel.add(beforeRiseRadio);
 
 		afterRiseRadio = new JRadioButton(LABELS.getString("lblAfterSunrise"));
 		afterRiseRadio.setOpaque(false);
-		afterRiseRadio.addActionListener(changeType);
-		panel.add(afterRiseRadio);
+		afterRiseRadio.addItemListener(changeType);
+		radioPanel.add(afterRiseRadio);
 
 		beforeSetRadio = new JRadioButton(LABELS.getString("lblBeforeSunset"));
 		beforeSetRadio.setOpaque(false);
-		beforeSetRadio.addActionListener(changeType);
-		panel.add(beforeSetRadio);
+		beforeSetRadio.addItemListener(changeType);
+		radioPanel.add(beforeSetRadio);
 
 		afterSetRadio = new JRadioButton(LABELS.getString("lblAfterSunset"));
 		afterSetRadio.setOpaque(false);
-		afterSetRadio.addActionListener(changeType);
-		panel.add(afterSetRadio);
+		afterSetRadio.addItemListener(changeType);
+		radioPanel.add(afterSetRadio);
 
 		ButtonGroup modeGroup = new ButtonGroup();
 		modeGroup.add(cronRadio);
@@ -537,14 +540,13 @@ public class JobPanel extends JPanel {
 		daysOfWeek = (seq.size() == 7 || seq.isEmpty()) ? "*" : CronUtils.listAsCronString(seq);
 	}
 
+	// assume cronLine is correct
 	public void setCron(String cronLine) {
-		// assume cronLine is correct
 		cronLine = CronUtils.fragStrToNum(cronLine);
 
 		final String[] values;
 		Matcher sm = CronUtils.SUNSET_PATTERN.matcher(cronLine);
 		if(sm.matches()) {
-			secondsTextField.setEnabled(false);
 			String hours = sm.group("HOUR");
 			String minutes = sm.group("MINUTE");
 			String day = sm.group("DAY");
@@ -566,7 +568,6 @@ public class JobPanel extends JPanel {
 			}
 		} else {
 			cronRadio.setSelected(true);
-			secondsTextField.setEnabled(true);
 			values = cronLine.split(" ");
 		}
 
@@ -615,11 +616,11 @@ public class JobPanel extends JPanel {
 	
 	private static void enableEdit(JPanel panel, boolean enable) {
 		for(Component c: panel.getComponents()) {
-			if(c instanceof JPanel p) {
-				enableEdit(p, enable);
-			} else {
+//			if(c instanceof JPanel p) {
+//				enableEdit(p, enable);
+//			} else {
 				c.setEnabled(enable);
-			}
+//			}
 		}
 	}
 
@@ -720,6 +721,3 @@ public class JobPanel extends JPanel {
 		return out;
 	}
 }
-
-// 0 0 2-7,10 1 * * KO
-// 0 0 10,2-7 1 * * OK

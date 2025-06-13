@@ -19,14 +19,14 @@ public class CronUtils {
 
 	private final static String REX_HOUR = "(" + REX_0_23 + "-" + REX_0_23 + "|\\*/" + REX_1_9999 + "|" + REX_0_23 + "/" + REX_1_9999 + "|" + REX_0_23 + ")";
 	private final static String REX_MINUTE = "(" + REX_0_59 + "-" + REX_0_59 +  "|\\*/" + REX_1_9999 + "|" + REX_0_59 + "/" + REX_1_9999 + "|" + REX_0_59  + ")";
-	private final static String REX_SECOND = "(" + REX_0_59 + "-" + REX_0_59 +  "|\\*/" + REX_1_9999 + "|" + REX_0_59 + "/" + REX_1_9999 + "|" + REX_0_59  + ")";
+//	private final static String REX_SECOND = "(" + REX_0_59 + "-" + REX_0_59 +  "|\\*/" + REX_1_9999 + "|" + REX_0_59 + "/" + REX_1_9999 + "|" + REX_0_59  + ")";
 	private final static String REX_MONTHDAY = "(" + REX_1_31 + "-" + REX_1_31 +  "|\\*/" + REX_1_9999 + "|" + REX_1_31 + "/" + REX_1_9999 + "|" + REX_1_31 + ")";
 	private final static String REX_MONTH = "(" + REX_1_12 + "-" + REX_1_12 +  "|\\*/" + REX_1_9999 + "|" + REX_1_12 + "/" + REX_1_9999 + "|" + REX_1_12 + ")";
 	private final static String REX_WEEKDAY = "(" + REX_0_6 + "-" + REX_0_6 +  "|\\*/" + REX_1_9999 + "|" + REX_0_6 + "/" + REX_1_9999 + "|" + REX_0_6 + ")";
 
 	private final static String REX_HOURS = "\\*|" + REX_HOUR + "(," + REX_HOUR + ")*";
 	private final static String REX_MINUTES = "\\*|" + REX_MINUTE + "(," + REX_MINUTE + ")*";
-	private final static String REX_SECONDS = "\\*|" + REX_SECOND + "(," + REX_SECOND + ")*";
+	private final static String REX_SECONDS = REX_MINUTES; //"\\*|" + REX_SECOND + "(," + REX_SECOND + ")*";
 	private final static String REX_MONTHDAYS = "\\*|" + REX_MONTHDAY + "(," + REX_MONTHDAY + ")*";
 	private final static String REX_MONTHS = "\\*|" + REX_MONTH + "(," + REX_MONTH + ")*";
 	private final static String REX_WEEKDAYS = "\\*|" + REX_WEEKDAY + "(," + REX_WEEKDAY + ")*";
@@ -36,19 +36,17 @@ public class CronUtils {
 
 	public final static Pattern HOURS_PATTERN = Pattern.compile(REX_HOURS);
 	public final static Pattern MINUTES_PATTERN = Pattern.compile(REX_MINUTES);
-	public final static Pattern SECONDS_PATTERN = Pattern.compile(REX_SECONDS);
+	public final static Pattern SECONDS_PATTERN = MINUTES_PATTERN; //Pattern.compile(REX_SECONDS);
 	public final static Pattern DAYS_PATTERN = Pattern.compile(REX_MONTHDAYS);
 
 	public final static Pattern CRON_PATTERN = Pattern.compile("(" + REX_SECONDS + ") (" + REX_MINUTES + ") (" + REX_HOURS + ") (" + REX_MONTHDAYS + ") (" + REX_MONTHS + ") (" + REX_WEEKDAYS + ")");
 	public final static Pattern SUNSET_PATTERN = Pattern.compile("@(sunset|sunrise)((\\+|-)(?<HOUR>" + REX_0_23 + ")h((?<MINUTE>" + REX_0_59 + ")m)?)?( (?<DAY>" + REX_MONTHDAYS + ") (?<MONTH>" + REX_MONTHS + ") (?<WDAY>" + REX_WEEKDAYS + "))?");
-	
-	public final static Pattern RANDOM_PATTERN =  Pattern.compile("@random:\\{\"from\":\"(" + REX_SECONDS + ") (" + REX_MINUTES + ") (" + REX_HOURS + ") (" + REX_MONTHDAYS + ") (" + REX_MONTHS + ") (" + REX_WEEKDAYS + ")\", ?\"to\":\"(" +
-			REX_SECONDS + ") (" + REX_MINUTES + ") (" + REX_HOURS + ") (" + REX_MONTHDAYS + ") (" + REX_MONTHS + ") (" + REX_WEEKDAYS + ")\", ?\"number\":\\d+\\}");
-	
-//	private final static Pattern FIND_PATTERN = Pattern.compile("(\\d+-\\d+|\\*/\\d+|\\d+/\\d+|\\d+)");
+
+	// todo correct expression - todo management 
+	//	public final static Pattern RANDOM_PATTERN =  Pattern.compile("@random:\\{\"from\":\"(" + REX_SECONDS + ") (" + REX_MINUTES + ") (" + REX_HOURS + ") (" + REX_MONTHDAYS + ") (" + REX_MONTHS + ") (" + REX_WEEKDAYS + ")\", ?\"to\":\"(" +
+	//			REX_SECONDS + ") (" + REX_MINUTES + ") (" + REX_HOURS + ") (" + REX_MONTHDAYS + ") (" + REX_MONTHS + ") (" + REX_WEEKDAYS + ")\", ?\"number\":\\d+\\}");
+
 	private final static Pattern FIND_PATTERN = Pattern.compile("(\\d+-\\d+|\\d+)");
-//	private final static Pattern MONTHS_FIND_PATTERN = Pattern.compile(",?" + REX_MONTH);
-//	private final static Pattern WEEKDAYS_FIND_PATTERN = Pattern.compile(",?" + REX_WEEKDAY);
 	
 	private CronUtils() {}
 	
@@ -83,7 +81,7 @@ public class CronUtils {
 	}
 	
 	/**
-	 * Shelly implementation want single values before groups (5,1-3 instead of 1-3,5)
+	 * Shelly implementation wants single values before groups (5,1-3 instead of 1-3,5)
 	 * @param list list of single valued (Integer)
 	 * @return a string in cron format
 	 */
