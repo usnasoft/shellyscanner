@@ -46,18 +46,8 @@ public class SchedulerDialog extends JDialog {
 
 	public SchedulerDialog(Window owner, AbstractG2Device device) {
 		super(owner, Main.LABELS.getString("schTitle") + " - " + UtilMiscellaneous.getExtendedHostName(device), Dialog.ModalityType.MODELESS);
-		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		this.sceduleManager = new ScheduleManager(device);
 		this.mHints = new MethodHints(device);
-
-		JScrollPane scrollPane = new JScrollPane(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-		scrollPane.getVerticalScrollBar().setUnitIncrement(16);
-		scrollPane.setViewportView(schedulesPanel);
-		schedulesPanel.setBackground(Main.BG_COLOR);
-		
-		scrollPane.setBorder(BorderFactory.createEmptyBorder());
-		getContentPane().add(scrollPane, BorderLayout.CENTER);
-		
 		boolean exist = false;
 		try {
 			Iterator<JsonNode> scIt = sceduleManager.getSchedules().iterator();
@@ -72,18 +62,7 @@ public class SchedulerDialog extends JDialog {
 			addJob(null, Integer.MAX_VALUE);
 		}
 		lineColors();
-
-		JPanel buttonsPanel = new JPanel();
-		getContentPane().add(buttonsPanel, BorderLayout.SOUTH);
-		JButton applyButton = new JButton(new UsnaAction("dlgApply", e -> apply()) );
-		JButton applyCloseButton = new JButton(new UsnaAction("dlgApplyClose", e -> {apply(); dispose();}) );
-		JButton jButtonClose = new JButton(new UsnaAction("dlgClose", e -> dispose()));
-		buttonsPanel.add(applyButton);
-		buttonsPanel.add(applyCloseButton);
-		buttonsPanel.add(jButtonClose);
-
-		pack();
-		setSize(getWidth(), 500);
+		init();
 		setLocationRelativeTo(owner);
 		setVisible(true);
 	}
@@ -91,20 +70,25 @@ public class SchedulerDialog extends JDialog {
 	/** test & design */
 	public SchedulerDialog() {
 		super(null, "schTitle", Dialog.ModalityType.APPLICATION_MODAL);
-		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		sceduleManager = null;
 		mHints = null;
-
+		addJob(null, Integer.MAX_VALUE);
+		lineColors();
+		init();
+		setLocationRelativeTo(null);
+		setVisible(true);
+	}
+	
+	private void init() {
+		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+		schedulesPanel.setBackground(Main.BG_COLOR);
+		
 		JScrollPane scrollPane = new JScrollPane(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		scrollPane.getVerticalScrollBar().setUnitIncrement(16);
 		scrollPane.setViewportView(schedulesPanel);
-		schedulesPanel.setBackground(Main.BG_COLOR);
-		
 		scrollPane.setBorder(BorderFactory.createEmptyBorder());
 		getContentPane().add(scrollPane, BorderLayout.CENTER);
-		addJob(null, Integer.MAX_VALUE);
-		lineColors();
-
+		
 		JPanel buttonsPanel = new JPanel();
 		getContentPane().add(buttonsPanel, BorderLayout.SOUTH);
 		JButton applyButton = new JButton(new UsnaAction("dlgApply", e -> apply()) );
@@ -118,8 +102,6 @@ public class SchedulerDialog extends JDialog {
 
 		pack();
 		setSize(getWidth(), 500);
-		setLocationRelativeTo(null);
-		setVisible(true);
 	}
 	
 	private boolean apply() {
@@ -136,7 +118,6 @@ public class SchedulerDialog extends JDialog {
 			} else {
 				for(int i = 0; i < numJobs; i++) {
 					JobPanel sl = (JobPanel)((JPanel)schedulesPanel.getComponent(i)).getComponent(0);
-					//				System.out.println(sl.validateData());
 					if(sl.validateData() == false) {
 						sl.scrollRectToVisible(sl.getBounds());
 						return false;
@@ -161,7 +142,6 @@ public class SchedulerDialog extends JDialog {
 				//				System.out.println(sl.getJson());
 				//				System.out.println(original.orig);
 				//				System.out.println(original.id + " -- " + sl.getJson().equals(original.orig));
-
 				if(/*i > 0 ||*/ sl.isNullJob() == false) {
 					ObjectNode jobJson = sl.getJson();
 					String res = null;
@@ -327,7 +307,7 @@ public class SchedulerDialog extends JDialog {
 		}
 	}
 	
-	record ScheduleData(int id, JsonNode orig) {}
+	private record ScheduleData(int id, JsonNode orig) {}
 
 	public static void main(final String ... args) throws Exception {
 		UsnaSwingUtils.setLookAndFeel(UsnaSwingUtils.LF_NIMBUS);
