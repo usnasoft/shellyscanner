@@ -1,4 +1,4 @@
-package it.usna.shellyscan.view.scheduler;
+package it.usna.shellyscan.view.scheduler.blutrv;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -35,19 +35,17 @@ import it.usna.shellyscan.view.util.UtilMiscellaneous;
 import it.usna.swing.UsnaSwingUtils;
 import it.usna.swing.VerticalFlowLayout;
 
-public class SchedulerDialog extends JDialog {
+public class TRVSchedulerDialog extends JDialog {
 	private static final long serialVersionUID = 1L;
 
 	private final ScheduleManager sceduleManager;
-	private final MethodHints mHints;
 	private final ArrayList<ScheduleData> originalValues = new ArrayList<>();
 	private final ArrayList<Integer> removedId = new ArrayList<>();
 	private final JPanel schedulesPanel = new JPanel(new VerticalFlowLayout(VerticalFlowLayout.TOP, VerticalFlowLayout.CENTER, 0, 0));
 
-	public SchedulerDialog(Window owner, AbstractG2Device device) {
+	public TRVSchedulerDialog(Window owner, AbstractG2Device device) {
 		super(owner, Main.LABELS.getString("schTitle") + " - " + UtilMiscellaneous.getExtendedHostName(device), Dialog.ModalityType.MODELESS);
 		this.sceduleManager = new ScheduleManager(device);
-		this.mHints = new MethodHints(device);
 		boolean exist = false;
 		try {
 			Iterator<JsonNode> scIt = sceduleManager.getSchedules().iterator();
@@ -68,10 +66,9 @@ public class SchedulerDialog extends JDialog {
 	}
 	
 	/** test & design */
-	public SchedulerDialog() {
+	public TRVSchedulerDialog() {
 		super(null, "schTitle", Dialog.ModalityType.APPLICATION_MODAL);
 		sceduleManager = null;
-		mHints = null;
 		addJob(null, Integer.MAX_VALUE);
 		lineColors();
 		init();
@@ -152,12 +149,7 @@ public class SchedulerDialog extends JDialog {
 						if(newId < 0) {
 							res = "creation error";
 						}
-					} else if(sl.hasSystemCalls() && jobJson.get("timespec").equals(original.orig.get("timespec")) == false) {
-						jobJson.remove("calls");
-						res = sceduleManager.update(original.id, jobJson);
-						originalValues.set(i, new ScheduleData(original.id, jobJson));
-					} else if(sl.hasSystemCalls() == false &&
-							(jobJson.get("timespec").equals(original.orig.get("timespec")) == false || jobJson.get("calls").equals(original.orig.get("calls")) == false)) { // id >= 0 -> existed
+					} else if(jobJson.get("timespec").equals(original.orig.get("timespec")) == false /*|| jobJson.get("calls").equals(original.orig.get("calls")) == false*/) { // id >= 0 -> existed
 						res = sceduleManager.update(original.id, jobJson);
 						originalValues.set(i, new ScheduleData(original.id, jobJson));
 					}
@@ -179,7 +171,7 @@ public class SchedulerDialog extends JDialog {
 
 	private void addJob(JsonNode node, int pos) {
 		JPanel linePanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
-		JobPanel job = new JobPanel(this, node, mHints);
+		JobPanel job = new JobPanel(this, node);
 		linePanel.add(job);
 
 		JButton enableButton = new JButton();
@@ -247,7 +239,7 @@ public class SchedulerDialog extends JDialog {
 				JsonNode pastedNode = jsonMapper.readTree(sch);
 //				if(pastedNode.hasNonNull("timespec") && pastedNode.hasNonNull("calls")) {
 					job.setCron(pastedNode.get("timespec").asText());
-					job.setCalls(pastedNode.get("calls"));
+//					job.setCalls(pastedNode.get("calls"));
 					job.revalidate();
 					try { TimeUnit.MILLISECONDS.sleep(300); } catch (InterruptedException e1) {} // a small time to show busy pointer
 //				}
@@ -261,14 +253,8 @@ public class SchedulerDialog extends JDialog {
 		JPanel opPanel = new JPanel(new VerticalFlowLayout());
 		opPanel.setOpaque(false);
 		opPanel.add(addBtn);
-		if(job.hasSystemCalls() == false) {
-			opPanel.add(duplicateBtn);
-		}
 		opPanel.add(removeBtn);
 		opPanel.add(copyBtn);
-		if(job.hasSystemCalls() == false) {
-			opPanel.add(pasteBtn);
-		}
 		linePanel.add(opPanel, BorderLayout.EAST);
 		
 		ScheduleData thisScheduleLine = new ScheduleData((node != null) ? node.path("id").asInt(-1) : -1, job.getJson());
@@ -311,7 +297,7 @@ public class SchedulerDialog extends JDialog {
 
 	public static void main(final String ... args) throws Exception {
 		UsnaSwingUtils.setLookAndFeel(UsnaSwingUtils.LF_NIMBUS);
-		new SchedulerDialog();
+		new TRVSchedulerDialog();
 	}
 }
 

@@ -72,7 +72,7 @@ import it.usna.shellyscan.view.appsettings.DialogAppSettings;
 import it.usna.shellyscan.view.chart.MeasuresChart;
 import it.usna.shellyscan.view.checklist.CheckListView;
 import it.usna.shellyscan.view.devsettings.DialogDeviceSettings;
-import it.usna.shellyscan.view.scheduler.SchedulerDialog;
+import it.usna.shellyscan.view.scheduler.gen2plus.SchedulerDialog;
 import it.usna.shellyscan.view.scripts.DialogDeviceScripts;
 import it.usna.shellyscan.view.util.Msg;
 import it.usna.shellyscan.view.util.ScannerProperties;

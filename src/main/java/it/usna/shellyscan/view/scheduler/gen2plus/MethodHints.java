@@ -1,4 +1,4 @@
-package it.usna.shellyscan.view.scheduler;
+package it.usna.shellyscan.view.scheduler.gen2plus;
 
 import java.awt.event.ActionEvent;
 import java.io.IOException;
@@ -25,7 +25,7 @@ public class MethodHints {
 	}
 	
 	public Object[] get(JTextField method, JTextField parameters) {
-		if(methodsList == null) {
+		if(methodsList == null || methodsList.size() == 0) {
 			generate();
 		}
 
@@ -48,8 +48,7 @@ public class MethodHints {
 	private void generate() {
 		methodsList = new ArrayList<Method>();
 		try {
-			final JsonNode components = device.getJSON("/rpc/Shelly.GetComponents?include=[%22config%22]").path("components"); // todo: manage pagination
-			final Iterator<JsonNode> compIt = components.iterator();
+			Iterator<JsonNode> compIt = device.getJSONIterator("/rpc/Shelly.GetComponents?include=[%22config%22]", "components");
 			while (compIt.hasNext()) {
 				JsonNode comp = compIt.next();
 				String key = comp.get("key").asText();
@@ -65,6 +64,9 @@ public class MethodHints {
 					methodsList.add(new Method(nameBase + "Open", "Cover.Open", "\"id\":" + id));
 					methodsList.add(new Method(nameBase + "Close", "Cover.Close", "\"id\":" + id));
 					methodsList.add(new Method(nameBase + "Go 50%", "Cover.GoToPosition", "\"id\":" + id + ",\"pos\":50"));
+					if(comp.get("config").hasNonNull("slat")) {
+						methodsList.add(new Method(nameBase + "Go 50%, Slat 50%", "Cover.GoToPosition", "\"id\":" + id + ",\"pos\":50,\"slat_pos\":50"));
+					}
 					// config/slat/slat == true ...
 				} else if(key.startsWith("light:")) {
 					int id = comp.get("config").path("id").intValue();
@@ -102,10 +104,13 @@ public class MethodHints {
 					methodsList.add(new Method(nameBase + "Toggle", "CCT.Toggle", "\"id\":" + id));
 					methodsList.add(new Method(nameBase + "On 50%", "CCT.Set", "\"id\":" + id + ",\"on\":true,\"brightness\":50"));
 					methodsList.add(new Method(nameBase + "On 4000K", "CCT.Set", "\"id\":" + id + ",\"on\":true,\"ct\":4000"));
-				} // else if(...
+				} //else if(key.startsWith("xxx:")) {}
+			}
+			if(methodsList.size() == 0) {
+				methodsList.add(new Method("No hints", "", ""));
 			}
 		} catch (IOException e) {
-			LOG.error("create hint", e);
+			LOG.error("create hints", e);
 		}
 	}
 	
@@ -114,5 +119,5 @@ public class MethodHints {
 		return ((compName == null || compName.length() == 0) ? comp.get("key").asText() : compName) + " - ";
 	}
 	
-	record Method(String name, String method, String pars) {}
+	private record Method(String name, String method, String pars) {}
 }

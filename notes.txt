@@ -361,11 +361,18 @@ blu -> buttons from actions
 
 1.2.5 ?
 ---
+Shelly 2PM Gen4
 Schedule
+gen2+
+todo: BLU trv
+calibrated: target_C
+not calibrated: pos
+
 https://next-api-docs.shelly.cloud/gen2/ComponentsAndServices/Schedule
 https://github.com/mongoose-os-libs/cron
 https://crontab.guru/
-todo: virtual components paging - it.usna.shellyscan.model.device.blu.BTHomeDevice.refreshStatus()
+
+virtual components paging - it.usna.shellyscan.model.device.blu.BTHomeDevice.refreshStatus()
 
 // TODO
 // schedule editor (Webhook.ListSupported) / semplicemente elenco azioni (?)
