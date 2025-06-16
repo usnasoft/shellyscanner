@@ -33,6 +33,9 @@ import javax.swing.JRadioButton;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 
+/**
+ * complete CRON panel; job details will be added by implementing classes
+ */
 public abstract class AbstractCronPanel extends JPanel {
 	private static final long serialVersionUID = 1L;
 	private final static ImageIcon EDIT_IMG = new ImageIcon(AbstractCronPanel.class.getResource("/images/Write16.png"));
@@ -60,6 +63,8 @@ public abstract class AbstractCronPanel extends JPanel {
 	 */
 	public AbstractCronPanel(JDialog parent) {
 		this.parent = parent;
+		setOpaque(false);
+		setBorder(BorderFactory.createEmptyBorder(2, 2, 4, 2));
 		initCronSection();
 	}
 
@@ -68,7 +73,7 @@ public abstract class AbstractCronPanel extends JPanel {
 		//		gbl_panel.columnWidths = new int[]{10, 10, 10, 10, 10, 0, 10};
 		// gbl_panel.rowHeights = new int[]{0, 0, 0, 0};
 		gbl_panel.columnWeights = new double[] { 1.0, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0, 0.0, 0.5, 1.0, 0.0 };
-		gbl_panel.rowWeights = new double[] { 1.0, 1.0, 1.0, 0.0, 1.0};
+		gbl_panel.rowWeights = new double[] { 1.0, 1.0, 1.0};
 		setLayout(gbl_panel);
 
 		JLabel lblNewLabel = new JLabel(LABELS.getString("lblHours"));
@@ -187,7 +192,7 @@ public abstract class AbstractCronPanel extends JPanel {
 		GridBagConstraints gbc_months = new GridBagConstraints();
 		gbc_months.anchor = GridBagConstraints.WEST;
 		gbc_months.gridheight = 2;
-		//		gbc_months.insets = new Insets(0, 0, 5, 5);
+		gbc_months.insets = new Insets(0, 0, 5, 0);
 		gbc_months.fill = GridBagConstraints.HORIZONTAL;
 		gbc_months.gridx = 9;
 		gbc_months.gridy = 0;
@@ -203,9 +208,11 @@ public abstract class AbstractCronPanel extends JPanel {
 		gbc_daysOfWeek.gridy = 0;
 		add(daysOfWeekPanel, gbc_daysOfWeek);
 
-		JPanel radioPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+		JPanel radioPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
 		radioPanel.setOpaque(false);
 		GridBagConstraints gbc_panel = new GridBagConstraints();
+		gbc_panel.fill = GridBagConstraints.HORIZONTAL;
+		gbc_panel.anchor = GridBagConstraints.WEST;
 		gbc_panel.gridwidth = 7;
 		//		gbc_panel.insets = new Insets(0, 0, 5, 5);
 		gbc_panel.gridx = 0;

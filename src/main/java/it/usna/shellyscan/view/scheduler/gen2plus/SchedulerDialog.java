@@ -167,7 +167,7 @@ public class SchedulerDialog extends JDialog {
 					}
 				}
 			}
-			try { TimeUnit.MILLISECONDS.sleep(300); } catch (InterruptedException e1) {} // a small time to show busy pointer
+			try { TimeUnit.MILLISECONDS.sleep(200); } catch (InterruptedException e1) {} // a small time to show busy pointer
 			return true;
 		} catch (IOException e) {
 			Msg.errorMsg(this, e);
@@ -233,7 +233,7 @@ public class SchedulerDialog extends JDialog {
 			final Clipboard cb = Toolkit.getDefaultToolkit().getSystemClipboard();
 			StringSelection selection = new StringSelection(job.getJson().toString());
 			cb.setContents(selection, selection);
-			try { TimeUnit.MILLISECONDS.sleep(300); } catch (InterruptedException e1) {} // a small time to show busy pointer
+			try { TimeUnit.MILLISECONDS.sleep(200); } catch (InterruptedException e1) {} // a small time to show busy pointer
 		}));
 		copyBtn.setContentAreaFilled(false);
 		copyBtn.setBorder(BorderFactory.createEmptyBorder(2, 3, 2, 3));
@@ -245,12 +245,12 @@ public class SchedulerDialog extends JDialog {
 				final ObjectMapper jsonMapper = new ObjectMapper();
 
 				JsonNode pastedNode = jsonMapper.readTree(sch);
-//				if(pastedNode.hasNonNull("timespec") && pastedNode.hasNonNull("calls")) {
-					job.setCron(pastedNode.get("timespec").asText());
+				job.setCron(pastedNode.get("timespec").asText());
+				if(pastedNode.hasNonNull("calls")) {
 					job.setCalls(pastedNode.get("calls"));
-					job.revalidate();
-					try { TimeUnit.MILLISECONDS.sleep(300); } catch (InterruptedException e1) {} // a small time to show busy pointer
-//				}
+				}
+				job.revalidate();
+				try { TimeUnit.MILLISECONDS.sleep(200); } catch (InterruptedException e1) {} // a small time to show busy pointer
 			} catch (Exception e1) {
 				Msg.errorMsg(this, "schErrorInvalidPaste");
 			}

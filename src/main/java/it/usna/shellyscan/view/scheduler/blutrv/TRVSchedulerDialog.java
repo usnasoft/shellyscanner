@@ -28,8 +28,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import it.usna.shellyscan.Main;
 import it.usna.shellyscan.controller.UsnaAction;
 import it.usna.shellyscan.controller.UsnaToggleAction;
-import it.usna.shellyscan.model.device.g2.AbstractG2Device;
-import it.usna.shellyscan.model.device.g2.modules.ScheduleManager;
+import it.usna.shellyscan.model.device.blu.BluTRV;
+import it.usna.shellyscan.model.device.blu.modules.ScheduleManagerTRV;
 import it.usna.shellyscan.view.util.Msg;
 import it.usna.shellyscan.view.util.UtilMiscellaneous;
 import it.usna.swing.UsnaSwingUtils;
@@ -38,26 +38,26 @@ import it.usna.swing.VerticalFlowLayout;
 public class TRVSchedulerDialog extends JDialog {
 	private static final long serialVersionUID = 1L;
 
-	private final ScheduleManager sceduleManager;
+	private final ScheduleManagerTRV sceduleManager;
 	private final ArrayList<ScheduleData> originalValues = new ArrayList<>();
 	private final ArrayList<Integer> removedId = new ArrayList<>();
 	private final JPanel schedulesPanel = new JPanel(new VerticalFlowLayout(VerticalFlowLayout.TOP, VerticalFlowLayout.CENTER, 0, 0));
 
-	public TRVSchedulerDialog(Window owner, AbstractG2Device device) {
+	public TRVSchedulerDialog(Window owner, BluTRV device) {
 		super(owner, Main.LABELS.getString("schTitle") + " - " + UtilMiscellaneous.getExtendedHostName(device), Dialog.ModalityType.MODELESS);
-		this.sceduleManager = new ScheduleManager(device);
+		this.sceduleManager = new ScheduleManagerTRV(null/*device*/);
 		boolean exist = false;
 		try {
 			Iterator<JsonNode> scIt = sceduleManager.getSchedules().iterator();
 			while(scIt.hasNext()) {
-				addJob(scIt.next(), Integer.MAX_VALUE);
+				addJob(scIt.next(), device.getMinTargetTemp(), device.getMaxTargetTemp(), Integer.MAX_VALUE);
 				exist = true;
 			}
 		} catch (IOException e) {
 			Msg.errorMsg(e);
 		}
 		if(exist == false) {
-			addJob(null, Integer.MAX_VALUE);
+			addJob(null, device.getMinTargetTemp(), device.getMaxTargetTemp(), Integer.MAX_VALUE);
 		}
 		lineColors();
 		init();
@@ -69,7 +69,7 @@ public class TRVSchedulerDialog extends JDialog {
 	public TRVSchedulerDialog() {
 		super(null, "schTitle", Dialog.ModalityType.APPLICATION_MODAL);
 		sceduleManager = null;
-		addJob(null, Integer.MAX_VALUE);
+		addJob(null, 10f, 30f, Integer.MAX_VALUE);
 		lineColors();
 		init();
 		setLocationRelativeTo(null);
@@ -159,7 +159,7 @@ public class TRVSchedulerDialog extends JDialog {
 					}
 				}
 			}
-			try { TimeUnit.MILLISECONDS.sleep(300); } catch (InterruptedException e1) {} // a small time to show busy pointer
+			try { TimeUnit.MILLISECONDS.sleep(200); } catch (InterruptedException e1) {} // a small time to show busy pointer
 			return true;
 		} catch (IOException e) {
 			Msg.errorMsg(this, e);
@@ -169,9 +169,9 @@ public class TRVSchedulerDialog extends JDialog {
 		}
 	}
 
-	private void addJob(JsonNode node, int pos) {
+	private void addJob(JsonNode node, float min, float max, int pos) {
 		JPanel linePanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
-		JobPanel job = new JobPanel(this, node);
+		JobPanel job = new JobPanel(this, min, max, node);
 		linePanel.add(job);
 
 		JButton enableButton = new JButton();
@@ -182,7 +182,7 @@ public class TRVSchedulerDialog extends JDialog {
 		JButton addBtn = new JButton(new UsnaAction(null, "schAdd", "/images/plus_transp16.png", e -> {
 			int i;
 			for(i = 0; schedulesPanel.getComponent(i) != linePanel; i++);
-			addJob(null, i + 1);
+			addJob(null, min, max, i + 1);
 			lineColors();
 			schedulesPanel.revalidate();
 		}));
@@ -214,7 +214,7 @@ public class TRVSchedulerDialog extends JDialog {
 		JButton duplicateBtn = new JButton(new UsnaAction(null, "schDuplicate", "/images/duplicate_trasp16.png", e -> {
 			int i;
 			for(i = 0; schedulesPanel.getComponent(i) != linePanel; i++);
-			addJob(job.getJson(), i + 1);
+			addJob(job.getJson(), min, max, i + 1);
 			lineColors();
 			schedulesPanel.revalidate();
 		}));
@@ -225,7 +225,7 @@ public class TRVSchedulerDialog extends JDialog {
 			final Clipboard cb = Toolkit.getDefaultToolkit().getSystemClipboard();
 			StringSelection selection = new StringSelection(job.getJson().toString());
 			cb.setContents(selection, selection);
-			try { TimeUnit.MILLISECONDS.sleep(300); } catch (InterruptedException e1) {} // a small time to show busy pointer
+			try { TimeUnit.MILLISECONDS.sleep(200); } catch (InterruptedException e1) {} // a small time to show busy pointer
 		}));
 		copyBtn.setContentAreaFilled(false);
 		copyBtn.setBorder(BorderFactory.createEmptyBorder(2, 3, 2, 3));
@@ -237,12 +237,10 @@ public class TRVSchedulerDialog extends JDialog {
 				final ObjectMapper jsonMapper = new ObjectMapper();
 
 				JsonNode pastedNode = jsonMapper.readTree(sch);
-//				if(pastedNode.hasNonNull("timespec") && pastedNode.hasNonNull("calls")) {
-					job.setCron(pastedNode.get("timespec").asText());
-//					job.setCalls(pastedNode.get("calls"));
-					job.revalidate();
-					try { TimeUnit.MILLISECONDS.sleep(300); } catch (InterruptedException e1) {} // a small time to show busy pointer
-//				}
+				job.setCron(pastedNode.get("timespec").asText());
+				job.setTarget(pastedNode);
+				job.revalidate();
+				try { TimeUnit.MILLISECONDS.sleep(200); } catch (InterruptedException e1) {} // a small time to show busy pointer
 			} catch (Exception e1) {
 				Msg.errorMsg(this, "schErrorInvalidPaste");
 			}
@@ -253,8 +251,10 @@ public class TRVSchedulerDialog extends JDialog {
 		JPanel opPanel = new JPanel(new VerticalFlowLayout());
 		opPanel.setOpaque(false);
 		opPanel.add(addBtn);
+		opPanel.add(duplicateBtn);
 		opPanel.add(removeBtn);
 		opPanel.add(copyBtn);
+		opPanel.add(pasteBtn);
 		linePanel.add(opPanel, BorderLayout.EAST);
 		
 		ScheduleData thisScheduleLine = new ScheduleData((node != null) ? node.path("id").asInt(-1) : -1, job.getJson());
