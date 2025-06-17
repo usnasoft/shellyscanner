@@ -13,7 +13,9 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
+import it.usna.shellyscan.model.device.ModulesHolder;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
+import it.usna.shellyscan.model.device.g3.modules.XT1Thermostat;
 
 public class MethodHints {
 	private final static Logger LOG = LoggerFactory.getLogger(MethodHints.class);
@@ -104,7 +106,17 @@ public class MethodHints {
 					methodsList.add(new Method(nameBase + "Toggle", "CCT.Toggle", "\"id\":" + id));
 					methodsList.add(new Method(nameBase + "On 50%", "CCT.Set", "\"id\":" + id + ",\"on\":true,\"brightness\":50"));
 					methodsList.add(new Method(nameBase + "On 4000K", "CCT.Set", "\"id\":" + id + ",\"on\":true,\"ct\":4000"));
-				} //else if(key.startsWith("xxx:")) {}
+				} else if(device instanceof ModulesHolder mh && mh.getModulesCount() > 0 && mh.getModules()[0] instanceof XT1Thermostat term) {
+					// LinkedGo ST802 & LinkedGo ST1820
+					if(key.equals("number:" + term.getTargetTempId())) {
+						String nameBase = actionBaseName(comp);
+						methodsList.add(new Method(nameBase + "20", "number.Set", "\"id\":" + term.getTargetTempId() + ",\"value\":20"));
+					} else if(key.equals("boolean:" + term.getEnableId())) {
+						String nameBase = actionBaseName(comp);
+						methodsList.add(new Method(nameBase + "yes", "boolean.Set", "\"id\":" + term.getEnableId() + ",\"value\":true"));
+						methodsList.add(new Method(nameBase + "no", "boolean.Set", "\"id\":" + term.getEnableId() + ",\"value\":false"));
+					}
+				}
 			}
 			if(methodsList.size() == 0) {
 				methodsList.add(new Method("No hints", "", ""));

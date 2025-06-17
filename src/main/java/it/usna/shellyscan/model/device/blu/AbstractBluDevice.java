@@ -18,6 +18,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.exc.StreamReadException;
 import com.fasterxml.jackson.databind.JsonNode;
 
+import it.usna.shellyscan.model.device.DeviceAPIException;
 import it.usna.shellyscan.model.device.DeviceOfflineException;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
@@ -84,6 +85,21 @@ public abstract class AbstractBluDevice extends ShellyAbstractDevice {
 			return postCommand(method, jsonMapper.writeValueAsString(payload));
 		} catch (JsonProcessingException e) {
 			return e.toString();
+		}
+	}
+	
+	public JsonNode getJSON(final String method, JsonNode payload) throws IOException {
+		return getJSON(method, jsonMapper.writeValueAsString(payload));
+	}
+	
+	public JsonNode getJSON(final String method, String payload) throws IOException {
+		final JsonNode resp = executeRPC(method, payload);
+		JsonNode result;
+		if((result = resp.get("result")) != null) {
+			return result;
+		} else {
+			JsonNode error = resp.get("error");
+			throw new DeviceAPIException(error.get("code").intValue(), error.get("message").asText("Generic error"));
 		}
 	}
 	

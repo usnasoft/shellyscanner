@@ -54,6 +54,7 @@ import it.usna.shellyscan.model.device.g2.modules.KVS;
 import it.usna.shellyscan.model.device.g2.modules.LoginManagerG2;
 import it.usna.shellyscan.model.device.g2.modules.MQTTManagerG2;
 import it.usna.shellyscan.model.device.g2.modules.RangeExtenderManager;
+import it.usna.shellyscan.model.device.g2.modules.ScheduleManager;
 import it.usna.shellyscan.model.device.g2.modules.Script;
 import it.usna.shellyscan.model.device.g2.modules.SensorAddOn;
 import it.usna.shellyscan.model.device.g2.modules.TimeAndLocationManagerG2;
@@ -506,7 +507,8 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 			errors.add("->r_step:restoreSchedule");
 			JsonNode schedule = backupJsons.get("Schedule.List.json");
 			if(schedule != null) { // some devices do not have Schedule.List +H&T
-				restoreSchedule(schedule, delay, errors);
+				TimeUnit.MILLISECONDS.sleep(delay);
+				ScheduleManager.restore(this, schedule, delay, errors);
 			}
 
 			errors.add("->r_step:Script");
@@ -613,19 +615,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 		final JsonNode mqtt = config.path("mqtt");
 		if(userPref.containsKey(RestoreMsg.RESTORE_MQTT) || mqtt.path("enable").asBoolean() == false || mqtt.path("user").asText("").isEmpty()) {
 			TimeUnit.MILLISECONDS.sleep(delay);
-			MQTTManagerG2 mqttM = new MQTTManagerG2(this, true);
-			errors.add(mqttM.restore(mqtt, userPref.get(RestoreMsg.RESTORE_MQTT)));
-		}
-	}
-
-	protected void restoreSchedule(JsonNode schedule, final long delay, ArrayList<String> errors) throws InterruptedException {
-		TimeUnit.MILLISECONDS.sleep(delay);
-		errors.add(postCommand("Schedule.DeleteAll", "{}"));
-		for(JsonNode sc: schedule.get("jobs")) {
-			ObjectNode thisSc = sc.deepCopy();
-			thisSc.remove("id");
-			TimeUnit.MILLISECONDS.sleep(delay);
-			errors.add(postCommand("Schedule.Create", thisSc));
+			errors.add(MQTTManagerG2.restore(this, mqtt, userPref.get(RestoreMsg.RESTORE_MQTT)));
 		}
 	}
 	

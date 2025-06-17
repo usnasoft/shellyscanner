@@ -45,7 +45,7 @@ public class TRVSchedulerDialog extends JDialog {
 
 	public TRVSchedulerDialog(Window owner, BluTRV device) {
 		super(owner, Main.LABELS.getString("schTitle") + " - " + UtilMiscellaneous.getExtendedHostName(device), Dialog.ModalityType.MODELESS);
-		this.sceduleManager = new ScheduleManagerTRV(null/*device*/);
+		this.sceduleManager = new ScheduleManagerTRV(device);
 		boolean exist = false;
 		try {
 			Iterator<JsonNode> scIt = sceduleManager.getSchedules().iterator();
@@ -53,7 +53,7 @@ public class TRVSchedulerDialog extends JDialog {
 				addJob(scIt.next(), device.getMinTargetTemp(), device.getMaxTargetTemp(), Integer.MAX_VALUE);
 				exist = true;
 			}
-		} catch (IOException e) {
+		} catch (/*IO*/Exception e) {
 			Msg.errorMsg(e);
 		}
 		if(exist == false) {
@@ -149,7 +149,7 @@ public class TRVSchedulerDialog extends JDialog {
 						if(newId < 0) {
 							res = "creation error";
 						}
-					} else if(jobJson.get("timespec").equals(original.orig.get("timespec")) == false /*|| jobJson.get("calls").equals(original.orig.get("calls")) == false*/) { // id >= 0 -> existed
+					} else if(jobJson.get("timespec").equals(original.orig.get("timespec")) == false || jobJson.path("pos").equals(original.orig.path("pos")) == false || jobJson.path("target_C").equals(original.orig.path("target_C")) == false) { // id >= 0 -> existed
 						res = sceduleManager.update(original.id, jobJson);
 						originalValues.set(i, new ScheduleData(original.id, jobJson));
 					}
@@ -257,7 +257,7 @@ public class TRVSchedulerDialog extends JDialog {
 		opPanel.add(pasteBtn);
 		linePanel.add(opPanel, BorderLayout.EAST);
 		
-		ScheduleData thisScheduleLine = new ScheduleData((node != null) ? node.path("id").asInt(-1) : -1, job.getJson());
+		ScheduleData thisScheduleLine = new ScheduleData((node != null) ? node.path("rule_id").asInt(-1) : -1, job.getJson());
 		if(pos >= originalValues.size()) {
 			schedulesPanel.add(linePanel);
 			originalValues.add(thisScheduleLine);

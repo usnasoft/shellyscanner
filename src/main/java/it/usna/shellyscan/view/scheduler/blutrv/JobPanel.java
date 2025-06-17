@@ -76,12 +76,17 @@ public class JobPanel extends AbstractCronPanel {
 				if(target.isEmpty() == false) {
 					target.setValue(UtilMiscellaneous.clamp(target.getFloatValue(), minTarget, maxTarget));
 				}
-			} else {
+				target.requestFocus();
+			}
+		});
+		
+		rdbtnPosition.addItemListener(e -> {
+			if(rdbtnPosition.isSelected()) {
 				target.setMaximumFractionDigits(0);
 				target.setLimits(0f, 100f);
-//				target.setValue(UtilMiscellaneous.clamp(target.getFloatValue(), 0f, 100f));
+				// clamp on °F ?
+				target.requestFocus();
 			}
-			target.requestFocus();
 		});
 	}
 	
@@ -92,9 +97,9 @@ public class JobPanel extends AbstractCronPanel {
 			if(scheduleNode.hasNonNull("target_C")) {
 				rdbtnTemp.setSelected(true);
 				target.setValue(scheduleNode.get("target_C").floatValue());
-			} else if(scheduleNode.hasNonNull("position")) {
+			} else if(scheduleNode.hasNonNull("pos")) {
 				rdbtnPosition.setSelected(true);
-				target.setValue(scheduleNode.get("position").intValue());
+				target.setValue(scheduleNode.get("pos").intValue());
 			}
 		}
 	}
@@ -130,7 +135,7 @@ public class JobPanel extends AbstractCronPanel {
 			if(rdbtnTemp.isSelected()) {
 				out.put("target_C", target.getFloatValue());
 			} else {
-				out.put("position", target.getIntValue());
+				out.put("pos", target.getIntValue());
 			}
 		}
 		return out;

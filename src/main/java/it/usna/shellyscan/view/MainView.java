@@ -66,12 +66,14 @@ import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
 import it.usna.shellyscan.model.device.blu.AbstractBluDevice;
 import it.usna.shellyscan.model.device.blu.BTHomeDevice;
+import it.usna.shellyscan.model.device.blu.BluTRV;
 import it.usna.shellyscan.model.device.g1.AbstractG1Device;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.view.appsettings.DialogAppSettings;
 import it.usna.shellyscan.view.chart.MeasuresChart;
 import it.usna.shellyscan.view.checklist.CheckListView;
 import it.usna.shellyscan.view.devsettings.DialogDeviceSettings;
+import it.usna.shellyscan.view.scheduler.blutrv.TRVSchedulerDialog;
 import it.usna.shellyscan.view.scheduler.gen2plus.SchedulerDialog;
 import it.usna.shellyscan.view.scripts.DialogDeviceScripts;
 import it.usna.shellyscan.view.util.Msg;
@@ -123,8 +125,13 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 	private Action infoAction = new UsnaSelectedAction(this, devicesTable, "action_info_name", "action_info_tooltip", "/images/Bubble3_16.png", "/images/Bubble3.png",
 			i -> new DialogDeviceInfo(MainView.this, model, i) );
 	
-	private Action schedulerEditAction = new UsnaSelectedAction(this, devicesTable, "action_scheduler_name", "action_scheduler_tooltip", null, "/images/Calendar.png",
-			i -> new SchedulerDialog(MainView.this, (AbstractG2Device)model.get(i)) );
+	private Action schedulerEditAction = new UsnaSelectedAction(this, devicesTable, "action_scheduler_name", "action_scheduler_tooltip", null, "/images/Calendar.png", i -> {
+		if(model.get(i) instanceof AbstractG2Device g2) {
+			new SchedulerDialog(MainView.this, g2);
+		} else if(model.get(i) instanceof BluTRV trv) {
+			new TRVSchedulerDialog(MainView.this, trv);
+		}
+	});
 
 	private Action infoLogAction = new UsnaSelectedAction(this, devicesTable, "action_info_log_name", "action_info_log_tooltip", null, "/images/Document2.png", i -> {
 		if(model.get(i) instanceof AbstractG2Device) {
@@ -563,7 +570,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 					}*/
 				}
 				infoAction.setEnabled(singleSelection);
-				schedulerEditAction.setEnabled(singleSelectionNoGhost && d instanceof AbstractG2Device);
+				schedulerEditAction.setEnabled(singleSelectionNoGhost && (d instanceof AbstractG2Device || d instanceof BluTRV));
 				infoLogAction.setEnabled(singleSelectionNoGhost);
 				checkListAction.setEnabled(selectionNoGhost);
 				rebootAction.setEnabled(selectionNoGhost && selectionNoBTHome);

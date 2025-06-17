@@ -16,6 +16,7 @@ import it.usna.shellyscan.model.device.BatteryDeviceInterface;
 import it.usna.shellyscan.model.device.RestoreMsg;
 import it.usna.shellyscan.model.device.g2.modules.KVS;
 import it.usna.shellyscan.model.device.g2.modules.LoginManagerG2;
+import it.usna.shellyscan.model.device.g2.modules.ScheduleManager;
 import it.usna.shellyscan.model.device.g2.modules.WIFIManagerG2;
 import it.usna.shellyscan.model.device.g2.modules.Webhooks;
 import it.usna.shellyscan.model.device.modules.WIFIManager.Network;
@@ -64,7 +65,8 @@ public class XT1 extends AbstractG3Device {
 			errors.add("->r_step:restoreSchedule");
 			JsonNode schedule = backupJsons.get("Schedule.List.json");
 			if(schedule != null) { // some devices do not have Schedule.List +H&T
-				restoreSchedule(schedule, delay, errors);
+				TimeUnit.MILLISECONDS.sleep(delay);
+				ScheduleManager.restore(this, schedule, delay, errors);
 			}
 
 //			errors.add("->r_step:Script");

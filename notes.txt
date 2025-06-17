@@ -362,11 +362,10 @@ blu -> buttons from actions
 1.2.5 ?
 ---
 Shelly 2PM Gen4
-Schedule
-gen2+
-todo: BLU trv
-calibrated: target_C
-not calibrated: pos
+schedule geb2+, BLU trv
+// todo schedule wall display thermostat
+// todo accept schedule @random
+// todo schedule load ...
 
 https://next-api-docs.shelly.cloud/gen2/ComponentsAndServices/Schedule
 https://github.com/mongoose-os-libs/cron
@@ -375,7 +374,6 @@ https://crontab.guru/
 virtual components paging - it.usna.shellyscan.model.device.blu.BTHomeDevice.refreshStatus()
 
 // TODO
-// schedule editor (Webhook.ListSupported) / semplicemente elenco azioni (?)
 // rgb_xx panel listener (?)
 // checklist AP ssid != mac (fw 1.5.0 stable)
 // wall display restore profiles and rules (/rpc/Thermostat.Schedule.ListRules?id=0&profile_id=1)
@@ -391,6 +389,7 @@ virtual components paging - it.usna.shellyscan.model.device.blu.BTHomeDevice.ref
 // in case of new bulbs (render of single CCT - bulbs as CCT/RGB)
 // https://smarthomecircle.com/connect-xiaomi-temperature-and-humidity-bluetooth-sensor-to-home-assistant
 // addon dimmer gen3 (currently not supported by fw)
+// Webhook.ListSupported
 
 -------java 21-------
 ThreadFactory factory = Thread.ofVirtual().factory();
