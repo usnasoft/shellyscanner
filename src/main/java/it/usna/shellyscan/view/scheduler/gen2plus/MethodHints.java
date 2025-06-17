@@ -106,15 +106,15 @@ public class MethodHints {
 					methodsList.add(new Method(nameBase + "Toggle", "CCT.Toggle", "\"id\":" + id));
 					methodsList.add(new Method(nameBase + "On 50%", "CCT.Set", "\"id\":" + id + ",\"on\":true,\"brightness\":50"));
 					methodsList.add(new Method(nameBase + "On 4000K", "CCT.Set", "\"id\":" + id + ",\"on\":true,\"ct\":4000"));
-				} else if(device instanceof ModulesHolder mh && mh.getModulesCount() > 0 && mh.getModules()[0] instanceof XT1Thermostat term) {
+				} else if(device instanceof ModulesHolder mh && mh.getModulesCount() > 0 && mh.getModules()[0] instanceof XT1Thermostat therm) {
 					// LinkedGo ST802 & LinkedGo ST1820
-					if(key.equals("number:" + term.getTargetTempId())) {
+					if(key.equals("number:" + therm.getTargetTempId())) {
 						String nameBase = actionBaseName(comp);
-						methodsList.add(new Method(nameBase + "20", "number.Set", "\"id\":" + term.getTargetTempId() + ",\"value\":20"));
-					} else if(key.equals("boolean:" + term.getEnableId())) {
+						methodsList.add(new Method(nameBase + "20", "number.Set", "\"id\":" + therm.getTargetTempId() + ",\"value\":20"));
+					} else if(key.equals("boolean:" + therm.getEnableId())) {
 						String nameBase = actionBaseName(comp);
-						methodsList.add(new Method(nameBase + "yes", "boolean.Set", "\"id\":" + term.getEnableId() + ",\"value\":true"));
-						methodsList.add(new Method(nameBase + "no", "boolean.Set", "\"id\":" + term.getEnableId() + ",\"value\":false"));
+						methodsList.add(new Method(nameBase + "yes", "boolean.Set", "\"id\":" + therm.getEnableId() + ",\"value\":true"));
+						methodsList.add(new Method(nameBase + "no", "boolean.Set", "\"id\":" + therm.getEnableId() + ",\"value\":false"));
 					}
 				}
 			}

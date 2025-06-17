@@ -122,6 +122,7 @@ public class BluTRV extends AbstractBluDevice implements ThermostatInterface, Mo
 		//http://192.168.1.29/rpc/BluTrv.Call?id=200&method="TRV.ListScheduleRules"&params={"id":0}
 	}
 	
+	// todo test
 	public String postTRVCommand(final String method, JsonNode payload) {	
 		ObjectNode out = JsonNodeFactory.instance.objectNode();
 		out.put("id", componentIndex);

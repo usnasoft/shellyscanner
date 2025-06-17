@@ -53,7 +53,7 @@ public class JobPanel extends AbstractCronPanel {
 
 		GridBagConstraints gbc_lblNewLabel_5 = new GridBagConstraints();
 		gbc_lblNewLabel_5.anchor = GridBagConstraints.WEST;
-		gbc_lblNewLabel_5.insets = new Insets(0, 0, 5, 0);
+		gbc_lblNewLabel_5.insets = new Insets(0, 0, 0, 0);
 		gbc_lblNewLabel_5.gridx = 0;
 		gbc_lblNewLabel_5.gridy = 3;
 		gbc_lblNewLabel_5.gridwidth = 8;

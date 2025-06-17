@@ -61,7 +61,6 @@ public class SchedulerDialog extends JDialog {
 		if(exist == false) {
 			addJob(null, Integer.MAX_VALUE);
 		}
-		lineColors();
 		init();
 		setLocationRelativeTo(owner);
 		setVisible(true);
@@ -73,7 +72,6 @@ public class SchedulerDialog extends JDialog {
 		sceduleManager = null;
 		mHints = null;
 		addJob(null, Integer.MAX_VALUE);
-		lineColors();
 		init();
 		setLocationRelativeTo(null);
 		setVisible(true);
@@ -100,6 +98,7 @@ public class SchedulerDialog extends JDialog {
 		buttonsPanel.add(applyCloseButton);
 		buttonsPanel.add(jButtonClose);
 
+		lineColors();
 		pack();
 		setSize(getWidth(), 500);
 	}

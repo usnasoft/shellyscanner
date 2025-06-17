@@ -59,7 +59,6 @@ public class TRVSchedulerDialog extends JDialog {
 		if(exist == false) {
 			addJob(null, device.getMinTargetTemp(), device.getMaxTargetTemp(), Integer.MAX_VALUE);
 		}
-		lineColors();
 		init();
 		setLocationRelativeTo(owner);
 		setVisible(true);
@@ -70,7 +69,6 @@ public class TRVSchedulerDialog extends JDialog {
 		super(null, "schTitle", Dialog.ModalityType.APPLICATION_MODAL);
 		sceduleManager = null;
 		addJob(null, 10f, 30f, Integer.MAX_VALUE);
-		lineColors();
 		init();
 		setLocationRelativeTo(null);
 		setVisible(true);
@@ -97,6 +95,7 @@ public class TRVSchedulerDialog extends JDialog {
 		buttonsPanel.add(applyCloseButton);
 		buttonsPanel.add(jButtonClose);
 
+		lineColors();
 		pack();
 		setSize(getWidth(), 500);
 	}
