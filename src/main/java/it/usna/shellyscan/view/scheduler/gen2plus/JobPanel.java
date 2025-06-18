@@ -27,7 +27,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import it.usna.shellyscan.controller.UsnaDropdownAction;
 import it.usna.shellyscan.view.scheduler.AbstractCronPanel;
-import it.usna.shellyscan.view.scheduler.CronUtils;
 import it.usna.shellyscan.view.util.Msg;
 
 public class JobPanel extends AbstractCronPanel {
@@ -195,31 +194,29 @@ public class JobPanel extends AbstractCronPanel {
 				((JTextField)callsParameterPanel.getComponent(0)).getText().isBlank();
 	}
 
+	@Override
 	public boolean validateData() {
-		String exp = expressionField.getText();
-		if(CronUtils.CRON_PATTERN.matcher(exp).matches() == false && CronUtils.SUNSET_PATTERN.matcher(exp).matches() == false) {
-			expressionField.requestFocus();
-			Msg.errorMsg(parent, "schErrorInvalidExpression");
-			return false;
-		}
-		for(int i = 0; i < callsPanel.getComponentCount(); i++) {
-			if(((JTextField)callsPanel.getComponent(i)).getText().isBlank()) {
-				callsPanel.getComponent(i).requestFocus();
-				Msg.errorMsg(parent, "schErrorInvalidMethod");
-				return false;
-			}
-			String parameters = ((JTextField)callsParameterPanel.getComponent(i)).getText();
-			if(parameters.isBlank() == false) {
-				try {
-					JSON_MAPPER.readTree("{" + parameters + "}");
-				} catch (JsonProcessingException e) {
-					callsParameterPanel.getComponent(i).requestFocus();
-					Msg.errorMsg(parent, "schErrorInvalidParameters");
+		if(super.validateData()) {
+			for(int i = 0; i < callsPanel.getComponentCount(); i++) {
+				if(((JTextField)callsPanel.getComponent(i)).getText().isBlank()) {
+					callsPanel.getComponent(i).requestFocus();
+					Msg.errorMsg(parent, "schErrorInvalidMethod");
 					return false;
 				}
+				String parameters = ((JTextField)callsParameterPanel.getComponent(i)).getText();
+				if(parameters.isBlank() == false) {
+					try {
+						JSON_MAPPER.readTree("{" + parameters + "}");
+					} catch (JsonProcessingException e) {
+						callsParameterPanel.getComponent(i).requestFocus();
+						Msg.errorMsg(parent, "schErrorInvalidParameters");
+						return false;
+					}
+				}
 			}
+			return true;
 		}
-		return true;
+		return false;
 	}
 	
 	public boolean hasSystemCalls() {

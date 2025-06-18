@@ -17,7 +17,6 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import it.usna.shellyscan.view.scheduler.AbstractCronPanel;
-import it.usna.shellyscan.view.scheduler.CronUtils;
 import it.usna.shellyscan.view.util.Msg;
 import it.usna.shellyscan.view.util.UtilMiscellaneous;
 import it.usna.swing.NumericTextField;
@@ -113,19 +112,17 @@ public class JobPanel extends AbstractCronPanel {
 		return expressionField.getText().equals(DEF_CRON) && target.getText().isBlank();
 	}
 
+	@Override
 	public boolean validateData() {
-		String exp = expressionField.getText();
-		if(CronUtils.CRON_PATTERN.matcher(exp).matches() == false && CronUtils.SUNSET_PATTERN.matcher(exp).matches() == false) {
-			expressionField.requestFocus();
-			Msg.errorMsg(parent, "schErrorInvalidExpression");
-			return false;
+		if(super.validateData()) {
+			if(target.isEmpty()) {
+				target.requestFocus();
+				Msg.errorMsg(parent, "schErrorInvalidTarget");
+				return false;
+			}
+			return true;
 		}
-		if(target.isEmpty()) {
-			target.requestFocus();
-			Msg.errorMsg(parent, "schErrorInvalidTarget");
-			return false;
-		}
-		return true;
+		return false;
 	}
 
 	public ObjectNode getJson() {

@@ -33,6 +33,8 @@ import javax.swing.JRadioButton;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 
+import it.usna.shellyscan.view.util.Msg;
+
 /**
  * complete CRON panel; job details will be added by implementing classes
  */
@@ -287,9 +289,15 @@ public abstract class AbstractCronPanel extends JPanel {
 			public void focusLost(FocusEvent e) {
 				String exp = CronUtils.fragStrToNum(expressionField.getText());
 				expressionField.setText(exp);
+				if(hoursTextField.isEnabled() == false) {
+					enableEdit(AbstractCronPanel.this, true);
+				}
 				if((CronUtils.CRON_PATTERN.matcher(exp).matches() || CronUtils.SUNSET_PATTERN.matcher(exp).matches())) {
 					expressionField.setForeground(null);
 					setCron(exp);
+				} else if(CronUtils.RANDOM_PATTERN.matcher(exp).matches()) {
+					enableEdit(AbstractCronPanel.this, false);
+					expressionField.setEnabled(true);
 				} else {
 					expressionField.setForeground(Color.red);
 				}
@@ -390,75 +398,78 @@ public abstract class AbstractCronPanel extends JPanel {
 	// assume cronLine is correct
 	public void setCron(String cronLine) {
 		cronLine = CronUtils.fragStrToNum(cronLine);
-
-		final String[] values;
-		Matcher sm = CronUtils.SUNSET_PATTERN.matcher(cronLine);
-		if(sm.matches()) {
-			String hours = sm.group("HOUR");
-			String minutes = sm.group("MINUTE");
-			String day = sm.group("DAY");
-			String month = sm.group("MONTH");
-			String wday = sm.group("WDAY");
-			values = new String[] {"0", (minutes != null) ? minutes : "0", (hours != null) ? hours : "0", (day != null) ? day : "*", (month != null) ? month : "*", (wday != null) ? wday : "*"};
-			if(cronLine.startsWith("@sunrise+")) {
-				afterRiseRadio.setSelected(true);
-			} else if(cronLine.startsWith("@sunrise-")) {
-				beforeRiseRadio.setSelected(true);
-			} else if(cronLine.startsWith("@sunrise")) {
-				afterRiseRadio.setSelected(true);
-			} else if(cronLine.startsWith("@sunset+")) {
-				afterSetRadio.setSelected(true);
-			} else if(cronLine.startsWith("@sunset-")) {
-				beforeSetRadio.setSelected(true);
-			} else if(cronLine.startsWith("@sunset")) {
-				afterSetRadio.setSelected(true);
+		if(cronLine.startsWith("@random") == false) {
+			final String[] values;
+			Matcher sm = CronUtils.SUNSET_PATTERN.matcher(cronLine);
+			if(sm.matches()) {
+				String hours = sm.group("HOUR");
+				String minutes = sm.group("MINUTE");
+				String day = sm.group("DAY");
+				String month = sm.group("MONTH");
+				String wday = sm.group("WDAY");
+				values = new String[] {"0", (minutes != null) ? minutes : "0", (hours != null) ? hours : "0", (day != null) ? day : "*", (month != null) ? month : "*", (wday != null) ? wday : "*"};
+				if(cronLine.startsWith("@sunrise+")) {
+					afterRiseRadio.setSelected(true);
+				} else if(cronLine.startsWith("@sunrise-")) {
+					beforeRiseRadio.setSelected(true);
+				} else if(cronLine.startsWith("@sunrise")) {
+					afterRiseRadio.setSelected(true);
+				} else if(cronLine.startsWith("@sunset+")) {
+					afterSetRadio.setSelected(true);
+				} else if(cronLine.startsWith("@sunset-")) {
+					beforeSetRadio.setSelected(true);
+				} else if(cronLine.startsWith("@sunset")) {
+					afterSetRadio.setSelected(true);
+				}
+			} else {
+				cronRadio.setSelected(true);
+				values = cronLine.split(" ");
 			}
+
+			secondsTextField.setText(values[0]);
+			minutesTextField.setText(values[1]);
+			hoursTextField.setText(values[2]);
+			daysTextField.setText(values[3]);
+
+			for(int i = 0; i < 12; i++) {
+				((JCheckBox) monthsPanel.getComponent(i)).setSelected(false);
+				monthsPanel.getComponent(i).setEnabled(true);
+			}
+			String months = values[4];
+			if(months.contains("/")) {
+				this.months = months;
+				enableEdit(monthsPanel, false);
+			} else {
+				if(months.equals("*")) {
+					months ="1-12";
+				}
+				for(int month: CronUtils.fragmentToInt(months)) {
+					((JCheckBox) monthsPanel.getComponent(month - 1)).setSelected(true);
+				}
+				computeMonths();
+			}
+
+			for(int i = 0; i < 7; i++) {
+				((JCheckBox) daysOfWeekPanel.getComponent(i)).setSelected(false);
+				daysOfWeekPanel.getComponent(i).setEnabled(true);
+			}
+			String daysOfWeek = values[5];
+			if(daysOfWeek.contains("/")) {
+				this.daysOfWeek = daysOfWeek;
+				enableEdit(daysOfWeekPanel, false);
+			} else {
+				if(daysOfWeek.equals("*")) {
+					daysOfWeek ="0-6";
+				}
+				for(int weekDay: CronUtils.fragmentToInt(daysOfWeek)) {
+					((JCheckBox) daysOfWeekPanel.getComponent((weekDay + 6) % 7)).setSelected(true);
+				}
+				computeDaysOfWeek();
+			}
+			generateExpression();
 		} else {
-			cronRadio.setSelected(true);
-			values = cronLine.split(" ");
+			expressionField.setText(cronLine);
 		}
-
-		secondsTextField.setText(values[0]);
-		minutesTextField.setText(values[1]);
-		hoursTextField.setText(values[2]);
-		daysTextField.setText(values[3]);
-
-		for(int i = 0; i < 12; i++) {
-			((JCheckBox) monthsPanel.getComponent(i)).setSelected(false);
-			monthsPanel.getComponent(i).setEnabled(true);
-		}
-		String months = values[4];
-		if(months.contains("/")) {
-			this.months = months;
-			enableEdit(monthsPanel, false);
-		} else {
-			if(months.equals("*")) {
-				months ="1-12";
-			}
-			for(int month: CronUtils.fragmentToInt(months)) {
-				((JCheckBox) monthsPanel.getComponent(month - 1)).setSelected(true);
-			}
-			computeMonths();
-		}
-
-		for(int i = 0; i < 7; i++) {
-			((JCheckBox) daysOfWeekPanel.getComponent(i)).setSelected(false);
-			daysOfWeekPanel.getComponent(i).setEnabled(true);
-		}
-		String daysOfWeek = values[5];
-		if(daysOfWeek.contains("/")) {
-			this.daysOfWeek = daysOfWeek;
-			enableEdit(daysOfWeekPanel, false);
-		} else {
-			if(daysOfWeek.equals("*")) {
-				daysOfWeek ="0-6";
-			}
-			for(int weekDay: CronUtils.fragmentToInt(daysOfWeek)) {
-				((JCheckBox) daysOfWeekPanel.getComponent((weekDay + 6) % 7)).setSelected(true);
-			}
-			computeDaysOfWeek();
-		}
-		generateExpression();
 	}
 	
 	protected static void enableEdit(JPanel panel, boolean enable) {
@@ -505,5 +516,16 @@ public abstract class AbstractCronPanel extends JPanel {
 
 		expressionField.setText(res);
 		expressionField.setForeground((CronUtils.CRON_PATTERN.matcher(res).matches() || CronUtils.SUNSET_PATTERN.matcher(res).matches()) ? null : Color.red);
+	}
+	
+	protected boolean validateData() {
+		String exp = expressionField.getText();
+		if(CronUtils.CRON_PATTERN.matcher(exp).matches() == false && CronUtils.SUNSET_PATTERN.matcher(exp).matches() == false && CronUtils.RANDOM_PATTERN.matcher(exp).matches() == false) {
+			expressionField.requestFocus();
+			Msg.errorMsg(parent, "schErrorInvalidExpression");
+			return false;
+		} else {
+			return true;
+		}
 	}
 }
