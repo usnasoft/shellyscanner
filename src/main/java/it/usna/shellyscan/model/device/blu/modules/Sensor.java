@@ -45,6 +45,10 @@ public class Sensor {
 		case 0x40 -> Meters.Type.DMM; // dec 64 - distance mm
 		default -> null;
 		};
+		
+		// 0x3C (60) dimmer (weel)
+		// 0x3F (63) rotation (accelerometer)
+		// 0x60 (96) channel
 	}
 	
 	public int getId() {

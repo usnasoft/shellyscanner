@@ -138,18 +138,6 @@ public class Shelly2PMG3 extends AbstractG3Device implements ModulesHolder, Inte
 		return internalTmp;
 	}
 
-	public float getPower() {
-		return power0;
-	}
-
-	public float getVoltage() {
-		return voltage0;
-	}
-
-	public float getCurrent() {
-		return current0;
-	}
-
 	@Override
 	public Meters[] getMeters() {
 		return meters;

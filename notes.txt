@@ -361,10 +361,10 @@ blu -> buttons from actions
 
 1.2.5 ?
 ---
-Shelly 2PM Gen4
+Shelly 2PM Gen4 (?)
+Shelly Shutter G3
 schedule geb2+, BLU trv
 // todo schedule wall display thermostat
-// todo accept schedule @random
 // todo schedule load ...
 
 https://next-api-docs.shelly.cloud/gen2/ComponentsAndServices/Schedule

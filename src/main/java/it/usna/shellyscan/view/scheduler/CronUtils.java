@@ -42,8 +42,8 @@ public class CronUtils {
 	public final static Pattern CRON_PATTERN = Pattern.compile("(" + REX_SECONDS + ") (" + REX_MINUTES + ") (" + REX_HOURS + ") (" + REX_MONTHDAYS + ") (" + REX_MONTHS + ") (" + REX_WEEKDAYS + ")");
 	public final static Pattern SUNSET_PATTERN = Pattern.compile("@(sunset|sunrise)((\\+|-)(?<HOUR>" + REX_0_23 + ")h((?<MINUTE>" + REX_0_59 + ")m)?)?( (?<DAY>" + REX_MONTHDAYS + ") (?<MONTH>" + REX_MONTHS + ") (?<WDAY>" + REX_WEEKDAYS + "))?");
 
-	public final static Pattern RANDOM_PATTERN =  Pattern.compile("@random:\\{\"from\":\"(" + REX_SECONDS + ") (" + REX_MINUTES + ") (" + REX_HOURS + ") (" + REX_MONTHDAYS + ") (" + REX_MONTHS + ") (" + REX_WEEKDAYS + ")\", ?\"to\":\"(" +
-			REX_SECONDS + ") (" + REX_MINUTES + ") (" + REX_HOURS + ") (" + REX_MONTHDAYS + ") (" + REX_MONTHS + ") (" + REX_WEEKDAYS + ")\", ?\"number\":\\d+\\}");
+//	public final static Pattern RANDOM_PATTERN =  Pattern.compile("@random:\\{\"from\":\"(" + REX_SECONDS + ") (" + REX_MINUTES + ") (" + REX_HOURS + ") (" + REX_MONTHDAYS + ") (" + REX_MONTHS + ") (" + REX_WEEKDAYS + ")\", ?\"to\":\"(" +
+//			REX_SECONDS + ") (" + REX_MINUTES + ") (" + REX_HOURS + ") (" + REX_MONTHDAYS + ") (" + REX_MONTHS + ") (" + REX_WEEKDAYS + ")\", ?\"number\":\\d+\\}");
 
 	private final static Pattern FIND_PATTERN = Pattern.compile("(\\d+-\\d+|\\d+)");
 	

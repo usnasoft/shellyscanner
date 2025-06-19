@@ -75,7 +75,7 @@ public abstract class AbstractCronPanel extends JPanel {
 		//		gbl_panel.columnWidths = new int[]{10, 10, 10, 10, 10, 0, 10};
 		// gbl_panel.rowHeights = new int[]{0, 0, 0, 0};
 		gbl_panel.columnWeights = new double[] { 1.0, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0, 0.0, 0.5, 1.0, 0.0 };
-		gbl_panel.rowWeights = new double[] { 1.0, 1.0, 1.0};
+//		gbl_panel.rowWeights = new double[] { 1.0, 1.0, 1.0};
 		setLayout(gbl_panel);
 
 		JLabel lblNewLabel = new JLabel(LABELS.getString("lblHours"));
@@ -295,9 +295,9 @@ public abstract class AbstractCronPanel extends JPanel {
 				if((CronUtils.CRON_PATTERN.matcher(exp).matches() || CronUtils.SUNSET_PATTERN.matcher(exp).matches())) {
 					expressionField.setForeground(null);
 					setCron(exp);
-				} else if(CronUtils.RANDOM_PATTERN.matcher(exp).matches()) {
-					enableEdit(AbstractCronPanel.this, false);
-					expressionField.setEnabled(true);
+//				} else if(CronUtils.RANDOM_PATTERN.matcher(exp).matches()) {
+//					enableEdit(AbstractCronPanel.this, false);
+//					expressionField.setEnabled(true);
 				} else {
 					expressionField.setForeground(Color.red);
 				}
@@ -398,7 +398,7 @@ public abstract class AbstractCronPanel extends JPanel {
 	// assume cronLine is correct
 	public void setCron(String cronLine) {
 		cronLine = CronUtils.fragStrToNum(cronLine);
-		if(cronLine.startsWith("@random") == false) {
+//		if(cronLine.startsWith("@random") == false) {
 			final String[] values;
 			Matcher sm = CronUtils.SUNSET_PATTERN.matcher(cronLine);
 			if(sm.matches()) {
@@ -467,9 +467,9 @@ public abstract class AbstractCronPanel extends JPanel {
 				computeDaysOfWeek();
 			}
 			generateExpression();
-		} else {
-			expressionField.setText(cronLine);
-		}
+//		} else {
+//			expressionField.setText(cronLine);
+//		}
 	}
 	
 	protected static void enableEdit(JPanel panel, boolean enable) {
@@ -520,7 +520,7 @@ public abstract class AbstractCronPanel extends JPanel {
 	
 	protected boolean validateData() {
 		String exp = expressionField.getText();
-		if(CronUtils.CRON_PATTERN.matcher(exp).matches() == false && CronUtils.SUNSET_PATTERN.matcher(exp).matches() == false && CronUtils.RANDOM_PATTERN.matcher(exp).matches() == false) {
+		if(CronUtils.CRON_PATTERN.matcher(exp).matches() == false && CronUtils.SUNSET_PATTERN.matcher(exp).matches() == false /*&& CronUtils.RANDOM_PATTERN.matcher(exp).matches() == false*/) {
 			expressionField.requestFocus();
 			Msg.errorMsg(parent, "schErrorInvalidExpression");
 			return false;
