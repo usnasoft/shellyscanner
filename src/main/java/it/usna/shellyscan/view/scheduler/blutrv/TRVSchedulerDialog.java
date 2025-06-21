@@ -1,5 +1,7 @@
 package it.usna.shellyscan.view.scheduler.blutrv;
 
+import static it.usna.shellyscan.Main.LABELS;
+
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Cursor;
@@ -10,16 +12,25 @@ import java.awt.Window;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.URI;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JDialog;
+import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -31,6 +42,7 @@ import it.usna.shellyscan.controller.UsnaToggleAction;
 import it.usna.shellyscan.model.device.blu.BluTRV;
 import it.usna.shellyscan.model.device.blu.modules.ScheduleManagerTRV;
 import it.usna.shellyscan.view.util.Msg;
+import it.usna.shellyscan.view.util.ScannerProperties;
 import it.usna.shellyscan.view.util.UtilMiscellaneous;
 import it.usna.swing.UsnaSwingUtils;
 import it.usna.swing.VerticalFlowLayout;
@@ -39,12 +51,14 @@ public class TRVSchedulerDialog extends JDialog {
 	private static final long serialVersionUID = 1L;
 
 	private final ScheduleManagerTRV sceduleManager;
+	private final BluTRV device;
 	private final ArrayList<ScheduleData> originalValues = new ArrayList<>();
 	private final ArrayList<Integer> removedId = new ArrayList<>();
 	private final JPanel schedulesPanel = new JPanel(new VerticalFlowLayout(VerticalFlowLayout.TOP, VerticalFlowLayout.CENTER, 0, 0));
 
 	public TRVSchedulerDialog(Window owner, BluTRV device) {
 		super(owner, Main.LABELS.getString("schTitle") + " - " + UtilMiscellaneous.getExtendedHostName(device), Dialog.ModalityType.MODELESS);
+		this.device = device;
 		this.sceduleManager = new ScheduleManagerTRV(device);
 		boolean exist = false;
 		try {
@@ -67,6 +81,7 @@ public class TRVSchedulerDialog extends JDialog {
 	/** test & design */
 	public TRVSchedulerDialog() {
 		super(null, "schTitle", Dialog.ModalityType.APPLICATION_MODAL);
+		this.device = null;
 		sceduleManager = null;
 		addJob(null, 10f, 30f, Integer.MAX_VALUE);
 		init();
@@ -86,18 +101,52 @@ public class TRVSchedulerDialog extends JDialog {
 		
 		JPanel buttonsPanel = new JPanel();
 		getContentPane().add(buttonsPanel, BorderLayout.SOUTH);
-		JButton applyButton = new JButton(new UsnaAction("dlgApply", e -> apply()) );
-		JButton applyCloseButton = new JButton(new UsnaAction("dlgApplyClose", e -> {
+		
+		buttonsPanel.add(new JButton(new UsnaAction("dlgApply", e -> apply())));
+		buttonsPanel.add( new JButton(new UsnaAction("dlgApplyClose", e -> {
 			if(apply()) dispose();
-		}) );
-		JButton jButtonClose = new JButton(new UsnaAction("dlgClose", e -> dispose()));
-		buttonsPanel.add(applyButton);
-		buttonsPanel.add(applyCloseButton);
-		buttonsPanel.add(jButtonClose);
+		}) ));
+		buttonsPanel.add(new JButton(new UsnaAction("lblLoadFile", e -> loadFromBackup())));
+		buttonsPanel.add(new JButton(new UsnaAction("dlgClose", e -> dispose())));
 
 		lineColors();
 		pack();
 		setSize(getWidth(), 500);
+	}
+	
+	private void loadFromBackup() {
+		final ScannerProperties appProp = ScannerProperties.instance();
+		final JFileChooser fc = new JFileChooser(appProp.getProperty("LAST_PATH"));
+		fc.setAcceptAllFileFilterUsed(false);
+		fc.setFileFilter(new FileNameExtensionFilter(LABELS.getString("filetype_sbk_desc"), Main.BACKUP_FILE_EXT));
+		if(fc.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+			setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+			try(FileSystem fs = FileSystems.newFileSystem(URI.create("jar:" + fc.getSelectedFile().toPath().toUri()), Map.of())) {
+				appProp.setProperty("LAST_PATH", fc.getCurrentDirectory().getCanonicalPath());
+				final ObjectMapper jsonMapper = new ObjectMapper();
+				JsonNode scNode = jsonMapper.readTree(Files.newBufferedReader(fs.getPath("Schedule.List.json"))).get("jobs");
+				Iterator<JsonNode> scIt = scNode.iterator();
+				while(scIt.hasNext()) {
+					ObjectNode jobNode = (ObjectNode)scIt.next();
+					jobNode.remove("id");
+					if(jobNode.hasNonNull("timespec") && (jobNode.hasNonNull("target_C") || jobNode.hasNonNull("pos"))) {
+						if(schedulesPanel.getComponentCount() == 1 && ((TRVJobPanel)((JPanel)schedulesPanel.getComponent(0)).getComponent(0)).isNullJob()) {
+							schedulesPanel.remove(0);
+						}
+						addJob(jobNode, device.getMinTargetTemp(), device.getMaxTargetTemp(), Integer.MAX_VALUE);
+					} else {
+						Msg.errorMsg(this, "msgIncompatibleFile");
+					}
+				}
+				lineColors();
+			} catch (FileNotFoundException | NoSuchFileException e) {
+				Msg.errorMsg(this, String.format(LABELS.getString("msgFileNotFound"), fc.getSelectedFile().getName()));
+			} catch (/*IO*/Exception e) {
+				Msg.errorMsg(this, "msgIncompatibleFile");
+			} finally {
+				setCursor(Cursor.getDefaultCursor());
+			}
+		}
 	}
 	
 	private boolean apply() {
@@ -107,13 +156,13 @@ public class TRVSchedulerDialog extends JDialog {
 
 			// Validation
 			if(numJobs == 1) {
-				JobPanel sl = (JobPanel)((JPanel)schedulesPanel.getComponent(0)).getComponent(0);
+				TRVJobPanel sl = (TRVJobPanel)((JPanel)schedulesPanel.getComponent(0)).getComponent(0);
 				if(sl.isNullJob() == false && sl.validateData() == false) {
 					return false;
 				}
 			} else {
 				for(int i = 0; i < numJobs; i++) {
-					JobPanel sl = (JobPanel)((JPanel)schedulesPanel.getComponent(i)).getComponent(0);
+					TRVJobPanel sl = (TRVJobPanel)((JPanel)schedulesPanel.getComponent(i)).getComponent(0);
 					if(sl.validateData() == false) {
 						sl.scrollRectToVisible(sl.getBounds());
 						return false;
@@ -133,7 +182,7 @@ public class TRVSchedulerDialog extends JDialog {
 			
 			// Create / Update
 			for(int i = 0; i < numJobs; i++) {
-				JobPanel sl = (JobPanel)((JPanel)schedulesPanel.getComponent(i)).getComponent(0);
+				TRVJobPanel sl = (TRVJobPanel)((JPanel)schedulesPanel.getComponent(i)).getComponent(0);
 				ScheduleData original = originalValues.get(i);
 				//				System.out.println(sl.getJson());
 				//				System.out.println(original.orig);
@@ -170,7 +219,7 @@ public class TRVSchedulerDialog extends JDialog {
 
 	private void addJob(JsonNode node, float min, float max, int pos) {
 		JPanel linePanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
-		JobPanel job = new JobPanel(this, min, max, node);
+		TRVJobPanel job = new TRVJobPanel(this, min, max, node);
 		linePanel.add(job);
 
 		JButton enableButton = new JButton();

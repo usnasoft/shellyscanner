@@ -21,7 +21,7 @@ import it.usna.shellyscan.view.util.Msg;
 import it.usna.shellyscan.view.util.UtilMiscellaneous;
 import it.usna.swing.NumericTextField;
 
-public class JobPanel extends AbstractCronPanel {
+public class TRVJobPanel extends AbstractCronPanel {
 	private static final long serialVersionUID = 1L;
 	private float minTarget, maxTarget;
 	private JRadioButton rdbtnTemp;
@@ -29,7 +29,7 @@ public class JobPanel extends AbstractCronPanel {
 	private NumericTextField<Float> target;
 //	private final static ObjectMapper JSON_MAPPER = new ObjectMapper();
 
-	JobPanel(JDialog parent, float minTarget, float maxTarget, JsonNode scheduleNode) {
+	TRVJobPanel(JDialog parent, float minTarget, float maxTarget, JsonNode scheduleNode) {
 		super(parent);
 		this.minTarget = minTarget;
 		this.maxTarget = maxTarget;

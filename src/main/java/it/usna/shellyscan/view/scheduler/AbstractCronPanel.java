@@ -9,7 +9,6 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.Insets;
-import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.ItemListener;
@@ -201,11 +200,7 @@ public abstract class AbstractCronPanel extends JPanel {
 		gbc_daysOfWeek.gridy = 0;
 		add(daysOfWeekPanel, gbc_daysOfWeek);
 		
-		JButton allWDaysButton = new JButton(new UsnaAction(null, "lblAddAll", "/images/Ok16.png", e -> {
-			checkBoxSelect(daysOfWeekPanel, true);
-			daysOfWeek = "*";
-			generateExpression();
-		}));
+		JButton allWDaysButton = new JButton(new UsnaAction(null, "lblAddAll", "/images/Ok16.png", e -> checkBoxSelect(daysOfWeekPanel, true)));
 		allWDaysButton.setContentAreaFilled(false);
 		allWDaysButton.setBorder(BorderFactory.createEmptyBorder());
 		GridBagConstraints gbc_allWDaysButton = new GridBagConstraints();
@@ -227,17 +222,13 @@ public abstract class AbstractCronPanel extends JPanel {
 		GridBagConstraints gbc_months = new GridBagConstraints();
 		gbc_months.anchor = GridBagConstraints.WEST;
 		gbc_months.gridheight = 2;
-		gbc_months.insets = new Insets(0, 10, 5, 5);
+		gbc_months.insets = new Insets(0, 12, 5, 5);
 		gbc_months.fill = GridBagConstraints.HORIZONTAL;
 		gbc_months.gridx = 10;
 		gbc_months.gridy = 0;
 		add(monthsPanel, gbc_months);
 		
-		JButton allMonthsButton = new JButton(new UsnaAction(null, "lblAddAll", "/images/Ok16.png", e -> {
-			checkBoxSelect(monthsPanel, true);
-			months = "*";
-			generateExpression();
-		}));
+		JButton allMonthsButton = new JButton(new UsnaAction(null, "lblAddAll", "/images/Ok16.png", e -> checkBoxSelect(monthsPanel, true)));
 		allMonthsButton.setContentAreaFilled(false);
 		allMonthsButton.setBorder(BorderFactory.createEmptyBorder());
 		GridBagConstraints gbc_btnNewButton = new GridBagConstraints();
@@ -379,7 +370,7 @@ public abstract class AbstractCronPanel extends JPanel {
 	private JPanel monthsPanel() {
 		JPanel mPanel = new JPanel();
 		mPanel.setOpaque(false);
-		ActionListener change = e -> {
+		ItemListener change = e -> {
 			computeMonths();
 			generateExpression();
 		};
@@ -390,7 +381,7 @@ public abstract class AbstractCronPanel extends JPanel {
 			chckbxNewCheckBox.setVerticalTextPosition(SwingConstants.TOP);
 			chckbxNewCheckBox.setHorizontalTextPosition(SwingConstants.CENTER);
 			chckbxNewCheckBox.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 1));
-			chckbxNewCheckBox.addActionListener(change);
+			chckbxNewCheckBox.addItemListener(change);
 			mPanel.add(chckbxNewCheckBox);
 		}
 		return mPanel;
@@ -409,7 +400,7 @@ public abstract class AbstractCronPanel extends JPanel {
 	private JPanel daysOfWeekPanel() {
 		JPanel wPanel = new JPanel();
 		wPanel.setOpaque(false);
-		ActionListener change = e -> {
+		ItemListener change = e -> {
 			computeDaysOfWeek();
 			generateExpression();
 		};
@@ -420,7 +411,7 @@ public abstract class AbstractCronPanel extends JPanel {
 			chckbxNewCheckBox.setVerticalTextPosition(SwingConstants.TOP);
 			chckbxNewCheckBox.setHorizontalTextPosition(SwingConstants.CENTER);
 			chckbxNewCheckBox.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 1));
-			chckbxNewCheckBox.addActionListener(change);
+			chckbxNewCheckBox.addItemListener(change);
 			wPanel.add(chckbxNewCheckBox);
 		}
 		return wPanel;
