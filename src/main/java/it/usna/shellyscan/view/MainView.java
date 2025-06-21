@@ -381,8 +381,8 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		statusPanel.setBackground(Main.STATUS_LINE_COLOR);
 		contentPane.add(statusPanel, BorderLayout.SOUTH);
 		
-		detailedViewAction = new UsnaToggleAction(null, "action_show_detail_name", "action_show_detail_tooltip", "action_show_detail_tooltip", "/images/Plus.png", "/images/Minus.png",
-				e -> SwingUtilities.invokeLater(() -> detailedView(detailedViewAction.isSelected()) ) );
+		detailedViewAction = new UsnaToggleAction(null, "action_show_detail_name", "action_show_detail_tooltip", "action_show_detail_tooltip", "/images/FullSize.png", "/images/ReducedSize.png",
+				e -> SwingUtilities.invokeLater(() -> detailedView(detailedViewAction.isSelected()) ) ); //Plus.png / Minus.png
 		
 		// Table
 		JScrollPane scrollPane = new JScrollPane();

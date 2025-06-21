@@ -149,13 +149,13 @@ public class JobPanel extends AbstractCronPanel {
 		gbc_lblNewLabel_6.gridwidth = 2;
 		gbc_lblNewLabel_6.anchor = GridBagConstraints.WEST;
 		gbc_lblNewLabel_6.insets = new Insets(0, 0, 5, 5);
-		gbc_lblNewLabel_6.gridx = 3;
+		gbc_lblNewLabel_6.gridx = 4;
 		gbc_lblNewLabel_6.gridy = 3;
 		add(new JLabel(LABELS.getString("lblParameters")), gbc_lblNewLabel_6);
 		
 		callsPanel = new JPanel();
 		GridBagConstraints gbc_callsPanel = new GridBagConstraints();
-		gbc_callsPanel.gridwidth = 3;
+		gbc_callsPanel.gridwidth = 4;
 		gbc_callsPanel.insets = new Insets(0, 0, 0, 5);
 		gbc_callsPanel.fill = GridBagConstraints.BOTH;
 		gbc_callsPanel.gridx = 0;
@@ -169,7 +169,7 @@ public class JobPanel extends AbstractCronPanel {
 		gbc_callsParameterPanel.gridwidth = 6;
 		gbc_callsParameterPanel.insets = new Insets(0, 0, 0, 5);
 		gbc_callsParameterPanel.fill = GridBagConstraints.BOTH;
-		gbc_callsParameterPanel.gridx = 3;
+		gbc_callsParameterPanel.gridx = 4;
 		gbc_callsParameterPanel.gridy = 4;
 		add(callsParameterPanel, gbc_callsParameterPanel);
 		callsParameterPanel.setLayout(new BoxLayout(callsParameterPanel, BoxLayout.Y_AXIS));
@@ -179,7 +179,7 @@ public class JobPanel extends AbstractCronPanel {
 		gbc_callsOperations.fill = GridBagConstraints.VERTICAL;
 		gbc_callsOperations.anchor = GridBagConstraints.WEST;
 		gbc_callsOperations.insets = new Insets(0, 0, 0, 5);
-		gbc_callsOperations.gridx = 9;
+		gbc_callsOperations.gridx = 10;
 		gbc_callsOperations.gridy = 4;
 		add(callsOperationsPanel, gbc_callsOperations);
 		callsOperationsPanel.setOpaque(false);
