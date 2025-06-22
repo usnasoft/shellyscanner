@@ -200,7 +200,7 @@ public abstract class AbstractCronPanel extends JPanel {
 		gbc_daysOfWeek.gridy = 0;
 		add(daysOfWeekPanel, gbc_daysOfWeek);
 		
-		JButton allWDaysButton = new JButton(new UsnaAction(null, "lblAddAll", "/images/Ok16.png", e -> checkBoxSelect(daysOfWeekPanel, true)));
+		JButton allWDaysButton = new JButton(new UsnaAction(null, "lblAddAll", "/images/Ok14.png", e -> checkBoxSelect(daysOfWeekPanel, true)));
 		allWDaysButton.setContentAreaFilled(false);
 		allWDaysButton.setBorder(BorderFactory.createEmptyBorder());
 		GridBagConstraints gbc_allWDaysButton = new GridBagConstraints();
@@ -209,7 +209,7 @@ public abstract class AbstractCronPanel extends JPanel {
 		gbc_allWDaysButton.gridy = 0;
 		add(allWDaysButton, gbc_allWDaysButton);
 		
-		JButton noWDaysButton = new JButton(new UsnaAction(null, "lblRemoveAll", "/images/PlayerStop16.png", e -> checkBoxSelect(daysOfWeekPanel, false)));
+		JButton noWDaysButton = new JButton(new UsnaAction(null, "lblRemoveAll", "/images/PlayerStop14.png", e -> checkBoxSelect(daysOfWeekPanel, false)));
 		noWDaysButton.setContentAreaFilled(false);
 		noWDaysButton.setBorder(BorderFactory.createEmptyBorder());
 		GridBagConstraints gbc_noWDaysButton = new GridBagConstraints();
@@ -228,7 +228,7 @@ public abstract class AbstractCronPanel extends JPanel {
 		gbc_months.gridy = 0;
 		add(monthsPanel, gbc_months);
 		
-		JButton allMonthsButton = new JButton(new UsnaAction(null, "lblAddAll", "/images/Ok16.png", e -> checkBoxSelect(monthsPanel, true)));
+		JButton allMonthsButton = new JButton(new UsnaAction(null, "lblAddAll", "/images/Ok14.png", e -> checkBoxSelect(monthsPanel, true)));
 		allMonthsButton.setContentAreaFilled(false);
 		allMonthsButton.setBorder(BorderFactory.createEmptyBorder());
 		GridBagConstraints gbc_btnNewButton = new GridBagConstraints();
@@ -237,7 +237,7 @@ public abstract class AbstractCronPanel extends JPanel {
 		gbc_btnNewButton.gridy = 0;
 		add(allMonthsButton, gbc_btnNewButton);
 		
-		JButton noMonthsButton = new JButton(new UsnaAction(null, "lblRemoveAll", "/images/PlayerStop16.png", e -> checkBoxSelect(monthsPanel, false)));
+		JButton noMonthsButton = new JButton(new UsnaAction(null, "lblRemoveAll", "/images/PlayerStop14.png", e -> checkBoxSelect(monthsPanel, false)));
 		noMonthsButton.setContentAreaFilled(false);
 		noMonthsButton.setBorder(BorderFactory.createEmptyBorder());
 		GridBagConstraints gbc_noMonthsButton = new GridBagConstraints();

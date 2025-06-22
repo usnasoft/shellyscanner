@@ -87,7 +87,7 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 	public void init(HttpClient httpClient) throws IOException {
 		this.httpClient = httpClient;
 		initSensors();
-		hostname = "B" + sensors.toString() + "-" + mac;
+		hostname = "B" + sensors.getFullID() + "-" + mac;
 		try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e) {}
 		refreshStatus();
 		try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e) {}
@@ -119,15 +119,17 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 		HashSet<String> set = new HashSet<>();
 		for(Webhook hook: devActions) {
 			String condition = hook.getCondition();
-			if(condition == null || condition.isEmpty()) {
-				set.add(""); // need a string to sort 
-			} else if(condition.startsWith("ev.idx == ")) { //  "condition" : "ev.idx == 0",
-				try {
-					set.add(condition);
-				} catch(RuntimeException e) {
-					LOG.error("Unexpected contition {}", condition);
-				}
-			}
+			set.add(condition == null ? "" : condition);
+//			if(condition == null || condition.isEmpty()) {
+//				set.add(""); // need a string to sort 
+////			} else if(condition.startsWith("ev.idx == ")) { //  "condition" : "ev.idx == 0",
+//			} else if(InputOnDevice.BUTTON_ID_PATTERN.matcher(condition).find()) {
+////				try {
+//					set.add(condition);
+////				} catch(RuntimeException e) {
+////					LOG.error("Unexpected contition {}", condition);
+////				}
+//			}
 		}
 		return set.stream().sorted().map(cond -> new InputOnDevice(cond, componentIndex)).toList();
 	}
@@ -249,23 +251,10 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 			res.put(RestoreMsg.ERR_RESTORE_MODEL, null);
 			return res;
 		}
-		// questo ...
 		String fileMac;
 		if((fileMac = usnaInfo.path("mac").asText("?")).equals(mac) == false) {
 			res.put(RestoreMsg.PRE_QUESTION_RESTORE_HOST, "mac: " + fileMac);
 		}
-//		// invece di questo
-//		final String fileComponentIndex = usnaInfo.get("index").asText();
-//		JsonNode fileComponents = backupJsons.get("Shelly.GetComponents.json").path("components");
-//		for(JsonNode fileComp: fileComponents) {
-//			if(fileComp.path("key").textValue().equals(DEVICE_KEY_PREFIX + fileComponentIndex)) { // find the component by fileComponentIndex
-//				/*String*/ fileMac = fileComp.path("config").path("addr").textValue();
-//				if(fileMac.equals(mac) == false) {
-//					res.put(RestoreMsg.PRE_QUESTION_RESTORE_HOST, "mac: " + fileMac);
-//				}
-//				break;
-//			}
-//		}
 		return res;
 	}
 

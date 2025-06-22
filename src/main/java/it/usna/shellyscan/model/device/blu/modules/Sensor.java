@@ -43,11 +43,11 @@ public class Sensor {
 		case 0x05 -> Meters.Type.L;
 		case 0x2C -> Meters.Type.VIB; // dec 44 - vibration (0-1; on shelly is boolean)
 		case 0x40 -> Meters.Type.DMM; // dec 64 - distance mm
+		case 0x3F -> Meters.Type.ANG; // dec 63 - angle (accelerometer)
 		default -> null;
 		};
 		
 		// 0x3C (60) dimmer (weel)
-		// 0x3F (63) rotation (accelerometer)
 		// 0x60 (96) channel
 	}
 	
