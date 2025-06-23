@@ -22,7 +22,7 @@ public class InputOnDevice implements InputActionInterface {
 	private final String hookId;
 	private String name;
 
-	public InputOnDevice(String cond, String parentId) {
+	public InputOnDevice(String cond, String parentId, SensorsCollection sensors) {
 		if(cond.isEmpty()) {
 			this.name = null;
 			this.condition = null;

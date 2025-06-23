@@ -37,7 +37,6 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.exc.StreamReadException;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
@@ -630,34 +629,6 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 
 	/** device specific */
 	protected abstract void restore(Map<String, JsonNode> backupJsons, List<String> errors) throws IOException, InterruptedException;
-	
-	protected JsonNode sectionToStream(final String section, final String arrayKey, final String entryName, FileSystem fs) throws IOException {
-		try(BufferedWriter writer = Files.newBufferedWriter(fs.getPath(entryName))) {
-			String req = section;
-			int offset = 0;
-			int tot = 0;
-			JsonNode resp = getJSON(req);
-			JsonNode arrayNode = resp.path(arrayKey);
-			do {
-				if(offset > 0) {
-					TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-					JsonNode fragment = getJSON(req);
-					ArrayNode fragmentArrayNode = (ArrayNode)fragment.path(arrayKey);
-					((ArrayNode)arrayNode).addAll(fragmentArrayNode);
-				}
-				JsonNode offsetNode;
-				if((offsetNode = resp.get("offset")) != null && (tot = resp.path("total").intValue()) > 0) { // potentially needs multiple calls
-					offset = offsetNode.intValue() + arrayNode.size();
-					req = section + ((section.contains("?")) ? "&offset=" : "?offset=") + offset;
-				}
-			} while(tot > offset);
-			jsonMapper.writer().writeValue(writer, resp);
-			return resp;
-		} catch (InterruptedException e) {
-			LOG.debug("sectionToStream {}-{}", section, arrayKey, e);
-			throw new DeviceOfflineException(e);
-		}
-	}
 	
 	/* experimental */
 //	public Future<Session> connectWebSocketLogs2(WebSocketDeviceListener listener) throws IOException, InterruptedException, ExecutionException {

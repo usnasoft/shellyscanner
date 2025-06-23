@@ -11,6 +11,7 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import org.eclipse.jetty.client.ContentResponse;
@@ -21,7 +22,9 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 
+import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.modules.FirmwareManager;
 import it.usna.shellyscan.model.device.modules.InputResetManager;
 import it.usna.shellyscan.model.device.modules.LoginManager;
@@ -279,6 +282,34 @@ public abstract class ShellyAbstractDevice {
 			return resp;
 		} catch (Exception e) {
 			LOG.debug("sectionToStream {}", section, e);
+			throw new DeviceOfflineException(e);
+		}
+	}
+	
+	protected JsonNode sectionToStream(final String section, final String arrayKey, final String entryName, FileSystem fs) throws IOException {
+		try(BufferedWriter writer = Files.newBufferedWriter(fs.getPath(entryName))) {
+			String req = section;
+			int offset = 0;
+			int tot = 0;
+			JsonNode resp = getJSON(req);
+			JsonNode arrayNode = resp.path(arrayKey);
+			do {
+				if(offset > 0) {
+					TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+					JsonNode fragment = getJSON(req);
+					ArrayNode fragmentArrayNode = (ArrayNode)fragment.path(arrayKey);
+					((ArrayNode)arrayNode).addAll(fragmentArrayNode);
+				}
+				JsonNode offsetNode;
+				if((offsetNode = resp.get("offset")) != null && (tot = resp.path("total").intValue()) > 0) { // potentially needs multiple calls
+					offset = offsetNode.intValue() + arrayNode.size();
+					req = section + ((section.contains("?")) ? "&offset=" : "?offset=") + offset;
+				}
+			} while(tot > offset);
+			jsonMapper.writer().writeValue(writer, resp);
+			return resp;
+		} catch (InterruptedException e) {
+			LOG.debug("sectionToStream {}-{}", section, arrayKey, e);
 			throw new DeviceOfflineException(e);
 		}
 	}

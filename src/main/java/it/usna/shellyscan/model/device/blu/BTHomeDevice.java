@@ -88,8 +88,8 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 		this.httpClient = httpClient;
 		initSensors();
 		hostname = "B" + sensors.getFullID() + "-" + mac;
-		try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e) {}
-		refreshStatus();
+//		try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e) {}
+//		refreshStatus();
 		try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e) {}
 		refreshSettings();
 	}
@@ -97,6 +97,9 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 	private void initSensors() throws IOException {
 		this.sensors = new SensorsCollection(this);
 		this.meters = sensors.getTypes().length > 0 ? new Meters[] {sensors} : null;
+		
+		try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e) {}
+		refreshStatus(); // init status for this.sensors
 		
 		ArrayList<DeviceModule> tmpModules = sensors.getModuleSensors();
 		List<InputActionInterface> tmpInputs = tmpModules.stream().filter(m -> m instanceof InputActionInterface).map(InputActionInterface.class::cast).collect(Collectors.toList());
@@ -120,18 +123,8 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 		for(Webhook hook: devActions) {
 			String condition = hook.getCondition();
 			set.add(condition == null ? "" : condition);
-//			if(condition == null || condition.isEmpty()) {
-//				set.add(""); // need a string to sort 
-////			} else if(condition.startsWith("ev.idx == ")) { //  "condition" : "ev.idx == 0",
-//			} else if(InputOnDevice.BUTTON_ID_PATTERN.matcher(condition).find()) {
-////				try {
-//					set.add(condition);
-////				} catch(RuntimeException e) {
-////					LOG.error("Unexpected contition {}", condition);
-////				}
-//			}
 		}
-		return set.stream().sorted().map(cond -> new InputOnDevice(cond, componentIndex)).toList();
+		return set.stream().sorted().map(cond -> new InputOnDevice(cond, componentIndex, sensors)).toList();
 	}
 	
 	public void setTypeName(String name) {
@@ -232,9 +225,9 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 		Files.deleteIfExists(file);
 		try(FileSystem fs = FileSystems.newFileSystem(URI.create("jar:" + file.toUri()), Map.of("create", "true"));
 			BufferedWriter writer = Files.newBufferedWriter(fs.getPath("ShellyScannerBLU.json"))) {
-			jsonMapper.writer().writeValue(writer, usnaData);
+			jsonMapper.writer().writeValue(writer, usnaData.toString());
 
-			sectionToStream("/rpc/Shelly.GetComponents?dynamic_only=true", "Shelly.GetComponents.json", fs); // "status" is used for groups
+			sectionToStream("/rpc/Shelly.GetComponents?dynamic_only=true", "components", "Shelly.GetComponents.json", fs); // "status" is used for groups
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			sectionToStream("/rpc/Webhook.List", "Webhook.List.json", fs);
 		} catch(InterruptedException e) {
@@ -344,8 +337,8 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			initSensors();
 			// RestoreAction do refreshSettings(); refreshStatus(); here we need a refreshStatus(); before refreshSettings(); for input names
-			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-			refreshStatus();
+//			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+//			refreshStatus();
 		} catch(IOException | RuntimeException | InterruptedException e) {
 			LOG.error("restore - RuntimeException", e);
 			errors.add(RestoreMsg.ERR_UNKNOWN.toString());
