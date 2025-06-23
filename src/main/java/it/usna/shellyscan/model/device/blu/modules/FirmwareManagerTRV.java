@@ -72,18 +72,22 @@ public class FirmwareManagerTRV implements FirmwareManager {
 	@Override
 	public String update(boolean dummy) {
 		updating = true;
-//		String res = d.postCommand("BluTrv.UpdateFirmware", "{\"id\":" + d.getIndex() + "}");
-//		if(res == null || res.isEmpty()) {
-//			updating = false;
-//		}
-//		return res;
+//		new Thread(() -> {
+//			String res = d.postCommand("BluTrv.UpdateFirmware", "{\"id\":" + d.getIndex() + "}");
+//			if(res != null && res.isEmpty() == false) {
+//				updating = false;
+//				LOG.error("FirmwareManagerTRV.update {}", res);
+//			}
+//		}).start();
 		new Thread(() -> {
 			try {
 				d.getJSON("/rpc/BluTrv.UpdateFirmware?id=" + d.getIndex()); // this call is blocking -> DeviceOfflineException
 			} catch (DeviceOfflineException e) {
 				LOG.trace("FirmwareManagerTRV.update timeout");
+				updating = false;
 			} catch (IOException | RuntimeException e) {
 				LOG.error("FirmwareManagerTRV.update", e);
+				updating = false;
 			}
 		}).start();
 		return null;

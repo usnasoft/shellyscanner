@@ -167,11 +167,6 @@ public abstract class AbstractBluDevice extends ShellyAbstractDevice {
 	}
 
 	@Override
-	public String[] getInfoRequests() {
-		return new String[] {"/rpc/BTHomeDevice.GetConfig?id=" + componentIndex, "/rpc/BTHomeDevice.GetStatus?id=" + componentIndex, "/rpc/BTHomeDevice.GetKnownObjects?id=" + componentIndex};
-	}
-
-	@Override
 	public void reboot() throws IOException {
 		throw new UnsupportedOperationException();
 	}
