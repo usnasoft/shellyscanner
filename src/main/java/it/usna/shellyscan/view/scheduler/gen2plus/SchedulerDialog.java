@@ -62,7 +62,7 @@ public class SchedulerDialog extends JDialog {
 		this.mHints = new MethodHints(device);
 		boolean exist = false;
 		try {
-			Iterator<JsonNode> scIt = sceduleManager.getSchedules().iterator();
+			Iterator<JsonNode> scIt = sceduleManager.getJobs().iterator();
 			while(scIt.hasNext()) {
 				addJob(scIt.next(), Integer.MAX_VALUE);
 				exist = true;

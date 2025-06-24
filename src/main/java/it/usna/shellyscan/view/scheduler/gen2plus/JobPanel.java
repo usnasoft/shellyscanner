@@ -50,7 +50,12 @@ public class JobPanel extends AbstractCronPanel {
 			addCall("", "", 0);
 		} else {
 			setCron(scheduleNode.path("timespec").asText());
-			setCalls(scheduleNode.path("calls"));
+			JsonNode calls = scheduleNode.path("calls");
+			if(calls.size() > 0) {
+				setCalls(scheduleNode.path("calls"));
+			} else {
+				addCall("", "", 0);
+			}
 		}
 	}
 

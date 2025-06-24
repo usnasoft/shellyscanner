@@ -124,7 +124,7 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 			String condition = hook.getCondition();
 			set.add(condition == null ? "" : condition);
 		}
-		return set.stream().sorted().map(cond -> new InputOnDevice(cond, componentIndex, sensors)).toList();
+		return set.stream().sorted().map(cond -> new InputOnDevice(cond, componentIndex/*, sensors*/)).toList();
 	}
 	
 	public void setTypeName(String name) {
@@ -148,7 +148,7 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 
 	@Override
 	public DeviceModule[] getModules() {
-		return /*inputs*/modules;
+		return modules;
 	}
 	
 	@Override
@@ -200,8 +200,8 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 		ArrayList<String> l = new ArrayList<String>(Arrays.asList(
 				"/rpc/BTHomeDevice.GetConfig?id=" + componentIndex, "/rpc/BTHomeDevice.GetStatus?id=" + componentIndex, "/rpc/BTHomeDevice.GetKnownObjects?id=" + componentIndex));
 		for(Sensor s: sensors.getSensors()) {
-			l.add("(BTHomeSensor.GetConfig [" + s.getId() + "])/rpc/BTHomeSensor.GetConfig?id=" + s.getId());
-			l.add("(BTHomeSensor.GetStatus [" + s.getId() + "])/rpc/BTHomeSensor.GetStatus?id=" + s.getId());
+			l.add("(BTHomeSensor.GetConfig [" + s.getId() + "-" + s.getObjId() + "])/rpc/BTHomeSensor.GetConfig?id=" + s.getId());
+			l.add("(BTHomeSensor.GetStatus [" + s.getId() + "-" + s.getObjId() + "])/rpc/BTHomeSensor.GetStatus?id=" + s.getId());
 		}
 		return l.toArray(String[]::new);
 	}
@@ -225,7 +225,7 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 		Files.deleteIfExists(file);
 		try(FileSystem fs = FileSystems.newFileSystem(URI.create("jar:" + file.toUri()), Map.of("create", "true"));
 			BufferedWriter writer = Files.newBufferedWriter(fs.getPath("ShellyScannerBLU.json"))) {
-			jsonMapper.writer().writeValue(writer, usnaData.toString());
+			jsonMapper.writer().writeValue(writer, usnaData);
 
 			sectionToStream("/rpc/Shelly.GetComponents?dynamic_only=true", "components", "Shelly.GetComponents.json", fs); // "status" is used for groups
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);

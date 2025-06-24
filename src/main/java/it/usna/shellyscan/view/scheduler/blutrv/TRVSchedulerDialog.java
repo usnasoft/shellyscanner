@@ -62,7 +62,7 @@ public class TRVSchedulerDialog extends JDialog {
 		this.sceduleManager = new ScheduleManagerTRV(device);
 		boolean exist = false;
 		try {
-			Iterator<JsonNode> scIt = sceduleManager.getSchedules().iterator();
+			Iterator<JsonNode> scIt = sceduleManager.getRules().iterator();
 			while(scIt.hasNext()) {
 				addJob(scIt.next(), device.getMinTargetTemp(), device.getMaxTargetTemp(), Integer.MAX_VALUE);
 				exist = true;

@@ -18,7 +18,7 @@ public class ScheduleManagerTRV {
 		this.trv = trv;
 	}
 	
-	public JsonNode getSchedules() throws IOException {
+	public JsonNode getRules() throws IOException {
 		return trv.getTRVJSON("TRV.ListScheduleRules", "{\"id\":0}").get("rules");
 	}
 

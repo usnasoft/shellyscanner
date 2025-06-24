@@ -22,17 +22,15 @@ public class InputOnDevice implements InputActionInterface {
 	private final String hookId;
 	private String name;
 
-	public InputOnDevice(String cond, String parentId, SensorsCollection sensors) {
+	public InputOnDevice(String cond, String parentId/*, SensorsCollection sensors*/) {
 		if(cond.isEmpty()) {
 			this.name = null;
 			this.condition = null;
 		} else { // "condition" : "ev.idx == 0" / "ev.idx === 0"
-			Matcher buttonMatcher = BUTTON_ID_PATTERN.matcher(cond);
 			Matcher channelMatcher = CHANNEL_ID_PATTERN.matcher(cond);
-			this.name = "";
-			if(channelMatcher.find()) {
-				name /*+*/= "ch " + channelMatcher.group(1);
-			}
+			this.name = channelMatcher.find() ? "ch " + channelMatcher.group(1) : "";
+
+			Matcher buttonMatcher = BUTTON_ID_PATTERN.matcher(cond);
 			if(buttonMatcher.find()) {
 				if(name.isEmpty() == false) {
 					name += " - ";	

@@ -16,7 +16,7 @@ public class ScheduleManager {
 		this.device = device;
 	}
 	
-	public JsonNode getSchedules() throws IOException {
+	public JsonNode getJobs() throws IOException {
 		return device.getJSON("/rpc/Schedule.List").get("jobs");
 	}
 	
@@ -27,7 +27,7 @@ public class ScheduleManager {
 	/**
 	 * @param def
 	 * @param enable
-	 * @return the new id; < 0 in case of errpr
+	 * @return the new id; < 0 in case of error
 	 * @throws IOException 
 	 */
 	public int create(JsonNode def, boolean enable) throws IOException {
