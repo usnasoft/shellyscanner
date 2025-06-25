@@ -47,7 +47,7 @@ import it.usna.shellyscan.view.util.UtilMiscellaneous;
 import it.usna.swing.UsnaSwingUtils;
 import it.usna.swing.VerticalFlowLayout;
 
-public class SchedulerDialog extends JDialog {
+public class G2SchedulerDialog extends JDialog {
 	private static final long serialVersionUID = 1L;
 
 	private final ScheduleManager sceduleManager;
@@ -56,7 +56,7 @@ public class SchedulerDialog extends JDialog {
 	private final ArrayList<Integer> removedId = new ArrayList<>();
 	private final JPanel schedulesPanel = new JPanel(new VerticalFlowLayout(VerticalFlowLayout.TOP, VerticalFlowLayout.CENTER, 0, 0));
 
-	public SchedulerDialog(Window owner, AbstractG2Device device) {
+	public G2SchedulerDialog(Window owner, AbstractG2Device device) {
 		super(owner, Main.LABELS.getString("schTitle") + " - " + UtilMiscellaneous.getExtendedHostName(device), Dialog.ModalityType.MODELESS);
 		this.sceduleManager = new ScheduleManager(device);
 		this.mHints = new MethodHints(device);
@@ -79,7 +79,7 @@ public class SchedulerDialog extends JDialog {
 	}
 	
 	/** test & design */
-	public SchedulerDialog() {
+	public G2SchedulerDialog() {
 		super(null, "schTitle", Dialog.ModalityType.APPLICATION_MODAL);
 		sceduleManager = null;
 		mHints = null;
@@ -130,7 +130,7 @@ public class SchedulerDialog extends JDialog {
 					ObjectNode jobNode = (ObjectNode)scIt.next();
 					jobNode.remove("id");
 					if(jobNode.hasNonNull("timespec") && jobNode.hasNonNull("calls")) {
-						if(schedulesPanel.getComponentCount() == 1 && ((JobPanel)((JPanel)schedulesPanel.getComponent(0)).getComponent(0)).isNullJob()) {
+						if(schedulesPanel.getComponentCount() == 1 && ((G2JobPanel)((JPanel)schedulesPanel.getComponent(0)).getComponent(0)).isNullJob()) {
 							schedulesPanel.remove(0);
 						}
 						addJob(jobNode, Integer.MAX_VALUE);
@@ -156,13 +156,13 @@ public class SchedulerDialog extends JDialog {
 
 			// Validation
 			if(numJobs == 1) {
-				JobPanel sl = (JobPanel)((JPanel)schedulesPanel.getComponent(0)).getComponent(0);
+				G2JobPanel sl = (G2JobPanel)((JPanel)schedulesPanel.getComponent(0)).getComponent(0);
 				if(sl.isNullJob() == false && sl.validateData() == false) {
 					return false;
 				}
 			} else {
 				for(int i = 0; i < numJobs; i++) {
-					JobPanel sl = (JobPanel)((JPanel)schedulesPanel.getComponent(i)).getComponent(0);
+					G2JobPanel sl = (G2JobPanel)((JPanel)schedulesPanel.getComponent(i)).getComponent(0);
 					if(sl.validateData() == false) {
 						sl.scrollRectToVisible(sl.getBounds());
 						return false;
@@ -182,7 +182,7 @@ public class SchedulerDialog extends JDialog {
 			
 			// Create / Update
 			for(int i = 0; i < numJobs; i++) {
-				JobPanel sl = (JobPanel)((JPanel)schedulesPanel.getComponent(i)).getComponent(0);
+				G2JobPanel sl = (G2JobPanel)((JPanel)schedulesPanel.getComponent(i)).getComponent(0);
 				ScheduleData original = originalValues.get(i);
 				//				System.out.println(sl.getJson());
 				//				System.out.println(original.orig);
@@ -224,7 +224,7 @@ public class SchedulerDialog extends JDialog {
 
 	private void addJob(JsonNode node, int pos) {
 		JPanel linePanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
-		JobPanel job = new JobPanel(this, node, mHints);
+		G2JobPanel job = new G2JobPanel(this, node, mHints);
 		linePanel.add(job);
 
 		JButton enableButton = new JButton();
@@ -356,7 +356,7 @@ public class SchedulerDialog extends JDialog {
 
 	public static void main(final String ... args) throws Exception {
 		UsnaSwingUtils.setLookAndFeel(UsnaSwingUtils.LF_NIMBUS);
-		new SchedulerDialog();
+		new G2SchedulerDialog();
 	}
 }
 

@@ -69,12 +69,14 @@ import it.usna.shellyscan.model.device.blu.BTHomeDevice;
 import it.usna.shellyscan.model.device.blu.BluTRV;
 import it.usna.shellyscan.model.device.g1.AbstractG1Device;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
+import it.usna.shellyscan.model.device.g2.WallDisplay;
 import it.usna.shellyscan.view.appsettings.DialogAppSettings;
 import it.usna.shellyscan.view.chart.MeasuresChart;
 import it.usna.shellyscan.view.checklist.CheckListView;
 import it.usna.shellyscan.view.devsettings.DialogDeviceSettings;
 import it.usna.shellyscan.view.scheduler.blutrv.TRVSchedulerDialog;
-import it.usna.shellyscan.view.scheduler.gen2plus.SchedulerDialog;
+import it.usna.shellyscan.view.scheduler.gen2plus.G2SchedulerDialog;
+import it.usna.shellyscan.view.scheduler.walldisplay.WDSchedulerDialog;
 import it.usna.shellyscan.view.scripts.DialogDeviceScripts;
 import it.usna.shellyscan.view.util.Msg;
 import it.usna.shellyscan.view.util.ScannerProperties;
@@ -126,8 +128,10 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 			i -> new DialogDeviceInfo(MainView.this, model, i) );
 	
 	private Action schedulerEditAction = new UsnaSelectedAction(this, devicesTable, "action_scheduler_name", "action_scheduler_tooltip", null, "/images/Calendar.png", i -> {
-		if(model.get(i) instanceof AbstractG2Device g2) {
-			new SchedulerDialog(MainView.this, g2);
+		if(model.get(i) instanceof WallDisplay wd) {
+			new WDSchedulerDialog(MainView.this, wd);
+		} else if(model.get(i) instanceof AbstractG2Device g2) {
+			new G2SchedulerDialog(MainView.this, g2);
 		} else if(model.get(i) instanceof BluTRV trv) {
 			new TRVSchedulerDialog(MainView.this, trv);
 		}

@@ -29,7 +29,7 @@ import it.usna.shellyscan.controller.UsnaDropdownAction;
 import it.usna.shellyscan.view.scheduler.AbstractCronPanel;
 import it.usna.shellyscan.view.util.Msg;
 
-public class JobPanel extends AbstractCronPanel {
+public class G2JobPanel extends AbstractCronPanel {
 	private static final long serialVersionUID = 1L;
 	private JPanel callsPanel;
 	private JPanel callsParameterPanel;
@@ -41,7 +41,7 @@ public class JobPanel extends AbstractCronPanel {
 	/**
 	 * @wbp.parser.constructor
 	 */
-	JobPanel(JDialog parent, JsonNode scheduleNode, MethodHints mHints) {
+	public G2JobPanel(JDialog parent, JsonNode scheduleNode, MethodHints mHints) {
 		super(parent);
 		initCallSection();
 		this.mHints = mHints;
