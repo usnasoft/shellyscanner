@@ -151,11 +151,11 @@ public class WallDisplay extends AbstractG2Device implements ModulesHolder {
 	@Override
 	protected void backup(FileSystem out) throws IOException, InterruptedException {
 		if(thermostat != null) {
-			JsonNode profiles = sectionToStream("/rpc/Thermostat.Schedule.ListProfiles?id=0", "Thermostat.Schedule.ListProfiles_id-0.json", out);
+			JsonNode profiles = sectionToStream("/rpc/Thermostat.Schedule.ListProfiles?id=0", "Thermostat.Schedule.ListProfiles.json", out);
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			for(JsonNode p: profiles.get("profiles")) {
 				final String id = p.get("id").asText();
-				sectionToStream("/rpc/Thermostat.Schedule.ListRules?id=0&profile_id=" + id, "Thermostat.Schedule.ListRules_id-0_profile_id-" + id + ".json", out);
+				sectionToStream("/rpc/Thermostat.Schedule.ListRules?id=0&profile_id=" + id, "Thermostat.Schedule.ListRules_profile_id-" + id + ".json", out);
 				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			}
 		}

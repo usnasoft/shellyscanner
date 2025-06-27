@@ -2,6 +2,8 @@ package it.usna.shellyscan.view.scheduler.walldisplay;
 
 import java.awt.BorderLayout;
 import java.awt.Cursor;
+import java.io.IOException;
+import java.util.List;
 
 import javax.swing.DefaultRowSorter;
 import javax.swing.JButton;
@@ -18,23 +20,29 @@ import it.usna.shellyscan.Main;
 import it.usna.shellyscan.controller.UsnaAction;
 import it.usna.shellyscan.model.device.g2.WallDisplay;
 import it.usna.shellyscan.model.device.g2.modules.ScheduleManagerThermWD;
+import it.usna.shellyscan.model.device.g2.modules.ScheduleManagerThermWD.ThermProfile;
+import it.usna.shellyscan.view.util.Msg;
 import it.usna.swing.VerticalFlowLayout;
 import it.usna.swing.table.ExTooltipTable;
 import it.usna.swing.table.UsnaTableModel;
 
 public class ProfilesPanel extends JPanel {
 	private static final long serialVersionUID = 1L;
+	private final JDialog parent;
 	private final ScheduleManagerThermWD wdSceduleManager;
+	private List<ThermProfile> profiles;
 	private JTable table;
+	private UsnaTableModel tModel;
 	
 	public ProfilesPanel(JDialog parent, WallDisplay device) {
+		this.parent = parent;
 		setLayout(new BorderLayout(0, 0));
 		this.wdSceduleManager = new ScheduleManagerThermWD(device);
 		
 		JScrollPane scrollPane = new JScrollPane();
 		add(scrollPane, BorderLayout.WEST);
 		
-		UsnaTableModel tModel = new UsnaTableModel(Main.LABELS.getString("schLblProfiles"));
+		tModel = new UsnaTableModel(Main.LABELS.getString("schLblProfiles"));
 		table = new ExTooltipTable(tModel, true) {
 			private static final long serialVersionUID = 1L;
 			{
@@ -54,13 +62,42 @@ public class ProfilesPanel extends JPanel {
 				try {
 					final int mRow = convertRowIndexToModel(getEditingRow());
 					String value = (String) getCellEditor().getCellEditorValue();
-					// todo
-					tModel.setRow(mRow, value);
+					if(mRow < profiles.size()) {
+						ThermProfile oldProfile = profiles.get(mRow);
+						if(oldProfile.name().equals(value) == false) {
+							String ret = wdSceduleManager.renameProfiles(mRow, value);
+							if(ret != null) {
+								Msg.errorMsg(parent, ret);
+							} else {
+								profiles.set(mRow, new ThermProfile(oldProfile.id(), value));
+								tModel.setRow(mRow, value);
+								super.editingStopped(e);
+							}
+						}
+					} else {
+						try {
+							int newId = wdSceduleManager.addProfiles(value);
+							profiles.add(new ThermProfile(newId, value));
+							tModel.setRow(mRow, value);
+							super.editingStopped(e);
+						} catch (IOException ex) {
+							Msg.errorMsg(parent, ex);
+						}
+					}
 				} finally {
 					parent.setCursor(Cursor.getDefaultCursor());
 				}
 			}
+			
+//			@Override
+//			public void removeEditor() {
+//				System.out.print("dddd");
+//				//
+//			}
 		};
+		
+		init();
+
 		scrollPane.setViewportView(table);
 		
 		JPanel buttonsPanel = new JPanel(new VerticalFlowLayout(VerticalFlowLayout.LEFT, VerticalFlowLayout.LEFT));
@@ -79,13 +116,32 @@ public class ProfilesPanel extends JPanel {
 		JButton deleteProfileButton = new JButton(new UsnaAction("schDelProfile", e -> {
 			int sel = table.getSelectedRow();
 			if(sel >= 0) {
+				int mRow = table.convertRowIndexToModel(sel);
 				TableCellEditor editor = table.getCellEditor();
 				if(editor != null) {
 					editor.stopCellEditing();
 				}
-				tModel.removeRow(table.convertRowIndexToModel(sel));
+				ThermProfile oldProfile = profiles.get(mRow);
+				String ret = wdSceduleManager.deleteProfiles(oldProfile.id());
+				if(ret != null) {
+					Msg.errorMsg(parent, ret);
+				} else {
+					profiles.remove(mRow);
+					tModel.removeRow(mRow);
+				}
 			}
 		}));
 		buttonsPanel.add(deleteProfileButton);
+	}
+	
+	private void init() {
+		try {
+			profiles = wdSceduleManager.getProfiles();
+			profiles.forEach(p -> {
+				tModel.addRow(p.name());
+			});
+		} catch (IOException e) {
+			Msg.errorMsg(parent, e);
+		}
 	}
 }

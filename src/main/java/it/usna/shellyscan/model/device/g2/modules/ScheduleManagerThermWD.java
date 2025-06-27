@@ -14,6 +14,7 @@ import it.usna.shellyscan.model.device.g2.WallDisplay;
  * Thermostat ScheduleManager for Wall Display also managing profiles
  */
 public class ScheduleManagerThermWD {
+	private final static String THERM_ID = "0";
 	private final WallDisplay wd;
 	
 	public ScheduleManagerThermWD(WallDisplay device) {
@@ -21,32 +22,27 @@ public class ScheduleManagerThermWD {
 	}
 
 	// Profiles -->
-	
-	// todo test
 	public List<ThermProfile> getProfiles() throws IOException {
 		ArrayList<ThermProfile> ret = new ArrayList<>();
-		wd.getJSON("Thermostat.Schedule.ListProfiles").path("profiles").forEach(node -> {
+		wd.getJSON("/rpc/Thermostat.Schedule.ListProfiles?id=" + THERM_ID).path("profiles").forEach(node -> {
 			ret.add(new ThermProfile(node.get("id").intValue(), node.get("name").textValue()));
 		});
 		return ret;
 	}
-	
-	// todo test
+
 	public String deleteProfiles(int id) {
-		return wd.postCommand("Thermostat.Schedule.DeleteProfile", "{\"id\":" + id + "}");
+		return wd.postCommand("Thermostat.Schedule.DeleteProfile", "{\"id\":" + THERM_ID + ",\"profile_id\":" + id + "}");
 	}
-	
-	// todo test
-	public String updateProfiles(int id, String newName) {
-		return wd.postCommand("Thermostat.Schedule.RenameProfile", "{\"id\":" + id + ",\"name\":\"" + newName + "\"}");
+
+	public String renameProfiles(int id, String newName) {
+		return wd.postCommand("Thermostat.Schedule.RenameProfile", "{\"id\":" + THERM_ID + ",\"profile_id\":" + id + ",\"name\":\"" + newName + "\"}");
 	}
-	
-	// todo test
+
 	public int addProfiles(String name) throws IOException {
-		JsonNode ret = wd.getJSON("Thermostat.Schedule.AddProfile", "{\"name\":\"" + name + "\"}");
-		return ret.get("id").intValue();
+		JsonNode ret = wd.getJSON("Thermostat.Schedule.AddProfile", "{\"id\":" + THERM_ID + ",\"name\":\"" + name + "\"}");
+		return ret.get("profile_id").intValue();
 	}
-	
+
 	// Rules (Thermostat) -->
 	
 	// todo test
@@ -87,5 +83,5 @@ public class ScheduleManagerThermWD {
 		return wd.postCommand("Thermostat.Schedule.DeleteRule", "{\"id\":0,\"rule_id\":" + ruleId + "}");
 	}
 	
-	public record ThermProfile(int is, String name) {};
+	public record ThermProfile(int id, String name) {};
 }
