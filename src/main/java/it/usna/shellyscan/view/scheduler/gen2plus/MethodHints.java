@@ -17,6 +17,10 @@ import it.usna.shellyscan.model.device.ModulesHolder;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.g3.modules.XT1Thermostat;
 
+/**
+ * Generate a list of shedulable actions according to the components found in /rpc/Shelly.GetComponents?include=["config"]
+ * the call is lazy -> list is created on the first call
+ */
 public class MethodHints {
 	private final static Logger LOG = LoggerFactory.getLogger(MethodHints.class);
 	private final AbstractG2Device device;
@@ -66,6 +70,7 @@ public class MethodHints {
 					methodsList.add(new Method(nameBase + "Open", "Cover.Open", "\"id\":" + id));
 					methodsList.add(new Method(nameBase + "Close", "Cover.Close", "\"id\":" + id));
 					methodsList.add(new Method(nameBase + "Go 50%", "Cover.GoToPosition", "\"id\":" + id + ",\"pos\":50"));
+					methodsList.add(new Method(nameBase + "Stop", "Cover.Stop", "\"id\":" + id));
 					if(comp.get("config").hasNonNull("slat")) {
 						methodsList.add(new Method(nameBase + "Go 50%, Slat 50%", "Cover.GoToPosition", "\"id\":" + id + ",\"pos\":50,\"slat_pos\":50"));
 					}

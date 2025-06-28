@@ -5,6 +5,7 @@ import static it.usna.shellyscan.Main.LABELS;
 import java.awt.BorderLayout;
 import java.awt.Dialog;
 import java.awt.Window;
+import java.util.concurrent.TimeUnit;
 
 import javax.swing.JButton;
 import javax.swing.JDialog;
@@ -13,6 +14,7 @@ import javax.swing.JTabbedPane;
 
 import it.usna.shellyscan.Main;
 import it.usna.shellyscan.controller.UsnaAction;
+import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.g2.WallDisplay;
 import it.usna.shellyscan.view.scheduler.gen2plus.G2SchedulerPanel;
 import it.usna.shellyscan.view.util.UtilMiscellaneous;
@@ -38,21 +40,28 @@ public class WDSchedulerDialog extends JDialog {
 	private void init(WallDisplay device) {
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		
-		final G2SchedulerPanel scPanel = device == null ? new G2SchedulerPanel() : new G2SchedulerPanel(this, device);
+		final G2SchedulerPanel schPanel = device == null ? new G2SchedulerPanel(this) : new G2SchedulerPanel(this, device);
+		try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e) {}
+		final ProfilesPanel thermopanel = new ProfilesPanel(this, device);
 		
 		JTabbedPane tabs = new JTabbedPane();
 		getContentPane().add(tabs, BorderLayout.CENTER);
 
-		tabs.add(LABELS.getString("schLblJobs"), scPanel);
-		tabs.add(LABELS.getString("schLblProTherm"), new ProfilesPanel(this, device));
+		tabs.add(LABELS.getString("schLblJobs"), schPanel);
+		tabs.add(LABELS.getString("schLblProTherm"), thermopanel);
 		
 		JPanel buttonsPanel = new JPanel();
-		buttonsPanel.add(new JButton(new UsnaAction("dlgApply", e -> scPanel.apply())));
-		buttonsPanel.add( new JButton(new UsnaAction("dlgApplyClose", e -> {
-			if(scPanel.apply()) dispose();
+		buttonsPanel.add(new JButton(new UsnaAction("dlgApply", e -> schPanel.apply() )));
+		buttonsPanel.add(new JButton(new UsnaAction("dlgApplyClose", e -> {
+			if(schPanel.apply()) dispose();
 		}) ));
-		buttonsPanel.add(new JButton(new UsnaAction("lblLoadFile", e -> scPanel.loadFromBackup())));
-		buttonsPanel.add(new JButton(new UsnaAction("dlgClose", e -> dispose())));
+		buttonsPanel.add(new JButton(new UsnaAction(this, "labelRefresh", e -> {
+			schPanel.refresh();
+			try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException ex) {}
+			thermopanel.refresh();
+		}) ));
+		buttonsPanel.add(new JButton(new UsnaAction("lblLoadFile", e -> schPanel.loadFromBackup() )));
+		buttonsPanel.add(new JButton(new UsnaAction("dlgClose", e -> dispose() )));
 		
 		getContentPane().add(buttonsPanel, BorderLayout.SOUTH);
 

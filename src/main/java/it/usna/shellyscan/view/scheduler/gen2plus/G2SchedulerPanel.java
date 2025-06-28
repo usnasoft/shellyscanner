@@ -56,6 +56,29 @@ public class G2SchedulerPanel extends JScrollPane {
 		this.parent = parent;
 		this.sceduleManager = new ScheduleManager(device);
 		this.mHints = new MethodHints(device);
+		
+		init();
+		fill();
+	}
+	
+	/** test & design */
+	public G2SchedulerPanel(JDialog parent) {
+		super(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+		this.parent = parent;
+		sceduleManager = null;
+		mHints = null;
+		addJob(null, Integer.MAX_VALUE);
+		init();
+	}
+	
+	private void init() {
+		setBackground(Main.BG_COLOR);
+		getVerticalScrollBar().setUnitIncrement(16);
+		setViewportView(schedulesPanel);
+		setBorder(BorderFactory.createEmptyBorder());
+	}
+	
+	private void fill() {
 		boolean exist = false;
 		try {
 			Iterator<JsonNode> scIt = sceduleManager.getJobs().iterator();
@@ -69,25 +92,13 @@ public class G2SchedulerPanel extends JScrollPane {
 		if(exist == false) {
 			addJob(null, Integer.MAX_VALUE);
 		}
-		init();
-	}
-	
-	/** test & design */
-	public G2SchedulerPanel() {
-		super(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-		parent = null;
-		sceduleManager = null;
-		mHints = null;
-		addJob(null, Integer.MAX_VALUE);
-		init();
-	}
-	
-	private void init() {
-		setBackground(Main.BG_COLOR);
-		getVerticalScrollBar().setUnitIncrement(16);
-		setViewportView(schedulesPanel);
-		setBorder(BorderFactory.createEmptyBorder());
 		lineColors();
+	}
+	
+	public void refresh() {
+		schedulesPanel.removeAll();
+		originalValues.clear();
+		fill();
 	}
 	
 	public void loadFromBackup() {
