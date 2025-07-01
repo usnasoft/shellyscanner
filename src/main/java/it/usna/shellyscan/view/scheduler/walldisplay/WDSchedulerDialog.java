@@ -3,6 +3,7 @@ package it.usna.shellyscan.view.scheduler.walldisplay;
 import static it.usna.shellyscan.Main.LABELS;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.Dialog;
 import java.awt.Window;
 import java.util.concurrent.TimeUnit;
@@ -42,25 +43,42 @@ public class WDSchedulerDialog extends JDialog {
 		
 		final G2SchedulerPanel schPanel = device == null ? new G2SchedulerPanel(this) : new G2SchedulerPanel(this, device);
 		try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e) {}
-		final ProfilesPanel thermopanel = new ProfilesPanel(this, device);
+//		final ProfilesPanel thermoPanel = new ProfilesPanel(this, device);
+		final WDThermSchedulerPanel thermoPanel = new WDThermSchedulerPanel(this, device);
 		
 		JTabbedPane tabs = new JTabbedPane();
 		getContentPane().add(tabs, BorderLayout.CENTER);
 
 		tabs.add(LABELS.getString("schLblJobs"), schPanel);
-		tabs.add(LABELS.getString("schLblProTherm"), thermopanel);
+		tabs.add(LABELS.getString("schLblProTherm"), thermoPanel);
 		
 		JPanel buttonsPanel = new JPanel();
-		buttonsPanel.add(new JButton(new UsnaAction("dlgApply", e -> schPanel.apply() )));
+		buttonsPanel.add(new JButton(new UsnaAction("dlgApply", e -> {
+			Component current = tabs.getSelectedComponent();
+			if(current == schPanel) {
+				schPanel.apply();
+			} else {
+				thermoPanel.apply();
+			}
+		}) ));
 		buttonsPanel.add(new JButton(new UsnaAction("dlgApplyClose", e -> {
-			if(schPanel.apply()) dispose();
+			Component current = tabs.getSelectedComponent();
+			boolean done = (current == schPanel) ? schPanel.apply() : thermoPanel.apply();
+			if(done) dispose();
 		}) ));
 		buttonsPanel.add(new JButton(new UsnaAction(this, "labelRefresh", e -> {
 			schPanel.refresh();
 			try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException ex) {}
-			thermopanel.refresh();
+			thermoPanel.refresh();
 		}) ));
-		buttonsPanel.add(new JButton(new UsnaAction("lblLoadFile", e -> schPanel.loadFromBackup() )));
+		buttonsPanel.add(new JButton(new UsnaAction("lblLoadFile", e -> {
+			Component current = tabs.getSelectedComponent();
+			if(current == schPanel) {
+				schPanel.loadFromBackup();
+			} else {
+				thermoPanel.loadFromBackup();
+			}
+		}) ));
 		buttonsPanel.add(new JButton(new UsnaAction("dlgClose", e -> dispose() )));
 		
 		getContentPane().add(buttonsPanel, BorderLayout.SOUTH);

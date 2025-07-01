@@ -3,10 +3,10 @@ package it.usna.shellyscan.view.scheduler.walldisplay;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Cursor;
+import java.awt.FlowLayout;
 import java.io.IOException;
 import java.util.List;
 
-import javax.swing.BoxLayout;
 import javax.swing.DefaultRowSorter;
 import javax.swing.JButton;
 import javax.swing.JDialog;
@@ -30,12 +30,14 @@ import it.usna.swing.table.UsnaTableModel;
 
 public class ProfilesPanel extends JPanel {
 	private static final long serialVersionUID = 1L;
+	public final static String SELECTION_EVENT = "usna_device_selection";
 	private final JDialog parent;
 	private final ScheduleManagerThermWD wdSceduleManager;
 	private List<ThermProfile> profiles;
+//	private HashMap<Integer, ArrayList<ScheduleData>> rules = new HashMap<>();
 	private JTable profilesTable;
 	private UsnaTableModel tModel;
-	
+
 	public ProfilesPanel(JDialog parent, WallDisplay device) {
 		this.parent = parent;
 		setLayout(new BorderLayout(0, 0));
@@ -51,6 +53,13 @@ public class ProfilesPanel extends JPanel {
 				setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 				sortByColumn(0, SortOrder.ASCENDING);
 				((DefaultRowSorter<?, ?>)getRowSorter()).setSortsOnUpdates(true);
+				
+				getSelectionModel().addListSelectionListener(e -> {
+					if(e.getValueIsAdjusting() == false) {
+						int sel = getSelectedModelRow();
+						ProfilesPanel.this.firePropertyChange(SELECTION_EVENT, null, (sel >= 0) ? profiles.get(sel).id() : -1);
+					}
+				});
 			}
 			
 			@Override
@@ -73,10 +82,12 @@ public class ProfilesPanel extends JPanel {
 				try {
 					final int mRow = convertRowIndexToModel(getEditingRow());
 					String value = (String) getCellEditor().getCellEditorValue();
+					// No empty profile names -> go back to previous
 					if(value.isEmpty()) {
 						getCellEditor().cancelCellEditing();
 						return;
 					}
+					// Update
 					if(mRow < profiles.size()) {
 						ThermProfile oldProfile = profiles.get(mRow);
 						if(oldProfile.name().equals(value) == false) {
@@ -89,6 +100,7 @@ public class ProfilesPanel extends JPanel {
 								tModel.setRow(mRow, value);
 							}
 						}
+					// New profile
 					} else {
 						try {
 							int newId = wdSceduleManager.addProfiles(value);
@@ -111,9 +123,9 @@ public class ProfilesPanel extends JPanel {
 		scrollPane.setViewportView(profilesTable);
 		
 //		JPanel buttonsPanel = new JPanel(new VerticalFlowLayout(VerticalFlowLayout.LEFT, VerticalFlowLayout.LEFT));
-		JPanel buttonsPanel = new JPanel();
+		JPanel buttonsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 10));
 		add(buttonsPanel, BorderLayout.EAST);
-		buttonsPanel.setLayout(new BoxLayout(buttonsPanel, BoxLayout.Y_AXIS));
+//		buttonsPanel.setLayout(new BoxLayout(buttonsPanel, BoxLayout.Y_AXIS));
 		
 		JButton newProfileButton = new JButton(new UsnaAction("schAddProfile", e -> {
 			TableCellEditor editor = profilesTable.getCellEditor();
@@ -162,6 +174,20 @@ public class ProfilesPanel extends JPanel {
 			profiles = wdSceduleManager.getProfiles();
 			profiles.forEach(p -> {
 				tModel.addRow(p.name());
+
+//				try {
+//					ArrayList<ScheduleData> list = new ArrayList<>();
+//					Iterator<JsonNode> scIt = wdSceduleManager.getRules(p.id()).iterator();
+//					while(scIt.hasNext()) {
+//						JsonNode node = scIt.next();
+//						// {"rule_id":"1751118368455","enable":true,"target_C":21,"profile_id":0,"timespec":"* 0 0 * * MON,TUE,WED,THU,FRI,SAT,SUN"
+//						ScheduleData thisRule = new ScheduleData(node.get("rule_id").intValue(), node.get("target_C").floatValue(), CronUtils.fragStrToNum(node.get("timespec").textValue()));
+//						list.add(thisRule);
+//					}
+//					rules.put(p.id(), list);
+//				} catch (IOException e) {
+//					Msg.errorMsg(parent, e);
+//				}
 			});
 		} catch (/*IO*/Exception e) {
 			Msg.errorMsg(parent, e);
@@ -180,4 +206,14 @@ public class ProfilesPanel extends JPanel {
 		}
 		super.setVisible(v);
 	}
+	
+	public void loadFromBackup() {
+		// todo
+	}
+	
+//	public boolean apply() {
+//		return false;
+//	}
+	
+//	private record ScheduleData(int ruleId, float target, String timespec) {}
 }

@@ -30,12 +30,12 @@ public class ScheduleManagerThermWD {
 		return ret;
 	}
 
-	public String deleteProfiles(int id) {
-		return wd.postCommand("Thermostat.Schedule.DeleteProfile", "{\"id\":" + THERM_ID + ",\"profile_id\":" + id + "}");
+	public String deleteProfiles(int profileId) {
+		return wd.postCommand("Thermostat.Schedule.DeleteProfile", "{\"id\":" + THERM_ID + ",\"profile_id\":" + profileId + "}");
 	}
 
-	public String renameProfiles(int id, String newName) {
-		return wd.postCommand("Thermostat.Schedule.RenameProfile", "{\"id\":" + THERM_ID + ",\"profile_id\":" + id + ",\"name\":\"" + newName + "\"}");
+	public String renameProfiles(int profileId, String newName) {
+		return wd.postCommand("Thermostat.Schedule.RenameProfile", "{\"id\":" + THERM_ID + ",\"profile_id\":" + profileId + ",\"name\":\"" + newName + "\"}");
 	}
 
 	public int addProfiles(String name) throws IOException {
@@ -46,8 +46,8 @@ public class ScheduleManagerThermWD {
 	// Rules (Thermostat) -->
 	
 	// todo test
-	public JsonNode getRules() throws IOException {
-		return wd.getJSON("TThermostat.Schedule.ListRules").get("rules");
+	public JsonNode getRules(int profileId) throws IOException {
+		return wd.getJSON("Thermostat.Schedule.ListRules", "{\"id\":" + THERM_ID + ",\"profile_id\":" + profileId + "}").get("rules");
 	}
 	
 	// todo test
