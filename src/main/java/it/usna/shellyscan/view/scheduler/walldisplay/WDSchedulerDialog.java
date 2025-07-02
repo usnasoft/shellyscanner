@@ -41,16 +41,15 @@ public class WDSchedulerDialog extends JDialog {
 	private void init(WallDisplay device) {
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		
-		final G2SchedulerPanel schPanel = device == null ? new G2SchedulerPanel(this) : new G2SchedulerPanel(this, device);
+		final G2SchedulerPanel schPanel = (device == null) ? new G2SchedulerPanel(this) : new G2SchedulerPanel(this, device);
 		try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e) {}
-//		final ProfilesPanel thermoPanel = new ProfilesPanel(this, device);
-		final WDThermSchedulerPanel thermoPanel = new WDThermSchedulerPanel(this, device);
+		final WDThermSchedulerPanel thermPanel = new WDThermSchedulerPanel(this, device);
 		
 		JTabbedPane tabs = new JTabbedPane();
 		getContentPane().add(tabs, BorderLayout.CENTER);
 
 		tabs.add(LABELS.getString("schLblJobs"), schPanel);
-		tabs.add(LABELS.getString("schLblProTherm"), thermoPanel);
+		tabs.add(LABELS.getString("schLblProTherm"), thermPanel);
 		
 		JPanel buttonsPanel = new JPanel();
 		buttonsPanel.add(new JButton(new UsnaAction("dlgApply", e -> {
@@ -58,25 +57,25 @@ public class WDSchedulerDialog extends JDialog {
 			if(current == schPanel) {
 				schPanel.apply();
 			} else {
-				thermoPanel.apply();
+				thermPanel.apply();
 			}
 		}) ));
 		buttonsPanel.add(new JButton(new UsnaAction("dlgApplyClose", e -> {
 			Component current = tabs.getSelectedComponent();
-			boolean done = (current == schPanel) ? schPanel.apply() : thermoPanel.apply();
+			boolean done = (current == schPanel) ? schPanel.apply() : thermPanel.apply();
 			if(done) dispose();
 		}) ));
 		buttonsPanel.add(new JButton(new UsnaAction(this, "labelRefresh", e -> {
 			schPanel.refresh();
 			try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException ex) {}
-			thermoPanel.refresh();
+			thermPanel.refresh();
 		}) ));
 		buttonsPanel.add(new JButton(new UsnaAction("lblLoadFile", e -> {
 			Component current = tabs.getSelectedComponent();
 			if(current == schPanel) {
 				schPanel.loadFromBackup();
 			} else {
-				thermoPanel.loadFromBackup();
+				thermPanel.loadFromBackup();
 			}
 		}) ));
 		buttonsPanel.add(new JButton(new UsnaAction("dlgClose", e -> dispose() )));
@@ -85,6 +84,13 @@ public class WDSchedulerDialog extends JDialog {
 
 		pack();
 		setSize(getWidth(), 500);
+	}
+	
+	static void lineColors(JPanel container) {
+		Component[] list = container.getComponents();
+		for(int i = 0; i < list.length; i++) {
+			list[i].setBackground((i % 2 == 1) ? Main.TAB_LINE2_COLOR : Main.TAB_LINE1_COLOR);
+		}
 	}
 	
 	public static void main(final String ... args) throws Exception {
@@ -99,8 +105,4 @@ public class WDSchedulerDialog extends JDialog {
 // https://regex101.com/
 // https://www.freeformatter.com/regex-tester.html
 
-// http://<ip>/rpc/Schedule.DeleteAll
-// http://<ip>/rpc/Schedule.Create?timespec="0 0 22 * * FRI"&calls=[{"method":"Shelly.GetDeviceInfo"}]
-// http://<ip>/rpc/Schedule.Create?timespec="10/100 * * * * *"&calls=[{"method":"light.toggle?id=0"}]
-
-// notes: 10 not working (do 0); 100 not working (do 60)
+// todo warning on profile remove (if rules exist)

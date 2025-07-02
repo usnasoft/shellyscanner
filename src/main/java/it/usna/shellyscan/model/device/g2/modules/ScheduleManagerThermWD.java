@@ -3,6 +3,7 @@ package it.usna.shellyscan.model.device.g2.modules;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
@@ -44,15 +45,13 @@ public class ScheduleManagerThermWD {
 	}
 
 	// Rules (Thermostat) -->
-	
-	// todo test
 	public JsonNode getRules(int profileId) throws IOException {
 		return wd.getJSON("Thermostat.Schedule.ListRules", "{\"id\":" + THERM_ID + ",\"profile_id\":" + profileId + "}").get("rules");
 	}
 	
 	// todo test
-	public String enable(int ruleId, boolean enable) {
-		return wd.postCommand("Thermostat.Schedule.UpdateRule", "{\"id\":0,\"rule_id\":" + ruleId + ",\"rule\":{\"enable\":" + (enable ? "true" : "false") + "}}");
+	public String enable(int ruleId, int profileId, boolean enable) {
+		return wd.postCommand("Thermostat.Schedule.UpdateRule", "{\"id\":" + THERM_ID + ",\"profile_id\":" + profileId + ",\"rule_id\":" + ruleId + ",\"rule\":{\"enable\":" + (enable ? "true" : "false") + "}}");
 	}
 	
 	/**
@@ -81,6 +80,14 @@ public class ScheduleManagerThermWD {
 	// todo test
 	public String delete(int ruleId) {
 		return wd.postCommand("Thermostat.Schedule.DeleteRule", "{\"id\":0,\"rule_id\":" + ruleId + "}");
+	}
+	
+	public static void restore(WallDisplay parent, Map<String, JsonNode> backup, final long delay, List<String> errors) throws InterruptedException {
+		// todo delete existing
+		JsonNode profilesNode = backup.get("Thermostat.Schedule.ListProfiles.json").path("profiles");
+		for(JsonNode profile: profilesNode) {
+			//todo
+		}
 	}
 	
 	public record ThermProfile(int id, String name) {};

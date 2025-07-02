@@ -28,20 +28,19 @@ import it.usna.shellyscan.view.util.Msg;
 import it.usna.swing.table.ExTooltipTable;
 import it.usna.swing.table.UsnaTableModel;
 
-public class ProfilesPanel extends JPanel {
+class ProfilesPanel extends JPanel {
 	private static final long serialVersionUID = 1L;
 	public final static String SELECTION_EVENT = "usna_device_selection";
 	private final JDialog parent;
 	private final ScheduleManagerThermWD wdSceduleManager;
 	private List<ThermProfile> profiles;
-//	private HashMap<Integer, ArrayList<ScheduleData>> rules = new HashMap<>();
 	private JTable profilesTable;
 	private UsnaTableModel tModel;
 
-	public ProfilesPanel(JDialog parent, WallDisplay device) {
+	public ProfilesPanel(JDialog parent, WallDisplay device, ScheduleManagerThermWD wdSceduleManager) {
 		this.parent = parent;
 		setLayout(new BorderLayout(0, 0));
-		this.wdSceduleManager = (device != null) ? new ScheduleManagerThermWD(device) : null; // device == null -> design
+		this.wdSceduleManager = wdSceduleManager;
 		
 		JScrollPane scrollPane = new JScrollPane();
 		add(scrollPane, BorderLayout.WEST);
@@ -121,12 +120,10 @@ public class ProfilesPanel extends JPanel {
 		fill();
 
 		scrollPane.setViewportView(profilesTable);
-		
-//		JPanel buttonsPanel = new JPanel(new VerticalFlowLayout(VerticalFlowLayout.LEFT, VerticalFlowLayout.LEFT));
+
 		JPanel buttonsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 10));
 		add(buttonsPanel, BorderLayout.EAST);
-//		buttonsPanel.setLayout(new BoxLayout(buttonsPanel, BoxLayout.Y_AXIS));
-		
+
 		JButton newProfileButton = new JButton(new UsnaAction("schAddProfile", e -> {
 			TableCellEditor editor = profilesTable.getCellEditor();
 			if(editor != null) {
@@ -172,23 +169,7 @@ public class ProfilesPanel extends JPanel {
 	private void fill() {
 		try {
 			profiles = wdSceduleManager.getProfiles();
-			profiles.forEach(p -> {
-				tModel.addRow(p.name());
-
-//				try {
-//					ArrayList<ScheduleData> list = new ArrayList<>();
-//					Iterator<JsonNode> scIt = wdSceduleManager.getRules(p.id()).iterator();
-//					while(scIt.hasNext()) {
-//						JsonNode node = scIt.next();
-//						// {"rule_id":"1751118368455","enable":true,"target_C":21,"profile_id":0,"timespec":"* 0 0 * * MON,TUE,WED,THU,FRI,SAT,SUN"
-//						ScheduleData thisRule = new ScheduleData(node.get("rule_id").intValue(), node.get("target_C").floatValue(), CronUtils.fragStrToNum(node.get("timespec").textValue()));
-//						list.add(thisRule);
-//					}
-//					rules.put(p.id(), list);
-//				} catch (IOException e) {
-//					Msg.errorMsg(parent, e);
-//				}
-			});
+			profiles.forEach(p -> tModel.addRow(p.name()) );
 		} catch (/*IO*/Exception e) {
 			Msg.errorMsg(parent, e);
 		}
@@ -214,6 +195,4 @@ public class ProfilesPanel extends JPanel {
 //	public boolean apply() {
 //		return false;
 //	}
-	
-//	private record ScheduleData(int ruleId, float target, String timespec) {}
 }

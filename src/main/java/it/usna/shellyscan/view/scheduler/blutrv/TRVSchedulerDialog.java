@@ -14,10 +14,6 @@ import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.net.URI;
-import java.nio.file.FileSystem;
-import java.nio.file.FileSystems;
-import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -37,6 +33,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import it.usna.shellyscan.Main;
+import it.usna.shellyscan.controller.RestoreAction;
 import it.usna.shellyscan.controller.UsnaAction;
 import it.usna.shellyscan.controller.UsnaToggleAction;
 import it.usna.shellyscan.model.device.blu.BluTRV;
@@ -121,11 +118,11 @@ public class TRVSchedulerDialog extends JDialog {
 		fc.setFileFilter(new FileNameExtensionFilter(LABELS.getString("filetype_sbk_desc"), Main.BACKUP_FILE_EXT));
 		if(fc.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
 			setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-			try(FileSystem fs = FileSystems.newFileSystem(URI.create("jar:" + fc.getSelectedFile().toPath().toUri()), Map.of())) {
+			try {
+				Map<String, JsonNode> files = RestoreAction.readBackupFile(fc.getSelectedFile().toPath());
 				appProp.setProperty("LAST_PATH", fc.getCurrentDirectory().getCanonicalPath());
-				final ObjectMapper jsonMapper = new ObjectMapper();
-				JsonNode scNode = jsonMapper.readTree(Files.newBufferedReader(fs.getPath("Schedule.List.json"))).get("jobs");
-				Iterator<JsonNode> scIt = scNode.iterator();
+				JsonNode schNode = files.get("Schedule.List.json").get("jobs");
+				Iterator<JsonNode> scIt = schNode.iterator();
 				while(scIt.hasNext()) {
 					ObjectNode jobNode = (ObjectNode)scIt.next();
 					jobNode.remove("id");
