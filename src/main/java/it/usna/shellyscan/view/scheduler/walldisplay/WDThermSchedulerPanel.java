@@ -75,7 +75,7 @@ public class WDThermSchedulerPanel extends JPanel {
 						JsonNode node = scIt.next();
 						// {"rule_id":"1751118368455","enable":true,"target_C":21,"profile_id":0,"timespec":"* 0 0 * * MON,TUE,WED,THU,FRI,SAT,SUN"
 						ScheduledRule thisRule = new ScheduledRule(
-								node.get("rule_id").intValue(), node.get("target_C").floatValue(), CronUtils.fragStrToNum(node.get("timespec").textValue()), node.path("enable").booleanValue());
+								node.get("rule_id").textValue(), node.get("target_C").floatValue(), CronUtils.fragStrToNum(node.get("timespec").textValue()), node.path("enable").booleanValue());
 						rulesList.add(thisRule);
 					}
 					rules.put(currentProfileId, rulesList);
@@ -88,7 +88,7 @@ public class WDThermSchedulerPanel extends JPanel {
 					});
 				} else if(currentProfileId >= 0) { // there is a selected profile with NO rules -> add an empty rule
 					rulesList = new ArrayList<ScheduledRule>();
-					rulesList.add(new ScheduledRule(-1, null, null, false));
+					rulesList.add(new ScheduledRule(null, null, null, false));
 					rules.put(currentProfileId, rulesList);
 					addJob(thermostat.getMinTargetTemp(), thermostat.getMaxTargetTemp(), false, null, null, Integer.MAX_VALUE);
 				}
@@ -142,7 +142,7 @@ public class WDThermSchedulerPanel extends JPanel {
 			} else if(rulesPanel.getComponentCount() == 1) {
 				job.clean();
 				data = rules.get(currentProfileId).remove(0);
-				rules.get(currentProfileId).add(new ScheduledRule(-1, null, null, false));
+				rules.get(currentProfileId).add(new ScheduledRule(null, null, null, false));
 			}
 //			if(data != null && data.id >= 0) {
 //				removedId.add(data.id);
@@ -224,11 +224,11 @@ public class WDThermSchedulerPanel extends JPanel {
 		if(pos >= rules.get(currentProfileId).size()) {
 //			rulesPanel.add(linePanel);
 //			rulesPanel.add(linePanel).add(linePanel);
-			rules.get(currentProfileId).add(new ScheduledRule(-1, temp, timespec, enabled));
+			rules.get(currentProfileId).add(new ScheduledRule(null, temp, timespec, enabled));
 		} else {
 //			rulesPanel.add(linePanel, pos);
 //			rulesPanel.add(linePanel).add(pos, linePanel);
-			rules.get(currentProfileId).add(pos, new ScheduledRule(-1, temp, timespec, enabled));
+			rules.get(currentProfileId).add(pos, new ScheduledRule(null, temp, timespec, enabled));
 		}
 	}
 	
@@ -236,7 +236,7 @@ public class WDThermSchedulerPanel extends JPanel {
 		int i;
 		for(i = 0; rulesPanel.getComponent(i) != rulePanel; i++);
 		ScheduledRule data = rules.get(currentProfileId).get(i);
-		if(data.ruleId >= 0) {
+		if(data.ruleId != null) {
 			String res = wdSceduleManager.enable(data.ruleId, currentProfileId, enable);
 			if(res != null) {
 				Msg.errorMsg(this, res);
@@ -309,6 +309,6 @@ public class WDThermSchedulerPanel extends JPanel {
 		}
 	}
 	
-	private record ScheduledRule(int ruleId, Float target, String timespec, boolean enabled) {}
-	private record RemovedRule(int ruleId, int profileId) {}
+	private record ScheduledRule(String ruleId, Float target, String timespec, boolean enabled) {}
+	private record RemovedRule(String ruleId, int profileId) {}
 }

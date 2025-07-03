@@ -264,6 +264,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 					return null;
 				}
 			} else {
+				LOG.debug("API error: {}.{} - {}", method, payload, error);
 				return error.path("message").asText("Generic error");
 			}
 		} catch(IOException e) {
