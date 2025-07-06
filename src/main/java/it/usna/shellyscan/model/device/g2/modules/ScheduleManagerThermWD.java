@@ -23,6 +23,7 @@ public class ScheduleManagerThermWD {
 	}
 
 	// Profiles -->
+	
 	public List<ThermProfile> getProfiles() throws IOException {
 		ArrayList<ThermProfile> ret = new ArrayList<>();
 		wd.getJSON("/rpc/Thermostat.Schedule.ListProfiles?id=" + THERM_ID).path("profiles").forEach(node -> {
@@ -45,9 +46,19 @@ public class ScheduleManagerThermWD {
 	}
 
 	// Rules (Thermostat) -->
-	public JsonNode getRules(int profileId) throws IOException {
-		return wd.getJSON("Thermostat.Schedule.ListRules", "{\"id\":" + THERM_ID + ",\"profile_id\":" + profileId + "}").get("rules");
+	
+	public List<Rule>getRules(int profileId) throws IOException {
+		ArrayList<Rule> rules = new ArrayList<>();
+		JsonNode r = wd.getJSON("Thermostat.Schedule.ListRules", "{\"id\":" + THERM_ID + ",\"profile_id\":" + profileId + "}").get("rules");
+		for(JsonNode rule: r) {
+			rules.add(new Rule(rule.get("rule_id").textValue(), rule.get("target_C").floatValue(), /*CronUtils.fragStrToNum(*/rule.get("timespec").textValue(), rule.path("enable").booleanValue()));
+		}
+		return rules;
 	}
+	
+//	public JsonNode getRules(int profileId) throws IOException {
+//	return wd.getJSON("Thermostat.Schedule.ListRules", "{\"id\":" + THERM_ID + ",\"profile_id\":" + profileId + "}").get("rules");
+//}
 	
 	// todo test
 	public String enable(String ruleId, int profileId, boolean enable) {
@@ -106,5 +117,43 @@ public class ScheduleManagerThermWD {
 		}
 	}
 	
-	public record ThermProfile(int id, String name) {};
+	public record ThermProfile(int id, String name) {}
+	
+	public static class Rule {
+		private String ruleId;
+		private Float target;
+		private String timespec;
+		private boolean enabled;
+		
+		public Rule(String ruleId, Float target, String timespec, boolean enabled) {
+			this.ruleId = ruleId;
+			this.target = target;
+			this.timespec = timespec;
+			this.enabled = enabled;
+		}
+		public String getRuleId() {
+			return ruleId;
+		}
+		public void setRuleId(String ruleId) {
+			this.ruleId = ruleId;
+		}
+		public Float getTarget() {
+			return target;
+		}
+		public void setTarget(Float target) {
+			this.target = target;
+		}
+		public String getTimespec() {
+			return timespec;
+		}
+		public void setTimespec(String timespec) {
+			this.timespec = timespec;
+		}
+		public boolean isEnabled() {
+			return enabled;
+		}
+		public void setEnabled(boolean enabled) {
+			this.enabled = enabled;
+		}
+	}
 }

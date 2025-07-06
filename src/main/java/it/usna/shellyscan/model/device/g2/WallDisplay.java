@@ -212,8 +212,6 @@ public class WallDisplay extends AbstractG2Device implements ModulesHolder {
 	}
 }
 
-// Status: "schedules" : { "enable" : false }
-
 /*
 http://deviceip/rpc/Shelly.ListMethods
 
@@ -232,4 +230,6 @@ http://deviceip/rpc/Shelly.ListMethods
 "Thermostat.Schedule.SetConfig","Thermostat.Schedule.UpdateRule","Thermostat.SetConfig","Ui.GetConfig","Ui.GetStatus","Ui.ListAvailable","Ui.Screen.Set","Ui.SetConfig","Ui.Tap","Virtual.Add",
 "Virtual.Delete","Virtual.List","Virtual.ListSupported","Webhook.Create","Webhook.Delete","Webhook.DeleteAll","Webhook.List","Webhook.ListSupported","Webhook.Update","WiFi.GetConfig",
 "WiFi.GetStatus","WiFi.SavedNetworks.Delete","WiFi.SavedNetworks.List","WiFi.Scan","WiFi.SetConfig","WiFi.SpeedTest","Ws.GetConfig","Ws.GetStatus","Ws.SetConfig"]}
+
+https://community.shelly.cloud/topic/1793-walldisplay-list-for-useful-rpc-commands/
 */
