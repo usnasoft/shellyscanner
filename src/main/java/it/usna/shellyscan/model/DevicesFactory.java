@@ -113,6 +113,7 @@ import it.usna.shellyscan.model.device.g4.Shelly2PMG4;
 import it.usna.shellyscan.model.device.g4.ShellyG4Unmanaged;
 import it.usna.shellyscan.model.device.g4.ShellyMini1G4;
 import it.usna.shellyscan.model.device.g4.ShellyMini1PMG4;
+import it.usna.shellyscan.model.device.g4.ShellyPowerStrip4G;
 import it.usna.shellyscan.view.DialogAuthentication;
 
 public class DevicesFactory {
@@ -338,6 +339,7 @@ public class DevicesFactory {
 			case Shelly2PMG4.ID -> new Shelly2PMG4(address, port, name);
 			case ShellyMini1G4.ID -> new ShellyMini1G4(address, port, name);
 			case ShellyMini1PMG4.ID -> new ShellyMini1PMG4(address, port, name);
+			case ShellyPowerStrip4G.ID -> new ShellyPowerStrip4G(address, port, name);
 			default -> new ShellyG4Unmanaged(address, port, name);
 			};
 		} catch(Exception e) { // really unexpected

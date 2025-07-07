@@ -357,6 +357,9 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 	public boolean backup(final Path file) throws IOException {
 		Files.deleteIfExists(file);
 		try(FileSystem fs = FileSystems.newFileSystem(URI.create("jar:" + file.toUri()), Map.of("create", "true"))) {
+//			Files.list(fs.getPath("/")).forEach(p -> {
+//				try { Files.delete(p); } catch (IOException e) { }
+//			});
 			sectionToStream("/rpc/Shelly.GetDeviceInfo", "Shelly.GetDeviceInfo.json", fs);
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			JsonNode config = sectionToStream("/rpc/Shelly.GetConfig", "Shelly.GetConfig.json", fs);

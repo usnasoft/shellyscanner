@@ -85,7 +85,7 @@ public abstract class AbstractBatteryG1Device extends AbstractG1Device implement
 						jsonMapper.writer().writeValue(writer, stSettingsActions);
 					}
 				} catch(IOException ex) {
-					LOG.error("backup script {script.getName()}", e);
+					LOG.error("backup", e);
 				}
 				return false;
 			} else {

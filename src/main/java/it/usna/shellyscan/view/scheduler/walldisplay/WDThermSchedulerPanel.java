@@ -245,8 +245,73 @@ public class WDThermSchedulerPanel extends JPanel {
 	}
 	
 	public boolean apply() {
-//		todo
-		return false;
+		try {
+			parent.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+			int numJobs = rulesPanel.getComponentCount();
+
+			// Validation
+			if(numJobs == 1) {
+				ThermJobPanel sl = (ThermJobPanel)((JPanel)rulesPanel.getComponent(0)).getComponent(0);
+				if(sl.isNullJob() == false && sl.validateData() == false) {
+					return false;
+				}
+			} else {
+				for(int i = 0; i < numJobs; i++) {
+					ThermJobPanel sl = (ThermJobPanel)((JPanel)rulesPanel.getComponent(i)).getComponent(0);
+					if(sl.validateData() == false) {
+						sl.scrollRectToVisible(sl.getBounds());
+						return false;
+					}
+				}
+			}
+
+			// Delete
+			for(RemovedRule rule: removed) {
+				String res = wdSceduleManager.delete(rule.ruleId, rule.profileId());
+				if(res != null) {
+					Msg.errorMsg(this, res);
+					return false;
+				}
+			}
+			removed.clear();
+
+			// Create / Update
+			for(int i = 0; i < numJobs; i++) {
+				ThermJobPanel sl = (ThermJobPanel)((JPanel)rulesPanel.getComponent(i)).getComponent(0);
+				ScheduledRule original = rules.get(i);
+//				if(/*i > 0 ||*/ sl.isNullJob() == false) {
+//					ObjectNode jobJson = sl.getJson();
+//					String res = null;
+//					if(original.id < 0) {
+//						JButton enableBtn = (JButton)((JPanel)schedulesPanel.getComponent(i)).getComponent(1);
+//						int newId = sceduleManager.create(jobJson, ((UsnaToggleAction)enableBtn.getAction()).isSelected());
+//						originalValues.set(i, new ScheduleData(newId, jobJson));
+//						if(newId < 0) {
+//							res = "creation error";
+//						}
+//					} else if(sl.hasSystemCalls() && jobJson.get("timespec").equals(original.orig.get("timespec")) == false) {
+//						jobJson.remove("calls");
+//						res = sceduleManager.update(original.id, jobJson);
+//						originalValues.set(i, new ScheduleData(original.id, jobJson));
+//					} else if(sl.hasSystemCalls() == false &&
+//							(jobJson.get("timespec").equals(original.orig.get("timespec")) == false || jobJson.get("calls").equals(original.orig.get("calls")) == false)) { // id >= 0 -> existed
+//						res = sceduleManager.update(original.id, jobJson);
+//						originalValues.set(i, new ScheduleData(original.id, jobJson));
+//					}
+//					if(res != null) {
+//						Msg.errorMsg(this, res);
+//						return false;
+//					}
+//				}
+			}
+//			try { TimeUnit.MILLISECONDS.sleep(200); } catch (InterruptedException e1) {} // a small time to show busy pointer
+			return true;
+		} catch (/*IO*/Exception e) {
+			Msg.errorMsg(this, e);
+			return false;
+		} finally {
+			parent.setCursor(Cursor.getDefaultCursor());
+		}
 	}
 	
 	public void refresh() {
@@ -309,6 +374,6 @@ public class WDThermSchedulerPanel extends JPanel {
 		}
 	}
 	
-	private record ScheduledRule(String ruleId, Float target, String timespec, boolean enabled) {}
+//	private record ScheduledRule(String ruleId, Float target, String timespec, boolean enabled) {}
 	private record RemovedRule(String ruleId, int profileId) {}
 }

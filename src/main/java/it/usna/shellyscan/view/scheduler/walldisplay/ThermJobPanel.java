@@ -21,7 +21,7 @@ class ThermJobPanel extends AbstractCronPanel {
 	private float minTarget, maxTarget;
 	private NumericTextField<Float> target;
 
-	ThermJobPanel(JDialog parent, float minTarget, float maxTarget, /*JsonNode scheduleNode*/String timespec, float temp) {
+	ThermJobPanel(JDialog parent, float minTarget, float maxTarget, /*JsonNode scheduleNode*/String timespec, Float temp) {
 		super(parent);
 		this.minTarget = minTarget;
 		this.maxTarget = maxTarget;
@@ -34,29 +34,10 @@ class ThermJobPanel extends AbstractCronPanel {
 			target.setValue(temp);
 		}
 	}
-	
-//	private void initTempSection() {
-//		target.setColumns(4);
-//		target.setMaximumFractionDigits(1);
-//		JPanel targetpanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
-//		targetpanel.setOpaque(false);
-//
-//		GridBagConstraints gbc_lblNewLabel_5 = new GridBagConstraints();
-//		gbc_lblNewLabel_5.anchor = GridBagConstraints.WEST;
-//		gbc_lblNewLabel_5.insets = new Insets(0, 0, 0, 0);
-//		gbc_lblNewLabel_5.gridx = 0;
-//		gbc_lblNewLabel_5.gridy = 3;
-//		gbc_lblNewLabel_5.gridwidth = 8;
-//		add(targetpanel, gbc_lblNewLabel_5);
-//
-//		target.setLimits(minTarget, maxTarget);
-//		
-//		targetpanel.add(new JLabel(LABELS.getString("lblTargetTemp")));
-//		targetpanel.add(target);
-//	}
-	
+
 	private void initTempSection() {
 		target = new NumericTextField<Float>(minTarget, maxTarget, Locale.ENGLISH);
+		target.allowNull(true);
 		target.setColumns(4);
 		target.setMaximumFractionDigits(1);
 		target.setLimits(minTarget, maxTarget);

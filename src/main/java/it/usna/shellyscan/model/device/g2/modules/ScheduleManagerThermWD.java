@@ -49,25 +49,8 @@ public class ScheduleManagerThermWD {
 		return wd.getJSON("Thermostat.Schedule.ListRules", "{\"id\":" + THERM_ID + ",\"profile_id\":" + profileId + "}").get("rules");
 	}
 	
-	// todo test
 	public String enable(String ruleId, int profileId, boolean enable) {
-		// {"id":0,"profile_id":0,"rule_id":"1751118368455","rule":{"enable":false}}
-		
-		 wd.postCommand("Thermostat.Schedule.ChangeRule", "{\"id\":" + THERM_ID + ",\"profile_id\":" + profileId + ",\"rule_id\":\"" + ruleId + "\",\"rule\":{\"enable\":" + (enable ? "true" : "false") + "}}");
-		 wd.postCommand("Thermostat.Schedule.ChangeRule", "{\"id\":" + THERM_ID + ",\"profile_id\":" + profileId + ",\"rule_id\":\"" + ruleId + "\",\"enable\":" + (enable ? "true" : "false") + "}");
-		 
-		 wd.postCommand("Thermostat.Schedule.ChangeRule", "{\"id\":" + THERM_ID + ",\"profile_id\":" + profileId + ",\"rule_id\":" + ruleId + ",\"rule\":{\"enable\":" + (enable ? "true" : "false") + "}}");
-		 wd.postCommand("Thermostat.Schedule.ChangeRule", "{\"id\":" + THERM_ID + ",\"profile_id\":" + profileId + ",\"rule_id\":" + ruleId + ",\"enable\":" + (enable ? "true" : "false") + "}");
-		 
-		 wd.postCommand("Thermostat.Schedule.ChangeRule", "{\"id\":" + THERM_ID + ",\"rule_id\":\"" + ruleId + "\",\"rule\":{\"enable\":" + (enable ? "true" : "false") + "}}");
-		 wd.postCommand("Thermostat.Schedule.ChangeRule", "{\"id\":" + THERM_ID + ",\"rule_id\":" + ruleId + ",\"enable\":" + (enable ? "true" : "false") + "}");
-		 
-		 wd.postCommand("Thermostat.Schedule.ChangeRule", "{\"id\":" + THERM_ID + ",\"profile_id\":" + profileId + ",\"rule_id\":\"" + ruleId + "\",\"rule\":{\"enable\":true,\"target_C\":20,\"timespec\":\"* 0 0 * * *\"}}");
-		 wd.postCommand("Thermostat.Schedule.ChangeRule", "{\"id\":" + THERM_ID + ",\"rule\":{\"enable\":true,\"target_C\":20,\"timespec\":\"* 0 0 * * *\",\"profile_id\":" + profileId + ",\"rule_id\":\"" + ruleId + "\"}}");
-		 wd.postCommand("Thermostat.Schedule.UpdateRule", "{\"id\":" + THERM_ID + ",\"rule_id\":\"" + ruleId + "\",\"rule\":{\"enable\":true,\"target_C\":20,\"timespec\":\"* 0 0 * * *\",\"profile_id\":" + profileId + "}}");
-
-//		return wd.postCommand("Thermostat.Schedule.UpdateRule", "{\"id\":" + THERM_ID + ",\"profile_id\":" + profileId + ",\"rule_id\":\"" + ruleId + "\",\"rule\":{\"enable\":" + (enable ? "true" : "false") + "}}");
-		return "xxx";//wd.postCommand("Thermostat.Schedule.UpdateRule", "{\"id\":" + THERM_ID + ",\"profile_id\":" + profileId + ",\"rule_id\":\"" + ruleId + "\",\"enable\":" + (enable ? "true" : "false") + "}");
+		 return wd.postCommand("Thermostat.Schedule.UpdateRule", "{\"id\":" + THERM_ID + ",\"profile_id\":" + profileId + ",\"config\":{\"rule_id\":\"" + ruleId + "\",\"enable\":" + (enable ? "true" : "false") + "}}");
 	}
 	
 	/**
@@ -94,8 +77,8 @@ public class ScheduleManagerThermWD {
 	}
 	
 	// todo test
-	public String delete(String ruleId) {
-		return wd.postCommand("Thermostat.Schedule.DeleteRule", "{\"id\":0,\"rule_id\":" + ruleId + "}");
+	public String delete(String ruleId, int profileId) {
+		return wd.postCommand("Thermostat.Schedule.DeleteRule", "{\"id\":" + THERM_ID + ",\"profile_id\":" + profileId + ",\"rule_id\":\"" + ruleId + "\"}");
 	}
 	
 	public static void restore(WallDisplay parent, Map<String, JsonNode> backup, final long delay, List<String> errors) throws InterruptedException {
