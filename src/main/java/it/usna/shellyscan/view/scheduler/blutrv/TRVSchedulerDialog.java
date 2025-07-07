@@ -152,7 +152,7 @@ public class TRVSchedulerDialog extends JDialog {
 			int numJobs = schedulesPanel.getComponentCount();
 
 			// Validation
-			if(numJobs == 1) {
+			if(numJobs == 1) { // only 1 can be null and must be alone -> (existing jobs deleted?)
 				TRVJobPanel sl = (TRVJobPanel)((JPanel)schedulesPanel.getComponent(0)).getComponent(0);
 				if(sl.isNullJob() == false && sl.validateData() == false) {
 					return false;
@@ -181,10 +181,7 @@ public class TRVSchedulerDialog extends JDialog {
 			for(int i = 0; i < numJobs; i++) {
 				TRVJobPanel sl = (TRVJobPanel)((JPanel)schedulesPanel.getComponent(i)).getComponent(0);
 				ScheduleData original = originalValues.get(i);
-				//				System.out.println(sl.getJson());
-				//				System.out.println(original.orig);
-				//				System.out.println(original.id + " -- " + sl.getJson().equals(original.orig));
-				if(/*i > 0 ||*/ sl.isNullJob() == false) {
+				if(sl.isNullJob() == false) { // only first one (and single) can be a "null job" (see validation phase)
 					ObjectNode jobJson = sl.getJson();
 					String res = null;
 					if(original.id < 0) {
