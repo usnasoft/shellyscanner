@@ -32,6 +32,7 @@ import it.usna.shellyscan.Main;
 import it.usna.shellyscan.controller.RestoreAction;
 import it.usna.shellyscan.controller.UsnaAction;
 import it.usna.shellyscan.controller.UsnaToggleAction;
+import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.g2.modules.ScheduleManager;
 import it.usna.shellyscan.view.util.Msg;
@@ -157,6 +158,7 @@ public class G2SchedulerPanel extends JScrollPane {
 			// Delete
 			for(int id: removedId) {
 				String res = sceduleManager.delete(id);
+				try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e1) {}
 				if(res != null) {
 					Msg.errorMsg(this, res);
 					return false;
@@ -171,21 +173,24 @@ public class G2SchedulerPanel extends JScrollPane {
 				if(/*i > 0 ||*/ sl.isNullJob() == false) {
 					ObjectNode jobJson = sl.getJson();
 					String res = null;
-					if(original.id < 0) {
+					if(original.id < 0) { // new -> create
 						JButton enableBtn = (JButton)((JPanel)schedulesPanel.getComponent(i)).getComponent(1);
 						int newId = sceduleManager.create(jobJson, ((UsnaToggleAction)enableBtn.getAction()).isSelected());
 						originalValues.set(i, new ScheduleData(newId, jobJson));
 						if(newId < 0) {
 							res = "creation error";
 						}
+						try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e1) {}
 					} else if(sl.hasSystemCalls() && jobJson.get("timespec").equals(original.orig.get("timespec")) == false) {
 						jobJson.remove("calls");
 						res = sceduleManager.update(original.id, jobJson);
 						originalValues.set(i, new ScheduleData(original.id, jobJson));
+						try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e1) {}
 					} else if(sl.hasSystemCalls() == false &&
 							(jobJson.get("timespec").equals(original.orig.get("timespec")) == false || jobJson.get("calls").equals(original.orig.get("calls")) == false)) { // id >= 0 -> existed
 						res = sceduleManager.update(original.id, jobJson);
 						originalValues.set(i, new ScheduleData(original.id, jobJson));
+						try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e1) {}
 					}
 					if(res != null) {
 						Msg.errorMsg(this, res);
@@ -193,7 +198,7 @@ public class G2SchedulerPanel extends JScrollPane {
 					}
 				}
 			}
-			try { TimeUnit.MILLISECONDS.sleep(200); } catch (InterruptedException e1) {} // a small time to show busy pointer
+			try { TimeUnit.MILLISECONDS.sleep(100); } catch (InterruptedException e1) {} // a small time to show busy pointer
 			return true;
 		} catch (IOException e) {
 			Msg.errorMsg(this, e);

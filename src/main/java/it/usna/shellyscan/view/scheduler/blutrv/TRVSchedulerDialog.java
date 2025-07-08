@@ -36,6 +36,7 @@ import it.usna.shellyscan.Main;
 import it.usna.shellyscan.controller.RestoreAction;
 import it.usna.shellyscan.controller.UsnaAction;
 import it.usna.shellyscan.controller.UsnaToggleAction;
+import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.blu.BluTRV;
 import it.usna.shellyscan.model.device.blu.modules.ScheduleManagerTRV;
 import it.usna.shellyscan.view.util.Msg;
@@ -170,6 +171,7 @@ public class TRVSchedulerDialog extends JDialog {
 			// Delete
 			for(int id: removedId) {
 				String res = sceduleManager.delete(id);
+				try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e1) {}
 				if(res != null) {
 					Msg.errorMsg(this, res);
 					return false;
@@ -191,9 +193,11 @@ public class TRVSchedulerDialog extends JDialog {
 						if(newId < 0) {
 							res = "creation error";
 						}
+						try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e1) {}
 					} else if(jobJson.get("timespec").equals(original.orig.get("timespec")) == false || jobJson.path("pos").equals(original.orig.path("pos")) == false || jobJson.path("target_C").equals(original.orig.path("target_C")) == false) { // id >= 0 -> existed
 						res = sceduleManager.update(original.id, jobJson);
 						originalValues.set(i, new ScheduleData(original.id, jobJson));
+						try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e1) {}
 					}
 					if(res != null) {
 						Msg.errorMsg(this, res);
@@ -201,7 +205,7 @@ public class TRVSchedulerDialog extends JDialog {
 					}
 				}
 			}
-			try { TimeUnit.MILLISECONDS.sleep(200); } catch (InterruptedException e1) {} // a small time to show busy pointer
+			try { TimeUnit.MILLISECONDS.sleep(100); } catch (InterruptedException e1) {} // a small time to show busy pointer
 			return true;
 		} catch (IOException e) {
 			Msg.errorMsg(this, e);

@@ -79,6 +79,14 @@ public class CronUtils {
 		return in;
 	}
 	
+	// this is the only way Wall Display thermostat understand it
+	public static String daysOfWeekAsString(String in) {
+		if(in.equals("*")) {
+			in ="0-6";
+		}
+		return fragmentToInt(in).stream().map(num -> WEEK_DAYS[num]).collect(Collectors.joining(","));
+	}
+	
 	/**
 	 * Shelly implementation wants single values before groups (5,1-3 instead of 1-3,5)
 	 * @param list list of single valued (Integer)

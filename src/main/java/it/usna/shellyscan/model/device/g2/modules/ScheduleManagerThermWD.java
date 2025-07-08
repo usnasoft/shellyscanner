@@ -6,8 +6,6 @@ import java.util.List;
 import java.util.Map;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import it.usna.shellyscan.model.device.g2.WallDisplay;
 
@@ -23,6 +21,10 @@ public class ScheduleManagerThermWD {
 	}
 
 	// Profiles -->
+	// http://192.168.1.24/rpc/Thermostat.Schedule.SetConfig?id=0&config={%22enable%22:true}
+	public String enableProfiles(boolean enable) {
+		return wd.postCommand("Thermostat.Schedule.SetConfig", "{\"id\":" + THERM_ID + ",\"config\":{\"enable\":" + (enable ? "true" : "false") + "}}" );
+	}
 	
 	public List<ThermProfile> getProfiles() throws IOException {
 		ArrayList<ThermProfile> ret = new ArrayList<>();
@@ -61,29 +63,23 @@ public class ScheduleManagerThermWD {
 	}
 	
 	/**
-	 * @param def
-	 * @param enable
-	 * @return the new id; < 0 in case of error
-	 * @throws IOException 
+	 * Rule creation
+	 * @param r
+	 * @param profileId
+	 * @return the new id; null in case of error
+	 * @throws IOException
 	 */
-	// todo test
-	public int create(JsonNode def, boolean enable) throws IOException {
-		((ObjectNode)def).put("enable", enable);
-		ObjectNode out = JsonNodeFactory.instance.objectNode();
-		out.set("rule", def);
-		JsonNode res = wd.getJSON("Thermostat.Schedule.CreateRule", out);
-		return res.path("rule_id").asInt(-1);
+	public String create(Rule r, int profileId) throws IOException {
+		JsonNode res = wd.getJSON("Thermostat.Schedule.CreateRule",
+				"{\"id\":" + THERM_ID + ",\"config\":{\"profile_id\":" + profileId + ",\"target_C\":" + r.target + ",\"timespec\":\"" + r.timespec + "\",\"enable\":" + (r.enabled ? "true" : "false") + "}}");
+		return res.get("new_rule").get("rule_id").asText();
+	}
+
+	public String update(Rule r, int profileId) {
+		return wd.postCommand("Thermostat.Schedule.UpdateRule",
+				"{\"id\":" + THERM_ID + ",\"profile_id\":" + profileId + ",\"config\":{\"rule_id\":\"" + r.ruleId + "\",\"target_C\":" + r.target + ",\"timespec\":\"" + r.timespec  + "\",\"enable\":" + (r.enabled ? "true" : "false") + "}}");
 	}
 	
-	// todo test
-	public String update(String ruleId, JsonNode def) {
-		ObjectNode out = JsonNodeFactory.instance.objectNode();
-		out.put("rule_id", ruleId);
-		out.set("rule", def);
-		return wd.postCommand("Thermostat.Schedule.UpdateRule", out);
-	}
-	
-	// todo test
 	public String delete(String ruleId, int profileId) {
 		return wd.postCommand("Thermostat.Schedule.DeleteRule", "{\"id\":" + THERM_ID + ",\"profile_id\":" + profileId + ",\"rule_id\":\"" + ruleId + "\"}");
 	}
@@ -110,10 +106,10 @@ public class ScheduleManagerThermWD {
 			this.timespec = timespec;
 			this.enabled = enabled;
 		}
-		public String getRuleId() {
+		public String getId() {
 			return ruleId;
 		}
-		public void setRuleId(String ruleId) {
+		public void setId(String ruleId) {
 			this.ruleId = ruleId;
 		}
 		public Float getTarget() {

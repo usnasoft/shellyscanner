@@ -81,7 +81,7 @@ class ThermJobPanel extends AbstractCronPanel {
 		return false;
 	}
 	
-	public String getTimeSpec() {
+	public String getTimespec() {
 		return expressionField.getText();
 	}
 	

@@ -559,6 +559,13 @@ public abstract class AbstractCronPanel extends JPanel {
 		expressionField.setForeground((CronUtils.CRON_PATTERN.matcher(res).matches() || CronUtils.SUNSET_PATTERN.matcher(res).matches()) ? null : Color.red);
 	}
 	
+	// probably to be removed for a new WD specific panel
+	public String getExtTimespec() {
+		String minutes = minutesTextField.getText();
+		String hours = hoursTextField.getText();
+		return "* " + minutes + " " + hours + " * * " + CronUtils.daysOfWeekAsString(daysOfWeek);
+	}
+	
 	protected boolean validateData() {
 		String exp = expressionField.getText();
 		if(CronUtils.CRON_PATTERN.matcher(exp).matches() == false && CronUtils.SUNSET_PATTERN.matcher(exp).matches() == false /*&& CronUtils.RANDOM_PATTERN.matcher(exp).matches() == false*/) {

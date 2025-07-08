@@ -366,6 +366,7 @@ Shelly Shutter G3
 schedule geb2+, BLU trv
 // todo schedule wall display thermostat
 // todo schedule load ...
+// nuovo pannello therm WD solo (ore, miniti, giorni della settimana (lista semplice)) e target
 
 https://next-api-docs.shelly.cloud/gen2/ComponentsAndServices/Schedule
 https://github.com/mongoose-os-libs/cron

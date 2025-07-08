@@ -1,18 +1,21 @@
 package it.usna.shellyscan.view.scheduler.walldisplay;
 
+import static it.usna.shellyscan.Main.LABELS;
+
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.FlowLayout;
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import javax.swing.DefaultRowSorter;
 import javax.swing.JButton;
 import javax.swing.JDialog;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.SortOrder;
 import javax.swing.event.ChangeEvent;
@@ -21,6 +24,7 @@ import javax.swing.table.TableCellRenderer;
 
 import it.usna.shellyscan.Main;
 import it.usna.shellyscan.controller.UsnaAction;
+import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.g2.WallDisplay;
 import it.usna.shellyscan.model.device.g2.modules.ScheduleManagerThermWD;
 import it.usna.shellyscan.model.device.g2.modules.ScheduleManagerThermWD.ThermProfile;
@@ -30,16 +34,18 @@ import it.usna.swing.table.UsnaTableModel;
 
 class ProfilesPanel extends JPanel {
 	private static final long serialVersionUID = 1L;
-	public final static String SELECTION_EVENT = "usna_device_selection";
+	public final static String SELECTION_EVENT = "usna_profile_selection";
+	public final static String DELETE_EVENT = "usna_profile_delete";
+	public final static String DUPLICATE_EVENT = "usna_profile_duplicate";
 	private final JDialog parent;
 	private final ScheduleManagerThermWD wdSceduleManager;
 	private List<ThermProfile> profiles;
-	private JTable profilesTable;
+	private ExTooltipTable profilesTable;
 	private UsnaTableModel tModel;
 
 	public ProfilesPanel(JDialog parent, WallDisplay device, ScheduleManagerThermWD wdSceduleManager) {
 		this.parent = parent;
-		setLayout(new BorderLayout(0, 0));
+		setLayout(new BorderLayout(40, 0));
 		this.wdSceduleManager = wdSceduleManager;
 		
 		JScrollPane scrollPane = new JScrollPane();
@@ -122,7 +128,7 @@ class ProfilesPanel extends JPanel {
 		scrollPane.setViewportView(profilesTable);
 
 		JPanel buttonsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 10));
-		add(buttonsPanel, BorderLayout.EAST);
+		add(buttonsPanel, BorderLayout.CENTER);
 
 		JButton newProfileButton = new JButton(new UsnaAction("schAddProfile", e -> {
 			TableCellEditor editor = profilesTable.getCellEditor();
@@ -135,31 +141,49 @@ class ProfilesPanel extends JPanel {
 		}));
 		buttonsPanel.add(newProfileButton);
 		
-		JButton duplicateProfileButton = new JButton(new UsnaAction("labelDuplicate", e -> {
-			int sel = profilesTable.getSelectedRow();
-			if(sel >= 0) {
-				// todo
+		JButton duplicateProfileButton = new JButton(new UsnaAction(parent, "schDuplicateProfile", e -> {
+			int mRow = profilesTable.getSelectedModelRow();
+			if(mRow >= 0) {
+				String name = profiles.get(mRow).name() + "-new";
+				try {
+					int newId = wdSceduleManager.addProfiles(name);
+					tModel.addRow(name);
+					profiles.add(new ThermProfile(newId, name));
+					ProfilesPanel.this.firePropertyChange(DUPLICATE_EVENT, profiles.get(mRow).id(), newId);
+				} catch (IOException ex) {
+					Msg.errorMsg(parent, ex);
+				}
 			} else {
 				Msg.errorMsg(parent, "msgDuplicateProfileSelect");
 			}
 		}));
 		buttonsPanel.add(duplicateProfileButton);
 
-		JButton deleteProfileButton = new JButton(new UsnaAction("schDelProfile", e -> {
-			int sel = profilesTable.getSelectedRow();
-			if(sel >= 0) {
-				int mRow = profilesTable.convertRowIndexToModel(sel);
+		JButton deleteProfileButton = new JButton(new UsnaAction(parent, "schDelProfile", e -> {
+			int mRow = profilesTable.getSelectedModelRow();
+			if(mRow >= 0) {
 				TableCellEditor editor = profilesTable.getCellEditor();
 				if(editor != null) {
 					editor.stopCellEditing();
 				}
 				ThermProfile oldProfile = profiles.get(mRow);
-				String ret = wdSceduleManager.deleteProfiles(oldProfile.id());
-				if(ret != null) {
-					Msg.errorMsg(parent, ret);
-				} else {
-					profiles.remove(mRow);
-					tModel.removeRow(mRow);
+
+				try {
+					if(wdSceduleManager.getRules(oldProfile.id()).size() == 0 ||
+							JOptionPane.showConfirmDialog(parent, LABELS.getString("msgSchDelProfile"), LABELS.getString("schDelProfile"),
+							JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE) == JOptionPane.OK_OPTION) {
+						try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e1) {}
+						String ret = wdSceduleManager.deleteProfiles(oldProfile.id());
+						if(ret != null) {
+							Msg.errorMsg(parent, ret);
+						} else {
+							profiles.remove(mRow);
+							tModel.removeRow(mRow);
+							ProfilesPanel.this.firePropertyChange(DELETE_EVENT, oldProfile.id(), null);
+						}
+					}
+				} catch (IOException ex) {
+					Msg.errorMsg(parent, ex);
 				}
 			}
 		}));
@@ -191,8 +215,4 @@ class ProfilesPanel extends JPanel {
 	public void loadFromBackup() {
 		// todo
 	}
-	
-//	public boolean apply() {
-//		return false;
-//	}
 }
