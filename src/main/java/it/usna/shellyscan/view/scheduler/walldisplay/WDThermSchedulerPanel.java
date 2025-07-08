@@ -22,6 +22,7 @@ import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -118,6 +119,8 @@ public class WDThermSchedulerPanel extends JPanel {
 		scrollPane.setBorder(BorderFactory.createEmptyBorder());
 		
 		add(scrollPane, BorderLayout.CENTER);
+		add(new JLabel("aaaaa"), BorderLayout.WEST);
+		add(new JLabel("zzzzz"), BorderLayout.EAST);
 	}
 	
 	private void addJob(float min, float max, boolean enabled, String timespec, Float temp, int pos) {
@@ -201,14 +204,20 @@ public class WDThermSchedulerPanel extends JPanel {
 		pasteBtn.setContentAreaFilled(false);
 		pasteBtn.setBorder(BorderFactory.createEmptyBorder(2, 3, 2, 3));
 		
+//		linePanel.add(Box.createHorizontalGlue());
+		
 		JPanel opPanel = new JPanel(new VerticalFlowLayout());
 		opPanel.setOpaque(false);
 		opPanel.add(addBtn);
 		opPanel.add(duplicateBtn);
 		opPanel.add(removeBtn);
-		opPanel.add(copyBtn);
-		opPanel.add(pasteBtn);
-		linePanel.add(opPanel, BorderLayout.EAST);
+		linePanel.add(opPanel);
+		
+		JPanel opPanel2 = new JPanel(new VerticalFlowLayout());
+		opPanel2.setOpaque(false);
+		opPanel2.add(copyBtn);
+		opPanel2.add(pasteBtn);
+		linePanel.add(opPanel2);
 		
 		if(pos >= rules.get(currentProfileId).size()) {
 			rulesPanel.add(linePanel);

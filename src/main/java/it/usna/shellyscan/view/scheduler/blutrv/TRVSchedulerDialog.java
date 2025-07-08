@@ -301,7 +301,7 @@ public class TRVSchedulerDialog extends JDialog {
 		opPanel.add(removeBtn);
 		opPanel.add(copyBtn);
 		opPanel.add(pasteBtn);
-		linePanel.add(opPanel, BorderLayout.EAST);
+		linePanel.add(opPanel);
 		
 		ScheduleData thisScheduleLine = new ScheduleData((node != null) ? node.path("rule_id").asInt(-1) : -1, job.getJson());
 		if(pos >= originalValues.size()) {

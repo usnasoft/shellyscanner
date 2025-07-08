@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.regex.Matcher;
+import java.util.stream.Collectors;
 
 import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
@@ -427,7 +428,10 @@ public abstract class AbstractCronPanel extends JPanel {
 				seq.add(i + 1);
 			}
 		}
-		daysOfWeek = (seq.size() == 7 || seq.isEmpty()) ? "*" : CronUtils.listAsCronString(seq);
+//		daysOfWeek = (seq.size() == 7 || seq.isEmpty()) ? "*" : CronUtils.listAsCronString(seq);
+		// the app do not undertand intervals here; the web UI do (!!!)
+		daysOfWeek = (seq.size() == 7 || seq.isEmpty()) ? "*" : seq.stream().map(num -> num + "").collect(Collectors.joining(","));
+
 	}
 
 	// assume cronLine is correct

@@ -1,6 +1,5 @@
 package it.usna.shellyscan.view.scheduler.gen2plus;
 
-import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.FlowLayout;
@@ -300,7 +299,7 @@ public class G2SchedulerPanel extends JScrollPane {
 		if(job.hasSystemCalls() == false) {
 			opPanel.add(pasteBtn);
 		}
-		linePanel.add(opPanel, BorderLayout.EAST);
+		linePanel.add(opPanel);
 		
 		ScheduleData thisScheduleLine = new ScheduleData((node != null) ? node.path("id").asInt(-1) : -1, job.getJson());
 		if(pos >= originalValues.size()) {

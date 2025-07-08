@@ -11,6 +11,7 @@ public class CronUtils {
 	private final static String[] MONTHS = new String[] {"JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"};
 	
 	private final static String REX_0_59 = "([1-5]?\\d)";
+	private final static String REX_00_59 = "([0-5]?\\d)"; // 00 is valid
 	private final static String REX_0_23 = "(1\\d|2[0-3]|\\d)";
 	private final static String REX_1_31 = "([12]\\d|3[01]|[1-9])";
 	private final static String REX_1_9999 = "([1-9]\\d{0,3})";
@@ -40,7 +41,7 @@ public class CronUtils {
 	public final static Pattern DAYS_PATTERN = Pattern.compile(REX_MONTHDAYS);
 
 	public final static Pattern CRON_PATTERN = Pattern.compile("(" + REX_SECONDS + ") (" + REX_MINUTES + ") (" + REX_HOURS + ") (" + REX_MONTHDAYS + ") (" + REX_MONTHS + ") (" + REX_WEEKDAYS + ")");
-	public final static Pattern SUNSET_PATTERN = Pattern.compile("@(sunset|sunrise)((\\+|-)(?<HOUR>" + REX_0_23 + ")h((?<MINUTE>" + REX_0_59 + ")m)?)?( (?<DAY>" + REX_MONTHDAYS + ") (?<MONTH>" + REX_MONTHS + ") (?<WDAY>" + REX_WEEKDAYS + "))?");
+	public final static Pattern SUNSET_PATTERN = Pattern.compile("@(sunset|sunrise)((\\+|-)(?<HOUR>" + REX_0_23 + ")h((?<MINUTE>" + REX_00_59 + ")m)?)?( (?<DAY>" + REX_MONTHDAYS + ") (?<MONTH>" + REX_MONTHS + ") (?<WDAY>" + REX_WEEKDAYS + "))?");
 
 //	public final static Pattern RANDOM_PATTERN =  Pattern.compile("@random:\\{\"from\":\"(" + REX_SECONDS + ") (" + REX_MINUTES + ") (" + REX_HOURS + ") (" + REX_MONTHDAYS + ") (" + REX_MONTHS + ") (" + REX_WEEKDAYS + ")\", ?\"to\":\"(" +
 //			REX_SECONDS + ") (" + REX_MINUTES + ") (" + REX_HOURS + ") (" + REX_MONTHDAYS + ") (" + REX_MONTHS + ") (" + REX_WEEKDAYS + ")\", ?\"number\":\\d+\\}");
