@@ -38,6 +38,9 @@ import it.usna.swing.NumericTextField;
 
 class ThermJobPanel extends JPanel {
 	private static final long serialVersionUID = 1L;
+	private final static String SECONDS = "*";
+	private final static String DAYS = "*";
+	private final static String MONTHS = "*";
 	private float minTarget, maxTarget;
 	private NumericTextField<Float> target;
 	
@@ -66,6 +69,8 @@ class ThermJobPanel extends JPanel {
 			setCron(timespec);
 			target.setValue(temp);
 		}
+//		setMaximumSize(getMinimumSize());
+//		getMinimumSize();
 	}
 
 	private void initTempSection() {
@@ -77,18 +82,16 @@ class ThermJobPanel extends JPanel {
 
 		GridBagConstraints gbc_lblNewLabel_5 = new GridBagConstraints();
 		gbc_lblNewLabel_5.anchor = GridBagConstraints.WEST;
-		gbc_lblNewLabel_5.insets = new Insets(0, 0, 0, 0);
+		gbc_lblNewLabel_5.insets = new Insets(0, 0, 0, 5);
 		gbc_lblNewLabel_5.gridx = 0;
 		gbc_lblNewLabel_5.gridy = 2;
-//		gbc_lblNewLabel_5.gridwidth = 8;
 		add(new JLabel(LABELS.getString("lblTargetTemp")), gbc_lblNewLabel_5);
 
 		GridBagConstraints gbc_target = new GridBagConstraints();
 		gbc_target.anchor = GridBagConstraints.WEST;
-		gbc_target.insets = new Insets(0, 0, 0, 0);
-		gbc_target.gridx = 2;
+		gbc_target.gridx = 1;
 		gbc_target.gridy = 2;
-		gbc_target.gridwidth = 8;
+		gbc_target.gridwidth = 3;
 		add(target, gbc_target);
 	}
 
@@ -152,7 +155,6 @@ class ThermJobPanel extends JPanel {
 
 		hoursTextField = new JTextField();
 		GridBagConstraints gbc_hoursTextField = new GridBagConstraints();
-		gbc_hoursTextField.gridwidth = 2;
 		gbc_hoursTextField.insets = new Insets(0, 0, 5, 5);
 		gbc_hoursTextField.fill = GridBagConstraints.HORIZONTAL;
 		gbc_hoursTextField.gridx = 0;
@@ -164,16 +166,15 @@ class ThermJobPanel extends JPanel {
 		GridBagConstraints gbc_lblNewLabel_1 = new GridBagConstraints();
 		gbc_lblNewLabel_1.anchor = GridBagConstraints.WEST;
 		gbc_lblNewLabel_1.insets = new Insets(0, 3, 5, 5);
-		gbc_lblNewLabel_1.gridx = 2;
+		gbc_lblNewLabel_1.gridx = 1;
 		gbc_lblNewLabel_1.gridy = 0;
 		add(lblNewLabel_1, gbc_lblNewLabel_1);
 
 		minutesTextField = new JTextField();
 		GridBagConstraints gbc_minutesTextField = new GridBagConstraints();
-		gbc_minutesTextField.gridwidth = 2;
 		gbc_minutesTextField.insets = new Insets(0, 0, 5, 5);
 		gbc_minutesTextField.fill = GridBagConstraints.HORIZONTAL;
-		gbc_minutesTextField.gridx = 2;
+		gbc_minutesTextField.gridx = 1;
 		gbc_minutesTextField.gridy = 1;
 		add(minutesTextField, gbc_minutesTextField);
 		minutesTextField.setColumns(10);
@@ -182,9 +183,9 @@ class ThermJobPanel extends JPanel {
 		GridBagConstraints gbc_daysOfWeek = new GridBagConstraints();
 		gbc_daysOfWeek.anchor = GridBagConstraints.WEST;
 		gbc_daysOfWeek.gridheight = 2;
-		gbc_daysOfWeek.insets = new Insets(0, 45, 5, 15);
+		gbc_daysOfWeek.insets = new Insets(0, 15, 5, 15);
 		gbc_daysOfWeek.fill = GridBagConstraints.HORIZONTAL;
-		gbc_daysOfWeek.gridx = 8;
+		gbc_daysOfWeek.gridx = 2;
 		gbc_daysOfWeek.gridy = 0;
 		add(daysOfWeekPanel, gbc_daysOfWeek);
 		
@@ -192,8 +193,9 @@ class ThermJobPanel extends JPanel {
 		allWDaysButton.setContentAreaFilled(false);
 		allWDaysButton.setBorder(BorderFactory.createEmptyBorder());
 		GridBagConstraints gbc_allWDaysButton = new GridBagConstraints();
-		gbc_allWDaysButton.anchor = GridBagConstraints.SOUTH;
-		gbc_allWDaysButton.gridx = 9;
+		gbc_allWDaysButton.insets = new Insets(0, 0, 5, 0);
+		gbc_allWDaysButton.anchor = GridBagConstraints.SOUTHWEST;
+		gbc_allWDaysButton.gridx = 3;
 		gbc_allWDaysButton.gridy = 0;
 		add(allWDaysButton, gbc_allWDaysButton);
 		
@@ -201,8 +203,9 @@ class ThermJobPanel extends JPanel {
 		noWDaysButton.setContentAreaFilled(false);
 		noWDaysButton.setBorder(BorderFactory.createEmptyBorder());
 		GridBagConstraints gbc_noWDaysButton = new GridBagConstraints();
+		gbc_noWDaysButton.anchor = GridBagConstraints.WEST;
 		gbc_noWDaysButton.insets = new Insets(0, 0, 5, 0);
-		gbc_noWDaysButton.gridx = 9;
+		gbc_noWDaysButton.gridx = 3;
 		gbc_noWDaysButton.gridy = 1;
 		add(noWDaysButton, gbc_noWDaysButton);
 
@@ -212,16 +215,17 @@ class ThermJobPanel extends JPanel {
 		gbc_panel.insets = new Insets(0, 0, 0, 5);
 		gbc_panel.fill = GridBagConstraints.HORIZONTAL;
 		gbc_panel.anchor = GridBagConstraints.WEST;
-		gbc_panel.gridwidth = 7;
+		gbc_panel.gridwidth = 2;
 		gbc_panel.gridx = 0;
 		gbc_panel.gridy = 2;
 		add(radioPanel, gbc_panel);
 
 		expressionField = new JTextField();
 		GridBagConstraints gbc_textField = new GridBagConstraints();
-		gbc_textField.gridwidth = 3;
+		gbc_textField.weightx = 1.0;
+		gbc_textField.gridwidth = 2;
 		gbc_textField.fill = GridBagConstraints.HORIZONTAL;
-		gbc_textField.gridx = 8;
+		gbc_textField.gridx = 2;
 		gbc_textField.gridy = 2;
 		add(expressionField, gbc_textField);
 
@@ -306,10 +310,8 @@ class ThermJobPanel extends JPanel {
 		cronLine = CronUtils.fragStrToNum(cronLine);
 		final String[] values = cronLine.split(" ");
 
-//		secondsTextField.setText(values[0]);
 		minutesTextField.setText(values[1]);
 		hoursTextField.setText(values[2]);
-//		daysTextField.setText(values[3]);
 
 		for(int i = 0; i < 7; i++) {
 			((JCheckBox) daysOfWeekPanel.getComponent(i)).setSelected(false);
@@ -351,15 +353,10 @@ class ThermJobPanel extends JPanel {
 		String minutes = minutesTextField.getText();
 		String hours = hoursTextField.getText();
 
-		String seconds = "*";
-		String days = "*";
-		String months = "*";
-		
 		minutesTextField.setForeground(CronUtils.MINUTES_PATTERN.matcher(minutes).matches() ? null : Color.red);
 		hoursTextField.setForeground(CronUtils.HOURS_PATTERN.matcher(hours).matches() ? null : Color.red);
 
-		String res = seconds + " " + minutes + " " + hours + " " + days + " " + months + " " + daysOfWeek;
-
+		String res = SECONDS + " " + minutes + " " + hours + " " + DAYS + " " + MONTHS + " " + daysOfWeek;
 		expressionField.setText(res);
 		expressionField.setForeground((CronUtils.CRON_PATTERN.matcher(res).matches()) ? null : Color.red);
 	}

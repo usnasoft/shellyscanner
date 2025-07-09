@@ -7,6 +7,7 @@ import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.GridLayout;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.DataFlavor;
@@ -22,7 +23,6 @@ import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -47,7 +47,7 @@ import it.usna.swing.VerticalFlowLayout;
 public class WDThermSchedulerPanel extends JPanel {
 	private static final long serialVersionUID = 1L;
 	private final ProfilesPanel profilesPanel;
-	private JPanel rulesPanel = new JPanel(new VerticalFlowLayout(VerticalFlowLayout.TOP, VerticalFlowLayout.CENTER, 0, 0));
+	private JPanel rulesPanel = new JPanel(/*new VerticalFlowLayout(VerticalFlowLayout.TOP, VerticalFlowLayout.CENTER, 0, 0)*/new GridLayout(0, 1, 0, 0));
 	private final ScheduleManagerThermWD wdSceduleManager;
 	private HashMap<Integer, List<Rule>> rules = new HashMap<>();
 	private ArrayList<RemovedRule> removed = new ArrayList<>();
@@ -115,23 +115,37 @@ public class WDThermSchedulerPanel extends JPanel {
 		rulesPanel.setBackground(Main.BG_COLOR);
 		JScrollPane scrollPane = new JScrollPane(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		scrollPane.getVerticalScrollBar().setUnitIncrement(16);
-		scrollPane.setViewportView(rulesPanel);
+		
+		JPanel nPanel = new JPanel(new BorderLayout());
+		nPanel.add(rulesPanel, BorderLayout.NORTH);
+		
+		scrollPane.setViewportView(nPanel);
 		scrollPane.setBorder(BorderFactory.createEmptyBorder());
 		
 		add(scrollPane, BorderLayout.CENTER);
-		add(new JLabel("aaaaa"), BorderLayout.WEST);
-		add(new JLabel("zzzzz"), BorderLayout.EAST);
+
+		// test & visual
+		if(device == null) {
+			currentProfileId = 0;
+			rules.put(0,  List.of());
+			addJob(0, 99, false, null, null, Integer.MAX_VALUE);
+		}
 	}
 	
 	private void addJob(float min, float max, boolean enabled, String timespec, Float temp, int pos) {
-		JPanel linePanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
+		JPanel linePanel = new JPanel(/*new FlowLayout(FlowLayout.LEFT, 6, 0)*/new BorderLayout(16, 0));
 		ThermJobPanel job = new ThermJobPanel(parent, min, max, timespec, temp);
-		linePanel.add(job);
+		linePanel.add(job, BorderLayout.CENTER);
 
 		JButton enableButton = new JButton();
 		enableButton.setContentAreaFilled(false);
 		enableButton.setBorder(BorderFactory.createEmptyBorder());
-		linePanel.add(enableButton);
+		
+		JPanel commandPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 0));
+		commandPanel.setOpaque(false);
+		linePanel.add(commandPanel, BorderLayout.EAST);
+		
+		commandPanel.add(enableButton);
 
 		JButton addBtn = new JButton(new UsnaAction(null, "schAdd", "/images/plus_transp16.png", e -> {
 			int i;
@@ -204,20 +218,18 @@ public class WDThermSchedulerPanel extends JPanel {
 		pasteBtn.setContentAreaFilled(false);
 		pasteBtn.setBorder(BorderFactory.createEmptyBorder(2, 3, 2, 3));
 		
-//		linePanel.add(Box.createHorizontalGlue());
+		JPanel opPanel1 = new JPanel(new VerticalFlowLayout(VerticalFlowLayout.CENTER, VerticalFlowLayout.CENTER, 0, 5));
+		opPanel1.setOpaque(false);
+		opPanel1.add(addBtn);
+		opPanel1.add(duplicateBtn);
+		opPanel1.add(removeBtn);
+		commandPanel.add(opPanel1);
 		
-		JPanel opPanel = new JPanel(new VerticalFlowLayout());
-		opPanel.setOpaque(false);
-		opPanel.add(addBtn);
-		opPanel.add(duplicateBtn);
-		opPanel.add(removeBtn);
-		linePanel.add(opPanel);
-		
-		JPanel opPanel2 = new JPanel(new VerticalFlowLayout());
+		JPanel opPanel2 = new JPanel(new VerticalFlowLayout(VerticalFlowLayout.CENTER, VerticalFlowLayout.CENTER, 0, 5));
 		opPanel2.setOpaque(false);
 		opPanel2.add(copyBtn);
 		opPanel2.add(pasteBtn);
-		linePanel.add(opPanel2);
+		commandPanel.add(opPanel2);
 		
 		if(pos >= rules.get(currentProfileId).size()) {
 			rulesPanel.add(linePanel);
