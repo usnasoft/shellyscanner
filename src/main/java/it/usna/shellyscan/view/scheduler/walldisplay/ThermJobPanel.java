@@ -44,16 +44,16 @@ class ThermJobPanel extends JPanel {
 	private float minTarget, maxTarget;
 	private NumericTextField<Float> target;
 	
-	private JTextField hoursTextField;
-	private JTextField minutesTextField;
+	private NumericTextField<Integer> hoursTextField = new NumericTextField<>(0, 0, 23);
+	private NumericTextField<Integer> minutesTextField = new NumericTextField<>(0, 0, 59);
 	private JPanel daysOfWeekPanel;
 	private String daysOfWeek;
 	protected JTextField expressionField;
 	protected JDialog parent;
 	
-	private final static String DEF_CRON = "* 0 0 * * *";
+	private final static String DEF_CRON = "* 0 0 * * 0,1,2,3,4,5,6";
 
-	ThermJobPanel(JDialog parent, float minTarget, float maxTarget, /*JsonNode scheduleNode*/String timespec, Float temp) {
+	ThermJobPanel(JDialog parent, float minTarget, float maxTarget, String timespec, Float temp) {
 		this.parent = parent;
 		setOpaque(false);
 		setBorder(BorderFactory.createEmptyBorder(2, 2, 4, 2));
@@ -69,8 +69,6 @@ class ThermJobPanel extends JPanel {
 			setCron(timespec);
 			target.setValue(temp);
 		}
-//		setMaximumSize(getMinimumSize());
-//		getMinimumSize();
 	}
 
 	private void initTempSection() {
@@ -153,7 +151,6 @@ class ThermJobPanel extends JPanel {
 		gbc_lblNewLabel.gridy = 0;
 		add(lblNewLabel, gbc_lblNewLabel);
 
-		hoursTextField = new JTextField();
 		GridBagConstraints gbc_hoursTextField = new GridBagConstraints();
 		gbc_hoursTextField.insets = new Insets(0, 0, 5, 5);
 		gbc_hoursTextField.fill = GridBagConstraints.HORIZONTAL;
@@ -170,7 +167,6 @@ class ThermJobPanel extends JPanel {
 		gbc_lblNewLabel_1.gridy = 0;
 		add(lblNewLabel_1, gbc_lblNewLabel_1);
 
-		minutesTextField = new JTextField();
 		GridBagConstraints gbc_minutesTextField = new GridBagConstraints();
 		gbc_minutesTextField.insets = new Insets(0, 0, 5, 5);
 		gbc_minutesTextField.fill = GridBagConstraints.HORIZONTAL;
@@ -183,7 +179,7 @@ class ThermJobPanel extends JPanel {
 		GridBagConstraints gbc_daysOfWeek = new GridBagConstraints();
 		gbc_daysOfWeek.anchor = GridBagConstraints.WEST;
 		gbc_daysOfWeek.gridheight = 2;
-		gbc_daysOfWeek.insets = new Insets(0, 15, 5, 15);
+		gbc_daysOfWeek.insets = new Insets(0, 15, 5, 8);
 		gbc_daysOfWeek.fill = GridBagConstraints.HORIZONTAL;
 		gbc_daysOfWeek.gridx = 2;
 		gbc_daysOfWeek.gridy = 0;
@@ -234,7 +230,7 @@ class ThermJobPanel extends JPanel {
 			public void focusLost(FocusEvent e) {
 				String exp = CronUtils.fragStrToNum(expressionField.getText());
 				expressionField.setText(exp);
-				if(CronUtils.CRON_PATTERN.matcher(exp).matches()) {
+				if(CronUtils.CRON_PATTERN_TH_WD.matcher(exp).matches()) {
 					expressionField.setForeground(null);
 					setCron(exp);
 				} else {
@@ -249,14 +245,12 @@ class ThermJobPanel extends JPanel {
 		});
 
 		FocusListener fragmentsFocusListener = new FocusListener() {
+			@SuppressWarnings("unchecked")
 			@Override
 			public void focusLost(FocusEvent e) {
-				JTextField f = (JTextField)e.getComponent();
-				f.setText(f.getText().replaceAll("\\s", ""));
-				if(f.getText().isEmpty()) {
-					f.setText("*");
+				if(((NumericTextField<Integer>)e.getComponent()).isEditValid()) {
+					generateExpression();
 				}
-				generateExpression();
 			}
 
 			@Override
@@ -301,7 +295,7 @@ class ThermJobPanel extends JPanel {
 		}
 //		daysOfWeek = (seq.size() == 7 || seq.isEmpty()) ? "*" : CronUtils.listAsCronString(seq);
 		// the app do not undertand intervals here; the web UI do (!!!)
-		daysOfWeek = (seq.size() == 7 || seq.isEmpty()) ? "*" : seq.stream().map(num -> num + "").collect(Collectors.joining(","));
+		daysOfWeek = (seq.isEmpty()) ? "0,1,2,3,4,5,6" : seq.stream().map(num -> num + "").collect(Collectors.joining(","));
 
 	}
 
@@ -352,13 +346,12 @@ class ThermJobPanel extends JPanel {
 	private void generateExpression() {
 		String minutes = minutesTextField.getText();
 		String hours = hoursTextField.getText();
-
-		minutesTextField.setForeground(CronUtils.MINUTES_PATTERN.matcher(minutes).matches() ? null : Color.red);
-		hoursTextField.setForeground(CronUtils.HOURS_PATTERN.matcher(hours).matches() ? null : Color.red);
+//		minutesTextField.setForeground(CronUtils.MINUTES_PATTERN.matcher(minutes).matches() ? null : Color.red);
+//		hoursTextField.setForeground(CronUtils.HOURS_PATTERN.matcher(hours).matches() ? null : Color.red);
 
 		String res = SECONDS + " " + minutes + " " + hours + " " + DAYS + " " + MONTHS + " " + daysOfWeek;
 		expressionField.setText(res);
-		expressionField.setForeground((CronUtils.CRON_PATTERN.matcher(res).matches()) ? null : Color.red);
+		expressionField.setForeground((CronUtils.CRON_PATTERN_TH_WD.matcher(res).matches()) ? null : Color.red);
 	}
 	
 	// probably to be removed for a new WD specific panel
@@ -367,9 +360,10 @@ class ThermJobPanel extends JPanel {
 		String hours = hoursTextField.getText();
 		return "* " + minutes + " " + hours + " * * " + CronUtils.daysOfWeekAsString(daysOfWeek);
 	}
+	
 	private boolean validateCronData() {
 		String exp = expressionField.getText();
-		if(CronUtils.CRON_PATTERN.matcher(exp).matches() == false && CronUtils.SUNSET_PATTERN.matcher(exp).matches() == false) {
+		if(CronUtils.CRON_PATTERN_TH_WD.matcher(exp).matches() == false && CronUtils.SUNSET_PATTERN.matcher(exp).matches() == false) {
 			expressionField.requestFocus();
 			Msg.errorMsg(parent, "schErrorInvalidExpression");
 			return false;

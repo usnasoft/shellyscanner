@@ -429,7 +429,7 @@ public abstract class AbstractCronPanel extends JPanel {
 			}
 		}
 //		daysOfWeek = (seq.size() == 7 || seq.isEmpty()) ? "*" : CronUtils.listAsCronString(seq);
-		// the app do not undertand intervals here; the web UI do (!!!)
+		// the app do not understand intervals here; the web UI do (!!!)
 		daysOfWeek = (seq.size() == 7 || seq.isEmpty()) ? "*" : seq.stream().map(num -> num + "").collect(Collectors.joining(","));
 
 	}
@@ -561,13 +561,6 @@ public abstract class AbstractCronPanel extends JPanel {
 
 		expressionField.setText(res);
 		expressionField.setForeground((CronUtils.CRON_PATTERN.matcher(res).matches() || CronUtils.SUNSET_PATTERN.matcher(res).matches()) ? null : Color.red);
-	}
-	
-	// probably to be removed for a new WD specific panel
-	public String getExtTimespec() {
-		String minutes = minutesTextField.getText();
-		String hours = hoursTextField.getText();
-		return "* " + minutes + " " + hours + " * * " + CronUtils.daysOfWeekAsString(daysOfWeek);
 	}
 	
 	protected boolean validateData() {

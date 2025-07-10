@@ -3,7 +3,6 @@ package it.usna.shellyscan.model.device.g2.modules;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -21,7 +20,7 @@ public class ScheduleManagerThermWD {
 	}
 
 	// Profiles -->
-	// http://192.168.1.24/rpc/Thermostat.Schedule.SetConfig?id=0&config={%22enable%22:true}
+
 	public String enableProfiles(boolean enable) {
 		return wd.postCommand("Thermostat.Schedule.SetConfig", "{\"id\":" + THERM_ID + ",\"config\":{\"enable\":" + (enable ? "true" : "false") + "}}" );
 	}
@@ -84,13 +83,13 @@ public class ScheduleManagerThermWD {
 		return wd.postCommand("Thermostat.Schedule.DeleteRule", "{\"id\":" + THERM_ID + ",\"profile_id\":" + profileId + ",\"rule_id\":\"" + ruleId + "\"}");
 	}
 	
-	public static void restore(WallDisplay parent, Map<String, JsonNode> backup, final long delay, List<String> errors) throws InterruptedException {
-		// todo delete existing
-		JsonNode profilesNode = backup.get("Thermostat.Schedule.ListProfiles.json").path("profiles");
-		for(JsonNode profile: profilesNode) {
-			//todo
-		}
-	}
+//	public static void restore(WallDisplay parent, Map<String, JsonNode> backup, final long delay, List<String> errors) throws InterruptedException {
+//		// todo delete existing
+//		JsonNode profilesNode = backup.get("Thermostat.Schedule.ListProfiles.json").path("profiles");
+//		for(JsonNode profile: profilesNode) {
+//			//todo
+//		}
+//	}
 	
 	public record ThermProfile(int id, String name) {}
 	
@@ -106,27 +105,35 @@ public class ScheduleManagerThermWD {
 			this.timespec = timespec;
 			this.enabled = enabled;
 		}
+		
 		public String getId() {
 			return ruleId;
 		}
+		
 		public void setId(String ruleId) {
 			this.ruleId = ruleId;
 		}
+		
 		public Float getTarget() {
 			return target;
 		}
+		
 		public void setTarget(Float target) {
 			this.target = target;
 		}
+		
 		public String getTimespec() {
 			return timespec;
 		}
+		
 		public void setTimespec(String timespec) {
 			this.timespec = timespec;
 		}
+		
 		public boolean isEnabled() {
 			return enabled;
 		}
+		
 		public void setEnabled(boolean enabled) {
 			this.enabled = enabled;
 		}

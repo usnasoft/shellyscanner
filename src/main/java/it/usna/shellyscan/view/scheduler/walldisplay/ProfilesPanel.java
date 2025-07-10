@@ -200,8 +200,12 @@ class ProfilesPanel extends JPanel {
 	}
 	
 	public void refresh() {
+		int sel = profilesTable.getSelectedRow();
 		tModel.clear();
 		fill();
+		if(sel >= 0 && profilesTable.getRowCount() > sel) {
+			profilesTable.setRowSelectionInterval(sel, sel);
+		}
 	}
 	
 	@Override

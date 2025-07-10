@@ -42,6 +42,10 @@ public class CronUtils {
 
 	public final static Pattern CRON_PATTERN = Pattern.compile("(" + REX_SECONDS + ") (" + REX_MINUTES + ") (" + REX_HOURS + ") (" + REX_MONTHDAYS + ") (" + REX_MONTHS + ") (" + REX_WEEKDAYS + ")");
 	public final static Pattern SUNSET_PATTERN = Pattern.compile("@(sunset|sunrise)((\\+|-)(?<HOUR>" + REX_0_23 + ")h((?<MINUTE>" + REX_00_59 + ")m)?)?( (?<DAY>" + REX_MONTHDAYS + ") (?<MONTH>" + REX_MONTHS + ") (?<WDAY>" + REX_WEEKDAYS + "))?");
+	
+//	private final static String REX_WEEKDAYS_S = "(SUN|MON|TUE|WED|TH|FRI|SAT)(,(SUN|MON|TUE|WED|THU|FRI|SAT))*";
+	private final static String REX_WEEKDAYS_S = "([0-6])(,[0-6])*";
+	public final static Pattern CRON_PATTERN_TH_WD = Pattern.compile("\\* (" + REX_0_59 + ") (" + REX_0_23 + ") \\* \\* (" + REX_WEEKDAYS_S + ")");
 
 //	public final static Pattern RANDOM_PATTERN =  Pattern.compile("@random:\\{\"from\":\"(" + REX_SECONDS + ") (" + REX_MINUTES + ") (" + REX_HOURS + ") (" + REX_MONTHDAYS + ") (" + REX_MONTHS + ") (" + REX_WEEKDAYS + ")\", ?\"to\":\"(" +
 //			REX_SECONDS + ") (" + REX_MINUTES + ") (" + REX_HOURS + ") (" + REX_MONTHDAYS + ") (" + REX_MONTHS + ") (" + REX_WEEKDAYS + ")\", ?\"number\":\\d+\\}");
@@ -117,5 +121,21 @@ public class CronUtils {
 		}
 		single.addAll(group);
 		return single.stream().collect(Collectors.joining(","));
+	}
+	
+	/**
+	 * timespec comparator by hour and minutes; only numbers allowed
+	 * @param timespec1
+	 * @param timespec2
+	 * @return
+	 */
+	public static int hmCompare(String timespec1, String timespec2) {
+		String t1[] = timespec1.split(" ");
+		String t2[] = timespec2.split(" ");
+		try {
+			return String.format("%02d%02d", Integer.parseInt(t1[2]), Integer.parseInt(t1[1])).compareTo(String.format("%02d%02d", Integer.parseInt(t2[2]), Integer.parseInt(t2[1])));
+		} catch (java.util.IllegalFormatException e) { // not a simple number
+			return 0;
+		}
 	}
 }

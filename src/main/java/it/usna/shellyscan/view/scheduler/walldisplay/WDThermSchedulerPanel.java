@@ -73,6 +73,7 @@ public class WDThermSchedulerPanel extends JPanel {
 				if(rulesList == null && currentProfileId >= 0) {
 					rulesList = wdSceduleManager.getRules(currentProfileId);
 					rulesList.forEach(rule -> rule.setTimespec(CronUtils.fragStrToNum(rule.getTimespec())));
+					rulesList.sort((r1, r2) -> CronUtils.hmCompare(r1.getTimespec(), r2.getTimespec())); // sort by hours and minutes
 					rules.put(currentProfileId, rulesList);
 				}
 
@@ -274,13 +275,13 @@ public class WDThermSchedulerPanel extends JPanel {
 
 			// Validation
 			if(numJobs == 1) {
-				ThermJobPanel sl = (ThermJobPanel)((JPanel)rulesPanel.getComponent(0)).getComponent(0);
+				ThermJobPanel sl = getThermPanel(0);
 				if(sl.isNullJob() == false && sl.validateData() == false) {
 					return false;
 				}
 			} else {
 				for(int i = 0; i < numJobs; i++) {
-					ThermJobPanel sl = (ThermJobPanel)((JPanel)rulesPanel.getComponent(i)).getComponent(0);
+					ThermJobPanel sl = getThermPanel(i);
 					if(sl.validateData() == false) {
 						sl.scrollRectToVisible(sl.getBounds());
 						return false;
@@ -301,26 +302,28 @@ public class WDThermSchedulerPanel extends JPanel {
 
 			// Create / Update
 			for(int i = 0; i < numJobs; i++) {
-				ThermJobPanel jobPanel = (ThermJobPanel)((JPanel)rulesPanel.getComponent(i)).getComponent(0);
+				ThermJobPanel jobPanel = getThermPanel(i);
 				Rule thisRule = rules.get(currentProfileId).get(i);
 				String res = null;
 				if(/*i > 0 ||*/ jobPanel.isNullJob() == false) {
 					if(thisRule.getId() == null) { // new -> create
-						JButton enableBtn = (JButton)((JPanel)rulesPanel.getComponent(i)).getComponent(1);
+						JButton enableBtn = getEnableButton(i);
 						thisRule.setTarget(jobPanel.getTarget());
 						thisRule.setTimespec(jobPanel.getExtTimespec());
 						thisRule.setEnabled(((UsnaToggleAction)enableBtn.getAction()).isSelected());
 						String newId = wdSceduleManager.create(thisRule, currentProfileId);
-						if(newId == null) {
+						if(newId == null) { // I rather expect an exception 
 							res = "creation error";
 						} else {
 							thisRule.setId(newId);
+							thisRule.setTimespec(jobPanel.getExtTimespec());
 						}
 						try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e1) {}
 					} else if(thisRule.getTarget().equals(jobPanel.getTarget()) == false || thisRule.getTimespec().equals(jobPanel.getTimespec()) == false) { // update
 						thisRule.setTarget(jobPanel.getTarget());
 						thisRule.setTimespec(jobPanel.getExtTimespec());
 						res = wdSceduleManager.update(thisRule, currentProfileId);
+						thisRule.setTimespec(jobPanel.getTimespec());
 						try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e1) {}
 					}
 					if(res != null) {
@@ -339,7 +342,16 @@ public class WDThermSchedulerPanel extends JPanel {
 		}
 	}
 	
+	private JButton getEnableButton(int i) {
+		return (JButton) ((JPanel)(((JPanel)rulesPanel.getComponent(i)).getComponent(1))).getComponent(0);
+	}
+	
+	private ThermJobPanel getThermPanel(int i) {
+		return (ThermJobPanel)((JPanel)rulesPanel.getComponent(i)).getComponent(0);
+	}
+	
 	public void refresh() {
+//		profilesPanel.
 		rules.clear();
 		profilesPanel.refresh();
 	}
@@ -362,8 +374,7 @@ public class WDThermSchedulerPanel extends JPanel {
 				JsonNode profilesNode = files.get("Thermostat.Schedule.ListProfiles.json").path("profiles");
 				
 //				try(FileSystem fs = FileSystems.newFileSystem(URI.create("jar:" + fc.getSelectedFile().toPath().toUri()), Map.of())) {
-//					
-//					
+//
 //					final ObjectMapper jsonMapper = new ObjectMapper();
 //					JsonNode profilesNode = jsonMapper.readTree(Files.newBufferedReader(fs.getPath("Thermostat.Schedule.ListProfiles.json"))).get("profiles");
 //					//				Iterator<JsonNode> scIt = scNode.iterator();
