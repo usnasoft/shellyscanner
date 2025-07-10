@@ -52,7 +52,7 @@ public class WDSchedulerDialog extends JDialog {
 		tabs.add(LABELS.getString("schLblProTherm"), thermPanel);
 		
 		JPanel buttonsPanel = new JPanel();
-		buttonsPanel.add(new JButton(new UsnaAction("dlgApply", e -> {
+		buttonsPanel.add(new JButton(new UsnaAction(this, "dlgApply", e -> {
 			Component current = tabs.getSelectedComponent();
 			if(current == schPanel) {
 				schPanel.apply();
@@ -60,7 +60,7 @@ public class WDSchedulerDialog extends JDialog {
 				thermPanel.apply();
 			}
 		}) ));
-		buttonsPanel.add(new JButton(new UsnaAction("dlgApplyClose", e -> {
+		buttonsPanel.add(new JButton(new UsnaAction(this, "dlgApplyClose", e -> {
 			Component current = tabs.getSelectedComponent();
 			boolean done = (current == schPanel) ? schPanel.apply() : thermPanel.apply();
 			if(done) dispose();

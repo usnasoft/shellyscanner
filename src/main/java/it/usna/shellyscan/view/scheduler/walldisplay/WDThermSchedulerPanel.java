@@ -68,6 +68,7 @@ public class WDThermSchedulerPanel extends JPanel {
 		
 		profilesPanel.addPropertyChangeListener(ProfilesPanel.SELECTION_EVENT, propertyChangeEvent -> {
 			try {
+				setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 				currentProfileId = (Integer)propertyChangeEvent.getNewValue();
 				List<Rule> rulesList = rules.get(currentProfileId);
 				if(rulesList == null && currentProfileId >= 0) {
@@ -93,6 +94,8 @@ public class WDThermSchedulerPanel extends JPanel {
 				rulesPanel.repaint(); // last one need this ... do not know why
 			} catch (IOException e) {
 				Msg.errorMsg(parent, e);
+			} finally {
+				setCursor(Cursor.getDefaultCursor());
 			}
 		});
 		
@@ -270,7 +273,6 @@ public class WDThermSchedulerPanel extends JPanel {
 	
 	public boolean apply() {
 		try {
-			parent.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 			int numJobs = rulesPanel.getComponentCount();
 
 			// Validation
@@ -337,8 +339,6 @@ public class WDThermSchedulerPanel extends JPanel {
 		} catch (/*IO*/Exception e) {
 			Msg.errorMsg(this, e);
 			return false;
-		} finally {
-			parent.setCursor(Cursor.getDefaultCursor());
 		}
 	}
 	
@@ -372,6 +372,10 @@ public class WDThermSchedulerPanel extends JPanel {
 				
 				Map<String, JsonNode> files = RestoreAction.readBackupFile(fc.getSelectedFile().toPath());
 				JsonNode profilesNode = files.get("Thermostat.Schedule.ListProfiles.json").path("profiles");
+				
+//				todo if exist "Thermostat.Schedule.ListProfiles.json" select one profile and load on current profile
+//					 else if exist"Schedule.List.json" (TRV) must have "timespec" - if has "target_C" go on else ("pos") skip
+				
 				
 //				try(FileSystem fs = FileSystems.newFileSystem(URI.create("jar:" + fc.getSelectedFile().toPath().toUri()), Map.of())) {
 //

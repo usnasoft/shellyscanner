@@ -39,8 +39,8 @@ public class G2SchedulerDialog extends JDialog {
 		JPanel buttonsPanel = new JPanel();
 		getContentPane().add(buttonsPanel, BorderLayout.SOUTH);
 		
-		buttonsPanel.add(new JButton(new UsnaAction("dlgApply", e -> scPanel.apply() )));
-		buttonsPanel.add( new JButton(new UsnaAction("dlgApplyClose", e -> {
+		buttonsPanel.add(new JButton(new UsnaAction(this, "dlgApply", e -> scPanel.apply() )));
+		buttonsPanel.add( new JButton(new UsnaAction(this, "dlgApplyClose", e -> {
 			if(scPanel.apply()) dispose();
 		}) ));
 		buttonsPanel.add(new JButton(new UsnaAction(this, "labelRefresh", e -> scPanel.refresh() )));

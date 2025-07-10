@@ -120,22 +120,22 @@ public class G2SchedulerPanel extends JScrollPane {
 						addJob(jobNode, Integer.MAX_VALUE);
 					} else {
 						Msg.errorMsg(this, "msgIncompatibleFile");
+						return;
 					}
 				}
-				lineColors();
 			} catch (FileNotFoundException | NoSuchFileException e) {
 				Msg.errorMsg(this, String.format(Main.LABELS.getString("msgFileNotFound"), fc.getSelectedFile().getName()));
 			} catch (/*IO*/Exception e) {
 				Msg.errorMsg(this, "msgIncompatibleFile");
 			} finally {
 				parent.setCursor(Cursor.getDefaultCursor());
+				lineColors();
 			}
 		}
 	}
 	
 	public boolean apply() {
 		try {
-			parent.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 			int numJobs = schedulesPanel.getComponentCount();
 
 			// Validation
@@ -202,8 +202,6 @@ public class G2SchedulerPanel extends JScrollPane {
 		} catch (IOException e) {
 			Msg.errorMsg(this, e);
 			return false;
-		} finally {
-			parent.setCursor(Cursor.getDefaultCursor());
 		}
 	}
 

@@ -58,19 +58,7 @@ public class TRVSchedulerDialog extends JDialog {
 		super(owner, Main.LABELS.getString("schTitle") + " - " + UtilMiscellaneous.getExtendedHostName(device), Dialog.ModalityType.MODELESS);
 		this.device = device;
 		this.sceduleManager = new ScheduleManagerTRV(device);
-		boolean exist = false;
-		try {
-			Iterator<JsonNode> scIt = sceduleManager.getRules().iterator();
-			while(scIt.hasNext()) {
-				addJob(scIt.next(), device.getMinTargetTemp(), device.getMaxTargetTemp(), Integer.MAX_VALUE);
-				exist = true;
-			}
-		} catch (/*IO*/Exception e) {
-			Msg.errorMsg(e);
-		}
-		if(exist == false) {
-			addJob(null, device.getMinTargetTemp(), device.getMaxTargetTemp(), Integer.MAX_VALUE);
-		}
+		fill();
 		init();
 		setLocationRelativeTo(owner);
 		setVisible(true);
@@ -87,6 +75,29 @@ public class TRVSchedulerDialog extends JDialog {
 		setVisible(true);
 	}
 	
+	private void fill() {
+		boolean exist = false;
+		try {
+			Iterator<JsonNode> scIt = sceduleManager.getRules().iterator();
+			while(scIt.hasNext()) {
+				addJob(scIt.next(), device.getMinTargetTemp(), device.getMaxTargetTemp(), Integer.MAX_VALUE);
+				exist = true;
+			}
+		} catch (IOException e) {
+			Msg.errorMsg(e);
+		}
+		if(exist == false) {
+			addJob(null, device.getMinTargetTemp(), device.getMaxTargetTemp(), Integer.MAX_VALUE);
+		}
+		lineColors();
+	}
+	
+	public void refresh() {
+		schedulesPanel.removeAll();
+		originalValues.clear();
+		fill();
+	}
+	
 	private void init() {
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		schedulesPanel.setBackground(Main.BG_COLOR);
@@ -100,14 +111,14 @@ public class TRVSchedulerDialog extends JDialog {
 		JPanel buttonsPanel = new JPanel();
 		getContentPane().add(buttonsPanel, BorderLayout.SOUTH);
 		
-		buttonsPanel.add(new JButton(new UsnaAction("dlgApply", e -> apply())));
+		buttonsPanel.add(new JButton(new UsnaAction("dlgApply", e -> apply()) ));
 		buttonsPanel.add( new JButton(new UsnaAction("dlgApplyClose", e -> {
 			if(apply()) dispose();
 		}) ));
-		buttonsPanel.add(new JButton(new UsnaAction("lblLoadFile", e -> loadFromBackup())));
-		buttonsPanel.add(new JButton(new UsnaAction("dlgClose", e -> dispose())));
+		buttonsPanel.add(new JButton(new UsnaAction(this, "labelRefresh", e -> refresh()) ));
+		buttonsPanel.add(new JButton(new UsnaAction("lblLoadFile", e -> loadFromBackup()) ));
+		buttonsPanel.add(new JButton(new UsnaAction("dlgClose", e -> dispose()) ));
 
-		lineColors();
 		pack();
 		setSize(getWidth(), 500);
 	}
@@ -134,14 +145,15 @@ public class TRVSchedulerDialog extends JDialog {
 						addJob(jobNode, device.getMinTargetTemp(), device.getMaxTargetTemp(), Integer.MAX_VALUE);
 					} else {
 						Msg.errorMsg(this, "msgIncompatibleFile");
+						return;
 					}
 				}
-				lineColors();
 			} catch (FileNotFoundException | NoSuchFileException e) {
 				Msg.errorMsg(this, String.format(LABELS.getString("msgFileNotFound"), fc.getSelectedFile().getName()));
 			} catch (/*IO*/Exception e) {
 				Msg.errorMsg(this, "msgIncompatibleFile");
 			} finally {
+				lineColors();
 				setCursor(Cursor.getDefaultCursor());
 			}
 		}

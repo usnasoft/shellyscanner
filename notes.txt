@@ -359,14 +359,13 @@ Switch, Cover Add physical control locking (in_locked config property) - OK
 blu -> buttons from actions
 
 
-1.2.5 ?
+1.2.6
 ---
-Shelly 2PM Gen4 (?)
+Shelly 2PM Gen4
 Shelly Shutter G3
 schedule geb2+, BLU trv
 // todo schedule wall display thermostat
 // todo schedule load ...
-// nuovo pannello therm WD solo (ore, miniti, giorni della settimana (lista semplice)) e target
 
 https://next-api-docs.shelly.cloud/gen2/ComponentsAndServices/Schedule
 https://github.com/mongoose-os-libs/cron
