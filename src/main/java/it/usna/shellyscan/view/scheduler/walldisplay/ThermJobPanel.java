@@ -135,9 +135,9 @@ class ThermJobPanel extends JPanel {
 		return out;
 	}
 	
-	protected void initCronSection() {
+	private void initCronSection() {
 		GridBagLayout gbl_panel = new GridBagLayout();
-		//		gbl_panel.columnWidths = new int[]{10, 10, 10, 10, 10, 0, 10};
+		// gbl_panel.columnWidths = new int[]{10, 10, 10, 10, 10, 0, 10};
 		// gbl_panel.rowHeights = new int[]{0, 0, 0, 0};
 //		gbl_panel.columnWeights = new double[] { 1.0, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0/*, 0.0, 0.0, 0.0, 0.0, 0.0 */};
 //		gbl_panel.rowWeights = new double[] { 1.0, 1.0, 1.0};
@@ -346,9 +346,6 @@ class ThermJobPanel extends JPanel {
 	private void generateExpression() {
 		String minutes = minutesTextField.getText();
 		String hours = hoursTextField.getText();
-//		minutesTextField.setForeground(CronUtils.MINUTES_PATTERN.matcher(minutes).matches() ? null : Color.red);
-//		hoursTextField.setForeground(CronUtils.HOURS_PATTERN.matcher(hours).matches() ? null : Color.red);
-
 		String res = SECONDS + " " + minutes + " " + hours + " " + DAYS + " " + MONTHS + " " + daysOfWeek;
 		expressionField.setText(res);
 		expressionField.setForeground((CronUtils.CRON_PATTERN_TH_WD.matcher(res).matches()) ? null : Color.red);

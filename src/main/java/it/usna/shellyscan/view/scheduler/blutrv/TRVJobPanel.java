@@ -22,7 +22,7 @@ import it.usna.shellyscan.view.util.UtilMiscellaneous;
 import it.usna.swing.NumericTextField;
 
 /**
- * Single cron panel + target temp / valve position
+ * Cron panel + target temp / valve position
  * No support for °F for now
  */
 public class TRVJobPanel extends AbstractCronPanel {

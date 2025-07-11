@@ -215,8 +215,4 @@ class ProfilesPanel extends JPanel {
 		}
 		super.setVisible(v);
 	}
-	
-	public void loadFromBackup() {
-		// todo
-	}
 }

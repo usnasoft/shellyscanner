@@ -26,6 +26,9 @@ import it.usna.shellyscan.Main;
 import it.usna.shellyscan.controller.UsnaAction;
 import it.usna.swing.UsnaSwingUtils;
 
+/**
+ * Display a  multi-selection list and fill "origin" JTextField on "OK" according to CronUtils.listAsCronString rule
+ */
 public class CronValuesDialog extends JDialog {
 	private static final long serialVersionUID = 1L;
 	
@@ -81,9 +84,4 @@ public class CronValuesDialog extends JDialog {
 		UsnaSwingUtils.setLocationRelativeTo(this, origin, SwingConstants.RIGHT, -4, -16);
 		setVisible(true);
 	}
-	
-//	public static void main(final String ... args) throws Exception {
-//		UsnaSwingUtils.setLookAndFeel(UsnaSwingUtils.LF_NIMBUS);
-//		new SelectorDialog(null, null, 0, 60);
-//	}
 }

@@ -12,7 +12,9 @@ import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.NoSuchFileException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -23,6 +25,7 @@ import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -38,6 +41,7 @@ import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.g2.WallDisplay;
 import it.usna.shellyscan.model.device.g2.modules.ScheduleManagerThermWD;
 import it.usna.shellyscan.model.device.g2.modules.ScheduleManagerThermWD.Rule;
+import it.usna.shellyscan.model.device.g2.modules.ScheduleManagerThermWD.ThermProfile;
 import it.usna.shellyscan.model.device.g2.modules.ThermostatG2;
 import it.usna.shellyscan.view.scheduler.CronUtils;
 import it.usna.shellyscan.view.util.Msg;
@@ -49,6 +53,7 @@ public class WDThermSchedulerPanel extends JPanel {
 	private final ProfilesPanel profilesPanel;
 	private JPanel rulesPanel = new JPanel(/*new VerticalFlowLayout(VerticalFlowLayout.TOP, VerticalFlowLayout.CENTER, 0, 0)*/new GridLayout(0, 1, 0, 0));
 	private final ScheduleManagerThermWD wdSceduleManager;
+	private final ThermostatG2 thermostat;
 	private HashMap<Integer, List<Rule>> rules = new HashMap<>();
 	private ArrayList<RemovedRule> removed = new ArrayList<>();
 	private int currentProfileId = -1;
@@ -60,7 +65,7 @@ public class WDThermSchedulerPanel extends JPanel {
 		this.parent = parent;
 //		this.device = device;
 		this.wdSceduleManager = (device != null) ? new ScheduleManagerThermWD(device) : null; // device == null -> design
-		ThermostatG2 thermostat = new ThermostatG2(device);
+		thermostat = new ThermostatG2(device);
 		
 		profilesPanel = new ProfilesPanel(parent, device, wdSceduleManager);
 		profilesPanel.setPreferredSize(new Dimension(getPreferredSize().width, 16 * 5));
@@ -81,13 +86,13 @@ public class WDThermSchedulerPanel extends JPanel {
 				rulesPanel.removeAll();
 				if(rulesList != null && rulesList.size() > 0) { // there is a selected profile with rules
 					rulesList.forEach(data -> {
-						addJob(thermostat.getMinTargetTemp(), thermostat.getMaxTargetTemp(), data.isEnabled() , data.getTimespec(), data.getTarget(), Integer.MAX_VALUE);
+						addJob(data.isEnabled() , data.getTimespec(), data.getTarget(), Integer.MAX_VALUE);
 					});
 				} else if(currentProfileId >= 0) { // there is a selected profile with NO rules -> add an empty rule
 					rulesList = new ArrayList<Rule>();
 					rulesList.add(new Rule(null, null, null, false));
 					rules.put(currentProfileId, rulesList);
-					addJob(thermostat.getMinTargetTemp(), thermostat.getMaxTargetTemp(), false, null, null, Integer.MAX_VALUE);
+					addJob(false, null, null, Integer.MAX_VALUE);
 				}
 				lineColors();
 				rulesPanel.revalidate();
@@ -132,13 +137,13 @@ public class WDThermSchedulerPanel extends JPanel {
 		if(device == null) {
 			currentProfileId = 0;
 			rules.put(0,  List.of());
-			addJob(0, 99, false, null, null, Integer.MAX_VALUE);
+			addJob(false, null, null, Integer.MAX_VALUE);
 		}
 	}
 	
-	private void addJob(float min, float max, boolean enabled, String timespec, Float temp, int pos) {
+	private void addJob(boolean enabled, String timespec, Float temp, int pos) {
 		JPanel linePanel = new JPanel(/*new FlowLayout(FlowLayout.LEFT, 6, 0)*/new BorderLayout(16, 0));
-		ThermJobPanel job = new ThermJobPanel(parent, min, max, timespec, temp);
+		ThermJobPanel job = new ThermJobPanel(parent, thermostat.getMinTargetTemp(), thermostat.getMaxTargetTemp(), timespec, temp);
 		linePanel.add(job, BorderLayout.CENTER);
 
 		JButton enableButton = new JButton();
@@ -154,7 +159,7 @@ public class WDThermSchedulerPanel extends JPanel {
 		JButton addBtn = new JButton(new UsnaAction(null, "schAdd", "/images/plus_transp16.png", e -> {
 			int i;
 			for(i = 0; rulesPanel.getComponent(i) != linePanel; i++);
-			addJob(min, max, false, null, null, i + 1);
+			addJob(false, null, null, i + 1);
 			addRule(false, null, null, i + 1);
 			lineColors();
 			rulesPanel.revalidate();
@@ -187,7 +192,7 @@ public class WDThermSchedulerPanel extends JPanel {
 		JButton duplicateBtn = new JButton(new UsnaAction(null, "schDuplicate", "/images/duplicate_trasp16.png", e -> {
 			int i;
 			for(i = 0; rulesPanel.getComponent(i) != linePanel; i++);
-			addJob(min, max, false, job.getTimespec(), job.getTarget(), i + 1);
+			addJob(false, job.getTimespec(), job.getTarget(), i + 1);
 			addRule(false, job.getTimespec(), job.getTarget(), i + 1);
 			lineColors();
 			rulesPanel.revalidate();
@@ -357,54 +362,58 @@ public class WDThermSchedulerPanel extends JPanel {
 	}
 	
 	public void loadFromBackup() {
-		try {
-			if(wdSceduleManager.getProfiles().size() > 0) {
-				Msg.errorMsg(this, "msgExistingProfile");
-				return;
-			}
-			final ScannerProperties appProp = ScannerProperties.instance();
-			final JFileChooser fc = new JFileChooser(appProp.getProperty("LAST_PATH"));
-			fc.setAcceptAllFileFilterUsed(false);
-			fc.setFileFilter(new FileNameExtensionFilter(LABELS.getString("filetype_sbk_desc"), Main.BACKUP_FILE_EXT));
-			if(fc.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+		final ScannerProperties appProp = ScannerProperties.instance();
+		final JFileChooser fc = new JFileChooser(appProp.getProperty("LAST_PATH"));
+		fc.setAcceptAllFileFilterUsed(false);
+		fc.setFileFilter(new FileNameExtensionFilter(LABELS.getString("filetype_sbk_desc"), Main.BACKUP_FILE_EXT));
+		if(fc.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+			try {
 				setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 				appProp.setProperty("LAST_PATH", fc.getCurrentDirectory().getCanonicalPath());
-				
 				Map<String, JsonNode> files = RestoreAction.readBackupFile(fc.getSelectedFile().toPath());
-				JsonNode profilesNode = files.get("Thermostat.Schedule.ListProfiles.json").path("profiles");
-				
-//				todo if exist "Thermostat.Schedule.ListProfiles.json" select one profile and load on current profile
-//					 else if exist"Schedule.List.json" (TRV) must have "timespec" - if has "target_C" go on else ("pos") skip
-				
-				
-//				try(FileSystem fs = FileSystems.newFileSystem(URI.create("jar:" + fc.getSelectedFile().toPath().toUri()), Map.of())) {
-//
-//					final ObjectMapper jsonMapper = new ObjectMapper();
-//					JsonNode profilesNode = jsonMapper.readTree(Files.newBufferedReader(fs.getPath("Thermostat.Schedule.ListProfiles.json"))).get("profiles");
-//					//				Iterator<JsonNode> scIt = scNode.iterator();
-//					//				while(scIt.hasNext()) {
-//					//					ObjectNode jobNode = (ObjectNode)scIt.next();
-//					//					jobNode.remove("id");
-//					//					if(jobNode.hasNonNull("timespec") && (jobNode.hasNonNull("target_C") || jobNode.hasNonNull("pos"))) {
-//					//						if(schedulesPanel.getComponentCount() == 1 && ((TRVJobPanel)((JPanel)schedulesPanel.getComponent(0)).getComponent(0)).isNullJob()) {
-//					//							schedulesPanel.remove(0);
-//					//						}
-//					//						addJob(jobNode, device.getMinTargetTemp(), device.getMaxTargetTemp(), Integer.MAX_VALUE);
-//					//					} else {
-//					//						Msg.errorMsg(this, "msgIncompatibleFile");
-//					//					}
-//					//				}
-//					lineColors();
-//				} catch (FileNotFoundException | NoSuchFileException e) {
-//					Msg.errorMsg(this, String.format(LABELS.getString("msgFileNotFound"), fc.getSelectedFile().getName()));
-//				} catch (/*IO*/Exception e) {
-//					Msg.errorMsg(this, "msgIncompatibleFile");
-//				} finally {
-//					setCursor(Cursor.getDefaultCursor());
-//				}
+
+				if(files.containsKey("Thermostat.Schedule.ListProfiles.json")) { // WD backup
+					JsonNode profilesNode = files.get("Thermostat.Schedule.ListProfiles.json").path("profiles");
+					ArrayList<ThermProfile> profiles = new ArrayList<>();
+					profilesNode.forEach(node -> profiles.add(new ThermProfile(node.get("id").intValue(), node.get("name").textValue())) );
+					if(profiles.size() > 0) {
+						ThermProfile loadProfile = (ThermProfile)JOptionPane.showInputDialog(this, LABELS.getString("dlgProfileSelectionMsg"), LABELS.getString("dlgProfileSelectionTitle"), JOptionPane.PLAIN_MESSAGE, null, profiles.toArray(), null);
+						if(loadProfile != null) {
+							JsonNode rules = files.get("Thermostat.Schedule.ListRules_profile_id-" + loadProfile.id() + ".json").get("rules");
+							for(JsonNode jsonRule: rules) {
+								if(rulesPanel.getComponentCount() == 1 && getThermPanel(0).isNullJob()) {
+									rulesPanel.remove(0);
+								}
+								addJob(false, jsonRule.get("timespec").textValue(), jsonRule.get("target_C").floatValue(), Integer.MAX_VALUE);
+								addRule(false, jsonRule.get("timespec").textValue(), jsonRule.get("target_C").floatValue(), Integer.MAX_VALUE);
+							}
+						}
+					} else {
+						JOptionPane.showMessageDialog(this, LABELS.getString("dlgProfileSelectionNoneMsg"), LABELS.getString("dlgProfileSelectionTitle"), JOptionPane.INFORMATION_MESSAGE);
+					}
+				} else if(files.containsKey("TRV.ListScheduleRules.json")) { // BLU TRV backup
+					JsonNode schNode = files.get("TRV.ListScheduleRules.json").get("rules");
+					for(JsonNode jsonRule: schNode) {
+						if(jsonRule.hasNonNull("target_C") && jsonRule.get("timespec").textValue().startsWith("@") == false) { // do nothing on "pos" or @(sunset|sunrise)
+							if(rulesPanel.getComponentCount() == 1 && getThermPanel(0).isNullJob()) {
+								rulesPanel.remove(0);
+							}
+							addJob(false, jsonRule.get("timespec").textValue(), jsonRule.get("target_C").floatValue(), Integer.MAX_VALUE);
+							addRule(false, jsonRule.get("timespec").textValue(), jsonRule.get("target_C").floatValue(), Integer.MAX_VALUE);
+						}
+					}
+				} else {
+					Msg.errorMsg(this, "msgIncompatibleFile");
+				}
+			} catch (FileNotFoundException | NoSuchFileException e) {
+				Msg.errorMsg(this, String.format(LABELS.getString("msgFileNotFound"), fc.getSelectedFile().getName()));
+			} catch (/*IO*/Exception e) {
+				Msg.errorMsg(this, "msgIncompatibleFile");
+			} finally {
+				rulesPanel.revalidate();
+				lineColors();
+				setCursor(Cursor.getDefaultCursor());
 			}
-		} catch (IOException e) {
-			Msg.errorMsg(this, e);
 		}
 	}
 	

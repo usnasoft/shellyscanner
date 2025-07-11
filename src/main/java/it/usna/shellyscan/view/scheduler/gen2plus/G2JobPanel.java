@@ -188,7 +188,6 @@ public class G2JobPanel extends AbstractCronPanel {
 		gbc_callsOperations.gridy = 4;
 		add(callsOperationsPanel, gbc_callsOperations);
 		callsOperationsPanel.setOpaque(false);
-		//		callsOperationsPanel.setBackground(Color.red);
 		callsOperationsPanel.setLayout(new BoxLayout(callsOperationsPanel, BoxLayout.Y_AXIS));
 	}
 

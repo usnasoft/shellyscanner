@@ -15,6 +15,7 @@ import java.awt.datatransfer.StringSelection;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.NoSuchFileException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Map;
@@ -24,6 +25,7 @@ import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -39,6 +41,7 @@ import it.usna.shellyscan.controller.UsnaToggleAction;
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.blu.BluTRV;
 import it.usna.shellyscan.model.device.blu.modules.ScheduleManagerTRV;
+import it.usna.shellyscan.model.device.g2.modules.ScheduleManagerThermWD.ThermProfile;
 import it.usna.shellyscan.view.util.Msg;
 import it.usna.shellyscan.view.util.ScannerProperties;
 import it.usna.shellyscan.view.util.UtilMiscellaneous;
@@ -52,7 +55,7 @@ public class TRVSchedulerDialog extends JDialog {
 	private final BluTRV device;
 	private final ArrayList<ScheduleData> originalValues = new ArrayList<>();
 	private final ArrayList<Integer> removedId = new ArrayList<>();
-	private final JPanel schedulesPanel = new JPanel(new VerticalFlowLayout(VerticalFlowLayout.TOP, VerticalFlowLayout.CENTER, 0, 0));
+	private final JPanel rulesPanel = new JPanel(new VerticalFlowLayout(VerticalFlowLayout.TOP, VerticalFlowLayout.CENTER, 0, 0));
 
 	public TRVSchedulerDialog(Window owner, BluTRV device) {
 		super(owner, Main.LABELS.getString("schTitle") + " - " + UtilMiscellaneous.getExtendedHostName(device), Dialog.ModalityType.MODELESS);
@@ -93,18 +96,18 @@ public class TRVSchedulerDialog extends JDialog {
 	}
 	
 	public void refresh() {
-		schedulesPanel.removeAll();
+		rulesPanel.removeAll();
 		originalValues.clear();
 		fill();
 	}
 	
 	private void init() {
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-		schedulesPanel.setBackground(Main.BG_COLOR);
+		rulesPanel.setBackground(Main.BG_COLOR);
 		
 		JScrollPane scrollPane = new JScrollPane(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		scrollPane.getVerticalScrollBar().setUnitIncrement(16);
-		scrollPane.setViewportView(schedulesPanel);
+		scrollPane.setViewportView(rulesPanel);
 		scrollPane.setBorder(BorderFactory.createEmptyBorder());
 		getContentPane().add(scrollPane, BorderLayout.CENTER);
 		
@@ -129,30 +132,46 @@ public class TRVSchedulerDialog extends JDialog {
 		fc.setAcceptAllFileFilterUsed(false);
 		fc.setFileFilter(new FileNameExtensionFilter(LABELS.getString("filetype_sbk_desc"), Main.BACKUP_FILE_EXT));
 		if(fc.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
-			setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 			try {
+				setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 				Map<String, JsonNode> files = RestoreAction.readBackupFile(fc.getSelectedFile().toPath());
 				appProp.setProperty("LAST_PATH", fc.getCurrentDirectory().getCanonicalPath());
-				JsonNode schNode = files.get("Schedule.List.json").get("jobs");
-				Iterator<JsonNode> scIt = schNode.iterator();
-				while(scIt.hasNext()) {
-					ObjectNode jobNode = (ObjectNode)scIt.next();
-					jobNode.remove("id");
-					if(jobNode.hasNonNull("timespec") && (jobNode.hasNonNull("target_C") || jobNode.hasNonNull("pos"))) {
-						if(schedulesPanel.getComponentCount() == 1 && ((TRVJobPanel)((JPanel)schedulesPanel.getComponent(0)).getComponent(0)).isNullJob()) {
-							schedulesPanel.remove(0);
+				
+				if(files.containsKey("Thermostat.Schedule.ListProfiles.json")) { // WD backup
+					JsonNode profilesNode = files.get("Thermostat.Schedule.ListProfiles.json").path("profiles");
+					ArrayList<ThermProfile> profiles = new ArrayList<>();
+					profilesNode.forEach(node -> profiles.add(new ThermProfile(node.get("id").intValue(), node.get("name").textValue())) );
+					if(profiles.size() > 0) {
+						ThermProfile loadProfile = (ThermProfile)JOptionPane.showInputDialog(this, LABELS.getString("dlgProfileSelectionMsg"), LABELS.getString("dlgProfileSelectionTitle"), JOptionPane.PLAIN_MESSAGE, null, profiles.toArray(), null);
+						if(loadProfile != null) {
+							JsonNode rules = files.get("Thermostat.Schedule.ListRules_profile_id-" + loadProfile.id() + ".json").get("rules");
+							for(JsonNode jsonRule: rules) {
+								if(rulesPanel.getComponentCount() == 1 && ((TRVJobPanel)((JPanel)rulesPanel.getComponent(0)).getComponent(0)).isNullJob()) {
+									rulesPanel.remove(0);
+								}
+								addJob(jsonRule, device.getMinTargetTemp(), device.getMaxTargetTemp(), Integer.MAX_VALUE);
+							}
 						}
-						addJob(jobNode, device.getMinTargetTemp(), device.getMaxTargetTemp(), Integer.MAX_VALUE);
 					} else {
-						Msg.errorMsg(this, "msgIncompatibleFile");
-						return;
+						JOptionPane.showMessageDialog(this, LABELS.getString("dlgProfileSelectionNoneMsg"), LABELS.getString("dlgProfileSelectionTitle"), JOptionPane.INFORMATION_MESSAGE);
 					}
+				} else if(files.containsKey("TRV.ListScheduleRules.json")) { // BLU TRV backup
+					JsonNode schNode = files.get("TRV.ListScheduleRules.json").get("rules");
+					for(JsonNode jsonRule: schNode) {
+						if(rulesPanel.getComponentCount() == 1 && ((TRVJobPanel)((JPanel)rulesPanel.getComponent(0)).getComponent(0)).isNullJob()) {
+							rulesPanel.remove(0);
+						}
+						addJob(jsonRule, device.getMinTargetTemp(), device.getMaxTargetTemp(), Integer.MAX_VALUE);
+					}
+				} else {
+					Msg.errorMsg(this, "msgIncompatibleFile");
 				}
 			} catch (FileNotFoundException | NoSuchFileException e) {
 				Msg.errorMsg(this, String.format(LABELS.getString("msgFileNotFound"), fc.getSelectedFile().getName()));
 			} catch (/*IO*/Exception e) {
 				Msg.errorMsg(this, "msgIncompatibleFile");
 			} finally {
+				rulesPanel.revalidate();
 				lineColors();
 				setCursor(Cursor.getDefaultCursor());
 			}
@@ -162,17 +181,17 @@ public class TRVSchedulerDialog extends JDialog {
 	private boolean apply() {
 		try {
 			this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-			int numJobs = schedulesPanel.getComponentCount();
+			int numJobs = rulesPanel.getComponentCount();
 
 			// Validation
 			if(numJobs == 1) { // only 1 can be null and must be alone -> (existing jobs deleted?)
-				TRVJobPanel sl = (TRVJobPanel)((JPanel)schedulesPanel.getComponent(0)).getComponent(0);
+				TRVJobPanel sl = (TRVJobPanel)((JPanel)rulesPanel.getComponent(0)).getComponent(0);
 				if(sl.isNullJob() == false && sl.validateData() == false) {
 					return false;
 				}
 			} else {
 				for(int i = 0; i < numJobs; i++) {
-					TRVJobPanel sl = (TRVJobPanel)((JPanel)schedulesPanel.getComponent(i)).getComponent(0);
+					TRVJobPanel sl = (TRVJobPanel)((JPanel)rulesPanel.getComponent(i)).getComponent(0);
 					if(sl.validateData() == false) {
 						sl.scrollRectToVisible(sl.getBounds());
 						return false;
@@ -193,13 +212,13 @@ public class TRVSchedulerDialog extends JDialog {
 			
 			// Create / Update
 			for(int i = 0; i < numJobs; i++) {
-				TRVJobPanel sl = (TRVJobPanel)((JPanel)schedulesPanel.getComponent(i)).getComponent(0);
+				TRVJobPanel sl = (TRVJobPanel)((JPanel)rulesPanel.getComponent(i)).getComponent(0);
 				ScheduleData original = originalValues.get(i);
 				if(sl.isNullJob() == false) { // only first one (and single) can be a "null job" (see validation phase)
 					ObjectNode jobJson = sl.getJson();
 					String res = null;
 					if(original.id < 0) {
-						JButton enableBtn = (JButton)((JPanel)schedulesPanel.getComponent(i)).getComponent(1);
+						JButton enableBtn = (JButton)((JPanel)rulesPanel.getComponent(i)).getComponent(1);
 						int newId = sceduleManager.create(jobJson, ((UsnaToggleAction)enableBtn.getAction()).isSelected());
 						originalValues.set(i, new ScheduleData(newId, jobJson));
 						if(newId < 0) {
@@ -239,23 +258,23 @@ public class TRVSchedulerDialog extends JDialog {
 
 		JButton addBtn = new JButton(new UsnaAction(null, "schAdd", "/images/plus_transp16.png", e -> {
 			int i;
-			for(i = 0; schedulesPanel.getComponent(i) != linePanel; i++);
+			for(i = 0; rulesPanel.getComponent(i) != linePanel; i++);
 			addJob(null, min, max, i + 1);
 			lineColors();
-			schedulesPanel.revalidate();
+			rulesPanel.revalidate();
 		}));
 		addBtn.setContentAreaFilled(false);
 		addBtn.setBorder(BorderFactory.createEmptyBorder(2, 3, 2, 3));
 		
 		JButton removeBtn = new JButton(new UsnaAction(null, "schRemove", "/images/erase-9-16.png", e -> {
 			ScheduleData data = null;
-			if(schedulesPanel.getComponentCount() > 1) {
+			if(rulesPanel.getComponentCount() > 1) {
 				int i;
-				for(i = 0; schedulesPanel.getComponent(i) != linePanel; i++);
-				schedulesPanel.remove(i);
+				for(i = 0; rulesPanel.getComponent(i) != linePanel; i++);
+				rulesPanel.remove(i);
 				lineColors();
 				data = originalValues.remove(i);
-			} else if(schedulesPanel.getComponentCount() == 1) {
+			} else if(rulesPanel.getComponentCount() == 1) {
 				job.clean();
 				data = originalValues.get(0);
 				originalValues.set(0, new ScheduleData(-1, job.getJson()));
@@ -263,18 +282,18 @@ public class TRVSchedulerDialog extends JDialog {
 			if(data != null && data.id >= 0) {
 				removedId.add(data.id);
 			}
-			schedulesPanel.revalidate();
-			schedulesPanel.repaint(); // last one need this ... do not know why
+			rulesPanel.revalidate();
+			rulesPanel.repaint(); // last one need this ... do not know why
 		}));
 		removeBtn.setContentAreaFilled(false);
 		removeBtn.setBorder(BorderFactory.createEmptyBorder(2, 3, 2, 3));
 
 		JButton duplicateBtn = new JButton(new UsnaAction(null, "schDuplicate", "/images/duplicate_trasp16.png", e -> {
 			int i;
-			for(i = 0; schedulesPanel.getComponent(i) != linePanel; i++);
+			for(i = 0; rulesPanel.getComponent(i) != linePanel; i++);
 			addJob(job.getJson(), min, max, i + 1);
 			lineColors();
-			schedulesPanel.revalidate();
+			rulesPanel.revalidate();
 		}));
 		duplicateBtn.setContentAreaFilled(false);
 		duplicateBtn.setBorder(BorderFactory.createEmptyBorder(2, 3, 2, 3));
@@ -317,10 +336,10 @@ public class TRVSchedulerDialog extends JDialog {
 		
 		ScheduleData thisScheduleLine = new ScheduleData((node != null) ? node.path("rule_id").asInt(-1) : -1, job.getJson());
 		if(pos >= originalValues.size()) {
-			schedulesPanel.add(linePanel);
+			rulesPanel.add(linePanel);
 			originalValues.add(thisScheduleLine);
 		} else {
-			schedulesPanel.add(linePanel, pos);
+			rulesPanel.add(linePanel, pos);
 			originalValues.add(pos, thisScheduleLine);
 		}
 
@@ -334,7 +353,7 @@ public class TRVSchedulerDialog extends JDialog {
 	
 	private void enableSchedule(JPanel line, boolean enable) {
 		int i;
-		for(i = 0; schedulesPanel.getComponent(i) != line; i++);
+		for(i = 0; rulesPanel.getComponent(i) != line; i++);
 		ScheduleData data = originalValues.get(i);
 		if(data.id >= 0) {
 			String res = sceduleManager.enable(data.id, enable);
@@ -345,7 +364,7 @@ public class TRVSchedulerDialog extends JDialog {
 	}
 	
 	private void lineColors() {
-		Component[] list = schedulesPanel.getComponents();
+		Component[] list = rulesPanel.getComponents();
 		for(int i = 0; i < list.length; i++) {
 			list[i].setBackground((i % 2 == 1) ? Main.TAB_LINE2_COLOR : Main.TAB_LINE1_COLOR);
 		}
@@ -355,18 +374,7 @@ public class TRVSchedulerDialog extends JDialog {
 
 	public static void main(final String ... args) throws Exception {
 		UsnaSwingUtils.setLookAndFeel(UsnaSwingUtils.LF_NIMBUS);
+		ScannerProperties.init(Path.of(System.getProperty("user.home"), ".shellyScanner"));
 		new TRVSchedulerDialog();
 	}
 }
-
-// https://next-api-docs.shelly.cloud/gen2/ComponentsAndServices/Schedule
-// https://github.com/mongoose-os-libs/cron
-// https://crontab.guru/
-// https://regex101.com/
-// https://www.freeformatter.com/regex-tester.html
-
-// http://<ip>/rpc/Schedule.DeleteAll
-// http://<ip>/rpc/Schedule.Create?timespec="0 0 22 * * FRI"&calls=[{"method":"Shelly.GetDeviceInfo"}]
-// http://<ip>/rpc/Schedule.Create?timespec="10/100 * * * * *"&calls=[{"method":"light.toggle?id=0"}]
-
-// notes: 10 not working (do 0); 100 not working (do 60)

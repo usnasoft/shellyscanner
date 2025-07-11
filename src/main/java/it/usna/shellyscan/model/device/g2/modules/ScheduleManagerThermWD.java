@@ -27,9 +27,9 @@ public class ScheduleManagerThermWD {
 	
 	public List<ThermProfile> getProfiles() throws IOException {
 		ArrayList<ThermProfile> ret = new ArrayList<>();
-		wd.getJSON("/rpc/Thermostat.Schedule.ListProfiles?id=" + THERM_ID).path("profiles").forEach(node -> {
-			ret.add(new ThermProfile(node.get("id").intValue(), node.get("name").textValue()));
-		});
+		wd.getJSON("/rpc/Thermostat.Schedule.ListProfiles?id=" + THERM_ID).path("profiles").forEach(node ->
+			ret.add(new ThermProfile(node.get("id").intValue(), node.get("name").textValue()))
+		);
 		return ret;
 	}
 
@@ -91,7 +91,12 @@ public class ScheduleManagerThermWD {
 //		}
 //	}
 	
-	public record ThermProfile(int id, String name) {}
+	public record ThermProfile(int id, String name) {
+		@Override
+		public String toString() {
+			return name;
+		}
+	}
 	
 	public static class Rule {
 		private String ruleId;

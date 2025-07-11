@@ -6,6 +6,7 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dialog;
 import java.awt.Window;
+import java.nio.file.Path;
 import java.util.concurrent.TimeUnit;
 
 import javax.swing.JButton;
@@ -18,6 +19,7 @@ import it.usna.shellyscan.controller.UsnaAction;
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.g2.WallDisplay;
 import it.usna.shellyscan.view.scheduler.gen2plus.G2SchedulerPanel;
+import it.usna.shellyscan.view.util.ScannerProperties;
 import it.usna.shellyscan.view.util.UtilMiscellaneous;
 import it.usna.swing.UsnaSwingUtils;
 
@@ -95,14 +97,7 @@ public class WDSchedulerDialog extends JDialog {
 	
 	public static void main(final String ... args) throws Exception {
 		UsnaSwingUtils.setLookAndFeel(UsnaSwingUtils.LF_NIMBUS);
+		ScannerProperties.init(Path.of(System.getProperty("user.home"), ".shellyScanner"));
 		new WDSchedulerDialog();
 	}
 }
-
-// https://next-api-docs.shelly.cloud/gen2/ComponentsAndServices/Schedule
-// https://github.com/mongoose-os-libs/cron
-// https://crontab.guru/
-// https://regex101.com/
-// https://www.freeformatter.com/regex-tester.html
-
-// todo warning on profile remove (if rules exist)

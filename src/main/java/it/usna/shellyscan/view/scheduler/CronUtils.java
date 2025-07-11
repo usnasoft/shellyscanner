@@ -139,3 +139,16 @@ public class CronUtils {
 		}
 	}
 }
+
+
+//https://next-api-docs.shelly.cloud/gen2/ComponentsAndServices/Schedule
+//https://github.com/mongoose-os-libs/cron
+//https://crontab.guru/
+//https://regex101.com/
+//https://www.freeformatter.com/regex-tester.html
+
+//http://<ip>/rpc/Schedule.DeleteAll
+//http://<ip>/rpc/Schedule.Create?timespec="0 0 22 * * FRI"&calls=[{"method":"Shelly.GetDeviceInfo"}]
+//http://<ip>/rpc/Schedule.Create?timespec="10/100 * * * * *"&calls=[{"method":"light.toggle?id=0"}]
+
+//notes: 10 not working (do 0); 100 not working (do 60)
