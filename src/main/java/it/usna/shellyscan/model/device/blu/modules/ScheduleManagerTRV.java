@@ -29,7 +29,7 @@ public class ScheduleManagerTRV {
 	/**
 	 * @param def
 	 * @param enable
-	 * @return the new id; < 0 in case of errpr
+	 * @return the new id; < 0 in case of error
 	 * @throws IOException 
 	 */
 	public int create(JsonNode def, boolean enable) throws IOException {

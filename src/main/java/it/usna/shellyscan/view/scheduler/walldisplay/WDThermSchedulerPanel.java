@@ -121,11 +121,11 @@ public class WDThermSchedulerPanel extends JPanel {
 			}
 		});
 
-		rulesPanel.setBackground(Main.BG_COLOR);
 		JScrollPane scrollPane = new JScrollPane(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		scrollPane.getVerticalScrollBar().setUnitIncrement(16);
 		
 		JPanel nPanel = new JPanel(new BorderLayout());
+		nPanel.setBackground(Main.BG_COLOR);
 		nPanel.add(rulesPanel, BorderLayout.NORTH);
 		
 		scrollPane.setViewportView(nPanel);
@@ -362,6 +362,10 @@ public class WDThermSchedulerPanel extends JPanel {
 	}
 	
 	public void loadFromBackup() {
+		if(currentProfileId < 0) {
+			Msg.errorMsg(this, "msgDuplicateProfileSelect");
+			return;
+		}
 		final ScannerProperties appProp = ScannerProperties.instance();
 		final JFileChooser fc = new JFileChooser(appProp.getProperty("LAST_PATH"));
 		fc.setAcceptAllFileFilterUsed(false);

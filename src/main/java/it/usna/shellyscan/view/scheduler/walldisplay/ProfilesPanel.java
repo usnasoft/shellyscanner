@@ -32,6 +32,9 @@ import it.usna.shellyscan.view.util.Msg;
 import it.usna.swing.table.ExTooltipTable;
 import it.usna.swing.table.UsnaTableModel;
 
+/**
+ * Thermostat profiles as a sortable and editable (names) list + create, delete, duplicate buttons
+ */
 class ProfilesPanel extends JPanel {
 	private static final long serialVersionUID = 1L;
 	public final static String SELECTION_EVENT = "usna_profile_selection";
@@ -96,7 +99,7 @@ class ProfilesPanel extends JPanel {
 					if(mRow < profiles.size()) {
 						ThermProfile oldProfile = profiles.get(mRow);
 						if(oldProfile.name().equals(value) == false) {
-							String ret = wdSceduleManager.renameProfiles(mRow, value);
+							String ret = wdSceduleManager.renameProfiles(oldProfile.id(), value);
 							if(ret != null) {
 								Msg.errorMsg(parent, ret);
 								return;

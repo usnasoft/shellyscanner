@@ -57,10 +57,10 @@ class ThermJobPanel extends JPanel {
 		this.parent = parent;
 		setOpaque(false);
 		setBorder(BorderFactory.createEmptyBorder(2, 2, 4, 2));
-		initCronSection();
-		
 		this.minTarget = minTarget;
 		this.maxTarget = maxTarget;
+		
+		initCronSection();
 		initTempSection();
 		if(timespec == null) {
 			setCron(DEF_CRON);
@@ -351,7 +351,6 @@ class ThermJobPanel extends JPanel {
 		expressionField.setForeground((CronUtils.CRON_PATTERN_TH_WD.matcher(res).matches()) ? null : Color.red);
 	}
 	
-	// probably to be removed for a new WD specific panel
 	public String getExtTimespec() {
 		String minutes = minutesTextField.getText();
 		String hours = hoursTextField.getText();

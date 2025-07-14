@@ -60,9 +60,8 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 			5, "Blu Motion",
 			6, "Blu Wall Switch 4", // Square
 			7, "Blu RC Button 4", // line
-			8, "Blu TRV",
+			8, "Blu TRV"
 //			9. "??",
-			10, "Blu Distance"
 			);
 	private String typeName;
 	private String typeID;
