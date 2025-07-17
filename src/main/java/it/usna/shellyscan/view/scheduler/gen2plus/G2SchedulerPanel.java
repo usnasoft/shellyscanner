@@ -216,6 +216,11 @@ public class G2SchedulerPanel extends JScrollPane {
 		JButton enableButton = new JButton();
 		enableButton.setContentAreaFilled(false);
 		enableButton.setBorder(BorderFactory.createEmptyBorder());
+		UsnaToggleAction enableAction = new UsnaToggleAction(this, "/images/Standby24.png", "/images/StandbyOn24.png",
+				e -> enableSchedule(linePanel, true), e -> enableSchedule(linePanel, false) );
+		enableAction.setTooltip("lblDisabled", "lblEnabled");
+		enableAction.setSelected(node != null && node.path("enable").booleanValue());
+		enableButton.setAction(enableAction);
 		linePanel.add(enableButton);
 
 		JButton addBtn = new JButton(new UsnaAction(null, "schAdd", "/images/plus_transp16.png", e -> {
@@ -238,6 +243,7 @@ public class G2SchedulerPanel extends JScrollPane {
 				data = originalValues.remove(i);
 			} else if(schedulesPanel.getComponentCount() == 1) {
 				job.clean();
+				enableAction.setSelected(false);
 				data = originalValues.get(0);
 				originalValues.set(0, new ScheduleData(-1, job.getJson()));
 			}
@@ -310,13 +316,6 @@ public class G2SchedulerPanel extends JScrollPane {
 			schedulesPanel.add(linePanel, pos);
 			originalValues.add(pos, thisScheduleLine);
 		}
-
-		UsnaToggleAction enableAction = new UsnaToggleAction(this, "/images/Standby24.png", "/images/StandbyOn24.png",
-				e -> enableSchedule(linePanel, true), e -> enableSchedule(linePanel, false) );
-		enableAction.setTooltip("lblDisabled", "lblEnabled");
-		
-		enableAction.setSelected(node != null && node.path("enable").booleanValue());
-		enableButton.setAction(enableAction);
 	}
 	
 	private void enableSchedule(JPanel line, boolean enable) {

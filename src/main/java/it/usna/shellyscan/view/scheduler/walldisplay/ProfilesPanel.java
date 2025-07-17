@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import javax.swing.BorderFactory;
 import javax.swing.DefaultRowSorter;
 import javax.swing.JButton;
 import javax.swing.JDialog;
@@ -24,6 +25,7 @@ import javax.swing.table.TableCellRenderer;
 
 import it.usna.shellyscan.Main;
 import it.usna.shellyscan.controller.UsnaAction;
+import it.usna.shellyscan.controller.UsnaToggleAction;
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.g2.WallDisplay;
 import it.usna.shellyscan.model.device.g2.modules.ScheduleManagerThermWD;
@@ -45,6 +47,7 @@ class ProfilesPanel extends JPanel {
 	private List<ThermProfile> profiles;
 	private ExTooltipTable profilesTable;
 	private UsnaTableModel tModel;
+	private UsnaToggleAction enableprofilesAction;
 
 	public ProfilesPanel(JDialog parent, WallDisplay device, ScheduleManagerThermWD wdSceduleManager) {
 		this.parent = parent;
@@ -125,8 +128,6 @@ class ProfilesPanel extends JPanel {
 				super.editingStopped(e);
 			}
 		};
-		
-		fill();
 
 		scrollPane.setViewportView(profilesTable);
 
@@ -180,8 +181,7 @@ class ProfilesPanel extends JPanel {
 						if(ret != null) {
 							Msg.errorMsg(parent, ret);
 						} else {
-							profiles.remove(mRow);
-							tModel.removeRow(mRow);
+							refresh();
 							ProfilesPanel.this.firePropertyChange(DELETE_EVENT, oldProfile.id(), null);
 						}
 					}
@@ -191,12 +191,38 @@ class ProfilesPanel extends JPanel {
 			}
 		}));
 		buttonsPanel.add(deleteProfileButton);
+		
+		JButton enableButton = new JButton();
+		enableButton.setContentAreaFilled(false);
+		enableButton.setBorder(BorderFactory.createEmptyBorder());
+		enableprofilesAction = new UsnaToggleAction(this, "/images/Standby24.png", "/images/StandbyOn24.png",
+				e -> {
+					String ret = wdSceduleManager.enableProfiles(true);
+					if(ret != null) {
+						Msg.errorMsg(parent, ret);
+					}
+				}, e -> {
+					String ret = wdSceduleManager.enableProfiles(false);
+					if(ret != null) {
+						Msg.errorMsg(parent, ret);
+					}
+				});
+		enableprofilesAction.setTooltip("lblDisabled", "lblEnabled");
+		//		enableAction.setSelected(enabled);
+		enableButton.setAction(enableprofilesAction);
+		buttonsPanel.add(enableButton);
+		
+		fill();
 	}
 	
 	private void fill() {
 		try {
 			profiles = wdSceduleManager.getProfiles();
 			profiles.forEach(p -> tModel.addRow(p.name()) );
+			
+			try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e1) {}
+			ThermProfile current = wdSceduleManager.getCurrentProfile();
+			enableprofilesAction.setSelected(current != null);
 		} catch (/*IO*/Exception e) {
 			Msg.errorMsg(parent, e);
 		}

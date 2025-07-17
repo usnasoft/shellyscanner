@@ -113,7 +113,11 @@ public class WDThermSchedulerPanel extends JPanel {
 			int newId = (Integer)propertyChangeEvent.getNewValue();
 			try {
 				for(Rule r: rules.get((Integer)propertyChangeEvent.getOldValue())) {
+					String ts = r.getTimespec();
+					String[] frags = ts.split(" ");
+					r.setTimespec(frags[0] + " " + frags[1] + " " + frags[2] + " " + frags[3] + " " + frags[4] + " " + CronUtils.daysOfWeekAsString(frags[5]));
 					wdSceduleManager.create(r, newId);
+					r.setTimespec(ts);
 					TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 				}
 			} catch (IOException | InterruptedException e) {
@@ -149,6 +153,11 @@ public class WDThermSchedulerPanel extends JPanel {
 		JButton enableButton = new JButton();
 		enableButton.setContentAreaFilled(false);
 		enableButton.setBorder(BorderFactory.createEmptyBorder());
+		UsnaToggleAction enableAction = new UsnaToggleAction(this, "/images/Standby24.png", "/images/StandbyOn24.png",
+				e -> enableSchedule(linePanel, true), e -> enableSchedule(linePanel, false) );
+		enableAction.setTooltip("lblDisabled", "lblEnabled");
+		enableAction.setSelected(enabled);
+		enableButton.setAction(enableAction);
 		
 		JPanel commandPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 0));
 		commandPanel.setOpaque(false);
@@ -177,6 +186,7 @@ public class WDThermSchedulerPanel extends JPanel {
 				data = rules.get(currentProfileId).remove(i);
 			} else if(rulesPanel.getComponentCount() == 1) {
 				job.clean();
+				enableAction.setSelected(false);
 				data = rules.get(currentProfileId).remove(0);
 				rules.get(currentProfileId).add(new Rule(null, null, null, false));
 			}
@@ -245,13 +255,6 @@ public class WDThermSchedulerPanel extends JPanel {
 		} else {
 			rulesPanel.add(linePanel, pos);
 		}
-		
-		UsnaToggleAction enableAction = new UsnaToggleAction(this, "/images/Standby24.png", "/images/StandbyOn24.png",
-				e -> enableSchedule(linePanel, true), e -> enableSchedule(linePanel, false) );
-		enableAction.setTooltip("lblDisabled", "lblEnabled");
-		
-		enableAction.setSelected(enabled);
-		enableButton.setAction(enableAction);
 	}
 	
 	private void addRule(boolean enabled, String timespec, Float temp, int pos) {
@@ -323,8 +326,8 @@ public class WDThermSchedulerPanel extends JPanel {
 							res = "creation error";
 						} else {
 							thisRule.setId(newId);
-							thisRule.setTimespec(jobPanel.getExtTimespec());
 						}
+						thisRule.setTimespec(jobPanel.getTimespec());
 						try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e1) {}
 					} else if(thisRule.getTarget().equals(jobPanel.getTarget()) == false || thisRule.getTimespec().equals(jobPanel.getTimespec()) == false) { // update
 						thisRule.setTarget(jobPanel.getTarget());

@@ -33,6 +33,16 @@ public class ScheduleManagerThermWD {
 		return ret;
 	}
 
+	public ThermProfile getCurrentProfile() throws IOException {
+		JsonNode status = wd.getJSON("/rpc/Shelly.GetStatus").get("thermostat:0").get("schedules");
+		return (status != null && status.get("enable").booleanValue()) ? new ThermProfile(status.get("profile_id").intValue(), status.path("profile_name").asText("")) : null;
+	}
+
+	//todo verifica
+	public String setCurrentProfile(int profileId) throws IOException {
+		return wd.postCommand("Thermostat.Schedule.SetConfig", "{\"id\":" + THERM_ID + ",\"config\":{\"profile_id\":" + profileId + "}}" );
+	}
+
 	public String deleteProfiles(int profileId) {
 		return wd.postCommand("Thermostat.Schedule.DeleteProfile", "{\"id\":" + THERM_ID + ",\"profile_id\":" + profileId + "}");
 	}
