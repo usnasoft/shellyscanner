@@ -26,7 +26,7 @@ public class ScheduleManagerThermWD {
 	// Profiles -->
 
 	public String enableProfiles(boolean enable) {
-		return wd.postCommand("Thermostat.Schedule.SetConfig", "{\"id\":" + THERM_ID + ",\"config\":{\"enable\":" + (enable ? "true" : "false") + "}}" );
+		return wd.postCommand("Thermostat.Schedule.SetConfig", "{\"id\":" + THERM_ID + ",\"config\":{\"enable\":" + String.valueOf(enable) + "}}" );
 	}
 	
 	public List<ThermProfile> getProfiles() throws IOException {
@@ -72,7 +72,7 @@ public class ScheduleManagerThermWD {
 	}
 
 	public String enable(String ruleId, int profileId, boolean enable) {
-		 return wd.postCommand("Thermostat.Schedule.UpdateRule", "{\"id\":" + THERM_ID + ",\"profile_id\":" + profileId + ",\"config\":{\"rule_id\":\"" + ruleId + "\",\"enable\":" + (enable ? "true" : "false") + "}}");
+		 return wd.postCommand("Thermostat.Schedule.UpdateRule", "{\"id\":" + THERM_ID + ",\"profile_id\":" + profileId + ",\"config\":{\"rule_id\":\"" + ruleId + "\",\"enable\":" +  String.valueOf(enable) + "}}");
 	}
 	
 	/**
@@ -84,13 +84,13 @@ public class ScheduleManagerThermWD {
 	 */
 	public String create(Rule r, int profileId) throws IOException {
 		JsonNode res = wd.getJSON("Thermostat.Schedule.CreateRule",
-				"{\"id\":" + THERM_ID + ",\"config\":{\"profile_id\":" + profileId + ",\"target_C\":" + r.target + ",\"timespec\":\"" + r.timespec + "\",\"enable\":" + (r.enabled ? "true" : "false") + "}}");
+				"{\"id\":" + THERM_ID + ",\"config\":{\"profile_id\":" + profileId + ",\"target_C\":" + r.target + ",\"timespec\":\"" + r.timespec + "\",\"enable\":" + String.valueOf(r.enabled) + "}}");
 		return res.get("new_rule").get("rule_id").asText();
 	}
 
 	public String update(Rule r, int profileId) {
 		return wd.postCommand("Thermostat.Schedule.UpdateRule",
-				"{\"id\":" + THERM_ID + ",\"profile_id\":" + profileId + ",\"config\":{\"rule_id\":\"" + r.ruleId + "\",\"target_C\":" + r.target + ",\"timespec\":\"" + r.timespec  + "\",\"enable\":" + (r.enabled ? "true" : "false") + "}}");
+				"{\"id\":" + THERM_ID + ",\"profile_id\":" + profileId + ",\"config\":{\"rule_id\":\"" + r.ruleId + "\",\"target_C\":" + r.target + ",\"timespec\":\"" + r.timespec  + "\",\"enable\":" + String.valueOf(r.enabled) + "}}");
 	}
 	
 	public String delete(String ruleId, int profileId) {

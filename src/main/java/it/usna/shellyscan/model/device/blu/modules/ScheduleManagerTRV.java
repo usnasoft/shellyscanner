@@ -23,7 +23,7 @@ public class ScheduleManagerTRV {
 	}
 
 	public String enable(int ruleId, boolean enable) {
-		return trv.postTRVCommand("Trv.UpdateScheduleRule", "{\"id\":0,\"rule_id\":" + ruleId + ",\"rule\":{\"enable\":" + (enable ? "true" : "false") + "}}");
+		return trv.postTRVCommand("Trv.UpdateScheduleRule", "{\"id\":0,\"rule_id\":" + ruleId + ",\"rule\":{\"enable\":" + String.valueOf(enable) + "}}");
 	}
 	
 	/**

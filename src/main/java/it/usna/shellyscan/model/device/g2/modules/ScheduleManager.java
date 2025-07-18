@@ -21,7 +21,7 @@ public class ScheduleManager {
 	}
 	
 	public String enable(int id, boolean enable) {
-		return device.postCommand("Schedule.Update", "{\"id\":" + id + ",\"enable\":" + (enable ? "true" : "false") + "}");
+		return device.postCommand("Schedule.Update", "{\"id\":" + id + ",\"enable\":" + String.valueOf(enable) + "}");
 	}
 	
 	/**
