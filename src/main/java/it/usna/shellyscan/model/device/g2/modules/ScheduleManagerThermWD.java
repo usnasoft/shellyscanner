@@ -3,9 +3,13 @@ package it.usna.shellyscan.model.device.g2.modules;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
+import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.g2.WallDisplay;
 
 /**
@@ -28,7 +32,7 @@ public class ScheduleManagerThermWD {
 	public List<ThermProfile> getProfiles() throws IOException {
 		ArrayList<ThermProfile> ret = new ArrayList<>();
 		wd.getJSON("/rpc/Thermostat.Schedule.ListProfiles?id=" + THERM_ID).path("profiles").forEach(node ->
-			ret.add(new ThermProfile(node.get("id").intValue(), node.get("name").textValue()))
+			ret.add(new ThermProfile(node.get("id").intValue(), node.path("name").asText("")))
 		);
 		return ret;
 	}
@@ -66,7 +70,7 @@ public class ScheduleManagerThermWD {
 		}
 		return rules;
 	}
-	
+
 	public String enable(String ruleId, int profileId, boolean enable) {
 		 return wd.postCommand("Thermostat.Schedule.UpdateRule", "{\"id\":" + THERM_ID + ",\"profile_id\":" + profileId + ",\"config\":{\"rule_id\":\"" + ruleId + "\",\"enable\":" + (enable ? "true" : "false") + "}}");
 	}
@@ -93,13 +97,34 @@ public class ScheduleManagerThermWD {
 		return wd.postCommand("Thermostat.Schedule.DeleteRule", "{\"id\":" + THERM_ID + ",\"profile_id\":" + profileId + ",\"rule_id\":\"" + ruleId + "\"}");
 	}
 	
-//	public static void restore(WallDisplay parent, Map<String, JsonNode> backup, final long delay, List<String> errors) throws InterruptedException {
-//		// todo delete existing
-//		JsonNode profilesNode = backup.get("Thermostat.Schedule.ListProfiles.json").path("profiles");
-//		for(JsonNode profile: profilesNode) {
-//			//todo
-//		}
-//	}
+	public void restore(Map<String, JsonNode> backup, List<String> errors) throws InterruptedException {
+		try {
+			// delete existing prifiles
+			for(ThermProfile p: getProfiles()) {
+				errors.add(deleteProfiles(p.id));
+				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+			}
+
+			// restore profiles
+			JsonNode profilesNode = backup.get("Thermostat.Schedule.ListProfiles.json").path("profiles");
+			for(JsonNode storedProfile: profilesNode) {
+				int newProfileId = addProfiles(storedProfile.path("name").asText(""));
+				int oldProfileId = storedProfile.get("id").intValue();
+				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+				
+				// create rules for each profile
+				JsonNode rules = backup.get("Thermostat.Schedule.ListRules_profile_id-" + oldProfileId + ".json").get("rules");
+				for(JsonNode rule: rules) {
+					JsonNode config = ((ObjectNode)rule.get("config")/*.deepCopy()*/).put("profile_id", newProfileId);
+					((ObjectNode)rule).set("config", config); // todo verificare se serve
+					errors.add(wd.postCommand("Thermostat.Schedule.CreateRule", rule));
+					TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+				}
+			}
+		} catch (IOException e) {
+			errors.add(e.getMessage());
+		}
+	}
 	
 	public record ThermProfile(int id, String name) {
 		@Override

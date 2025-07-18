@@ -18,6 +18,7 @@ import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.ModulesHolder;
 import it.usna.shellyscan.model.device.RestoreMsg;
 import it.usna.shellyscan.model.device.g2.modules.Relay;
+import it.usna.shellyscan.model.device.g2.modules.ScheduleManagerThermWD;
 import it.usna.shellyscan.model.device.g2.modules.ThermostatG2;
 import it.usna.shellyscan.model.device.modules.DeviceModule;
 
@@ -197,9 +198,8 @@ public class WallDisplay extends AbstractG2Device implements ModulesHolder {
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 		errors.add(postCommand("Illuminance.SetConfig", createIndexedRestoreNode(backupConfiguration, "illuminance", 0)));
 		
-//		if(thermMode) {
-//			thermostat.restoreProfiles(backupJsons, errors);
-//		}
+		ScheduleManagerThermWD scheduleManagerTherm = new ScheduleManagerThermWD(this);
+		scheduleManagerTherm.restore(backupJsons, errors);
 	}
 	
 	@Override
