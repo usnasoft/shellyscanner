@@ -45,6 +45,7 @@ import it.usna.shellyscan.model.device.BatteryDeviceInterface;
 import it.usna.shellyscan.model.device.DeviceAPIException;
 import it.usna.shellyscan.model.device.DeviceOfflineException;
 import it.usna.shellyscan.model.device.RestoreMsg;
+import it.usna.shellyscan.model.device.RestoreUtil;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.g2.modules.DynamicComponents;
 import it.usna.shellyscan.model.device.g2.modules.FirmwareManagerG2;
@@ -420,7 +421,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 		EnumMap<RestoreMsg, Object> res = new EnumMap<>(RestoreMsg.class);
 		try {
 			JsonNode devInfo = backupJsons.get("Shelly.GetDeviceInfo.json");
-			if(devInfo == null || this.getTypeID().equals(devInfo.get("app").asText()) == false) {
+			if(devInfo == null || RestoreUtil.compatibleModels(devInfo.get("app").asText(), this.getTypeID()) == false) {
 				res.put(RestoreMsg.ERR_RESTORE_MODEL, null);
 			} else {
 				JsonNode config = backupJsons.get("Shelly.GetConfig.json");
@@ -613,6 +614,13 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 			outConfig.set("config", matter/*.deepCopy()*/);
 			TimeUnit.MILLISECONDS.sleep(delay);
 			errors.add(postCommand("Matter.SetConfig", outConfig));
+		}
+		
+		JsonNode zigbee = config.get("zigbee"); // gen4+
+		if(zigbee != null) {
+			outConfig.set("config", zigbee/*.deepCopy()*/);
+			TimeUnit.MILLISECONDS.sleep(delay);
+			errors.add(postCommand("Zigbee.SetConfig", outConfig));
 		}
 		
 		final JsonNode mqtt = config.path("mqtt");

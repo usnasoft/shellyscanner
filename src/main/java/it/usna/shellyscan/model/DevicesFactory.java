@@ -333,12 +333,11 @@ public class DevicesFactory {
 				digestAuthentication(httpClient, address, port, name);
 			}
 			d = switch(info.get("app").asText()) {
-			case Shelly1G4.ID -> new Shelly1G4(address, port, name);
-			case Shelly1PMG4.ID -> new Shelly1PMG4(address, port, name);
-			case Shelly2PMG4.ID -> new Shelly2PMG4(address, port, name);
-			case ShellyMini1G4.ID -> new ShellyMini1G4(address, port, name);
-			case ShellyMini1PMG4.ID -> new ShellyMini1PMG4(address, port, name);
-
+			case Shelly1G4.ID, Shelly1G4.ID_ZB -> new Shelly1G4(address, port, name);
+			case Shelly1PMG4.ID, Shelly1PMG4.ID_ZB -> new Shelly1PMG4(address, port, name);
+			case Shelly2PMG4.ID, Shelly2PMG4.ID_ZB -> new Shelly2PMG4(address, port, name);
+			case ShellyMini1G4.ID, ShellyMini1G4.ID_ZB -> new ShellyMini1G4(address, port, name);
+			case ShellyMini1PMG4.ID, ShellyMini1PMG4.ID_ZB -> new ShellyMini1PMG4(address, port, name);
 			default -> new ShellyG4Unmanaged(address, port, name);
 			};
 		} catch(Exception e) { // really unexpected

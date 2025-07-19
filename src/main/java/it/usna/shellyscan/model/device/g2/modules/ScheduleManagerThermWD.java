@@ -7,7 +7,6 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.g2.WallDisplay;
@@ -66,7 +65,7 @@ public class ScheduleManagerThermWD {
 		ArrayList<Rule> rules = new ArrayList<>();
 		JsonNode r = wd.getJSON("Thermostat.Schedule.ListRules", "{\"id\":" + THERM_ID + ",\"profile_id\":" + profileId + "}").get("rules");
 		for(JsonNode rule: r) {
-			rules.add(new Rule(rule.get("rule_id").textValue(), rule.get("target_C").floatValue(), /*CronUtils.fragStrToNum(*/rule.get("timespec").textValue(), rule.path("enable").booleanValue()));
+			rules.add(new Rule(rule.get("rule_id").textValue(), rule.get("target_C").floatValue(), rule.get("timespec").textValue(), rule.path("enable").booleanValue()));
 		}
 		return rules;
 	}
@@ -85,6 +84,12 @@ public class ScheduleManagerThermWD {
 	public String create(Rule r, int profileId) throws IOException {
 		JsonNode res = wd.getJSON("Thermostat.Schedule.CreateRule",
 				"{\"id\":" + THERM_ID + ",\"config\":{\"profile_id\":" + profileId + ",\"target_C\":" + r.target + ",\"timespec\":\"" + r.timespec + "\",\"enable\":" + String.valueOf(r.enabled) + "}}");
+		return res.get("new_rule").get("rule_id").asText();
+	}
+	
+	public String create(String timespec, float target, boolean enabled, int profileId) throws IOException {
+		JsonNode res = wd.getJSON("Thermostat.Schedule.CreateRule",
+				"{\"id\":" + THERM_ID + ",\"config\":{\"profile_id\":" + profileId + ",\"target_C\":" + target + ",\"timespec\":\"" + timespec + "\",\"enable\":" + String.valueOf(enabled) + "}}");
 		return res.get("new_rule").get("rule_id").asText();
 	}
 
@@ -115,9 +120,7 @@ public class ScheduleManagerThermWD {
 				// create rules for each profile
 				JsonNode rules = backup.get("Thermostat.Schedule.ListRules_profile_id-" + oldProfileId + ".json").get("rules");
 				for(JsonNode rule: rules) {
-					JsonNode config = ((ObjectNode)rule.get("config")/*.deepCopy()*/).put("profile_id", newProfileId);
-					((ObjectNode)rule).set("config", config); // todo verificare se serve
-					errors.add(wd.postCommand("Thermostat.Schedule.CreateRule", rule));
+					create(rule.get("timespec").asText(), rule.get("target_C").floatValue(), rule.path("enable").booleanValue(), newProfileId);
 					TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 				}
 			}

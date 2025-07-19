@@ -364,8 +364,10 @@ blu -> buttons from actions
 Shelly 2PM Gen4
 Shelly Shutter G3
 schedule geb2+, BLU trv
-// todo schedule wall display thermostat
-// todo schedule load ...
+schedule wall display thermostat
+schedule load ...
+wall display restore therm profiles
+restore compatibility table
 
 https://next-api-docs.shelly.cloud/gen2/ComponentsAndServices/Schedule
 https://github.com/mongoose-os-libs/cron
@@ -376,7 +378,6 @@ virtual components paging - it.usna.shellyscan.model.device.blu.BTHomeDevice.ref
 // TODO
 // rgb_xx panel listener (?)
 // checklist AP ssid != mac (fw 1.5.0 stable)
-// wall display restore profiles and rules (/rpc/Thermostat.Schedule.ListRules?id=0&profile_id=1)
 // portare il modello sulla tabella per semplificare il calcolo dei tooltip (e delle icone di stato)
 // Xmod1 sganciare bottone se detatched (?)
 // add "knx" support
