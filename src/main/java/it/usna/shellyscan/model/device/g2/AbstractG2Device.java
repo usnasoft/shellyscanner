@@ -609,7 +609,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 		TimeUnit.MILLISECONDS.sleep(delay);
 		errors.add(postCommand("Sys.SetConfig", outConfig));
 		
-		JsonNode matter = config.get("matter");
+		JsonNode matter = config.get("matter"); // some gen3 & gen4+
 		if(matter != null) {
 			outConfig.set("config", matter/*.deepCopy()*/);
 			TimeUnit.MILLISECONDS.sleep(delay);

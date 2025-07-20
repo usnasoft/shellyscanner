@@ -347,15 +347,6 @@ BLE.CloudRelay.ListInfos pagination
 KVS.GetMany pagination
 Graphs: types combo only have pertinent values
 lettura dati per array (itarator) su restore e su GET (offset)
-
-fw 1.6.0 ->
-https://shelly-api-docs.shelly.cloud/gen2/DynamicComponents/BTHome/
-Matter Add support for Shelly 1 Gen3, 1PM Gen3, 1 Mini Gen3, 1PM Mini Gen3, 2PM Gen3
-
-Scripting Add ArrayBuffer and AES for Gen3 and Gen4 devices - OK, added to EditorPanel
-Cover Add maintenance_mode config property - OK
-Switch, Cover Add physical control locking (in_locked config property) - OK
-
 blu -> buttons from actions
 
 
@@ -368,6 +359,7 @@ schedule wall display thermostat
 schedule load ...
 wall display restore therm profiles
 restore compatibility table
+// todo schedule wall display thermostat - profile selection
 
 https://next-api-docs.shelly.cloud/gen2/ComponentsAndServices/Schedule
 https://github.com/mongoose-os-libs/cron
