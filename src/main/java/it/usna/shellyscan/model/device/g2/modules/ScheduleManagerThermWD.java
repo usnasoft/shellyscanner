@@ -36,8 +36,10 @@ public class ScheduleManagerThermWD {
 		return ret;
 	}
 
+	/** Return the currently active profile; null if the scheduler is disabled.
+	 * The display knows the active profile if the scheduler is disabled; here we don't */
 	public ThermProfile getCurrentProfile() throws IOException {
-		JsonNode status = wd.getJSON("/rpc/Shelly.GetStatus").get("thermostat:0").get("schedules");
+		JsonNode status = wd.getJSON("/rpc/Thermostat.GetStatus?id=" + THERM_ID).get("schedules"); //wd.getJSON("/rpc/Shelly.GetStatus").get("thermostat:0").get("schedules");
 		return (status != null && status.get("enable").booleanValue()) ? new ThermProfile(status.get("profile_id").intValue(), status.path("profile_name").asText("")) : null;
 	}
 

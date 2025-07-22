@@ -45,6 +45,8 @@ class ProfilesPanel extends JPanel {
 	private final JDialog parent;
 	private final ScheduleManagerThermWD wdSceduleManager;
 	private List<ThermProfile> profiles;
+	
+//	private JComboBox<ThermProfile> activeProfile;
 	private ExTooltipTable profilesTable;
 	private UsnaTableModel tModel;
 	private UsnaToggleAction enableprofilesAction;
@@ -131,7 +133,7 @@ class ProfilesPanel extends JPanel {
 
 		scrollPane.setViewportView(profilesTable);
 
-		JPanel buttonsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 10));
+		JPanel buttonsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 10));
 		add(buttonsPanel, BorderLayout.CENTER);
 
 		JButton newProfileButton = new JButton(new UsnaAction("schAddProfile", e -> {
@@ -208,9 +210,9 @@ class ProfilesPanel extends JPanel {
 					}
 				});
 		enableprofilesAction.setTooltip("lblDisabled", "lblEnabled");
-		//		enableAction.setSelected(enabled);
 		enableButton.setAction(enableprofilesAction);
 		buttonsPanel.add(enableButton);
+//		add(enableButton, BorderLayout.EAST);
 		
 		fill();
 	}
