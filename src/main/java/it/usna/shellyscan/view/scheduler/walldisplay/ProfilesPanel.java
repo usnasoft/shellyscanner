@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import javax.swing.BorderFactory;
+import javax.swing.Box;
 import javax.swing.DefaultRowSorter;
 import javax.swing.JButton;
 import javax.swing.JDialog;
@@ -193,6 +194,8 @@ class ProfilesPanel extends JPanel {
 			}
 		}));
 		buttonsPanel.add(deleteProfileButton);
+		
+		buttonsPanel.add(Box.createHorizontalStrut(30));
 		
 		JButton enableButton = new JButton();
 		enableButton.setContentAreaFilled(false);
