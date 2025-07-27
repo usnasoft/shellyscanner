@@ -54,10 +54,14 @@ public class BluInetAddressAndPort extends InetAddressAndPort {
 	
 	@Override
 	public String toString() {
-		if(port == 80) {
-			return address.getHostAddress() + " (" + (alternativeParents.size() + 1) + ")";
-		} else {
-			return address.getHostAddress() + ":" + port + " (" + (alternativeParents.size() + 1) + ")";
+		if(stringValue == null) {
+			stringValue();
 		}
+		return stringValue + " (" + (alternativeParents.size() + 1) + ")";
+//		if(port == 80) {
+//			return address.getHostAddress() + " (" + (alternativeParents.size() + 1) + ")";
+//		} else {
+//			return address.getHostAddress() + ":" + port + " (" + (alternativeParents.size() + 1) + ")";
+//		}
 	}
 }

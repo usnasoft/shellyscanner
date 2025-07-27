@@ -73,11 +73,6 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 	private JLabel colorRGBWGainLabel = new JLabel();
 	private JLabel colorRGBWhiteLabel = new JLabel();
 	
-	// Roller
-//	private JPanel rollerPanel = new JPanel(new BorderLayout());
-//	private JLabel rollerLabel = new JLabel();
-//	private JSlider rollerPerc = new JSlider(0, 100);
-	
 	// Thermostat G1 (TRV)
 	private JPanel trvPanel = new JPanel(new BorderLayout());
 	private JLabel trvProfileLabel = new JLabel();
@@ -176,26 +171,6 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 		colorRGBWSlidersPanel.setOpaque(false);
 		colorRGBWPanel.add(colorRGBWSlidersPanel, BorderLayout.SOUTH);
 		
-		// Roller
-//		JPanel rollerSouthPanel = new JPanel(new BorderLayout());
-//		JPanel rollerButtonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 3, 0));
-//		rollerPanel.add(rollerLabel, BorderLayout.CENTER);
-//		rollerSouthPanel.add(rollerPerc, BorderLayout.CENTER);
-//		rollerPerc.setPreferredSize(new Dimension(20, rollerPerc.getPreferredSize().height));
-//		rollerSouthPanel.add(rollerButtonPanel, BorderLayout.EAST);
-//		JButton rollerButtonUp = new JButton(UP_IMG);
-//		JButton rollerButtonDown = new JButton(DOWN_IMG);
-//		JButton rollerButtonStop = new JButton(new ImageIcon(getClass().getResource("/images/PlayerStop16.png")));
-//		rollerButtonUp.setBorder(BorderFactory.createEmptyBorder());
-//		rollerButtonStop.setBorder(BorderFactory.createEmptyBorder());
-//		rollerButtonDown.setBorder(BorderFactory.createEmptyBorder());
-//		rollerButtonPanel.add(rollerButtonUp);
-//		rollerButtonPanel.add(rollerButtonStop);
-//		rollerButtonPanel.add(rollerButtonDown);
-//		rollerSouthPanel.setOpaque(false);
-//		rollerButtonPanel.setOpaque(false);
-//		rollerPanel.add(rollerSouthPanel, BorderLayout.SOUTH);
-
 		// Thermostat G1 (TRV)
 		trvPanel.add(trvProfileLabel, BorderLayout.CENTER);
 		trvPanel.add(trvSlider, BorderLayout.SOUTH);
@@ -246,19 +221,6 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 			}
 			ret = stackedPanel;
 		} else if(value instanceof RollerInterface[] rollers) { // 2.5 ...
-//			RollerInterface roller = rollers[0]; // multiple rollers devices currently not supported
-//			String labelText;
-//			if(roller.isCalibrated()) {
-//				labelText = roller.getLabel() + " " + roller.getPosition() + "%";
-//				rollerPerc.setVisible(true);
-//			} else {
-//				labelText = roller.getLabel();
-//				rollerPerc.setVisible(false);
-//			}
-//			rollerPerc.setValue(roller.getPosition());
-//			rollerLabel.setText(labelText);
-//			rollerLabel.setForeground(foregroundColor);
-//			ret = rollerPanel;
 			stackedPanel.removeAll();
 			for(int i = 0; i < rollers.length; i++) { // 1, 1PM, EM, 2.5 ...
 				stackedPanel.add(getRollerPanel(rollers[i], foregroundColor, i == 0));
@@ -336,14 +298,6 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 				}
 				ret = stackedPanel;
 			}
-//		} else if(value instanceof InputInterface[] inputs) { // Button1 - I3 - I4
-//			stackedPanel.removeAll();
-//			for(InputInterface inp: inputs) {
-//				if(inp.enabled()) {
-//					stackedPanel.add(getInputPanel(inp, foregroundColor));
-//				}
-//			}
-//			ret = stackedPanel;
 		} else if(value instanceof ThermostatG1 thermostat) { // TRV gen1
 			trvSlider.setValue((int)(thermostat.getTargetTemp() * 2));
 			trvProfileLabel.setText(thermostat.getCurrentProfile() + " " + thermostat.getTargetTemp() + "°C");
