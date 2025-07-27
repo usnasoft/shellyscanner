@@ -46,6 +46,6 @@ public class MetersWVI extends Meters {
 	
 	@Override
 	public String toString() {
-		return Type.W + "=" + NF.format(power) + " " + Type.V + "=" + NF.format(voltage) + " " + Type.I + "=" + NF.format(current);
+		return Type.W + "=" + NF2.format(power) + " " + Type.V + "=" + NF2.format(voltage) + " " + Type.I + "=" + NF2.format(current);
 	}
 }

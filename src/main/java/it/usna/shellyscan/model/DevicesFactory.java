@@ -103,6 +103,7 @@ import it.usna.shellyscan.model.device.g3.ShellyMini1G3;
 import it.usna.shellyscan.model.device.g3.ShellyMini1PMG3;
 import it.usna.shellyscan.model.device.g3.ShellyMiniPMG3;
 import it.usna.shellyscan.model.device.g3.ShellyPlugSG3;
+import it.usna.shellyscan.model.device.g3.ShellyShutterG3;
 import it.usna.shellyscan.model.device.g3.ShellyXMOD1;
 import it.usna.shellyscan.model.device.g3.XT1;
 import it.usna.shellyscan.model.device.g4.AbstractG4Device;
@@ -280,6 +281,7 @@ public class DevicesFactory {
 			case Shelly1G3.ID -> new Shelly1G3(address, port, name);
 			case Shelly1PMG3.ID -> new Shelly1PMG3(address, port, name);
 			case Shelly2PMG3.ID -> new Shelly2PMG3(address, port, name);
+			case ShellyShutterG3.ID -> new ShellyShutterG3(address, port, name);
 			case Shelly0_10VPMG3.ID -> new Shelly0_10VPMG3(address, port, name);
 			case ShellyI4G3.ID -> new ShellyI4G3(address, port, name);
 			case ShellyMini1G3.ID -> new ShellyMini1G3(address, port, name);
@@ -331,11 +333,11 @@ public class DevicesFactory {
 				digestAuthentication(httpClient, address, port, name);
 			}
 			d = switch(info.get("app").asText()) {
-			case Shelly1G4.ID -> new Shelly1G4(address, port, name);
-			case Shelly1PMG4.ID -> new Shelly1PMG4(address, port, name);
-			case Shelly2PMG4.ID -> new Shelly2PMG4(address, port, name);
-			case ShellyMini1G4.ID -> new ShellyMini1G4(address, port, name);
-			case ShellyMini1PMG4.ID -> new ShellyMini1PMG4(address, port, name);
+			case Shelly1G4.ID, Shelly1G4.ID_ZB -> new Shelly1G4(address, port, name);
+			case Shelly1PMG4.ID, Shelly1PMG4.ID_ZB -> new Shelly1PMG4(address, port, name);
+			case Shelly2PMG4.ID, Shelly2PMG4.ID_ZB -> new Shelly2PMG4(address, port, name);
+			case ShellyMini1G4.ID, ShellyMini1G4.ID_ZB -> new ShellyMini1G4(address, port, name);
+			case ShellyMini1PMG4.ID, ShellyMini1PMG4.ID_ZB -> new ShellyMini1PMG4(address, port, name);
 			default -> new ShellyG4Unmanaged(address, port, name);
 			};
 		} catch(Exception e) { // really unexpected

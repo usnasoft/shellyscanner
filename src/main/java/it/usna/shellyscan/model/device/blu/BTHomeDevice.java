@@ -12,6 +12,7 @@ import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -59,9 +60,8 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 			5, "Blu Motion",
 			6, "Blu Wall Switch 4", // Square
 			7, "Blu RC Button 4", // line
-			8, "Blu TRV",
+			8, "Blu TRV"
 //			9. "??",
-			10, "Blu Distance"
 			);
 	private String typeName;
 	private String typeID;
@@ -86,9 +86,9 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 	public void init(HttpClient httpClient) throws IOException {
 		this.httpClient = httpClient;
 		initSensors();
-		hostname = "B" + sensors.toString() + "-" + mac;
-		try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e) {}
-		refreshStatus();
+		hostname = "B" + sensors.getFullID() + "-" + mac;
+//		try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e) {}
+//		refreshStatus();
 		try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e) {}
 		refreshSettings();
 	}
@@ -96,6 +96,9 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 	private void initSensors() throws IOException {
 		this.sensors = new SensorsCollection(this);
 		this.meters = sensors.getTypes().length > 0 ? new Meters[] {sensors} : null;
+		
+		try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e) {}
+		refreshStatus(); // init status for this.sensors
 		
 		ArrayList<DeviceModule> tmpModules = sensors.getModuleSensors();
 		List<InputActionInterface> tmpInputs = tmpModules.stream().filter(m -> m instanceof InputActionInterface).map(InputActionInterface.class::cast).collect(Collectors.toList());
@@ -118,17 +121,9 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 		HashSet<String> set = new HashSet<>();
 		for(Webhook hook: devActions) {
 			String condition = hook.getCondition();
-			if(condition == null || condition.isEmpty()) {
-				set.add(""); // need a string to sort 
-			} else if(condition.startsWith("ev.idx == ")) { //  "condition" : "ev.idx == 0",
-				try {
-					set.add(condition);
-				} catch(RuntimeException e) {
-					LOG.error("Unexpected contition {}", condition);
-				}
-			}
+			set.add(condition == null ? "" : condition);
 		}
-		return set.stream().sorted().map(cond -> new InputOnDevice(cond, componentIndex)).toList();
+		return set.stream().sorted().map(cond -> new InputOnDevice(cond, componentIndex/*, sensors*/)).toList();
 	}
 	
 	public void setTypeName(String name) {
@@ -152,21 +147,22 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 
 	@Override
 	public DeviceModule[] getModules() {
-		return /*inputs*/modules;
+		return modules;
 	}
 	
 	@Override
 	public void refreshStatus() throws IOException {
-		JsonNode components = getJSON("/rpc/Shelly.GetComponents?dynamic_only=true").path("components");
-		String k;
+		Iterator<JsonNode> componentsIt = getJSONIterator("/rpc/Shelly.GetComponents?dynamic_only=true", "components");
+		String compKey;
 		boolean devExists = false;
-		for(JsonNode comp: components) {
+		while(componentsIt.hasNext()) {
+			JsonNode comp = componentsIt.next();
 			if(devExists == false && comp.path("key").textValue().equals(DEVICE_KEY_PREFIX + componentIndex)) { // devExists == false for efficiency
 				fillSettings(comp.path("config"));
 				fillStatus(comp.path("status"));
 				devExists = true;
-			} else if((k = comp.path("key").textValue()).startsWith(SENSOR_KEY_PREFIX)) {
-				int id = Integer.parseInt(k.substring(13));
+			} else if((compKey = comp.path("key").textValue()).startsWith(SENSOR_KEY_PREFIX)) {
+				int id = Integer.parseInt(compKey.substring(13));
 				Sensor sensor = sensors.getSensor(id);
 				if(sensor != null) {
 					sensor.fill(comp);
@@ -203,8 +199,8 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 		ArrayList<String> l = new ArrayList<String>(Arrays.asList(
 				"/rpc/BTHomeDevice.GetConfig?id=" + componentIndex, "/rpc/BTHomeDevice.GetStatus?id=" + componentIndex, "/rpc/BTHomeDevice.GetKnownObjects?id=" + componentIndex));
 		for(Sensor s: sensors.getSensors()) {
-			l.add("(BTHomeSensor.GetConfig [" + s.getId() + "])/rpc/BTHomeSensor.GetConfig?id=" + s.getId());
-			l.add("(BTHomeSensor.GetStatus [" + s.getId() + "])/rpc/BTHomeSensor.GetStatus?id=" + s.getId());
+			l.add("(BTHomeSensor.GetConfig [" + s.getId() + "-" + s.getObjId() + "])/rpc/BTHomeSensor.GetConfig?id=" + s.getId());
+			l.add("(BTHomeSensor.GetStatus [" + s.getId() + "-" + s.getObjId() + "])/rpc/BTHomeSensor.GetStatus?id=" + s.getId());
 		}
 		return l.toArray(String[]::new);
 	}
@@ -230,7 +226,7 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 			BufferedWriter writer = Files.newBufferedWriter(fs.getPath("ShellyScannerBLU.json"))) {
 			jsonMapper.writer().writeValue(writer, usnaData);
 
-			sectionToStream("/rpc/Shelly.GetComponents?dynamic_only=true", "Shelly.GetComponents.json", fs); // "status" is used for groups
+			sectionToStream("/rpc/Shelly.GetComponents?dynamic_only=true", "components", "Shelly.GetComponents.json", fs); // "status" is used for groups
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			sectionToStream("/rpc/Webhook.List", "Webhook.List.json", fs);
 		} catch(InterruptedException e) {
@@ -247,23 +243,10 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 			res.put(RestoreMsg.ERR_RESTORE_MODEL, null);
 			return res;
 		}
-		// questo ...
 		String fileMac;
 		if((fileMac = usnaInfo.path("mac").asText("?")).equals(mac) == false) {
 			res.put(RestoreMsg.PRE_QUESTION_RESTORE_HOST, "mac: " + fileMac);
 		}
-//		// invece di questo
-//		final String fileComponentIndex = usnaInfo.get("index").asText();
-//		JsonNode fileComponents = backupJsons.get("Shelly.GetComponents.json").path("components");
-//		for(JsonNode fileComp: fileComponents) {
-//			if(fileComp.path("key").textValue().equals(DEVICE_KEY_PREFIX + fileComponentIndex)) { // find the component by fileComponentIndex
-//				/*String*/ fileMac = fileComp.path("config").path("addr").textValue();
-//				if(fileMac.equals(mac) == false) {
-//					res.put(RestoreMsg.PRE_QUESTION_RESTORE_HOST, "mac: " + fileMac);
-//				}
-//				break;
-//			}
-//		}
 		return res;
 	}
 
@@ -353,8 +336,8 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			initSensors();
 			// RestoreAction do refreshSettings(); refreshStatus(); here we need a refreshStatus(); before refreshSettings(); for input names
-			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-			refreshStatus();
+//			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+//			refreshStatus();
 		} catch(IOException | RuntimeException | InterruptedException e) {
 			LOG.error("restore - RuntimeException", e);
 			errors.add(RestoreMsg.ERR_UNKNOWN.toString());

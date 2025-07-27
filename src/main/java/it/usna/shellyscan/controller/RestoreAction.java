@@ -322,14 +322,14 @@ public class RestoreAction extends UsnaAction {
 		return err;
 	}
 
-	private static Map<String, JsonNode> readBackupFile(final Path file) throws IOException {
+	public static Map<String, JsonNode> readBackupFile(final Path file) throws IOException {
 		final Map<String, JsonNode> backupJsons = new HashMap<>();
 		try(FileSystem fs = FileSystems.newFileSystem(URI.create("jar:" + file.toUri()), Map.of()); Stream<Path> pathStream = Files.list(fs.getPath("/"))) {
 			final ObjectMapper jsonMapper = new ObjectMapper();
 			pathStream.forEach(p -> {
 				try {
 					if(p.toString().endsWith(".json")) {
-						backupJsons.put(p.getFileName().toString(), jsonMapper.readTree(Files.readString(p)));
+						backupJsons.put(p.getFileName().toString(), jsonMapper.readTree(/*Files.readString(p)*/Files.newBufferedReader(p)));
 					} else {
 						backupJsons.put(p.getFileName().toString() + ".json", jsonMapper.createObjectNode().put("code", Files.readString(p/*, StandardCharsets.UTF_8*/)));
 					}

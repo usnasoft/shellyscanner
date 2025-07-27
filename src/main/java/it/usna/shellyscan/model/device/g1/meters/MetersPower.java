@@ -16,6 +16,6 @@ public abstract class MetersPower extends Meters {
 	
 	@Override
 	public String toString() {
-		return Type.W + "=" + NF.format(getValue(Type.W));
+		return Type.W + "=" + NF2.format(getValue(Type.W));
 	}
 }

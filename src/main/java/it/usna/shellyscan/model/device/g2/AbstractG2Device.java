@@ -12,6 +12,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.EnumMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -44,6 +45,7 @@ import it.usna.shellyscan.model.device.BatteryDeviceInterface;
 import it.usna.shellyscan.model.device.DeviceAPIException;
 import it.usna.shellyscan.model.device.DeviceOfflineException;
 import it.usna.shellyscan.model.device.RestoreMsg;
+import it.usna.shellyscan.model.device.RestoreUtil;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.g2.modules.DynamicComponents;
 import it.usna.shellyscan.model.device.g2.modules.FirmwareManagerG2;
@@ -51,6 +53,8 @@ import it.usna.shellyscan.model.device.g2.modules.InputResetManagerG2;
 import it.usna.shellyscan.model.device.g2.modules.KVS;
 import it.usna.shellyscan.model.device.g2.modules.LoginManagerG2;
 import it.usna.shellyscan.model.device.g2.modules.MQTTManagerG2;
+import it.usna.shellyscan.model.device.g2.modules.RangeExtenderManager;
+import it.usna.shellyscan.model.device.g2.modules.ScheduleManager;
 import it.usna.shellyscan.model.device.g2.modules.Script;
 import it.usna.shellyscan.model.device.g2.modules.SensorAddOn;
 import it.usna.shellyscan.model.device.g2.modules.TimeAndLocationManagerG2;
@@ -261,6 +265,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 					return null;
 				}
 			} else {
+				LOG.debug("API error: {}.{} - {}", method, payload, error);
 				return error.path("message").asText("Generic error");
 			}
 		} catch(IOException e) {
@@ -292,6 +297,20 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 			JsonNode error = resp.get("error");
 			throw new DeviceAPIException(error.get("code").intValue(), error.get("message").asText("Generic error"));
 		}
+	}
+	
+	/**
+	 * example: <code> {
+	 *  "items" : [ {"key" : "key", "etag" : "xxxyyy", "value" : "{}"} ],
+	 *  "offset" : 0, "total" : 1
+	 * } </code>
+	 * @param method - e.g. /rpc/KVS.GetMany
+	 * @param arrayKey - e.g. items
+	 * @return an Iterator&lt;JsonNode&gt; navigating through pages
+	 * @throws IOException
+	 */
+	public Iterator<JsonNode> getJSONIterator(final String method, final String arrayKey) throws IOException {
+		return new PageIterator(this, method, arrayKey);
 	}
 
 	private JsonNode executeRPC(final String method, String payload) throws IOException, StreamReadException { // StreamReadException extends ... IOException
@@ -339,6 +358,9 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 	public boolean backup(final Path file) throws IOException {
 		Files.deleteIfExists(file);
 		try(FileSystem fs = FileSystems.newFileSystem(URI.create("jar:" + file.toUri()), Map.of("create", "true"))) {
+//			Files.list(fs.getPath("/")).forEach(p -> {
+//				try { Files.delete(p); } catch (IOException e) { }
+//			});
 			sectionToStream("/rpc/Shelly.GetDeviceInfo", "Shelly.GetDeviceInfo.json", fs);
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			JsonNode config = sectionToStream("/rpc/Shelly.GetConfig", "Shelly.GetConfig.json", fs);
@@ -399,7 +421,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 		EnumMap<RestoreMsg, Object> res = new EnumMap<>(RestoreMsg.class);
 		try {
 			JsonNode devInfo = backupJsons.get("Shelly.GetDeviceInfo.json");
-			if(devInfo == null || this.getTypeID().equals(devInfo.get("app").asText()) == false) {
+			if(devInfo == null || RestoreUtil.compatibleModels(devInfo.get("app").asText(), this.getTypeID()) == false) {
 				res.put(RestoreMsg.ERR_RESTORE_MODEL, null);
 			} else {
 				JsonNode config = backupJsons.get("Shelly.GetConfig.json");
@@ -489,7 +511,8 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 			errors.add("->r_step:restoreSchedule");
 			JsonNode schedule = backupJsons.get("Schedule.List.json");
 			if(schedule != null) { // some devices do not have Schedule.List +H&T
-				restoreSchedule(schedule, delay, errors);
+				TimeUnit.MILLISECONDS.sleep(delay);
+				ScheduleManager.restore(this, schedule, delay, errors);
 			}
 
 			errors.add("->r_step:Script");
@@ -586,29 +609,24 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 		TimeUnit.MILLISECONDS.sleep(delay);
 		errors.add(postCommand("Sys.SetConfig", outConfig));
 		
-		JsonNode matter = config.get("matter");
+		JsonNode matter = config.get("matter"); // some gen3 & gen4+
 		if(matter != null) {
 			outConfig.set("config", matter/*.deepCopy()*/);
 			TimeUnit.MILLISECONDS.sleep(delay);
 			errors.add(postCommand("Matter.SetConfig", outConfig));
 		}
 		
+		JsonNode zigbee = config.get("zigbee"); // gen4+
+		if(zigbee != null) {
+			outConfig.set("config", zigbee/*.deepCopy()*/);
+			TimeUnit.MILLISECONDS.sleep(delay);
+			errors.add(postCommand("Zigbee.SetConfig", outConfig));
+		}
+		
 		final JsonNode mqtt = config.path("mqtt");
 		if(userPref.containsKey(RestoreMsg.RESTORE_MQTT) || mqtt.path("enable").asBoolean() == false || mqtt.path("user").asText("").isEmpty()) {
 			TimeUnit.MILLISECONDS.sleep(delay);
-			MQTTManagerG2 mqttM = new MQTTManagerG2(this, true);
-			errors.add(mqttM.restore(mqtt, userPref.get(RestoreMsg.RESTORE_MQTT)));
-		}
-	}
-
-	protected void restoreSchedule(JsonNode schedule, final long delay, ArrayList<String> errors) throws InterruptedException {
-		TimeUnit.MILLISECONDS.sleep(delay);
-		errors.add(postCommand("Schedule.DeleteAll", "{}"));
-		for(JsonNode sc: schedule.get("jobs")) {
-			ObjectNode thisSc = sc.deepCopy();
-			thisSc.remove("id");
-			TimeUnit.MILLISECONDS.sleep(delay);
-			errors.add(postCommand("Schedule.Create", thisSc));
+			errors.add(MQTTManagerG2.restore(this, mqtt, userPref.get(RestoreMsg.RESTORE_MQTT)));
 		}
 	}
 	

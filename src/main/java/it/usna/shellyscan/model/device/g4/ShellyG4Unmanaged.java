@@ -53,7 +53,7 @@ public class ShellyG4Unmanaged extends AbstractG4Device implements ShellyUnmanag
 	}
 	
 	public String getTypeName() {
-		return "Generic G4";
+		return (type == null || type.isEmpty()) ? "Generic G4" : "Generic (" + type + ")";
 	}
 	
 	@Override

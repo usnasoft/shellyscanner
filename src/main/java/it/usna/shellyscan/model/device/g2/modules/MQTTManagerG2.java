@@ -27,12 +27,12 @@ public class MQTTManagerG2 implements MQTTManager {
 		init();
 	}
 	
-	public MQTTManagerG2(AbstractG2Device d, boolean noInit) throws IOException {
-		this.d = d;
-		if(noInit == false) {
-			init();
-		}
-	}
+//	public MQTTManagerG2(AbstractG2Device d, boolean noInit) throws IOException {
+//		this.d = d;
+//		if(noInit == false) {
+//			init();
+//		}
+//	}
 
 	private void init() throws IOException {
 		JsonNode settings = d.getJSON("/rpc/MQTT.GetConfig");
@@ -121,15 +121,14 @@ public class MQTTManagerG2 implements MQTTManager {
 		return d.postCommand("MQTT.SetConfig", config);
 	}
 	
-	// todo test
-	public String restore(final JsonNode mqtt, String pwd) {
+	public static String restore(AbstractG2Device parent, final JsonNode mqtt, String pwd) {
 		ObjectNode outConfig = JsonNodeFactory.instance.objectNode();
 		ObjectNode mqttCopy = mqtt.deepCopy();
 		if(pwd != null && pwd.length() > 0) {
 			mqttCopy.put("pass", pwd);
 		}
 		outConfig.set("config", mqttCopy);
-		return d.postCommand("MQTT.SetConfig", outConfig);
+		return parent.postCommand("MQTT.SetConfig", outConfig);
 		//return set(mqtt.get("server").asText(), mqtt.get("user").asText(), pwd, mqtt.get("topic_prefix").asText());
 	}
 }

@@ -15,6 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import it.usna.shellyscan.Main;
+import it.usna.shellyscan.model.device.DeviceAPIException;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
 
@@ -85,9 +86,14 @@ public class Msg {
 		} else {
 			LOG.error("Unexpected", t);
 		}
-		String msg = t.getMessage();
-		if(msg == null || msg.isEmpty()) {
-			msg = t.toString();
+		String msg;
+		if(t instanceof DeviceAPIException api && api.getErrorMessage() != null && api.getErrorMessage().isBlank() == false) {
+			msg = api.getErrorMessage();
+		} else {
+			msg = t.getMessage();
+			if(msg == null || msg.isBlank()) {
+				msg = t.toString();
+			}
 		}
 		errorMsg(owner, msg);
 	}

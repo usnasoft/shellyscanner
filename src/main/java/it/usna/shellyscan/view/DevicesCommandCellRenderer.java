@@ -41,7 +41,7 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 	final static ImageIcon EDIT_IMG = new ImageIcon(DevicesCommandCellRenderer.class.getResource("/images/Write16.png"));
 	final static ImageIcon UP_IMG = new ImageIcon(DevicesCommandCellRenderer.class.getResource("/images/Arrow16up.png"));
 	final static ImageIcon DOWN_IMG = new ImageIcon(DevicesCommandCellRenderer.class.getResource("/images/Arrow16down.png"));
-	final static ImageIcon STOP_IMG = new ImageIcon(DevicesCommandCellRenderer.class.getResource("/images/PlayerStop.png"));
+	final static ImageIcon STOP_IMG = new ImageIcon(DevicesCommandCellRenderer.class.getResource("/images/PlayerStop16.png"));
 	private JButton onOffButton0 = new JButton();
 	private JLabel label0 = new JLabel();
 	private JButton editDialogButton = new JButton(EDIT_IMG);
@@ -185,7 +185,7 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 //		rollerSouthPanel.add(rollerButtonPanel, BorderLayout.EAST);
 //		JButton rollerButtonUp = new JButton(UP_IMG);
 //		JButton rollerButtonDown = new JButton(DOWN_IMG);
-//		JButton rollerButtonStop = new JButton(new ImageIcon(getClass().getResource("/images/PlayerStop.png")));
+//		JButton rollerButtonStop = new JButton(new ImageIcon(getClass().getResource("/images/PlayerStop16.png")));
 //		rollerButtonUp.setBorder(BorderFactory.createEmptyBorder());
 //		rollerButtonStop.setBorder(BorderFactory.createEmptyBorder());
 //		rollerButtonDown.setBorder(BorderFactory.createEmptyBorder());

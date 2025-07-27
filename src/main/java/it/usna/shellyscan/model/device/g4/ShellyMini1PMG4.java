@@ -22,6 +22,7 @@ import it.usna.shellyscan.model.device.g2.modules.Relay;
  */
 public class ShellyMini1PMG4 extends AbstractG4Device implements ModulesHolder, InternalTmpHolder {
 	public final static String ID = "Mini1PMG4";
+	public final static String ID_ZB = "Mini1PMG4ZB";
 	public final static String MODEL = "S4SW-001P8EU";
 	private float internalTmp;
 	private MetersWVI meters = new MetersWVI();

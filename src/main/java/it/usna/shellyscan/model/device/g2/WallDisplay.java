@@ -18,6 +18,7 @@ import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.ModulesHolder;
 import it.usna.shellyscan.model.device.RestoreMsg;
 import it.usna.shellyscan.model.device.g2.modules.Relay;
+import it.usna.shellyscan.model.device.g2.modules.ScheduleManagerThermWD;
 import it.usna.shellyscan.model.device.g2.modules.ThermostatG2;
 import it.usna.shellyscan.model.device.modules.DeviceModule;
 
@@ -151,11 +152,11 @@ public class WallDisplay extends AbstractG2Device implements ModulesHolder {
 	@Override
 	protected void backup(FileSystem out) throws IOException, InterruptedException {
 		if(thermostat != null) {
-			JsonNode profiles = sectionToStream("/rpc/Thermostat.Schedule.ListProfiles?id=0", "Thermostat.Schedule.ListProfiles_id-0.json", out);
+			JsonNode profiles = sectionToStream("/rpc/Thermostat.Schedule.ListProfiles?id=0", "Thermostat.Schedule.ListProfiles.json", out);
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			for(JsonNode p: profiles.get("profiles")) {
 				final String id = p.get("id").asText();
-				sectionToStream("/rpc/Thermostat.Schedule.ListRules?id=0&profile_id=" + id, "Thermostat.Schedule.ListRules_id-0_profile_id-" + id + ".json", out);
+				sectionToStream("/rpc/Thermostat.Schedule.ListRules?id=0&profile_id=" + id, "Thermostat.Schedule.ListRules_profile_id-" + id + ".json", out);
 				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			}
 		}
@@ -197,9 +198,8 @@ public class WallDisplay extends AbstractG2Device implements ModulesHolder {
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 		errors.add(postCommand("Illuminance.SetConfig", createIndexedRestoreNode(backupConfiguration, "illuminance", 0)));
 		
-//		if(thermMode) {
-//			thermostat.restoreProfiles(backupJsons, errors);
-//		}
+		ScheduleManagerThermWD scheduleManagerTherm = new ScheduleManagerThermWD(this);
+		scheduleManagerTherm.restore(backupJsons, errors);
 	}
 	
 	@Override
@@ -211,8 +211,6 @@ public class WallDisplay extends AbstractG2Device implements ModulesHolder {
 		}
 	}
 }
-
-// Status: "schedules" : { "enable" : false }
 
 /*
 http://deviceip/rpc/Shelly.ListMethods
@@ -232,4 +230,6 @@ http://deviceip/rpc/Shelly.ListMethods
 "Thermostat.Schedule.SetConfig","Thermostat.Schedule.UpdateRule","Thermostat.SetConfig","Ui.GetConfig","Ui.GetStatus","Ui.ListAvailable","Ui.Screen.Set","Ui.SetConfig","Ui.Tap","Virtual.Add",
 "Virtual.Delete","Virtual.List","Virtual.ListSupported","Webhook.Create","Webhook.Delete","Webhook.DeleteAll","Webhook.List","Webhook.ListSupported","Webhook.Update","WiFi.GetConfig",
 "WiFi.GetStatus","WiFi.SavedNetworks.Delete","WiFi.SavedNetworks.List","WiFi.Scan","WiFi.SetConfig","WiFi.SpeedTest","Ws.GetConfig","Ws.GetStatus","Ws.SetConfig"]}
+
+https://community.shelly.cloud/topic/1793-walldisplay-list-for-useful-rpc-commands/
 */

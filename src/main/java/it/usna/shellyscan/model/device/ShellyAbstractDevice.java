@@ -285,7 +285,7 @@ public abstract class ShellyAbstractDevice {
 			throw new DeviceOfflineException(e);
 		}
 	}
-
+	
 	protected JsonNode sectionToStream(final String section, final String arrayKey, final String entryName, FileSystem fs) throws IOException {
 		try(BufferedWriter writer = Files.newBufferedWriter(fs.getPath(entryName))) {
 			String req = section;

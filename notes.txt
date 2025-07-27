@@ -346,50 +346,44 @@ Shelly.GetComponents pagination
 BLE.CloudRelay.ListInfos pagination
 KVS.GetMany pagination
 Graphs: types combo only have pertinent values
-
-todo: reload blu after restore (?), rivedere con fw 1.6.0
-todo: blu button, rivedere restore con fw 1.6.0
-
-todo: lettura dati per array (itarator) su restore e su GET (offset)
-
-1.6.0 ->
-https://shelly-api-docs.shelly.cloud/gen2/DynamicComponents/BTHome/
-Matter Add support for Shelly 1 Gen3, 1PM Gen3, 1 Mini Gen3, 1PM Mini Gen3, 2PM Gen3
-
-Scripting Add ArrayBuffer and AES for Gen3 and Gen4 devices - OK, added to EditorPanel
-Cover Add maintenance_mode config property - OK
-Switch, Cover Add physical control locking (in_locked config property) - OK
-
-blu ->
-buttons from actions -> condition (if null applies to all!?)
+lettura dati per array (itarator) su restore e su GET (offset)
+blu -> buttons from actions
 
 
-1.2.5 ?
+1.2.6
 ---
-Schedule
+Shelly 2PM Gen4
+Shelly Shutter G3
+schedule geb2+, BLU trv
+schedule wall display thermostat
+schedule load ...
+wall display restore therm profiles
+zigbee
+restore compatibility table
+// todo schedule wall display thermostat - profile selection
+
 https://next-api-docs.shelly.cloud/gen2/ComponentsAndServices/Schedule
 https://github.com/mongoose-os-libs/cron
 https://crontab.guru/
-todo: virtual components paging
+
+virtual components paging - it.usna.shellyscan.model.device.blu.BTHomeDevice.refreshStatus()
 
 // TODO
-// intercept cmd-Q on OSX (shutdown) - -Dapple.eawt.quitStrategy=CLOSE_ALL_WINDOWS
-// schedule editor (Webhook.ListSupported) / semplicemente elenco azioni (?)
 // rgb_xx panel listener (?)
 // checklist AP ssid != mac (fw 1.5.0 stable)
-// wall display restore profiles and rules (/rpc/Thermostat.Schedule.ListRules?id=0&profile_id=1)
 // portare il modello sulla tabella per semplificare il calcolo dei tooltip (e delle icone di stato)
 // Xmod1 sganciare bottone se detatched (?)
 // add "knx" support
 // rivedere it.usna.shellyscan.model.device.g2.ShellyPlusi4 alla luce di "Input.Trigger" (?) no, al momento è gestibile solo il push
 // grafico energia
 // inclusione massiva
-// gestione "reading": se stato online leggo uptime, se uptime diverso dal precedente memorizzo il timestamp else Quando il time stamp corrente - memorizzato > intervallo * 3 modifico lo stato - si, ma dove?
+// gestione "reading": se stato online leggo ShellyAbstractDevice.lastConnection, se systime - lastConnection > intervallo * 3 modifico lo stato - si, ma dove, task specifico?
 // InetAddressAndPort potrebbe mantenere direttamente i byte (sarebbe estremamente ottimizzato); tuttavia attenderei l'introduzione di IPv6
 // color weel https://stackoverflow.com/questions/36252778/how-to-draw-a-rgb-color-wheel-in-java
 // in case of new bulbs (render of single CCT - bulbs as CCT/RGB)
 // https://smarthomecircle.com/connect-xiaomi-temperature-and-humidity-bluetooth-sensor-to-home-assistant
 // addon dimmer gen3 (currently not supported by fw)
+// Webhook.ListSupported
 
 -------java 21-------
 ThreadFactory factory = Thread.ofVirtual().factory();

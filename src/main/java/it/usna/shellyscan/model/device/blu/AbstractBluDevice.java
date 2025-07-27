@@ -3,6 +3,7 @@ package it.usna.shellyscan.model.device.blu;
 import java.io.IOException;
 import java.net.SocketTimeoutException;
 import java.nio.charset.StandardCharsets;
+import java.util.Iterator;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
@@ -17,9 +18,11 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.exc.StreamReadException;
 import com.fasterxml.jackson.databind.JsonNode;
 
+import it.usna.shellyscan.model.device.DeviceAPIException;
 import it.usna.shellyscan.model.device.DeviceOfflineException;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
+import it.usna.shellyscan.model.device.g2.PageIterator;
 import it.usna.shellyscan.model.device.g2.modules.DynamicComponents;
 import it.usna.shellyscan.model.device.modules.InputResetManager;
 import it.usna.shellyscan.model.device.modules.LoginManager;
@@ -85,6 +88,35 @@ public abstract class AbstractBluDevice extends ShellyAbstractDevice {
 		}
 	}
 	
+	public JsonNode getJSON(final String method, JsonNode payload) throws IOException {
+		return getJSON(method, jsonMapper.writeValueAsString(payload));
+	}
+	
+	public JsonNode getJSON(final String method, String payload) throws IOException {
+		final JsonNode resp = executeRPC(method, payload);
+		JsonNode result;
+		if((result = resp.get("result")) != null) {
+			return result;
+		} else {
+			JsonNode error = resp.get("error");
+			throw new DeviceAPIException(error.get("code").intValue(), error.get("message").asText("Generic error"));
+		}
+	}
+	
+	/**
+	 * example: <code> {
+	 *  "items" : [ {"key" : "key", "etag" : "xxxyyy", "value" : "{}"} ],
+	 *  "offset" : 0, "total" : 1
+	 * } </code>
+	 * @param method - e.g. /rpc/KVS.GetMany
+	 * @param arrayKey - e.g. items
+	 * @return an Iterator&lt;JsonNode&gt; navigating through pages
+	 * @throws IOException
+	 */
+	public Iterator<JsonNode> getJSONIterator(final String method, final String arrayKey) throws IOException {
+		return new PageIterator(this, method, arrayKey);
+	}
+	
 	/**
 	 * return null if ok or error description in case of error; cannot use parent.postCommand becouse of the status
 	 */
@@ -132,11 +164,6 @@ public abstract class AbstractBluDevice extends ShellyAbstractDevice {
 			status = Status.OFF_LINE;
 			throw new DeviceOfflineException(e);
 		}
-	}
-
-	@Override
-	public String[] getInfoRequests() {
-		return new String[] {"/rpc/BTHomeDevice.GetConfig?id=" + componentIndex, "/rpc/BTHomeDevice.GetStatus?id=" + componentIndex, "/rpc/BTHomeDevice.GetKnownObjects?id=" + componentIndex};
 	}
 
 	@Override

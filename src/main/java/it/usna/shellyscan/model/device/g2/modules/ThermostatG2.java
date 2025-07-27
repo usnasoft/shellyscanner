@@ -95,7 +95,7 @@ public class ThermostatG2 implements ThermostatInterface {
 	public String restore(JsonNode thermostatData) {
 		ObjectNode out = JsonNodeFactory.instance.objectNode();
 		out.put("id", 0);
-		ObjectNode th = (ObjectNode)thermostatData.get("thermostat:" + 0).deepCopy();
+		ObjectNode th = (ObjectNode)thermostatData.get("thermostat:0").deepCopy();
 		th.remove("id");
 		th.remove("enable"); // do not restore "volatile" parameters
 		th.remove("target_C"); // do not restore "volatile" parameters
@@ -103,47 +103,9 @@ public class ThermostatG2 implements ThermostatInterface {
 		return parent.postCommand("Thermostat.SetConfig", out);
 	}
 	
-//	public void restoreProfiles(Map<String, JsonNode> backupJsons, List<String> errors) throws InterruptedException, UnsupportedEncodingException, IOException {
-//		try {
-//			JsonNode profiles = parent.getJSON("/rpc/Thermostat.Schedule.ListProfiles?id=0").get("profiles");
-//			for(JsonNode prof: profiles) {
-//				errors.add(parent.postCommand("Thermostat.Schedule.DeleteProfile", "{\"id\"=0,\"profile_id\"=" + prof.get("id").asText() + "}"));
-//			}
-//
-//			JsonNode storedProfiles = backupJsons.get("Thermostat.Schedule.ListProfiles_id-0.json").get("profiles");
-//			for(JsonNode prof: storedProfiles) {
-//				int storedId = prof.get("id").intValue();
-//				JsonNode p = parent.getJSON("/rpc/Thermostat.Schedule.CreateProfile?id=0&name=" + URLEncoder.encode(prof.get("name").asText(), StandardCharsets.UTF_8.name()));
-//				int newId = p.get("profile_id").intValue();
-//				
-//				JsonNode rules = backupJsons.get("Thermostat.Schedule.ListRules_id-0_profile_id-" + storedId + ".json").get("rules");
-//				for(JsonNode rule: rules) {
-//					ObjectNode scheduleParams = JsonNodeFactory.instance.objectNode();
-//					
-//					((ObjectNode)rule).remove("rule_id");
-////					((ObjectNode)rule).remove("profile_id");
-//					((ObjectNode)rule).put("profile_id", newId);
-//					((ObjectNode)rule).put("id", 0);
-//					
-//					scheduleParams.put("id", 0);
-////					scheduleParams.put("profile_id", newId);
-//					scheduleParams.set("rule", rule);
-//					
-//					ObjectNode outConfig = JsonNodeFactory.instance.objectNode();
-//					outConfig.set("config", scheduleParams);
-//					
-//					errors.add(parent.postCommand("Thermostat.Schedule.AddRule", rule)); // CreateRule ?
-//					TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-//				}
-//			}
-//		} catch (DeviceAPIException e) {
-//			errors.add(e.getMessage());
-//		}
-//	}
-	
 	@Override
 	public String toString() {
-		return "Target temp: " + targetTemp + (running ? " (on)" : " (off)"); // profile
+		return "Target temp: " + targetTemp + (running ? " (on)" : " (off)");
 	}
 }
 

@@ -25,12 +25,18 @@ public abstract class Meters implements Comparable<Meters> {
 		NUM, // integer
 		DMM, // distance [mm]
 		VIB, // vibration - 0=false; 1=true
+		ANG, // angle - accelerometer
+		ANG1, // angle - accelerometer
+		ANG2, // angle - accelerometer
 		BAT // battery %
 	};
-	protected static NumberFormat NF = NumberFormat.getNumberInstance(Locale.ENGLISH);
+	protected static NumberFormat NF1 = NumberFormat.getNumberInstance(Locale.ENGLISH);
+	protected static NumberFormat NF2 = NumberFormat.getNumberInstance(Locale.ENGLISH);
 	static {
-		NF.setMaximumFractionDigits(2);
-		NF.setMinimumFractionDigits(2);
+		NF1.setMaximumFractionDigits(1);
+		NF1.setMinimumFractionDigits(1);
+		NF2.setMaximumFractionDigits(2);
+		NF2.setMinimumFractionDigits(2);
 	}
 	
 	public abstract float getValue(Type t);
@@ -54,7 +60,9 @@ public abstract class Meters implements Comparable<Meters> {
 	public boolean hasNames() {
 		String name;
 		for(Type type: getTypes()) {
-			if((name = getName(type)) != null && name.isEmpty() == false) return true;
+			if((name = getName(type)) != null && name.isEmpty() == false) {
+				return true;
+			}
 		}
 		return false;
 	}
@@ -74,9 +82,9 @@ public abstract class Meters implements Comparable<Meters> {
 		Type[] t = getTypes();
 		if(t.length > 0) {
 			StringBuilder res = new StringBuilder(t[0].toString());
-			res.append("=").append(NF.format(getValue(t[0])));
+			res.append("=").append(NF1.format(getValue(t[0])));
 			for(int i = 1; i < t.length; i++) {
-				res.append(" ").append(t[i].toString()).append("=").append(NF.format(getValue(t[i])));
+				res.append(" ").append(t[i].toString()).append("=").append(NF1.format(getValue(t[i])));
 			}
 			return res.toString();
 		} else {

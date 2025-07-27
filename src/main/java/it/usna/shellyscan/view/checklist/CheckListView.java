@@ -66,7 +66,7 @@ import it.usna.shellyscan.model.device.ShellyAbstractDevice.LogMode;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
 import it.usna.shellyscan.model.device.g1.AbstractG1Device;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
-import it.usna.shellyscan.model.device.g2.RangeExtenderManager;
+import it.usna.shellyscan.model.device.g2.modules.RangeExtenderManager;
 import it.usna.shellyscan.model.device.g2.modules.Script;
 import it.usna.shellyscan.model.device.g2.modules.WIFIManagerG2;
 import it.usna.shellyscan.view.DevicesTable;

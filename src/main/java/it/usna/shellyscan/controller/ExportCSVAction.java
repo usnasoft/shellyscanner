@@ -26,7 +26,7 @@ public class ExportCSVAction extends UsnaAction {
 //	private final static Logger LOG = LoggerFactory.getLogger(ExportCSVAction.class);
 
 	public ExportCSVAction(MainView mainView, DevicesTable devicesTable) {
-		super(mainView, "action_csv_name", "action_csv_tooltip", null, "/images/Table.png");
+		super(mainView, "action_csv_name", "action_csv_tooltip", null, /*"/images/Table.png"*/"/images/Save.png");
 		
 		setActionListener(e -> {
 			AppProperties appProp = ScannerProperties.instance();

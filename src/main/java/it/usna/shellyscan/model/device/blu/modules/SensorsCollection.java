@@ -36,6 +36,7 @@ public class SensorsCollection extends Meters {
 		ArrayList<Sensor> sensors = new ArrayList<>();
 		/*ArrayList<Sensor>*/ modules = new ArrayList<>();
 		Meters.Type lastT = null;
+		Meters.Type lastRot = null;
 		for(JsonNode sensorConf: objects) {
 			String comp = sensorConf.path("component").asText();
 			if(comp != null && comp.startsWith(AbstractBluDevice.SENSOR_KEY_PREFIX)) {
@@ -44,22 +45,31 @@ public class SensorsCollection extends Meters {
 				if(sensor instanceof DeviceModule dm) {
 					modules.add(dm);
 				} else {
-					Type t = sensor.getMeterType();
-					if(t != null) {
-						if(t == Meters.Type.T) { // up to 5 temperature measures
+					Type thisType = sensor.getMeterType();
+					if(thisType != null) {
+						if(thisType == Meters.Type.T) { // up to 5 temperature measures
 							if(lastT == null) {
 								lastT = Meters.Type.T;
 							} else if(lastT == Meters.Type.T) {
-								t = lastT = Meters.Type.T1;
+								thisType = lastT = Meters.Type.T1;
 							} else if(lastT == Meters.Type.T1) {
-								t = lastT = Meters.Type.T2;
+								thisType = lastT = Meters.Type.T2;
 							} else if(lastT == Meters.Type.T2) {
-								t = lastT = Meters.Type.T3;
+								thisType = lastT = Meters.Type.T3;
 							} else if(lastT == Meters.Type.T3) {
-								t = lastT = Meters.Type.T4;
+								thisType = lastT = Meters.Type.T4;
 							}
 						}
-						measuresMap.put(t, sensor);
+						if(thisType == Meters.Type.ANG) { // up to 3 angles
+							if(lastRot == null) {
+								lastRot = Meters.Type.ANG;
+							} else if(lastRot == Meters.Type.ANG) {
+								thisType = lastRot = Meters.Type.ANG1;
+							} else if(lastRot == Meters.Type.ANG1) {
+								thisType = lastRot = Meters.Type.ANG2;
+							}
+						}
+						measuresMap.put(thisType, sensor);
 					}
 				}
 				sensors.add(sensor);
@@ -124,10 +134,15 @@ public class SensorsCollection extends Meters {
 		return null;
 	}
 	
-	@Override
-	public String toString() {
+	public String getFullID() {
 		return Stream.of(sensorsArray).map(s -> "s" + s.getObjId()).sorted().collect(Collectors.joining());
 	}
+	
+// use it.usna.shellyscan.model.device.Meters.toString() instead
+//	@Override
+//	public String toString() {
+//		return Stream.of(sensorsArray).map(s -> "s" + s.getObjId()).sorted().collect(Collectors.joining());
+//	}
 }
 
 // https://bthome.io/format/

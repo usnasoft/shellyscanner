@@ -48,6 +48,11 @@ public class ShellyBluUnmanaged extends AbstractBluDevice implements ShellyUnman
 	}
 	
 	@Override
+	public String[] getInfoRequests() {
+		return new String[] {"/rpc/BTHomeDevice.GetConfig?id=" + componentIndex, "/rpc/BTHomeDevice.GetStatus?id=" + componentIndex, "/rpc/BTHomeDevice.GetKnownObjects?id=" + componentIndex};
+	}
+	
+	@Override
 	public Throwable getException() {
 		return ex;
 	}

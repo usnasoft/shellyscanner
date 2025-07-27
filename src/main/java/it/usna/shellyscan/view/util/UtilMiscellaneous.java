@@ -57,7 +57,19 @@ public class UtilMiscellaneous {
 		return formatterN2.format(celsius * 1.8f + 32f);
 	}
 	
+	// exists from java 21
 	public static int clamp(int value, int min, int max) {
+		if(value >= max) {
+			return max;
+		}
+		if(value <= min) {
+			return min;
+		}
+		return value;
+	}
+
+	// exists from java 21
+	public static float clamp(float value, float min, float max) {
 		if(value >= max) {
 			return max;
 		}

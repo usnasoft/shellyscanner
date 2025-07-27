@@ -1,4 +1,4 @@
-package it.usna.shellyscan.view.scheduler;
+package it.usna.shellyscan.view.scheduler.gen2plus;
 
 import java.awt.event.ActionEvent;
 import java.io.IOException;
@@ -13,8 +13,14 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
+import it.usna.shellyscan.model.device.ModulesHolder;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
+import it.usna.shellyscan.model.device.g3.modules.XT1Thermostat;
 
+/**
+ * Generate a list of shedulable actions according to the components found in /rpc/Shelly.GetComponents?include=["config"]
+ * the call is lazy -> list is created on the first call
+ */
 public class MethodHints {
 	private final static Logger LOG = LoggerFactory.getLogger(MethodHints.class);
 	private final AbstractG2Device device;
@@ -25,7 +31,7 @@ public class MethodHints {
 	}
 	
 	public Object[] get(JTextField method, JTextField parameters) {
-		if(methodsList == null) {
+		if(methodsList == null || methodsList.size() == 0) {
 			generate();
 		}
 
@@ -48,8 +54,7 @@ public class MethodHints {
 	private void generate() {
 		methodsList = new ArrayList<Method>();
 		try {
-			final JsonNode components = device.getJSON("/rpc/Shelly.GetComponents?include=[%22config%22]").path("components"); // todo: manage pagination
-			final Iterator<JsonNode> compIt = components.iterator();
+			Iterator<JsonNode> compIt = device.getJSONIterator("/rpc/Shelly.GetComponents?include=[%22config%22]", "components");
 			while (compIt.hasNext()) {
 				JsonNode comp = compIt.next();
 				String key = comp.get("key").asText();
@@ -65,6 +70,10 @@ public class MethodHints {
 					methodsList.add(new Method(nameBase + "Open", "Cover.Open", "\"id\":" + id));
 					methodsList.add(new Method(nameBase + "Close", "Cover.Close", "\"id\":" + id));
 					methodsList.add(new Method(nameBase + "Go 50%", "Cover.GoToPosition", "\"id\":" + id + ",\"pos\":50"));
+					methodsList.add(new Method(nameBase + "Stop", "Cover.Stop", "\"id\":" + id));
+					if(comp.get("config").hasNonNull("slat")) {
+						methodsList.add(new Method(nameBase + "Go 50%, Slat 50%", "Cover.GoToPosition", "\"id\":" + id + ",\"pos\":50,\"slat_pos\":50"));
+					}
 					// config/slat/slat == true ...
 				} else if(key.startsWith("light:")) {
 					int id = comp.get("config").path("id").intValue();
@@ -94,7 +103,7 @@ public class MethodHints {
 					methodsList.add(new Method(nameBase + "On, green", "RGBW.Set", "\"id\":" + id + ",\"on\":true,\"white\":0,\"rgb\":[0,255,0]"));
 					methodsList.add(new Method(nameBase + "On, blu", "RGBW.Set", "\"id\":" + id + ",\"on\":true,\"white\":0,\"rgb\":[0,0,255]"));
 					methodsList.add(new Method(nameBase + "On, white", "RGBW.Set", "\"id\":" + id + ",\"on\":true,\"rgb\":[0,0,0],\"white\":255"));
-				} else if(key.startsWith("cct")) {
+				} else if(key.startsWith("cct:")) {
 					int id = comp.get("config").path("id").intValue();
 					String nameBase = actionBaseName(comp);
 					methodsList.add(new Method(nameBase + "On", "CCT.Set", "\"id\":" + id + ",\"on\":true"));
@@ -102,10 +111,23 @@ public class MethodHints {
 					methodsList.add(new Method(nameBase + "Toggle", "CCT.Toggle", "\"id\":" + id));
 					methodsList.add(new Method(nameBase + "On 50%", "CCT.Set", "\"id\":" + id + ",\"on\":true,\"brightness\":50"));
 					methodsList.add(new Method(nameBase + "On 4000K", "CCT.Set", "\"id\":" + id + ",\"on\":true,\"ct\":4000"));
-				} // else if(...
+				} else if(device instanceof ModulesHolder mh && mh.getModulesCount() > 0 && mh.getModules()[0] instanceof XT1Thermostat therm) {
+					// LinkedGo ST802 & LinkedGo ST1820
+					if(key.equals("number:" + therm.getTargetTempId())) {
+						String nameBase = actionBaseName(comp);
+						methodsList.add(new Method(nameBase + "20", "number.Set", "\"id\":" + therm.getTargetTempId() + ",\"value\":20"));
+					} else if(key.equals("boolean:" + therm.getEnableId())) {
+						String nameBase = actionBaseName(comp);
+						methodsList.add(new Method(nameBase + "yes", "boolean.Set", "\"id\":" + therm.getEnableId() + ",\"value\":true"));
+						methodsList.add(new Method(nameBase + "no", "boolean.Set", "\"id\":" + therm.getEnableId() + ",\"value\":false"));
+					}
+				}
+			}
+			if(methodsList.size() == 0) {
+				methodsList.add(new Method("No hints", "", ""));
 			}
 		} catch (IOException e) {
-			LOG.error("create hint", e);
+			LOG.error("create hints", e);
 		}
 	}
 	
@@ -114,5 +136,5 @@ public class MethodHints {
 		return ((compName == null || compName.length() == 0) ? comp.get("key").asText() : compName) + " - ";
 	}
 	
-	record Method(String name, String method, String pars) {}
+	private record Method(String name, String method, String pars) {}
 }

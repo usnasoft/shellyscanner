@@ -66,13 +66,17 @@ import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
 import it.usna.shellyscan.model.device.blu.AbstractBluDevice;
 import it.usna.shellyscan.model.device.blu.BTHomeDevice;
+import it.usna.shellyscan.model.device.blu.BluTRV;
 import it.usna.shellyscan.model.device.g1.AbstractG1Device;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
+import it.usna.shellyscan.model.device.g2.WallDisplay;
 import it.usna.shellyscan.view.appsettings.DialogAppSettings;
 import it.usna.shellyscan.view.chart.MeasuresChart;
 import it.usna.shellyscan.view.checklist.CheckListView;
 import it.usna.shellyscan.view.devsettings.DialogDeviceSettings;
-import it.usna.shellyscan.view.scheduler.SchedulerDialog;
+import it.usna.shellyscan.view.scheduler.blutrv.TRVSchedulerDialog;
+import it.usna.shellyscan.view.scheduler.gen2plus.G2SchedulerDialog;
+import it.usna.shellyscan.view.scheduler.walldisplay.WDSchedulerDialog;
 import it.usna.shellyscan.view.scripts.DialogDeviceScripts;
 import it.usna.shellyscan.view.util.Msg;
 import it.usna.shellyscan.view.util.ScannerProperties;
@@ -123,8 +127,15 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 	private Action infoAction = new UsnaSelectedAction(this, devicesTable, "action_info_name", "action_info_tooltip", "/images/Bubble3_16.png", "/images/Bubble3.png",
 			i -> new DialogDeviceInfo(MainView.this, model, i) );
 	
-	private Action schedulerEditAction = new UsnaSelectedAction(this, devicesTable, "action_scheduler_name", "action_scheduler_tooltip", null, "/images/Calendar.png",
-			i -> new SchedulerDialog(MainView.this, (AbstractG2Device)model.get(i)) );
+	private Action schedulerEditAction = new UsnaSelectedAction(this, devicesTable, "action_scheduler_name", "action_scheduler_tooltip", null, "/images/Calendar.png", i -> {
+		if(model.get(i) instanceof WallDisplay wd) {
+			new WDSchedulerDialog(MainView.this, wd);
+		} else if(model.get(i) instanceof AbstractG2Device g2) {
+			new G2SchedulerDialog(MainView.this, g2);
+		} else if(model.get(i) instanceof BluTRV trv) {
+			new TRVSchedulerDialog(MainView.this, trv);
+		}
+	});
 
 	private Action infoLogAction = new UsnaSelectedAction(this, devicesTable, "action_info_log_name", "action_info_log_tooltip", null, "/images/Document2.png", i -> {
 		if(model.get(i) instanceof AbstractG2Device) {
@@ -374,8 +385,8 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		statusPanel.setBackground(Main.STATUS_LINE_COLOR);
 		contentPane.add(statusPanel, BorderLayout.SOUTH);
 		
-		detailedViewAction = new UsnaToggleAction(null, "action_show_detail_name", "action_show_detail_tooltip", "action_show_detail_tooltip", "/images/Plus.png", "/images/Minus.png",
-				e -> SwingUtilities.invokeLater(() -> detailedView(detailedViewAction.isSelected()) ) );
+		detailedViewAction = new UsnaToggleAction(null, "action_show_detail_name", "action_show_detail_tooltip", "action_show_detail_tooltip", "/images/FullSize.png", "/images/ReducedSize.png",
+				e -> SwingUtilities.invokeLater(() -> detailedView(detailedViewAction.isSelected()) ) ); //Plus.png / Minus.png
 		
 		// Table
 		JScrollPane scrollPane = new JScrollPane();
@@ -396,7 +407,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		toolBar.addSeparator();
 		toolBar.add(infoAction);
 		toolBar.add(infoLogAction);
-//		toolBar.add(schedulerEditAction);
+		toolBar.add(schedulerEditAction);
 		toolBar.add(chartAction);
 		toolBar.add(checkListAction);
 		toolBar.add(browseAction);
@@ -563,7 +574,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 					}*/
 				}
 				infoAction.setEnabled(singleSelection);
-				schedulerEditAction.setEnabled(singleSelectionNoGhost && d instanceof AbstractG2Device);
+				schedulerEditAction.setEnabled(singleSelectionNoGhost && (d instanceof AbstractG2Device || d instanceof BluTRV));
 				infoLogAction.setEnabled(singleSelectionNoGhost);
 				checkListAction.setEnabled(selectionNoGhost);
 				rebootAction.setEnabled(selectionNoGhost && selectionNoBTHome);

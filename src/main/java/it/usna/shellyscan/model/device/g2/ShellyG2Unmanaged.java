@@ -51,7 +51,7 @@ public class ShellyG2Unmanaged extends AbstractG2Device implements ShellyUnmanag
 	}
 	
 	public String getTypeName() {
-		return "Generic G2";
+		return (type == null || type.isEmpty()) ? "Generic G2" : "Generic (" + type + ")";
 	}
 	
 	@Override

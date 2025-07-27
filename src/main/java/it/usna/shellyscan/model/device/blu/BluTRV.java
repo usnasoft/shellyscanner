@@ -16,6 +16,7 @@ import org.eclipse.jetty.client.HttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -25,6 +26,7 @@ import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.ModulesHolder;
 import it.usna.shellyscan.model.device.RestoreMsg;
 import it.usna.shellyscan.model.device.blu.modules.FirmwareManagerTRV;
+import it.usna.shellyscan.model.device.blu.modules.ScheduleManagerTRV;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.g2.modules.Webhooks;
 import it.usna.shellyscan.model.device.modules.DeviceModule;
@@ -118,6 +120,44 @@ public class BluTRV extends AbstractBluDevice implements ThermostatInterface, Mo
 		}
 		this.pos = trv.get("pos").intValue();
 		//http://192.168.1.29/rpc/BluTrv.Call?id=200&method="TRV.ListScheduleRules"&params={"id":0}
+	}
+	
+	// todo test
+	public String postTRVCommand(final String method, JsonNode payload) {	
+		ObjectNode out = JsonNodeFactory.instance.objectNode();
+		out.put("id", componentIndex);
+		out.put("method", method);
+		out.set("params", payload);
+		return postCommand("BluTrv.Call", out);
+	}
+	
+	public String postTRVCommand(final String method, String payload) {	
+		ObjectNode out = JsonNodeFactory.instance.objectNode();
+		out.put("id", componentIndex);
+		out.put("method", method);
+		try {
+			out.set("params", jsonMapper.readTree(payload));
+		} catch (JsonProcessingException e) {
+			LOG.error("getTRVJSON payload {}", payload, e);
+			return e.getMessage();
+		}
+		return postCommand("BluTrv.Call", out);
+	}
+	
+	public JsonNode getTRVJSON(final String method, JsonNode payload) throws IOException {	
+		ObjectNode out = JsonNodeFactory.instance.objectNode();
+		out.put("id", componentIndex);
+		out.put("method", method);
+		out.set("params", payload);
+		return getJSON("BluTrv.Call", out);
+	}
+
+	public JsonNode getTRVJSON(final String method, String payload) throws IOException {	
+		ObjectNode out = JsonNodeFactory.instance.objectNode();
+		out.put("id", componentIndex);
+		out.put("method", method);
+		out.set("params", jsonMapper.readTree(payload));
+		return getJSON("BluTrv.Call", out);
 	}
 	
 	@Override
@@ -242,30 +282,7 @@ public class BluTRV extends AbstractBluDevice implements ThermostatInterface, Mo
 			errors.add(postCommand("BluTrv.Call", out));
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 
-			// BluTrv.Call - TRV.RemoveScheduleRule
-			JsonNode existingRules = getJSON("/rpc/BluTrv.Call?id=" + componentIndex + "&method=%22TRV.ListScheduleRules%22&params=%7B%22id%22:0%7D").get("rules");
-			ObjectNode scheduleParams = JsonNodeFactory.instance.objectNode();
-			scheduleParams.put("id", 0);
-			out.put("method", "TRV.RemoveScheduleRule");
-			for(JsonNode rule: existingRules) {
-				scheduleParams.set("rule_id", rule.get("rule_id"));
-				out.set("params", scheduleParams);
-				errors.add(postCommand("BluTrv.Call", out));
-				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-			}
-
-			// BluTrv.Call - TRV.AddScheduleRule
-			JsonNode storedSchedule = backupJsons.get("TRV.ListScheduleRules.json").get("rules");
-			/*ObjectNode*/ scheduleParams = JsonNodeFactory.instance.objectNode();
-			scheduleParams.put("id", 0);
-			out.put("method", "TRV.AddScheduleRule");
-			for(JsonNode rule: storedSchedule) {
-				((ObjectNode)rule).remove("rule_id");
-				scheduleParams.set("rule", rule);
-				out.set("params", scheduleParams);
-				errors.add(postCommand("BluTrv.Call", out));
-				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-			}
+			ScheduleManagerTRV.restore(this, backupJsons.get("TRV.ListScheduleRules.json"), errors);
 
 			final int storedId = storedConfig.get("id").intValue();
 			final int currentId = Integer.parseInt(componentIndex);

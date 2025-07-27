@@ -199,7 +199,7 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 			}
 		});
 
-		JButton btnDownload = new JButton(new UsnaAction(MeasuresChart.this, "dlgChartsCSVTooltip", "/images/DownloadEmpty16.png", e -> {
+		JButton btnDownload = new JButton(new UsnaAction(MeasuresChart.this, "dlgChartsCSVTooltip", /*"/images/DownloadEmpty16.png"*/ "/images/Save_trasp16.png", e -> {
 			try {
 				final JFileChooser fc = new JFileChooser(appProp.getProperty("LAST_PATH"));
 				fc.setFileFilter(new FileNameExtensionFilter(LABELS.getString("filetype_csv_desc"), "csv"));
@@ -221,7 +221,7 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 		}));
 		btnDownload.setPreferredSize(BTN_SIZE);
 
-		JButton btnCopy = new JButton(new UsnaAction(null, "btnCopy", "/images/Toolbar-Copy16.png", e -> chartPanel.doCopy()));
+		JButton btnCopy = new JButton(new UsnaAction(null, "dlgChartsCopyTooltip", "/images/Toolbar-Copy16.png", e -> chartPanel.doCopy()));
 		btnCopy.setPreferredSize(BTN_SIZE);
 
 		westCommandPanel.add(new JLabel(LABELS.getString("dlgChartsSeriesLabel")));

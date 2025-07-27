@@ -17,6 +17,7 @@ public class IntegerTextFieldPanel extends JPanel {
 
 	public IntegerTextFieldPanel(int min, int max) {
 		super(new FlowLayout(FlowLayout.LEFT, 0, 0));
+		setOpaque(false);
 		itf = new NumericTextField<Integer>(min, max);
 		add(itf);
 		

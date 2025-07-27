@@ -13,14 +13,22 @@ public class XT1Thermostat implements ThermostatInterface {
 	private float targetTemp;
 	private float minTarget;
 	private float maxTarget;
-	private final String enabledID;
+	private final String enableId;
 	private final String targetId;
 	private boolean celsius;
 	
 	public XT1Thermostat(AbstractG3Device parent, String enabledID, String targetId) {
 		this.parent = parent;
-		this.enabledID = enabledID;
+		this.enableId = enabledID;
 		this.targetId = targetId;
+	}
+	
+	public String getTargetTempId() {
+		return targetId;
+	}
+	
+	public String getEnableId() {
+		return enableId;
 	}
 	
 	public void configTargetTemperature(JsonNode sensor) {
@@ -58,7 +66,7 @@ public class XT1Thermostat implements ThermostatInterface {
 
 	@Override
 	public void setEnabled(boolean enabled) throws IOException {
-		String res = parent.postCommand("Boolean.Set", "{\"id\":" + enabledID + ",\"value\":" + enabled + "}");
+		String res = parent.postCommand("Boolean.Set", "{\"id\":" + enableId + ",\"value\":" + enabled + "}");
 		if(res == null) {
 			this.enabled = enabled;
 		} else {
