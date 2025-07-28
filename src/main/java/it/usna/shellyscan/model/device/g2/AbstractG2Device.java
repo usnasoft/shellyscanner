@@ -411,9 +411,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 		return true;
 	}
 	
-//	/** implement for devices that need additional information */
-//	protected void backup(ZipOutputStream out) throws IOException, InterruptedException {}
-	
+	/** implement for devices that need additional information */
 	protected void backup(FileSystem fs) throws IOException, InterruptedException {}
 
 	@Override

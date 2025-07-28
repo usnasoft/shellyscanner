@@ -369,7 +369,7 @@ https://crontab.guru/
 virtual components paging - it.usna.shellyscan.model.device.blu.BTHomeDevice.refreshStatus()
 
 // TODO
-// rgb_xx panel listener (?)
+// rgb_xx panel listener (?) -> model su DevicesTable -> su DevicesCommandCellEditor -> DialogEditLights che diventa listener e chiama i 
 // checklist AP ssid != mac (fw 1.5.0 stable)
 // portare il modello sulla tabella per semplificare il calcolo dei tooltip (e delle icone di stato)
 // Xmod1 sganciare bottone se detatched (?)
