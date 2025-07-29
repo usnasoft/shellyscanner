@@ -48,9 +48,10 @@ import it.usna.shellyscan.model.Devices.EventType;
 import it.usna.shellyscan.model.device.BatteryDeviceInterface;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
-import it.usna.shellyscan.model.device.g2.AbstractBatteryG2Device;
+import it.usna.shellyscan.model.device.g1.AbstractBatteryG1Device;
 import it.usna.shellyscan.view.util.UsnaTextPane;
 import it.usna.shellyscan.view.util.UtilMiscellaneous;
+import it.usna.swing.UsnaSwingUtils;
 import it.usna.swing.dialog.FindReplaceDialog;
 import it.usna.util.UsnaEventListener;
 
@@ -74,10 +75,11 @@ public class DialogDeviceInfo extends JDialog implements UsnaEventListener<Devic
 		setTitle(UtilMiscellaneous.getExtendedHostName(device));
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		this.setSize(530, 650);
-		setLocationRelativeTo(owner);
+//		setLocationRelativeTo(owner);
+		UsnaSwingUtils.setLocationRelativeTo(this, owner, true);
 
 		// too many concurrent requests are dangerous (device reboot - G1) or cause websocket disconnection (G2)
-		executor = Executors.newScheduledThreadPool(device instanceof AbstractBatteryG2Device ? 6 : 2);
+		executor = Executors.newScheduledThreadPool((device instanceof BatteryDeviceInterface && device instanceof AbstractBatteryG1Device == false) ? 6 : 2);
 
 		getContentPane().add(tabbedPane, BorderLayout.CENTER);
 
