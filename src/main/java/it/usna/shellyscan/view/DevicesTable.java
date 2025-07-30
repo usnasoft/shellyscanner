@@ -177,8 +177,7 @@ public class DevicesTable extends ExTooltipTable {
 
 	@Override
 	public boolean isCellEditable(final int row, final int column) {
-//		Object val = getValueAt(row, column);
-//		return val instanceof DeviceModule || val instanceof DeviceModule[];
+//		Object val = getValueAt(row, column); return val instanceof DeviceModule || val instanceof DeviceModule[];
 		return convertColumnIndexToModel(column) == COL_COMMAND_IDX;
 	}
 
@@ -291,8 +290,10 @@ public class DevicesTable extends ExTooltipTable {
 							} else { // fahrenheit 
 								ret += LABELS.getString("METER_LBL_" + t) + tLabel + " " + String.format(Locale.ENGLISH, LABELS.getString("METER_VAL_T_F"), m.getValue(t) * 1.8f + 32f) + " ";
 							}
-						} else if(t == Meters.Type.EX) {
-							ret += LABELS.getString("METER_LBL_" + t) + tLabel + " " + LABELS.getString((m.getValue(t) == 0f) ? "METER_VAL_EX_0" : "METER_VAL_EX_1") + " ";
+						} else if(t.isBoolean()) {
+							ret += LABELS.getString("METER_LBL_" + t) + tLabel + " " + LABELS.getString((m.getValue(t) == 0f) ? "METER_VAL_" + t + "_0" : "METER_VAL_" + t + "_NOT0") + " ";
+//						} else if(t == Meters.Type.EX) {
+//							ret += LABELS.getString("METER_LBL_" + t) + tLabel + " " + LABELS.getString((m.getValue(t) == 0f) ? "METER_VAL_EX_0" : "METER_VAL_EX_1") + " ";
 						} else {
 							ret += LABELS.getString("METER_LBL_" + t) + tLabel + " " + String.format(Locale.ENGLISH, LABELS.getString("METER_VAL_" + t), m.getValue(t)) + " ";
 						}

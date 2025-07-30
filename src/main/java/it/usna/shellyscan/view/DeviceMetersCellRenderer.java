@@ -81,9 +81,11 @@ public class DeviceMetersCellRenderer extends JPanel implements TableCellRendere
 								} else { // fahrenheit 
 									val = new JLabel(String.format(Locale.ENGLISH, Main.LABELS.getString("METER_VAL_T_F"), metValue * 1.8f + 32f));
 								}
-							} else if(t == Meters.Type.EX) {
-//								singleArrayObj[0] = metValue; val = new JLabel(SWITCH_FORMATTER.format(singleArrayObj));
-								val = new JLabel(Main.LABELS.getString((metValue == 0f) ? "METER_VAL_EX_0" : "METER_VAL_EX_1"));
+							} else if(t.isBoolean()) {
+								val = new JLabel(Main.LABELS.getString((metValue == 0f) ? "METER_VAL_" + t + "_0" : "METER_VAL_" + t + "_NOT0"));
+//							} else if(t == Meters.Type.EX) {
+////								singleArrayObj[0] = metValue; val = new JLabel(SWITCH_FORMATTER.format(singleArrayObj));
+//								val = new JLabel(Main.LABELS.getString((metValue == 0f) ? "METER_VAL_EX_0" : "METER_VAL_EX_1"));
 							} else {
 								val = new JLabel(String.format(Locale.ENGLISH, Main.LABELS.getString("METER_VAL_" + t), metValue));
 								if(metValue == 0f) {
