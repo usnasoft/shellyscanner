@@ -30,7 +30,7 @@ public abstract class Meters implements Comparable<Meters> {
 		ANG2, // angle - accelerometer
 		BAT; // battery %
 		
-		final boolean bool;
+		final boolean bool; // 0 or not 0
 		
 		private Type() {
 			bool = false;

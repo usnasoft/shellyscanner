@@ -22,7 +22,7 @@ import it.usna.shellyscan.model.device.DeviceAPIException;
 import it.usna.shellyscan.model.device.DeviceOfflineException;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
-import it.usna.shellyscan.model.device.g2.PageIterator;
+import it.usna.shellyscan.model.device.g2.JsonPageIterator;
 import it.usna.shellyscan.model.device.g2.modules.DynamicComponents;
 import it.usna.shellyscan.model.device.modules.InputResetManager;
 import it.usna.shellyscan.model.device.modules.LoginManager;
@@ -114,7 +114,7 @@ public abstract class AbstractBluDevice extends ShellyAbstractDevice {
 	 * @throws IOException
 	 */
 	public Iterator<JsonNode> getJSONIterator(final String method, final String arrayKey) throws IOException {
-		return new PageIterator(this, method, arrayKey);
+		return new JsonPageIterator(this, method, arrayKey);
 	}
 	
 	/**

@@ -361,6 +361,8 @@ wall display restore therm profiles
 zigbee
 restore compatibility table
 // todo schedule wall display thermostat - profile selection
+// todo 1.7.0 https://shelly-api-docs.shelly.cloud/gen2/DynamicComponents/BTHome/BTHomeControl/ (?)
+// todo 1.7.0 Shelly2PMG4 zigbee verifica
 
 https://next-api-docs.shelly.cloud/gen2/ComponentsAndServices/Schedule
 https://github.com/mongoose-os-libs/cron
@@ -385,11 +387,6 @@ virtual components paging - it.usna.shellyscan.model.device.blu.BTHomeDevice.ref
 // addon dimmer gen3 (currently not supported by fw)
 // Webhook.ListSupported
 
--------java 21-------
+------- java 21+ -------
 ThreadFactory factory = Thread.ofVirtual().factory();
 ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(0, factory);
-
-
-
-test integrale backup: bthome, blu trv,
-OK: cli, g1, g2, scripts, battery g1, deferred battery g2, deferred battery g3

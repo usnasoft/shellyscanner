@@ -47,6 +47,7 @@ import it.usna.shellyscan.model.device.blu.BluTRV;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.g2.AbstractProDevice;
 import it.usna.shellyscan.model.device.g3.AbstractG3Device;
+import it.usna.shellyscan.model.device.g4.AbstractG4Device;
 
 public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Integer> {
 	private final static Logger LOG = LoggerFactory.getLogger(Devices.class);
@@ -391,9 +392,8 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 					});
 				}
 				// BTHome (BLU)
-				if(d instanceof AbstractProDevice || d instanceof AbstractG3Device) {
-					final JsonNode currenteComponents = d.getJSON("/rpc/Shelly.GetComponents?dynamic_only=true").path("components"); // empty on 401
-					for(JsonNode compInfo: currenteComponents) {
+				if(d instanceof AbstractProDevice || d instanceof AbstractG3Device || d instanceof AbstractG4Device) {
+					for(JsonNode compInfo: ((AbstractG2Device)d).getJSONIterator("/rpc/Shelly.GetComponents?dynamic_only=true", "components")) { // empty on 401
 						String key = compInfo.path("key").asText();
 						if(key.startsWith(AbstractBluDevice.DEVICE_KEY_PREFIX) || key.startsWith(BluTRV.DEVICE_KEY_PREFIX)) {
 							newBluDevice(d, compInfo, key);

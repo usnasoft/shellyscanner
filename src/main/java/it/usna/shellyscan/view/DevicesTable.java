@@ -292,8 +292,6 @@ public class DevicesTable extends ExTooltipTable {
 							}
 						} else if(t.isBoolean()) {
 							ret += LABELS.getString("METER_LBL_" + t) + tLabel + " " + LABELS.getString((m.getValue(t) == 0f) ? "METER_VAL_" + t + "_0" : "METER_VAL_" + t + "_NOT0") + " ";
-//						} else if(t == Meters.Type.EX) {
-//							ret += LABELS.getString("METER_LBL_" + t) + tLabel + " " + LABELS.getString((m.getValue(t) == 0f) ? "METER_VAL_EX_0" : "METER_VAL_EX_1") + " ";
 						} else {
 							ret += LABELS.getString("METER_LBL_" + t) + tLabel + " " + String.format(Locale.ENGLISH, LABELS.getString("METER_VAL_" + t), m.getValue(t)) + " ";
 						}
@@ -328,39 +326,35 @@ public class DevicesTable extends ExTooltipTable {
 
 	@Override
 	public void columnsWidthAdapt() {
-//		Graphics g = getGraphics();
-//		if (g != null) {
-			final FontMetrics fm = getFontMetrics(getFont());
-//			final FontMetrics fm = g.getFontMetrics();
-			final int columnCount = getColumnCount();
-			final int rowCount = getRowCount();
-			for (int c = 0; c < columnCount; c++) {
-				int modelCol = convertColumnIndexToModel(c);
-				if (modelCol != COL_STATUS_IDX) { // COL_STATUS_IDX has fixed width
-					TableColumn tc = columnModel.getColumn(c);
-					if (modelCol == COL_UPTIME_IDX) {
-						tc.setPreferredWidth(uptimeRenderer.getPreferredWidth(fm));
-					} else {
-						int width = SwingUtilities.computeStringWidth(fm, tc.getHeaderValue().toString()) >> 1;
-						for (int r = 0; r < rowCount; r++) {
-							Object val = getValueAt(r, c);
-							if (val != null) {
-								if (val instanceof Object[] arr) {
-									for (Object v : arr) {
-										if (v != null) {
-											width = Math.max(width, SwingUtilities.computeStringWidth(fm, v.toString()));
-										}
+		final FontMetrics fm = getFontMetrics(getFont());
+		final int columnCount = getColumnCount();
+		final int rowCount = getRowCount();
+		for (int c = 0; c < columnCount; c++) {
+			int modelCol = convertColumnIndexToModel(c);
+			if (modelCol != COL_STATUS_IDX) { // COL_STATUS_IDX has fixed width
+				TableColumn tc = columnModel.getColumn(c);
+				if (modelCol == COL_UPTIME_IDX) {
+					tc.setPreferredWidth(uptimeRenderer.getPreferredWidth(fm));
+				} else {
+					int width = SwingUtilities.computeStringWidth(fm, tc.getHeaderValue().toString()) >> 1;
+					for (int r = 0; r < rowCount; r++) {
+						Object val = getValueAt(r, c);
+						if (val != null) {
+							if (val instanceof Object[] arr) {
+								for (Object v : arr) {
+									if (v != null) {
+										width = Math.max(width, SwingUtilities.computeStringWidth(fm, v.toString()));
 									}
-								} else {
-									width = Math.max(width, SwingUtilities.computeStringWidth(fm, val.toString()));
 								}
+							} else {
+								width = Math.max(width, SwingUtilities.computeStringWidth(fm, val.toString()));
 							}
 						}
-						tc.setPreferredWidth(width);
 					}
+					tc.setPreferredWidth(width);
 				}
 			}
-//		}
+		}
 	}
 
 	public void setRowFilter(String filter, int ... cols) {

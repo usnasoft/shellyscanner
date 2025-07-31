@@ -12,7 +12,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.EnumMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -306,11 +305,11 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 	 * } </code>
 	 * @param method - e.g. /rpc/KVS.GetMany
 	 * @param arrayKey - e.g. items
-	 * @return an Iterator&lt;JsonNode&gt; navigating through pages
+	 * @return an Iterator&lt;JsonNode&gt; & Iterable&lt;JsonNode&gt; navigating through pages
 	 * @throws IOException
 	 */
-	public Iterator<JsonNode> getJSONIterator(final String method, final String arrayKey) throws IOException {
-		return new PageIterator(this, method, arrayKey);
+	public JsonPageIterator getJSONIterator(final String method, final String arrayKey) throws IOException {
+		return new JsonPageIterator(this, method, arrayKey);
 	}
 
 	private JsonNode executeRPC(final String method, String payload) throws IOException, StreamReadException { // StreamReadException extends ... IOException
