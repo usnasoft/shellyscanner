@@ -80,21 +80,21 @@ public class ShellyEM extends AbstractG1Device implements ModulesHolder {
 		return new Relay[] {relay};
 	}
 	
-	public float getPower(int index) {
-		return power[index];
-	}
-	
-	public float getReactive(int index) {
-		return reactive[index];
-	}
-	
-	public float getPF(int index) {
-		return pf[index];
-	}
-	
-	public float getVoltage(int index) {
-		return voltage[index];
-	}
+//	public float getPower(int index) {
+//		return power[index];
+//	}
+//	
+//	public float getReactive(int index) {
+//		return reactive[index];
+//	}
+//	
+//	public float getPF(int index) {
+//		return pf[index];
+//	}
+//	
+//	public float getVoltage(int index) {
+//		return voltage[index];
+//	}
 	
 	@Override
 	public Meters[] getMeters() {

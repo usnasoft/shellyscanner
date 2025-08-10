@@ -64,13 +64,13 @@ public class ShellyHT extends AbstractBatteryG1Device {
 		bat = status.get("bat").get("value").intValue();
 	}
 
-	public float getTemp() {
-		return temp;
-	}
-	
-	public float getHumidity() {
-		return humidity;
-	}
+//	public float getTemp() {
+//		return temp;
+//	}
+//	
+//	public float getHumidity() {
+//		return humidity;
+//	}
 
 	@Override
 	public Meters[] getMeters() {

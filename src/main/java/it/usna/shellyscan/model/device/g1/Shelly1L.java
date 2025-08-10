@@ -55,9 +55,9 @@ public class Shelly1L extends AbstractG1Device implements ModulesHolder, Interna
 		return internalTmp;
 	}
 	
-	public float getPower() {
-		return power;
-	}
+//	public float getPower() {
+//		return power;
+//	}
 	
 	@Override
 	public Meters[] getMeters() {

@@ -363,7 +363,7 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 			return ret;
 		} catch(Throwable e) {
 			LOG.error("rendering error", e);
-			labelPlain.setText("rendering error");
+			labelPlain.setText("--");
 			return labelPlain;
 		}
 	}
@@ -450,6 +450,7 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 					try {
 						bLabel = LABELS.getString(inp.getEvent(i));
 					} catch( MissingResourceException e) {
+						LOG.debug("Missing event {}", inp.getEvent(i));
 						bLabel = "x";
 					}
 					JButton b = new JButton(bLabel);

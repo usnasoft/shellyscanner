@@ -48,9 +48,9 @@ public class ShellyDUORGB extends AbstractG1Device implements ModulesHolder {
 		return ID;
 	}
 	
-	public float getPower() {
-		return power;
-	}
+//	public float getPower() {
+//		return power;
+//	}
 
 	@Override
 	public Meters[] getMeters() {

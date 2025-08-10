@@ -57,9 +57,9 @@ public class ShellyDimmer extends AbstractG1Device implements ModulesHolder, Int
 		return internalTmp;
 	}
 	
-	public float getPower() {
-		return power;
-	}
+//	public float getPower() {
+//		return power;
+//	}
 	
 	@Override
 	public Meters[] getMeters() {

@@ -68,13 +68,13 @@ public class ShellyTRV extends AbstractG1Device {
 		super.fillStatus(status);
 		bat = status.get("bat").get("value").asInt();
 		JsonNode therm = status.get("thermostats").get(0);
-		measuredTemp = (float)therm.get("tmp").get("value").doubleValue();
+		measuredTemp = therm.get("tmp").get("value").floatValue();
 		thermostat.fillStatus(therm);
 	}
 	
-	public float getMeasuredTemp() {
-		return measuredTemp;
-	}
+//	public float getMeasuredTemp() {
+//		return measuredTemp;
+//	}
 	
 	public ThermostatG1 getThermostat() {
 		return thermostat;

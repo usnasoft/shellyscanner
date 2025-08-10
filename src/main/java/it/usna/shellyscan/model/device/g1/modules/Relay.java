@@ -9,7 +9,7 @@ import it.usna.shellyscan.model.device.g1.AbstractG1Device;
 import it.usna.shellyscan.model.device.modules.RelayInterface;
 
 /**
- * Used by 1, 1PM, EM, 2, 2.5
+ * Used by 1, 1PM, EM, 2, 2.5, ...
  */
 public class Relay implements RelayInterface {
 	private final AbstractG1Device parent;
@@ -17,30 +17,16 @@ public class Relay implements RelayInterface {
 	private String name;
 	private boolean isOn;
 	private String source;
-//	private final boolean associatedInput;
-//	private boolean reverse;
 	private boolean inputIsOn;
-	
-//	public Relay(AbstractG1Device parent, int index, boolean associatedInput) {
-//		this.parent = parent;
-//		this.index = index;
-//		this.associatedInput = associatedInput;
-//	}
 	
 	public Relay(AbstractG1Device parent, int index) {
 		this.parent = parent;
 		this.index = index;
-//		this.associatedInput = false;
 	}
 	
 	public void fillSettings(JsonNode settingsRelay) {
 		name = settingsRelay.get("name").asText("");
 	}
-	
-//	public void fillSettings(JsonNode settingsRelay, boolean input) {
-//		name = settingsRelay.get("name").asText("");
-//		reverse = input && settingsRelay.path("btn_reverse").asBoolean();
-//	}
 	
 	public void fillStatus(JsonNode relay) {
 		isOn = relay.get("ison").booleanValue();
@@ -92,17 +78,6 @@ public class Relay implements RelayInterface {
 		((ObjectNode)data).remove("ison");
 		((ObjectNode)data).remove("has_timer");
 		((ObjectNode)data).remove("overpower"); // 2.5
-
-//		Iterator<Entry<String, JsonNode>> pars = data.fields();
-//		if(pars.hasNext()) {
-//			String command = "/settings/relay/" + index + "?" + AbstractG1Device.jsonEntryToURLPar(pars.next());
-//			while(pars.hasNext()) {
-//				command += "&" + AbstractG1Device.jsonEntryToURLPar(pars.next());
-//			}
-//			return parent.sendCommand(command);
-//		}
-//		return null;
-//		return parent.sendCommand("/settings/relay/" + index + "?" + AbstractG1Device.jsonEntryIteratorToURLPar(data.fields()));
 		return parent.sendCommand("/settings/relay/" + index + "?" + AbstractG1Device.jsonEntrySetToURLPar(data.properties()));
 	}
 	

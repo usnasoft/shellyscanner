@@ -85,9 +85,4 @@ public class Button1 extends AbstractBatteryG1Device implements ModulesHolder {
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 		errors.add(sendCommand("/settings/input/0?name=" + settings.get("inputs").get(0).get("name").asText()));
 	}
-	
-//	@Override
-//	public String toString() {
-//		return super.toString();
-//	}
 }
