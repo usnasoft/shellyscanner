@@ -22,6 +22,9 @@ import javax.swing.JTable;
 import javax.swing.border.Border;
 import javax.swing.table.TableCellRenderer;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import it.usna.shellyscan.Main;
 import it.usna.shellyscan.model.device.g1.modules.LightBulbRGB;
 import it.usna.shellyscan.model.device.g1.modules.ThermostatG1;
@@ -37,6 +40,8 @@ import it.usna.shellyscan.model.device.modules.WhiteInterface;
 import it.usna.swing.VerticalFlowLayout;
 
 public class DevicesCommandCellRenderer implements TableCellRenderer {
+	private final static Logger LOG = LoggerFactory.getLogger(DevicesCommandCellRenderer.class);
+
 	// Generic
 	final static ImageIcon EDIT_IMG = new ImageIcon(DevicesCommandCellRenderer.class.getResource("/images/Write16.png"));
 	final static ImageIcon UP_IMG = new ImageIcon(DevicesCommandCellRenderer.class.getResource("/images/Arrow16up.png"));
@@ -211,152 +216,156 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 
 	@Override
 	public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-//		try {
-		final JComponent ret;
-		final Color foregroundColor = isSelected ? table.getSelectionForeground() : table.getForeground();
-		if(value instanceof RelayInterface[] riArray) {
-			stackedPanel.removeAll();
-			for(int i = 0; i < riArray.length; i++) { // 1, 1PM, EM, 2.5 ...
-				stackedPanel.add(getRelayPanel(riArray[i], foregroundColor, i == 0));
-			}
-			ret = stackedPanel;
-		} else if(value instanceof RollerInterface[] rollers) { // 2.5 ...
-			stackedPanel.removeAll();
-			for(int i = 0; i < rollers.length; i++) { // 1, 1PM, EM, 2.5 ...
-				stackedPanel.add(getRollerPanel(rollers[i], foregroundColor, i == 0));
-			}
-			ret = stackedPanel;
-		} else if(value instanceof LightBulbRGB[] lights) { // RGBW Bulbs
-			LightBulbRGB light = lights[0]; // multiple bulbs devices currently not supported
-			if(light.isOn()) {
-				lightRGBBulbButton.setText(LABEL_ON);
-				lightRGBBulbButton.setBackground(BUTTON_ON_BG_COLOR);
-			} else {
-				lightRGBBulbButton.setText(LABEL_OFF);
-				lightRGBBulbButton.setBackground(BUTTON_OFF_BG_COLOR);
-			}
-			final int slider = light.isColorMode() ? light.getGain() : light.getBrightness();
-			lightRGBBulbBrightness.setValue(slider);
-			lightRGBBulbLabel.setText(light.getLabel() + " " + slider + "%");
-			lightRGBBulbLabel.setForeground(foregroundColor);
-			ret = lightRGBBulbPanel;
-		} else if(value instanceof RGBWInterface[] rgbws) { // RGBWs
-			RGBWInterface color = rgbws[0];
-			if(color.isOn()) {
-				colorRGBWButton.setText(LABEL_ON);
-				colorRGBWButton.setBackground(BUTTON_ON_BG_COLOR);
-			} else {
-				colorRGBWButton.setText(LABEL_OFF);
-				colorRGBWButton.setBackground(BUTTON_OFF_BG_COLOR);
-			}
-			colorRGBWButton.setForeground(color.isInputOn() ? BUTTON_ON_FG_COLOR : null);
-			colorRGBWGain.setValue(color.getGain());
-			colorRGBWWhite.setValue(color.getWhite());
-			colorRGBWLabel.setText(color.getLabel());
-			colorRGBWLabel.setForeground(foregroundColor);
-			colorRGBWGainLabel.setForeground(foregroundColor);
-			colorRGBWGainLabel.setText(/*Main.LABELS.getString("labelShortGain") +*/ String.format("%-5s", color.getGain() + "%"));
-			colorRGBWhiteLabel.setForeground(foregroundColor);
-			colorRGBWhiteLabel.setText(String.format("%-5s", Main.LABELS.getString("labelShortWhite") + color.getWhite()));
-			ret = colorRGBWPanel;
-		} else if(value instanceof RGBInterface[] rgbs) { // RGBs
-			RGBInterface rgb = rgbs[0];
-			if(rgb.isOn()) {
-				colorRGBButton.setText(LABEL_ON);
-				colorRGBButton.setBackground(BUTTON_ON_BG_COLOR);
-			} else {
-				colorRGBButton.setText(LABEL_OFF);
-				colorRGBButton.setBackground(BUTTON_OFF_BG_COLOR);
-			}
-			colorRGBButton.setForeground(rgb.isInputOn() ? BUTTON_ON_FG_COLOR : null);
-			colorRGBBrightness.setValue(rgb.getGain());
-			colorRGBLabel.setText(rgb.getLabel() + " " + rgb.getGain() + "%");
-			colorRGBLabel.setForeground(foregroundColor);
-			ret = colorRGBPanel;
-		} else if(value instanceof WhiteInterface[] lights) { // Dimmerable white(s)
-			if(lights.length == 1) {
-				WhiteInterface light = lights[0];
-				if(light.isOn()) {
-					lightButton.setText(LABEL_ON);
-					lightButton.setBackground(BUTTON_ON_BG_COLOR);
-				} else {
-					lightButton.setText(LABEL_OFF);
-					lightButton.setBackground(BUTTON_OFF_BG_COLOR);
-				}
-				lightButton.setForeground(light.isInputOn() ? BUTTON_ON_FG_COLOR : null);
-				lightBrightness.setMinimum(light.getMinBrightness());
-				lightBrightness.setMaximum(light.getMaxBrightness());
-				lightBrightness.setValue(light.getBrightness());
-				lightLabel.setText(light.getLabel() + " " + light.getBrightness() + "%");
-				lightLabel.setForeground(foregroundColor);
-				ret = lightPanel;
-			} else {
+		try {
+			final JComponent ret;
+			final Color foregroundColor = isSelected ? table.getSelectionForeground() : table.getForeground();
+			if(value instanceof RelayInterface[] riArray) {
 				stackedPanel.removeAll();
-				for(int i = 0; i < lights.length;) {
-					JPanel panel = getWhiteSyntheticPanel(lights[i], foregroundColor, i == 0, ++i == lights.length);
-					stackedPanel.add(panel);
+				for(int i = 0; i < riArray.length; i++) { // 1, 1PM, EM, 2.5 ...
+					stackedPanel.add(getRelayPanel(riArray[i], foregroundColor, i == 0));
 				}
 				ret = stackedPanel;
-			}
-		} else if(value instanceof ThermostatG1 thermostat) { // TRV gen1
-			trvSlider.setValue((int)(thermostat.getTargetTemp() * 2));
-			trvProfileLabel.setText(thermostat.getCurrentProfile() + " " + thermostat.getTargetTemp() + "°C");
-			trvProfileLabel.setEnabled(thermostat.isScheduleActive());
-			trvProfileLabel.setForeground(foregroundColor);
-			ret = trvPanel;
-		} else if(value instanceof ThermostatInterface[] thermostats) {
-			ThermostatInterface thermostat = thermostats[0]; // multiple thermostats devices currently not supported
-			thermSlider.setMinimum((int)(thermostat.getMinTargetTemp() * thermostat.getUnitDivision()));
-			thermSlider.setMaximum((int)(thermostat.getMaxTargetTemp() * thermostat.getUnitDivision()));
-			thermSlider.setValue((int)(thermostat.getTargetTemp() * thermostat.getUnitDivision()));
-			if(tempUnitCelsius) {
-				thermProfileLabel.setText(/*thermostat.getCurrentProfile() + " " +*/ thermostat.getTargetTemp() + "°C");
-			} else {
-				thermProfileLabel.setText(/*thermostat.getCurrentProfile() + " " +*/ (Math.round(thermostat.getTargetTemp() * 18f + 320f) / 10f) + "°F");
-//				thermProfileLabel.setText(/*thermostat.getCurrentProfile() + " " +*/ String.format(Locale.ENGLISH, "%.1f°F", thermostat.getTargetTemp() * 1.8f + 32f));
-			}
-			if(thermostat.isEnabled()) {
-				thermActiveButton.setText(LABEL_ON);
-				thermActiveButton.setBackground(BUTTON_ON_BG_COLOR);
-				thermProfileLabel.setEnabled(true);
-				thermActiveButton.setForeground(thermostat.isRunning() ? BUTTON_ON_FG_COLOR : null);
-			} else {
-				thermActiveButton.setText(LABEL_OFF);
-				thermActiveButton.setBackground(BUTTON_OFF_BG_COLOR);
-				thermProfileLabel.setEnabled(false);
-				thermActiveButton.setForeground(null);
-			}
-			thermProfileLabel.setForeground(foregroundColor);
-			ret = thermPanel;
-		} else if(value instanceof DeviceModule[] modArray) { // mixed modules
-			stackedPanel.removeAll();
-			for(int i = 0; i < modArray.length; i++) {
-				DeviceModule module = modArray[i];
-				if(module instanceof RelayInterface rel) {
-					stackedPanel.add(getRelayPanel(rel, foregroundColor, i == 0));
-				} else if(module instanceof InputInterface input) {
-					if(input.enabled()) {
-						stackedPanel.add(getInputPanel(input, foregroundColor));
-					}
-				} else if(module instanceof WhiteInterface white) {
-					stackedPanel.add(getWhiteSyntheticPanel(white, foregroundColor, i == 0, i == modArray.length - 1));
-				} else if(module instanceof RGBInterface rgb) {
-					stackedPanel.add(getRGBSyntheticPanel(rgb, foregroundColor, i == 0, i == modArray.length - 1));
-				} else if(module instanceof MotionInterface pir) {
-					JLabel motionLabel = (i == 0) ? label0 : new JLabel();
-					motionLabel.setText(LABELS.getString(pir.motion() ? "labelStatusMotion_true" : "labelStatusMotion_false"));
-					motionLabel.setForeground(foregroundColor);
-					stackedPanel.add(motionLabel);
+			} else if(value instanceof RollerInterface[] rollers) { // 2.5 ...
+				stackedPanel.removeAll();
+				for(int i = 0; i < rollers.length; i++) { // 1, 1PM, EM, 2.5 ...
+					stackedPanel.add(getRollerPanel(rollers[i], foregroundColor, i == 0));
 				}
+				ret = stackedPanel;
+			} else if(value instanceof LightBulbRGB[] lights) { // RGBW Bulbs
+				LightBulbRGB light = lights[0]; // multiple bulbs devices currently not supported
+				if(light.isOn()) {
+					lightRGBBulbButton.setText(LABEL_ON);
+					lightRGBBulbButton.setBackground(BUTTON_ON_BG_COLOR);
+				} else {
+					lightRGBBulbButton.setText(LABEL_OFF);
+					lightRGBBulbButton.setBackground(BUTTON_OFF_BG_COLOR);
+				}
+				final int slider = light.isColorMode() ? light.getGain() : light.getBrightness();
+				lightRGBBulbBrightness.setValue(slider);
+				lightRGBBulbLabel.setText(light.getLabel() + " " + slider + "%");
+				lightRGBBulbLabel.setForeground(foregroundColor);
+				ret = lightRGBBulbPanel;
+			} else if(value instanceof RGBWInterface[] rgbws) { // RGBWs
+				RGBWInterface color = rgbws[0];
+				if(color.isOn()) {
+					colorRGBWButton.setText(LABEL_ON);
+					colorRGBWButton.setBackground(BUTTON_ON_BG_COLOR);
+				} else {
+					colorRGBWButton.setText(LABEL_OFF);
+					colorRGBWButton.setBackground(BUTTON_OFF_BG_COLOR);
+				}
+				colorRGBWButton.setForeground(color.isInputOn() ? BUTTON_ON_FG_COLOR : null);
+				colorRGBWGain.setValue(color.getGain());
+				colorRGBWWhite.setValue(color.getWhite());
+				colorRGBWLabel.setText(color.getLabel());
+				colorRGBWLabel.setForeground(foregroundColor);
+				colorRGBWGainLabel.setForeground(foregroundColor);
+				colorRGBWGainLabel.setText(/*Main.LABELS.getString("labelShortGain") +*/ String.format("%-5s", color.getGain() + "%"));
+				colorRGBWhiteLabel.setForeground(foregroundColor);
+				colorRGBWhiteLabel.setText(String.format("%-5s", Main.LABELS.getString("labelShortWhite") + color.getWhite()));
+				ret = colorRGBWPanel;
+			} else if(value instanceof RGBInterface[] rgbs) { // RGBs
+				RGBInterface rgb = rgbs[0];
+				if(rgb.isOn()) {
+					colorRGBButton.setText(LABEL_ON);
+					colorRGBButton.setBackground(BUTTON_ON_BG_COLOR);
+				} else {
+					colorRGBButton.setText(LABEL_OFF);
+					colorRGBButton.setBackground(BUTTON_OFF_BG_COLOR);
+				}
+				colorRGBButton.setForeground(rgb.isInputOn() ? BUTTON_ON_FG_COLOR : null);
+				colorRGBBrightness.setValue(rgb.getGain());
+				colorRGBLabel.setText(rgb.getLabel() + " " + rgb.getGain() + "%");
+				colorRGBLabel.setForeground(foregroundColor);
+				ret = colorRGBPanel;
+			} else if(value instanceof WhiteInterface[] lights) { // Dimmerable white(s)
+				if(lights.length == 1) {
+					WhiteInterface light = lights[0];
+					if(light.isOn()) {
+						lightButton.setText(LABEL_ON);
+						lightButton.setBackground(BUTTON_ON_BG_COLOR);
+					} else {
+						lightButton.setText(LABEL_OFF);
+						lightButton.setBackground(BUTTON_OFF_BG_COLOR);
+					}
+					lightButton.setForeground(light.isInputOn() ? BUTTON_ON_FG_COLOR : null);
+					lightBrightness.setMinimum(light.getMinBrightness());
+					lightBrightness.setMaximum(light.getMaxBrightness());
+					lightBrightness.setValue(light.getBrightness());
+					lightLabel.setText(light.getLabel() + " " + light.getBrightness() + "%");
+					lightLabel.setForeground(foregroundColor);
+					ret = lightPanel;
+				} else {
+					stackedPanel.removeAll();
+					for(int i = 0; i < lights.length;) {
+						JPanel panel = getWhiteSyntheticPanel(lights[i], foregroundColor, i == 0, ++i == lights.length);
+						stackedPanel.add(panel);
+					}
+					ret = stackedPanel;
+				}
+			} else if(value instanceof ThermostatG1 thermostat) { // TRV gen1
+				trvSlider.setValue((int)(thermostat.getTargetTemp() * 2));
+				trvProfileLabel.setText(thermostat.getCurrentProfile() + " " + thermostat.getTargetTemp() + "°C");
+				trvProfileLabel.setEnabled(thermostat.isScheduleActive());
+				trvProfileLabel.setForeground(foregroundColor);
+				ret = trvPanel;
+			} else if(value instanceof ThermostatInterface[] thermostats) {
+				ThermostatInterface thermostat = thermostats[0]; // multiple thermostats devices currently not supported
+				thermSlider.setMinimum((int)(thermostat.getMinTargetTemp() * thermostat.getUnitDivision()));
+				thermSlider.setMaximum((int)(thermostat.getMaxTargetTemp() * thermostat.getUnitDivision()));
+				thermSlider.setValue((int)(thermostat.getTargetTemp() * thermostat.getUnitDivision()));
+				if(tempUnitCelsius) {
+					thermProfileLabel.setText(/*thermostat.getCurrentProfile() + " " +*/ thermostat.getTargetTemp() + "°C");
+				} else {
+					thermProfileLabel.setText(/*thermostat.getCurrentProfile() + " " +*/ (Math.round(thermostat.getTargetTemp() * 18f + 320f) / 10f) + "°F");
+					//				thermProfileLabel.setText(/*thermostat.getCurrentProfile() + " " +*/ String.format(Locale.ENGLISH, "%.1f°F", thermostat.getTargetTemp() * 1.8f + 32f));
+				}
+				if(thermostat.isEnabled()) {
+					thermActiveButton.setText(LABEL_ON);
+					thermActiveButton.setBackground(BUTTON_ON_BG_COLOR);
+					thermProfileLabel.setEnabled(true);
+					thermActiveButton.setForeground(thermostat.isRunning() ? BUTTON_ON_FG_COLOR : null);
+				} else {
+					thermActiveButton.setText(LABEL_OFF);
+					thermActiveButton.setBackground(BUTTON_OFF_BG_COLOR);
+					thermProfileLabel.setEnabled(false);
+					thermActiveButton.setForeground(null);
+				}
+				thermProfileLabel.setForeground(foregroundColor);
+				ret = thermPanel;
+			} else if(value instanceof DeviceModule[] modArray) { // mixed modules
+				stackedPanel.removeAll();
+				for(int i = 0; i < modArray.length; i++) {
+					DeviceModule module = modArray[i];
+					if(module instanceof RelayInterface rel) {
+						stackedPanel.add(getRelayPanel(rel, foregroundColor, i == 0));
+					} else if(module instanceof InputInterface input) {
+						if(input.enabled()) {
+							stackedPanel.add(getInputPanel(input, foregroundColor));
+						}
+					} else if(module instanceof WhiteInterface white) {
+						stackedPanel.add(getWhiteSyntheticPanel(white, foregroundColor, i == 0, i == modArray.length - 1));
+					} else if(module instanceof RGBInterface rgb) {
+						stackedPanel.add(getRGBSyntheticPanel(rgb, foregroundColor, i == 0, i == modArray.length - 1));
+					} else if(module instanceof MotionInterface pir) {
+						JLabel motionLabel = (i == 0) ? label0 : new JLabel();
+						motionLabel.setText(LABELS.getString(pir.motion() ? "labelStatusMotion_true" : "labelStatusMotion_false"));
+						motionLabel.setForeground(foregroundColor);
+						stackedPanel.add(motionLabel);
+					}
+				}
+				ret = stackedPanel;
+			} else {
+				labelPlain.setText(value == null ? "" : value.toString());
+				labelPlain.setForeground(foregroundColor);
+				ret = labelPlain;
 			}
-			ret = stackedPanel;
-		} else {
-			labelPlain.setText(value == null ? "" : value.toString());
-			labelPlain.setForeground(foregroundColor);
-			ret = labelPlain;
+			return ret;
+		} catch(Throwable e) {
+			LOG.error("rendering error", e);
+			labelPlain.setText("rendering error");
+			return labelPlain;
 		}
-		return ret;
-//		} catch(Exception e) {e.printStackTrace(); return null;}
 	}
 
 	private JPanel getRelayPanel(RelayInterface rel, final Color foregroundColor, boolean ind0) {
