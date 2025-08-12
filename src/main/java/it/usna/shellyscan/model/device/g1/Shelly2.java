@@ -16,7 +16,7 @@ import it.usna.shellyscan.model.device.g1.modules.Roller;
 import it.usna.shellyscan.model.device.modules.DeviceModule;
 
 public class Shelly2 extends AbstractG1Device implements ModulesHolder {
-	public final static String ID = "SHSW-21";
+	public static final String ID = "SHSW-21";
 	private boolean modeRelay;
 	private Relay relay0, relay1;
 	private Roller roller;

@@ -14,7 +14,7 @@ import it.usna.shellyscan.model.device.blu.BluTRV;
 import it.usna.shellyscan.model.device.modules.FirmwareManager;
 
 public class FirmwareManagerTRV implements FirmwareManager {
-	private final static Logger LOG = LoggerFactory.getLogger(FirmwareManagerTRV.class);
+	private static final Logger LOG = LoggerFactory.getLogger(FirmwareManagerTRV.class);
 
 	private final BluTRV d;
 	private String current;

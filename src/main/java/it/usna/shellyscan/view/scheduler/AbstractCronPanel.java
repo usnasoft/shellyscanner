@@ -41,7 +41,7 @@ import it.usna.shellyscan.view.util.Msg;
  */
 public abstract class AbstractCronPanel extends JPanel {
 	private static final long serialVersionUID = 1L;
-	private final static ImageIcon EDIT_IMG = new ImageIcon(AbstractCronPanel.class.getResource("/images/Write16.png"));
+	private static final ImageIcon EDIT_IMG = new ImageIcon(AbstractCronPanel.class.getResource("/images/Write16.png"));
 	private JTextField hoursTextField;
 	private JTextField minutesTextField;
 	private JTextField secondsTextField;
@@ -56,16 +56,16 @@ public abstract class AbstractCronPanel extends JPanel {
 	private JRadioButton beforeSetRadio;
 	private JRadioButton afterSetRadio;
 	protected JTextField expressionField;
-	protected JDialog parent;
+	protected JDialog parentDlg;
 
-	protected final static String DEF_CRON = "0 0 * * * *";
+	protected static final String DEF_CRON = "0 0 * * * *";
 	
 	/**
 	 * @wbp.parser.constructor
 	 * used for design
 	 */
-	public AbstractCronPanel(JDialog parent) {
-		this.parent = parent;
+	protected AbstractCronPanel(JDialog parent) {
+		this.parentDlg = parent;
 		setOpaque(false);
 		setBorder(BorderFactory.createEmptyBorder(2, 2, 4, 2));
 		initCronSection();
@@ -95,7 +95,7 @@ public abstract class AbstractCronPanel extends JPanel {
 		gbc_btnHoursSelec.gridx = 1;
 		gbc_btnHoursSelec.gridy = 0;
 		add(btnHoursSelec, gbc_btnHoursSelec);
-		btnHoursSelec.addActionListener(e -> new CronValuesDialog(parent, hoursTextField, 0, 24));
+		btnHoursSelec.addActionListener(e -> new CronValuesDialog(parentDlg, hoursTextField, 0, 24));
 
 		JButton btnMinutesSelec = new JButton(EDIT_IMG);
 		btnMinutesSelec.setContentAreaFilled(false);
@@ -105,7 +105,7 @@ public abstract class AbstractCronPanel extends JPanel {
 		gbc_btnMinutesSelec.gridx = 3;
 		gbc_btnMinutesSelec.gridy = 0;
 		add(btnMinutesSelec, gbc_btnMinutesSelec);
-		btnMinutesSelec.addActionListener(e -> new CronValuesDialog(parent, minutesTextField, 0, 60));
+		btnMinutesSelec.addActionListener(e -> new CronValuesDialog(parentDlg, minutesTextField, 0, 60));
 
 		JLabel lblNewLabel_2 = new JLabel(LABELS.getString("lblSeconds"));
 		GridBagConstraints gbc_lblNewLabel_2 = new GridBagConstraints();
@@ -123,7 +123,7 @@ public abstract class AbstractCronPanel extends JPanel {
 		gbc_btnSecondsSelec.gridx = 5;
 		gbc_btnSecondsSelec.gridy = 0;
 		add(btnSecondsSelec, gbc_btnSecondsSelec);
-		btnSecondsSelec.addActionListener(e -> new CronValuesDialog(parent, secondsTextField, 0, 60));
+		btnSecondsSelec.addActionListener(e -> new CronValuesDialog(parentDlg, secondsTextField, 0, 60));
 
 		JLabel lblNewLabel_3 = new JLabel(LABELS.getString("lblDays"));
 		GridBagConstraints gbc_lblNewLabel_3 = new GridBagConstraints();
@@ -141,7 +141,7 @@ public abstract class AbstractCronPanel extends JPanel {
 		gbc_btnDaysSelec.gridx = 7;
 		gbc_btnDaysSelec.gridy = 0;
 		add(btnDaysSelec, gbc_btnDaysSelec);
-		btnDaysSelec.addActionListener(e -> new CronValuesDialog(parent, daysTextField, 1, 32));
+		btnDaysSelec.addActionListener(e -> new CronValuesDialog(parentDlg, daysTextField, 1, 32));
 
 		hoursTextField = new JTextField();
 		GridBagConstraints gbc_hoursTextField = new GridBagConstraints();
@@ -567,7 +567,7 @@ public abstract class AbstractCronPanel extends JPanel {
 		String exp = expressionField.getText();
 		if(CronUtils.CRON_PATTERN.matcher(exp).matches() == false && CronUtils.SUNSET_PATTERN.matcher(exp).matches() == false /*&& CronUtils.RANDOM_PATTERN.matcher(exp).matches() == false*/) {
 			expressionField.requestFocus();
-			Msg.errorMsg(parent, "schErrorInvalidExpression");
+			Msg.errorMsg(parentDlg, "schErrorInvalidExpression");
 			return false;
 		} else {
 			return true;

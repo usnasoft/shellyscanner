@@ -53,41 +53,41 @@ import it.usna.util.AppProperties;
 
 public class DevicesTable extends ExTooltipTable {
 	private static final long serialVersionUID = 1L;
-	private final static Image OFFLINEIMG =Toolkit.getDefaultToolkit().getImage(DevicesTable.class.getResource("/images/bullet_stop.png"));
-	private final static Image GHOSTIMG = Toolkit.getDefaultToolkit().getImage(DevicesTable.class.getResource("/images/bullet_ghost.png"));
-	private final static Image BLUIMG = Toolkit.getDefaultToolkit().getImage(DevicesTable.class.getResource("/images/bullet_bluetooth.png"));
-	public final static ImageIcon ONLINE_BULLET = new ImageIcon(DevicesTable.class.getResource("/images/bullet_yes.png"), LABELS.getString("labelDevOnLIne"));
-	public final static ImageIcon ONLINE_BULLET_REBOOT = new ImageIcon(DevicesTable.class.getResource("/images/bullet_yes_reboot.png"), LABELS.getString("labelDevOnLIneReboot"));
-	public final static ImageIcon OFFLINE_BULLET = new ImageIcon(OFFLINEIMG, LABELS.getString("labelDevOffLIne"));
-	public final static ImageIcon LOGIN_BULLET = new ImageIcon(DevicesTable.class.getResource("/images/bullet_star_yellow.png"), LABELS.getString("labelDevNotLogged"));
-	public final static ImageIcon UPDATING_BULLET = new ImageIcon(DevicesTable.class.getResource("/images/bullet_refresh.png"), LABELS.getString("labelDevUpdating"));
-	public final static ImageIcon ERROR_BULLET = new ImageIcon(DevicesTable.class.getResource("/images/bullet_error.png"), LABELS.getString("labelDevError"));
-	private final static String TRUE = LABELS.getString("true_yn");
-	private final static String FALSE = LABELS.getString("false_yn");
-	private final static String YES = LABELS.getString("true_yna");
-	private final static String NO = LABELS.getString("false_yna");
+	private static final Image OFFLINEIMG =Toolkit.getDefaultToolkit().getImage(DevicesTable.class.getResource("/images/bullet_stop.png"));
+	private static final Image GHOSTIMG = Toolkit.getDefaultToolkit().getImage(DevicesTable.class.getResource("/images/bullet_ghost.png"));
+	private static final Image BLUIMG = Toolkit.getDefaultToolkit().getImage(DevicesTable.class.getResource("/images/bullet_bluetooth.png"));
+	public static final ImageIcon ONLINE_BULLET = new ImageIcon(DevicesTable.class.getResource("/images/bullet_yes.png"), LABELS.getString("labelDevOnLIne"));
+	public static final ImageIcon ONLINE_BULLET_REBOOT = new ImageIcon(DevicesTable.class.getResource("/images/bullet_yes_reboot.png"), LABELS.getString("labelDevOnLIneReboot"));
+	public static final ImageIcon OFFLINE_BULLET = new ImageIcon(OFFLINEIMG, LABELS.getString("labelDevOffLIne"));
+	public static final ImageIcon LOGIN_BULLET = new ImageIcon(DevicesTable.class.getResource("/images/bullet_star_yellow.png"), LABELS.getString("labelDevNotLogged"));
+	public static final ImageIcon UPDATING_BULLET = new ImageIcon(DevicesTable.class.getResource("/images/bullet_refresh.png"), LABELS.getString("labelDevUpdating"));
+	public static final ImageIcon ERROR_BULLET = new ImageIcon(DevicesTable.class.getResource("/images/bullet_error.png"), LABELS.getString("labelDevError"));
+	private static final String TRUE = LABELS.getString("true_yn");
+	private static final String FALSE = LABELS.getString("false_yn");
+	private static final String YES = LABELS.getString("true_yna");
+	private static final String NO = LABELS.getString("false_yna");
 	
 	// model columns indexes
-	public final static int COL_STATUS_IDX = 0;
-	final static int COL_TYPE = 1;
-	final static int COL_DEVICE = 2;
-	final static int COL_NAME = 3;
-	final static int COL_KEYWORD = 4;
-	final static int COL_MAC_IDX = 5;
-	final static int COL_IP_IDX = 6;
-	final static int COL_SSID_IDX = 7;
-	final static int COL_RSSI_IDX = 8;
-	final static int COL_CLOUD = 9;
-	final static int COL_MQTT = 10;
-	final static int COL_UPTIME_IDX = 11;
-	final static int COL_INT_TEMP = 12;
-	final static int COL_MEASURES_IDX = 13;
-	final static int COL_DEBUG = 14;
-	final static int COL_SOURCE_IDX = 15;
-	final static int COL_COMMAND_IDX = 16;
+	public static final int COL_STATUS_IDX = 0;
+	static final int COL_TYPE = 1;
+	static final int COL_DEVICE = 2;
+	static final int COL_NAME = 3;
+	static final int COL_KEYWORD = 4;
+	static final int COL_MAC_IDX = 5;
+	static final int COL_IP_IDX = 6;
+	static final int COL_SSID_IDX = 7;
+	static final int COL_RSSI_IDX = 8;
+	static final int COL_CLOUD = 9;
+	static final int COL_MQTT = 10;
+	static final int COL_UPTIME_IDX = 11;
+	static final int COL_INT_TEMP = 12;
+	static final int COL_MEASURES_IDX = 13;
+	static final int COL_DEBUG = 14;
+	static final int COL_SOURCE_IDX = 15;
+	static final int COL_COMMAND_IDX = 16;
 	
-	public final static String STORE_PREFIX = "TAB";
-	public final static String STORE_EXT_PREFIX = "TAB_EXT";
+	public static final String STORE_PREFIX = "TAB";
+	public static final String STORE_EXT_PREFIX = "TAB_EXT";
 	
 	private UptimeCellRenderer uptimeRenderer = new UptimeCellRenderer();
 
@@ -95,7 +95,7 @@ public class DevicesTable extends ExTooltipTable {
 	
 	private boolean tempUnitCelsius;
 	
-	private final static Logger LOG = LoggerFactory.getLogger(DevicesTable.class);
+	private static final Logger LOG = LoggerFactory.getLogger(DevicesTable.class);
 
 	public DevicesTable(TableModel tm) {
 		super(tm, true);

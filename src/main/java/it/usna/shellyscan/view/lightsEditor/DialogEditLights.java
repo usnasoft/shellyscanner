@@ -37,9 +37,9 @@ import it.usna.swing.VerticalFlowLayout;
 public class DialogEditLights extends JDialog {
 	private static final long serialVersionUID = 1L;
 	private final LightPanel commandPanels[];
-	final static ImageIcon offImg = new ImageIcon(DialogEditLights.class.getResource("/images/Standby24.png"));
-	private final static ImageIcon onImg = new ImageIcon(DialogEditLights.class.getResource("/images/StandbyOn24.png"));
-	private final static Logger LOG = LoggerFactory.getLogger(DialogEditLights.class);
+	static final ImageIcon offImg = new ImageIcon(DialogEditLights.class.getResource("/images/Standby24.png"));
+	private static final ImageIcon onImg = new ImageIcon(DialogEditLights.class.getResource("/images/StandbyOn24.png"));
+	private static final Logger LOG = LoggerFactory.getLogger(DialogEditLights.class);
 
 	public DialogEditLights(final Window owner, String title, DeviceModule[] lights) {
 		super(owner, title, Dialog.ModalityType.MODELESS);

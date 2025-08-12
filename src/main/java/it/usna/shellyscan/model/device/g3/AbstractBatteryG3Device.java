@@ -23,7 +23,7 @@ import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.BatteryDeviceInterface;
 
 public abstract class AbstractBatteryG3Device extends AbstractG3Device implements BatteryDeviceInterface {
-	private final static Logger LOG = LoggerFactory.getLogger(AbstractBatteryG3Device.class);
+	private static final Logger LOG = LoggerFactory.getLogger(AbstractBatteryG3Device.class);
 	protected JsonNode shelly;
 	protected JsonNode settings;
 	protected JsonNode status;

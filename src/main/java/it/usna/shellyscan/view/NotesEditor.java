@@ -35,7 +35,7 @@ import it.usna.swing.dialog.FindReplaceDialog;
  */
 public class NotesEditor extends JFrame {
 	private static final long serialVersionUID = 1L;
-	private final static int MAX_KEYWORD_SIZE = 32;
+	private static final int MAX_KEYWORD_SIZE = 32;
 	private JPanel centerPanel = new JPanel(new BorderLayout());
 
 	public NotesEditor(MainView mView, GhostDevice ghost, int index) {

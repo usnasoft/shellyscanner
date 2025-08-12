@@ -25,9 +25,9 @@ import it.usna.shellyscan.model.device.modules.DeviceModule;
  * @author usna
  */
 public class ShellyProRGBWW extends AbstractProDevice implements ModulesHolder, InternalTmpHolder {
-//	private final static Logger LOG = LoggerFactory.getLogger(ShellyProRGBWW.class);
-	public final static String ID = "ProRGBWWPM";
-	public final static String MODEL ="SPDC-0D5PE16EU";
+//	private static final Logger LOG = LoggerFactory.getLogger(ShellyProRGBWW.class);
+	public static final String ID = "ProRGBWWPM";
+	public static final String MODEL ="SPDC-0D5PE16EU";
 	public enum Profile {
 		LIGHT("light"), RGB2L("rgbx2light"), RGB_CCT("rgbcct"), CCT_CCT("cctx2");
 		

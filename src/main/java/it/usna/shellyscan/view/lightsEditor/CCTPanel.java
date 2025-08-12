@@ -26,7 +26,7 @@ import it.usna.shellyscan.view.util.UtilMiscellaneous;
 import it.usna.swing.VerticalFlowLayout;
 
 public class CCTPanel extends LightPanel {
-	private final static Logger LOG = LoggerFactory.getLogger(CCTPanel.class);
+	private static final Logger LOG = LoggerFactory.getLogger(CCTPanel.class);
 	private static final long serialVersionUID = 1L;
 	private final CCTInterface light;
 	private final JLabel labelBrighteness = new JLabel();

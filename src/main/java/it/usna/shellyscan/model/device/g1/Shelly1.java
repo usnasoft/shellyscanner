@@ -19,9 +19,9 @@ import it.usna.shellyscan.model.device.g1.modules.Relay;
  * @author usna
  */
 public class Shelly1 extends AbstractG1Device implements ModulesHolder {
-	public final static String ID = "SHSW-1";
-	private final static Meters.Type[] SUPPORTED_MEASURES_H = new Meters.Type[] { Meters.Type.T, Meters.Type.H };
-	private final static Meters.Type[] MEASURES_EXT_SWITCH = new Meters.Type[] { Meters.Type.EX };
+	public static final String ID = "SHSW-1";
+	private static final Meters.Type[] SUPPORTED_MEASURES_H = new Meters.Type[] { Meters.Type.T, Meters.Type.H };
+	private static final Meters.Type[] MEASURES_EXT_SWITCH = new Meters.Type[] { Meters.Type.EX };
 	private Relay relay = new Relay(this, 0);
 	private float extT0, extT1, extT2;
 	private int humidity;

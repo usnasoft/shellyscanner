@@ -27,8 +27,8 @@ import it.usna.shellyscan.model.device.modules.DeviceModule;
  * @author usna
  */
 public class WallDisplay extends AbstractG2Device implements ModulesHolder {
-	public final static String ID = "WallDisplay";
-	private final static Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.T, Meters.Type.H, Meters.Type.L};
+	public static final String ID = "WallDisplay";
+	private static final Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.T, Meters.Type.H, Meters.Type.L};
 	private float temp;
 	private float humidity;
 	private int lux;

@@ -20,9 +20,9 @@ import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
 
 public class Msg {
-	private final static Logger LOG = LoggerFactory.getLogger(Msg.class);
-	private final static int DEF_ROWS_MAX = 35;
-	private final static Pattern PATTERN_BR = Pattern.compile("<br>");
+	private static final Logger LOG = LoggerFactory.getLogger(Msg.class);
+	private static final int DEF_ROWS_MAX = 35;
+	private static final Pattern PATTERN_BR = Pattern.compile("<br>");
 	
 	public static void showHtmlMessageDialog(Component parentComponent, CharSequence message, String title, int messageType, final int rowsMax) {
 		try {

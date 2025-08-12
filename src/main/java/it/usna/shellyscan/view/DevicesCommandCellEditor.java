@@ -45,7 +45,7 @@ import it.usna.swing.VerticalFlowLayout;
 
 public class DevicesCommandCellEditor extends AbstractCellEditor implements TableCellEditor {
 	private static final long serialVersionUID = 1L;
-	private final static Logger LOG = LoggerFactory.getLogger(DevicesCommandCellEditor.class);
+	private static final Logger LOG = LoggerFactory.getLogger(DevicesCommandCellEditor.class);
 	private Object edited;
 	
 	// Generic

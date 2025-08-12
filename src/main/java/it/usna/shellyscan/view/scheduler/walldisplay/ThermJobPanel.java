@@ -38,9 +38,9 @@ import it.usna.swing.NumericTextField;
 
 class ThermJobPanel extends JPanel {
 	private static final long serialVersionUID = 1L;
-	private final static String SECONDS = "*";
-	private final static String DAYS = "*";
-	private final static String MONTHS = "*";
+	private static final String SECONDS = "*";
+	private static final String DAYS = "*";
+	private static final String MONTHS = "*";
 	private float minTarget, maxTarget;
 	private NumericTextField<Float> target;
 	
@@ -51,7 +51,7 @@ class ThermJobPanel extends JPanel {
 	protected JTextField expressionField;
 	protected JDialog parent;
 	
-	private final static String DEF_CRON = "* 0 0 * * 0,1,2,3,4,5,6";
+	private static final String DEF_CRON = "* 0 0 * * 0,1,2,3,4,5,6";
 
 	ThermJobPanel(JDialog parent, float minTarget, float maxTarget, String timespec, Float temp) {
 		this.parent = parent;

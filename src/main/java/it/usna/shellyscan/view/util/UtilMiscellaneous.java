@@ -8,7 +8,7 @@ import it.usna.shellyscan.model.device.modules.DeviceModule;
 import it.usna.shellyscan.model.device.modules.RelayInterface;
 
 public class UtilMiscellaneous {
-	private final static NumberFormat formatterN2 = NumberFormat.getInstance();
+	private static final NumberFormat formatterN2 = NumberFormat.getInstance();
 	static {
 		formatterN2.setMaximumFractionDigits(2);
 		formatterN2.setMinimumFractionDigits(2);

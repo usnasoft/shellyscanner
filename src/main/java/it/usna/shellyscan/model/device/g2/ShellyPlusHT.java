@@ -12,8 +12,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import it.usna.shellyscan.model.device.Meters;
 
 public class ShellyPlusHT extends AbstractBatteryG2Device {
-	public final static String ID = "PlusHT";
-	private final static Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.T, Meters.Type.H, Meters.Type.BAT};
+	public static final String ID = "PlusHT";
+	private static final Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.T, Meters.Type.H, Meters.Type.BAT};
 	private float temp;
 	private float humidity;
 	private Meters[] meters;

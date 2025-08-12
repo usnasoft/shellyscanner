@@ -32,7 +32,7 @@ import it.usna.util.AppProperties;
 
 public class PanelStore extends JPanel {
 	private static final long serialVersionUID = 1L;
-	private final static Logger LOG = LoggerFactory.getLogger(PanelStore.class);
+	private static final Logger LOG = LoggerFactory.getLogger(PanelStore.class);
 	private JCheckBox chckbxUseStore = new JCheckBox();
 	private JTextField textFieldStoreFileName;
 	private JCheckBox autoReloadCheckBox;

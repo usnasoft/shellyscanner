@@ -9,7 +9,7 @@ import it.usna.shellyscan.model.device.g3.AbstractG3Device;
  * @author usna
  */
 public abstract class AbstractG4Device extends AbstractG3Device {
-//	private final static Logger LOG = LoggerFactory.getLogger(AbstractG3Device.class);
+//	private static final Logger LOG = LoggerFactory.getLogger(AbstractG3Device.class);
 	protected boolean zigbee;
 
 	protected AbstractG4Device(InetAddress address, int port, String hostname) {

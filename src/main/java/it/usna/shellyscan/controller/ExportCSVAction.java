@@ -23,7 +23,7 @@ import it.usna.util.IOFile;
 
 public class ExportCSVAction extends UsnaAction {
 	private static final long serialVersionUID = 1L;
-//	private final static Logger LOG = LoggerFactory.getLogger(ExportCSVAction.class);
+//	private static final Logger LOG = LoggerFactory.getLogger(ExportCSVAction.class);
 
 	public ExportCSVAction(MainView mainView, DevicesTable devicesTable) {
 		super(mainView, "action_csv_name", "action_csv_tooltip", null, /*"/images/Table.png"*/"/images/Save.png");

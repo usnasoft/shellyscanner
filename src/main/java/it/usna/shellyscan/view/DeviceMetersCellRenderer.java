@@ -21,18 +21,18 @@ import it.usna.shellyscan.model.device.Meters.Type;
 
 public class DeviceMetersCellRenderer extends JPanel implements TableCellRenderer {
 	private static final long serialVersionUID = 1L;
-	private final static int HIDE_LIMIT = 4;
-	private final static Insets INSETS_LABEL1 = new Insets(0, 0, 0, 2);
-	private final static Insets INSETS_LABEL2 = new Insets(0, 6, 0, 2);
+	private static final int HIDE_LIMIT = 4;
+	private static final Insets INSETS_LABEL1 = new Insets(0, 0, 0, 2);
+	private static final Insets INSETS_LABEL2 = new Insets(0, 6, 0, 2);
 
 	private static Border EMPTY_BORDER;
-	private final static Border FOCUS_BORDER = UIManager.getBorder("Table.focusCellHighlightBorder");
-	private final static Font LABEL_FONT = new Font("Tahoma", Font.BOLD, 11);
-//	private final static MessageFormat SWITCH_FORMATTER = new MessageFormat("{0,choice,0#open|1#closed|1<{0,number,integer}}", Locale.ENGLISH);
+	private static final Border FOCUS_BORDER = UIManager.getBorder("Table.focusCellHighlightBorder");
+	private static final Font LABEL_FONT = new Font("Tahoma", Font.BOLD, 11);
+//	private static final MessageFormat SWITCH_FORMATTER = new MessageFormat("{0,choice,0#open|1#closed|1<{0,number,integer}}", Locale.ENGLISH);
 	//val = new JLabel(SWITCH_FORMATTER.format(singleArrayObj));
 	
-	private final static JLabel EMPTY = new JLabel();
-	private final static GridBagConstraints GBC_FILLER = new GridBagConstraints();
+	private static final JLabel EMPTY = new JLabel();
+	private static final GridBagConstraints GBC_FILLER = new GridBagConstraints();
 	static {
 		EMPTY.setOpaque(true);
 		GBC_FILLER.weightx = 1.0;

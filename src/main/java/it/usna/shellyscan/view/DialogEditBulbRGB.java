@@ -63,7 +63,7 @@ public class DialogEditBulbRGB extends JDialog {
 	private JLabel labelBlue = new JLabel();
 	private final JPanel previewColorPanel = new JPanel();
 	private final JPanel previewWhitePanel = new JPanel();
-	private final static Logger LOG = LoggerFactory.getLogger(DialogEditBulbRGB.class);
+	private static final Logger LOG = LoggerFactory.getLogger(DialogEditBulbRGB.class);
 	private final JButton k3000 = new JButton("3000K");
 	private final JButton k4500 = new JButton("4500K");
 	private final JButton k6000 = new JButton("6000K");

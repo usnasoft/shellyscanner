@@ -50,9 +50,9 @@ import it.usna.shellyscan.model.device.g3.AbstractG3Device;
 import it.usna.shellyscan.model.device.g4.AbstractG4Device;
 
 public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Integer> {
-	private final static Logger LOG = LoggerFactory.getLogger(Devices.class);
-	private final static ObjectMapper JSON_MAPPER = new ObjectMapper();
-	public final static String SCANNER_AGENT = "Shelly Scanner";
+	private static final Logger LOG = LoggerFactory.getLogger(Devices.class);
+	private static final ObjectMapper JSON_MAPPER = new ObjectMapper();
+	public static final String SCANNER_AGENT = "Shelly Scanner";
 	
 	public enum EventType {
 		ADD,
@@ -63,16 +63,16 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 		CLEAR // Clear model
 	};
 
-	private final static int EXECUTOR_POOL_SIZE = 128;
-	public final static long MULTI_QUERY_DELAY = 59;
+	private static final int EXECUTOR_POOL_SIZE = 128;
+	public static final long MULTI_QUERY_DELAY = 59;
 
 	private JmmDNS jd;
 	private Set<JmDNS> bjServices = new HashSet<>();
 
 	private IPCollection ipCollection = null;
 
-	private final static String SERVICE_TYPE1 = "_http._tcp.local.";
-//	private final static String SERVICE_TYPE2 = "_shelly._tcp.local.";
+	private static final String SERVICE_TYPE1 = "_http._tcp.local.";
+//	private static final String SERVICE_TYPE2 = "_shelly._tcp.local.";
 	private final List<ShellyAbstractDevice> devices = new ArrayList<>();
 	private final List<ScheduledFuture<?>> refreshProcess = new ArrayList<>();
 	private int refreshInterval = 2000;

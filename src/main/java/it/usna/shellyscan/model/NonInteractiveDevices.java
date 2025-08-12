@@ -40,18 +40,18 @@ import it.usna.shellyscan.model.device.g3.AbstractG3Device;
  * Devices model intended for CLI non iteractive use
  */
 public class NonInteractiveDevices implements Closeable {
-	private final static Logger LOG = LoggerFactory.getLogger(NonInteractiveDevices.class);
-	private final static ObjectMapper JSON_MAPPER = new ObjectMapper();
+	private static final Logger LOG = LoggerFactory.getLogger(NonInteractiveDevices.class);
+	private static final ObjectMapper JSON_MAPPER = new ObjectMapper();
 
-	private final static int EXECUTOR_POOL_SIZE = 64;
+	private static final int EXECUTOR_POOL_SIZE = 64;
 
 	private JmmDNS jd;
 	private Set<JmDNS> bjServices = new HashSet<>();
 
 	private IPCollection ipCollection = null;
 
-	private final static String SERVICE_TYPE1 = "_http._tcp.local.";
-//	private final static String SERVICE_TYPE2 = "_shelly._tcp.local.";
+	private static final String SERVICE_TYPE1 = "_http._tcp.local.";
+//	private static final String SERVICE_TYPE2 = "_shelly._tcp.local.";
 	private final List<ShellyAbstractDevice> devices = new ArrayList<>();
 
 	private HttpClient httpClient = new HttpClient();

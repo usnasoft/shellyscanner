@@ -23,8 +23,8 @@ import it.usna.shellyscan.model.device.modules.DeviceModule;
  * @author usna
  */
 public class ShellyProDimmer2 extends AbstractProDevice implements InternalTmpHolder, ModulesHolder {
-	public final static String ID = "ProDimmerx";
-	public final static String MODEL = "SPDM-002PE01EU";
+	public static final String ID = "ProDimmerx";
+	public static final String MODEL = "SPDM-002PE01EU";
 	private float internalTmp;
 	private final MetersWVI meters0 = new MetersWVI();
 	private final MetersWVI meters1 = new MetersWVI();

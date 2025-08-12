@@ -5,11 +5,11 @@ import java.io.IOException;
 public class DeviceAPIException extends IOException {
 	private static final long serialVersionUID = 1L;
 	// Common Errors - https://shelly-api-docs.shelly.cloud/gen2/General/CommonErrors
-	public final static int INVALID_ARGUMENT = -103;
-	public final static int DEADLINE_EXCEEDED = -104;
-	public final static int RESOURCE_EXHAUSTED = -108;
-	public final static int FAILED_PRECONDITION = -109;
-	public final static int UNAVAILABLE = -114;
+	public static final int INVALID_ARGUMENT = -103;
+	public static final int DEADLINE_EXCEEDED = -104;
+	public static final int RESOURCE_EXHAUSTED = -108;
+	public static final int FAILED_PRECONDITION = -109;
+	public static final int UNAVAILABLE = -114;
 	
 	private final int code;
 	private final String msg;

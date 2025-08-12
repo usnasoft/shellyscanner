@@ -23,7 +23,7 @@ import it.usna.shellyscan.model.device.modules.DeviceModule;
  * @author usna
  */
 public class ShellyXMOD1 extends AbstractG3Device implements ModulesHolder {
-	public final static String ID = "XMOD1";
+	public static final String ID = "XMOD1";
 	private int numInputs;
 	private int numOutputs;
 	private int numModules;

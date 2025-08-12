@@ -12,9 +12,9 @@ import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.g1.modules.ThermostatG1;
 
 public class ShellyTRV extends AbstractG1Device {
-	public final static String ID = "SHTRV-01";
-//	private final static Logger LOG = LoggerFactory.getLogger(ShellyTRV.class);
-	private final static Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.BAT, Meters.Type.T};
+	public static final String ID = "SHTRV-01";
+//	private static final Logger LOG = LoggerFactory.getLogger(ShellyTRV.class);
+	private static final Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.BAT, Meters.Type.T};
 	private ThermostatG1 thermostat = new ThermostatG1(this);
 	private float measuredTemp;
 	private Meters[] meters;

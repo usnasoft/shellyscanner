@@ -25,21 +25,21 @@ import it.usna.swing.table.UsnaTableModel;
 
 class CheckListTable extends ExTooltipTable {
 	private static final long serialVersionUID = 1L;
-	private final static Color GREEN_OK = new Color(0, 192, 0);
-	public final static int COL_STATUS = 0;
-	public final static int COL_NAME = 1;
-	public final static int COL_IP = 2;
-	public final static int COL_ECO = 3;
-	public final static int COL_LED = 4;
-	public final static int COL_LOGS = 5;
-	public final static int COL_BLE = 6;
-	public final static int COL_AP = 7;
-	public final static int COL_ROAMING = 8;
-	public final static int COL_WIFI1 = 9;
-	public final static int COL_WIFI2 = 10;
-	public final static int COL_EXTENDER = 11;
-	public final static int COL_SCRIPTS = 12;
-	public final static int COL_LAST = COL_SCRIPTS;
+	private static final Color GREEN_OK = new Color(0, 192, 0);
+	public static final int COL_STATUS = 0;
+	public static final int COL_NAME = 1;
+	public static final int COL_IP = 2;
+	public static final int COL_ECO = 3;
+	public static final int COL_LED = 4;
+	public static final int COL_LOGS = 5;
+	public static final int COL_BLE = 6;
+	public static final int COL_AP = 7;
+	public static final int COL_ROAMING = 8;
+	public static final int COL_WIFI1 = 9;
+	public static final int COL_WIFI2 = 10;
+	public static final int COL_EXTENDER = 11;
+	public static final int COL_SCRIPTS = 12;
+	public static final int COL_LAST = COL_SCRIPTS;
 	
 	public CheckListTable(UsnaTableModel tModel, final SortOrder ipSort) {
 		super(tModel, true);

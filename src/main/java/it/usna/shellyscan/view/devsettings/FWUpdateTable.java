@@ -23,11 +23,11 @@ import it.usna.swing.table.ExTooltipTable;
 
 public class FWUpdateTable extends ExTooltipTable {
 	private static final long serialVersionUID = 1L;
-	final static int COL_STATUS = 0;
-	final static int COL_ID = 1;
-	final static int COL_CURRENT = 2;
-	final static int COL_STABLE = 3;
-	final static int COL_BETA = 4;
+	static final int COL_STATUS = 0;
+	static final int COL_ID = 1;
+	static final int COL_CURRENT = 2;
+	static final int COL_STABLE = 3;
+	static final int COL_BETA = 4;
 	
 	private final PanelFWUpdate fwPanel;
 

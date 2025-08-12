@@ -37,7 +37,7 @@ import it.usna.shellyscan.model.device.modules.WIFIManager;
  * @author usna
  */
 public abstract class ShellyAbstractDevice {
-	private final static Logger LOG = LoggerFactory.getLogger(ShellyAbstractDevice.class);
+	private static final Logger LOG = LoggerFactory.getLogger(ShellyAbstractDevice.class);
 	protected HttpClient httpClient;
 	protected final InetAddressAndPort addressAndPort;
 	protected String hostname;

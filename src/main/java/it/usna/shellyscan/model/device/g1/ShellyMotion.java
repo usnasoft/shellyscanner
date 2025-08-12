@@ -12,8 +12,8 @@ import it.usna.shellyscan.model.device.modules.DeviceModule;
 import it.usna.shellyscan.model.device.modules.MotionInterface;
 
 public class ShellyMotion extends AbstractG1Device implements ModulesHolder {
-	public final static String ID = "SHMOS-01";
-	private final static Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.L, Meters.Type.BAT};
+	public static final String ID = "SHMOS-01";
+	private static final Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.L, Meters.Type.BAT};
 	private int lux;
 	private boolean motion;
 	private int bat;

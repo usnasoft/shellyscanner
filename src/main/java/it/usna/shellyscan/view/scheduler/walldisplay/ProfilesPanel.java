@@ -40,10 +40,10 @@ import it.usna.swing.table.UsnaTableModel;
  */
 class ProfilesPanel extends JPanel {
 	private static final long serialVersionUID = 1L;
-	public final static String SELECTION_EVENT = "usna_profile_selection";
-	public final static String DELETE_EVENT = "usna_profile_delete";
-	public final static String DUPLICATE_EVENT = "usna_profile_duplicate";
-	private final JDialog parent;
+	public static final String SELECTION_EVENT = "usna_profile_selection";
+	public static final String DELETE_EVENT = "usna_profile_delete";
+	public static final String DUPLICATE_EVENT = "usna_profile_duplicate";
+	private final JDialog parentDlg;
 	private final ScheduleManagerThermWD wdSceduleManager;
 	private List<ThermProfile> profiles;
 	
@@ -53,7 +53,7 @@ class ProfilesPanel extends JPanel {
 	private UsnaToggleAction enableprofilesAction;
 
 	public ProfilesPanel(JDialog parent, WallDisplay device, ScheduleManagerThermWD wdSceduleManager) {
-		this.parent = parent;
+		this.parentDlg = parent;
 		setLayout(new BorderLayout(40, 0));
 		this.wdSceduleManager = wdSceduleManager;
 		
@@ -229,7 +229,7 @@ class ProfilesPanel extends JPanel {
 			ThermProfile current = wdSceduleManager.getCurrentProfile();
 			enableprofilesAction.setSelected(current != null);
 		} catch (/*IO*/Exception e) {
-			Msg.errorMsg(parent, e);
+			Msg.errorMsg(parentDlg, e);
 		}
 	}
 	

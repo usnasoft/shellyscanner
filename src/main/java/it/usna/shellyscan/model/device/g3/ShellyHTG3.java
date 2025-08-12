@@ -16,8 +16,8 @@ import it.usna.shellyscan.model.device.Meters;
  * @author usna
  */
 public class ShellyHTG3 extends AbstractBatteryG3Device {
-	public final static String ID = "HTG3";
-	private final static Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.T, Meters.Type.H, Meters.Type.BAT};
+	public static final String ID = "HTG3";
+	private static final Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.T, Meters.Type.H, Meters.Type.BAT};
 	private float temp;
 	private float humidity;
 	private Meters[] meters;

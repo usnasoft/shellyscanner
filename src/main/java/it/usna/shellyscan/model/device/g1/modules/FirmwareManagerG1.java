@@ -10,7 +10,7 @@ import it.usna.shellyscan.model.device.g1.AbstractG1Device;
 import it.usna.shellyscan.model.device.modules.FirmwareManager;
 
 public class FirmwareManagerG1 implements FirmwareManager {
-	private final static String STATUS_UPDATING = "updating";
+	private static final String STATUS_UPDATING = "updating";
 
 	private final AbstractG1Device d;
 	private String current;

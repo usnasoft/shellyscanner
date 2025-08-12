@@ -22,7 +22,7 @@ import it.usna.shellyscan.model.device.g3.modules.XT1Thermostat;
  * the call is lazy -> list is created on the first call
  */
 public class MethodHints {
-	private final static Logger LOG = LoggerFactory.getLogger(MethodHints.class);
+	private static final Logger LOG = LoggerFactory.getLogger(MethodHints.class);
 	private final AbstractG2Device device;
 	private ArrayList<Method> methodsList;
 	

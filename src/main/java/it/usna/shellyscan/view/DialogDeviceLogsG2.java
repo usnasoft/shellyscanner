@@ -54,7 +54,7 @@ import it.usna.swing.dialog.FindReplaceDialog;
 
 public class DialogDeviceLogsG2 extends JDialog {
 	private static final long serialVersionUID = 1L;
-	private final static Logger LOG = LoggerFactory.getLogger(DialogDeviceLogsG2.class);
+	private static final Logger LOG = LoggerFactory.getLogger(DialogDeviceLogsG2.class);
 	private boolean logWasActive;
 	private Future<Session> wsSession;
 	private UsnaTextPane textArea = new UsnaTextPane();

@@ -36,7 +36,7 @@ public class G2JobPanel extends AbstractCronPanel {
 	private JPanel callsOperationsPanel;
 	private boolean systemJob = false;
 	private final MethodHints mHints;
-	private final static ObjectMapper JSON_MAPPER = new ObjectMapper();
+	private static final ObjectMapper JSON_MAPPER = new ObjectMapper();
 
 	/**
 	 * @wbp.parser.constructor
@@ -204,7 +204,7 @@ public class G2JobPanel extends AbstractCronPanel {
 			for(int i = 0; i < callsPanel.getComponentCount(); i++) {
 				if(((JTextField)callsPanel.getComponent(i)).getText().isBlank()) {
 					callsPanel.getComponent(i).requestFocus();
-					Msg.errorMsg(parent, "schErrorInvalidMethod");
+					Msg.errorMsg(parentDlg, "schErrorInvalidMethod");
 					return false;
 				}
 				String parameters = ((JTextField)callsParameterPanel.getComponent(i)).getText();
@@ -213,7 +213,7 @@ public class G2JobPanel extends AbstractCronPanel {
 						JSON_MAPPER.readTree("{" + parameters + "}");
 					} catch (JsonProcessingException e) {
 						callsParameterPanel.getComponent(i).requestFocus();
-						Msg.errorMsg(parent, "schErrorInvalidParameters");
+						Msg.errorMsg(parentDlg, "schErrorInvalidParameters");
 						return false;
 					}
 				}
@@ -240,7 +240,7 @@ public class G2JobPanel extends AbstractCronPanel {
 				try {
 					call.set("params", JSON_MAPPER.readTree("{" + parameters + "}"));
 				} catch (JsonProcessingException e) {
-					Msg.errorMsg(parent, "schErrorInvalidParameters");
+					Msg.errorMsg(parentDlg, "schErrorInvalidParameters");
 					callsParameterPanel.getComponent(i).requestFocus();
 					return null;
 				}

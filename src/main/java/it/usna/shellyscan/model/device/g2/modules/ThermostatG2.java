@@ -10,7 +10,7 @@ import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.modules.ThermostatInterface;
 
 public class ThermostatG2 implements ThermostatInterface {
-	private final static String HEATING_TYPE = "heating";
+	private static final String HEATING_TYPE = "heating";
 	private final AbstractG2Device parent;
 	private String name;
 	private boolean enabled;

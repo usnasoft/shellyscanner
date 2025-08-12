@@ -9,7 +9,7 @@ import it.usna.shellyscan.model.device.g2.AbstractG2Device;
  * @author usna
  */
 public abstract class AbstractG3Device extends AbstractG2Device {
-//	private final static Logger LOG = LoggerFactory.getLogger(AbstractG3Device.class);
+//	private static final Logger LOG = LoggerFactory.getLogger(AbstractG3Device.class);
 	
 	protected AbstractG3Device(InetAddress address, int port, String hostname) {
 		super(address, port, hostname);

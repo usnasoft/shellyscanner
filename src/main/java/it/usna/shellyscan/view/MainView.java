@@ -89,11 +89,11 @@ import it.usna.util.UsnaEventListener;
 
 public class MainView extends MainWindow implements UsnaEventListener<Devices.EventType, Integer>, ScannerProperties.AppPropertyListener {
 	private static final long serialVersionUID = 1L;
-	public final static int SHORTCUT_KEY = Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx();
-	private final static Logger LOG = LoggerFactory.getLogger(MainWindow.class);
-	private final static ImageIcon DEFERRED_ICON = new ImageIcon(MainView.class.getResource("/images/deferred_list.png"));
-	private final static ImageIcon DEFERRED_ICON_FAIL = new ImageIcon(MainView.class.getResource("/images/deferred_list_fail.png"));
-	private final static ImageIcon DEFERRED_ICON_OK = new ImageIcon(MainView.class.getResource("/images/deferred_list_ok.png"));
+	public static final int SHORTCUT_KEY = Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx();
+	private static final Logger LOG = LoggerFactory.getLogger(MainWindow.class);
+	private static final ImageIcon DEFERRED_ICON = new ImageIcon(MainView.class.getResource("/images/deferred_list.png"));
+	private static final ImageIcon DEFERRED_ICON_FAIL = new ImageIcon(MainView.class.getResource("/images/deferred_list_fail.png"));
+	private static final ImageIcon DEFERRED_ICON_OK = new ImageIcon(MainView.class.getResource("/images/deferred_list_ok.png"));
 	private ListSelectionListener tableSelectionListener;
 	private AppProperties appProp;
 	private AppProperties temporaryProp = new AppProperties(); // normal view properties stored here on detailed view

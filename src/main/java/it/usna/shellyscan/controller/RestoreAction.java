@@ -43,11 +43,11 @@ import it.usna.util.AppProperties;
 
 public class RestoreAction extends UsnaAction {
 	private static final long serialVersionUID = 1L;
-	private final static Logger LOG = LoggerFactory.getLogger(RestoreAction.class);
-	private final static String CHECK_MSG_PREFIX = "msgRestore";
-	private final static String ERROR_MSG_PREFIX = "errRestore";
-	private final static String QUEUE_RET = "QUEUE";
-	private final static String CANCEL_RET = "CANC";
+	private static final Logger LOG = LoggerFactory.getLogger(RestoreAction.class);
+	private static final String CHECK_MSG_PREFIX = "msgRestore";
+	private static final String ERROR_MSG_PREFIX = "errRestore";
+	private static final String QUEUE_RET = "QUEUE";
+	private static final String CANCEL_RET = "CANC";
 	private SwingWorker<String, Object> worker;
 
 	public RestoreAction(MainView mainView, DevicesTable devicesTable, AppProperties appProp, Devices model) {

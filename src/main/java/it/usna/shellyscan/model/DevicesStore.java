@@ -36,24 +36,24 @@ import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.g3.AbstractG3Device;
 
 public class DevicesStore {
-	private final static Logger LOG = LoggerFactory.getLogger(DevicesStore.class);
-	private final static int STORE_VERSION = 0;
-	private final static ObjectMapper JSON_MAPPER = new ObjectMapper();
-	private final static String TYPE_ID = "tid";
-	private final static String GENERATION = "gen";
-	private final static String TYPE_NAME = "tn";
-	private final static String NAME = "name";
-	private final static String HOSTNAME = "host";
-	private final static String MAC = "mac";
-	private final static String ADDRESS = "ip";
-	private final static String PORT = "port";
-	private final static String SSID = "ssid";
-	private final static String BATTERY = "bat";
-	private final static String LAST_CON = "last";
-	private final static String USER_NOTE = "note";
-	private final static String KEYWORD_NOTE = "keyword";
+	private static final Logger LOG = LoggerFactory.getLogger(DevicesStore.class);
+	private static final int STORE_VERSION = 0;
+	private static final ObjectMapper JSON_MAPPER = new ObjectMapper();
+	private static final String TYPE_ID = "tid";
+	private static final String GENERATION = "gen";
+	private static final String TYPE_NAME = "tn";
+	private static final String NAME = "name";
+	private static final String HOSTNAME = "host";
+	private static final String MAC = "mac";
+	private static final String ADDRESS = "ip";
+	private static final String PORT = "port";
+	private static final String SSID = "ssid";
+	private static final String BATTERY = "bat";
+	private static final String LAST_CON = "last";
+	private static final String USER_NOTE = "note";
+	private static final String KEYWORD_NOTE = "keyword";
 
-	private final static Pattern MAC_PATTERN = Pattern.compile("^([a-f0-9]{12})|([a-f0-9]{2}(:[a-f0-9]{2}){5})$", Pattern.CASE_INSENSITIVE);
+	private static final Pattern MAC_PATTERN = Pattern.compile("^([a-f0-9]{12})|([a-f0-9]{2}(:[a-f0-9]{2}){5})$", Pattern.CASE_INSENSITIVE);
 	
 	private final ArrayList<GhostDevice> ghostsList = new ArrayList<>();
 

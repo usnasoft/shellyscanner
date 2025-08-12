@@ -16,7 +16,7 @@ import it.usna.shellyscan.controller.UsnaToggleAction;
 import it.usna.shellyscan.model.device.modules.WhiteInterface;
 
 public class WhitePanel extends LightPanel {
-	private final static Logger LOG = LoggerFactory.getLogger(WhitePanel.class);
+	private static final Logger LOG = LoggerFactory.getLogger(WhitePanel.class);
 	private static final long serialVersionUID = 1L;
 	private final WhiteInterface light;
 	private final JLabel label = new JLabel();

@@ -70,10 +70,10 @@ import it.usna.shellyscan.model.device.modules.WIFIManager.Network;
  * @author usna
  */
 public abstract class AbstractG2Device extends ShellyAbstractDevice {
-	public final static int LOG_VERBOSE = 4;
-//	public final static int LOG_WARN = 1;
+	public static final int LOG_VERBOSE = 4;
+//	public static final int LOG_WARN = 1;
 
-	private final static Logger LOG = LoggerFactory.getLogger(AbstractG2Device.class);
+	private static final Logger LOG = LoggerFactory.getLogger(AbstractG2Device.class);
 	protected WebSocketClient wsClient;
 	private boolean rangeExtender;
 
@@ -194,6 +194,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 		return postCommand("BLE.SetConfig", "{\"config\":{\"enable\":" + ble + "}}");
 	}
 
+	@Override
 	public boolean rebootRequired() {
 		return rebootRequired; //return getJSON("/rpc/Sys.GetStatus").path("restart_required").asBoolean(false);
 	}
@@ -591,7 +592,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 		JsonNode sys = config.get("sys");
 		ObjectNode outSys = JsonNodeFactory.instance.objectNode();
 		
-		ObjectNode outDevice = (ObjectNode)sys.get("device")/*.deepCopy()*/; // todo test (anche caso name = null)
+		ObjectNode outDevice = (ObjectNode)sys.get("device")/*.deepCopy()*/;
 		outDevice.remove("mac");
 		outDevice.remove("fw_id");
 		outDevice.remove("addon_type");
@@ -675,7 +676,6 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 //			}); // this also do upgrade
 //			return s;
 //		} catch (NoSuchAlgorithmException e) {
-//			// TODO Auto-generated catch block
 //			e.printStackTrace();
 //			return null;
 //		}

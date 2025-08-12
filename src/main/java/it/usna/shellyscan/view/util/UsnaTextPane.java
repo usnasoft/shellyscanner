@@ -12,7 +12,7 @@ import org.slf4j.LoggerFactory;
 
 public class UsnaTextPane extends JTextPane {
 	private static final long serialVersionUID = 1L;
-	private final static Logger LOG = LoggerFactory.getLogger(UsnaTextPane.class);
+	private static final Logger LOG = LoggerFactory.getLogger(UsnaTextPane.class);
 	private final StyledDocument doc;
 	
 	public UsnaTextPane() {

@@ -12,66 +12,66 @@ import it.usna.util.AppProperties;
  */
 public class ScannerProperties extends AppProperties { // cannot also extend UsnaObservable
 	private static final long serialVersionUID = 1L;
-	public final static String PROP_TOOLBAR_CAPTIONS = "T_CAPTIONS";
-	public final static String PROP_CSV_SEPARATOR = "CSV_SEPARATOR";
-	private final static String PROP_CSV_SEPARATOR_DEFAULT = ",";
-	public final static String PROP_SCAN_MODE = "SCAN_MODE";
-	private final static String PROP_SCAN_MODE_DEFAULT = "FULL";
-	public final static String PROP_DCLICK_ACTION = "DCLICK_ACTION";
-	private final static String PROP_DCLICK_ACTION_DEFAULT = "DET";
-	public final static String PROP_DEFAULT_FILTER_IDX = "DEFAULT_FILTER";
+	public static final String PROP_TOOLBAR_CAPTIONS = "T_CAPTIONS";
+	public static final String PROP_CSV_SEPARATOR = "CSV_SEPARATOR";
+	private static final String PROP_CSV_SEPARATOR_DEFAULT = ",";
+	public static final String PROP_SCAN_MODE = "SCAN_MODE";
+	private static final String PROP_SCAN_MODE_DEFAULT = "FULL";
+	public static final String PROP_DCLICK_ACTION = "DCLICK_ACTION";
+	private static final String PROP_DCLICK_ACTION_DEFAULT = "DET";
+	public static final String PROP_DEFAULT_FILTER_IDX = "DEFAULT_FILTER";
 	
-	public final static String PROP_UPTIME_MODE = "UPTIME_MODE";
-	private final static String PROP_UPTIME_MODE_DEFAULT = "SEC";
+	public static final String PROP_UPTIME_MODE = "UPTIME_MODE";
+	private static final String PROP_UPTIME_MODE_DEFAULT = "SEC";
 	
-	public final static String PROP_TEMP_UNIT = "TEMP_UNIT";
-	private final static String PROP_TEMP_UNIT_DEFAULT = "C";
+	public static final String PROP_TEMP_UNIT = "TEMP_UNIT";
+	private static final String PROP_TEMP_UNIT_DEFAULT = "C";
 	
-	public final static String PROP_UPDATECHK_ACTION = "UPDATE_CHK";
-	public final static String PROP_UPDATECHK_NEVER = "NEVER";
-	public final static String PROP_UPDATECHK_STABLE = "STABLE";
-	public final static String PROP_UPDATECHK_DEV = "BETA";
+	public static final String PROP_UPDATECHK_ACTION = "UPDATE_CHK";
+	public static final String PROP_UPDATECHK_NEVER = "NEVER";
+	public static final String PROP_UPDATECHK_STABLE = "STABLE";
+	public static final String PROP_UPDATECHK_DEV = "BETA";
 	
-	public final static String PROP_CHARTS_START = "CHART_DEF";
-	public final static String PROP_CHARTS_EXPORT = "CHART_EXPORT";
+	public static final String PROP_CHARTS_START = "CHART_DEF";
+	public static final String PROP_CHARTS_EXPORT = "CHART_EXPORT";
 	
-	public final static String PROP_DETAILED_VIEW_SCREEN = "DETAIL_SCREEN";
-	public final static String PROP_DETAILED_VIEW_SCREEN_FULL = "FULL";
-	public final static String PROP_DETAILED_VIEW_SCREEN_AS_IS = "ASIS";
-	public final static String PROP_DETAILED_VIEW_SCREEN_HORIZONTAL = "HOR";
-	public final static String PROP_DETAILED_VIEW_SCREEN_ESTIMATE = "COMP";
+	public static final String PROP_DETAILED_VIEW_SCREEN = "DETAIL_SCREEN";
+	public static final String PROP_DETAILED_VIEW_SCREEN_FULL = "FULL";
+	public static final String PROP_DETAILED_VIEW_SCREEN_AS_IS = "ASIS";
+	public static final String PROP_DETAILED_VIEW_SCREEN_HORIZONTAL = "HOR";
+	public static final String PROP_DETAILED_VIEW_SCREEN_ESTIMATE = "COMP";
 	
-	public final static String PROP_LOGIN_USER = "RLUSER";
-	public final static String PROP_LOGIN_PWD = "RLPWD";
+	public static final String PROP_LOGIN_USER = "RLUSER";
+	public static final String PROP_LOGIN_PWD = "RLPWD";
 	
-	public final static String PROP_REFRESH_ITERVAL = "REFRESH_INTERVAL";
-	private final static int PROP_REFRESH_ITERVAL_DEFAULT = 2;
-	public final static String PROP_REFRESH_CONF = "REFRESH_SETTINGS";
-	private final static int PROP_REFRESH_CONF_DEFAULT = 5;
+	public static final String PROP_REFRESH_ITERVAL = "REFRESH_INTERVAL";
+	private static final int PROP_REFRESH_ITERVAL_DEFAULT = 2;
+	public static final String PROP_REFRESH_CONF = "REFRESH_SETTINGS";
+	private static final int PROP_REFRESH_CONF_DEFAULT = 5;
 	
-	public final static String PROP_USE_ARCHIVE = "USE_ARCHIVE";
-	public final static String PROP_ARCHIVE_FILE = "USE_ARCHIVE_FILENAME";
-	public final static String PROP_ARCHIVE_FILE_DEFAULT = Path.of(System.getProperty("user.home"), "ShellyStore.arc").toString();
-	public final static String PROP_AUTORELOAD_ARCHIVE = "AUTORELOAD";
+	public static final String PROP_USE_ARCHIVE = "USE_ARCHIVE";
+	public static final String PROP_ARCHIVE_FILE = "USE_ARCHIVE_FILENAME";
+	public static final String PROP_ARCHIVE_FILE_DEFAULT = Path.of(System.getProperty("user.home"), "ShellyStore.arc").toString();
+	public static final String PROP_AUTORELOAD_ARCHIVE = "AUTORELOAD";
 	
-	public final static String BASE_SCAN_IP = "BASE_SCAN";
-	public final static String FIRST_SCAN_IP = "FIRST_SCAN";
-	public final static int FIST_SCAN_IP_DEFAULT = 1;
-	public final static String LAST_SCAN_IP = "LAST_SCAN";
-	public final static int LAST_SCAN_IP_DEFAULT = 254;
+	public static final String BASE_SCAN_IP = "BASE_SCAN";
+	public static final String FIRST_SCAN_IP = "FIRST_SCAN";
+	public static final int FIST_SCAN_IP_DEFAULT = 1;
+	public static final String LAST_SCAN_IP = "LAST_SCAN";
+	public static final int LAST_SCAN_IP_DEFAULT = 254;
 	
-	public final static String PROP_IDE_TAB_SIZE = "IDE_TAB_SIZE";
-	public final static int IDE_TAB_SIZE_DEFAULT = 4;
-	public final static String PROP_IDE_FONT_SIZE = "IDE_FONT_SIZE";
-	public final static int IDE_FONT_SIZE_DEFAULT = 12;
-	public final static String IDE_AUTOINDENT = "IDE_INDENT";
-	public final static String IDE_AUTOCLOSE_CURLY = "CL_CURLY";
-	public final static String IDE_AUTOCLOSE_BRACKET = "CL_BRACK";
-	public final static String IDE_AUTOCLOSE_SQUARE = "CL_SQUSARE";
-	public final static String IDE_AUTOCLOSE_STRING = "CL_STRING";
-	public final static String PROP_IDE_DARK = "IDE_DARK";
+	public static final String PROP_IDE_TAB_SIZE = "IDE_TAB_SIZE";
+	public static final int IDE_TAB_SIZE_DEFAULT = 4;
+	public static final String PROP_IDE_FONT_SIZE = "IDE_FONT_SIZE";
+	public static final int IDE_FONT_SIZE_DEFAULT = 12;
+	public static final String IDE_AUTOINDENT = "IDE_INDENT";
+	public static final String IDE_AUTOCLOSE_CURLY = "CL_CURLY";
+	public static final String IDE_AUTOCLOSE_BRACKET = "CL_BRACK";
+	public static final String IDE_AUTOCLOSE_SQUARE = "CL_SQUSARE";
+	public static final String IDE_AUTOCLOSE_STRING = "CL_STRING";
+	public static final String PROP_IDE_DARK = "IDE_DARK";
 	
-	public final static String VERSION_IGNORE = "IGNORE_VERION_DOWNLOAD";
+	public static final String VERSION_IGNORE = "IGNORE_VERION_DOWNLOAD";
 	
 	public enum PropertyEvent {CHANGE};
 	

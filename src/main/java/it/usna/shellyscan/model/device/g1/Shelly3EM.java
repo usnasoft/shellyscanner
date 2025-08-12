@@ -14,21 +14,21 @@ import it.usna.shellyscan.model.device.ModulesHolder;
 import it.usna.shellyscan.model.device.g1.modules.Relay;
 
 public class Shelly3EM extends AbstractG1Device implements ModulesHolder {
-	public final static String ID = "SHEM-3";
+	public static final String ID = "SHEM-3";
 	private Relay relay = new Relay(this, 0);
 	private Relay[] relayArray = new Relay[] {relay};
-	private float power[] = new float[3];
-	private float current[] = new float[3];
-	private float pf[] = new float[3];
-	private float voltage[] = new float[3];
-	private String meterName[] = new String[3];
-	private Meters meters[];
+	private float[] power = new float[3];
+	private float[] current = new float[3];
+	private float[] pf = new float[3];
+	private float[] voltage = new float[3];
+	private String[] meterName = new String[3];
+	private Meters[] meters;
 
 	public Shelly3EM(InetAddress address, int port, String hostname) {
 		super(address, port, hostname);
 		
 		class EM3Meters extends Meters implements LabelHolder {
-			private final static Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.W, Meters.Type.PF, Meters.Type.V, Meters.Type.I};
+			private static final Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.W, Meters.Type.PF, Meters.Type.V, Meters.Type.I};
 			private int ind;
 			private EM3Meters(int ind) {
 				this.ind = ind;
@@ -142,12 +142,12 @@ public class Shelly3EM extends AbstractG1Device implements ModulesHolder {
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 		errors.add(relay.restore(settings.get("relays").get(0)));
 		
-		JsonNode meters = settings.get("emeters");
+		JsonNode storedMeters = settings.get("emeters");
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-		errors.add(sendCommand("/settings/emeters/0?" + jsonNodeToURLPar(meters.get(0), "name", "appliance_type", "max_power")));
+		errors.add(sendCommand("/settings/emeters/0?" + jsonNodeToURLPar(storedMeters.get(0), "name", "appliance_type", "max_power")));
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-		errors.add(sendCommand("/settings/emeters/1?" + jsonNodeToURLPar(meters.get(1), "name", "appliance_type", "max_power")));
+		errors.add(sendCommand("/settings/emeters/1?" + jsonNodeToURLPar(storedMeters.get(1), "name", "appliance_type", "max_power")));
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-		errors.add(sendCommand("/settings/emeters/2?" + jsonNodeToURLPar(meters.get(2), "name", "appliance_type", "max_power")));
+		errors.add(sendCommand("/settings/emeters/2?" + jsonNodeToURLPar(storedMeters.get(2), "name", "appliance_type", "max_power")));
 	}
 }

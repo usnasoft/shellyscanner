@@ -26,15 +26,15 @@ import it.usna.shellyscan.model.device.g2.AbstractG2Device;
  * IDs for these components start from 200 and are limited to 299.
  */
 public class DynamicComponents {
-	private final static Logger LOG = LoggerFactory.getLogger(DynamicComponents.class);
+	private static final Logger LOG = LoggerFactory.getLogger(DynamicComponents.class);
 	
-	public final static String GROUP_TYPE = "group";
-	public final static String[] VIRTUAL_TYPES = {"boolean", "number", "text", "enum", GROUP_TYPE, "button"};
-	public final static String BTHOME_DEVICE = "bthomedevice";
-	public final static String BTHOME_SENSOR = "bthomesensor";
+	public static final String GROUP_TYPE = "group";
+	public static final String[] VIRTUAL_TYPES = {"boolean", "number", "text", "enum", GROUP_TYPE, "button"};
+	public static final String BTHOME_DEVICE = "bthomedevice";
+	public static final String BTHOME_SENSOR = "bthomesensor";
 	
-	public final static int MIN_ID = 200;
-	public final static int MAX_ID = 299;
+	public static final int MIN_ID = 200;
+	public static final int MAX_ID = 299;
 	
 //	/**
 //	 * @param components - result of <IP>/rpc/Shelly.GetComponents?dynamic_only=true

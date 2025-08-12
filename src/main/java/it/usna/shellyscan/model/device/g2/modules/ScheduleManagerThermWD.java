@@ -15,7 +15,7 @@ import it.usna.shellyscan.model.device.g2.WallDisplay;
  * Thermostat ScheduleManager for Wall Display also managing profiles
  */
 public class ScheduleManagerThermWD {
-	private final static String THERM_ID = "0";
+	private static final String THERM_ID = "0";
 	private final WallDisplay wd;
 	
 	public ScheduleManagerThermWD(WallDisplay device) {

@@ -14,20 +14,20 @@ import it.usna.shellyscan.model.device.ModulesHolder;
 import it.usna.shellyscan.model.device.g1.modules.Relay;
 
 public class ShellyEM extends AbstractG1Device implements ModulesHolder {
-	public final static String ID = "SHEM";
+	public static final String ID = "SHEM";
 	private Relay relay = new Relay(this, 0);
-	private float power[] = new float[2];
-	private float reactive[] = new float[2];
-	private float pf[] = new float[2];
-	private float voltage[] = new float[2];
-	private String meterName[] = new String[2];
-	private Meters meters[];
+	private float[] power = new float[2];
+	private float[] reactive = new float[2];
+	private float[] pf = new float[2];
+	private float[] voltage = new float[2];
+	private String[] meterName = new String[2];
+	private Meters[] meters;
 
 	public ShellyEM(InetAddress address, int port, String hostname) {
 		super(address, port, hostname);
 		
 		class EMMeters extends Meters implements LabelHolder {
-			private final static Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.W, Meters.Type.VAR, Meters.Type.PF, Meters.Type.V};
+			private static final Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.W, Meters.Type.VAR, Meters.Type.PF, Meters.Type.V};
 			private int ind;
 			private EMMeters(int ind) {
 				this.ind = ind;
@@ -132,11 +132,11 @@ public class ShellyEM extends AbstractG1Device implements ModulesHolder {
 	@Override
 	protected void restore(JsonNode settings, List<String> errors) throws IOException, InterruptedException {
 		errors.add(sendCommand("/settings?" + jsonNodeToURLPar(settings, "led_status_disable", "wifirecovery_reboot_enabled")));
-		JsonNode meters = settings.get("emeters");
+		JsonNode storedMeters = settings.get("emeters");
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-		errors.add(sendCommand("/settings/emeters/0?" + jsonNodeToURLPar(meters.get(0), "name", "appliance_type", "max_power")));
+		errors.add(sendCommand("/settings/emeters/0?" + jsonNodeToURLPar(storedMeters.get(0), "name", "appliance_type", "max_power")));
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-		errors.add(sendCommand("/settings/emeters/1?" + jsonNodeToURLPar(meters.get(1), "name", "appliance_type", "max_power")));
+		errors.add(sendCommand("/settings/emeters/1?" + jsonNodeToURLPar(storedMeters.get(1), "name", "appliance_type", "max_power")));
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 		errors.add(relay.restore(settings.get("relays").get(0)));
 	}

@@ -14,7 +14,7 @@ import it.usna.util.AppProperties;
 import it.usna.util.UsnaEventListener;  
 
 public class NonInteractiveMeasuresChart implements UsnaEventListener<Devices.EventType, Integer> {
-	private final static Logger LOG = LoggerFactory.getLogger(NonInteractiveMeasuresChart.class);
+	private static final Logger LOG = LoggerFactory.getLogger(NonInteractiveMeasuresChart.class);
 	private ChartType currentType;
 	private final boolean fahrenheit;
 	private final Devices model;

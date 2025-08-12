@@ -18,7 +18,7 @@ import it.usna.shellyscan.model.device.g2.meters.MetersWVI;
 import it.usna.shellyscan.model.device.g2.modules.Relay;
 
 public class ShellyPlugSG3 extends AbstractG3Device implements ModulesHolder, InternalTmpHolder {
-	public final static String ID = "PlugSG3";
+	public static final String ID = "PlugSG3";
 	private Relay relay = new Relay(this, 0);
 	private float internalTmp;
 	private MetersWVI meters = new MetersWVI();

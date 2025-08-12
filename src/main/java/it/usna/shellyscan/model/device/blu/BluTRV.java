@@ -34,11 +34,11 @@ import it.usna.shellyscan.model.device.modules.FirmwareManager;
 import it.usna.shellyscan.model.device.modules.ThermostatInterface;
 
 public class BluTRV extends AbstractBluDevice implements ThermostatInterface, ModulesHolder {
-	private final static Logger LOG = LoggerFactory.getLogger(AbstractBluDevice.class);
-	private final static String TRV_DEVICE = "blutrv";
-	public final static String DEVICE_KEY_PREFIX = TRV_DEVICE + ":";
-	public final static String ID = "BluTRV";
-	private final static Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.T, Meters.Type.BAT};
+	private static final Logger LOG = LoggerFactory.getLogger(AbstractBluDevice.class);
+	private static final String TRV_DEVICE = "blutrv";
+	public static final String DEVICE_KEY_PREFIX = TRV_DEVICE + ":";
+	public static final String ID = "BluTRV";
+	private static final Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.T, Meters.Type.BAT};
 	private int battery;
 	private float externalTemp;
 	private float targetTemp;

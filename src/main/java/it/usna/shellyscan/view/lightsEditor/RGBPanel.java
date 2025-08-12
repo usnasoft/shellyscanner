@@ -32,7 +32,7 @@ import it.usna.swing.VerticalFlowLayout;
  */
 public class RGBPanel extends LightPanel {
 	private static final long serialVersionUID = 1L;
-	private final static Logger LOG = LoggerFactory.getLogger(RGBPanel.class);
+	private static final Logger LOG = LoggerFactory.getLogger(RGBPanel.class);
 	
 	private final RGBInterface light;
 	private JLabel labelGain = new JLabel();

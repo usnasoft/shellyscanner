@@ -137,9 +137,9 @@ public class PanelResLogin extends AbstractSettingsPanel {
 		boolean enabledGlobal = false;
 		String userGlobal = "";
 		boolean first = true;
-		for(int i = 0; i < parent.getLocalSize(); i++) {
+		for(int i = 0; i < parentDlg.getLocalSize(); i++) {
 			try {
-				ShellyAbstractDevice d = parent.getLocalDevice(i);
+				ShellyAbstractDevice d = parentDlg.getLocalDevice(i);
 				if(d instanceof AbstractBluDevice) {
 					exclude += "<br>" + UtilMiscellaneous.getFullName(d);
 					excludeCount++;
@@ -166,7 +166,7 @@ public class PanelResLogin extends AbstractSettingsPanel {
 			}
 		}
 		if(showExcluded) {
-			if(excludeCount == parent.getLocalSize() && isShowing()) {
+			if(excludeCount == parentDlg.getLocalSize() && isShowing()) {
 				return LABELS.getString("msgAllDevicesExcluded");
 			} else if (excludeCount > 0 && isShowing()) {
 				Msg.showHtmlMessageDialog(this, exclude, LABELS.getString("dlgExcludedDevicesTitle"), JOptionPane.WARNING_MESSAGE);
@@ -191,8 +191,8 @@ public class PanelResLogin extends AbstractSettingsPanel {
 			throw new IllegalArgumentException(LABELS.getString("dlgSetMsgObbUser"));
 		}
 		String res = "<html>";
-		for(int i = 0; i < parent.getLocalSize(); i++) {
-			final ShellyAbstractDevice device = parent.getLocalDevice(i);
+		for(int i = 0; i < parentDlg.getLocalSize(); i++) {
+			final ShellyAbstractDevice device = parentDlg.getLocalDevice(i);
 			if(device instanceof AbstractBluDevice == false) { // not blu
 				final LoginManager lm = loginModule.get(i);
 				if(lm != null) {
@@ -213,7 +213,7 @@ public class PanelResLogin extends AbstractSettingsPanel {
 				} else if(device.getStatus() == Status.OFF_LINE || device instanceof GhostDevice) { // defer
 					res += String.format(LABELS.getString("dlgSetMultiMsgQueue"), device.getHostname()) + "<br>";
 					DeferrablesContainer dc = DeferrablesContainer.getInstance();
-					dc.addOrUpdate(parent.getModelIndex(i), DeferrableTask.Type.LOGIN, LABELS.getString(enabled ? "RestrictedLoginTaskEnable" : "RestrictedLoginTaskDisable"), (def, dev) -> {
+					dc.addOrUpdate(parentDlg.getModelIndex(i), DeferrableTask.Type.LOGIN, LABELS.getString(enabled ? "RestrictedLoginTaskEnable" : "RestrictedLoginTaskDisable"), (def, dev) -> {
 						final LoginManager loginManager = dev.getLoginManager();
 						if(enabled) {
 							return loginManager.set(user, pwd);

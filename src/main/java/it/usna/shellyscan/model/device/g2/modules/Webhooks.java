@@ -13,14 +13,14 @@ import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.util.AccumulatingMap;
 
 public class Webhooks {
-//	public final static String INPUT_ON = "input.toggle_on";
-//	public final static String INPUT_OFF = "input.toggle_off";
-//	public final static String INPUT_PUSH = "input.button_push";
-//	public final static String INPUT_LONG_PUSH = "input.button_longpush";
-//	public final static String INPUT_DOUBLE_PUSH = "input.button_doublepush";
-//	public final static String INPUT_TRIPLE_PUSH = "input.button_triplepush";
-//	private final static String SENSOR_EVENT_PREFIX = DynamicComponents.BTHOME_SENSOR + ".";
-//	private final static String BTDEVICE_EVENT_PREFIX = DynamicComponents.BTHOME_DEVICE + ".";
+//	public static final String INPUT_ON = "input.toggle_on";
+//	public static final String INPUT_OFF = "input.toggle_off";
+//	public static final String INPUT_PUSH = "input.button_push";
+//	public static final String INPUT_LONG_PUSH = "input.button_longpush";
+//	public static final String INPUT_DOUBLE_PUSH = "input.button_doublepush";
+//	public static final String INPUT_TRIPLE_PUSH = "input.button_triplepush";
+//	private static final String SENSOR_EVENT_PREFIX = DynamicComponents.BTHOME_SENSOR + ".";
+//	private static final String BTDEVICE_EVENT_PREFIX = DynamicComponents.BTHOME_DEVICE + ".";
 	
 	private final AbstractG2Device parent;
 	private AccumulatingMap<String, Webhook> hooks = new AccumulatingMap<>(); // key: input3, bthomedevice200, ...

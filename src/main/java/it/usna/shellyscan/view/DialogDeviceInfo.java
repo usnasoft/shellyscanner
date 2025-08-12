@@ -57,9 +57,9 @@ import it.usna.util.UsnaEventListener;
 
 public class DialogDeviceInfo extends JDialog implements UsnaEventListener<Devices.EventType, Integer> {
 	private static final long serialVersionUID = 1L;
-	private final static Logger LOG = LoggerFactory.getLogger(MainWindow.class);
-	private final static Style DEF_STYLE = StyleContext.getDefaultStyleContext().getStyle(StyleContext.DEFAULT_STYLE);
-	private final static Pattern DELIMITERS_PATTERN = Pattern.compile("(\\{[\\n\\r])|([\\n\\r]\\s*\\})");
+	private static final Logger LOG = LoggerFactory.getLogger(MainWindow.class);
+	private static final Style DEF_STYLE = StyleContext.getDefaultStyleContext().getStyle(StyleContext.DEFAULT_STYLE);
+	private static final Pattern DELIMITERS_PATTERN = Pattern.compile("(\\{[\\n\\r])|([\\n\\r]\\s*\\})");
 	private final Devices devicesModel;
 	private final int deviceIndex;
 	private final ScheduledExecutorService executor;

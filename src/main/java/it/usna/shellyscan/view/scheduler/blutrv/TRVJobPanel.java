@@ -36,7 +36,7 @@ public class TRVJobPanel extends AbstractCronPanel {
 		super(parent);
 		this.minTarget = minTarget;
 		this.maxTarget = maxTarget;
-		targetField = new NumericTextField<Float>(minTarget, maxTarget, Locale.ENGLISH);
+		targetField = new NumericTextField<>(minTarget, maxTarget, Locale.ENGLISH);
 		initTempSection();
 		if(scheduleNode == null) {
 			setCron(DEF_CRON);
@@ -120,7 +120,7 @@ public class TRVJobPanel extends AbstractCronPanel {
 		if(super.validateData()) {
 			if(targetField.isEmpty()) {
 				targetField.requestFocus();
-				Msg.errorMsg(parent, "schErrorInvalidTarget");
+				Msg.errorMsg(parentDlg, "schErrorInvalidTarget");
 				return false;
 			}
 			return true;

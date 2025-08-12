@@ -84,10 +84,10 @@ import it.usna.util.UsnaEventListener;
 
 public class CheckListView extends JDialog implements UsnaEventListener<Devices.EventType, Integer>, ScannerProperties.AppPropertyListener {
 	private static final long serialVersionUID = 1L;
-	private final static Logger LOG = LoggerFactory.getLogger(CheckListView.class);
-	public final static String TRUE_STR = LABELS.getString("true_yn");
-	public final static String FALSE_STR = LABELS.getString("false_yn");
-	public final static String NOT_APPLICABLE_STR = "-";
+	private static final Logger LOG = LoggerFactory.getLogger(CheckListView.class);
+	public static final String TRUE_STR = LABELS.getString("true_yn");
+	public static final String FALSE_STR = LABELS.getString("false_yn");
+	public static final String NOT_APPLICABLE_STR = "-";
 	private final ScannerProperties properties = ScannerProperties.instance();
 	private final Devices appModel;
 	private final int[] devicesInd;

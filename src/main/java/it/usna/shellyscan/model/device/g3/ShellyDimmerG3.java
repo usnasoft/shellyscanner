@@ -27,9 +27,9 @@ import it.usna.shellyscan.model.device.modules.DeviceModule;
  * @author usna
  */
 public class ShellyDimmerG3 extends AbstractG3Device implements InternalTmpHolder, ModulesHolder {
-	private final static Logger LOG = LoggerFactory.getLogger(ShellyDimmerG3.class);
-	public final static String ID = "DimmerG3";
-	public final static String MODEL = "S3DM-0A101WWL";
+	private static final Logger LOG = LoggerFactory.getLogger(ShellyDimmerG3.class);
+	public static final String ID = "DimmerG3";
+	public static final String MODEL = "S3DM-0A101WWL";
 	private float internalTmp;
 	private MetersWVI baseMeasures = new MetersWVI();
 	private Meters[] meters;

@@ -71,7 +71,7 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 	private ScheduledExecutorService exeService = Executors.newScheduledThreadPool(35);
 	private List<Future<Void>> retriveFutures;
 
-	private final static Logger LOG = LoggerFactory.getLogger(PanelFWUpdate.class);
+	private static final Logger LOG = LoggerFactory.getLogger(PanelFWUpdate.class);
 
 	public PanelFWUpdate(DialogDeviceSettings parent) {
 		super(parent);
@@ -195,7 +195,7 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 
 	private void fillTable(boolean select) {
 		tModel.clear();
-		for(int i = 0; i < parent.getLocalSize(); i++) {
+		for(int i = 0; i < parentDlg.getLocalSize(); i++) {
 			if(Thread.interrupted() == false) {
 				tModel.addRow(createTableRow(i, select));
 			}
@@ -206,7 +206,7 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 	}
 
 	private Object[] createTableRow(int localIndex, boolean select) {
-		ShellyAbstractDevice d = parent.getLocalDevice(localIndex);
+		ShellyAbstractDevice d = parentDlg.getLocalDevice(localIndex);
 		FirmwareManager fw = getFirmwareManager(localIndex);
 		if(fw != null) {
 			if(fw.upadating()) {
@@ -219,7 +219,7 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 			}
 		} else {
 			DeferrablesContainer dc = DeferrablesContainer.getInstance();
-			if(dc.indexOf(parent.getModelIndex(localIndex), DeferrableTask.Type.FW_UPDATE) < 0) {
+			if(dc.indexOf(parentDlg.getModelIndex(localIndex), DeferrableTask.Type.FW_UPDATE) < 0) {
 				return new Object[] {DevicesTable.getStatusIcon(d), UtilMiscellaneous.getExtendedHostName(d), null /*current fw unknown*/, Boolean.FALSE /*any*/};
 			} else {
 				return new Object[] {DevicesTable.getStatusIcon(d), UtilMiscellaneous.getExtendedHostName(d), null,  LABELS.getString("labelRequested")};
@@ -231,7 +231,7 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 	String showing() throws InterruptedException {
 		lblCount.setText("");
 		btnCheck.setEnabled(false);
-		final int size = parent.getLocalSize();
+		final int size = parentDlg.getLocalSize();
 		devicesFWData = Stream.generate(DeviceFirmware::new).limit(size).collect(Collectors.toList());
 		tModel.clear();
 		try {
@@ -241,7 +241,7 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 			}
 			retriveFutures = exeService.invokeAll(calls);
 			fillTable(true);
-			parent.getModel().addListener(this);
+			parentDlg.getModel().addListener(this);
 
 			table.columnsWidthAdapt();
 			final FontMetrics fm = getGraphics().getFontMetrics();
@@ -259,7 +259,7 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 
 	@Override
 	void hiding() {
-		parent.getModel().removeListener(this);
+		parentDlg.getModel().removeListener(this);
 		if(retriveFutures != null) {
 			retriveFutures.forEach(f -> f.cancel(true));
 		}
@@ -287,7 +287,7 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 	}
 
 	private void initDevice(final int index) {
-		final ShellyAbstractDevice d = parent.getLocalDevice(index);
+		final ShellyAbstractDevice d = parentDlg.getLocalDevice(index);
 		FirmwareManager fm = d.getFWManager();
 		DeviceFirmware fwInfo = devicesFWData.get(index);
 		fwInfo.fwModule = fm;
@@ -329,14 +329,14 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 	}
 
 	private String updateDeviceFW(int i, boolean toStable) {
-		ShellyAbstractDevice device = parent.getLocalDevice(i);
+		ShellyAbstractDevice device = parentDlg.getLocalDevice(i);
 		if(device instanceof GhostDevice == false) {
 			DeviceFirmware fwInfo = devicesFWData.get(i);
 			fwInfo.uptime = device.getUptime();
 			String msg = fwInfo.fwModule.update(toStable);
 			if(msg != null) {
 				if(device.getStatus() == Status.OFF_LINE) {
-					createDeferrable(parent.getModelIndex(i), fwInfo.fwModule, toStable);
+					createDeferrable(parentDlg.getModelIndex(i), fwInfo.fwModule, toStable);
 					return UtilMiscellaneous.getFullName(device) + " - " + LABELS.getString("msgFWUpdateQueue") + "\n";
 				} else {
 					if(LABELS.containsKey(msg)) {
@@ -353,7 +353,7 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 				return "";
 			}
 		} else {
-			createDeferrable(parent.getModelIndex(i), null, true);
+			createDeferrable(parentDlg.getModelIndex(i), null, true);
 			return UtilMiscellaneous.getFullName(device) + " - " + LABELS.getString("msgFWUpdateQueue") + "\n";
 		}
 	}
@@ -431,7 +431,7 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 			if(cause instanceof WebSocketTimeoutException) {
 				LOG.trace("ws-timeout -> reopen");
 				try {
-					devicesFWData.get(index).wsSession = wsEventListener(index, parent.getLocalDevice(index));
+					devicesFWData.get(index).wsSession = wsEventListener(index, parentDlg.getLocalDevice(index));
 				} catch (IOException | InterruptedException | ExecutionException e) {
 					LOG.debug("ws-timeout -> reopen error", e);
 				}
@@ -452,9 +452,9 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 	@Override
 	public void update(EventType mesgType, Integer pos) {
 		if(mesgType == Devices.EventType.UPDATE || mesgType == Devices.EventType.SUBSTITUTE) {
-			final int localIndex = parent.getLocalIndex(pos);
+			final int localIndex = parentDlg.getLocalIndex(pos);
 			if(localIndex >= 0) {
-				final ShellyAbstractDevice device = parent.getModel().get(pos);
+				final ShellyAbstractDevice device = parentDlg.getModel().get(pos);
 				ShellyAbstractDevice.Status newStatus = device.getStatus();
 
 				if(newStatus == ShellyAbstractDevice.Status.ON_LINE && devicesFWData.get(localIndex).fwModule == null) {

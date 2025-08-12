@@ -14,7 +14,7 @@ import it.usna.shellyscan.model.device.ModulesHolder;
 import it.usna.shellyscan.model.device.g1.modules.Relay;
 
 public class ShellyUNI extends AbstractG1Device implements ModulesHolder {
-	public final static String ID = "SHUNI-1";
+	public static final String ID = "SHUNI-1";
 	private Relay relay0 = new Relay(this, 0);
 	private Relay relay1 = new Relay(this, 1);
 	private float voltage;

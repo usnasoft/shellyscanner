@@ -19,8 +19,8 @@ import it.usna.shellyscan.model.device.modules.InputInterface;
  * @author usna
  */
 public class Button1 extends AbstractBatteryG1Device implements ModulesHolder {
-	public final static String ID = "SHBTN-2";
-	private final static Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.BAT};
+	public static final String ID = "SHBTN-2";
+	private static final Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.BAT};
 	private Actions actions = new Actions(this);
 	private Meters[] meters;
 	

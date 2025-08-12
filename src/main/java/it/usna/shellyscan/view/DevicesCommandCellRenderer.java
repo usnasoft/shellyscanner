@@ -40,13 +40,13 @@ import it.usna.shellyscan.model.device.modules.WhiteInterface;
 import it.usna.swing.VerticalFlowLayout;
 
 public class DevicesCommandCellRenderer implements TableCellRenderer {
-	private final static Logger LOG = LoggerFactory.getLogger(DevicesCommandCellRenderer.class);
+	private static final Logger LOG = LoggerFactory.getLogger(DevicesCommandCellRenderer.class);
 
 	// Generic
-	final static ImageIcon EDIT_IMG = new ImageIcon(DevicesCommandCellRenderer.class.getResource("/images/Write16.png"));
-	final static ImageIcon UP_IMG = new ImageIcon(DevicesCommandCellRenderer.class.getResource("/images/Arrow16up.png"));
-	final static ImageIcon DOWN_IMG = new ImageIcon(DevicesCommandCellRenderer.class.getResource("/images/Arrow16down.png"));
-	final static ImageIcon STOP_IMG = new ImageIcon(DevicesCommandCellRenderer.class.getResource("/images/PlayerStop16.png"));
+	static final ImageIcon EDIT_IMG = new ImageIcon(DevicesCommandCellRenderer.class.getResource("/images/Write16.png"));
+	static final ImageIcon UP_IMG = new ImageIcon(DevicesCommandCellRenderer.class.getResource("/images/Arrow16up.png"));
+	static final ImageIcon DOWN_IMG = new ImageIcon(DevicesCommandCellRenderer.class.getResource("/images/Arrow16down.png"));
+	static final ImageIcon STOP_IMG = new ImageIcon(DevicesCommandCellRenderer.class.getResource("/images/PlayerStop16.png"));
 	private JButton onOffButton0 = new JButton();
 	private JLabel label0 = new JLabel();
 	private JButton editDialogButton = new JButton(EDIT_IMG);
@@ -99,11 +99,11 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 	static final int MAX_ACTIONS_SHOWN = 5; // if supported actions <= then show also disabled buttons
 	private static final int BUTTON_MARGIN_H = 12;
 	private static final int BUTTON_MARGIN_V = 1;
-	final static Border BUTTON_BORDERS = BorderFactory.createEmptyBorder(BUTTON_MARGIN_V, BUTTON_MARGIN_H, BUTTON_MARGIN_V, BUTTON_MARGIN_H);
-//	final static Border BUTTON_BORDERS_SMALL = BorderFactory.createEmptyBorder(BUTTON_MARGIN_V, BUTTON_MARGIN_H-2, BUTTON_MARGIN_V, BUTTON_MARGIN_H-2);
-	final static Border BUTTON_BORDERS_SMALLER = BorderFactory.createEmptyBorder(BUTTON_MARGIN_V, BUTTON_MARGIN_H-5, BUTTON_MARGIN_V, BUTTON_MARGIN_H-5);
-	final static String LABEL_ON = Main.LABELS.getString("btnOnLabel");
-	final static String LABEL_OFF = Main.LABELS.getString("btnOffLabel");
+	static final Border BUTTON_BORDERS = BorderFactory.createEmptyBorder(BUTTON_MARGIN_V, BUTTON_MARGIN_H, BUTTON_MARGIN_V, BUTTON_MARGIN_H);
+//	static final Border BUTTON_BORDERS_SMALL = BorderFactory.createEmptyBorder(BUTTON_MARGIN_V, BUTTON_MARGIN_H-2, BUTTON_MARGIN_V, BUTTON_MARGIN_H-2);
+	static final Border BUTTON_BORDERS_SMALLER = BorderFactory.createEmptyBorder(BUTTON_MARGIN_V, BUTTON_MARGIN_H-5, BUTTON_MARGIN_V, BUTTON_MARGIN_H-5);
+	static final String LABEL_ON = Main.LABELS.getString("btnOnLabel");
+	static final String LABEL_OFF = Main.LABELS.getString("btnOffLabel");
 	
 	private boolean tempUnitCelsius;
 
@@ -318,7 +318,7 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 					thermProfileLabel.setText(/*thermostat.getCurrentProfile() + " " +*/ thermostat.getTargetTemp() + "°C");
 				} else {
 					thermProfileLabel.setText(/*thermostat.getCurrentProfile() + " " +*/ (Math.round(thermostat.getTargetTemp() * 18f + 320f) / 10f) + "°F");
-					//				thermProfileLabel.setText(/*thermostat.getCurrentProfile() + " " +*/ String.format(Locale.ENGLISH, "%.1f°F", thermostat.getTargetTemp() * 1.8f + 32f));
+					//thermProfileLabel.setText(/*thermostat.getCurrentProfile() + " " +*/ String.format(Locale.ENGLISH, "%.1f°F", thermostat.getTargetTemp() * 1.8f + 32f));
 				}
 				if(thermostat.isEnabled()) {
 					thermActiveButton.setText(LABEL_ON);
@@ -361,7 +361,7 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 				ret = labelPlain;
 			}
 			return ret;
-		} catch(Throwable e) {
+		} catch(Exception e) {
 			LOG.error("rendering error", e);
 			labelPlain.setText("--");
 			return labelPlain;
@@ -449,7 +449,7 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 					String bLabel;
 					try {
 						bLabel = LABELS.getString(inp.getEvent(i));
-					} catch( MissingResourceException e) {
+					} catch(MissingResourceException e) {
 						LOG.debug("Missing event {}", inp.getEvent(i));
 						bLabel = "x";
 					}

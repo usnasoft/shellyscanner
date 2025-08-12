@@ -25,8 +25,8 @@ import it.usna.shellyscan.model.device.modules.DeviceModule;
  * @author usna
  */
 public class ShellyPlus0_10VDimmer extends AbstractG2Device implements /*InternalTmpHolder,*/ ModulesHolder {
-	private final static Logger LOG = LoggerFactory.getLogger(ShellyPlus0_10VDimmer.class);
-	public final static String ID = "Plus10V";
+	private static final Logger LOG = LoggerFactory.getLogger(ShellyPlus0_10VDimmer.class);
+	public static final String ID = "Plus10V";
 //	private float internalTmp;
 //	private float power;
 //	private float voltage;
