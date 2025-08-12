@@ -23,7 +23,7 @@ public class Shelly1PM extends AbstractG1Device implements ModulesHolder, Intern
 	private Relay[] relayArray = new Relay[] {relay};
 	private float internalTmp;
 	private float power;
-	private float extT0, extT1, extT2;// = new float[3];
+	private float extT0, extT1, extT2;
 	private int humidity;
 	private int extSwitchStatus;
 	private boolean extSwitchRev;
@@ -37,7 +37,6 @@ public class Shelly1PM extends AbstractG1Device implements ModulesHolder, Intern
 	protected void init() throws IOException {
 		JsonNode settings = getJSON("/settings");
 		this.hostname = settings.get("device").get("hostname").asText("");
-//		fillOnce(settings);
 		fillSettings(settings);
 		try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e) {}
 		JsonNode status = getJSON("/status");
@@ -72,7 +71,6 @@ public class Shelly1PM extends AbstractG1Device implements ModulesHolder, Intern
 			if(extTNode.has("0")) tt.add(Meters.Type.T);
 			if(extTNode.has("1")) tt.add(Meters.Type.T1);
 			if(extTNode.has("2")) tt.add(Meters.Type.T2);
-			//final Meters.Type[] mTypes = tt.toArray(new Meters.Type[tt.size()]);
 			final Meters.Type[] mTypes = tt.toArray(Meters.Type[]::new);
 			meters = new Meters[] {
 					pMeters,
@@ -140,10 +138,6 @@ public class Shelly1PM extends AbstractG1Device implements ModulesHolder, Intern
 		return internalTmp;
 	}
 
-//	public float getPower() {
-//		return power;
-//	}
-
 	@Override
 	public Meters[] getMeters() {
 		return meters;
@@ -193,15 +187,12 @@ public class Shelly1PM extends AbstractG1Device implements ModulesHolder, Intern
 		for(int i = 0; i < 3; i++) {
 			JsonNode extT = settings.path("ext_temperature").path(i + "");
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-//			errors.add(sendCommand("/settings/ext_temperature/" + i + "?" + jsonEntryIteratorToURLPar(extT.fields())));
 			errors.add(sendCommand("/settings/ext_temperature/" + i + "?" + jsonEntrySetToURLPar(extT.properties())));
 		}
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-//		errors.add(sendCommand("/settings/ext_humidity/0?" + jsonEntryIteratorToURLPar(settings.path("ext_humidity").path("0").fields())));
 		errors.add(sendCommand("/settings/ext_humidity/0?" + jsonEntrySetToURLPar(settings.path("ext_humidity").path("0").properties())));
 		
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-//		errors.add(sendCommand("/settings/ext_switch/0?" + jsonEntryIteratorToURLPar(settings.path("ext_switch").path("0").fields())));
 		errors.add(sendCommand("/settings/ext_switch/0?" + jsonEntrySetToURLPar(settings.path("ext_switch").path("0").properties())));
 	}
 

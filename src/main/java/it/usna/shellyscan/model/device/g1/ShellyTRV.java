@@ -72,10 +72,6 @@ public class ShellyTRV extends AbstractG1Device {
 		thermostat.fillStatus(therm);
 	}
 	
-//	public float getMeasuredTemp() {
-//		return measuredTemp;
-//	}
-	
 	public ThermostatG1 getThermostat() {
 		return thermostat;
 	}

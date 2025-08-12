@@ -37,6 +37,7 @@ public class ShellyPro4PM extends AbstractProDevice implements ModulesHolder, In
 
 		meters = new Meters[] {
 				new Meters() {
+					@Override
 					public Type[] getTypes() {
 						return SUPPORTED_MEASURES;
 					}
@@ -55,6 +56,7 @@ public class ShellyPro4PM extends AbstractProDevice implements ModulesHolder, In
 					}
 				},
 				new Meters() {
+					@Override
 					public Type[] getTypes() {
 						return SUPPORTED_MEASURES;
 					}
@@ -73,6 +75,7 @@ public class ShellyPro4PM extends AbstractProDevice implements ModulesHolder, In
 					}
 				},
 				new Meters() {
+					@Override
 					public Type[] getTypes() {
 						return SUPPORTED_MEASURES;
 					}
@@ -91,6 +94,7 @@ public class ShellyPro4PM extends AbstractProDevice implements ModulesHolder, In
 					}
 				},
 				new Meters() {
+					@Override
 					public Type[] getTypes() {
 						return SUPPORTED_MEASURES;
 					}

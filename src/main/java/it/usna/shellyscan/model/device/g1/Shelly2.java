@@ -62,10 +62,6 @@ public class Shelly2 extends AbstractG1Device implements ModulesHolder {
 		}
 	}
 	
-//	public float getPower() {
-//		return power;
-//	}
-	
 	@Override
 	public Meters[] getMeters() {
 		return meters;
