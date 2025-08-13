@@ -24,9 +24,9 @@ import it.usna.shellyscan.model.device.BatteryDeviceInterface;
 
 public abstract class AbstractBatteryG2Device extends AbstractG2Device implements BatteryDeviceInterface {
 	private static final Logger LOG = LoggerFactory.getLogger(AbstractBatteryG2Device.class);
-	protected JsonNode shelly;
-	protected JsonNode settings;
-	protected JsonNode status;
+	protected JsonNode shellyJ;
+	protected JsonNode settingsJ;
+	protected JsonNode statusJ;
 	protected Map<String, JsonNode> others = new HashMap<>();
 	protected int bat;
 
@@ -36,7 +36,7 @@ public abstract class AbstractBatteryG2Device extends AbstractG2Device implement
 	
 	@Override
 	public void init(HttpClient httpClient, WebSocketClient wsClient, JsonNode devInfo) throws IOException {
-		this.shelly = devInfo;
+		this.shellyJ = devInfo;
 		this.httpClient = httpClient;
 		this.wsClient = wsClient;
 		init(devInfo);
@@ -50,11 +50,11 @@ public abstract class AbstractBatteryG2Device extends AbstractG2Device implement
 	@Override
 	public JsonNode getStoredJSON(final String command) {
 		if(command.equals("/shelly") || command.equals("/rpc/Shelly.GetDeviceInfo")) {
-			return shelly;
+			return shellyJ;
 		} else if(command.equals("/rpc/Shelly.GetConfig")) {
-			return settings;
+			return settingsJ;
 		} else if(command.equals("/rpc/Shelly.GetStatus")) {
-			return status;
+			return statusJ;
 		} else {
 			return others.get(command);
 		}
@@ -63,11 +63,11 @@ public abstract class AbstractBatteryG2Device extends AbstractG2Device implement
 	@Override
 	public void setStoredJSON(final String command, JsonNode val) {
 		if(command.equals("/shelly") || command.equals("/rpc/Shelly.GetDeviceInfo")) {
-			this.shelly = val;
+			this.shellyJ = val;
 		} else if(command.equals("/rpc/Shelly.GetConfig")) {
-			this.settings = val;
+			this.settingsJ = val;
 		} else if(command.equals("/rpc/Shelly.GetStatus")) {
-			this.status = val;
+			this.statusJ = val;
 		} else {
 			others.put(command, val);
 		}
@@ -97,7 +97,7 @@ public abstract class AbstractBatteryG2Device extends AbstractG2Device implement
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			try {
 				sectionToStream("/rpc/KVS.GetMany", "items", "KVS.GetMany.json", fs);
-			} catch(Exception e) {}
+			} catch(Exception e) {/* some model do not support KVS */}
 		} catch(InterruptedException e) {
 			LOG.error("backup", e);
 		} catch(Exception e) {
@@ -116,7 +116,7 @@ public abstract class AbstractBatteryG2Device extends AbstractG2Device implement
 						jsonMapper.writer().writeValue(writer, getStoredJSON("/rpc/KVS.GetMany"));
 					}
 				} catch(IOException ex) {
-					LOG.error("backup battery ()", e, ex);
+					LOG.error("backup battery {}", e, ex);
 				}
 				return false;
 			} else {

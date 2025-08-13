@@ -350,7 +350,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 	When sending the challange request for the debug endpoint, you have to provide the same auth params, but as get paramethers in format
 	auth.[paramName]=paramValue. For example about the username it will be auth.username=admin&auth.cnonce=…&auth.respose=...
 	 */
-	public Future<Session> connectWebSocketLogs(WebSocketDeviceListener listener) throws IOException, InterruptedException, ExecutionException {
+	public Future<Session> connectWebSocketLogs(WebSocketDeviceListener listener) throws IOException {
 		return wsClient.connect(listener, URI.create("ws://" + addressAndPort.getRepresentation() + "/debug/log"));
 	}
 
@@ -373,12 +373,12 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			try {
 				sectionToStream("/rpc/KVS.GetMany", "items", "KVS.GetMany.json", fs);
-			} catch(Exception e) {}
+			} catch(Exception e) {/* some model do not support KVS */}
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			JsonNode scripts = null;
 			try {
 				scripts = sectionToStream("/rpc/Script.List", "Script.List.json", fs);
-			} catch(Exception e) {}
+			} catch(Exception e) {/* some model do not support Scripts */}
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			try { // Virtual components (PRO & gen3+)
 				sectionToStream("/rpc/Shelly.GetComponents?dynamic_only=true", "components", "Shelly.GetComponents.json", fs);
@@ -460,7 +460,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 					List<Script> existingScripts = Script.list(this);
 					List<String> scriptsEnabledByDefault = new ArrayList<>();
 					List<String> scriptsWithSameName = new ArrayList<>();
-					List<String> existingScriptsNames = existingScripts.stream().map(s -> s.getName()).toList();
+					List<String> existingScriptsNames = existingScripts.stream().map(Script::getName).toList();
 					for(JsonNode jsonScript: storedScripts.get("scripts")) {
 						if(existingScriptsNames.contains(jsonScript.get("name").asText()))
 							scriptsWithSameName.add(jsonScript.get("name").asText());
@@ -497,7 +497,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 			errors.add("->r_step:specific");
 			restore(backupJsons, errors);
 			if(status == Status.OFF_LINE) {
-				return errors.size() > 0 ? errors : List.of(RestoreMsg.ERR_UNKNOWN.toString());
+				return errors.isEmpty() == false ? errors : List.of(RestoreMsg.ERR_UNKNOWN.toString());
 			}
 
 			errors.add("->r_step:DynamicComponents");
@@ -548,7 +548,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 				TimeUnit.MILLISECONDS.sleep(delay);
 				JsonNode apNode = config.at("/wifi/ap"); // e.g. wall display -> isMissingNode()
 				if(currentConnection != Network.AP && apNode.isMissingNode() == false &&
-						((userPref.containsKey(RestoreMsg.RESTORE_WI_FI_AP) || apNode.path("is_open").asBoolean() || apNode.path("enable").asBoolean() == false))) {
+						(userPref.containsKey(RestoreMsg.RESTORE_WI_FI_AP) || apNode.path("is_open").asBoolean() || apNode.path("enable").asBoolean() == false)) {
 					errors.add(WIFIManagerG2.restoreAP_roam(this, config.get("wifi"), userPref.get(RestoreMsg.RESTORE_WI_FI_AP)));
 				} else {
 					errors.add(WIFIManagerG2.restoreRoam(this, config.get("wifi")));
@@ -596,7 +596,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 		outDevice.remove("mac");
 		outDevice.remove("fw_id");
 		outDevice.remove("addon_type");
-		outDevice.remove("profile"); // postCommand("Shelly.setprofile", "{\"name\":\"" + shelly.get("profile") +"\"}");
+		outDevice.remove("profile");
 		outSys.set("device", outDevice);
 
 		outSys.set("sntp", sys.get("sntp")/*.deepCopy()*/);

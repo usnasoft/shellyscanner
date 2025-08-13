@@ -18,6 +18,8 @@ public class LoRaAddOn {
 	public static final String ADDON_TYPE = "LoRa";
 	private static final int ID = 100;
 	
+	private LoRaAddOn() {}
+	
 	public static String enable(AbstractG3Device d, boolean enable) {
 		return d.postCommand("Sys.SetConfig", "{\"config\":{\"device\":{\"addon_type\":" + (enable ? "\"" + ADDON_TYPE + "\"" : "null") + "}}}");
 	}

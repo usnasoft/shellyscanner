@@ -49,12 +49,12 @@ class ThermJobPanel extends JPanel {
 	private JPanel daysOfWeekPanel;
 	private String daysOfWeek;
 	protected JTextField expressionField;
-	protected JDialog parent;
+	protected JDialog parentDlg;
 	
 	private static final String DEF_CRON = "* 0 0 * * 0,1,2,3,4,5,6";
 
 	ThermJobPanel(JDialog parent, float minTarget, float maxTarget, String timespec, Float temp) {
-		this.parent = parent;
+		this.parentDlg = parent;
 		setOpaque(false);
 		setBorder(BorderFactory.createEmptyBorder(2, 2, 4, 2));
 		this.minTarget = minTarget;
@@ -106,7 +106,7 @@ class ThermJobPanel extends JPanel {
 		if(validateCronData()) {
 			if(target.isEmpty()) {
 				target.requestFocus();
-				Msg.errorMsg(parent, "schErrorInvalidTarget");
+				Msg.errorMsg(parentDlg, "schErrorInvalidTarget");
 				return false;
 			}
 			return true;
@@ -361,7 +361,7 @@ class ThermJobPanel extends JPanel {
 		String exp = expressionField.getText();
 		if(CronUtils.CRON_PATTERN_TH_WD.matcher(exp).matches() == false && CronUtils.SUNSET_PATTERN.matcher(exp).matches() == false) {
 			expressionField.requestFocus();
-			Msg.errorMsg(parent, "schErrorInvalidExpression");
+			Msg.errorMsg(parentDlg, "schErrorInvalidExpression");
 			return false;
 		} else {
 			return true;

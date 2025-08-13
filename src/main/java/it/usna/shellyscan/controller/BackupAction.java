@@ -106,8 +106,8 @@ public class BackupAction extends UsnaAction {
 					new BackWorker().execute();
 					try {
 						appProp.setProperty("LAST_PATH", fc.getCurrentDirectory().getCanonicalPath());
-					} catch (IOException e1) {
-						LOG.error("BackupAction - LAST_PATH", e);
+					} catch (IOException ex) {
+						LOG.error("BackupAction - LAST_PATH", ex);
 					}
 				}
 			}

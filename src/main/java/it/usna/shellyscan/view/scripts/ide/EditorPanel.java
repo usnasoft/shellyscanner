@@ -532,8 +532,8 @@ public class EditorPanel extends SyntaxEditor {
 							@Override
 							public void menuKeyTyped(MenuKeyEvent e) {
 								popup.setVisible(false);
-								char c;
-								if(Character.isISOControl(c = e.getKeyChar()) == false) {
+								char c = e.getKeyChar();
+								if(Character.isISOControl(c) == false) {
 									replaceSelection(String.valueOf(c));
 								}
 							}
@@ -610,7 +610,7 @@ public class EditorPanel extends SyntaxEditor {
 				lastFunctionPos = pos + 8; //" function" -> 8
 			} else if(txt.charAt(pos) == '=' && getCharacterStyleName(pos).equals("usna_operator")) {
 				String w = findPreviousPlainWord(txt, pos);
-				//					System.out.println(w);
+				// System.out.println(w);
 				if(w.toLowerCase().startsWith(token)) {
 					found.add(w); // todo: ignoring "let"
 				}

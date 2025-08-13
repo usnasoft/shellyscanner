@@ -24,11 +24,12 @@ public class Msg {
 	private static final int DEF_ROWS_MAX = 35;
 	private static final Pattern PATTERN_BR = Pattern.compile("<br>");
 	
+	private Msg() {}
+	
 	public static void showHtmlMessageDialog(Component parentComponent, CharSequence message, String title, int messageType, final int rowsMax) {
 		try {
 			Matcher m = PATTERN_BR.matcher(message);
 			int rows = (int)m.results().count();
-//			while(m.find()) rows++;
 			if(rows <= rowsMax) {
 				JOptionPane.showMessageDialog(parentComponent, message, title, messageType);
 			} else {
