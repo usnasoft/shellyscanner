@@ -273,7 +273,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 	
 	private Action csvExportAction = new ExportCSVAction(this, devicesTable);
 
-	private Action devicesSettingsAction = new UsnaAction(this, "action_general_conf_name", "action_general_conf_tooltip", null, "/images/Tool.png", e -> {
+	private Action devicesSettingsAction = new UsnaAction(this, "action_general_conf_name", "action_general_conf_tooltip", "/images/Tool16.png", "/images/Tool.png", e -> {
 		new DialogDeviceSettings(this, model, devicesTable.getSelectedModelRows());
 	});
 	
@@ -431,7 +431,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		contentPane.add(toolBar, BorderLayout.NORTH);
 
 		// devices popup
-		UsnaPopupMenu tablePopup = new UsnaPopupMenu(infoAction, browseAction, backupAction, restoreAction, notesAction, reloadAction/*, loginAction*/);
+		UsnaPopupMenu tablePopup = new UsnaPopupMenu(infoAction, browseAction, devicesSettingsAction, backupAction, restoreAction, notesAction, reloadAction);
 		UsnaPopupMenu ghostDevPopup = new UsnaPopupMenu(reloadAction, notesAction, eraseGhostAction);
 
 		// devices popup & double click

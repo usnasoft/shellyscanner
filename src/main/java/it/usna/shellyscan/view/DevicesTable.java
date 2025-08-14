@@ -116,11 +116,11 @@ public class DevicesTable extends ExTooltipTable {
 		colCommand.setCellEditor(new DevicesCommandCellEditor(this, tempUnitCelsius));
 
 		TableRowSorter<?> sorter = (TableRowSorter<?>)getRowSorter();
-		
+
 		sorter.setComparator(COL_COMMAND_IDX, (o1, o2) -> {
 			final String s1, s2;
 			if(o1 == null) {
-				s1 = "";
+				s1 = null;
 			} else if (o1 instanceof DeviceModule[] dmArray) {
 				s1 = dmArray[0].getLabel();
 			} else if (o1 instanceof DeviceModule dm) {
@@ -129,7 +129,7 @@ public class DevicesTable extends ExTooltipTable {
 				s1 = o1.toString();
 			}
 			if(o2 == null) {
-				s2 = "";
+				s2 = null;
 			} else if (o2 instanceof DeviceModule[] dmArray) {
 				s2 = dmArray[0].getLabel();
 			} else if (o2 instanceof DeviceModule dm) {
@@ -137,7 +137,13 @@ public class DevicesTable extends ExTooltipTable {
 			} else {
 				s2 = o2.toString();
 			}
-			return s1.compareTo(s2);
+			if(s1 == null) {
+				return (s2 == null) ? 0 : -1;
+			}
+			if(s2 == null) {
+				return 1;
+			}
+			return s1.compareToIgnoreCase(s2);
 		});
 		
 		sorter.setComparator(COL_MEASURES_IDX, (Meters[] o1, Meters[] o2) -> {
@@ -152,15 +158,15 @@ public class DevicesTable extends ExTooltipTable {
 		});
 		
 		sorter.setComparator(COL_SOURCE_IDX, (o1, o2) -> {
-			String s1 = o1 instanceof String[] ? ((String[])o1)[0] : (String)o1;
-			String s2 = o2 instanceof String[] ? ((String[])o2)[0] : (String)o2;
+			String s1 = o1 instanceof String[] arr ? arr[0] : (String)o1;
+			String s2 = o2 instanceof String[] arr ? arr[0] : (String)o2;
 			if(s1 == null) {
-				return -1;
+				return (s2 == null) ? 0 : -1;
 			}
 			if(s2 == null) {
 				return 1;
 			}
-			return s1.compareTo(s2);
+			return s1.compareToIgnoreCase(s2);
 		});
 		
 		activateSingleCellStringCopy();
