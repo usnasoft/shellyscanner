@@ -42,10 +42,6 @@ public class ShellyPlug extends AbstractG1Device implements ModulesHolder {
 	public String getTypeID() {
 		return ID;
 	}
-	
-//	public float getPower() {
-//		return power;
-//	}
 
 	@Override
 	public Meters[] getMeters() {

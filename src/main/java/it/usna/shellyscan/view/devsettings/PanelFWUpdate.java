@@ -4,10 +4,14 @@ import static it.usna.shellyscan.Main.LABELS;
 
 import java.awt.BorderLayout;
 import java.awt.Cursor;
+import java.awt.Desktop;
 import java.awt.FlowLayout;
 import java.awt.FontMetrics;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.IOException;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -53,6 +57,7 @@ import it.usna.shellyscan.model.device.g2.WebSocketDeviceListener;
 import it.usna.shellyscan.model.device.modules.FirmwareManager;
 import it.usna.shellyscan.view.DevicesTable;
 import it.usna.shellyscan.view.MainView;
+import it.usna.shellyscan.view.util.Msg;
 import it.usna.shellyscan.view.util.UtilMiscellaneous;
 import it.usna.swing.table.UsnaTableModel;
 import it.usna.swing.texteditor.TextDocumentListener;
@@ -187,6 +192,19 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 		btnPanelRight.add(btnCheck);
 
 //		btnPanel.add(Box.createHorizontalStrut(2));
+
+		table.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mousePressed(MouseEvent evt) {
+				if (evt.getClickCount() == 2 /*&& table.getSelectedRow() != -1*/) {
+					try {
+						Desktop.getDesktop().browse(URI.create("http://" + parentDlg.getLocalDevice(table.getSelectedModelRow()).getAddressAndPort().getRepresentation()));
+					} catch (IOException | UnsupportedOperationException e) {
+						Msg.errorMsg(parentDlg, e);
+					}
+				}
+			}
+		});
 	}
 	
 	FirmwareManager getFirmwareManager(int index) {

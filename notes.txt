@@ -360,9 +360,9 @@ schedule load ...
 wall display restore therm profiles
 zigbee
 restore compatibility table
+firmware update dialog - double click on table
 // todo schedule wall display thermostat - profile selection
 // todo 1.7.0 https://shelly-api-docs.shelly.cloud/gen2/DynamicComponents/BTHome/BTHomeControl/ (?)
-// todo 1.7.0 Shelly2PMG4 zigbee verifica
 
 https://next-api-docs.shelly.cloud/gen2/ComponentsAndServices/Schedule
 https://github.com/mongoose-os-libs/cron

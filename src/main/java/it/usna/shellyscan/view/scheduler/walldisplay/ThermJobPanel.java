@@ -189,7 +189,6 @@ class ThermJobPanel extends JPanel {
 		allWDaysButton.setContentAreaFilled(false);
 		allWDaysButton.setBorder(BorderFactory.createEmptyBorder());
 		GridBagConstraints gbc_allWDaysButton = new GridBagConstraints();
-		gbc_allWDaysButton.insets = new Insets(0, 0, 5, 0);
 		gbc_allWDaysButton.anchor = GridBagConstraints.SOUTHWEST;
 		gbc_allWDaysButton.gridx = 3;
 		gbc_allWDaysButton.gridy = 0;

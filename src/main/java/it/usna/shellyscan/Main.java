@@ -38,8 +38,8 @@ public class Main {
 		System.setProperty("apple.eawt.quitStrategy", "CLOSE_ALL_WINDOWS"); // macOS specific - cmd-Q / -Dapple.eawt.quitStrategy=CLOSE_ALL_WINDOWS
 	}
 	public static final String APP_NAME = "Shelly Scanner";
-	public static final String VERSION = "1.2.6 beta2";
-	public static final String VERSION_CODE = "001.002.006r103"; // r0xx alpha; r1xx beta; r2xx stable
+	public static final String VERSION = "1.2.6";
+	public static final String VERSION_CODE = "001.002.006r200"; // r0xx alpha; r1xx beta; r2xx stable
 	public static final Image ICON = Toolkit.getDefaultToolkit().createImage(Main.class.getResource("/images/ShSc24.png"));
 	public static final String BACKUP_FILE_EXT = "sbk";
 	public static final String ARCHIVE_FILE_EXT = "arc";
