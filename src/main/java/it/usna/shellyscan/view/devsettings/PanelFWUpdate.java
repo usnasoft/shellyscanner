@@ -23,6 +23,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.JButton;
@@ -59,6 +60,7 @@ import it.usna.shellyscan.view.DevicesTable;
 import it.usna.shellyscan.view.MainView;
 import it.usna.shellyscan.view.util.Msg;
 import it.usna.shellyscan.view.util.UtilMiscellaneous;
+import it.usna.swing.UsnaPopupMenu;
 import it.usna.swing.table.UsnaTableModel;
 import it.usna.swing.texteditor.TextDocumentListener;
 import it.usna.util.UsnaEventListener;
@@ -192,16 +194,23 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 		btnPanelRight.add(btnCheck);
 
 //		btnPanel.add(Box.createHorizontalStrut(2));
+		
+		Action browseAction = new UsnaAction(parentDlg, "action_web_name", "action_web_tooltip", "/images/Computer16.png", "/images/Computer.png", e -> {
+			try {
+				Desktop.getDesktop().browse(URI.create("http://" + parentDlg.getLocalDevice(table.getSelectedModelRow()).getAddressAndPort().getRepresentation()));
+			} catch (IOException | UnsupportedOperationException ex) {
+				Msg.errorMsg(parentDlg, ex);
+			}
+		});
+
+		UsnaPopupMenu popup = new UsnaPopupMenu(browseAction);
+		table.addMouseListener(popup.getMouseListener(table));
 
 		table.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mousePressed(MouseEvent evt) {
 				if (evt.getClickCount() == 2 /*&& table.getSelectedRow() != -1*/) {
-					try {
-						Desktop.getDesktop().browse(URI.create("http://" + parentDlg.getLocalDevice(table.getSelectedModelRow()).getAddressAndPort().getRepresentation()));
-					} catch (IOException | UnsupportedOperationException e) {
-						Msg.errorMsg(parentDlg, e);
-					}
+					browseAction.actionPerformed(null);
 				}
 			}
 		});

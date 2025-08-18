@@ -8,7 +8,6 @@ import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
-import java.awt.event.MouseEvent;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URI;
@@ -211,19 +210,8 @@ public class ScriptsPanel extends JPanel {
 		final JButton editBtn = new JButton(editAction);
 		operationsPanel.add(editBtn);
 
-		UsnaPopupMenu tablePopup = new UsnaPopupMenu(editAction) {
-			private static final long serialVersionUID = 1L;
-
-			@Override
-			protected void doPopup(MouseEvent evt) {
-				final int r = table.rowAtPoint(evt.getPoint());
-				if (r >= 0) {
-					table.setRowSelectionInterval(r, r);
-					show(table, evt.getX(), evt.getY());
-				}
-			}
-		};
-		table.addMouseListener(tablePopup.getMouseListener());
+		UsnaPopupMenu tablePopup = new UsnaPopupMenu(editAction);
+		table.addMouseListener(tablePopup.getMouseListener(table));
 
 		// Fill table
 		for (Script sc : Script.list(device)) {

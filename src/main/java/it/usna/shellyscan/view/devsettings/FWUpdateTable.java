@@ -9,6 +9,7 @@ import javax.swing.DefaultRowSorter;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JTable;
+import javax.swing.ListSelectionModel;
 import javax.swing.RowFilter;
 import javax.swing.event.ChangeEvent;
 import javax.swing.table.TableCellEditor;
@@ -50,6 +51,8 @@ public class FWUpdateTable extends ExTooltipTable {
 		// On update COL_STABLE value class is String for the updating row, if this is the first row ... see UsnaTableModel.getColumnClass(...))
 		columnModel.getColumn(COL_STABLE).setCellEditor(getDefaultEditor(Boolean.class));
 		activateSingleCellStringCopy();
+		
+		setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 	}
 
 	@Override
