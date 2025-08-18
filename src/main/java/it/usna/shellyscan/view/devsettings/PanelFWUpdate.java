@@ -47,6 +47,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import it.usna.shellyscan.controller.DeferrableTask;
 import it.usna.shellyscan.controller.DeferrablesContainer;
 import it.usna.shellyscan.controller.UsnaAction;
+import it.usna.shellyscan.controller.UsnaSelectedAction;
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.Devices.EventType;
 import it.usna.shellyscan.model.device.GhostDevice;
@@ -194,10 +195,10 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 		btnPanelRight.add(btnCheck);
 
 //		btnPanel.add(Box.createHorizontalStrut(2));
-		
-		Action browseAction = new UsnaAction(parentDlg, "action_web_name", "action_web_tooltip", "/images/Computer16.png", "/images/Computer.png", e -> {
+
+		Action browseAction = new UsnaSelectedAction(parentDlg, table, "action_web_name", /*"action_web_tooltip"*/null, "/images/Computer16.png", /*"/images/Computer.png"*/null, i -> {
 			try {
-				Desktop.getDesktop().browse(URI.create("http://" + parentDlg.getLocalDevice(table.getSelectedModelRow()).getAddressAndPort().getRepresentation()));
+				Desktop.getDesktop().browse(URI.create("http://" + parentDlg.getLocalDevice(i).getAddressAndPort().getRepresentation()));
 			} catch (IOException | UnsupportedOperationException ex) {
 				Msg.errorMsg(parentDlg, ex);
 			}
