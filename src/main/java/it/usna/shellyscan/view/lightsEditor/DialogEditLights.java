@@ -56,8 +56,8 @@ public class DialogEditLights extends JDialog {
 			commandPanel.setBorder(BorderFactory.createEmptyBorder(6, 0, 6, 0));
 		}
 		
-		((JPanel)getContentPane()).getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "escape_close");
-		((JPanel)getContentPane()).getActionMap().put("escape_close", new AbstractAction() {
+		getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "escape_close");
+		getRootPane().getActionMap().put("escape_close", new AbstractAction() {
 			private static final long serialVersionUID = 1L;
 			@Override
 			public void actionPerformed(ActionEvent e) {

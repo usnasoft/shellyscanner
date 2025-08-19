@@ -354,16 +354,14 @@ blu -> buttons from actions
 ---
 Shelly 2PM Gen4
 Shelly Shutter G3
-schedule geb2+, BLU trv
+schedule gen2+, BLU trv
 schedule wall display thermostat
 schedule load ...
 wall display restore therm profiles
 zigbee
 restore compatibility table
-firmware update dialog - double click on table
+firmware update dialog - double click & menu on table
 fix: The SOURCE sorting works incorrectly
-// todo schedule wall display thermostat - profile selection
-// todo 1.7.0 https://shelly-api-docs.shelly.cloud/gen2/DynamicComponents/BTHome/BTHomeControl/ (?)
 
 https://next-api-docs.shelly.cloud/gen2/ComponentsAndServices/Schedule
 https://github.com/mongoose-os-libs/cron
@@ -371,10 +369,14 @@ https://crontab.guru/
 
 virtual components paging - it.usna.shellyscan.model.device.blu.BTHomeDevice.refreshStatus()
 
+
 // TODO
 - Krzysztof Ce
 it would be nice to have column sorting, e.g. to sort FW versions or device names.
 It would also be nice to add dynamic filters that show, for example, only enabled devices or disabled devices on the main view (?)
+
+// schedule wall display thermostat - profile selection
+// 1.7.0 https://shelly-api-docs.shelly.cloud/gen2/DynamicComponents/BTHome/BTHomeControl/ (?)
 
 
 // rgb_xx panel listener (?) -> model su DevicesTable -> su DevicesCommandCellEditor -> DialogEditLights che diventa listener e chiama i 

@@ -26,7 +26,7 @@ public class WhitePanel extends LightPanel {
 	
 	public WhitePanel(final WhiteInterface light) {
 		this.light = light;
-		setBorder(BorderFactory.createEmptyBorder(4, 8, 10, 8));
+		setBorder(BorderFactory.createEmptyBorder(6, 8, 12, 8));
 
 		setLayout(new BorderLayout(10, 0));
 		brightnessSlider = new JSlider(light.getMinBrightness(), light.getMaxBrightness(), light.getBrightness());

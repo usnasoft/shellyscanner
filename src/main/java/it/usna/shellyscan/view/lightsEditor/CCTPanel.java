@@ -40,7 +40,7 @@ public class CCTPanel extends LightPanel {
 	
 	public CCTPanel(final CCTInterface light) {
 		this.light = light;
-		setBorder(BorderFactory.createEmptyBorder(4, 8, 10, 8));
+		setBorder(BorderFactory.createEmptyBorder(6, 8, 12, 8));
 		setLayout(new VerticalFlowLayout(VerticalFlowLayout.CENTER, VerticalFlowLayout.CENTER, 0, 0));
 		// set initial values to avoid listeners to call the device in initial adjust
 		brightnessSlider = new JSlider(light.getMinBrightness(), light.getMaxBrightness(), light.getBrightness());

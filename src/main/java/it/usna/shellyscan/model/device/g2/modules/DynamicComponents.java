@@ -24,6 +24,8 @@ import it.usna.shellyscan.model.device.g2.AbstractG2Device;
  * Reference: https://shelly-api-docs.shelly.cloud/gen2/DynamicComponents/
  * <br>
  * IDs for these components start from 200 and are limited to 299.
+ * <br>
+ * List: <IP>/rpc/Shelly.GetComponents?dynamic_only=true
  */
 public class DynamicComponents {
 	private static final Logger LOG = LoggerFactory.getLogger(DynamicComponents.class);
@@ -36,14 +38,7 @@ public class DynamicComponents {
 	public static final int MIN_ID = 200;
 	public static final int MAX_ID = 299;
 	
-//	/**
-//	 * @param components - result of <IP>/rpc/Shelly.GetComponents?dynamic_only=true
-//	 */
-//	public DynamicComponents(JsonNode components) {
-//	}
-//	
-//	public DynamicComponents(AbstractG2Device parent) throws IOException {
-//	}
+	private DynamicComponents() { }
 
 	/**
 	 * Remove all dynamic components except BTHomeDevice(s).<br>
