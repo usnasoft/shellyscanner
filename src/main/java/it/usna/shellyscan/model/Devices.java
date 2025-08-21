@@ -91,8 +91,11 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 		
 //		wsClient.setConnectTimeout(100_000);
 //		wsClient.setIdleTimeout(Duration.ofMinutes(100));
-		wsClient.setStopAtShutdown(true);
 //		wsClient.setInputBufferSize(100_000);
+//		wsClient.setMaxBinaryMessageSize(100_000);
+//		wsClient.setMaxTextMessageSize(100_000);
+//		wsClient.setOutputBufferSize(100_000);
+		wsClient.setStopAtShutdown(true);
 		wsClient.start();
 	}
 

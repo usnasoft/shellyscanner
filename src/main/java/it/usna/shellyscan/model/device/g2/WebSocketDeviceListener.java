@@ -55,10 +55,10 @@ public class WebSocketDeviceListener implements Session.Listener.AutoDemanding {
 		}
 	}
 		
-	@Override
-	public void onWebSocketFrame(org.eclipse.jetty.websocket.api.Frame frame, org.eclipse.jetty.websocket.api.Callback callback) {
-		LOG.trace("ws-frame; length: {}", frame);
-	}
+//	@Override
+//	public void onWebSocketFrame(org.eclipse.jetty.websocket.api.Frame frame, org.eclipse.jetty.websocket.api.Callback callback) {
+//		LOG.trace("ws-frame; length: {}", frame);
+//	}
 
 	@Override
 	public void onWebSocketBinary(java.nio.ByteBuffer payload, org.eclipse.jetty.websocket.api.Callback callback) {

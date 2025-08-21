@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>it.usna</groupId>
 	<artifactId>shellyscan</artifactId>
-	<version>1.2.6</version>
+	<version>1.2.7alpha</version>
 	<name>Shelly Scanner</name>
 	<packaging>jar</packaging>
 
@@ -116,12 +116,12 @@
 		<dependency>
 			<groupId>org.eclipse.jetty</groupId>
 			<artifactId>jetty-client</artifactId>
-			<version>12.0.23</version>
+			<version>12.1.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.eclipse.jetty.websocket</groupId>
 			<artifactId>jetty-websocket-jetty-client</artifactId>
-			<version>12.0.23</version>
+			<version>12.1.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.jfree</groupId>
