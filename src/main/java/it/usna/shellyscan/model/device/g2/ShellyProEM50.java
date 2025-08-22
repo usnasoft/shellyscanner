@@ -16,8 +16,8 @@ import it.usna.shellyscan.model.device.ModulesHolder;
 import it.usna.shellyscan.model.device.g2.modules.Relay;
 
 public class ShellyProEM50 extends AbstractProDevice implements ModulesHolder, InternalTmpHolder {
-	public final static String ID = "ProEM";
-	private final static Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.W, Meters.Type.VA, Meters.Type.PF, Meters.Type.V, Meters.Type.I, Meters.Type.FREQ};
+	public static final String ID = "ProEM";
+	private static final Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.W, Meters.Type.VA, Meters.Type.PF, Meters.Type.V, Meters.Type.I, Meters.Type.FREQ};
 	private Relay relay = new Relay(this, 0);
 	private Relay[] relays = new Relay[] {relay};
 	private float internalTmp;

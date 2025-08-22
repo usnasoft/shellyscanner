@@ -39,9 +39,9 @@ public class DialogDeviceSettings extends JDialog implements UsnaEventListener<D
 	private Thread showCurrentThread;
 	private AbstractSettingsPanel currentPanel = null;
 	
-	public final static int FW = 0;
-	public final static int WIFI1 = 1;
-	public final static int WIFI2 = 2;
+	public static final int FW = 0;
+	public static final int WIFI1 = 1;
+	public static final int WIFI2 = 2;
 	
 	private Devices model;
 	private int[] devicesInd;

@@ -29,8 +29,8 @@ public class LightBulbRGB implements CCTInterface, RGBInterface {
 	private int gain; // Gain for all channels, 0..100, applies in mode="color"
 	private String source;
 	
-	public final static int MIN_TEMP = 3000;
-	public final static int MAX_TEMP = 6500;
+	public static final int MIN_TEMP = 3000;
+	public static final int MAX_TEMP = 6500;
 	
 	public LightBulbRGB(AbstractG1Device parent, int index) {
 		this.parent = parent;

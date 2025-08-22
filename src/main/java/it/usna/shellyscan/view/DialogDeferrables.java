@@ -3,7 +3,6 @@ package it.usna.shellyscan.view;
 import static it.usna.shellyscan.Main.LABELS;
 
 import java.awt.BorderLayout;
-import java.awt.event.MouseEvent;
 
 import javax.swing.Action;
 import javax.swing.ImageIcon;
@@ -33,7 +32,7 @@ import it.usna.util.UsnaEventListener;
 
 public class DialogDeferrables extends JFrame implements UsnaEventListener<DeferrableTask.Status, Integer> {
 	private static final long serialVersionUID = 1L;
-	private final static Logger LOG = LoggerFactory.getLogger(DialogDeferrables.class);
+	private static final Logger LOG = LoggerFactory.getLogger(DialogDeferrables.class);
 	private final UsnaTableModel tModel = new UsnaTableModel(LABELS.getString("col_time"), LABELS.getString("col_devName"), LABELS.getString("col_actionDesc"), LABELS.getString("col_status"));
 	private final ExTooltipTable table = new ExTooltipTable(tModel);
 	private final DeferrablesContainer deferrables;
@@ -50,6 +49,7 @@ public class DialogDeferrables extends JFrame implements UsnaEventListener<Defer
 				setIconTextGap(6);
 			}
 
+			@Override
 			public JLabel getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
 				super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 				Status status = deferrables.get(table.convertRowIndexToModel(row)).getStatus();
@@ -95,19 +95,8 @@ public class DialogDeferrables extends JFrame implements UsnaEventListener<Defer
 			}
 		});
 		
-		UsnaPopupMenu tablePopup = new UsnaPopupMenu(abortAction) {
-			private static final long serialVersionUID = 1L;
-
-			@Override
-			protected void doPopup(MouseEvent e) {
-				int r;
-				if((r = table.rowAtPoint(e.getPoint())) >= 0 && table.isRowSelected(r) == false) {
-					table.setRowSelectionInterval(r, r);
-				}
-				show(table, e.getX(), e.getY());
-			}
-		};
-		table.addMouseListener(tablePopup.getMouseListener());
+		UsnaPopupMenu tablePopup = new UsnaPopupMenu(abortAction);
+		table.addMouseListener(tablePopup.getMouseListener(table));
 
 		setSize(700, 300);
 	}

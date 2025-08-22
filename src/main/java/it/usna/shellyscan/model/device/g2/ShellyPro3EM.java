@@ -15,7 +15,7 @@ import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.RestoreMsg;
 
 public class ShellyPro3EM extends AbstractProDevice implements InternalTmpHolder {
-	public final static String ID = "Pro3EM";
+	public static final String ID = "Pro3EM";
 	private float internalTmp;
 	private float power[] = new float[3], totPower;
 	private float apparent[] = new float[3], totApparent;
@@ -27,12 +27,13 @@ public class ShellyPro3EM extends AbstractProDevice implements InternalTmpHolder
 	private Meters meters[];
 	private boolean triphase;
 	
-	private final static String MODE_TRIPHASE = "triphase";
+	private static final String MODE_TRIPHASE = "triphase";
 
 	public ShellyPro3EM(InetAddress address, int port, String hostname) {
 		super(address, port, hostname);
 	}
 	
+	@Override
 	protected void init(JsonNode devInfo) throws IOException {
 		this.init(devInfo.get("profile").textValue().equals(MODE_TRIPHASE));
 		super.init(devInfo);
@@ -144,7 +145,7 @@ public class ShellyPro3EM extends AbstractProDevice implements InternalTmpHolder
 	}
 	
 	private class EMMeters extends Meters implements LabelHolder {
-		private final static Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.W, Meters.Type.VA, Meters.Type.PF, Meters.Type.V, Meters.Type.I, Meters.Type.FREQ};
+		private static final Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.W, Meters.Type.VA, Meters.Type.PF, Meters.Type.V, Meters.Type.I, Meters.Type.FREQ};
 		private int ind;
 
 		private EMMeters(int ind) {
@@ -185,7 +186,7 @@ public class ShellyPro3EM extends AbstractProDevice implements InternalTmpHolder
 	}
 
 	private class TotalEMMeters extends Meters {
-		private final static Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.W, Meters.Type.VA, Meters.Type.I};
+		private static final Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.W, Meters.Type.VA, Meters.Type.I};
 
 		@Override
 		public Type[] getTypes() {

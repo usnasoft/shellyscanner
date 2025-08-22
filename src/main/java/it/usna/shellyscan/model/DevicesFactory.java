@@ -118,7 +118,7 @@ import it.usna.shellyscan.view.DialogAuthentication;
 public class DevicesFactory {
 	private DevicesFactory() {}
 
-	private final static Logger LOG = LoggerFactory.getLogger(DevicesFactory.class);
+	private static final Logger LOG = LoggerFactory.getLogger(DevicesFactory.class);
 	private static String lastUser;
 	private static char[] lastP;
 	

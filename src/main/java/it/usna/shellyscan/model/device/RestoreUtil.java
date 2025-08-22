@@ -11,7 +11,7 @@ import it.usna.shellyscan.model.device.g4.ShellyMini1G4;
 import it.usna.shellyscan.model.device.g4.ShellyMini1PMG4;
 
 public class RestoreUtil {
-	private final static String[][] COMPATIBILITY_TABLE = 
+	private static final String[][] COMPATIBILITY_TABLE = 
 		{
 				{Shelly1G3.ID, ShellyMini1G3.ID, Shelly1G4.ID, Shelly1G4.ID_ZB, ShellyMini1G4.ID, ShellyMini1G4.ID_ZB}, // 1
 				{Shelly1PMG3.ID, ShellyMini1PMG3.ID, Shelly1PMG4.ID, Shelly1PMG4.ID_ZB, ShellyMini1PMG4.ID, ShellyMini1PMG4.ID_ZB}, // 1PM

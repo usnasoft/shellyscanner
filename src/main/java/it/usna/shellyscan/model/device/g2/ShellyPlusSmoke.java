@@ -11,7 +11,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import it.usna.shellyscan.model.device.Meters;
 
 public class ShellyPlusSmoke extends AbstractBatteryG2Device {
-	private final static Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.BAT};
+	private static final Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.BAT};
 	private Meters[] meters;
 	private boolean alarm;
 	
@@ -38,7 +38,7 @@ public class ShellyPlusSmoke extends AbstractBatteryG2Device {
 		};
 	}
 
-	public final static String ID = "PlusSmoke";
+	public static final String ID = "PlusSmoke";
 	
 	@Override
 	public String getTypeID() {
@@ -62,13 +62,13 @@ public class ShellyPlusSmoke extends AbstractBatteryG2Device {
 	@Override
 	protected void fillSettings(JsonNode settings) throws IOException {
 		super.fillSettings(settings);
-		this.settings = settings;
+		this.settingsJ = settings;
 	}
 	
 	@Override
 	protected void fillStatus(JsonNode status) throws IOException {
 		super.fillStatus(status);
-		this.status = status;
+		this.statusJ = status;
 		bat = status.path("devicepower:0").path("battery").path("percent").intValue();
 		alarm = status.path("smoke:0").path("alarm").asBoolean();
 	}

@@ -8,7 +8,6 @@ import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
-import java.awt.event.MouseEvent;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URI;
@@ -57,10 +56,10 @@ import it.usna.swing.table.UsnaTableModel;
 
 public class ScriptsPanel extends JPanel {
 	private static final long serialVersionUID = 1L;
-	private final static Border BUTTON_BORDERS = BorderFactory.createEmptyBorder(0, 12, 0, 12);
-	private final static int COL_NAME = 0;
-	private final static int COL_ENABLED = 1;
-	private final static int COL_RUN = 2;
+	private static final Border BUTTON_BORDERS = BorderFactory.createEmptyBorder(0, 12, 0, 12);
+	private static final int COL_NAME = 0;
+	private static final int COL_ENABLED = 1;
+	private static final int COL_RUN = 2;
 	private final ExTooltipTable table;
 	private final ArrayList<ScriptAndEditor> scripts = new ArrayList<>();
 
@@ -211,19 +210,8 @@ public class ScriptsPanel extends JPanel {
 		final JButton editBtn = new JButton(editAction);
 		operationsPanel.add(editBtn);
 
-		UsnaPopupMenu tablePopup = new UsnaPopupMenu(editAction) {
-			private static final long serialVersionUID = 1L;
-
-			@Override
-			protected void doPopup(MouseEvent evt) {
-				final int r = table.rowAtPoint(evt.getPoint());
-				if (r >= 0) {
-					table.setRowSelectionInterval(r, r);
-					show(table, evt.getX(), evt.getY());
-				}
-			}
-		};
-		table.addMouseListener(tablePopup.getMouseListener());
+		UsnaPopupMenu tablePopup = new UsnaPopupMenu(editAction);
+		table.addMouseListener(tablePopup.getMouseListener(table));
 
 		// Fill table
 		for (Script sc : Script.list(device)) {
@@ -279,8 +267,8 @@ public class ScriptsPanel extends JPanel {
 	private class ButtonCellRenderer implements TableCellRenderer {
 		private JButton runningB = new JButton();
 		private JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
-		private final static ImageIcon stopIcon = new ImageIcon(ButtonCellRenderer.class.getResource("/images/Stop16.png"));
-		private final static ImageIcon runIcon = new ImageIcon(ButtonCellRenderer.class.getResource("/images/Play16.png"));
+		private static final ImageIcon stopIcon = new ImageIcon(ButtonCellRenderer.class.getResource("/images/Stop16.png"));
+		private static final ImageIcon runIcon = new ImageIcon(ButtonCellRenderer.class.getResource("/images/Play16.png"));
 
 		public ButtonCellRenderer() {
 			runningB.setBorder(BUTTON_BORDERS);

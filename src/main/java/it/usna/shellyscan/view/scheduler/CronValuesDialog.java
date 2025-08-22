@@ -63,6 +63,7 @@ public class CronValuesDialog extends JDialog {
 		buttonsPanel.add(closeBtn);
 		
 		list.addMouseListener(new MouseAdapter() {
+			@Override
 		    public void mouseClicked(MouseEvent evt) {
 		        if (evt.getClickCount() == 2) {
 		        	okBtn.doClick();

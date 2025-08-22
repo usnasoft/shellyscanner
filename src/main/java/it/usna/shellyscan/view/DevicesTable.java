@@ -53,41 +53,41 @@ import it.usna.util.AppProperties;
 
 public class DevicesTable extends ExTooltipTable {
 	private static final long serialVersionUID = 1L;
-	private final static Image OFFLINEIMG =Toolkit.getDefaultToolkit().getImage(DevicesTable.class.getResource("/images/bullet_stop.png"));
-	private final static Image GHOSTIMG = Toolkit.getDefaultToolkit().getImage(DevicesTable.class.getResource("/images/bullet_ghost.png"));
-	private final static Image BLUIMG = Toolkit.getDefaultToolkit().getImage(DevicesTable.class.getResource("/images/bullet_bluetooth.png"));
-	public final static ImageIcon ONLINE_BULLET = new ImageIcon(DevicesTable.class.getResource("/images/bullet_yes.png"), LABELS.getString("labelDevOnLIne"));
-	public final static ImageIcon ONLINE_BULLET_REBOOT = new ImageIcon(DevicesTable.class.getResource("/images/bullet_yes_reboot.png"), LABELS.getString("labelDevOnLIneReboot"));
-	public final static ImageIcon OFFLINE_BULLET = new ImageIcon(OFFLINEIMG, LABELS.getString("labelDevOffLIne"));
-	public final static ImageIcon LOGIN_BULLET = new ImageIcon(DevicesTable.class.getResource("/images/bullet_star_yellow.png"), LABELS.getString("labelDevNotLogged"));
-	public final static ImageIcon UPDATING_BULLET = new ImageIcon(DevicesTable.class.getResource("/images/bullet_refresh.png"), LABELS.getString("labelDevUpdating"));
-	public final static ImageIcon ERROR_BULLET = new ImageIcon(DevicesTable.class.getResource("/images/bullet_error.png"), LABELS.getString("labelDevError"));
-	private final static String TRUE = LABELS.getString("true_yn");
-	private final static String FALSE = LABELS.getString("false_yn");
-	private final static String YES = LABELS.getString("true_yna");
-	private final static String NO = LABELS.getString("false_yna");
+	private static final Image OFFLINEIMG =Toolkit.getDefaultToolkit().getImage(DevicesTable.class.getResource("/images/bullet_stop.png"));
+	private static final Image GHOSTIMG = Toolkit.getDefaultToolkit().getImage(DevicesTable.class.getResource("/images/bullet_ghost.png"));
+	private static final Image BLUIMG = Toolkit.getDefaultToolkit().getImage(DevicesTable.class.getResource("/images/bullet_bluetooth.png"));
+	public static final ImageIcon ONLINE_BULLET = new ImageIcon(DevicesTable.class.getResource("/images/bullet_yes.png"), LABELS.getString("labelDevOnLIne"));
+	public static final ImageIcon ONLINE_BULLET_REBOOT = new ImageIcon(DevicesTable.class.getResource("/images/bullet_yes_reboot.png"), LABELS.getString("labelDevOnLIneReboot"));
+	public static final ImageIcon OFFLINE_BULLET = new ImageIcon(OFFLINEIMG, LABELS.getString("labelDevOffLIne"));
+	public static final ImageIcon LOGIN_BULLET = new ImageIcon(DevicesTable.class.getResource("/images/bullet_star_yellow.png"), LABELS.getString("labelDevNotLogged"));
+	public static final ImageIcon UPDATING_BULLET = new ImageIcon(DevicesTable.class.getResource("/images/bullet_refresh.png"), LABELS.getString("labelDevUpdating"));
+	public static final ImageIcon ERROR_BULLET = new ImageIcon(DevicesTable.class.getResource("/images/bullet_error.png"), LABELS.getString("labelDevError"));
+	private static final String TRUE = LABELS.getString("true_yn");
+	private static final String FALSE = LABELS.getString("false_yn");
+	private static final String YES = LABELS.getString("true_yna");
+	private static final String NO = LABELS.getString("false_yna");
 	
 	// model columns indexes
-	public final static int COL_STATUS_IDX = 0;
-	final static int COL_TYPE = 1;
-	final static int COL_DEVICE = 2;
-	final static int COL_NAME = 3;
-	final static int COL_KEYWORD = 4;
-	final static int COL_MAC_IDX = 5;
-	final static int COL_IP_IDX = 6;
-	final static int COL_SSID_IDX = 7;
-	final static int COL_RSSI_IDX = 8;
-	final static int COL_CLOUD = 9;
-	final static int COL_MQTT = 10;
-	final static int COL_UPTIME_IDX = 11;
-	final static int COL_INT_TEMP = 12;
-	final static int COL_MEASURES_IDX = 13;
-	final static int COL_DEBUG = 14;
-	final static int COL_SOURCE_IDX = 15;
-	final static int COL_COMMAND_IDX = 16;
+	public static final int COL_STATUS_IDX = 0;
+	static final int COL_TYPE = 1;
+	static final int COL_DEVICE = 2;
+	static final int COL_NAME = 3;
+	static final int COL_KEYWORD = 4;
+	static final int COL_MAC_IDX = 5;
+	static final int COL_IP_IDX = 6;
+	static final int COL_SSID_IDX = 7;
+	static final int COL_RSSI_IDX = 8;
+	static final int COL_CLOUD = 9;
+	static final int COL_MQTT = 10;
+	static final int COL_UPTIME_IDX = 11;
+	static final int COL_INT_TEMP = 12;
+	static final int COL_MEASURES_IDX = 13;
+	static final int COL_DEBUG = 14;
+	static final int COL_SOURCE_IDX = 15;
+	static final int COL_COMMAND_IDX = 16;
 	
-	public final static String STORE_PREFIX = "TAB";
-	public final static String STORE_EXT_PREFIX = "TAB_EXT";
+	public static final String STORE_PREFIX = "TAB";
+	public static final String STORE_EXT_PREFIX = "TAB_EXT";
 	
 	private UptimeCellRenderer uptimeRenderer = new UptimeCellRenderer();
 
@@ -95,7 +95,7 @@ public class DevicesTable extends ExTooltipTable {
 	
 	private boolean tempUnitCelsius;
 	
-	private final static Logger LOG = LoggerFactory.getLogger(DevicesTable.class);
+	private static final Logger LOG = LoggerFactory.getLogger(DevicesTable.class);
 
 	public DevicesTable(TableModel tm) {
 		super(tm, true);
@@ -116,11 +116,11 @@ public class DevicesTable extends ExTooltipTable {
 		colCommand.setCellEditor(new DevicesCommandCellEditor(this, tempUnitCelsius));
 
 		TableRowSorter<?> sorter = (TableRowSorter<?>)getRowSorter();
-		
+
 		sorter.setComparator(COL_COMMAND_IDX, (o1, o2) -> {
 			final String s1, s2;
 			if(o1 == null) {
-				s1 = "";
+				s1 = null;
 			} else if (o1 instanceof DeviceModule[] dmArray) {
 				s1 = dmArray[0].getLabel();
 			} else if (o1 instanceof DeviceModule dm) {
@@ -129,7 +129,7 @@ public class DevicesTable extends ExTooltipTable {
 				s1 = o1.toString();
 			}
 			if(o2 == null) {
-				s2 = "";
+				s2 = null;
 			} else if (o2 instanceof DeviceModule[] dmArray) {
 				s2 = dmArray[0].getLabel();
 			} else if (o2 instanceof DeviceModule dm) {
@@ -137,7 +137,13 @@ public class DevicesTable extends ExTooltipTable {
 			} else {
 				s2 = o2.toString();
 			}
-			return s1.compareTo(s2);
+			if(s1 == null) {
+				return (s2 == null) ? 0 : -1;
+			}
+			if(s2 == null) {
+				return 1;
+			}
+			return s1.compareToIgnoreCase(s2);
 		});
 		
 		sorter.setComparator(COL_MEASURES_IDX, (Meters[] o1, Meters[] o2) -> {
@@ -152,15 +158,15 @@ public class DevicesTable extends ExTooltipTable {
 		});
 		
 		sorter.setComparator(COL_SOURCE_IDX, (o1, o2) -> {
-			String s1 = o1 instanceof String[] ? ((String[])o1)[0] : (String)o1;
-			String s2 = o2 instanceof String[] ? ((String[])o2)[0] : (String)o2;
+			String s1 = o1 instanceof String[] arr ? arr[0] : (String)o1;
+			String s2 = o2 instanceof String[] arr ? arr[0] : (String)o2;
 			if(s1 == null) {
-				return -1;
+				return (s2 == null) ? 0 : -1;
 			}
 			if(s2 == null) {
 				return 1;
 			}
-			return s1.compareTo(s2);
+			return s1.compareToIgnoreCase(s2);
 		});
 		
 		activateSingleCellStringCopy();
@@ -177,8 +183,7 @@ public class DevicesTable extends ExTooltipTable {
 
 	@Override
 	public boolean isCellEditable(final int row, final int column) {
-//		Object val = getValueAt(row, column);
-//		return val instanceof DeviceModule || val instanceof DeviceModule[];
+//		Object val = getValueAt(row, column); return val instanceof DeviceModule || val instanceof DeviceModule[];
 		return convertColumnIndexToModel(column) == COL_COMMAND_IDX;
 	}
 
@@ -291,8 +296,8 @@ public class DevicesTable extends ExTooltipTable {
 							} else { // fahrenheit 
 								ret += LABELS.getString("METER_LBL_" + t) + tLabel + " " + String.format(Locale.ENGLISH, LABELS.getString("METER_VAL_T_F"), m.getValue(t) * 1.8f + 32f) + " ";
 							}
-						} else if(t == Meters.Type.EX) {
-							ret += LABELS.getString("METER_LBL_" + t) + tLabel + " " + LABELS.getString((m.getValue(t) == 0f) ? "METER_VAL_EX_0" : "METER_VAL_EX_1") + " ";
+						} else if(t.isBoolean()) {
+							ret += LABELS.getString("METER_LBL_" + t) + tLabel + " " + LABELS.getString((m.getValue(t) == 0f) ? "METER_VAL_" + t + "_0" : "METER_VAL_" + t + "_NOT0") + " ";
 						} else {
 							ret += LABELS.getString("METER_LBL_" + t) + tLabel + " " + String.format(Locale.ENGLISH, LABELS.getString("METER_VAL_" + t), m.getValue(t)) + " ";
 						}
@@ -327,39 +332,35 @@ public class DevicesTable extends ExTooltipTable {
 
 	@Override
 	public void columnsWidthAdapt() {
-//		Graphics g = getGraphics();
-//		if (g != null) {
-			final FontMetrics fm = getFontMetrics(getFont());
-//			final FontMetrics fm = g.getFontMetrics();
-			final int columnCount = getColumnCount();
-			final int rowCount = getRowCount();
-			for (int c = 0; c < columnCount; c++) {
-				int modelCol = convertColumnIndexToModel(c);
-				if (modelCol != COL_STATUS_IDX) { // COL_STATUS_IDX has fixed width
-					TableColumn tc = columnModel.getColumn(c);
-					if (modelCol == COL_UPTIME_IDX) {
-						tc.setPreferredWidth(uptimeRenderer.getPreferredWidth(fm));
-					} else {
-						int width = SwingUtilities.computeStringWidth(fm, tc.getHeaderValue().toString()) >> 1;
-						for (int r = 0; r < rowCount; r++) {
-							Object val = getValueAt(r, c);
-							if (val != null) {
-								if (val instanceof Object[] arr) {
-									for (Object v : arr) {
-										if (v != null) {
-											width = Math.max(width, SwingUtilities.computeStringWidth(fm, v.toString()));
-										}
+		final FontMetrics fm = getFontMetrics(getFont());
+		final int columnCount = getColumnCount();
+		final int rowCount = getRowCount();
+		for (int c = 0; c < columnCount; c++) {
+			int modelCol = convertColumnIndexToModel(c);
+			if (modelCol != COL_STATUS_IDX) { // COL_STATUS_IDX has fixed width
+				TableColumn tc = columnModel.getColumn(c);
+				if (modelCol == COL_UPTIME_IDX) {
+					tc.setPreferredWidth(uptimeRenderer.getPreferredWidth(fm));
+				} else {
+					int width = SwingUtilities.computeStringWidth(fm, tc.getHeaderValue().toString()) >> 1;
+					for (int r = 0; r < rowCount; r++) {
+						Object val = getValueAt(r, c);
+						if (val != null) {
+							if (val instanceof Object[] arr) {
+								for (Object v : arr) {
+									if (v != null) {
+										width = Math.max(width, SwingUtilities.computeStringWidth(fm, v.toString()));
 									}
-								} else {
-									width = Math.max(width, SwingUtilities.computeStringWidth(fm, val.toString()));
 								}
+							} else {
+								width = Math.max(width, SwingUtilities.computeStringWidth(fm, val.toString()));
 							}
 						}
-						tc.setPreferredWidth(width);
 					}
+					tc.setPreferredWidth(width);
 				}
 			}
-//		}
+		}
 	}
 
 	public void setRowFilter(String filter, int ... cols) {
@@ -398,12 +399,8 @@ public class DevicesTable extends ExTooltipTable {
 
 	public void resetRowsComputedHeight() {
 		for(int i = 0; i < getRowCount(); i++) {
-			setRowHeight(i, 1);
+			setRowHeight(i, 1); // ONLINE_BULLET.getIconHeight());
 		}
-	}
-	
-	public void resetRowComputedHeight(int modelIndex) {
-		setRowHeight(convertRowIndexToView(modelIndex), ONLINE_BULLET.getIconHeight());
 	}
 
 	// adapt row height

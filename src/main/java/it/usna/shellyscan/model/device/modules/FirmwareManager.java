@@ -4,7 +4,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public interface FirmwareManager {
-	final static Pattern VERSION_PATTERN = Pattern.compile(".*/v?([\\.\\d]+(?:(?:-beta.*)|(?:-rc.*))?)(?:-|@).*?(-beta\\d*(-QA)?)?$");
+	static final Pattern VERSION_PATTERN = Pattern.compile(".*/v?([\\.\\d]+(?:(?:-beta.*)|(?:-rc.*))?)(?:-|@).*?(-beta\\d*(-QA)?)?$");
 	//e.g.:
 	// 20210429-100340/v1.10.4-g3f94cd7 - 20211222-144927/0.9.2-beta2-gc538a83
 	// 20231107-162425/v1.14.1-rc1-g0617c15 - 20211223-144928/v2.0.5@3f0fcbbe

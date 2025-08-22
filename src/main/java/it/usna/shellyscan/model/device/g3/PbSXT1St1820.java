@@ -23,16 +23,16 @@ import it.usna.shellyscan.model.device.modules.DeviceModule;
  * LinkedGo ST1820 (PbS) model
  */
 public class PbSXT1St1820 extends XT1 implements ModulesHolder {
-	private final static Logger LOG = LoggerFactory.getLogger(PbSXT1St1820.class);
-	public final static String MODEL = "S3XT-0S";
-	public final static String SVC0_TYPE = "linkedgo-st1820-floor-thermostat";
-	private final static Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.T, Meters.Type.H};
-	private final static String CURRENT_TEMP_KEY = "number:201";
-	private final static String CURRENT_HUM_KEY = "number:200";
-	private final static String TARGET_TEMP_ID = "202";
-	private final static String TARGET_TEMP_KEY = "number:" + TARGET_TEMP_ID;
-	private final static String ENABLED_ID = "202";
-	private final static String ENABLED_KEY = "boolean:" + ENABLED_ID;
+	private static final Logger LOG = LoggerFactory.getLogger(PbSXT1St1820.class);
+	public static final String MODEL = "S3XT-0S";
+	public static final String SVC0_TYPE = "linkedgo-st1820-floor-thermostat";
+	private static final Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.T, Meters.Type.H};
+	private static final String CURRENT_TEMP_KEY = "number:201";
+	private static final String CURRENT_HUM_KEY = "number:200";
+	private static final String TARGET_TEMP_ID = "202";
+	private static final String TARGET_TEMP_KEY = "number:" + TARGET_TEMP_ID;
+	private static final String ENABLED_ID = "202";
+	private static final String ENABLED_KEY = "boolean:" + ENABLED_ID;
 	private float temp;
 	private float humidity;
 	private Meters[] meters;

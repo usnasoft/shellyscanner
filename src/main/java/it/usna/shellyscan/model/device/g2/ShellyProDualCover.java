@@ -21,9 +21,9 @@ import it.usna.shellyscan.model.device.g2.modules.Roller;
  * @author usna
  */
 public class ShellyProDualCover extends AbstractProDevice implements ModulesHolder, InternalTmpHolder {
-	public final static String ID = "Pro4PM";
-	public final static String MODEL = "SPSH-002PE16EU";
-	private final static Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.W, Meters.Type.PF, Meters.Type.V, Meters.Type.I};
+	public static final String ID = "Pro4PM";
+	public static final String MODEL = "SPSH-002PE16EU";
+	private static final Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.W, Meters.Type.PF, Meters.Type.V, Meters.Type.I};
 	private Roller roller0 = new Roller(this, 0);
 	private Roller roller1 = new Roller(this, 1);
 	private float internalTmp;

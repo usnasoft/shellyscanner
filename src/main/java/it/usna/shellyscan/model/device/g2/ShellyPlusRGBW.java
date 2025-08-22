@@ -29,7 +29,7 @@ import it.usna.shellyscan.model.device.modules.DeviceModule;
  * @author usna
  */
 public class ShellyPlusRGBW extends AbstractG2Device implements ModulesHolder, InternalTmpHolder {
-	private final static Logger LOG = LoggerFactory.getLogger(ShellyPlusRGBW.class);
+	private static final Logger LOG = LoggerFactory.getLogger(ShellyPlusRGBW.class);
 	public enum Profile {
 		LIGHT("light"), RGB("rgb"), RGBW("rgbw");
 		
@@ -39,8 +39,8 @@ public class ShellyPlusRGBW extends AbstractG2Device implements ModulesHolder, I
 			this.code = code;
 		}
 	};
-	public final static String ID = "PlusRGBWPM";
-	public final static String MODEL = "SNDC-0D4P10WW";
+	public static final String ID = "PlusRGBWPM";
+	public static final String MODEL = "SNDC-0D4P10WW";
 	private Profile profile;
 	private float internalTmp;
 	private LightWhite light0, light1, light2, light3;

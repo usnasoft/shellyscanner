@@ -16,7 +16,7 @@ import it.usna.shellyscan.model.device.g1.modules.LightWhite;
 import it.usna.shellyscan.model.device.modules.DeviceModule;
 
 public class ShellyDimmer extends AbstractG1Device implements ModulesHolder, InternalTmpHolder {
-	public final static String ID = "SHDM-1";
+	public static final String ID = "SHDM-1";
 	private float internalTmp;
 	private boolean calibrated;
 	private LightWhite light = new LightWhite(this, "/light/", 0);
@@ -57,10 +57,6 @@ public class ShellyDimmer extends AbstractG1Device implements ModulesHolder, Int
 		return internalTmp;
 	}
 	
-	public float getPower() {
-		return power;
-	}
-	
 	@Override
 	public Meters[] getMeters() {
 		return meters;
@@ -73,6 +69,7 @@ public class ShellyDimmer extends AbstractG1Device implements ModulesHolder, Int
 		calibrated = settings.get("calibrated").asBoolean();
 	}
 	
+	@Override
 	protected void fillStatus(JsonNode status) throws IOException {
 		super.fillStatus(status);
 		light.fillStatus(status.get("lights").get(0), status.get("inputs").get(0));

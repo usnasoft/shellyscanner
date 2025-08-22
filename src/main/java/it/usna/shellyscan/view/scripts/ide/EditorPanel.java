@@ -35,19 +35,19 @@ import it.usna.swing.texteditor.SyntaxEditor;
 
 public class EditorPanel extends SyntaxEditor {
 	private static final long serialVersionUID = 1L;
-	private final static Pattern LINE_START = Pattern.compile("(^)(.*)", Pattern.MULTILINE);
-	private final static Pattern COMMENTED_LINE = Pattern.compile("(^)(\\s*)//", Pattern.MULTILINE);
-	private final static Pattern LINE_TAB = Pattern.compile("(^)\\t", Pattern.MULTILINE);
-	private final static Pattern SPACES = Pattern.compile("[ \t]*");
-	private final static Pattern FUNCTION = Pattern.compile("function\\s+(\\S*\\s*\\()");
-	private final static Pattern FUNCTION_ARGS = Pattern.compile("\\s*[\\S&&[^\\(]]+\\((.*)\\)");
+	private static final Pattern LINE_START = Pattern.compile("(^)(.*)", Pattern.MULTILINE);
+	private static final Pattern COMMENTED_LINE = Pattern.compile("(^)(\\s*)//", Pattern.MULTILINE);
+	private static final Pattern LINE_TAB = Pattern.compile("(^)\\t", Pattern.MULTILINE);
+	private static final Pattern SPACES = Pattern.compile("[ \t]*");
+	private static final Pattern FUNCTION = Pattern.compile("function\\s+(\\S*\\s*\\()");
+	private static final Pattern FUNCTION_ARGS = Pattern.compile("\\s*[\\S&&[^\\(]]+\\((.*)\\)");
 	private final boolean darkMode = ScannerProperties.instance().getBoolProperty(ScannerProperties.PROP_IDE_DARK);
-	private final static int MIN_AUTOCOMPLETE = 2;
-	private final static Font AUTOCOMPLETE_FONT = new Font(Font.MONOSPACED, Font.PLAIN, 12);
-	private final static Logger LOG = LoggerFactory.getLogger(EditorPanel.class);
+	private static final int MIN_AUTOCOMPLETE = 2;
+	private static final Font AUTOCOMPLETE_FONT = new Font(Font.MONOSPACED, Font.PLAIN, 12);
+	private static final Logger LOG = LoggerFactory.getLogger(EditorPanel.class);
 	
-	private final static ImageIcon FUNCTON_ICON = new ImageIcon(EditorPanel.class.getResource("/images/function_12.png"));
-	private final static ImageIcon VAR_ICON = new ImageIcon(EditorPanel.class.getResource("/images/var_12.png"));
+	private static final ImageIcon FUNCTON_ICON = new ImageIcon(EditorPanel.class.getResource("/images/function_12.png"));
+	private static final ImageIcon VAR_ICON = new ImageIcon(EditorPanel.class.getResource("/images/var_12.png"));
 	
 	private final String[] reservedWords = new String[] {
 			"abstract", "arguments", "await*", "boolean", "break", "byte", "case", "catch",
@@ -532,8 +532,8 @@ public class EditorPanel extends SyntaxEditor {
 							@Override
 							public void menuKeyTyped(MenuKeyEvent e) {
 								popup.setVisible(false);
-								char c;
-								if(Character.isISOControl(c = e.getKeyChar()) == false) {
+								char c = e.getKeyChar();
+								if(Character.isISOControl(c) == false) {
 									replaceSelection(String.valueOf(c));
 								}
 							}
@@ -610,7 +610,7 @@ public class EditorPanel extends SyntaxEditor {
 				lastFunctionPos = pos + 8; //" function" -> 8
 			} else if(txt.charAt(pos) == '=' && getCharacterStyleName(pos).equals("usna_operator")) {
 				String w = findPreviousPlainWord(txt, pos);
-				//					System.out.println(w);
+				// System.out.println(w);
 				if(w.toLowerCase().startsWith(token)) {
 					found.add(w); // todo: ignoring "let"
 				}

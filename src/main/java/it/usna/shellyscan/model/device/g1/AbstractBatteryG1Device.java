@@ -19,7 +19,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import it.usna.shellyscan.model.device.BatteryDeviceInterface;
 
 public abstract class AbstractBatteryG1Device extends AbstractG1Device implements BatteryDeviceInterface {
-	private final static Logger LOG = LoggerFactory.getLogger(AbstractBatteryG1Device.class);
+	private static final Logger LOG = LoggerFactory.getLogger(AbstractBatteryG1Device.class);
 	protected JsonNode stShelly;
 	protected JsonNode stSettings;
 	protected JsonNode stStatus;

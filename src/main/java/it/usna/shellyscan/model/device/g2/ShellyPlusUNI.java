@@ -26,8 +26,8 @@ import it.usna.shellyscan.model.device.g2.modules.SensorAddOn;
  * @author usna
  */
 public class ShellyPlusUNI extends AbstractG2Device implements ModulesHolder {
-	private final static Logger LOG = LoggerFactory.getLogger(ShellyPlusUNI.class);
-	public final static String ID = "PlusUni";
+	private static final Logger LOG = LoggerFactory.getLogger(ShellyPlusUNI.class);
+	public static final String ID = "PlusUni";
 	private Relay relay0 = new Relay(this, 0);
 	private Relay relay1 = new Relay(this, 1);
 	private Relay[] relays = new Relay[] {relay0, relay1};
@@ -41,6 +41,7 @@ public class ShellyPlusUNI extends AbstractG2Device implements ModulesHolder {
 		super(address, port, hostname);
 	}
 	
+	@Override
 	protected void init(JsonNode devInfo) throws IOException {
 		configure();
 		super.init(devInfo);
@@ -76,6 +77,7 @@ public class ShellyPlusUNI extends AbstractG2Device implements ModulesHolder {
 		return meters;
 	}
 	
+	@Override
 	protected void fillSettings(JsonNode configuration) throws IOException {
 		super.fillSettings(configuration);
 		relay0.fillSettings(configuration.get("switch:0"), configuration.get("input:0"));
@@ -130,7 +132,7 @@ public class ShellyPlusUNI extends AbstractG2Device implements ModulesHolder {
 	}
 	
 	private class CounterMeters extends Meters implements LabelHolder {
-		private final static Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.NUM, Meters.Type.FREQ};
+		private static final Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.NUM, Meters.Type.FREQ};
 		@Override
 		public float getValue(Type t) {
 			if(t == Meters.Type.FREQ) {

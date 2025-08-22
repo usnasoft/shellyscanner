@@ -21,7 +21,7 @@ import it.usna.shellyscan.model.device.g2.modules.Relay;
  * @author usna
  */
 public class PbSOgemraySW40 extends AbstractG3Device implements ModulesHolder, InternalTmpHolder {
-	public final static String ID = "Ogemray25";
+	public static final String ID = "Ogemray25";
 	private Relay relay = new Relay(this, 0);
 	private float internalTmp;
 	private Relay[] relays = new Relay[] {relay};

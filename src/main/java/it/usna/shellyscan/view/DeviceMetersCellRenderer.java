@@ -21,18 +21,18 @@ import it.usna.shellyscan.model.device.Meters.Type;
 
 public class DeviceMetersCellRenderer extends JPanel implements TableCellRenderer {
 	private static final long serialVersionUID = 1L;
-	private final static int HIDE_LIMIT = 4;
-	private final static Insets INSETS_LABEL1 = new Insets(0, 0, 0, 2);
-	private final static Insets INSETS_LABEL2 = new Insets(0, 6, 0, 2);
+	private static final int HIDE_LIMIT = 4;
+	private static final Insets INSETS_LABEL1 = new Insets(0, 0, 0, 2);
+	private static final Insets INSETS_LABEL2 = new Insets(0, 6, 0, 2);
 
 	private static Border EMPTY_BORDER;
-	private final static Border FOCUS_BORDER = UIManager.getBorder("Table.focusCellHighlightBorder");
-	private final static Font LABEL_FONT = new Font("Tahoma", Font.BOLD, 11);
-//	private final Object[] singleArrayObj = new Object[1];
-//	private final static MessageFormat SWITCH_FORMATTER = new MessageFormat("{0,choice,0#open|1#closed|1<{0,number,integer}}", Locale.ENGLISH);
+	private static final Border FOCUS_BORDER = UIManager.getBorder("Table.focusCellHighlightBorder");
+	private static final Font LABEL_FONT = new Font("Tahoma", Font.BOLD, 11);
+//	private static final MessageFormat SWITCH_FORMATTER = new MessageFormat("{0,choice,0#open|1#closed|1<{0,number,integer}}", Locale.ENGLISH);
+	//val = new JLabel(SWITCH_FORMATTER.format(singleArrayObj));
 	
-	private final static JLabel EMPTY = new JLabel();
-	private final static GridBagConstraints GBC_FILLER = new GridBagConstraints();
+	private static final JLabel EMPTY = new JLabel();
+	private static final GridBagConstraints GBC_FILLER = new GridBagConstraints();
 	static {
 		EMPTY.setOpaque(true);
 		GBC_FILLER.weightx = 1.0;
@@ -81,9 +81,8 @@ public class DeviceMetersCellRenderer extends JPanel implements TableCellRendere
 								} else { // fahrenheit 
 									val = new JLabel(String.format(Locale.ENGLISH, Main.LABELS.getString("METER_VAL_T_F"), metValue * 1.8f + 32f));
 								}
-							} else if(t == Meters.Type.EX) {
-//								singleArrayObj[0] = metValue; val = new JLabel(SWITCH_FORMATTER.format(singleArrayObj));
-								val = new JLabel(Main.LABELS.getString((metValue == 0f) ? "METER_VAL_EX_0" : "METER_VAL_EX_1"));
+							} else if(t.isBoolean()) {
+								val = new JLabel(Main.LABELS.getString((metValue == 0f) ? "METER_VAL_" + t + "_0" : "METER_VAL_" + t + "_NOT0"));
 							} else {
 								val = new JLabel(String.format(Locale.ENGLISH, Main.LABELS.getString("METER_VAL_" + t), metValue));
 								if(metValue == 0f) {

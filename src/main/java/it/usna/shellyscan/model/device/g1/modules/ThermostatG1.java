@@ -10,15 +10,15 @@ import it.usna.shellyscan.model.device.modules.ThermostatInterface;
 /* TRV only, I will not continue develop this class */
 public class ThermostatG1 implements ThermostatInterface {
 	private final AbstractG1Device parent;
-	private final static String INDEX = "0";
+	private static final String INDEX = "0";
 	private boolean autoTemp;
 	private float targetTemp; // Target temperature 4..31
 	private float position;
 	private boolean schedule;
 	private int scheduleProfile; //  1..5
 	private String[] profileNames = new String[5];
-	public final static float TARGET_MIN = 4;
-	public final static float TARGET_MAX = 31;
+	public static final float TARGET_MIN = 4;
+	public static final float TARGET_MAX = 31;
 	
 	public ThermostatG1(AbstractG1Device parent) {
 		this.parent = parent;

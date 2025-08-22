@@ -9,8 +9,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import it.usna.shellyscan.model.device.Meters;
 
 public class ShellyHT extends AbstractBatteryG1Device {
-	public final static String ID = "SHHT-1";
-	private final static Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.T, Meters.Type.H, Meters.Type.BAT};
+	public static final String ID = "SHHT-1";
+	private static final Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.T, Meters.Type.H, Meters.Type.BAT};
 	private float temp;
 	private int humidity;
 	private Meters[] meters;
@@ -64,13 +64,13 @@ public class ShellyHT extends AbstractBatteryG1Device {
 		bat = status.get("bat").get("value").intValue();
 	}
 
-	public float getTemp() {
-		return temp;
-	}
-	
-	public float getHumidity() {
-		return humidity;
-	}
+//	public float getTemp() {
+//		return temp;
+//	}
+//	
+//	public float getHumidity() {
+//		return humidity;
+//	}
 
 	@Override
 	public Meters[] getMeters() {

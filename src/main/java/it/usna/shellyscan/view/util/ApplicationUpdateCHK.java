@@ -26,7 +26,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import it.usna.shellyscan.Main;
 
 public class ApplicationUpdateCHK {
-	private final static Logger LOG = LoggerFactory.getLogger(ApplicationUpdateCHK.class);
+	private static final Logger LOG = LoggerFactory.getLogger(ApplicationUpdateCHK.class);
 	
 	public static void checkForUpdates(final Window w) {
 		w.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));

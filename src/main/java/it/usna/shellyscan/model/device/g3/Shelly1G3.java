@@ -26,9 +26,9 @@ import it.usna.shellyscan.model.device.g3.modules.LoRaAddOn;
  * @author usna
  */
 public class Shelly1G3 extends AbstractG3Device implements ModulesHolder, InternalTmpHolder {
-	private final static Logger LOG = LoggerFactory.getLogger(Shelly1G3.class);
-	public final static String ID = "S1G3";
-	public final static String MODEL = "S3SW-001X16EU";
+	private static final Logger LOG = LoggerFactory.getLogger(Shelly1G3.class);
+	public static final String ID = "S1G3";
+	public static final String MODEL = "S3SW-001X16EU";
 	private Relay relay = new Relay(this, 0);
 	private Relay[] relays = new Relay[] {relay};
 	private float internalTmp;

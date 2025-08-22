@@ -20,16 +20,31 @@ public abstract class Meters implements Comparable<Meters> {
 		T2, // temperature
 		T3, // temperature
 		T4, // temperature
-		EX, // ext switch status
+		EX(true), // ext switch status
 		PERC, // 0-100
 		NUM, // integer
 		DMM, // distance [mm]
-		VIB, // vibration - 0=false; 1=true
+		VIB(true), // vibration - 0=false; 1=true
 		ANG, // angle - accelerometer
 		ANG1, // angle - accelerometer
 		ANG2, // angle - accelerometer
-		BAT // battery %
+		BAT; // battery %
+		
+		final boolean bool; // 0 or not 0
+		
+		private Type() {
+			bool = false;
+		}
+		
+		private Type(boolean b) {
+			bool = b;
+		}
+		
+		public boolean isBoolean() {
+			return bool;
+		}
 	};
+
 	protected static NumberFormat NF1 = NumberFormat.getNumberInstance(Locale.ENGLISH);
 	protected static NumberFormat NF2 = NumberFormat.getNumberInstance(Locale.ENGLISH);
 	static {

@@ -17,8 +17,8 @@ import it.usna.shellyscan.model.device.g1.modules.Roller;
 import it.usna.shellyscan.model.device.modules.DeviceModule;
 
 public class Shelly25 extends AbstractG1Device implements ModulesHolder, InternalTmpHolder {
-	public final static String ID = "SHSW-25";
-	private final static Meters.Type[] SUPPORTED_MEASURES_C1 = new Meters.Type[] {Meters.Type.W, Meters.Type.V};
+	public static final String ID = "SHSW-25";
+	private static final Meters.Type[] SUPPORTED_MEASURES_C1 = new Meters.Type[] {Meters.Type.W, Meters.Type.V};
 	private boolean modeRelay;
 	private Relay relay0, relay1;
 	private Roller roller;
@@ -27,7 +27,7 @@ public class Shelly25 extends AbstractG1Device implements ModulesHolder, Interna
 	private float voltage;
 	private Meters[] meters;
 	
-	private final static String MODE_RELAY = "relay";
+	private static final String MODE_RELAY = "relay";
 
 	public Shelly25(InetAddress address, int port, String hostname) {
 		super(address, port, hostname);
@@ -80,10 +80,6 @@ public class Shelly25 extends AbstractG1Device implements ModulesHolder, Interna
 	@Override
 	public float getInternalTmp() {
 		return internalTmp;
-	}
-	
-	public float getPower(int index) {
-		return (index == 0) ? power0 : power1;
 	}
 	
 	@Override

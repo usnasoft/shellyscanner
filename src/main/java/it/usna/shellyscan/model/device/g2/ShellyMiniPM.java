@@ -16,8 +16,8 @@ import it.usna.shellyscan.model.device.Meters;
  * @author usna
  */
 public class ShellyMiniPM extends AbstractG2Device {
-	public final static String ID = "PlusPMMini";
-	private final static Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.W, Meters.Type.V, Meters.Type.I, Meters.Type.FREQ};
+	public static final String ID = "PlusPMMini";
+	private static final Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.W, Meters.Type.V, Meters.Type.I, Meters.Type.FREQ};
 	private float power;
 	private float voltage;
 	private float current;

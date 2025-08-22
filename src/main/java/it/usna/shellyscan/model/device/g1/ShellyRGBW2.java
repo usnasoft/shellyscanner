@@ -16,13 +16,13 @@ import it.usna.shellyscan.model.device.g1.modules.LightWhite;
 import it.usna.shellyscan.model.device.modules.DeviceModule;
 
 public class ShellyRGBW2 extends AbstractG1Device implements ModulesHolder/*, RGBWCommander, WhiteCommander*/ {
-	public final static String ID = "SHRGBW2";
+	public static final String ID = "SHRGBW2";
 	private boolean modeColor;
 	private LightRGBW color;
 	private LightWhite white0, white1, white2, white3;
 	private float power[] = new float[4];
 	
-	private final static String MODE_COLOR = "color";
+	private static final String MODE_COLOR = "color";
 
 	public ShellyRGBW2(InetAddress address, int port, String hostname) {
 		super(address, port, hostname);

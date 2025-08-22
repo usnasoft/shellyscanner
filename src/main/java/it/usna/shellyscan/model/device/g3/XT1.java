@@ -25,8 +25,8 @@ import it.usna.shellyscan.model.device.modules.WIFIManager.Network;
  * XT1 PbS base model
  */
 public class XT1 extends AbstractG3Device {
-	private final static Logger LOG = LoggerFactory.getLogger(AbstractG3Device.class);
-	public final static String ID = "XT1";
+	private static final Logger LOG = LoggerFactory.getLogger(AbstractG3Device.class);
+	public static final String ID = "XT1";
 	
 	public XT1(InetAddress address, int port, String hostname) {
 		super(address, port, hostname);

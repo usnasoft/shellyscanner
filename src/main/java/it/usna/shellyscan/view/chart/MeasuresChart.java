@@ -75,13 +75,13 @@ import it.usna.util.UsnaEventListener;
 // https://www.javatpoint.com/jfreechart-tutorial
 public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.EventType, Integer> {
 	private static final long serialVersionUID = 1L;
-	private final static Logger LOG = LoggerFactory.getLogger(MeasuresChart.class);
-	private final static NumberFormat NF = NumberFormat.getNumberInstance(Locale.ENGLISH);
+	private static final Logger LOG = LoggerFactory.getLogger(MeasuresChart.class);
+	private static final NumberFormat NF = NumberFormat.getNumberInstance(Locale.ENGLISH);
 	static {
 		NF.setMaximumFractionDigits(2);
 		NF.setMinimumFractionDigits(2);
 	}
-	private final static Dimension BTN_SIZE = new Dimension(33, 28);
+	private static final Dimension BTN_SIZE = new Dimension(33, 28);
 	private final Devices model;
 	
 	private final TimeSeriesCollection dataset = new TimeSeriesCollection(); // Create dataset

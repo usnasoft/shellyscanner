@@ -40,7 +40,7 @@ import it.usna.util.UsnaEventListener;
 //https://shelly-api-docs.shelly.cloud/gen1/#settings
 public class PanelMQTTG1 extends AbstractSettingsPanel implements UsnaEventListener<ShellyAbstractDevice, Future<?>> {
 	private static final long serialVersionUID = 1L;
-	private final static Logger LOG = LoggerFactory.getLogger(PanelMQTTG1.class);
+	private static final Logger LOG = LoggerFactory.getLogger(PanelMQTTG1.class);
 	
 	private char pwdEchoChar;
 	private final JCheckBox chckbxEnabled = new JCheckBox();
@@ -102,7 +102,7 @@ public class PanelMQTTG1 extends AbstractSettingsPanel implements UsnaEventListe
 		gbc_btnCopy.gridx = 4;
 		gbc_btnCopy.gridy = 0;
 		contentPanel.add(btnCopy, gbc_btnCopy);
-		btnCopy.addActionListener(e -> selDialog = new DialogDeviceSelection(owner, this, parent.getModel()));
+		btnCopy.addActionListener(e -> selDialog = new DialogDeviceSelection(owner, this, parentDlg.getModel()));
 
 		JLabel lblNewLabel_1 = new JLabel(LABELS.getString("dlgSetServer"));
 		GridBagConstraints gbc_lblNewLabel_1 = new GridBagConstraints();
@@ -439,9 +439,9 @@ public class PanelMQTTG1 extends AbstractSettingsPanel implements UsnaEventListe
 			int updatePerGlobal = 0;
 			boolean noPwdGlobal = false;
 			boolean first = true;
-			for(int i = 0; i < parent.getLocalSize(); i++) {
+			for(int i = 0; i < parentDlg.getLocalSize(); i++) {
 				try {
-					d = parent.getLocalDevice(i);
+					d = parentDlg.getLocalDevice(i);
 					MQTTManagerG1 mqttm = (MQTTManagerG1)d.getMQTTManager();
 					if(Thread.interrupted()) {
 						throw new InterruptedException();
@@ -495,7 +495,7 @@ public class PanelMQTTG1 extends AbstractSettingsPanel implements UsnaEventListe
 //			if(Thread.interrupted()) {
 //				throw new InterruptedException();
 //			}
-			if(excludeCount == parent.getLocalSize() && isShowing()) {
+			if(excludeCount == parentDlg.getLocalSize() && isShowing()) {
 				return LABELS.getString("msgAllDevicesExcluded");
 			} else if (excludeCount > 0 && isShowing()) {
 				Msg.showHtmlMessageDialog(this, exclude, LABELS.getString("dlgExcludedDevicesTitle"), JOptionPane.WARNING_MESSAGE);
@@ -532,7 +532,7 @@ public class PanelMQTTG1 extends AbstractSettingsPanel implements UsnaEventListe
 			}
 			textFieldUpdatePeriod.setValue(updatePerGlobal >= 0 ? updatePerGlobal : null);
 
-			setEnabledMQTT(enabledGlobal, parent.getLocalSize() == 1);
+			setEnabledMQTT(enabledGlobal, parentDlg.getLocalSize() == 1);
 			btnCopy.setEnabled(true);
 			return null;
 		} catch (RuntimeException e) {
@@ -564,7 +564,7 @@ public class PanelMQTTG1 extends AbstractSettingsPanel implements UsnaEventListe
 			}
 		}
 		String res = "<html>";
-		for(int i = 0; i < parent.getLocalSize(); i++) {
+		for(int i = 0; i < parentDlg.getLocalSize(); i++) {
 			String msg;
 			MQTTManagerG1 mqttM = mqttModule.get(i);
 			if(mqttM != null) {
@@ -574,7 +574,7 @@ public class PanelMQTTG1 extends AbstractSettingsPanel implements UsnaEventListe
 					String prefix ;
 					if(chckbxDefaultPrefix.isSelected()) {
 						prefix = null;
-					} else if(parent.getLocalSize() > 1) {
+					} else if(parentDlg.getLocalSize() > 1) {
 						prefix = "";
 					} else {
 						prefix = textFieldID.getText();
@@ -592,9 +592,9 @@ public class PanelMQTTG1 extends AbstractSettingsPanel implements UsnaEventListe
 					msg = mqttM.disable();
 				}
 				if(msg != null) {
-					res += String.format(LABELS.getString("dlgSetMultiMsgFail"), parent.getLocalDevice(i).getHostname()) + " (" + msg + ")<br>";
+					res += String.format(LABELS.getString("dlgSetMultiMsgFail"), parentDlg.getLocalDevice(i).getHostname()) + " (" + msg + ")<br>";
 				} else {
-					res += String.format(LABELS.getString("dlgSetMultiMsgOk"), parent.getLocalDevice(i).getHostname()) + "<br>";
+					res += String.format(LABELS.getString("dlgSetMultiMsgOk"), parentDlg.getLocalDevice(i).getHostname()) + "<br>";
 				}
 			}
 		}

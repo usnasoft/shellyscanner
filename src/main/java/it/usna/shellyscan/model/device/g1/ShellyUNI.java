@@ -14,7 +14,7 @@ import it.usna.shellyscan.model.device.ModulesHolder;
 import it.usna.shellyscan.model.device.g1.modules.Relay;
 
 public class ShellyUNI extends AbstractG1Device implements ModulesHolder {
-	public final static String ID = "SHUNI-1";
+	public static final String ID = "SHUNI-1";
 	private Relay relay0 = new Relay(this, 0);
 	private Relay relay1 = new Relay(this, 1);
 	private float voltage;
@@ -118,20 +118,20 @@ public class ShellyUNI extends AbstractG1Device implements ModulesHolder {
 		JsonNode ralaysStatus = status.get("relays");
 		relay0.fillStatus(ralaysStatus.get(0), status.get("inputs").get(0));
 		relay1.fillStatus(ralaysStatus.get(1), status.get("inputs").get(1));
-		voltage = (float)status.get("adcs").get(0).get("voltage").asDouble();
+		voltage = status.get("adcs").get(0).get("voltage").floatValue();
 		
 		JsonNode extTNode = status.path("ext_temperature");
 		JsonNode extTNode0 = extTNode.get("0");
 		if(extTNode0 != null) {
-			extT0 = (float) extTNode0.path("tC").asDouble();
+			extT0 = extTNode0.path("tC").floatValue();
 		}
 		JsonNode extTNode1 = extTNode.get("1");
 		if(extTNode1 != null) {
-			extT1 = (float) extTNode1.path("tC").asDouble();
+			extT1 = extTNode1.path("tC").floatValue();
 		}
 		JsonNode extTNode2 = extTNode.get("2");
 		if(extTNode2 != null) {
-			extT2 = (float) extTNode2.path("tC").asDouble();
+			extT2 = extTNode2.path("tC").floatValue();
 		}
 		JsonNode extHNode = status.path("ext_humidity").get("0");
 		if (extHNode != null) {

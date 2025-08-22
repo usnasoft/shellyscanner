@@ -15,7 +15,7 @@ import it.usna.shellyscan.model.device.g1.modules.LightWhite;
 import it.usna.shellyscan.model.device.modules.DeviceModule;
 
 public class ShellyDUO extends AbstractG1Device implements ModulesHolder {
-	public final static String ID = "SHBDUO-1";
+	public static final String ID = "SHBDUO-1";
 	private LightWhite light = new LightWhite(this, "/light/", 0);
 	private LightWhite[] lightArray = new LightWhite[] {light};
 	private float power;
@@ -49,9 +49,9 @@ public class ShellyDUO extends AbstractG1Device implements ModulesHolder {
 		return lightArray;
 	}
 	
-	public float getPower() {
-		return power;
-	}
+//	public float getPower() {
+//		return power;
+//	}
 	
 	@Override
 	public Meters[] getMeters() {

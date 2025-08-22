@@ -49,7 +49,7 @@ import it.usna.shellyscan.view.util.UtilMiscellaneous;
 public class PanelOthers extends AbstractSettingsPanel {
 	private static final long serialVersionUID = 1L;
 	
-	private final static Logger LOG = LoggerFactory.getLogger(PanelOthers.class);
+	private static final Logger LOG = LoggerFactory.getLogger(PanelOthers.class);
 	private final ButtonGroup radioMainSectionGroup = new ButtonGroup();
 	private JRadioButton rdbtnSNTP;
 	private JRadioButton rdbtnCloud;
@@ -206,8 +206,8 @@ public class PanelOthers extends AbstractSettingsPanel {
 		Boolean cloudEnabledGlobal = null;
 		Boolean resetEnabledGlobal = null;
 		boolean first = true;
-		for(int i = 0; i < parent.getLocalSize(); i++) {
-			d = parent.getLocalDevice(i);
+		for(int i = 0; i < parentDlg.getLocalSize(); i++) {
+			d = parentDlg.getLocalDevice(i);
 			if(Thread.interrupted()) {
 				throw new InterruptedException();
 			}
@@ -255,7 +255,7 @@ public class PanelOthers extends AbstractSettingsPanel {
 			}
 		}
 		if(showExcluded) {
-			if(excludeCount == parent.getLocalSize() && isShowing()) {
+			if(excludeCount == parentDlg.getLocalSize() && isShowing()) {
 				return LABELS.getString("msgAllDevicesExcluded");
 			} else if (excludeCount > 0 && isShowing()) {
 				Msg.showHtmlMessageDialog(this, exclude, LABELS.getString("dlgExcludedDevicesTitle"), JOptionPane.WARNING_MESSAGE);
@@ -310,13 +310,13 @@ public class PanelOthers extends AbstractSettingsPanel {
 			throw new IllegalArgumentException(LABELS.getString("dlgNTPServerEmptyError"));
 		}
 		String res = "<html>";
-		for(int i = 0; i < parent.getLocalSize(); i++) {
-			final ShellyAbstractDevice device = parent.getLocalDevice(i);
+		for(int i = 0; i < parentDlg.getLocalSize(); i++) {
+			final ShellyAbstractDevice device = parentDlg.getLocalDevice(i);
 			if(device instanceof AbstractBluDevice == false) { // not blu
 				if(device.getStatus() == Status.OFF_LINE || device instanceof GhostDevice) { // defer
 					res += String.format(LABELS.getString("dlgSetMultiMsgQueue"), device.getHostname()) + "<br>";
 					DeferrablesContainer dc = DeferrablesContainer.getInstance();
-					dc.addOrUpdate(parent.getModelIndex(i), DeferrableTask.Type.NTP, LABELS.getString("dlgNTPServer"),
+					dc.addOrUpdate(parentDlg.getModelIndex(i), DeferrableTask.Type.NTP, LABELS.getString("dlgNTPServer"),
 							(def, dev) -> dev.getTimeAndLocationManager().setSNTPServer(server) );
 				} else {
 					try {
@@ -349,13 +349,13 @@ public class PanelOthers extends AbstractSettingsPanel {
 		final boolean disable = radioCloudDisable.isSelected();
 		if(enable || disable) {
 			String res = "<html>";
-			for(int i = 0; i < parent.getLocalSize(); i++) {
-				final ShellyAbstractDevice device = parent.getLocalDevice(i);
+			for(int i = 0; i < parentDlg.getLocalSize(); i++) {
+				final ShellyAbstractDevice device = parentDlg.getLocalDevice(i);
 				if(device instanceof AbstractG1Device || device instanceof AbstractG2Device || device instanceof GhostDevice) {
 					if(device.getStatus() == Status.OFF_LINE || device instanceof GhostDevice) { // defer
 						res += String.format(LABELS.getString("dlgSetMultiMsgQueue"), device.getHostname()) + "<br>";
 						DeferrablesContainer dc = DeferrablesContainer.getInstance();
-						dc.addOrUpdate(parent.getModelIndex(i), DeferrableTask.Type.CLOUD_ENABLE, LABELS.getString("dlgCloudConf"),
+						dc.addOrUpdate(parentDlg.getModelIndex(i), DeferrableTask.Type.CLOUD_ENABLE, LABELS.getString("dlgCloudConf"),
 								(def, dev) -> dev.setCloudEnabled(enable) );
 					} else {
 						String msg = device.setCloudEnabled(enable);
@@ -381,13 +381,13 @@ public class PanelOthers extends AbstractSettingsPanel {
 		final boolean disable = radioResetDisable.isSelected();
 		if(enable || disable) {
 			String res = "<html>";
-			for(int i = 0; i < parent.getLocalSize(); i++) {
-				final ShellyAbstractDevice device = parent.getLocalDevice(i);
+			for(int i = 0; i < parentDlg.getLocalSize(); i++) {
+				final ShellyAbstractDevice device = parentDlg.getLocalDevice(i);
 				if(device instanceof AbstractG1Device || device instanceof AbstractG2Device || device instanceof GhostDevice) {
 					if(device.getStatus() == Status.OFF_LINE || device instanceof GhostDevice) { // defer
 						res += String.format(LABELS.getString("dlgSetMultiMsgQueue"), device.getHostname()) + "<br>";
 						DeferrablesContainer dc = DeferrablesContainer.getInstance();
-						dc.addOrUpdate(parent.getModelIndex(i), DeferrableTask.Type.INPUT_RESET_ENABLE, LABELS.getString("dlgResetConf"),
+						dc.addOrUpdate(parentDlg.getModelIndex(i), DeferrableTask.Type.INPUT_RESET_ENABLE, LABELS.getString("dlgResetConf"),
 								(def, dev) -> dev.getInputResetManager().enableReset(enable) );
 					} else {
 						try {

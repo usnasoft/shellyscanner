@@ -14,7 +14,7 @@ import it.usna.shellyscan.model.device.modules.DeviceModule;
 import it.usna.shellyscan.model.device.modules.InputInterface;
 
 public class ShellyI3 extends AbstractG1Device implements ModulesHolder {
-	public final static String ID = "SHIX3-1";
+	public static final String ID = "SHIX3-1";
 	private Actions actions = new Actions(this);
 	
 	public ShellyI3(InetAddress address, int port, String hostname) {

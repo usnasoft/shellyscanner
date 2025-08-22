@@ -55,7 +55,7 @@ import it.usna.shellyscan.model.device.modules.WIFIManager.Network;
  * @author usna
  */
 public abstract class AbstractG1Device extends ShellyAbstractDevice {
-	private final static Logger LOG = LoggerFactory.getLogger(AbstractG1Device.class);
+	private static final Logger LOG = LoggerFactory.getLogger(AbstractG1Device.class);
 
 	protected AbstractG1Device(InetAddress address, int port, String hostname) {
 		super(address, port, hostname);
@@ -165,7 +165,7 @@ public abstract class AbstractG1Device extends ShellyAbstractDevice {
 			rebootRequired = true;
 			return true;
 		} else {
-			return true;
+			return false;
 		}
 	}
 	
@@ -247,7 +247,7 @@ public abstract class AbstractG1Device extends ShellyAbstractDevice {
 			JsonNode settings = backupJsons.get("settings.json");
 			final String fileHostname = settings.get("device").get("hostname").asText("");
 			final String fileType = settings.get("device").get("type").asText();
-			if(fileType.length() > 0 && fileType.equals(this.getTypeID()) == false) {
+			if(fileType.isEmpty() == false && fileType.equals(this.getTypeID()) == false) {
 				res.put(RestoreMsg.ERR_RESTORE_MODEL, null);
 			} else {
 				boolean sameHost = fileHostname.equals(this.hostname);
@@ -266,7 +266,7 @@ public abstract class AbstractG1Device extends ShellyAbstractDevice {
 						res.put(RestoreMsg.RESTORE_WI_FI2, settings.at("/wifi_sta1/ssid").asText());
 					}
 				}
-				if(settings.at("/mqtt/enable").asBoolean() && settings.at("/mqtt/user").asText("").length() > 0) {
+				if(settings.at("/mqtt/enable").asBoolean() && settings.at("/mqtt/user").asText("").isEmpty() == false) {
 					res.put(RestoreMsg.RESTORE_MQTT, settings.at("/mqtt/user").asText());
 				}
 			}
@@ -363,7 +363,7 @@ public abstract class AbstractG1Device extends ShellyAbstractDevice {
 		}
 //		LOG.trace("step 2.3");
 		final JsonNode mqtt = settings.get("mqtt");
-		if(data.containsKey(RestoreMsg.RESTORE_MQTT) || mqtt.path("enable").asBoolean() == false || mqtt.path("user").asText("").length() == 0) {
+		if(data.containsKey(RestoreMsg.RESTORE_MQTT) || mqtt.path("enable").asBoolean() == false || mqtt.path("user").asText("").isEmpty()) {
 			TimeUnit.MILLISECONDS.sleep(delay);
 			MQTTManagerG1 mqttM = new MQTTManagerG1(this, true);
 			errors.add(mqttM.restore(mqtt, data.get(RestoreMsg.RESTORE_MQTT)));

@@ -19,10 +19,10 @@ import it.usna.shellyscan.model.device.g2.modules.Roller;
 import it.usna.shellyscan.model.device.modules.DeviceModule;
 
 public class ShellyPro2PM extends AbstractProDevice implements ModulesHolder, InternalTmpHolder {
-	public final static String ID = "Pro2PM";
-	public final static String MODEL = "SPSW-202PE16EU";
+	public static final String ID = "Pro2PM";
+	public static final String MODEL = "SPSW-202PE16EU";
 	private boolean modeRelay;
-	private final static Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.W, Meters.Type.PF, Meters.Type.V, Meters.Type.I};
+	private static final Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.W, Meters.Type.PF, Meters.Type.V, Meters.Type.I};
 	private Relay relay0, relay1;
 	private Relay[] relaysArray;
 	private Roller roller;
@@ -35,7 +35,7 @@ public class ShellyPro2PM extends AbstractProDevice implements ModulesHolder, In
 	private Meters meters0, meters1;
 	private Meters[] meters;
 
-	private final static String MODE_RELAY = "switch";
+	private static final String MODE_RELAY = "switch";
 
 	public ShellyPro2PM(InetAddress address, int port, String hostname) {
 		super(address, port, hostname);

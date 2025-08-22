@@ -37,24 +37,24 @@ public class Main {
 	static {
 		System.setProperty("apple.eawt.quitStrategy", "CLOSE_ALL_WINDOWS"); // macOS specific - cmd-Q / -Dapple.eawt.quitStrategy=CLOSE_ALL_WINDOWS
 	}
-	public final static String APP_NAME = "Shelly Scanner";
-	public final static String VERSION = "1.2.6 beta2";
-	public final static String VERSION_CODE = "001.002.006r102"; // r0xx alpha; r1xx beta; r2xx stable
-	public final static Image ICON = Toolkit.getDefaultToolkit().createImage(Main.class.getResource("/images/ShSc24.png"));
-	public final static String BACKUP_FILE_EXT = "sbk";
-	public final static String ARCHIVE_FILE_EXT = "arc";
+	public static final String APP_NAME = "Shelly Scanner";
+	public static final String VERSION = "1.2.6";
+	public static final String VERSION_CODE = "001.002.006r200"; // r0xx alpha; r1xx beta; r2xx stable
+	public static final Image ICON = Toolkit.getDefaultToolkit().createImage(Main.class.getResource("/images/ShSc24.png"));
+	public static final String BACKUP_FILE_EXT = "sbk";
+	public static final String ARCHIVE_FILE_EXT = "arc";
 
-	public final static ResourceBundle LABELS = ResourceBundle.getBundle("LabelsBundle");
-//	public final static Color BG_COLOR = new Color(50, 60, 65);
-	public final static Color BG_COLOR = new Color(60, 70, 90);
-	public final static Color TAB_LINE1_COLOR = new Color(240, 240, 240);
-//	public final static Color TAB_LINE2 = new Color(160, 180, 255);
-	public final static Color TAB_LINE2_COLOR = new Color(210, 218, 255);
-//	public final static Color STATUS_LINE = new Color(200, 220, 255);
-	public final static Color STATUS_LINE_COLOR = new Color(172, 195, 230);
-	public final static String TAB_VERSION = "5"; // on version change reset table settings
+	public static final ResourceBundle LABELS = ResourceBundle.getBundle("LabelsBundle");
+//	public static final Color BG_COLOR = new Color(50, 60, 65);
+	public static final Color BG_COLOR = new Color(60, 70, 90);
+	public static final Color TAB_LINE1_COLOR = new Color(240, 240, 240);
+//	public static final Color TAB_LINE2 = new Color(160, 180, 255);
+	public static final Color TAB_LINE2_COLOR = new Color(210, 218, 255);
+//	public static final Color STATUS_LINE = new Color(200, 220, 255);
+	public static final Color STATUS_LINE_COLOR = new Color(172, 195, 230);
+	public static final String TAB_VERSION = "5"; // on version change reset table settings
 
-	private final static String IP_SCAN_PAR_FORMAT = "^((?:(?:0|1\\d?\\d?|2[0-4]?\\d?|25[0-5]?|[3-9]\\d?)\\.){2}(?:0|1\\d?\\d?|2[0-4]?\\d?|25[0-5]?|[3-9]\\d?))\\.(0|1\\d?\\d?|2[0-4]?\\d?|25[0-5]?|[3-9]\\d?)-(0|1\\d?\\d?|2[0-4]?\\d?|25[0-5]?|[3-9]\\d?)$";
+	private static final String IP_SCAN_PAR_FORMAT = "^((?:(?:0|1\\d?\\d?|2[0-4]?\\d?|25[0-5]?|[3-9]\\d?)\\.){2}(?:0|1\\d?\\d?|2[0-4]?\\d?|25[0-5]?|[3-9]\\d?))\\.(0|1\\d?\\d?|2[0-4]?\\d?|25[0-5]?|[3-9]\\d?)-(0|1\\d?\\d?|2[0-4]?\\d?|25[0-5]?|[3-9]\\d?)$";
 
 	public static void main(final String ... args) {
 		// System.setProperty(SimpleLogger.DEFAULT_LOG_LEVEL_KEY, "error");
@@ -253,7 +253,7 @@ public class Main {
 			if(cli.unused().length > 0) {
 				System.err.println("Ignored parameter(s): " + String.join("; ", cli.unused()));
 			}
-		} catch (Throwable ex) {
+		} catch (Exception ex) {
 			Msg.errorMsg(ex);
 			ex.printStackTrace();
 			System.exit(1);

@@ -23,7 +23,7 @@ import it.usna.shellyscan.model.device.modules.WIFIManager;
 import it.usna.shellyscan.model.device.modules.WIFIManager.Network;
 
 public class GhostDevice extends ShellyAbstractDevice {
-	private final static Logger LOG = LoggerFactory.getLogger(GhostDevice.class);
+	private static final Logger LOG = LoggerFactory.getLogger(GhostDevice.class);
 	private final String typeName;
 	private final String gen;
 	private final String typeID;

@@ -13,8 +13,8 @@ import it.usna.shellyscan.model.device.g2.modules.Webhooks;
 import it.usna.shellyscan.model.device.g2.modules.Webhooks.Webhook;
 
 public class InputOnDevice implements InputActionInterface {
-	private final static Pattern BUTTON_ID_PATTERN = Pattern.compile("ev.idx\\s*===?\\s*(\\d+)");
-	private final static Pattern CHANNEL_ID_PATTERN = Pattern.compile("ev.sensors\\[96\\]\\[0\\]\\.value\\s*===?\\s*(\\d+)");
+	private static final Pattern BUTTON_ID_PATTERN = Pattern.compile("ev.idx\\s*===?\\s*(\\d+)");
+	private static final Pattern CHANNEL_ID_PATTERN = Pattern.compile("ev.sensors\\[96\\]\\[0\\]\\.value\\s*===?\\s*(\\d+)");
 	// "condition" : "ev.sensors[96][0].value === 1 && ev.idx === 0"
 	
 	private final Input input;

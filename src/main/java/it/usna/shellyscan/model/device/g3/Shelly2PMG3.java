@@ -28,11 +28,11 @@ import it.usna.shellyscan.model.device.modules.DeviceModule;
  * @author usna
  */
 public class Shelly2PMG3 extends AbstractG3Device implements ModulesHolder, InternalTmpHolder {
-	private final static Logger LOG = LoggerFactory.getLogger(Shelly2PMG3.class);
-	public final static String ID = "S2PMG3";
-	public final static String MODEL = "S3SW-002P16EU";
+	private static final Logger LOG = LoggerFactory.getLogger(Shelly2PMG3.class);
+	public static final String ID = "S2PMG3";
+	public static final String MODEL = "S3SW-002P16EU";
 	private boolean modeRelay;
-	private final static Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.W, Meters.Type.PF, Meters.Type.V, Meters.Type.I};
+	private static final Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.W, Meters.Type.PF, Meters.Type.V, Meters.Type.I};
 	private Relay relay0, relay1;
 	private Relay[] relaysArray;
 	private Roller roller;
@@ -47,7 +47,7 @@ public class Shelly2PMG3 extends AbstractG3Device implements ModulesHolder, Inte
 	private SensorAddOn sensorAddOn;
 	private boolean loraAddOn;
 
-	private final static String MODE_RELAY = "switch";
+	private static final String MODE_RELAY = "switch";
 
 	public Shelly2PMG3(InetAddress address, int port, String hostname) {
 		super(address, port, hostname);

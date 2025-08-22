@@ -140,6 +140,7 @@ public class DialogDeviceSelection extends JDialog {
 		
 		// Select & close (first click do select)
 		table.addMouseListener(new MouseAdapter() {
+			@Override
 		    public void mousePressed(MouseEvent evt) {
 		        if (evt.getClickCount() == 2 && table.getSelectedRow() != -1) {
 		        	dispose();

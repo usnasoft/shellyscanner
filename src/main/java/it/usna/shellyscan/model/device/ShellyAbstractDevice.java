@@ -37,7 +37,7 @@ import it.usna.shellyscan.model.device.modules.WIFIManager;
  * @author usna
  */
 public abstract class ShellyAbstractDevice {
-	private final static Logger LOG = LoggerFactory.getLogger(ShellyAbstractDevice.class);
+	private static final Logger LOG = LoggerFactory.getLogger(ShellyAbstractDevice.class);
 	protected HttpClient httpClient;
 	protected final InetAddressAndPort addressAndPort;
 	protected String hostname;
@@ -286,6 +286,7 @@ public abstract class ShellyAbstractDevice {
 		}
 	}
 	
+	// to be used with "offset"; data will be merged on a single file (gen2+)
 	protected JsonNode sectionToStream(final String section, final String arrayKey, final String entryName, FileSystem fs) throws IOException {
 		try(BufferedWriter writer = Files.newBufferedWriter(fs.getPath(entryName))) {
 			String req = section;
@@ -328,4 +329,4 @@ public abstract class ShellyAbstractDevice {
 	public String toString() {
 		return getTypeName() + "-" + name + ": " + addressAndPort.getRepresentation() + " (" + hostname + ")";
 	}
-} //278 - 399 - 316 - 251 - 237 - 231 - 247 - 271
+} //278 - 399 - 316 - 251 - 237 - 231 - 247 - 271 - 332

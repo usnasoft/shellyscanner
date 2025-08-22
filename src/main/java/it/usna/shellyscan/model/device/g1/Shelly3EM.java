@@ -14,20 +14,21 @@ import it.usna.shellyscan.model.device.ModulesHolder;
 import it.usna.shellyscan.model.device.g1.modules.Relay;
 
 public class Shelly3EM extends AbstractG1Device implements ModulesHolder {
-	public final static String ID = "SHEM-3";
+	public static final String ID = "SHEM-3";
 	private Relay relay = new Relay(this, 0);
-	private float power[] = new float[3];
-	private float current[] = new float[3];
-	private float pf[] = new float[3];
-	private float voltage[] = new float[3];
-	private String meterName[] = new String[3];
-	private Meters meters[];
+	private Relay[] relayArray = new Relay[] {relay};
+	private float[] power = new float[3];
+	private float[] current = new float[3];
+	private float[] pf = new float[3];
+	private float[] voltage = new float[3];
+	private String[] meterName = new String[3];
+	private Meters[] meters;
 
 	public Shelly3EM(InetAddress address, int port, String hostname) {
 		super(address, port, hostname);
 		
 		class EM3Meters extends Meters implements LabelHolder {
-			private final static Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.W, Meters.Type.PF, Meters.Type.V, Meters.Type.I};
+			private static final Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.W, Meters.Type.PF, Meters.Type.V, Meters.Type.I};
 			private int ind;
 			private EM3Meters(int ind) {
 				this.ind = ind;
@@ -77,23 +78,7 @@ public class Shelly3EM extends AbstractG1Device implements ModulesHolder {
 
 	@Override
 	public Relay[] getModules() {
-		return new Relay[] {relay};
-	}
-	
-	public float getPower(int index) {
-		return power[index];
-	}
-	
-	public float getCurrent(int index) {
-		return current[index];
-	}
-	
-	public float getPF(int index) {
-		return pf[index];
-	}
-	
-	public float getVoltage(int index) {
-		return voltage[index];
+		return relayArray;
 	}
 	
 	@Override
@@ -107,9 +92,9 @@ public class Shelly3EM extends AbstractG1Device implements ModulesHolder {
 		relay.fillSettings(settings.get("relays").get(0));
 		
 		JsonNode eMeters = settings.get("emeters");
-		meterName[0] = eMeters.get(0).get("name").asText("");
-		meterName[1] = eMeters.get(1).get("name").asText("");
-		meterName[2] = eMeters.get(2).get("name").asText("");
+		meterName[0] = eMeters.get(0).path("name").asText("");
+		meterName[1] = eMeters.get(1).path("name").asText("");
+		meterName[2] = eMeters.get(2).path("name").asText("");
 	}
 	
 	@Override
@@ -119,33 +104,34 @@ public class Shelly3EM extends AbstractG1Device implements ModulesHolder {
 
 		JsonNode eMeters = status.get("emeters");
 		JsonNode eMeters0 = eMeters.get(0);
-		power[0] = (float)eMeters0.get("power").asDouble();
-		current[0] = (float)eMeters0.get("current").asDouble();
-		pf[0] = (float)eMeters0.get("pf").asDouble();
-		voltage[0] = (float)eMeters0.get("voltage").asDouble();
+		power[0] = eMeters0.get("power").floatValue();
+		current[0] = eMeters0.get("current").floatValue();
+		pf[0] = eMeters0.get("pf").floatValue();
+		voltage[0] = eMeters0.get("voltage").floatValue();
 		JsonNode eMeters1 = eMeters.get(1);
-		power[1] = (float)eMeters1.get("power").asDouble();
-		current[1] = (float)eMeters1.get("current").asDouble();
-		pf[1] = (float)eMeters1.get("pf").asDouble();
-		voltage[1] = (float)eMeters1.get("voltage").asDouble();
+		power[1] = eMeters1.get("power").floatValue();
+		current[1] = eMeters1.get("current").floatValue();
+		pf[1] = eMeters1.get("pf").floatValue();
+		voltage[1] = eMeters1.get("voltage").floatValue();
 		JsonNode eMeters2 = eMeters.get(2);
-		power[2] = (float)eMeters2.get("power").asDouble();
-		current[2] = (float)eMeters2.get("current").asDouble();
-		pf[2] = (float)eMeters2.get("pf").asDouble();
-		voltage[2] = (float)eMeters2.get("voltage").asDouble();
+		power[2] = eMeters2.get("power").floatValue();
+		current[2] = eMeters2.get("current").floatValue();
+		pf[2] = eMeters2.get("pf").floatValue();
+		voltage[2] = eMeters2.get("voltage").floatValue();
 	}
 
 	@Override
 	protected void restore(JsonNode settings, List<String> errors) throws IOException, InterruptedException {
 		errors.add(sendCommand("/settings?" + jsonNodeToURLPar(settings, "led_status_disable", "wifirecovery_reboot_enabled")));
-		JsonNode meters = settings.get("emeters");
-		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-		errors.add(sendCommand("/settings/emeters/0?" + jsonNodeToURLPar(meters.get(0), "name", "appliance_type", "max_power")));
-		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-		errors.add(sendCommand("/settings/emeters/1?" + jsonNodeToURLPar(meters.get(1), "name", "appliance_type", "max_power")));
-		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-		errors.add(sendCommand("/settings/emeters/2?" + jsonNodeToURLPar(meters.get(2), "name", "appliance_type", "max_power")));
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 		errors.add(relay.restore(settings.get("relays").get(0)));
+		
+		JsonNode storedMeters = settings.get("emeters");
+		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+		errors.add(sendCommand("/settings/emeters/0?" + jsonNodeToURLPar(storedMeters.get(0), "name", "appliance_type", "max_power")));
+		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+		errors.add(sendCommand("/settings/emeters/1?" + jsonNodeToURLPar(storedMeters.get(1), "name", "appliance_type", "max_power")));
+		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+		errors.add(sendCommand("/settings/emeters/2?" + jsonNodeToURLPar(storedMeters.get(2), "name", "appliance_type", "max_power")));
 	}
 }

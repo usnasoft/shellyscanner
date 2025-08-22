@@ -12,8 +12,8 @@ import com.fasterxml.jackson.databind.JsonNode;
  * @author usna
  */
 public class ShellyGateway extends AbstractG2Device {
-//	private final static Logger LOG = LoggerFactory.getLogger(ShellyGatewayG3.class);
-	public final static String ID = "BluGw";
+//	private static final Logger LOG = LoggerFactory.getLogger(ShellyGatewayG3.class);
+	public static final String ID = "BluGw";
 
 	public ShellyGateway(InetAddress address, int port, String hostname) {
 		super(address, port, hostname);

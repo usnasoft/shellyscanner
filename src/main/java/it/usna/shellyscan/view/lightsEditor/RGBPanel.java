@@ -32,7 +32,7 @@ import it.usna.swing.VerticalFlowLayout;
  */
 public class RGBPanel extends LightPanel {
 	private static final long serialVersionUID = 1L;
-	private final static Logger LOG = LoggerFactory.getLogger(RGBPanel.class);
+	private static final Logger LOG = LoggerFactory.getLogger(RGBPanel.class);
 	
 	private final RGBInterface light;
 	private JLabel labelGain = new JLabel();
@@ -52,7 +52,7 @@ public class RGBPanel extends LightPanel {
 
 	public RGBPanel(final RGBInterface light) {
 		this.light = light;
-		setBorder(BorderFactory.createEmptyBorder(4, 8, 10, 8));
+		setBorder(BorderFactory.createEmptyBorder(6, 8, 12, 8));
 		setLayout(new VerticalFlowLayout(VerticalFlowLayout.CENTER, VerticalFlowLayout.CENTER, 0, 0));
 
 		// set initial values to avoid listeners to call the device in initial adjust

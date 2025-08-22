@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import it.usna.shellyscan.model.device.Meters;
 
 public class MetersWVIpf extends Meters {
-	private final static Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Type.W, Type.PF, Type.V, Type.I};
+	private static final Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Type.W, Type.PF, Type.V, Type.I};
 	private float power;
 	private float voltage;
 	private float current;

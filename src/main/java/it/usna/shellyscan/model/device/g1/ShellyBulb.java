@@ -15,7 +15,7 @@ import it.usna.shellyscan.model.device.g1.modules.LightBulbRGB;
 import it.usna.shellyscan.model.device.modules.DeviceModule;
 
 public class ShellyBulb extends AbstractG1Device implements ModulesHolder {
-	public final static String ID = "SHBLB-1";
+	public static final String ID = "SHBLB-1";
 	private LightBulbRGB light = new LightBulbRGB(this, 0);
 	private LightBulbRGB[] lightsArray = new LightBulbRGB[] {light};
 	private float power;
@@ -44,9 +44,9 @@ public class ShellyBulb extends AbstractG1Device implements ModulesHolder {
 		return ID;
 	}
 	
-	public float getPower() {
-		return power;
-	}
+//	public float getPower() {
+//		return power;
+//	}
 	
 	@Override
 	public Meters[] getMeters() {

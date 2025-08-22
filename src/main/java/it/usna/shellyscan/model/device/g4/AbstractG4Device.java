@@ -5,11 +5,11 @@ import java.net.InetAddress;
 import it.usna.shellyscan.model.device.g3.AbstractG3Device;
 
 /**
- * Base class for any gen3 Shelly device
+ * Base class for any gen4 Shelly device
  * @author usna
  */
 public abstract class AbstractG4Device extends AbstractG3Device {
-//	private final static Logger LOG = LoggerFactory.getLogger(AbstractG3Device.class);
+//	private static final Logger LOG = LoggerFactory.getLogger(AbstractG4Device.class);
 	protected boolean zigbee;
 
 	protected AbstractG4Device(InetAddress address, int port, String hostname) {

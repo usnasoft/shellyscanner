@@ -81,11 +81,11 @@ import it.usna.util.IOFile;
  */
 public class ScriptFrame extends JFrame {
 	private static final long serialVersionUID = 1L;
-	private final static Logger LOG = LoggerFactory.getLogger(ScriptFrame.class);
-	public final static String RUN_EVENT = "scriptIsRunning";
-	public final static String CLOSE_EVENT = "scriptEditorColose";
+	private static final Logger LOG = LoggerFactory.getLogger(ScriptFrame.class);
+	public static final String RUN_EVENT = "scriptIsRunning";
+	public static final String CLOSE_EVENT = "scriptEditorColose";
 
-	public final static Color DARK_BACKGOUND_COLOR = new Color(40, 40, 40);
+	public static final Color DARK_BACKGOUND_COLOR = new Color(40, 40, 40);
 
 	private Action openAction;
 	private Action saveAction;

@@ -22,7 +22,7 @@ import it.usna.shellyscan.model.device.DeviceAPIException;
 import it.usna.shellyscan.model.device.DeviceOfflineException;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
-import it.usna.shellyscan.model.device.g2.PageIterator;
+import it.usna.shellyscan.model.device.g2.JsonPageIterator;
 import it.usna.shellyscan.model.device.g2.modules.DynamicComponents;
 import it.usna.shellyscan.model.device.modules.InputResetManager;
 import it.usna.shellyscan.model.device.modules.LoginManager;
@@ -32,15 +32,15 @@ import it.usna.shellyscan.model.device.modules.WIFIManager;
 import it.usna.shellyscan.model.device.modules.WIFIManager.Network;
 
 public abstract class AbstractBluDevice extends ShellyAbstractDevice {
-	public final static String GENERATION = "blu";
-	private final static Logger LOG = LoggerFactory.getLogger(AbstractBluDevice.class);
+	public static final String GENERATION = "blu";
+	private static final Logger LOG = LoggerFactory.getLogger(AbstractBluDevice.class);
 	protected final AbstractG2Device parent;
 //	protected WebSocketClient wsClient;
 	protected final String componentIndex;
 	
-	public final static String DEVICE_KEY_PREFIX = DynamicComponents.BTHOME_DEVICE + ":"; // "bthomedevice:";
-	public final static String SENSOR_KEY_PREFIX = DynamicComponents.BTHOME_SENSOR + ":"; // "bthomesensor:";
-	public final static String GROUP_KEY_PREFIX = DynamicComponents.GROUP_TYPE + ":"; // "group:";
+	public static final String DEVICE_KEY_PREFIX = DynamicComponents.BTHOME_DEVICE + ":"; // "bthomedevice:";
+	public static final String SENSOR_KEY_PREFIX = DynamicComponents.BTHOME_SENSOR + ":"; // "bthomesensor:";
+	public static final String GROUP_KEY_PREFIX = DynamicComponents.GROUP_TYPE + ":"; // "group:";
 	
 	/**
 	 * AbstractBluDevice constructor
@@ -114,7 +114,7 @@ public abstract class AbstractBluDevice extends ShellyAbstractDevice {
 	 * @throws IOException
 	 */
 	public Iterator<JsonNode> getJSONIterator(final String method, final String arrayKey) throws IOException {
-		return new PageIterator(this, method, arrayKey);
+		return new JsonPageIterator(this, method, arrayKey);
 	}
 	
 	/**

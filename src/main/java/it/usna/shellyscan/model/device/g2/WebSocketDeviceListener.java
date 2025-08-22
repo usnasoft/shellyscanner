@@ -15,9 +15,9 @@ public class WebSocketDeviceListener implements Session.Listener.AutoDemanding {
 	public static String NOTIFY_FULL_STATUS = "NotifyFullStatus";
 	public static String NOTIFY_EVENT = "NotifyEvent";
 	private Predicate<JsonNode> notifyCondition;
-	private final static ObjectMapper JSON_MAPPER = new ObjectMapper();
+	private static final ObjectMapper JSON_MAPPER = new ObjectMapper();
 	
-	private final static Logger LOG = LoggerFactory.getLogger(WebSocketDeviceListener.class);
+	private static final Logger LOG = LoggerFactory.getLogger(WebSocketDeviceListener.class);
 	
 	public WebSocketDeviceListener() {
 	}

@@ -26,7 +26,7 @@ import it.usna.util.AppProperties;
 
 public class BackupAction extends UsnaAction {
 	private static final long serialVersionUID = 1L;
-	private final static Logger LOG = LoggerFactory.getLogger(BackupAction.class);
+	private static final Logger LOG = LoggerFactory.getLogger(BackupAction.class);
 	private SwingWorker<String, Object> worker;
 
 	public BackupAction(MainView mainView, DevicesTable devicesTable, AppProperties appProp, Devices model) {
@@ -106,8 +106,8 @@ public class BackupAction extends UsnaAction {
 					new BackWorker().execute();
 					try {
 						appProp.setProperty("LAST_PATH", fc.getCurrentDirectory().getCanonicalPath());
-					} catch (IOException e1) {
-						LOG.error("BackupAction - LAST_PATH", e);
+					} catch (IOException ex) {
+						LOG.error("BackupAction - LAST_PATH", ex);
 					}
 				}
 			}
