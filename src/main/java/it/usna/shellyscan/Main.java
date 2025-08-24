@@ -123,7 +123,7 @@ public class Main {
 
 		// Credentials (from configuration only)
 		String lUser = appProp.getProperty(ScannerProperties.PROP_LOGIN_USER);
-		if(lUser != null && lUser.length() > 0) {
+		if(lUser != null && lUser.isEmpty() == false) {
 			try {
 				char[] pDecoded = new String(Base64.getDecoder().decode(appProp.getProperty(ScannerProperties.PROP_LOGIN_PWD).substring(1))).toCharArray();
 				DevicesFactory.setCredential(lUser, pDecoded);

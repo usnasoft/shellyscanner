@@ -69,7 +69,13 @@ import it.usna.util.UsnaEventListener;
 public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventListener<Devices.EventType, Integer> {
 	private static final long serialVersionUID = 1L;
 	private FWUpdateTable table;
-	private UsnaTableModel tModel = new UsnaTableModel("", LABELS.getString("col_device"), LABELS.getString("dlgSetColCurrentV"), LABELS.getString("dlgSetColLastV"), LABELS.getString("dlgSetColBetaV"));
+	private UsnaTableModel tModel = new UsnaTableModel("", LABELS.getString("col_device"), LABELS.getString("dlgSetColCurrentV"), LABELS.getString("dlgSetColLastV"), LABELS.getString("dlgSetColBetaV")) {
+		private static final long serialVersionUID = 1L;
+		@Override
+		public Class<?> getColumnClass(final int c) { // Booolean is comparable; see TableStringConverter
+			return (c == FWUpdateTable.COL_CURRENT || c == FWUpdateTable.COL_STABLE  || c == FWUpdateTable.COL_BETA) ? Object.class : super.getColumnClass(c);
+		}
+	};
 	private List<DeviceFirmware> devicesFWData;
 
 	private JLabel lblCount = new JLabel();
@@ -99,7 +105,6 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 		btnPanel.add(btnPanelRight, BorderLayout.EAST);
 		add(btnPanel, BorderLayout.SOUTH);
 //		btnPanel.setLayout(new BoxLayout(btnPanel, BoxLayout.X_AXIS));
-
 //		btnPanel.add(Box.createHorizontalStrut(2));
 
 		JButton btnUnselectAll = new JButton(new UsnaAction("btn_unselectAll", event -> {
@@ -116,13 +121,11 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 		btnUnselectAll.setBorder(BorderFactory.createEmptyBorder(4, 7, 4, 7));
 		btnPanelLeft.add(btnUnselectAll);
 
-		JButton btnSelectStable = new JButton(new UsnaAction("btn_selectAllSta", event -> {
-			for(int i= 0; i < tModel.getRowCount(); i++) {
-				if(tModel.getValueAt(i, FWUpdateTable.COL_STABLE) instanceof Boolean) {
-					tModel.setValueAt(Boolean.TRUE, i, FWUpdateTable.COL_STABLE);
-					if(tModel.getValueAt(i, FWUpdateTable.COL_BETA) instanceof Boolean) {
-						tModel.setValueAt(Boolean.FALSE, i, FWUpdateTable.COL_BETA);
-					}
+		JButton btnSelectStable = new JButton(new UsnaSelectedAction(null, table, "btn_selectAllSta", i -> {
+			if(tModel.getValueAt(i, FWUpdateTable.COL_STABLE) instanceof Boolean) {
+				tModel.setValueAt(Boolean.TRUE, i, FWUpdateTable.COL_STABLE);
+				if(tModel.getValueAt(i, FWUpdateTable.COL_BETA) instanceof Boolean) {
+					tModel.setValueAt(Boolean.FALSE, i, FWUpdateTable.COL_BETA);
 				}
 			}
 			countSelection();
@@ -130,13 +133,11 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 		btnSelectStable.setBorder(BorderFactory.createEmptyBorder(4, 7, 4, 7));
 		btnPanelLeft.add(btnSelectStable);
 
-		JButton btnSelectBeta = new JButton(new UsnaAction("btn_selectAllbeta", event -> {
-			for(int i= 0; i < tModel.getRowCount(); i++) {
-				if(tModel.getValueAt(i, FWUpdateTable.COL_BETA) instanceof Boolean) {
-					tModel.setValueAt(Boolean.TRUE, i, FWUpdateTable.COL_BETA);
-					if(tModel.getValueAt(i, FWUpdateTable.COL_STABLE) instanceof Boolean) {
-						tModel.setValueAt(Boolean.FALSE, i, FWUpdateTable.COL_STABLE);
-					}
+		JButton btnSelectBeta = new JButton(new UsnaSelectedAction(null, table, "btn_selectAllbeta", i -> {
+			if(tModel.getValueAt(i, FWUpdateTable.COL_BETA) instanceof Boolean) {
+				tModel.setValueAt(Boolean.TRUE, i, FWUpdateTable.COL_BETA);
+				if(tModel.getValueAt(i, FWUpdateTable.COL_STABLE) instanceof Boolean) {
+					tModel.setValueAt(Boolean.FALSE, i, FWUpdateTable.COL_STABLE);
 				}
 			}
 			countSelection();
@@ -193,10 +194,12 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 		btnCheck.setBorder(BorderFactory.createEmptyBorder(4, 7, 4, 7));
 		btnPanelRight.add(Box.createHorizontalStrut(6));
 		btnPanelRight.add(btnCheck);
-
 //		btnPanel.add(Box.createHorizontalStrut(2));
 
-		Action browseAction = new UsnaSelectedAction(parentDlg, table, "action_web_name", /*"action_web_tooltip"*/null, "/images/Computer16.png", /*"/images/Computer.png"*/null, i -> {
+		Action browseAction = new UsnaSelectedAction(parentDlg, table, "action_web_name", null, "/images/Computer16.png", null, () ->
+		table.getSelectedRowCount() <= 8 ||
+		JOptionPane.showConfirmDialog(parentDlg, LABELS.getString("action_web_confirm"), LABELS.getString("action_web_name"), JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE) == JOptionPane.OK_OPTION,
+		i -> {
 			try {
 				Desktop.getDesktop().browse(URI.create("http://" + parentDlg.getLocalDevice(i).getAddressAndPort().getRepresentation()));
 			} catch (IOException | UnsupportedOperationException ex) {
@@ -204,7 +207,9 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 			}
 		});
 
-		UsnaPopupMenu popup = new UsnaPopupMenu(browseAction);
+		Action nosortAction = new UsnaAction("lblNoSort", e -> table.clearSort());
+
+		UsnaPopupMenu popup = new UsnaPopupMenu(browseAction, nosortAction);
 		table.addMouseListener(popup.getMouseListener(table));
 
 		table.addMouseListener(new MouseAdapter() {
@@ -524,7 +529,7 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 			}
 		}
 	}
-} // 346 - 362 - 462 - 476 - 509 - 418 - 438
+} // 346 - 362 - 462 - 476 - 509 - 418 - 438 - 532
 
 // {"src":"shellyplusi4-a8032ab1fe78","dst":"S_Scanner","method":"NotifyEvent","params":{"ts":1677696108.45,"events":[{"component":"sys", "event":"ota_progress", "msg":"Waiting for data", "progress_percent":99, "ts":1677696108.45}]}}
 // {"src":"shellyplusi4-a8032ab1fe78","dst":"S_Scanner","method":"NotifyEvent","params":{"ts":1677696109.49,"events":[{"component":"sys", "event":"ota_success", "msg":"Update applied, rebooting", "ts":1677696109.49}]}}

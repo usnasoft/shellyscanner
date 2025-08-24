@@ -194,7 +194,7 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 		// ThermostatInterface
 		thermPanel.add(thermProfileLabel, BorderLayout.CENTER);
 		thermPanel.add(thermSlider, BorderLayout.SOUTH);
-		thermSlider.setPreferredSize(new Dimension(20, thermSlider.getPreferredSize().height));
+//		thermSlider.setPreferredSize(new Dimension(20, thermSlider.getPreferredSize().height));
 		JPanel thermButtonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 3, 0));
 		thermButtonPanel.setBorder(BorderFactory.createEmptyBorder(1, 0, 0, 0));
 		thermButtonPanel.setOpaque(false);
@@ -425,12 +425,13 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 		if(roller.isCalibrated()) {
 			rollerLabel.setText(roller.getLabel() + " " + roller.getPosition() + "%");
 			JSlider rollerSlider = new JSlider(0, 100, roller.getPosition());
-			rollerSlider.setPreferredSize(new Dimension(20, rollerSlider.getPreferredSize().height));
+//			rollerSlider.setPreferredSize(new Dimension(200, rollerSlider.getPreferredSize().height));
 			rollerSouthPanel.add(rollerSlider, BorderLayout.CENTER);
 		} else {
 			rollerLabel.setText(roller.getLabel());
 		}
 		rollerLabel.setForeground(foregroundColor);
+//		rollerPanel.setPreferredSize(new Dimension(500, rollerPanel.getPreferredSize().height));
 		return rollerPanel;
 	}
 	

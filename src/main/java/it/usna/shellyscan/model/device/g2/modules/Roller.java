@@ -92,7 +92,7 @@ public class Roller implements RollerInterface {
 	@Override
 	public String toString() {
 		if(calibrated) {
-			return getLabel() + "-" + position;
+			return getLabel() + "- %" + position;
 		} else {
 			return getLabel() + "-n.c.";
 		}
