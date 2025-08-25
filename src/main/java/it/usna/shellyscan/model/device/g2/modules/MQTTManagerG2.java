@@ -19,6 +19,8 @@ public class MQTTManagerG2 implements MQTTManager {
 	
 	// G2 specific
 	private String sslCA;
+	private boolean control;
+	private boolean rpc;
 	private boolean rpcNtf;
 	private boolean statusNtf;
 
@@ -26,13 +28,6 @@ public class MQTTManagerG2 implements MQTTManager {
 		this.d = d;
 		init();
 	}
-	
-//	public MQTTManagerG2(AbstractG2Device d, boolean noInit) throws IOException {
-//		this.d = d;
-//		if(noInit == false) {
-//			init();
-//		}
-//	}
 
 	private void init() throws IOException {
 		JsonNode settings = d.getJSON("/rpc/MQTT.GetConfig");
@@ -41,6 +36,8 @@ public class MQTTManagerG2 implements MQTTManager {
 		this.user = settings.path("user").asText("");
 		this.prefix = settings.path("topic_prefix").asText("");
 		this.sslCA = settings.path("ssl_ca").asText("");
+		this.control = settings.path("enable_control").asBoolean();
+		this.rpc = settings.path("enable_rpc").asBoolean();
 		this.rpcNtf = settings.path("rpc_ntf").asBoolean();
 		this.statusNtf = settings.path("status_ntf").asBoolean();
 	}
@@ -76,6 +73,14 @@ public class MQTTManagerG2 implements MQTTManager {
 	public boolean isStatusNtf() {
 		return statusNtf;
 	}
+	
+	public boolean isControlEnabled() {
+		return control;
+	}
+	
+	public boolean isRpcEnabled() {
+		return rpc;
+	}
 
 	@Override
 	public String disable() {
@@ -99,9 +104,15 @@ public class MQTTManagerG2 implements MQTTManager {
 		return d.postCommand("MQTT.SetConfig", config);
 	}
 	
-	public String set(Boolean rpcNtf, Boolean statusNtf, String server, String user, String pwd, String prefix) {
+	public String set(Boolean control, Boolean rpc, Boolean rpcNtf, Boolean statusNtf, String server, String user, String pwd, String prefix) {
 		ObjectNode pars = JsonNodeFactory.instance.objectNode();
 		pars.put("enable", true);
+		if(control != null) {
+			pars.put("enable_control", control);
+		}
+		if(rpc != null) {
+			pars.put("enable_rpc", rpc);
+		}
 		if(rpcNtf != null) {
 			pars.put("rpc_ntf", rpcNtf);
 		}
@@ -129,6 +140,5 @@ public class MQTTManagerG2 implements MQTTManager {
 		}
 		outConfig.set("config", mqttCopy);
 		return parent.postCommand("MQTT.SetConfig", outConfig);
-		//return set(mqtt.get("server").asText(), mqtt.get("user").asText(), pwd, mqtt.get("topic_prefix").asText());
 	}
 }

@@ -21,6 +21,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import javax.swing.Action;
@@ -108,38 +109,45 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 //		btnPanel.add(Box.createHorizontalStrut(2));
 
 		JButton btnUnselectAll = new JButton(new UsnaAction("btn_unselectAll", event -> {
-			for(int i= 0; i < tModel.getRowCount(); i++) {
+			IntStream sel = (table.getSelectedRowCount() > 1) ? table.getSelectedModelRowsStream() : IntStream.range(0, tModel.getRowCount());
+			sel.forEach(i -> {
 				if(tModel.getValueAt(i, FWUpdateTable.COL_STABLE) instanceof Boolean) {
 					tModel.setValueAt(Boolean.FALSE, i, FWUpdateTable.COL_STABLE);
 				}
 				if(tModel.getValueAt(i, FWUpdateTable.COL_BETA) instanceof Boolean) {
 					tModel.setValueAt(Boolean.FALSE, i, FWUpdateTable.COL_BETA);
 				}
-			}
+			});
 			countSelection();
 		}));
 		btnUnselectAll.setBorder(BorderFactory.createEmptyBorder(4, 7, 4, 7));
 		btnPanelLeft.add(btnUnselectAll);
-
-		JButton btnSelectStable = new JButton(new UsnaSelectedAction(null, table, "btn_selectAllSta", i -> {
-			if(tModel.getValueAt(i, FWUpdateTable.COL_STABLE) instanceof Boolean) {
-				tModel.setValueAt(Boolean.TRUE, i, FWUpdateTable.COL_STABLE);
-				if(tModel.getValueAt(i, FWUpdateTable.COL_BETA) instanceof Boolean) {
-					tModel.setValueAt(Boolean.FALSE, i, FWUpdateTable.COL_BETA);
+		
+		JButton btnSelectStable = new JButton(new UsnaAction("btn_selectAllSta", event -> {
+			IntStream sel = (table.getSelectedRowCount() > 1) ? table.getSelectedModelRowsStream() : IntStream.range(0, tModel.getRowCount());
+			sel.forEach(i -> {
+				if(tModel.getValueAt(i, FWUpdateTable.COL_STABLE) instanceof Boolean) {
+					tModel.setValueAt(Boolean.TRUE, i, FWUpdateTable.COL_STABLE);
+					if(tModel.getValueAt(i, FWUpdateTable.COL_BETA) instanceof Boolean) {
+						tModel.setValueAt(Boolean.FALSE, i, FWUpdateTable.COL_BETA);
+					}
 				}
-			}
+			});
 			countSelection();
 		}));
 		btnSelectStable.setBorder(BorderFactory.createEmptyBorder(4, 7, 4, 7));
 		btnPanelLeft.add(btnSelectStable);
 
-		JButton btnSelectBeta = new JButton(new UsnaSelectedAction(null, table, "btn_selectAllbeta", i -> {
-			if(tModel.getValueAt(i, FWUpdateTable.COL_BETA) instanceof Boolean) {
-				tModel.setValueAt(Boolean.TRUE, i, FWUpdateTable.COL_BETA);
-				if(tModel.getValueAt(i, FWUpdateTable.COL_STABLE) instanceof Boolean) {
-					tModel.setValueAt(Boolean.FALSE, i, FWUpdateTable.COL_STABLE);
+		JButton btnSelectBeta = new JButton(new UsnaAction("btn_selectAllbeta", event -> {
+			IntStream sel = (table.getSelectedRowCount() > 1) ? table.getSelectedModelRowsStream() : IntStream.range(0, tModel.getRowCount());
+			sel.forEach(i -> {
+				if(tModel.getValueAt(i, FWUpdateTable.COL_BETA) instanceof Boolean) {
+					tModel.setValueAt(Boolean.TRUE, i, FWUpdateTable.COL_BETA);
+					if(tModel.getValueAt(i, FWUpdateTable.COL_STABLE) instanceof Boolean) {
+						tModel.setValueAt(Boolean.FALSE, i, FWUpdateTable.COL_STABLE);
+					}
 				}
-			}
+			});
 			countSelection();
 		}));
 		btnSelectBeta.setBorder(BorderFactory.createEmptyBorder(4, 7, 4, 7));
@@ -348,9 +356,9 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 				if(table.convertRowIndexToView(i) >= 0) { // included in filter
 					Object update = tModel.getValueAt(i, FWUpdateTable.COL_STABLE);
 					Object beta = tModel.getValueAt(i, FWUpdateTable.COL_BETA);
-					if(update instanceof Boolean && ((Boolean)update) == Boolean.TRUE) {
+					if(update == Boolean.TRUE) {
 						res += updateDeviceFW(i, true);
-					} else if(beta instanceof Boolean && ((Boolean)beta) == Boolean.TRUE) {
+					} else if(beta == Boolean.TRUE) {
 						res += updateDeviceFW(i, false);
 					}
 				}
@@ -529,7 +537,7 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 			}
 		}
 	}
-} // 346 - 362 - 462 - 476 - 509 - 418 - 438 - 532
+} // 346 - 362 - 462 - 476 - 509 - 418 - 438 - 540
 
 // {"src":"shellyplusi4-a8032ab1fe78","dst":"S_Scanner","method":"NotifyEvent","params":{"ts":1677696108.45,"events":[{"component":"sys", "event":"ota_progress", "msg":"Waiting for data", "progress_percent":99, "ts":1677696108.45}]}}
 // {"src":"shellyplusi4-a8032ab1fe78","dst":"S_Scanner","method":"NotifyEvent","params":{"ts":1677696109.49,"events":[{"component":"sys", "event":"ota_success", "msg":"Update applied, rebooting", "ts":1677696109.49}]}}
