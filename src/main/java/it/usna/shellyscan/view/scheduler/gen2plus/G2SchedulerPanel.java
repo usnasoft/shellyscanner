@@ -45,6 +45,7 @@ public class G2SchedulerPanel extends JScrollPane {
 	private static final long serialVersionUID = 1L;
 
 	private final JDialog parentDlg;
+	private final AbstractG2Device device;
 	private final ScheduleManager sceduleManager;
 	private final MethodHints mHints;
 	private final ArrayList<ScheduleData> originalValues = new ArrayList<>();
@@ -54,6 +55,7 @@ public class G2SchedulerPanel extends JScrollPane {
 	public G2SchedulerPanel(JDialog parent, AbstractG2Device device) {
 		super(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		this.parentDlg = parent;
+		this.device = device;
 		this.sceduleManager = new ScheduleManager(device);
 		this.mHints = new MethodHints(device);
 		
@@ -65,6 +67,7 @@ public class G2SchedulerPanel extends JScrollPane {
 	public G2SchedulerPanel(JDialog parent) {
 		super(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		this.parentDlg = parent;
+		this.device = null;
 		sceduleManager = null;
 		mHints = null;
 		addJob(null, Integer.MAX_VALUE);
@@ -87,7 +90,7 @@ public class G2SchedulerPanel extends JScrollPane {
 				exist = true;
 			}
 		} catch (IOException e) {
-			Msg.errorMsg(e);
+			Msg.errorStatusMsg(null, device, e);
 		}
 		if(exist == false) {
 			addJob(null, Integer.MAX_VALUE);
@@ -236,22 +239,30 @@ public class G2SchedulerPanel extends JScrollPane {
 		addBtn.setBorder(BorderFactory.createEmptyBorder(2, 3, 2, 3));
 		
 		JButton removeBtn = new JButton(new UsnaAction(null, "schRemove", "/images/erase-9-16.png", e -> {
-			ScheduleData data = null;
-			if(schedulesPanel.getComponentCount() > 1) {
-				int i;
-				for(i = 0; schedulesPanel.getComponent(i) != linePanel; i++);
-				schedulesPanel.remove(i);
-				lineColors();
-				data = originalValues.remove(i);
-			} else if(schedulesPanel.getComponentCount() == 1) {
-				job.clean();
-				enableAction.setSelected(false);
-				data = originalValues.get(0);
-				originalValues.set(0, new ScheduleData(-1, job.getJson()));
-			}
+//			ScheduleData data = null;
+//			if(schedulesPanel.getComponentCount() > 1) {
+//				int i;
+//				for(i = 0; schedulesPanel.getComponent(i) != linePanel; i++);
+//				schedulesPanel.remove(i);
+//				lineColors();
+//				data = originalValues.remove(i);
+//			} else if(schedulesPanel.getComponentCount() == 1) {
+//				job.clean();
+//				enableAction.setSelected(false);
+//				data = originalValues.get(0);
+//				originalValues.set(0, new ScheduleData(-1, job.getJson()));
+//			}
+			int i;
+			for(i = 0; schedulesPanel.getComponent(i) != linePanel; i++);
+			schedulesPanel.remove(i);
+			ScheduleData data = originalValues.remove(i);
 			if(data != null && data.id >= 0) {
 				removedId.add(data.id);
 			}
+			if(schedulesPanel.getComponentCount() == 0) {
+				addJob(null, 0);
+			}
+			lineColors();
 			schedulesPanel.revalidate();
 			schedulesPanel.repaint(); // last one need this ... do not know why
 		}));

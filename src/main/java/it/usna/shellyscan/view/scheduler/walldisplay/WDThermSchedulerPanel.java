@@ -177,22 +177,31 @@ public class WDThermSchedulerPanel extends JPanel {
 		addBtn.setBorder(BorderFactory.createEmptyBorder(2, 3, 2, 3));
 		
 		JButton removeBtn = new JButton(new UsnaAction(null, "schRemove", "/images/erase-9-16.png", e -> {
-			Rule data = null;
-			if(rulesPanel.getComponentCount() > 1) {
-				int i;
-				for(i = 0; rulesPanel.getComponent(i) != linePanel; i++);
-				rulesPanel.remove(i);
-				lineColors();
-				data = rules.get(currentProfileId).remove(i);
-			} else if(rulesPanel.getComponentCount() == 1) {
-				job.clean();
-				enableAction.setSelected(false);
-				data = rules.get(currentProfileId).remove(0);
-				rules.get(currentProfileId).add(new Rule(null, null, null, false));
-			}
+//			Rule data = null;
+//			if(rulesPanel.getComponentCount() > 1) {
+//				int i;
+//				for(i = 0; rulesPanel.getComponent(i) != linePanel; i++);
+//				rulesPanel.remove(i);
+//				lineColors();
+//				data = rules.get(currentProfileId).remove(i);
+//			} else if(rulesPanel.getComponentCount() == 1) {
+//				job.clean();
+//				enableAction.setSelected(false);
+//				data = rules.get(currentProfileId).remove(0);
+//				rules.get(currentProfileId).add(new Rule(null, null, null, false));
+//			}
+			int i;
+			for(i = 0; rulesPanel.getComponent(i) != linePanel; i++);
+			rulesPanel.remove(i);
+			Rule data = rules.get(currentProfileId).remove(i);
 			if(data.getId() != null) {
 				removed.add(new RemovedRule(data.getId(), currentProfileId));
 			}
+			if(rulesPanel.getComponentCount() == 0) {
+				addJob(false, null, null, 0);
+				addRule(false, null, null, 0);
+			}
+			lineColors();
 			rulesPanel.revalidate();
 			rulesPanel.repaint(); // last one need this ... do not know why
 		}));

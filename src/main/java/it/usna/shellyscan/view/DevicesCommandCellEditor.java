@@ -856,7 +856,7 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 										try {
 											inp.execute(index);
 										} catch (IOException ex) {
-											Msg.errorMsg(ex);
+											Msg.errorMsg(null, ex);
 										}
 									}).start();
 									Thread.sleep(200);

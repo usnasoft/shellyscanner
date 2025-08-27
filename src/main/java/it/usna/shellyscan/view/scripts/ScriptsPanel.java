@@ -143,7 +143,7 @@ public class ScriptsPanel extends JPanel {
 					scripts.remove(mRow);
 					tModel.removeRow(mRow);
 				} catch (IOException e1) {
-					Msg.errorMsg(e1);
+					Msg.errorMsg(this, e1);
 				}
 			}
 		}));
@@ -156,7 +156,7 @@ public class ScriptsPanel extends JPanel {
 				int mrow = tModel.addRow(sc.getName(), sc.isEnabled(), sc.isRunning());
 				table.setRowSelectionInterval(0, table.convertRowIndexToView(mrow));
 			} catch (IOException e1) {
-				Msg.errorMsg(e1);
+				Msg.errorMsg(this, e1);
 			}
 		}));
 		operationsPanel.add(btnNew);
@@ -204,7 +204,7 @@ public class ScriptsPanel extends JPanel {
 				});
 				tModel.fireTableCellUpdated(mRow, COL_RUN);
 			} catch (IOException e1) {
-				Msg.errorMsg(e1);
+				Msg.errorMsg(this, e1);
 			}
 		});
 		final JButton editBtn = new JButton(editAction);

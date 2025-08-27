@@ -26,27 +26,34 @@ public class Msg {
 	
 	private Msg() {}
 	
-	public static void showHtmlMessageDialog(Component parentComponent, CharSequence message, String title, int messageType, final int rowsMax) {
+	/**
+	 * @param owner determines the Frame in which the dialog is displayed
+	 * @param message
+	 * @param title
+	 * @param messageType JOptionPane.ERROR_MESSAGE, JOptionPane.INFORMATION_MESSAGE, ...
+	 * @param rowsMax
+	 */
+	public static void showHtmlMessageDialog(Component owner, CharSequence message, String title, int messageType, final int rowsMax) {
 		try {
 			Matcher m = PATTERN_BR.matcher(message);
 			int rows = (int)m.results().count();
 			if(rows <= rowsMax) {
-				JOptionPane.showMessageDialog(parentComponent, message, title, messageType);
+				JOptionPane.showMessageDialog(owner, message, title, messageType);
 			} else {
 				JScrollPane scrollPane = new JScrollPane(new JLabel(message.toString()));
 				Dimension d = scrollPane.getPreferredSize();
-				d.height = parentComponent.getGraphics().getFontMetrics().getHeight() * rowsMax;
+				d.height = owner.getGraphics().getFontMetrics().getHeight() * rowsMax;
 				d.width += scrollPane.getVerticalScrollBar().getPreferredSize().width;
 				scrollPane.setPreferredSize(d);
-				JOptionPane.showMessageDialog(parentComponent, scrollPane, title, messageType);
+				JOptionPane.showMessageDialog(owner, scrollPane, title, messageType);
 			}
 		} catch(RuntimeException e) { // HeadlessException
 			LOG.error(title + "-" + message.toString(), e);
 		}
 	}
 	
-	public static void showHtmlMessageDialog(Component parentComponent, CharSequence message, String title, int messageType) {
-		showHtmlMessageDialog(parentComponent, message, title, messageType, DEF_ROWS_MAX);
+	public static void showHtmlMessageDialog(Component owner, CharSequence message, String title, int messageType) {
+		showHtmlMessageDialog(owner, message, title, messageType, DEF_ROWS_MAX);
 	}
 	
 	public static void showMsg(Component owner, String msg, String title, int type) {
@@ -62,21 +69,15 @@ public class Msg {
 			} else if(msg.startsWith("<html>") == false) {
 				msg = splitLine(msg, 128);
 			}
+			if(owner == null) {
+				owner = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusedWindow();
+			}
 			JOptionPane.showMessageDialog(owner, msg, title, type);
 		} catch(RuntimeException e) { // HeadlessException
 			LOG.error(title + "-" + msg, e);
 		}
 	}
-	
-//	private static void errorMsg(String msg, String title) {
-//		final Window win = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusedWindow();
-//		showMsg(win, msg, title, JOptionPane.ERROR_MESSAGE);
-//	}
-	
-//	public static void errorMsg(String msg) {
-//		Msg.errorMsg(msg, Main.LABELS.getString("errorTitle"));
-//	}
-	
+
 	public static void errorMsg(Component owner, String msg) {
 		showMsg(owner, msg, Main.LABELS.getString("errorTitle"), JOptionPane.ERROR_MESSAGE);
 	}
@@ -98,12 +99,7 @@ public class Msg {
 		}
 		errorMsg(owner, msg);
 	}
-	
-	public static void errorMsg(final Throwable t) {
-		final Component win = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusedWindow();
-		errorMsg(win, t);
-	}
-	
+
 	public static void warningMsg(Component owner, String msg) {
 		showMsg(owner, msg, Main.LABELS.getString("warningTitle"), JOptionPane.WARNING_MESSAGE);
 	}

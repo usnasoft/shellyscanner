@@ -185,7 +185,7 @@ public class Main {
 			UsnaSwingUtils.setLookAndFeel(UsnaSwingUtils.LF_NIMBUS);
 //			UIManager.getLookAndFeelDefaults().put("Table:\"Table.cellRenderer\".alternateRowColor", TAB_LINE2_COLOR); // genera strani log
 		} catch (Exception e) {
-			Msg.errorMsg(e);
+			Msg.errorMsg(null, e);
 		}
 		//		UIManager.put("Table.background", new ColorUIResource(TAB_LINE1));
 		//		UIManager.put("Table.alternateRowColor", TAB_LINE2);
@@ -244,7 +244,7 @@ public class Main {
 						model.scannerInit(fullScanFinal, refreshStatusInterval, refreshConfigTics, appProp.getBoolProperty(ScannerProperties.PROP_AUTORELOAD_ARCHIVE) && useArchive);
 					}
 				} catch (/*IO*/Exception e) {
-					Msg.errorMsg(e);
+					Msg.errorMsg(null, e);
 					System.exit(1);
 				} finally {
 					view.setCursor(Cursor.getDefaultCursor());
@@ -254,7 +254,7 @@ public class Main {
 				System.err.println("Ignored parameter(s): " + String.join("; ", cli.unused()));
 			}
 		} catch (Exception ex) {
-			Msg.errorMsg(ex);
+			Msg.errorMsg(null, ex);
 			ex.printStackTrace();
 			System.exit(1);
 		}

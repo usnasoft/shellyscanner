@@ -134,13 +134,13 @@ public class G2JobPanel extends AbstractCronPanel {
 		callsOperationsPanel.add(callOpPanel, index);
 	}
 
-	public void clean() {
-		callsPanel.removeAll();
-		callsParameterPanel.removeAll();
-		callsOperationsPanel.removeAll();
-		setCron(DEF_CRON);
-		addCall("", "", 0);
-	}
+//	public void clean() {
+//		callsPanel.removeAll();
+//		callsParameterPanel.removeAll();
+//		callsOperationsPanel.removeAll();
+//		setCron(DEF_CRON);
+//		addCall("", "", 0);
+//	}
 
 	private void initCallSection() {
 		GridBagConstraints gbc_lblNewLabel_5 = new GridBagConstraints();

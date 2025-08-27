@@ -353,7 +353,7 @@ public class ScriptFrame extends JFrame {
 					setTitle(script.getName() + " - " + toSave.getFileName());
 					canOverwriteFile = true;
 				} catch (IOException e1) {
-					Msg.errorMsg(e1);
+					Msg.errorMsg(this, e1);
 				}
 				path = fc.getSelectedFile().toPath();
 			}
@@ -365,7 +365,7 @@ public class ScriptFrame extends JFrame {
 					Files.writeString(path, editor.getText());
 					JOptionPane.showMessageDialog(ScriptFrame.this, LABELS.getString("msgFileSaved"), LABELS.getString("dlgScriptEditorTitle"), JOptionPane.INFORMATION_MESSAGE);
 				} catch (IOException e1) {
-					Msg.errorMsg(e1);
+					Msg.errorMsg(this, e1);
 				}
 			} else {
 				saveAsAction.actionPerformed(e);

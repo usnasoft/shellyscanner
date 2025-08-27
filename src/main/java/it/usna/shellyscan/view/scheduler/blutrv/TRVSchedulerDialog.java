@@ -87,7 +87,7 @@ public class TRVSchedulerDialog extends JDialog {
 				exist = true;
 			}
 		} catch (IOException e) {
-			Msg.errorMsg(e);
+			Msg.errorStatusMsg(null, device, e);
 		}
 		if(exist == false) {
 			addJob(null, device.getMinTargetTemp(), device.getMaxTargetTemp(), Integer.MAX_VALUE);
@@ -272,22 +272,30 @@ public class TRVSchedulerDialog extends JDialog {
 		addBtn.setBorder(BorderFactory.createEmptyBorder(2, 3, 2, 3));
 		
 		JButton removeBtn = new JButton(new UsnaAction(null, "schRemove", "/images/erase-9-16.png", e -> {
-			ScheduleData data = null;
-			if(rulesPanel.getComponentCount() > 1) {
-				int i;
-				for(i = 0; rulesPanel.getComponent(i) != linePanel; i++);
-				rulesPanel.remove(i);
-				lineColors();
-				data = originalValues.remove(i);
-			} else if(rulesPanel.getComponentCount() == 1) {
-				job.clean();
-				enableAction.setSelected(false);
-				data = originalValues.get(0);
-				originalValues.set(0, new ScheduleData(-1, job.getJson()));
-			}
+//			ScheduleData data = null;
+//			if(rulesPanel.getComponentCount() > 1) {
+//				int i;
+//				for(i = 0; rulesPanel.getComponent(i) != linePanel; i++);
+//				rulesPanel.remove(i);
+//				lineColors();
+//				data = originalValues.remove(i);
+//			} else if(rulesPanel.getComponentCount() == 1) {
+//				job.clean();
+//				enableAction.setSelected(false);
+//				data = originalValues.get(0);
+//				originalValues.set(0, new ScheduleData(-1, job.getJson()));
+//			}
+			int i;
+			for(i = 0; rulesPanel.getComponent(i) != linePanel; i++);
+			rulesPanel.remove(i);
+			ScheduleData data = originalValues.remove(i);
 			if(data != null && data.id >= 0) {
 				removedId.add(data.id);
 			}
+			if(rulesPanel.getComponentCount() == 0) {
+				addJob(null, min, max, 0);
+			}
+			lineColors();
 			rulesPanel.revalidate();
 			rulesPanel.repaint(); // last one need this ... do not know why
 		}));

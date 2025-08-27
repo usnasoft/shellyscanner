@@ -106,10 +106,10 @@ public class TRVJobPanel extends AbstractCronPanel {
 		}
 	}
 
-	public void clean() {
-		setCron(DEF_CRON);
-		targetField.setValue(null);
-	}
+//	public void clean() {
+//		setCron(DEF_CRON);
+//		targetField.setValue(null);
+//	}
 
 	public boolean isNullJob() {
 		return expressionField.getText().equals(DEF_CRON) && targetField.getText().isBlank();

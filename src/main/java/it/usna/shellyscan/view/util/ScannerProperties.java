@@ -83,7 +83,7 @@ public class ScannerProperties extends AppProperties { // cannot also extend Usn
 		try { // in case of error or no file (true) use default configuration
 			load(true);
 		} catch (IOException e) {
-			Msg.errorMsg(e);
+			Msg.errorMsg(null, e);
 		}
 		defaultBoolProperty(PROP_TOOLBAR_CAPTIONS, true);
 		defaultProperty(PROP_CSV_SEPARATOR, PROP_CSV_SEPARATOR_DEFAULT);

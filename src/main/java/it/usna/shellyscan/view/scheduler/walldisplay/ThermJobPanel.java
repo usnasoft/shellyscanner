@@ -93,10 +93,10 @@ class ThermJobPanel extends JPanel {
 		add(target, gbc_target);
 	}
 
-	public void clean() {
-		setCron(DEF_CRON);
-		target.setValue(null);
-	}
+//	public void clean() {
+//		setCron(DEF_CRON);
+//		target.setValue(null);
+//	}
 
 	public boolean isNullJob() {
 		return expressionField.getText().equals(DEF_CRON) && target.getText().isBlank();
