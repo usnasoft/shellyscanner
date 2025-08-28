@@ -85,7 +85,7 @@ public class WDSchedulerDialog extends JDialog {
 		getContentPane().add(buttonsPanel, BorderLayout.SOUTH);
 
 		pack();
-		setSize(getWidth(), 500);
+		setSize(getWidth(), 512);
 	}
 	
 	static void lineColors(JPanel container) {

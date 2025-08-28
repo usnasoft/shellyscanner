@@ -177,19 +177,6 @@ public class WDThermSchedulerPanel extends JPanel {
 		addBtn.setBorder(BorderFactory.createEmptyBorder(2, 3, 2, 3));
 		
 		JButton removeBtn = new JButton(new UsnaAction(null, "schRemove", "/images/erase-9-16.png", e -> {
-//			Rule data = null;
-//			if(rulesPanel.getComponentCount() > 1) {
-//				int i;
-//				for(i = 0; rulesPanel.getComponent(i) != linePanel; i++);
-//				rulesPanel.remove(i);
-//				lineColors();
-//				data = rules.get(currentProfileId).remove(i);
-//			} else if(rulesPanel.getComponentCount() == 1) {
-//				job.clean();
-//				enableAction.setSelected(false);
-//				data = rules.get(currentProfileId).remove(0);
-//				rules.get(currentProfileId).add(new Rule(null, null, null, false));
-//			}
 			int i;
 			for(i = 0; rulesPanel.getComponent(i) != linePanel; i++);
 			rulesPanel.remove(i);
@@ -368,9 +355,8 @@ public class WDThermSchedulerPanel extends JPanel {
 	}
 	
 	public void refresh() {
-//		profilesPanel.
 		rules.clear();
-		profilesPanel.refresh();
+		profilesPanel.refresh(); // the profile will be selected again so rules will be fetched again
 	}
 	
 	public void loadFromBackup() {

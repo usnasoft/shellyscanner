@@ -24,6 +24,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 
+import it.usna.shellyscan.model.DeviceAPIException;
+import it.usna.shellyscan.model.DeviceOfflineException;
+import it.usna.shellyscan.model.DeviceUnauthorizedException;
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.modules.FirmwareManager;
 import it.usna.shellyscan.model.device.modules.InputResetManager;
@@ -114,7 +117,7 @@ public abstract class ShellyAbstractDevice {
 		}
 		if(statusCode == HttpStatus.UNAUTHORIZED_401) {
 			status = Status.NOT_LOOGGED;
-			throw new IOException("Status-" + HttpStatus.UNAUTHORIZED_401);
+			throw new DeviceUnauthorizedException();
 		} else if(statusCode == HttpStatus.INTERNAL_SERVER_ERROR_500) {
 			status = Status.ERROR;
 			String errorMsg;

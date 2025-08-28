@@ -102,6 +102,8 @@ public class G2SchedulerPanel extends JScrollPane {
 		schedulesPanel.removeAll();
 		originalValues.clear();
 		fill();
+		schedulesPanel.revalidate();
+		schedulesPanel.repaint(); // last one need this ... do not know why
 	}
 	
 	public void loadFromBackup() {
@@ -239,19 +241,6 @@ public class G2SchedulerPanel extends JScrollPane {
 		addBtn.setBorder(BorderFactory.createEmptyBorder(2, 3, 2, 3));
 		
 		JButton removeBtn = new JButton(new UsnaAction(null, "schRemove", "/images/erase-9-16.png", e -> {
-//			ScheduleData data = null;
-//			if(schedulesPanel.getComponentCount() > 1) {
-//				int i;
-//				for(i = 0; schedulesPanel.getComponent(i) != linePanel; i++);
-//				schedulesPanel.remove(i);
-//				lineColors();
-//				data = originalValues.remove(i);
-//			} else if(schedulesPanel.getComponentCount() == 1) {
-//				job.clean();
-//				enableAction.setSelected(false);
-//				data = originalValues.get(0);
-//				originalValues.set(0, new ScheduleData(-1, job.getJson()));
-//			}
 			int i;
 			for(i = 0; schedulesPanel.getComponent(i) != linePanel; i++);
 			schedulesPanel.remove(i);

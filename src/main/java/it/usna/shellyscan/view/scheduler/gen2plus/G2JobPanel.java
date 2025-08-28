@@ -85,7 +85,9 @@ public class G2JobPanel extends AbstractCronPanel {
 
 	private void addCall(String method, String params/*, String origin*/, int index) {
 		JTextField methodTF = new JTextField(method);
+		methodTF.setColumns(20); // not all the space needed space (in case of long strings)
 		JTextField paramsTF = new JTextField(params);
+		paramsTF.setColumns(40); // not all the space needed space (in case of long strings)
 		callsPanel.add(methodTF, index);
 		callsParameterPanel.add(paramsTF, index);
 
@@ -134,14 +136,6 @@ public class G2JobPanel extends AbstractCronPanel {
 		callsOperationsPanel.add(callOpPanel, index);
 	}
 
-//	public void clean() {
-//		callsPanel.removeAll();
-//		callsParameterPanel.removeAll();
-//		callsOperationsPanel.removeAll();
-//		setCron(DEF_CRON);
-//		addCall("", "", 0);
-//	}
-
 	private void initCallSection() {
 		GridBagConstraints gbc_lblNewLabel_5 = new GridBagConstraints();
 		gbc_lblNewLabel_5.anchor = GridBagConstraints.WEST;
@@ -171,7 +165,7 @@ public class G2JobPanel extends AbstractCronPanel {
 		
 		callsParameterPanel = new JPanel();
 		GridBagConstraints gbc_callsParameterPanel = new GridBagConstraints();
-		gbc_callsParameterPanel.gridwidth = 6;
+		gbc_callsParameterPanel.gridwidth = 7;
 		gbc_callsParameterPanel.insets = new Insets(0, 0, 5, 5);
 		gbc_callsParameterPanel.fill = GridBagConstraints.BOTH;
 		gbc_callsParameterPanel.gridx = 4;
@@ -183,8 +177,8 @@ public class G2JobPanel extends AbstractCronPanel {
 		GridBagConstraints gbc_callsOperations = new GridBagConstraints();
 		gbc_callsOperations.fill = GridBagConstraints.VERTICAL;
 		gbc_callsOperations.anchor = GridBagConstraints.WEST;
-		gbc_callsOperations.insets = new Insets(0, 0, 5, 5);
-		gbc_callsOperations.gridx = 10;
+		gbc_callsOperations.insets = new Insets(0, 0, 5, 2);
+		gbc_callsOperations.gridx = 11;
 		gbc_callsOperations.gridy = 4;
 		add(callsOperationsPanel, gbc_callsOperations);
 		callsOperationsPanel.setOpaque(false);

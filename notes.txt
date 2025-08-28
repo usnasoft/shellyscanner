@@ -374,12 +374,13 @@ virtual components paging - it.usna.shellyscan.model.device.blu.BTHomeDevice.ref
 ---
 column sorting, e.g. to sort FW versions or device names (Krzysztof Ce)
 fw update multiselection and buttons working on selection (if lenght > 1)
-Enable RPC over MQTT parameter (gen2+)
+Enable RPC over MQTT - Enable 'MQTT Control' parametes (gen2+)
+various fix on scheduler editor
 
 // TODO
 It would also be nice to add dynamic filters that show, for example, only enabled devices or disabled devices on the main view (?)
 
-Enable 'MQTT Control'
+
 
 // schedule wall display thermostat - profile selection
 // 1.7.0 https://shelly-api-docs.shelly.cloud/gen2/DynamicComponents/BTHome/BTHomeControl/ (?)

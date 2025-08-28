@@ -51,6 +51,9 @@ class ProfilesPanel extends JPanel {
 	private ExTooltipTable profilesTable;
 	private UsnaTableModel tModel;
 	private UsnaToggleAction enableprofilesAction;
+	
+	private JButton deleteProfileButton;
+	private JButton duplicateProfileButton;
 
 	public ProfilesPanel(JDialog parent, WallDisplay device, ScheduleManagerThermWD wdSceduleManager) {
 		this.parentDlg = parent;
@@ -71,7 +74,11 @@ class ProfilesPanel extends JPanel {
 				getSelectionModel().addListSelectionListener(e -> {
 					if(e.getValueIsAdjusting() == false) {
 						int sel = getSelectedModelRow();
-						ProfilesPanel.this.firePropertyChange(SELECTION_EVENT, null, (sel >= 0) ? profiles.get(sel).id() : -1);
+						boolean validSelection = (sel >= 0);
+						ProfilesPanel.this.firePropertyChange(SELECTION_EVENT, null, validSelection ? profiles.get(sel).id() : -1);
+
+						duplicateProfileButton.setEnabled(validSelection);
+						deleteProfileButton.setEnabled(validSelection);
 					}
 				});
 			}
@@ -96,13 +103,13 @@ class ProfilesPanel extends JPanel {
 				try {
 					final int mRow = convertRowIndexToModel(getEditingRow());
 					String value = (String) getCellEditor().getCellEditorValue();
-					// No empty profile names -> go back to previous
+					// No empty profile names -> go back to original value
 					if(value.isEmpty()) {
 						getCellEditor().cancelCellEditing();
-						return;
+						value = (String) tModel.getValueAt(mRow, 0);
 					}
-					// Update
-					if(mRow < profiles.size()) {
+					// Update existing profile
+					if(mRow < profiles.size() && tModel.getValueAt(mRow, 0).equals(value) == false) {
 						ThermProfile oldProfile = profiles.get(mRow);
 						if(oldProfile.name().equals(value) == false) {
 							String ret = wdSceduleManager.renameProfiles(oldProfile.id(), value);
@@ -115,7 +122,7 @@ class ProfilesPanel extends JPanel {
 							}
 						}
 					// New profile
-					} else {
+					} else if(mRow >= profiles.size()) {
 						try {
 							int newId = wdSceduleManager.addProfiles(value);
 							profiles.add(new ThermProfile(newId, value));
@@ -129,6 +136,15 @@ class ProfilesPanel extends JPanel {
 					parent.setCursor(Cursor.getDefaultCursor());
 				}
 				super.editingStopped(e);
+			}
+			
+			@Override
+			public void removeEditor() {
+				final int mRow = convertRowIndexToModel(getEditingRow());
+				super.removeEditor();
+				if(mRow >= profiles.size()) { // esc (?)
+					tModel.removeRow(mRow);
+				}
 			}
 		};
 
@@ -148,7 +164,7 @@ class ProfilesPanel extends JPanel {
 		}));
 		buttonsPanel.add(newProfileButton);
 		
-		JButton duplicateProfileButton = new JButton(new UsnaAction(parent, "schDuplicateProfile", e -> {
+		duplicateProfileButton = new JButton(new UsnaAction(parent, "schDuplicateProfile", e -> {
 			int mRow = profilesTable.getSelectedModelRow();
 			if(mRow >= 0) {
 				String name = profiles.get(mRow).name() + "-new";
@@ -164,9 +180,10 @@ class ProfilesPanel extends JPanel {
 				Msg.errorMsg(parent, "msgDuplicateProfileSelect");
 			}
 		}));
+		duplicateProfileButton.setEnabled(false);
 		buttonsPanel.add(duplicateProfileButton);
 
-		JButton deleteProfileButton = new JButton(new UsnaAction(parent, "schDelProfile", e -> {
+		deleteProfileButton = new JButton(new UsnaAction(parent, "schDelProfile", e -> {
 			int mRow = profilesTable.getSelectedModelRow();
 			if(mRow >= 0) {
 				TableCellEditor editor = profilesTable.getCellEditor();
@@ -193,6 +210,7 @@ class ProfilesPanel extends JPanel {
 				}
 			}
 		}));
+		deleteProfileButton.setEnabled(false);
 		buttonsPanel.add(deleteProfileButton);
 		
 		buttonsPanel.add(Box.createHorizontalStrut(30));
@@ -215,7 +233,6 @@ class ProfilesPanel extends JPanel {
 		enableprofilesAction.setTooltip("lblDisabled", "lblEnabled");
 		enableButton.setAction(enableprofilesAction);
 		buttonsPanel.add(enableButton);
-//		add(enableButton, BorderLayout.EAST);
 		
 		fill();
 	}

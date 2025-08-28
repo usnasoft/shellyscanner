@@ -6,7 +6,7 @@ import org.eclipse.jetty.websocket.api.Session;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.JacksonException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -50,7 +50,7 @@ public class WebSocketDeviceListener implements Session.Listener.AutoDemanding {
 			if(notifyCondition == null || notifyCondition.test(msg)) {
 				onMessage(msg);
 			}
-		} catch (JsonProcessingException e) {
+		} catch (JacksonException e) {
 			LOG.warn("ws-message-error: {}", message, e);
 		}
 	}

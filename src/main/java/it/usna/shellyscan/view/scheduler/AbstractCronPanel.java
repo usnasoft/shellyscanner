@@ -67,7 +67,7 @@ public abstract class AbstractCronPanel extends JPanel {
 	protected AbstractCronPanel(JDialog parent) {
 		this.parentDlg = parent;
 		setOpaque(false);
-		setBorder(BorderFactory.createEmptyBorder(2, 2, 4, 2));
+		setBorder(BorderFactory.createEmptyBorder(3, 2, 5, 2));
 		initCronSection();
 	}
 
@@ -75,7 +75,7 @@ public abstract class AbstractCronPanel extends JPanel {
 		GridBagLayout gbl_panel = new GridBagLayout();
 		//		gbl_panel.columnWidths = new int[]{10, 10, 10, 10, 10, 0, 10};
 		// gbl_panel.rowHeights = new int[]{0, 0, 0, 0};
-		gbl_panel.columnWeights = new double[] { 1.0, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
+		gbl_panel.columnWeights = new double[] { 1.0, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0 };
 //		gbl_panel.rowWeights = new double[] { 1.0, 1.0, 1.0};
 		setLayout(gbl_panel);
 
@@ -221,6 +221,7 @@ public abstract class AbstractCronPanel extends JPanel {
 		
 		monthsPanel = monthsPanel();
 		GridBagConstraints gbc_months = new GridBagConstraints();
+		gbc_months.gridwidth = 2;
 		gbc_months.anchor = GridBagConstraints.WEST;
 		gbc_months.gridheight = 2;
 		gbc_months.insets = new Insets(0, 12, 5, 5);
@@ -234,7 +235,7 @@ public abstract class AbstractCronPanel extends JPanel {
 		allMonthsButton.setBorder(BorderFactory.createEmptyBorder());
 		GridBagConstraints gbc_btnNewButton = new GridBagConstraints();
 		gbc_btnNewButton.anchor = GridBagConstraints.SOUTH;
-		gbc_btnNewButton.gridx = 11;
+		gbc_btnNewButton.gridx = 12;
 		gbc_btnNewButton.gridy = 0;
 		add(allMonthsButton, gbc_btnNewButton);
 		
@@ -243,7 +244,7 @@ public abstract class AbstractCronPanel extends JPanel {
 		noMonthsButton.setBorder(BorderFactory.createEmptyBorder());
 		GridBagConstraints gbc_noMonthsButton = new GridBagConstraints();
 		gbc_noMonthsButton.insets = new Insets(0, 0, 5, 0);
-		gbc_noMonthsButton.gridx = 11;
+		gbc_noMonthsButton.gridx = 12;
 		gbc_noMonthsButton.gridy = 1;
 		add(noMonthsButton, gbc_noMonthsButton);
 
@@ -314,7 +315,7 @@ public abstract class AbstractCronPanel extends JPanel {
 
 		expressionField = new JTextField();
 		GridBagConstraints gbc_textField = new GridBagConstraints();
-		gbc_textField.gridwidth = 3;
+		gbc_textField.gridwidth = 4;
 		gbc_textField.fill = GridBagConstraints.HORIZONTAL;
 		gbc_textField.gridx = 8;
 		gbc_textField.gridy = 2;

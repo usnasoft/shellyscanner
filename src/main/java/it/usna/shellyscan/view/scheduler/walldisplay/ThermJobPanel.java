@@ -56,7 +56,7 @@ class ThermJobPanel extends JPanel {
 	ThermJobPanel(JDialog parent, float minTarget, float maxTarget, String timespec, Float temp) {
 		this.parentDlg = parent;
 		setOpaque(false);
-		setBorder(BorderFactory.createEmptyBorder(2, 2, 4, 2));
+		setBorder(BorderFactory.createEmptyBorder(3, 2, 5, 2));
 		this.minTarget = minTarget;
 		this.maxTarget = maxTarget;
 		

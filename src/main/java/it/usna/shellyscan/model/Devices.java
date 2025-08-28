@@ -405,6 +405,8 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 					}
 				}
 			}
+		} catch(DeviceUnauthorizedException e) {
+			LOG.debug("401 - {}:{}; host: {}", address, port, hostName, e);
 		} catch(Exception e) {
 			LOG.error("Unexpected-add: {}:{}; host: {}", address, port, hostName, e);
 		}

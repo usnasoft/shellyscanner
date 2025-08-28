@@ -74,7 +74,7 @@ public class DialogDeviceSettings extends JDialog implements UsnaEventListener<D
 		BorderLayout borderLayout = (BorderLayout) getContentPane().getLayout();
 		borderLayout.setVgap(5);
 
-		this.setSize(610, 420);
+		this.setSize(610, 450);
 		setLocationRelativeTo(owner);
 
 		JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 5, 3));
