@@ -389,17 +389,6 @@ public abstract class AbstractG1Device extends ShellyAbstractDevice {
 		}
 	}
 	
-//	public static String jsonEntryIteratorToURLPar(Iterator<Entry<String, JsonNode>> pars) throws UnsupportedEncodingException {
-//		if(pars.hasNext()) {
-//			String command = AbstractG1Device.jsonEntryToURLPar(pars.next());
-//			while(pars.hasNext()) {
-//				command += "&" + AbstractG1Device.jsonEntryToURLPar(pars.next());
-//			}
-//			return command;
-//		}
-//		return "";
-//	}
-	
 	public static String jsonEntrySetToURLPar(Set<Entry<String, JsonNode>> pars) throws UnsupportedEncodingException {
 		String command = "";
 		for(Entry<String, JsonNode> par: pars) {

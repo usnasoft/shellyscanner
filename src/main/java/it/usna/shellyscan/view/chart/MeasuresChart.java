@@ -15,10 +15,9 @@ import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.EnumSet;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Locale;
-import java.util.Map;
 import java.util.stream.Stream;
 
 import javax.swing.BorderFactory;
@@ -86,7 +85,7 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 	
 	private final TimeSeriesCollection dataset = new TimeSeriesCollection(); // Create dataset
 	private final ValueAxis xAxis;
-	private final Map<Integer, TimeSeries[]> seriesMap = new HashMap<>(); // device index, TimeSeries (one or more)
+	private final HashMap<Integer, TimeSeries[]> seriesMap = new HashMap<>(); // device index, TimeSeries (one or more)
 
 	private final JComboBox<String> seriesCombo = new JComboBox<>();
 	private final JScrollBar scrollBar = new JScrollBar(JScrollBar.HORIZONTAL, 0, 0, 0, 0);
@@ -353,7 +352,7 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 	}
 	
 	private ChartType[] typeComboContent(int[] modelIndexes) {
-		HashSet<ChartType> available = new HashSet<>();
+		EnumSet<ChartType> available = EnumSet.noneOf(ChartType.class);
 		for(int ind: modelIndexes) {
 			final ShellyAbstractDevice d = model.get(ind);
 			boolean powerFound = false;

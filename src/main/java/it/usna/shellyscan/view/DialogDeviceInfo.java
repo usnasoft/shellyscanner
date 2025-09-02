@@ -211,6 +211,7 @@ public class DialogDeviceInfo extends JDialog implements UsnaEventListener<Devic
 				textPane.setCaretPosition(0);
 			} catch (Exception e) {
 				if (Thread.interrupted() == false) {
+					LOG.debug("getJsonGetPanel: {}", info, e);
 					String msg;
 					if (device.getStatus() == Status.OFF_LINE || device.getStatus() == Status.GHOST) {
 						msg = "<" + Main.LABELS.getString("Status-OFFLINE") + ">";

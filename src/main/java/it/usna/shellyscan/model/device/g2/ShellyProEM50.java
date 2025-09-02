@@ -13,6 +13,7 @@ import it.usna.shellyscan.model.device.InternalTmpHolder;
 import it.usna.shellyscan.model.device.LabelHolder;
 import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.ModulesHolder;
+import it.usna.shellyscan.model.device.g2.modules.EM1Manager;
 import it.usna.shellyscan.model.device.g2.modules.Relay;
 
 public class ShellyProEM50 extends AbstractProDevice implements ModulesHolder, InternalTmpHolder {
@@ -132,6 +133,16 @@ public class ShellyProEM50 extends AbstractProDevice implements ModulesHolder, I
 		freq[1] = em1_1.get("freq").floatValue();
 
 		internalTmp = switchStatus.get("temperature").get("tC").floatValue();
+	}
+	
+	@Override
+	public String[] getInfoRequests() {
+//		try {
+//			new EM1Manager(this, 0).getFullHistory(EM1Manager.ACT_ENERGY);
+//		} catch (IOException e) {
+//			e.printStackTrace();
+//		}
+		return EM1Manager.getInfoRequests(super.getInfoRequests(), 0, 1);
 	}
 
 	@Override
