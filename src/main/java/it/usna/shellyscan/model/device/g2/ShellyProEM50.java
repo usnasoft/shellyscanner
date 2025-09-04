@@ -138,7 +138,9 @@ public class ShellyProEM50 extends AbstractProDevice implements ModulesHolder, I
 	@Override
 	public String[] getInfoRequests() {
 //		try {
-//			new EM1Manager(this, 0).getFullHistory(EM1Manager.ACT_ENERGY);
+//			int end = (int)((System.currentTimeMillis()/1000) / 3600) * 3600;
+//			int start = end - (3600 * 24 * 1);
+//			new EM1Manager(this, 0).getEnergy(/*EM1Manager.ACT_ENERGY,*/ start, end);
 //		} catch (IOException e) {
 //			e.printStackTrace();
 //		}

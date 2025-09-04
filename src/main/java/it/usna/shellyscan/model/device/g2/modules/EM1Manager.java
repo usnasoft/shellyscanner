@@ -11,7 +11,7 @@ import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 
 public class EM1Manager {
 	public static final String ACT_ENERGY = "total_act_energy";
-	private static final int PERIOD = 300; // seconds {300, 900, 1800, or 3600}
+	private static final int PERIOD = 3600; // seconds {300, 900, 1800, or 3600}
 	private final AbstractG2Device device;
 	private final int id;
 	
@@ -34,12 +34,13 @@ public class EM1Manager {
 	 * @return
 	 * @throws IOException 
 	 */
-	public List<TimedData> getFullHistory(String dataType) throws IOException {
-		ArrayList<TimedData> data = new ArrayList<>();
-		int nextTs = 0;
-		//		JsonNode energyDataValue = device.getJSON("/rpc/EM1Data.GetNetEnergies?id=" + id + "&ts=" + nextTs + "&add_keys=false&period=" + PERIOD);
+//	int end = (int)((System.currentTimeMillis()/1000) / 60) * 60;
+//	int start = end - (3600 * 2);
+	public List<EnergyData> getEnergyData(String dataType, int startTs, int endTs) throws IOException {
+		ArrayList<EnergyData> data = new ArrayList<>();
+		int nextTs = startTs;
 		do {
-			JsonNode energyDataValue = device.getJSON("/rpc/EM1Data.GetData?id=" + id + "&ts=" + nextTs); // too many values -> too much time
+			JsonNode energyDataValue = device.getJSON("/rpc/EM1Data.GetData?add_keys=false&id=" + id + "&ts=" + nextTs + "&end_ts=" + endTs); // too many values -> too much time
 			System.out.println("-------------------------------------------------------------------");
 			for(JsonNode energyData: energyDataValue.get("data")) {
 				int ts = energyData.get("ts").intValue();
@@ -47,7 +48,34 @@ public class EM1Manager {
 				JsonNode enArray = energyData.get("values");
 				for(JsonNode valArray: enArray) {
 
-					data.add(new TimedData(ts /** 1000L*/, valArray.get(0).floatValue()));
+					data.add(new EnergyData(ts /** 1000L*/, valArray.get(0).floatValue()));
+					ts += period;
+
+					System.out.println(data.get(data.size() - 1));
+				}
+			}
+			nextTs = energyDataValue.path("next_record_ts").intValue();
+		} while(nextTs > 0);
+
+		return data;
+	}
+	
+	/*
+		long end = (System.currentTimeMillis() / 3600) * 3600;
+		long start = end - (3600 * 24 * 7);
+	 */
+	public List<EnergyData> getEnergy(int startTs, int endTs) throws IOException {
+		ArrayList<EnergyData> data = new ArrayList<>();
+		int nextTs = startTs;
+		do {
+			JsonNode energyDataValue = device.getJSON("/rpc/EM1Data.GetNetEnergies?id=" + id + "&ts=" + nextTs + "&end_ts=" + endTs + "&add_keys=false&period=" + PERIOD);
+			System.out.println("-------------------------------------------------------------------");
+			for(JsonNode energyData: energyDataValue.get("data")) {
+				int ts = energyData.get("ts").intValue();
+				int period = energyData.get("period").intValue();
+				JsonNode enArray = energyData.get("values");
+				for(JsonNode valArray: enArray) {
+					data.add(new EnergyData(ts /** 1000L*/, valArray.get(0).floatValue()));
 					ts += period;
 
 					System.out.println(data.get(data.size() - 1));
@@ -65,7 +93,7 @@ public class EM1Manager {
 	 * @param FromTs timestamp
 	 * @return
 	 */
-	public List<TimedData> getFrom(String dataType, long fromTs) { // or array
+	public List<EnergyData> getFrom(String dataType, long fromTs) { // or array
 		return null;
 	}
 	
@@ -75,7 +103,7 @@ public class EM1Manager {
 	 * @param FromTs timestamp
 	 * @return
 	 */
-	public List<TimedData> getNext(String dataType) { // or array
+	public List<EnergyData> getNextEnergy(/*String dataType*/) {
 		return null;
 	}
 	
@@ -89,7 +117,13 @@ public class EM1Manager {
 	
 	//l.add("(BTHomeSensor.GetConfig [" + s.getId() + "-" + s.getObjId() + "])/rpc/BTHomeSensor.GetCon)fig?id=" + s.getId());
 
-	public record TimedData(long timestamp, float value) {}
+//	public record TimedData(long timestamp, float value) {}
+	public record EnergyData(long timestamp, float ... value) {
+		@Override
+		public String toString() {
+			return timestamp + "-" + value[0];
+		}
+	}
 }
 
 //todo questo diventa EM1Manager che deriva da un'interffacia da cui deriverà anche EMManager (e forse anche EMPMManager)

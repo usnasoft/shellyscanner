@@ -94,18 +94,12 @@
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-databind</artifactId>
-			<version>2.19.2</version>
-<!--			<exclusions>
-				<exclusion>
-					<groupId>net.bytebuddy</groupId>
-					<artifactId>byte-buddy</artifactId>
-				</exclusion>
-			</exclusions>-->
+			<version>2.20.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.jmdns</groupId>
 			<artifactId>jmdns</artifactId>
-			<version>3.6.1</version>
+			<version>3.6.2</version>
 			<!--<version>3.6.2-SNAPSHOT</version>-->
 		</dependency>
 		<dependency>
