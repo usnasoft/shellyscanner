@@ -35,6 +35,7 @@ import it.usna.shellyscan.model.device.blu.BluTRV;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.g2.AbstractProDevice;
 import it.usna.shellyscan.model.device.g3.AbstractG3Device;
+import it.usna.shellyscan.model.device.g4.AbstractG4Device;
 
 /**
  * Devices model intended for CLI non iteractive use
@@ -177,7 +178,7 @@ public class NonInteractiveDevices implements Closeable {
 				consumer.accept(d);
 				LOG.debug("Create {}:{} - {}", address, port, d);
 
-				// Rage extender
+				// Range extender
 				if(/*port == 80 &&*/ d instanceof AbstractG2Device gen2 && (gen2.isExtender() || gen2.getStatus() == Status.NOT_LOOGGED)) {
 					gen2.getRangeExtenderManager().getPorts().forEach(p -> {
 						try {
@@ -191,12 +192,11 @@ public class NonInteractiveDevices implements Closeable {
 					});
 				}
 				// BTHome (BLU)
-				if(d instanceof AbstractProDevice || d instanceof AbstractG3Device) {
-					final JsonNode currenteComponents = d.getJSON("/rpc/Shelly.GetComponents?dynamic_only=true").path("components"); // empty on 401
-					for(JsonNode compInfo: currenteComponents) {
+				if(d instanceof AbstractProDevice || d instanceof AbstractG3Device || d instanceof AbstractG4Device) {
+					for(JsonNode compInfo: ((AbstractG2Device)d).getJSONIterator("/rpc/Shelly.GetComponents?dynamic_only=true", "components")) { // empty on 401
 						String key = compInfo.path("key").asText();
 						if(key.startsWith(AbstractBluDevice.DEVICE_KEY_PREFIX) || key.startsWith(BluTRV.DEVICE_KEY_PREFIX)) {
-							AbstractBluDevice newBlu = DevicesFactory.createBlu((AbstractG2Device)d, httpClient, /*wsClient,*/ compInfo, key);
+							AbstractBluDevice newBlu = DevicesFactory.createBlu((AbstractG2Device)d, httpClient, compInfo, key);
 							consumer.accept(newBlu);
 						}
 					}

@@ -64,25 +64,16 @@ public abstract class ShellyAbstractDevice {
 	public enum Status {ON_LINE, OFF_LINE, NOT_LOOGGED, READING, ERROR, GHOST}; // GHOST not yet detected (in store)
 	public enum LogMode {NONE, FILE, MQTT, SOCKET, UDP, UNDEFINED};
 
-	protected ShellyAbstractDevice(InetAddress address, int port, String hostname) {
-		addressAndPort = new InetAddressAndPort(address, port);
+	protected ShellyAbstractDevice(InetAddressAndPort address, String hostname) {
+		this(address);
 		this.hostname = hostname;
-		if(address instanceof Inet6Address) {
-			if(port == 80) {
-				this.uriPrefix = "http://[" + address.getHostAddress() + "]";
-			} else {
-				this.uriPrefix = "http://[" + address.getHostAddress() + "]:" + port;
-			}
-		} else {
-			this.uriPrefix = "http://" + addressAndPort.getRepresentation();
-		}
 	}
 	
 	/**
-	 * Non ethernet devices (Blu)
+	 * Non ethernet (-> no hostname) devices (BLU)
 	 */
 	protected ShellyAbstractDevice(InetAddressAndPort address) {
-		addressAndPort = address;
+		this.addressAndPort = address;
 		InetAddress addr = address.getAddress();
 		if(addr instanceof Inet6Address) {
 			int port = address.getPort();
@@ -255,11 +246,8 @@ public abstract class ShellyAbstractDevice {
 	public abstract TimeAndLocationManager getTimeAndLocationManager() throws IOException;
 	
 	public abstract InputResetManager getInputResetManager() throws IOException;
-
-//	public abstract boolean backup(final File file) throws IOException; // false: use of stored data; could not connect to device
 	
 	public abstract boolean backup(final Path file) throws IOException; // false: use of stored data; could not connect to device
-	
 	
 	public abstract Map<RestoreMsg, Object> restoreCheck(Map<String, JsonNode> backupJsons) throws IOException;
 	
@@ -332,4 +320,4 @@ public abstract class ShellyAbstractDevice {
 	public String toString() {
 		return getTypeName() + "-" + name + ": " + addressAndPort.getRepresentation() + " (" + hostname + ")";
 	}
-} //278 - 399 - 316 - 251 - 237 - 231 - 247 - 271 - 332
+} //278 - 399 - 316 - 251 - 237 - 231 - 247 - 271 - 332 - 323

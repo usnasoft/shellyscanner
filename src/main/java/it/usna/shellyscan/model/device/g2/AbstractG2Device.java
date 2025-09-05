@@ -43,6 +43,7 @@ import it.usna.shellyscan.model.DeviceAPIException;
 import it.usna.shellyscan.model.DeviceOfflineException;
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.BatteryDeviceInterface;
+import it.usna.shellyscan.model.device.InetAddressAndPort;
 import it.usna.shellyscan.model.device.RestoreMsg;
 import it.usna.shellyscan.model.device.RestoreUtil;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
@@ -78,7 +79,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 	private boolean rangeExtender;
 
 	protected AbstractG2Device(InetAddress address, int port, String hostname) {
-		super(address, port, hostname);
+		super(new InetAddressAndPort(address, port), hostname);
 	}
 
 	public void init(HttpClient httpClient, WebSocketClient wsClient, JsonNode devInfo) throws IOException {

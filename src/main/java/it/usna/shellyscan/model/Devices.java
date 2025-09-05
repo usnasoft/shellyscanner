@@ -375,7 +375,7 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 				newDevice(d);
 				LOG.debug("Create {}:{} - {}", address, port, d);
 
-				// Rage extender
+				// Range extender
 				if(/*port == 80 &&*/ d instanceof AbstractG2Device gen2 && (gen2.isExtender() || gen2.getStatus() == Status.NOT_LOOGGED)) {
 					gen2.getRangeExtenderManager().getPorts().forEach(p -> {
 						try {

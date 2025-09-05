@@ -36,8 +36,8 @@ public class EM1Manager {
 	 */
 //	int end = (int)((System.currentTimeMillis()/1000) / 60) * 60;
 //	int start = end - (3600 * 2);
-	public List<EnergyData> getEnergyData(String dataType, int startTs, int endTs) throws IOException {
-		ArrayList<EnergyData> data = new ArrayList<>();
+	public List<TimedData> getData(int startTs, int endTs) throws IOException {
+		ArrayList<TimedData> data = new ArrayList<>();
 		int nextTs = startTs;
 		do {
 			JsonNode energyDataValue = device.getJSON("/rpc/EM1Data.GetData?add_keys=false&id=" + id + "&ts=" + nextTs + "&end_ts=" + endTs); // too many values -> too much time
@@ -47,8 +47,11 @@ public class EM1Manager {
 				int period = energyData.get("period").intValue();
 				JsonNode enArray = energyData.get("values");
 				for(JsonNode valArray: enArray) {
-
-					data.add(new EnergyData(ts /** 1000L*/, valArray.get(0).floatValue()));
+					float[] values = new float[valArray.size()];
+					for(int i = 0; i < values.length; i++) {
+						values[i] = valArray.get(i).floatValue();
+					}
+					data.add(new TimedData(ts /** 1000L*/, values));
 					ts += period;
 
 					System.out.println(data.get(data.size() - 1));
@@ -64,8 +67,8 @@ public class EM1Manager {
 		long end = (System.currentTimeMillis() / 3600) * 3600;
 		long start = end - (3600 * 24 * 7);
 	 */
-	public List<EnergyData> getEnergy(int startTs, int endTs) throws IOException {
-		ArrayList<EnergyData> data = new ArrayList<>();
+	public List<TimedData> getEnergy(int startTs, int endTs) throws IOException {
+		ArrayList<TimedData> data = new ArrayList<>();
 		int nextTs = startTs;
 		do {
 			JsonNode energyDataValue = device.getJSON("/rpc/EM1Data.GetNetEnergies?id=" + id + "&ts=" + nextTs + "&end_ts=" + endTs + "&add_keys=false&period=" + PERIOD);
@@ -75,7 +78,7 @@ public class EM1Manager {
 				int period = energyData.get("period").intValue();
 				JsonNode enArray = energyData.get("values");
 				for(JsonNode valArray: enArray) {
-					data.add(new EnergyData(ts /** 1000L*/, valArray.get(0).floatValue()));
+					data.add(new TimedData(ts /** 1000L*/, valArray.get(0).floatValue()));
 					ts += period;
 
 					System.out.println(data.get(data.size() - 1));
@@ -93,7 +96,7 @@ public class EM1Manager {
 	 * @param FromTs timestamp
 	 * @return
 	 */
-	public List<EnergyData> getFrom(String dataType, long fromTs) { // or array
+	public List<TimedData> getFrom(String dataType, long fromTs) { // or array
 		return null;
 	}
 	
@@ -103,7 +106,7 @@ public class EM1Manager {
 	 * @param FromTs timestamp
 	 * @return
 	 */
-	public List<EnergyData> getNextEnergy(/*String dataType*/) {
+	public List<TimedData> getNextEnergy(/*String dataType*/) {
 		return null;
 	}
 	
@@ -117,8 +120,7 @@ public class EM1Manager {
 	
 	//l.add("(BTHomeSensor.GetConfig [" + s.getId() + "-" + s.getObjId() + "])/rpc/BTHomeSensor.GetCon)fig?id=" + s.getId());
 
-//	public record TimedData(long timestamp, float value) {}
-	public record EnergyData(long timestamp, float ... value) {
+	public record TimedData(long timestamp, float ... value) {
 		@Override
 		public String toString() {
 			return timestamp + "-" + value[0];
@@ -136,3 +138,5 @@ public class EM1Manager {
 //http://192.168.1.200/rpc/EM1Data.GetNetEnergies?id=0&ts=1755788400&add_keys=false&period=3600
 //http://192.168.1.200/rpc/EM1Data.GetNetEnergies?id=0&ts=1755788400&end_ts=1755874800&add_keys=false&period=3600
 //http://192.168.1.200/rpc/EM1Data.GetNetEnergies?id=0&ts=1755788400&end_ts=1752235200&add_keys=false&period=300 - paging (7 days)
+
+//chiamo ogni minuto con l'ultimo ts; quando torna più di un valore avanto all'ultimo ts tornato

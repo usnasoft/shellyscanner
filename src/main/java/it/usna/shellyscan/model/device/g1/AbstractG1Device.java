@@ -34,6 +34,7 @@ import com.fasterxml.jackson.databind.node.NullNode;
 
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.BatteryDeviceInterface;
+import it.usna.shellyscan.model.device.InetAddressAndPort;
 import it.usna.shellyscan.model.device.RestoreMsg;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.g1.modules.Actions;
@@ -58,7 +59,7 @@ public abstract class AbstractG1Device extends ShellyAbstractDevice {
 	private static final Logger LOG = LoggerFactory.getLogger(AbstractG1Device.class);
 
 	protected AbstractG1Device(InetAddress address, int port, String hostname) {
-		super(address, port, hostname);
+		super(new InetAddressAndPort(address, port), hostname);
 	}
 	
 	public void init(HttpClient httpClient, JsonNode shelly) throws IOException {

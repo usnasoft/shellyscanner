@@ -18,8 +18,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.exc.StreamReadException;
 import com.fasterxml.jackson.databind.JsonNode;
 
-import it.usna.shellyscan.model.device.DeviceAPIException;
-import it.usna.shellyscan.model.device.DeviceOfflineException;
+import it.usna.shellyscan.model.DeviceAPIException;
+import it.usna.shellyscan.model.DeviceOfflineException;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.g2.JsonPageIterator;
