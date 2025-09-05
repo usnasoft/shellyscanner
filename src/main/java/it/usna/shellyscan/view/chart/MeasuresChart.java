@@ -355,17 +355,19 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 		EnumSet<ChartType> available = EnumSet.noneOf(ChartType.class);
 		for(int ind: modelIndexes) {
 			final ShellyAbstractDevice d = model.get(ind);
-			boolean powerFound = false;
-			for(Meters ms: d.getMeters()) {
-				for(Meters.Type m: ms.getTypes()) {
-					if(m == Meters.Type.W) {
-						available.add(ChartType.P);
-						if(powerFound) {
-							available.add(ChartType.P_SUM);
+			if(d.getMeters() != null) {
+				boolean powerFound = false;
+				for(Meters ms: d.getMeters()) {
+					for(Meters.Type m: ms.getTypes()) {
+						if(m == Meters.Type.W) {
+							available.add(ChartType.P);
+							if(powerFound) {
+								available.add(ChartType.P_SUM);
+							}
+							powerFound = true;
+						} else if(m != null) {
+							Stream.of(ChartType.values()).filter(t -> m == t.mType).findAny().ifPresent(ct -> available.add(ct));
 						}
-						powerFound = true;
-					} else if(m != null) {
-						Stream.of(ChartType.values()).filter(t -> m == t.mType).findAny().ifPresent(ct -> available.add(ct));
 					}
 				}
 			}
