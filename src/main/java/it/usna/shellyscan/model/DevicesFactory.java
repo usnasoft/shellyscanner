@@ -71,6 +71,7 @@ import it.usna.shellyscan.model.device.g2.ShellyPlusi4;
 import it.usna.shellyscan.model.device.g2.ShellyPro1;
 import it.usna.shellyscan.model.device.g2.ShellyPro1PM;
 import it.usna.shellyscan.model.device.g2.ShellyPro2;
+import it.usna.shellyscan.model.device.g2.ShellyPro2CB;
 import it.usna.shellyscan.model.device.g2.ShellyPro2PM;
 import it.usna.shellyscan.model.device.g2.ShellyPro3;
 import it.usna.shellyscan.model.device.g2.ShellyPro3EM;
@@ -115,6 +116,7 @@ import it.usna.shellyscan.model.device.g4.ShellyG4Unmanaged;
 import it.usna.shellyscan.model.device.g4.ShellyMini1G4;
 import it.usna.shellyscan.model.device.g4.ShellyMini1PMG4;
 import it.usna.shellyscan.model.device.g4.ShellyPowerStrip4G;
+import it.usna.shellyscan.model.device.g4.ShellyPro1PM40G4;
 import it.usna.shellyscan.view.DialogAuthentication;
 
 public class DevicesFactory {
@@ -255,6 +257,13 @@ public class DevicesFactory {
 				case ShellyProEM50.ID -> new ShellyProEM50(address, port, name);
 				case ShellyPro3EM.ID -> new ShellyPro3EM(address, port, name);
 				case ShellyProRGBWW.ID -> new ShellyProRGBWW(address, port, name);
+				case ShellyPro2CB.ID -> {
+					if(ShellyPro2CB.MODEL.equals(info.get("model").asText())) {
+						yield new ShellyPro2CB(address, port, name);
+					} else {
+						yield new ShellyG2Unmanaged(address, port, name);
+					}
+				}
 				default -> new ShellyG2Unmanaged(address, port, name);
 			};
 		} catch(Exception e) { // really unexpected
@@ -342,7 +351,8 @@ public class DevicesFactory {
 			case ShellyMini1PMG4.ID, ShellyMini1PMG4.ID_ZB -> new ShellyMini1PMG4(address, port, name);
 			case ShellyDimmerG4.ID, ShellyDimmerG4.ID_ZB -> new ShellyDimmerG4(address, port, name);
 			case ShellyPowerStrip4G.ID, ShellyPowerStrip4G.ID_ZB -> new ShellyPowerStrip4G(address, port, name);
-
+			// PRO
+			case ShellyPro1PM40G4.ID, ShellyPro1PM40G4.ID_ZB -> new ShellyPro1PM40G4(address, port, name);
 			default -> new ShellyG4Unmanaged(address, port, name);
 			};
 		} catch(Exception e) { // really unexpected

@@ -89,8 +89,8 @@ public class DialogEditBulbRGB extends JDialog {
 		getContentPane().add(modePanel(light), BorderLayout.NORTH);
 		getContentPane().add(panelCard, BorderLayout.CENTER);
 		
-		getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "escape_close");
-		getRootPane().getActionMap().put("escape_close", new AbstractAction() {
+		rootPane.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "escape_close");
+		rootPane.getActionMap().put("escape_close", new AbstractAction() {
 			private static final long serialVersionUID = 1L;
 			@Override
 			public void actionPerformed(ActionEvent e) {

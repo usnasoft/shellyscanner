@@ -29,6 +29,7 @@ public class ShellyMiniPM extends AbstractG2Device {
 
 		meters = new Meters[] {
 				new Meters() {
+					@Override
 					public Type[] getTypes() {
 						return SUPPORTED_MEASURES;
 					}
