@@ -376,10 +376,14 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 			relayLabel = label0;
 			relayLabel.setText(rel.getLabel());
 			button = onOffButton0;
+			button.setForeground(rel.isInputOn() ? BUTTON_ON_FG_COLOR : null);
 		} else {
 			relayLabel = new JLabel(rel.getLabel());
 			button = new JButton();
 			button.setBorder(BUTTON_BORDERS);
+			if(rel.isInputOn()) {
+				button.setForeground(BUTTON_ON_FG_COLOR);
+			}
 		}
 		relayLabel.setForeground(foregroundColor);
 		JPanel relayButtonPanel = new JPanel(new VerticalFlowLayout(VerticalFlowLayout.CENTER, VerticalFlowLayout.CENTER, 0, 0));
@@ -396,7 +400,7 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 			button.setText(LABEL_OFF);
 			button.setBackground(BUTTON_OFF_BG_COLOR);
 		}
-		button.setForeground(rel.isInputOn() ? BUTTON_ON_FG_COLOR : null);
+//		button.setForeground(rel.isInputOn() ? BUTTON_ON_FG_COLOR : null);
 		return relayPanel;
 	}
 	

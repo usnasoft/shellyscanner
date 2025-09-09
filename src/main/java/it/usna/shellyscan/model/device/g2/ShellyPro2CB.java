@@ -101,5 +101,7 @@ public class ShellyPro2CB extends AbstractProDevice implements ModulesHolder, In
 		JsonNode config = backupJsons.get("Shelly.GetConfig.json");
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 		errors.add(breaker.restore(config));
+		
+		errors.add(postCommand("CB.SetConfig", AbstractG2Device.createIndexedRestoreNode(config, "voltmeter", 0)));
 	}
 }

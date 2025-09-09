@@ -14,6 +14,8 @@ import it.usna.shellyscan.model.device.InternalTmpHolder;
 import it.usna.shellyscan.model.device.LabelHolder;
 import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.RestoreMsg;
+import it.usna.shellyscan.model.device.g2.modules.EM1Manager;
+import it.usna.shellyscan.model.device.g2.modules.EMManager;
 
 public class Shelly3EM63 extends AbstractG3Device implements InternalTmpHolder {
 	public static final String ID = "S3EMG3";
@@ -143,6 +145,15 @@ public class Shelly3EM63 extends AbstractG3Device implements InternalTmpHolder {
 		}
 
 		internalTmp = status.path("temperature:0").path("tC").floatValue();
+	}
+	
+	@Override
+	public String[] getInfoRequests() {
+		if(triphase) {
+			return EMManager.getInfoRequests(super.getInfoRequests());
+		} else {
+			return EM1Manager.getInfoRequests(super.getInfoRequests(), 0, 1, 2);
+		}
 	}
 	
 	private class EMMeters extends Meters implements LabelHolder {

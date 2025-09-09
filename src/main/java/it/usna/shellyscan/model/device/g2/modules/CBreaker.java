@@ -5,20 +5,22 @@ import java.util.Arrays;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
+import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
-import it.usna.shellyscan.model.device.modules.DeviceModule;
+import it.usna.shellyscan.model.device.modules.RelayInterface;
 
 /**
  * Circuit Breaker model
  */
-public class CBreaker implements DeviceModule {
+// todo specific renderer (and, if later useful, interface) with "isLocked" evidence; removal of "isInputOn"
+public class CBreaker implements /*DeviceModule*/RelayInterface {
 	private final AbstractG2Device parent;
 	private String name;
 	private boolean isOn;
 	private boolean isLocked;
 	private String source;
 	
-	public CBreaker(AbstractG2Device parent) { // will became an interface
+	public CBreaker(AbstractG2Device parent) {
 		this.parent = parent;
 	}
 	
@@ -41,13 +43,18 @@ public class CBreaker implements DeviceModule {
 		return name;
 	}
 
+	// output: only accepts false, otherwise an error is returned. The breaker lever can not be engaged remotely!
 	public boolean toggle() throws IOException {
-		//todo
-		return false;
+		change(! isOn);
+		return isOn;
 	}
 
+	// output: only accepts false, otherwise an error is returned. The breaker lever can not be engaged remotely!
 	public void change(boolean on) throws IOException {
-		//todo
+		if(parent.postCommand("CB.Set", "{\"id\":0,\"output\":" + on + "}") == null) {
+			isOn = on;
+			source = Devices.SCANNER_AGENT;
+		}
 	}
 
 	public boolean isOn() {
@@ -61,6 +68,12 @@ public class CBreaker implements DeviceModule {
 
 	public boolean isLocked() {
 		return isLocked;
+	}
+	
+	// to be removed on RelayInterface removal (?)
+	@Override
+	public boolean isInputOn() {
+		return false;
 	}
 	
 	public static String[] getInfoRequests(String [] cmd) {
