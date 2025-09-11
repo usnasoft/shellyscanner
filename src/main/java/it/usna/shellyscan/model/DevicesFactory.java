@@ -116,7 +116,6 @@ import it.usna.shellyscan.model.device.g4.ShellyG4Unmanaged;
 import it.usna.shellyscan.model.device.g4.ShellyMini1G4;
 import it.usna.shellyscan.model.device.g4.ShellyMini1PMG4;
 import it.usna.shellyscan.model.device.g4.ShellyPowerStrip4G;
-import it.usna.shellyscan.model.device.g4.ShellyPro1PM40G4;
 import it.usna.shellyscan.view.DialogAuthentication;
 
 public class DevicesFactory {
@@ -352,7 +351,7 @@ public class DevicesFactory {
 			case ShellyDimmerG4.ID, ShellyDimmerG4.ID_ZB -> new ShellyDimmerG4(address, port, name);
 			case ShellyPowerStrip4G.ID, ShellyPowerStrip4G.ID_ZB -> new ShellyPowerStrip4G(address, port, name);
 			// PRO
-			case ShellyPro1PM40G4.ID, ShellyPro1PM40G4.ID_ZB -> new ShellyPro1PM40G4(address, port, name);
+
 			default -> new ShellyG4Unmanaged(address, port, name);
 			};
 		} catch(Exception e) { // really unexpected
