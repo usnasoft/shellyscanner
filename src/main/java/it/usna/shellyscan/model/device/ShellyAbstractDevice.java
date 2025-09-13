@@ -1,18 +1,17 @@
 package it.usna.shellyscan.model.device;
 
-import java.io.BufferedWriter;
 import java.io.IOException;
 import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.SocketTimeoutException;
-import java.nio.file.FileSystem;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import org.eclipse.jetty.client.ContentResponse;
 import org.eclipse.jetty.client.HttpClient;
@@ -20,6 +19,7 @@ import org.eclipse.jetty.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -85,6 +85,7 @@ public abstract class ShellyAbstractDevice {
 		} else {
 			this.uriPrefix = "http://" + addressAndPort.getRepresentation();
 		}
+		jsonMapper.disable(JsonGenerator.Feature.AUTO_CLOSE_TARGET); // need this for backup
 	}
 	
 	public JsonNode getJSON(final String command) throws IOException { //JsonProcessingException extends IOException
@@ -263,23 +264,29 @@ public abstract class ShellyAbstractDevice {
 	 * Backup basic operation
 	 * @param section call whose returned json must be stored
 	 * @param entryName ZipEntry name
-	 * @param fs FileSystem
+	 * @param fs ZipOutputStream
 	 * @throws IOException on error or response.getStatus() != HttpStatus.OK_200
 	 */
-	protected JsonNode sectionToStream(String section, String entryName, FileSystem fs) throws IOException {
-		try(BufferedWriter writer = Files.newBufferedWriter(fs.getPath(entryName))) {
+	protected JsonNode sectionToStream(String section, String entryName, ZipOutputStream out) throws IOException {
+		try {
 			JsonNode resp = getJSON(section);
-			jsonMapper.writer().writeValue(writer, resp);
+			ZipEntry entry = new ZipEntry(entryName);
+			out.putNextEntry(entry);
+			jsonMapper.writer().writeValue(out, resp);
+			out.closeEntry();
 			return resp;
-		} catch (Exception e) {
+		} catch (RuntimeException e) {
 			LOG.debug("sectionToStream {}", section, e);
 			throw new DeviceOfflineException(e);
 		}
 	}
 	
 	// to be used with "offset"; data will be merged on a single file (gen2+)
-	protected JsonNode sectionToStream(final String section, final String arrayKey, final String entryName, FileSystem fs) throws IOException {
-		try(BufferedWriter writer = Files.newBufferedWriter(fs.getPath(entryName))) {
+	protected JsonNode sectionToStream(final String section, final String arrayKey, final String entryName, ZipOutputStream out) throws IOException {
+		try {
+			ZipEntry entry = new ZipEntry(entryName);
+			out.putNextEntry(entry);
+			
 			String req = section;
 			int offset = 0;
 			int tot = 0;
@@ -298,7 +305,7 @@ public abstract class ShellyAbstractDevice {
 					req = section + ((section.contains("?")) ? "&offset=" : "?offset=") + offset;
 				}
 			} while(tot > offset);
-			jsonMapper.writer().writeValue(writer, resp);
+			jsonMapper.writer().writeValue(out, resp);
 			return resp;
 		} catch (InterruptedException e) {
 			LOG.debug("sectionToStream {}-{}", section, arrayKey, e);

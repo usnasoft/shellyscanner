@@ -38,7 +38,7 @@ public class Main {
 		System.setProperty("apple.eawt.quitStrategy", "CLOSE_ALL_WINDOWS"); // macOS specific - cmd-Q / -Dapple.eawt.quitStrategy=CLOSE_ALL_WINDOWS
 	}
 	public static final String APP_NAME = "Shelly Scanner";
-	public static final String VERSION = "1.3.0 alpha";
+	public static final String VERSION = "1.3.0 alpha2";
 	public static final String VERSION_CODE = "001.003.000r001"; // r0xx alpha; r1xx beta; r2xx stable
 	public static final Image ICON = Toolkit.getDefaultToolkit().createImage(Main.class.getResource("/images/ShSc24.png"));
 	public static final String BACKUP_FILE_EXT = "sbk";
@@ -183,7 +183,8 @@ public class Main {
 		// Activate dynamic model - Go interactive
 		try {
 			UsnaSwingUtils.setLookAndFeel(UsnaSwingUtils.LF_NIMBUS);
-//			UIManager.getLookAndFeelDefaults().put("Table:\"Table.cellRenderer\".alternateRowColor", TAB_LINE2_COLOR); // genera strani log
+			UsnaSwingUtils.macOddities();
+			//UIManager.getLookAndFeelDefaults().put("Table:\"Table.cellRenderer\".alternateRowColor", TAB_LINE2_COLOR); // genera strani log
 		} catch (Exception e) {
 			Msg.errorMsg(null, e);
 		}

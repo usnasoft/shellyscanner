@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.InternalTmpHolder;
@@ -138,9 +139,16 @@ public class ShellyProEM50 extends AbstractProDevice implements ModulesHolder, I
 	@Override
 	public String[] getInfoRequests() {
 //		try {
+//			int end = (int)((System.currentTimeMillis()/1000) / 60) * 60;
+//			int start = end - (3600 * 2 * 1); // 2h back
+//			new EM1Manager(this, 0).getData(/*EM1Manager.ACT_ENERGY,*/ start, end);
+//		} catch (IOException e) {
+//			e.printStackTrace();
+//		}
+//		try {
 //			int end = (int)((System.currentTimeMillis()/1000) / 3600) * 3600;
 //			int start = end - (3600 * 24 * 1);
-//			new EM1Manager(this, 0).getEnergy(/*EM1Manager.ACT_ENERGY,*/ start, end);
+//			new EM1Manager(this, 0).getEnergy(start, end);
 //		} catch (IOException e) {
 //			e.printStackTrace();
 //		}
@@ -152,10 +160,14 @@ public class ShellyProEM50 extends AbstractProDevice implements ModulesHolder, I
 		JsonNode config = backupJsons.get("Shelly.GetConfig.json");
 		errors.add(relay.restore(config));
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-		
-		errors.add(postCommand("EM1.SetConfig", createIndexedRestoreNode(config, "em1", 0)));
+
+		ObjectNode conf = createIndexedRestoreNode(config, "em1", 0);
+		((ObjectNode)conf.get("config")).remove("ct_type");
+		errors.add(postCommand("EM1.SetConfig", conf));
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-		errors.add(postCommand("EM1.SetConfig", createIndexedRestoreNode(config, "em1", 1)));
+		conf = createIndexedRestoreNode(config, "em1", 1);
+		((ObjectNode)conf.get("config")).remove("ct_type");
+		errors.add(postCommand("EM1.SetConfig", conf));
 	}
 
 	@Override

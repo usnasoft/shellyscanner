@@ -375,13 +375,14 @@ virtual components paging - it.usna.shellyscan.model.device.blu.BTHomeDevice.ref
 BLU Distance/Remote/button zb/h&t zb
 Dimmer G4
 Power Strip
+MacOS cmd-C, cmd-V, cmd-X
 column sorting, e.g. to sort FW versions or device names (Krzysztof Ce)
 fw update multiselection and buttons working on selection (if lenght > 1)
 Enable RPC over MQTT - Enable 'MQTT Control' parametes (gen2+)
 various fix on scheduler editor
 
 // TODO
-CB
+CB (?)
 Enegy (EM)
 It would also be nice to add dynamic filters that show, for example, only enabled devices or disabled devices on the main view (?)
 

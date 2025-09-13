@@ -1,11 +1,8 @@
 package it.usna.shellyscan.model.device.blu;
 
-import java.io.BufferedWriter;
+import java.io.FileOutputStream;
 import java.io.IOException;
-import java.net.URI;
-import java.nio.file.FileSystem;
-import java.nio.file.FileSystems;
-import java.nio.file.Files;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -17,6 +14,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import org.eclipse.jetty.client.HttpClient;
 import org.slf4j.Logger;
@@ -225,14 +224,14 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 		usnaData.put("index", componentIndex);
 		usnaData.put("type", typeID);
 		usnaData.put("mac", mac);
-		Files.deleteIfExists(file);
-		try(FileSystem fs = FileSystems.newFileSystem(URI.create("jar:" + file.toUri()), Map.of("create", "true"));
-			BufferedWriter writer = Files.newBufferedWriter(fs.getPath("ShellyScannerBLU.json"))) {
-			jsonMapper.writer().writeValue(writer, usnaData);
+		try(ZipOutputStream out = new ZipOutputStream(new FileOutputStream(file.toFile()), StandardCharsets.UTF_8)) {
+			ZipEntry entry = new ZipEntry("ShellyScannerBLU.json");
+			out.putNextEntry(entry);
+			jsonMapper.writer().writeValue(out, usnaData);
 
-			sectionToStream("/rpc/Shelly.GetComponents?dynamic_only=true", "components", "Shelly.GetComponents.json", fs); // "status" is used for groups
+			sectionToStream("/rpc/Shelly.GetComponents?dynamic_only=true", "components", "Shelly.GetComponents.json", out); // "status" is used for groups
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-			sectionToStream("/rpc/Webhook.List", "Webhook.List.json", fs);
+			sectionToStream("/rpc/Webhook.List", "Webhook.List.json", out);
 		} catch(InterruptedException e) {
 			LOG.error("backup", e);
 		}
@@ -290,9 +289,9 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 					errors.add(parent.postCommand("BTHomeDevice.SetConfig", out));
 					fileAddr = fileComp.at("/config/addr").textValue();
 					
-					// todo /attrs/flags ? Valuable values here?
+					// /attrs/flags ? Valuable values here?
 
-					Webhooks.delete(parent, DynamicComponents.BTHOME_DEVICE, currentComponentIndex, Devices.MULTI_QUERY_DELAY);//					Webhooks.restore(parent, DEVICE_KEY_PREFIX + fileComponentIndex, DEVICE_KEY_PREFIX + componentIndex, Devices.MULTI_QUERY_DELAY, storedWebHooks, errors);
+					Webhooks.delete(parent, DynamicComponents.BTHOME_DEVICE, currentComponentIndex, Devices.MULTI_QUERY_DELAY); // Webhooks.restore(parent, DEVICE_KEY_PREFIX + fileComponentIndex, DEVICE_KEY_PREFIX + componentIndex, Devices.MULTI_QUERY_DELAY, storedWebHooks, errors);
 					Webhooks.restore(parent, DynamicComponents.BTHOME_DEVICE, Integer.parseInt(fileComponentIndex), currentComponentIndex, storedWebHooks, Devices.MULTI_QUERY_DELAY, errors);
 					
 					break;

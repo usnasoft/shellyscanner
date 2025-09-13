@@ -47,8 +47,7 @@ public class DynamicComponents {
 	 */
 	private static List<String> deleteAll(AbstractG2Device parent) throws IOException, InterruptedException {
 		final List<String> devicesAddress = new ArrayList<>();
-		final JsonNode currenteComponents = parent.getJSON("/rpc/Shelly.GetComponents?dynamic_only=true&include=[%22config%22]").path("components");
-		final Iterator<JsonNode> compIt = currenteComponents.iterator();
+		Iterator<JsonNode> compIt = parent.getJSONIterator("/rpc/Shelly.GetComponents?dynamic_only=true&include=[%22config%22]", "components");
 		while (compIt.hasNext()) {
 			JsonNode comp = compIt.next();
 			String key = comp.get("key").asText();

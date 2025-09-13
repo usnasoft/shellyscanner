@@ -1,16 +1,15 @@
 package it.usna.shellyscan.model.device.g3;
 
-import java.io.BufferedWriter;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.InetAddress;
-import java.net.URI;
-import java.nio.file.FileSystem;
-import java.nio.file.FileSystems;
-import java.nio.file.Files;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.websocket.client.WebSocketClient;
@@ -87,34 +86,35 @@ public abstract class AbstractBatteryG3Device extends AbstractG3Device implement
 	 * No scripts, No Schedule
 	 */
 	public boolean backup(final Path file) throws IOException {
-		Files.deleteIfExists(file);
-		try(FileSystem fs = FileSystems.newFileSystem(URI.create("jar:" + file.toUri()), Map.of("create", "true"))) {
-			sectionToStream("/rpc/Shelly.GetDeviceInfo", "Shelly.GetDeviceInfo.json", fs);
+		//try(FileSystem fs = FileSystems.newFileSystem(URI.create("jar:" + file.toUri()), Map.of("create", "true"))) {
+		try(ZipOutputStream out = new ZipOutputStream(new FileOutputStream(file.toFile()), StandardCharsets.UTF_8)) {
+			sectionToStream("/rpc/Shelly.GetDeviceInfo", "Shelly.GetDeviceInfo.json", out);
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-			sectionToStream("/rpc/Shelly.GetConfig", "Shelly.GetConfig.json", fs);
+			sectionToStream("/rpc/Shelly.GetConfig", "Shelly.GetConfig.json", out);
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-			sectionToStream("/rpc/Webhook.List", "Webhook.List.json", fs);
+			sectionToStream("/rpc/Webhook.List", "Webhook.List.json", out);
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			try {
-				sectionToStream("/rpc/KVS.GetMany", "items", "KVS.GetMany.json", fs);
+				sectionToStream("/rpc/KVS.GetMany", "items", "KVS.GetMany.json", out);
 			} catch(Exception e) {/* some model do not support KVS */}
 		} catch(InterruptedException e) {
 			LOG.error("backup", e);
 		} catch(Exception e) {
-			if(getStatus() != Status.ON_LINE && getStoredJSON("/rpc/Shelly.GetDeviceInfo") != null && getStoredJSON("/rpc/Shelly.GetConfig") != null && getStoredJSON("/rpc/Webhook.List") != null && getStoredJSON("/rpc/KVS.GetMany") != null) {
-				try(FileSystem fs = FileSystems.newFileSystem(URI.create("jar:" + file.toUri()), Map.of("create", "true"))) {
-					try(BufferedWriter writer = Files.newBufferedWriter(fs.getPath("Shelly.GetDeviceInfo.json"))) {
-						jsonMapper.writer().writeValue(writer, getStoredJSON("/rpc/Shelly.GetDeviceInfo"));
-					}
-					try(BufferedWriter writer = Files.newBufferedWriter(fs.getPath("Shelly.GetConfig.json"))) {
-						jsonMapper.writer().writeValue(writer, getStoredJSON("/rpc/Shelly.GetConfig"));
-					}
-					try(BufferedWriter writer = Files.newBufferedWriter(fs.getPath("Webhook.List.json"))) {
-						jsonMapper.writer().writeValue(writer, getStoredJSON("/rpc/Webhook.List"));
-					}
-					try(BufferedWriter writer = Files.newBufferedWriter(fs.getPath("KVS.GetMany.json"))) {
-						jsonMapper.writer().writeValue(writer, getStoredJSON("/rpc/KVS.GetMany"));
-					}
+			if(getStatus() != Status.ON_LINE &&
+					getStoredJSON("/rpc/Shelly.GetDeviceInfo") != null && getStoredJSON("/rpc/Shelly.GetConfig") != null && getStoredJSON("/rpc/Webhook.List") != null && getStoredJSON("/rpc/KVS.GetMany") != null) {
+				try(ZipOutputStream out = new ZipOutputStream(new FileOutputStream(file.toFile()), StandardCharsets.UTF_8)) {
+					out.putNextEntry(new ZipEntry("Shelly.GetDeviceInfo.json"));
+					jsonMapper.writer().writeValue(out, getStoredJSON("/rpc/Shelly.GetDeviceInfo"));
+					out.closeEntry();
+					out.putNextEntry(new ZipEntry("Shelly.GetConfig.json"));
+					jsonMapper.writer().writeValue(out, getStoredJSON("/rpc/Shelly.GetConfig"));
+					out.closeEntry();
+					out.putNextEntry(new ZipEntry("Webhook.List.json"));
+					jsonMapper.writer().writeValue(out, getStoredJSON("/rpc/Webhook.List"));
+					out.closeEntry();
+					out.putNextEntry(new ZipEntry("KVS.GetMany.json"));
+					jsonMapper.writer().writeValue(out, getStoredJSON("/rpc/KVS.GetMany"));
+					out.closeEntry();
 				} catch(IOException ex) {
 					LOG.error("backup battery {}", e, ex);
 				}
