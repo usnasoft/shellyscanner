@@ -97,9 +97,9 @@ public abstract class Meters implements Comparable<Meters> {
 		Type[] t = getTypes();
 		if(t.length > 0) {
 			StringBuilder res = new StringBuilder(t[0].toString());
-			res.append("=").append(NF1.format(getValue(t[0])));
+			res.append('=').append(NF1.format(getValue(t[0])));
 			for(int i = 1; i < t.length; i++) {
-				res.append(" ").append(t[i].toString()).append("=").append(NF1.format(getValue(t[i])));
+				res.append(' ').append(t[i].toString()).append('=').append(NF1.format(getValue(t[i])));
 			}
 			return res.toString();
 		} else {

@@ -22,21 +22,26 @@ public class LightCCT implements CCTInterface {
 	private String source;
 	private boolean inputIsOn;
 	private final int minBrightness;
-	private int mintemperature = 2700;
-	private int maxtemperature = 6500;
+	private int minTemperature = 2700;
+	private int maxTemperature = 6500;
+	private final boolean fixRange;
 	
 	public LightCCT(AbstractG2Device parent, int index) {
 		this.parent = parent;
 		this.index = index;
 		this.minBrightness = 0;
+		this.fixRange = false;
 	}
 	
-	public LightCCT(AbstractG2Device parent, int minBrightness, int index) {
+	public LightCCT(AbstractG2Device parent, int minTemperature, int maxTemperature, int index) {
 		this.parent = parent;
 		this.index = index;
-		this.minBrightness = minBrightness;
+		this.minBrightness = 0;
+		this.minTemperature = minTemperature;
+		this.maxTemperature = maxTemperature;
+		this.fixRange = true;
 	}
-	
+
 	@Override
 	public int getMinBrightness() {
 		return minBrightness;
@@ -44,9 +49,11 @@ public class LightCCT implements CCTInterface {
 
 	public void fillSettings(JsonNode settingsCt) {
 		name = settingsCt.get("name").asText("");
-		final JsonNode ctRange = settingsCt.get("ct_range");
-		mintemperature = ctRange.get(0).asInt();
-		maxtemperature = ctRange.get(1).asInt();
+		if(fixRange == false) {
+			final JsonNode ctRange = settingsCt.get("ct_range");
+			minTemperature = ctRange.get(0).asInt();
+			maxTemperature = ctRange.get(1).asInt();
+		}
 	}
 	
 	public void fillStatus(JsonNode statusCt) {
@@ -115,12 +122,12 @@ public class LightCCT implements CCTInterface {
 	
 	@Override
 	public int getMinTemperature() {
-		return mintemperature;
+		return minTemperature;
 	}
 	
 	@Override
 	public int getMaxTemperature() {
-		return maxtemperature;
+		return maxTemperature;
 	}
 	
 	@Override

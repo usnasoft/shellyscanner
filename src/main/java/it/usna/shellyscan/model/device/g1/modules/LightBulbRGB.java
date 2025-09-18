@@ -9,13 +9,12 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.g1.AbstractG1Device;
-import it.usna.shellyscan.model.device.modules.CCTInterface;
-import it.usna.shellyscan.model.device.modules.RGBInterface;
+import it.usna.shellyscan.model.device.modules.RGBCCTBulbInterface;
 
 /**
  * Used by RGBW Bulbs
  */
-public class LightBulbRGB implements CCTInterface, RGBInterface {
+public class LightBulbRGB implements RGBCCTBulbInterface {
 	private final AbstractG1Device parent;
 	private final int index;
 	private String name = "";
@@ -36,7 +35,7 @@ public class LightBulbRGB implements CCTInterface, RGBInterface {
 		this.parent = parent;
 		this.index = index;
 	}
-	
+
 	public void fillSettings(JsonNode settingslight) {
 		name = settingslight.path("name").asText("");
 	}
@@ -105,6 +104,11 @@ public class LightBulbRGB implements CCTInterface, RGBInterface {
 	public int getMinTemperature() {
 		return MIN_TEMP;
 	}
+	
+	@Override
+	public int getMaxTemperature() {
+		return MAX_TEMP;
+	}
 
 	@Override
 	public boolean isInputOn() {
@@ -116,10 +120,12 @@ public class LightBulbRGB implements CCTInterface, RGBInterface {
 		return parent;
 	}
 	
+	@Override
 	public boolean isColorMode() {
 		return modeColor;
 	}
 	
+	@Override
 	public void setColorMode(boolean color) throws IOException {
 //		final JsonNode status = parent.getJSON("/light/" + index + "?mode=" + (color ? "color" : "white"));
 //		refresh(status);
@@ -134,6 +140,7 @@ public class LightBulbRGB implements CCTInterface, RGBInterface {
 		fillStatus(status);
 	}
 	
+	@Override
 	public void setGain(int b) throws IOException {
 		final JsonNode status = parent.getJSON("/light/" + index + "?gain=" + b);
 		fillStatus(status);

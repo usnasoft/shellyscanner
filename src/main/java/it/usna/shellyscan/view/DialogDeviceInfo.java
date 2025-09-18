@@ -25,6 +25,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
+import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
@@ -96,12 +97,6 @@ public class DialogDeviceInfo extends JDialog implements UsnaEventListener<Devic
 		jButtonFind.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_F, MainView.SHORTCUT_KEY), "find_act");
 		jButtonFind.getActionMap().put("find_act", findAction);
 
-//		final Action topAction = new UsnaAction(e -> ta.get().setCaretPosition(0));
-//		getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).remove(KeyStroke.getKeyStroke(KeyEvent.VK_HOME, 0));
-//		getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_HOME, 0), "top_act");
-//		getRootPane().getActionMap().put(DefaultEditorKit.beginLineAction, topAction);
-//		getRootPane().getActionMap().put(DefaultEditorKit.beginAction, topAction);
-
 		JButton jButtonCopyAll = new JButton(new UsnaAction("btnCopyAll", e -> {
 			final String cpy = ta.get().getText();
 			if (cpy != null && cpy.isEmpty() == false) {
@@ -159,6 +154,9 @@ public class DialogDeviceInfo extends JDialog implements UsnaEventListener<Devic
 		StyleConstants.setForeground(temporaryStyle, Color.BLUE);
 		textPane.setEditable(false);
 		textPane.addCaretListener(e -> markDelimiters(e.getDot(), textPane, curlyStyle));
+		
+		textPane.getActionMap().put(DefaultEditorKit.beginLineAction, new UsnaAction(e -> textPane.setCaretPosition(0)));
+		textPane.getActionMap().put(DefaultEditorKit.endLineAction, new UsnaAction(e -> textPane.setCaretPosition(textPane.getDocument().getLength())));
 
 		final ObjectWriter writer = new ObjectMapper().writerWithDefaultPrettyPrinter();
 		JsonNode storedVal;
