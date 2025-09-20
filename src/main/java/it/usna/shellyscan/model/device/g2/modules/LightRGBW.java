@@ -137,10 +137,10 @@ public class LightRGBW implements RGBWInterface {
 		return parent.postCommand("RGBW.SetConfig", AbstractG2Device.createIndexedRestoreNode(config, "rgbw", index));
 	}
 	
-	@Override
-	public AbstractG2Device getParent() {
-		return parent;
-	}
+//	@Override
+//	public AbstractG2Device getParent() {
+//		return parent;
+//	}
 	
 	@Override
 	public String toString() {

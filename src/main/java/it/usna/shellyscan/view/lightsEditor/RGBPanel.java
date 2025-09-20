@@ -80,7 +80,7 @@ public class RGBPanel extends LightPanel {
 			}
 		};
 
-		JPanel switchPanel = new JPanel(new BorderLayout(10, 0));
+		JPanel switchPanel = new JPanel(new BorderLayout(20, 0));
 		switchPanel.setOpaque(false);
 		switchPanel.add(labelGain, BorderLayout.NORTH);
 		switchAction = new UsnaToggleAction(null, "/images/Standby24.png", "/images/StandbyOn24.png", e -> {
@@ -109,21 +109,21 @@ public class RGBPanel extends LightPanel {
 			}
 		});
 		this.add(switchPanel);
-		JPanel redPanel = new JPanel(new BorderLayout(10, 0));
+		JPanel redPanel = new JPanel(new BorderLayout(20, 0));
 		redPanel.setOpaque(false);
 		redPanel.add(labelRed, BorderLayout.NORTH);
 		redPanel.add(sliderRed, BorderLayout.CENTER);
 		redPanel.add(Box.createHorizontalStrut(DialogEditLights.offImg.getIconWidth()), BorderLayout.EAST);
 		this.add(redPanel);
 
-		JPanel greenPanel = new JPanel(new BorderLayout(10, 0));
+		JPanel greenPanel = new JPanel(new BorderLayout(20, 0));
 		greenPanel.setOpaque(false);
 		greenPanel.add(labelGreen, BorderLayout.NORTH);
 		greenPanel.add(sliderGreen, BorderLayout.CENTER);
 		greenPanel.add(Box.createHorizontalStrut(DialogEditLights.offImg.getIconWidth()), BorderLayout.EAST);
 		this.add(greenPanel);
 
-		JPanel bluePanel = new JPanel(new BorderLayout(10, 0));
+		JPanel bluePanel = new JPanel(new BorderLayout(20, 0));
 		bluePanel.setOpaque(false);
 		bluePanel.add(labelBlue, BorderLayout.NORTH);
 		bluePanel.add(sliderBlue, BorderLayout.CENTER);
@@ -230,7 +230,7 @@ public class RGBPanel extends LightPanel {
 		adjust();
 	}
 
-	private void adjust() {
+	void adjust() {
 		sliderRed.removeChangeListener(rgbSliderListener);
 		sliderGreen.removeChangeListener(rgbSliderListener);
 		sliderBlue.removeChangeListener(rgbSliderListener);

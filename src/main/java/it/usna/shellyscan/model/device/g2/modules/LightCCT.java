@@ -47,20 +47,20 @@ public class LightCCT implements CCTInterface {
 		return minBrightness;
 	}
 
-	public void fillSettings(JsonNode settingsCt) {
-		name = settingsCt.get("name").asText("");
+	public void fillSettings(JsonNode configCCT) {
+		name = configCCT.get("name").asText("");
 		if(fixRange == false) {
-			final JsonNode ctRange = settingsCt.get("ct_range");
+			final JsonNode ctRange = configCCT.get("ct_range");
 			minTemperature = ctRange.get(0).asInt();
 			maxTemperature = ctRange.get(1).asInt();
 		}
 	}
 	
-	public void fillStatus(JsonNode statusCt) {
-		isOn = statusCt.get("output").asBoolean();
-		brightness = statusCt.get("brightness").intValue();
-		temperature = statusCt.get("ct").intValue();
-		source = statusCt.get("source").asText("-");
+	public void fillStatus(JsonNode statusCCT) {
+		isOn = statusCCT.get("output").asBoolean();
+		brightness = statusCCT.get("brightness").intValue();
+		temperature = statusCCT.get("ct").intValue();
+		source = statusCCT.get("source").asText("-");
 	}
 	
 	public void fillStatus(JsonNode statusCt, JsonNode input) {
@@ -107,7 +107,6 @@ public class LightCCT implements CCTInterface {
 	public int getBrightness() {
 		return brightness;
 	}
-	
 
 	@Override
 	public void setTemperature(int ct) throws IOException {
@@ -144,10 +143,10 @@ public class LightCCT implements CCTInterface {
 		return (name == null || name.isEmpty()) ? parent.getName() : name;
 	}
 	
-	@Override
-	public AbstractG2Device getParent() {
-		return parent;
-	}
+//	@Override
+//	public AbstractG2Device getParent() {
+//		return parent;
+//	}
 	
 	@Override
 	public String toString() {

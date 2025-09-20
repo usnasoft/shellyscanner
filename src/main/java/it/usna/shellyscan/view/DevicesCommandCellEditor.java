@@ -28,11 +28,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import it.usna.shellyscan.model.device.blu.AbstractBluDevice;
-import it.usna.shellyscan.model.device.g1.modules.LightBulbRGB;
 import it.usna.shellyscan.model.device.g1.modules.ThermostatG1;
 import it.usna.shellyscan.model.device.modules.CCTInterface;
 import it.usna.shellyscan.model.device.modules.DeviceModule;
 import it.usna.shellyscan.model.device.modules.InputInterface;
+import it.usna.shellyscan.model.device.modules.RGBCCTInterface;
 import it.usna.shellyscan.model.device.modules.RGBInterface;
 import it.usna.shellyscan.model.device.modules.RGBWInterface;
 import it.usna.shellyscan.model.device.modules.RelayInterface;
@@ -41,7 +41,6 @@ import it.usna.shellyscan.model.device.modules.ThermostatInterface;
 import it.usna.shellyscan.model.device.modules.WhiteInterface;
 import it.usna.shellyscan.view.lightsEditor.DialogEditLights;
 import it.usna.shellyscan.view.util.Msg;
-import it.usna.shellyscan.view.util.UtilMiscellaneous;
 import it.usna.swing.VerticalFlowLayout;
 
 public class DevicesCommandCellEditor extends AbstractCellEditor implements TableCellEditor {
@@ -52,7 +51,7 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 	// Generic
 	private JButton editDialogButton = new JButton(DevicesCommandCellRenderer.EDIT_IMG);
 
-	// RGBW Bulbs
+	// RGB/CCT Bulbs
 	private JLabel lightRGBBulbLabel = new JLabel();
 	private JPanel lightRGBBulbPanel = new JPanel(new BorderLayout());
 	private JButton lightRGBBulbButton = new JButton();
@@ -101,31 +100,23 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 		editDialogButton.setBorder(BorderFactory.createEmptyBorder(0, 3, 0, 3));
 		editDialogButton.setContentAreaFilled(false);
 		editDialogButton.addActionListener(e -> {
-			final Window win = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusedWindow();
-			win.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-			if(/*edited != null &&*/ edited instanceof DeviceModule[] modules) {
-				final String title;
-				if(modules[0] instanceof WhiteInterface w) {
-					title = UtilMiscellaneous.getDescName(w.getParent());
-				} else if(modules[0] instanceof RGBInterface rgb) {
-					title = UtilMiscellaneous.getDescName(rgb.getParent());
-				} else {
-					title = modules[0].getLabel();
-				}
-				new DialogEditLights(win, title, modules);
+			if(edited instanceof DeviceModule[] modules) {
+				final Window win = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusedWindow();
+				win.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+				new DialogEditLights(win, modules);
+				win.setCursor(Cursor.getDefaultCursor());
 			}
 			cancelCellEditing();
-			win.setCursor(Cursor.getDefaultCursor());
 		});
 		
-		// RGBW Bulbs
+		// RGB/CCT Bulbs
 		lightRGBBulbPanel.setBackground(selBackground);
 		lightRGBBulbLabel.setForeground(selForeground);
 		lightRGBBulbPanel.add(lightRGBBulbLabel, BorderLayout.CENTER);
 		lightRGBBulbPanel.add(lightRGBBulbButton, BorderLayout.EAST);
 		lightRGBBulbButton.setBorder(DevicesCommandCellRenderer.BUTTON_BORDERS);
 		lightRGBBulbButton.addActionListener(e -> {
-			if(edited instanceof LightBulbRGB[] bulbs) {
+			if(edited instanceof RGBCCTInterface[] bulbs) {
 				try {
 					bulbs[0].toggle();
 				} catch (IOException ex) {
@@ -142,18 +133,18 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 		lightEditRGBBulbButton.setBorder(BorderFactory.createEmptyBorder(0, 3, 0, 3));
 		lightEditRGBBulbButton.setContentAreaFilled(false);
 		lightEditRGBBulbButton.addActionListener(e -> {
-			if(edited instanceof LightBulbRGB[] bulbs) {
+			if(edited instanceof RGBCCTInterface[] bulbs) {
 				final Window win = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusedWindow();
 				win.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-				new DialogEditBulbRGB(win, bulbs[0]);
+				new DialogEditLights(win, bulbs);
 				cancelCellEditing();
 				win.setCursor(Cursor.getDefaultCursor());
 			}
 		});
 		lightRGBBulbSouthPanel.add(lightEditRGBBulbButton, BorderLayout.EAST);
 		lightRGBBulbBrightness.addChangeListener(e -> {
-			if(/*edited != null &&*/ edited instanceof LightBulbRGB[] bulbs) {
-				LightBulbRGB light = bulbs[0];
+			if(edited instanceof RGBCCTInterface[] bulbs) {
+				RGBCCTInterface light = bulbs[0];
 				if(lightRGBBulbBrightness.getValueIsAdjusting()) {
 					lightRGBBulbLabel.setText(light.getLabel() + " " + lightRGBBulbBrightness.getValue() + "%");
 				} else {
@@ -274,7 +265,7 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 			if(edited instanceof RGBWInterface[] rgbws) {
 				final Window win = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusedWindow();
 				win.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-				new DialogEditLights(win, UtilMiscellaneous.getDescName(rgbws[0].getParent()), rgbws);
+				new DialogEditLights(win, rgbws);
 				cancelCellEditing();
 				win.setCursor(Cursor.getDefaultCursor());
 			}
@@ -436,8 +427,8 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 			}
 			edited = rollersArray;
 			return stackedPanel;
-		} else if(value instanceof LightBulbRGB[] bulbsArray) { // RGBW Bulbs
-			return getLightRGBWPanel(bulbsArray);
+		} else if(value instanceof RGBCCTInterface[] bulbsArray) { // RGB/CCT Bulbs
+			return getRGBCCTPanel(bulbsArray);
 		} else if(value instanceof RGBWInterface[] rgbws) {
 			return getRGBWColorPanel(rgbws);
 		} else if(value instanceof RGBInterface[] rgbs) {
@@ -588,8 +579,8 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 		return rollerPanel;
 	}
 	
-	private Component getLightRGBWPanel(LightBulbRGB[] lights) {
-		LightBulbRGB light = lights[0]; // multiple bulbs devices currently not supported
+	private Component getRGBCCTPanel(RGBCCTInterface[] lights) {
+		RGBCCTInterface light = lights[0]; // multiple bulbs devices currently not supported
 		final int slider = light.isColorMode() ? light.getGain() : light.getBrightness();
 		lightRGBBulbLabel.setText(light.getLabel() + " " + slider + "%");
 		lightRGBBulbBrightness.setValue(slider);

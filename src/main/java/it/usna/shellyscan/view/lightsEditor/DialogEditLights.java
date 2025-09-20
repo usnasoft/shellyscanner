@@ -30,6 +30,7 @@ import it.usna.shellyscan.Main;
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.modules.CCTInterface;
 import it.usna.shellyscan.model.device.modules.DeviceModule;
+import it.usna.shellyscan.model.device.modules.RGBCCTInterface;
 import it.usna.shellyscan.model.device.modules.RGBInterface;
 import it.usna.shellyscan.model.device.modules.WhiteInterface;
 import it.usna.swing.VerticalFlowLayout;
@@ -41,8 +42,8 @@ public class DialogEditLights extends JDialog {
 	private static final ImageIcon onImg = new ImageIcon(DialogEditLights.class.getResource("/images/StandbyOn24.png"));
 	private static final Logger LOG = LoggerFactory.getLogger(DialogEditLights.class);
 
-	public DialogEditLights(final Window owner, String title, DeviceModule[] lights) {
-		super(owner, title, Dialog.ModalityType.MODELESS);
+	public DialogEditLights(final Window owner, DeviceModule[] lights) {
+		super(owner, lights.length == 1 ? lights[0].getLabel() : LABELS.getString("dlgLightsEditorTitle"), Dialog.ModalityType.MODELESS);
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		getContentPane().setLayout(new BorderLayout(0, 0));
 
@@ -80,7 +81,7 @@ public class DialogEditLights extends JDialog {
 		offButton.setContentAreaFilled(false);
 		onButton.setContentAreaFilled(false);
 		
-		JLabel lblNewLabel = new JLabel(LABELS.getString("dlgELAAllChannels"));
+		JLabel lblNewLabel = new JLabel(LABELS.getString("labelSwitchAllChannels"));
 		panel.add(lblNewLabel);
 		panel.add(offButton);
 		panel.add(onButton);
@@ -106,13 +107,15 @@ public class DialogEditLights extends JDialog {
 	private JPanel commandPanel(DeviceModule[] lights) {
 		JPanel stackedPanel = new JPanel(new VerticalFlowLayout(VerticalFlowLayout.TOP, VerticalFlowLayout.LEFT, 0, 0));	
 		for(int i = 0; i < lights.length; i++) {
-			if(lights[i] instanceof RGBInterface rgb) { // rgbw extends rgb
+			if(lights[i] instanceof RGBCCTInterface rgbcct) { // rgbcct extends rgb & cct
+				stackedPanel.add((commandPanels[i] = new RGBCCTPanel(rgbcct)));
+			} else if(lights[i] instanceof RGBInterface rgb) { // rgbw extends rgb
 				stackedPanel.add((commandPanels[i] = new RGBPanel(rgb)));
 			} else if(lights[i] instanceof CCTInterface cct) {
 				stackedPanel.add((commandPanels[i] = new CCTPanel(cct)));
 			} else if(lights[i] instanceof WhiteInterface w) {
 				stackedPanel.add((commandPanels[i] = new WhitePanel(w)));
-			} 
+			}
 			commandPanels[i].setBackground(i % 2 == 0 ? Main.TAB_LINE1_COLOR : Main.TAB_LINE2_COLOR);
 		}
 		return stackedPanel;

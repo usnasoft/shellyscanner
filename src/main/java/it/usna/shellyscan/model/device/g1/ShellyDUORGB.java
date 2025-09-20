@@ -13,6 +13,7 @@ import it.usna.shellyscan.model.device.ModulesHolder;
 import it.usna.shellyscan.model.device.g1.meters.MetersPower;
 import it.usna.shellyscan.model.device.g1.modules.LightBulbRGB;
 import it.usna.shellyscan.model.device.modules.DeviceModule;
+import it.usna.shellyscan.model.device.modules.RGBCCTInterface;
 
 /**
  * Shelly Shelly DUO RGB model
@@ -21,7 +22,7 @@ import it.usna.shellyscan.model.device.modules.DeviceModule;
 public class ShellyDUORGB extends AbstractG1Device implements ModulesHolder {
 	public static final String ID = "SHCB-1";
 	private LightBulbRGB light = new LightBulbRGB(this, 0);
-	private LightBulbRGB[] lightsArray = new LightBulbRGB[] {light};
+	private RGBCCTInterface[] lightsArray = new RGBCCTInterface[] {light};
 	private float power;
 	private Meters[] meters;
 	

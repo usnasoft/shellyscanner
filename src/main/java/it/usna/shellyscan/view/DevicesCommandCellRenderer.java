@@ -26,12 +26,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import it.usna.shellyscan.Main;
-import it.usna.shellyscan.model.device.g1.modules.LightBulbRGB;
 import it.usna.shellyscan.model.device.g1.modules.ThermostatG1;
 import it.usna.shellyscan.model.device.modules.CCTInterface;
 import it.usna.shellyscan.model.device.modules.DeviceModule;
 import it.usna.shellyscan.model.device.modules.InputInterface;
 import it.usna.shellyscan.model.device.modules.MotionInterface;
+import it.usna.shellyscan.model.device.modules.RGBCCTInterface;
 import it.usna.shellyscan.model.device.modules.RGBInterface;
 import it.usna.shellyscan.model.device.modules.RGBWInterface;
 import it.usna.shellyscan.model.device.modules.RelayInterface;
@@ -51,14 +51,8 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 	private JButton onOffButton0 = new JButton();
 	private JLabel label0 = new JLabel();
 	private JButton editDialogButton = new JButton(EDIT_IMG);
-	
-	// Dimmer
-//	private JPanel lightPanel = new JPanel(new BorderLayout());
-//	private JLabel lightLabel = new JLabel();
-//	private JButton lightButton = new JButton();
-//	private JSlider lightBrightness = new JSlider();
-	
-	// RGBW Bulbs
+
+	// RGB/CCT Bulbs
 	private JPanel lightRGBBulbPanel = new JPanel(new BorderLayout());
 	private JLabel lightRGBBulbLabel = new JLabel();
 	private JButton lightRGBBulbButton = new JButton();
@@ -115,14 +109,7 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 		editDialogButton.setBorder(BorderFactory.createEmptyBorder(0, 3, 0, 3));
 		editDialogButton.setContentAreaFilled(false);
 		
-		// Dimmer
-//		lightButton.setBorder(BUTTON_BORDERS);
-//		lightPanel.add(lightButton, BorderLayout.EAST);
-//		lightPanel.add(lightLabel, BorderLayout.WEST);
-//		lightPanel.add(lightBrightness, BorderLayout.SOUTH);
-//		lightBrightness.setPreferredSize(new Dimension(20, lightBrightness.getPreferredSize().height));
-		
-		// RGBW Bulbs
+		// RGB/CCT Bulbs
 		JPanel lightRGBBulbSouthPanel = new JPanel(new BorderLayout());
 		lightRGBBulbSouthPanel.setOpaque(false);
 		JButton lightEditRGBBulbButton = new JButton(EDIT_IMG);
@@ -232,8 +219,8 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 					stackedPanel.add(getRollerPanel(rollers[i], foregroundColor, i == 0));
 				}
 				ret = stackedPanel;
-			} else if(value instanceof LightBulbRGB[] lights) { // RGBW Bulbs
-				LightBulbRGB light = lights[0]; // multiple bulbs devices currently not supported
+			} else if(value instanceof RGBCCTInterface[] lights) { // RGBW Bulbs
+				RGBCCTInterface light = lights[0]; // multiple bulbs devices currently not supported
 				if(light.isOn()) {
 					lightRGBBulbButton.setText(LABEL_ON);
 					lightRGBBulbButton.setBackground(BUTTON_ON_BG_COLOR);

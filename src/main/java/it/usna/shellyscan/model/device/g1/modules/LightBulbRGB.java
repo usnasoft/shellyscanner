@@ -7,14 +7,13 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
-import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.g1.AbstractG1Device;
-import it.usna.shellyscan.model.device.modules.RGBCCTBulbInterface;
+import it.usna.shellyscan.model.device.modules.RGBCCTInterface;
 
 /**
  * Used by RGBW Bulbs
  */
-public class LightBulbRGB implements RGBCCTBulbInterface {
+public class LightBulbRGB implements RGBCCTInterface {
 	private final AbstractG1Device parent;
 	private final int index;
 	private String name = "";
@@ -115,10 +114,10 @@ public class LightBulbRGB implements RGBCCTBulbInterface {
 		return false;
 	}
 
-	@Override
-	public ShellyAbstractDevice getParent() {
-		return parent;
-	}
+//	@Override
+//	public ShellyAbstractDevice getParent() {
+//		return parent;
+//	}
 	
 	@Override
 	public boolean isColorMode() {

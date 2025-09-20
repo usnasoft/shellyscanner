@@ -28,7 +28,7 @@ public class WhitePanel extends LightPanel {
 		this.light = light;
 		setBorder(BorderFactory.createEmptyBorder(6, 8, 12, 8));
 
-		setLayout(new BorderLayout(10, 0));
+		setLayout(new BorderLayout(20, 0));
 		brightnessSlider = new JSlider(light.getMinBrightness(), light.getMaxBrightness(), light.getBrightness());
 		add(label, BorderLayout.NORTH);
 		switchAction = new UsnaToggleAction(null, "/images/Standby24.png", "/images/StandbyOn24.png", e -> {
