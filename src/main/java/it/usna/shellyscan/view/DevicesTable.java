@@ -335,7 +335,7 @@ public class DevicesTable extends ExTooltipTable {
 		final FontMetrics fm = getFontMetrics(getFont());
 		final int columnCount = getColumnCount();
 		final int rowCount = getRowCount();
-		for (int c = 0; c < columnCount; c++) {
+		for(int c = 0; c < columnCount; c++) {
 			int modelCol = convertColumnIndexToModel(c);
 			if (modelCol != COL_STATUS_IDX) { // COL_STATUS_IDX has fixed width
 				TableColumn tc = columnModel.getColumn(c);
@@ -357,7 +357,11 @@ public class DevicesTable extends ExTooltipTable {
 							}
 						}
 					}
-					tc.setPreferredWidth(width);
+					if(modelCol == COL_COMMAND_IDX) {
+						tc.setPreferredWidth((int)(width * 1.05f));
+					} else {
+						tc.setPreferredWidth(width);
+					}
 				}
 			}
 		}

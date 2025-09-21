@@ -49,12 +49,10 @@ public class DialogEditLights extends JDialog {
 
 		commandPanels = new LightPanel[lights.length];
 
-		JPanel commandPanel = commandPanel(lights);
-		getContentPane().add(commandPanel, BorderLayout.CENTER);
+		JPanel commandStackedPanel = commandPanel(lights);
+		getContentPane().add(commandStackedPanel, BorderLayout.CENTER);
 		if(lights.length > 1) {
 			getContentPane().add(northPanel(lights), BorderLayout.NORTH);
-		} else {
-			commandPanel.setBorder(BorderFactory.createEmptyBorder(6, 0, 6, 0));
 		}
 		
 		rootPane.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "escape_close");

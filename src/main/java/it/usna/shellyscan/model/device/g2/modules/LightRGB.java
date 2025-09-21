@@ -122,6 +122,6 @@ public class LightRGB implements RGBInterface {
 	
 	@Override
 	public String toString() {
-		return getLabel() + "-" + gain + (isOn ? "-ON" : "-OFF");
+		return getLabel() + "-" + gain + (isOn ? "%-ON" : "%-OFF");
 	}
 }
