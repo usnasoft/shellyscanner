@@ -36,7 +36,7 @@ public class UtilMiscellaneous {
 	}
 	
 	public static String getDescName(ShellyAbstractDevice d, String label) {
-		return (label != null && label.isEmpty() == false) ? getDescName(d) : getDescName(d) + "-" + label;
+		return (label == null || label.isEmpty()) ? getDescName(d) : getDescName(d) + "-" + label;
 	}
 
 	public static String getFullName(ShellyAbstractDevice d) {

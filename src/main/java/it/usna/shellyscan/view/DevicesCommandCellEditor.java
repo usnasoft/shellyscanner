@@ -49,18 +49,6 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 	
 	// Generic
 	private JButton editDialogButton = new JButton(DevicesCommandCellRenderer.EDIT_IMG);
-
-	// Thermostat G1 (TRV)
-	private JPanel trvPanel = new JPanel(new BorderLayout());
-	private JLabel trvProfileLabel = new JLabel();
-	private JSlider trvSlider = new JSlider((int)(ThermostatG1.TARGET_MIN * 2), (int)(ThermostatG1.TARGET_MAX * 2));
-	
-	// ThermostatInterface
-	private JPanel thermPanel = new JPanel(new BorderLayout());
-	private JLabel thermProfileLabel = new JLabel();
-	private JSlider thermSlider = new JSlider();
-	private JButton thermActiveButton = new JButton();
-
 	private JPanel stackedPanel = new JPanel();
 	
 	private final Color selBackground;
@@ -85,139 +73,7 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 			}
 			cancelCellEditing();
 		});
-			
-		// Thermostat G1 (TRV)
-		trvPanel.setBackground(selBackground);
-		trvPanel.add(trvProfileLabel, BorderLayout.CENTER);
-		trvPanel.add(trvSlider, BorderLayout.SOUTH);
-		JPanel trvButtonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 3, 0));
-		trvButtonPanel.setBorder(BorderFactory.createEmptyBorder(1, 0, 0, 0));
-		trvButtonPanel.setOpaque(false);
-		JButton trvButtonUp = new JButton(DevicesCommandCellRenderer.UP_IMG);
-		trvButtonUp.setBorder(BorderFactory.createEmptyBorder());
-		JButton trvButtonDown = new JButton(DevicesCommandCellRenderer.DOWN_IMG);
-		trvButtonDown.setBorder(BorderFactory.createEmptyBorder());
-		trvButtonPanel.add(trvButtonUp);
-		trvButtonPanel.add(trvButtonDown);
-		trvPanel.add(trvButtonPanel, BorderLayout.EAST);
-		trvProfileLabel.setForeground(selForeground);
-		trvSlider.addChangeListener(e -> {
-			if(edited instanceof ThermostatG1) {
-				if(trvSlider.getValueIsAdjusting()) {
-					trvProfileLabel.setText(((ThermostatG1)edited).getCurrentProfile() + " " + trvSlider.getValue()/2f + "°C");
-				} else {
-					try {
-						((ThermostatG1)edited).setTargetTemp(trvSlider.getValue()/2f);
-					} catch (/*IO*/Exception ex) {
-						LOG.error("thermSlider", ex);
-					}
-					cancelCellEditing();
-				}
-			}
-		});
-		trvButtonUp.addActionListener(e -> {
-			if(edited instanceof ThermostatG1) {
-				try {
-					((ThermostatG1)edited).targetTempUp(0.5f);
-				} catch (/*IO*/Exception ex) {
-					LOG.error("thermButtonUp", ex);
-				}
-				cancelCellEditing();
-			}
-		});
-		trvButtonDown.addActionListener(e -> {
-			if(edited instanceof ThermostatG1) {
-				try {
-					((ThermostatG1)edited).targetTempDown(0.5f);
-				} catch (/*IO*/Exception ex) {
-					LOG.error("thermButtonDown", ex);
-				}
-				cancelCellEditing();
-			}
-		});
-		
-		// ThermostatInterface
-		thermPanel.setBackground(selBackground);
-		thermPanel.add(thermProfileLabel, BorderLayout.CENTER);
-		thermPanel.add(thermSlider, BorderLayout.SOUTH);
-		JPanel thermButtonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 3, 0));
-		thermButtonPanel.setBorder(BorderFactory.createEmptyBorder(1, 0, 0, 0));
-		thermButtonPanel.setOpaque(false);
-		JButton thermButtonUp = new JButton(DevicesCommandCellRenderer.UP_IMG);
-		thermButtonUp.setBorder(BorderFactory.createEmptyBorder());
-		JButton thermButtonDown = new JButton(DevicesCommandCellRenderer.DOWN_IMG);
-		thermButtonDown.setBorder(BorderFactory.createEmptyBorder());
-		thermActiveButton.setBorder(DevicesCommandCellRenderer.BUTTON_BORDERS_SMALLER);
-		thermButtonPanel.add(thermActiveButton);
-		thermButtonPanel.add(thermButtonUp);
-		thermButtonPanel.add(thermButtonDown);
-		thermPanel.add(thermButtonPanel, BorderLayout.EAST);
-		thermProfileLabel.setForeground(selForeground);
-		thermSlider.addChangeListener(e -> {
-			if(edited instanceof ThermostatInterface[] th) {
-				if(thermSlider.getValueIsAdjusting()) {
-					if(tempUnitCelsius) {
-						thermProfileLabel.setText(/*thermostat.getCurrentProfile() + " " +*/ ((float)thermSlider.getValue()) / th[0].getUnitDivision() + "°C");
-					} else {
-						thermProfileLabel.setText(/*thermostat.getCurrentProfile() + " " +*/ (Math.round((((float)thermSlider.getValue()) / th[0].getUnitDivision()) * 18f + 320f) / 10f) + "°F");
-					}
-				} else {
-					if(th[0] instanceof AbstractBluDevice) {
-						table.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-					}
-					try {
-						th[0].setTargetTemp(((float)thermSlider.getValue()) / th[0].getUnitDivision());
-					} catch (/*IO*/Exception ex) {
-						LOG.error("thermSlider", ex);
-					}
-					table.setCursor(Cursor.getDefaultCursor());
-					cancelCellEditing();
-				}
-			}
-		});
-		thermActiveButton.addActionListener(e -> {
-			if(edited instanceof ThermostatInterface[] th) {
-				if(th[0] instanceof AbstractBluDevice) {
-					table.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-				}
-				try {
-					th[0].setEnabled(th[0].isEnabled() == false); // toggle
-				} catch (/*IO*/Exception ex) {
-					LOG.error("thermActiveButton", ex);
-				}
-				table.setCursor(Cursor.getDefaultCursor());
-				cancelCellEditing();
-			}
-		});
-		thermButtonUp.addActionListener(e -> {
-			if(edited instanceof ThermostatInterface[] th && th[0].getTargetTemp() < th[0].getMaxTargetTemp()) {
-				if(th[0] instanceof AbstractBluDevice) {
-					table.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-				}
-				try {
-					th[0].setTargetTemp(Math.round(10 * th[0].getTargetTemp() + 10f / th[0].getUnitDivision()) / 10f);
-				} catch (/*IO*/Exception ex) {
-					LOG.error("thermButtonUp", ex);
-				}
-				table.setCursor(Cursor.getDefaultCursor());
-				cancelCellEditing();
-			}
-		});
-		thermButtonDown.addActionListener(e -> {
-			if(edited instanceof ThermostatInterface[] th && th[0].getTargetTemp() > th[0].getMinTargetTemp()) {
-				if(th[0] instanceof AbstractBluDevice) {
-					table.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-				}
-				try {
-					th[0].setTargetTemp(Math.round(10 * th[0].getTargetTemp() - 10f / th[0].getUnitDivision()) / 10f);
-				} catch (/*IO*/Exception ex) {
-					LOG.error("thermButtonDown", ex);
-				}
-				table.setCursor(Cursor.getDefaultCursor());
-				cancelCellEditing();
-			}
-		});
-		
+
 		BoxLayout stackedPanelLO = new BoxLayout(stackedPanel, BoxLayout.Y_AXIS);
 		stackedPanel.setLayout(stackedPanelLO);
 		stackedPanel.setBackground(selBackground);
@@ -255,10 +111,14 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 			JPanel panel = getWhitePanel(whitesArray[0], whitesArray[0] instanceof CCTInterface);
 			edited = whitesArray;
 			return panel;
-		} else if(value instanceof ThermostatG1 th) { // TRV
-			return getTrvG1Panel(th);
+		} else if(value instanceof ThermostatG1 th) { // TRV Gen1
+			JPanel panel = getThermostatG1Panel(th);
+			edited = th;
+			return panel;
 		} else if(value instanceof ThermostatInterface[] ths) {
-			return getThermostatPanel(ths);
+			JPanel panel = getThermostatPanel(ths[0], table);
+			edited = ths;
+			return panel;
 		} else if(value instanceof DeviceModule[] modArray) { // mixed
 			stackedPanel.removeAll();
 			for(int i = 0; i < modArray.length; i++) {
@@ -421,7 +281,7 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 		});
 		lightPanel.add(lightBrightness, BorderLayout.SOUTH);
 		lightBrightness.addChangeListener(e -> {
-			if(edited instanceof WhiteInterface[]) {
+//			if(edited instanceof WhiteInterface[]) {
 				if(lightBrightness.getValueIsAdjusting()) {
 					lightLabel.setText(light.getLabel() + " " + lightBrightness.getValue() + "%");
 				} else {
@@ -436,7 +296,7 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 					}
 					cancelCellEditing();
 				}
-			}
+//			}
 		});
 		lightLabel.setText(light.getLabel() + " " + sliderValue + "%");
 		lightBrightness.setMinimum(light.getMinBrightness());
@@ -468,9 +328,7 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 		JLabel lightLabel = new JLabel();
 		JPanel lightPanel = new JPanel(new BorderLayout());
 		JButton lightButton = new JButton();
-		JSlider lightBrightness = new JSlider(0, 100, rgb.getGain());
-//		lightBrightness.setMinimum(light.getMinBrightness());
-//		lightBrightness.setMaximum(light.getMaxBrightness());
+		JSlider lightBrightness = new JSlider(0/*light.getMinBrightness()*/, 100/*light.getMaxBrightness()*/, rgb.getGain());
 		
 		lightPanel.setBackground(selBackground);
 		lightLabel.setForeground(selForeground);
@@ -546,9 +404,7 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 //			}
 		});
 		
-		JSlider lightBrightness = new JSlider(0, 100, rgbw.getGain());
-//		lightBrightness.setMinimum(light.getMinBrightness());
-//		lightBrightness.setMaximum(light.getMaxBrightness());
+		JSlider lightBrightness = new JSlider(0/*light.getMinBrightness()*/, 100/*light.getMaxBrightness()*/, rgbw.getGain());
 		lightBrightness.addChangeListener(e -> {
 //			if(edited instanceof RGBInterface[]) {
 				if(lightBrightness.getValueIsAdjusting()) {
@@ -749,40 +605,174 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 		}
 		return lightPanel;
 	}
-	
-	private Component getTrvG1Panel(ThermostatG1 thermostat) {
-		trvSlider.setValue((int)(thermostat.getTargetTemp() * 2f));
-		trvProfileLabel.setText(thermostat.getCurrentProfile() + " " + thermostat.getTargetTemp() + "°C");
-		trvProfileLabel.setEnabled(thermostat.isScheduleActive());
 
-		edited = thermostat;
-		return trvPanel;
-	}
-	
-	private Component getThermostatPanel(ThermostatInterface therm[]) {
-		ThermostatInterface thermostat = therm[0];
-		thermSlider.setMinimum((int)(thermostat.getMinTargetTemp() * thermostat.getUnitDivision()));
-		thermSlider.setMaximum((int)(thermostat.getMaxTargetTemp() * thermostat.getUnitDivision()));
-		thermSlider.setValue((int)(thermostat.getTargetTemp() * thermostat.getUnitDivision()));
+	private JPanel getThermostatPanel(ThermostatInterface therm, JTable table) {
+		JPanel thermPanel = new JPanel(new BorderLayout());
+		JLabel thermProfileLabel = new JLabel();
+		JSlider thermSlider = new JSlider(
+				(int)(therm.getMinTargetTemp() * therm.getUnitDivision()),
+				(int)(therm.getMaxTargetTemp() * therm.getUnitDivision()),
+				(int)(therm.getTargetTemp() * therm.getUnitDivision()));
+
+		JButton thermActiveButton = new JButton();
+		
+		thermPanel.setBackground(selBackground);
+		thermPanel.add(thermProfileLabel, BorderLayout.CENTER);
+		thermPanel.add(thermSlider, BorderLayout.SOUTH);
+		JPanel thermButtonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 3, 0));
+		thermButtonPanel.setBorder(BorderFactory.createEmptyBorder(1, 0, 0, 0));
+		thermButtonPanel.setOpaque(false);
+		JButton thermButtonUp = new JButton(DevicesCommandCellRenderer.UP_IMG);
+		thermButtonUp.setBorder(BorderFactory.createEmptyBorder());
+		JButton thermButtonDown = new JButton(DevicesCommandCellRenderer.DOWN_IMG);
+		thermButtonDown.setBorder(BorderFactory.createEmptyBorder());
+		thermActiveButton.setBorder(DevicesCommandCellRenderer.BUTTON_BORDERS_SMALLER);
+		thermButtonPanel.add(thermActiveButton);
+		thermButtonPanel.add(thermButtonUp);
+		thermButtonPanel.add(thermButtonDown);
+		thermPanel.add(thermButtonPanel, BorderLayout.EAST);
+		thermProfileLabel.setForeground(selForeground);
+		thermSlider.addChangeListener(e -> {
+//			if(edited instanceof ThermostatInterface[] th) {
+				if(thermSlider.getValueIsAdjusting()) {
+					if(tempUnitCelsius) {
+						thermProfileLabel.setText(/*thermostat.getCurrentProfile() + " " +*/ ((float)thermSlider.getValue()) / therm.getUnitDivision() + "°C");
+					} else {
+						thermProfileLabel.setText(/*thermostat.getCurrentProfile() + " " +*/ (Math.round((((float)thermSlider.getValue()) / therm.getUnitDivision()) * 18f + 320f) / 10f) + "°F");
+					}
+				} else {
+					if(therm instanceof AbstractBluDevice) {
+						table.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+					}
+					try {
+						therm.setTargetTemp(((float)thermSlider.getValue()) / therm.getUnitDivision());
+					} catch (/*IO*/Exception ex) {
+						LOG.error("thermSlider", ex);
+					}
+					table.setCursor(Cursor.getDefaultCursor());
+					cancelCellEditing();
+				}
+//			}
+		});
+		thermActiveButton.addActionListener(e -> {
+//			if(edited instanceof ThermostatInterface[] th) {
+				if(therm instanceof AbstractBluDevice) {
+					table.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+				}
+				try {
+					therm.setEnabled(therm.isEnabled() == false); // toggle
+				} catch (/*IO*/Exception ex) {
+					LOG.error("thermActiveButton", ex);
+				}
+				table.setCursor(Cursor.getDefaultCursor());
+				cancelCellEditing();
+//			}
+		});
+		thermButtonUp.addActionListener(e -> {
+			if(/*edited instanceof ThermostatInterface[] th &&*/ therm.getTargetTemp() < therm.getMaxTargetTemp()) {
+				if(therm instanceof AbstractBluDevice) {
+					table.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+				}
+				try {
+					therm.setTargetTemp(Math.round(10 * therm.getTargetTemp() + 10f / therm.getUnitDivision()) / 10f);
+				} catch (/*IO*/Exception ex) {
+					LOG.error("thermButtonUp", ex);
+				}
+				table.setCursor(Cursor.getDefaultCursor());
+				cancelCellEditing();
+			}
+		});
+		thermButtonDown.addActionListener(e -> {
+			if(/*edited instanceof ThermostatInterface[] th &&*/ therm.getTargetTemp() > therm.getMinTargetTemp()) {
+				if(therm instanceof AbstractBluDevice) {
+					table.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+				}
+				try {
+					therm.setTargetTemp(Math.round(10 * therm.getTargetTemp() - 10f / therm.getUnitDivision()) / 10f);
+				} catch (/*IO*/Exception ex) {
+					LOG.error("thermButtonDown", ex);
+				}
+				table.setCursor(Cursor.getDefaultCursor());
+				cancelCellEditing();
+			}
+		});
+
 		if(tempUnitCelsius) {
-			thermProfileLabel.setText(/*thermostat.getCurrentProfile() + " " +*/ thermostat.getTargetTemp() + "°C");
+			thermProfileLabel.setText(/*thermostat.getCurrentProfile() + " " +*/ therm.getTargetTemp() + "°C");
 		} else {
-			thermProfileLabel.setText(/*thermostat.getCurrentProfile() + " " +*/ (Math.round(thermostat.getTargetTemp() * 18f + 320f) / 10f) + "°F");
-//			thermProfileLabel.setText(/*thermostat.getCurrentProfile() + " " +*/ String.format(Locale.ENGLISH, "%.1f°F", thermostat.getTargetTemp() * 1.8f + 32f));
+			thermProfileLabel.setText(/*thermostat.getCurrentProfile() + " " +*/ (Math.round(therm.getTargetTemp() * 18f + 320f) / 10f) + "°F");
 		}
-		if(thermostat.isEnabled()) {
+		if(therm.isEnabled()) {
 			thermActiveButton.setText(DevicesCommandCellRenderer.LABEL_ON);
 			thermActiveButton.setBackground(DevicesCommandCellRenderer.BUTTON_ON_BG_COLOR);
 			thermProfileLabel.setEnabled(true);
-			thermActiveButton.setForeground(thermostat.isRunning() ? DevicesCommandCellRenderer.BUTTON_ON_FG_COLOR : null);
+			thermActiveButton.setForeground(therm.isRunning() ? DevicesCommandCellRenderer.BUTTON_ON_FG_COLOR : null);
 		} else {
 			thermActiveButton.setText(DevicesCommandCellRenderer.LABEL_OFF);
 			thermActiveButton.setBackground(DevicesCommandCellRenderer.BUTTON_OFF_BG_COLOR);
 			thermProfileLabel.setEnabled(false);
 			thermActiveButton.setForeground(null);
 		}
-		edited = therm;
 		return thermPanel;
+	}
+	
+	private JPanel getThermostatG1Panel(ThermostatG1 thermostat) { // TRV Gen1
+		JPanel trvPanel = new JPanel(new BorderLayout());
+		JLabel trvProfileLabel = new JLabel();
+		JSlider trvSlider = new JSlider((int)(ThermostatG1.TARGET_MIN * 2), (int)(ThermostatG1.TARGET_MAX * 2), (int)(thermostat.getTargetTemp() * 2f));
+		
+		trvPanel.setBackground(selBackground);
+		trvPanel.add(trvProfileLabel, BorderLayout.CENTER);
+		trvPanel.add(trvSlider, BorderLayout.SOUTH);
+		JPanel trvButtonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 3, 0));
+		trvButtonPanel.setBorder(BorderFactory.createEmptyBorder(1, 0, 0, 0));
+		trvButtonPanel.setOpaque(false);
+		JButton trvButtonUp = new JButton(DevicesCommandCellRenderer.UP_IMG);
+		trvButtonUp.setBorder(BorderFactory.createEmptyBorder());
+		JButton trvButtonDown = new JButton(DevicesCommandCellRenderer.DOWN_IMG);
+		trvButtonDown.setBorder(BorderFactory.createEmptyBorder());
+		trvButtonPanel.add(trvButtonUp);
+		trvButtonPanel.add(trvButtonDown);
+		trvPanel.add(trvButtonPanel, BorderLayout.EAST);
+		trvProfileLabel.setForeground(selForeground);
+		trvSlider.addChangeListener(e -> {
+//			if(edited instanceof ThermostatG1) {
+				if(trvSlider.getValueIsAdjusting()) {
+					trvProfileLabel.setText(thermostat.getCurrentProfile() + " " + trvSlider.getValue()/2f + "°C");
+				} else {
+					try {
+						thermostat.setTargetTemp(trvSlider.getValue()/2f);
+					} catch (/*IO*/Exception ex) {
+						LOG.error("thermSlider", ex);
+					}
+					cancelCellEditing();
+				}
+//			}
+		});
+		trvButtonUp.addActionListener(e -> {
+//			if(edited instanceof ThermostatG1) {
+				try {
+					thermostat.targetTempUp(0.5f);
+				} catch (/*IO*/Exception ex) {
+					LOG.error("thermButtonUp", ex);
+				}
+				cancelCellEditing();
+//			}
+		});
+		trvButtonDown.addActionListener(e -> {
+//			if(edited instanceof ThermostatG1) {
+				try {
+					thermostat.targetTempDown(0.5f);
+				} catch (/*IO*/Exception ex) {
+					LOG.error("thermButtonDown", ex);
+				}
+				cancelCellEditing();
+//			}
+		});
+
+		trvProfileLabel.setText(thermostat.getCurrentProfile() + " " + thermostat.getTargetTemp() + "°C");
+		trvProfileLabel.setEnabled(thermostat.isScheduleActive());
+		return trvPanel;
 	}
 	
 	private Component getInputPanel(final InputInterface inp, JTable table) {
@@ -807,7 +797,7 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 					if(enabled) {
 						final int index = i;
 						b.addActionListener(e -> {
-							if(edited != null /*&& edited instanceof InputInterface[]*/) {
+//							if(edited != null /*&& edited instanceof InputInterface[]*/) {
 								table.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 								try {
 									new Thread(() -> {
@@ -821,7 +811,7 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 								} catch (InterruptedException e1) {}
 								table.setCursor(Cursor.getDefaultCursor());
 								cancelCellEditing();
-							}
+//							}
 						});
 					} else {
 						b.setEnabled(false);

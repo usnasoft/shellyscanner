@@ -50,20 +50,7 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 	private JButton onOffButton0 = new JButton();
 	private JLabel label0 = new JLabel();
 	private JButton editDialogButton = new JButton(EDIT_IMG);
-	
-	// Thermostat G1 (TRV)
-	private JPanel trvPanel = new JPanel(new BorderLayout());
-	private JLabel trvProfileLabel = new JLabel();
-	private JSlider trvSlider = new JSlider((int)(ThermostatG1.TARGET_MIN * 2), (int)(ThermostatG1.TARGET_MAX * 2));
-	
-	// ThermostatInterface
-	private JPanel thermPanel = new JPanel(new BorderLayout());
-	private JLabel thermProfileLabel = new JLabel();
-	private JSlider thermSlider = new JSlider();
-	private JButton thermActiveButton = new JButton();
-
 	private JPanel stackedPanel = new JPanel();
-	
 	private JLabel labelPlain = new JLabel();
 	
 	static final Color BUTTON_ON_BG_COLOR = new Color(125, 217, 240);
@@ -86,39 +73,7 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 		onOffButton0.setBorder(BUTTON_BORDERS);
 		editDialogButton.setBorder(BorderFactory.createEmptyBorder(0, 3, 0, 3));
 		editDialogButton.setContentAreaFilled(false);
-		
-		// Thermostat G1 (TRV)
-		trvPanel.add(trvProfileLabel, BorderLayout.CENTER);
-		trvPanel.add(trvSlider, BorderLayout.SOUTH);
-		trvSlider.setPreferredSize(new Dimension(20, trvSlider.getPreferredSize().height));
-		JPanel trvButtonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 3, 0));
-		trvButtonPanel.setBorder(BorderFactory.createEmptyBorder(1, 0, 0, 0));
-		trvButtonPanel.setOpaque(false);
-		JButton trvButtonUp = new JButton(UP_IMG);
-		trvButtonUp.setBorder(BorderFactory.createEmptyBorder());
-		JButton trvButtonDown = new JButton(DOWN_IMG);
-		trvButtonDown.setBorder(BorderFactory.createEmptyBorder());
-		trvButtonPanel.add(trvButtonUp);
-		trvButtonPanel.add(trvButtonDown);
-		trvPanel.add(trvButtonPanel, BorderLayout.EAST);
-		
-		// ThermostatInterface
-		thermPanel.add(thermProfileLabel, BorderLayout.CENTER);
-		thermPanel.add(thermSlider, BorderLayout.SOUTH);
-//		thermSlider.setPreferredSize(new Dimension(20, thermSlider.getPreferredSize().height));
-		JPanel thermButtonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 3, 0));
-		thermButtonPanel.setBorder(BorderFactory.createEmptyBorder(1, 0, 0, 0));
-		thermButtonPanel.setOpaque(false);
-		JButton thermButtonUp = new JButton(UP_IMG);
-		thermButtonUp.setBorder(BorderFactory.createEmptyBorder());
-		JButton thermButtonDown = new JButton(DOWN_IMG);
-		thermButtonDown.setBorder(BorderFactory.createEmptyBorder());
-		thermActiveButton.setBorder(BUTTON_BORDERS_SMALLER);
-		thermButtonPanel.add(thermActiveButton);
-		thermButtonPanel.add(thermButtonUp);
-		thermButtonPanel.add(thermButtonDown);
-		thermPanel.add(thermButtonPanel, BorderLayout.EAST);
-		
+
 		BoxLayout stackedPanelLO = new BoxLayout(stackedPanel, BoxLayout.Y_AXIS);
 		stackedPanel.setLayout(stackedPanelLO);
 		
@@ -151,35 +106,9 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 			} else if(value instanceof WhiteInterface[] lights && lights.length == 1) { // Dimmable (CCT) white
 				ret = getWhitePanel(lights[0], foregroundColor, true, lights[0] instanceof CCTInterface);
 			} else if(value instanceof ThermostatG1 thermostat) { // TRV gen1
-				trvSlider.setValue((int)(thermostat.getTargetTemp() * 2));
-				trvProfileLabel.setText(thermostat.getCurrentProfile() + " " + thermostat.getTargetTemp() + "°C");
-				trvProfileLabel.setEnabled(thermostat.isScheduleActive());
-				trvProfileLabel.setForeground(foregroundColor);
-				ret = trvPanel;
+				ret = getThermostatG1Panel(thermostat, foregroundColor);
 			} else if(value instanceof ThermostatInterface[] thermostats) {
-				ThermostatInterface thermostat = thermostats[0]; // multiple thermostats devices currently not supported
-				thermSlider.setMinimum((int)(thermostat.getMinTargetTemp() * thermostat.getUnitDivision()));
-				thermSlider.setMaximum((int)(thermostat.getMaxTargetTemp() * thermostat.getUnitDivision()));
-				thermSlider.setValue((int)(thermostat.getTargetTemp() * thermostat.getUnitDivision()));
-				if(tempUnitCelsius) {
-					thermProfileLabel.setText(/*thermostat.getCurrentProfile() + " " +*/ thermostat.getTargetTemp() + "°C");
-				} else {
-					thermProfileLabel.setText(/*thermostat.getCurrentProfile() + " " +*/ (Math.round(thermostat.getTargetTemp() * 18f + 320f) / 10f) + "°F");
-					//thermProfileLabel.setText(/*thermostat.getCurrentProfile() + " " +*/ String.format(Locale.ENGLISH, "%.1f°F", thermostat.getTargetTemp() * 1.8f + 32f));
-				}
-				if(thermostat.isEnabled()) {
-					thermActiveButton.setText(LABEL_ON);
-					thermActiveButton.setBackground(BUTTON_ON_BG_COLOR);
-					thermProfileLabel.setEnabled(true);
-					thermActiveButton.setForeground(thermostat.isRunning() ? BUTTON_ON_FG_COLOR : null);
-				} else {
-					thermActiveButton.setText(LABEL_OFF);
-					thermActiveButton.setBackground(BUTTON_OFF_BG_COLOR);
-					thermProfileLabel.setEnabled(false);
-					thermActiveButton.setForeground(null);
-				}
-				thermProfileLabel.setForeground(foregroundColor);
-				ret = thermPanel;
+				ret = getThermostatPanel(thermostats[0], foregroundColor);
 			} else if(value instanceof DeviceModule[] modArray) { // mixed modules
 				stackedPanel.removeAll();
 				for(int i = 0; i < modArray.length; i++) {
@@ -452,9 +381,7 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 			label = new JLabel(light.getLabel() + " " + light.getGain() + "%");
 		}
 		panel.add(label, BorderLayout.WEST);
-		JSlider lightBrightness = new JSlider(0, 100, light.getGain());
-//		lightBrightness.setMinimum(light.getMinBrightness());
-//		lightBrightness.setMaximum(light.getMaxBrightness());
+		JSlider lightBrightness = new JSlider(0/*light.getMinBrightness()*/, 100/*light.getMaxBrightness()*/, light.getGain());
 		panel.add(lightBrightness, BorderLayout.SOUTH);
 		
 		if(light.isOn()) {
@@ -496,9 +423,7 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 
 		final JPanel sliderPanel = new JPanel(new BorderLayout(0, 0));
 		sliderPanel.setOpaque(false);
-		JSlider lightBrightness = new JSlider(0, 100, light.getGain());
-//		lightBrightness.setMinimum(light.getMinBrightness());
-//		lightBrightness.setMaximum(light.getMaxBrightness());
+		JSlider lightBrightness = new JSlider(0/*light.getMinBrightness()*/, 100/*light.getMaxBrightness()*/, light.getGain());
 		sliderPanel.add(lightBrightness, BorderLayout.NORTH);
 		JSlider lightWhite = new JSlider(0, 255, light.getWhite());
 		sliderPanel.add(lightWhite, BorderLayout.SOUTH);
@@ -565,6 +490,77 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 			panel.add(button, BorderLayout.EAST);
 		}
 		return panel; 
+	}
+
+	private JPanel getThermostatPanel(ThermostatInterface thermostat, final Color foregroundColor) {
+		JPanel thermPanel = new JPanel(new BorderLayout());
+		JLabel thermProfileLabel = new JLabel();
+		JSlider thermSlider = new JSlider(
+				(int)(thermostat.getMinTargetTemp() * thermostat.getUnitDivision()),
+				(int)(thermostat.getMaxTargetTemp() * thermostat.getUnitDivision()),
+				(int)(thermostat.getTargetTemp() * thermostat.getUnitDivision()));
+		
+		thermPanel.add(thermProfileLabel, BorderLayout.CENTER);
+		thermPanel.add(thermSlider, BorderLayout.SOUTH);
+//		thermSlider.setPreferredSize(new Dimension(20, thermSlider.getPreferredSize().height));
+		JPanel thermButtonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 3, 0));
+		thermButtonPanel.setBorder(BorderFactory.createEmptyBorder(1, 0, 0, 0));
+		thermButtonPanel.setOpaque(false);
+		JButton thermButtonUp = new JButton(UP_IMG);
+		thermButtonUp.setBorder(BorderFactory.createEmptyBorder());
+		JButton thermButtonDown = new JButton(DOWN_IMG);
+		thermButtonDown.setBorder(BorderFactory.createEmptyBorder());
+		JButton thermActiveButton = new JButton();
+		thermActiveButton.setBorder(BUTTON_BORDERS_SMALLER);
+		thermButtonPanel.add(thermActiveButton);
+		thermButtonPanel.add(thermButtonUp);
+		thermButtonPanel.add(thermButtonDown);
+		thermPanel.add(thermButtonPanel, BorderLayout.EAST);
+
+		if(tempUnitCelsius) {
+			thermProfileLabel.setText(/*thermostat.getCurrentProfile() + " " +*/ thermostat.getTargetTemp() + "°C");
+		} else {
+			thermProfileLabel.setText(/*thermostat.getCurrentProfile() + " " +*/ (Math.round(thermostat.getTargetTemp() * 18f + 320f) / 10f) + "°F");
+		}
+		if(thermostat.isEnabled()) {
+			thermActiveButton.setText(LABEL_ON);
+			thermActiveButton.setBackground(BUTTON_ON_BG_COLOR);
+			thermProfileLabel.setEnabled(true);
+			thermActiveButton.setForeground(thermostat.isRunning() ? BUTTON_ON_FG_COLOR : null);
+		} else {
+			thermActiveButton.setText(LABEL_OFF);
+			thermActiveButton.setBackground(BUTTON_OFF_BG_COLOR);
+			thermProfileLabel.setEnabled(false);
+			thermActiveButton.setForeground(null);
+		}
+		thermProfileLabel.setForeground(foregroundColor);
+		return thermPanel; 
+	}
+	
+	private JPanel getThermostatG1Panel(ThermostatG1 thermostat, final Color foregroundColor) { // TRV Gen1
+		JPanel trvPanel = new JPanel(new BorderLayout());
+		JLabel trvProfileLabel = new JLabel();
+		JSlider trvSlider = new JSlider((int)(ThermostatG1.TARGET_MIN * 2), (int)(ThermostatG1.TARGET_MAX * 2), (int)(thermostat.getTargetTemp() * 2));
+		
+		trvPanel.add(trvProfileLabel, BorderLayout.CENTER);
+		trvPanel.add(trvSlider, BorderLayout.SOUTH);
+		trvSlider.setPreferredSize(new Dimension(20, trvSlider.getPreferredSize().height));
+		JPanel trvButtonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 3, 0));
+		trvButtonPanel.setBorder(BorderFactory.createEmptyBorder(1, 0, 0, 0));
+		trvButtonPanel.setOpaque(false);
+		JButton trvButtonUp = new JButton(UP_IMG);
+		trvButtonUp.setBorder(BorderFactory.createEmptyBorder());
+		JButton trvButtonDown = new JButton(DOWN_IMG);
+		trvButtonDown.setBorder(BorderFactory.createEmptyBorder());
+		trvButtonPanel.add(trvButtonUp);
+		trvButtonPanel.add(trvButtonDown);
+		trvPanel.add(trvButtonPanel, BorderLayout.EAST);
+
+		trvProfileLabel.setText(thermostat.getCurrentProfile() + " " + thermostat.getTargetTemp() + "°C");
+		trvProfileLabel.setEnabled(thermostat.isScheduleActive());
+		trvProfileLabel.setForeground(foregroundColor);
+		
+		return trvPanel; 
 	}
 	
 	public void setTempUnit(boolean celsius) {

@@ -22,7 +22,8 @@ public enum ChartType {
 	H("dlgChartsHumidityLabel", "dlgChartsHumidityYLabel", Meters.Type.H),
 	LUX("dlgChartsLuxLabel", "dlgChartsLuxYLabel", Meters.Type.L),
 	FREQ("dlgChartsFreqLabel", "dlgChartsFreqYLabel", Meters.Type.FREQ),
-	DIST("dlgChartsDistanceLabel", "dlgChartsDistanceYLabel", Meters.Type.DMM);
+	DIST("dlgChartsDistanceLabel", "dlgChartsDistanceYLabel", Meters.Type.DMM),
+	EM1("dlgChartsEMLabel", "dlgChartsEMYLabel");
 
 	final String yLabel;
 	final String label;

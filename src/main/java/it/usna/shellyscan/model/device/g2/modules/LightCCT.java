@@ -150,6 +150,6 @@ public class LightCCT implements CCTInterface {
 	
 	@Override
 	public String toString() {
-		return getLabel() + ":" + brightness + (isOn ? "%-ON" : "%-OFF");
+		return getLabel() + ":" + brightness + (isOn ? "-ON" : "-OFF");
 	}
 }

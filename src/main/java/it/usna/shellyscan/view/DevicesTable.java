@@ -357,11 +357,7 @@ public class DevicesTable extends ExTooltipTable {
 							}
 						}
 					}
-					if(modelCol == COL_COMMAND_IDX) {
-						tc.setPreferredWidth((int)(width * 1.05f));
-					} else {
-						tc.setPreferredWidth(width);
-					}
+					tc.setPreferredWidth((modelCol == COL_COMMAND_IDX) ? ((width * 105) / 100) : width); // COL_COMMAND_IDX -> +5%
 				}
 			}
 		}

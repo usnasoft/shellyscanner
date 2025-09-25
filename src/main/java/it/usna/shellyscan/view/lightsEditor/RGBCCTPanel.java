@@ -10,6 +10,7 @@ import java.awt.FlowLayout;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 
+import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
@@ -50,6 +51,7 @@ public class RGBCCTPanel extends LightPanel {
 	
 	private JPanel modePanel(RGBCCTInterface light) {
 		JPanel typePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+		typePanel.setBorder(BorderFactory.createEmptyBorder(3, 0, 3, 0));
 		typePanel.setBackground(Color.LIGHT_GRAY);
 	
 		ActionListener modeAction = e -> {

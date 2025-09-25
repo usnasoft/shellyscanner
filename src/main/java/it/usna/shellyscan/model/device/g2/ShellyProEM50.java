@@ -10,6 +10,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import it.usna.shellyscan.model.Devices;
+import it.usna.shellyscan.model.device.EMHolder;
 import it.usna.shellyscan.model.device.InternalTmpHolder;
 import it.usna.shellyscan.model.device.LabelHolder;
 import it.usna.shellyscan.model.device.Meters;
@@ -35,7 +36,7 @@ public class ShellyProEM50 extends AbstractProDevice implements ModulesHolder, I
 	public ShellyProEM50(InetAddress address, int port, String hostname) {
 		super(address, port, hostname);
 
-		class EMMeters extends Meters implements LabelHolder {
+		class EMMeters extends Meters implements LabelHolder, EMHolder {
 			private int ind;
 			private EMMeters(int ind) {
 				this.ind = ind;
@@ -66,6 +67,11 @@ public class ShellyProEM50 extends AbstractProDevice implements ModulesHolder, I
 			@Override
 			public String getLabel() {
 				return meterName[ind];
+			}
+			
+			@Override
+			public EM1Manager getEM() {
+				return new EM1Manager(ShellyProEM50.this, ind);
 			}
 			
 			@Override
@@ -138,20 +144,6 @@ public class ShellyProEM50 extends AbstractProDevice implements ModulesHolder, I
 	
 	@Override
 	public String[] getInfoRequests() {
-//		try {
-//			int end = (int)((System.currentTimeMillis()/1000) / 60) * 60;
-//			int start = end - (3600 * 2 * 1); // 2h back
-//			new EM1Manager(this, 0).getData(/*EM1Manager.ACT_ENERGY,*/ start, end);
-//		} catch (IOException e) {
-//			e.printStackTrace();
-//		}
-//		try {
-//			int end = (int)((System.currentTimeMillis()/1000) / 3600) * 3600;
-//			int start = end - (3600 * 24 * 1);
-//			new EM1Manager(this, 0).getEnergy(start, end);
-//		} catch (IOException e) {
-//			e.printStackTrace();
-//		}
 		return EM1Manager.getInfoRequests(super.getInfoRequests(), 0, 1);
 	}
 

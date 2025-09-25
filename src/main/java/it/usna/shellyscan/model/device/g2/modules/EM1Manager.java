@@ -120,7 +120,7 @@ public class EM1Manager {
 	
 	//l.add("(BTHomeSensor.GetConfig [" + s.getId() + "-" + s.getObjId() + "])/rpc/BTHomeSensor.GetCon)fig?id=" + s.getId());
 
-	public record TimedData(long timestamp, float ... value) {
+	public record TimedData(int timestamp, float ... value) {
 		@Override
 		public String toString() {
 			return timestamp + "-" + value[0];

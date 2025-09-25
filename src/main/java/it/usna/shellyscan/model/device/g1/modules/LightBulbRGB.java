@@ -209,6 +209,6 @@ public class LightBulbRGB implements RGBCCTInterface {
 	
 	@Override
 	public String toString() {
-		return getLabel() + "-" + (modeColor ? gain : brightness) + (isOn ? "%-ON" : "%-OFF");
+		return getLabel() + "-" + (modeColor ? gain : brightness) + (isOn ? "-ON" : "-OFF");
 	}
 }
