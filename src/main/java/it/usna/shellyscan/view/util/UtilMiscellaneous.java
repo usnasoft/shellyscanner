@@ -35,8 +35,12 @@ public class UtilMiscellaneous {
 		return channel == 0 ? getDescName(d) : getDescName(d) + "-" + (channel + 1);
 	}
 	
-	public static String getDescName(ShellyAbstractDevice d, String label) {
-		return (label == null || label.isEmpty()) ? getDescName(d) : getDescName(d) + "-" + label;
+//	public static String getDescName(ShellyAbstractDevice d, String label) {
+//		return (label == null || label.isEmpty()) ? getDescName(d) : getDescName(d) + "-" + label;
+//	}
+	
+	public static String getDescName(ShellyAbstractDevice d, String label, int channel) {
+		return (label == null || label.isEmpty()) ? getDescName(d, channel) : getDescName(d) + "-" + label;
 	}
 
 	public static String getFullName(ShellyAbstractDevice d) {

@@ -60,14 +60,14 @@ import it.usna.shellyscan.Main;
 import it.usna.shellyscan.controller.UsnaAction;
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.Devices.EventType;
+import it.usna.shellyscan.model.device.EMDataInterface;
+import it.usna.shellyscan.model.device.EMDataInterface.TimedData;
 import it.usna.shellyscan.model.device.EMHolder;
 import it.usna.shellyscan.model.device.InternalTmpHolder;
 import it.usna.shellyscan.model.device.LabelHolder;
 import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
-import it.usna.shellyscan.model.device.g2.modules.EM1Manager;
-import it.usna.shellyscan.model.device.g2.modules.EM1Manager.TimedData;
 import it.usna.shellyscan.view.MainView;
 import it.usna.shellyscan.view.util.Msg;
 import it.usna.shellyscan.view.util.ScannerProperties;
@@ -375,7 +375,7 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 						}
 					}
 					if(ms instanceof EMHolder) {
-						available.add(ChartType.EM1);
+						available.add(ChartType.EM);
 					}
 				}
 			}
@@ -434,8 +434,7 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 				TimeSeries ts = new TimeSeries(uniqueName(dataset, UtilMiscellaneous.getDescName(d)));
 				dataset.addSeries(ts);
 				seriesMap.put(ind, new TimeSeries[] {ts});
-			} else if(currentType == ChartType.EM1) { // todo EM -> EM1, EM
-/////////////////////////////////////////////////////////////////////
+			} else if(currentType == ChartType.EM) { // todo EM -> EM1, EM
 				yAxis.setLabel(currentType.yLabel);
 				ArrayList<TimeSeries> tempSeries = new ArrayList<>(5);
 				ArrayList<EMChartBean> tempEm = new ArrayList<>(5);
@@ -443,11 +442,21 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 				if(meters != null) {
 					for(int i = 0; i < meters.length; i++) {
 						if(meters[i] instanceof EMHolder emh) {
-							String name = (meters[i] instanceof LabelHolder lh) ? UtilMiscellaneous.getDescName(d, lh.getLabel()) : UtilMiscellaneous.getDescName(d, i);
-							TimeSeries ts = new TimeSeries(uniqueName(dataset, name));
-							tempSeries.add(ts);
 							tempEm.add(new EMChartBean(emh));
-							dataset.addSeries(ts);
+							for(int lineInd = 0; lineInd < emh.getEM().getNumLines(); lineInd++) {
+//								String name = (meters[i] instanceof LabelHolder lh) ? UtilMiscellaneous.getDescName(d, lh.getLabel(), i) : UtilMiscellaneous.getDescName(d, i);
+								String name;
+								if(emh.getEM().getNumLines() > 1) {
+									name = UtilMiscellaneous.getDescName(d, String.valueOf((char)('a' + lineInd)), i);
+								} else {
+									name = (meters[i] instanceof LabelHolder lh) ? UtilMiscellaneous.getDescName(d, lh.getLabel(), i) : UtilMiscellaneous.getDescName(d, i);
+								}
+								TimeSeries ts = new TimeSeries(uniqueName(dataset, name));
+								tempSeries.add(ts);
+								dataset.addSeries(ts);
+							}
+						} else {
+							tempEm.add(null);
 						}
 					}
 				}
@@ -456,7 +465,6 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 				}
 				seriesMap.put(ind, tempSeries.toArray(TimeSeries[]::new));
 				emMap.put(ind, tempEm.toArray(EMChartBean[]::new));
-/////////////////////////////////////////////////////////////////////
 			} else if(currentType.mType == null) { // device property (RSSI), not from "Meters" or P_SUM
 				yAxis.setLabel(currentType.yLabel);
 				TimeSeries ts = new TimeSeries(uniqueName(dataset, UtilMiscellaneous.getDescName(d)));
@@ -469,7 +477,7 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 				if(meters != null) {
 					for(int i = 0; i < meters.length; i++) {
 						if(meters[i].hasType(currentType.mType)) {
-							String name = (meters[i] instanceof LabelHolder lh) ? UtilMiscellaneous.getDescName(d, lh.getLabel()) : UtilMiscellaneous.getDescName(d, i);
+							String name = (meters[i] instanceof LabelHolder lh) ? UtilMiscellaneous.getDescName(d, lh.getLabel(), i) : UtilMiscellaneous.getDescName(d, i);
 							TimeSeries ts = new TimeSeries(uniqueName(dataset, name));
 							temp.add(ts);
 							dataset.addSeries(ts);
@@ -493,8 +501,9 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 	}
 	
 	private static String uniqueName(TimeSeriesCollection dataset, String name) {
+		String orig = name;
 		for(int i = 1; dataset.getSeries(name) != null; i++) {
-			name += "(" + i + ")";
+			name = orig + "(" + i + ")";
 		}
 		return name;
 	}
@@ -571,27 +580,22 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 								ts[0].addOrUpdate(timestamp, sumW);
 								outStream(d, 0, currentType.name(), timestamp, sumW);
 							}
-						} else if((m = d.getMeters()) != null) {
+						} else if(currentType == ChartType.EM && (m = d.getMeters()) != null) {
 							int j = 0;
 							for(int i = 0; i < m.length; i++) {
-								if(m[i].hasType(currentType.mType) /*&& j < ts.length*/) {
-									float val = m[i].getValue(currentType.mType);
-									ts[j].addOrUpdate(timestamp, val);
-									outStream(d, j, currentType.name(), timestamp, val);
-									j++;
-								} else if(currentType == ChartType.EM1 && m[i] instanceof EMHolder /*emk*/) {
-									EMChartBean emBean = emMap.get(ind)[i];
-									long localTime = System.currentTimeMillis();
-									if(emBean.localTs == 0 || localTime >= emBean.localTs + 60*1000) {
+								EMChartBean emBean = emMap.get(ind)[i];
+								long localTime = System.currentTimeMillis();
+								if(emBean != null) {
+									if(emBean.localTs == 0 || localTime >= emBean.localTs + 60*1000) { // 1 min from last update
 										try {
-											int start = emBean.remoteTs == 0 ? (int)(localTime / 1000) - 60 * 30 : emBean.remoteTs + 60;
-											List<TimedData> energy = emBean.emManager.getData(start, start + 60 * 30);
+											int start = emBean.remoteTs == 0 ? (int)(localTime / 1000) - 60 * 30 : emBean.remoteTs + 60; // first -> get last 30 min
+											List<TimedData> energyData = emBean.emManager.getEnergyData(start, start + 60 * 60); // in case localTime and device time are not aligned ...
 											Millisecond enTimestamp;
 											int remoteTime = emBean.remoteTs;
-											for(TimedData en: energy) {
+											for(TimedData en: energyData) {
 												remoteTime = en.timestamp();
 												enTimestamp = new Millisecond(new Date(remoteTime * 1000L));
-												float val = en.value()[0]; // todo verifica "0"
+												float val = en.values()[0]; // todo verifica "0"
 												ts[j].addOrUpdate(enTimestamp, val);
 												outStream(d, j, currentType.name(), enTimestamp, val);
 											}
@@ -601,6 +605,16 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 											LOG.warn("EM-getData", e);
 										}
 									}
+									j++;
+								}
+							}
+						} else if((m = d.getMeters()) != null) {
+							int j = 0;
+							for(int i = 0; i < m.length; i++) {
+								if(m[i].hasType(currentType.mType) /*&& j < ts.length*/) {
+									float val = m[i].getValue(currentType.mType);
+									ts[j].addOrUpdate(timestamp, val);
+									outStream(d, j, currentType.name(), timestamp, val);
 									j++;
 								}
 							}
@@ -626,12 +640,10 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 		outStream = stream;
 	}
 	
-	class EMChartBean {
-		EM1Manager emManager;
-		int remoteTs; // s
-		long localTs; // ms
-		
-		EMChartBean() {}
+	private static class EMChartBean {
+		private EMDataInterface emManager;
+		private int remoteTs; // s
+		private long localTs; // ms
 		
 		EMChartBean(EMHolder device) {
 			this.emManager = device.getEM();

@@ -10,77 +10,27 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import it.usna.shellyscan.model.Devices;
-import it.usna.shellyscan.model.device.EMHolder;
 import it.usna.shellyscan.model.device.InternalTmpHolder;
-import it.usna.shellyscan.model.device.LabelHolder;
 import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.ModulesHolder;
+import it.usna.shellyscan.model.device.g2.meters.EM1Meters;
 import it.usna.shellyscan.model.device.g2.modules.EM1Manager;
 import it.usna.shellyscan.model.device.g2.modules.Relay;
 
 public class ShellyProEM50 extends AbstractProDevice implements ModulesHolder, InternalTmpHolder {
 	public static final String ID = "ProEM";
-	private static final Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.W, Meters.Type.VA, Meters.Type.PF, Meters.Type.V, Meters.Type.I, Meters.Type.FREQ};
 	private Relay relay = new Relay(this, 0);
 	private Relay[] relays = new Relay[] {relay};
 	private float internalTmp;
-	private float power[] = new float[2];
-	private float apparent[] = new float[2];
-	private float voltage[] = new float[2];
-	private float current[] = new float[2];
-	private float pf[] = new float[2];
-	private float freq[] = new float[2];
-	private String meterName[] = new String[2];
+	private EM1Meters meters0, meters1;
 	private Meters meters[];
 
 	public ShellyProEM50(InetAddress address, int port, String hostname) {
 		super(address, port, hostname);
 
-		class EMMeters extends Meters implements LabelHolder, EMHolder {
-			private int ind;
-			private EMMeters(int ind) {
-				this.ind = ind;
-			}
-			
-			@Override
-			public Type[] getTypes() {
-				return SUPPORTED_MEASURES;
-			}
-
-			@Override
-			public float getValue(Type t) {
-				if(t == Type.W) {
-					return power[ind];
-				} else if(t == Type.VA) {
-					return apparent[ind];
-				} else if(t == Type.I) {
-					return current[ind];
-				} else if(t == Type.PF) {
-					return pf[ind];
-				} else if(t == Type.FREQ) {
-					return freq[ind];
-				} else {
-					return voltage[ind];
-				}
-			}
-
-			@Override
-			public String getLabel() {
-				return meterName[ind];
-			}
-			
-			@Override
-			public EM1Manager getEM() {
-				return new EM1Manager(ShellyProEM50.this, ind);
-			}
-			
-			@Override
-			public String toString() {
-				return meterName[ind] + ": " + Type.W + "=" + power[ind] + " " + Type.I + "=" + current[ind] + " " + Type.PF + "=" + pf[ind] + " " + Type.V + "=" + voltage[ind];
-			}
-		}
-		
-		meters = new Meters[] {new EMMeters(0), new EMMeters(1)};
+		meters0 = new EM1Meters(new EM1Manager(this, 0));
+		meters1 = new EM1Meters(new EM1Manager(this, 1));
+		meters = new Meters[] {meters0, meters1};
 	}
 
 	@Override
@@ -113,8 +63,8 @@ public class ShellyProEM50 extends AbstractProDevice implements ModulesHolder, I
 		super.fillSettings(configuration);
 		relay.fillSettings(configuration.get("switch:0"));
 		
-		meterName[0] = configuration.get("em1:0").get("name").asText("");
-		meterName[1] = configuration.get("em1:1").get("name").asText("");
+		meters0.fillSettings(configuration.get("em1:0"));
+		meters1.fillSettings(configuration.get("em1:1"));
 	}
 
 	@Override
@@ -122,24 +72,10 @@ public class ShellyProEM50 extends AbstractProDevice implements ModulesHolder, I
 		super.fillStatus(status);
 		JsonNode switchStatus = status.get("switch:0");
 		relay.fillStatus(switchStatus);
-
-		JsonNode em1_0 = status.get("em1:0");
-		power[0] = em1_0.get("act_power").floatValue();
-		apparent[0] = em1_0.get("aprt_power").floatValue();
-		current[0] = em1_0.get("current").floatValue();
-		pf[0] = em1_0.get("pf").floatValue();
-		voltage[0] = em1_0.get("voltage").floatValue();
-		freq[0] = em1_0.get("freq").floatValue();
-		
-		JsonNode em1_1 = status.get("em1:1");
-		power[1] = em1_1.get("act_power").floatValue();
-		apparent[1] = em1_1.get("aprt_power").floatValue();
-		current[1] = em1_1.get("current").floatValue();
-		pf[1] = em1_1.get("pf").floatValue();
-		voltage[1] = em1_1.get("voltage").floatValue();
-		freq[1] = em1_1.get("freq").floatValue();
-
 		internalTmp = switchStatus.get("temperature").get("tC").floatValue();
+		
+		meters0.fillStatus(status.get("em1:0"));
+		meters1.fillStatus(status.get("em1:1"));
 	}
 	
 	@Override
@@ -156,6 +92,7 @@ public class ShellyProEM50 extends AbstractProDevice implements ModulesHolder, I
 		ObjectNode conf = createIndexedRestoreNode(config, "em1", 0);
 		((ObjectNode)conf.get("config")).remove("ct_type");
 		errors.add(postCommand("EM1.SetConfig", conf));
+		
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 		conf = createIndexedRestoreNode(config, "em1", 1);
 		((ObjectNode)conf.get("config")).remove("ct_type");

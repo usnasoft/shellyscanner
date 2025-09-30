@@ -23,7 +23,7 @@ public enum ChartType {
 	LUX("dlgChartsLuxLabel", "dlgChartsLuxYLabel", Meters.Type.L),
 	FREQ("dlgChartsFreqLabel", "dlgChartsFreqYLabel", Meters.Type.FREQ),
 	DIST("dlgChartsDistanceLabel", "dlgChartsDistanceYLabel", Meters.Type.DMM),
-	EM1("dlgChartsEMLabel", "dlgChartsEMYLabel");
+	EM("dlgChartsEMLabel", "dlgChartsEMYLabel");
 
 	final String yLabel;
 	final String label;
