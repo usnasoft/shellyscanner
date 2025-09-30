@@ -22,16 +22,6 @@ import it.usna.shellyscan.model.device.g2.modules.EMManager;
 public class Shelly3EM63 extends AbstractG3Device implements InternalTmpHolder {
 	public static final String ID = "S3EMG3";
 	private float internalTmp;
-//	private float power[] = new float[3], totPower;
-//	private float apparent[] = new float[3], totApparent;
-//	private float voltage[] = new float[3];
-//	private float current[] = new float[3], totCurrent;
-//	private float pf[] = new float[3];
-//	private float freq[] = new float[3];
-//	private String meterName[] = new String[3];
-//	private float totPower;
-//	private float totApparent;
-//	private float totCurrent;
 	
 	private EM1Meters meters0, meters1, meters2; // em1
 	private EMPhaseMeters emMeters0, emMeters1, emMeters2; //em
@@ -54,8 +44,6 @@ public class Shelly3EM63 extends AbstractG3Device implements InternalTmpHolder {
 	private void init(boolean triphase) {
 		this.triphase = triphase;
 		if(triphase) {
-//			meters = new Meters[] {new EMMeters(0), new EMMeters(1), new EMMeters(2), new TotalEMMeters()};
-//			meterName[1] = meterName[2] = "";
 			emMeters0 = new EMPhaseMeters("a");
 			emMeters1 = new EMPhaseMeters("b");
 			emMeters2 = new EMPhaseMeters("c");
@@ -100,12 +88,8 @@ public class Shelly3EM63 extends AbstractG3Device implements InternalTmpHolder {
 			init(current3phase);
 		}
 		if(current3phase) {
-//			meterName[0] = configuration.get("em:0").get("name").asText("");
 			emMeters0.fillSettings(configuration.get("em:0"));
 		} else {
-//			meterName[0] = configuration.get("em1:0").get("name").asText("");
-//			meterName[1] = configuration.get("em1:1").get("name").asText("");
-//			meterName[2] = configuration.get("em1:2").get("name").asText("");
 			meters0.fillSettings(configuration.get("em1:0"));
 			meters1.fillSettings(configuration.get("em1:1"));
 			meters2.fillSettings(configuration.get("em1:2"));
@@ -117,56 +101,11 @@ public class Shelly3EM63 extends AbstractG3Device implements InternalTmpHolder {
 		super.fillStatus(status);
 		if(triphase) {
 			JsonNode em0 = status.get("em:0");
-			
-//			power[0] = em_0.get("a_act_power").floatValue();
-//			apparent[0] = em_0.get("a_aprt_power").floatValue();
-//			current[0] = em_0.get("a_current").floatValue();
-//			pf[0] = em_0.get("a_pf").floatValue();
-//			voltage[0] = em_0.get("a_voltage").floatValue();
-//			freq[0] = em_0.get("a_freq").floatValue();
-//			
-//			power[1] = em_0.get("b_act_power").floatValue();
-//			apparent[1] = em_0.get("b_aprt_power").floatValue();
-//			current[1] = em_0.get("b_current").floatValue();
-//			pf[1] = em_0.get("b_pf").floatValue();
-//			voltage[1] = em_0.get("b_voltage").floatValue();
-//			freq[1] = em_0.get("b_freq").floatValue();
-//			
-//			power[2] = em_0.get("c_act_power").floatValue();
-//			apparent[2] = em_0.get("c_aprt_power").floatValue();
-//			current[2] = em_0.get("c_current").floatValue();
-//			pf[2] = em_0.get("c_pf").floatValue();
-//			voltage[2] = em_0.get("c_voltage").floatValue();
-//			freq[2] = em_0.get("c_freq").floatValue();
 			emMeters0.fillStatus(em0);
 			emMeters1.fillStatus(em0);
 			emMeters2.fillStatus(em0);
 			emTotal.fillStatus(em0);
 		} else {
-//			JsonNode em1_0 = status.get("em1:0");
-//			power[0] = em1_0.get("act_power").floatValue();
-//			apparent[0] = em1_0.get("aprt_power").floatValue();
-//			current[0] = em1_0.get("current").floatValue();
-//			pf[0] = em1_0.get("pf").floatValue();
-//			voltage[0] = em1_0.get("voltage").floatValue();
-//			freq[0] = em1_0.get("freq").floatValue();
-//
-//			JsonNode em1_1 = status.get("em1:1");
-//			power[1] = em1_1.get("act_power").floatValue();
-//			apparent[1] = em1_1.get("aprt_power").floatValue();
-//			current[1] = em1_1.get("current").floatValue();
-//			pf[1] = em1_1.get("pf").floatValue();
-//			voltage[1] = em1_1.get("voltage").floatValue();
-//			freq[1] = em1_1.get("freq").floatValue();
-//
-//			JsonNode em1_2 = status.get("em1:2");
-//			power[2] = em1_2.get("act_power").floatValue();
-//			apparent[2] = em1_2.get("aprt_power").floatValue();
-//			current[2] = em1_2.get("current").floatValue();
-//			pf[2] = em1_2.get("pf").floatValue();
-//			voltage[2] = em1_2.get("voltage").floatValue();
-//			freq[2] = em1_2.get("freq").floatValue();
-			
 			meters0.fillStatus(status.get("em1:0"));
 			meters1.fillStatus(status.get("em1:1"));
 			meters2.fillStatus(status.get("em1:2"));
@@ -183,73 +122,7 @@ public class Shelly3EM63 extends AbstractG3Device implements InternalTmpHolder {
 			return EM1Manager.getInfoRequests(super.getInfoRequests(), 0, 1, 2);
 		}
 	}
-	
-//	private class EMMeters extends Meters implements LabelHolder {
-//		private static final Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.W, Meters.Type.VA, Meters.Type.PF, Meters.Type.V, Meters.Type.I, Meters.Type.FREQ};
-//		private int ind;
-//
-//		private EMMeters(int ind) {
-//			this.ind = ind;
-//		}
-//		
-//		@Override
-//		public Type[] getTypes() {
-//			return SUPPORTED_MEASURES;
-//		}
-//
-//		@Override
-//		public float getValue(Type t) {
-//			if(t == Type.W) {
-//				return power[ind];
-//			} else if(t == Type.VA) {
-//				return apparent[ind];
-//			} else if(t == Type.I) {
-//				return current[ind];
-//			} else if(t == Type.PF) {
-//				return pf[ind];
-//			} else if(t == Type.FREQ) {
-//				return freq[ind];
-//			} else {
-//				return voltage[ind];
-//			}
-//		}
-//
-//		@Override
-//		public String getLabel() {
-//			return meterName[ind];
-//		}
-//		
-//		@Override
-//		public String toString() {
-//			return meterName[ind] + ": " + Type.W + "=" + power[ind] + " " + Type.I + "=" + current[ind] + " " + Type.PF + "=" + pf[ind] + " " + Type.V + "=" + voltage[ind];
-//		}
-//	}
 
-//	private class TotalEMMeters extends Meters {
-//		private static final Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.W, Meters.Type.VA, Meters.Type.I};
-//
-//		@Override
-//		public Type[] getTypes() {
-//			return SUPPORTED_MEASURES;
-//		}
-//
-//		@Override
-//		public float getValue(Type t) {
-//			if(t == Type.W) {
-//				return totPower;
-//			} else if(t == Type.VA) {
-//				return totApparent;
-//			} else { //if(t == Type.I)
-//				return totCurrent;
-//			}
-//		}
-//		
-//		@Override
-//		public String toString() {
-//			return Type.W + "=" + totPower + " " + Type.VA + "=" + totApparent + " " + Type.I + "=" + totCurrent;
-//		}
-//	}
-//	
 	@Override
 	public void restoreCheck(Map<String, JsonNode> backupJsons, Map<RestoreMsg, Object> res) {
 		JsonNode devInfo = backupJsons.get("Shelly.GetDeviceInfo.json");

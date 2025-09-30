@@ -444,7 +444,6 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 						if(meters[i] instanceof EMHolder emh) {
 							tempEm.add(new EMChartBean(emh));
 							for(int lineInd = 0; lineInd < emh.getEM().getNumLines(); lineInd++) {
-//								String name = (meters[i] instanceof LabelHolder lh) ? UtilMiscellaneous.getDescName(d, lh.getLabel(), i) : UtilMiscellaneous.getDescName(d, i);
 								String name;
 								if(emh.getEM().getNumLines() > 1) {
 									name = UtilMiscellaneous.getDescName(d, String.valueOf((char)('a' + lineInd)), i);
@@ -586,18 +585,20 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 								EMChartBean emBean = emMap.get(ind)[i];
 								long localTime = System.currentTimeMillis();
 								if(emBean != null) {
-									if(emBean.localTs == 0 || localTime >= emBean.localTs + 60*1000) { // 1 min from last update
+									if(emBean.localTs == 0 || localTime >= emBean.localTs + 60 * 1000) { // 1 min from last update
 										try {
 											int start = emBean.remoteTs == 0 ? (int)(localTime / 1000) - 60 * 30 : emBean.remoteTs + 60; // first -> get last 30 min
 											List<TimedData> energyData = emBean.emManager.getEnergyData(start, start + 60 * 60); // in case localTime and device time are not aligned ...
 											Millisecond enTimestamp;
 											int remoteTime = emBean.remoteTs;
 											for(TimedData en: energyData) {
-												remoteTime = en.timestamp();
-												enTimestamp = new Millisecond(new Date(remoteTime * 1000L));
-												float val = en.values()[0]; // todo verifica "0"
-												ts[j].addOrUpdate(enTimestamp, val);
-												outStream(d, j, currentType.name(), enTimestamp, val);
+												for(int lineInd = 0; lineInd < emBean.emManager.getNumLines(); lineInd++) {
+													remoteTime = en.timestamp();
+													enTimestamp = new Millisecond(new Date(remoteTime * 1000L));
+													float val = en.values()[lineInd];
+													ts[j + lineInd].addOrUpdate(enTimestamp, val);
+													outStream(d, j + lineInd, currentType.name(), enTimestamp, val);
+												}
 											}
 											emBean.remoteTs = remoteTime;
 											emBean.localTs = localTime;
@@ -605,7 +606,7 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 											LOG.warn("EM-getData", e);
 										}
 									}
-									j++;
+									j += emBean.emManager.getNumLines();
 								}
 							}
 						} else if((m = d.getMeters()) != null) {
