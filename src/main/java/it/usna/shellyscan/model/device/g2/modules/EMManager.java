@@ -7,8 +7,8 @@ import java.util.List;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
-import it.usna.shellyscan.model.device.EMDataInterface;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
+import it.usna.shellyscan.model.device.meters.EMDataInterface;
 
 public class EMManager implements EMDataInterface {
 	private static final int IND_a_total_act_energy = 0;

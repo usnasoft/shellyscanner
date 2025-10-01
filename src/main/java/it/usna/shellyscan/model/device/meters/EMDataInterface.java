@@ -1,4 +1,4 @@
-package it.usna.shellyscan.model.device;
+package it.usna.shellyscan.model.device.meters;
 
 import java.io.IOException;
 import java.util.List;

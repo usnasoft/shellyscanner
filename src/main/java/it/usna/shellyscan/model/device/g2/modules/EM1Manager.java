@@ -7,8 +7,8 @@ import java.util.List;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
-import it.usna.shellyscan.model.device.EMDataInterface;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
+import it.usna.shellyscan.model.device.meters.EMDataInterface;
 
 public class EM1Manager implements EMDataInterface {
 //	private static final int PERIOD = 3600; // seconds {300, 900, 1800, or 3600}

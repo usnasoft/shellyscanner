@@ -83,11 +83,11 @@ public class Shelly3EM63 extends AbstractG3Device implements InternalTmpHolder {
 	@Override
 	protected void fillSettings(JsonNode configuration) throws IOException {
 		super.fillSettings(configuration);
-		boolean current3phase = configuration.get("sys").get("device").get("profile").asText().equals(MODE_TRIPHASE);
-		if(current3phase != triphase) {
-			init(current3phase);
+		boolean config3phase = configuration.get("sys").get("device").get("profile").asText().equals(MODE_TRIPHASE);
+		if(config3phase != triphase) {
+			init(config3phase);
 		}
-		if(current3phase) {
+		if(config3phase) {
 			emMeters0.fillSettings(configuration.get("em:0"));
 		} else {
 			meters0.fillSettings(configuration.get("em1:0"));
