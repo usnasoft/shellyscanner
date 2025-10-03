@@ -63,6 +63,9 @@ public class EM1Manager implements EMDataInterface {
 	}
 	
 	@Override
+	/**
+	 * like getData but only returns active energy data
+	 */
 	public List<TimedData> getEnergyData(int startTs, int endTs) throws IOException {
 		ArrayList<TimedData> data = new ArrayList<>();
 		int nextTs = startTs;
@@ -76,7 +79,6 @@ public class EM1Manager implements EMDataInterface {
 				for(JsonNode valArray: enArray) {
 					data.add(new TimedData(ts, new float[] {valArray.get(IND_total_act_energy).floatValue() - valArray.get(IND_total_act_ret_energy).floatValue()}));
 					ts += period;
-
 //					System.out.println(data.get(data.size() - 1));
 				}
 			}
@@ -90,10 +92,13 @@ public class EM1Manager implements EMDataInterface {
 	public int getNumLines() {
 		return 1;
 	}
-	
-	/*
-		long end = (System.currentTimeMillis() / 3600) * 3600;
-		long start = end - (3600 * 24 * 7);
+
+	/**
+	 * @param startTs e.g. period 3600 -> long end = (System.currentTimeMillis() / 3600) * 3600; long start = end - (3600 * 24 * 7);
+	 * @param endTs
+	 * @param period seconds {300, 900, 1800, or 3600}
+	 * @return
+	 * @throws IOException
 	 */
 	public List<TimedData> getEnergy(int startTs, int endTs, int period) throws IOException {
 		ArrayList<TimedData> data = new ArrayList<>();
@@ -106,9 +111,8 @@ public class EM1Manager implements EMDataInterface {
 				int thisPeriod = energyData.get("period").intValue();
 				JsonNode enArray = energyData.get("values");
 				for(JsonNode valArray: enArray) {
-					data.add(new TimedData(ts /** 1000L*/, new float[] {valArray.get(0).floatValue()}));
+					data.add(new TimedData(ts, new float[] {valArray.get(0).floatValue()}));
 					ts += thisPeriod;
-
 //					System.out.println(data.get(data.size() - 1));
 				}
 			}
