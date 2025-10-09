@@ -32,8 +32,8 @@ public class UsnaDropdownAction extends UsnaAction {
 //		});
 	}
 	
-	public UsnaDropdownAction(Component w, String largeIcon, String tooltipId, Supplier<Object[]> supplier) {
-		super(w, largeIcon, tooltipId);
+	public UsnaDropdownAction(Component w, String tooltipId, String largeIcon, Supplier<Object[]> supplier) {
+		super(w, tooltipId, largeIcon);
 		this.actionsSupplier = supplier;
 		
 		setActionListener(e -> {
@@ -42,8 +42,8 @@ public class UsnaDropdownAction extends UsnaAction {
 		});
 	}
 	
-	public UsnaDropdownAction(Component w, String largeIcon, String tooltipId, Object[] actions) {
-		this(w, largeIcon, tooltipId, () -> actions);
+	public UsnaDropdownAction(Component w, String tooltipId, String largeIcon, Object[] actions) {
+		this(w, tooltipId, largeIcon, () -> actions);
 //		super(w, largeIcon, tooltipId);
 ////		this.actions = actions;
 //		this.actionsSupplier = () -> {return actions;};

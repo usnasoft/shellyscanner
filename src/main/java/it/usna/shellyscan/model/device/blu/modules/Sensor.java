@@ -2,7 +2,7 @@ package it.usna.shellyscan.model.device.blu.modules;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
-import it.usna.shellyscan.model.device.Meters;
+import it.usna.shellyscan.model.device.meters.Meters;
 
 /**
  * Sensor factory / Generic BTHSensor / Measure BTHSensor

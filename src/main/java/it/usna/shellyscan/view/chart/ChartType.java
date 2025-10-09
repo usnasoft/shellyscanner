@@ -2,7 +2,7 @@ package it.usna.shellyscan.view.chart;
 
 import static it.usna.shellyscan.Main.LABELS;
 
-import it.usna.shellyscan.model.device.Meters;
+import it.usna.shellyscan.model.device.meters.Meters;
 
 public enum ChartType {
 	INT_TEMP("dlgChartsIntTempLabel", "dlgChartsTempYLabel"),

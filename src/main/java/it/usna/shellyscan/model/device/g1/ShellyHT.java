@@ -6,7 +6,7 @@ import java.util.List;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
-import it.usna.shellyscan.model.device.Meters;
+import it.usna.shellyscan.model.device.meters.Meters;
 
 public class ShellyHT extends AbstractBatteryG1Device {
 	public static final String ID = "SHHT-1";

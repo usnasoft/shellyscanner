@@ -121,7 +121,7 @@ public class G2JobPanel extends AbstractCronPanel {
 		callOpPanel.add(minusB);
 
 		JButton btnSelectCombo = new JButton();
-		btnSelectCombo.setAction(new UsnaDropdownAction(btnSelectCombo, "/images/expand-more.png", "lblMethodSelect", () -> {
+		btnSelectCombo.setAction(new UsnaDropdownAction(btnSelectCombo, "lblMethodSelect", "/images/expand-more.png", () -> {
 			try {
 				this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 				return mHints.get(methodTF, paramsTF);

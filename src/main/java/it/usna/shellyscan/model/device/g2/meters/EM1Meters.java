@@ -3,9 +3,9 @@ package it.usna.shellyscan.model.device.g2.meters;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import it.usna.shellyscan.model.device.LabelHolder;
-import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.g2.modules.EM1Manager;
 import it.usna.shellyscan.model.device.meters.EMHolder;
+import it.usna.shellyscan.model.device.meters.Meters;
 
 /**
  * EM1 model; also returns EMData module 

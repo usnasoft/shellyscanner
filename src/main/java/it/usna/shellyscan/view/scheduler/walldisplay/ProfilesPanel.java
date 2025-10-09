@@ -193,7 +193,7 @@ class ProfilesPanel extends JPanel {
 				ThermProfile oldProfile = profiles.get(mRow);
 
 				try {
-					if(wdSceduleManager.getRules(oldProfile.id()).size() == 0 ||
+					if(wdSceduleManager.getRules(oldProfile.id()).isEmpty() ||
 							JOptionPane.showConfirmDialog(parent, LABELS.getString("msgSchDelProfile"), LABELS.getString("schDelProfile"),
 							JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE) == JOptionPane.OK_OPTION) {
 						try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e1) {}

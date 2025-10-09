@@ -13,6 +13,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.Locale;
+import java.util.MissingResourceException;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -32,7 +33,6 @@ import it.usna.shellyscan.Main;
 import it.usna.shellyscan.model.device.GhostDevice;
 import it.usna.shellyscan.model.device.InternalTmpHolder;
 import it.usna.shellyscan.model.device.LabelHolder;
-import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.ModulesHolder;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
@@ -42,6 +42,7 @@ import it.usna.shellyscan.model.device.g1.ShellyFlood;
 import it.usna.shellyscan.model.device.g1.ShellyTRV;
 import it.usna.shellyscan.model.device.g1.modules.ThermostatG1;
 import it.usna.shellyscan.model.device.g2.ShellyPlusSmoke;
+import it.usna.shellyscan.model.device.meters.Meters;
 import it.usna.shellyscan.model.device.modules.DeviceModule;
 import it.usna.shellyscan.view.util.ScannerProperties;
 import it.usna.shellyscan.view.util.UtilMiscellaneous;
@@ -257,8 +258,10 @@ public class DevicesTable extends ExTooltipTable {
 								} else { // fahrenheit 
 									tt += "<td><i>" + LABELS.getString("METER_LBL_" + t) + tLabel + "</i>&nbsp;</td><td align='right'>" + String.format(Locale.ENGLISH, LABELS.getString("METER_VAL_T_F"), m.getValue(t) * 1.8f + 32f) + "&nbsp;</td>";
 								}
-							} else if(t == Meters.Type.EX) {
-								tt += "<td><i>" + LABELS.getString("METER_LBL_" + t) + tLabel + "</i>&nbsp;</td><td align='right'>" + LABELS.getString((m.getValue(t) == 0f) ? "METER_VAL_EX_0" : "METER_VAL_EX_1") + "&nbsp;</td>";
+							} else if(t.isEnumType()) {
+								try {
+									tt += "<td><i>" + LABELS.getString("METER_LBL_" + t) + tLabel + "</i>&nbsp;</td><td align='right'>" + LABELS.getString("METER_VAL_" + t + "_" + (int)m.getValue(t)) + "&nbsp;</td>";
+								} catch(MissingResourceException e) {}
 							} else {
 								tt += "<td><i>" + LABELS.getString("METER_LBL_" + t) + tLabel + "</i>&nbsp;</td><td align='right'>" + String.format(Locale.ENGLISH, LABELS.getString("METER_VAL_" + t), m.getValue(t)) + "&nbsp;</td>";
 							}
@@ -296,8 +299,10 @@ public class DevicesTable extends ExTooltipTable {
 							} else { // fahrenheit 
 								ret += LABELS.getString("METER_LBL_" + t) + tLabel + " " + String.format(Locale.ENGLISH, LABELS.getString("METER_VAL_T_F"), m.getValue(t) * 1.8f + 32f) + " ";
 							}
-						} else if(t.isBoolean()) {
-							ret += LABELS.getString("METER_LBL_" + t) + tLabel + " " + LABELS.getString((m.getValue(t) == 0f) ? "METER_VAL_" + t + "_0" : "METER_VAL_" + t + "_NOT0") + " ";
+						} else if(t.isEnumType()) {
+							try {
+								ret += LABELS.getString("METER_LBL_" + t) + tLabel + " " + LABELS.getString("METER_VAL_" + t + "_" + (int)m.getValue(t)) + " ";
+							} catch(MissingResourceException e) {}
 						} else {
 							ret += LABELS.getString("METER_LBL_" + t) + tLabel + " " + String.format(Locale.ENGLISH, LABELS.getString("METER_VAL_" + t), m.getValue(t)) + " ";
 						}

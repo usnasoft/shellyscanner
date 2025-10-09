@@ -2,7 +2,7 @@ package it.usna.shellyscan.model.device.g2.meters;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
-import it.usna.shellyscan.model.device.Meters;
+import it.usna.shellyscan.model.device.meters.Meters;
 
 public class MetersWVIpf extends Meters {
 	private static final Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Type.W, Type.PF, Type.V, Type.I};

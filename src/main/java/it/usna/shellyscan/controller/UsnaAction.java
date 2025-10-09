@@ -41,7 +41,7 @@ public class UsnaAction extends AbstractAction {
 	}
 
 	public UsnaAction(Component w, String tooltipId, String icon, final ActionListener a) {
-		this(w, icon, tooltipId);
+		this(w, tooltipId, icon);
 		this.onActionPerformed = a;
 	}
 	
@@ -49,7 +49,7 @@ public class UsnaAction extends AbstractAction {
 	 * This constructor must be followed by a setActionListener call
 	 */
 	public UsnaAction(Component w, String nameId, String tooltipId, String smallIcon, String largeIcon) {
-		this(w, largeIcon, tooltipId);
+		this(w, tooltipId, largeIcon);
 		putValue(NAME, LABELS.getString(nameId));
 		if(smallIcon != null) {
 			putValue(SMALL_ICON, new ImageIcon(UsnaAction.class.getResource(smallIcon)));
@@ -59,7 +59,7 @@ public class UsnaAction extends AbstractAction {
 	/**
 	 * This constructor must be followed by a setActionListener call
 	 */
-	public UsnaAction(Component w, String icon, String tooltipId) {
+	protected UsnaAction(Component w, String tooltipId, String icon) {
 		this.w = w;
 		if(icon != null) {
 			putValue(LARGE_ICON_KEY, new ImageIcon(UsnaAction.class.getResource(icon)));

@@ -1,4 +1,4 @@
-package it.usna.shellyscan.model.device;
+package it.usna.shellyscan.model.device.meters;
 
 import java.text.NumberFormat;
 import java.util.Locale;
@@ -30,18 +30,18 @@ public abstract class Meters implements Comparable<Meters> {
 		ANG2, // angle - accelerometer
 		BAT; // battery %
 		
-		final boolean bool; // 0 or not 0
+		final boolean enumType; // 0 or not 0
 		
 		private Type() {
-			bool = false;
+			enumType = false;
 		}
 		
 		private Type(boolean b) {
-			bool = b;
+			enumType = b;
 		}
 		
-		public boolean isBoolean() {
-			return bool;
+		public boolean isEnumType() {
+			return enumType;
 		}
 	};
 

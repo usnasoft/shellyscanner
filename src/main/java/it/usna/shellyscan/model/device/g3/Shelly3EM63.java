@@ -11,13 +11,13 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.InternalTmpHolder;
-import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.RestoreMsg;
 import it.usna.shellyscan.model.device.g2.meters.EM1Meters;
 import it.usna.shellyscan.model.device.g2.meters.EMPhaseMeters;
 import it.usna.shellyscan.model.device.g2.meters.EMTotalMeters;
 import it.usna.shellyscan.model.device.g2.modules.EM1Manager;
 import it.usna.shellyscan.model.device.g2.modules.EMManager;
+import it.usna.shellyscan.model.device.meters.Meters;
 
 public class Shelly3EM63 extends AbstractG3Device implements InternalTmpHolder {
 	public static final String ID = "S3EMG3";

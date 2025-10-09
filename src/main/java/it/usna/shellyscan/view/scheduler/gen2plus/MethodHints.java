@@ -31,7 +31,7 @@ public class MethodHints {
 	}
 	
 	public Object[] get(JTextField method, JTextField parameters) {
-		if(methodsList == null || methodsList.size() == 0) {
+		if(methodsList == null || methodsList.isEmpty()) {
 			generate();
 		}
 
@@ -43,8 +43,12 @@ public class MethodHints {
 
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					method.setText(m.method);
-					parameters.setText(m.pars);
+					if(m.method != null) {
+						method.setText(m.method);
+					}
+					if(m.pars != null) {
+						parameters.setText(m.pars);
+					}
 				}
 			};
 		}
@@ -130,8 +134,8 @@ public class MethodHints {
 					}
 				}
 			}
-			if(methodsList.size() == 0) {
-				methodsList.add(new Method("No hints", "", ""));
+			if(methodsList.isEmpty()) {
+				methodsList.add(new Method("No hints", null, null));
 			}
 		} catch (IOException e) {
 			LOG.error("create hints", e);

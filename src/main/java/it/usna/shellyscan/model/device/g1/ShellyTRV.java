@@ -8,8 +8,8 @@ import java.util.concurrent.TimeUnit;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import it.usna.shellyscan.model.Devices;
-import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.g1.modules.ThermostatG1;
+import it.usna.shellyscan.model.device.meters.Meters;
 
 public class ShellyTRV extends AbstractG1Device {
 	public static final String ID = "SHTRV-01";

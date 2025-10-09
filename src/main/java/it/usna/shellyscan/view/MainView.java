@@ -365,7 +365,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		
 		// Selection popup
 		JButton btnSelectCombo = new JButton();
-		btnSelectCombo.setAction(new UsnaDropdownAction(btnSelectCombo, "/images/expand-more.png", "labelSelectDevices", new Object[] {
+		btnSelectCombo.setAction(new UsnaDropdownAction(btnSelectCombo, "labelSelectDevices", "/images/expand-more.png", new Object[] {
 				new SelectionAction(devicesTable, "labelSelectOnLineReboot", null, null, i -> model.get(i).getStatus() == Status.ON_LINE && model.get(i).rebootRequired()),
 				new SelectionAction(devicesTable, "labelSelectG1", null, null, i -> model.get(i) instanceof AbstractG1Device),
 				new SelectionAction(devicesTable, "labelSelectG2", null, null, i -> model.get(i) instanceof AbstractG2Device /*&& model.get(i) instanceof AbstractG3Device == false*/), // G2+

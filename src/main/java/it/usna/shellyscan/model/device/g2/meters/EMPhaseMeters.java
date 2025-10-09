@@ -3,7 +3,7 @@ package it.usna.shellyscan.model.device.g2.meters;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import it.usna.shellyscan.model.device.LabelHolder;
-import it.usna.shellyscan.model.device.Meters;
+import it.usna.shellyscan.model.device.meters.Meters;
 
 /**
  * EM 3phase model (for a single phase)

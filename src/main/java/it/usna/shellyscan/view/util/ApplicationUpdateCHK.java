@@ -32,7 +32,7 @@ public class ApplicationUpdateCHK {
 		w.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 		try {
 			List<Release> rel = remoteCheck(true, "000");
-			if(rel.size() == 0) {
+			if(rel.isEmpty()) {
 				Msg.showMsg(w, LABELS.getString("aboutCheckUpdatesNone"), currentVersion(), JOptionPane.INFORMATION_MESSAGE);
 			} else {	
 				String msg = rel.stream().map(Release::msg).collect(Collectors.joining("\n"));

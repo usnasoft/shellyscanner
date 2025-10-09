@@ -6,6 +6,7 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.util.Locale;
+import java.util.MissingResourceException;
 
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
@@ -16,8 +17,8 @@ import javax.swing.border.Border;
 import javax.swing.table.TableCellRenderer;
 
 import it.usna.shellyscan.Main;
-import it.usna.shellyscan.model.device.Meters;
-import it.usna.shellyscan.model.device.Meters.Type;
+import it.usna.shellyscan.model.device.meters.Meters;
+import it.usna.shellyscan.model.device.meters.Meters.Type;
 
 public class DeviceMetersCellRenderer extends JPanel implements TableCellRenderer {
 	private static final long serialVersionUID = 1L;
@@ -81,8 +82,12 @@ public class DeviceMetersCellRenderer extends JPanel implements TableCellRendere
 								} else { // fahrenheit 
 									val = new JLabel(String.format(Locale.ENGLISH, Main.LABELS.getString("METER_VAL_T_F"), metValue * 1.8f + 32f));
 								}
-							} else if(t.isBoolean()) {
-								val = new JLabel(Main.LABELS.getString((metValue == 0f) ? "METER_VAL_" + t + "_0" : "METER_VAL_" + t + "_NOT0"));
+							} else if(t.isEnumType()) {
+								try {
+									val = new JLabel(Main.LABELS.getString("METER_VAL_" + t + "_"  + (int)metValue));
+								} catch(MissingResourceException e) {
+									val = new JLabel("-");
+								}
 							} else {
 								val = new JLabel(String.format(Locale.ENGLISH, Main.LABELS.getString("METER_VAL_" + t), metValue));
 								if(metValue == 0f) {

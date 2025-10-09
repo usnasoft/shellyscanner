@@ -28,6 +28,7 @@ import it.usna.shellyscan.model.DeviceAPIException;
 import it.usna.shellyscan.model.DeviceOfflineException;
 import it.usna.shellyscan.model.DeviceUnauthorizedException;
 import it.usna.shellyscan.model.Devices;
+import it.usna.shellyscan.model.device.meters.Meters;
 import it.usna.shellyscan.model.device.modules.FirmwareManager;
 import it.usna.shellyscan.model.device.modules.InputResetManager;
 import it.usna.shellyscan.model.device.modules.LoginManager;

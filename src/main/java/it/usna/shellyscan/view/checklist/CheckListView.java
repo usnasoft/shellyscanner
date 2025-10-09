@@ -594,7 +594,7 @@ public class CheckListView extends JDialog implements UsnaEventListener<Devices.
 		if(config.at("/sys/debug/udp").hasNonNull("addr")) {
 			logModes.add(LogMode.UDP);
 		}
-		Object debug = (logModes.size() == 0) ? Boolean.FALSE : logModes.stream().map(log -> LABELS.getString("debug" + log.name())).collect(Collectors.joining(", "));
+		Object debug = (logModes.isEmpty()) ? Boolean.FALSE : logModes.stream().map(log -> LABELS.getString("debug" + log.name())).collect(Collectors.joining(", "));
 		Object ble;
 		JsonNode bleEnableNode = config.at("/ble/enable");
 		if(bleEnableNode.isMissingNode()) {
