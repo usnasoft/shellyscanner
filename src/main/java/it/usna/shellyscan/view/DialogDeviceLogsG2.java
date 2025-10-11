@@ -238,7 +238,7 @@ public class DialogDeviceLogsG2 extends JDialog {
 		}
 
 		@Override
-		public void onWebSocketClose(int statusCode, String reason) {
+		public void onWebSocketClose(int statusCode, String reason, Callback c) {
 			textArea.append(">>>> Close: " + reason + " (" + statusCode + ")\n", bluStyle);
 		}
 

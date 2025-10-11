@@ -2,6 +2,7 @@ package it.usna.shellyscan.model.device.g2;
 
 import java.util.function.Predicate;
 
+import org.eclipse.jetty.websocket.api.Callback;
 import org.eclipse.jetty.websocket.api.Session;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,8 +32,13 @@ public class WebSocketDeviceListener implements Session.Listener.AutoDemanding {
        LOG.trace("ws-open"); // session.getRemoteAddress()
     }
 
+//	@Override
+//	public void onWebSocketClose(int statusCode, String reason) {
+//		LOG.trace("sw-close: reason: {}, status: {}", reason, statusCode);
+//	}
+	
 	@Override
-	public void onWebSocketClose(int statusCode, String reason) {
+	public void onWebSocketClose(int statusCode, String reason, Callback c) {
 		LOG.trace("sw-close: reason: {}, status: {}", reason, statusCode);
 	}
 

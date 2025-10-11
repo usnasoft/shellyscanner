@@ -34,7 +34,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-dependency-plugin</artifactId>
-				<version>3.8.1</version>
+				<version>3.9.0</version>
 				<executions>
 					<execution>
 						<id>copy-dependencies</id>
@@ -110,12 +110,12 @@
 		<dependency>
 			<groupId>org.eclipse.jetty</groupId>
 			<artifactId>jetty-client</artifactId>
-			<version>12.1.0</version>
+			<version>12.1.2</version>
 		</dependency>
 		<dependency>
 			<groupId>org.eclipse.jetty.websocket</groupId>
 			<artifactId>jetty-websocket-jetty-client</artifactId>
-			<version>12.1.0</version>
+			<version>12.1.2</version>
 		</dependency>
 		<dependency>
 			<groupId>org.jfree</groupId>
