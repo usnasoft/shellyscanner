@@ -28,6 +28,7 @@ public abstract class Meters implements Comparable<Meters> {
 		ANG, // angle - accelerometer
 		ANG1, // angle - accelerometer
 		ANG2, // angle - accelerometer
+		CHANNEL, // BLU remore channel
 		BAT; // battery %
 		
 		final boolean enumType; // 0 or not 0

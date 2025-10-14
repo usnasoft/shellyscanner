@@ -30,6 +30,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.KeyStroke;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
@@ -42,6 +43,7 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
+import it.usna.shellyscan.controller.UsnaAction;
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice.LogMode;
 import it.usna.shellyscan.model.device.blu.AbstractBluDevice;
@@ -222,6 +224,9 @@ public class DialogDeviceLogsG2 extends JDialog {
 					}
 				}
 			});
+			
+			textArea.getActionMap().put(DefaultEditorKit.beginLineAction, new UsnaAction(e -> textArea.setCaretPosition(0)));
+			textArea.getActionMap().put(DefaultEditorKit.endLineAction, new UsnaAction(e -> textArea.setCaretPosition(textArea.getDocument().getLength())));
 
 			this.setSize(700, 650);
 			setLocationRelativeTo(owner);

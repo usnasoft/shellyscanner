@@ -111,7 +111,7 @@ public class Webhooks {
 		}
 	}
 
-	public static class Webhook {
+	public class Webhook {
 //		private int id;
 		private boolean enable;
 		private String event;
@@ -142,6 +142,7 @@ public class Webhooks {
 		
 		public void execute() throws IOException {
 			for(String url: urls) {
+				url = url.replaceAll("^http://127.0.0.1", "http://" + parent.getAddressAndPort().getRepresentation());
 				final URL command = new URL(url);
 				command.openConnection().getContent();
 			}
