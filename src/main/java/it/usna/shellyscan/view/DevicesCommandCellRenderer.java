@@ -71,7 +71,7 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 		this.tempUnitCelsius = celsius;
 		// Generic
 		onOffButton0.setBorder(BUTTON_BORDERS);
-		editDialogButton.setBorder(BorderFactory.createEmptyBorder(0, 3, 0, 3));
+		editDialogButton.setBorder(BorderFactory.createEmptyBorder(0, 2, 0, 2));
 		editDialogButton.setContentAreaFilled(false);
 
 		BoxLayout stackedPanelLO = new BoxLayout(stackedPanel, BoxLayout.Y_AXIS);
