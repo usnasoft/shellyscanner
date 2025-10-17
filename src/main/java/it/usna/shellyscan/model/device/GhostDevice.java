@@ -12,7 +12,10 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
+import it.usna.shellyscan.model.DeviceOfflineException;
 import it.usna.shellyscan.model.device.blu.AbstractBluDevice;
+import it.usna.shellyscan.model.device.blu.BTHomeDevice;
+import it.usna.shellyscan.model.device.blu.BluInetAddressAndPort;
 import it.usna.shellyscan.model.device.g2.modules.LoginManagerG2;
 import it.usna.shellyscan.model.device.modules.FirmwareManager;
 import it.usna.shellyscan.model.device.modules.InputResetManager;
@@ -23,7 +26,7 @@ import it.usna.shellyscan.model.device.modules.WIFIManager;
 import it.usna.shellyscan.model.device.modules.WIFIManager.Network;
 
 public class GhostDevice extends ShellyAbstractDevice {
-	private final static Logger LOG = LoggerFactory.getLogger(GhostDevice.class);
+	private static final Logger LOG = LoggerFactory.getLogger(GhostDevice.class);
 	private final String typeName;
 	private final String gen;
 	private final String typeID;
@@ -34,7 +37,7 @@ public class GhostDevice extends ShellyAbstractDevice {
 	public GhostDevice(InetAddress address, int port, String hostname,
 			String mac, String ssid, String typeName, String typeID, String gen, String name, long lastConnection, boolean battery,
 			String note, String keyNote) {
-		super(address, port, hostname);
+		super((BTHomeDevice.GENERATION.equals(gen)) ? new BluInetAddressAndPort(address, port, 0) : new InetAddressAndPort(address, port), hostname);
 		this.mac = mac;
 		this.ssid = ssid;
 		this.typeName = typeName;
@@ -45,10 +48,6 @@ public class GhostDevice extends ShellyAbstractDevice {
 		this.battery = battery;
 		this.note = note;
 		this.keyNote = keyNote;
-		
-//		if(BTHomeDevice.GENERATION.equals(gen)) {
-//			addressAndPort = ;
-//		}
 	}
 
 	@Override

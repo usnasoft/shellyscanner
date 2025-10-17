@@ -10,20 +10,20 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.InternalTmpHolder;
-import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.ModulesHolder;
 import it.usna.shellyscan.model.device.g1.meters.MetersPower;
 import it.usna.shellyscan.model.device.g1.modules.Relay;
+import it.usna.shellyscan.model.device.meters.Meters;
 
 public class Shelly1PM extends AbstractG1Device implements ModulesHolder, InternalTmpHolder {
-	public final static String ID = "SHSW-PM";
-	private final static Meters.Type[] SUPPORTED_MEASURES_H = new Meters.Type[] {Meters.Type.T, Meters.Type.H};
-	private final static Meters.Type[] MEASURES_EXT_SWITCH = new Meters.Type[] {Meters.Type.EX};
+	public static final String ID = "SHSW-PM";
+	private static final Meters.Type[] SUPPORTED_MEASURES_H = new Meters.Type[] {Meters.Type.T, Meters.Type.H};
+	private static final Meters.Type[] MEASURES_EXT_SWITCH = new Meters.Type[] {Meters.Type.EX};
 	private Relay relay = new Relay(this, 0);
 	private Relay[] relayArray = new Relay[] {relay};
 	private float internalTmp;
 	private float power;
-	private float extT0, extT1, extT2;// = new float[3];
+	private float extT0, extT1, extT2;
 	private int humidity;
 	private int extSwitchStatus;
 	private boolean extSwitchRev;
@@ -37,7 +37,6 @@ public class Shelly1PM extends AbstractG1Device implements ModulesHolder, Intern
 	protected void init() throws IOException {
 		JsonNode settings = getJSON("/settings");
 		this.hostname = settings.get("device").get("hostname").asText("");
-//		fillOnce(settings);
 		fillSettings(settings);
 		try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e) {}
 		JsonNode status = getJSON("/status");
@@ -72,7 +71,6 @@ public class Shelly1PM extends AbstractG1Device implements ModulesHolder, Intern
 			if(extTNode.has("0")) tt.add(Meters.Type.T);
 			if(extTNode.has("1")) tt.add(Meters.Type.T1);
 			if(extTNode.has("2")) tt.add(Meters.Type.T2);
-			//final Meters.Type[] mTypes = tt.toArray(new Meters.Type[tt.size()]);
 			final Meters.Type[] mTypes = tt.toArray(Meters.Type[]::new);
 			meters = new Meters[] {
 					pMeters,
@@ -110,7 +108,7 @@ public class Shelly1PM extends AbstractG1Device implements ModulesHolder, Intern
 							if(extSwitchRev) {
 								return extSwitchStatus == 0 ? 1 : 0;
 							} else {
-								return extSwitchStatus;
+								return extSwitchStatus == 0 ? 0f : 1f;
 							}
 						}
 					}
@@ -138,10 +136,6 @@ public class Shelly1PM extends AbstractG1Device implements ModulesHolder, Intern
 	@Override
 	public float getInternalTmp() {
 		return internalTmp;
-	}
-
-	public float getPower() {
-		return power;
 	}
 
 	@Override
@@ -193,15 +187,12 @@ public class Shelly1PM extends AbstractG1Device implements ModulesHolder, Intern
 		for(int i = 0; i < 3; i++) {
 			JsonNode extT = settings.path("ext_temperature").path(i + "");
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-//			errors.add(sendCommand("/settings/ext_temperature/" + i + "?" + jsonEntryIteratorToURLPar(extT.fields())));
 			errors.add(sendCommand("/settings/ext_temperature/" + i + "?" + jsonEntrySetToURLPar(extT.properties())));
 		}
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-//		errors.add(sendCommand("/settings/ext_humidity/0?" + jsonEntryIteratorToURLPar(settings.path("ext_humidity").path("0").fields())));
 		errors.add(sendCommand("/settings/ext_humidity/0?" + jsonEntrySetToURLPar(settings.path("ext_humidity").path("0").properties())));
 		
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-//		errors.add(sendCommand("/settings/ext_switch/0?" + jsonEntryIteratorToURLPar(settings.path("ext_switch").path("0").fields())));
 		errors.add(sendCommand("/settings/ext_switch/0?" + jsonEntrySetToURLPar(settings.path("ext_switch").path("0").properties())));
 	}
 

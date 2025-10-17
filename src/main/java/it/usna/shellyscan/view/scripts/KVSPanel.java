@@ -138,7 +138,7 @@ public class KVSPanel extends JPanel {
 					kvs.delete(mRow);
 					tModel.removeRow(mRow);
 				} catch (IOException e1) {
-					Msg.errorMsg(e1);
+					Msg.errorMsg(this, e1);
 				}
 			}
 		}));

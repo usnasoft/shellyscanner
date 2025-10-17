@@ -10,7 +10,7 @@ import it.usna.shellyscan.model.device.g2.modules.InputActionInterface;
 import it.usna.shellyscan.model.device.g2.modules.Webhooks;
 
 public class InputSensor extends Sensor implements InputActionInterface {
-	public final static int OBJ_ID = 0x3A; // dec. 58
+	public static final int OBJ_ID = 0x3A; // dec. 58
 	private final Input input;
 
 	InputSensor(int id, JsonNode sensorConf) {

@@ -13,7 +13,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.InternalTmpHolder;
-import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.ModulesHolder;
 import it.usna.shellyscan.model.device.RestoreMsg;
 import it.usna.shellyscan.model.device.g2.meters.MetersWVI;
@@ -21,6 +20,7 @@ import it.usna.shellyscan.model.device.g2.modules.Input;
 import it.usna.shellyscan.model.device.g2.modules.LightWhite;
 import it.usna.shellyscan.model.device.g2.modules.SensorAddOn;
 import it.usna.shellyscan.model.device.g3.modules.LoRaAddOn;
+import it.usna.shellyscan.model.device.meters.Meters;
 import it.usna.shellyscan.model.device.modules.DeviceModule;
 
 /**
@@ -28,9 +28,9 @@ import it.usna.shellyscan.model.device.modules.DeviceModule;
  * @author usna
  */
 public class Shelly0_10VPMG3 extends AbstractG3Device implements InternalTmpHolder, ModulesHolder {
-	private final static Logger LOG = LoggerFactory.getLogger(Shelly0_10VPMG3.class);
-	public final static String ID = "Dimmer0110VPMG3";
-	public final static String MODEL = "S3DM-0010WW";
+	private static final Logger LOG = LoggerFactory.getLogger(Shelly0_10VPMG3.class);
+	public static final String ID = "Dimmer0110VPMG3";
+	public static final String MODEL = "S3DM-0010WW";
 	private float internalTmp;
 	private MetersWVI baseMeasures = new MetersWVI();
 	private Meters[] meters;

@@ -8,20 +8,21 @@ import java.util.concurrent.TimeUnit;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import it.usna.shellyscan.model.Devices;
-import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.ModulesHolder;
 import it.usna.shellyscan.model.device.g1.meters.MetersPower;
 import it.usna.shellyscan.model.device.g1.modules.LightBulbRGB;
+import it.usna.shellyscan.model.device.meters.Meters;
 import it.usna.shellyscan.model.device.modules.DeviceModule;
+import it.usna.shellyscan.model.device.modules.RGBCCTInterface;
 
 /**
  * Shelly Shelly DUO RGB model
  * @author usna
  */
 public class ShellyDUORGB extends AbstractG1Device implements ModulesHolder {
-	public final static String ID = "SHCB-1";
+	public static final String ID = "SHCB-1";
 	private LightBulbRGB light = new LightBulbRGB(this, 0);
-	private LightBulbRGB[] lightsArray = new LightBulbRGB[] {light};
+	private RGBCCTInterface[] lightsArray = new RGBCCTInterface[] {light};
 	private float power;
 	private Meters[] meters;
 	
@@ -48,9 +49,9 @@ public class ShellyDUORGB extends AbstractG1Device implements ModulesHolder {
 		return ID;
 	}
 	
-	public float getPower() {
-		return power;
-	}
+//	public float getPower() {
+//		return power;
+//	}
 
 	@Override
 	public Meters[] getMeters() {

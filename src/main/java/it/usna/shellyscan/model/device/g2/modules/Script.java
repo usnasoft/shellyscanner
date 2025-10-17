@@ -10,7 +10,7 @@ import java.util.concurrent.TimeUnit;
 import com.fasterxml.jackson.core.io.JsonStringEncoder;
 import com.fasterxml.jackson.databind.JsonNode;
 
-import it.usna.shellyscan.model.device.DeviceOfflineException;
+import it.usna.shellyscan.model.DeviceOfflineException;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 
 public class Script {

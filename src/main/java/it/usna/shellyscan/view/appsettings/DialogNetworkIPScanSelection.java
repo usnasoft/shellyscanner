@@ -28,7 +28,7 @@ import it.usna.util.AppProperties;
 
 public class DialogNetworkIPScanSelection extends JDialog {
 	private static final long serialVersionUID = 1L;
-	private final static String IPV4_REGEX_3 = "^((0|1\\d?\\d?|2[0-4]?\\d?|25[0-5]?|[3-9]\\d?)\\.){2}(0|1\\d?\\d?|2[0-4]?\\d?|25[0-5]?|[3-9]\\d?)$";
+	private static final String IPV4_REGEX_3 = "^((0|1\\d?\\d?|2[0-4]?\\d?|25[0-5]?|[3-9]\\d?)\\.){2}(0|1\\d?\\d?|2[0-4]?\\d?|25[0-5]?|[3-9]\\d?)$";
 
 	JTextField[] baseIP = new JTextField[10];
 	IntegerTextFieldPanel[] firstIP = new IntegerTextFieldPanel[10];

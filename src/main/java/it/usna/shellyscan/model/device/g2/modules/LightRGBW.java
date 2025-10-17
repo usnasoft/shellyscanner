@@ -17,7 +17,7 @@ public class LightRGBW implements RGBWInterface {
 	private int green; // 0..255
 	private int blue; // 0..255
 	private int white; // 0..255
-	private int gain; // Gain for all channels, 0..100
+	private int brightness; // Brightness for all channels, 0..100
 	private String source;
 	private boolean inputIsOn;
 	
@@ -37,7 +37,7 @@ public class LightRGBW implements RGBWInterface {
 		green = rgbNode.get(1).asInt();
 		blue = rgbNode.get(2).asInt();
 		white = statusColor.get("white").asInt();
-		gain = statusColor.get("brightness").asInt();
+		brightness = statusColor.get("brightness").asInt();
 		source = statusColor.get("source").asText("-");
 	}
 	
@@ -120,12 +120,12 @@ public class LightRGBW implements RGBWInterface {
 	@Override
 	public void setGain(int b) throws IOException {
 		parent.getJSON("/rpc/RGBW.Set?id=" + index + "&brightness=" + b);
-		gain = b;
+		brightness = b;
 	}
 
 	@Override
 	public int getGain() {
-		return gain;
+		return brightness;
 	}
 	
 	@Override
@@ -137,13 +137,13 @@ public class LightRGBW implements RGBWInterface {
 		return parent.postCommand("RGBW.SetConfig", AbstractG2Device.createIndexedRestoreNode(config, "rgbw", index));
 	}
 	
-	@Override
-	public AbstractG2Device getParent() {
-		return parent;
-	}
+//	@Override
+//	public AbstractG2Device getParent() {
+//		return parent;
+//	}
 	
 	@Override
 	public String toString() {
-		return getLabel() + "-" + gain + (isOn ? "-ON" : "-OFF");
+		return getLabel() + "-" + brightness + (isOn ? "-ON" : "-OFF");
 	}
 }

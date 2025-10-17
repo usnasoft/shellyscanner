@@ -52,7 +52,7 @@ public class CronValuesDialog extends JDialog {
 		
 		JButton okBtn = new JButton(new UsnaAction("dlgOK", e -> {
 			List<Integer> selection = list.getSelectedValuesList();
-			String res = (selection.size() == 0 || selection.size() == max - min) ? "*" : CronUtils.listAsCronString(selection);
+			String res = (selection.isEmpty() || selection.size() == max - min) ? "*" : CronUtils.listAsCronString(selection);
 			origin.setText(res);
 			origin.requestFocus();
 			dispose();
@@ -63,6 +63,7 @@ public class CronValuesDialog extends JDialog {
 		buttonsPanel.add(closeBtn);
 		
 		list.addMouseListener(new MouseAdapter() {
+			@Override
 		    public void mouseClicked(MouseEvent evt) {
 		        if (evt.getClickCount() == 2) {
 		        	okBtn.doClick();
@@ -70,8 +71,8 @@ public class CronValuesDialog extends JDialog {
 		    }
 		});
 		
-		scrollPane.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "escape_close");
-		scrollPane.getActionMap().put("escape_close", new AbstractAction() {
+		rootPane.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "escape_close");
+		rootPane.getActionMap().put("escape_close", new AbstractAction() {
 			private static final long serialVersionUID = 1L;
 			@Override
 			public void actionPerformed(ActionEvent e) {

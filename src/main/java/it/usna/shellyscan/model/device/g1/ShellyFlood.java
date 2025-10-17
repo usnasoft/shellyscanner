@@ -6,11 +6,11 @@ import java.util.List;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
-import it.usna.shellyscan.model.device.Meters;
+import it.usna.shellyscan.model.device.meters.Meters;
 
 public class ShellyFlood extends AbstractBatteryG1Device {
-	public final static String ID = "SHWT-1";
-	private final static Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.BAT, Meters.Type.T};
+	public static final String ID = "SHWT-1";
+	private static final Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.BAT, Meters.Type.T};
 	private boolean flood;
 	private float temp;
 	private Meters[] meters;

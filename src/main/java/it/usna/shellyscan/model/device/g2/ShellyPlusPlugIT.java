@@ -8,13 +8,13 @@ import java.util.Map;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import it.usna.shellyscan.model.device.InternalTmpHolder;
-import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.ModulesHolder;
 import it.usna.shellyscan.model.device.g2.meters.MetersWVI;
 import it.usna.shellyscan.model.device.g2.modules.Relay;
+import it.usna.shellyscan.model.device.meters.Meters;
 
 public class ShellyPlusPlugIT extends AbstractG2Device implements ModulesHolder, InternalTmpHolder {
-	public final static String ID = "PlusPlugIT";
+	public static final String ID = "PlusPlugIT";
 	private Relay relay = new Relay(this, 0);
 	private float internalTmp;
 	private MetersWVI meters = new MetersWVI();

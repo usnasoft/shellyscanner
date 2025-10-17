@@ -155,10 +155,10 @@ public class LightRGBW implements RGBWInterface {
 		return parent.getName();
 	}
 	
-	@Override
-	public AbstractG1Device getParent() {
-		return parent;
-	}
+//	@Override
+//	public AbstractG1Device getParent() {
+//		return parent;
+//	}
 	
 	@Override
 	public String toString() {

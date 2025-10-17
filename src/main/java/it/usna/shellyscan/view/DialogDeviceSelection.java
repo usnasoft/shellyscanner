@@ -6,6 +6,7 @@ import java.awt.BorderLayout;
 import java.awt.Cursor;
 import java.awt.FlowLayout;
 import java.awt.Window;
+import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -14,6 +15,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
+import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.JButton;
@@ -140,11 +142,21 @@ public class DialogDeviceSelection extends JDialog {
 		
 		// Select & close (first click do select)
 		table.addMouseListener(new MouseAdapter() {
+			@Override
 		    public void mousePressed(MouseEvent evt) {
 		        if (evt.getClickCount() == 2 && table.getSelectedRow() != -1) {
 		        	dispose();
 		        }
 		    }
+		});
+		
+		rootPane.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "escape_close");
+		rootPane.getActionMap().put("escape_close", new AbstractAction() {
+			private static final long serialVersionUID = 1L;
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				dispose();
+			}
 		});
 
 		setSize(450, owner.getHeight());		UsnaSwingUtils.setLocationRelativeTo(this, owner, SwingConstants.RIGHT, -8, 0);

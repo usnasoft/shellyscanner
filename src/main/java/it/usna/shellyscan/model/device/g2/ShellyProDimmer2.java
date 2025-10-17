@@ -10,12 +10,12 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.InternalTmpHolder;
-import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.ModulesHolder;
 import it.usna.shellyscan.model.device.RestoreMsg;
 import it.usna.shellyscan.model.device.g2.meters.MetersWVI;
 import it.usna.shellyscan.model.device.g2.modules.Input;
 import it.usna.shellyscan.model.device.g2.modules.LightWhite;
+import it.usna.shellyscan.model.device.meters.Meters;
 import it.usna.shellyscan.model.device.modules.DeviceModule;
 
 /**
@@ -23,8 +23,8 @@ import it.usna.shellyscan.model.device.modules.DeviceModule;
  * @author usna
  */
 public class ShellyProDimmer2 extends AbstractProDevice implements InternalTmpHolder, ModulesHolder {
-	public final static String ID = "ProDimmerx";
-	public final static String MODEL = "SPDM-002PE01EU";
+	public static final String ID = "ProDimmerx";
+	public static final String MODEL = "SPDM-002PE01EU";
 	private float internalTmp;
 	private final MetersWVI meters0 = new MetersWVI();
 	private final MetersWVI meters1 = new MetersWVI();

@@ -1,18 +1,17 @@
 package it.usna.shellyscan.model.device;
 
-import java.io.BufferedWriter;
 import java.io.IOException;
 import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.SocketTimeoutException;
-import java.nio.file.FileSystem;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import org.eclipse.jetty.client.ContentResponse;
 import org.eclipse.jetty.client.HttpClient;
@@ -20,11 +19,16 @@ import org.eclipse.jetty.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 
+import it.usna.shellyscan.model.DeviceAPIException;
+import it.usna.shellyscan.model.DeviceOfflineException;
+import it.usna.shellyscan.model.DeviceUnauthorizedException;
 import it.usna.shellyscan.model.Devices;
+import it.usna.shellyscan.model.device.meters.Meters;
 import it.usna.shellyscan.model.device.modules.FirmwareManager;
 import it.usna.shellyscan.model.device.modules.InputResetManager;
 import it.usna.shellyscan.model.device.modules.LoginManager;
@@ -37,7 +41,7 @@ import it.usna.shellyscan.model.device.modules.WIFIManager;
  * @author usna
  */
 public abstract class ShellyAbstractDevice {
-	private final static Logger LOG = LoggerFactory.getLogger(ShellyAbstractDevice.class);
+	private static final Logger LOG = LoggerFactory.getLogger(ShellyAbstractDevice.class);
 	protected HttpClient httpClient;
 	protected final InetAddressAndPort addressAndPort;
 	protected String hostname;
@@ -61,25 +65,16 @@ public abstract class ShellyAbstractDevice {
 	public enum Status {ON_LINE, OFF_LINE, NOT_LOOGGED, READING, ERROR, GHOST}; // GHOST not yet detected (in store)
 	public enum LogMode {NONE, FILE, MQTT, SOCKET, UDP, UNDEFINED};
 
-	protected ShellyAbstractDevice(InetAddress address, int port, String hostname) {
-		addressAndPort = new InetAddressAndPort(address, port);
+	protected ShellyAbstractDevice(InetAddressAndPort address, String hostname) {
+		this(address);
 		this.hostname = hostname;
-		if(address instanceof Inet6Address) {
-			if(port == 80) {
-				this.uriPrefix = "http://[" + address.getHostAddress() + "]";
-			} else {
-				this.uriPrefix = "http://[" + address.getHostAddress() + "]:" + port;
-			}
-		} else {
-			this.uriPrefix = "http://" + addressAndPort.getRepresentation();
-		}
 	}
 	
 	/**
-	 * Non ethernet devices (Blu)
+	 * Non ethernet (-> no hostname) devices (BLU)
 	 */
 	protected ShellyAbstractDevice(InetAddressAndPort address) {
-		addressAndPort = address;
+		this.addressAndPort = address;
 		InetAddress addr = address.getAddress();
 		if(addr instanceof Inet6Address) {
 			int port = address.getPort();
@@ -91,6 +86,7 @@ public abstract class ShellyAbstractDevice {
 		} else {
 			this.uriPrefix = "http://" + addressAndPort.getRepresentation();
 		}
+		jsonMapper.disable(JsonGenerator.Feature.AUTO_CLOSE_TARGET); // need this for backup
 	}
 	
 	public JsonNode getJSON(final String command) throws IOException { //JsonProcessingException extends IOException
@@ -114,7 +110,7 @@ public abstract class ShellyAbstractDevice {
 		}
 		if(statusCode == HttpStatus.UNAUTHORIZED_401) {
 			status = Status.NOT_LOOGGED;
-			throw new IOException("Status-" + HttpStatus.UNAUTHORIZED_401);
+			throw new DeviceUnauthorizedException();
 		} else if(statusCode == HttpStatus.INTERNAL_SERVER_ERROR_500) {
 			status = Status.ERROR;
 			String errorMsg;
@@ -252,11 +248,8 @@ public abstract class ShellyAbstractDevice {
 	public abstract TimeAndLocationManager getTimeAndLocationManager() throws IOException;
 	
 	public abstract InputResetManager getInputResetManager() throws IOException;
-
-//	public abstract boolean backup(final File file) throws IOException; // false: use of stored data; could not connect to device
 	
 	public abstract boolean backup(final Path file) throws IOException; // false: use of stored data; could not connect to device
-	
 	
 	public abstract Map<RestoreMsg, Object> restoreCheck(Map<String, JsonNode> backupJsons) throws IOException;
 	
@@ -272,22 +265,29 @@ public abstract class ShellyAbstractDevice {
 	 * Backup basic operation
 	 * @param section call whose returned json must be stored
 	 * @param entryName ZipEntry name
-	 * @param fs FileSystem
+	 * @param fs ZipOutputStream
 	 * @throws IOException on error or response.getStatus() != HttpStatus.OK_200
 	 */
-	protected JsonNode sectionToStream(String section, String entryName, FileSystem fs) throws IOException {
-		try(BufferedWriter writer = Files.newBufferedWriter(fs.getPath(entryName))) {
+	protected JsonNode sectionToStream(String section, String entryName, ZipOutputStream out) throws IOException {
+		try {
 			JsonNode resp = getJSON(section);
-			jsonMapper.writer().writeValue(writer, resp);
+			ZipEntry entry = new ZipEntry(entryName);
+			out.putNextEntry(entry);
+			jsonMapper.writer().writeValue(out, resp);
+			out.closeEntry();
 			return resp;
-		} catch (Exception e) {
+		} catch (RuntimeException e) {
 			LOG.debug("sectionToStream {}", section, e);
 			throw new DeviceOfflineException(e);
 		}
 	}
 	
-	protected JsonNode sectionToStream(final String section, final String arrayKey, final String entryName, FileSystem fs) throws IOException {
-		try(BufferedWriter writer = Files.newBufferedWriter(fs.getPath(entryName))) {
+	// to be used with "offset"; data will be merged on a single file (gen2+)
+	protected JsonNode sectionToStream(final String section, final String arrayKey, final String entryName, ZipOutputStream out) throws IOException {
+		try {
+			ZipEntry entry = new ZipEntry(entryName);
+			out.putNextEntry(entry);
+			
 			String req = section;
 			int offset = 0;
 			int tot = 0;
@@ -306,7 +306,7 @@ public abstract class ShellyAbstractDevice {
 					req = section + ((section.contains("?")) ? "&offset=" : "?offset=") + offset;
 				}
 			} while(tot > offset);
-			jsonMapper.writer().writeValue(writer, resp);
+			jsonMapper.writer().writeValue(out, resp);
 			return resp;
 		} catch (InterruptedException e) {
 			LOG.debug("sectionToStream {}-{}", section, arrayKey, e);
@@ -328,4 +328,4 @@ public abstract class ShellyAbstractDevice {
 	public String toString() {
 		return getTypeName() + "-" + name + ": " + addressAndPort.getRepresentation() + " (" + hostname + ")";
 	}
-} //278 - 399 - 316 - 251 - 237 - 231 - 247 - 271
+} //278 - 399 - 316 - 251 - 237 - 231 - 247 - 271 - 332 - 323

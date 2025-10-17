@@ -8,14 +8,14 @@ import java.util.concurrent.TimeUnit;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import it.usna.shellyscan.model.Devices;
-import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.ModulesHolder;
 import it.usna.shellyscan.model.device.g1.meters.MetersPower;
 import it.usna.shellyscan.model.device.g1.modules.LightBulbRGB;
+import it.usna.shellyscan.model.device.meters.Meters;
 import it.usna.shellyscan.model.device.modules.DeviceModule;
 
 public class ShellyBulb extends AbstractG1Device implements ModulesHolder {
-	public final static String ID = "SHBLB-1";
+	public static final String ID = "SHBLB-1";
 	private LightBulbRGB light = new LightBulbRGB(this, 0);
 	private LightBulbRGB[] lightsArray = new LightBulbRGB[] {light};
 	private float power;
@@ -44,9 +44,9 @@ public class ShellyBulb extends AbstractG1Device implements ModulesHolder {
 		return ID;
 	}
 	
-	public float getPower() {
-		return power;
-	}
+//	public float getPower() {
+//		return power;
+//	}
 	
 	@Override
 	public Meters[] getMeters() {

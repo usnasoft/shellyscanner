@@ -7,15 +7,13 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
-import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.g1.AbstractG1Device;
-import it.usna.shellyscan.model.device.modules.CCTInterface;
-import it.usna.shellyscan.model.device.modules.RGBInterface;
+import it.usna.shellyscan.model.device.modules.RGBCCTInterface;
 
 /**
  * Used by RGBW Bulbs
  */
-public class LightBulbRGB implements CCTInterface, RGBInterface {
+public class LightBulbRGB implements RGBCCTInterface {
 	private final AbstractG1Device parent;
 	private final int index;
 	private String name = "";
@@ -29,14 +27,14 @@ public class LightBulbRGB implements CCTInterface, RGBInterface {
 	private int gain; // Gain for all channels, 0..100, applies in mode="color"
 	private String source;
 	
-	public final static int MIN_TEMP = 3000;
-	public final static int MAX_TEMP = 6500;
+	public static final int MIN_TEMP = 3000;
+	public static final int MAX_TEMP = 6500;
 	
 	public LightBulbRGB(AbstractG1Device parent, int index) {
 		this.parent = parent;
 		this.index = index;
 	}
-	
+
 	public void fillSettings(JsonNode settingslight) {
 		name = settingslight.path("name").asText("");
 	}
@@ -105,21 +103,28 @@ public class LightBulbRGB implements CCTInterface, RGBInterface {
 	public int getMinTemperature() {
 		return MIN_TEMP;
 	}
+	
+	@Override
+	public int getMaxTemperature() {
+		return MAX_TEMP;
+	}
 
 	@Override
 	public boolean isInputOn() {
 		return false;
 	}
 
-	@Override
-	public ShellyAbstractDevice getParent() {
-		return parent;
-	}
+//	@Override
+//	public ShellyAbstractDevice getParent() {
+//		return parent;
+//	}
 	
+	@Override
 	public boolean isColorMode() {
 		return modeColor;
 	}
 	
+	@Override
 	public void setColorMode(boolean color) throws IOException {
 //		final JsonNode status = parent.getJSON("/light/" + index + "?mode=" + (color ? "color" : "white"));
 //		refresh(status);
@@ -134,6 +139,7 @@ public class LightBulbRGB implements CCTInterface, RGBInterface {
 		fillStatus(status);
 	}
 	
+	@Override
 	public void setGain(int b) throws IOException {
 		final JsonNode status = parent.getJSON("/light/" + index + "?gain=" + b);
 		fillStatus(status);

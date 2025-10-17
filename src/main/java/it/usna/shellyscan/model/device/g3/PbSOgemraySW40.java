@@ -10,18 +10,18 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.InternalTmpHolder;
-import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.ModulesHolder;
 import it.usna.shellyscan.model.device.g2.meters.MetersWVI;
 import it.usna.shellyscan.model.device.g2.modules.Input;
 import it.usna.shellyscan.model.device.g2.modules.Relay;
+import it.usna.shellyscan.model.device.meters.Meters;
 
 /**
  * Ogemray SW40 25A rele model
  * @author usna
  */
 public class PbSOgemraySW40 extends AbstractG3Device implements ModulesHolder, InternalTmpHolder {
-	public final static String ID = "Ogemray25";
+	public static final String ID = "Ogemray25";
 	private Relay relay = new Relay(this, 0);
 	private float internalTmp;
 	private Relay[] relays = new Relay[] {relay};

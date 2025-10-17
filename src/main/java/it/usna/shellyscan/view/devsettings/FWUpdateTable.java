@@ -5,7 +5,6 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
 
-import javax.swing.DefaultRowSorter;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JTable;
@@ -15,6 +14,7 @@ import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
+import javax.swing.table.TableStringConverter;
 
 import it.usna.shellyscan.Main;
 import it.usna.shellyscan.model.device.modules.FirmwareManager;
@@ -23,33 +23,50 @@ import it.usna.swing.table.ExTooltipTable;
 
 public class FWUpdateTable extends ExTooltipTable {
 	private static final long serialVersionUID = 1L;
-	final static int COL_STATUS = 0;
-	final static int COL_ID = 1;
-	final static int COL_CURRENT = 2;
-	final static int COL_STABLE = 3;
-	final static int COL_BETA = 4;
+	static final int COL_STATUS = 0;
+	static final int COL_ID = 1;
+	static final int COL_CURRENT = 2;
+	static final int COL_STABLE = 3;
+	static final int COL_BETA = 4;
 	
 	private final PanelFWUpdate fwPanel;
 
 	public FWUpdateTable(TableModel tm, PanelFWUpdate fwPanel) {
-		super(tm, true);
-		DefaultRowSorter<?,?> sorter = (DefaultRowSorter<?,?>)getRowSorter();
-		sorter.setSortable(COL_STATUS, false);
-		sorter.setSortable(COL_ID, false);
-		sorter.setSortable(COL_CURRENT, false);
-		sorter.setSortable(COL_STABLE, false);
-		sorter.setSortable(COL_BETA, false);
-
+		super(tm);
 		this.fwPanel = fwPanel;
+
+		TableRowSorter<TableModel> sorter = new TableRowSorter<>(tm);
+		sorter.setStringConverter(new TableStringConverter() {
+			@Override
+			public String toString(TableModel model, int row, int column) {
+				if(model.getValueAt(row, column) == null) return "";
+				FirmwareManager fw = fwPanel.getFirmwareManager(row);
+				if(column == COL_CURRENT && fw != null) {
+					return FirmwareManager.getShortVersion(fw.current());
+				} else if(column == COL_STABLE && fw != null) {
+					return FirmwareManager.getShortVersion(fw.newStable());
+				} else if(column == COL_BETA && fw != null) {
+					return FirmwareManager.getShortVersion(fw.newBeta());
+				}
+				return model.getValueAt(row, column).toString();
+			}
+		});
+		this.setRowSorter(sorter);
+
 		getTableHeader().setReorderingAllowed(false);
 		TableCellRenderer fwRendered = new FWCellRendered();
 		columnModel.getColumn(COL_STABLE).setCellRenderer(fwRendered);
 		columnModel.getColumn(COL_BETA).setCellRenderer(fwRendered);
 		columnModel.getColumn(COL_STATUS).setMaxWidth(DevicesTable.ONLINE_BULLET.getIconWidth() + 2);
 		columnModel.getColumn(COL_STATUS).setMinWidth(DevicesTable.ONLINE_BULLET.getIconWidth() + 2);
+		
 		// On update COL_STABLE value class is String for the updating row, if this is the first row ... see UsnaTableModel.getColumnClass(...))
-		columnModel.getColumn(COL_STABLE).setCellEditor(getDefaultEditor(Boolean.class));
+		TableCellEditor booleanEditor = getDefaultEditor(Boolean.class);
+		columnModel.getColumn(COL_STABLE).setCellEditor(booleanEditor);
+		columnModel.getColumn(COL_BETA).setCellEditor(booleanEditor);
+		
 		activateSingleCellStringCopy();
+//		setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 	}
 
 	@Override
@@ -125,7 +142,7 @@ public class FWUpdateTable extends ExTooltipTable {
 		if(filter.isEmpty()) {
 			sorter.setRowFilter(null);
 		} else {
-			RowFilter<TableModel, Integer> regexFilter = RowFilter.regexFilter("(?i).*\\Q" + filter.replace("\\E", "\\e") + "\\E.*", COL_ID, COL_CURRENT);
+			RowFilter<TableModel, Integer> regexFilter = RowFilter.regexFilter("(?i).*\\Q" + filter.replace("\\E", "\\e") + "\\E.*", COL_ID, COL_CURRENT, COL_STABLE, COL_BETA);
 			sorter.setRowFilter(regexFilter);
 		}
 	}

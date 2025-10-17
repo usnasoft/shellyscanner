@@ -47,11 +47,12 @@ import it.usna.shellyscan.model.device.blu.BluTRV;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.g2.AbstractProDevice;
 import it.usna.shellyscan.model.device.g3.AbstractG3Device;
+import it.usna.shellyscan.model.device.g4.AbstractG4Device;
 
 public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Integer> {
-	private final static Logger LOG = LoggerFactory.getLogger(Devices.class);
-	private final static ObjectMapper JSON_MAPPER = new ObjectMapper();
-	public final static String SCANNER_AGENT = "Shelly Scanner";
+	private static final Logger LOG = LoggerFactory.getLogger(Devices.class);
+	private static final ObjectMapper JSON_MAPPER = new ObjectMapper();
+	public static final String SCANNER_AGENT = "Shelly Scanner";
 	
 	public enum EventType {
 		ADD,
@@ -62,16 +63,16 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 		CLEAR // Clear model
 	};
 
-	private final static int EXECUTOR_POOL_SIZE = 128;
-	public final static long MULTI_QUERY_DELAY = 59;
+	private static final int EXECUTOR_POOL_SIZE = 128;
+	public static final long MULTI_QUERY_DELAY = 59;
 
 	private JmmDNS jd;
 	private Set<JmDNS> bjServices = new HashSet<>();
 
 	private IPCollection ipCollection = null;
 
-	private final static String SERVICE_TYPE1 = "_http._tcp.local.";
-//	private final static String SERVICE_TYPE2 = "_shelly._tcp.local.";
+	private static final String SERVICE_TYPE1 = "_http._tcp.local.";
+//	private static final String SERVICE_TYPE2 = "_shelly._tcp.local.";
 	private final List<ShellyAbstractDevice> devices = new ArrayList<>();
 	private final List<ScheduledFuture<?>> refreshProcess = new ArrayList<>();
 	private int refreshInterval = 2000;
@@ -90,8 +91,11 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 		
 //		wsClient.setConnectTimeout(100_000);
 //		wsClient.setIdleTimeout(Duration.ofMinutes(100));
-		wsClient.setStopAtShutdown(true);
 //		wsClient.setInputBufferSize(100_000);
+//		wsClient.setMaxBinaryMessageSize(100_000);
+//		wsClient.setMaxTextMessageSize(100_000);
+//		wsClient.setOutputBufferSize(100_000);
+		wsClient.setStopAtShutdown(true);
 		wsClient.start();
 	}
 
@@ -371,7 +375,7 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 				newDevice(d);
 				LOG.debug("Create {}:{} - {}", address, port, d);
 
-				// Rage extender
+				// Range extender
 				if(/*port == 80 &&*/ d instanceof AbstractG2Device gen2 && (gen2.isExtender() || gen2.getStatus() == Status.NOT_LOOGGED)) {
 					gen2.getRangeExtenderManager().getPorts().forEach(p -> {
 						try {
@@ -391,9 +395,8 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 					});
 				}
 				// BTHome (BLU)
-				if(d instanceof AbstractProDevice || d instanceof AbstractG3Device) {
-					final JsonNode currenteComponents = d.getJSON("/rpc/Shelly.GetComponents?dynamic_only=true").path("components"); // empty on 401
-					for(JsonNode compInfo: currenteComponents) {
+				if(d instanceof AbstractProDevice || d instanceof AbstractG3Device || d instanceof AbstractG4Device) {
+					for(JsonNode compInfo: ((AbstractG2Device)d).getJSONIterator("/rpc/Shelly.GetComponents?dynamic_only=true", "components")) { // empty on 401
 						String key = compInfo.path("key").asText();
 						if(key.startsWith(AbstractBluDevice.DEVICE_KEY_PREFIX) || key.startsWith(BluTRV.DEVICE_KEY_PREFIX)) {
 							newBluDevice(d, compInfo, key);
@@ -402,6 +405,8 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 					}
 				}
 			}
+		} catch(DeviceUnauthorizedException e) {
+			LOG.debug("401 - {}:{}; host: {}", address, port, hostName, e);
 		} catch(Exception e) {
 			LOG.error("Unexpected-add: {}:{}; host: {}", address, port, hostName, e);
 		}

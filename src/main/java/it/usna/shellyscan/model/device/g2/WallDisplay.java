@@ -2,24 +2,25 @@ package it.usna.shellyscan.model.device.g2;
 
 import java.io.IOException;
 import java.net.InetAddress;
-import java.nio.file.FileSystem;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.zip.ZipOutputStream;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import it.usna.shellyscan.model.Devices;
-import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.ModulesHolder;
 import it.usna.shellyscan.model.device.RestoreMsg;
+import it.usna.shellyscan.model.device.g2.modules.Input;
 import it.usna.shellyscan.model.device.g2.modules.Relay;
 import it.usna.shellyscan.model.device.g2.modules.ScheduleManagerThermWD;
 import it.usna.shellyscan.model.device.g2.modules.ThermostatG2;
+import it.usna.shellyscan.model.device.meters.Meters;
 import it.usna.shellyscan.model.device.modules.DeviceModule;
 
 /**
@@ -27,8 +28,8 @@ import it.usna.shellyscan.model.device.modules.DeviceModule;
  * @author usna
  */
 public class WallDisplay extends AbstractG2Device implements ModulesHolder {
-	public final static String ID = "WallDisplay";
-	private final static Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.T, Meters.Type.H, Meters.Type.L};
+	public static final String ID = "WallDisplay";
+	private static final Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.T, Meters.Type.H, Meters.Type.L};
 	private float temp;
 	private float humidity;
 	private int lux;
@@ -150,7 +151,7 @@ public class WallDisplay extends AbstractG2Device implements ModulesHolder {
 	}
 	
 	@Override
-	protected void backup(FileSystem out) throws IOException, InterruptedException {
+	protected void backup(ZipOutputStream out) throws IOException, InterruptedException {
 		if(thermostat != null) {
 			JsonNode profiles = sectionToStream("/rpc/Thermostat.Schedule.ListProfiles?id=0", "Thermostat.Schedule.ListProfiles.json", out);
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
@@ -175,14 +176,19 @@ public class WallDisplay extends AbstractG2Device implements ModulesHolder {
 	protected void restore(Map<String, JsonNode> backupJsons, List<String> errors) throws InterruptedException, IOException {
 		JsonNode backupConfiguration = backupJsons.get("Shelly.GetConfig.json");
 		boolean thermMode = backupConfiguration.get("thermostat:0") != null;
-		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+//		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 		if(thermMode && thermostat != null) { // saved configuration was "thermostat" and the current too? 
 			errors.add(thermostat.restore(backupConfiguration));
+			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+			new ScheduleManagerThermWD(this).restore(backupJsons, errors);
 		} else if(thermMode == false && relay != null) {
 			errors.add(relay.restore(backupConfiguration));
 		} else {
 			errors.add(RestoreMsg.ERR_RESTORE_MODE_THERM.name());
 		}
+		
+		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+		errors.add(Input.restore(this, backupConfiguration, 0));
 		
 		ObjectNode ui = (ObjectNode)backupConfiguration.get("ui").deepCopy();
 		ObjectNode out = JsonNodeFactory.instance.objectNode().set("config", ui);
@@ -197,9 +203,6 @@ public class WallDisplay extends AbstractG2Device implements ModulesHolder {
 		errors.add(postCommand("Humidity.SetConfig", createIndexedRestoreNode(backupConfiguration, "humidity", 0)));
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 		errors.add(postCommand("Illuminance.SetConfig", createIndexedRestoreNode(backupConfiguration, "illuminance", 0)));
-		
-		ScheduleManagerThermWD scheduleManagerTherm = new ScheduleManagerThermWD(this);
-		scheduleManagerTherm.restore(backupJsons, errors);
 	}
 	
 	@Override

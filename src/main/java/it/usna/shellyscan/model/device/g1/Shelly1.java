@@ -9,19 +9,19 @@ import java.util.concurrent.TimeUnit;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import it.usna.shellyscan.model.Devices;
-import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.ModulesHolder;
 import it.usna.shellyscan.model.device.g1.meters.MetersPower;
 import it.usna.shellyscan.model.device.g1.modules.Relay;
+import it.usna.shellyscan.model.device.meters.Meters;
 
 /**
  * Shelly 1 model
  * @author usna
  */
 public class Shelly1 extends AbstractG1Device implements ModulesHolder {
-	public final static String ID = "SHSW-1";
-	private final static Meters.Type[] SUPPORTED_MEASURES_H = new Meters.Type[] { Meters.Type.T, Meters.Type.H };
-	private final static Meters.Type[] MEASURES_EXT_SWITCH = new Meters.Type[] { Meters.Type.EX };
+	public static final String ID = "SHSW-1";
+	private static final Meters.Type[] SUPPORTED_MEASURES_H = new Meters.Type[] { Meters.Type.T, Meters.Type.H };
+	private static final Meters.Type[] MEASURES_EXT_SWITCH = new Meters.Type[] { Meters.Type.EX };
 	private Relay relay = new Relay(this, 0);
 	private float extT0, extT1, extT2;
 	private int humidity;
@@ -94,7 +94,7 @@ public class Shelly1 extends AbstractG1Device implements ModulesHolder {
 					if (extSwitchRev) {
 						return extSwitchStatus == 0 ? 1f : 0f;
 					} else {
-						return extSwitchStatus;
+						return extSwitchStatus == 0 ? 0f : 1f;
 					}
 				}
 			});
@@ -182,15 +182,12 @@ public class Shelly1 extends AbstractG1Device implements ModulesHolder {
 		for (int i = 0; i < 3; i++) {
 			JsonNode extT = settings.path("ext_temperature").path(i + "");
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-//			errors.add(sendCommand("/settings/ext_temperature/" + i + "?" + jsonEntryIteratorToURLPar(extT.fields())));
 			errors.add(sendCommand("/settings/ext_temperature/" + i + "?" + jsonEntrySetToURLPar(extT.properties())));
 		}
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-//		errors.add(sendCommand("/settings/ext_humidity/0?" + jsonEntryIteratorToURLPar(settings.path("ext_humidity").path("0").fields())));
 		errors.add(sendCommand("/settings/ext_humidity/0?" + jsonEntrySetToURLPar(settings.path("ext_humidity").path("0").properties())));
 		
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-//		errors.add(sendCommand("/settings/ext_switch/0?" + jsonEntryIteratorToURLPar(settings.path("ext_switch").path("0").fields())));
 		errors.add(sendCommand("/settings/ext_switch/0?" + jsonEntrySetToURLPar(settings.path("ext_switch").path("0").properties())));
 	}
 

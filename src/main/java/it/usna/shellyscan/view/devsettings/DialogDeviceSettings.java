@@ -39,9 +39,9 @@ public class DialogDeviceSettings extends JDialog implements UsnaEventListener<D
 	private Thread showCurrentThread;
 	private AbstractSettingsPanel currentPanel = null;
 	
-	public final static int FW = 0;
-	public final static int WIFI1 = 1;
-	public final static int WIFI2 = 2;
+	public static final int FW = 0;
+	public static final int WIFI1 = 1;
+	public static final int WIFI2 = 2;
 	
 	private Devices model;
 	private int[] devicesInd;
@@ -74,7 +74,7 @@ public class DialogDeviceSettings extends JDialog implements UsnaEventListener<D
 		BorderLayout borderLayout = (BorderLayout) getContentPane().getLayout();
 		borderLayout.setVgap(5);
 
-		this.setSize(610, 420);
+		this.setSize(610, 450);
 		setLocationRelativeTo(owner);
 
 		JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 5, 3));
@@ -164,7 +164,7 @@ public class DialogDeviceSettings extends JDialog implements UsnaEventListener<D
 				}
 			} catch (InterruptedException e) {
 			} finally {
-				DialogDeviceSettings.this.setCursor(Cursor.getDefaultCursor());
+				setCursor(Cursor.getDefaultCursor());
 			}
 		});
 		showCurrentThread.start();

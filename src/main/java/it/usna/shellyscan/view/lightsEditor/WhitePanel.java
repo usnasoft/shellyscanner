@@ -16,7 +16,7 @@ import it.usna.shellyscan.controller.UsnaToggleAction;
 import it.usna.shellyscan.model.device.modules.WhiteInterface;
 
 public class WhitePanel extends LightPanel {
-	private final static Logger LOG = LoggerFactory.getLogger(WhitePanel.class);
+	private static final Logger LOG = LoggerFactory.getLogger(WhitePanel.class);
 	private static final long serialVersionUID = 1L;
 	private final WhiteInterface light;
 	private final JLabel label = new JLabel();
@@ -26,9 +26,9 @@ public class WhitePanel extends LightPanel {
 	
 	public WhitePanel(final WhiteInterface light) {
 		this.light = light;
-		setBorder(BorderFactory.createEmptyBorder(4, 8, 10, 8));
+		setBorder(BorderFactory.createEmptyBorder(6, 8, 12, 8));
 
-		setLayout(new BorderLayout(10, 0));
+		setLayout(new BorderLayout(20, 0));
 		brightnessSlider = new JSlider(light.getMinBrightness(), light.getMaxBrightness(), light.getBrightness());
 		add(label, BorderLayout.NORTH);
 		switchAction = new UsnaToggleAction(null, "/images/Standby24.png", "/images/StandbyOn24.png", e -> {

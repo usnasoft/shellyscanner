@@ -22,6 +22,7 @@ import it.usna.shellyscan.controller.UsnaAction;
 import it.usna.shellyscan.view.util.ApplicationUpdateCHK;
 
 public class DialogAbout {
+	private DialogAbout() {}
 	
 	public static void show(JFrame owner) {
 		final String build = Main.VERSION_CODE.substring(Main.VERSION_CODE.length() - 2, Main.VERSION_CODE.length());
@@ -38,7 +39,7 @@ public class DialogAbout {
 						JOptionPane.showMessageDialog(ep, ev.getURL(), "", JOptionPane.PLAIN_MESSAGE);
 					}
 				}
-			} catch (IOException ex) {}
+			} catch (IOException ex) {/* cannot run the browser */}
 		});
 		
 		// JButton Check Updates

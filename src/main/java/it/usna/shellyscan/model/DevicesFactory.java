@@ -103,6 +103,7 @@ import it.usna.shellyscan.model.device.g3.ShellyMini1G3;
 import it.usna.shellyscan.model.device.g3.ShellyMini1PMG3;
 import it.usna.shellyscan.model.device.g3.ShellyMiniPMG3;
 import it.usna.shellyscan.model.device.g3.ShellyPlugSG3;
+import it.usna.shellyscan.model.device.g3.ShellyPlugSOutdoorG3;
 import it.usna.shellyscan.model.device.g3.ShellyShutterG3;
 import it.usna.shellyscan.model.device.g3.ShellyXMOD1;
 import it.usna.shellyscan.model.device.g3.XT1;
@@ -110,15 +111,17 @@ import it.usna.shellyscan.model.device.g4.AbstractG4Device;
 import it.usna.shellyscan.model.device.g4.Shelly1G4;
 import it.usna.shellyscan.model.device.g4.Shelly1PMG4;
 import it.usna.shellyscan.model.device.g4.Shelly2PMG4;
+import it.usna.shellyscan.model.device.g4.ShellyDimmerG4;
 import it.usna.shellyscan.model.device.g4.ShellyG4Unmanaged;
 import it.usna.shellyscan.model.device.g4.ShellyMini1G4;
 import it.usna.shellyscan.model.device.g4.ShellyMini1PMG4;
+import it.usna.shellyscan.model.device.g4.ShellyPowerStrip4G;
 import it.usna.shellyscan.view.DialogAuthentication;
 
 public class DevicesFactory {
 	private DevicesFactory() {}
 
-	private final static Logger LOG = LoggerFactory.getLogger(DevicesFactory.class);
+	private static final Logger LOG = LoggerFactory.getLogger(DevicesFactory.class);
 	private static String lastUser;
 	private static char[] lastP;
 	
@@ -253,6 +256,7 @@ public class DevicesFactory {
 				case ShellyProEM50.ID -> new ShellyProEM50(address, port, name);
 				case ShellyPro3EM.ID -> new ShellyPro3EM(address, port, name);
 				case ShellyProRGBWW.ID -> new ShellyProRGBWW(address, port, name);
+				
 				default -> new ShellyG2Unmanaged(address, port, name);
 			};
 		} catch(Exception e) { // really unexpected
@@ -288,15 +292,16 @@ public class DevicesFactory {
 			case ShellyMini1PMG3.ID -> new ShellyMini1PMG3(address, port, name);
 			case ShellyMiniPMG3.ID -> new ShellyMiniPMG3(address, port, name);
 			case ShellyPlugSG3.ID -> new ShellyPlugSG3(address, port, name);
+			case ShellyPlugSOutdoorG3.ID -> new ShellyPlugSOutdoorG3(address, port, name);
 			case ShellyHTG3.ID -> new ShellyHTG3(address, port, name);
 			case ShellyDimmerG3.ID -> new ShellyDimmerG3(address, port, name);
 			case Shelly3EM63.ID -> new Shelly3EM63(address, port, name);
 			case Shelly1LG3.ID -> new Shelly1LG3(address, port, name);
 			case Shelly2LG3.ID -> new Shelly2LG3(address, port, name);
 			case ShellyGatewayG3.ID -> new ShellyGatewayG3(address, port, name);
+
 			// X
 			case ShellyXMOD1.ID -> new ShellyXMOD1(address, port, name);
-			default -> new ShellyG3Unmanaged(address, port, name);
 			// Powered by Shelly
 			case XT1.ID -> {
 				String type = info.path("svc0").path("type").asText();
@@ -309,6 +314,7 @@ public class DevicesFactory {
 				}
 			}
 			case PbSOgemraySW40.ID -> new PbSOgemraySW40(address, port, name);
+			default -> new ShellyG3Unmanaged(address, port, name);
 			};
 		} catch(Exception e) { // really unexpected
 			LOG.error("create", e);
@@ -338,6 +344,11 @@ public class DevicesFactory {
 			case Shelly2PMG4.ID, Shelly2PMG4.ID_ZB -> new Shelly2PMG4(address, port, name);
 			case ShellyMini1G4.ID, ShellyMini1G4.ID_ZB -> new ShellyMini1G4(address, port, name);
 			case ShellyMini1PMG4.ID, ShellyMini1PMG4.ID_ZB -> new ShellyMini1PMG4(address, port, name);
+			case ShellyDimmerG4.ID, ShellyDimmerG4.ID_ZB -> new ShellyDimmerG4(address, port, name);
+			case ShellyPowerStrip4G.ID, ShellyPowerStrip4G.ID_ZB -> new ShellyPowerStrip4G(address, port, name);
+
+			// PRO
+
 			default -> new ShellyG4Unmanaged(address, port, name);
 			};
 		} catch(Exception e) { // really unexpected

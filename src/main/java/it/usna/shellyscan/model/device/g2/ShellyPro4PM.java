@@ -11,15 +11,15 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.InternalTmpHolder;
-import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.ModulesHolder;
 import it.usna.shellyscan.model.device.g2.modules.Input;
 import it.usna.shellyscan.model.device.g2.modules.Relay;
+import it.usna.shellyscan.model.device.meters.Meters;
 
 public class ShellyPro4PM extends AbstractProDevice implements ModulesHolder, InternalTmpHolder {
-	public final static String ID = "Pro4PM";
-	public final static String MODEL = "SPSW-104PE16EU";
-	private final static Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.W, Meters.Type.PF, Meters.Type.V, Meters.Type.I};
+	public static final String ID = "Pro4PM";
+	public static final String MODEL = "SPSW-104PE16EU";
+	private static final Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.W, Meters.Type.PF, Meters.Type.V, Meters.Type.I};
 	private Relay relay0 = new Relay(this, 0);
 	private Relay relay1 = new Relay(this, 1);
 	private Relay relay2 = new Relay(this, 2);
@@ -37,6 +37,7 @@ public class ShellyPro4PM extends AbstractProDevice implements ModulesHolder, In
 
 		meters = new Meters[] {
 				new Meters() {
+					@Override
 					public Type[] getTypes() {
 						return SUPPORTED_MEASURES;
 					}
@@ -55,6 +56,7 @@ public class ShellyPro4PM extends AbstractProDevice implements ModulesHolder, In
 					}
 				},
 				new Meters() {
+					@Override
 					public Type[] getTypes() {
 						return SUPPORTED_MEASURES;
 					}
@@ -73,6 +75,7 @@ public class ShellyPro4PM extends AbstractProDevice implements ModulesHolder, In
 					}
 				},
 				new Meters() {
+					@Override
 					public Type[] getTypes() {
 						return SUPPORTED_MEASURES;
 					}
@@ -91,6 +94,7 @@ public class ShellyPro4PM extends AbstractProDevice implements ModulesHolder, In
 					}
 				},
 				new Meters() {
+					@Override
 					public Type[] getTypes() {
 						return SUPPORTED_MEASURES;
 					}

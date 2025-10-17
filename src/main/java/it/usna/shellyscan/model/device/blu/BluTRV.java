@@ -1,16 +1,15 @@
 package it.usna.shellyscan.model.device.blu;
 
+import java.io.FileOutputStream;
 import java.io.IOException;
-import java.net.URI;
-import java.nio.file.FileSystem;
-import java.nio.file.FileSystems;
-import java.nio.file.Files;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.zip.ZipOutputStream;
 
 import org.eclipse.jetty.client.HttpClient;
 import org.slf4j.Logger;
@@ -22,23 +21,23 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import it.usna.shellyscan.model.Devices;
-import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.ModulesHolder;
 import it.usna.shellyscan.model.device.RestoreMsg;
 import it.usna.shellyscan.model.device.blu.modules.FirmwareManagerTRV;
 import it.usna.shellyscan.model.device.blu.modules.ScheduleManagerTRV;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.g2.modules.Webhooks;
+import it.usna.shellyscan.model.device.meters.Meters;
 import it.usna.shellyscan.model.device.modules.DeviceModule;
 import it.usna.shellyscan.model.device.modules.FirmwareManager;
 import it.usna.shellyscan.model.device.modules.ThermostatInterface;
 
 public class BluTRV extends AbstractBluDevice implements ThermostatInterface, ModulesHolder {
-	private final static Logger LOG = LoggerFactory.getLogger(AbstractBluDevice.class);
-	private final static String TRV_DEVICE = "blutrv";
-	public final static String DEVICE_KEY_PREFIX = TRV_DEVICE + ":";
-	public final static String ID = "BluTRV";
-	private final static Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.T, Meters.Type.BAT};
+	private static final Logger LOG = LoggerFactory.getLogger(AbstractBluDevice.class);
+	private static final String TRV_DEVICE = "blutrv";
+	public static final String DEVICE_KEY_PREFIX = TRV_DEVICE + ":";
+	public static final String ID = "BluTRV";
+	private static final Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.T, Meters.Type.BAT};
 	private int battery;
 	private float externalTemp;
 	private float targetTemp;
@@ -184,21 +183,20 @@ public class BluTRV extends AbstractBluDevice implements ThermostatInterface, Mo
 
 	@Override
 	public boolean backup(Path file) throws IOException {
-		Files.deleteIfExists(file);
-		try(FileSystem fs = FileSystems.newFileSystem(URI.create("jar:" + file.toUri()), Map.of("create", "true"))) {
-			sectionToStream("/rpc/BluTrv.GetRemoteDeviceInfo?id=" + componentIndex, "Shelly.GetRemoteDeviceInfo.json", fs);
+		try(ZipOutputStream out = new ZipOutputStream(new FileOutputStream(file.toFile()), StandardCharsets.UTF_8)) {
+			sectionToStream("/rpc/BluTrv.GetRemoteDeviceInfo?id=" + componentIndex, "Shelly.GetRemoteDeviceInfo.json", out);
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-			sectionToStream("/rpc/BluTrv.GetRemoteConfig?id=" + componentIndex, "Shelly.GetRemoteConfig.json", fs);
+			sectionToStream("/rpc/BluTrv.GetRemoteConfig?id=" + componentIndex, "Shelly.GetRemoteConfig.json", out);
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-			JsonNode config = sectionToStream("/rpc/BluTrv.GetConfig?id=" + componentIndex, "Shelly.GetConfig.json", fs);
+			JsonNode config = sectionToStream("/rpc/BluTrv.GetConfig?id=" + componentIndex, "Shelly.GetConfig.json", out);
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-			sectionToStream("/rpc/BluTrv.Call?id=" + componentIndex + "&method=%22TRV.ListScheduleRules%22&params=%7B%22id%22:0%7D", "TRV.ListScheduleRules.json", fs);
+			sectionToStream("/rpc/BluTrv.Call?id=" + componentIndex + "&method=%22TRV.ListScheduleRules%22&params=%7B%22id%22:0%7D", "TRV.ListScheduleRules.json", out);
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-			sectionToStream("/rpc/Webhook.List", "Webhook.List.json", fs);
+			sectionToStream("/rpc/Webhook.List", "Webhook.List.json", out);
 			String bthome = config.path("trv").asText();
 			String bhtIndex = bthome.substring(bthome.indexOf(':') + 1);
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-			sectionToStream("/rpc/BTHomeDevice.GetKnownObjects?id=" + bhtIndex, "BTHomeDevice.GetKnownObjects.json", fs);
+			sectionToStream("/rpc/BTHomeDevice.GetKnownObjects?id=" + bhtIndex, "BTHomeDevice.GetKnownObjects.json", out);
 		} catch(InterruptedException e) {
 			LOG.error("backup", e);
 		}

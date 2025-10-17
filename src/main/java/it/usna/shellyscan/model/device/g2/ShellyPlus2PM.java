@@ -13,13 +13,13 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.InternalTmpHolder;
-import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.ModulesHolder;
 import it.usna.shellyscan.model.device.RestoreMsg;
 import it.usna.shellyscan.model.device.g2.modules.Input;
 import it.usna.shellyscan.model.device.g2.modules.Relay;
 import it.usna.shellyscan.model.device.g2.modules.Roller;
 import it.usna.shellyscan.model.device.g2.modules.SensorAddOn;
+import it.usna.shellyscan.model.device.meters.Meters;
 import it.usna.shellyscan.model.device.modules.DeviceModule;
 
 /**
@@ -27,9 +27,9 @@ import it.usna.shellyscan.model.device.modules.DeviceModule;
  * @author usna
  */
 public class ShellyPlus2PM extends AbstractG2Device implements ModulesHolder, InternalTmpHolder {
-	private final static Logger LOG = LoggerFactory.getLogger(ShellyPlus2PM.class);
-	public final static String ID = "Plus2PM";
-	private final static Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.W, Meters.Type.PF, Meters.Type.V, Meters.Type.I};
+	private static final Logger LOG = LoggerFactory.getLogger(ShellyPlus2PM.class);
+	public static final String ID = "Plus2PM";
+	private static final Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.W, Meters.Type.PF, Meters.Type.V, Meters.Type.I};
 	private boolean modeRelay;
 	private Relay relay0, relay1;
 	private Relay[] relaysArray;
@@ -44,7 +44,7 @@ public class ShellyPlus2PM extends AbstractG2Device implements ModulesHolder, In
 	private Meters[] meters;
 	private SensorAddOn addOn;
 
-	private final static String MODE_RELAY = "switch";
+	private static final String MODE_RELAY = "switch";
 
 	public ShellyPlus2PM(InetAddress address, int port, String hostname) {
 		super(address, port, hostname);

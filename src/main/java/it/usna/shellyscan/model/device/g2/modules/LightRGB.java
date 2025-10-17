@@ -115,10 +115,10 @@ public class LightRGB implements RGBInterface {
 		return parent.postCommand("RGB.SetConfig", AbstractG2Device.createIndexedRestoreNode(config, "rgb", index));
 	}
 	
-	@Override
-	public AbstractG2Device getParent() {
-		return parent;
-	}
+//	@Override
+//	public AbstractG2Device getParent() {
+//		return parent;
+//	}
 	
 	@Override
 	public String toString() {

@@ -1,5 +1,6 @@
 package it.usna.shellyscan.model.device.blu;
 
+import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,13 +15,18 @@ public class BluInetAddressAndPort extends InetAddressAndPort {
 		this.index = index;
 	}
 	
+	public BluInetAddressAndPort(InetAddress address, int port, int index) {
+		super(address, port);
+		this.index = index;
+	}
+	
 	public int getIndex() {
 		return index;
 	}
 	
 	public void addAlternativeParent(AbstractBluDevice otherBlu) {	
 		addAlternativeParent(otherBlu.parent.getAddressAndPort());
-		((BluInetAddressAndPort)otherBlu.getAddressAndPort()).getAlternativeParents().forEach(a -> addAlternativeParent(a));
+		((BluInetAddressAndPort)otherBlu.getAddressAndPort()).getAlternativeParents().forEach(this::addAlternativeParent);
 	}
 	
 	public void addAlternativeParent(InetAddressAndPort parent) {
@@ -54,10 +60,9 @@ public class BluInetAddressAndPort extends InetAddressAndPort {
 	
 	@Override
 	public String toString() {
-		if(port == 80) {
-			return address.getHostAddress() + " (" + (alternativeParents.size() + 1) + ")";
-		} else {
-			return address.getHostAddress() + ":" + port + " (" + (alternativeParents.size() + 1) + ")";
+		if(stringValue == null) {
+			stringValue();
 		}
+		return stringValue + " (" + (alternativeParents.size() + 1) + ")";
 	}
 }

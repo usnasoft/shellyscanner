@@ -26,7 +26,7 @@ import it.usna.shellyscan.view.util.UtilMiscellaneous;
 import it.usna.swing.VerticalFlowLayout;
 
 public class CCTPanel extends LightPanel {
-	private final static Logger LOG = LoggerFactory.getLogger(CCTPanel.class);
+	private static final Logger LOG = LoggerFactory.getLogger(CCTPanel.class);
 	private static final long serialVersionUID = 1L;
 	private final CCTInterface light;
 	private final JLabel labelBrighteness = new JLabel();
@@ -40,13 +40,13 @@ public class CCTPanel extends LightPanel {
 	
 	public CCTPanel(final CCTInterface light) {
 		this.light = light;
-		setBorder(BorderFactory.createEmptyBorder(4, 8, 10, 8));
+		setBorder(BorderFactory.createEmptyBorder(6, 8, 12, 8));
 		setLayout(new VerticalFlowLayout(VerticalFlowLayout.CENTER, VerticalFlowLayout.CENTER, 0, 0));
 		// set initial values to avoid listeners to call the device in initial adjust
 		brightnessSlider = new JSlider(light.getMinBrightness(), light.getMaxBrightness(), light.getBrightness());
 		temperatureSlider = new JSlider(light.getMinTemperature(), light.getMaxTemperature(), light.getTemperature());
 
-		JPanel switchPanel = new JPanel(new BorderLayout(10, 0));
+		JPanel switchPanel = new JPanel(new BorderLayout(20, 0));
 		switchPanel.setOpaque(false);
 		switchPanel.add(labelBrighteness, BorderLayout.NORTH);
 		switchAction = new UsnaToggleAction(null, "/images/Standby24.png", "/images/StandbyOn24.png", e -> {
@@ -76,7 +76,7 @@ public class CCTPanel extends LightPanel {
 		};
 		this.add(switchPanel);
 
-		JPanel temperaturePanel = new JPanel(new BorderLayout(10, 0));
+		JPanel temperaturePanel = new JPanel(new BorderLayout(20, 0));
 		temperaturePanel.setOpaque(false);
 		temperaturePanel.add(labelTemperature, BorderLayout.NORTH);
 		temperaturePanel.add(temperatureSlider, BorderLayout.CENTER);
@@ -137,7 +137,7 @@ public class CCTPanel extends LightPanel {
 		adjust();
 	}
 
-	private void adjust() {
+	void adjust() {
 		brightnessSlider.removeChangeListener(brightenessSliderListener);
 		temperatureSlider.removeChangeListener(temperatureSliderListener);
 		

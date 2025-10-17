@@ -6,15 +6,15 @@ import org.slf4j.LoggerFactory;
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.Devices.EventType;
 import it.usna.shellyscan.model.device.InternalTmpHolder;
-import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
+import it.usna.shellyscan.model.device.meters.Meters;
 import it.usna.shellyscan.view.util.ScannerProperties;
 import it.usna.util.AppProperties;
 import it.usna.util.UsnaEventListener;  
 
 public class NonInteractiveMeasuresChart implements UsnaEventListener<Devices.EventType, Integer> {
-	private final static Logger LOG = LoggerFactory.getLogger(NonInteractiveMeasuresChart.class);
+	private static final Logger LOG = LoggerFactory.getLogger(NonInteractiveMeasuresChart.class);
 	private ChartType currentType;
 	private final boolean fahrenheit;
 	private final Devices model;

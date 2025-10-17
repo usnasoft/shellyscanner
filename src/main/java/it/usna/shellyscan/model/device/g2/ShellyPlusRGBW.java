@@ -13,7 +13,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.InternalTmpHolder;
-import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.ModulesHolder;
 import it.usna.shellyscan.model.device.RestoreMsg;
 import it.usna.shellyscan.model.device.g2.meters.MetersWVI;
@@ -22,6 +21,7 @@ import it.usna.shellyscan.model.device.g2.modules.LightRGB;
 import it.usna.shellyscan.model.device.g2.modules.LightRGBW;
 import it.usna.shellyscan.model.device.g2.modules.LightWhite;
 import it.usna.shellyscan.model.device.g2.modules.SensorAddOn;
+import it.usna.shellyscan.model.device.meters.Meters;
 import it.usna.shellyscan.model.device.modules.DeviceModule;
 
 /**
@@ -29,7 +29,7 @@ import it.usna.shellyscan.model.device.modules.DeviceModule;
  * @author usna
  */
 public class ShellyPlusRGBW extends AbstractG2Device implements ModulesHolder, InternalTmpHolder {
-	private final static Logger LOG = LoggerFactory.getLogger(ShellyPlusRGBW.class);
+	private static final Logger LOG = LoggerFactory.getLogger(ShellyPlusRGBW.class);
 	public enum Profile {
 		LIGHT("light"), RGB("rgb"), RGBW("rgbw");
 		
@@ -39,8 +39,8 @@ public class ShellyPlusRGBW extends AbstractG2Device implements ModulesHolder, I
 			this.code = code;
 		}
 	};
-	public final static String ID = "PlusRGBWPM";
-	public final static String MODEL = "SNDC-0D4P10WW";
+	public static final String ID = "PlusRGBWPM";
+	public static final String MODEL = "SNDC-0D4P10WW";
 	private Profile profile;
 	private float internalTmp;
 	private LightWhite light0, light1, light2, light3;

@@ -57,12 +57,12 @@ public class WDThermSchedulerPanel extends JPanel {
 	private HashMap<Integer, List<Rule>> rules = new HashMap<>();
 	private ArrayList<RemovedRule> removed = new ArrayList<>();
 	private int currentProfileId = -1;
-	private final JDialog parent;
+	private final JDialog parentDlg;
 //	private final WallDisplay device;
 
 	public WDThermSchedulerPanel(JDialog parent, WallDisplay device) {
 		setLayout(new BorderLayout());
-		this.parent = parent;
+		this.parentDlg = parent;
 //		this.device = device;
 		this.wdSceduleManager = (device != null) ? new ScheduleManagerThermWD(device) : null; // device == null -> design
 		thermostat = new ThermostatG2(device);
@@ -147,7 +147,7 @@ public class WDThermSchedulerPanel extends JPanel {
 	
 	private void addJob(boolean enabled, String timespec, Float temp, int pos) {
 		JPanel linePanel = new JPanel(/*new FlowLayout(FlowLayout.LEFT, 6, 0)*/new BorderLayout(16, 0));
-		ThermJobPanel job = new ThermJobPanel(parent, thermostat.getMinTargetTemp(), thermostat.getMaxTargetTemp(), timespec, temp);
+		ThermJobPanel job = new ThermJobPanel(parentDlg, thermostat.getMinTargetTemp(), thermostat.getMaxTargetTemp(), timespec, temp);
 		linePanel.add(job, BorderLayout.CENTER);
 
 		JButton enableButton = new JButton();
@@ -177,22 +177,18 @@ public class WDThermSchedulerPanel extends JPanel {
 		addBtn.setBorder(BorderFactory.createEmptyBorder(2, 3, 2, 3));
 		
 		JButton removeBtn = new JButton(new UsnaAction(null, "schRemove", "/images/erase-9-16.png", e -> {
-			Rule data = null;
-			if(rulesPanel.getComponentCount() > 1) {
-				int i;
-				for(i = 0; rulesPanel.getComponent(i) != linePanel; i++);
-				rulesPanel.remove(i);
-				lineColors();
-				data = rules.get(currentProfileId).remove(i);
-			} else if(rulesPanel.getComponentCount() == 1) {
-				job.clean();
-				enableAction.setSelected(false);
-				data = rules.get(currentProfileId).remove(0);
-				rules.get(currentProfileId).add(new Rule(null, null, null, false));
-			}
+			int i;
+			for(i = 0; rulesPanel.getComponent(i) != linePanel; i++);
+			rulesPanel.remove(i);
+			Rule data = rules.get(currentProfileId).remove(i);
 			if(data.getId() != null) {
 				removed.add(new RemovedRule(data.getId(), currentProfileId));
 			}
+			if(rulesPanel.getComponentCount() == 0) {
+				addJob(false, null, null, 0);
+				addRule(false, null, null, 0);
+			}
+			lineColors();
 			rulesPanel.revalidate();
 			rulesPanel.repaint(); // last one need this ... do not know why
 		}));
@@ -210,7 +206,7 @@ public class WDThermSchedulerPanel extends JPanel {
 		duplicateBtn.setContentAreaFilled(false);
 		duplicateBtn.setBorder(BorderFactory.createEmptyBorder(2, 3, 2, 3));
 		
-		JButton copyBtn = new JButton(new UsnaAction(parent, "schCopy", "/images/copy_trasp16.png", e -> {
+		JButton copyBtn = new JButton(new UsnaAction(parentDlg, "schCopy", "/images/copy_trasp16.png", e -> {
 			final Clipboard cb = Toolkit.getDefaultToolkit().getSystemClipboard();
 			StringSelection selection = new StringSelection(job.getJson().toString());
 			cb.setContents(selection, selection);
@@ -219,7 +215,7 @@ public class WDThermSchedulerPanel extends JPanel {
 		copyBtn.setContentAreaFilled(false);
 		copyBtn.setBorder(BorderFactory.createEmptyBorder(2, 3, 2, 3));
 
-		JButton pasteBtn = new JButton(new UsnaAction(parent, "schPaste", "/images/paste_trasp16.png", e -> {
+		JButton pasteBtn = new JButton(new UsnaAction(parentDlg, "schPaste", "/images/paste_trasp16.png", e -> {
 			final Clipboard cb = Toolkit.getDefaultToolkit().getSystemClipboard();
 			try {
 				String sch = cb.getContents(this).getTransferData(DataFlavor.stringFlavor).toString();
@@ -231,7 +227,7 @@ public class WDThermSchedulerPanel extends JPanel {
 				job.revalidate();
 				try { TimeUnit.MILLISECONDS.sleep(200); } catch (InterruptedException e1) {} // a small time to show busy pointer
 			} catch (Exception e1) {
-				Msg.errorMsg(parent, "schErrorInvalidPaste");
+				Msg.errorMsg(parentDlg, "schErrorInvalidPaste");
 			}
 		}));
 		pasteBtn.setContentAreaFilled(false);
@@ -272,7 +268,7 @@ public class WDThermSchedulerPanel extends JPanel {
 		if(rule.getId() != null) {
 			String res = wdSceduleManager.enable(rule.getId(), currentProfileId, enable);
 			if(res != null) {
-				Msg.errorMsg(parent, res);
+				Msg.errorMsg(parentDlg, res);
 			} else {
 				rule.setEnabled(enable);
 			}
@@ -359,9 +355,8 @@ public class WDThermSchedulerPanel extends JPanel {
 	}
 	
 	public void refresh() {
-//		profilesPanel.
 		rules.clear();
-		profilesPanel.refresh();
+		profilesPanel.refresh(); // the profile will be selected again so rules will be fetched again
 	}
 	
 	public void loadFromBackup() {

@@ -112,13 +112,13 @@ public class LightWhite implements WhiteInterface {
 		return (name == null || name.isEmpty()) ? parent.getName() : name;
 	}
 	
-	@Override
-	public AbstractG2Device getParent() {
-		return parent;
-	}
+//	@Override
+//	public AbstractG2Device getParent() {
+//		return parent;
+//	}
 	
 	@Override
 	public String toString() {
-		return getLabel() + ":" + brightness + (isOn ? "%-ON" : "%-OFF");
+		return getLabel() + ":" + brightness + (isOn ? "-ON" : "-OFF");
 	}
 }

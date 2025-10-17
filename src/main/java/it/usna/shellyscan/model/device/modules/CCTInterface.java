@@ -7,11 +7,15 @@ public interface CCTInterface extends WhiteInterface {
 	
 	int getTemperature();
 	
-	default int getMinTemperature() {
-		return 2700;
-	}
+	int getMinTemperature();
 	
-	default int getMaxTemperature() {
-		return 6500;
-	}
+	int getMaxTemperature();
+	
+//	default int getMinTemperature() {
+//		return 2700;
+//	}
+//	
+//	default int getMaxTemperature() {
+//		return 6500;
+//	}
 }

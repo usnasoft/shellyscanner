@@ -2,10 +2,10 @@ package it.usna.shellyscan.model.device.g2;
 
 import java.io.IOException;
 import java.net.InetAddress;
-import java.nio.file.FileSystem;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.zip.ZipOutputStream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,20 +14,20 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.LabelHolder;
-import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.ModulesHolder;
 import it.usna.shellyscan.model.device.RestoreMsg;
 import it.usna.shellyscan.model.device.g2.modules.Input;
 import it.usna.shellyscan.model.device.g2.modules.Relay;
 import it.usna.shellyscan.model.device.g2.modules.SensorAddOn;
+import it.usna.shellyscan.model.device.meters.Meters;
 
 /**
  * Shelly Shelly Plus UNI model
  * @author usna
  */
 public class ShellyPlusUNI extends AbstractG2Device implements ModulesHolder {
-	private final static Logger LOG = LoggerFactory.getLogger(ShellyPlusUNI.class);
-	public final static String ID = "PlusUni";
+	private static final Logger LOG = LoggerFactory.getLogger(ShellyPlusUNI.class);
+	public static final String ID = "PlusUni";
 	private Relay relay0 = new Relay(this, 0);
 	private Relay relay1 = new Relay(this, 1);
 	private Relay[] relays = new Relay[] {relay0, relay1};
@@ -41,6 +41,7 @@ public class ShellyPlusUNI extends AbstractG2Device implements ModulesHolder {
 		super(address, port, hostname);
 	}
 	
+	@Override
 	protected void init(JsonNode devInfo) throws IOException {
 		configure();
 		super.init(devInfo);
@@ -76,6 +77,7 @@ public class ShellyPlusUNI extends AbstractG2Device implements ModulesHolder {
 		return meters;
 	}
 	
+	@Override
 	protected void fillSettings(JsonNode configuration) throws IOException {
 		super.fillSettings(configuration);
 		relay0.fillSettings(configuration.get("switch:0"), configuration.get("input:0"));
@@ -111,7 +113,7 @@ public class ShellyPlusUNI extends AbstractG2Device implements ModulesHolder {
 	
 	@Override
 	// integrated addon
-	protected void backup(FileSystem out) throws IOException, InterruptedException {
+	protected void backup(ZipOutputStream out) throws IOException, InterruptedException {
 		sectionToStream("/rpc/SensorAddon.GetPeripherals", SensorAddOn.BACKUP_SECTION, out);
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 	}
@@ -130,7 +132,7 @@ public class ShellyPlusUNI extends AbstractG2Device implements ModulesHolder {
 	}
 	
 	private class CounterMeters extends Meters implements LabelHolder {
-		private final static Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.NUM, Meters.Type.FREQ};
+		private static final Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.NUM, Meters.Type.FREQ};
 		@Override
 		public float getValue(Type t) {
 			if(t == Meters.Type.FREQ) {

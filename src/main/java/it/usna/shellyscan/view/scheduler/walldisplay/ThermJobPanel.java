@@ -38,9 +38,9 @@ import it.usna.swing.NumericTextField;
 
 class ThermJobPanel extends JPanel {
 	private static final long serialVersionUID = 1L;
-	private final static String SECONDS = "*";
-	private final static String DAYS = "*";
-	private final static String MONTHS = "*";
+	private static final String SECONDS = "*";
+	private static final String DAYS = "*";
+	private static final String MONTHS = "*";
 	private float minTarget, maxTarget;
 	private NumericTextField<Float> target;
 	
@@ -49,14 +49,14 @@ class ThermJobPanel extends JPanel {
 	private JPanel daysOfWeekPanel;
 	private String daysOfWeek;
 	protected JTextField expressionField;
-	protected JDialog parent;
+	protected JDialog parentDlg;
 	
-	private final static String DEF_CRON = "* 0 0 * * 0,1,2,3,4,5,6";
+	private static final String DEF_CRON = "* 0 0 * * 0,1,2,3,4,5,6";
 
 	ThermJobPanel(JDialog parent, float minTarget, float maxTarget, String timespec, Float temp) {
-		this.parent = parent;
+		this.parentDlg = parent;
 		setOpaque(false);
-		setBorder(BorderFactory.createEmptyBorder(2, 2, 4, 2));
+		setBorder(BorderFactory.createEmptyBorder(3, 2, 5, 2));
 		this.minTarget = minTarget;
 		this.maxTarget = maxTarget;
 		
@@ -93,10 +93,10 @@ class ThermJobPanel extends JPanel {
 		add(target, gbc_target);
 	}
 
-	public void clean() {
-		setCron(DEF_CRON);
-		target.setValue(null);
-	}
+//	public void clean() {
+//		setCron(DEF_CRON);
+//		target.setValue(null);
+//	}
 
 	public boolean isNullJob() {
 		return expressionField.getText().equals(DEF_CRON) && target.getText().isBlank();
@@ -106,7 +106,7 @@ class ThermJobPanel extends JPanel {
 		if(validateCronData()) {
 			if(target.isEmpty()) {
 				target.requestFocus();
-				Msg.errorMsg(parent, "schErrorInvalidTarget");
+				Msg.errorMsg(parentDlg, "schErrorInvalidTarget");
 				return false;
 			}
 			return true;
@@ -189,7 +189,6 @@ class ThermJobPanel extends JPanel {
 		allWDaysButton.setContentAreaFilled(false);
 		allWDaysButton.setBorder(BorderFactory.createEmptyBorder());
 		GridBagConstraints gbc_allWDaysButton = new GridBagConstraints();
-		gbc_allWDaysButton.insets = new Insets(0, 0, 5, 0);
 		gbc_allWDaysButton.anchor = GridBagConstraints.SOUTHWEST;
 		gbc_allWDaysButton.gridx = 3;
 		gbc_allWDaysButton.gridy = 0;
@@ -361,7 +360,7 @@ class ThermJobPanel extends JPanel {
 		String exp = expressionField.getText();
 		if(CronUtils.CRON_PATTERN_TH_WD.matcher(exp).matches() == false && CronUtils.SUNSET_PATTERN.matcher(exp).matches() == false) {
 			expressionField.requestFocus();
-			Msg.errorMsg(parent, "schErrorInvalidExpression");
+			Msg.errorMsg(parentDlg, "schErrorInvalidExpression");
 			return false;
 		} else {
 			return true;

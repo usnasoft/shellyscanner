@@ -89,11 +89,11 @@ import it.usna.util.UsnaEventListener;
 
 public class MainView extends MainWindow implements UsnaEventListener<Devices.EventType, Integer>, ScannerProperties.AppPropertyListener {
 	private static final long serialVersionUID = 1L;
-	public final static int SHORTCUT_KEY = Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx();
-	private final static Logger LOG = LoggerFactory.getLogger(MainWindow.class);
-	private final static ImageIcon DEFERRED_ICON = new ImageIcon(MainView.class.getResource("/images/deferred_list.png"));
-	private final static ImageIcon DEFERRED_ICON_FAIL = new ImageIcon(MainView.class.getResource("/images/deferred_list_fail.png"));
-	private final static ImageIcon DEFERRED_ICON_OK = new ImageIcon(MainView.class.getResource("/images/deferred_list_ok.png"));
+	public static final int SHORTCUT_KEY = Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx();
+	private static final Logger LOG = LoggerFactory.getLogger(MainView.class);
+	private static final ImageIcon DEFERRED_ICON = new ImageIcon(MainView.class.getResource("/images/deferred_list.png"));
+	private static final ImageIcon DEFERRED_ICON_FAIL = new ImageIcon(MainView.class.getResource("/images/deferred_list_fail.png"));
+	private static final ImageIcon DEFERRED_ICON_OK = new ImageIcon(MainView.class.getResource("/images/deferred_list_ok.png"));
 	private ListSelectionListener tableSelectionListener;
 	private AppProperties appProp;
 	private AppProperties temporaryProp = new AppProperties(); // normal view properties stored here on detailed view
@@ -148,9 +148,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 	});
 
 	private Action rescanAction = new UsnaAction(null, "action_scan_name", "action_scan_tooltip", null, "/images/73-radar.png", e -> {
-		if(devicesTable.isEditing()) {
-			devicesTable.getCellEditor().stopCellEditing();
-		}
+		devicesTable.removeEditor(); //	devicesTable.stopCellEditing();
 		devicesTable.clearSelection();
 		reserveStatusLine(true);
 		setStatus(LABELS.getString("scanning_start"));
@@ -169,7 +167,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		});
 	});
 
-	private Action refreshAction = new UsnaAction(null, "action_refresh_name", "action_refresh_tooltip", null, "/images/Refresh.png", e -> {
+	private Action refreshAction = new UsnaAction(null, "action_refresh_name", "action_refresh_tooltip", null, "/images/Refresh.png", e ->
 		SwingUtilities.invokeLater(() -> {
 			setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 			setEnabled(false);
@@ -188,8 +186,8 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 			devicesTable.columnsWidthAdapt();
 			setEnabled(true);
 			setCursor(Cursor.getDefaultCursor());
-		});
-	});
+		})
+	);
 	
 	private Action rebootAction = new UsnaSelectedAction(this, devicesTable, "action_reboot_name", "action_reboot_tooltip", null, "/images/nuke.png", () -> {
 		final String cancel = UIManager.getString("OptionPane.cancelButtonText");
@@ -211,10 +209,10 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		try { Thread.sleep(250); } catch (InterruptedException e1) {}
 	});
 	
-	private Action browseAction = new UsnaSelectedAction(this, devicesTable, "action_web_name", "action_web_tooltip", "/images/Computer16.png", "/images/Computer.png", () -> {
-		return devicesTable.getSelectedRowCount() <= 8 || JOptionPane.showConfirmDialog(MainView.this, LABELS.getString("action_web_confirm"), LABELS.getString("action_web_name"),
-				JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE) == JOptionPane.OK_OPTION;
-	}, ind -> {
+	private Action browseAction = new UsnaSelectedAction(this, devicesTable, "action_web_name", "action_web_tooltip", "/images/Computer16.png", "/images/Computer.png", () ->
+		devicesTable.getSelectedRowCount() <= 8 || JOptionPane.showConfirmDialog(MainView.this, LABELS.getString("action_web_confirm"), LABELS.getString("action_web_name"),
+				JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE) == JOptionPane.OK_OPTION,
+	ind -> {
 		try {
 			Desktop.getDesktop().browse(URI.create("http://" + model.get(ind).getAddressAndPort().getRepresentation()));
 		} catch (IOException | UnsupportedOperationException e) { // browserSupported = Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE);
@@ -228,6 +226,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 	private UsnaAction reloadAction = new UsnaSelectedAction(this, devicesTable, "action_name_reload", null, "/images/Loop16.png", null, i -> {
 		final ShellyAbstractDevice d = model.get(i);
 		model.create(d.getAddressAndPort().getAddress(), d.getAddressAndPort().getPort(), d instanceof AbstractBluDevice blu ? blu.getParent().getHostname() : d.getHostname(), false);
+		devicesTable.setRowHeight(devicesTable.convertRowIndexToView(i), DevicesTable.ONLINE_BULLET.getIconHeight()); // reset row height
 	});
 
 	private Action backupAction;
@@ -246,7 +245,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 	private Action eraseGhostAction = new UsnaAction(this, "action_name_delete_ghost", null, "/images/Minus16.png", null, e -> {
 		boolean delete = true;
 		for(int idx: devicesTable.getSelectedRows()) {
-			if(model.getGhost(devicesTable.convertRowIndexToModel(idx)).getNote().trim().length() > 0) {
+			if(model.getGhost(devicesTable.convertRowIndexToModel(idx)).getNote().trim().isBlank() == false) {
 				delete = (JOptionPane.showConfirmDialog(MainView.this, LABELS.getString("action_name_delete_ghost_confirm"), 
 						LABELS.getString("action_name_delete_ghost"), JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE) == JOptionPane.OK_OPTION);
 				break;
@@ -273,16 +272,13 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 	
 	private Action csvExportAction = new ExportCSVAction(this, devicesTable);
 
-	private Action devicesSettingsAction = new UsnaAction(this, "action_general_conf_name", "action_general_conf_tooltip", null, "/images/Tool.png", e -> {
-		new DialogDeviceSettings(this, model, devicesTable.getSelectedModelRows());
-	});
+	private Action devicesSettingsAction = new UsnaAction(this, "action_general_conf_name", "action_general_conf_tooltip", "/images/Tool16.png", "/images/Tool.png", e ->
+		new DialogDeviceSettings(this, model, devicesTable.getSelectedModelRows())
+	);
 	
 	private Action eraseFilterAction = new UsnaAction(null, null, "/images/erase-9-16.png", e -> {
 		textFieldFilter.setText("");
 		textFieldFilter.requestFocusInWindow();
-//		if(devicesTable.isEditing()) {
-//			devicesTable.getCellEditor().stopCellEditing();
-//		}
 //		devicesTable.clearSelection();
 		displayStatus();
 	});
@@ -369,7 +365,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		
 		// Selection popup
 		JButton btnSelectCombo = new JButton();
-		btnSelectCombo.setAction(new UsnaDropdownAction(btnSelectCombo, "/images/expand-more.png", "labelSelectDevices", new Object[] {
+		btnSelectCombo.setAction(new UsnaDropdownAction(btnSelectCombo, "labelSelectDevices", "/images/expand-more.png", new Object[] {
 				new SelectionAction(devicesTable, "labelSelectOnLineReboot", null, null, i -> model.get(i).getStatus() == Status.ON_LINE && model.get(i).rebootRequired()),
 				new SelectionAction(devicesTable, "labelSelectG1", null, null, i -> model.get(i) instanceof AbstractG1Device),
 				new SelectionAction(devicesTable, "labelSelectG2", null, null, i -> model.get(i) instanceof AbstractG2Device /*&& model.get(i) instanceof AbstractG3Device == false*/), // G2+
@@ -431,7 +427,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		contentPane.add(toolBar, BorderLayout.NORTH);
 
 		// devices popup
-		UsnaPopupMenu tablePopup = new UsnaPopupMenu(infoAction, browseAction, backupAction, restoreAction, notesAction, reloadAction/*, loginAction*/);
+		UsnaPopupMenu tablePopup = new UsnaPopupMenu(infoAction, browseAction, devicesSettingsAction, backupAction, restoreAction, notesAction, reloadAction);
 		UsnaPopupMenu ghostDevPopup = new UsnaPopupMenu(reloadAction, notesAction, eraseGhostAction);
 
 		// devices popup & double click
@@ -487,16 +483,13 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		
 		// Deferrables listener
 		final DeferrablesContainer dc = DeferrablesContainer.getInstance();
-		dc.addListener(new UsnaEventListener<DeferrableTask.Status, Integer>() {
-			@Override
-			public void update(DeferrableTask.Status mesgType, Integer idx) {
-				if(mesgType != DeferrableTask.Status.RUNNING) {
-					btnshowDeferrables.setText(dc.countWaiting() + "");
-					if(mesgType == DeferrableTask.Status.FAIL && (dialogDeferrables == null || dialogDeferrables.isVisible() == false || dialogDeferrables.getExtendedState() == JFrame.ICONIFIED)) {
-						btnshowDeferrables.setIcon(DEFERRED_ICON_FAIL);
-					} else if(mesgType == DeferrableTask.Status.SUCCESS && btnshowDeferrables.getIcon() != DEFERRED_ICON_FAIL && (dialogDeferrables == null || dialogDeferrables.isVisible() == false || dialogDeferrables.getExtendedState() == JFrame.ICONIFIED)) {
-						btnshowDeferrables.setIcon(DEFERRED_ICON_OK);
-					}
+		dc.addListener((mesgType, idx) -> { // UsnaEventListener<DeferrableTask.Status, Integer>()
+			if(mesgType != DeferrableTask.Status.RUNNING) {
+				btnshowDeferrables.setText(dc.countWaiting() + "");
+				if(mesgType == DeferrableTask.Status.FAIL && (dialogDeferrables == null || dialogDeferrables.isVisible() == false || dialogDeferrables.getExtendedState() == JFrame.ICONIFIED)) {
+					btnshowDeferrables.setIcon(DEFERRED_ICON_FAIL);
+				} else if(mesgType == DeferrableTask.Status.SUCCESS && btnshowDeferrables.getIcon() != DEFERRED_ICON_FAIL && (dialogDeferrables == null || dialogDeferrables.isVisible() == false || dialogDeferrables.getExtendedState() == JFrame.ICONIFIED)) {
+					btnshowDeferrables.setIcon(DEFERRED_ICON_OK);
 				}
 			}
 		});
@@ -541,11 +534,11 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 	
 	private void setColFilter(JComboBox<?> combo) {
 		final int[] cols = switch(combo.getSelectedIndex()) {
-		default -> new int[] {DevicesTable.COL_TYPE, DevicesTable.COL_DEVICE, DevicesTable.COL_NAME, DevicesTable.COL_KEYWORD, DevicesTable.COL_IP_IDX};
 		case 1 -> new int[] {DevicesTable.COL_TYPE};
 		case 2 -> new int[] {DevicesTable.COL_DEVICE};
 		case 3 -> new int[] {DevicesTable.COL_NAME};
 		case 4 -> new int[] {DevicesTable.COL_KEYWORD};
+		default -> new int[] {DevicesTable.COL_TYPE, DevicesTable.COL_DEVICE, DevicesTable.COL_NAME, DevicesTable.COL_KEYWORD, DevicesTable.COL_IP_IDX};
 		};
 		devicesTable.setRowFilter(textFieldFilter.getText(), cols);
 		displayStatus();

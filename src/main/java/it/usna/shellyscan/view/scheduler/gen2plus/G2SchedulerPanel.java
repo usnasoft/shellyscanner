@@ -44,7 +44,8 @@ import it.usna.swing.VerticalFlowLayout;
 public class G2SchedulerPanel extends JScrollPane {
 	private static final long serialVersionUID = 1L;
 
-	private final JDialog parent;
+	private final JDialog parentDlg;
+	private final AbstractG2Device device;
 	private final ScheduleManager sceduleManager;
 	private final MethodHints mHints;
 	private final ArrayList<ScheduleData> originalValues = new ArrayList<>();
@@ -53,7 +54,8 @@ public class G2SchedulerPanel extends JScrollPane {
 
 	public G2SchedulerPanel(JDialog parent, AbstractG2Device device) {
 		super(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-		this.parent = parent;
+		this.parentDlg = parent;
+		this.device = device;
 		this.sceduleManager = new ScheduleManager(device);
 		this.mHints = new MethodHints(device);
 		
@@ -64,7 +66,8 @@ public class G2SchedulerPanel extends JScrollPane {
 	/** test & design */
 	public G2SchedulerPanel(JDialog parent) {
 		super(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-		this.parent = parent;
+		this.parentDlg = parent;
+		this.device = null;
 		sceduleManager = null;
 		mHints = null;
 		addJob(null, Integer.MAX_VALUE);
@@ -87,7 +90,7 @@ public class G2SchedulerPanel extends JScrollPane {
 				exist = true;
 			}
 		} catch (IOException e) {
-			Msg.errorMsg(e);
+			Msg.errorStatusMsg(null, device, e);
 		}
 		if(exist == false) {
 			addJob(null, Integer.MAX_VALUE);
@@ -99,6 +102,8 @@ public class G2SchedulerPanel extends JScrollPane {
 		schedulesPanel.removeAll();
 		originalValues.clear();
 		fill();
+		schedulesPanel.revalidate();
+		schedulesPanel.repaint(); // last one need this ... do not know why
 	}
 	
 	public void loadFromBackup() {
@@ -131,7 +136,7 @@ public class G2SchedulerPanel extends JScrollPane {
 			} catch (/*IO*/Exception e) {
 				Msg.errorMsg(this, "msgIncompatibleFile");
 			} finally {
-				parent.setCursor(Cursor.getDefaultCursor());
+				parentDlg.setCursor(Cursor.getDefaultCursor());
 				lineColors();
 			}
 		}
@@ -160,7 +165,7 @@ public class G2SchedulerPanel extends JScrollPane {
 			// Delete
 			for(int id: removedId) {
 				String res = sceduleManager.delete(id);
-				try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e1) {}
+				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 				if(res != null) {
 					Msg.errorMsg(this, res);
 					return false;
@@ -182,17 +187,17 @@ public class G2SchedulerPanel extends JScrollPane {
 						if(newId < 0) {
 							res = "creation error";
 						}
-						try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e1) {}
+						TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 					} else if(sl.hasSystemCalls() && jobJson.get("timespec").equals(original.orig.get("timespec")) == false) {
 						jobJson.remove("calls");
 						res = sceduleManager.update(original.id, jobJson);
 						originalValues.set(i, new ScheduleData(original.id, jobJson));
-						try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e1) {}
+						TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 					} else if(sl.hasSystemCalls() == false &&
 							(jobJson.get("timespec").equals(original.orig.get("timespec")) == false || jobJson.get("calls").equals(original.orig.get("calls")) == false)) { // id >= 0 -> existed
 						res = sceduleManager.update(original.id, jobJson);
 						originalValues.set(i, new ScheduleData(original.id, jobJson));
-						try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e1) {}
+						TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 					}
 					if(res != null) {
 						Msg.errorMsg(this, res);
@@ -200,17 +205,19 @@ public class G2SchedulerPanel extends JScrollPane {
 					}
 				}
 			}
-			try { TimeUnit.MILLISECONDS.sleep(100); } catch (InterruptedException e1) {} // a small time to show busy pointer
+			TimeUnit.MILLISECONDS.sleep(100);// a small time to show busy pointer
 			return true;
 		} catch (IOException e) {
 			Msg.errorMsg(this, e);
+			return false;
+		} catch(InterruptedException e) {
 			return false;
 		}
 	}
 
 	private void addJob(JsonNode node, int pos) {
 		JPanel linePanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
-		G2JobPanel job = new G2JobPanel(parent, node, mHints);
+		G2JobPanel job = new G2JobPanel(parentDlg, node, mHints);
 		linePanel.add(job);
 
 		JButton enableButton = new JButton();
@@ -234,22 +241,17 @@ public class G2SchedulerPanel extends JScrollPane {
 		addBtn.setBorder(BorderFactory.createEmptyBorder(2, 3, 2, 3));
 		
 		JButton removeBtn = new JButton(new UsnaAction(null, "schRemove", "/images/erase-9-16.png", e -> {
-			ScheduleData data = null;
-			if(schedulesPanel.getComponentCount() > 1) {
-				int i;
-				for(i = 0; schedulesPanel.getComponent(i) != linePanel; i++);
-				schedulesPanel.remove(i);
-				lineColors();
-				data = originalValues.remove(i);
-			} else if(schedulesPanel.getComponentCount() == 1) {
-				job.clean();
-				enableAction.setSelected(false);
-				data = originalValues.get(0);
-				originalValues.set(0, new ScheduleData(-1, job.getJson()));
-			}
+			int i;
+			for(i = 0; schedulesPanel.getComponent(i) != linePanel; i++);
+			schedulesPanel.remove(i);
+			ScheduleData data = originalValues.remove(i);
 			if(data != null && data.id >= 0) {
 				removedId.add(data.id);
 			}
+			if(schedulesPanel.getComponentCount() == 0) {
+				addJob(null, 0);
+			}
+			lineColors();
 			schedulesPanel.revalidate();
 			schedulesPanel.repaint(); // last one need this ... do not know why
 		}));

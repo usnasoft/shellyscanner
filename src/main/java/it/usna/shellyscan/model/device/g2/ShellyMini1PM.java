@@ -10,18 +10,18 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.InternalTmpHolder;
-import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.ModulesHolder;
 import it.usna.shellyscan.model.device.g2.meters.MetersWVI;
 import it.usna.shellyscan.model.device.g2.modules.Input;
 import it.usna.shellyscan.model.device.g2.modules.Relay;
+import it.usna.shellyscan.model.device.meters.Meters;
 
 /**
  * Shelly Shelly Plus mini 1PM model
  * @author usna
  */
 public class ShellyMini1PM extends AbstractG2Device implements ModulesHolder, InternalTmpHolder {
-	public final static String ID = "Plus1PMMini";
+	public static final String ID = "Plus1PMMini";
 	private float internalTmp;
 	private MetersWVI meters = new MetersWVI();
 	private Meters[] metersArray = new Meters[] {meters};

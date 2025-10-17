@@ -9,12 +9,12 @@ import java.util.concurrent.TimeUnit;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import it.usna.shellyscan.model.Devices;
-import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.ModulesHolder;
 import it.usna.shellyscan.model.device.g1.modules.Relay;
+import it.usna.shellyscan.model.device.meters.Meters;
 
 public class ShellyUNI extends AbstractG1Device implements ModulesHolder {
-	public final static String ID = "SHUNI-1";
+	public static final String ID = "SHUNI-1";
 	private Relay relay0 = new Relay(this, 0);
 	private Relay relay1 = new Relay(this, 1);
 	private float voltage;
@@ -118,20 +118,20 @@ public class ShellyUNI extends AbstractG1Device implements ModulesHolder {
 		JsonNode ralaysStatus = status.get("relays");
 		relay0.fillStatus(ralaysStatus.get(0), status.get("inputs").get(0));
 		relay1.fillStatus(ralaysStatus.get(1), status.get("inputs").get(1));
-		voltage = (float)status.get("adcs").get(0).get("voltage").asDouble();
+		voltage = status.get("adcs").get(0).get("voltage").floatValue();
 		
 		JsonNode extTNode = status.path("ext_temperature");
 		JsonNode extTNode0 = extTNode.get("0");
 		if(extTNode0 != null) {
-			extT0 = (float) extTNode0.path("tC").asDouble();
+			extT0 = extTNode0.path("tC").floatValue();
 		}
 		JsonNode extTNode1 = extTNode.get("1");
 		if(extTNode1 != null) {
-			extT1 = (float) extTNode1.path("tC").asDouble();
+			extT1 = extTNode1.path("tC").floatValue();
 		}
 		JsonNode extTNode2 = extTNode.get("2");
 		if(extTNode2 != null) {
-			extT2 = (float) extTNode2.path("tC").asDouble();
+			extT2 = extTNode2.path("tC").floatValue();
 		}
 		JsonNode extHNode = status.path("ext_humidity").get("0");
 		if (extHNode != null) {
@@ -149,7 +149,6 @@ public class ShellyUNI extends AbstractG1Device implements ModulesHolder {
 			JsonNode extT = settings.path("ext_temperature").path(i + "");
 			if(extT.isNull() == false && extT.get(0) != null) {
 				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-//				String ret = sendCommand("/settings/ext_temperature/" + i + "?" + jsonEntryIteratorToURLPar(extT.get(0).fields()));
 				String ret = sendCommand("/settings/ext_temperature/" + i + "?" + jsonEntrySetToURLPar(extT.get(0).properties()));
 				errors.add((ret == null || ret.startsWith("[")) ? null : ret);
 			}
@@ -157,7 +156,6 @@ public class ShellyUNI extends AbstractG1Device implements ModulesHolder {
 		JsonNode hum0 = settings.path("ext_humidity").path("0");
 		if(hum0.isNull() == false && hum0.get(0) != null) {
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-//			String ret = sendCommand("/settings/ext_humidity/0?" + jsonEntryIteratorToURLPar(hum0.get(0).fields()));
 			String ret = sendCommand("/settings/ext_humidity/0?" + jsonEntrySetToURLPar(hum0.get(0).properties()));
 			errors.add((ret == null || ret.startsWith("[")) ? null : ret);
 		}
@@ -174,7 +172,6 @@ public class ShellyUNI extends AbstractG1Device implements ModulesHolder {
 
 		for(int index = 0; index < relAct.size(); index++) {
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-//			errors.add(sendCommand("/settings/adc/0/relay_actions." + index + "?" + AbstractG1Device.jsonEntryIteratorToURLPar(relAct.get(index).fields())));
 			errors.add(sendCommand("/settings/adc/0/relay_actions." + index + "?" + AbstractG1Device.jsonEntrySetToURLPar(relAct.get(index).properties())));
 		}
 	}

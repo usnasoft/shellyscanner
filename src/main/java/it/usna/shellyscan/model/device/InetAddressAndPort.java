@@ -10,16 +10,12 @@ import java.net.InetAddress;
 public class InetAddressAndPort implements Comparable<InetAddressAndPort> {
 	protected final InetAddress address;
 	protected final int port;
-
+	protected String stringValue = null;
+	
 	public InetAddressAndPort(InetAddress address, int port) {
 		this.address = address;
 		this.port = port;
 	}
-	
-//	public InetAddressAndPort(ShellyAbstractDevice d) {
-//		this.address = d.getAddress();
-//		this.port = d.getPort();
-//	}
 	
 	public InetAddress getAddress() {
 		return address;
@@ -57,22 +53,27 @@ public class InetAddressAndPort implements Comparable<InetAddressAndPort> {
 		return address.equals(o2.address) && port == o2.port;
 	}
 	
-	public String getRepresentation() {
+	//see java.net.Inet4Address.getHostAddress() implementation to undestand ...
+	protected void stringValue() {
 		if(port == 80) {
-			return address.getHostAddress();
+			stringValue = address.getHostAddress();
 		} else {
-			return address.getHostAddress() + ":" + port;
+			stringValue = address.getHostAddress() + ":" + port;
 		}
+	}
+	
+	public String getRepresentation() {
+		if(stringValue == null) {
+			stringValue();
+		}
+		return stringValue;
 	}
 	
 	@Override
 	public String toString() {
-		if(port == 80) {
-			return address.getHostAddress();
-		} else {
-			return address.getHostAddress() + ":" + port;
+		if(stringValue == null) {
+			stringValue();
 		}
+		return stringValue;
 	}
 }
-
-//Note: InetAddress is not efficient (see java.net.Inet4Address implementation); an initial getAddress() and byte storage could improve performance

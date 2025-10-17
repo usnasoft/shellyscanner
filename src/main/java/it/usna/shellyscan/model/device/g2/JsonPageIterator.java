@@ -17,7 +17,7 @@ import it.usna.shellyscan.model.device.ShellyAbstractDevice;
  * </code><br>
  * calling "method" with the proper offset when needed
  */
-public class PageIterator implements Iterator<JsonNode> {
+public class JsonPageIterator implements Iterator<JsonNode>, Iterable<JsonNode> {
 	private final ShellyAbstractDevice device;
 	private final String method;
 	private final String arrayKey;
@@ -25,7 +25,7 @@ public class PageIterator implements Iterator<JsonNode> {
 	private final int numNodes;
 	private int nextIdx = 0;
 	
-	public PageIterator(ShellyAbstractDevice device, final String method, final String arrayKey) throws IOException {
+	public JsonPageIterator(ShellyAbstractDevice device, final String method, final String arrayKey) throws IOException {
 		this.device = device;
 		this.method = method;
 		this.arrayKey = arrayKey;
@@ -59,5 +59,10 @@ public class PageIterator implements Iterator<JsonNode> {
 	public JsonNode next() {
 		nextIdx++;
 		return current.next();
+	}
+
+	@Override
+	public Iterator<JsonNode> iterator() {
+		return this;
 	}
 }

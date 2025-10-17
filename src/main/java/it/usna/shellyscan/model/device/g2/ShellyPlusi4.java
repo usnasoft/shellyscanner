@@ -12,17 +12,17 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import it.usna.shellyscan.model.Devices;
-import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.ModulesHolder;
 import it.usna.shellyscan.model.device.RestoreMsg;
 import it.usna.shellyscan.model.device.g2.modules.Input;
 import it.usna.shellyscan.model.device.g2.modules.SensorAddOn;
 import it.usna.shellyscan.model.device.g2.modules.Webhooks;
+import it.usna.shellyscan.model.device.meters.Meters;
 import it.usna.shellyscan.model.device.modules.DeviceModule;
 
 public class ShellyPlusi4 extends AbstractG2Device implements ModulesHolder {
-	private final static Logger LOG = LoggerFactory.getLogger(ShellyPlusi4.class);
-	public final static String ID = "PlusI4";
+	private static final Logger LOG = LoggerFactory.getLogger(ShellyPlusi4.class);
+	public static final String ID = "PlusI4";
 	private Input[] inputs;
 	private Webhooks webhooks;
 	private Meters[] meters;

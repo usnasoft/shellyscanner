@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import it.usna.shellyscan.model.device.modules.MotionInterface;
 
 public class MotionSensor extends Sensor implements MotionInterface {
-	public final static int OBJ_ID = 0x21; // dec. 33
+	public static final int OBJ_ID = 0x21; // dec. 33
 	private boolean motion;
 
 	MotionSensor(int id, JsonNode sensorConf) {

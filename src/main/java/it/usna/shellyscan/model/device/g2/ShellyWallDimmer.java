@@ -13,7 +13,7 @@ import it.usna.shellyscan.model.device.g2.modules.LightWhite;
 import it.usna.shellyscan.model.device.modules.DeviceModule;
 
 public class ShellyWallDimmer extends AbstractG2Device implements ModulesHolder {
-	public final static String ID = "PlusWallDimmer";
+	public static final String ID = "PlusWallDimmer";
 	private LightWhite light = new LightWhite(this, 1, 0);
 	private LightWhite[] lightArray = new LightWhite[] {light};
 

@@ -8,7 +8,7 @@ import it.usna.shellyscan.model.device.modules.DeviceModule;
 import it.usna.shellyscan.model.device.modules.RelayInterface;
 
 public class UtilMiscellaneous {
-	private final static NumberFormat formatterN2 = NumberFormat.getInstance();
+	private static final NumberFormat formatterN2 = NumberFormat.getInstance();
 	static {
 		formatterN2.setMaximumFractionDigits(2);
 		formatterN2.setMinimumFractionDigits(2);
@@ -35,8 +35,12 @@ public class UtilMiscellaneous {
 		return channel == 0 ? getDescName(d) : getDescName(d) + "-" + (channel + 1);
 	}
 	
-	public static String getDescName(ShellyAbstractDevice d, String label) {
-		return (label != null && label.isEmpty() == false) ? getDescName(d) : getDescName(d) + "-" + label;
+//	public static String getDescName(ShellyAbstractDevice d, String label) {
+//		return (label == null || label.isEmpty()) ? getDescName(d) : getDescName(d) + "-" + label;
+//	}
+	
+	public static String getDescName(ShellyAbstractDevice d, String label, int channel) {
+		return (label == null || label.isEmpty()) ? getDescName(d, channel) : getDescName(d) + "-" + label;
 	}
 
 	public static String getFullName(ShellyAbstractDevice d) {

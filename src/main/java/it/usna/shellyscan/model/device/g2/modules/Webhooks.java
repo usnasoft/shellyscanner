@@ -13,15 +13,15 @@ import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.util.AccumulatingMap;
 
 public class Webhooks {
-//	public final static String INPUT_ON = "input.toggle_on";
-//	public final static String INPUT_OFF = "input.toggle_off";
-//	public final static String INPUT_PUSH = "input.button_push";
-//	public final static String INPUT_LONG_PUSH = "input.button_longpush";
-//	public final static String INPUT_DOUBLE_PUSH = "input.button_doublepush";
-//	public final static String INPUT_TRIPLE_PUSH = "input.button_triplepush";
-//	private final static String SENSOR_EVENT_PREFIX = DynamicComponents.BTHOME_SENSOR + ".";
-//	private final static String BTDEVICE_EVENT_PREFIX = DynamicComponents.BTHOME_DEVICE + ".";
-	
+//	public static final String INPUT_ON = "input.toggle_on";
+//	public static final String INPUT_OFF = "input.toggle_off";
+//	public static final String INPUT_PUSH = "input.button_push";
+//	public static final String INPUT_LONG_PUSH = "input.button_longpush";
+//	public static final String INPUT_DOUBLE_PUSH = "input.button_doublepush";
+//	public static final String INPUT_TRIPLE_PUSH = "input.button_triplepush";
+//	private static final String SENSOR_EVENT_PREFIX = DynamicComponents.BTHOME_SENSOR + ".";
+//	private static final String BTDEVICE_EVENT_PREFIX = DynamicComponents.BTHOME_DEVICE + ".";
+
 	private final AbstractG2Device parent;
 	private AccumulatingMap<String, Webhook> hooks = new AccumulatingMap<>(); // key: input3, bthomedevice200, ...
 
@@ -73,7 +73,7 @@ public class Webhooks {
 		});
 	}
 
-	public static void restore(AbstractG2Device parent, JsonNode storedWH, long delay, ArrayList<String> errors) throws InterruptedException {
+	public static void restore(AbstractG2Device parent, JsonNode storedWH, long delay,List<String> errors) throws InterruptedException {
 		TimeUnit.MILLISECONDS.sleep(delay);
 		errors.add(parent.postCommand("Webhook.DeleteAll", "{}"));
 		for(JsonNode ac: storedWH.get("hooks")) {
@@ -89,13 +89,13 @@ public class Webhooks {
 	}
 	
 	// restore all webhooks with a specific "cid" on a new "cid"
-	public static void restore(AbstractG2Device parent, String storedKey, /*int newCid*/ String newKey, JsonNode storedWH, long delay, ArrayList<String> errors) throws InterruptedException {
-		String typeIdxOld[] = storedKey.split(":");
-		String typeIdxNew[] = newKey.split(":");
+	public static void restore(AbstractG2Device parent, String storedKey, /*int newCid*/ String newKey, JsonNode storedWH, long delay, List<String> errors) throws InterruptedException {
+		String[] typeIdxOld = storedKey.split(":");
+		String[] typeIdxNew = newKey.split(":");
 		restore(parent, typeIdxOld[0], Integer.parseInt(typeIdxOld[1]), Integer.parseInt(typeIdxNew[1]), storedWH, delay, errors);
 	}
 	
-	public static void restore(AbstractG2Device parent, String eventType, int storedCid, int newCid, JsonNode storedWH, long delay, ArrayList<String> errors) throws InterruptedException {
+	public static void restore(AbstractG2Device parent, String eventType, int storedCid, int newCid, JsonNode storedWH, long delay, List<String> errors) throws InterruptedException {
 		for(JsonNode ac: storedWH.get("hooks")) {
 			if(ac.get("cid").intValue() == storedCid && ac.get("event").textValue().startsWith(eventType + ".")) {
 				ObjectNode thisAction = (ObjectNode)ac.deepCopy();
@@ -111,7 +111,7 @@ public class Webhooks {
 		}
 	}
 
-	public static class Webhook {
+	public class Webhook {
 //		private int id;
 		private boolean enable;
 		private String event;
@@ -142,6 +142,7 @@ public class Webhooks {
 		
 		public void execute() throws IOException {
 			for(String url: urls) {
+				url = url.replaceAll("^http://127.0.0.1|^http://localhost", "http://" + parent.getAddressAndPort().getRepresentation());
 				final URL command = new URL(url);
 				command.openConnection().getContent();
 			}

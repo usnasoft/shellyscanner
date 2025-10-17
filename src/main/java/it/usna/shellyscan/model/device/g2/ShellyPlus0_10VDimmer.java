@@ -12,12 +12,12 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import it.usna.shellyscan.model.Devices;
-import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.ModulesHolder;
 import it.usna.shellyscan.model.device.RestoreMsg;
 import it.usna.shellyscan.model.device.g2.modules.Input;
 import it.usna.shellyscan.model.device.g2.modules.LightWhite;
 import it.usna.shellyscan.model.device.g2.modules.SensorAddOn;
+import it.usna.shellyscan.model.device.meters.Meters;
 import it.usna.shellyscan.model.device.modules.DeviceModule;
 
 /**
@@ -25,8 +25,8 @@ import it.usna.shellyscan.model.device.modules.DeviceModule;
  * @author usna
  */
 public class ShellyPlus0_10VDimmer extends AbstractG2Device implements /*InternalTmpHolder,*/ ModulesHolder {
-	private final static Logger LOG = LoggerFactory.getLogger(ShellyPlus0_10VDimmer.class);
-	public final static String ID = "Plus10V";
+	private static final Logger LOG = LoggerFactory.getLogger(ShellyPlus0_10VDimmer.class);
+	public static final String ID = "Plus10V";
 //	private float internalTmp;
 //	private float power;
 //	private float voltage;

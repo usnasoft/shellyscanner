@@ -1,14 +1,12 @@
 package it.usna.shellyscan.model.device.g1;
 
-import java.io.BufferedWriter;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.InetAddress;
-import java.net.URI;
-import java.nio.file.FileSystem;
-import java.nio.file.FileSystems;
-import java.nio.file.Files;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
-import java.util.Map;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import org.eclipse.jetty.client.HttpClient;
 import org.slf4j.Logger;
@@ -19,7 +17,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import it.usna.shellyscan.model.device.BatteryDeviceInterface;
 
 public abstract class AbstractBatteryG1Device extends AbstractG1Device implements BatteryDeviceInterface {
-	private final static Logger LOG = LoggerFactory.getLogger(AbstractBatteryG1Device.class);
+	private static final Logger LOG = LoggerFactory.getLogger(AbstractBatteryG1Device.class);
 	protected JsonNode stShelly;
 	protected JsonNode stSettings;
 	protected JsonNode stStatus;
@@ -77,13 +75,13 @@ public abstract class AbstractBatteryG1Device extends AbstractG1Device implement
 			return super.backup(file);
 		} catch (/*java.net.SocketTimeout*/Exception e) {
 			if(getStatus() != Status.ON_LINE && stSettings != null && stSettingsActions != null) {
-				try(FileSystem fs = FileSystems.newFileSystem(URI.create("jar:" + file.toUri()), Map.of("create", "true"))) {
-					try(BufferedWriter writer = Files.newBufferedWriter(fs.getPath("settings.json"))) {
-						jsonMapper.writer().writeValue(writer, stSettings);
-					}
-					try(BufferedWriter writer = Files.newBufferedWriter(fs.getPath("actions.json"))) {
-						jsonMapper.writer().writeValue(writer, stSettingsActions);
-					}
+				try(ZipOutputStream out = new ZipOutputStream(new FileOutputStream(file.toFile()), StandardCharsets.UTF_8)) {
+					out.putNextEntry(new ZipEntry("settings.json"));
+					jsonMapper.writer().writeValue(out, stSettings);
+					out.closeEntry();
+					out.putNextEntry(new ZipEntry("actions.json"));
+					jsonMapper.writer().writeValue(out, stSettingsActions);
+					out.closeEntry();
 				} catch(IOException ex) {
 					LOG.error("backup", e);
 				}
@@ -93,7 +91,7 @@ public abstract class AbstractBatteryG1Device extends AbstractG1Device implement
 			}
 		}
 	}
-	
+
 //	public void copyFrom(BatteryDeviceInterface dev) {
 //		AbstractBatteryG1Device devG1 = (AbstractBatteryG1Device)dev;
 //		if(shelly == null) {

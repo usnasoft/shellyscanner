@@ -22,7 +22,7 @@ import it.usna.shellyscan.model.device.g3.modules.XT1Thermostat;
  * the call is lazy -> list is created on the first call
  */
 public class MethodHints {
-	private final static Logger LOG = LoggerFactory.getLogger(MethodHints.class);
+	private static final Logger LOG = LoggerFactory.getLogger(MethodHints.class);
 	private final AbstractG2Device device;
 	private ArrayList<Method> methodsList;
 	
@@ -31,7 +31,7 @@ public class MethodHints {
 	}
 	
 	public Object[] get(JTextField method, JTextField parameters) {
-		if(methodsList == null || methodsList.size() == 0) {
+		if(methodsList == null || methodsList.isEmpty()) {
 			generate();
 		}
 
@@ -43,8 +43,12 @@ public class MethodHints {
 
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					method.setText(m.method);
-					parameters.setText(m.pars);
+					if(m.method != null) {
+						method.setText(m.method);
+					}
+					if(m.pars != null) {
+						parameters.setText(m.pars);
+					}
 				}
 			};
 		}
@@ -98,7 +102,7 @@ public class MethodHints {
 					methodsList.add(new Method(nameBase + "On", "RGBW.Set", "\"id\":" + id + ",\"on\":true"));
 					methodsList.add(new Method(nameBase + "Off", "RGBW.Set", "\"id\":" + id + ",\"on\":false"));
 					methodsList.add(new Method(nameBase + "Toggle", "RGBW.Toggle", "\"id\":" + id));
-					methodsList.add(new Method(nameBase + "On 50%", "RGBW", "\"id\":" + id + ",\"on\":true,\"brightness\":50"));
+					methodsList.add(new Method(nameBase + "On 50%", "RGBW.Set", "\"id\":" + id + ",\"on\":true,\"brightness\":50"));
 					methodsList.add(new Method(nameBase + "On, red", "RGBW.Set", "\"id\":" + id + ",\"on\":true,\"white\":0,\"rgb\":[255,0,0]"));
 					methodsList.add(new Method(nameBase + "On, green", "RGBW.Set", "\"id\":" + id + ",\"on\":true,\"white\":0,\"rgb\":[0,255,0]"));
 					methodsList.add(new Method(nameBase + "On, blu", "RGBW.Set", "\"id\":" + id + ",\"on\":true,\"white\":0,\"rgb\":[0,0,255]"));
@@ -111,6 +115,13 @@ public class MethodHints {
 					methodsList.add(new Method(nameBase + "Toggle", "CCT.Toggle", "\"id\":" + id));
 					methodsList.add(new Method(nameBase + "On 50%", "CCT.Set", "\"id\":" + id + ",\"on\":true,\"brightness\":50"));
 					methodsList.add(new Method(nameBase + "On 4000K", "CCT.Set", "\"id\":" + id + ",\"on\":true,\"ct\":4000"));
+				} else if(key.startsWith("rgbcct:")) {
+					int id = comp.get("config").path("id").intValue();
+					String nameBase = actionBaseName(comp);
+					methodsList.add(new Method(nameBase + "On", "RGBCCT.Set", "\"id\":" + id + ",\"on\":true"));
+					methodsList.add(new Method(nameBase + "Off", "RGBCCT.Set", "\"id\":" + id + ",\"on\":false"));
+					methodsList.add(new Method(nameBase + "Toggle", "RGBCCT.Toggle", "\"id\":" + id));
+					methodsList.add(new Method(nameBase + "On 50%", "RGBCCT.Set", "\"id\":" + id + ",\"on\":true,\"brightness\":50"));
 				} else if(device instanceof ModulesHolder mh && mh.getModulesCount() > 0 && mh.getModules()[0] instanceof XT1Thermostat therm) {
 					// LinkedGo ST802 & LinkedGo ST1820
 					if(key.equals("number:" + therm.getTargetTempId())) {
@@ -123,8 +134,8 @@ public class MethodHints {
 					}
 				}
 			}
-			if(methodsList.size() == 0) {
-				methodsList.add(new Method("No hints", "", ""));
+			if(methodsList.isEmpty()) {
+				methodsList.add(new Method("No hints", null, null));
 			}
 		} catch (IOException e) {
 			LOG.error("create hints", e);

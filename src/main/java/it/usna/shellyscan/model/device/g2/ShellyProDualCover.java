@@ -11,19 +11,19 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.InternalTmpHolder;
-import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.ModulesHolder;
 import it.usna.shellyscan.model.device.g2.modules.Input;
 import it.usna.shellyscan.model.device.g2.modules.Roller;
+import it.usna.shellyscan.model.device.meters.Meters;
 
 /**
  * Dual Cover model
  * @author usna
  */
 public class ShellyProDualCover extends AbstractProDevice implements ModulesHolder, InternalTmpHolder {
-	public final static String ID = "Pro4PM";
-	public final static String MODEL = "SPSH-002PE16EU";
-	private final static Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.W, Meters.Type.PF, Meters.Type.V, Meters.Type.I};
+	public static final String ID = "Pro4PM";
+	public static final String MODEL = "SPSH-002PE16EU";
+	private static final Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.W, Meters.Type.PF, Meters.Type.V, Meters.Type.I};
 	private Roller roller0 = new Roller(this, 0);
 	private Roller roller1 = new Roller(this, 1);
 	private float internalTmp;

@@ -8,15 +8,15 @@ import java.util.concurrent.TimeUnit;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import it.usna.shellyscan.model.Devices;
-import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.ModulesHolder;
 import it.usna.shellyscan.model.device.g1.meters.MetersPower;
 import it.usna.shellyscan.model.device.g1.modules.Relay;
 import it.usna.shellyscan.model.device.g1.modules.Roller;
+import it.usna.shellyscan.model.device.meters.Meters;
 import it.usna.shellyscan.model.device.modules.DeviceModule;
 
 public class Shelly2 extends AbstractG1Device implements ModulesHolder {
-	public final static String ID = "SHSW-21";
+	public static final String ID = "SHSW-21";
 	private boolean modeRelay;
 	private Relay relay0, relay1;
 	private Roller roller;
@@ -60,10 +60,6 @@ public class Shelly2 extends AbstractG1Device implements ModulesHolder {
 		} else {
 			return new Roller[] {roller};
 		}
-	}
-	
-	public float getPower() {
-		return power;
 	}
 	
 	@Override

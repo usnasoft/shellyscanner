@@ -1,4 +1,4 @@
-package it.usna.shellyscan.model.device;
+package it.usna.shellyscan.model.device.meters;
 
 import java.text.NumberFormat;
 import java.util.Locale;
@@ -20,16 +20,32 @@ public abstract class Meters implements Comparable<Meters> {
 		T2, // temperature
 		T3, // temperature
 		T4, // temperature
-		EX, // ext switch status
+		EX(true), // ext switch status
 		PERC, // 0-100
-		NUM, // integer
+		NUM, // integer - UNI counter
 		DMM, // distance [mm]
-		VIB, // vibration - 0=false; 1=true
+		VIB(true), // vibration - 0=false; 1=true
 		ANG, // angle - accelerometer
 		ANG1, // angle - accelerometer
 		ANG2, // angle - accelerometer
-		BAT // battery %
+		CHANNEL, // channel - BLU remore channel
+		BAT; // battery %
+		
+		final boolean enumType; // 0 or not 0
+		
+		private Type() {
+			enumType = false;
+		}
+		
+		private Type(boolean b) {
+			enumType = b;
+		}
+		
+		public boolean isEnumType() {
+			return enumType;
+		}
 	};
+
 	protected static NumberFormat NF1 = NumberFormat.getNumberInstance(Locale.ENGLISH);
 	protected static NumberFormat NF2 = NumberFormat.getNumberInstance(Locale.ENGLISH);
 	static {
@@ -81,10 +97,18 @@ public abstract class Meters implements Comparable<Meters> {
 	public String toString() {
 		Type[] t = getTypes();
 		if(t.length > 0) {
-			StringBuilder res = new StringBuilder(t[0].toString());
-			res.append("=").append(NF1.format(getValue(t[0])));
+			String tName = t[0].toString();
+			if(tName.length() > 2) {
+				tName = tName.substring(0, 2);
+			}
+			StringBuilder res = new StringBuilder(tName);
+			res.append('=').append(NF1.format(getValue(t[0])));
 			for(int i = 1; i < t.length; i++) {
-				res.append(" ").append(t[i].toString()).append("=").append(NF1.format(getValue(t[i])));
+				tName = t[i].toString();
+				if(tName.length() > 2) {
+					tName = tName.substring(0, 2);
+				}
+				res.append(' ').append(tName).append('=').append(NF1.format(getValue(t[i])));
 			}
 			return res.toString();
 		} else {

@@ -4,10 +4,14 @@ import static it.usna.shellyscan.Main.LABELS;
 
 import java.awt.BorderLayout;
 import java.awt.Cursor;
+import java.awt.Desktop;
 import java.awt.FlowLayout;
 import java.awt.FontMetrics;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.IOException;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -17,8 +21,10 @@ import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.JButton;
@@ -42,6 +48,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import it.usna.shellyscan.controller.DeferrableTask;
 import it.usna.shellyscan.controller.DeferrablesContainer;
 import it.usna.shellyscan.controller.UsnaAction;
+import it.usna.shellyscan.controller.UsnaSelectedAction;
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.Devices.EventType;
 import it.usna.shellyscan.model.device.GhostDevice;
@@ -53,7 +60,9 @@ import it.usna.shellyscan.model.device.g2.WebSocketDeviceListener;
 import it.usna.shellyscan.model.device.modules.FirmwareManager;
 import it.usna.shellyscan.view.DevicesTable;
 import it.usna.shellyscan.view.MainView;
+import it.usna.shellyscan.view.util.Msg;
 import it.usna.shellyscan.view.util.UtilMiscellaneous;
+import it.usna.swing.UsnaPopupMenu;
 import it.usna.swing.table.UsnaTableModel;
 import it.usna.swing.texteditor.TextDocumentListener;
 import it.usna.util.UsnaEventListener;
@@ -61,7 +70,13 @@ import it.usna.util.UsnaEventListener;
 public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventListener<Devices.EventType, Integer> {
 	private static final long serialVersionUID = 1L;
 	private FWUpdateTable table;
-	private UsnaTableModel tModel = new UsnaTableModel("", LABELS.getString("col_device"), LABELS.getString("dlgSetColCurrentV"), LABELS.getString("dlgSetColLastV"), LABELS.getString("dlgSetColBetaV"));
+	private UsnaTableModel tModel = new UsnaTableModel("", LABELS.getString("col_device"), LABELS.getString("dlgSetColCurrentV"), LABELS.getString("dlgSetColLastV"), LABELS.getString("dlgSetColBetaV")) {
+		private static final long serialVersionUID = 1L;
+		@Override
+		public Class<?> getColumnClass(final int c) { // Booolean is comparable; see TableStringConverter
+			return (c == FWUpdateTable.COL_CURRENT || c == FWUpdateTable.COL_STABLE  || c == FWUpdateTable.COL_BETA) ? Object.class : super.getColumnClass(c);
+		}
+	};
 	private List<DeviceFirmware> devicesFWData;
 
 	private JLabel lblCount = new JLabel();
@@ -71,7 +86,7 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 	private ScheduledExecutorService exeService = Executors.newScheduledThreadPool(35);
 	private List<Future<Void>> retriveFutures;
 
-	private final static Logger LOG = LoggerFactory.getLogger(PanelFWUpdate.class);
+	private static final Logger LOG = LoggerFactory.getLogger(PanelFWUpdate.class);
 
 	public PanelFWUpdate(DialogDeviceSettings parent) {
 		super(parent);
@@ -91,46 +106,48 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 		btnPanel.add(btnPanelRight, BorderLayout.EAST);
 		add(btnPanel, BorderLayout.SOUTH);
 //		btnPanel.setLayout(new BoxLayout(btnPanel, BoxLayout.X_AXIS));
-
 //		btnPanel.add(Box.createHorizontalStrut(2));
 
 		JButton btnUnselectAll = new JButton(new UsnaAction("btn_unselectAll", event -> {
-			for(int i= 0; i < tModel.getRowCount(); i++) {
+			IntStream sel = (table.getSelectedRowCount() > 1) ? table.getSelectedModelRowsStream() : IntStream.range(0, tModel.getRowCount());
+			sel.forEach(i -> {
 				if(tModel.getValueAt(i, FWUpdateTable.COL_STABLE) instanceof Boolean) {
 					tModel.setValueAt(Boolean.FALSE, i, FWUpdateTable.COL_STABLE);
 				}
 				if(tModel.getValueAt(i, FWUpdateTable.COL_BETA) instanceof Boolean) {
 					tModel.setValueAt(Boolean.FALSE, i, FWUpdateTable.COL_BETA);
 				}
-			}
+			});
 			countSelection();
 		}));
 		btnUnselectAll.setBorder(BorderFactory.createEmptyBorder(4, 7, 4, 7));
 		btnPanelLeft.add(btnUnselectAll);
-
+		
 		JButton btnSelectStable = new JButton(new UsnaAction("btn_selectAllSta", event -> {
-			for(int i= 0; i < tModel.getRowCount(); i++) {
+			IntStream sel = (table.getSelectedRowCount() > 1) ? table.getSelectedModelRowsStream() : IntStream.range(0, tModel.getRowCount());
+			sel.forEach(i -> {
 				if(tModel.getValueAt(i, FWUpdateTable.COL_STABLE) instanceof Boolean) {
 					tModel.setValueAt(Boolean.TRUE, i, FWUpdateTable.COL_STABLE);
 					if(tModel.getValueAt(i, FWUpdateTable.COL_BETA) instanceof Boolean) {
 						tModel.setValueAt(Boolean.FALSE, i, FWUpdateTable.COL_BETA);
 					}
 				}
-			}
+			});
 			countSelection();
 		}));
 		btnSelectStable.setBorder(BorderFactory.createEmptyBorder(4, 7, 4, 7));
 		btnPanelLeft.add(btnSelectStable);
 
 		JButton btnSelectBeta = new JButton(new UsnaAction("btn_selectAllbeta", event -> {
-			for(int i= 0; i < tModel.getRowCount(); i++) {
+			IntStream sel = (table.getSelectedRowCount() > 1) ? table.getSelectedModelRowsStream() : IntStream.range(0, tModel.getRowCount());
+			sel.forEach(i -> {
 				if(tModel.getValueAt(i, FWUpdateTable.COL_BETA) instanceof Boolean) {
 					tModel.setValueAt(Boolean.TRUE, i, FWUpdateTable.COL_BETA);
 					if(tModel.getValueAt(i, FWUpdateTable.COL_STABLE) instanceof Boolean) {
 						tModel.setValueAt(Boolean.FALSE, i, FWUpdateTable.COL_STABLE);
 					}
 				}
-			}
+			});
 			countSelection();
 		}));
 		btnSelectBeta.setBorder(BorderFactory.createEmptyBorder(4, 7, 4, 7));
@@ -185,8 +202,32 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 		btnCheck.setBorder(BorderFactory.createEmptyBorder(4, 7, 4, 7));
 		btnPanelRight.add(Box.createHorizontalStrut(6));
 		btnPanelRight.add(btnCheck);
-
 //		btnPanel.add(Box.createHorizontalStrut(2));
+
+		Action browseAction = new UsnaSelectedAction(parentDlg, table, "action_web_name", null, "/images/Computer16.png", null, () ->
+		table.getSelectedRowCount() <= 8 ||
+		JOptionPane.showConfirmDialog(parentDlg, LABELS.getString("action_web_confirm"), LABELS.getString("action_web_name"), JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE) == JOptionPane.OK_OPTION,
+		i -> {
+			try {
+				Desktop.getDesktop().browse(URI.create("http://" + parentDlg.getLocalDevice(i).getAddressAndPort().getRepresentation()));
+			} catch (IOException | UnsupportedOperationException ex) {
+				Msg.errorMsg(parentDlg, ex);
+			}
+		});
+
+		Action nosortAction = new UsnaAction("lblNoSort", e -> table.clearSort());
+
+		UsnaPopupMenu popup = new UsnaPopupMenu(browseAction, nosortAction);
+		table.addMouseListener(popup.getMouseListener(table));
+
+		table.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mousePressed(MouseEvent evt) {
+				if (evt.getClickCount() == 2 /*&& table.getSelectedRow() != -1*/) {
+					browseAction.actionPerformed(null);
+				}
+			}
+		});
 	}
 	
 	FirmwareManager getFirmwareManager(int index) {
@@ -195,7 +236,7 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 
 	private void fillTable(boolean select) {
 		tModel.clear();
-		for(int i = 0; i < parent.getLocalSize(); i++) {
+		for(int i = 0; i < parentDlg.getLocalSize(); i++) {
 			if(Thread.interrupted() == false) {
 				tModel.addRow(createTableRow(i, select));
 			}
@@ -206,7 +247,7 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 	}
 
 	private Object[] createTableRow(int localIndex, boolean select) {
-		ShellyAbstractDevice d = parent.getLocalDevice(localIndex);
+		ShellyAbstractDevice d = parentDlg.getLocalDevice(localIndex);
 		FirmwareManager fw = getFirmwareManager(localIndex);
 		if(fw != null) {
 			if(fw.upadating()) {
@@ -219,7 +260,7 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 			}
 		} else {
 			DeferrablesContainer dc = DeferrablesContainer.getInstance();
-			if(dc.indexOf(parent.getModelIndex(localIndex), DeferrableTask.Type.FW_UPDATE) < 0) {
+			if(dc.indexOf(parentDlg.getModelIndex(localIndex), DeferrableTask.Type.FW_UPDATE) < 0) {
 				return new Object[] {DevicesTable.getStatusIcon(d), UtilMiscellaneous.getExtendedHostName(d), null /*current fw unknown*/, Boolean.FALSE /*any*/};
 			} else {
 				return new Object[] {DevicesTable.getStatusIcon(d), UtilMiscellaneous.getExtendedHostName(d), null,  LABELS.getString("labelRequested")};
@@ -231,7 +272,7 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 	String showing() throws InterruptedException {
 		lblCount.setText("");
 		btnCheck.setEnabled(false);
-		final int size = parent.getLocalSize();
+		final int size = parentDlg.getLocalSize();
 		devicesFWData = Stream.generate(DeviceFirmware::new).limit(size).collect(Collectors.toList());
 		tModel.clear();
 		try {
@@ -241,7 +282,7 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 			}
 			retriveFutures = exeService.invokeAll(calls);
 			fillTable(true);
-			parent.getModel().addListener(this);
+			parentDlg.getModel().addListener(this);
 
 			table.columnsWidthAdapt();
 			final FontMetrics fm = getGraphics().getFontMetrics();
@@ -259,7 +300,7 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 
 	@Override
 	void hiding() {
-		parent.getModel().removeListener(this);
+		parentDlg.getModel().removeListener(this);
 		if(retriveFutures != null) {
 			retriveFutures.forEach(f -> f.cancel(true));
 		}
@@ -287,7 +328,7 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 	}
 
 	private void initDevice(final int index) {
-		final ShellyAbstractDevice d = parent.getLocalDevice(index);
+		final ShellyAbstractDevice d = parentDlg.getLocalDevice(index);
 		FirmwareManager fm = d.getFWManager();
 		DeviceFirmware fwInfo = devicesFWData.get(index);
 		fwInfo.fwModule = fm;
@@ -315,9 +356,9 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 				if(table.convertRowIndexToView(i) >= 0) { // included in filter
 					Object update = tModel.getValueAt(i, FWUpdateTable.COL_STABLE);
 					Object beta = tModel.getValueAt(i, FWUpdateTable.COL_BETA);
-					if(update instanceof Boolean && ((Boolean)update) == Boolean.TRUE) {
+					if(update == Boolean.TRUE) {
 						res += updateDeviceFW(i, true);
-					} else if(beta instanceof Boolean && ((Boolean)beta) == Boolean.TRUE) {
+					} else if(beta == Boolean.TRUE) {
 						res += updateDeviceFW(i, false);
 					}
 				}
@@ -329,14 +370,14 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 	}
 
 	private String updateDeviceFW(int i, boolean toStable) {
-		ShellyAbstractDevice device = parent.getLocalDevice(i);
+		ShellyAbstractDevice device = parentDlg.getLocalDevice(i);
 		if(device instanceof GhostDevice == false) {
 			DeviceFirmware fwInfo = devicesFWData.get(i);
 			fwInfo.uptime = device.getUptime();
 			String msg = fwInfo.fwModule.update(toStable);
 			if(msg != null) {
 				if(device.getStatus() == Status.OFF_LINE) {
-					createDeferrable(parent.getModelIndex(i), fwInfo.fwModule, toStable);
+					createDeferrable(parentDlg.getModelIndex(i), toStable);
 					return UtilMiscellaneous.getFullName(device) + " - " + LABELS.getString("msgFWUpdateQueue") + "\n";
 				} else {
 					if(LABELS.containsKey(msg)) {
@@ -353,12 +394,12 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 				return "";
 			}
 		} else {
-			createDeferrable(parent.getModelIndex(i), null, true);
+			createDeferrable(parentDlg.getModelIndex(i), true);
 			return UtilMiscellaneous.getFullName(device) + " - " + LABELS.getString("msgFWUpdateQueue") + "\n";
 		}
 	}
 	
-	private static void createDeferrable(int modelIndex, FirmwareManager fm, boolean toStable) {
+	private static void createDeferrable(int modelIndex, boolean toStable) {
 		DeferrablesContainer dc = DeferrablesContainer.getInstance();
 		dc.addOrUpdate(modelIndex, DeferrableTask.Type.FW_UPDATE, LABELS.getString(toStable ? "dlgSetFWUpdateStable" : "dlgSetFWUpdateBeta"), (def, dev) -> {
 			return dev.getFWManager().update(toStable);
@@ -431,7 +472,7 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 			if(cause instanceof WebSocketTimeoutException) {
 				LOG.trace("ws-timeout -> reopen");
 				try {
-					devicesFWData.get(index).wsSession = wsEventListener(index, parent.getLocalDevice(index));
+					devicesFWData.get(index).wsSession = wsEventListener(index, parentDlg.getLocalDevice(index));
 				} catch (IOException | InterruptedException | ExecutionException e) {
 					LOG.debug("ws-timeout -> reopen error", e);
 				}
@@ -452,9 +493,9 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 	@Override
 	public void update(EventType mesgType, Integer pos) {
 		if(mesgType == Devices.EventType.UPDATE || mesgType == Devices.EventType.SUBSTITUTE) {
-			final int localIndex = parent.getLocalIndex(pos);
+			final int localIndex = parentDlg.getLocalIndex(pos);
 			if(localIndex >= 0) {
-				final ShellyAbstractDevice device = parent.getModel().get(pos);
+				final ShellyAbstractDevice device = parentDlg.getModel().get(pos);
 				ShellyAbstractDevice.Status newStatus = device.getStatus();
 
 				if(newStatus == ShellyAbstractDevice.Status.ON_LINE && devicesFWData.get(localIndex).fwModule == null) {
@@ -496,7 +537,7 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 			}
 		}
 	}
-} // 346 - 362 - 462 - 476 - 509 - 418 - 438
+} // 346 - 362 - 462 - 476 - 509 - 418 - 438 - 540
 
 // {"src":"shellyplusi4-a8032ab1fe78","dst":"S_Scanner","method":"NotifyEvent","params":{"ts":1677696108.45,"events":[{"component":"sys", "event":"ota_progress", "msg":"Waiting for data", "progress_percent":99, "ts":1677696108.45}]}}
 // {"src":"shellyplusi4-a8032ab1fe78","dst":"S_Scanner","method":"NotifyEvent","params":{"ts":1677696109.49,"events":[{"component":"sys", "event":"ota_success", "msg":"Update applied, rebooting", "ts":1677696109.49}]}}

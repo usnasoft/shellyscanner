@@ -2,20 +2,20 @@ package it.usna.shellyscan.model.device.g3;
 
 import java.io.IOException;
 import java.net.InetAddress;
-import java.nio.file.FileSystem;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.zip.ZipOutputStream;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
 import it.usna.shellyscan.model.Devices;
-import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.ModulesHolder;
 import it.usna.shellyscan.model.device.RestoreMsg;
 import it.usna.shellyscan.model.device.g2.modules.Input;
 import it.usna.shellyscan.model.device.g2.modules.Relay;
 import it.usna.shellyscan.model.device.g2.modules.SensorAddOn;
+import it.usna.shellyscan.model.device.meters.Meters;
 import it.usna.shellyscan.model.device.modules.DeviceModule;
 
 /**
@@ -23,7 +23,7 @@ import it.usna.shellyscan.model.device.modules.DeviceModule;
  * @author usna
  */
 public class ShellyXMOD1 extends AbstractG3Device implements ModulesHolder {
-	public final static String ID = "XMOD1";
+	public static final String ID = "XMOD1";
 	private int numInputs;
 	private int numOutputs;
 	private int numModules;
@@ -145,7 +145,7 @@ public class ShellyXMOD1 extends AbstractG3Device implements ModulesHolder {
 	}
 
 	@Override
-	protected void backup(FileSystem out) throws IOException, InterruptedException {
+	protected void backup(ZipOutputStream out) throws IOException, InterruptedException {
 		sectionToStream("/rpc/XMOD.GetInfo", "XMOD.GetInfo.json", out);
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 	}

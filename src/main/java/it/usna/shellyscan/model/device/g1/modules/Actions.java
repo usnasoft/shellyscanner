@@ -19,19 +19,19 @@ import it.usna.shellyscan.model.device.g1.AbstractG1Device;
 import it.usna.shellyscan.model.device.modules.InputInterface;
 
 public class Actions {
-//	public final static String PUSH = "shortpush_url";
-//	public final static String DOUBLE_PUSH = "double_shortpush_url";
-//	public final static String TRIPLE_PUSH = "triple_shortpush_url";
-//	public final static String LONG_PUSH = "longpush_url";
-//	public final static String BUTTON_ON = "btn_on_url";
-//	public final static String BUTTON_OFF = "btn_off_url";
-//	public final static String OUT_ON = "out_on_url";
-//	public final static String OUT_OFF = "out_off_url";
-//	public final static String SHORT_LONG_PUSH = "shortpush_longpush_url";
-//	public final static String LONG_SHORT_PUSH = "longpush_shortpush_url";
-//	public final static String ROLLER_OPEN = "roller_open_url";
-//	public final static String ROLLER_CLOSE = "roller_close_url";
-//	public final static String ROLLER_STOP = "roller_stop_url";
+//	public static final String PUSH = "shortpush_url";
+//	public static final String DOUBLE_PUSH = "double_shortpush_url";
+//	public static final String TRIPLE_PUSH = "triple_shortpush_url";
+//	public static final String LONG_PUSH = "longpush_url";
+//	public static final String BUTTON_ON = "btn_on_url";
+//	public static final String BUTTON_OFF = "btn_off_url";
+//	public static final String OUT_ON = "out_on_url";
+//	public static final String OUT_OFF = "out_off_url";
+//	public static final String SHORT_LONG_PUSH = "shortpush_longpush_url";
+//	public static final String LONG_SHORT_PUSH = "longpush_shortpush_url";
+//	public static final String ROLLER_OPEN = "roller_open_url";
+//	public static final String ROLLER_CLOSE = "roller_close_url";
+//	public static final String ROLLER_STOP = "roller_stop_url";
 	
 	private final AbstractG1Device parent;
 	private Map<Integer, Input> inputMap = new HashMap<>();

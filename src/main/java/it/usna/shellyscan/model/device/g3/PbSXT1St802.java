@@ -2,9 +2,9 @@ package it.usna.shellyscan.model.device.g3;
 
 import java.io.IOException;
 import java.net.InetAddress;
-import java.nio.file.FileSystem;
 import java.util.List;
 import java.util.Map;
+import java.util.zip.ZipOutputStream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,9 +14,9 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import it.usna.shellyscan.model.Devices;
-import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.ModulesHolder;
 import it.usna.shellyscan.model.device.g3.modules.XT1Thermostat;
+import it.usna.shellyscan.model.device.meters.Meters;
 import it.usna.shellyscan.model.device.modules.DeviceModule;
 import it.usna.shellyscan.model.device.modules.RelayInterface;
 
@@ -24,20 +24,20 @@ import it.usna.shellyscan.model.device.modules.RelayInterface;
  * LinkedGo ST802 (PbS) model
  */
 public class PbSXT1St802 extends XT1 implements ModulesHolder {
-	private final static Logger LOG = LoggerFactory.getLogger(PbSXT1St802.class);
-	public final static String MODEL = "S3XT-0S";
-	public final static String SVC0_TYPE = "linkedgo-st-802-hvac";
+	private static final Logger LOG = LoggerFactory.getLogger(PbSXT1St802.class);
+	public static final String MODEL = "S3XT-0S";
+	public static final String SVC0_TYPE = "linkedgo-st-802-hvac";
 	public enum Mode { COOL, DRY, HEAT, VENTILATION };
 	private Mode mode;
-	private final static Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.T, Meters.Type.H};
-	private final static String CURRENT_TEMP_KEY = "number:201";
-	private final static String CURRENT_HUM_KEY = "number:200";
-	private final static String TARGET_TEMP_ID = "203";
-	private final static String TARGET_TEMP_KEY = "number:" + TARGET_TEMP_ID;
-	private final static String TARGET_HUM_KEY = "number:202";
-	private final static String ENABLED_ID = "201";
-	private final static String ENABLED_KEY = "boolean:" + ENABLED_ID;
-	private final static String MODE_KEY = "enum:201";
+	private static final Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.T, Meters.Type.H};
+	private static final String CURRENT_TEMP_KEY = "number:201";
+	private static final String CURRENT_HUM_KEY = "number:200";
+	private static final String TARGET_TEMP_ID = "203";
+	private static final String TARGET_TEMP_KEY = "number:" + TARGET_TEMP_ID;
+	private static final String TARGET_HUM_KEY = "number:202";
+	private static final String ENABLED_ID = "201";
+	private static final String ENABLED_KEY = "boolean:" + ENABLED_ID;
+	private static final String MODE_KEY = "enum:201";
 	private float temp;
 	private float humidity;
 	private Meters[] meters;
@@ -128,7 +128,7 @@ public class PbSXT1St802 extends XT1 implements ModulesHolder {
 	}
 	
 	@Override
-	protected void backup(FileSystem out) throws IOException {
+	protected void backup(ZipOutputStream out) throws IOException {
 		sectionToStream("/rpc/Service.GetConfig?id=0", "Service.GetConfig.json", out);
 	}
 	

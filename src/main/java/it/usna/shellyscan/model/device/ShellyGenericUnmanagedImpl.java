@@ -25,11 +25,11 @@ import it.usna.shellyscan.model.device.modules.WIFIManager.Network;
  * @author usna
  */
 public class ShellyGenericUnmanagedImpl extends ShellyAbstractDevice implements ShellyUnmanagedDeviceInterface {
-	private final static Pattern MAC_PATTERN = Pattern.compile("^[A-F0-9]{12}$");
+	private static final Pattern MAC_PATTERN = Pattern.compile("^[A-F0-9]{12}$");
 	private Throwable ex;
 
 	public ShellyGenericUnmanagedImpl(InetAddress address, int port, String hostname, HttpClient httpClient) {
-		super(address, port, hostname);
+		super(new InetAddressAndPort(address, port), hostname);
 		this.httpClient = httpClient;
 		if(hostname.length() > 12) {
 			String mac = hostname.substring(Math.max(hostname.length() - 12, 0), hostname.length()).toUpperCase();

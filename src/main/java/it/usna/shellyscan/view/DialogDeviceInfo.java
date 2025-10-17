@@ -4,7 +4,6 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Toolkit;
-import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
@@ -26,6 +25,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
+import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
@@ -40,7 +40,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 
-import it.usna.mvc.singlewindow.MainWindow;
 import it.usna.shellyscan.Main;
 import it.usna.shellyscan.controller.UsnaAction;
 import it.usna.shellyscan.model.Devices;
@@ -48,17 +47,18 @@ import it.usna.shellyscan.model.Devices.EventType;
 import it.usna.shellyscan.model.device.BatteryDeviceInterface;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
-import it.usna.shellyscan.model.device.g2.AbstractBatteryG2Device;
+import it.usna.shellyscan.model.device.g1.AbstractBatteryG1Device;
 import it.usna.shellyscan.view.util.UsnaTextPane;
 import it.usna.shellyscan.view.util.UtilMiscellaneous;
+import it.usna.swing.UsnaSwingUtils;
 import it.usna.swing.dialog.FindReplaceDialog;
 import it.usna.util.UsnaEventListener;
 
 public class DialogDeviceInfo extends JDialog implements UsnaEventListener<Devices.EventType, Integer> {
 	private static final long serialVersionUID = 1L;
-	private final static Logger LOG = LoggerFactory.getLogger(MainWindow.class);
-	private final static Style DEF_STYLE = StyleContext.getDefaultStyleContext().getStyle(StyleContext.DEFAULT_STYLE);
-	private final static Pattern DELIMITERS_PATTERN = Pattern.compile("(\\{[\\n\\r])|([\\n\\r]\\s*\\})");
+	private static final Logger LOG = LoggerFactory.getLogger(DialogDeviceInfo.class);
+	private static final Style DEF_STYLE = StyleContext.getDefaultStyleContext().getStyle(StyleContext.DEFAULT_STYLE);
+	private static final Pattern DELIMITERS_PATTERN = Pattern.compile("(\\{[\\n\\r])|([\\n\\r]\\s*\\})");
 	private final Devices devicesModel;
 	private final int deviceIndex;
 	private final ScheduledExecutorService executor;
@@ -74,17 +74,17 @@ public class DialogDeviceInfo extends JDialog implements UsnaEventListener<Devic
 		setTitle(UtilMiscellaneous.getExtendedHostName(device));
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		this.setSize(530, 650);
-		setLocationRelativeTo(owner);
+		UsnaSwingUtils.setLocationRelativeTo(this, owner, true);
 
 		// too many concurrent requests are dangerous (device reboot - G1) or cause websocket disconnection (G2)
-		executor = Executors.newScheduledThreadPool(device instanceof AbstractBatteryG2Device ? 6 : 2);
+		executor = Executors.newScheduledThreadPool((device instanceof BatteryDeviceInterface && device instanceof AbstractBatteryG1Device == false) ? 6 : 2);
 
 		getContentPane().add(tabbedPane, BorderLayout.CENTER);
 
 		JPanel buttonsPanel = new JPanel();
 		getContentPane().add(buttonsPanel, BorderLayout.SOUTH);
 
-		JButton btnRefresh = new JButton(new UsnaAction("labelRefresh", e -> fill() ));
+		JButton btnRefresh = new JButton(new UsnaAction("labelRefresh", e -> fill()));
 
 		final Supplier<JTextComponent> ta = () -> (JTextComponent) ((JScrollPane) ((JPanel) tabbedPane.getSelectedComponent()).getComponent(0)).getViewport().getView();
 		final Action findAction = new UsnaAction("btnFind", e -> {
@@ -97,20 +97,11 @@ public class DialogDeviceInfo extends JDialog implements UsnaEventListener<Devic
 		jButtonFind.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_F, MainView.SHORTCUT_KEY), "find_act");
 		jButtonFind.getActionMap().put("find_act", findAction);
 
-//		final Action topAction = new UsnaAction(e -> {
-//			ta.get().setCaretPosition(0);
-//		});
-//		jButtonFind.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).remove(KeyStroke.getKeyStroke(KeyEvent.VK_HOME, MainView.SHORTCUT_KEY));
-//		jButtonFind.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_HOME, MainView.SHORTCUT_KEY), "top_act");
-//		jButtonFind.getActionMap().put(DefaultEditorKit.beginLineAction, topAction);
-//		jButtonFind.getActionMap().put(DefaultEditorKit.beginAction, topAction);
-
 		JButton jButtonCopyAll = new JButton(new UsnaAction("btnCopyAll", e -> {
-			final String cp = ta.get().getText();
-			if (cp != null && cp.length() > 0) {
-				final Clipboard cb = Toolkit.getDefaultToolkit().getSystemClipboard();
-				StringSelection selection = new StringSelection(cp);
-				cb.setContents(selection, selection);
+			final String cpy = ta.get().getText();
+			if (cpy != null && cpy.isEmpty() == false) {
+				StringSelection selection = new StringSelection(cpy);
+				Toolkit.getDefaultToolkit().getSystemClipboard().setContents(selection, selection);
 			}
 		}));
 
@@ -163,17 +154,19 @@ public class DialogDeviceInfo extends JDialog implements UsnaEventListener<Devic
 		StyleConstants.setForeground(temporaryStyle, Color.BLUE);
 		textPane.setEditable(false);
 		textPane.addCaretListener(e -> markDelimiters(e.getDot(), textPane, curlyStyle));
+		
+		textPane.getActionMap().put(DefaultEditorKit.beginLineAction, new UsnaAction(e -> textPane.setCaretPosition(0)));
+		textPane.getActionMap().put(DefaultEditorKit.endLineAction, new UsnaAction(e -> textPane.setCaretPosition(textPane.getDocument().getLength())));
 
 		final ObjectWriter writer = new ObjectMapper().writerWithDefaultPrettyPrinter();
 		JsonNode storedVal;
 
 		// only offset=0 if is an array
-		if (device instanceof BatteryDeviceInterface && (storedVal = ((BatteryDeviceInterface)device).getStoredJSON(info)) != null) {
+		if (device instanceof BatteryDeviceInterface bd && (storedVal = bd.getStoredJSON(info)) != null) {
 			try {
 				String json = writer.writeValueAsString(storedVal);
 				textPane.setText(json, temporaryStyle);
 				textPane.setCaretPosition(0);
-//				markDelimiters(0, textPane, curlyStyle);
 			} catch (JsonProcessingException e) {}
 		} else {
 			textPane.setText(Main.LABELS.getString("lblLoading"), temporaryStyle);
@@ -214,9 +207,9 @@ public class DialogDeviceInfo extends JDialog implements UsnaEventListener<Devic
 				} while(tot > offset);
 				
 				textPane.setCaretPosition(0);
-//				markDelimiters(0, textPane, curlyStyle);
 			} catch (Exception e) {
 				if (Thread.interrupted() == false) {
+					LOG.debug("getJsonGetPanel: {}", info, e);
 					String msg;
 					if (device.getStatus() == Status.OFF_LINE || device.getStatus() == Status.GHOST) {
 						msg = "<" + Main.LABELS.getString("Status-OFFLINE") + ">";
@@ -243,7 +236,7 @@ public class DialogDeviceInfo extends JDialog implements UsnaEventListener<Devic
 		return panel;
 	}
 	
-	private int retrivedArraySize(JsonNode val) {
+	private static int retrivedArraySize(JsonNode val) {
 		Iterator<JsonNode> it = val.iterator();
 		while(it.hasNext()) {
 			JsonNode node = it.next();
@@ -299,8 +292,8 @@ public class DialogDeviceInfo extends JDialog implements UsnaEventListener<Devic
 	public void update(EventType mesgType, Integer msgBody) {
 		if(pleaseUpdate && msgBody != null && msgBody.intValue() == deviceIndex) {
 			SwingUtilities.invokeLater(() -> {
-				if(((ScheduledThreadPoolExecutor)executor).getQueue().size() == 0 && (
-						mesgType == EventType.SUBSTITUTE || (mesgType == EventType.UPDATE && devicesModel.get(deviceIndex).getStatus() == Status.ON_LINE)) ) {
+				if(((ScheduledThreadPoolExecutor)executor).getQueue().isEmpty() &&
+						(mesgType == EventType.SUBSTITUTE || (mesgType == EventType.UPDATE && devicesModel.get(deviceIndex).getStatus() == Status.ON_LINE)) ) {
 					pleaseUpdate = false;
 					fill();
 				} else if(mesgType == Devices.EventType.CLEAR) {

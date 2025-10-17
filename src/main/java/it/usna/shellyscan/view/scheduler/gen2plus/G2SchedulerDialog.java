@@ -48,7 +48,7 @@ public class G2SchedulerDialog extends JDialog {
 		buttonsPanel.add(new JButton(new UsnaAction("dlgClose", e -> dispose() )));
 
 		pack();
-		setSize(getWidth(), 500);
+		setSize(getWidth(), 512);
 	}
 
 	public static void main(final String ... args) throws Exception {

@@ -2,7 +2,7 @@ package it.usna.shellyscan.model.device.blu.modules;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
-import it.usna.shellyscan.model.device.Meters;
+import it.usna.shellyscan.model.device.meters.Meters;
 
 /**
  * Sensor factory / Generic BTHSensor / Measure BTHSensor
@@ -44,11 +44,11 @@ public class Sensor {
 		case 0x2C -> Meters.Type.VIB; // dec 44 - vibration (0-1; on shelly is boolean)
 		case 0x40 -> Meters.Type.DMM; // dec 64 - distance mm
 		case 0x3F -> Meters.Type.ANG; // dec 63 - angle (accelerometer)
+		case 0x60 -> Meters.Type.CHANNEL; //  dec 96 - channel
 		default -> null;
 		};
 		
 		// 0x3C (60) dimmer (weel)
-		// 0x60 (96) channel
 	}
 	
 	public int getId() {
@@ -77,7 +77,7 @@ public class Sensor {
 		if(valNode.isBoolean()) {
 			value = valNode.asBoolean() ? 1f : 0f;
 		} else {
-			value = comp.path("status").path("value").floatValue();
+			value = valNode.floatValue();
 		}
 	}
 	

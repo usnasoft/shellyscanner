@@ -9,13 +9,13 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.InternalTmpHolder;
-import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.ModulesHolder;
 import it.usna.shellyscan.model.device.g1.meters.MetersPower;
 import it.usna.shellyscan.model.device.g1.modules.Relay;
+import it.usna.shellyscan.model.device.meters.Meters;
 
 public class ShellyPlugS extends AbstractG1Device implements ModulesHolder, InternalTmpHolder {
-	public final static String ID = "SHPLG-S";
+	public static final String ID = "SHPLG-S";
 	private Relay relay = new Relay(this, 0);
 	private Relay[] relayArray = new Relay[] {relay};
 	private float internalTmp;

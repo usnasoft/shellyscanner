@@ -17,7 +17,7 @@ import it.usna.util.UsnaEventListener;
 import it.usna.util.UsnaObservable;
 
 public class DeferrablesContainer extends UsnaObservable<DeferrableTask.Status, Integer> implements UsnaEventListener<Devices.EventType, Integer> {
-	private final static Logger LOG = LoggerFactory.getLogger(DeferrablesContainer.class);
+	private static final Logger LOG = LoggerFactory.getLogger(DeferrablesContainer.class);
 	private static DeferrablesContainer instance;
 	private final Devices model;
 	private ArrayList<Integer> devIdx = new ArrayList<>();

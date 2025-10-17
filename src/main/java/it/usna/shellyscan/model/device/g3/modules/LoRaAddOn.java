@@ -13,10 +13,12 @@ import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.g3.AbstractG3Device;
 
 public class LoRaAddOn {
-//	private final static Logger LOG = LoggerFactory.getLogger(LoRaAddOn.class);
-//	public final static String BACKUP_SECTION = "LoRa.GetConfig.json";
-	public final static String ADDON_TYPE = "LoRa";
-	private final static int ID = 100;
+//	private static final Logger LOG = LoggerFactory.getLogger(LoRaAddOn.class);
+//	public static final String BACKUP_SECTION = "LoRa.GetConfig.json";
+	public static final String ADDON_TYPE = "LoRa";
+	private static final int ID = 100;
+	
+	private LoRaAddOn() {}
 	
 	public static String enable(AbstractG3Device d, boolean enable) {
 		return d.postCommand("Sys.SetConfig", "{\"config\":{\"device\":{\"addon_type\":" + (enable ? "\"" + ADDON_TYPE + "\"" : "null") + "}}}");

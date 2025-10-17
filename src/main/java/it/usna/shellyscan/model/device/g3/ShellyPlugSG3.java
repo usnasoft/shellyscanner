@@ -12,13 +12,16 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.InternalTmpHolder;
-import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.ModulesHolder;
 import it.usna.shellyscan.model.device.g2.meters.MetersWVI;
 import it.usna.shellyscan.model.device.g2.modules.Relay;
+import it.usna.shellyscan.model.device.meters.Meters;
 
+/**
+ * PlugS Gen3 model
+ */
 public class ShellyPlugSG3 extends AbstractG3Device implements ModulesHolder, InternalTmpHolder {
-	public final static String ID = "PlugSG3";
+	public static final String ID = "PlugSG3";
 	private Relay relay = new Relay(this, 0);
 	private float internalTmp;
 	private MetersWVI meters = new MetersWVI();
@@ -71,12 +74,13 @@ public class ShellyPlugSG3 extends AbstractG3Device implements ModulesHolder, In
 	@Override
 	protected void restore(Map<String, JsonNode> backupJsons, List<String> errors) throws InterruptedException {
 		JsonNode configuration = backupJsons.get("Shelly.GetConfig.json");
-		JsonNode ui = configuration.get("plugs_ui").deepCopy();
-		ObjectNode out = JsonNodeFactory.instance.objectNode();
-		out.set("config", ui);
-		errors.add(postCommand("PLUGS_UI.SetConfig", out));
-		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-		
+		JsonNode ui = configuration.path("plugs_ui");
+		if(ui.isMissingNode() == false) {
+			ObjectNode out = JsonNodeFactory.instance.objectNode();
+			out.set("config", ui);
+			errors.add(postCommand("PLUGS_UI.SetConfig", out));
+			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+		}
 		errors.add(relay.restore(configuration));
 	}
 	

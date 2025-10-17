@@ -20,8 +20,8 @@ import it.usna.shellyscan.model.device.modules.DeviceModule;
  * @author usna
  */
 public class Shelly1LG3 extends AbstractG3Device implements ModulesHolder, InternalTmpHolder {
-	public final static String ID = "S1LG3";
-	public final static String MODEL = "S3SW-0A1X1EUL";
+	public static final String ID = "S1LG3";
+	public static final String MODEL = "S3SW-0A1X1EUL";
 	private Relay relay0 = new Relay(this, 0);
 	private Relay[] relaysArray = new Relay[] {relay0};
 	private String inputKey;

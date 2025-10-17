@@ -24,9 +24,9 @@ import it.usna.shellyscan.view.util.Msg;
 import it.usna.shellyscan.view.util.UtilMiscellaneous;
 
 public class DialogDeviceScripts extends JDialog {
-	private final static Logger LOG = LoggerFactory.getLogger(DialogDeviceScripts.class);
+	private static final Logger LOG = LoggerFactory.getLogger(DialogDeviceScripts.class);
 	private static final long serialVersionUID = 1L;
-	public final static String FILE_EXTENSION = "js";
+	public static final String FILE_EXTENSION = "js";
 	private JPanel kvsPanel;
 
 	public DialogDeviceScripts(final Frame owner, Devices model, int modelIndex) {

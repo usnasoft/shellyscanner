@@ -1,5 +1,6 @@
 package it.usna.shellyscan.model.device.g1;
 
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
@@ -7,9 +8,6 @@ import java.net.SocketTimeoutException;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.FileSystem;
-import java.nio.file.FileSystems;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.EnumMap;
@@ -20,6 +18,7 @@ import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.zip.ZipOutputStream;
 
 import org.eclipse.jetty.client.Authentication;
 import org.eclipse.jetty.client.AuthenticationStore;
@@ -34,6 +33,7 @@ import com.fasterxml.jackson.databind.node.NullNode;
 
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.BatteryDeviceInterface;
+import it.usna.shellyscan.model.device.InetAddressAndPort;
 import it.usna.shellyscan.model.device.RestoreMsg;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.g1.modules.Actions;
@@ -55,10 +55,10 @@ import it.usna.shellyscan.model.device.modules.WIFIManager.Network;
  * @author usna
  */
 public abstract class AbstractG1Device extends ShellyAbstractDevice {
-	private final static Logger LOG = LoggerFactory.getLogger(AbstractG1Device.class);
+	private static final Logger LOG = LoggerFactory.getLogger(AbstractG1Device.class);
 
 	protected AbstractG1Device(InetAddress address, int port, String hostname) {
-		super(address, port, hostname);
+		super(new InetAddressAndPort(address, port), hostname);
 	}
 	
 	public void init(HttpClient httpClient, JsonNode shelly) throws IOException {
@@ -165,7 +165,7 @@ public abstract class AbstractG1Device extends ShellyAbstractDevice {
 			rebootRequired = true;
 			return true;
 		} else {
-			return true;
+			return false;
 		}
 	}
 	
@@ -229,11 +229,11 @@ public abstract class AbstractG1Device extends ShellyAbstractDevice {
 	
 	@Override
 	public boolean backup(final Path file) throws IOException {
-		Files.deleteIfExists(file);
-		try(FileSystem fs = FileSystems.newFileSystem(URI.create("jar:" + file.toUri()), Map.of("create", "true"))) {
-			sectionToStream("/settings", "settings.json", fs);
+		//try(FileSystem fs = FileSystems.newFileSystem(URI.create("jar:" + file.toUri()), Map.of("create", "true"))) {
+		try(ZipOutputStream out = new ZipOutputStream(new FileOutputStream(file.toFile()), StandardCharsets.UTF_8)) {
+			sectionToStream("/settings", "settings.json", out);
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-			sectionToStream("/settings/actions", "actions.json", fs);
+			sectionToStream("/settings/actions", "actions.json", out);
 		} catch(InterruptedException e) {
 			LOG.error("backup", e);
 		}
@@ -247,7 +247,7 @@ public abstract class AbstractG1Device extends ShellyAbstractDevice {
 			JsonNode settings = backupJsons.get("settings.json");
 			final String fileHostname = settings.get("device").get("hostname").asText("");
 			final String fileType = settings.get("device").get("type").asText();
-			if(fileType.length() > 0 && fileType.equals(this.getTypeID()) == false) {
+			if(fileType.isEmpty() == false && fileType.equals(this.getTypeID()) == false) {
 				res.put(RestoreMsg.ERR_RESTORE_MODEL, null);
 			} else {
 				boolean sameHost = fileHostname.equals(this.hostname);
@@ -266,7 +266,7 @@ public abstract class AbstractG1Device extends ShellyAbstractDevice {
 						res.put(RestoreMsg.RESTORE_WI_FI2, settings.at("/wifi_sta1/ssid").asText());
 					}
 				}
-				if(settings.at("/mqtt/enable").asBoolean() && settings.at("/mqtt/user").asText("").length() > 0) {
+				if(settings.at("/mqtt/enable").asBoolean() && settings.at("/mqtt/user").asText("").isEmpty() == false) {
 					res.put(RestoreMsg.RESTORE_MQTT, settings.at("/mqtt/user").asText());
 				}
 			}
@@ -363,7 +363,7 @@ public abstract class AbstractG1Device extends ShellyAbstractDevice {
 		}
 //		LOG.trace("step 2.3");
 		final JsonNode mqtt = settings.get("mqtt");
-		if(data.containsKey(RestoreMsg.RESTORE_MQTT) || mqtt.path("enable").asBoolean() == false || mqtt.path("user").asText("").length() == 0) {
+		if(data.containsKey(RestoreMsg.RESTORE_MQTT) || mqtt.path("enable").asBoolean() == false || mqtt.path("user").asText("").isEmpty()) {
 			TimeUnit.MILLISECONDS.sleep(delay);
 			MQTTManagerG1 mqttM = new MQTTManagerG1(this, true);
 			errors.add(mqttM.restore(mqtt, data.get(RestoreMsg.RESTORE_MQTT)));
@@ -388,17 +388,6 @@ public abstract class AbstractG1Device extends ShellyAbstractDevice {
 			return name + "=" + URLEncoder.encode(val.asText(), StandardCharsets.UTF_8.name());
 		}
 	}
-	
-//	public static String jsonEntryIteratorToURLPar(Iterator<Entry<String, JsonNode>> pars) throws UnsupportedEncodingException {
-//		if(pars.hasNext()) {
-//			String command = AbstractG1Device.jsonEntryToURLPar(pars.next());
-//			while(pars.hasNext()) {
-//				command += "&" + AbstractG1Device.jsonEntryToURLPar(pars.next());
-//			}
-//			return command;
-//		}
-//		return "";
-//	}
 	
 	public static String jsonEntrySetToURLPar(Set<Entry<String, JsonNode>> pars) throws UnsupportedEncodingException {
 		String command = "";

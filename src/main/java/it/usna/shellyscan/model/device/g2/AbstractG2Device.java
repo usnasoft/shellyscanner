@@ -1,18 +1,14 @@
 package it.usna.shellyscan.model.device.g2;
 
-import java.io.BufferedWriter;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.SocketTimeoutException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.FileSystem;
-import java.nio.file.FileSystems;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.EnumMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -20,6 +16,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import org.eclipse.jetty.client.Authentication;
 import org.eclipse.jetty.client.AuthenticationStore;
@@ -40,10 +38,11 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
+import it.usna.shellyscan.model.DeviceAPIException;
+import it.usna.shellyscan.model.DeviceOfflineException;
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.BatteryDeviceInterface;
-import it.usna.shellyscan.model.device.DeviceAPIException;
-import it.usna.shellyscan.model.device.DeviceOfflineException;
+import it.usna.shellyscan.model.device.InetAddressAndPort;
 import it.usna.shellyscan.model.device.RestoreMsg;
 import it.usna.shellyscan.model.device.RestoreUtil;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
@@ -71,15 +70,15 @@ import it.usna.shellyscan.model.device.modules.WIFIManager.Network;
  * @author usna
  */
 public abstract class AbstractG2Device extends ShellyAbstractDevice {
-	public final static int LOG_VERBOSE = 4;
-//	public final static int LOG_WARN = 1;
+	public static final int LOG_VERBOSE = 4;
+//	public static final int LOG_WARN = 1;
 
-	private final static Logger LOG = LoggerFactory.getLogger(AbstractG2Device.class);
+	private static final Logger LOG = LoggerFactory.getLogger(AbstractG2Device.class);
 	protected WebSocketClient wsClient;
 	private boolean rangeExtender;
 
 	protected AbstractG2Device(InetAddress address, int port, String hostname) {
-		super(address, port, hostname);
+		super(new InetAddressAndPort(address, port), hostname);
 	}
 
 	public void init(HttpClient httpClient, WebSocketClient wsClient, JsonNode devInfo) throws IOException {
@@ -195,6 +194,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 		return postCommand("BLE.SetConfig", "{\"config\":{\"enable\":" + ble + "}}");
 	}
 
+	@Override
 	public boolean rebootRequired() {
 		return rebootRequired; //return getJSON("/rpc/Sys.GetStatus").path("restart_required").asBoolean(false);
 	}
@@ -306,11 +306,11 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 	 * } </code>
 	 * @param method - e.g. /rpc/KVS.GetMany
 	 * @param arrayKey - e.g. items
-	 * @return an Iterator&lt;JsonNode&gt; navigating through pages
+	 * @return an Iterator&lt;JsonNode&gt; & Iterable&lt;JsonNode&gt; navigating through pages
 	 * @throws IOException
 	 */
-	public Iterator<JsonNode> getJSONIterator(final String method, final String arrayKey) throws IOException {
-		return new PageIterator(this, method, arrayKey);
+	public JsonPageIterator getJSONIterator(final String method, final String arrayKey) throws IOException {
+		return new JsonPageIterator(this, method, arrayKey);
 	}
 
 	private JsonNode executeRPC(final String method, String payload) throws IOException, StreamReadException { // StreamReadException extends ... IOException
@@ -350,50 +350,51 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 	When sending the challange request for the debug endpoint, you have to provide the same auth params, but as get paramethers in format
 	auth.[paramName]=paramValue. For example about the username it will be auth.username=admin&auth.cnonce=…&auth.respose=...
 	 */
-	public Future<Session> connectWebSocketLogs(WebSocketDeviceListener listener) throws IOException, InterruptedException, ExecutionException {
+	public Future<Session> connectWebSocketLogs(WebSocketDeviceListener listener) throws IOException {
 		return wsClient.connect(listener, URI.create("ws://" + addressAndPort.getRepresentation() + "/debug/log"));
 	}
 
 	@Override
 	public boolean backup(final Path file) throws IOException {
-		Files.deleteIfExists(file);
-		try(FileSystem fs = FileSystems.newFileSystem(URI.create("jar:" + file.toUri()), Map.of("create", "true"))) {
+		try(ZipOutputStream out = new ZipOutputStream(new FileOutputStream(file.toFile()), StandardCharsets.UTF_8)) {
 //			Files.list(fs.getPath("/")).forEach(p -> {
 //				try { Files.delete(p); } catch (IOException e) { }
 //			});
-			sectionToStream("/rpc/Shelly.GetDeviceInfo", "Shelly.GetDeviceInfo.json", fs);
+			sectionToStream("/rpc/Shelly.GetDeviceInfo", "Shelly.GetDeviceInfo.json", out);
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-			JsonNode config = sectionToStream("/rpc/Shelly.GetConfig", "Shelly.GetConfig.json", fs);
+			JsonNode config = sectionToStream("/rpc/Shelly.GetConfig", "Shelly.GetConfig.json", out);
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			try { // unmanaged battery device
-				sectionToStream("/rpc/Schedule.List", "Schedule.List.json", fs);
+				sectionToStream("/rpc/Schedule.List", "Schedule.List.json", out);
 			} catch(Exception e) {}
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-			sectionToStream("/rpc/Webhook.List", "Webhook.List.json", fs);
+			sectionToStream("/rpc/Webhook.List", "Webhook.List.json", out);
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			try {
-				sectionToStream("/rpc/KVS.GetMany", "items", "KVS.GetMany.json", fs);
-			} catch(Exception e) {}
+				sectionToStream("/rpc/KVS.GetMany", "items", "KVS.GetMany.json", out);
+			} catch(Exception e) {/* some model do not support KVS */}
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			JsonNode scripts = null;
 			try {
-				scripts = sectionToStream("/rpc/Script.List", "Script.List.json", fs);
-			} catch(Exception e) {}
+				scripts = sectionToStream("/rpc/Script.List", "Script.List.json", out);
+			} catch(Exception e) {/* some model do not support Scripts */}
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			try { // Virtual components (PRO & gen3+)
-				sectionToStream("/rpc/Shelly.GetComponents?dynamic_only=true", "components", "Shelly.GetComponents.json", fs);
+				sectionToStream("/rpc/Shelly.GetComponents?dynamic_only=true", "components", "Shelly.GetComponents.json", out);
 			} catch(Exception e) {}
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			String addon = config.get("sys").get("device").path("addon_type").asText();
 			if(SensorAddOn.ADDON_TYPE.equals(addon)) {
-				sectionToStream("/rpc/SensorAddon.GetPeripherals", SensorAddOn.BACKUP_SECTION, fs);
+				sectionToStream("/rpc/SensorAddon.GetPeripherals", SensorAddOn.BACKUP_SECTION, out);
 				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			}
 			// Scripts
 			if(scripts != null) {
 				for(Script script: Script.list(this, scripts)) {
-					try(BufferedWriter writer = Files.newBufferedWriter(fs.getPath(script.getName() + ".mjs"))) {
-						writer.write(script.getCode());
+					try {
+						ZipEntry entry = new ZipEntry(script.getName() + ".mjs");
+						out.putNextEntry(entry);
+						out.write(script.getCode().getBytes()/*code, 0, code.length*/);
 					} catch(IOException e) {
 						LOG.error("backup script {}", script.getName(), e);
 					}
@@ -401,7 +402,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 				}
 			}
 			try { // Device specific
-				backup(fs);
+				backup(out);
 			} catch(Exception e) {
 				LOG.error("backup specific", e);
 			}
@@ -411,10 +412,8 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 		return true;
 	}
 	
-//	/** implement for devices that need additional information */
-//	protected void backup(ZipOutputStream out) throws IOException, InterruptedException {}
-	
-	protected void backup(FileSystem fs) throws IOException, InterruptedException {}
+	/** implement for devices that need additional information */
+	protected void backup(ZipOutputStream fs) throws IOException, InterruptedException {}
 
 	@Override
 	public Map<RestoreMsg, Object> restoreCheck(Map<String, JsonNode> backupJsons) throws IOException {
@@ -462,7 +461,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 					List<Script> existingScripts = Script.list(this);
 					List<String> scriptsEnabledByDefault = new ArrayList<>();
 					List<String> scriptsWithSameName = new ArrayList<>();
-					List<String> existingScriptsNames = existingScripts.stream().map(s -> s.getName()).toList();
+					List<String> existingScriptsNames = existingScripts.stream().map(Script::getName).toList();
 					for(JsonNode jsonScript: storedScripts.get("scripts")) {
 						if(existingScriptsNames.contains(jsonScript.get("name").asText()))
 							scriptsWithSameName.add(jsonScript.get("name").asText());
@@ -499,7 +498,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 			errors.add("->r_step:specific");
 			restore(backupJsons, errors);
 			if(status == Status.OFF_LINE) {
-				return errors.size() > 0 ? errors : List.of(RestoreMsg.ERR_UNKNOWN.toString());
+				return errors.isEmpty() == false ? errors : List.of(RestoreMsg.ERR_UNKNOWN.toString());
 			}
 
 			errors.add("->r_step:DynamicComponents");
@@ -550,7 +549,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 				TimeUnit.MILLISECONDS.sleep(delay);
 				JsonNode apNode = config.at("/wifi/ap"); // e.g. wall display -> isMissingNode()
 				if(currentConnection != Network.AP && apNode.isMissingNode() == false &&
-						((userPref.containsKey(RestoreMsg.RESTORE_WI_FI_AP) || apNode.path("is_open").asBoolean() || apNode.path("enable").asBoolean() == false))) {
+						(userPref.containsKey(RestoreMsg.RESTORE_WI_FI_AP) || apNode.path("is_open").asBoolean() || apNode.path("enable").asBoolean() == false)) {
 					errors.add(WIFIManagerG2.restoreAP_roam(this, config.get("wifi"), userPref.get(RestoreMsg.RESTORE_WI_FI_AP)));
 				} else {
 					errors.add(WIFIManagerG2.restoreRoam(this, config.get("wifi")));
@@ -594,11 +593,11 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 		JsonNode sys = config.get("sys");
 		ObjectNode outSys = JsonNodeFactory.instance.objectNode();
 		
-		ObjectNode outDevice = (ObjectNode)sys.get("device")/*.deepCopy()*/; // todo test (anche caso name = null)
+		ObjectNode outDevice = (ObjectNode)sys.get("device")/*.deepCopy()*/;
 		outDevice.remove("mac");
 		outDevice.remove("fw_id");
 		outDevice.remove("addon_type");
-		outDevice.remove("profile"); // postCommand("Shelly.setprofile", "{\"name\":\"" + shelly.get("profile") +"\"}");
+		outDevice.remove("profile");
 		outSys.set("device", outDevice);
 
 		outSys.set("sntp", sys.get("sntp")/*.deepCopy()*/);
@@ -678,7 +677,6 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 //			}); // this also do upgrade
 //			return s;
 //		} catch (NoSuchAlgorithmException e) {
-//			// TODO Auto-generated catch block
 //			e.printStackTrace();
 //			return null;
 //		}

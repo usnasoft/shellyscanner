@@ -13,7 +13,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.InternalTmpHolder;
-import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.ModulesHolder;
 import it.usna.shellyscan.model.device.RestoreMsg;
 import it.usna.shellyscan.model.device.g2.meters.MetersWVI;
@@ -21,16 +20,17 @@ import it.usna.shellyscan.model.device.g2.modules.Input;
 import it.usna.shellyscan.model.device.g2.modules.Relay;
 import it.usna.shellyscan.model.device.g2.modules.SensorAddOn;
 import it.usna.shellyscan.model.device.g3.modules.LoRaAddOn;
+import it.usna.shellyscan.model.device.meters.Meters;
 
 /**
  * Shelly 1PM G4 model
  * @author usna
  */
 public class Shelly1PMG4 extends AbstractG4Device implements ModulesHolder, InternalTmpHolder {
-	private final static Logger LOG = LoggerFactory.getLogger(Shelly1PMG4.class);
-	public final static String ID = "S1PMG4";
-	public final static String ID_ZB = "S1PMG4ZB";
-	public final static String MODEL = "S4SW-001P16EU";
+	private static final Logger LOG = LoggerFactory.getLogger(Shelly1PMG4.class);
+	public static final String ID = "S1PMG4";
+	public static final String ID_ZB = "S1PMG4ZB";
+	public static final String MODEL = "S4SW-001P16EU";
 	private Relay relay = new Relay(this, 0);
 	private float internalTmp;
 	private Relay[] relays = new Relay[] {relay};

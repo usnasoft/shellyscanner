@@ -131,10 +131,10 @@ public class LightWhite implements WhiteInterface {
 		return (name == null || name.isEmpty()) ? parent.getName() : name;
 	}
 	
-	@Override
-	public AbstractG1Device getParent() {
-		return parent;
-	}
+//	@Override
+//	public AbstractG1Device getParent() {
+//		return parent;
+//	}
 	
 	@Override
 	public String toString() {

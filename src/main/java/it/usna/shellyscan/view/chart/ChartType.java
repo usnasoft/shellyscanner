@@ -2,7 +2,7 @@ package it.usna.shellyscan.view.chart;
 
 import static it.usna.shellyscan.Main.LABELS;
 
-import it.usna.shellyscan.model.device.Meters;
+import it.usna.shellyscan.model.device.meters.Meters;
 
 public enum ChartType {
 	INT_TEMP("dlgChartsIntTempLabel", "dlgChartsTempYLabel"),
@@ -22,7 +22,8 @@ public enum ChartType {
 	H("dlgChartsHumidityLabel", "dlgChartsHumidityYLabel", Meters.Type.H),
 	LUX("dlgChartsLuxLabel", "dlgChartsLuxYLabel", Meters.Type.L),
 	FREQ("dlgChartsFreqLabel", "dlgChartsFreqYLabel", Meters.Type.FREQ),
-	DIST("dlgChartsDistanceLabel", "dlgChartsDistanceYLabel", Meters.Type.DMM);
+	DIST("dlgChartsDistanceLabel", "dlgChartsDistanceYLabel", Meters.Type.DMM),
+	EM("dlgChartsEMLabel", "dlgChartsEMYLabel");
 
 	final String yLabel;
 	final String label;

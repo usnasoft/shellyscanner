@@ -44,7 +44,7 @@ import it.usna.util.UsnaEventListener;
 //https://shelly-api-docs.shelly.cloud/gen1/#settings
 public class PanelMQTTMix extends AbstractSettingsPanel implements UsnaEventListener<ShellyAbstractDevice, Future<?>> {
 	private static final long serialVersionUID = 1L;
-	private final static Logger LOG = LoggerFactory.getLogger(PanelMQTTMix.class);
+	private static final Logger LOG = LoggerFactory.getLogger(PanelMQTTMix.class);
 
 	private char pwdEchoChar;
 	private JCheckBox chckbxEnabled = new JCheckBox();
@@ -92,7 +92,7 @@ public class PanelMQTTMix extends AbstractSettingsPanel implements UsnaEventList
 		gbc_btnCopy.gridx = 4;
 		gbc_btnCopy.gridy = 0;
 		contentPanel.add(btnCopy, gbc_btnCopy);
-		btnCopy.addActionListener(e -> selDialog = new DialogDeviceSelection(owner, this, parent.getModel()));
+		btnCopy.addActionListener(e -> selDialog = new DialogDeviceSelection(owner, this, parentDlg.getModel()));
 
 		JLabel lblNewLabel_1 = new JLabel(LABELS.getString("dlgSetServer"));
 		GridBagConstraints gbc_lblNewLabel_1 = new GridBagConstraints();
@@ -255,9 +255,9 @@ public class PanelMQTTMix extends AbstractSettingsPanel implements UsnaEventList
 			String idGlobal = "";
 			boolean noPwdGlobal = false;
 			boolean first = true;
-			for(int i = 0; i < parent.getLocalSize(); i++) {
+			for(int i = 0; i < parentDlg.getLocalSize(); i++) {
 				try {
-					d = parent.getLocalDevice(i);
+					d = parentDlg.getLocalDevice(i);
 					if(d instanceof AbstractBluDevice) {
 						mqttModule.add(null);
 						exclude += "<br>" + UtilMiscellaneous.getFullName(d);
@@ -295,7 +295,7 @@ public class PanelMQTTMix extends AbstractSettingsPanel implements UsnaEventList
 				}
 			}
 			if(showExcluded) {
-				if(excludeCount == parent.getLocalSize() && isShowing()) {
+				if(excludeCount == parentDlg.getLocalSize() && isShowing()) {
 					return LABELS.getString("msgAllDevicesExcluded");
 				} else if (excludeCount > 0 && isShowing()) {
 					Msg.showHtmlMessageDialog(this, exclude, LABELS.getString("dlgExcludedDevicesTitle"), JOptionPane.WARNING_MESSAGE);
@@ -308,7 +308,7 @@ public class PanelMQTTMix extends AbstractSettingsPanel implements UsnaEventList
 			chckbxNoPWD.setSelected(noPwdGlobal);
 			textFieldID.setText(idGlobal);
 
-			setEnabledMQTT(enabledGlobal, parent.getLocalSize() == 1);
+			setEnabledMQTT(enabledGlobal, parentDlg.getLocalSize() == 1);
 			btnCopy.setEnabled(true);
 			return null;
 		} catch (RuntimeException e) {
@@ -335,7 +335,7 @@ public class PanelMQTTMix extends AbstractSettingsPanel implements UsnaEventList
 			}
 			if(chckbxDefaultPrefix.isSelected()) {
 				prefix = null;
-			} else if(parent.getLocalSize() > 1) {
+			} else if(parentDlg.getLocalSize() > 1) {
 				prefix = "";
 			} else {
 				prefix = textFieldID.getText();
@@ -353,8 +353,8 @@ public class PanelMQTTMix extends AbstractSettingsPanel implements UsnaEventList
 			server = user = pwd = prefix = null;
 		}
 		String res = "<html>";
-		for(int i = 0; i < parent.getLocalSize(); i++) {
-			ShellyAbstractDevice device = parent.getLocalDevice(i);
+		for(int i = 0; i < parentDlg.getLocalSize(); i++) {
+			ShellyAbstractDevice device = parentDlg.getLocalDevice(i);
 			if(device instanceof AbstractBluDevice == false) { // not blu
 				MQTTManager mqttM = mqttModule.get(i);
 				if(mqttM != null) {
@@ -372,7 +372,7 @@ public class PanelMQTTMix extends AbstractSettingsPanel implements UsnaEventList
 				} else if(device.getStatus() == Status.OFF_LINE || device instanceof GhostDevice) { // defer
 					res += String.format(LABELS.getString("dlgSetMultiMsgQueue"), device.getHostname()) + "<br>";
 					DeferrablesContainer dc = DeferrablesContainer.getInstance();
-					dc.addOrUpdate(parent.getModelIndex(i), DeferrableTask.Type.MQTT, LABELS.getString(enabled ? "dlgSetMQTTTaskDescEnable" : "dlgSetMQTTTaskDescDisable"), (def, dev) -> {
+					dc.addOrUpdate(parentDlg.getModelIndex(i), DeferrableTask.Type.MQTT, LABELS.getString(enabled ? "dlgSetMQTTTaskDescEnable" : "dlgSetMQTTTaskDescDisable"), (def, dev) -> {
 						final MQTTManager mqttManager = dev.getMQTTManager();
 						if(enabled) {
 							return mqttManager.set(server, user, pwd, prefix);

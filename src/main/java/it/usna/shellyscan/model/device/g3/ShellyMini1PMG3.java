@@ -10,19 +10,19 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.InternalTmpHolder;
-import it.usna.shellyscan.model.device.Meters;
 import it.usna.shellyscan.model.device.ModulesHolder;
 import it.usna.shellyscan.model.device.g2.meters.MetersWVI;
 import it.usna.shellyscan.model.device.g2.modules.Input;
 import it.usna.shellyscan.model.device.g2.modules.Relay;
+import it.usna.shellyscan.model.device.meters.Meters;
 
 /**
  * Shelly mini 1PM G3 model
  * @author usna
  */
 public class ShellyMini1PMG3 extends AbstractG3Device implements ModulesHolder, InternalTmpHolder {
-	public final static String ID = "Mini1PMG3";
-	public final static String MODEL = "S3SW-001P8EU";
+	public static final String ID = "Mini1PMG3";
+	public static final String MODEL = "S3SW-001P8EU";
 	private float internalTmp;
 	private MetersWVI meters = new MetersWVI();
 	private Meters[] metersArray = new Meters[] {meters};

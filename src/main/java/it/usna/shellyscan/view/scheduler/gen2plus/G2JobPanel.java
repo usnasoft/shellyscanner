@@ -36,7 +36,7 @@ public class G2JobPanel extends AbstractCronPanel {
 	private JPanel callsOperationsPanel;
 	private boolean systemJob = false;
 	private final MethodHints mHints;
-	private final static ObjectMapper JSON_MAPPER = new ObjectMapper();
+	private static final ObjectMapper JSON_MAPPER = new ObjectMapper();
 
 	/**
 	 * @wbp.parser.constructor
@@ -85,7 +85,9 @@ public class G2JobPanel extends AbstractCronPanel {
 
 	private void addCall(String method, String params/*, String origin*/, int index) {
 		JTextField methodTF = new JTextField(method);
+		methodTF.setColumns(20); // not all the space needed space (in case of long strings)
 		JTextField paramsTF = new JTextField(params);
+		paramsTF.setColumns(40); // not all the space needed space (in case of long strings)
 		callsPanel.add(methodTF, index);
 		callsParameterPanel.add(paramsTF, index);
 
@@ -119,7 +121,7 @@ public class G2JobPanel extends AbstractCronPanel {
 		callOpPanel.add(minusB);
 
 		JButton btnSelectCombo = new JButton();
-		btnSelectCombo.setAction(new UsnaDropdownAction(btnSelectCombo, "/images/expand-more.png", "lblMethodSelect", () -> {
+		btnSelectCombo.setAction(new UsnaDropdownAction(btnSelectCombo, "lblMethodSelect", "/images/expand-more.png", () -> {
 			try {
 				this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 				return mHints.get(methodTF, paramsTF);
@@ -132,14 +134,6 @@ public class G2JobPanel extends AbstractCronPanel {
 		callOpPanel.add(btnSelectCombo);
 
 		callsOperationsPanel.add(callOpPanel, index);
-	}
-
-	public void clean() {
-		callsPanel.removeAll();
-		callsParameterPanel.removeAll();
-		callsOperationsPanel.removeAll();
-		setCron(DEF_CRON);
-		addCall("", "", 0);
 	}
 
 	private void initCallSection() {
@@ -171,7 +165,7 @@ public class G2JobPanel extends AbstractCronPanel {
 		
 		callsParameterPanel = new JPanel();
 		GridBagConstraints gbc_callsParameterPanel = new GridBagConstraints();
-		gbc_callsParameterPanel.gridwidth = 6;
+		gbc_callsParameterPanel.gridwidth = 7;
 		gbc_callsParameterPanel.insets = new Insets(0, 0, 5, 5);
 		gbc_callsParameterPanel.fill = GridBagConstraints.BOTH;
 		gbc_callsParameterPanel.gridx = 4;
@@ -183,8 +177,8 @@ public class G2JobPanel extends AbstractCronPanel {
 		GridBagConstraints gbc_callsOperations = new GridBagConstraints();
 		gbc_callsOperations.fill = GridBagConstraints.VERTICAL;
 		gbc_callsOperations.anchor = GridBagConstraints.WEST;
-		gbc_callsOperations.insets = new Insets(0, 0, 5, 5);
-		gbc_callsOperations.gridx = 10;
+		gbc_callsOperations.insets = new Insets(0, 0, 5, 2);
+		gbc_callsOperations.gridx = 11;
 		gbc_callsOperations.gridy = 4;
 		add(callsOperationsPanel, gbc_callsOperations);
 		callsOperationsPanel.setOpaque(false);
@@ -204,7 +198,7 @@ public class G2JobPanel extends AbstractCronPanel {
 			for(int i = 0; i < callsPanel.getComponentCount(); i++) {
 				if(((JTextField)callsPanel.getComponent(i)).getText().isBlank()) {
 					callsPanel.getComponent(i).requestFocus();
-					Msg.errorMsg(parent, "schErrorInvalidMethod");
+					Msg.errorMsg(parentDlg, "schErrorInvalidMethod");
 					return false;
 				}
 				String parameters = ((JTextField)callsParameterPanel.getComponent(i)).getText();
@@ -213,7 +207,7 @@ public class G2JobPanel extends AbstractCronPanel {
 						JSON_MAPPER.readTree("{" + parameters + "}");
 					} catch (JsonProcessingException e) {
 						callsParameterPanel.getComponent(i).requestFocus();
-						Msg.errorMsg(parent, "schErrorInvalidParameters");
+						Msg.errorMsg(parentDlg, "schErrorInvalidParameters");
 						return false;
 					}
 				}
@@ -240,7 +234,7 @@ public class G2JobPanel extends AbstractCronPanel {
 				try {
 					call.set("params", JSON_MAPPER.readTree("{" + parameters + "}"));
 				} catch (JsonProcessingException e) {
-					Msg.errorMsg(parent, "schErrorInvalidParameters");
+					Msg.errorMsg(parentDlg, "schErrorInvalidParameters");
 					callsParameterPanel.getComponent(i).requestFocus();
 					return null;
 				}
