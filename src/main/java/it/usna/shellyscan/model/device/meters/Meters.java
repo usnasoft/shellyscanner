@@ -9,22 +9,22 @@ public abstract class Meters implements Comparable<Meters> {
 		VA, // apparent power
 		VAR, // reactive power
 		PF, // power factor
-//		PF1, // power factor (1 decimal precision)
 		V, // voltage
 		I, // current
 		FREQ, // Frequency
 		T, // temperature
 		H, // humidity %
 		L, // lux
+		LIGHT(true), // boolean: 0/false -> no light, 1/true -> light
 		T1, // temperature
 		T2, // temperature
 		T3, // temperature
 		T4, // temperature
-		EX(true), // ext switch status
+		EX(true), // boolean: ext switch status
 		PERC, // 0-100
 		NUM, // integer - UNI counter
 		DMM, // distance [mm]
-		VIB(true), // vibration - 0=false; 1=true
+		VIB(true), // boolean: vibration - 0=false; 1=true
 		ANG, // angle - accelerometer
 		ANG1, // angle - accelerometer
 		ANG2, // angle - accelerometer

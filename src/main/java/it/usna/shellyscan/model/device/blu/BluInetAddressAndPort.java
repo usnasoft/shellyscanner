@@ -41,21 +41,29 @@ public class BluInetAddressAndPort extends InetAddressAndPort {
 	
 	@Override
 	public int compareTo(InetAddressAndPort o2) {
-		byte[] i1 = address.getAddress();
-		byte[] i2 = o2.getAddress().getAddress();
-		int cmp;
-		if(i1[0] != i2[0]) return (i1[0] & 0xFF) - (i2[0] & 0xFF);
-		if(i1[1] != i2[1]) return (i1[1] & 0xFF) - (i2[1] & 0xFF);
-		if(i1[2] != i2[2]) return (i1[2] & 0xFF) - (i2[2] & 0xFF);
-		if((cmp = (i1[3] & 0xFF) - (i2[3] & 0xFF)) != 0) return cmp;
-		if((cmp = port - o2.getPort()) != 0) return cmp;
-		if(o2 instanceof BluInetAddressAndPort b) return index - b.index;
+//		byte[] i1 = address.getAddress();
+//		byte[] i2 = o2.getAddress().getAddress();
+//		int cmp;
+//		if(i1[0] != i2[0]) return (i1[0] & 0xFF) - (i2[0] & 0xFF);
+//		if(i1[1] != i2[1]) return (i1[1] & 0xFF) - (i2[1] & 0xFF);
+//		if(i1[2] != i2[2]) return (i1[2] & 0xFF) - (i2[2] & 0xFF);
+//		if((cmp = (i1[3] & 0xFF) - (i2[3] & 0xFF)) != 0) return cmp;
+//		if((cmp = port - o2.getPort()) != 0) return cmp;
+		
+		if(sortValue != o2.getSortValue()) {
+			return (sortValue > o2.getSortValue()) ? 1 : -1;
+		}
+		if(o2 instanceof BluInetAddressAndPort b) {
+			return index - b.index;
+		}
 		return 1; // blue is greater than non blue
+		
 	}
 	
 	@Override
 	public boolean equals(Object o2) {
-		return o2 != null && getClass() == o2.getClass() && address.equals(((BluInetAddressAndPort)o2).address) && port == ((BluInetAddressAndPort)o2).port && index == ((BluInetAddressAndPort)o2).index;
+		return o2 != null && BluInetAddressAndPort.class == o2.getClass() && sortValue == ((BluInetAddressAndPort)o2).sortValue && index == ((BluInetAddressAndPort)o2).index;
+//		return o2 != null && getClass() == o2.getClass() && address.equals(((BluInetAddressAndPort)o2).address) && port == ((BluInetAddressAndPort)o2).port && index == ((BluInetAddressAndPort)o2).index;
 	}
 	
 	@Override

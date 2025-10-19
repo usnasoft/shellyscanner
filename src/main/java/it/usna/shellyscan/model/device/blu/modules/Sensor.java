@@ -40,10 +40,11 @@ public class Sensor {
 		case 0x01 -> Meters.Type.BAT;
 		case 0x2E -> Meters.Type.H;
 		case 0x45 -> Meters.Type.T;
-		case 0x05 -> Meters.Type.L;
+		case 0x05 -> Meters.Type.L; // lux
+		case 0x1E -> Meters.Type.LIGHT; // 0 (False = No light), 1 (True = Light detected)
 		case 0x2C -> Meters.Type.VIB; // dec 44 - vibration (0-1; on shelly is boolean)
-		case 0x40 -> Meters.Type.DMM; // dec 64 - distance mm
 		case 0x3F -> Meters.Type.ANG; // dec 63 - angle (accelerometer)
+		case 0x40 -> Meters.Type.DMM; // dec 64 - distance mm
 		case 0x60 -> Meters.Type.CHANNEL; //  dec 96 - channel
 		default -> null;
 		};

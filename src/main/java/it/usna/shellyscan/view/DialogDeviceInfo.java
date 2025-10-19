@@ -111,6 +111,20 @@ public class DialogDeviceInfo extends JDialog implements UsnaEventListener<Devic
 		buttonsPanel.add(jButtonFind);
 		buttonsPanel.add(jButtonCopyAll);
 		buttonsPanel.add(jButtonClose);
+		
+		// tab navigation - next
+		tabbedPane.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, MainView.SHORTCUT_KEY), "next_tab");
+		tabbedPane.getActionMap().put("next_tab", new UsnaAction(e -> {
+			int selectedIndex = tabbedPane.getSelectedIndex();
+			tabbedPane.setSelectedIndex((selectedIndex == tabbedPane.getTabCount() - 1) ? 0 : selectedIndex + 1);
+		}));
+
+		// tab navigation - previous
+		tabbedPane.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, MainView.SHORTCUT_KEY), "prev_tab");
+		tabbedPane.getActionMap().put("prev_tab", new UsnaAction(e -> {
+			int selectedIndex = tabbedPane.getSelectedIndex();
+			tabbedPane.setSelectedIndex((selectedIndex == 0) ? tabbedPane.getTabCount() - 1 : selectedIndex - 1);
+		}));
 
 		setVisible(true);
 		fill();

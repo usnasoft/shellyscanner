@@ -378,6 +378,7 @@ virtual components paging - it.usna.shellyscan.model.device.blu.BTHomeDevice.ref
 ---
 Outdoor Plug S G3
 BLU Remote
+BLU Distance
 Power Strip
 Enegy (EM)
 MacOS cmd-C, cmd-V, cmd-X
@@ -386,14 +387,28 @@ fw update multiselection and buttons working on selection (if lenght > 1)
 Enable RPC over MQTT - Enable 'MQTT Control' parametes (gen2+)
 various fix on scheduler editor
 
-// TODO
-BLU Distance/button zb/h&t zb
+
+1.3.1
+---
+button zb/h&t zb
 Dimmer G4
+ottimizzazione ip sort (long)
+it.usna.shellyscan.model.device.blu.BTHomeDevice.refreshStatus()
+e
+it.usna.shellyscan.model.device.blu.BTHomeDevice.refreshSettings()
+dovrebbero porter lavorare sugli stessi dati se vecchi meno di 0.5 secondi
+->
+definizione di BTHomeManager ?
+
+
 It would also be nice to add dynamic filters that show, for example, only enabled devices or disabled devices on the main view (?)
+
 
 /rpc/PresenceZone.GetConfig?id=201
 public enum Type boolean -> enum (illuminance)
 
+
+// TODO
 // schedule wall display thermostat - profile selection
 // 1.7.0 https://shelly-api-docs.shelly.cloud/gen2/DynamicComponents/BTHome/BTHomeControl/ (?)
 

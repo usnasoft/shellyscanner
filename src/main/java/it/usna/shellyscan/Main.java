@@ -38,19 +38,16 @@ public class Main {
 		System.setProperty("apple.eawt.quitStrategy", "CLOSE_ALL_WINDOWS"); // macOS specific - cmd-Q / -Dapple.eawt.quitStrategy=CLOSE_ALL_WINDOWS
 	}
 	public static final String APP_NAME = "Shelly Scanner";
-	public static final String VERSION = "1.3.0 beta";
-	public static final String VERSION_CODE = "001.003.000r101"; // r0xx alpha; r1xx beta; r2xx stable
+	public static final String VERSION = "1.3.1 alpha";
+	public static final String VERSION_CODE = "001.003.001r000"; // r0xx alpha; r1xx beta; r2xx stable
 	public static final Image ICON = Toolkit.getDefaultToolkit().createImage(Main.class.getResource("/images/ShSc24.png"));
 	public static final String BACKUP_FILE_EXT = "sbk";
 	public static final String ARCHIVE_FILE_EXT = "arc";
 
 	public static final ResourceBundle LABELS = ResourceBundle.getBundle("LabelsBundle");
-//	public static final Color BG_COLOR = new Color(50, 60, 65);
 	public static final Color BG_COLOR = new Color(60, 70, 90);
 	public static final Color TAB_LINE1_COLOR = new Color(240, 240, 240);
-//	public static final Color TAB_LINE2 = new Color(160, 180, 255);
 	public static final Color TAB_LINE2_COLOR = new Color(210, 218, 255);
-//	public static final Color STATUS_LINE = new Color(200, 220, 255);
 	public static final Color STATUS_LINE_COLOR = new Color(172, 195, 230);
 	public static final String TAB_VERSION = "5"; // on version change reset table settings
 
@@ -62,8 +59,11 @@ public class Main {
 		System.setProperty(SimpleLogger.LOG_KEY_PREFIX + "org.eclipse.jetty", "warn");
 		System.setProperty(SimpleLogger.SHOW_DATE_TIME_KEY, "true");
 		final Logger LOG = LoggerFactory.getLogger(Main.class);
+		
 		LOG.info(APP_NAME + " " + VERSION_CODE);
-//		LOG.debug(Runtime.version().toString() + " / " + System.getProperties().getProperty("java.vendor"));
+		if(LOG.isDebugEnabled()) {
+			LOG.debug("Runnnning on: " + System.getProperty("os.name") + "; java version: " + Runtime.version().toString() + " / " + System.getProperties().getProperty("java.vendor"));
+		}
 
 		final ScannerProperties appProp = ScannerProperties.init(Path.of(System.getProperty("user.home"), ".shellyScanner"));
 
