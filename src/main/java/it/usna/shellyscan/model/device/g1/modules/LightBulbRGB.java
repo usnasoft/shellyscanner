@@ -3,12 +3,11 @@ package it.usna.shellyscan.model.device.g1.modules;
 import java.io.IOException;
 import java.util.Map.Entry;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-
 import it.usna.shellyscan.model.device.g1.AbstractG1Device;
 import it.usna.shellyscan.model.device.modules.RGBCCTInterface;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ObjectNode;
 
 /**
  * Used by RGBW Bulbs
@@ -36,13 +35,13 @@ public class LightBulbRGB implements RGBCCTInterface {
 	}
 
 	public void fillSettings(JsonNode settingslight) {
-		name = settingslight.path("name").asText("");
+		name = settingslight.path("name").asString("");
 	}
 	
 	public void fillStatus(JsonNode statuslight) {
 		isOn = statuslight.get("ison").asBoolean();
-		modeColor = "color".equals(statuslight.get("mode").asText());
-		source = statuslight.get("source").asText("-");
+		modeColor = "color".equals(statuslight.get("mode").asString());
+		source = statuslight.get("source").asString("-");
 //		if(modeColor) {
 			red = statuslight.get("red").intValue();
 			green = statuslight.get("green").intValue();
@@ -130,7 +129,7 @@ public class LightBulbRGB implements RGBCCTInterface {
 //		refresh(status);
 		final JsonNode setting = parent.getJSON("/settings?mode=" + (color ? "color" : "white"));
 //		refresh(setting.get("lights").get(0)); // "mode" missing
-		modeColor = "color".equals(setting.get("mode").asText());
+		modeColor = "color".equals(setting.get("mode").asString());
 	}
 
 	@Override
@@ -146,7 +145,7 @@ public class LightBulbRGB implements RGBCCTInterface {
 	}
 	
 	@Override
-	public void setTemperature(int t) throws JsonProcessingException, IOException {
+	public void setTemperature(int t) throws JacksonException, IOException {
 		final JsonNode status = parent.getJSON("/light/" + index + "?temp=" + t);
 		fillStatus(status);
 	}

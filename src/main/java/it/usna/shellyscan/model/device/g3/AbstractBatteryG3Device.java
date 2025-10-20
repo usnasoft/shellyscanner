@@ -16,10 +16,9 @@ import org.eclipse.jetty.websocket.client.WebSocketClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.BatteryDeviceInterface;
+import tools.jackson.databind.JsonNode;
 
 public abstract class AbstractBatteryG3Device extends AbstractG3Device implements BatteryDeviceInterface {
 	private static final Logger LOG = LoggerFactory.getLogger(AbstractBatteryG3Device.class);

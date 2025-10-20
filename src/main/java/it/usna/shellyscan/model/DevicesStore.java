@@ -18,12 +18,6 @@ import java.util.regex.Pattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-
 import it.usna.shellyscan.model.device.BatteryDeviceInterface;
 import it.usna.shellyscan.model.device.GhostDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
@@ -34,6 +28,11 @@ import it.usna.shellyscan.model.device.blu.BTHomeDevice;
 import it.usna.shellyscan.model.device.g1.AbstractG1Device;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.g3.AbstractG3Device;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.JsonNodeFactory;
+import tools.jackson.databind.node.ObjectNode;
 
 public class DevicesStore {
 	private static final Logger LOG = LoggerFactory.getLogger(DevicesStore.class);
@@ -130,16 +129,16 @@ public class DevicesStore {
 					array.forEach(el -> {
 						try {
 							ghostsList.add(new GhostDevice(
-									InetAddress.getByName(el.get(ADDRESS).asText()), el.get(PORT).intValue(), el.get(HOSTNAME).asText(), el.get(MAC).asText(),
-									el.get(SSID).asText(), el.get(TYPE_NAME).asText(), el.get(TYPE_ID).asText(), el.path(GENERATION).asText(), el.get(NAME).asText(), el.path(LAST_CON).longValue(),
-									el.path(BATTERY).booleanValue(), el.path(USER_NOTE).asText(), el.path(KEYWORD_NOTE).asText()));
+									InetAddress.getByName(el.get(ADDRESS).asString()), el.get(PORT).intValue(), el.get(HOSTNAME).asString(), el.get(MAC).asString(),
+									el.get(SSID).asString(), el.get(TYPE_NAME).asString(), el.get(TYPE_ID).asString(), el.path(GENERATION).asString(), el.get(NAME).asString(), el.path(LAST_CON).longValue(),
+									el.path(BATTERY).booleanValue(), el.path(USER_NOTE).asString(), el.path(KEYWORD_NOTE).asString()));
 						} catch (UnknownHostException | RuntimeException e) {
 							LOG.error("Archive read", e);
 						}
 					});
 				}
 			} else {
-				LOG.info("Archive version is {}; " + STORE_VERSION + " expected", arc.path("ver").asText());
+				LOG.info("Archive version is {}; " + STORE_VERSION + " expected", arc.path("ver").asString());
 			}
 		} catch(FileNotFoundException | NoSuchFileException e) {
 			// first run?

@@ -9,16 +9,15 @@ import java.util.zip.ZipOutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.ModulesHolder;
 import it.usna.shellyscan.model.device.g3.modules.XT1Thermostat;
 import it.usna.shellyscan.model.device.meters.Meters;
 import it.usna.shellyscan.model.device.modules.DeviceModule;
 import it.usna.shellyscan.model.device.modules.RelayInterface;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.JsonNodeFactory;
+import tools.jackson.databind.node.ObjectNode;
 
 /**
  * LinkedGo ST802 (PbS) model
@@ -83,9 +82,9 @@ public class PbSXT1St802 extends XT1 implements ModulesHolder {
 		JsonNode sensors = getJSON("/rpc/Shelly.GetComponents?keys=[%22boolean:201%22,%22number:200%22,%22number:201%22,%22number:202%22,%22number:203%22,%22enum:201%22]");
 		for(JsonNode sensor: sensors.path("components")) {
 			try {
-				String key = sensor.get("key").textValue();
+				String key = sensor.get("key").asString();
 				if(MODE_KEY.equals(key)) {
-					this.mode = Mode.valueOf(sensor.path("status").path("value").textValue().toUpperCase());
+					this.mode = Mode.valueOf(sensor.path("status").path("value").asString().toUpperCase());
 					if(mode == Mode.HEAT || mode == Mode.COOL || mode == Mode.VENTILATION) {
 						if(thermostats == null) {
 							thermostats = new XT1Thermostat[] {thermostat};
@@ -96,7 +95,7 @@ public class PbSXT1St802 extends XT1 implements ModulesHolder {
 						thermostats = null;
 					}
 				} else if(CURRENT_TEMP_KEY.equals(key)) {
-					boolean celsius = "°C".equals(sensor.path("config").path("meta").path("ui").path("unit").textValue());
+					boolean celsius = "°C".equals(sensor.path("config").path("meta").path("ui").path("unit").asString());
 					if(celsius) {
 						temp = sensor.path("status").path("value").floatValue();
 					} else {

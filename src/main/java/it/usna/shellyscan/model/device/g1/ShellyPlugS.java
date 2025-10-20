@@ -5,14 +5,13 @@ import java.net.InetAddress;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.InternalTmpHolder;
 import it.usna.shellyscan.model.device.ModulesHolder;
 import it.usna.shellyscan.model.device.g1.meters.MetersPower;
 import it.usna.shellyscan.model.device.g1.modules.Relay;
 import it.usna.shellyscan.model.device.meters.Meters;
+import tools.jackson.databind.JsonNode;
 
 public class ShellyPlugS extends AbstractG1Device implements ModulesHolder, InternalTmpHolder {
 	public static final String ID = "SHPLG-S";

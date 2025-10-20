@@ -7,12 +7,11 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.blu.AbstractBluDevice;
 import it.usna.shellyscan.model.device.meters.Meters;
 import it.usna.shellyscan.model.device.modules.DeviceModule;
+import tools.jackson.databind.JsonNode;
 
 /**
  * Collection of BTHomeDevice related sensors and "Meters" implementation
@@ -38,7 +37,7 @@ public class SensorsCollection extends Meters {
 		Meters.Type lastT = null;
 		Meters.Type lastRot = null;
 		for(JsonNode sensorConf: objects) {
-			String comp = sensorConf.path("component").asText();
+			String comp = sensorConf.path("component").asString();
 			if(comp != null && comp.startsWith(AbstractBluDevice.SENSOR_KEY_PREFIX)) {
 				final int id = Integer.parseInt(comp.substring(13));
 				final Sensor sensor = Sensor.create(id, sensorConf); // create

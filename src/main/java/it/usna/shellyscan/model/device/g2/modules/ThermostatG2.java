@@ -2,12 +2,11 @@ package it.usna.shellyscan.model.device.g2.modules;
 
 import java.io.IOException;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.modules.ThermostatInterface;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.JsonNodeFactory;
+import tools.jackson.databind.node.ObjectNode;
 
 public class ThermostatG2 implements ThermostatInterface {
 	private static final String HEATING_TYPE = "heating";
@@ -24,8 +23,8 @@ public class ThermostatG2 implements ThermostatInterface {
 	}
 	
 	public void fillSettings(JsonNode thermostat) {
-		name = thermostat.get("name").asText("");
-		heatingMode = HEATING_TYPE.equals(thermostat.get("type").asText());
+		name = thermostat.get("name").asString("");
+		heatingMode = HEATING_TYPE.equals(thermostat.get("type").asString());
 	}
 	
 	public void fillStatus(JsonNode thermostat) throws IOException {

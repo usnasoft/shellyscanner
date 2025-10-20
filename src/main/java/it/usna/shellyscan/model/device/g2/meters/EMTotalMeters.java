@@ -1,10 +1,9 @@
 package it.usna.shellyscan.model.device.g2.meters;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
 import it.usna.shellyscan.model.device.g2.modules.EMManager;
 import it.usna.shellyscan.model.device.meters.EMHolder;
 import it.usna.shellyscan.model.device.meters.Meters;
+import tools.jackson.databind.JsonNode;
 
 /**
  * EM 3phase model (total)

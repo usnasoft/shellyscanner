@@ -6,12 +6,11 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
 import it.usna.shellyscan.model.DeviceOfflineException;
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.blu.BluTRV;
 import it.usna.shellyscan.model.device.modules.FirmwareManager;
+import tools.jackson.databind.JsonNode;
 
 public class FirmwareManagerTRV implements FirmwareManager {
 	private static final Logger LOG = LoggerFactory.getLogger(FirmwareManagerTRV.class);
@@ -32,11 +31,11 @@ public class FirmwareManagerTRV implements FirmwareManager {
 		updating = false;
 		try {
 			JsonNode deviceInfoNode = d.getJSON("/rpc/BluTrv.GetRemoteDeviceInfo?id=" + d.getIndex());
-			current = deviceInfoNode.at("/device_info/fw_id").textValue();
+			current = deviceInfoNode.at("/device_info/fw_id").asString();
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			
 			JsonNode newFwNode = d.getJSON("/rpc/BluTrv.CheckForUpdates?id=" + d.getIndex());
-			String lastFW = newFwNode.path("fw_id").textValue();
+			String lastFW = newFwNode.path("fw_id").asString();
 			
 			if(lastFW != null && lastFW.isEmpty() == false && lastFW.equals(current) == false) {
 				this.stable = lastFW;

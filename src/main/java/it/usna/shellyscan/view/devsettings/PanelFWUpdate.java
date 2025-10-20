@@ -43,8 +43,6 @@ import org.eclipse.jetty.websocket.api.exceptions.WebSocketTimeoutException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
 import it.usna.shellyscan.controller.DeferrableTask;
 import it.usna.shellyscan.controller.DeferrablesContainer;
 import it.usna.shellyscan.controller.UsnaAction;
@@ -66,6 +64,7 @@ import it.usna.swing.UsnaPopupMenu;
 import it.usna.swing.table.UsnaTableModel;
 import it.usna.swing.texteditor.TextDocumentListener;
 import it.usna.util.UsnaEventListener;
+import tools.jackson.databind.JsonNode;
 
 public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventListener<Devices.EventType, Integer> {
 	private static final long serialVersionUID = 1L;
@@ -436,7 +435,7 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 		private final String component;
 		
 		public FMUpdateListener(int index, String component) {
-			super(json -> json.path("method").asText().equals(WebSocketDeviceListener.NOTIFY_EVENT));
+			super(json -> json.path("method").asString().equals(WebSocketDeviceListener.NOTIFY_EVENT));
 			this.index = index;
 			this.component = component;
 		}
@@ -445,8 +444,8 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 		public void onMessage(JsonNode msg) {
 			try {
 				for(JsonNode event: msg.path("params").path("events")) {
-					String eventType = event.path("event").asText();
-					String comp = event.path("component").asText();
+					String eventType = event.path("event").asString();
+					String comp = event.path("component").asString();
 					if(eventType.equals("ota_progress") && component.equals(comp)) { // dowloading
 						getFirmwareManager(index).upadating(true);
 						int progress = event.path("progress_percent").asInt();

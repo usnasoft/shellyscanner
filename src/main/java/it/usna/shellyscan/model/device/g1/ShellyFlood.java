@@ -4,9 +4,8 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.util.List;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
 import it.usna.shellyscan.model.device.meters.Meters;
+import tools.jackson.databind.JsonNode;
 
 public class ShellyFlood extends AbstractBatteryG1Device {
 	public static final String ID = "SHWT-1";

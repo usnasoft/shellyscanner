@@ -9,8 +9,6 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.InternalTmpHolder;
 import it.usna.shellyscan.model.device.ModulesHolder;
@@ -20,6 +18,7 @@ import it.usna.shellyscan.model.device.g2.modules.Relay;
 import it.usna.shellyscan.model.device.g2.modules.SensorAddOn;
 import it.usna.shellyscan.model.device.g3.modules.LoRaAddOn;
 import it.usna.shellyscan.model.device.meters.Meters;
+import tools.jackson.databind.JsonNode;
 
 /**
  * Shelly 1 G3 model
@@ -42,8 +41,8 @@ public class Shelly1G3 extends AbstractG3Device implements ModulesHolder, Intern
 	
 	@Override
 	protected void init(JsonNode devInfo) throws IOException {
-		this.hostname = devInfo.get("id").asText("");
-		this.mac = devInfo.get("mac").asText();
+		this.hostname = devInfo.get("id").asString("");
+		this.mac = devInfo.get("mac").asString();
 
 		final JsonNode config = configure();
 		
@@ -53,7 +52,7 @@ public class Shelly1G3 extends AbstractG3Device implements ModulesHolder, Intern
 	
 	private JsonNode configure() throws IOException {
 		final JsonNode config = getJSON("/rpc/Shelly.GetConfig");
-		final String addOn = config.get("sys").get("device").path("addon_type").asText();
+		final String addOn = config.get("sys").get("device").path("addon_type").asString();
 		if(SensorAddOn.ADDON_TYPE.equals(addOn)) {
 			sensorAddOn = new SensorAddOn(this);
 			meters = (sensorAddOn.getTypes().length > 0) ? new Meters[] {sensorAddOn} : null;

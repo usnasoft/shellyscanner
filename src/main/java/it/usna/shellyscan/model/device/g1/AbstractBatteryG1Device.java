@@ -12,9 +12,8 @@ import org.eclipse.jetty.client.HttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
 import it.usna.shellyscan.model.device.BatteryDeviceInterface;
+import tools.jackson.databind.JsonNode;
 
 public abstract class AbstractBatteryG1Device extends AbstractG1Device implements BatteryDeviceInterface {
 	private static final Logger LOG = LoggerFactory.getLogger(AbstractBatteryG1Device.class);
@@ -31,7 +30,7 @@ public abstract class AbstractBatteryG1Device extends AbstractG1Device implement
 	@Override
 	public final void init(HttpClient httpClient, JsonNode shelly) throws IOException {
 		this.httpClient = httpClient;
-		this.mac = shelly.get("mac").asText();
+		this.mac = shelly.get("mac").asString();
 		this.stShelly = shelly;
 		init();
 	}

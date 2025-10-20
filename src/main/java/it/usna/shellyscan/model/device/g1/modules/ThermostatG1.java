@@ -2,10 +2,9 @@ package it.usna.shellyscan.model.device.g1.modules;
 
 import java.io.IOException;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
 import it.usna.shellyscan.model.device.g1.AbstractG1Device;
 import it.usna.shellyscan.model.device.modules.ThermostatInterface;
+import tools.jackson.databind.JsonNode;
 
 /* TRV only, I will not continue develop this class */
 public class ThermostatG1 implements ThermostatInterface {
@@ -37,7 +36,7 @@ public class ThermostatG1 implements ThermostatInterface {
 	public void fillSettings(JsonNode thermostat) {
 		JsonNode profiles = thermostat.get("schedule_profile_names");
 		for(int i = 0; i < profiles.size(); i++) {
-			profileNames[i] = profiles.get(i).asText();
+			profileNames[i] = profiles.get(i).asString();
 		}
 		autoTemp = thermostat.get("t_auto").get("enabled").asBoolean();
 	}

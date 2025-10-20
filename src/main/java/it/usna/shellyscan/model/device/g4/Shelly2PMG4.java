@@ -9,8 +9,6 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.InternalTmpHolder;
 import it.usna.shellyscan.model.device.ModulesHolder;
@@ -22,6 +20,7 @@ import it.usna.shellyscan.model.device.g2.modules.SensorAddOn;
 import it.usna.shellyscan.model.device.g3.modules.LoRaAddOn;
 import it.usna.shellyscan.model.device.meters.Meters;
 import it.usna.shellyscan.model.device.modules.DeviceModule;
+import tools.jackson.databind.JsonNode;
 
 /**
  * Shelly 2PM G4 model 
@@ -56,8 +55,8 @@ public class Shelly2PMG4 extends AbstractG4Device implements ModulesHolder, Inte
 	
 	@Override
 	protected void init(JsonNode devInfo) throws IOException {
-		this.hostname = devInfo.get("id").asText("");
-		this.mac = devInfo.get("mac").asText();
+		this.hostname = devInfo.get("id").asString("");
+		this.mac = devInfo.get("mac").asString();
 		
 		final JsonNode config = configure();
 		
@@ -104,7 +103,7 @@ public class Shelly2PMG4 extends AbstractG4Device implements ModulesHolder, Inte
 	
 	private JsonNode configure() throws IOException {
 		final JsonNode config = getJSON("/rpc/Shelly.GetConfig");
-		final String addOn = config.get("sys").get("device").path("addon_type").asText();
+		final String addOn = config.get("sys").get("device").path("addon_type").asString();
 		if(SensorAddOn.ADDON_TYPE.equals(addOn)) {
 			sensorAddOn = new SensorAddOn(this);
 		} else {
@@ -159,7 +158,7 @@ public class Shelly2PMG4 extends AbstractG4Device implements ModulesHolder, Inte
 	@Override
 	protected void fillSettings(JsonNode configuration) throws IOException {
 		super.fillSettings(configuration);
-		modeRelay = configuration.get("sys").get("device").get("profile").asText().equals(MODE_RELAY);
+		modeRelay = configuration.get("sys").get("device").get("profile").asString().equals(MODE_RELAY);
 		if(modeRelay) {
 			if(relay0 == null /*|| relay1 == null*/) {
 				relay0 = new Relay(this, 0);
@@ -238,7 +237,7 @@ public class Shelly2PMG4 extends AbstractG4Device implements ModulesHolder, Inte
 	@Override
 	public void restoreCheck(Map<String, JsonNode> backupJsons, Map<RestoreMsg, Object> res) throws IOException {
 		JsonNode devInfo = backupJsons.get("Shelly.GetDeviceInfo.json");
-		boolean backModeRelay = MODE_RELAY.equals(devInfo.get("profile").asText());
+		boolean backModeRelay = MODE_RELAY.equals(devInfo.get("profile").asString());
 		if(backModeRelay != modeRelay) {
 			res.put(RestoreMsg.ERR_RESTORE_MODE_COVER, null);
 		}
@@ -254,7 +253,7 @@ public class Shelly2PMG4 extends AbstractG4Device implements ModulesHolder, Inte
 	@Override
 	protected void restore(Map<String, JsonNode> backupJsons, List<String> errors) throws InterruptedException {
 		JsonNode configuration = backupJsons.get("Shelly.GetConfig.json");
-		final boolean backModeRelay = MODE_RELAY.equals(configuration.at("/sys/device/profile").asText());
+		final boolean backModeRelay = MODE_RELAY.equals(configuration.at("/sys/device/profile").asString());
 		if(backModeRelay == modeRelay) {
 			errors.add(Input.restore(this,configuration, 0));
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);

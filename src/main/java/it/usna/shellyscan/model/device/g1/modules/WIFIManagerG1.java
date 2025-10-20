@@ -5,10 +5,9 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
 import it.usna.shellyscan.model.device.g1.AbstractG1Device;
 import it.usna.shellyscan.model.device.modules.WIFIManager;
+import tools.jackson.databind.JsonNode;
 
 public class WIFIManagerG1 implements WIFIManager {
 	private String net;
@@ -46,12 +45,12 @@ public class WIFIManagerG1 implements WIFIManager {
 	private void init() throws IOException {
 		JsonNode sta = d.getJSON("/settings/" + net);
 		enabled = sta.get("enabled").asBoolean();
-		dSSID = sta.path("ssid").asText("");
-		staticIP = sta.path("ipv4_method").asText().equals("static");
-		ip = sta.path("ip").asText("");
-		netmask = sta.path("mask").asText("");
-		gw = sta.path("gw").asText("");
-		dns = sta.path("dns").asText("");
+		dSSID = sta.path("ssid").asString("");
+		staticIP = sta.path("ipv4_method").asString().equals("static");
+		ip = sta.path("ip").asString("");
+		netmask = sta.path("mask").asString("");
+		gw = sta.path("gw").asString("");
+		dns = sta.path("dns").asString("");
 	}
 
 	@Override
@@ -135,9 +134,9 @@ public class WIFIManagerG1 implements WIFIManager {
 		try {
 			JsonNode settings = d.getJSON("/settings");
 			JsonNode sta;
-			if((sta = settings.get("wifi_sta")).get("enabled").asBoolean() && sta.get("ssid").asText("").equals(d.getSSID())) {
+			if((sta = settings.get("wifi_sta")).get("enabled").asBoolean() && sta.get("ssid").asString("").equals(d.getSSID())) {
 				return Network.PRIMARY;
-			} else if((sta = settings.get("wifi_sta1")).get("enabled").asBoolean() && sta.get("ssid").asText("").equals(d.getSSID())) {
+			} else if((sta = settings.get("wifi_sta1")).get("enabled").asBoolean() && sta.get("ssid").asString("").equals(d.getSSID())) {
 				return Network.SECONDARY;
 			} else {
 				return Network.AP;
@@ -150,13 +149,13 @@ public class WIFIManagerG1 implements WIFIManager {
 	public String restore(JsonNode sta, String pwd) throws UnsupportedEncodingException {
 		if(sta.get("enabled").asBoolean()) {
 			return d.sendCommand("/settings/" + net + "?enabled=true&" + AbstractG1Device.jsonNodeToURLPar(sta, "ssid", "ipv4_method", "ip", "dns") +
-					"&key=" + URLEncoder.encode(pwd, StandardCharsets.UTF_8.name()) + "&netmask=" + sta.get("mask").asText("") + "&gateway=" + sta.get("gw").asText(""));
+					"&key=" + URLEncoder.encode(pwd, StandardCharsets.UTF_8.name()) + "&netmask=" + sta.get("mask").asString("") + "&gateway=" + sta.get("gw").asString(""));
 		} else {
 			return disable();
 		}
 	}
 	
 	public static String restoreRoam(AbstractG1Device d, JsonNode roam) {
-		return d.sendCommand("/settings?ap_roaming_enabled=" + roam.path("enabled").asBoolean() + "&ap_roaming_threshold=" + roam.path("threshold").asText());
+		return d.sendCommand("/settings?ap_roaming_enabled=" + roam.path("enabled").asBoolean() + "&ap_roaming_threshold=" + roam.path("threshold").asString());
 	}
 }

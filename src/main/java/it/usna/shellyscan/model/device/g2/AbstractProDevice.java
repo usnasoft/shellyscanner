@@ -6,11 +6,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.RestoreMsg;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.JsonNode;
 
 public abstract class AbstractProDevice extends AbstractG2Device {
 
@@ -31,7 +30,7 @@ public abstract class AbstractProDevice extends AbstractG2Device {
 		errors.add(ethRestore(config.get("eth")));
 	}
 	
-	private String ethRestore(JsonNode eth) throws JsonProcessingException, InterruptedException {
+	private String ethRestore(JsonNode eth) throws JacksonException, InterruptedException {
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 		return postCommand("Eth.SetConfig", "{\"config\":" + jsonMapper.writeValueAsString(eth) + "}");
 	}

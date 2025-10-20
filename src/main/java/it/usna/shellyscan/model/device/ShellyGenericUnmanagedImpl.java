@@ -9,9 +9,6 @@ import java.util.regex.Pattern;
 
 import org.eclipse.jetty.client.HttpClient;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-
 import it.usna.shellyscan.model.device.modules.FirmwareManager;
 import it.usna.shellyscan.model.device.modules.InputResetManager;
 import it.usna.shellyscan.model.device.modules.LoginManager;
@@ -19,6 +16,8 @@ import it.usna.shellyscan.model.device.modules.MQTTManager;
 import it.usna.shellyscan.model.device.modules.TimeAndLocationManager;
 import it.usna.shellyscan.model.device.modules.WIFIManager;
 import it.usna.shellyscan.model.device.modules.WIFIManager.Network;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.JsonNode;
 
 /**
  * Generic Shelly device model for unknown generation
@@ -46,7 +45,7 @@ public class ShellyGenericUnmanagedImpl extends ShellyAbstractDevice implements 
 		this.ex = e;
 		if(e instanceof IOException && "Status-401".equals(e.getMessage())) {
 			status = Status.NOT_LOOGGED;
-		} else if(e instanceof IOException && e instanceof JsonProcessingException == false) { // JsonProcessingException extends IOException
+		} else if(e instanceof IOException && e instanceof JacksonException == false) { // JsonProcessingException extends IOException
 			status = Status.OFF_LINE;
 		} else {
 			status = Status.ERROR;

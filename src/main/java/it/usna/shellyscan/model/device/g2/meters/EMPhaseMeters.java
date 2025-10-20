@@ -1,9 +1,8 @@
 package it.usna.shellyscan.model.device.g2.meters;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
 import it.usna.shellyscan.model.device.LabelHolder;
 import it.usna.shellyscan.model.device.meters.Meters;
+import tools.jackson.databind.JsonNode;
 
 /**
  * EM 3phase model (for a single phase)
@@ -51,7 +50,7 @@ public class EMPhaseMeters extends Meters implements LabelHolder {
 	}
 	
 	public void fillSettings(JsonNode emConfiguration) {
-		label = emConfiguration.path("name").asText("");
+		label = emConfiguration.path("name").asString("");
 	}
 	
 	public void fillStatus(JsonNode emStatus) {

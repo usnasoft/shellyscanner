@@ -3,9 +3,8 @@ package it.usna.shellyscan.model.device.g2;
 import java.io.IOException;
 import java.util.Iterator;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
+import tools.jackson.databind.JsonNode;
 
 /**
  * Iterate over this kind of Json structure:<br>

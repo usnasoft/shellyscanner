@@ -6,8 +6,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.InternalTmpHolder;
 import it.usna.shellyscan.model.device.ModulesHolder;
@@ -19,6 +17,7 @@ import it.usna.shellyscan.model.device.g2.modules.LightRGB;
 import it.usna.shellyscan.model.device.g2.modules.LightWhite;
 import it.usna.shellyscan.model.device.meters.Meters;
 import it.usna.shellyscan.model.device.modules.DeviceModule;
+import tools.jackson.databind.JsonNode;
 
 /**
  * Shelly PRO RGBWW PM model 
@@ -57,8 +56,8 @@ public class ShellyProRGBWW extends AbstractProDevice implements ModulesHolder, 
 
 	@Override
 	protected void init(JsonNode devInfo) throws IOException {
-		this.hostname = devInfo.get("id").asText("");
-		this.mac = devInfo.get("mac").asText();
+		this.hostname = devInfo.get("id").asString("");
+		this.mac = devInfo.get("mac").asString();
 
 		fillSettings(getJSON("/rpc/Shelly.GetConfig"));
 		fillStatus(getJSON("/rpc/Shelly.GetStatus"));
@@ -97,7 +96,7 @@ public class ShellyProRGBWW extends AbstractProDevice implements ModulesHolder, 
 	@Override
 	protected void fillSettings(JsonNode configuration) throws IOException {
 		super.fillSettings(configuration);
-		String prof = configuration.get("sys").get("device").get("profile").asText();
+		String prof = configuration.get("sys").get("device").get("profile").asString();
 		if(prof.equals(Profile.LIGHT.code)) {
 			if(profile != Profile.LIGHT) {
 				profile = Profile.LIGHT;
@@ -226,8 +225,8 @@ public class ShellyProRGBWW extends AbstractProDevice implements ModulesHolder, 
 	@Override
 	public void restoreCheck(Map<String, JsonNode> backupJsons, Map<RestoreMsg, Object> res) throws IOException {
 		JsonNode devInfo = backupJsons.get("Shelly.GetDeviceInfo.json");
-		if(profile.code.equals(devInfo.get("profile").asText()) == false) {
-			res.put(RestoreMsg.ERR_RESTORE_PROFILE, new String[] {profile.code, devInfo.get("profile").asText()});
+		if(profile.code.equals(devInfo.get("profile").asString()) == false) {
+			res.put(RestoreMsg.ERR_RESTORE_PROFILE, new String[] {profile.code, devInfo.get("profile").asString()});
 		}
 	}
 
@@ -245,7 +244,7 @@ public class ShellyProRGBWW extends AbstractProDevice implements ModulesHolder, 
 		errors.add(Input.restore(this, configuration, 4));
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 
-		final String backMode = configuration.at("/sys/device/profile").asText();
+		final String backMode = configuration.at("/sys/device/profile").asString();
 		if(profile.code.equals(backMode)) {
 			if(profile == Profile.LIGHT) {
 				errors.add(light0.restore(configuration));

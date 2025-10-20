@@ -14,10 +14,9 @@ import org.eclipse.jetty.client.DigestAuthentication;
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.http.HttpStatus;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.modules.LoginManager;
+import tools.jackson.databind.JsonNode;
 
 //https://shelly-api-docs.shelly.cloud/gen2/Overview/CommonServices/Shelly#shellysetauth
 //https://shelly-api-docs.shelly.cloud/gen2/0.14/General/Authentication#authentication
@@ -44,7 +43,7 @@ public class LoginManagerG2 implements LoginManager {
 	private void init() throws IOException {
 		JsonNode shelly = d.getJSON("/shelly");
 		this.enabled = shelly.get("auth_en").asBoolean();
-		this.realm = shelly.get("id").asText();
+		this.realm = shelly.get("id").asString();
 	}
 
 	@Override

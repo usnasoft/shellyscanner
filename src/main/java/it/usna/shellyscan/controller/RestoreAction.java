@@ -26,9 +26,6 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import it.usna.shellyscan.Main;
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.RestoreMsg;
@@ -40,6 +37,8 @@ import it.usna.shellyscan.view.DialogAuthentication;
 import it.usna.shellyscan.view.MainView;
 import it.usna.shellyscan.view.util.Msg;
 import it.usna.util.AppProperties;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 
 public class RestoreAction extends UsnaAction {
 	private static final long serialVersionUID = 1L;

@@ -3,14 +3,14 @@ package it.usna.shellyscan.model.device.g2.modules;
 import java.io.IOException;
 import java.util.Arrays;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.modules.RelayInterface;
+import tools.jackson.databind.JsonNode;
 
 /**
- * Circuit Breaker model
+ 
+import tools.jackson.databind.JsonNode;* Circuit Breaker model
  */
 // todo specific renderer (and, if later useful, interface) with "isLocked" evidence; removal of "isInputOn"
 public class CBreaker implements /*DeviceModule*/RelayInterface {
@@ -25,12 +25,12 @@ public class CBreaker implements /*DeviceModule*/RelayInterface {
 	}
 	
 	public void fillSettings(JsonNode cbConfiguration) {
-		name = cbConfiguration.get("name").asText("");
+		name = cbConfiguration.get("name").asString("");
 	}
 	
 	public void fillStatus(JsonNode cbStatus) {
 		isOn = cbStatus.get("output").booleanValue();
-		source = cbStatus.get("source").asText("-");
+		source = cbStatus.get("source").asString("-");
 		isLocked = cbStatus.get("safety").booleanValue();
 	}
 

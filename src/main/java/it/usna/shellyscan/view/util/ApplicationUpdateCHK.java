@@ -20,10 +20,9 @@ import javax.swing.JOptionPane;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import it.usna.shellyscan.Main;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 
 public class ApplicationUpdateCHK {
 	private static final Logger LOG = LoggerFactory.getLogger(ApplicationUpdateCHK.class);
@@ -110,18 +109,18 @@ public class ApplicationUpdateCHK {
 		final JsonNode updateNode = new ObjectMapper().readTree(con.getInputStream());
 		final JsonNode stable = updateNode.path("stable");
 		String id = null;
-		if(stable.isNull() == false && (id = stable.path("id").asText()).compareTo(Main.VERSION_CODE) > 0 && id.compareTo(ignoreRel) > 0) {
-			String devMsg = String.format(LABELS.getString("aboutCheckUpdatesYes"), stable.path("version").asText());
-			String note = stable.path("note").asText();
+		if(stable.isNull() == false && (id = stable.path("id").asString()).compareTo(Main.VERSION_CODE) > 0 && id.compareTo(ignoreRel) > 0) {
+			String devMsg = String.format(LABELS.getString("aboutCheckUpdatesYes"), stable.path("version").asString());
+			String note = stable.path("note").asString();
 			if(note.length() > 0) {
 				devMsg += " - " + note;
 			}
 			rel.add(new Release(devMsg, id));
 		}
 		final JsonNode dev = updateNode.path("dev");
-		if(checkDev && dev.isNull() == false && (id = dev.path("id").asText()).compareTo(Main.VERSION_CODE) > 0 && id.compareTo(ignoreRel) > 0) {
-			String stableMsg = String.format(LABELS.getString("aboutCheckUpdatesYes"), dev.path("version").asText());
-			String note = dev.path("note").asText();
+		if(checkDev && dev.isNull() == false && (id = dev.path("id").asString()).compareTo(Main.VERSION_CODE) > 0 && id.compareTo(ignoreRel) > 0) {
+			String stableMsg = String.format(LABELS.getString("aboutCheckUpdatesYes"), dev.path("version").asString());
+			String note = dev.path("note").asString();
 			if(note.length() > 0) {
 				stableMsg += " - " + note;
 			}

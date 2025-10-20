@@ -2,10 +2,9 @@ package it.usna.shellyscan.model.device.g1.modules;
 
 import java.io.IOException;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
 import it.usna.shellyscan.model.device.g1.AbstractG1Device;
 import it.usna.shellyscan.model.device.modules.InputResetManager;
+import tools.jackson.databind.JsonNode;
 
 public class InputResetManagerG1 implements InputResetManager {
 	private final AbstractG1Device parent;

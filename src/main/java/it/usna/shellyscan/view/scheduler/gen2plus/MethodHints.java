@@ -11,11 +11,10 @@ import javax.swing.JTextField;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
 import it.usna.shellyscan.model.device.ModulesHolder;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.g3.modules.XT1Thermostat;
+import tools.jackson.databind.JsonNode;
 
 /**
  * Generate a list of shedulable actions according to the components found in /rpc/Shelly.GetComponents?include=["config"]
@@ -61,7 +60,7 @@ public class MethodHints {
 			Iterator<JsonNode> compIt = device.getJSONIterator("/rpc/Shelly.GetComponents?include=[%22config%22]", "components");
 			while (compIt.hasNext()) {
 				JsonNode comp = compIt.next();
-				String key = comp.get("key").asText();
+				String key = comp.get("key").asString();
 				if(key.startsWith("switch:")) {
 					int id = comp.get("config").path("id").intValue();
 					String nameBase = actionBaseName(comp);
@@ -143,8 +142,8 @@ public class MethodHints {
 	}
 	
 	private static String actionBaseName(JsonNode comp) {
-		String compName = comp.get("config").path("name").textValue();
-		return ((compName == null || compName.length() == 0) ? comp.get("key").asText() : compName) + " - ";
+		String compName = comp.get("config").path("name").asString();
+		return ((compName == null || compName.length() == 0) ? comp.get("key").asString() : compName) + " - ";
 	}
 	
 	private record Method(String name, String method, String pars) {}

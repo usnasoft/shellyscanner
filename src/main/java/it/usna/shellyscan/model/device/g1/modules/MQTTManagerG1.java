@@ -5,10 +5,9 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
 import it.usna.shellyscan.model.device.g1.AbstractG1Device;
 import it.usna.shellyscan.model.device.modules.MQTTManager;
+import tools.jackson.databind.JsonNode;
 
 public class MQTTManagerG1 implements MQTTManager {
 	private final AbstractG1Device d;
@@ -40,9 +39,9 @@ public class MQTTManagerG1 implements MQTTManager {
 	private void init() throws IOException {
 		JsonNode settings = d.getJSON("/settings").get("mqtt");
 		this.enabled = settings.get("enable").asBoolean();
-		this. server = settings.path("server").asText("");
-		this.user = settings.path("user").asText("");
-		this.prefix = settings.path("id").asText("");
+		this. server = settings.path("server").asString("");
+		this.user = settings.path("user").asString("");
+		this.prefix = settings.path("id").asString("");
 
 		// G1 specific
 		this.rTimeoutMax = settings.path("reconnect_timeout_max").asInt(0);
@@ -170,9 +169,9 @@ public class MQTTManagerG1 implements MQTTManager {
 	public String restore(final JsonNode mqtt, String pwd) {
 		if(mqtt.get("enable").asBoolean()) {
 			// In case authentication is required, mqtt_user and mqtt_pass
-			return set(mqtt.get("server").asText(), mqtt.get("user").asText(), pwd, mqtt.get("id").asText(),
-					mqtt.get("reconnect_timeout_max").asInt(), mqtt.get("reconnect_timeout_min").asInt(), mqtt.get("clean_session").asText(), mqtt.get("keep_alive").asInt(),
-					mqtt.get("max_qos").asInt(), mqtt.get("retain").asText(), mqtt.get("update_period").asInt());
+			return set(mqtt.get("server").asString(), mqtt.get("user").asString(), pwd, mqtt.get("id").asString(),
+					mqtt.get("reconnect_timeout_max").asInt(), mqtt.get("reconnect_timeout_min").asInt(), mqtt.get("clean_session").asString(), mqtt.get("keep_alive").asInt(),
+					mqtt.get("max_qos").asInt(), mqtt.get("retain").asString(), mqtt.get("update_period").asInt());
 		} else {
 			return disable();
 		}

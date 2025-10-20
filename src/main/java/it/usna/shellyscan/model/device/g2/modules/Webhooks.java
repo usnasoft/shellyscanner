@@ -6,11 +6,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.util.AccumulatingMap;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ObjectNode;
 
 public class Webhooks {
 //	public static final String INPUT_ON = "input.toggle_on";
@@ -35,7 +34,7 @@ public class Webhooks {
 		whList.forEach(hook -> {
 			int cid = hook.get("cid").asInt();
 			if(cid < DynamicComponents.MIN_ID) {
-				String event = hook.get("event").asText();
+				String event = hook.get("event").asString();
 				int dotpos = event.indexOf('.');
 				final String eventOrigin = (dotpos > 0) ? event.substring(0, dotpos) : "";
 
@@ -50,7 +49,7 @@ public class Webhooks {
 		whList.forEach(hook -> {
 			int cid = hook.get("cid").asInt();
 			if(cid >= DynamicComponents.MIN_ID && cid <= DynamicComponents.MAX_ID) {
-				String event = hook.get("event").asText();
+				String event = hook.get("event").asString();
 				int dotpos = event.indexOf('.');
 				final String eventOrigin = (dotpos > 0) ? event.substring(0, dotpos) : "";
 
@@ -66,7 +65,7 @@ public class Webhooks {
 	public static void delete(AbstractG2Device parent, String eventType, int cid, long delay) throws IOException {
 		JsonNode whList = parent.getJSON("/rpc/Webhook.List").get("hooks");
 		whList.forEach(hook -> {
-			if(hook.get("cid").asInt() == cid && hook.get("event").textValue().startsWith(eventType + ".")) {
+			if(hook.get("cid").asInt() == cid && hook.get("event").asString().startsWith(eventType + ".")) {
 				try { TimeUnit.MILLISECONDS.sleep(delay); } catch (InterruptedException e) {}
 				parent.postCommand("Webhook.Delete", "{\"id\":" + hook.get("id").asInt() + "}");
 			}
@@ -82,7 +81,7 @@ public class Webhooks {
 			TimeUnit.MILLISECONDS.sleep(delay);
 			String ret = parent.postCommand("Webhook.Create", thisAction);
 			if(ret != null) {
-				ret = "Action \"" + ac.path("name").asText("") + "\" - error: " + ret;
+				ret = "Action \"" + ac.path("name").asString("") + "\" - error: " + ret;
 			}
 			errors.add(ret);
 		}
@@ -97,14 +96,14 @@ public class Webhooks {
 	
 	public static void restore(AbstractG2Device parent, String eventType, int storedCid, int newCid, JsonNode storedWH, long delay, List<String> errors) throws InterruptedException {
 		for(JsonNode ac: storedWH.get("hooks")) {
-			if(ac.get("cid").intValue() == storedCid && ac.get("event").textValue().startsWith(eventType + ".")) {
+			if(ac.get("cid").intValue() == storedCid && ac.get("event").asString().startsWith(eventType + ".")) {
 				ObjectNode thisAction = (ObjectNode)ac.deepCopy();
 				thisAction.remove("id");
 				thisAction.put("cid", newCid);
 				TimeUnit.MILLISECONDS.sleep(delay);
 				String ret =  parent.postCommand("Webhook.Create", thisAction);
 				if(ret != null) {
-					ret = "Action \"" + ac.path("name").asText("") + "\" - error: " + ret;
+					ret = "Action \"" + ac.path("name").asString("") + "\" - error: " + ret;
 				}
 				errors.add(ret);
 			}
@@ -122,10 +121,10 @@ public class Webhooks {
 		private Webhook(JsonNode wh) {
 //			id = wh.get("id").asInt();
 			enable = wh.get("enable").asBoolean();
-			event = wh.get("event").asText();
-			name = wh.get("name").asText();
-			condition = wh.path("condition").textValue();
-			wh.get("urls").forEach(url -> urls.add(url.asText()));
+			event = wh.get("event").asString();
+			name = wh.get("name").asString();
+			condition = wh.path("condition").asString();
+			wh.get("urls").forEach(url -> urls.add(url.asString()));
 		}
 		
 		public boolean isEnabled() {

@@ -5,7 +5,7 @@ import java.net.InetAddress;
 import java.util.List;
 import java.util.Map;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 
 /**
  * Shelly BLU gateway model
@@ -21,8 +21,8 @@ public class ShellyGateway extends AbstractG2Device {
 	
 	@Override
 	protected void init(JsonNode devInfo) throws IOException {
-		this.hostname = devInfo.get("id").asText("");
-		this.mac = devInfo.get("mac").asText();
+		this.hostname = devInfo.get("id").asString("");
+		this.mac = devInfo.get("mac").asString();
 
 		fillSettings(getJSON("/rpc/Shelly.GetConfig"));
 		fillStatus(getJSON("/rpc/Shelly.GetStatus"));

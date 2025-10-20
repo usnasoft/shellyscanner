@@ -11,13 +11,12 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.RestoreMsg;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.meters.Meters;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ObjectNode;
 
 /**
  * Sensor add-on model
@@ -57,7 +56,7 @@ public class SensorAddOn extends Meters {
 			ArrayList<Meters.Type> types = new ArrayList<>();
 
 			if(peripherals.get("dht22") instanceof ObjectNode dht22Node && dht22Node.size() > 0) {
-				Iterator<String> dht22 = dht22Node.fieldNames();
+				Iterator<String> dht22 = dht22Node.propertyNames().iterator();
 				while(dht22.hasNext()) {
 					String par = dht22.next();
 					if(par.startsWith("temperature")) {
@@ -70,7 +69,7 @@ public class SensorAddOn extends Meters {
 				types.add(Type.H);
 			}
 			if(peripherals.get("ds18b20") instanceof ObjectNode ds18b20Node && ds18b20Node.size() > 0) {
-				Iterator<String> temp = ds18b20Node.fieldNames();
+				Iterator<String> temp = ds18b20Node.propertyNames().iterator();
 				for(int i = 0; temp.hasNext(); i++) {
 					if(i == 0) {
 						extT0ID = temp.next();
@@ -91,21 +90,21 @@ public class SensorAddOn extends Meters {
 				}
 			}
 			if(peripherals.get("digital_in") instanceof ObjectNode digIn) {
-				Iterator<String> digInIterator = digIn.fieldNames();
+				Iterator<String> digInIterator = digIn.propertyNames().iterator();
 				if(digInIterator.hasNext()) {
 					switchID = digInIterator.next();
 					types.add(Type.EX);
 				}
 			}
 			if(peripherals.get("analog_in") instanceof ObjectNode analogIn) {
-				Iterator<String> analogInIterator = analogIn.fieldNames();
+				Iterator<String> analogInIterator = analogIn.propertyNames().iterator();
 				if(analogInIterator.hasNext()) {
 					analogID = analogInIterator.next();
 					types.add(Type.PERC);
 				}
 			}
 			if(peripherals.get("voltmeter") instanceof ObjectNode voltIn) {
-				Iterator<String> voltInIterator = voltIn.fieldNames();
+				Iterator<String> voltInIterator = voltIn.propertyNames().iterator();
 				if(voltInIterator.hasNext()) {
 					voltmeterID = voltInIterator.next();
 					types.add(Type.V);
@@ -127,31 +126,31 @@ public class SensorAddOn extends Meters {
 		try {
 			JsonNode cnf;
 			if(switchID != null && (cnf = configuration.get(switchID)) != null) {
-				switchName = cnf.path("name").textValue();
+				switchName = cnf.path("name").asString();
 			}
 			if(analogID != null && (cnf = configuration.get(analogID)) != null) {
-				analogName = cnf.path("name").textValue();
+				analogName = cnf.path("name").asString();
 			}
 			if(voltmeterID != null && (cnf = configuration.get(voltmeterID)) != null) {
-				voltmeterName = cnf.path("name").textValue();
+				voltmeterName = cnf.path("name").asString();
 			}
 			if(extT0ID != null && (cnf = configuration.get(extT0ID)) != null) {
-				extT0Name = cnf.path("name").textValue();
+				extT0Name = cnf.path("name").asString();
 			}
 			if(extT1ID != null && (cnf = configuration.get(extT1ID)) != null) {
-				extT1Name = cnf.path("name").textValue();
+				extT1Name = cnf.path("name").asString();
 			}
 			if(extT2ID != null && (cnf = configuration.get(extT2ID)) != null) {
-				extT2Name = cnf.path("name").textValue();
+				extT2Name = cnf.path("name").asString();
 			}
 			if(extT3ID != null && (cnf = configuration.get(extT3ID)) != null) {
-				extT3Name = cnf.path("name").textValue();
+				extT3Name = cnf.path("name").asString();
 			}
 			if(extT4ID != null && (cnf = configuration.get(extT4ID)) != null) {
-				extT4Name = cnf.path("name").textValue();
+				extT4Name = cnf.path("name").asString();
 			}
 			if(humidityID != null && (cnf = configuration.get(humidityID)) != null) {
-				humidityName = cnf.path("name").textValue();
+				humidityName = cnf.path("name").asString();
 			}
 		} catch (RuntimeException e) {
 			LOG.warn("Settings Add-on configuration changed?", e);
@@ -331,7 +330,7 @@ public class SensorAddOn extends Meters {
 						if(index.equals(prevIndex) == false) { // dht22 have 2 entries but must be added once
 							prevIndex = index;
 							if(inputValue.has("addr")) {
-								errors.add(addSensor(d, sensor, index, inputValue.get("addr").asText()));
+								errors.add(addSensor(d, sensor, index, inputValue.get("addr").asString()));
 							} else {
 								errors.add(addSensor(d, sensor, index));
 							}

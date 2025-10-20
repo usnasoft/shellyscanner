@@ -4,10 +4,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Map.Entry;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.modules.InputResetManager;
+import tools.jackson.databind.JsonNode;
 
 public class InputResetManagerG2 implements InputResetManager {
 	private final AbstractG2Device parent;

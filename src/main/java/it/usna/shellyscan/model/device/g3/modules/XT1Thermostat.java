@@ -2,10 +2,9 @@ package it.usna.shellyscan.model.device.g3.modules;
 
 import java.io.IOException;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
 import it.usna.shellyscan.model.device.g3.AbstractG3Device;
 import it.usna.shellyscan.model.device.modules.ThermostatInterface;
+import tools.jackson.databind.JsonNode;
 
 public class XT1Thermostat implements ThermostatInterface {
 	private final AbstractG3Device parent;
@@ -33,7 +32,7 @@ public class XT1Thermostat implements ThermostatInterface {
 	
 	public void configTargetTemperature(JsonNode sensor) {
 		JsonNode config = sensor.path("config");
-		celsius = "°C".equals(config.path("meta").path("ui").path("unit").textValue());
+		celsius = "°C".equals(config.path("meta").path("ui").path("unit").asString());
 		if(celsius) {
 			targetTemp = sensor.path("status").path("value").floatValue();
 			minTarget = config.path("min").floatValue();

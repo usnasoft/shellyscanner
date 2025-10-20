@@ -5,13 +5,12 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
 import it.usna.shellyscan.model.device.RestoreMsg;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.ShellyUnmanagedDeviceInterface;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.modules.FirmwareManager;
+import tools.jackson.databind.JsonNode;
 
 public class ShellyBluUnmanaged extends AbstractBluDevice implements ShellyUnmanagedDeviceInterface {
 	private String type;
@@ -24,7 +23,7 @@ public class ShellyBluUnmanaged extends AbstractBluDevice implements ShellyUnman
 	}
 	
 	public ShellyBluUnmanaged(ShellyAbstractDevice parent, JsonNode info, String index, Throwable ex) {
-		this(parent, info, info.path("config").path("meta").path("ui").path("local_name").asText(""), index);
+		this(parent, info, info.path("config").path("meta").path("ui").path("local_name").asString(""), index);
 		this.ex = ex;
 		status = Status.ERROR;
 	}

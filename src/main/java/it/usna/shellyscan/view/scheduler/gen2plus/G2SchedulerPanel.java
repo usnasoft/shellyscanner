@@ -23,10 +23,6 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-
 import it.usna.shellyscan.Main;
 import it.usna.shellyscan.controller.RestoreAction;
 import it.usna.shellyscan.controller.UsnaAction;
@@ -37,6 +33,9 @@ import it.usna.shellyscan.model.device.g2.modules.ScheduleManager;
 import it.usna.shellyscan.view.util.Msg;
 import it.usna.shellyscan.view.util.ScannerProperties;
 import it.usna.swing.VerticalFlowLayout;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.node.ObjectNode;
 
 /**
  * The complete panel showing and managing gen2+ jobs
@@ -284,7 +283,7 @@ public class G2SchedulerPanel extends JScrollPane {
 				final ObjectMapper jsonMapper = new ObjectMapper();
 
 				JsonNode pastedNode = jsonMapper.readTree(sch);
-				job.setCron(pastedNode.get("timespec").asText());
+				job.setCron(pastedNode.get("timespec").asString());
 				if(pastedNode.hasNonNull("calls")) {
 					job.setCalls(pastedNode.get("calls"));
 				}

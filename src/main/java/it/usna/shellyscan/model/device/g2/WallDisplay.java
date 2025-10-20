@@ -9,10 +9,6 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.zip.ZipOutputStream;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.ModulesHolder;
 import it.usna.shellyscan.model.device.RestoreMsg;
@@ -22,6 +18,9 @@ import it.usna.shellyscan.model.device.g2.modules.ScheduleManagerThermWD;
 import it.usna.shellyscan.model.device.g2.modules.ThermostatG2;
 import it.usna.shellyscan.model.device.meters.Meters;
 import it.usna.shellyscan.model.device.modules.DeviceModule;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.JsonNodeFactory;
+import tools.jackson.databind.node.ObjectNode;
 
 /**
  * Shelly Wall Display
@@ -126,7 +125,7 @@ public class WallDisplay extends AbstractG2Device implements ModulesHolder {
 			try {
 				JsonNode profiles = getJSON("/rpc/Thermostat.Schedule.ListProfiles?id=0").get("profiles");
 				for(JsonNode p: profiles) {
-					l.add("(Thermostat.Schedule.ListRules [" + p.path("name").asText() + "])/rpc/Thermostat.Schedule.ListRules?id=0&profile_id=" + p.get("id").asText());
+					l.add("(Thermostat.Schedule.ListRules [" + p.path("name").asString() + "])/rpc/Thermostat.Schedule.ListRules?id=0&profile_id=" + p.get("id").asString());
 				}
 			} catch (IOException e) {}
 			return l.toArray(String[]::new);
@@ -156,7 +155,7 @@ public class WallDisplay extends AbstractG2Device implements ModulesHolder {
 			JsonNode profiles = sectionToStream("/rpc/Thermostat.Schedule.ListProfiles?id=0", "Thermostat.Schedule.ListProfiles.json", out);
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			for(JsonNode p: profiles.get("profiles")) {
-				final String id = p.get("id").asText();
+				final String id = p.get("id").asString();
 				sectionToStream("/rpc/Thermostat.Schedule.ListRules?id=0&profile_id=" + id, "Thermostat.Schedule.ListRules_profile_id-" + id + ".json", out);
 				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			}

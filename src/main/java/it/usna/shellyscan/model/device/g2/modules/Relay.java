@@ -2,11 +2,10 @@ package it.usna.shellyscan.model.device.g2.modules;
 
 import java.io.IOException;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.modules.RelayInterface;
+import tools.jackson.databind.JsonNode;
 
 /**
  * Used by +1, +1PM, +2PM
@@ -26,25 +25,25 @@ public class Relay implements RelayInterface {
 	}
 	
 	public void fillSettings(JsonNode configuration) {
-		name = configuration.get("name").asText("");
+		name = configuration.get("name").asString("");
 	}
 	
 	public void fillSettings(JsonNode configuration, JsonNode input) {
-		name = configuration.get("name").textValue();
+		name = configuration.get("name").asString();
 		if(name == null || name.isEmpty()) {
-			name = input.get("name").asText("");
+			name = input.get("name").asString("");
 		}
 //		reverse = inputs.get("invert").asBoolean();
 	}
 	
 	public void fillStatus(JsonNode relay) { // Ralay
 		isOn = relay.get("output").booleanValue();
-		source = relay.get("source").asText("-");
+		source = relay.get("source").asString("-");
 	}
 	
 	public void fillStatus(JsonNode relay, JsonNode input) { // Ralay + Input
 		isOn = relay.get("output").booleanValue();
-		source = relay.get("source").asText("-");
+		source = relay.get("source").asString("-");
 		inputIsOn = input.get("state").booleanValue();
 	}
 	
@@ -57,7 +56,7 @@ public class Relay implements RelayInterface {
 	public boolean toggle() throws IOException {
 //		final JsonNode relay = parent.getJSON("/relay/" + index + "?turn=toggle");
 //		isOn = relay.get("ison").asBoolean();
-//		source = relay.get("source").asText("-");
+//		source = relay.get("source").asString("-");
 		final JsonNode relay = parent.getJSON("/rpc/Switch.Toggle?id=" + index);
 		isOn = relay.get("was_on").asBoolean() == false;
 		source = Devices.SCANNER_AGENT;
@@ -68,7 +67,7 @@ public class Relay implements RelayInterface {
 	public void change(boolean on) throws IOException {
 //		final JsonNode relay = parent.getJSON("/relay/" + index + "?turn=" + (on ? "on" : "off"));
 //		isOn = relay.get("ison").asBoolean();
-//		source = relay.get("source").asText("-");
+//		source = relay.get("source").asString("-");
 		parent.getJSON("/rpc/Switch.Set?id=" + index + "&on=" + on);
 		isOn = on;
 		source = Devices.SCANNER_AGENT;

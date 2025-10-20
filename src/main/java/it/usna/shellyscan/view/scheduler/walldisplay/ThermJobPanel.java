@@ -28,13 +28,12 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-
 import it.usna.shellyscan.controller.UsnaAction;
 import it.usna.shellyscan.view.scheduler.CronUtils;
 import it.usna.shellyscan.view.util.Msg;
 import it.usna.swing.NumericTextField;
+import tools.jackson.databind.node.JsonNodeFactory;
+import tools.jackson.databind.node.ObjectNode;
 
 class ThermJobPanel extends JPanel {
 	private static final long serialVersionUID = 1L;

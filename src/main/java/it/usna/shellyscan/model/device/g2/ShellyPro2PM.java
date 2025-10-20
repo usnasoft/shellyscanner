@@ -6,8 +6,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.InternalTmpHolder;
 import it.usna.shellyscan.model.device.ModulesHolder;
@@ -17,6 +15,7 @@ import it.usna.shellyscan.model.device.g2.modules.Relay;
 import it.usna.shellyscan.model.device.g2.modules.Roller;
 import it.usna.shellyscan.model.device.meters.Meters;
 import it.usna.shellyscan.model.device.modules.DeviceModule;
+import tools.jackson.databind.JsonNode;
 
 public class ShellyPro2PM extends AbstractProDevice implements ModulesHolder, InternalTmpHolder {
 	public static final String ID = "Pro2PM";
@@ -111,7 +110,7 @@ public class ShellyPro2PM extends AbstractProDevice implements ModulesHolder, In
 	@Override
 	protected void fillSettings(JsonNode configuration) throws IOException {
 		super.fillSettings(configuration);
-		modeRelay = configuration.get("sys").get("device").get("profile").asText().equals(MODE_RELAY);
+		modeRelay = configuration.get("sys").get("device").get("profile").asString().equals(MODE_RELAY);
 		if(modeRelay) {
 			if(relay0 == null /*|| relay1 == null*/) {
 				relay0 = new Relay(this, 0);
@@ -172,7 +171,7 @@ public class ShellyPro2PM extends AbstractProDevice implements ModulesHolder, In
 	@Override
 	public void restoreCheck(Map<String, JsonNode> backupJsons, Map<RestoreMsg, Object> res) {
 		JsonNode devInfo = backupJsons.get("Shelly.GetDeviceInfo.json");
-		boolean backModeRelay = MODE_RELAY.equals(devInfo.get("profile").asText());
+		boolean backModeRelay = MODE_RELAY.equals(devInfo.get("profile").asString());
 		if(backModeRelay != modeRelay) {
 			res.put(RestoreMsg.ERR_RESTORE_MODE_COVER, null);
 		}
@@ -181,7 +180,7 @@ public class ShellyPro2PM extends AbstractProDevice implements ModulesHolder, In
 	@Override
 	protected void restore(Map<String, JsonNode> backupJsons, List<String> errors) throws InterruptedException {
 		JsonNode configuration = backupJsons.get("Shelly.GetConfig.json");
-		final boolean backModeRelay = MODE_RELAY.equals(configuration.at("/sys/device/profile").asText());
+		final boolean backModeRelay = MODE_RELAY.equals(configuration.at("/sys/device/profile").asString());
 		if(backModeRelay == modeRelay) {
 			errors.add(Input.restore(this, configuration, 0));
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);

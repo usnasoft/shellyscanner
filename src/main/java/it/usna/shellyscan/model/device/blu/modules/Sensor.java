@@ -1,8 +1,7 @@
 package it.usna.shellyscan.model.device.blu.modules;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
 import it.usna.shellyscan.model.device.meters.Meters;
+import tools.jackson.databind.JsonNode;
 
 /**
  * Sensor factory / Generic BTHSensor / Measure BTHSensor
@@ -65,7 +64,7 @@ public class Sensor {
 	}
 	
 //	public void fillSConfig(JsonNode config) {
-//		name = config.path("name").asText("");
+//		name = config.path("name").asString("");
 //	}
 //	
 //	public void fillStatus(JsonNode status) {
@@ -73,7 +72,7 @@ public class Sensor {
 //	}
 	
 	public void fill(JsonNode comp) {
-		name = comp.path("config").path("name").asText("");
+		name = comp.path("config").path("name").asString("");
 		JsonNode valNode = comp.path("status").path("value");
 		if(valNode.isBoolean()) {
 			value = valNode.asBoolean() ? 1f : 0f;

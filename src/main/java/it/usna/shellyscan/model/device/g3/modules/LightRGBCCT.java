@@ -2,12 +2,11 @@ package it.usna.shellyscan.model.device.g3.modules;
 
 import java.io.IOException;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
 import it.usna.shellyscan.model.DeviceAPIException;
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.modules.RGBCCTInterface;
+import tools.jackson.databind.JsonNode;
 
 public class LightRGBCCT implements RGBCCTInterface {
 	private static final int INDEX = 0;
@@ -49,8 +48,8 @@ public class LightRGBCCT implements RGBCCTInterface {
 	}
 	
 	public void fillSettings(JsonNode config) {
-		name = config.get("name").asText("");
-		colorMode = "rgb".equals(config.get("mode").textValue()); // Range of values: rgb, cct
+		name = config.get("name").asString("");
+		colorMode = "rgb".equals(config.get("mode").asString()); // Range of values: rgb, cct
 	}
 	
 	public void fillStatus(JsonNode statusRGBCCT) {
@@ -63,7 +62,7 @@ public class LightRGBCCT implements RGBCCTInterface {
 		
 		temperature = statusRGBCCT.get("ct").intValue();
 		
-		source = statusRGBCCT.get("source").asText("-");
+		source = statusRGBCCT.get("source").asString("-");
 	}
 
 	@Override

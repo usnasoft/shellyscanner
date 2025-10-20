@@ -4,10 +4,9 @@ import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ObjectNode;
 
 public class ScheduleManager {
 	private final AbstractG2Device device;
@@ -49,7 +48,7 @@ public class ScheduleManager {
 	public static void restore(AbstractG2Device parent, JsonNode schedule, final long delay, List<String> errors) throws InterruptedException {
 		errors.add(parent.postCommand("Schedule.DeleteAll", "{}"));
 		for(JsonNode sc: schedule.get("jobs")) {
-			ObjectNode thisSc = sc.deepCopy();
+			ObjectNode thisSc = (ObjectNode)sc.deepCopy();
 			thisSc.remove("id");
 			TimeUnit.MILLISECONDS.sleep(delay);
 			errors.add(parent.postCommand("Schedule.Create", thisSc));

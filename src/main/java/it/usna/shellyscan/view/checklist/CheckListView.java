@@ -51,8 +51,6 @@ import javax.swing.table.TableRowSorter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
 import it.usna.shellyscan.Main;
 import it.usna.shellyscan.controller.UsnaAction;
 import it.usna.shellyscan.controller.UsnaDropdownAction;
@@ -81,6 +79,7 @@ import it.usna.swing.UsnaPopupMenu;
 import it.usna.swing.table.UsnaTableModel;
 import it.usna.swing.texteditor.TextDocumentListener;
 import it.usna.util.UsnaEventListener;
+import tools.jackson.databind.JsonNode;
 
 public class CheckListView extends JDialog implements UsnaEventListener<Devices.EventType, Integer>, ScannerProperties.AppPropertyListener {
 	private static final long serialVersionUID = 1L;
@@ -548,19 +547,19 @@ public class CheckListView extends JDialog implements UsnaEventListener<Devices.
 		if (settings.path("ap_roaming").isMissingNode()) {
 			roaming = "-";
 		} else if (settings.at("/ap_roaming/enabled").asBoolean()) {
-			roaming = settings.at("/ap_roaming/threshold").asText();
+			roaming = settings.at("/ap_roaming/threshold").asString();
 		} else {
 			roaming = FALSE_STR;
 		}
 		String wifi1;
 		if (settings.at("/wifi_sta/enabled").asBoolean()) {
-			wifi1 = "static".equals(settings.at("/wifi_sta/ipv4_method").asText()) ? TRUE_STR : FALSE_STR;
+			wifi1 = "static".equals(settings.at("/wifi_sta/ipv4_method").asString()) ? TRUE_STR : FALSE_STR;
 		} else {
 			wifi1 = "-";
 		}
 		String wifi2;
 		if (settings.at("/wifi_sta1/enabled").asBoolean()) {
-			wifi2 = "static".equals(settings.at("/wifi_sta1/ipv4_method").asText()) ? TRUE_STR : FALSE_STR;
+			wifi2 = "static".equals(settings.at("/wifi_sta1/ipv4_method").asString()) ? TRUE_STR : FALSE_STR;
 		} else {
 			wifi2 = "-";
 		}
@@ -602,7 +601,7 @@ public class CheckListView extends JDialog implements UsnaEventListener<Devices.
 		} else if(bleEnableNode.asBoolean()) {
 			try {
 				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-//				ble = d.getJSON("/rpc/BLE.CloudRelay.ListInfos").get("total").asText(); // fw >= 1.5.0
+//				ble = d.getJSON("/rpc/BLE.CloudRelay.ListInfos").get("total").asString(); // fw >= 1.5.0
 				ble = d.getJSON("/rpc/BLE.CloudRelay.List").get("addrs").size();
 			} catch (/*IO*/Exception e) {
 //				if (config.at("/ble/observer/enable").booleanValue()) { // fw < 1.5.0
@@ -618,19 +617,19 @@ public class CheckListView extends JDialog implements UsnaEventListener<Devices.
 		if (config.at("/wifi/roam").isMissingNode()) {
 			roaming = "-";
 		} else if (config.at("/wifi/roam/interval").asInt() > 0) {
-			roaming = config.at("/wifi/roam/rssi_thr").asText();
+			roaming = config.at("/wifi/roam/rssi_thr").asString();
 		} else {
 			roaming = FALSE_STR;
 		}
 		String wifi1;
 		if (config.at("/wifi/sta/enable").asBoolean()) {
-			wifi1 = "static".equals(config.at("/wifi/sta/ipv4mode").asText()) ? TRUE_STR : FALSE_STR;
+			wifi1 = "static".equals(config.at("/wifi/sta/ipv4mode").asString()) ? TRUE_STR : FALSE_STR;
 		} else {
 			wifi1 = "-";
 		}
 		String wifi2;
 		if (config.at("/wifi/sta1/enable").asBoolean()) {
-			wifi2 = "static".equals(config.at("/wifi/sta1/ipv4mode").asText()) ? TRUE_STR : FALSE_STR;
+			wifi2 = "static".equals(config.at("/wifi/sta1/ipv4mode").asString()) ? TRUE_STR : FALSE_STR;
 		} else {
 			wifi2 = "-";
 		}

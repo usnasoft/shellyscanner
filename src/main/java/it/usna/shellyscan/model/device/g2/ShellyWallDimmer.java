@@ -5,12 +5,11 @@ import java.net.InetAddress;
 import java.util.List;
 import java.util.Map;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-
 import it.usna.shellyscan.model.device.ModulesHolder;
 import it.usna.shellyscan.model.device.g2.modules.LightWhite;
 import it.usna.shellyscan.model.device.modules.DeviceModule;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.JsonNode;
 
 public class ShellyWallDimmer extends AbstractG2Device implements ModulesHolder {
 	public static final String ID = "PlusWallDimmer";
@@ -44,7 +43,7 @@ public class ShellyWallDimmer extends AbstractG2Device implements ModulesHolder 
 	}
 
 	@Override
-	protected void restore(Map<String, JsonNode> backupJsons, List<String> errors) throws JsonProcessingException {
+	protected void restore(Map<String, JsonNode> backupJsons, List<String> errors) throws JacksonException {
 		JsonNode configuration = backupJsons.get("Shelly.GetConfig.json");
 		errors.add(light.restore(configuration));
 		errors.add(postCommand("WD_UI.SetConfig", "{\"config\":" + jsonMapper.writeValueAsString(configuration.get("wd_ui")) + "}"));

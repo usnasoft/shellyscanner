@@ -6,10 +6,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.g2.WallDisplay;
+import tools.jackson.databind.JsonNode;
 
 /**
  * Thermostat ScheduleManager for Wall Display also managing profiles
@@ -31,7 +30,7 @@ public class ScheduleManagerThermWD {
 	public List<ThermProfile> getProfiles() throws IOException {
 		ArrayList<ThermProfile> ret = new ArrayList<>();
 		wd.getJSON("/rpc/Thermostat.Schedule.ListProfiles?id=" + THERM_ID).path("profiles").forEach(node ->
-			ret.add(new ThermProfile(node.get("id").intValue(), node.path("name").asText("")))
+			ret.add(new ThermProfile(node.get("id").intValue(), node.path("name").asString("")))
 		);
 		return ret;
 	}
@@ -40,7 +39,7 @@ public class ScheduleManagerThermWD {
 	 * The display knows the active profile if the scheduler is disabled; here we don't */
 	public ThermProfile getCurrentProfile() throws IOException {
 		JsonNode status = wd.getJSON("/rpc/Thermostat.GetStatus?id=" + THERM_ID).get("schedules"); //wd.getJSON("/rpc/Shelly.GetStatus").get("thermostat:0").get("schedules");
-		return (status != null && status.get("enable").booleanValue()) ? new ThermProfile(status.get("profile_id").intValue(), status.path("profile_name").asText("")) : null;
+		return (status != null && status.get("enable").booleanValue()) ? new ThermProfile(status.get("profile_id").intValue(), status.path("profile_name").asString("")) : null;
 	}
 
 	//todo verifica
@@ -67,7 +66,7 @@ public class ScheduleManagerThermWD {
 		ArrayList<Rule> rules = new ArrayList<>();
 		JsonNode r = wd.getJSON("Thermostat.Schedule.ListRules", "{\"id\":" + THERM_ID + ",\"profile_id\":" + profileId + "}").get("rules");
 		for(JsonNode rule: r) {
-			rules.add(new Rule(rule.get("rule_id").textValue(), rule.get("target_C").floatValue(), rule.get("timespec").textValue(), rule.path("enable").booleanValue()));
+			rules.add(new Rule(rule.get("rule_id").asString(), rule.get("target_C").floatValue(), rule.get("timespec").asString(), rule.path("enable").booleanValue()));
 		}
 		return rules;
 	}
@@ -86,13 +85,13 @@ public class ScheduleManagerThermWD {
 	public String create(Rule r, int profileId) throws IOException {
 		JsonNode res = wd.getJSON("Thermostat.Schedule.CreateRule",
 				"{\"id\":" + THERM_ID + ",\"config\":{\"profile_id\":" + profileId + ",\"target_C\":" + r.target + ",\"timespec\":\"" + r.timespec + "\",\"enable\":" + String.valueOf(r.enabled) + "}}");
-		return res.get("new_rule").get("rule_id").asText();
+		return res.get("new_rule").get("rule_id").asString();
 	}
 	
 	public String create(String timespec, float target, boolean enabled, int profileId) throws IOException {
 		JsonNode res = wd.getJSON("Thermostat.Schedule.CreateRule",
 				"{\"id\":" + THERM_ID + ",\"config\":{\"profile_id\":" + profileId + ",\"target_C\":" + target + ",\"timespec\":\"" + timespec + "\",\"enable\":" + String.valueOf(enabled) + "}}");
-		return res.get("new_rule").get("rule_id").asText();
+		return res.get("new_rule").get("rule_id").asString();
 	}
 
 	public String update(Rule r, int profileId) {
@@ -115,14 +114,14 @@ public class ScheduleManagerThermWD {
 			// restore profiles
 			JsonNode profilesNode = backup.get("Thermostat.Schedule.ListProfiles.json").path("profiles");
 			for(JsonNode storedProfile: profilesNode) {
-				int newProfileId = addProfiles(storedProfile.path("name").asText(""));
+				int newProfileId = addProfiles(storedProfile.path("name").asString(""));
 				int oldProfileId = storedProfile.get("id").intValue();
 				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 				
 				// create rules for each profile
 				JsonNode rules = backup.get("Thermostat.Schedule.ListRules_profile_id-" + oldProfileId + ".json").get("rules");
 				for(JsonNode rule: rules) {
-					create(rule.get("timespec").asText(), rule.get("target_C").floatValue(), rule.path("enable").booleanValue(), newProfileId);
+					create(rule.get("timespec").asString(), rule.get("target_C").floatValue(), rule.path("enable").booleanValue(), newProfileId);
 					TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 				}
 			}

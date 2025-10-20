@@ -25,9 +25,6 @@ import org.eclipse.jetty.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
 import it.usna.shellyscan.model.device.blu.AbstractBluDevice;
@@ -36,6 +33,9 @@ import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.g2.AbstractProDevice;
 import it.usna.shellyscan.model.device.g3.AbstractG3Device;
 import it.usna.shellyscan.model.device.g4.AbstractG4Device;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 
 /**
  * Devices model intended for CLI non iteractive use
@@ -139,7 +139,7 @@ public class NonInteractiveDevices implements Closeable {
 				LOG.trace("Not Shelly {}, status {}, node {}", address, resp, shellyNode);
 				return null;
 			}
-		} catch (InterruptedException | ExecutionException | IOException e) { // SocketTimeoutException extends IOException
+		} catch (InterruptedException | ExecutionException | JacksonException e) { // SocketTimeoutException extends IOException
 			LOG.trace("Not Shelly {} - {}", address, port, e);
 			return null;
 		}
@@ -194,7 +194,7 @@ public class NonInteractiveDevices implements Closeable {
 				// BTHome (BLU)
 				if(d instanceof AbstractProDevice || d instanceof AbstractG3Device || d instanceof AbstractG4Device) {
 					for(JsonNode compInfo: ((AbstractG2Device)d).getJSONIterator("/rpc/Shelly.GetComponents?dynamic_only=true", "components")) { // empty on 401
-						String key = compInfo.path("key").asText();
+						String key = compInfo.path("key").asString();
 						if(key.startsWith(AbstractBluDevice.DEVICE_KEY_PREFIX) || key.startsWith(BluTRV.DEVICE_KEY_PREFIX)) {
 							AbstractBluDevice newBlu = DevicesFactory.createBlu((AbstractG2Device)d, httpClient, compInfo, key);
 							consumer.accept(newBlu);

@@ -15,10 +15,9 @@ import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.Request;
 import org.eclipse.jetty.http.HttpStatus;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
 import it.usna.shellyscan.model.device.g1.AbstractG1Device;
 import it.usna.shellyscan.model.device.modules.LoginManager;
+import tools.jackson.databind.JsonNode;
 
 public class LoginManagerG1 implements LoginManager {
 	private AbstractG1Device d;
@@ -40,7 +39,7 @@ public class LoginManagerG1 implements LoginManager {
 	private void init() throws IOException {
 		JsonNode login = d.getJSON("/settings/login");
 		this.enabled = login.get("enabled").asBoolean();
-		this.user = login.get("username").asText();
+		this.user = login.get("username").asString();
 	}
 
 	@Override

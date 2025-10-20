@@ -1,8 +1,7 @@
 package it.usna.shellyscan.model.device.blu.modules;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
 import it.usna.shellyscan.model.device.modules.MotionInterface;
+import tools.jackson.databind.JsonNode;
 
 public class MotionSensor extends Sensor implements MotionInterface {
 	public static final int OBJ_ID = 0x21; // dec. 33
@@ -16,7 +15,7 @@ public class MotionSensor extends Sensor implements MotionInterface {
 	
 	@Override
 	public void fill(JsonNode comp) {
-		name = comp.path("config").path("name").asText("");
+		name = comp.path("config").path("name").asString("");
 		motion = comp.path("status").path("value").asBoolean(); // description: 0 (False = Clear) - 1 (True = Detected) but real boolean found
 	}
 	

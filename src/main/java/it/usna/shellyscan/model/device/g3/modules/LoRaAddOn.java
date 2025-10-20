@@ -5,12 +5,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.RestoreMsg;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.g3.AbstractG3Device;
+import tools.jackson.databind.JsonNode;
 
 public class LoRaAddOn {
 //	private static final Logger LOG = LoggerFactory.getLogger(LoRaAddOn.class);

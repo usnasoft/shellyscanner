@@ -2,10 +2,9 @@ package it.usna.shellyscan.model.device.g2.modules;
 
 import java.io.IOException;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.modules.RollerInterface;
+import tools.jackson.databind.JsonNode;
 
 /**
  * Cover - used by +2PM, pro 2PM
@@ -24,7 +23,7 @@ public class Roller implements RollerInterface {
 	}
 	
 	public void fillSettings(JsonNode configuration) {
-		name = configuration.get("name").asText("");
+		name = configuration.get("name").asString("");
 	}
 	
 	public void fillStatus(JsonNode rollerStatus) {
@@ -32,7 +31,7 @@ public class Roller implements RollerInterface {
 		if(calibrated) {
 			position = rollerStatus.get("current_pos").intValue();
 		}
-		source = rollerStatus.get("source").asText("-");
+		source = rollerStatus.get("source").asString("-");
 	}
 	
 	@Override
@@ -49,21 +48,21 @@ public class Roller implements RollerInterface {
 	public void setPosition(int pos) throws IOException {
 		final JsonNode roller = parent.getJSON("/roller/" + index + "?go=to_pos&roller_pos=" + pos);
 		position = roller.get("current_pos").asInt();
-		source = roller.get("source").asText("-");
+		source = roller.get("source").asString("-");
 	}
 	
 	@Override
 	public void open() throws IOException {
 		final JsonNode roller = parent.getJSON("/roller/" + index + "?go=open");
 		position = 100;
-		source = roller.get("source").asText("-");
+		source = roller.get("source").asString("-");
 	}
 	
 	@Override
 	public void close() throws IOException {
 		final JsonNode roller = parent.getJSON("/roller/" + index + "?go=close");
 		position = 0;
-		source = roller.get("source").asText("-");
+		source = roller.get("source").asString("-");
 	}
 	
 	@Override
@@ -72,7 +71,7 @@ public class Roller implements RollerInterface {
 		if(calibrated) {
 			position = roller.get("current_pos").asInt();
 		}
-		source = roller.get("source").asText("-");
+		source = roller.get("source").asString("-");
 	}
 	
 	@Override

@@ -41,8 +41,6 @@ import org.eclipse.jetty.websocket.api.StatusCode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
 import it.usna.shellyscan.controller.UsnaAction;
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice.LogMode;
@@ -53,6 +51,7 @@ import it.usna.shellyscan.view.util.Msg;
 import it.usna.shellyscan.view.util.UsnaTextPane;
 import it.usna.shellyscan.view.util.UtilMiscellaneous;
 import it.usna.swing.dialog.FindReplaceDialog;
+import tools.jackson.databind.JsonNode;
 
 public class DialogDeviceLogsG2 extends JDialog {
 	private static final long serialVersionUID = 1L;
@@ -252,7 +251,7 @@ public class DialogDeviceLogsG2 extends JDialog {
 			int logLevel = comboBox.getSelectedIndex();
 			int level = msg.get("level").asInt(0);
 			if (level <= logLevel) {
-				textArea.append(msg.get("ts").asLong() + " - L" + level + " - fd" + msg.path("fd").asText() + ": " + msg.get("data").asText().trim() + "\n");
+				textArea.append(msg.get("ts").asLong() + " - L" + level + " - fd" + msg.path("fd").asString() + ": " + msg.get("data").asString().trim() + "\n");
 			}
 			textArea.setCaretPosition(textArea.getStyledDocument().getLength());
 		}

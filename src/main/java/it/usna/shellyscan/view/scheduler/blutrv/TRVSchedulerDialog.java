@@ -30,10 +30,6 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-
 import it.usna.shellyscan.Main;
 import it.usna.shellyscan.controller.RestoreAction;
 import it.usna.shellyscan.controller.UsnaAction;
@@ -47,6 +43,9 @@ import it.usna.shellyscan.view.util.ScannerProperties;
 import it.usna.shellyscan.view.util.UtilMiscellaneous;
 import it.usna.swing.UsnaSwingUtils;
 import it.usna.swing.VerticalFlowLayout;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.node.ObjectNode;
 
 public class TRVSchedulerDialog extends JDialog {
 	private static final long serialVersionUID = 1L;
@@ -142,7 +141,7 @@ public class TRVSchedulerDialog extends JDialog {
 				if(files.containsKey("Thermostat.Schedule.ListProfiles.json")) { // WD backup
 					JsonNode profilesNode = files.get("Thermostat.Schedule.ListProfiles.json").path("profiles");
 					ArrayList<ThermProfile> profiles = new ArrayList<>();
-					profilesNode.forEach(node -> profiles.add(new ThermProfile(node.get("id").intValue(), node.get("name").textValue())) );
+					profilesNode.forEach(node -> profiles.add(new ThermProfile(node.get("id").intValue(), node.get("name").asString())) );
 					if(profiles.size() > 0) {
 						ThermProfile loadProfile = (ThermProfile)JOptionPane.showInputDialog(this, LABELS.getString("dlgProfileSelectionMsg"), LABELS.getString("dlgProfileSelectionTitle"), JOptionPane.PLAIN_MESSAGE, null, profiles.toArray(), null);
 						if(loadProfile != null) {
@@ -317,7 +316,7 @@ public class TRVSchedulerDialog extends JDialog {
 				final ObjectMapper jsonMapper = new ObjectMapper();
 
 				JsonNode pastedNode = jsonMapper.readTree(sch);
-				job.setCron(pastedNode.get("timespec").asText());
+				job.setCron(pastedNode.get("timespec").asString());
 				job.setTarget(pastedNode);
 				job.revalidate();
 				try { TimeUnit.MILLISECONDS.sleep(200); } catch (InterruptedException e1) {} // a small time to show busy pointer

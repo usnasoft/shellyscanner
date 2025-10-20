@@ -6,16 +6,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.ModulesHolder;
 import it.usna.shellyscan.model.device.g2.meters.MetersWVIpf;
 import it.usna.shellyscan.model.device.g2.modules.Relay;
 import it.usna.shellyscan.model.device.meters.Meters;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.JsonNodeFactory;
+import tools.jackson.databind.node.ObjectNode;
 
 /**
  * Shelly Power Strip G4 model
@@ -98,7 +97,7 @@ public class ShellyPowerStrip4G extends AbstractG4Device implements ModulesHolde
 	}
 
 	@Override
-	protected void restore(Map<String, JsonNode> backupJsons, List<String> errors) throws InterruptedException, JsonProcessingException {
+	protected void restore(Map<String, JsonNode> backupJsons, List<String> errors) throws InterruptedException, JacksonException {
 		JsonNode configuration = backupJsons.get("Shelly.GetConfig.json");
 		errors.add(relay0.restore(configuration));
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);

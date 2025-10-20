@@ -2,12 +2,11 @@ package it.usna.shellyscan.model.device.blu.modules;
 
 import java.io.IOException;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
 import it.usna.shellyscan.model.device.g2.modules.DynamicComponents;
 import it.usna.shellyscan.model.device.g2.modules.Input;
 import it.usna.shellyscan.model.device.g2.modules.InputActionInterface;
 import it.usna.shellyscan.model.device.g2.modules.Webhooks;
+import tools.jackson.databind.JsonNode;
 
 public class InputSensor extends Sensor implements InputActionInterface {
 	public static final int OBJ_ID = 0x3A; // dec. 58
@@ -22,7 +21,7 @@ public class InputSensor extends Sensor implements InputActionInterface {
 	
 	@Override
 	public void fill(JsonNode comp) {
-		name = comp.path("config").path("name").asText("");
+		name = comp.path("config").path("name").asString("");
 //		value = comp.path("status").path("value")...Value();
 	}
 	

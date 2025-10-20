@@ -12,14 +12,13 @@ import javax.swing.JDialog;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-
 import it.usna.shellyscan.view.scheduler.AbstractCronPanel;
 import it.usna.shellyscan.view.util.Msg;
 import it.usna.shellyscan.view.util.UtilMiscellaneous;
 import it.usna.swing.NumericTextField;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.JsonNodeFactory;
+import tools.jackson.databind.node.ObjectNode;
 
 /**
  * Cron panel + target temp / valve position
@@ -42,7 +41,7 @@ public class TRVJobPanel extends AbstractCronPanel {
 			setCron(DEF_CRON);
 			setTarget(null);
 		} else {
-			setCron(scheduleNode.path("timespec").asText());
+			setCron(scheduleNode.path("timespec").asString());
 			setTarget(scheduleNode);
 		}
 	}

@@ -35,11 +35,6 @@ import javax.swing.text.StyledDocument;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
-
 import it.usna.shellyscan.Main;
 import it.usna.shellyscan.controller.UsnaAction;
 import it.usna.shellyscan.model.Devices;
@@ -53,6 +48,10 @@ import it.usna.shellyscan.view.util.UtilMiscellaneous;
 import it.usna.swing.UsnaSwingUtils;
 import it.usna.swing.dialog.FindReplaceDialog;
 import it.usna.util.UsnaEventListener;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectWriter;
 
 public class DialogDeviceInfo extends JDialog implements UsnaEventListener<Devices.EventType, Integer> {
 	private static final long serialVersionUID = 1L;
@@ -181,7 +180,7 @@ public class DialogDeviceInfo extends JDialog implements UsnaEventListener<Devic
 				String json = writer.writeValueAsString(storedVal);
 				textPane.setText(json, temporaryStyle);
 				textPane.setCaretPosition(0);
-			} catch (JsonProcessingException e) {}
+			} catch (JacksonException e) {}
 		} else {
 			textPane.setText(Main.LABELS.getString("lblLoading"), temporaryStyle);
 		}

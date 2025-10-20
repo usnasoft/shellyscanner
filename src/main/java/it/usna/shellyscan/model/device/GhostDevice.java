@@ -10,8 +10,6 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
 import it.usna.shellyscan.model.DeviceOfflineException;
 import it.usna.shellyscan.model.device.blu.AbstractBluDevice;
 import it.usna.shellyscan.model.device.blu.BTHomeDevice;
@@ -24,6 +22,7 @@ import it.usna.shellyscan.model.device.modules.MQTTManager;
 import it.usna.shellyscan.model.device.modules.TimeAndLocationManager;
 import it.usna.shellyscan.model.device.modules.WIFIManager;
 import it.usna.shellyscan.model.device.modules.WIFIManager.Network;
+import tools.jackson.databind.JsonNode;
 
 public class GhostDevice extends ShellyAbstractDevice {
 	private static final Logger LOG = LoggerFactory.getLogger(GhostDevice.class);
@@ -183,8 +182,8 @@ public class GhostDevice extends ShellyAbstractDevice {
 		EnumMap<RestoreMsg, Object> res = new EnumMap<>(RestoreMsg.class);
 		try {
 			JsonNode settings = backupJsons.get("settings.json");
-			final String fileHostname = settings.get("device").get("hostname").asText("");
-			final String fileType = settings.get("device").get("type").asText();
+			final String fileHostname = settings.get("device").get("hostname").asString("");
+			final String fileType = settings.get("device").get("type").asString();
 			if(/*fileType.length() > 0 &&*/ getTypeID().equals(fileType) == false) {
 				res.put(RestoreMsg.ERR_RESTORE_MODEL, null);
 			} else {
@@ -193,11 +192,11 @@ public class GhostDevice extends ShellyAbstractDevice {
 					res.put(RestoreMsg.PRE_QUESTION_RESTORE_HOST, fileHostname);
 				}
 				if(settings.at("/login/enabled").asBoolean()) {
-					res.put(RestoreMsg.RESTORE_LOGIN, settings.at("/login/username").asText());
+					res.put(RestoreMsg.RESTORE_LOGIN, settings.at("/login/username").asString());
 				}
 				// Can't restore network values
-				if(settings.at("/mqtt/enable").asBoolean() && settings.at("/mqtt/user").asText("").length() > 0) {
-					res.put(RestoreMsg.RESTORE_MQTT, settings.at("/mqtt/user").asText());
+				if(settings.at("/mqtt/enable").asBoolean() && settings.at("/mqtt/user").asString("").length() > 0) {
+					res.put(RestoreMsg.RESTORE_MQTT, settings.at("/mqtt/user").asString());
 				}
 			}
 		} catch(RuntimeException e) {
@@ -212,8 +211,8 @@ public class GhostDevice extends ShellyAbstractDevice {
 		try {
 			JsonNode devInfo = backupJsons.get("Shelly.GetDeviceInfo.json");
 			JsonNode config = backupJsons.get("Shelly.GetConfig.json");
-			final String fileHostname = devInfo.get("id").asText("");
-			final String fileType = devInfo.get("app").asText();
+			final String fileHostname = devInfo.get("id").asString("");
+			final String fileType = devInfo.get("app").asString();
 			if(getTypeID().equals(fileType) == false) {
 				res.put(RestoreMsg.ERR_RESTORE_MODEL, null);
 			} else {
@@ -225,8 +224,8 @@ public class GhostDevice extends ShellyAbstractDevice {
 					res.put(RestoreMsg.RESTORE_LOGIN, LoginManagerG2.LOGIN_USER);
 				}
 				// Can't restore network values
-				if(config.at("/mqtt/enable").asBoolean() && config.at("/mqtt/user").asText("").length() > 0) {
-					res.put(RestoreMsg.RESTORE_MQTT, config.at("/mqtt/user").asText());
+				if(config.at("/mqtt/enable").asBoolean() && config.at("/mqtt/user").asString("").length() > 0) {
+					res.put(RestoreMsg.RESTORE_MQTT, config.at("/mqtt/user").asString());
 				}
 				// device specific
 //				restoreCheck(backupJsons, res); // TODO check compatibility with this call for any new device
@@ -242,15 +241,15 @@ public class GhostDevice extends ShellyAbstractDevice {
 		EnumMap<RestoreMsg, Object> res = new EnumMap<>(RestoreMsg.class);
 		JsonNode usnaInfo = backupJsons.get("ShellyScannerBLU.json");
 		String fileLocalName;
-		if(/*usnaInfo == null ||*/ (fileLocalName = usnaInfo.path("type").asText("")).equals(getTypeID()) == false) {
+		if(/*usnaInfo == null ||*/ (fileLocalName = usnaInfo.path("type").asString("")).equals(getTypeID()) == false) {
 			res.put(RestoreMsg.ERR_RESTORE_MODEL, null);
 			return res;
 		}
-		final String fileComponentIndex = usnaInfo.get("index").asText();
+		final String fileComponentIndex = usnaInfo.get("index").asString();
 		JsonNode fileComponents = backupJsons.get("Shelly.GetComponents.json").path("components");
 		for(JsonNode fileComp: fileComponents) {
-			if(fileComp.path("key").textValue().equals(AbstractBluDevice.DEVICE_KEY_PREFIX + fileComponentIndex)) { // find the component by fileComponentIndex
-				String fileMac = fileComp.path("config").path("addr").textValue();
+			if(fileComp.path("key").asString().equals(AbstractBluDevice.DEVICE_KEY_PREFIX + fileComponentIndex)) { // find the component by fileComponentIndex
+				String fileMac = fileComp.path("config").path("addr").asString();
 				if(fileMac.equals(mac) == false) {
 					res.put(RestoreMsg.PRE_QUESTION_RESTORE_HOST, fileLocalName + "-" + fileMac);
 				}
@@ -267,10 +266,10 @@ public class GhostDevice extends ShellyAbstractDevice {
 		try {
 			JsonNode remoteDevInfo = backupJsons.get("Shelly.GetRemoteDeviceInfo.json");
 			JsonNode devInfo = remoteDevInfo.get("device_info");
-			if(devInfo == null || getTypeID().equals(devInfo.get("app").asText()) == false) {
+			if(devInfo == null || getTypeID().equals(devInfo.get("app").asString()) == false) {
 				res.put(RestoreMsg.ERR_RESTORE_MODEL, null);
 			} else {
-				final String fileHostname = devInfo.get("id").asText("");
+				final String fileHostname = devInfo.get("id").asString("");
 				boolean sameHost = fileHostname.equals(this.hostname);
 				if(sameHost == false) {
 					res.put(RestoreMsg.PRE_QUESTION_RESTORE_HOST, fileHostname);
