@@ -547,19 +547,19 @@ public class CheckListView extends JDialog implements UsnaEventListener<Devices.
 		if (settings.path("ap_roaming").isMissingNode()) {
 			roaming = "-";
 		} else if (settings.at("/ap_roaming/enabled").asBoolean()) {
-			roaming = settings.at("/ap_roaming/threshold").asString();
+			roaming = settings.at("/ap_roaming/threshold").asString("");
 		} else {
 			roaming = FALSE_STR;
 		}
 		String wifi1;
 		if (settings.at("/wifi_sta/enabled").asBoolean()) {
-			wifi1 = "static".equals(settings.at("/wifi_sta/ipv4_method").asString()) ? TRUE_STR : FALSE_STR;
+			wifi1 = "static".equals(settings.at("/wifi_sta/ipv4_method").asString("")) ? TRUE_STR : FALSE_STR;
 		} else {
 			wifi1 = "-";
 		}
 		String wifi2;
 		if (settings.at("/wifi_sta1/enabled").asBoolean()) {
-			wifi2 = "static".equals(settings.at("/wifi_sta1/ipv4_method").asString()) ? TRUE_STR : FALSE_STR;
+			wifi2 = "static".equals(settings.at("/wifi_sta1/ipv4_method").asString("")) ? TRUE_STR : FALSE_STR;
 		} else {
 			wifi2 = "-";
 		}
@@ -584,10 +584,10 @@ public class CheckListView extends JDialog implements UsnaEventListener<Devices.
 			ap = TRUE_STR; // AP active but protected with pwd
 		}
 		ArrayList<LogMode> logModes = new ArrayList<>();
-		if(config.at("/sys/debug/websocket/enable").booleanValue()) {
+		if(config.at("/sys/debug/websocket/enable").booleanValue(false)) {
 			logModes.add(LogMode.SOCKET);
 		}
-		if(config.at("/sys/debug/mqtt/enable").booleanValue()) {
+		if(config.at("/sys/debug/mqtt/enable").booleanValue(false)) {
 			logModes.add(LogMode.MQTT);
 		}
 		if(config.at("/sys/debug/udp").hasNonNull("addr")) {
@@ -601,10 +601,10 @@ public class CheckListView extends JDialog implements UsnaEventListener<Devices.
 		} else if(bleEnableNode.asBoolean()) {
 			try {
 				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-//				ble = d.getJSON("/rpc/BLE.CloudRelay.ListInfos").get("total").asString(); // fw >= 1.5.0
+//				ble = d.getJSON("/rpc/BLE.CloudRelay.ListInfos").get("total").asString(""); // fw >= 1.5.0
 				ble = d.getJSON("/rpc/BLE.CloudRelay.List").get("addrs").size();
 			} catch (/*IO*/Exception e) {
-//				if (config.at("/ble/observer/enable").booleanValue()) { // fw < 1.5.0
+//				if (config.at("/ble/observer/enable").booleanValue(false)) { // fw < 1.5.0
 //					ble = "OBS"; // used as observer
 //				} else {
 					ble = TRUE_STR;
@@ -617,19 +617,19 @@ public class CheckListView extends JDialog implements UsnaEventListener<Devices.
 		if (config.at("/wifi/roam").isMissingNode()) {
 			roaming = "-";
 		} else if (config.at("/wifi/roam/interval").asInt() > 0) {
-			roaming = config.at("/wifi/roam/rssi_thr").asString();
+			roaming = config.at("/wifi/roam/rssi_thr").asString("");
 		} else {
 			roaming = FALSE_STR;
 		}
 		String wifi1;
 		if (config.at("/wifi/sta/enable").asBoolean()) {
-			wifi1 = "static".equals(config.at("/wifi/sta/ipv4mode").asString()) ? TRUE_STR : FALSE_STR;
+			wifi1 = "static".equals(config.at("/wifi/sta/ipv4mode").asString("")) ? TRUE_STR : FALSE_STR;
 		} else {
 			wifi1 = "-";
 		}
 		String wifi2;
 		if (config.at("/wifi/sta1/enable").asBoolean()) {
-			wifi2 = "static".equals(config.at("/wifi/sta1/ipv4mode").asString()) ? TRUE_STR : FALSE_STR;
+			wifi2 = "static".equals(config.at("/wifi/sta1/ipv4mode").asString("")) ? TRUE_STR : FALSE_STR;
 		} else {
 			wifi2 = "-";
 		}

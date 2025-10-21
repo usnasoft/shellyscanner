@@ -57,7 +57,7 @@ public class ShellyProRGBWW extends AbstractProDevice implements ModulesHolder, 
 	@Override
 	protected void init(JsonNode devInfo) throws IOException {
 		this.hostname = devInfo.get("id").asString("");
-		this.mac = devInfo.get("mac").asString();
+		this.mac = devInfo.get("mac").asString("");
 
 		fillSettings(getJSON("/rpc/Shelly.GetConfig"));
 		fillStatus(getJSON("/rpc/Shelly.GetStatus"));
@@ -96,7 +96,7 @@ public class ShellyProRGBWW extends AbstractProDevice implements ModulesHolder, 
 	@Override
 	protected void fillSettings(JsonNode configuration) throws IOException {
 		super.fillSettings(configuration);
-		String prof = configuration.get("sys").get("device").get("profile").asString();
+		String prof = configuration.get("sys").get("device").get("profile").asString("");
 		if(prof.equals(Profile.LIGHT.code)) {
 			if(profile != Profile.LIGHT) {
 				profile = Profile.LIGHT;
@@ -225,8 +225,8 @@ public class ShellyProRGBWW extends AbstractProDevice implements ModulesHolder, 
 	@Override
 	public void restoreCheck(Map<String, JsonNode> backupJsons, Map<RestoreMsg, Object> res) throws IOException {
 		JsonNode devInfo = backupJsons.get("Shelly.GetDeviceInfo.json");
-		if(profile.code.equals(devInfo.get("profile").asString()) == false) {
-			res.put(RestoreMsg.ERR_RESTORE_PROFILE, new String[] {profile.code, devInfo.get("profile").asString()});
+		if(profile.code.equals(devInfo.get("profile").asString("")) == false) {
+			res.put(RestoreMsg.ERR_RESTORE_PROFILE, new String[] {profile.code, devInfo.get("profile").asString("")});
 		}
 	}
 
@@ -244,7 +244,7 @@ public class ShellyProRGBWW extends AbstractProDevice implements ModulesHolder, 
 		errors.add(Input.restore(this, configuration, 4));
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 
-		final String backMode = configuration.at("/sys/device/profile").asString();
+		final String backMode = configuration.at("/sys/device/profile").asString("");
 		if(profile.code.equals(backMode)) {
 			if(profile == Profile.LIGHT) {
 				errors.add(light0.restore(configuration));
@@ -277,7 +277,7 @@ public class ShellyProRGBWW extends AbstractProDevice implements ModulesHolder, 
 		}
 		
 		// TODO ?
-//		final boolean hf = configuration.get("plusrgbwpm").get("hf_mode").booleanValue();
+//		final boolean hf = configuration.get("plusrgbwpm").get("hf_mode").booleanValue(false);
 //		errors.add(postCommand("PlusRGBWPM.SetConfig", "{\"config\":{\"hf_mode\":" + hf + "}}"));
 	}
 	

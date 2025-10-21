@@ -29,7 +29,7 @@ public class Relay implements RelayInterface {
 	}
 	
 	public void fillSettings(JsonNode configuration, JsonNode input) {
-		name = configuration.get("name").asString();
+		name = configuration.get("name").asString("");
 		if(name == null || name.isEmpty()) {
 			name = input.get("name").asString("");
 		}
@@ -37,14 +37,14 @@ public class Relay implements RelayInterface {
 	}
 	
 	public void fillStatus(JsonNode relay) { // Ralay
-		isOn = relay.get("output").booleanValue();
+		isOn = relay.get("output").booleanValue(false);
 		source = relay.get("source").asString("-");
 	}
 	
 	public void fillStatus(JsonNode relay, JsonNode input) { // Ralay + Input
-		isOn = relay.get("output").booleanValue();
+		isOn = relay.get("output").booleanValue(false);
 		source = relay.get("source").asString("-");
-		inputIsOn = input.get("state").booleanValue();
+		inputIsOn = input.get("state").booleanValue(false);
 	}
 	
 	@Override

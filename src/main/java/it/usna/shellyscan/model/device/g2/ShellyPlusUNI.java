@@ -94,8 +94,8 @@ public class ShellyPlusUNI extends AbstractG2Device implements ModulesHolder {
 		relay1.fillStatus(status.get("switch:1"), status.get("input:1"));
 		
 		JsonNode input2 = status.get("input:2");
-		input2Freq = input2.get("freq").intValue();
-		input2Count = input2.get("counts").path("total").intValue();
+		input2Freq = input2.get("freq").intValue(0);
+		input2Count = input2.get("counts").path("total").intValue(0);
 		
 		addOn.fillStatus(status);
 	}

@@ -22,7 +22,7 @@ public class ShellyGateway extends AbstractG2Device {
 	@Override
 	protected void init(JsonNode devInfo) throws IOException {
 		this.hostname = devInfo.get("id").asString("");
-		this.mac = devInfo.get("mac").asString();
+		this.mac = devInfo.get("mac").asString("");
 
 		fillSettings(getJSON("/rpc/Shelly.GetConfig"));
 		fillStatus(getJSON("/rpc/Shelly.GetStatus"));
@@ -41,7 +41,7 @@ public class ShellyGateway extends AbstractG2Device {
 	@Override
 	protected void restore(Map<String, JsonNode> backupJsons, List<String> errors) throws IOException, InterruptedException {
 		JsonNode configuration = backupJsons.get("Shelly.GetConfig.json");
-		boolean ledOn = configuration.at("/blugw/sys_led_enable").booleanValue();
+		boolean ledOn = configuration.at("/blugw/sys_led_enable").booleanValue(false);
 		postCommand("BluGw.SetConfig", "{\"config\":{\"sys_led_enable\":" + ledOn + "}}");
 	}
 }

@@ -27,7 +27,7 @@ public class InputResetManagerG2 implements InputResetManager {
 				JsonNode reset = node.getValue().path("factory_reset");
 				if(reset.isMissingNode()) {
 					currentMode = Status.NOT_APPLICABLE;
-				} else if(reset.booleanValue()) {
+				} else if(reset.booleanValue(false)) {
 					currentMode = Status.TRUE;
 					ids.add(id);
 				} else {

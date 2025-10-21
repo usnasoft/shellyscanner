@@ -71,7 +71,7 @@ public class BluTRV extends AbstractBluDevice implements ThermostatInterface, Mo
 	public void init(HttpClient httpClient/*, WebSocketClient wsClient*/) throws IOException {
 		super.init(httpClient);
 		try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e) {}
-		this.hostname = getJSON("/rpc/BluTrv.GetRemoteDeviceInfo?id=" + componentIndex).get("device_info").get("id").asString();
+		this.hostname = getJSON("/rpc/BluTrv.GetRemoteDeviceInfo?id=" + componentIndex).get("device_info").get("id").asString("");
 	}
 
 	@Override
@@ -102,9 +102,9 @@ public class BluTRV extends AbstractBluDevice implements ThermostatInterface, Mo
 	@Override
 	public void refreshStatus() throws IOException {
 		JsonNode status = getJSON("/rpc/BluTrv.GetStatus?id=" + componentIndex);
-		this.rssi = status.path("rssi").intValue();
-		this.lastConnection = status.path("last_updated_ts").intValue() * 1000L;
-		this.battery = status.path("battery").intValue();
+		this.rssi = status.path("rssi").intValue(0);
+		this.lastConnection = status.path("last_updated_ts").intValue(0) * 1000L;
+		this.battery = status.path("battery").intValue(0);
 		
 		try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e) { }
 		JsonNode remoteStatus = getJSON("/rpc/BluTrv.GetRemoteStatus?id=" + componentIndex).get("status");
@@ -116,7 +116,7 @@ public class BluTRV extends AbstractBluDevice implements ThermostatInterface, Mo
 		} else {
 			this.targetTemp = trv.get("target_C").floatValue();
 		}
-		this.pos = trv.get("pos").intValue();
+		this.pos = trv.get("pos").intValue(0);
 		//http://192.168.1.29/rpc/BluTrv.Call?id=200&method="TRV.ListScheduleRules"&params={"id":0}
 	}
 	
@@ -192,7 +192,7 @@ public class BluTRV extends AbstractBluDevice implements ThermostatInterface, Mo
 			sectionToStream("/rpc/BluTrv.Call?id=" + componentIndex + "&method=%22TRV.ListScheduleRules%22&params=%7B%22id%22:0%7D", "TRV.ListScheduleRules.json", out);
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			sectionToStream("/rpc/Webhook.List", "Webhook.List.json", out);
-			String bthome = config.path("trv").asString();
+			String bthome = config.path("trv").asString("");
 			String bhtIndex = bthome.substring(bthome.indexOf(':') + 1);
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			sectionToStream("/rpc/BTHomeDevice.GetKnownObjects?id=" + bhtIndex, "BTHomeDevice.GetKnownObjects.json", out);
@@ -212,7 +212,7 @@ public class BluTRV extends AbstractBluDevice implements ThermostatInterface, Mo
 				return res;
 			}
 			JsonNode devInfo = remoteDevInfo.get("device_info");
-			if(devInfo == null || getTypeID().equals(devInfo.get("app").asString()) == false) {
+			if(devInfo == null || getTypeID().equals(devInfo.get("app").asString("")) == false) {
 				res.put(RestoreMsg.ERR_RESTORE_MODEL, null);
 			} else {
 				final String fileHostname = devInfo.get("id").asString("");
@@ -281,7 +281,7 @@ public class BluTRV extends AbstractBluDevice implements ThermostatInterface, Mo
 
 			ScheduleManagerTRV.restore(this, backupJsons.get("TRV.ListScheduleRules.json"), errors);
 
-			final int storedId = storedConfig.get("id").intValue();
+			final int storedId = storedConfig.get("id").intValue(0);
 			final int currentId = Integer.parseInt(componentIndex);
 			JsonNode storedWebHooks = backupJsons.get("Webhook.List.json");
 			Webhooks.delete(parent, TRV_DEVICE, currentId, Devices.MULTI_QUERY_DELAY);
@@ -293,13 +293,13 @@ public class BluTRV extends AbstractBluDevice implements ThermostatInterface, Mo
 			// spero ne prossimi fw ci siano delle action specifiche per il TRV
 			
 //			JsonNode storedBTHSensors = backupJsons.get("BTHomeDevice.GetKnownObjects.json").get("objects");
-//			final String storedBtHome = storedConfig.get("trv").asString();
+//			final String storedBtHome = storedConfig.get("trv").asString("");
 //			String bhtIndex = storedBtHome.substring(storedBtHome.indexOf(':') + 1);
 //			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 //			JsonNode existingBTHSensors = getJSON("/rpc/BTHomeDevice.GetKnownObjects?id=" + bhtIndex).get("objects");
 //			
 //			for(JsonNode sensorConf: storedBTHSensors) {
-//				String comp = sensorConf.path("component").asString();
+//				String comp = sensorConf.path("component").asString("");
 //				if(comp != null && comp.startsWith(SENSOR_KEY_PREFIX)) {
 //					String oldCid = comp.substring(13);
 ////					confronto tra storedBTHSensors e existingBTHSensors

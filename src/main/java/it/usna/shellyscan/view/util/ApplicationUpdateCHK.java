@@ -6,7 +6,6 @@ import java.awt.Cursor;
 import java.awt.Desktop;
 import java.awt.Window;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLConnection;
@@ -103,24 +102,24 @@ public class ApplicationUpdateCHK {
 		return String.format(LABELS.getString("aboutCheckUpdatesTitle"), Main.VERSION + " r." + Main.VERSION_CODE.substring(Main.VERSION_CODE.length() - 2, Main.VERSION_CODE.length()));
 	}
 	
-	private static List<Release> remoteCheck(final boolean checkDev, final String ignoreRel) throws MalformedURLException, IOException {
+	private static List<Release> remoteCheck(final boolean checkDev, final String ignoreRel) throws /*MalformedURLException,*/ IOException {
 		List<Release> rel = new ArrayList<>(2);
 		final URLConnection con = new URL(LABELS.getString("aboutCheckUpdatesPath")).openConnection(); // http://www.usna.it/shellyscanner/last_verion.txt
 		final JsonNode updateNode = new ObjectMapper().readTree(con.getInputStream());
 		final JsonNode stable = updateNode.path("stable");
 		String id = null;
-		if(stable.isNull() == false && (id = stable.path("id").asString()).compareTo(Main.VERSION_CODE) > 0 && id.compareTo(ignoreRel) > 0) {
-			String devMsg = String.format(LABELS.getString("aboutCheckUpdatesYes"), stable.path("version").asString());
-			String note = stable.path("note").asString();
+		if(stable.isMissingNode() == false && (id = stable.path("id").asString("")).compareTo(Main.VERSION_CODE) > 0 && id.compareTo(ignoreRel) > 0) {
+			String devMsg = String.format(LABELS.getString("aboutCheckUpdatesYes"), stable.path("version").asString(""));
+			String note = stable.path("note").asString("");
 			if(note.length() > 0) {
 				devMsg += " - " + note;
 			}
 			rel.add(new Release(devMsg, id));
 		}
 		final JsonNode dev = updateNode.path("dev");
-		if(checkDev && dev.isNull() == false && (id = dev.path("id").asString()).compareTo(Main.VERSION_CODE) > 0 && id.compareTo(ignoreRel) > 0) {
-			String stableMsg = String.format(LABELS.getString("aboutCheckUpdatesYes"), dev.path("version").asString());
-			String note = dev.path("note").asString();
+		if(checkDev && dev.isMissingNode() == false && (id = dev.path("id").asString("")).compareTo(Main.VERSION_CODE) > 0 && id.compareTo(ignoreRel) > 0) {
+			String stableMsg = String.format(LABELS.getString("aboutCheckUpdatesYes"), dev.path("version").asString(""));
+			String note = dev.path("note").asString("");
 			if(note.length() > 0) {
 				stableMsg += " - " + note;
 			}

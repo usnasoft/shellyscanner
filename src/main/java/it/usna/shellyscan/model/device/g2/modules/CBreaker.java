@@ -29,9 +29,9 @@ public class CBreaker implements /*DeviceModule*/RelayInterface {
 	}
 	
 	public void fillStatus(JsonNode cbStatus) {
-		isOn = cbStatus.get("output").booleanValue();
+		isOn = cbStatus.get("output").booleanValue(false);
 		source = cbStatus.get("source").asString("-");
-		isLocked = cbStatus.get("safety").booleanValue();
+		isLocked = cbStatus.get("safety").booleanValue(false);
 	}
 
 	@Override

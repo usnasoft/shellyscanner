@@ -41,7 +41,7 @@ public class TRVJobPanel extends AbstractCronPanel {
 			setCron(DEF_CRON);
 			setTarget(null);
 		} else {
-			setCron(scheduleNode.path("timespec").asString());
+			setCron(scheduleNode.path("timespec").asString(""));
 			setTarget(scheduleNode);
 		}
 	}
@@ -100,7 +100,7 @@ public class TRVJobPanel extends AbstractCronPanel {
 				targetField.setValue(scheduleNode.get("target_C").floatValue());
 			} else if(scheduleNode.hasNonNull("pos")) {
 				rdbtnPosition.setSelected(true);
-				targetField.setValue(scheduleNode.get("pos").intValue());
+				targetField.setValue(scheduleNode.get("pos").intValue(0));
 			}
 		}
 	}

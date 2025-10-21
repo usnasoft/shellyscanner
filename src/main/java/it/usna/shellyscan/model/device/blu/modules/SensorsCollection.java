@@ -37,7 +37,7 @@ public class SensorsCollection extends Meters {
 		Meters.Type lastT = null;
 		Meters.Type lastRot = null;
 		for(JsonNode sensorConf: objects) {
-			String comp = sensorConf.path("component").asString();
+			String comp = sensorConf.path("component").asString("");
 			if(comp != null && comp.startsWith(AbstractBluDevice.SENSOR_KEY_PREFIX)) {
 				final int id = Integer.parseInt(comp.substring(13));
 				final Sensor sensor = Sensor.create(id, sensorConf); // create

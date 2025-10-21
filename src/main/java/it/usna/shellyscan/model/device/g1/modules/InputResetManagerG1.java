@@ -19,7 +19,7 @@ public class InputResetManagerG1 implements InputResetManager {
 		JsonNode reset = config.path("factory_reset_from_switch");
 		if(reset.isMissingNode()) {
 			mode = Status.NOT_APPLICABLE;
-		} else if(reset.booleanValue()) {
+		} else if(reset.booleanValue(false)) {
 			mode = Status.TRUE;
 		} else {
 			mode = Status.FALSE;

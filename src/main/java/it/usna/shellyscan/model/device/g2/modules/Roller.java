@@ -29,7 +29,7 @@ public class Roller implements RollerInterface {
 	public void fillStatus(JsonNode rollerStatus) {
 		calibrated = rollerStatus.get("pos_control").asBoolean();
 		if(calibrated) {
-			position = rollerStatus.get("current_pos").intValue();
+			position = rollerStatus.get("current_pos").intValue(0);
 		}
 		source = rollerStatus.get("source").asString("-");
 	}

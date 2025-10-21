@@ -37,6 +37,7 @@ import it.usna.shellyscan.model.device.ModulesHolder;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
 import it.usna.shellyscan.model.device.blu.AbstractBluDevice;
+import it.usna.shellyscan.model.device.blu.BluInetAddressAndPort;
 import it.usna.shellyscan.model.device.g1.ShellyDW;
 import it.usna.shellyscan.model.device.g1.ShellyFlood;
 import it.usna.shellyscan.model.device.g1.ShellyTRV;
@@ -233,6 +234,9 @@ public class DevicesTable extends ExTooltipTable {
 			} else if (value instanceof ImageIcon icon) {
 				adaptTooltipLocation = false;
 				return icon.getDescription();
+			} else if (value instanceof BluInetAddressAndPort bluAddr && bluAddr.getAlternativeParents().size() > 0) {
+				adaptTooltipLocation = false;
+				return bluAddr.getParentsAsString();
 			} else if(value instanceof ThermostatG1 therm) { // TRV G1
 				adaptTooltipLocation = false;
 				return String.format(Locale.ENGLISH, LABELS.getString("col_command_therm_tooltip"), therm.getCurrentProfile(), therm.getTargetTemp(), therm.getPosition());

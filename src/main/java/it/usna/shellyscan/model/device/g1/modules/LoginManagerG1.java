@@ -39,7 +39,7 @@ public class LoginManagerG1 implements LoginManager {
 	private void init() throws IOException {
 		JsonNode login = d.getJSON("/settings/login");
 		this.enabled = login.get("enabled").asBoolean();
-		this.user = login.get("username").asString();
+		this.user = login.get("username").asString("");
 	}
 
 	@Override

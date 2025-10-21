@@ -77,7 +77,7 @@ public class ShellyProDimmer1 extends AbstractProDevice implements InternalTmpHo
 	@Override
 	protected void restoreCheck(Map<String, JsonNode> backupJsons, Map<RestoreMsg, Object> resp) {
 		JsonNode devInfo = backupJsons.get("Shelly.GetDeviceInfo.json");
-		if(MODEL.equals(devInfo.get("model").asString()) == false) {
+		if(MODEL.equals(devInfo.get("model").asString("")) == false) {
 			resp.put(RestoreMsg.ERR_RESTORE_MODEL, null);
 		}
 	}

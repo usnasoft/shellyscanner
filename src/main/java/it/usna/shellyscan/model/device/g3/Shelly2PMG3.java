@@ -55,7 +55,7 @@ public class Shelly2PMG3 extends AbstractG3Device implements ModulesHolder, Inte
 	@Override
 	protected void init(JsonNode devInfo) throws IOException {
 		this.hostname = devInfo.get("id").asString("");
-		this.mac = devInfo.get("mac").asString();
+		this.mac = devInfo.get("mac").asString("");
 		
 		final JsonNode config = configure();
 		
@@ -102,7 +102,7 @@ public class Shelly2PMG3 extends AbstractG3Device implements ModulesHolder, Inte
 	
 	private JsonNode configure() throws IOException {
 		final JsonNode config = getJSON("/rpc/Shelly.GetConfig");
-		final String addOn = config.get("sys").get("device").path("addon_type").asString();
+		final String addOn = config.get("sys").get("device").path("addon_type").asString("");
 		if(SensorAddOn.ADDON_TYPE.equals(addOn)) {
 			sensorAddOn = new SensorAddOn(this);
 		} else {
@@ -145,7 +145,7 @@ public class Shelly2PMG3 extends AbstractG3Device implements ModulesHolder, Inte
 	@Override
 	protected void fillSettings(JsonNode configuration) throws IOException {
 		super.fillSettings(configuration);
-		modeRelay = configuration.get("sys").get("device").get("profile").asString().equals(MODE_RELAY);
+		modeRelay = configuration.get("sys").get("device").get("profile").asString("").equals(MODE_RELAY);
 		if(modeRelay) {
 			if(relay0 == null /*|| relay1 == null*/) {
 				relay0 = new Relay(this, 0);
@@ -224,7 +224,7 @@ public class Shelly2PMG3 extends AbstractG3Device implements ModulesHolder, Inte
 	@Override
 	public void restoreCheck(Map<String, JsonNode> backupJsons, Map<RestoreMsg, Object> res) throws IOException {
 		JsonNode devInfo = backupJsons.get("Shelly.GetDeviceInfo.json");
-		boolean backModeRelay = MODE_RELAY.equals(devInfo.get("profile").asString());
+		boolean backModeRelay = MODE_RELAY.equals(devInfo.get("profile").asString(""));
 		if(backModeRelay != modeRelay) {
 			res.put(RestoreMsg.ERR_RESTORE_MODE_COVER, null);
 		}
@@ -240,7 +240,7 @@ public class Shelly2PMG3 extends AbstractG3Device implements ModulesHolder, Inte
 	@Override
 	protected void restore(Map<String, JsonNode> backupJsons, List<String> errors) throws InterruptedException {
 		JsonNode configuration = backupJsons.get("Shelly.GetConfig.json");
-		final boolean backModeRelay = MODE_RELAY.equals(configuration.at("/sys/device/profile").asString());
+		final boolean backModeRelay = MODE_RELAY.equals(configuration.at("/sys/device/profile").asString(""));
 		if(backModeRelay == modeRelay) {
 			errors.add(Input.restore(this,configuration, 0));
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);

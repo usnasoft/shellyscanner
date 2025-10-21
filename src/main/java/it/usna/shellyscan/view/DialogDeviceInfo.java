@@ -144,7 +144,7 @@ public class DialogDeviceInfo extends JDialog implements UsnaEventListener<Devic
 				} else {
 					name = info.replaceFirst("\\?.*", "").replaceFirst("^/", "").replaceFirst("^rpc/", "").replaceFirst("^Shelly\\.", "");
 				}
-				tabbedPane.add(name, getJsonGetPanel(info, device));
+				tabbedPane.add(name, getJsonPanel(info, device));
 			}
 			if(selected >= 0) {
 				tabbedPane.setSelectedIndex(selected);
@@ -154,7 +154,7 @@ public class DialogDeviceInfo extends JDialog implements UsnaEventListener<Devic
 		}
 	}
 
-	private JPanel getJsonGetPanel(final String info, final ShellyAbstractDevice device) {
+	private JPanel getJsonPanel(final String info, final ShellyAbstractDevice device) {
 		JPanel panel = new JPanel();
 		panel.setLayout(new BorderLayout(0, 0));
 		UsnaTextPane textPane = new UsnaTextPane();
@@ -212,9 +212,9 @@ public class DialogDeviceInfo extends JDialog implements UsnaEventListener<Devic
 						bd.setStoredJSON(req, val);
 					}
 					JsonNode offsetNode;
-					if((offsetNode = val.get("offset")) != null && (tot = val.path("total").intValue()) > 0) { // potentially needs multiple calls
+					if((offsetNode = val.get("offset")) != null && (tot = val.path("total").intValue(0)) > 0) { // potentially needs multiple calls
 						int retrived = retrivedArraySize(val);
-						offset = offsetNode.intValue() + retrived;
+						offset = offsetNode.intValue(0) + retrived;
 						req = info + ((info.contains("?")) ? "&offset=" : "?offset=") + offset;
 					}
 				} while(tot > offset);

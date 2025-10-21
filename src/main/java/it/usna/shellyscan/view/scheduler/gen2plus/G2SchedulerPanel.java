@@ -225,7 +225,7 @@ public class G2SchedulerPanel extends JScrollPane {
 		UsnaToggleAction enableAction = new UsnaToggleAction(this, "/images/Standby24.png", "/images/StandbyOn24.png",
 				e -> enableSchedule(linePanel, true), e -> enableSchedule(linePanel, false) );
 		enableAction.setTooltip("lblDisabled", "lblEnabled");
-		enableAction.setSelected(node != null && node.path("enable").booleanValue());
+		enableAction.setSelected(node != null && node.path("enable").booleanValue(false));
 		enableButton.setAction(enableAction);
 		linePanel.add(enableButton);
 
@@ -283,7 +283,7 @@ public class G2SchedulerPanel extends JScrollPane {
 				final ObjectMapper jsonMapper = new ObjectMapper();
 
 				JsonNode pastedNode = jsonMapper.readTree(sch);
-				job.setCron(pastedNode.get("timespec").asString());
+				job.setCron(pastedNode.get("timespec").asString(""));
 				if(pastedNode.hasNonNull("calls")) {
 					job.setCalls(pastedNode.get("calls"));
 				}

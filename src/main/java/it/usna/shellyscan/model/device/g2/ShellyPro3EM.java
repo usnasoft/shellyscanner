@@ -42,7 +42,7 @@ public class ShellyPro3EM extends AbstractProDevice implements InternalTmpHolder
 	
 	@Override
 	protected void init(JsonNode devInfo) throws IOException {
-		this.init(devInfo.get("profile").asString().equals(MODE_TRIPHASE));
+		this.init(devInfo.get("profile").asString("").equals(MODE_TRIPHASE));
 		super.init(devInfo);
 	}
 	
@@ -95,7 +95,7 @@ public class ShellyPro3EM extends AbstractProDevice implements InternalTmpHolder
 	@Override
 	protected void fillSettings(JsonNode configuration) throws IOException {
 //		super.fillSettings(configuration);
-//		boolean current3phase = configuration.get("sys").get("device").get("profile").asString().equals(MODE_TRIPHASE);
+//		boolean current3phase = configuration.get("sys").get("device").get("profile").asString("").equals(MODE_TRIPHASE);
 //		if(current3phase != triphase) {
 //			init(current3phase);
 //		}
@@ -108,7 +108,7 @@ public class ShellyPro3EM extends AbstractProDevice implements InternalTmpHolder
 //		}
 		
 		super.fillSettings(configuration);
-		boolean config3phase = configuration.get("sys").get("device").get("profile").asString().equals(MODE_TRIPHASE);
+		boolean config3phase = configuration.get("sys").get("device").get("profile").asString("").equals(MODE_TRIPHASE);
 		if(config3phase != triphase) {
 			init(config3phase);
 		}
@@ -273,7 +273,7 @@ public class ShellyPro3EM extends AbstractProDevice implements InternalTmpHolder
 	@Override
 	public void restoreCheck(Map<String, JsonNode> backupJsons, Map<RestoreMsg, Object> res) throws IOException {
 		JsonNode devInfo = backupJsons.get("Shelly.GetDeviceInfo.json");
-		boolean backModeTriphase = MODE_TRIPHASE.equals(devInfo.get("profile").asString());
+		boolean backModeTriphase = MODE_TRIPHASE.equals(devInfo.get("profile").asString(""));
 		if(backModeTriphase != triphase) {
 			res.put(RestoreMsg.ERR_RESTORE_MODE_TRIPHASE, null);
 		}

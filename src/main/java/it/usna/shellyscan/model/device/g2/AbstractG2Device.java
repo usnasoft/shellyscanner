@@ -87,7 +87,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 
 	protected void init(JsonNode devInfo) throws IOException {
 		this.hostname = devInfo.get("id").asString("");
-		this.mac = devInfo.get("mac").asString().toUpperCase();
+		this.mac = devInfo.get("mac").asString("").toUpperCase();
 
 		fillSettings(getJSON("/rpc/Shelly.GetConfig"));
 		fillStatus(getJSON("/rpc/Shelly.GetStatus"));
@@ -110,9 +110,9 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 
 		JsonNode udp;
 		JsonNode debugNode = sysNode.path("debug");
-		if(debugNode.path("websocket").path("enable").booleanValue()) {
+		if(debugNode.path("websocket").path("enable").booleanValue(false)) {
 			this.debugMode = LogMode.SOCKET;
-		} else if(debugNode.path("mqtt").path("enable").booleanValue()) {
+		} else if(debugNode.path("mqtt").path("enable").booleanValue(false)) {
 			this.debugMode = LogMode.MQTT;
 		} else if((udp = debugNode.get("udp")) != null && udp.get("addr").isNull() == false) {  // no "udp" on wall display ???
 			this.debugMode = LogMode.UDP;
@@ -120,21 +120,21 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 			this.debugMode = LogMode.NONE;
 		}
 
-		this.cloudEnabled = config.path("cloud").path("enable").booleanValue();
-		this.mqttEnabled = config.path("mqtt").path("enable").booleanValue();
+		this.cloudEnabled = config.path("cloud").path("enable").booleanValue(false);
+		this.mqttEnabled = config.path("mqtt").path("enable").booleanValue(false);
 
-		this.rangeExtender = config.get("wifi").path("ap").path("range_extender").path("enable").booleanValue(); // no "ap" on wall display ???
+		this.rangeExtender = config.get("wifi").path("ap").path("range_extender").path("enable").booleanValue(false); // no "ap" on wall display ???
 	}
 
 	protected void fillStatus(JsonNode status) throws IOException {
-		this.cloudConnected = status.path("cloud").path("connected").booleanValue();
+		this.cloudConnected = status.path("cloud").path("connected").booleanValue(false);
 		JsonNode wifiNode = status.get("wifi");
-		this.rssi = wifiNode.path("rssi").intValue();
-		this.ssid = wifiNode.path("ssid").asString();
+		this.rssi = wifiNode.path("rssi").intValue(0);
+		this.ssid = wifiNode.path("ssid").asString("");
 		JsonNode sysNode = status.get("sys");
-		this.uptime = sysNode.get("uptime").intValue();
-		this.rebootRequired = sysNode.path("restart_required").booleanValue();
-		this.mqttConnected = status.path("mqtt").path("connected").booleanValue();
+		this.uptime = sysNode.get("uptime").intValue(0);
+		this.rebootRequired = sysNode.path("restart_required").booleanValue(false);
+		this.mqttConnected = status.path("mqtt").path("connected").booleanValue(false);
 
 		lastConnection = System.currentTimeMillis();
 	}
@@ -277,7 +277,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 	public JsonNode getJSON(final String command) throws IOException {
 		JsonNode resp = super.getJSON(command);
 		if(resp.has("code") && resp.has("message")) { // e.g.: {"code":-114,"message":"Method KVS.GetMany failed: No such component"}
-			throw new DeviceAPIException(resp.get("code").intValue(), resp.get("message").asString("Generic error"));
+			throw new DeviceAPIException(resp.get("code").intValue(0), resp.get("message").asString("Generic error"));
 		}
 		return resp;
 	}
@@ -293,7 +293,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 			return result;
 		} else {
 			JsonNode error = resp.get("error");
-			throw new DeviceAPIException(error.get("code").intValue(), error.get("message").asString("Generic error"));
+			throw new DeviceAPIException(error.get("code").intValue(0), error.get("message").asString("Generic error"));
 		}
 	}
 	
@@ -311,7 +311,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 		return new JsonPageIterator(this, method, arrayKey);
 	}
 
-	private JsonNode executeRPC(final String method, String payload) throws IOException, StreamReadException { // StreamReadException extends ... IOException
+	private JsonNode executeRPC(final String method, String payload) throws IOException, JacksonException, StreamReadException {
 		try {
 			ContentResponse response = httpClient.POST(uriPrefix + "/rpc")
 					.body(new StringRequestContent("application/json", "{\"id\":1,\"method\":\"" + method + "\",\"params\":" + payload + "}", StandardCharsets.UTF_8))
@@ -381,7 +381,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 				sectionToStream("/rpc/Shelly.GetComponents?dynamic_only=true", "components", "Shelly.GetComponents.json", out);
 			} catch(Exception e) {}
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-			String addon = config.get("sys").get("device").path("addon_type").asString();
+			String addon = config.get("sys").get("device").path("addon_type").asString("");
 			if(SensorAddOn.ADDON_TYPE.equals(addon)) {
 				sectionToStream("/rpc/SensorAddon.GetPeripherals", SensorAddOn.BACKUP_SECTION, out);
 				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
@@ -418,7 +418,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 		EnumMap<RestoreMsg, Object> res = new EnumMap<>(RestoreMsg.class);
 		try {
 			JsonNode devInfo = backupJsons.get("Shelly.GetDeviceInfo.json");
-			if(devInfo == null || RestoreUtil.compatibleModels(devInfo.get("app").asString(), this.getTypeID()) == false) {
+			if(devInfo == null || RestoreUtil.compatibleModels(devInfo.get("app").asString(""), this.getTypeID()) == false) {
 				res.put(RestoreMsg.ERR_RESTORE_MODEL, null);
 			} else {
 				JsonNode config = backupJsons.get("Shelly.GetConfig.json");
@@ -433,26 +433,26 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 				Network currentConnection = WIFIManagerG2.currentConnection(this);
 				if(currentConnection != Network.UNKNOWN) {
 					JsonNode wifi = config.at("/wifi/sta");
-					if(wifi.path("enable").asBoolean() && (sameDevice || wifi.path("ipv4mode").asString().equals("dhcp")) && currentConnection != Network.PRIMARY) {
+					if(wifi.path("enable").asBoolean() && (sameDevice || wifi.path("ipv4mode").asString("").equals("dhcp")) && currentConnection != Network.PRIMARY) {
 						if(wifi.path("is_open").asBoolean() == false) {
-							res.put(RestoreMsg.RESTORE_WI_FI1, wifi.path("ssid").asString());
+							res.put(RestoreMsg.RESTORE_WI_FI1, wifi.path("ssid").asString(""));
 						}
 					}
 					JsonNode wifi2 = config.at("/wifi/sta1");
-					if(wifi2.path("enable").asBoolean() && (sameDevice || wifi2.path("ipv4mode").asString().equals("dhcp")) && currentConnection != Network.SECONDARY) {
+					if(wifi2.isMissingNode() == false && wifi2.path("enable").asBoolean() && (sameDevice || wifi2.path("ipv4mode").asString("").equals("dhcp")) && currentConnection != Network.SECONDARY) {
 						if(wifi2.path("is_open").asBoolean() == false) {
-							res.put(RestoreMsg.RESTORE_WI_FI2, wifi2.path("ssid").asString());
+							res.put(RestoreMsg.RESTORE_WI_FI2, wifi2.path("ssid").asString(""));
 						}
 					}
 					JsonNode wifiAP = config.at("/wifi/ap");
-					if(wifiAP.path("enable").asBoolean() && currentConnection != Network.AP) {
+					if(wifiAP.isMissingNode() == false && wifiAP.path("enable").asBoolean() && currentConnection != Network.AP) {
 						if(wifiAP.path("is_open").asBoolean() == false) {
-							res.put(RestoreMsg.RESTORE_WI_FI_AP, wifiAP.path("ssid").asString());
+							res.put(RestoreMsg.RESTORE_WI_FI_AP, wifiAP.path("ssid").asString(""));
 						}
 					}
 				}
 				if(config.at("/mqtt/enable").asBoolean() && config.at("/mqtt/user").asString("").isEmpty() == false) {
-					res.put(RestoreMsg.RESTORE_MQTT, config.at("/mqtt/user").asString());
+					res.put(RestoreMsg.RESTORE_MQTT, config.at("/mqtt/user").asString(""));
 				}
 				JsonNode storedScripts = backupJsons.get("Script.List.json");
 				if(storedScripts != null && storedScripts.path("scripts").size() > 0) {
@@ -461,10 +461,10 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 					List<String> scriptsWithSameName = new ArrayList<>();
 					List<String> existingScriptsNames = existingScripts.stream().map(Script::getName).toList();
 					for(JsonNode jsonScript: storedScripts.get("scripts")) {
-						if(existingScriptsNames.contains(jsonScript.get("name").asString()))
-							scriptsWithSameName.add(jsonScript.get("name").asString());
+						if(existingScriptsNames.contains(jsonScript.get("name").asString("")))
+							scriptsWithSameName.add(jsonScript.get("name").asString(""));
 						if(jsonScript.get("enable").asBoolean())
-							scriptsEnabledByDefault.add(jsonScript.get("name").asString());
+							scriptsEnabledByDefault.add(jsonScript.get("name").asString(""));
 					}
 					if(scriptsWithSameName.isEmpty() == false) {
 						res.put(RestoreMsg.QUESTION_RESTORE_SCRIPTS_OVERRIDE, String.join(", ", scriptsWithSameName));

@@ -21,7 +21,7 @@ public class TimeAndLocationManagerG2 implements TimeAndLocationManager {
 	}
 	
 	private void init(JsonNode settings) {
-		server = settings.path("sys").path("sntp").path("server").asString();
+		server = settings.path("sys").path("sntp").path("server").asString("");
 	}
 	
 	

@@ -85,7 +85,7 @@ public class ShellyRGBW2 extends AbstractG1Device implements ModulesHolder/*, RG
 	@Override
 	protected void fillSettings(JsonNode settings) throws IOException {
 		super.fillSettings(settings);
-		modeColor = MODE_COLOR.equals(settings.get("mode").asString());
+		modeColor = MODE_COLOR.equals(settings.get("mode").asString(""));
 		if(modeColor) {
 			if(color == null) {
 				color = new LightRGBW(this, 0);
@@ -153,7 +153,7 @@ public class ShellyRGBW2 extends AbstractG1Device implements ModulesHolder/*, RG
 			}
 		}
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-		final boolean backModeColor = MODE_COLOR.equals(settings.get("mode").asString());
+		final boolean backModeColor = MODE_COLOR.equals(settings.get("mode").asString(""));
 		if(backModeColor) {
 			final LightRGBW color = new LightRGBW(this, 0); // just for restore; object is later refreshed (fill called)
 			color.restore(settings.get("lights").get(0));

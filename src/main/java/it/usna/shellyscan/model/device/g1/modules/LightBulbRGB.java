@@ -40,16 +40,16 @@ public class LightBulbRGB implements RGBCCTInterface {
 	
 	public void fillStatus(JsonNode statuslight) {
 		isOn = statuslight.get("ison").asBoolean();
-		modeColor = "color".equals(statuslight.get("mode").asString());
+		modeColor = "color".equals(statuslight.get("mode").asString(""));
 		source = statuslight.get("source").asString("-");
 //		if(modeColor) {
-			red = statuslight.get("red").intValue();
-			green = statuslight.get("green").intValue();
-			blue = statuslight.get("blue").intValue();
-			gain = statuslight.get("gain").intValue();
+			red = statuslight.get("red").intValue(0);
+			green = statuslight.get("green").intValue(0);
+			blue = statuslight.get("blue").intValue(0);
+			gain = statuslight.get("gain").intValue(0);
 //		} else {
-			temp = statuslight.get("temp").intValue();
-			brightness = statuslight.get("brightness").intValue();
+			temp = statuslight.get("temp").intValue(0);
+			brightness = statuslight.get("brightness").intValue(0);
 //		}
 	}
 
@@ -129,7 +129,7 @@ public class LightBulbRGB implements RGBCCTInterface {
 //		refresh(status);
 		final JsonNode setting = parent.getJSON("/settings?mode=" + (color ? "color" : "white"));
 //		refresh(setting.get("lights").get(0)); // "mode" missing
-		modeColor = "color".equals(setting.get("mode").asString());
+		modeColor = "color".equals(setting.get("mode").asString(""));
 	}
 
 	@Override

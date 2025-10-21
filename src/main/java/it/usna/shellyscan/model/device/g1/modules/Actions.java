@@ -53,7 +53,7 @@ public class Actions {
 					final JsonNode val = entry.getValue();
 					if(key.equals("urls")) {
 						for(JsonNode url: val) {
-							urls.add(url.asString());
+							urls.add(url.asString(""));
 						}
 					} else if(key.equals("enabled")) {
 						enabled = val.asBoolean();
@@ -121,7 +121,7 @@ public class Actions {
 			}
 			return res;
 		} else {
-			return "&" + name + "=" + URLEncoder.encode(val.asString(), StandardCharsets.UTF_8.name());
+			return "&" + name + "=" + URLEncoder.encode(val.asString(""), StandardCharsets.UTF_8.name());
 		}
 	}
 

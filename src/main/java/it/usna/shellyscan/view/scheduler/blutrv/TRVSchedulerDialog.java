@@ -141,7 +141,7 @@ public class TRVSchedulerDialog extends JDialog {
 				if(files.containsKey("Thermostat.Schedule.ListProfiles.json")) { // WD backup
 					JsonNode profilesNode = files.get("Thermostat.Schedule.ListProfiles.json").path("profiles");
 					ArrayList<ThermProfile> profiles = new ArrayList<>();
-					profilesNode.forEach(node -> profiles.add(new ThermProfile(node.get("id").intValue(), node.get("name").asString())) );
+					profilesNode.forEach(node -> profiles.add(new ThermProfile(node.get("id").intValue(0), node.get("name").asString(""))) );
 					if(profiles.size() > 0) {
 						ThermProfile loadProfile = (ThermProfile)JOptionPane.showInputDialog(this, LABELS.getString("dlgProfileSelectionMsg"), LABELS.getString("dlgProfileSelectionTitle"), JOptionPane.PLAIN_MESSAGE, null, profiles.toArray(), null);
 						if(loadProfile != null) {
@@ -258,7 +258,7 @@ public class TRVSchedulerDialog extends JDialog {
 		UsnaToggleAction enableAction = new UsnaToggleAction(this, "/images/Standby24.png", "/images/StandbyOn24.png",
 				e -> enableSchedule(linePanel, true), e -> enableSchedule(linePanel, false) );
 		enableAction.setTooltip("lblDisabled", "lblEnabled");
-		enableAction.setSelected(node != null && node.path("enable").booleanValue());
+		enableAction.setSelected(node != null && node.path("enable").booleanValue(false));
 		enableButton.setAction(enableAction);
 		linePanel.add(enableButton);
 
@@ -316,7 +316,7 @@ public class TRVSchedulerDialog extends JDialog {
 				final ObjectMapper jsonMapper = new ObjectMapper();
 
 				JsonNode pastedNode = jsonMapper.readTree(sch);
-				job.setCron(pastedNode.get("timespec").asString());
+				job.setCron(pastedNode.get("timespec").asString(""));
 				job.setTarget(pastedNode);
 				job.revalidate();
 				try { TimeUnit.MILLISECONDS.sleep(200); } catch (InterruptedException e1) {} // a small time to show busy pointer

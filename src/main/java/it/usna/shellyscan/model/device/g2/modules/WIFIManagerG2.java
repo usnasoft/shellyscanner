@@ -47,7 +47,7 @@ public class WIFIManagerG2 implements WIFIManager {
 		JsonNode wifi = d.getJSON("/rpc/Wifi.GetConfig").get(net);
 		enabled = wifi.get("enable").asBoolean();
 		dSSID = wifi.get("ssid").asString("");
-		staticIP = wifi.get("ipv4mode").asString().equals("static");
+		staticIP = wifi.get("ipv4mode").asString("").equals("static");
 		ip = wifi.get("ip").asString("");
 		netmask = wifi.get("netmask").asString("");
 		gw = wifi.get("gw").asString("");
@@ -164,10 +164,10 @@ public class WIFIManagerG2 implements WIFIManager {
 
 	public String restore(JsonNode wifi, String pwd) {
 		if(wifi.get("enable").asBoolean()) {
-			if(wifi.get("ipv4mode").asString().equals("static")) {
-				return set(wifi.get("ssid").asString(), pwd, wifi.get("ip").asString(), wifi.get("netmask").asString(""), wifi.get("gw").asString(""), wifi.get("nameserver").asString(""));
+			if(wifi.get("ipv4mode").asString("").equals("static")) {
+				return set(wifi.get("ssid").asString(""), pwd, wifi.get("ip").asString(""), wifi.get("netmask").asString(""), wifi.get("gw").asString(""), wifi.get("nameserver").asString(""));
 			} else {
-				return set(wifi.get("ssid").asString(), pwd);
+				return set(wifi.get("ssid").asString(""), pwd);
 			}
 		} else {
 			return disable();
@@ -182,7 +182,7 @@ public class WIFIManagerG2 implements WIFIManager {
 		if(ap.isMissingNode() == false) {
 			ObjectNode outAP = (ObjectNode)ap.deepCopy();
 //			outAP.remove("ssid");
-			if(ap.path("is_open").booleanValue() == false) {
+			if(ap.path("is_open").booleanValue(false) == false) {
 				outAP.put("pass", pwd);
 			}
 			outWifi.set("ap", outAP);

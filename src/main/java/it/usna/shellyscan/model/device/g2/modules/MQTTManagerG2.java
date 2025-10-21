@@ -35,10 +35,10 @@ public class MQTTManagerG2 implements MQTTManager {
 		this.user = settings.path("user").asString("");
 		this.prefix = settings.path("topic_prefix").asString("");
 		this.sslCA = settings.path("ssl_ca").asString("");
-		this.control = settings.path("enable_control").asBoolean();
-		this.rpc = settings.path("enable_rpc").asBoolean();
-		this.rpcNtf = settings.path("rpc_ntf").asBoolean();
-		this.statusNtf = settings.path("status_ntf").asBoolean();
+		this.control = settings.path("enable_control").asBoolean(false);
+		this.rpc = settings.path("enable_rpc").asBoolean(false);
+		this.rpcNtf = settings.path("rpc_ntf").asBoolean(false);
+		this.statusNtf = settings.path("status_ntf").asBoolean(false);
 	}
 
 	@Override

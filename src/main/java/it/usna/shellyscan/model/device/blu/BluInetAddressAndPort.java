@@ -3,6 +3,7 @@ package it.usna.shellyscan.model.device.blu;
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import it.usna.shellyscan.model.device.InetAddressAndPort;
 
@@ -58,6 +59,14 @@ public class BluInetAddressAndPort extends InetAddressAndPort {
 		}
 		return 1; // blue is greater than non blue
 		
+	}
+	
+	public String getParentsAsString() {
+		if(alternativeParents.size() > 0) {
+			return getRepresentation() + alternativeParents.stream().map(InetAddressAndPort::getRepresentation).collect(Collectors.joining(" / ", " / ", ""));
+		} else {
+			return getRepresentation() + " (1)";
+		}
 	}
 	
 	@Override

@@ -50,7 +50,7 @@ public abstract class AbstractBluDevice extends ShellyAbstractDevice {
 		super(new BluInetAddressAndPort(parent.getAddressAndPort(), Integer.parseInt(index)));
 		this.parent = parent;
 		this.componentIndex = index;
-		this.mac = compInfo.path("config").path("addr").asString();
+		this.mac = compInfo.path("config").path("addr").asString("");
 	}
 	
 	public void init(HttpClient httpClient/*, WebSocketClient wsClient*/) throws IOException {
@@ -97,7 +97,7 @@ public abstract class AbstractBluDevice extends ShellyAbstractDevice {
 			return result;
 		} else {
 			JsonNode error = resp.get("error");
-			throw new DeviceAPIException(error.get("code").intValue(), error.get("message").asString("Generic error"));
+			throw new DeviceAPIException(error.get("code").intValue(0), error.get("message").asString("Generic error"));
 		}
 	}
 	

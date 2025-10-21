@@ -169,9 +169,9 @@ public class MQTTManagerG1 implements MQTTManager {
 	public String restore(final JsonNode mqtt, String pwd) {
 		if(mqtt.get("enable").asBoolean()) {
 			// In case authentication is required, mqtt_user and mqtt_pass
-			return set(mqtt.get("server").asString(), mqtt.get("user").asString(), pwd, mqtt.get("id").asString(),
-					mqtt.get("reconnect_timeout_max").asInt(), mqtt.get("reconnect_timeout_min").asInt(), mqtt.get("clean_session").asString(), mqtt.get("keep_alive").asInt(),
-					mqtt.get("max_qos").asInt(), mqtt.get("retain").asString(), mqtt.get("update_period").asInt());
+			return set(mqtt.get("server").asString(""), mqtt.get("user").asString(""), pwd, mqtt.get("id").asString(""),
+					mqtt.get("reconnect_timeout_max").asInt(), mqtt.get("reconnect_timeout_min").asInt(), mqtt.get("clean_session").asString(""), mqtt.get("keep_alive").asInt(),
+					mqtt.get("max_qos").asInt(), mqtt.get("retain").asString(""), mqtt.get("update_period").asInt());
 		} else {
 			return disable();
 		}

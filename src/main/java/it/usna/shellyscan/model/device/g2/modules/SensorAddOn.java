@@ -126,31 +126,31 @@ public class SensorAddOn extends Meters {
 		try {
 			JsonNode cnf;
 			if(switchID != null && (cnf = configuration.get(switchID)) != null) {
-				switchName = cnf.path("name").asString();
+				switchName = cnf.path("name").asString("");
 			}
 			if(analogID != null && (cnf = configuration.get(analogID)) != null) {
-				analogName = cnf.path("name").asString();
+				analogName = cnf.path("name").asString("");
 			}
 			if(voltmeterID != null && (cnf = configuration.get(voltmeterID)) != null) {
-				voltmeterName = cnf.path("name").asString();
+				voltmeterName = cnf.path("name").asString("");
 			}
 			if(extT0ID != null && (cnf = configuration.get(extT0ID)) != null) {
-				extT0Name = cnf.path("name").asString();
+				extT0Name = cnf.path("name").asString("");
 			}
 			if(extT1ID != null && (cnf = configuration.get(extT1ID)) != null) {
-				extT1Name = cnf.path("name").asString();
+				extT1Name = cnf.path("name").asString("");
 			}
 			if(extT2ID != null && (cnf = configuration.get(extT2ID)) != null) {
-				extT2Name = cnf.path("name").asString();
+				extT2Name = cnf.path("name").asString("");
 			}
 			if(extT3ID != null && (cnf = configuration.get(extT3ID)) != null) {
-				extT3Name = cnf.path("name").asString();
+				extT3Name = cnf.path("name").asString("");
 			}
 			if(extT4ID != null && (cnf = configuration.get(extT4ID)) != null) {
-				extT4Name = cnf.path("name").asString();
+				extT4Name = cnf.path("name").asString("");
 			}
 			if(humidityID != null && (cnf = configuration.get(humidityID)) != null) {
-				humidityName = cnf.path("name").asString();
+				humidityName = cnf.path("name").asString("");
 			}
 		} catch (RuntimeException e) {
 			LOG.warn("Settings Add-on configuration changed?", e);
@@ -184,7 +184,7 @@ public class SensorAddOn extends Meters {
 				extT4 = status.path(extT4ID).get("tC").floatValue();
 			}
 			if(humidityID != null) {
-				humidity = status.path(humidityID).get("rh").intValue();
+				humidity = status.path(humidityID).get("rh").intValue(0);
 			}
 		} catch (RuntimeException e) {
 			LOG.warn("Status Add-on configuration changed?", e);
@@ -330,7 +330,7 @@ public class SensorAddOn extends Meters {
 						if(index.equals(prevIndex) == false) { // dht22 have 2 entries but must be added once
 							prevIndex = index;
 							if(inputValue.has("addr")) {
-								errors.add(addSensor(d, sensor, index, inputValue.get("addr").asString()));
+								errors.add(addSensor(d, sensor, index, inputValue.get("addr").asString("")));
 							} else {
 								errors.add(addSensor(d, sensor, index));
 							}

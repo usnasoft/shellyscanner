@@ -42,7 +42,7 @@ public class ShellyPlus0_10VDimmer extends AbstractG2Device implements /*Interna
 	@Override
 	protected void init(JsonNode devInfo) throws IOException {
 		this.hostname = devInfo.get("id").asString("");
-		this.mac = devInfo.get("mac").asString();
+		this.mac = devInfo.get("mac").asString("");
 		
 		final JsonNode config = configure();
 		
@@ -65,7 +65,7 @@ public class ShellyPlus0_10VDimmer extends AbstractG2Device implements /*Interna
 //		};
 		
 		final JsonNode config = getJSON("/rpc/Shelly.GetConfig");
-		if(SensorAddOn.ADDON_TYPE.equals(config.get("sys").get("device").path("addon_type").asString())) {
+		if(SensorAddOn.ADDON_TYPE.equals(config.get("sys").get("device").path("addon_type").asString(""))) {
 			addOn = new SensorAddOn(this);
 			meters = new Meters[] {addOn}; //(addOn.getTypes().length > 0) ? new Meters[] {baseMeasures, addOn} : new Meters[] {baseMeasures};
 		} else {

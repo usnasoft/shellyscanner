@@ -49,7 +49,7 @@ public class DynamicComponents {
 		Iterator<JsonNode> compIt = parent.getJSONIterator("/rpc/Shelly.GetComponents?dynamic_only=true&include=[%22config%22]", "components");
 		while (compIt.hasNext()) {
 			JsonNode comp = compIt.next();
-			String key = comp.get("key").asString();
+			String key = comp.get("key").asString("");
 			if(Arrays.stream(VIRTUAL_TYPES).anyMatch(type -> key/*.toLowerCase()*/.startsWith(type/*.toLowerCase()*/ + ":"))) { // VIRTUAL_TYPES
 				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 				parent.postCommand("Virtual.Delete", "{\"key\":\"" + key + "\"}");
@@ -58,7 +58,7 @@ public class DynamicComponents {
 				String typeIdx[] = key.split(":");
 				parent.postCommand("BTHome.DeleteSensor", "{\"id\":" + typeIdx[1] + "}");
 			} else if(key.toLowerCase().startsWith("bthomedevice" + ":")) { // BTHomeDevice
-				devicesAddress.add(comp.at("/config/addr").asString());
+				devicesAddress.add(comp.at("/config/addr").asString(""));
 			}
 		}
 		return devicesAddress;
@@ -75,13 +75,13 @@ public class DynamicComponents {
 				Iterator<JsonNode> storedIt = storedComponents.iterator();
 				while (storedIt.hasNext()) {
 					JsonNode storedComp = storedIt.next();
-					String storedKey = storedComp.get("key").asString().toLowerCase();
+					String storedKey = storedComp.get("key").asString("").toLowerCase();
 					if(storedKey.startsWith("bthomedevice:")) {
 						boolean exists = false;
 						Iterator<JsonNode> it = currenteComponents.iterator();
 						while (it.hasNext()) {
 							JsonNode currentComp = it.next();
-							if(storedKey.equals(currentComp.get("key").asString().toLowerCase()) && currentComp.at("/config/addr").equals(storedComp.at("/config/addr"))) {
+							if(storedKey.equals(currentComp.get("key").asString("").toLowerCase()) && currentComp.at("/config/addr").equals(storedComp.at("/config/addr"))) {
 								exists = true;
 								break;
 							}
@@ -110,7 +110,7 @@ public class DynamicComponents {
 				final Iterator<JsonNode> storedIt = storedComponents.path("components").iterator();
 				while (storedIt.hasNext()) {
 					JsonNode storedComp = storedIt.next();
-					String key = storedComp.get("key").asString();
+					String key = storedComp.get("key").asString("");
 					String typeIdx[] = key.split(":");
 					if(typeIdx.length == 2 && Arrays.stream(VIRTUAL_TYPES).anyMatch(typeIdx[0]::equals/*IgnoreCase*/)) { // add virtual component
 						TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
@@ -127,7 +127,7 @@ public class DynamicComponents {
 						if(typeIdx[0].equals/*IgnoreCase*/(GROUP_TYPE) && (value = storedComp.at("/status/value")) != null && value.size() > 0) {
 							groupsValues.add(new GroupValue(Integer.parseInt(typeIdx[1]), (ArrayNode)value));
 						}
-					} else if(typeIdx.length == 2 && typeIdx[0].equals/*IgnoreCase*/(BTHOME_SENSOR) && existingDevices.contains(storedComp.at("/config/addr").asString())) { // add BTHome sensor
+					} else if(typeIdx.length == 2 && typeIdx[0].equals/*IgnoreCase*/(BTHOME_SENSOR) && existingDevices.contains(storedComp.at("/config/addr").asString(""))) { // add BTHome sensor
 						TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 						ObjectNode out = JsonNodeFactory.instance.objectNode();
 						out.put("id", Integer.parseInt(typeIdx[1])); // keep old id
@@ -136,7 +136,7 @@ public class DynamicComponents {
 						out.set("config", config);
 						errors.add(parent.postCommand("BTHome.AddSensor", out));
 						existingKeys.add(key);
-					} else if(typeIdx.length == 2 && typeIdx[0].equals/*IgnoreCase*/(BTHOME_DEVICE) && existingDevices.contains(storedComp.at("/config/addr").asString())) { // add BTHome device
+					} else if(typeIdx.length == 2 && typeIdx[0].equals/*IgnoreCase*/(BTHOME_DEVICE) && existingDevices.contains(storedComp.at("/config/addr").asString(""))) { // add BTHome device
 						TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 						ObjectNode out = JsonNodeFactory.instance.objectNode();
 						out.put("id", Integer.parseInt(typeIdx[1])); // keep old id
@@ -167,7 +167,7 @@ public class DynamicComponents {
 	private static void groupRestoreValues(ArrayNode orig, List<String> existing) {
 		Iterator<JsonNode> origIterator = orig.iterator();
 		while(origIterator.hasNext()) {
-			String val = origIterator.next().asString();
+			String val = origIterator.next().asString("");
 			if(existing.contains(val) == false) {
 				origIterator.remove();
 			}

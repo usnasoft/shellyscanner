@@ -35,7 +35,7 @@ import it.usna.shellyscan.controller.RestoreAction;
 import it.usna.shellyscan.controller.UsnaAction;
 import it.usna.shellyscan.controller.UsnaToggleAction;
 import it.usna.shellyscan.model.Devices;
-import it.usna.shellyscan.model.device.g2.WallDisplay;
+import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.g2.modules.ScheduleManagerThermWD;
 import it.usna.shellyscan.model.device.g2.modules.ScheduleManagerThermWD.Rule;
 import it.usna.shellyscan.model.device.g2.modules.ScheduleManagerThermWD.ThermProfile;
@@ -59,7 +59,7 @@ public class WDThermSchedulerPanel extends JPanel {
 	private final JDialog parentDlg;
 //	private final WallDisplay device;
 
-	public WDThermSchedulerPanel(JDialog parent, WallDisplay device) {
+	public WDThermSchedulerPanel(JDialog parent, AbstractG2Device device) {
 		setLayout(new BorderLayout());
 		this.parentDlg = parent;
 //		this.device = device;
@@ -221,7 +221,7 @@ public class WDThermSchedulerPanel extends JPanel {
 				final ObjectMapper jsonMapper = new ObjectMapper();
 
 				JsonNode pastedNode = jsonMapper.readTree(sch);
-				job.setCron(pastedNode.get("timespec").asString());
+				job.setCron(pastedNode.get("timespec").asString(""));
 				job.setTarget(pastedNode.get("target_C").floatValue());
 				job.revalidate();
 				try { TimeUnit.MILLISECONDS.sleep(200); } catch (InterruptedException e1) {} // a small time to show busy pointer
@@ -376,7 +376,7 @@ public class WDThermSchedulerPanel extends JPanel {
 				if(files.containsKey("Thermostat.Schedule.ListProfiles.json")) { // WD backup
 					JsonNode profilesNode = files.get("Thermostat.Schedule.ListProfiles.json").path("profiles");
 					ArrayList<ThermProfile> profiles = new ArrayList<>();
-					profilesNode.forEach(node -> profiles.add(new ThermProfile(node.get("id").intValue(), node.get("name").asString())) );
+					profilesNode.forEach(node -> profiles.add(new ThermProfile(node.get("id").intValue(0), node.get("name").asString(""))) );
 					if(profiles.size() > 0) {
 						ThermProfile loadProfile = (ThermProfile)JOptionPane.showInputDialog(this, LABELS.getString("dlgProfileSelectionMsg"), LABELS.getString("dlgProfileSelectionTitle"), JOptionPane.PLAIN_MESSAGE, null, profiles.toArray(), null);
 						if(loadProfile != null) {
@@ -385,8 +385,8 @@ public class WDThermSchedulerPanel extends JPanel {
 								if(rulesPanel.getComponentCount() == 1 && getThermPanel(0).isNullJob()) {
 									rulesPanel.remove(0);
 								}
-								addJob(false, jsonRule.get("timespec").asString(), jsonRule.get("target_C").floatValue(), Integer.MAX_VALUE);
-								addRule(false, jsonRule.get("timespec").asString(), jsonRule.get("target_C").floatValue(), Integer.MAX_VALUE);
+								addJob(false, jsonRule.get("timespec").asString(""), jsonRule.get("target_C").floatValue(), Integer.MAX_VALUE);
+								addRule(false, jsonRule.get("timespec").asString(""), jsonRule.get("target_C").floatValue(), Integer.MAX_VALUE);
 							}
 						}
 					} else {
@@ -395,12 +395,12 @@ public class WDThermSchedulerPanel extends JPanel {
 				} else if(files.containsKey("TRV.ListScheduleRules.json")) { // BLU TRV backup
 					JsonNode schNode = files.get("TRV.ListScheduleRules.json").get("rules");
 					for(JsonNode jsonRule: schNode) {
-						if(jsonRule.hasNonNull("target_C") && jsonRule.get("timespec").asString().startsWith("@") == false) { // do nothing on "pos" or @(sunset|sunrise)
+						if(jsonRule.hasNonNull("target_C") && jsonRule.get("timespec").asString("").startsWith("@") == false) { // do nothing on "pos" or @(sunset|sunrise)
 							if(rulesPanel.getComponentCount() == 1 && getThermPanel(0).isNullJob()) {
 								rulesPanel.remove(0);
 							}
-							addJob(false, jsonRule.get("timespec").asString(), jsonRule.get("target_C").floatValue(), Integer.MAX_VALUE);
-							addRule(false, jsonRule.get("timespec").asString(), jsonRule.get("target_C").floatValue(), Integer.MAX_VALUE);
+							addJob(false, jsonRule.get("timespec").asString(""), jsonRule.get("target_C").floatValue(), Integer.MAX_VALUE);
+							addRule(false, jsonRule.get("timespec").asString(""), jsonRule.get("target_C").floatValue(), Integer.MAX_VALUE);
 						}
 					}
 				} else {

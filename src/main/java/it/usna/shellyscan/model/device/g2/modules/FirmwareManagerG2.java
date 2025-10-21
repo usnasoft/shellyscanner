@@ -26,13 +26,13 @@ public class FirmwareManagerG2 implements FirmwareManager {
 	private void init() {
 		try {
 			JsonNode node = d.getJSON("/rpc/Shelly.CheckForUpdate");
-			stable = node.at("/stable/build_id").asString();
-			beta = node.at("/beta/build_id").asString();
+			stable = node.at("/stable/build_id").asString(null);
+			beta = node.at("/beta/build_id").asString(null);
 			if(d instanceof BatteryDeviceInterface == false) {
 				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			}
 			JsonNode nodeDevInfo = d.getJSON("/rpc/Shelly.GetDeviceInfo");
-			current = nodeDevInfo.get("fw_id").asString();
+			current = nodeDevInfo.get("fw_id").asString(null);
 			valid = true;
 			updating = false;
 		} catch(/*IO*/Exception e) {
@@ -41,17 +41,17 @@ public class FirmwareManagerG2 implements FirmwareManager {
 			JsonNode node;
 			if(d instanceof BatteryDeviceInterface batteryDevice) {
 				if((node = batteryDevice.getStoredJSON("/rpc/Shelly.CheckForUpdate")) != null) {
-					stable = node.at("/stable/build_id").asString();
-					beta = node.at("/beta/build_id").asString();
+					stable = node.at("/stable/build_id").asString(null);
+					beta = node.at("/beta/build_id").asString(null);
 				} else if((node = batteryDevice.getStoredJSON("/rpc/Shelly.GetStatus")) != null) {
 					node = node.at("/sys/available_updates");
-					stable = node.at("/stable/version").asString(); // not id
-					beta = node.at("/beta/version").asString(); // not id
+					stable = node.at("/stable/version").asString(null); // not id
+					beta = node.at("/beta/version").asString(null); // not id
 				}
 				if((node = batteryDevice.getStoredJSON("/rpc/Shelly.GetConfig")) != null) { // probably fresher than "/rpc/Shelly.GetDeviceInfo"
-					current = node.at("/sys/device/fw_id").asString();
+					current = node.at("/sys/device/fw_id").asString(null);
 				} else if((node = batteryDevice.getStoredJSON("/shelly")) != null) {
-					current = node.path("fw_id").asString();
+					current = node.path("fw_id").asString(null);
 				}
 			}
 		}

@@ -21,7 +21,7 @@ public class Script {
 
 	private Script(AbstractG2Device device, JsonNode script) {
 		this.device = device;
-		name = script.get("name").asString();
+		name = script.get("name").asString("");
 		id = script.get("id").asInt();
 		enabled = script.get("enable").asBoolean();
 		running = script.path("running").asBoolean(false);
@@ -89,7 +89,7 @@ public class Script {
 
 	public String getCode() throws IOException {
 		try {
-			return device.getJSON("/rpc/Script.GetCode?id=" + id).get("data").asString().replaceAll("\\r+\\n", "\n");
+			return device.getJSON("/rpc/Script.GetCode?id=" + id).get("data").asString("").replaceAll("\\r+\\n", "\n");
 		} catch(IOException e) {
 			if(e instanceof DeviceOfflineException) {
 				throw e;
@@ -142,19 +142,19 @@ public class Script {
 				JsonNode existingScripts = device.getJSON("/rpc/Script.List").get("scripts");
 				HashMap<String, Integer> existingScriptsNamesIds = new HashMap<>();
 				for(JsonNode existingScript: existingScripts) {
-					existingScriptsNamesIds.put(existingScript.get("name").asString(), existingScript.get("id").asInt());
+					existingScriptsNamesIds.put(existingScript.get("name").asString(""), existingScript.get("id").asInt());
 				}
 
 				for(JsonNode jsonScript: scriptsBackup.get("scripts")) {
-					String writeToScriptName = jsonScript.get("name").asString();
+					String writeToScriptName = jsonScript.get("name").asString("");
 					if(existingScriptsNamesIds.containsKey(writeToScriptName) && overrideScripts == false) {
 						writeToScriptName = writeToScriptName + "_restored";
 						//if this also exists dynamically append numbers (counter of already existing with same name) to the name
 						for(int i = 1; existingScriptsNamesIds.containsKey(writeToScriptName); i++) {
-							writeToScriptName = jsonScript.get("name").asString() + "_restored" + i;
+							writeToScriptName = jsonScript.get("name").asString("") + "_restored" + i;
 						}
 					}
-					String code = backupJsons.get(jsonScript.get("name").asString() + ".mjs.json").get("code").asString();
+					String code = backupJsons.get(jsonScript.get("name").asString("") + ".mjs.json").get("code").asString("");
 					if(code != null) {
 						TimeUnit.MILLISECONDS.sleep(delay);
 						Script script;

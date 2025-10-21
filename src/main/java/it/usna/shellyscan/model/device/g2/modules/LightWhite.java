@@ -40,20 +40,20 @@ public class LightWhite implements WhiteInterface {
 		name = settingsWhite.get("name").asString("");
 //		JsonNode range = settingsWhite.get("range_map");
 //		if(range != null) {
-//			minB = range.get(0).intValue();
-//			maxB = range.get(1).intValue();
+//			minB = range.get(0).intValue(0);
+//			maxB = range.get(1).intValue(0);
 //		}
 	}
 	
 	public void fillStatus(JsonNode statusWhite) {
 		isOn = statusWhite.get("output").asBoolean();
-		brightness = statusWhite.get("brightness").intValue();
+		brightness = statusWhite.get("brightness").intValue(0);
 		source = statusWhite.get("source").asString("-");
 	}
 	
 	public void fillStatus(JsonNode statusWhite, JsonNode input) {
 		isOn = statusWhite.get("output").asBoolean();
-		brightness = statusWhite.get("brightness").intValue();
+		brightness = statusWhite.get("brightness").intValue(0);
 		source = statusWhite.get("source").asString("-");
 		inputIsOn = input.get("state").asBoolean();
 	}

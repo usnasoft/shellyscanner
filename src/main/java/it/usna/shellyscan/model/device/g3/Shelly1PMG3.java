@@ -44,7 +44,7 @@ public class Shelly1PMG3 extends AbstractG3Device implements ModulesHolder, Inte
 	@Override
 	protected void init(JsonNode devInfo) throws IOException {
 		this.hostname = devInfo.get("id").asString("");
-		this.mac = devInfo.get("mac").asString();
+		this.mac = devInfo.get("mac").asString("");
 		
 		final JsonNode config = configure();
 		
@@ -54,7 +54,7 @@ public class Shelly1PMG3 extends AbstractG3Device implements ModulesHolder, Inte
 	
 	private JsonNode configure() throws IOException {	
 		final JsonNode config = getJSON("/rpc/Shelly.GetConfig");
-		final String addOn = config.get("sys").get("device").path("addon_type").asString();
+		final String addOn = config.get("sys").get("device").path("addon_type").asString("");
 		if(SensorAddOn.ADDON_TYPE.equals(addOn)) {
 			sensorAddOn = new SensorAddOn(this);
 			meters = (sensorAddOn.getTypes().length > 0) ? new Meters[] {baseMeasures, sensorAddOn} : new Meters[] {baseMeasures};

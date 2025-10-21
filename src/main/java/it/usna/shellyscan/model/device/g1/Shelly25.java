@@ -93,7 +93,7 @@ public class Shelly25 extends AbstractG1Device implements ModulesHolder, Interna
 	@Override
 	protected void fillSettings(JsonNode settings) throws IOException {
 		super.fillSettings(settings);
-		modeRelay = MODE_RELAY.equals(settings.get("mode").asString());
+		modeRelay = MODE_RELAY.equals(settings.get("mode").asString(""));
 		if(modeRelay) {
 			if(relay0 == null /*|| relay1 == null*/) {
 				relay0 = new Relay(this, 0);
@@ -132,7 +132,7 @@ public class Shelly25 extends AbstractG1Device implements ModulesHolder, Interna
 	@Override
 	protected void restore(JsonNode settings, List<String> errors) throws IOException, InterruptedException {
 		errors.add(sendCommand("/settings?" + jsonNodeToURLPar(settings, "led_status_disable", "longpush_time", "factory_reset_from_switch", "mode", "wifirecovery_reboot_enabled"/*, "max_power"*/)));
-		final boolean backModeRelay = MODE_RELAY.equals(settings.get("mode").asString());
+		final boolean backModeRelay = MODE_RELAY.equals(settings.get("mode").asString(""));
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 		if(backModeRelay) {
 			Relay rel = new Relay(this, 0); // just for restore; object is later refreshed (fill called)

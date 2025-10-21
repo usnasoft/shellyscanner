@@ -30,7 +30,7 @@ public abstract class AbstractBatteryG1Device extends AbstractG1Device implement
 	@Override
 	public final void init(HttpClient httpClient, JsonNode shelly) throws IOException {
 		this.httpClient = httpClient;
-		this.mac = shelly.get("mac").asString();
+		this.mac = shelly.get("mac").asString("");
 		this.stShelly = shelly;
 		init();
 	}

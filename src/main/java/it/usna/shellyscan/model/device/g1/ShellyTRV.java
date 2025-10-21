@@ -78,9 +78,9 @@ public class ShellyTRV extends AbstractG1Device {
 	@Override
 	protected void restore(JsonNode settings, List<String> errors) throws IOException, InterruptedException {
 		JsonNode display = settings.path("display");
-		errors.add(sendCommand("/settings?child_lock=" + settings.get("child_lock").asString() +
-				"&display_brightness=" + display.get("brightness").asString() +
-				"&display_flipped=" + display.get("flipped").asString()));
+		errors.add(sendCommand("/settings?child_lock=" + settings.get("child_lock").asString("") +
+				"&display_brightness=" + display.get("brightness").asString("") +
+				"&display_flipped=" + display.get("flipped").asString("")));
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 		errors.add(thermostat.restore(settings.get("thermostats").get(0)));
 	}

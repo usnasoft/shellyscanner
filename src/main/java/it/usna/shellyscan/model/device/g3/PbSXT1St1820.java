@@ -75,9 +75,9 @@ public class PbSXT1St1820 extends XT1 implements ModulesHolder {
 		JsonNode sensors = getJSON("/rpc/Shelly.GetComponents?keys=[%22boolean:202%22,%22number:200%22,%22number:201%22,%22number:202%22]");
 		for(JsonNode sensor: sensors.path("components")) {
 			try {
-				String key = sensor.get("key").asString();
+				String key = sensor.get("key").asString("");
 				if(CURRENT_TEMP_KEY.equals(key)) {
-					boolean celsius = "°C".equals(sensor.path("config").path("meta").path("ui").path("unit").asString());
+					boolean celsius = "°C".equals(sensor.path("config").path("meta").path("ui").path("unit").asString(""));
 					if(celsius) {
 						temp = sensor.path("status").path("value").floatValue();
 					} else {

@@ -36,7 +36,7 @@ public class ThermostatG1 implements ThermostatInterface {
 	public void fillSettings(JsonNode thermostat) {
 		JsonNode profiles = thermostat.get("schedule_profile_names");
 		for(int i = 0; i < profiles.size(); i++) {
-			profileNames[i] = profiles.get(i).asString();
+			profileNames[i] = profiles.get(i).asString("");
 		}
 		autoTemp = thermostat.get("t_auto").get("enabled").asBoolean();
 	}
@@ -106,7 +106,7 @@ public class ThermostatG1 implements ThermostatInterface {
 	
 	private void fillThermostat(JsonNode thermostat) {
 		targetTemp = (float)thermostat.get("target_t").get("value").asDouble();
-//		position = thermostat.get("pos").intValue();
+//		position = thermostat.get("pos").intValue(0);
 		schedule = thermostat.get("schedule").asBoolean();
 		scheduleProfile = thermostat.get("schedule_profile").asInt();
 	}

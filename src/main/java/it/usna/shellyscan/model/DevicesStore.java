@@ -129,16 +129,16 @@ public class DevicesStore {
 					array.forEach(el -> {
 						try {
 							ghostsList.add(new GhostDevice(
-									InetAddress.getByName(el.get(ADDRESS).asString()), el.get(PORT).intValue(), el.get(HOSTNAME).asString(), el.get(MAC).asString(),
-									el.get(SSID).asString(), el.get(TYPE_NAME).asString(), el.get(TYPE_ID).asString(), el.path(GENERATION).asString(), el.get(NAME).asString(), el.path(LAST_CON).longValue(),
-									el.path(BATTERY).booleanValue(), el.path(USER_NOTE).asString(), el.path(KEYWORD_NOTE).asString()));
+									InetAddress.getByName(el.get(ADDRESS).asString("")), el.get(PORT).intValue(0), el.get(HOSTNAME).asString(""), el.get(MAC).asString(""),
+									el.get(SSID).asString(""), el.get(TYPE_NAME).asString(""), el.get(TYPE_ID).asString(""), el.path(GENERATION).asString(""), el.get(NAME).asString(""), el.path(LAST_CON).longValue(),
+									el.path(BATTERY).booleanValue(false), el.path(USER_NOTE).asString(""), el.path(KEYWORD_NOTE).asString("")));
 						} catch (UnknownHostException | RuntimeException e) {
 							LOG.error("Archive read", e);
 						}
 					});
 				}
 			} else {
-				LOG.info("Archive version is {}; " + STORE_VERSION + " expected", arc.path("ver").asString());
+				LOG.info("Archive version is {}; " + STORE_VERSION + " expected", arc.path("ver").asString(""));
 			}
 		} catch(FileNotFoundException | NoSuchFileException e) {
 			// first run?

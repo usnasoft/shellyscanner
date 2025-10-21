@@ -301,8 +301,8 @@ public abstract class ShellyAbstractDevice {
 					((ArrayNode)arrayNode).addAll(fragmentArrayNode);
 				}
 				JsonNode offsetNode;
-				if((offsetNode = resp.get("offset")) != null && (tot = resp.path("total").intValue()) > 0) { // potentially needs multiple calls
-					offset = offsetNode.intValue() + arrayNode.size();
+				if((offsetNode = resp.get("offset")) != null && (tot = resp.path("total").intValue(0)) > 0) { // potentially needs multiple calls
+					offset = offsetNode.intValue(0) + arrayNode.size();
 					req = section + ((section.contains("?")) ? "&offset=" : "?offset=") + offset;
 				}
 			} while(tot > offset);

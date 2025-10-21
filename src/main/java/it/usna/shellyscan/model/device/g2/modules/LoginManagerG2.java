@@ -43,7 +43,7 @@ public class LoginManagerG2 implements LoginManager {
 	private void init() throws IOException {
 		JsonNode shelly = d.getJSON("/shelly");
 		this.enabled = shelly.get("auth_en").asBoolean();
-		this.realm = shelly.get("id").asString();
+		this.realm = shelly.get("id").asString("");
 	}
 
 	@Override

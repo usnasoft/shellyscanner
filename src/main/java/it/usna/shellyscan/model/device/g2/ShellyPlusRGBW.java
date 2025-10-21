@@ -61,7 +61,7 @@ public class ShellyPlusRGBW extends AbstractG2Device implements ModulesHolder, I
 	@Override
 	protected void init(JsonNode devInfo) throws IOException {
 		this.hostname = devInfo.get("id").asString("");
-		this.mac = devInfo.get("mac").asString();
+		this.mac = devInfo.get("mac").asString("");
 
 		final JsonNode config = configure();
 		fillSettings(config);
@@ -70,7 +70,7 @@ public class ShellyPlusRGBW extends AbstractG2Device implements ModulesHolder, I
 
 	private JsonNode configure() throws IOException {
 		final JsonNode config = getJSON("/rpc/Shelly.GetConfig");
-		if(SensorAddOn.ADDON_TYPE.equals(config.get("sys").get("device").path("addon_type").asString())) {
+		if(SensorAddOn.ADDON_TYPE.equals(config.get("sys").get("device").path("addon_type").asString(""))) {
 			addOn = new SensorAddOn(this);
 		} else {
 			addOn = null;
@@ -111,7 +111,7 @@ public class ShellyPlusRGBW extends AbstractG2Device implements ModulesHolder, I
 	@Override
 	protected void fillSettings(JsonNode configuration) throws IOException {
 		super.fillSettings(configuration);
-		String prof = configuration.get("sys").get("device").get("profile").asString();
+		String prof = configuration.get("sys").get("device").get("profile").asString("");
 		if(prof.equals(Profile.LIGHT.code)) {
 			if(profile != Profile.LIGHT) {
 				profile = Profile.LIGHT;
@@ -205,8 +205,8 @@ public class ShellyPlusRGBW extends AbstractG2Device implements ModulesHolder, I
 	@Override
 	public void restoreCheck(Map<String, JsonNode> backupJsons, Map<RestoreMsg, Object> res) throws IOException {
 		JsonNode devInfo = backupJsons.get("Shelly.GetDeviceInfo.json");
-		if(profile.code.equals(devInfo.get("profile").asString()) == false) {
-			res.put(RestoreMsg.ERR_RESTORE_PROFILE, new String[] {profile.code, devInfo.get("profile").asString()});
+		if(profile.code.equals(devInfo.get("profile").asString("")) == false) {
+			res.put(RestoreMsg.ERR_RESTORE_PROFILE, new String[] {profile.code, devInfo.get("profile").asString("")});
 		}
 		try {
 			configure(); // maybe useless in case of mDNS use since you must reboot before -> on reboot the device registers again on mDNS ad execute a reload
@@ -228,7 +228,7 @@ public class ShellyPlusRGBW extends AbstractG2Device implements ModulesHolder, I
 		errors.add(Input.restore(this, configuration, 3));
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 		
-		final String backMode = configuration.at("/sys/device/profile").asString();
+		final String backMode = configuration.at("/sys/device/profile").asString("");
 		if(profile.code.equals(backMode)) {
 			if(profile == Profile.LIGHT) {
 				errors.add(light0.restore(configuration));
@@ -248,7 +248,7 @@ public class ShellyPlusRGBW extends AbstractG2Device implements ModulesHolder, I
 			errors.add(RestoreMsg.ERR_RESTORE_PROFILE.name());
 		}
 		
-		final boolean hf = configuration.get("plusrgbwpm").get("hf_mode").booleanValue();
+		final boolean hf = configuration.get("plusrgbwpm").get("hf_mode").booleanValue(false);
 		errors.add(postCommand("PlusRGBWPM.SetConfig", "{\"config\":{\"hf_mode\":" + hf + "}}"));
 		
 		SensorAddOn.restore(this, addOn, backupJsons, errors);

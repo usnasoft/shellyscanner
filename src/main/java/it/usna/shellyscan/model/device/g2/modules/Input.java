@@ -28,7 +28,7 @@ public class Input implements InputActionInterface {
 	
 	public void fillSettings(JsonNode input) {
 		name = input.get("name").asString("");
-		enable = input.get("enable").booleanValue();
+		enable = input.get("enable").booleanValue(false);
 //		reverse = input.get("invert").asBoolean();
 	}
 	

@@ -28,7 +28,7 @@ import it.usna.shellyscan.Main;
 import it.usna.shellyscan.controller.UsnaAction;
 import it.usna.shellyscan.controller.UsnaToggleAction;
 import it.usna.shellyscan.model.Devices;
-import it.usna.shellyscan.model.device.g2.WallDisplay;
+import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.g2.modules.ScheduleManagerThermWD;
 import it.usna.shellyscan.model.device.g2.modules.ScheduleManagerThermWD.ThermProfile;
 import it.usna.shellyscan.view.util.Msg;
@@ -55,7 +55,7 @@ class ProfilesPanel extends JPanel {
 	private JButton deleteProfileButton;
 	private JButton duplicateProfileButton;
 
-	public ProfilesPanel(JDialog parent, WallDisplay device, ScheduleManagerThermWD wdSceduleManager) {
+	public ProfilesPanel(JDialog parent, AbstractG2Device device, ScheduleManagerThermWD wdSceduleManager) {
 		this.parentDlg = parent;
 		setLayout(new BorderLayout(40, 0));
 		this.wdSceduleManager = wdSceduleManager;

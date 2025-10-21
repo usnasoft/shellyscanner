@@ -24,13 +24,13 @@ public class ThermostatG2 implements ThermostatInterface {
 	
 	public void fillSettings(JsonNode thermostat) {
 		name = thermostat.get("name").asString("");
-		heatingMode = HEATING_TYPE.equals(thermostat.get("type").asString());
+		heatingMode = HEATING_TYPE.equals(thermostat.get("type").asString(""));
 	}
 	
 	public void fillStatus(JsonNode thermostat) throws IOException {
-		enabled = thermostat.get("enable").booleanValue();
+		enabled = thermostat.get("enable").booleanValue(false);
 		targetTemp = thermostat.get("target_C").floatValue();
-		running = thermostat.get("output").booleanValue();
+		running = thermostat.get("output").booleanValue(false);
 	}
 
 	@Override

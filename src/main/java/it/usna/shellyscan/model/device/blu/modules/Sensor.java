@@ -15,7 +15,7 @@ public class Sensor {
 	protected float value;
 
 	public static Sensor create(int id, JsonNode sensorConf) {
-		int objId = sensorConf.path("obj_id").intValue();
+		int objId = sensorConf.path("obj_id").intValue(0);
 		if(objId == InputSensor.OBJ_ID) {
 			return new InputSensor(id, sensorConf);
 		} else if(objId == MotionSensor.OBJ_ID) {
@@ -27,14 +27,14 @@ public class Sensor {
 
 	protected Sensor(int id, JsonNode sensorConf) {
 		this.id = id;
-		this.idx = sensorConf.path("idx").intValue();
+		this.idx = sensorConf.path("idx").intValue(0);
 		this.mType = null;
 	}
 	
 	private Sensor(int id, int objID, JsonNode sensorConf) {
 		this.id = id;
 		this.objID = objID;
-		this.idx = sensorConf.path("idx").intValue();
+		this.idx = sensorConf.path("idx").intValue(0);
 		this.mType = switch(objID) {
 		case 0x01 -> Meters.Type.BAT;
 		case 0x2E -> Meters.Type.H;

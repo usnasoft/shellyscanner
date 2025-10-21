@@ -435,7 +435,7 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 		private final String component;
 		
 		public FMUpdateListener(int index, String component) {
-			super(json -> json.path("method").asString().equals(WebSocketDeviceListener.NOTIFY_EVENT));
+			super(json -> json.path("method").asString("").equals(WebSocketDeviceListener.NOTIFY_EVENT));
 			this.index = index;
 			this.component = component;
 		}
@@ -444,8 +444,8 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 		public void onMessage(JsonNode msg) {
 			try {
 				for(JsonNode event: msg.path("params").path("events")) {
-					String eventType = event.path("event").asString();
-					String comp = event.path("component").asString();
+					String eventType = event.path("event").asString("");
+					String comp = event.path("component").asString("");
 					if(eventType.equals("ota_progress") && component.equals(comp)) { // dowloading
 						getFirmwareManager(index).upadating(true);
 						int progress = event.path("progress_percent").asInt();

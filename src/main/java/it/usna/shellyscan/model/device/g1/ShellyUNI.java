@@ -141,7 +141,7 @@ public class ShellyUNI extends AbstractG1Device implements ModulesHolder {
 	@Override
 	protected void restore(JsonNode settings, List<String> errors) throws IOException, InterruptedException {
 		errors.add(sendCommand("/settings?" + jsonNodeToURLPar(settings, "longpush_time", "factory_reset_from_switch") +
-				"&ext_sensors_temperature_unit=" + settings.path("ext_sensors").path("temperature_unit").asString()));
+				"&ext_sensors_temperature_unit=" + settings.path("ext_sensors").path("temperature_unit").asString("")));
 
 		// ret.startsWith("[") ... don't ask ... it's an array and return an array
 		for (int i = 0; i < 3; i++) {
@@ -166,7 +166,7 @@ public class ShellyUNI extends AbstractG1Device implements ModulesHolder {
 		
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 		JsonNode adc0 = settings.get("adcs").get(0);
-		errors.add(sendCommand("/settings/adc/0?range=" + adc0.get("range").asString() + "&offset=" + adc0.path("offset").asString()));
+		errors.add(sendCommand("/settings/adc/0?range=" + adc0.get("range").asString("") + "&offset=" + adc0.path("offset").asString("")));
 		JsonNode relAct = adc0.get("relay_actions");
 
 		for(int index = 0; index < relAct.size(); index++) {

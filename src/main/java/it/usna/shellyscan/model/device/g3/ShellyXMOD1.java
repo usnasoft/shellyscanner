@@ -37,7 +37,7 @@ public class ShellyXMOD1 extends AbstractG3Device implements ModulesHolder {
 	@Override
 	protected void init(JsonNode devInfo) throws IOException {
 		this.hostname = devInfo.get("id").asString("");
-		this.mac = devInfo.get("mac").asString();
+		this.mac = devInfo.get("mac").asString("");
 
 		final JsonNode config = configure();
 
@@ -47,8 +47,8 @@ public class ShellyXMOD1 extends AbstractG3Device implements ModulesHolder {
 	
 	private JsonNode configure() throws IOException {
 		final JsonNode xmod = getJSON("/rpc/XMOD.GetInfo").get("jwt").get("xmod1");
-		numInputs = xmod.get("ni").intValue();
-		numOutputs = xmod.get("no").intValue();
+		numInputs = xmod.get("ni").intValue(0);
+		numOutputs = xmod.get("no").intValue(0);
 		numModules = Math.max(numOutputs, numInputs);
 
 		inputOutput = new DeviceModule[numModules];
@@ -61,7 +61,7 @@ public class ShellyXMOD1 extends AbstractG3Device implements ModulesHolder {
 		}
 
 		final JsonNode config = getJSON("/rpc/Shelly.GetConfig");
-		if(SensorAddOn.ADDON_TYPE.equals(config.get("sys").get("device").path("addon_type").asString())) {
+		if(SensorAddOn.ADDON_TYPE.equals(config.get("sys").get("device").path("addon_type").asString(""))) {
 			addOn = new SensorAddOn(this);
 			meters = (addOn.getTypes().length > 0) ? new Meters[] {addOn} : null;
 		} else {
@@ -153,8 +153,8 @@ public class ShellyXMOD1 extends AbstractG3Device implements ModulesHolder {
 	public void restoreCheck(Map<String, JsonNode> backupJsons, Map<RestoreMsg, Object> res) throws IOException {
 		configure(); // reload IO & addon configuration -  useless in case of mDNS use since you must reboot before -> on reboot the device registers again on mDNS ad execute a reload
 		JsonNode xmodStored = backupJsons.get("XMOD.GetInfo.json");
-		int numStoredInputs = xmodStored.at("/jwt/xmod1/ni").intValue();
-		int numStoredOutputs = xmodStored.at("/jwt/xmod1/no").intValue();
+		int numStoredInputs = xmodStored.at("/jwt/xmod1/ni").intValue(0);
+		int numStoredOutputs = xmodStored.at("/jwt/xmod1/no").intValue(0);
 		if(numStoredInputs != numInputs || numStoredOutputs != numOutputs) {
 			res.put(RestoreMsg.WARN_RESTORE_XMOD_IO, null);
 		}
@@ -165,8 +165,8 @@ public class ShellyXMOD1 extends AbstractG3Device implements ModulesHolder {
 	protected void restore(Map<String, JsonNode> backupJsons, List<String> errors) throws InterruptedException {
 		JsonNode configuration = backupJsons.get("Shelly.GetConfig.json");
 		JsonNode xmodStored = backupJsons.get("XMOD.GetInfo.json");
-		int numStoredInputs = xmodStored.at("/jwt/xmod1/ni").intValue();
-		int numStoredOutputs = xmodStored.at("/jwt/xmod1/no").intValue();
+		int numStoredInputs = xmodStored.at("/jwt/xmod1/ni").intValue(0);
+		int numStoredOutputs = xmodStored.at("/jwt/xmod1/no").intValue(0);
 		
 		for(int i = 0; i < Math.min(numStoredInputs, numInputs); i++) {
 			errors.add(Input.restore(this, configuration, i));

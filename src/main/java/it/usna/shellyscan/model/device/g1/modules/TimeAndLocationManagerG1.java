@@ -21,7 +21,7 @@ public class TimeAndLocationManagerG1 implements TimeAndLocationManager {
 	}
 	
 	private void init(JsonNode settings) {
-		server = settings.path("sntp").path("server").asString();
+		server = settings.path("sntp").path("server").asString("");
 	}
 	
 	@Override

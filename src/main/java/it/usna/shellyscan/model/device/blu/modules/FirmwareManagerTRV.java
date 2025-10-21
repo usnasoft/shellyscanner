@@ -31,11 +31,11 @@ public class FirmwareManagerTRV implements FirmwareManager {
 		updating = false;
 		try {
 			JsonNode deviceInfoNode = d.getJSON("/rpc/BluTrv.GetRemoteDeviceInfo?id=" + d.getIndex());
-			current = deviceInfoNode.at("/device_info/fw_id").asString();
+			current = deviceInfoNode.at("/device_info/fw_id").asString("");
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			
 			JsonNode newFwNode = d.getJSON("/rpc/BluTrv.CheckForUpdates?id=" + d.getIndex());
-			String lastFW = newFwNode.path("fw_id").asString();
+			String lastFW = newFwNode.path("fw_id").asString("");
 			
 			if(lastFW != null && lastFW.isEmpty() == false && lastFW.equals(current) == false) {
 				this.stable = lastFW;

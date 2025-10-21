@@ -32,7 +32,7 @@ public class XT1Thermostat implements ThermostatInterface {
 	
 	public void configTargetTemperature(JsonNode sensor) {
 		JsonNode config = sensor.path("config");
-		celsius = "°C".equals(config.path("meta").path("ui").path("unit").asString());
+		celsius = "°C".equals(config.path("meta").path("ui").path("unit").asString(""));
 		if(celsius) {
 			targetTemp = sensor.path("status").path("value").floatValue();
 			minTarget = config.path("min").floatValue();
@@ -45,7 +45,7 @@ public class XT1Thermostat implements ThermostatInterface {
 	}
 	
 	public void configEnabled(JsonNode sensor) {
-		enabled = sensor.path("status").path("value").booleanValue();
+		enabled = sensor.path("status").path("value").booleanValue(false);
 	}
 
 	@Override

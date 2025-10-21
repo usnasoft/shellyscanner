@@ -25,7 +25,7 @@ public class Roller implements RollerInterface {
 	public void fillStatus(JsonNode rollerStatus) {
 		calibrated = rollerStatus.get("positioning").asBoolean();
 		if(calibrated) {
-			position = rollerStatus.get("current_pos").intValue();
+			position = rollerStatus.get("current_pos").intValue(0);
 		}
 		source = rollerStatus.get("source").asString("-");
 	}
@@ -43,7 +43,7 @@ public class Roller implements RollerInterface {
 	@Override
 	public void setPosition(int pos) throws IOException {
 		final JsonNode roller = parent.getJSON("/roller/" + index + "?go=to_pos&roller_pos=" + pos);
-		position = roller.get("current_pos").intValue();
+		position = roller.get("current_pos").intValue(0);
 		source = roller.get("source").asString("-");
 	}
 	
@@ -65,7 +65,7 @@ public class Roller implements RollerInterface {
 	public void stop() throws IOException {
 		final JsonNode roller = parent.getJSON("/roller/" + index + "?go=stop");
 		if(calibrated) {
-			position = roller.get("current_pos").intValue();
+			position = roller.get("current_pos").intValue(0);
 		}
 		source = roller.get("source").asString("-");
 	}

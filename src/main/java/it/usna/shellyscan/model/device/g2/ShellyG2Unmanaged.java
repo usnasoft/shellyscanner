@@ -34,8 +34,8 @@ public class ShellyG2Unmanaged extends AbstractG2Device implements ShellyUnmanag
 	@Override
 	protected void init(JsonNode devInfo) {
 		try {
-			this.type = devInfo.get("app").asString();
-			this.mac = devInfo.get("mac").asString();
+			this.type = devInfo.get("app").asString("");
+			this.mac = devInfo.get("mac").asString("");
 			this.hostname = devInfo.get("id").asString("");
 
 			fillSettings(getJSON("/rpc/Shelly.GetConfig"));

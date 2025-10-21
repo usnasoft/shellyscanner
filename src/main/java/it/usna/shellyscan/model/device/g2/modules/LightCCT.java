@@ -57,15 +57,15 @@ public class LightCCT implements CCTInterface {
 	
 	public void fillStatus(JsonNode statusCCT) {
 		isOn = statusCCT.get("output").asBoolean();
-		brightness = statusCCT.get("brightness").intValue();
-		temperature = statusCCT.get("ct").intValue();
+		brightness = statusCCT.get("brightness").intValue(0);
+		temperature = statusCCT.get("ct").intValue(0);
 		source = statusCCT.get("source").asString("-");
 	}
 	
 	public void fillStatus(JsonNode statusCt, JsonNode input) {
 		isOn = statusCt.get("output").asBoolean();
-		brightness = statusCt.get("brightness").intValue();
-		temperature = statusCt.get("ct").intValue();
+		brightness = statusCt.get("brightness").intValue(0);
+		temperature = statusCt.get("ct").intValue(0);
 		source = statusCt.get("source").asString("-");
 		inputIsOn = input.get("state").asBoolean();
 	}

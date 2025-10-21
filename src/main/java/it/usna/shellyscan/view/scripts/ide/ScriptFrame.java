@@ -560,7 +560,7 @@ public class ScriptFrame extends JFrame {
 	
 	public class LogWebSocketDeviceListener extends WebSocketDeviceListener {
 		public LogWebSocketDeviceListener() {
-			super(node -> node.path("level").intValue() == 2 && node.path("fd").asInt(100 + scriptId) == 100 + scriptId); // Info
+			super(node -> node.path("level").intValue(0) == 2 && node.path("fd").asInt(100 + scriptId) == 100 + scriptId); // Info
 		}
 		
 		@Override
@@ -573,7 +573,7 @@ public class ScriptFrame extends JFrame {
 
 		@Override
 		public void onMessage(JsonNode msg) {
-			logsTextArea.append(msg.path("data").asString() + "\n");
+			logsTextArea.append(msg.path("data").asString("") + "\n");
 			logsTextArea.setCaretPosition(logsTextArea.getDocument().getLength());
 		}
 	}

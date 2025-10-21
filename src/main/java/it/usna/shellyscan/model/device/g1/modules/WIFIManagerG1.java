@@ -46,7 +46,7 @@ public class WIFIManagerG1 implements WIFIManager {
 		JsonNode sta = d.getJSON("/settings/" + net);
 		enabled = sta.get("enabled").asBoolean();
 		dSSID = sta.path("ssid").asString("");
-		staticIP = sta.path("ipv4_method").asString().equals("static");
+		staticIP = sta.path("ipv4_method").asString("").equals("static");
 		ip = sta.path("ip").asString("");
 		netmask = sta.path("mask").asString("");
 		gw = sta.path("gw").asString("");
@@ -156,6 +156,6 @@ public class WIFIManagerG1 implements WIFIManager {
 	}
 	
 	public static String restoreRoam(AbstractG1Device d, JsonNode roam) {
-		return d.sendCommand("/settings?ap_roaming_enabled=" + roam.path("enabled").asBoolean() + "&ap_roaming_threshold=" + roam.path("threshold").asString());
+		return d.sendCommand("/settings?ap_roaming_enabled=" + roam.path("enabled").asBoolean() + "&ap_roaming_threshold=" + roam.path("threshold").asString(""));
 	}
 }

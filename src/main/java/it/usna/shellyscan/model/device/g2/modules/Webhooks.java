@@ -34,7 +34,7 @@ public class Webhooks {
 		whList.forEach(hook -> {
 			int cid = hook.get("cid").asInt();
 			if(cid < DynamicComponents.MIN_ID) {
-				String event = hook.get("event").asString();
+				String event = hook.get("event").asString("");
 				int dotpos = event.indexOf('.');
 				final String eventOrigin = (dotpos > 0) ? event.substring(0, dotpos) : "";
 
@@ -49,7 +49,7 @@ public class Webhooks {
 		whList.forEach(hook -> {
 			int cid = hook.get("cid").asInt();
 			if(cid >= DynamicComponents.MIN_ID && cid <= DynamicComponents.MAX_ID) {
-				String event = hook.get("event").asString();
+				String event = hook.get("event").asString("");
 				int dotpos = event.indexOf('.');
 				final String eventOrigin = (dotpos > 0) ? event.substring(0, dotpos) : "";
 
@@ -65,7 +65,7 @@ public class Webhooks {
 	public static void delete(AbstractG2Device parent, String eventType, int cid, long delay) throws IOException {
 		JsonNode whList = parent.getJSON("/rpc/Webhook.List").get("hooks");
 		whList.forEach(hook -> {
-			if(hook.get("cid").asInt() == cid && hook.get("event").asString().startsWith(eventType + ".")) {
+			if(hook.get("cid").asInt() == cid && hook.get("event").asString("").startsWith(eventType + ".")) {
 				try { TimeUnit.MILLISECONDS.sleep(delay); } catch (InterruptedException e) {}
 				parent.postCommand("Webhook.Delete", "{\"id\":" + hook.get("id").asInt() + "}");
 			}
@@ -96,7 +96,7 @@ public class Webhooks {
 	
 	public static void restore(AbstractG2Device parent, String eventType, int storedCid, int newCid, JsonNode storedWH, long delay, List<String> errors) throws InterruptedException {
 		for(JsonNode ac: storedWH.get("hooks")) {
-			if(ac.get("cid").intValue() == storedCid && ac.get("event").asString().startsWith(eventType + ".")) {
+			if(ac.get("cid").intValue(0) == storedCid && ac.get("event").asString("").startsWith(eventType + ".")) {
 				ObjectNode thisAction = (ObjectNode)ac.deepCopy();
 				thisAction.remove("id");
 				thisAction.put("cid", newCid);
@@ -121,10 +121,10 @@ public class Webhooks {
 		private Webhook(JsonNode wh) {
 //			id = wh.get("id").asInt();
 			enable = wh.get("enable").asBoolean();
-			event = wh.get("event").asString();
-			name = wh.get("name").asString();
-			condition = wh.path("condition").asString();
-			wh.get("urls").forEach(url -> urls.add(url.asString()));
+			event = wh.get("event").asString("");
+			name = wh.get("name").asString("");
+			condition = wh.path("condition").asString("");
+			wh.get("urls").forEach(url -> urls.add(url.asString("")));
 		}
 		
 		public boolean isEnabled() {

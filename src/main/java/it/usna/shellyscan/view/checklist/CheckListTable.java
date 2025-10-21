@@ -6,8 +6,6 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
 import java.util.Comparator;
-import java.util.List;
-import java.util.stream.Collectors;
 
 import javax.swing.JLabel;
 import javax.swing.JTable;
@@ -17,7 +15,6 @@ import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableRowSorter;
 
 import it.usna.shellyscan.Main;
-import it.usna.shellyscan.model.device.InetAddressAndPort;
 import it.usna.shellyscan.model.device.blu.BluInetAddressAndPort;
 import it.usna.shellyscan.view.DevicesTable;
 import it.usna.swing.table.ExTooltipTable;
@@ -170,9 +167,8 @@ class CheckListTable extends ExTooltipTable {
 		@Override
 		public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
 			JLabel ret = (JLabel)super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-			List<InetAddressAndPort> parents;
-			if(value instanceof BluInetAddressAndPort bluAddr && (parents = bluAddr.getAlternativeParents()).size() > 0) {
-				ret.setText(bluAddr.getRepresentation() + parents.stream().map(InetAddressAndPort::getRepresentation).collect(Collectors.joining(" / ", " / ", "")));
+			if(value instanceof BluInetAddressAndPort bluAddr && bluAddr.getAlternativeParents().size() > 0) {
+				ret.setText(bluAddr.getParentsAsString());
 				ret.setForeground(Color.red);
 				if (isSelected) {
 					ret.setFont(ret.getFont().deriveFont(Font.BOLD));

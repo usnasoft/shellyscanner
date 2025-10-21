@@ -82,9 +82,9 @@ public class PbSXT1St802 extends XT1 implements ModulesHolder {
 		JsonNode sensors = getJSON("/rpc/Shelly.GetComponents?keys=[%22boolean:201%22,%22number:200%22,%22number:201%22,%22number:202%22,%22number:203%22,%22enum:201%22]");
 		for(JsonNode sensor: sensors.path("components")) {
 			try {
-				String key = sensor.get("key").asString();
+				String key = sensor.get("key").asString("");
 				if(MODE_KEY.equals(key)) {
-					this.mode = Mode.valueOf(sensor.path("status").path("value").asString().toUpperCase());
+					this.mode = Mode.valueOf(sensor.path("status").path("value").asString("").toUpperCase());
 					if(mode == Mode.HEAT || mode == Mode.COOL || mode == Mode.VENTILATION) {
 						if(thermostats == null) {
 							thermostats = new XT1Thermostat[] {thermostat};
@@ -95,7 +95,7 @@ public class PbSXT1St802 extends XT1 implements ModulesHolder {
 						thermostats = null;
 					}
 				} else if(CURRENT_TEMP_KEY.equals(key)) {
-					boolean celsius = "°C".equals(sensor.path("config").path("meta").path("ui").path("unit").asString());
+					boolean celsius = "°C".equals(sensor.path("config").path("meta").path("ui").path("unit").asString(""));
 					if(celsius) {
 						temp = sensor.path("status").path("value").floatValue();
 					} else {
@@ -151,7 +151,7 @@ public class PbSXT1St802 extends XT1 implements ModulesHolder {
 //		}
 		
 		private void setHumidity(JsonNode sensor) {
-			targetHumidity = sensor.path("status").path("value").intValue();
+			targetHumidity = sensor.path("status").path("value").intValue(0);
 		}
 
 		@Override

@@ -183,7 +183,7 @@ public class GhostDevice extends ShellyAbstractDevice {
 		try {
 			JsonNode settings = backupJsons.get("settings.json");
 			final String fileHostname = settings.get("device").get("hostname").asString("");
-			final String fileType = settings.get("device").get("type").asString();
+			final String fileType = settings.get("device").get("type").asString("");
 			if(/*fileType.length() > 0 &&*/ getTypeID().equals(fileType) == false) {
 				res.put(RestoreMsg.ERR_RESTORE_MODEL, null);
 			} else {
@@ -192,11 +192,11 @@ public class GhostDevice extends ShellyAbstractDevice {
 					res.put(RestoreMsg.PRE_QUESTION_RESTORE_HOST, fileHostname);
 				}
 				if(settings.at("/login/enabled").asBoolean()) {
-					res.put(RestoreMsg.RESTORE_LOGIN, settings.at("/login/username").asString());
+					res.put(RestoreMsg.RESTORE_LOGIN, settings.at("/login/username").asString(""));
 				}
 				// Can't restore network values
 				if(settings.at("/mqtt/enable").asBoolean() && settings.at("/mqtt/user").asString("").length() > 0) {
-					res.put(RestoreMsg.RESTORE_MQTT, settings.at("/mqtt/user").asString());
+					res.put(RestoreMsg.RESTORE_MQTT, settings.at("/mqtt/user").asString(""));
 				}
 			}
 		} catch(RuntimeException e) {
@@ -212,7 +212,7 @@ public class GhostDevice extends ShellyAbstractDevice {
 			JsonNode devInfo = backupJsons.get("Shelly.GetDeviceInfo.json");
 			JsonNode config = backupJsons.get("Shelly.GetConfig.json");
 			final String fileHostname = devInfo.get("id").asString("");
-			final String fileType = devInfo.get("app").asString();
+			final String fileType = devInfo.get("app").asString("");
 			if(getTypeID().equals(fileType) == false) {
 				res.put(RestoreMsg.ERR_RESTORE_MODEL, null);
 			} else {
@@ -225,7 +225,7 @@ public class GhostDevice extends ShellyAbstractDevice {
 				}
 				// Can't restore network values
 				if(config.at("/mqtt/enable").asBoolean() && config.at("/mqtt/user").asString("").length() > 0) {
-					res.put(RestoreMsg.RESTORE_MQTT, config.at("/mqtt/user").asString());
+					res.put(RestoreMsg.RESTORE_MQTT, config.at("/mqtt/user").asString(""));
 				}
 				// device specific
 //				restoreCheck(backupJsons, res); // TODO check compatibility with this call for any new device
@@ -245,11 +245,11 @@ public class GhostDevice extends ShellyAbstractDevice {
 			res.put(RestoreMsg.ERR_RESTORE_MODEL, null);
 			return res;
 		}
-		final String fileComponentIndex = usnaInfo.get("index").asString();
+		final String fileComponentIndex = usnaInfo.get("index").asString("");
 		JsonNode fileComponents = backupJsons.get("Shelly.GetComponents.json").path("components");
 		for(JsonNode fileComp: fileComponents) {
-			if(fileComp.path("key").asString().equals(AbstractBluDevice.DEVICE_KEY_PREFIX + fileComponentIndex)) { // find the component by fileComponentIndex
-				String fileMac = fileComp.path("config").path("addr").asString();
+			if(fileComp.path("key").asString("").equals(AbstractBluDevice.DEVICE_KEY_PREFIX + fileComponentIndex)) { // find the component by fileComponentIndex
+				String fileMac = fileComp.path("config").path("addr").asString("");
 				if(fileMac.equals(mac) == false) {
 					res.put(RestoreMsg.PRE_QUESTION_RESTORE_HOST, fileLocalName + "-" + fileMac);
 				}
@@ -266,7 +266,7 @@ public class GhostDevice extends ShellyAbstractDevice {
 		try {
 			JsonNode remoteDevInfo = backupJsons.get("Shelly.GetRemoteDeviceInfo.json");
 			JsonNode devInfo = remoteDevInfo.get("device_info");
-			if(devInfo == null || getTypeID().equals(devInfo.get("app").asString()) == false) {
+			if(devInfo == null || getTypeID().equals(devInfo.get("app").asString("")) == false) {
 				res.put(RestoreMsg.ERR_RESTORE_MODEL, null);
 			} else {
 				final String fileHostname = devInfo.get("id").asString("");

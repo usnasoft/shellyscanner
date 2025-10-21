@@ -49,7 +49,7 @@ public class LightRGBCCT implements RGBCCTInterface {
 	
 	public void fillSettings(JsonNode config) {
 		name = config.get("name").asString("");
-		colorMode = "rgb".equals(config.get("mode").asString()); // Range of values: rgb, cct
+		colorMode = "rgb".equals(config.get("mode").asString("")); // Range of values: rgb, cct
 	}
 	
 	public void fillStatus(JsonNode statusRGBCCT) {
@@ -60,7 +60,7 @@ public class LightRGBCCT implements RGBCCTInterface {
 		blue = rgbNode.get(2).asInt();
 		brightness = statusRGBCCT.get("brightness").asInt();
 		
-		temperature = statusRGBCCT.get("ct").intValue();
+		temperature = statusRGBCCT.get("ct").intValue(0);
 		
 		source = statusRGBCCT.get("source").asString("-");
 	}

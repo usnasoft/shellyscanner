@@ -44,7 +44,7 @@ public class ShellyDimmerG4 extends AbstractG4Device implements InternalTmpHolde
 	@Override
 	protected void init(JsonNode devInfo) throws IOException {
 		this.hostname = devInfo.get("id").asString("");
-		this.mac = devInfo.get("mac").asString();
+		this.mac = devInfo.get("mac").asString("");
 		
 		final JsonNode config = configure();
 		
@@ -54,7 +54,7 @@ public class ShellyDimmerG4 extends AbstractG4Device implements InternalTmpHolde
 	
 	private JsonNode configure() throws IOException {	
 		final JsonNode config = getJSON("/rpc/Shelly.GetConfig");
-		if(SensorAddOn.ADDON_TYPE.equals(config.get("sys").get("device").path("addon_type").asString())) {
+		if(SensorAddOn.ADDON_TYPE.equals(config.get("sys").get("device").path("addon_type").asString(""))) {
 			sensorAddOn = new SensorAddOn(this);
 			meters = (sensorAddOn.getTypes().length > 0) ? new Meters[] {baseMeasures, sensorAddOn} : new Meters[] {baseMeasures};
 		} else {

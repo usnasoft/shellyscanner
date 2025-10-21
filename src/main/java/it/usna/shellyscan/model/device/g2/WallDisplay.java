@@ -105,7 +105,7 @@ public class WallDisplay extends AbstractG2Device implements ModulesHolder {
 		super.fillStatus(status);
 		temp = status.path("temperature:0").path("tC").floatValue();
 		humidity = status.path("humidity:0").path("rh").floatValue();
-		lux = status.path("illuminance:0").path("lux").intValue();
+		lux = status.path("illuminance:0").path("lux").intValue(0);
 		if(relay != null) {
 			relay.fillStatus(status.get("switch:0"), status.get("input:0"));
 		} else {
@@ -125,7 +125,7 @@ public class WallDisplay extends AbstractG2Device implements ModulesHolder {
 			try {
 				JsonNode profiles = getJSON("/rpc/Thermostat.Schedule.ListProfiles?id=0").get("profiles");
 				for(JsonNode p: profiles) {
-					l.add("(Thermostat.Schedule.ListRules [" + p.path("name").asString() + "])/rpc/Thermostat.Schedule.ListRules?id=0&profile_id=" + p.get("id").asString());
+					l.add("(Thermostat.Schedule.ListRules [" + p.path("name").asString("") + "])/rpc/Thermostat.Schedule.ListRules?id=0&profile_id=" + p.get("id").asString(""));
 				}
 			} catch (IOException e) {}
 			return l.toArray(String[]::new);
@@ -155,7 +155,7 @@ public class WallDisplay extends AbstractG2Device implements ModulesHolder {
 			JsonNode profiles = sectionToStream("/rpc/Thermostat.Schedule.ListProfiles?id=0", "Thermostat.Schedule.ListProfiles.json", out);
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			for(JsonNode p: profiles.get("profiles")) {
-				final String id = p.get("id").asString();
+				final String id = p.get("id").asString("");
 				sectionToStream("/rpc/Thermostat.Schedule.ListRules?id=0&profile_id=" + id, "Thermostat.Schedule.ListRules_profile_id-" + id + ".json", out);
 				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			}

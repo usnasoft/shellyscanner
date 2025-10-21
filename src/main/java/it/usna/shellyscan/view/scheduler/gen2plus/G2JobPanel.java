@@ -48,7 +48,7 @@ public class G2JobPanel extends AbstractCronPanel {
 			setCron(DEF_CRON);
 			addCall("", "", 0);
 		} else {
-			setCron(scheduleNode.path("timespec").asString());
+			setCron(scheduleNode.path("timespec").asString(""));
 			JsonNode calls = scheduleNode.path("calls");
 			if(calls.size() > 0) {
 				setCalls(scheduleNode.path("calls"));
@@ -73,7 +73,7 @@ public class G2JobPanel extends AbstractCronPanel {
 			if(call.hasNonNull("origin")) {
 				systemJob = true;
 			}
-			addCall(call.path("method").asString(), params.isEmpty() ? "" :  params.substring(1, params.length() - 1), i);
+			addCall(call.path("method").asString(""), params.isEmpty() ? "" :  params.substring(1, params.length() - 1), i);
 		}
 		if(systemJob) {
 			enableEdit(callsPanel, false);

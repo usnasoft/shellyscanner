@@ -54,7 +54,7 @@ public class ShellyPro1 extends AbstractProDevice implements ModulesHolder, Inte
 		super.fillSettings(configuration);
 		
 		JsonNode switchConf0 = configuration.get("switch:0");
-		inputKey = switchConf0.path("input_id").intValue() == 0 ? "input:0" : "input:1";;
+		inputKey = switchConf0.path("input_id").intValue(0) == 0 ? "input:0" : "input:1";;
 		relay.fillSettings(switchConf0, configuration.get(inputKey));
 	}
 	

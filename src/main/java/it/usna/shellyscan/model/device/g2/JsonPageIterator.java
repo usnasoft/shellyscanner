@@ -29,7 +29,7 @@ public class JsonPageIterator implements Iterator<JsonNode>, Iterable<JsonNode> 
 		this.method = method;
 		this.arrayKey = arrayKey;
 		JsonNode resp = device.getJSON(method);
-		this.numNodes = resp.path("total").intValue();
+		this.numNodes = resp.path("total").intValue(0);
 		this.current = resp.path(arrayKey).iterator();
 	}
 
