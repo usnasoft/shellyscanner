@@ -451,8 +451,9 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 						}
 					}
 				}
-				if(config.at("/mqtt/enable").asBoolean() && config.at("/mqtt/user").asString("").isEmpty() == false) {
-					res.put(RestoreMsg.RESTORE_MQTT, config.at("/mqtt/user").asString(""));
+				JsonNode mqtt = config.path("mqtt");
+				if(mqtt.isMissingNode() == false && mqtt.path("enable").asBoolean(false) && mqtt.path("user").asString("").isEmpty() == false) {
+					res.put(RestoreMsg.RESTORE_MQTT, mqtt.path("user").asString(""));
 				}
 				JsonNode storedScripts = backupJsons.get("Script.List.json");
 				if(storedScripts != null && storedScripts.path("scripts").size() > 0) {
@@ -505,12 +506,8 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 			errors.add("->r_step:restoreCommonConfig");
 			restoreCommonConfig(config, delay, userPref, errors);
 
-			errors.add("->r_step:restoreSchedule");
-			JsonNode schedule = backupJsons.get("Schedule.List.json");
-			if(schedule != null) { // some devices do not have Schedule.List +H&T
-				TimeUnit.MILLISECONDS.sleep(delay);
-				ScheduleManager.restore(this, schedule, delay, errors);
-			}
+			errors.add("->r_step:Scheduler");
+			ScheduleManager.restore(this, backupJsons, delay, errors);
 
 			errors.add("->r_step:Script");
 			Script.restoreAll(this, backupJsons, delay, userPref.containsKey(RestoreMsg.QUESTION_RESTORE_SCRIPTS_OVERRIDE), userPref.containsKey(RestoreMsg.QUESTION_RESTORE_SCRIPTS_ENABLE_LIKE_BACKED_UP), errors);
@@ -532,16 +529,17 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 			TimeUnit.MILLISECONDS.sleep(delay);
 			Network currentConnection = WIFIManagerG2.currentConnection(this);
 			if(currentConnection != Network.UNKNOWN) {
-				JsonNode sta1Node = config.at("/wifi/sta1");
-				if(sta1Node.isMissingNode() == false && (userPref.containsKey(RestoreMsg.RESTORE_WI_FI2) || sta1Node.path("is_open").asBoolean() || sta1Node.path("enable").asBoolean() == false) && currentConnection != Network.SECONDARY) {
+				JsonNode wifi2 = config.at("/wifi/sta1");
+				if(wifi2.isMissingNode() == false && (userPref.containsKey(RestoreMsg.RESTORE_WI_FI2) || wifi2.path("is_open").asBoolean() || wifi2.path("enable").asBoolean() == false) && currentConnection != Network.SECONDARY) {
 					TimeUnit.MILLISECONDS.sleep(delay);
 					WIFIManagerG2 wm = new WIFIManagerG2(this, Network.SECONDARY, true);
-					errors.add(wm.restore(sta1Node, userPref.get(RestoreMsg.RESTORE_WI_FI2)));
+					errors.add(wm.restore(wifi2, userPref.get(RestoreMsg.RESTORE_WI_FI2)));
 				}
-				if((userPref.containsKey(RestoreMsg.RESTORE_WI_FI1) || config.at("/wifi/sta/is_open").asBoolean() || config.at("/wifi/sta/enable").asBoolean() == false) && currentConnection != Network.PRIMARY) {
+				JsonNode wifi = config.at("/wifi/sta");
+				if((userPref.containsKey(RestoreMsg.RESTORE_WI_FI1) || wifi.path("is_open").asBoolean() || wifi.path("enable").asBoolean() == false) && currentConnection != Network.PRIMARY) {
 					TimeUnit.MILLISECONDS.sleep(delay);
 					WIFIManagerG2 wm = new WIFIManagerG2(this, Network.PRIMARY, true);
-					errors.add(wm.restore(config.at("/wifi/sta"), userPref.get(RestoreMsg.RESTORE_WI_FI1)));
+					errors.add(wm.restore(wifi, userPref.get(RestoreMsg.RESTORE_WI_FI1)));
 				}
 				
 				TimeUnit.MILLISECONDS.sleep(delay);
@@ -550,7 +548,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 						(userPref.containsKey(RestoreMsg.RESTORE_WI_FI_AP) || apNode.path("is_open").asBoolean() || apNode.path("enable").asBoolean() == false)) {
 					errors.add(WIFIManagerG2.restoreAP_roam(this, config.get("wifi"), userPref.get(RestoreMsg.RESTORE_WI_FI_AP)));
 				} else {
-					errors.add(WIFIManagerG2.restoreRoam(this, config.get("wifi")));
+					errors.add(WIFIManagerG2.restoreRoam(this, config.get("wifi"))); // WIFIManagerG2.restoreAP_roam(...) also restore roam parameters
 				}
 			}
 			
@@ -572,7 +570,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 	}
 
 	// Shelly.GetConfig.json
-	protected void restoreCommonConfig(JsonNode config, final long delay, Map<RestoreMsg, String> userPref, List<String> errors) throws InterruptedException, IOException {
+	protected void restoreCommonConfig(JsonNode config, final long delay, Map<RestoreMsg, String> userPref, List<String> errors) throws InterruptedException {
 		ObjectNode outConfig = JsonNodeFactory.instance.objectNode();
 
 		// BLE.SetConfig
@@ -621,13 +619,13 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 		}
 		
 		final JsonNode mqtt = config.path("mqtt");
-		if(userPref.containsKey(RestoreMsg.RESTORE_MQTT) || mqtt.path("enable").asBoolean() == false || mqtt.path("user").asString("").isEmpty()) {
+		if(mqtt.isMissingNode() == false && userPref.containsKey(RestoreMsg.RESTORE_MQTT) || mqtt.path("enable").asBoolean() == false || mqtt.path("user").asString("").isEmpty()) {
 			TimeUnit.MILLISECONDS.sleep(delay);
 			errors.add(MQTTManagerG2.restore(this, mqtt, userPref.get(RestoreMsg.RESTORE_MQTT)));
 		}
 	}
 	
-	public static ObjectNode createIndexedRestoreNode(JsonNode backConfig, String type, int index) { // todo addon, input, switch
+	public static ObjectNode createIndexedRestoreNode(JsonNode backConfig, String type, int index) {
 		ObjectNode out = JsonNodeFactory.instance.objectNode();
 		out.put("id", index);
 		ObjectNode data = (ObjectNode)backConfig.get(type + ":" + index).deepCopy();

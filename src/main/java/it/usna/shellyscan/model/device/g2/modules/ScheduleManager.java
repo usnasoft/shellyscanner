@@ -2,6 +2,7 @@ package it.usna.shellyscan.model.device.g2.modules;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
@@ -44,14 +45,20 @@ public class ScheduleManager {
 		return device.postCommand("Schedule.Delete", "{\"id\":" + id + "}");
 	}
 	
-	// Remove all existing jobs and add stored ones
-	public static void restore(AbstractG2Device parent, JsonNode schedule, final long delay, List<String> errors) throws InterruptedException {
-		errors.add(parent.postCommand("Schedule.DeleteAll", "{}"));
-		for(JsonNode sc: schedule.get("jobs")) {
-			ObjectNode thisSc = (ObjectNode)sc.deepCopy();
-			thisSc.remove("id");
+	/**
+	 * Remove all existing jobs and add stored ones; do nothing if backupJsons does not contains "Schedule.List.json"
+	 */
+	public static void restore(AbstractG2Device parent, Map<String, JsonNode> backupJsons, final long delay, List<String> errors) throws InterruptedException {
+		JsonNode schedule = backupJsons.get("Schedule.List.json");
+		if(schedule != null) { // some devices do not have Schedule.List +H&T
 			TimeUnit.MILLISECONDS.sleep(delay);
-			errors.add(parent.postCommand("Schedule.Create", thisSc));
+			errors.add(parent.postCommand("Schedule.DeleteAll", "{}"));
+			for(JsonNode sc: schedule.get("jobs")) {
+				ObjectNode thisSc = (ObjectNode)sc.deepCopy();
+				thisSc.remove("id");
+				TimeUnit.MILLISECONDS.sleep(delay);
+				errors.add(parent.postCommand("Schedule.Create", thisSc));
+			}
 		}
 	}
 }

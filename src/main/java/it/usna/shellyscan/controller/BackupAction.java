@@ -115,6 +115,6 @@ public class BackupAction extends UsnaAction {
 	}
 	
 	public static String defFileName(ShellyAbstractDevice device) {
-		return device.getHostname().replaceAll("[^\\w_-]+", "_") + "." + Main.BACKUP_FILE_EXT;
+		return device.getHostname().replaceAll("[^\\w\\-]+", "_") + "." + Main.BACKUP_FILE_EXT;
 	}
 }

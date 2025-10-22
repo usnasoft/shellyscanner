@@ -11,8 +11,8 @@ public class BluInetAddressAndPort extends InetAddressAndPort {
 	private final ArrayList<InetAddressAndPort> alternativeParents = new ArrayList<>();
 	private final int index; // the index identifying the device among the parent components
 
-	public BluInetAddressAndPort(InetAddressAndPort address, int index) {
-		super(address.getAddress(), address.getPort());
+	public BluInetAddressAndPort(InetAddressAndPort addressAndPort, int index) {
+		super(addressAndPort);
 		this.index = index;
 	}
 	

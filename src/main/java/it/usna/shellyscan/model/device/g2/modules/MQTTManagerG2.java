@@ -134,7 +134,7 @@ public class MQTTManagerG2 implements MQTTManager {
 	public static String restore(AbstractG2Device parent, final JsonNode mqtt, String pwd) {
 		ObjectNode outConfig = JsonNodeFactory.instance.objectNode();
 		ObjectNode mqttCopy = (ObjectNode)mqtt.deepCopy();
-		if(pwd != null && pwd.length() > 0) {
+		if(pwd != null && pwd.isEmpty() == false) {
 			mqttCopy.put("pass", pwd);
 		}
 		outConfig.set("config", mqttCopy);

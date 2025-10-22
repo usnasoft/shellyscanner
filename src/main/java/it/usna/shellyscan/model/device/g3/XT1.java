@@ -61,12 +61,8 @@ public class XT1 extends AbstractG3Device {
 			errors.add("->r_step:restoreCommonConfig");
 			restoreCommonConfig(config, delay, userPref, errors);
 
-			errors.add("->r_step:restoreSchedule");
-			JsonNode schedule = backupJsons.get("Schedule.List.json");
-			if(schedule != null) { // some devices do not have Schedule.List +H&T
-				TimeUnit.MILLISECONDS.sleep(delay);
-				ScheduleManager.restore(this, schedule, delay, errors);
-			}
+			errors.add("->r_step:Scheduler");
+			ScheduleManager.restore(this, backupJsons, delay, errors);
 
 //			errors.add("->r_step:Script");
 //			Script.restoreAll(this, backupJsons, delay, userPref.containsKey(RestoreMsg.QUESTION_RESTORE_SCRIPTS_OVERRIDE), userPref.containsKey(RestoreMsg.QUESTION_RESTORE_SCRIPTS_ENABLE_LIKE_BACKED_UP), errors);

@@ -12,6 +12,7 @@ import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.ProviderNotFoundException;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -184,7 +185,7 @@ public class RestoreAction extends UsnaAction {
 				Msg.warningMsg(mainView, "<html>" + warn);
 			}
 
-			Map<RestoreMsg, String> resData = new HashMap<>();
+			Map<RestoreMsg, String> resData = new EnumMap<>(RestoreMsg.class);
 
 			if(test.containsKey(RestoreMsg.RESTORE_LOGIN) && multi == false) {
 				DialogAuthentication credentials = new DialogAuthentication(mainView,
@@ -313,7 +314,7 @@ public class RestoreAction extends UsnaAction {
 	}
 
 	private static String erroreMsg(List<String> errors) {
-		String err = errors.stream().filter(s-> s != null && s.length() > 0 && s.startsWith("->r_step:") == false)
+		String err = errors.stream().filter(s-> s != null && s.isEmpty() == false && s.startsWith("->r_step:") == false)
 				.map(s -> LABELS.containsKey(ERROR_MSG_PREFIX + s) ? LABELS.getString(ERROR_MSG_PREFIX + s) : s).distinct().collect(Collectors.joining("\n"));
 		if(err.isEmpty() == false) {
 			LOG.debug(errors.stream().map(s -> s == null ? "-" : s).collect(Collectors.joining("\n")));

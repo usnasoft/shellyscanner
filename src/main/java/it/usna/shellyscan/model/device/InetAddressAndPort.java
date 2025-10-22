@@ -20,6 +20,13 @@ public class InetAddressAndPort implements Comparable<InetAddressAndPort> {
 		sortValue = (long)(b[0] & 0xFF)<<40 | (long)(b[1] & 0xFF)<<32 | (long)(b[2] & 0xFF)<<24 | (long)(b[3] & 0xFF)<<16 | port;
 	}
 	
+	public InetAddressAndPort(InetAddressAndPort addressAndPort) {
+		this.address = addressAndPort.getAddress();
+		this.port = addressAndPort.getPort();
+		sortValue = addressAndPort.sortValue;
+		stringValue = addressAndPort.stringValue;
+	}
+	
 	public InetAddress getAddress() {
 		return address;
 	}

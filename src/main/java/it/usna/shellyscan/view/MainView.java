@@ -70,7 +70,6 @@ import it.usna.shellyscan.model.device.blu.BluTRV;
 import it.usna.shellyscan.model.device.g1.AbstractG1Device;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.g2.WallDisplay;
-import it.usna.shellyscan.model.device.g2.WallDisplayX2i;
 import it.usna.shellyscan.view.appsettings.DialogAppSettings;
 import it.usna.shellyscan.view.chart.MeasuresChart;
 import it.usna.shellyscan.view.checklist.CheckListView;
@@ -129,7 +128,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 			i -> new DialogDeviceInfo(MainView.this, model, i) );
 	
 	private Action schedulerEditAction = new UsnaSelectedAction(this, devicesTable, "action_scheduler_name", "action_scheduler_tooltip", null, "/images/Calendar.png", i -> {
-		if(model.get(i) instanceof WallDisplay || model.get(i) instanceof WallDisplayX2i) {
+		if(model.get(i) instanceof WallDisplay) {
 			new WDSchedulerDialog(MainView.this, (AbstractG2Device)model.get(i));
 		} else if(model.get(i) instanceof AbstractG2Device g2) {
 			new G2SchedulerDialog(MainView.this, g2);
