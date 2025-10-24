@@ -42,6 +42,7 @@ import it.usna.shellyscan.model.device.blu.BluInetAddressAndPort;
 import it.usna.shellyscan.model.device.blu.BluTRV;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.g2.AbstractProDevice;
+import it.usna.shellyscan.model.device.g2.modules.DynamicComponents;
 import it.usna.shellyscan.model.device.g3.AbstractG3Device;
 import it.usna.shellyscan.model.device.g4.AbstractG4Device;
 import tools.jackson.core.JacksonException;
@@ -397,7 +398,7 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 				if(d instanceof AbstractProDevice || d instanceof AbstractG3Device || d instanceof AbstractG4Device) {
 					for(JsonNode compInfo: ((AbstractG2Device)d).getJSONIterator("/rpc/Shelly.GetComponents?dynamic_only=true", "components")) { // empty on 401
 						String key = compInfo.path("key").asString("");
-						if(key.startsWith(AbstractBluDevice.DEVICE_KEY_PREFIX) || key.startsWith(BluTRV.DEVICE_KEY_PREFIX)) {
+						if(key.startsWith(DynamicComponents.DEVICE_KEY_PREFIX) || key.startsWith(BluTRV.DEVICE_KEY_PREFIX)) {
 							newBluDevice(d, compInfo, key);
 						}
 //						if(key.startsWith(BluTRV.DEVICE_KEY_PREFIX)) { newBluDevice(d, compInfo, key); }

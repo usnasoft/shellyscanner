@@ -69,6 +69,7 @@ import it.usna.shellyscan.model.device.g2.ShellyPlusi4;
 import it.usna.shellyscan.model.device.g2.ShellyPro1;
 import it.usna.shellyscan.model.device.g2.ShellyPro1PM;
 import it.usna.shellyscan.model.device.g2.ShellyPro2;
+import it.usna.shellyscan.model.device.g2.ShellyPro2CB;
 import it.usna.shellyscan.model.device.g2.ShellyPro2PM;
 import it.usna.shellyscan.model.device.g2.ShellyPro3;
 import it.usna.shellyscan.model.device.g2.ShellyPro3EM;
@@ -80,6 +81,8 @@ import it.usna.shellyscan.model.device.g2.ShellyProEM50;
 import it.usna.shellyscan.model.device.g2.ShellyProRGBWW;
 import it.usna.shellyscan.model.device.g2.ShellyWallDimmer;
 import it.usna.shellyscan.model.device.g2.WallDisplay;
+import it.usna.shellyscan.model.device.g2.WallDisplayX2i;
+import it.usna.shellyscan.model.device.g2.modules.DynamicComponents;
 import it.usna.shellyscan.model.device.g2.modules.LoginManagerG2;
 import it.usna.shellyscan.model.device.g3.AbstractG3Device;
 import it.usna.shellyscan.model.device.g3.PbSOgemraySW40;
@@ -92,6 +95,8 @@ import it.usna.shellyscan.model.device.g3.Shelly1PMG3;
 import it.usna.shellyscan.model.device.g3.Shelly2LG3;
 import it.usna.shellyscan.model.device.g3.Shelly2PMG3;
 import it.usna.shellyscan.model.device.g3.Shelly3EM63;
+import it.usna.shellyscan.model.device.g3.ShellyBulbDuoG3;
+import it.usna.shellyscan.model.device.g3.ShellyBulbRGBG3;
 import it.usna.shellyscan.model.device.g3.ShellyDimmerG3;
 import it.usna.shellyscan.model.device.g3.ShellyG3Unmanaged;
 import it.usna.shellyscan.model.device.g3.ShellyGatewayG3;
@@ -109,10 +114,13 @@ import it.usna.shellyscan.model.device.g4.AbstractG4Device;
 import it.usna.shellyscan.model.device.g4.Shelly1G4;
 import it.usna.shellyscan.model.device.g4.Shelly1PMG4;
 import it.usna.shellyscan.model.device.g4.Shelly2PMG4;
+import it.usna.shellyscan.model.device.g4.ShellyDimmerG4;
 import it.usna.shellyscan.model.device.g4.ShellyG4Unmanaged;
 import it.usna.shellyscan.model.device.g4.ShellyMini1G4;
 import it.usna.shellyscan.model.device.g4.ShellyMini1PMG4;
 import it.usna.shellyscan.model.device.g4.ShellyPowerStrip4G;
+import it.usna.shellyscan.model.device.g4.ShellyPresenceG4;
+import it.usna.shellyscan.model.device.g4.ShellyPro1PM40G4;
 import it.usna.shellyscan.view.DialogAuthentication;
 import tools.jackson.databind.JsonNode;
 
@@ -239,7 +247,7 @@ public class DevicesFactory {
 				case ShellyPlus0_10VDimmer.ID -> new ShellyPlus0_10VDimmer(address, port, name);
 				case ShellyGateway.ID -> new ShellyGateway(address, port, name);
 				case WallDisplay.ID -> new WallDisplay(address, port, name);
-
+				case WallDisplayX2i.ID -> new WallDisplayX2i(address, port, name);
 				case ShellyPlusUNI.ID -> new ShellyPlusUNI(address, port, name);
 				// Plus - Battery
 				case ShellyPlusHT.ID -> new ShellyPlusHT(address, port, name);
@@ -250,12 +258,18 @@ public class DevicesFactory {
 				case ShellyPro2PM.ID -> new ShellyPro2PM(address, port, name);
 				case ShellyPro2.ID -> new ShellyPro2(address, port, name);
 				case ShellyPro3.ID -> new ShellyPro3(address, port, name);
-				case ShellyPro4PM.ID -> ShellyProDualCover.MODEL.equals(info.get("model").asString()) ? new ShellyProDualCover(address, port, name) : new ShellyPro4PM(address, port, name);
-				case ShellyProDimmer1.ID -> ShellyProDimmer2.MODEL.equals(info.get("model").asString()) ? new ShellyProDimmer2(address, port, name) : new ShellyProDimmer1(address, port, name);
+				case ShellyPro4PM.ID -> ShellyProDualCover.MODEL.equals(info.get("model").asString("")) ? new ShellyProDualCover(address, port, name) : new ShellyPro4PM(address, port, name);
+				case ShellyProDimmer1.ID -> ShellyProDimmer2.MODEL.equals(info.get("model").asString("")) ? new ShellyProDimmer2(address, port, name) : new ShellyProDimmer1(address, port, name);
 				case ShellyProEM50.ID -> new ShellyProEM50(address, port, name);
 				case ShellyPro3EM.ID -> new ShellyPro3EM(address, port, name);
 				case ShellyProRGBWW.ID -> new ShellyProRGBWW(address, port, name);
-
+				case ShellyPro2CB.ID -> { // remove ???
+					if(ShellyPro2CB.MODEL.equals(info.get("model").asString(""))) {
+						yield new ShellyPro2CB(address, port, name);
+					} else {
+						yield new ShellyG2Unmanaged(address, port, name);
+					}
+				}
 				default -> new ShellyG2Unmanaged(address, port, name);
 			};
 		} catch(Exception e) { // really unexpected
@@ -298,7 +312,8 @@ public class DevicesFactory {
 			case Shelly1LG3.ID -> new Shelly1LG3(address, port, name);
 			case Shelly2LG3.ID -> new Shelly2LG3(address, port, name);
 			case ShellyGatewayG3.ID -> new ShellyGatewayG3(address, port, name);
-
+			case ShellyBulbDuoG3.ID -> new ShellyBulbDuoG3(address, port, name);
+			case ShellyBulbRGBG3.ID -> new ShellyBulbRGBG3(address, port, name);
 			// X
 			case ShellyXMOD1.ID -> new ShellyXMOD1(address, port, name);
 			// Powered by Shelly
@@ -343,11 +358,11 @@ public class DevicesFactory {
 			case Shelly2PMG4.ID, Shelly2PMG4.ID_ZB -> new Shelly2PMG4(address, port, name);
 			case ShellyMini1G4.ID, ShellyMini1G4.ID_ZB -> new ShellyMini1G4(address, port, name);
 			case ShellyMini1PMG4.ID, ShellyMini1PMG4.ID_ZB -> new ShellyMini1PMG4(address, port, name);
-
+			case ShellyDimmerG4.ID, ShellyDimmerG4.ID_ZB -> new ShellyDimmerG4(address, port, name);
 			case ShellyPowerStrip4G.ID, ShellyPowerStrip4G.ID_ZB -> new ShellyPowerStrip4G(address, port, name);
-
+			case ShellyPresenceG4.ID -> new ShellyPresenceG4(address, port, name);
 			// PRO
-
+			case ShellyPro1PM40G4.ID, ShellyPro1PM40G4.ID_ZB -> new ShellyPro1PM40G4(address, port, name);
 			default -> new ShellyG4Unmanaged(address, port, name);
 			};
 		} catch(Exception e) { // really unexpected
@@ -395,7 +410,7 @@ public class DevicesFactory {
 	public static AbstractBluDevice createBlu(AbstractG2Device parent, HttpClient httpClient, /*WebSocketClient wsClient,*/ JsonNode info, String key) {
 		AbstractBluDevice blu;
 		try {
-			if(key.startsWith(AbstractBluDevice.DEVICE_KEY_PREFIX)) {
+			if(key.startsWith(DynamicComponents.DEVICE_KEY_PREFIX)) {
 //				final String type = info.path("config").path("meta").path("ui").path("local_name").asString("");
 				int model = info.path("attrs").path("model_id").asInt(-1);
 				blu = new BTHomeDevice(parent, info, model, key.substring(13));

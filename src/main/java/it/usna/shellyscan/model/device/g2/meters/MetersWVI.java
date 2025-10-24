@@ -15,9 +15,9 @@ public class MetersWVI extends Meters {
 	}
 	
 	public void fill(JsonNode status) {
-		power = status.path("apower").floatValue();
-		voltage = status.path("voltage").floatValue();
-		current = status.path("current").floatValue();
+		power = status.get("apower").floatValue();
+		voltage = status.get("voltage").floatValue();
+		current = status.get("current").floatValue();
 	}
 	
 	@Override

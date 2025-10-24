@@ -393,6 +393,8 @@ various fix on scheduler editor
 button zb/h&t zb
 Dimmer G4
 ottimizzazione ip sort (long)
+
+No sembra essre utile:
 it.usna.shellyscan.model.device.blu.BTHomeDevice.refreshStatus()
 e
 it.usna.shellyscan.model.device.blu.BTHomeDevice.refreshSettings()

@@ -6,3 +6,5 @@ jpackage --type exe -n ShellyScanner --app-version 1.2.2 --copyright usnasoft --
 
 
 https://github.com/wixtoolset/wix3/releases/tag/wix3141rtm
+
+https://stackoverflow.com/questions/74498307/use-jpackage-with-wix-4

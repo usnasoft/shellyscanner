@@ -132,7 +132,7 @@ public class PbSXT1St802 extends XT1 implements ModulesHolder {
 	}
 	
 	@Override
-	protected void restore(Map<String, JsonNode> backupJsons, List<String> errors) throws IOException {
+	protected void restore(Map<String, JsonNode> backupJsons, List<String> errors) {
 		ObjectNode out = JsonNodeFactory.instance.objectNode();
 		out.put("id", 0);
 		ObjectNode config = (ObjectNode)backupJsons.get("Service.GetConfig.json");

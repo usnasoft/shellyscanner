@@ -34,10 +34,66 @@ public class DynamicComponents {
 	public static final String BTHOME_DEVICE = "bthomedevice";
 	public static final String BTHOME_SENSOR = "bthomesensor";
 	
+	public static final String DEVICE_KEY_PREFIX = BTHOME_DEVICE + ":"; // "bthomedevice:"
+	public static final String SENSOR_KEY_PREFIX = BTHOME_SENSOR + ":"; // "bthomesensor:"
+	public static final String GROUP_KEY_PREFIX = GROUP_TYPE + ":"; // "group:"
+
 	public static final int MIN_ID = 200;
 	public static final int MAX_ID = 299;
+
+
+//	private static final int LATENCY = 1250;
+//	private final AbstractG2Device parent;
+//	private long lastFetch = 0;
+//	private ArrayList<JsonNode> bthDevices = new ArrayList<>();
+//	private ArrayList<JsonNode> bthSensors = new ArrayList<>();
 	
-	private DynamicComponents() { }
+//	public DynamicComponents(AbstractG2Device device) {
+//		this.parent = device;
+//	}
+//	
+//	private void readComponents() throws IOException {
+//		//		long currentTime = System.currentTimeMillis();
+//		//		if(currentTime > lastFetch + LATENCY) {
+//		bthDevices.clear();
+//		bthSensors.clear();
+//		JsonPageIterator it = new JsonPageIterator(parent, "/rpc/Shelly.GetComponents?dynamic_only=true", "components");
+//		it.forEach(node -> {
+//			if(node.path("key").asString().startsWith(DEVICE_KEY_PREFIX)) {
+//				bthDevices.add(node);
+//			} else if(node.path("key").asString().startsWith(SENSOR_KEY_PREFIX)) {
+//				bthSensors.add(node);
+//			}
+//		});
+//		//			lastFetch = currentTime;
+//		//		}
+//	}
+//	
+//	public JsonNode getComponentNode(String index) throws IOException {
+//		long currentTime = System.currentTimeMillis();
+//		if(currentTime > lastFetch + LATENCY) {
+////			System.out.println(currentTime - lastFetch);
+//			readComponents();
+//			
+//			lastFetch = currentTime;
+//			
+//		} else {
+//			System.out.println("risparmio");
+//		}
+//		
+//		for(JsonNode dev: bthDevices) {
+//			if(dev.path("key").asString().equals(DEVICE_KEY_PREFIX + index)) {
+//				return dev;
+//			}
+//		}
+//		return null;
+//	}
+//	
+//	public List<JsonNode> getSensors() {
+//		return bthSensors;
+//	}
+	
+	private DynamicComponents() {}
 
 	/**
 	 * Remove all dynamic components except BTHomeDevice(s).<br>
