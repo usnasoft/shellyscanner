@@ -71,7 +71,7 @@ public class Sensor {
 		if(valNode.isBoolean()) {
 			value = valNode.asBoolean() ? 1f : 0f;
 		} else {
-			value = valNode.floatValue();
+			value = valNode.floatValue(0); // can be temporarily null
 		}
 	}
 	

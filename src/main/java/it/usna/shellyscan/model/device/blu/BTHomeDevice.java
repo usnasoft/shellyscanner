@@ -104,6 +104,20 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 		this.sensors = new SensorsCollection(this);
 		this.meters = sensors.getTypes().length > 0 ? new Meters[] {sensors} : null;
 		
+		// generare key argument to retrive related components
+		StringBuilder keysBuilder = new StringBuilder("[%22");
+		keysBuilder.append(DEVICE_KEY_PREFIX);
+		keysBuilder.append(componentIndex);
+		keysBuilder.append("%22");
+		for(Sensor s: sensors.getSensors()) {
+			keysBuilder.append(",%22");
+			keysBuilder.append(SENSOR_KEY_PREFIX);
+			keysBuilder.append(s.getId());
+			keysBuilder.append("%22");
+		}
+		keysBuilder.append(']');
+		componentsKeys = keysBuilder.toString();
+		
 		try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e) {}
 		refreshStatus(); // init status for this.sensors
 		
@@ -122,20 +136,6 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 		}
 		this.inputs = tmpInputs.toArray(InputActionInterface[]::new);
 		this.modules = tmpModules.toArray(DeviceModule[]::new);
-		
-		// generare key argument to retrive related components
-		StringBuilder keysBuilder = new StringBuilder("[%22");
-		keysBuilder.append(DEVICE_KEY_PREFIX);
-		keysBuilder.append(componentIndex);
-		keysBuilder.append("%22");
-		for(Sensor s: sensors.getSensors()) {
-			keysBuilder.append(",%22");
-			keysBuilder.append(SENSOR_KEY_PREFIX);
-			keysBuilder.append(s.getId());
-			keysBuilder.append("%22");
-		}
-		keysBuilder.append(']');
-		componentsKeys = keysBuilder.toString();
 	}
 	
 	private List<InputOnDevice> deviceInputs(List<Webhook> devActions) {
@@ -179,22 +179,10 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 		boolean devExists = false;
 		while(componentsIt.hasNext()) {
 			JsonNode comp = componentsIt.next();
-//			if(devExists == false && comp.path("key").asString("").equals(DEVICE_KEY_PREFIX + componentIndex)) { // devExists == false for efficiency
-//				fillSettings(comp.path("config"));
-//				fillStatus(comp.path("status"));
-//				devExists = true;
-//			} else if((compKey = comp.path("key").asString("")).startsWith(SENSOR_KEY_PREFIX)) {
-//				int id = Integer.parseInt(compKey.substring(13));
-//				Sensor sensor = sensors.getSensor(id);
-//				if(sensor != null) {
-//					sensor.fill(comp);
-//				}
-//			}
-			
 			if((compKey = comp.path("key").asString()).startsWith(SENSOR_KEY_PREFIX)) {
 				int id = Integer.parseInt(compKey.substring(13));
 				sensors.getSensor(id).fill(comp);
-			} else { // not s sensor -> is the device
+			} else { // not a sensor -> is the device
 				fillSettings(comp.path("config"));
 				fillStatus(comp.path("status"));
 				devExists = true;
@@ -315,14 +303,6 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 					existingGroups.put(key, (ArrayNode)comp.path("status").get("value"));
 				}
 			});
-
-//			JsonNode currentComponents = parent.getJSON("/rpc/Shelly.GetComponents?dynamic_only=true&include=[%22status%22]");
-//			for (JsonNode comp: currentComponents.path("components")) {
-//				String key = comp.get("key").asString("");
-//				if(key.startsWith(GROUP_KEY_PREFIX)) {
-//					existingGroups.put(key, (ArrayNode)comp.path("status").get("value"));
-//				}
-//			}
 
 			JsonNode usnaInfo = backupJsons.get("ShellyScannerBLU.json");
 			String fileComponentIndex = usnaInfo.get("index").asString("");
