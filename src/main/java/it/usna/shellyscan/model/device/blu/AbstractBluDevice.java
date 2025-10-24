@@ -34,11 +34,7 @@ public abstract class AbstractBluDevice extends ShellyAbstractDevice {
 	protected final AbstractG2Device parent;
 //	protected WebSocketClient wsClient;
 	protected final String componentIndex;
-	
-//	public static final String DEVICE_KEY_PREFIX = DynamicComponents.BTHOME_DEVICE + ":"; // "bthomedevice:";
-//	public static final String SENSOR_KEY_PREFIX = DynamicComponents.BTHOME_SENSOR + ":"; // "bthomesensor:";
-//	public static final String GROUP_KEY_PREFIX = DynamicComponents.GROUP_TYPE + ":"; // "group:";
-	
+
 	/**
 	 * AbstractBluDevice constructor
 	 * @param parent

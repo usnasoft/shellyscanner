@@ -82,7 +82,6 @@ import it.usna.shellyscan.model.device.g2.ShellyProRGBWW;
 import it.usna.shellyscan.model.device.g2.ShellyWallDimmer;
 import it.usna.shellyscan.model.device.g2.WallDisplay;
 import it.usna.shellyscan.model.device.g2.WallDisplayX2i;
-import it.usna.shellyscan.model.device.g2.modules.DynamicComponents;
 import it.usna.shellyscan.model.device.g2.modules.LoginManagerG2;
 import it.usna.shellyscan.model.device.g3.AbstractG3Device;
 import it.usna.shellyscan.model.device.g3.PbSOgemraySW40;
@@ -410,7 +409,7 @@ public class DevicesFactory {
 	public static AbstractBluDevice createBlu(AbstractG2Device parent, HttpClient httpClient, /*WebSocketClient wsClient,*/ JsonNode info, String key) {
 		AbstractBluDevice blu;
 		try {
-			if(key.startsWith(DynamicComponents.DEVICE_KEY_PREFIX)) {
+			if(key.startsWith(BTHomeDevice.DEVICE_KEY_PREFIX)) {
 //				final String type = info.path("config").path("meta").path("ui").path("local_name").asString("");
 				int model = info.path("attrs").path("model_id").asInt(-1);
 				blu = new BTHomeDevice(parent, info, model, key.substring(13));

@@ -20,7 +20,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -53,9 +52,9 @@ import it.usna.shellyscan.model.device.GhostDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
 import it.usna.shellyscan.model.device.blu.AbstractBluDevice;
+import it.usna.shellyscan.model.device.blu.BTHomeDevice;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.g2.WebSocketDeviceListener;
-import it.usna.shellyscan.model.device.g2.modules.DynamicComponents;
 import it.usna.shellyscan.model.device.modules.FirmwareManager;
 import it.usna.shellyscan.view.DevicesTable;
 import it.usna.shellyscan.view.MainView;
@@ -269,7 +268,8 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 		lblCount.setText("");
 		btnCheck.setEnabled(false);
 		final int size = parentDlg.getLocalSize();
-		devicesFWData = Stream.generate(DeviceFirmware::new).limit(size).collect(Collectors.toList());
+//		devicesFWData = Stream.generate(DeviceFirmware::new).limit(size).collect(Collectors.toList());
+		devicesFWData = Stream.generate(DeviceFirmware::new).limit(size).toList();
 		tModel.clear();
 		try {
 			List<Callable<Void>> calls = new ArrayList<>(size);
@@ -419,7 +419,7 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 
 	private Future<Session> wsEventListener(int index, ShellyAbstractDevice d) throws IOException, InterruptedException, ExecutionException {
 		if(d instanceof AbstractBluDevice blu) {
-			return ((AbstractG2Device)blu.getParent()).connectWebSocketClient(new FMUpdateListener(index, DynamicComponents.DEVICE_KEY_PREFIX + blu.getIndex()));
+			return ((AbstractG2Device)blu.getParent()).connectWebSocketClient(new FMUpdateListener(index, BTHomeDevice.DEVICE_KEY_PREFIX + blu.getIndex()));
 		} else {
 			return ((AbstractG2Device)d).connectWebSocketClient(new FMUpdateListener(index, "sys"));
 		}
@@ -520,7 +520,7 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 //									}
 									fwInfo.rebootTime = Long.MAX_VALUE; // reset value
 									fwInfo.uptime = -1; // reset value
-								} catch (Throwable ex) {
+								} catch (Exception ex) {
 									LOG.error("Unexpected", ex);
 								}
 							});

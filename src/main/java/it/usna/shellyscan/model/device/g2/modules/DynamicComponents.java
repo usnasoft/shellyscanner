@@ -33,14 +33,9 @@ public class DynamicComponents {
 	public static final String[] VIRTUAL_TYPES = {"boolean", "number", "text", "enum", GROUP_TYPE, "button"};
 	public static final String BTHOME_DEVICE = "bthomedevice";
 	public static final String BTHOME_SENSOR = "bthomesensor";
-	
-	public static final String DEVICE_KEY_PREFIX = BTHOME_DEVICE + ":"; // "bthomedevice:"
-	public static final String SENSOR_KEY_PREFIX = BTHOME_SENSOR + ":"; // "bthomesensor:"
-	public static final String GROUP_KEY_PREFIX = GROUP_TYPE + ":"; // "group:"
 
 	public static final int MIN_ID = 200;
 	public static final int MAX_ID = 299;
-
 
 //	private static final int LATENCY = 1250;
 //	private final AbstractG2Device parent;
