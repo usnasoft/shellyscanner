@@ -28,6 +28,7 @@ import org.slf4j.LoggerFactory;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
 import it.usna.shellyscan.model.device.blu.AbstractBluDevice;
+import it.usna.shellyscan.model.device.blu.BTHomeDevice;
 import it.usna.shellyscan.model.device.blu.BluTRV;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.g2.AbstractProDevice;
@@ -195,7 +196,7 @@ public class NonInteractiveDevices implements Closeable {
 				if(d instanceof AbstractProDevice || d instanceof AbstractG3Device || d instanceof AbstractG4Device) {
 					for(JsonNode compInfo: ((AbstractG2Device)d).getJSONIterator("/rpc/Shelly.GetComponents?dynamic_only=true", "components")) { // empty on 401
 						String key = compInfo.path("key").asString("");
-						if(key.startsWith(AbstractBluDevice.DEVICE_KEY_PREFIX) || key.startsWith(BluTRV.DEVICE_KEY_PREFIX)) {
+						if(key.startsWith(BTHomeDevice.DEVICE_KEY_PREFIX) || key.startsWith(BluTRV.DEVICE_KEY_PREFIX)) {
 							AbstractBluDevice newBlu = DevicesFactory.createBlu((AbstractG2Device)d, httpClient, compInfo, key);
 							consumer.accept(newBlu);
 						}

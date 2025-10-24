@@ -20,7 +20,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -53,6 +52,7 @@ import it.usna.shellyscan.model.device.GhostDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
 import it.usna.shellyscan.model.device.blu.AbstractBluDevice;
+import it.usna.shellyscan.model.device.blu.BTHomeDevice;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.g2.WebSocketDeviceListener;
 import it.usna.shellyscan.model.device.modules.FirmwareManager;
@@ -104,8 +104,6 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 		JPanel btnPanelRight = new JPanel(new FlowLayout(FlowLayout.CENTER, 1, 0));
 		btnPanel.add(btnPanelRight, BorderLayout.EAST);
 		add(btnPanel, BorderLayout.SOUTH);
-//		btnPanel.setLayout(new BoxLayout(btnPanel, BoxLayout.X_AXIS));
-//		btnPanel.add(Box.createHorizontalStrut(2));
 
 		JButton btnUnselectAll = new JButton(new UsnaAction("btn_unselectAll", event -> {
 			IntStream sel = (table.getSelectedRowCount() > 1) ? table.getSelectedModelRowsStream() : IntStream.range(0, tModel.getRowCount());
@@ -154,7 +152,6 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 
 		btnPanelLeft.add(Box.createHorizontalStrut(6));
 		btnPanelLeft.add(lblCount);
-//		btnPanel.add(Box.createHorizontalGlue());
 		
 		textFieldFilter.setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));
 		textFieldFilter.setColumns(12);
@@ -201,7 +198,6 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 		btnCheck.setBorder(BorderFactory.createEmptyBorder(4, 7, 4, 7));
 		btnPanelRight.add(Box.createHorizontalStrut(6));
 		btnPanelRight.add(btnCheck);
-//		btnPanel.add(Box.createHorizontalStrut(2));
 
 		Action browseAction = new UsnaSelectedAction(parentDlg, table, "action_web_name", null, "/images/Computer16.png", null, () ->
 		table.getSelectedRowCount() <= 8 ||
@@ -272,7 +268,8 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 		lblCount.setText("");
 		btnCheck.setEnabled(false);
 		final int size = parentDlg.getLocalSize();
-		devicesFWData = Stream.generate(DeviceFirmware::new).limit(size).collect(Collectors.toList());
+//		devicesFWData = Stream.generate(DeviceFirmware::new).limit(size).collect(Collectors.toList());
+		devicesFWData = Stream.generate(DeviceFirmware::new).limit(size).toList();
 		tModel.clear();
 		try {
 			List<Callable<Void>> calls = new ArrayList<>(size);
@@ -422,7 +419,7 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 
 	private Future<Session> wsEventListener(int index, ShellyAbstractDevice d) throws IOException, InterruptedException, ExecutionException {
 		if(d instanceof AbstractBluDevice blu) {
-			return ((AbstractG2Device)blu.getParent()).connectWebSocketClient(new FMUpdateListener(index, AbstractBluDevice.DEVICE_KEY_PREFIX + blu.getIndex()));
+			return ((AbstractG2Device)blu.getParent()).connectWebSocketClient(new FMUpdateListener(index, BTHomeDevice.DEVICE_KEY_PREFIX + blu.getIndex()));
 		} else {
 			return ((AbstractG2Device)d).connectWebSocketClient(new FMUpdateListener(index, "sys"));
 		}
@@ -523,7 +520,7 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 //									}
 									fwInfo.rebootTime = Long.MAX_VALUE; // reset value
 									fwInfo.uptime = -1; // reset value
-								} catch (Throwable ex) {
+								} catch (Exception ex) {
 									LOG.error("Unexpected", ex);
 								}
 							});

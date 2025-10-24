@@ -395,7 +395,7 @@ public class DevicesFactory {
 	public static AbstractBluDevice createBlu(AbstractG2Device parent, HttpClient httpClient, /*WebSocketClient wsClient,*/ JsonNode info, String key) {
 		AbstractBluDevice blu;
 		try {
-			if(key.startsWith(AbstractBluDevice.DEVICE_KEY_PREFIX)) {
+			if(key.startsWith(BTHomeDevice.DEVICE_KEY_PREFIX)) {
 //				final String type = info.path("config").path("meta").path("ui").path("local_name").asString("");
 				int model = info.path("attrs").path("model_id").asInt(-1);
 				blu = new BTHomeDevice(parent, info, model, key.substring(13));

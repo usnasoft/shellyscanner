@@ -397,7 +397,7 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 				if(d instanceof AbstractProDevice || d instanceof AbstractG3Device || d instanceof AbstractG4Device) {
 					for(JsonNode compInfo: ((AbstractG2Device)d).getJSONIterator("/rpc/Shelly.GetComponents?dynamic_only=true", "components")) { // empty on 401
 						String key = compInfo.path("key").asString("");
-						if(key.startsWith(AbstractBluDevice.DEVICE_KEY_PREFIX) || key.startsWith(BluTRV.DEVICE_KEY_PREFIX)) {
+						if(key.startsWith(BTHomeDevice.DEVICE_KEY_PREFIX) || key.startsWith(BluTRV.DEVICE_KEY_PREFIX)) {
 							newBluDevice(d, compInfo, key);
 						}
 //						if(key.startsWith(BluTRV.DEVICE_KEY_PREFIX)) { newBluDevice(d, compInfo, key); }

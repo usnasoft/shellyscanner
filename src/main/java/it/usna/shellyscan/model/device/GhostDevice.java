@@ -11,7 +11,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import it.usna.shellyscan.model.DeviceOfflineException;
-import it.usna.shellyscan.model.device.blu.AbstractBluDevice;
 import it.usna.shellyscan.model.device.blu.BTHomeDevice;
 import it.usna.shellyscan.model.device.blu.BluInetAddressAndPort;
 import it.usna.shellyscan.model.device.g2.modules.LoginManagerG2;
@@ -248,7 +247,7 @@ public class GhostDevice extends ShellyAbstractDevice {
 		final String fileComponentIndex = usnaInfo.get("index").asString("");
 		JsonNode fileComponents = backupJsons.get("Shelly.GetComponents.json").path("components");
 		for(JsonNode fileComp: fileComponents) {
-			if(fileComp.path("key").asString("").equals(AbstractBluDevice.DEVICE_KEY_PREFIX + fileComponentIndex)) { // find the component by fileComponentIndex
+			if(fileComp.path("key").asString("").equals(BTHomeDevice.DEVICE_KEY_PREFIX + fileComponentIndex)) { // find the component by fileComponentIndex
 				String fileMac = fileComp.path("config").path("addr").asString("");
 				if(fileMac.equals(mac) == false) {
 					res.put(RestoreMsg.PRE_QUESTION_RESTORE_HOST, fileLocalName + "-" + fileMac);

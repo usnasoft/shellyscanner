@@ -5,6 +5,7 @@ import tools.jackson.databind.JsonNode;
 
 /**
  * Sensor factory / Generic BTHSensor / Measure BTHSensor
+ * @see https://bthome.io/format/
  */
 public class Sensor {
 	protected final int id; // Id of the component instance
@@ -40,14 +41,13 @@ public class Sensor {
 		case 0x2E -> Meters.Type.H;
 		case 0x45 -> Meters.Type.T;
 		case 0x05 -> Meters.Type.L; // lux
-		case 0x1E -> Meters.Type.LIGHT; // 0 (False = No light), 1 (True = Light detected)
+		case 0x1E -> Meters.Type.LIGHT; // dec 30 - 0 (False = No light), 1 (True = Light detected)
 		case 0x2C -> Meters.Type.VIB; // dec 44 - vibration (0-1; on shelly is boolean)
 		case 0x3F -> Meters.Type.ANG; // dec 63 - angle (accelerometer)
 		case 0x40 -> Meters.Type.DMM; // dec 64 - distance mm
 		case 0x60 -> Meters.Type.CHANNEL; //  dec 96 - channel
 		default -> null;
 		};
-		
 		// 0x3C (60) dimmer (weel)
 	}
 	
@@ -63,16 +63,10 @@ public class Sensor {
 		return idx;
 	}
 	
-//	public void fillSConfig(JsonNode config) {
-//		name = config.path("name").asString("");
-//	}
-//	
-//	public void fillStatus(JsonNode status) {
-//		value = status.path("value").floatValue();
-//	}
-	
 	public void fill(JsonNode comp) {
+		// config
 		name = comp.path("config").path("name").asString("");
+		// status
 		JsonNode valNode = comp.path("status").path("value");
 		if(valNode.isBoolean()) {
 			value = valNode.asBoolean() ? 1f : 0f;
