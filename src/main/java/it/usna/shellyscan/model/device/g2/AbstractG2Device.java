@@ -510,7 +510,9 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 			ScheduleManager.restore(this, backupJsons, delay, errors);
 
 			errors.add("->r_step:Script");
-			Script.restoreAll(this, backupJsons, delay, userPref.containsKey(RestoreMsg.QUESTION_RESTORE_SCRIPTS_OVERRIDE), userPref.containsKey(RestoreMsg.QUESTION_RESTORE_SCRIPTS_ENABLE_LIKE_BACKED_UP), errors);
+			if(userPref.containsKey(RestoreMsg.QUESTION_RESTORE_SCRIPTS_SKIP) == false) {
+				Script.restoreAll(this, backupJsons, delay, userPref.containsKey(RestoreMsg.QUESTION_RESTORE_SCRIPTS_OVERRIDE), userPref.containsKey(RestoreMsg.QUESTION_RESTORE_SCRIPTS_ENABLE_LIKE_BACKED_UP), errors);
+			}
 
 			errors.add("->r_step:KVS");
 			JsonNode kvs = backupJsons.get("KVS.GetMany.json");

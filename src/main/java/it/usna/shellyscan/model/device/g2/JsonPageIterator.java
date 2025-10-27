@@ -16,7 +16,7 @@ import tools.jackson.databind.JsonNode;
  * </code><br>
  * calling "method" with the proper offset when needed
  */
-public class JsonPageIterator implements Iterator<JsonNode>, Iterable<JsonNode> {
+public class JsonPageIterator implements Iterator<JsonNode>/*, Iterable<JsonNode>*/ {
 	private final ShellyAbstractDevice device;
 	private final String method;
 	private final String arrayKey;
@@ -60,8 +60,8 @@ public class JsonPageIterator implements Iterator<JsonNode>, Iterable<JsonNode> 
 		return current.next();
 	}
 
-	@Override
-	public Iterator<JsonNode> iterator() {
-		return this;
-	}
+//	@Override
+//	public Iterator<JsonNode> iterator() {
+//		return this;
+//	}
 }

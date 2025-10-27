@@ -251,17 +251,21 @@ public class RestoreAction extends UsnaAction {
 				resData.put(RestoreMsg.QUESTION_RESTORE_SCRIPTS_OVERRIDE, "true");
 				resData.put(RestoreMsg.QUESTION_RESTORE_SCRIPTS_ENABLE_LIKE_BACKED_UP, "true");
 			} else {
-				boolean overwriteScriptNames = false;
 				String rename = LABELS.getString("lblRename");
-				if(test.containsKey(RestoreMsg.QUESTION_RESTORE_SCRIPTS_OVERRIDE) && 
-						JOptionPane.showOptionDialog(mainView,
-								String.format(LABELS.getString(CHECK_MSG_PREFIX + "QUESTION_RESTORE_SCRIPTS_OVERRIDE"), test.get(RestoreMsg.QUESTION_RESTORE_SCRIPTS_OVERRIDE)),
-								LABELS.getString("msgRestoreTitle"), JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE,
-								null, new Object[] {rename, LABELS.getString("lblOverwrite")}, rename) == 1 /*overwrite*/) {
-					resData.put(RestoreMsg.QUESTION_RESTORE_SCRIPTS_OVERRIDE, "true");
-					overwriteScriptNames = true;
-				}
-				if(test.containsKey(RestoreMsg.QUESTION_RESTORE_SCRIPTS_ENABLE_LIKE_BACKED_UP) && (overwriteScriptNames || test.containsKey(RestoreMsg.QUESTION_RESTORE_SCRIPTS_OVERRIDE) == false) &&
+				if(test.containsKey(RestoreMsg.QUESTION_RESTORE_SCRIPTS_OVERRIDE)) {
+					int answer = JOptionPane.showOptionDialog(mainView,
+							String.format(LABELS.getString(CHECK_MSG_PREFIX + "QUESTION_RESTORE_SCRIPTS_OVERRIDE"), test.get(RestoreMsg.QUESTION_RESTORE_SCRIPTS_OVERRIDE)),
+							LABELS.getString("msgRestoreTitle"), JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE,
+							null, new Object[] {rename, LABELS.getString("lblSkip"), LABELS.getString("lblOverwrite")}, rename);
+					if(answer == 2) { // overwrite
+						resData.put(RestoreMsg.QUESTION_RESTORE_SCRIPTS_OVERRIDE, "true");
+					} else if(answer == 1) { // do not restore scripts
+						resData.put(RestoreMsg.QUESTION_RESTORE_SCRIPTS_SKIP, "true");
+						test.remove(RestoreMsg.QUESTION_RESTORE_SCRIPTS_ENABLE_LIKE_BACKED_UP);
+					}
+				}				
+				if(test.containsKey(RestoreMsg.QUESTION_RESTORE_SCRIPTS_ENABLE_LIKE_BACKED_UP) &&
+						(resData.containsKey(RestoreMsg.QUESTION_RESTORE_SCRIPTS_OVERRIDE) || test.containsKey(RestoreMsg.QUESTION_RESTORE_SCRIPTS_OVERRIDE) == false) &&
 						JOptionPane.showConfirmDialog(mainView,
 								String.format(LABELS.getString(CHECK_MSG_PREFIX + "QUESTION_RESTORE_SCRIPTS_ENABLE_LIKE_BACKED_UP"), test.get(RestoreMsg.QUESTION_RESTORE_SCRIPTS_ENABLE_LIKE_BACKED_UP)),
 								LABELS.getString("msgRestoreTitle"), JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION) {
