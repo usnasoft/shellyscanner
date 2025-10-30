@@ -94,8 +94,6 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 		this.httpClient = httpClient;
 		initSensors();
 		hostname = "B" + sensors.getFullID() + "-" + mac;
-//		try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e) {}
-//		refreshStatus();
 		try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e) {}
 		refreshSettings();
 	}
@@ -173,7 +171,6 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 	
 	@Override
 	public void refreshStatus() throws IOException {
-//		Iterator<JsonNode> componentsIt = getJSONIterator("/rpc/Shelly.GetComponents?dynamic_only=true", "components");
 		Iterator<JsonNode> componentsIt = getJSONIterator("/rpc/Shelly.GetComponents?keys=" + componentsKeys, "components");
 		String compKey;
 		boolean devExists = false;

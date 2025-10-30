@@ -32,14 +32,14 @@ public class XT1Thermostat implements ThermostatInterface {
 	
 	public void configTargetTemperature(JsonNode sensor) {
 		JsonNode config = sensor.path("config");
-		celsius = "°C".equals(config.path("meta").path("ui").path("unit").asString(""));
+		celsius = "°C".equals(config.path("meta").path("ui").path("unit").asString(null));
 		if(celsius) {
 			targetTemp = sensor.path("status").path("value").floatValue();
 			minTarget = config.path("min").floatValue();
 			maxTarget = config.path("max").floatValue();
 		} else {
 			targetTemp = Math.round((sensor.path("status").path("value").floatValue() - 32f) * (5f / 9f * 10f)) / 10f;//float val =Math.round(thermostat.getTargetTemp() * 10f) / 10f;
-			minTarget = Math.round((config.path("min").floatValue() - 32f) * (5f / 9f * 10f)) / 10f;
+			minTarget = Math.round((config.path("min").floatValue() - 32f) * (5f / 9f * 10f)) / 10f; // round(x*10) / 10 -> one decimal
 			maxTarget = Math.round((config.path("max").floatValue() - 32f) * (5f / 9f * 10f)) / 10f;
 		}
 	}
@@ -84,8 +84,7 @@ public class XT1Thermostat implements ThermostatInterface {
 		if(celsius) {
 			res = parent.postCommand("Number.Set", "{\"id\":" + targetId + ",\"value\":" + temp + "}");
 		} else {
-			res = parent.postCommand("Number.Set", "{\"id\":" + targetId + ",\"value\":" + (Math.round(temp * 18f + 320f) / 10f) + "}");
-//			res = parent.postCommand("Number.Set", "{\"id\":" + targetId + ",\"value\":" + (Math.round((temp * 1.8f + 32f) * 10f) / 10f) + "}");
+			res = parent.postCommand("Number.Set", "{\"id\":" + targetId + ",\"value\":" + (Math.round(temp * 18f + 320f) / 10f) + "}"); // round(x*10) / 10 -> one decimal
 		}
 		if(res == null) {
 			targetTemp = temp;

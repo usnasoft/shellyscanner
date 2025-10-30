@@ -115,20 +115,18 @@ public class WallDisplay extends AbstractG2Device implements ModulesHolder {
 	
 	@Override
 	public String[] getInfoRequests() {
-		if(relay != null) {
-			return super.getInfoRequests();
-		} else {
-			ArrayList<String> l = new ArrayList<>(Arrays.asList(
-					"/rpc/Shelly.GetDeviceInfo?ident=true", "/rpc/Shelly.GetConfig", "/rpc/Shelly.GetStatus", "/rpc/Shelly.CheckForUpdate", "/rpc/Schedule.List", "/rpc/Webhook.List",
-					"/rpc/Script.List", "/rpc/WiFi.ListAPClients" /*, "/rpc/Sys.GetStatus",*/, "/rpc/KVS.GetMany", "/rpc/Shelly.GetComponents",
-					"/rpc/Thermostat.Schedule.ListProfiles?id=0"));
+		if(thermostat != null) {
+			ArrayList<String> l = new ArrayList<>(Arrays.asList(super.getInfoRequests()));
+			l.add("/rpc/Thermostat.Schedule.ListProfiles?id=0");
 			try {
 				JsonNode profiles = getJSON("/rpc/Thermostat.Schedule.ListProfiles?id=0").get("profiles");
 				for(JsonNode p: profiles) {
-					l.add("(Thermostat.Schedule.ListRules [" + p.path("name").asString("") + "])/rpc/Thermostat.Schedule.ListRules?id=0&profile_id=" + p.get("id").asString(""));
+					l.add("(Thermostat.Schedule.ListRules [" + p.path("id").asString(null) + "])/rpc/Thermostat.Schedule.ListRules?id=0&profile_id=" + p.get("id").asString(null));
 				}
 			} catch (IOException e) {}
 			return l.toArray(String[]::new);
+		} else {
+			return super.getInfoRequests();
 		}
 	}
 	
@@ -149,6 +147,10 @@ public class WallDisplay extends AbstractG2Device implements ModulesHolder {
 		return meters;
 	}
 	
+	public boolean hasThermostat() {
+		return thermostat != null;
+	}
+
 	@Override
 	protected void backup(ZipOutputStream out) throws IOException, InterruptedException {
 		if(thermostat != null) {

@@ -18,15 +18,17 @@ import javax.swing.JDialog;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.SortOrder;
 import javax.swing.event.ChangeEvent;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellEditor;
-import javax.swing.table.TableCellRenderer;
 
 import it.usna.shellyscan.Main;
 import it.usna.shellyscan.controller.UsnaAction;
 import it.usna.shellyscan.controller.UsnaToggleAction;
+import it.usna.shellyscan.model.DeviceAPIException;
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.g2.modules.ScheduleManagerThermWD;
@@ -46,14 +48,15 @@ class ProfilesPanel extends JPanel {
 	private final JDialog parentDlg;
 	private final ScheduleManagerThermWD wdSceduleManager;
 	private List<ThermProfile> profiles;
-	
-//	private JComboBox<ThermProfile> activeProfile;
+	private ThermProfile currentProfile;
+
 	private ExTooltipTable profilesTable;
 	private UsnaTableModel tModel;
-	private UsnaToggleAction enableprofilesAction;
+	private UsnaToggleAction enableProfilesAction;
 	
 	private JButton deleteProfileButton;
 	private JButton duplicateProfileButton;
+	private JButton selectProfileButton;
 
 	public ProfilesPanel(JDialog parent, AbstractG2Device device, ScheduleManagerThermWD wdSceduleManager) {
 		this.parentDlg = parent;
@@ -62,7 +65,7 @@ class ProfilesPanel extends JPanel {
 		
 		JScrollPane scrollPane = new JScrollPane();
 		add(scrollPane, BorderLayout.WEST);
-		
+
 		tModel = new UsnaTableModel(Main.LABELS.getString("schLblProfiles"));
 		profilesTable = new ExTooltipTable(tModel, true) {
 			private static final long serialVersionUID = 1L;
@@ -70,26 +73,28 @@ class ProfilesPanel extends JPanel {
 				setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 				sortByColumn(0, SortOrder.ASCENDING);
 				((DefaultRowSorter<?, ?>)getRowSorter()).setSortsOnUpdates(true);
-				
+
 				getSelectionModel().addListSelectionListener(e -> {
 					if(e.getValueIsAdjusting() == false) {
-						int sel = getSelectedModelRow();
-						boolean validSelection = (sel >= 0);
-						ProfilesPanel.this.firePropertyChange(SELECTION_EVENT, null, validSelection ? profiles.get(sel).id() : -1);
-
-						duplicateProfileButton.setEnabled(validSelection);
-						deleteProfileButton.setEnabled(validSelection);
+						manageSelection();
 					}
 				});
-			}
-			
-			@Override
-			public Component prepareRenderer(TableCellRenderer renderer, int row, int column) {
-				Component comp = super.prepareRenderer(renderer, row, column);
-				if(isRowSelected(row) == false) {
-					comp.setBackground((row % 2 == 0) ? Main.TAB_LINE1_COLOR : Main.TAB_LINE2_COLOR);
-				}
-				return comp;
+				
+				columnModel.getColumn(0).setCellRenderer(new DefaultTableCellRenderer() {
+					@Override
+					public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+						super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+						if(currentProfile != null && profiles.get(convertRowIndexToModel(row)).id() == currentProfile.id()) {
+							this.setText("<html>" + this.getText() + " <b>\u2713");
+						} else {
+							this.setText("<html>" + this.getText());
+						}
+						if(isSelected == false) {
+							setBackground((row % 2 == 0) ? Main.TAB_LINE1_COLOR : Main.TAB_LINE2_COLOR);
+						}
+						return this;
+					}
+				});
 			}
 		
 			@Override
@@ -103,34 +108,44 @@ class ProfilesPanel extends JPanel {
 				try {
 					final int mRow = convertRowIndexToModel(getEditingRow());
 					String value = (String) getCellEditor().getCellEditorValue();
-					// No empty profile names -> go back to original value
+					// No empty profile names allowed -> go back to original value
 					if(value.isEmpty()) {
 						getCellEditor().cancelCellEditing();
-						value = (String) tModel.getValueAt(mRow, 0);
-					}
-					// Update existing profile
-					if(mRow < profiles.size() && tModel.getValueAt(mRow, 0).equals(value) == false) {
-						ThermProfile oldProfile = profiles.get(mRow);
-						if(oldProfile.name().equals(value) == false) {
-							String ret = wdSceduleManager.renameProfiles(oldProfile.id(), value);
-							if(ret != null) {
-								Msg.errorMsg(parent, ret);
-								return;
-							} else {
-								profiles.set(mRow, new ThermProfile(oldProfile.id(), value));
+						// Overridden removeEditor() will remove the row in case of aborted new row
+					} else {
+						// Update existing profile
+						if(mRow < profiles.size() && tModel.getValueAt(mRow, 0).equals(value) == false) {
+							ThermProfile oldProfile = profiles.get(mRow);
+							if(oldProfile.name().equals(value) == false) {
+								String ret = wdSceduleManager.renameProfiles(oldProfile.id(), value);
+								if(ret != null) {
+									Msg.errorMsg(parent, ret);
+									return;
+								} else {
+									profiles.set(mRow, new ThermProfile(oldProfile.id(), value));
+									tModel.setRow(mRow, value);
+								}
+							}
+							// New profile
+						} else if(mRow >= profiles.size()) {
+							try {
+								int newId = wdSceduleManager.addProfiles(value);
+								profiles.add(new ThermProfile(newId, value));
 								tModel.setRow(mRow, value);
+								setRowSelectionInterval(mRow, mRow);
+							} catch (DeviceAPIException ex) {
+								if(ex.getErrorCode() == DeviceAPIException.FAILED_PRECONDITION) {
+									Msg.errorMsg(parent, "schAddProfileError");
+									getCellEditor().cancelCellEditing();
+								} else {
+									Msg.errorMsg(parent, ex);
+								}
+							} catch (IOException ex) {
+								Msg.errorMsg(parent, ex);
+//								return;
 							}
 						}
-					// New profile
-					} else if(mRow >= profiles.size()) {
-						try {
-							int newId = wdSceduleManager.addProfiles(value);
-							profiles.add(new ThermProfile(newId, value));
-							tModel.setRow(mRow, value);
-						} catch (IOException ex) {
-							Msg.errorMsg(parent, ex);
-							return;
-						}
+						currentProfile = wdSceduleManager.getCurrentProfile();
 					}
 				} finally {
 					parent.setCursor(Cursor.getDefaultCursor());
@@ -149,6 +164,7 @@ class ProfilesPanel extends JPanel {
 		};
 
 		scrollPane.setViewportView(profilesTable);
+		scrollPane.setBorder(BorderFactory.createEmptyBorder());
 
 		JPanel buttonsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 10));
 		add(buttonsPanel, BorderLayout.CENTER);
@@ -173,6 +189,12 @@ class ProfilesPanel extends JPanel {
 					tModel.addRow(name);
 					profiles.add(new ThermProfile(newId, name));
 					ProfilesPanel.this.firePropertyChange(DUPLICATE_EVENT, profiles.get(mRow).id(), newId);
+				} catch (DeviceAPIException ex) {
+					if(ex.getErrorCode() == DeviceAPIException.FAILED_PRECONDITION) {
+						Msg.errorMsg(parent, "schAddProfileError");
+					} else {
+						Msg.errorMsg(parent, ex);
+					}
 				} catch (IOException ex) {
 					Msg.errorMsg(parent, ex);
 				}
@@ -213,28 +235,59 @@ class ProfilesPanel extends JPanel {
 		deleteProfileButton.setEnabled(false);
 		buttonsPanel.add(deleteProfileButton);
 		
+		selectProfileButton = new JButton(new UsnaAction(parent, "schSelectProfile", e -> {
+			try {
+				ThermProfile selectedProfile = profiles.get(profilesTable.getSelectedModelRow());
+				wdSceduleManager.setCurrentProfile(selectedProfile.id());
+				currentProfile = selectedProfile;
+				selectProfileButton.setEnabled(false);
+			} catch (IOException ex) {
+				Msg.errorMsg(parent, ex);
+				currentProfile = null;
+			}
+			profilesTable.repaint();
+		}));
+		selectProfileButton.setEnabled(false);
+		buttonsPanel.add(selectProfileButton);
+		
 		buttonsPanel.add(Box.createHorizontalStrut(30));
 		
 		JButton enableButton = new JButton();
 		enableButton.setContentAreaFilled(false);
 		enableButton.setBorder(BorderFactory.createEmptyBorder());
-		enableprofilesAction = new UsnaToggleAction(this, "/images/Standby24.png", "/images/StandbyOn24.png",
+		enableProfilesAction = new UsnaToggleAction(this, "/images/Standby24.png", "/images/StandbyOn24.png",
 				e -> {
 					String ret = wdSceduleManager.enableProfiles(true);
 					if(ret != null) {
 						Msg.errorMsg(parent, ret);
 					}
+					currentProfile = wdSceduleManager.getCurrentProfile();
+					manageSelection();
+					profilesTable.repaint();
 				}, e -> {
 					String ret = wdSceduleManager.enableProfiles(false);
 					if(ret != null) {
 						Msg.errorMsg(parent, ret);
 					}
+					currentProfile = null;
+					manageSelection();
+					profilesTable.repaint();
 				});
-		enableprofilesAction.setTooltip("lblDisabled", "lblEnabled");
-		enableButton.setAction(enableprofilesAction);
+		enableProfilesAction.setTooltip("lblDisabled", "lblEnabled");
+		enableButton.setAction(enableProfilesAction);
 		buttonsPanel.add(enableButton);
 		
 		fill();
+	}
+	
+	private void manageSelection() {
+		int sel = profilesTable.getSelectedModelRow();
+		boolean validSelection = (sel >= 0);
+		firePropertyChange(SELECTION_EVENT, null, validSelection ? profiles.get(sel).id() : -1);
+
+		duplicateProfileButton.setEnabled(validSelection);
+		deleteProfileButton.setEnabled(validSelection);
+		selectProfileButton.setEnabled(validSelection && currentProfile != null && profiles.get(sel).id() != currentProfile.id());
 	}
 	
 	private void fill() {
@@ -243,8 +296,8 @@ class ProfilesPanel extends JPanel {
 			profiles.forEach(p -> tModel.addRow(p.name()) );
 			
 			try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e1) {}
-			ThermProfile current = wdSceduleManager.getCurrentProfile();
-			enableprofilesAction.setSelected(current != null);
+			currentProfile = wdSceduleManager.getCurrentProfile();
+			enableProfilesAction.setSelected(currentProfile != null);
 		} catch (/*IO*/Exception e) {
 			Msg.errorMsg(parentDlg, e);
 		}

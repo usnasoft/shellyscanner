@@ -28,6 +28,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 import it.usna.shellyscan.Main;
@@ -47,7 +48,7 @@ import it.usna.swing.VerticalFlowLayout;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
-public class WDThermSchedulerPanel extends JPanel {
+public class WDThermSchedulerPanel extends /*JPanel*/JSplitPane {
 	private static final long serialVersionUID = 1L;
 	private final ProfilesPanel profilesPanel;
 	private JPanel rulesPanel = new JPanel(/*new VerticalFlowLayout(VerticalFlowLayout.TOP, VerticalFlowLayout.CENTER, 0, 0)*/new GridLayout(0, 1, 0, 0));
@@ -57,18 +58,16 @@ public class WDThermSchedulerPanel extends JPanel {
 	private ArrayList<RemovedRule> removed = new ArrayList<>();
 	private int currentProfileId = -1;
 	private final JDialog parentDlg;
-//	private final WallDisplay device;
 
 	public WDThermSchedulerPanel(JDialog parent, AbstractG2Device device) {
-		setLayout(new BorderLayout());
+		setOrientation(JSplitPane.VERTICAL_SPLIT);
 		this.parentDlg = parent;
-//		this.device = device;
 		this.wdSceduleManager = (device != null) ? new ScheduleManagerThermWD(device) : null; // device == null -> design
 		thermostat = new ThermostatG2(device);
 		
 		profilesPanel = new ProfilesPanel(parent, device, wdSceduleManager);
 		profilesPanel.setPreferredSize(new Dimension(getPreferredSize().width, 16 * 5));
-		add(profilesPanel, BorderLayout.NORTH);
+		setTopComponent(profilesPanel);
 		
 		profilesPanel.addPropertyChangeListener(ProfilesPanel.SELECTION_EVENT, propertyChangeEvent -> {
 			try {
@@ -113,11 +112,13 @@ public class WDThermSchedulerPanel extends JPanel {
 			try {
 				for(Rule r: rules.get((Integer)propertyChangeEvent.getOldValue())) {
 					String ts = r.getTimespec();
-					String[] frags = ts.split(" ");
-					r.setTimespec(frags[0] + " " + frags[1] + " " + frags[2] + " " + frags[3] + " " + frags[4] + " " + CronUtils.daysOfWeekAsString(frags[5]));
-					wdSceduleManager.create(r, newId);
-					r.setTimespec(ts);
-					TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+					if(ts != null) {
+						String[] frags = ts.split(" ");
+						r.setTimespec(frags[0] + " " + frags[1] + " " + frags[2] + " " + frags[3] + " " + frags[4] + " " + CronUtils.daysOfWeekAsString(frags[5]));
+						wdSceduleManager.create(r, newId);
+						r.setTimespec(ts);
+						TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+					}
 				}
 			} catch (IOException | InterruptedException e) {
 				Msg.errorMsg(parent, e);
@@ -133,8 +134,7 @@ public class WDThermSchedulerPanel extends JPanel {
 		
 		scrollPane.setViewportView(nPanel);
 		scrollPane.setBorder(BorderFactory.createEmptyBorder());
-		
-		add(scrollPane, BorderLayout.CENTER);
+		setBottomComponent(scrollPane);
 
 		// test & visual
 		if(device == null) {

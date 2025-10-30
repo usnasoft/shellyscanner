@@ -129,7 +129,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 			i -> new DialogDeviceInfo(MainView.this, model, i) );
 	
 	private Action schedulerEditAction = new UsnaSelectedAction(this, devicesTable, "action_scheduler_name", "action_scheduler_tooltip", null, "/images/Calendar.png", i -> {
-		if(model.get(i) instanceof WallDisplay ) {
+		if((model.get(i) instanceof WallDisplay wd && wd.hasThermostat()) ) {
 			new WDSchedulerDialog(MainView.this, (AbstractG2Device)model.get(i));
 		} else if(model.get(i) instanceof AbstractG2Device g2) {
 			new G2SchedulerDialog(MainView.this, g2);

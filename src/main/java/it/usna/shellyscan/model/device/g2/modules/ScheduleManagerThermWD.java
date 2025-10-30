@@ -30,16 +30,20 @@ public class ScheduleManagerThermWD {
 	public List<ThermProfile> getProfiles() throws IOException {
 		ArrayList<ThermProfile> ret = new ArrayList<>();
 		wd.getJSON("/rpc/Thermostat.Schedule.ListProfiles?id=" + THERM_ID).path("profiles").forEach(node ->
-			ret.add(new ThermProfile(node.get("id").intValue(0), node.path("name").asString("")))
+			ret.add(new ThermProfile(node.get("id").intValue(-1), node.path("name").asString("")))
 		);
 		return ret;
 	}
 
 	/** Return the currently active profile; null if the scheduler is disabled.
 	 * The display knows the active profile if the scheduler is disabled; here we don't */
-	public ThermProfile getCurrentProfile() throws IOException {
-		JsonNode status = wd.getJSON("/rpc/Thermostat.GetStatus?id=" + THERM_ID).get("schedules"); //wd.getJSON("/rpc/Shelly.GetStatus").get("thermostat:0").get("schedules");
-		return (status != null && status.get("enable").booleanValue(false)) ? new ThermProfile(status.get("profile_id").intValue(0), status.path("profile_name").asString("")) : null;
+	public ThermProfile getCurrentProfile() {
+		try {
+			JsonNode status = wd.getJSON("/rpc/Thermostat.GetStatus?id=" + THERM_ID).get("schedules");
+			return (status != null && status.get("enable").booleanValue(false)) ? new ThermProfile(status.get("profile_id").intValue(0), status.path("profile_name").asString("")) : null;
+		} catch (IOException e) {
+			return null;
+		}
 	}
 
 	//todo verifica
@@ -130,12 +134,7 @@ public class ScheduleManagerThermWD {
 		}
 	}
 	
-	public record ThermProfile(int id, String name) {
-		@Override
-		public String toString() {
-			return name;
-		}
-	}
+	public record ThermProfile(int id, String name) {}
 	
 	public static class Rule {
 		private String ruleId;

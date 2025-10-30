@@ -392,7 +392,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 					try {
 						ZipEntry entry = new ZipEntry(script.getName() + ".mjs");
 						out.putNextEntry(entry);
-						out.write(script.getCode().getBytes()/*code, 0, code.length*/);
+						out.write(script.getCode().getBytes(StandardCharsets.UTF_8)/*code, 0, code.length*/);
 					} catch(IOException e) {
 						LOG.error("backup script {}", script.getName(), e);
 					}
