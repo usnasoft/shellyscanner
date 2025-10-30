@@ -100,6 +100,7 @@ public class G2SchedulerPanel extends JScrollPane {
 	public void refresh() {
 		schedulesPanel.removeAll();
 		originalValues.clear();
+		removedId.clear();
 		fill();
 		schedulesPanel.revalidate();
 		schedulesPanel.repaint(); // last one need this ... do not know why
@@ -146,7 +147,7 @@ public class G2SchedulerPanel extends JScrollPane {
 			int numJobs = schedulesPanel.getComponentCount();
 
 			// Validation
-			if(numJobs == 1) {
+			if(numJobs == 1 && originalValues.get(0).id < 0) { // one empty and not on the device (or deleted) in ok
 				G2JobPanel sl = (G2JobPanel)((JPanel)schedulesPanel.getComponent(0)).getComponent(0);
 				if(sl.isNullJob() == false && sl.validateData() == false) {
 					return false;
@@ -239,7 +240,7 @@ public class G2SchedulerPanel extends JScrollPane {
 		addBtn.setContentAreaFilled(false);
 		addBtn.setBorder(BorderFactory.createEmptyBorder(2, 3, 2, 3));
 		
-		JButton removeBtn = new JButton(new UsnaAction(null, "schRemove", "/images/erase-9-16.png", e -> {
+		JButton removeBtn = new JButton(new UsnaAction(this, "schRemove", "/images/erase-9-16.png", e -> {
 			int i;
 			for(i = 0; schedulesPanel.getComponent(i) != linePanel; i++);
 			schedulesPanel.remove(i);
@@ -253,6 +254,7 @@ public class G2SchedulerPanel extends JScrollPane {
 			lineColors();
 			schedulesPanel.revalidate();
 			schedulesPanel.repaint(); // last one need this ... do not know why
+			try { TimeUnit.MILLISECONDS.sleep(200); } catch (InterruptedException e1) {} // a small time to show busy pointer
 		}));
 		removeBtn.setContentAreaFilled(false);
 		removeBtn.setBorder(BorderFactory.createEmptyBorder(2, 3, 2, 3));

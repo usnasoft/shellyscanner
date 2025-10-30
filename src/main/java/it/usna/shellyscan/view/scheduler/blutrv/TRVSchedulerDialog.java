@@ -97,6 +97,7 @@ public class TRVSchedulerDialog extends JDialog {
 	public void refresh() {
 		rulesPanel.removeAll();
 		originalValues.clear();
+		removedId.clear();
 		fill();
 		rulesPanel.revalidate();
 		rulesPanel.repaint(); // last one need this ... do not know why
@@ -185,7 +186,7 @@ public class TRVSchedulerDialog extends JDialog {
 			int numJobs = rulesPanel.getComponentCount();
 
 			// Validation
-			if(numJobs == 1) { // only 1 can be null and must be alone -> (existing jobs deleted?)
+			if(numJobs == 1 && originalValues.get(0).id < 0) { // one empty and not on the device (or deleted) in ok
 				TRVJobPanel sl = (TRVJobPanel)((JPanel)rulesPanel.getComponent(0)).getComponent(0);
 				if(sl.isNullJob() == false && sl.validateData() == false) {
 					return false;
@@ -272,7 +273,7 @@ public class TRVSchedulerDialog extends JDialog {
 		addBtn.setContentAreaFilled(false);
 		addBtn.setBorder(BorderFactory.createEmptyBorder(2, 3, 2, 3));
 		
-		JButton removeBtn = new JButton(new UsnaAction(null, "schRemove", "/images/erase-9-16.png", e -> {
+		JButton removeBtn = new JButton(new UsnaAction(this, "schRemove", "/images/erase-9-16.png", e -> {
 			int i;
 			for(i = 0; rulesPanel.getComponent(i) != linePanel; i++);
 			rulesPanel.remove(i);
@@ -286,6 +287,7 @@ public class TRVSchedulerDialog extends JDialog {
 			lineColors();
 			rulesPanel.revalidate();
 			rulesPanel.repaint(); // last one need this ... do not know why
+			try { TimeUnit.MILLISECONDS.sleep(200); } catch (InterruptedException e1) {} // a small time to show busy pointer
 		}));
 		removeBtn.setContentAreaFilled(false);
 		removeBtn.setBorder(BorderFactory.createEmptyBorder(2, 3, 2, 3));

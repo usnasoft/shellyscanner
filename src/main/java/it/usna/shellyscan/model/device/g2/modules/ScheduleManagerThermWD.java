@@ -46,7 +46,6 @@ public class ScheduleManagerThermWD {
 		}
 	}
 
-	//todo verifica
 	public String setCurrentProfile(int profileId) throws IOException {
 		return wd.postCommand("Thermostat.Schedule.SetConfig", "{\"id\":" + THERM_ID + ",\"config\":{\"profile_id\":" + profileId + "}}" );
 	}

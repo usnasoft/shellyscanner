@@ -117,8 +117,8 @@ class ThermJobPanel extends JPanel {
 		return expressionField.getText();
 	}
 	
-	public float getTarget() {
-		return target.getFloatValue();
+	public Float getTarget() {
+		return target.isEmpty() ? null : target.getFloatValue();
 	}
 	
 	public void setTarget(float temp) {

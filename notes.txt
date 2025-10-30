@@ -392,29 +392,27 @@ various fix on scheduler editor
 ---
 button zb/h&t zb
 Dimmer G4
+schedule wall display thermostat - profile selection
 ottimizzazione ip sort (long)
+"skip" on scripts restore
 
-No sembra essre utile:
+No sembra essre utile, le letture si distanziano naturalmente:
 it.usna.shellyscan.model.device.blu.BTHomeDevice.refreshStatus()
 e
 it.usna.shellyscan.model.device.blu.BTHomeDevice.refreshSettings()
 dovrebbero porter lavorare sugli stessi dati se vecchi meno di 0.5 secondi
 ->
 definizione di BTHomeManager ?
+invece ho ridotto la lettura alle soli chiavi utili
 
 
-It would also be nice to add dynamic filters that show, for example, only enabled devices or disabled devices on the main view (?)
 
 
 /rpc/PresenceZone.GetConfig?id=201
 public enum Type boolean -> enum (illuminance)
 
 
-// TODO
-// schedule wall display thermostat - profile selection
-// 1.7.0 https://shelly-api-docs.shelly.cloud/gen2/DynamicComponents/BTHome/BTHomeControl/ (?)
-
-
+// It would also be nice to add dynamic filters that show, for example, only enabled devices or disabled devices on the main view (?)
 // rgb_xx panel listener (?) -> model su DevicesTable -> su DevicesCommandCellEditor -> DialogEditLights che diventa listener e chiama i 
 // checklist AP ssid != mac (fw 1.5.0 stable)
 // portare il modello sulla tabella per semplificare il calcolo dei tooltip (e delle icone di stato)
