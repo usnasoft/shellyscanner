@@ -60,7 +60,7 @@ class ProfilesPanel extends JPanel {
 
 	public ProfilesPanel(JDialog parent, AbstractG2Device device, ScheduleManagerThermWD wdSceduleManager) {
 		this.parentDlg = parent;
-		setLayout(new BorderLayout(40, 0));
+		setLayout(new BorderLayout(20, 0));
 		this.wdSceduleManager = wdSceduleManager;
 		
 		JScrollPane scrollPane = new JScrollPane();
@@ -166,10 +166,10 @@ class ProfilesPanel extends JPanel {
 		scrollPane.setViewportView(profilesTable);
 		scrollPane.setBorder(BorderFactory.createEmptyBorder());
 
-		JPanel buttonsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 10));
+		JPanel buttonsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 10));
 		add(buttonsPanel, BorderLayout.CENTER);
 
-		JButton newProfileButton = new JButton(new UsnaAction("schAddProfile", e -> {
+		JButton newProfileButton = new JButton(new UsnaAction(null, "schAddProfile", null, "/images/plus_transp16.png", null,  e -> {
 			TableCellEditor editor = profilesTable.getCellEditor();
 			if(editor != null) {
 				editor.stopCellEditing();
@@ -180,7 +180,7 @@ class ProfilesPanel extends JPanel {
 		}));
 		buttonsPanel.add(newProfileButton);
 		
-		duplicateProfileButton = new JButton(new UsnaAction(parent, "schDuplicateProfile", e -> {
+		duplicateProfileButton = new JButton(new UsnaAction(parent, "schDuplicateProfile", null, "/images/duplicate_trasp16.png", null, e -> {
 			int mRow = profilesTable.getSelectedModelRow();
 			if(mRow >= 0) {
 				String name = profiles.get(mRow).name() + "-new";
@@ -205,7 +205,7 @@ class ProfilesPanel extends JPanel {
 		duplicateProfileButton.setEnabled(false);
 		buttonsPanel.add(duplicateProfileButton);
 
-		deleteProfileButton = new JButton(new UsnaAction(parent, "schDelProfile", e -> {
+		deleteProfileButton = new JButton(new UsnaAction(parent, "schDelProfile", null, "/images/erase-9-16.png", null, e -> {
 			int mRow = profilesTable.getSelectedModelRow();
 			if(mRow >= 0) {
 				TableCellEditor editor = profilesTable.getCellEditor();
@@ -235,7 +235,7 @@ class ProfilesPanel extends JPanel {
 		deleteProfileButton.setEnabled(false);
 		buttonsPanel.add(deleteProfileButton);
 		
-		selectProfileButton = new JButton(new UsnaAction(parent, "schSelectProfile", e -> {
+		selectProfileButton = new JButton(new UsnaAction(parent, "schSelectProfile", null, "/images/OK_trasp.png", null, e -> {
 			try {
 				ThermProfile selectedProfile = profiles.get(profilesTable.getSelectedModelRow());
 				wdSceduleManager.setCurrentProfile(selectedProfile.id());
@@ -250,7 +250,7 @@ class ProfilesPanel extends JPanel {
 		selectProfileButton.setEnabled(false);
 		buttonsPanel.add(selectProfileButton);
 		
-		buttonsPanel.add(Box.createHorizontalStrut(30));
+		buttonsPanel.add(Box.createHorizontalStrut(20));
 		
 		JButton enableButton = new JButton();
 		enableButton.setContentAreaFilled(false);

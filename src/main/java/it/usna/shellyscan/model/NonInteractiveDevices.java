@@ -194,13 +194,13 @@ public class NonInteractiveDevices implements Closeable {
 				}
 				// BTHome (BLU)
 				if(d instanceof AbstractProDevice || d instanceof AbstractG3Device || d instanceof AbstractG4Device) {
-					for(JsonNode compInfo: ((AbstractG2Device)d).getJSONIterator("/rpc/Shelly.GetComponents?dynamic_only=true", "components")) { // empty on 401
+					((AbstractG2Device)d).getJSONIterator("/rpc/Shelly.GetComponents?dynamic_only=true", "components").forEachRemaining(compInfo -> {
 						String key = compInfo.path("key").asString("");
 						if(key.startsWith(BTHomeDevice.DEVICE_KEY_PREFIX) || key.startsWith(BluTRV.DEVICE_KEY_PREFIX)) {
 							AbstractBluDevice newBlu = DevicesFactory.createBlu((AbstractG2Device)d, httpClient, compInfo, key);
 							consumer.accept(newBlu);
 						}
-					}
+					});
 				}
 			}
 		} catch(Exception e) {

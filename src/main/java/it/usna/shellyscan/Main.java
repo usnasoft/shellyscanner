@@ -17,6 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.simple.SimpleLogger;
 
+import it.usna.shellyscan.controller.BackupAction;
 import it.usna.shellyscan.controller.DeferrablesContainer;
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.DevicesFactory;
@@ -151,7 +152,7 @@ public class Main {
 			try (NonInteractiveDevices model = (ipCollection == null) ? new NonInteractiveDevices(fullScan) : new NonInteractiveDevices(ipCollection)) {
 				model.execute(d -> {
 					try {
-						d.backup(Path.of(path, d.getHostname().replaceAll("[^\\w_-]+", "_") + "." + Main.BACKUP_FILE_EXT));
+						d.backup(Path.of(path, BackupAction.defFileName(d)));
 						System.out.println(d.getHostname() + " success");
 					} catch (Exception e) {
 						System.out.println(d.getHostname() + " error - " + e.toString());

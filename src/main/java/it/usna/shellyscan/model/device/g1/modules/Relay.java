@@ -32,10 +32,10 @@ public class Relay implements RelayInterface {
 		source = relay.get("source").asString("-");
 	}
 	
-	public void fillStatus(JsonNode relay, JsonNode inputs) {
+	public void fillStatus(JsonNode relay, JsonNode input) {
 		isOn = relay.get("ison").booleanValue(false);
 		source = relay.path("source").asString("-"); //old fw miss "source"
-		inputIsOn = inputs.path("input").booleanValue(false);
+		inputIsOn = input.path("input").asBoolean(false); // 0/1
 	}
 	
 	@Override

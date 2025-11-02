@@ -29,8 +29,6 @@ public class DeviceMetersCellRenderer extends JPanel implements TableCellRendere
 	private static Border EMPTY_BORDER;
 	private static final Border FOCUS_BORDER = UIManager.getBorder("Table.focusCellHighlightBorder");
 	private static final Font LABEL_FONT = new Font("Tahoma", Font.BOLD, 11);
-//	private static final MessageFormat SWITCH_FORMATTER = new MessageFormat("{0,choice,0#open|1#closed|1<{0,number,integer}}", Locale.ENGLISH);
-	//val = new JLabel(SWITCH_FORMATTER.format(singleArrayObj));
 	
 	private static final JLabel EMPTY = new JLabel();
 	private static final GridBagConstraints GBC_FILLER = new GridBagConstraints();
