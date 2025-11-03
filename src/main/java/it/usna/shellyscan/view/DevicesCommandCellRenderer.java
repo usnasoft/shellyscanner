@@ -44,8 +44,10 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 
 	// Generic
 	static final ImageIcon EDIT_IMG = new ImageIcon(DevicesCommandCellRenderer.class.getResource("/images/Write16.png"));
-	static final ImageIcon UP_IMG = new ImageIcon(DevicesCommandCellRenderer.class.getResource("/images/Arrow16up.png"));
 	static final ImageIcon DOWN_IMG = new ImageIcon(DevicesCommandCellRenderer.class.getResource("/images/Arrow16down.png"));
+	static final ImageIcon UP_IMG = new ImageIcon(DevicesCommandCellRenderer.class.getResource("/images/Arrow16up.png"));
+	static final ImageIcon DOWN_ON_IMG = new ImageIcon(DevicesCommandCellRenderer.class.getResource("/images/Arrow16down_on.png"));
+	static final ImageIcon UP_ON_IMG = new ImageIcon(DevicesCommandCellRenderer.class.getResource("/images/Arrow16up_on.png"));
 	static final ImageIcon STOP_IMG = new ImageIcon(DevicesCommandCellRenderer.class.getResource("/images/PlayerStop16.png"));
 	private JButton onOffButton0 = new JButton();
 	private JLabel label0 = new JLabel();
@@ -191,8 +193,8 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 		rollerButtonPanel.setOpaque(false);
 		rollerPanel.add(rollerLabel, BorderLayout.CENTER);
 		rollerSouthPanel.add(rollerButtonPanel, BorderLayout.EAST);
-		JButton rollerButtonUp = new JButton(UP_IMG);
-		JButton rollerButtonDown = new JButton(DOWN_IMG);
+		JButton rollerButtonUp = new JButton(roller.isInputOn0() ? DevicesCommandCellRenderer.UP_ON_IMG : DevicesCommandCellRenderer.UP_IMG);
+		JButton rollerButtonDown = new JButton(roller.isInputOn1() ? DevicesCommandCellRenderer.DOWN_ON_IMG : DevicesCommandCellRenderer.DOWN_IMG);
 		JButton rollerButtonStop = new JButton(STOP_IMG);
 		rollerButtonUp.setBorder(BorderFactory.createEmptyBorder());
 		rollerButtonStop.setBorder(BorderFactory.createEmptyBorder());
@@ -211,7 +213,6 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 			rollerLabel.setText(roller.getLabel());
 		}
 		rollerLabel.setForeground(foregroundColor);
-//		rollerPanel.setPreferredSize(new Dimension(500, rollerPanel.getPreferredSize().height));
 		return rollerPanel;
 	}
 	

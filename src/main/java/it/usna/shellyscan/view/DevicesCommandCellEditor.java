@@ -191,8 +191,8 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 		JPanel rollerButtonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 3, 0));
 		rollerButtonPanel.setOpaque(false);
 		rollerSouthPanel.add(rollerButtonPanel, BorderLayout.EAST);
-		JButton rollerButtonUp = new JButton(DevicesCommandCellRenderer.UP_IMG);
-		JButton rollerButtonDown = new JButton(DevicesCommandCellRenderer.DOWN_IMG);
+		JButton rollerButtonUp = new JButton(roller.isInputOn0() ? DevicesCommandCellRenderer.UP_ON_IMG : DevicesCommandCellRenderer.UP_IMG);
+		JButton rollerButtonDown = new JButton(roller.isInputOn1() ? DevicesCommandCellRenderer.DOWN_ON_IMG : DevicesCommandCellRenderer.DOWN_IMG);
 		JButton rollerButtonStop = new JButton(DevicesCommandCellRenderer.STOP_IMG);
 		rollerButtonUp.setBorder(BorderFactory.createEmptyBorder());
 		rollerButtonStop.setBorder(BorderFactory.createEmptyBorder());

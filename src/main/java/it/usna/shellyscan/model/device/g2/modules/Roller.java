@@ -16,6 +16,8 @@ public class Roller implements RollerInterface {
 	private boolean calibrated;
 	private int position;
 	private String source;
+	private boolean inputIsOn0;
+	private boolean inputIsOn1;
 	
 	public Roller(AbstractG2Device parent, int index) {
 		this.parent = parent;
@@ -32,6 +34,16 @@ public class Roller implements RollerInterface {
 			position = rollerStatus.get("current_pos").intValue(0);
 		}
 		source = rollerStatus.get("source").asString("-");
+	}
+	
+	public void fillStatus(JsonNode rollerStatus, JsonNode input0, JsonNode input1) {
+		calibrated = rollerStatus.get("pos_control").asBoolean();
+		if(calibrated) {
+			position = rollerStatus.get("current_pos").intValue(0);
+		}
+		source = rollerStatus.get("source").asString("-");
+		inputIsOn0 = input0.get("state").booleanValue(false);
+		inputIsOn1 = input1.get("state").booleanValue(false);
 	}
 	
 	@Override
@@ -72,6 +84,16 @@ public class Roller implements RollerInterface {
 			position = roller.get("current_pos").asInt();
 		}
 		source = roller.get("source").asString("-");
+	}
+	
+	@Override
+	public boolean isInputOn0() {
+		return inputIsOn0;
+	}
+	
+	@Override
+	public boolean isInputOn1() {
+		return inputIsOn1;
 	}
 	
 	@Override

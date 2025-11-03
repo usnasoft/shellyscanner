@@ -160,7 +160,7 @@ public class ShellyPro2PM extends AbstractProDevice implements ModulesHolder, In
 			current0 = cover.get("current").floatValue();
 			pf0 = cover.get("pf").floatValue();
 			internalTmp = cover.path("temperature").path("tC").floatValue();
-			roller.fillStatus(cover);
+			roller.fillStatus(cover, status.get("input:0"), status.get("input:1"));
 		}
 	}
 	
