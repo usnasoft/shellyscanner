@@ -37,22 +37,21 @@ public class LightRGBCCT implements RGBCCTInterface {
 
 	@Override
 	public void setColorMode(boolean color) throws IOException {
-		String ret = parent.postCommand("RGBCCT.SetConfig", "{\"id\":" + INDEX + ",\"config\":{\"mode\":\"" + (color ? "rgb" : "cct") + "\"}}");
+		String ret = parent.postCommand("RGBCCT.Set", "{\"id\":" + INDEX + ",\"mode\":\"" + (color ? "rgb" : "cct") + "\"}");
 		if(ret == null) {
 			colorMode = color;
 		} else {
 			throw new DeviceAPIException(DeviceAPIException.UNAVAILABLE, ret);
 		}
-//		parent.getJSON("/rpc/RGBCCT.SetConfig?id=" + INDEX + "&config={\"mode\":\"" + (color ? "rgb" : "cct") + "\"}");
 		colorMode = color;
 	}
 	
 	public void fillSettings(JsonNode config) {
 		name = config.get("name").asString("");
-		colorMode = "rgb".equals(config.get("mode").asString("")); // Range of values: rgb, cct
 	}
 	
 	public void fillStatus(JsonNode statusRGBCCT) {
+		colorMode = "rgb".equals(statusRGBCCT.get("mode").asString(null)); // Range of values: rgb, cct
 		isOn = statusRGBCCT.get("output").asBoolean();
 		final JsonNode rgbNode = statusRGBCCT.get("rgb");
 		red = rgbNode.get(0).asInt();

@@ -211,7 +211,7 @@ public class Shelly2PMG4 extends AbstractG4Device implements ModulesHolder, Inte
 			current0 = cover.path("current").floatValue();
 			pf0 = cover.path("pf").floatValue();
 			internalTmp = cover.path("temperature").path("tC").floatValue();
-			roller.fillStatus(cover);
+			roller.fillStatus(cover, status.get("input:0"), status.get("input:1"));
 		}
 		if(sensorAddOn != null) {
 			sensorAddOn.fillStatus(status);

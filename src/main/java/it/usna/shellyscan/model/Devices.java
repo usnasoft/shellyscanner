@@ -483,7 +483,7 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 						Thread.sleep(MULTI_QUERY_DELAY);
 					}
 					d.refreshStatus();
-				} catch (JacksonException e) {
+				} catch (RuntimeException /*| JacksonException*/ e) {
 					LOG.trace("Unexpected-refresh: {}", d, e);
 					d.setStatus(Status.ERROR);
 				} catch (IOException | InterruptedException e) {}

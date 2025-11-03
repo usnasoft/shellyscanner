@@ -205,7 +205,7 @@ public class ShellyPlus2PM extends AbstractG2Device implements ModulesHolder, In
 			current0 = cover.path("current").floatValue();
 			pf0 = cover.path("pf").floatValue();
 			internalTmp = cover.path("temperature").path("tC").floatValue();
-			roller.fillStatus(cover);
+			roller.fillStatus(cover, status.get("input:0"), status.get("input:1"));
 		}
 		if(addOn != null) {
 			addOn.fillStatus(status);

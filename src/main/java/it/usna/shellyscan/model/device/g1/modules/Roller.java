@@ -26,6 +26,9 @@ public class Roller implements RollerInterface {
 		calibrated = rollerStatus.get("positioning").asBoolean();
 		if(calibrated) {
 			position = rollerStatus.get("current_pos").intValue(0);
+			if(position > 100) {
+				calibrated = false;
+			}
 		}
 		source = rollerStatus.get("source").asString("-");
 	}

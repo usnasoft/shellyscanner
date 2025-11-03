@@ -117,14 +117,14 @@ public class ShellyProDualCover extends AbstractProDevice implements ModulesHold
 	protected void fillStatus(JsonNode status) throws IOException {
 		super.fillStatus(status);
 		JsonNode coverStatus0 = status.get("cover:0");
-		roller0.fillStatus(coverStatus0);
+		roller0.fillStatus(coverStatus0, status.get("input:0"), status.get("input:1"));
 		power0 = coverStatus0.get("apower").floatValue();
 		voltage0 = coverStatus0.get("voltage").floatValue();
 		current0 = coverStatus0.get("current").floatValue();
 		pf0 = coverStatus0.get("pf").floatValue();
 
 		JsonNode coverStatus1 = status.get("cover:1");
-		roller1.fillStatus(coverStatus1);
+		roller1.fillStatus(coverStatus0, status.get("input:2"), status.get("input:3"));
 		power1 = coverStatus1.get("apower").floatValue();
 		voltage1 = coverStatus1.get("voltage").floatValue();
 		current1 = coverStatus1.get("current").floatValue();
