@@ -59,7 +59,6 @@ public abstract class ShellyAbstractDevice {
 	protected long lastConnection = 0;
 
 	protected final String uriPrefix;
-//	protected final ObjectMapper jsonMapper = new ObjectMapper();
 	protected final JsonMapper jsonMapper = JsonMapper.builder().disable(StreamWriteFeature.AUTO_CLOSE_TARGET).build();  // disable(...) need this for backup
 	
 	public enum Status {ON_LINE, OFF_LINE, NOT_LOOGGED, READING, ERROR, GHOST}; // GHOST not yet detected (in store)
@@ -86,10 +85,9 @@ public abstract class ShellyAbstractDevice {
 		} else {
 			this.uriPrefix = "http://" + addressAndPort.getRepresentation();
 		}
-//		jsonMapper.disable(StreamWriteFeature.AUTO_CLOSE_TARGET); // need this for backup
 	}
 	
-	public JsonNode getJSON(final String command) throws IOException { //JsonProcessingException extends IOException
+	public JsonNode getJSON(final String command) throws IOException {
 		ContentResponse response;
 		int statusCode;
 		try {
@@ -102,7 +100,7 @@ public abstract class ShellyAbstractDevice {
 		} catch(InterruptedException | ExecutionException | TimeoutException | JacksonException e) {
 			status = Status.OFF_LINE;
 			throw new DeviceOfflineException(e);
-		} catch (/*JacksonException |*/ RuntimeException e) {
+		} catch (RuntimeException e) { // JacksonException extends RuntimeException
 //			if(status == Status.ON_LINE || status == Status.READING) {
 				status = Status.ERROR;
 //			}

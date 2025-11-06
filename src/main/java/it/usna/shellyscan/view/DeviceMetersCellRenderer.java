@@ -1,6 +1,7 @@
 package it.usna.shellyscan.view;
 
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -9,6 +10,7 @@ import java.util.Locale;
 import java.util.MissingResourceException;
 
 import javax.swing.BorderFactory;
+import javax.swing.Box;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTable;
@@ -26,25 +28,23 @@ public class DeviceMetersCellRenderer extends JPanel implements TableCellRendere
 	private static final Insets INSETS_LABEL1 = new Insets(0, 0, 0, 2);
 	private static final Insets INSETS_LABEL2 = new Insets(0, 6, 0, 2);
 
-	private static Border EMPTY_BORDER;
+	private final Border emptyBorder;
 	private static final Border FOCUS_BORDER = UIManager.getBorder("Table.focusCellHighlightBorder");
 	private static final Font LABEL_FONT = new Font("Tahoma", Font.BOLD, 11);
 	
-	private static final JLabel EMPTY = new JLabel();
+	private static final Component EMPTY_ALIGN_FILLER = Box.createHorizontalStrut(0);
 	private static final GridBagConstraints GBC_FILLER = new GridBagConstraints();
-	static {
-		EMPTY.setOpaque(true);
-		GBC_FILLER.weightx = 1.0;
-	}
+	
 	private boolean tempUnitCelsius;
 
 	public DeviceMetersCellRenderer(boolean celsius) {
 		this.tempUnitCelsius = celsius;
+		GBC_FILLER.weightx = 1.0;
 		GridBagLayout gridBagLayout = new GridBagLayout();
 		gridBagLayout.rowWeights = new double[] {1.0, 1.0, 1.0, 1.0, 1.0}; // up to 5 rows
 		setLayout(gridBagLayout);
 		final Insets borderInsets = FOCUS_BORDER.getBorderInsets(this);
-		EMPTY_BORDER = BorderFactory.createEmptyBorder(borderInsets.top, borderInsets.left, borderInsets.bottom, borderInsets.right);
+		emptyBorder = BorderFactory.createEmptyBorder(borderInsets.top, borderInsets.left, borderInsets.bottom, borderInsets.right);
 	}
 
 	@Override
@@ -53,21 +53,22 @@ public class DeviceMetersCellRenderer extends JPanel implements TableCellRendere
 		removeAll();
 		if(value != null) {
 			final Color foregroundColor = isSelected ? table.getSelectionForeground() : table.getForeground();
-			Meters ms[] = (Meters[])value;
-			for(int i = 0; i < ms.length; i++) {
-				final Meters m = ms[i];
+			Meters[] ms = (Meters[])value;
+			int maxCol = 0;
+			for(int gridRow = 0; gridRow < ms.length; gridRow++) {
+				final Meters m = ms[gridRow];
 				if(m != null) {
-					int j = 0;
+					int gridCol = 0;
 					Type[] types = m.getTypes();
 					for(Meters.Type t: types) {
 						if(types.length <= HIDE_LIMIT || isVisible(t)) {
 							JLabel label = new JLabel(Main.LABELS.getString("METER_LBL_" + t));
 							GridBagConstraints gbc_label = new GridBagConstraints();
-							gbc_label.insets = (j > 0) ? INSETS_LABEL2 : INSETS_LABEL1;
+							gbc_label.insets = (gridCol > 0) ? INSETS_LABEL2 : INSETS_LABEL1;
 							gbc_label.anchor = GridBagConstraints.WEST;
 							gbc_label.weightx = 0.0;
-							gbc_label.gridx = j * 2;
-							gbc_label.gridy = i;
+							gbc_label.gridx = gridCol;
+							gbc_label.gridy = gridRow;
 							label.setForeground(foregroundColor);
 							label.setFont(LABEL_FONT);
 							add(label, gbc_label);
@@ -95,21 +96,28 @@ public class DeviceMetersCellRenderer extends JPanel implements TableCellRendere
 							GridBagConstraints gbc_value = new GridBagConstraints();
 							gbc_value.anchor = GridBagConstraints.EAST;
 							gbc_value.weightx = 0.0;
-							gbc_value.gridx = gbc_label.gridx + 1;
-							gbc_value.gridy = i;
+							gbc_value.gridx = gridCol + 1;
+							gbc_value.gridy = gridRow;
 							val.setForeground(foregroundColor);
 							add(val, gbc_value);
 
-							j++;
+							gridCol += 2;
 						}
 					}
-					GBC_FILLER.gridx = (j * 2) + 2;
-					GBC_FILLER.gridy = i;
-					add(EMPTY, GBC_FILLER);
+					if(gridCol > maxCol) {
+						maxCol = gridCol;
+					}
+//					GBC_FILLER.gridx = gridCol + 2;
+//					GBC_FILLER.gridy = gridRow;
+//					add(EMPTY_ALIGN_FILLER, GBC_FILLER);
 				}
 			}
+			// add a filler on row 0 last column + 1 
+			GBC_FILLER.gridx = maxCol;
+			GBC_FILLER.gridy = 0;
+			add(EMPTY_ALIGN_FILLER, GBC_FILLER);
 		}
-		setBorder(hasFocus ? FOCUS_BORDER : EMPTY_BORDER);
+		setBorder(hasFocus ? FOCUS_BORDER : emptyBorder);
 		return this;
 //		}catch(Exception e) {
 //			e.printStackTrace();
