@@ -40,6 +40,7 @@ public class DeviceMetersCellRenderer extends JPanel implements TableCellRendere
 	public DeviceMetersCellRenderer(boolean celsius) {
 		this.tempUnitCelsius = celsius;
 		GBC_FILLER.weightx = 1.0;
+		GBC_FILLER.gridy = 0;
 		GridBagLayout gridBagLayout = new GridBagLayout();
 		gridBagLayout.rowWeights = new double[] {1.0, 1.0, 1.0, 1.0, 1.0}; // up to 5 rows
 		setLayout(gridBagLayout);
@@ -114,7 +115,6 @@ public class DeviceMetersCellRenderer extends JPanel implements TableCellRendere
 			}
 			// add a filler on row 0 last column + 1 
 			GBC_FILLER.gridx = maxCol;
-			GBC_FILLER.gridy = 0;
 			add(EMPTY_ALIGN_FILLER, GBC_FILLER);
 		}
 		setBorder(hasFocus ? FOCUS_BORDER : emptyBorder);

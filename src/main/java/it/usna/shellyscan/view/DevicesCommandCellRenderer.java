@@ -145,7 +145,8 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 
 	private JPanel getRelayPanel(RelayInterface rel, final Color foregroundColor, boolean ind0) {
 		JPanel relayPanel = new JPanel(new BorderLayout());
-		final JLabel relayLabel;// = new JLabel(rel.getLabel());
+		relayPanel.setOpaque(false);
+		final JLabel relayLabel;
 		final JButton button;
 		if(ind0) {
 			relayLabel = label0;
@@ -165,7 +166,6 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 		relayButtonPanel.setOpaque(false);
 		relayButtonPanel.add(button);
 
-		relayPanel.setOpaque(false);
 		relayPanel.add(relayLabel, BorderLayout.CENTER);
 		relayPanel.add(relayButtonPanel, BorderLayout.EAST);
 		if(rel.isOn()) {
@@ -175,7 +175,6 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 			button.setText(LABEL_OFF);
 			button.setBackground(BUTTON_OFF_BG_COLOR);
 		}
-//		button.setForeground(rel.isInputOn() ? BUTTON_ON_FG_COLOR : null);
 		return relayPanel;
 	}
 	
@@ -257,7 +256,7 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 	private JPanel getRGBSyntheticPanel(RGBInterface rgb, final Color foregroundColor, boolean ind0, boolean addEditButton) {
 		final JPanel panel = new JPanel(new BorderLayout());
 		panel.setOpaque(false);
-		final JLabel label;// = new JLabel(rgb.getLabel() + " " + rgb.getGain() + "%");
+		final JLabel label;
 		JButton button;
 		if(ind0) {
 			button = onOffButton0;
