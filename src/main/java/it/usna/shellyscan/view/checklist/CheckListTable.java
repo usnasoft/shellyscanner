@@ -36,7 +36,8 @@ class CheckListTable extends ExTooltipTable {
 	public static final int COL_WIFI2 = 10;
 	public static final int COL_EXTENDER = 11;
 	public static final int COL_SCRIPTS = 12;
-	public static final int COL_LAST = COL_SCRIPTS;
+	public static final int COL_AUTO_FW_UPDATE = 13;
+	public static final int COL_LAST = COL_AUTO_FW_UPDATE;
 	
 	public CheckListTable(UsnaTableModel tModel, final SortOrder ipSort) {
 		super(tModel, true);
@@ -46,7 +47,7 @@ class CheckListTable extends ExTooltipTable {
 		setHeadersTooltip(
 				LABELS.getString("col_status_exp"), null, null, LABELS.getString("col_eco_tooltip"), LABELS.getString("col_ledoff_tooltip"), LABELS.getString("col_logs_tooltip"),
 				LABELS.getString("col_blt_tooltip"), LABELS.getString("col_AP_tooltip"), LABELS.getString("col_roaming_tooltip"), LABELS.getString("col_wifi1_tooltip"),
-				LABELS.getString("col_wifi2_tooltip"), LABELS.getString("col_extender_tooltip"), LABELS.getString("col_scripts_tooltip"));
+				LABELS.getString("col_wifi2_tooltip"), LABELS.getString("col_extender_tooltip"), LABELS.getString("col_scripts_tooltip"), LABELS.getString("col_auto_fw_update_tooltip"));
 
 		TableCellRenderer rendTrueOk = new CheckRenderer(true);
 		TableCellRenderer rendFalseOk = new CheckRenderer(false);
@@ -61,10 +62,11 @@ class CheckListTable extends ExTooltipTable {
 		columnModel.getColumn(COL_WIFI2).setCellRenderer(rendTrueOk);
 		columnModel.getColumn(COL_EXTENDER).setCellRenderer(new StringJudgedRenderer("0", CheckListView.FALSE_STR));
 		columnModel.getColumn(COL_SCRIPTS).setCellRenderer(new StringJudgedRenderer(null, null));
+		columnModel.getColumn(COL_AUTO_FW_UPDATE).setCellRenderer(new StringJudgedRenderer(null, null));
 
 		TableRowSorter<?> rowSorter = ((TableRowSorter<?>) getRowSorter());
 		rowSorter.setSortsOnUpdates(true);
-		final Comparator<?> sorter = (o1, o2) -> { // null, Boolean, String
+		final Comparator<?> sorter = (o1, o2) -> { // use when there is a mix: null, Boolean, String
 			String s1 = o1 == null ? "" : o1.toString();
 			String s2 = o2 == null ? "" : o2.toString();
 			return s1.compareTo(s2);
@@ -78,7 +80,7 @@ class CheckListTable extends ExTooltipTable {
 		rowSorter.setComparator(COL_WIFI1, sorter);
 		rowSorter.setComparator(COL_WIFI2, sorter);
 		rowSorter.setComparator(COL_EXTENDER, sorter);
-		rowSorter.setComparator(COL_SCRIPTS, sorter);
+//		rowSorter.setComparator(COL_SCRIPTS, sorter);
 
 		if (ipSort != SortOrder.UNSORTED) {
 			sortByColumn(COL_IP, ipSort);

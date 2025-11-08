@@ -65,6 +65,7 @@ import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
 import it.usna.shellyscan.model.device.g1.AbstractG1Device;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.g2.modules.RangeExtenderManager;
+import it.usna.shellyscan.model.device.g2.modules.ScheduleManager;
 import it.usna.shellyscan.model.device.g2.modules.Script;
 import it.usna.shellyscan.model.device.g2.modules.WIFIManagerG2;
 import it.usna.shellyscan.view.DevicesTable;
@@ -106,7 +107,8 @@ public class CheckListView extends JDialog implements UsnaEventListener<Devices.
 
 		tModel = new UsnaTableModel("" /*status*/,
 				LABELS.getString("col_device"), LABELS.getString("col_ip"), LABELS.getString("col_eco"), LABELS.getString("col_ledoff"), LABELS.getString("col_logs"), LABELS.getString("col_blt"),
-				LABELS.getString("col_AP"), LABELS.getString("col_roaming"), LABELS.getString("col_wifi1"), LABELS.getString("col_wifi2"), LABELS.getString("col_extender"), LABELS.getString("col_scripts")) {
+				LABELS.getString("col_AP"), LABELS.getString("col_roaming"), LABELS.getString("col_wifi1"), LABELS.getString("col_wifi2"), LABELS.getString("col_extender"), LABELS.getString("col_scripts"),
+				LABELS.getString("col_auto_fw_update")) {
 			private static final long serialVersionUID = 1L;
 
 			@Override
@@ -422,7 +424,7 @@ public class CheckListView extends JDialog implements UsnaEventListener<Devices.
 		btnClose.setBorder(BorderFactory.createEmptyBorder(2, 7, 2, 8));
 		panelRight.add(btnClose);
 
-		setSize(980, 598);
+		setSize(1000, 598);
 		setVisible(true);
 		setLocationRelativeTo(owner);
 		table.columnsWidthAdapt();
@@ -575,6 +577,7 @@ public class CheckListView extends JDialog implements UsnaEventListener<Devices.
 		tRow[CheckListTable.COL_WIFI2] = wifi2;
 		tRow[CheckListTable.COL_EXTENDER] = NOT_APPLICABLE_STR;
 		tRow[CheckListTable.COL_SCRIPTS] = NOT_APPLICABLE_STR;
+		tRow[CheckListTable.COL_AUTO_FW_UPDATE] = NOT_APPLICABLE_STR;
 	}
 
 	private static void g2Row(AbstractG2Device d, JsonNode config, JsonNode status, Object[] tRow) {
@@ -652,6 +655,12 @@ public class CheckListView extends JDialog implements UsnaEventListener<Devices.
 				LOG.debug("scripts: {}", d, e);
 			}
 		}
+		String autoFWupdate = NOT_APPLICABLE_STR;
+		try {
+			autoFWupdate = new ScheduleManager(d).autoFWUpdate();
+		} catch (IOException e) {
+			LOG.debug("fw auto update: {}", d, e);
+		}
 		
 		tRow[CheckListTable.COL_STATUS] = DevicesTable.getStatusIcon(d);
 		tRow[CheckListTable.COL_ECO] = eco;
@@ -664,6 +673,7 @@ public class CheckListView extends JDialog implements UsnaEventListener<Devices.
 		tRow[CheckListTable.COL_WIFI2] = wifi2;
 		tRow[CheckListTable.COL_EXTENDER] = extender;
 		tRow[CheckListTable.COL_SCRIPTS] = scripts;
+		tRow[CheckListTable.COL_AUTO_FW_UPDATE] = autoFWupdate;
 	}
 	
 //	private static void bluRow(AbstractBluDevice d, Object[] tRow) {

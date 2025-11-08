@@ -51,7 +51,7 @@ public class G2JobPanel extends AbstractCronPanel {
 			setCron(scheduleNode.path("timespec").asString(""));
 			JsonNode calls = scheduleNode.path("calls");
 			if(calls.size() > 0) {
-				setCalls(scheduleNode.path("calls"));
+				setCalls(/*scheduleNode.path("calls")*/calls);
 			} else {
 				addCall("", "", 0);
 			}

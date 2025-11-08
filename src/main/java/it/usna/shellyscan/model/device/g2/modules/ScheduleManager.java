@@ -1,6 +1,7 @@
 package it.usna.shellyscan.model.device.g2.modules;
 
 import java.io.IOException;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -43,6 +44,25 @@ public class ScheduleManager {
 	
 	public String delete(int id) {
 		return device.postCommand("Schedule.Delete", "{\"id\":" + id + "}");
+	}
+	
+	public String autoFWUpdate() throws IOException {
+		Iterator<JsonNode> jobsIt = getJobs().iterator();
+		while(jobsIt.hasNext()) {
+			JsonNode scheduleNode = jobsIt.next();
+			if(scheduleNode.get("enable").asBoolean()) {
+				JsonNode calls = scheduleNode.path("calls");
+				Iterator<JsonNode> callsIt = calls.iterator();
+				while(callsIt.hasNext()) {
+					JsonNode call = callsIt.next();
+					// if(call.hasNonNull("origin")) systemJob = true;
+					if(call.path("method").asString("").equalsIgnoreCase("Shelly.Update")) {
+						return call.path("params").get("stage").asString();
+					}
+				}
+			}
+		}
+		return null;
 	}
 	
 	/**
