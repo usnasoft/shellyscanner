@@ -392,9 +392,11 @@ various fix on scheduler editor
 ---
 button zb/h&t zb
 Dimmer G4
+chacklist - auto fw update
 schedule wall display thermostat - profile selection
 ottimizzazione ip sort (long)
 "skip" on scripts restore
+Export script fix for certain charsets
 
 No sembra essre utile, le letture si distanziano naturalmente:
 it.usna.shellyscan.model.device.blu.BTHomeDevice.refreshStatus()
