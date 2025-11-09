@@ -206,6 +206,41 @@ public class CheckListView extends JDialog implements UsnaEventListener<Devices.
 				updateRow(getLocalDevice(localRow), localRow);
 			});
 		});
+		
+		Action autoFWUpdateAction = new UsnaDropdownAction(this, "col_auto_fw_update", "col_auto_fw_update_tooltip"/*, null*/, "/images/Auto_fw_update24.png", new Action[] {
+				new UsnaSelectedAction(this, table, "setAutoFWUpdateStable", localRow -> {
+					try {
+						AbstractG2Device d = (AbstractG2Device)getLocalDevice(localRow);
+						ScheduleManager sm = new ScheduleManager(d);
+						sm.removeFWUpdate();
+						if(tModel.getValueAt(localRow, CheckListTable.COL_AUTO_FW_UPDATE).toString().equals("stable") == false) {
+							try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e1) {}
+							sm.addFWUpdate(true);
+						}
+						try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e1) {}
+						updateRow(d, localRow);
+					} catch (IOException ex) {
+						Msg.errorMsg(this, ex);
+						LOG.error("autoFWUpdateAction", ex);
+					}
+				}),
+				new UsnaSelectedAction(this, table, "setAutoFWUpdateBeta", localRow -> {
+					try {
+						AbstractG2Device d = (AbstractG2Device)getLocalDevice(localRow);
+						ScheduleManager sm = new ScheduleManager(d);
+						sm.removeFWUpdate();
+						if(tModel.getValueAt(localRow, CheckListTable.COL_AUTO_FW_UPDATE).toString().equals("beta") == false) {
+							try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e1) {}
+							sm.addFWUpdate(false);
+						}
+						try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e1) {}
+						updateRow(d, localRow);
+					} catch (IOException ex) {
+						Msg.errorMsg(this, ex);
+						LOG.error("autoFWUpdateAction", ex);
+					}
+				})
+		});		
 
 		Action rebootAction = new UsnaSelectedAction(this, table, "action_reboot_name", "action_reboot_tooltip", null, "/images/Nuke24.png", () -> {
 			final String cancel = UIManager.getString("OptionPane.cancelButtonText");
@@ -279,6 +314,7 @@ public class CheckListView extends JDialog implements UsnaEventListener<Devices.
 					roamingAction.setEnabled(sameStringValuesOrInt(modelRow, CheckListTable.COL_ROAMING));
 					rangeExtenderAction.setEnabled(sameStringValuesOrInt(modelRow, CheckListTable.COL_EXTENDER));
 					scriptsEditAction.setEnabled(modelRow.length == 1 && (val = tModel.getValueAt(modelRow[0], CheckListTable.COL_SCRIPTS)) != null && val.equals(NOT_APPLICABLE_STR) == false);
+					autoFWUpdateAction.setEnabled(sameObjectValues(modelRow, CheckListTable.COL_AUTO_FW_UPDATE));
 					browseAction.setEnabled(true);
 					rebootAction.setEnabled(true);
 				} else {
@@ -291,6 +327,7 @@ public class CheckListView extends JDialog implements UsnaEventListener<Devices.
 					roamingAction.setEnabled(false);
 					rangeExtenderAction.setEnabled(false);
 					scriptsEditAction.setEnabled(false);
+					autoFWUpdateAction.setEnabled(false);
 					browseAction.setEnabled(false);
 					rebootAction.setEnabled(false);
 				}
@@ -346,6 +383,7 @@ public class CheckListView extends JDialog implements UsnaEventListener<Devices.
 					};
 					case CheckListTable.COL_EXTENDER -> rangeExtenderAction;
 					case CheckListTable.COL_SCRIPTS -> scriptsEditAction;
+					case CheckListTable.COL_AUTO_FW_UPDATE -> autoFWUpdateAction;
 					default -> null;
 					};
 					final UsnaPopupMenu tablePopup = new UsnaPopupMenu();
@@ -374,6 +412,7 @@ public class CheckListView extends JDialog implements UsnaEventListener<Devices.
 		toolBar.add(apModeAction);
 		toolBar.add(roamingAction);
 		toolBar.add(rangeExtenderAction);
+		toolBar.add(autoFWUpdateAction);
 		toolBar.addSeparator();
 		toolBar.add(browseAction);
 		toolBar.add(rebootAction);
@@ -626,13 +665,13 @@ public class CheckListView extends JDialog implements UsnaEventListener<Devices.
 		}
 		String wifi1;
 		if (config.at("/wifi/sta/enable").asBoolean()) {
-			wifi1 = "static".equals(config.at("/wifi/sta/ipv4mode").asString("")) ? TRUE_STR : FALSE_STR;
+			wifi1 = "static".equals(config.at("/wifi/sta/ipv4mode").asString()) ? TRUE_STR : FALSE_STR;
 		} else {
 			wifi1 = "-";
 		}
 		String wifi2;
 		if (config.at("/wifi/sta1/enable").asBoolean()) {
-			wifi2 = "static".equals(config.at("/wifi/sta1/ipv4mode").asString("")) ? TRUE_STR : FALSE_STR;
+			wifi2 = "static".equals(config.at("/wifi/sta1/ipv4mode").asString()) ? TRUE_STR : FALSE_STR;
 		} else {
 			wifi2 = "-";
 		}
@@ -655,10 +694,15 @@ public class CheckListView extends JDialog implements UsnaEventListener<Devices.
 				LOG.debug("scripts: {}", d, e);
 			}
 		}
-		String autoFWupdate = NOT_APPLICABLE_STR;
+		String autoFWupdate;
 		try {
+			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			autoFWupdate = new ScheduleManager(d).autoFWUpdate();
-		} catch (IOException e) {
+			if(autoFWupdate == null) {
+				autoFWupdate = FALSE_STR;
+			}
+		} catch (Exception e) {
+			autoFWupdate = NOT_APPLICABLE_STR;
 			LOG.debug("fw auto update: {}", d, e);
 		}
 		

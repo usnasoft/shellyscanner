@@ -8,9 +8,11 @@ import java.util.concurrent.TimeUnit;
 
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.JsonNodeFactory;
 import tools.jackson.databind.node.ObjectNode;
 
-public class ScheduleManager {
+public class ScheduleManager {	
 	private final AbstractG2Device device;
 	
 	public ScheduleManager(AbstractG2Device device) {
@@ -37,11 +39,17 @@ public class ScheduleManager {
 		return res.path("id").asInt(-1);
 	}
 	
+	/**
+	 * return null on success
+	 */
 	public String update(int id, JsonNode def) {
 		((ObjectNode)def).put("id", id);
 		return device.postCommand("Schedule.Update", def);
 	}
 	
+	/**
+	 * return null on success
+	 */
 	public String delete(int id) {
 		return device.postCommand("Schedule.Delete", "{\"id\":" + id + "}");
 	}
@@ -63,6 +71,41 @@ public class ScheduleManager {
 			}
 		}
 		return null;
+	}
+	
+	/**
+	 * return null on success
+	 */
+	public String removeFWUpdate() throws IOException {
+		Iterator<JsonNode> jobsIt = getJobs().iterator();
+		while(jobsIt.hasNext()) {
+			JsonNode scheduleNode = jobsIt.next();
+			if(scheduleNode.get("enable").asBoolean()) {
+				JsonNode calls = scheduleNode.path("calls");
+				Iterator<JsonNode> callsIt = calls.iterator();
+				while(callsIt.hasNext()) {
+					JsonNode call = callsIt.next();
+					if(call.path("method").asString("").equalsIgnoreCase("Shelly.Update")) {
+						return delete(scheduleNode.get("id").intValue());
+					}
+				}
+			}
+		}
+		return "schedule not found";
+	}
+	
+	public void addFWUpdate(boolean stable) throws IOException {
+		final ObjectNode out = JsonNodeFactory.instance.objectNode();
+		out.put("timespec", "0 0 0 * * 0,1,2,3,4,5,6");
+		final ObjectNode call = JsonNodeFactory.instance.objectNode();
+		call.put("method", "Shelly.Update");
+		final ObjectNode parameters = JsonNodeFactory.instance.objectNode();
+		parameters.put("stage", stable ? "stable" : "beta");
+		call.set("params", parameters);
+		final ArrayNode calls = JsonNodeFactory.instance.arrayNode();
+		calls.add(call);
+		out.set("calls", calls);
+		create(out, true);
 	}
 	
 	/**
