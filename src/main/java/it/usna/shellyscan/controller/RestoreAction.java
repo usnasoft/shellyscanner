@@ -316,6 +316,26 @@ public class RestoreAction extends UsnaAction {
 			model.activateRefresh(modelRow);
 		}
 	}
+	
+	private static String nonInteractiveRestoreDevice(final ShellyAbstractDevice device, final Path basePath) throws IOException {
+		final Path file = basePath.resolve(BackupAction.defFileName(device));
+		final Map<String, JsonNode> backupJsons = readBackupFile(file);
+		final Map<RestoreMsg, Object> test = device.restoreCheck(backupJsons);
+
+		for(Map.Entry<RestoreMsg, Object> e: test.entrySet()) {
+			if(e.getKey().getType() == RestoreMsg.Type.PRE) {
+				return e.getKey().toString();
+			}
+		}
+		for(Map.Entry<RestoreMsg, Object> e: test.entrySet()) {
+			if(e.getKey().getType() == RestoreMsg.Type.ERROR) {
+				return e.getKey().toString();
+			}
+		}
+		Map<RestoreMsg, String> resData = Map.of(RestoreMsg.QUESTION_RESTORE_SCRIPTS_OVERRIDE, "true", RestoreMsg.QUESTION_RESTORE_SCRIPTS_ENABLE_LIKE_BACKED_UP, "true");
+		final List<String> restoreResult = device.restore(backupJsons, resData); // Do restore
+		return erroreMsg(restoreResult);
+	}
 
 	private static String erroreMsg(List<String> errors) {
 		String err = errors.stream().filter(s-> s != null && s.isEmpty() == false && s.startsWith("->r_step:") == false)
@@ -333,7 +353,7 @@ public class RestoreAction extends UsnaAction {
 			pathStream.forEach(p -> {
 				try {
 					if(p.toString().endsWith(".json")) {
-						backupJsons.put(p.getFileName().toString(), jsonMapper.readTree(/*Files.readString(p)*/Files.newBufferedReader(p)));
+						backupJsons.put(p.getFileName().toString(), jsonMapper.readTree(Files.newBufferedReader(p)));
 					} else {
 						backupJsons.put(p.getFileName().toString() + ".json", jsonMapper.createObjectNode().put("code", Files.readString(p/*, StandardCharsets.UTF_8*/)));
 					}

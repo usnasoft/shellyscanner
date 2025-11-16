@@ -15,9 +15,9 @@ public class MetersWVI extends Meters {
 	}
 	
 	public void fill(JsonNode status) {
-		power = status.path("apower").floatValue(0);
+		power = status.path("apower").floatValue(0); // Shelly +RGBW - "Lights x 4" not calibrated -> missing node
 		voltage = status.path("voltage").floatValue(0);
-		current = status.path("current").floatValue(0);
+		current = status.path("current").floatValue(0); // Shelly +RGBW - "Lights x 4" not calibrated -> missing node
 	}
 	
 	@Override

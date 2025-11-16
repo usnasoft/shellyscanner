@@ -10,13 +10,15 @@ import tools.jackson.databind.JsonNode;
 
 //https://shelly-api-docs.shelly.cloud/gen2/Overview/CommonServices/Shelly#shellyupdate
 public class FirmwareManagerG2 implements FirmwareManager {
-
 	private final AbstractG2Device d;
 	private String current;
 	private String stable;
 	private String beta;
 	private boolean updating;
 	private boolean valid;
+	
+	public static final String STAGE_STABLE = "stable";
+	public static final String STAGE_BETA = "beta";
 	
 	public FirmwareManagerG2(AbstractG2Device d) /*throws IOException*/ {
 		this.d = d;
@@ -80,11 +82,10 @@ public class FirmwareManagerG2 implements FirmwareManager {
 	@Override
 	public String update(boolean stable) {
 		updating = true;
-		String res = d.postCommand("Shelly.Update", stable ? "{\"stage\":\"stable\"}" : "{\"stage\":\"beta\"}");
+		String res = d.postCommand("Shelly.Update", stable ? "{\"stage\":\"" + STAGE_STABLE + "\"}" : "{\"stage\":\"" + STAGE_BETA + "\"}");
 		if(res != null && res.isEmpty() == false) {
 			updating = false;
 		}
-//		System.out.println("res " + res + " - " + d.getStatus());
 		return res;
 	}
 
@@ -102,11 +103,3 @@ public class FirmwareManagerG2 implements FirmwareManager {
 		return valid;
 	}
 }
-
-// autoupdate
-// -----------
-//schedule.create - params:
-//calls: 
-//[{method: "Shelly.Update", params: {stage: "beta"}, origin: "shelly_service"}]
-//timespec: 
-//"0 0 0 * * 0,1,2,3,4,5,6"

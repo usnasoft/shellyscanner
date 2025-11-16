@@ -64,6 +64,7 @@ import it.usna.shellyscan.model.device.ShellyAbstractDevice.LogMode;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
 import it.usna.shellyscan.model.device.g1.AbstractG1Device;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
+import it.usna.shellyscan.model.device.g2.modules.FirmwareManagerG2;
 import it.usna.shellyscan.model.device.g2.modules.RangeExtenderManager;
 import it.usna.shellyscan.model.device.g2.modules.ScheduleManager;
 import it.usna.shellyscan.model.device.g2.modules.Script;
@@ -213,7 +214,7 @@ public class CheckListView extends JDialog implements UsnaEventListener<Devices.
 						AbstractG2Device d = (AbstractG2Device)getLocalDevice(localRow);
 						ScheduleManager sm = new ScheduleManager(d);
 						sm.removeFWUpdate();
-						if(tModel.getValueAt(localRow, CheckListTable.COL_AUTO_FW_UPDATE).toString().equals("stable") == false) {
+						if(tModel.getValueAt(localRow, CheckListTable.COL_AUTO_FW_UPDATE).toString().equals(FirmwareManagerG2.STAGE_STABLE) == false) {
 							try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e1) {}
 							sm.addFWUpdate(true);
 						}
@@ -229,7 +230,7 @@ public class CheckListView extends JDialog implements UsnaEventListener<Devices.
 						AbstractG2Device d = (AbstractG2Device)getLocalDevice(localRow);
 						ScheduleManager sm = new ScheduleManager(d);
 						sm.removeFWUpdate();
-						if(tModel.getValueAt(localRow, CheckListTable.COL_AUTO_FW_UPDATE).toString().equals("beta") == false) {
+						if(tModel.getValueAt(localRow, CheckListTable.COL_AUTO_FW_UPDATE).toString().equals(FirmwareManagerG2.STAGE_BETA) == false) {
 							try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e1) {}
 							sm.addFWUpdate(false);
 						}
@@ -240,7 +241,7 @@ public class CheckListView extends JDialog implements UsnaEventListener<Devices.
 						LOG.error("autoFWUpdateAction", ex);
 					}
 				})
-		});		
+		});
 
 		Action rebootAction = new UsnaSelectedAction(this, table, "action_reboot_name", "action_reboot_tooltip", null, "/images/Nuke24.png", () -> {
 			final String cancel = UIManager.getString("OptionPane.cancelButtonText");
@@ -302,7 +303,7 @@ public class CheckListView extends JDialog implements UsnaEventListener<Devices.
 					if(sameBooleanValues(modelRow, CheckListTable.COL_LOGS, AbstractG1Device.class)) {
 						logsButton.setAction(logsG1Action);
 						logsG1Action.setEnabled(true);
-					} else if(sameObjectValues(modelRow, CheckListTable.COL_LOGS)) {
+					} else if(sameObjectValues(modelRow, CheckListTable.COL_LOGS) != null) {
 						logsButton.setAction(logsG2Action);
 						logsG2Action.setEnabled(true);
 					} else {
@@ -314,7 +315,7 @@ public class CheckListView extends JDialog implements UsnaEventListener<Devices.
 					roamingAction.setEnabled(sameStringValuesOrInt(modelRow, CheckListTable.COL_ROAMING));
 					rangeExtenderAction.setEnabled(sameStringValuesOrInt(modelRow, CheckListTable.COL_EXTENDER));
 					scriptsEditAction.setEnabled(modelRow.length == 1 && (val = tModel.getValueAt(modelRow[0], CheckListTable.COL_SCRIPTS)) != null && val.equals(NOT_APPLICABLE_STR) == false);
-					autoFWUpdateAction.setEnabled(sameObjectValues(modelRow, CheckListTable.COL_AUTO_FW_UPDATE));
+					autoFWUpdateAction.setEnabled(sameObjectValues(modelRow, CheckListTable.COL_AUTO_FW_UPDATE) != null);
 					browseAction.setEnabled(true);
 					rebootAction.setEnabled(true);
 				} else {
@@ -330,6 +331,8 @@ public class CheckListView extends JDialog implements UsnaEventListener<Devices.
 					autoFWUpdateAction.setEnabled(false);
 					browseAction.setEnabled(false);
 					rebootAction.setEnabled(false);
+					
+					logsButton.setAction(logsG1Action); // needed to initially show the button
 				}
 			}
 		};
@@ -480,19 +483,7 @@ public class CheckListView extends JDialog implements UsnaEventListener<Devices.
 		}
 		return ret;
 	}
-	
-//	/** true if all values == FALSE_STR or all values != FALSE_STR but none is NOT_APPLICABLE_STR */
-//	private boolean sameStringValues(int modelRows[], int col/*, Class<?> allowedDeviceClass*/) {
-//		Object val0 = tModel.getValueAt(modelRows[0], col);
-//		boolean ret = val0 instanceof String && val0.equals(NOT_APPLICABLE_STR) == false /*&& (allowedDeviceClass == null || allowedDeviceClass.isInstance(getLocalDevice(modelRows[0])))*/;
-//		for(int i = 1; i < modelRows.length && ret; i++) {
-//			Object val = tModel.getValueAt(modelRows[i], col);
-//			ret = val instanceof String && ((val.equals(FALSE_STR) && val0.equals(FALSE_STR)) || (val.equals(FALSE_STR) == false && val0.equals(FALSE_STR) == false));
-//					/*&& (allowedDeviceClass == null || allowedDeviceClass.isInstance(getLocalDevice(modelRows[i])));*/
-//		}
-//		return ret /*&& val0 != null*/;
-//	}
-	
+
 	/** true if all values are Integers or all values == FALSE_STR or all values != FALSE_STR but none is NOT_APPLICABLE_STR */
 	private boolean sameStringValuesOrInt(int modelRows[], int col) {
 		Object val0 = tModel.getValueAt(modelRows[0], col);
@@ -504,12 +495,14 @@ public class CheckListView extends JDialog implements UsnaEventListener<Devices.
 		return ret;
 	}
 	
-	/** true if all values are "equals" but none is NOT_APPLICABLE_STR (only AbstractG2Device)*/
-	private boolean sameObjectValues(int modelRows[], int col) {
+	/** the "value" if all values are "equals" and not NOT_APPLICABLE_STR or null; null otherwise (only AbstractG2Device)*/
+	private Object sameObjectValues(int modelRows[], int col) {
 		Object val0 = tModel.getValueAt(modelRows[0], col);
-		boolean ret = val0 != null && val0.equals(NOT_APPLICABLE_STR) == false;
-		for(int i = 1; i < modelRows.length && ret; i++) {
-			ret = val0.equals(tModel.getValueAt(modelRows[i], col)) && AbstractG2Device.class.isInstance(getLocalDevice(modelRows[i]));
+		Object ret = val0 != null && val0.equals(NOT_APPLICABLE_STR) == false ? val0 : null;
+		for(int i = 1; i < modelRows.length && ret != null; i++) {
+			if(val0.equals(tModel.getValueAt(modelRows[i], col)) == false || getLocalDevice(modelRows[i]) instanceof AbstractG2Device == false) {
+				return null;
+			}
 		}
 		return ret;
 	}
@@ -643,14 +636,11 @@ public class CheckListView extends JDialog implements UsnaEventListener<Devices.
 		} else if(bleEnableNode.asBoolean()) {
 			try {
 				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-//				ble = d.getJSON("/rpc/BLE.CloudRelay.ListInfos").get("total").asString(""); // fw >= 1.5.0
+//				ble = d.getJSON("/rpc/BLE.CloudRelay.ListInfos").get("total"); // fw >= 1.5.0
 				ble = d.getJSON("/rpc/BLE.CloudRelay.List").get("addrs").size();
 			} catch (/*IO*/Exception e) {
-//				if (config.at("/ble/observer/enable").booleanValue(false)) { // fw < 1.5.0
-//					ble = "OBS"; // used as observer
-//				} else {
-					ble = TRUE_STR;
-//				}
+//				config.at("/ble/observer/enable").booleanValue(false) // fw < 1.5.0
+				ble = TRUE_STR;
 			}
 		} else {
 			ble = FALSE_STR;

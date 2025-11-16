@@ -24,7 +24,7 @@ public class ScheduleManager {
 	}
 	
 	public String enable(int id, boolean enable) {
-		return device.postCommand("Schedule.Update", "{\"id\":" + id + ",\"enable\":" + String.valueOf(enable) + "}");
+		return device.postCommand("Schedule.Update", "{\"id\":" + id + ",\"enable\":" + enable + "}");
 	}
 	
 	/**
@@ -100,7 +100,7 @@ public class ScheduleManager {
 		final ObjectNode call = JsonNodeFactory.instance.objectNode();
 		call.put("method", "Shelly.Update");
 		final ObjectNode parameters = JsonNodeFactory.instance.objectNode();
-		parameters.put("stage", stable ? "stable" : "beta");
+		parameters.put("stage", stable ? FirmwareManagerG2.STAGE_STABLE : FirmwareManagerG2.STAGE_BETA);
 		call.set("params", parameters);
 		final ArrayNode calls = JsonNodeFactory.instance.arrayNode();
 		calls.add(call);
