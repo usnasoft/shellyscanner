@@ -4,7 +4,9 @@ import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Image;
 import java.awt.Toolkit;
+import java.io.FileNotFoundException;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.util.Base64;
 import java.util.ResourceBundle;
@@ -19,6 +21,7 @@ import org.slf4j.simple.SimpleLogger;
 
 import it.usna.shellyscan.controller.BackupAction;
 import it.usna.shellyscan.controller.DeferrablesContainer;
+import it.usna.shellyscan.controller.RestoreAction;
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.DevicesFactory;
 import it.usna.shellyscan.model.IPCollection;
@@ -59,11 +62,11 @@ public class Main {
 		System.setProperty(SimpleLogger.LOG_KEY_PREFIX + "javax.jmdns", "warn");
 		System.setProperty(SimpleLogger.LOG_KEY_PREFIX + "org.eclipse.jetty", "warn");
 		System.setProperty(SimpleLogger.SHOW_DATE_TIME_KEY, "true");
-		final Logger LOG = LoggerFactory.getLogger(Main.class);
+		final Logger logger = LoggerFactory.getLogger(Main.class);
 		
-		LOG.info(APP_NAME + " " + VERSION_CODE);
-		if(LOG.isDebugEnabled()) {
-			LOG.debug("Runnnning on: " + System.getProperty("os.name") + "; java version: " + Runtime.version().toString() + " / " + System.getProperties().getProperty("java.vendor"));
+		logger.info(APP_NAME + " " + VERSION_CODE);
+		if(logger.isDebugEnabled()) {
+			logger.debug("Runnnning on: " + System.getProperty("os.name") + "; java version: " + Runtime.version().toString() + " / " + System.getProperties().getProperty("java.vendor"));
 		}
 
 		final ScannerProperties appProp = ScannerProperties.init(Path.of(System.getProperty("user.home"), ".shellyScanner"));
@@ -133,47 +136,50 @@ public class Main {
 
 		// Non interactive commands
 		if((cliIndex = cli.hasEntry("-backup")) >= 0) {
-			final String path = cli.getParameter(cliIndex);
-			if(path == null) {
-				System.err.println("mandatory parameter after -backup (must be an existing path)");
-				System.exit(1);
-			}
-			Path dirPath = Path.of(path);
-			if(path == null || Files.exists(dirPath) == false || Files.isDirectory(dirPath) == false) {
-				System.err.println("parameter after -backup must be an existing path");
-				System.exit(1);
-			}
-			// look for unused CLI entries
-			if(cli.unused().length > 0) {
-				System.err.println("Wrong parameter(s): " + String.join("; ", cli.unused()));
-				System.exit(10);
-			}
-			LOG.info("Backup devices in {}", path);
-			try (NonInteractiveDevices model = (ipCollection == null) ? new NonInteractiveDevices(fullScan) : new NonInteractiveDevices(ipCollection)) {
-				model.execute(d -> {
-					try {
-						d.backup(Path.of(path, BackupAction.defFileName(d)));
-						System.out.println(d.getHostname() + " success");
-					} catch (Exception e) {
-						System.out.println(d.getHostname() + " error - " + e.toString());
-					}
-				});
-				LOG.info("Backup end");
-				System.exit(0);
-			} catch (Exception e) {
-				e.printStackTrace();
-				System.exit(1);
-			}
+//			final String path = cli.getParameter(cliIndex);
+//			if(path == null) {
+//				System.err.println("mandatory parameter after -backup (must be an existing path)");
+//				System.exit(1);
+//			}
+//			Path dirPath = Path.of(path);
+//			if(path == null || Files.exists(dirPath) == false || Files.isDirectory(dirPath) == false) {
+//				System.err.println("parameter after -backup must be an existing path");
+//				System.exit(1);
+//			}
+//			// look for unused CLI entries
+//			if(cli.unused().length > 0) {
+//				System.err.println("Wrong parameter(s): " + String.join("; ", cli.unused()));
+//				System.exit(10);
+//			}
+//			logger.info("Backup devices in {}", path);
+//			try (NonInteractiveDevices model = (ipCollection == null) ? new NonInteractiveDevices(fullScan) : new NonInteractiveDevices(ipCollection)) {
+//				model.execute(d -> {
+//					try {
+//						d.backup(Path.of(path, BackupAction.defFileName(d)));
+//						System.out.println(d.getHostname() + " success");
+//					} catch (Exception e) {
+//						System.out.println(d.getHostname() + " error - " + e.toString());
+//					}
+//				});
+//				logger.info("Backup end");
+//				System.exit(0);
+//			} catch (Exception e) {
+//				e.printStackTrace();
+//				System.exit(1);
+//			}
+			cliBackup(cli, cliIndex, ipCollection, fullScan, logger);
+		} else if((cliIndex = cli.hasEntry("-restore")) >= 0) {
+			cliRestore(cli, cliIndex, ipCollection, fullScan, logger);
 		} else if(cli.hasEntry("-list") >= 0) {
 			// look for unused CLI entries
 			if(cli.unused().length > 0) {
 				System.err.println("Wrong parameter(s): " + String.join("; ", cli.unused()));
 				System.exit(10);
 			}
-			LOG.info("Retriving list ...");
+			logger.info("Retriving list ...");
 			try (NonInteractiveDevices model = (ipCollection == null) ? new NonInteractiveDevices(fullScan) : new NonInteractiveDevices(ipCollection)) {
 				model.execute(d -> System.out.println(d));
-				LOG.info("List end");
+				logger.info("List end");
 				System.exit(0);
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -258,6 +264,75 @@ public class Main {
 		} catch (Exception ex) {
 			Msg.errorMsg(null, ex);
 			ex.printStackTrace();
+			System.exit(1);
+		}
+	}
+	
+	private static void cliBackup(CLI cli, int cliIndex, IPCollection ipCollection, boolean fullScan, final Logger log) {
+		final String path = cli.getParameter(cliIndex);
+		if(path == null) {
+			System.err.println("mandatory parameter after -backup (must be an existing path)");
+			System.exit(1);
+		}
+		Path dirPath = Path.of(path);
+		if(path == null || Files.exists(dirPath) == false || Files.isDirectory(dirPath) == false) {
+			System.err.println("parameter after -backup must be an existing path");
+			System.exit(1);
+		}
+		// look for unused CLI entries
+		if(cli.unused().length > 0) {
+			System.err.println("Wrong parameter(s): " + String.join("; ", cli.unused()));
+			System.exit(10);
+		}
+		log.info("Backup devices in {}", path);
+		try (NonInteractiveDevices model = (ipCollection == null) ? new NonInteractiveDevices(fullScan) : new NonInteractiveDevices(ipCollection)) {
+			model.execute(d -> {
+				try {
+					d.backup(Path.of(path, BackupAction.defFileName(d)));
+					System.out.println(d.getHostname() + " success");
+				} catch (Exception e) {
+					System.out.println(d.getHostname() + " error - " + e.toString());
+				}
+			});
+			log.info("Backup end");
+			System.exit(0);
+		} catch (Exception e) {
+			e.printStackTrace();
+			System.exit(1);
+		}
+	}
+	
+	private static void cliRestore(CLI cli, int cliIndex, IPCollection ipCollection, boolean fullScan, final Logger log) {
+		final String path = cli.getParameter(cliIndex);
+		if(path == null) {
+			System.err.println("mandatory parameter after -backup (must be an existing path)");
+			System.exit(1);
+		}
+		Path dirPath = Path.of(path);
+		if(path == null || Files.exists(dirPath) == false || Files.isDirectory(dirPath) == false) {
+			System.err.println("parameter after -restore must be an existing path");
+			System.exit(1);
+		}
+		if(cli.unused().length > 0) {
+			System.err.println("Wrong parameter(s): " + String.join("; ", cli.unused()));
+			System.exit(10);
+		}
+		log.info("Restore devices from {}", path);
+		try (NonInteractiveDevices model = (ipCollection == null) ? new NonInteractiveDevices(fullScan) : new NonInteractiveDevices(ipCollection)) {
+			model.execute(d -> {
+				try {
+					String res = RestoreAction.nonInteractiveRestoreDevice(d, dirPath);
+					System.out.println(d.getHostname() + (res == null ? " success" : (" error - " + res)));
+				} catch (FileNotFoundException | NoSuchFileException e1) {
+					// just skip
+				} catch (Exception e) {
+					System.out.println(d.getHostname() + " error - " + e.toString());
+				}
+			});
+			log.info("Restore end");
+			System.exit(0);
+		} catch (Exception e) {
+			e.printStackTrace();
 			System.exit(1);
 		}
 	}

@@ -317,7 +317,7 @@ public class RestoreAction extends UsnaAction {
 		}
 	}
 	
-	private static String nonInteractiveRestoreDevice(final ShellyAbstractDevice device, final Path basePath) throws IOException {
+	public static String nonInteractiveRestoreDevice(final ShellyAbstractDevice device, final Path basePath) throws IOException {
 		final Path file = basePath.resolve(BackupAction.defFileName(device));
 		final Map<String, JsonNode> backupJsons = readBackupFile(file);
 		final Map<RestoreMsg, Object> test = device.restoreCheck(backupJsons);
