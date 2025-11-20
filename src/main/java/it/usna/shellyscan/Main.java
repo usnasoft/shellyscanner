@@ -43,7 +43,7 @@ public class Main {
 	}
 	public static final String APP_NAME = "Shelly Scanner";
 	public static final String VERSION = "1.3.1 beta";
-	public static final String VERSION_CODE = "001.003.001r100"; // r0xx alpha; r1xx beta; r2xx stable
+	public static final String VERSION_CODE = "001.003.001r101"; // r0xx alpha; r1xx beta; r2xx stable
 	public static final Image ICON = Toolkit.getDefaultToolkit().createImage(Main.class.getResource("/images/ShSc24.png"));
 	public static final String BACKUP_FILE_EXT = "sbk";
 	public static final String ARCHIVE_FILE_EXT = "arc";
@@ -136,46 +136,11 @@ public class Main {
 
 		// Non interactive commands
 		if((cliIndex = cli.hasEntry("-backup")) >= 0) {
-//			final String path = cli.getParameter(cliIndex);
-//			if(path == null) {
-//				System.err.println("mandatory parameter after -backup (must be an existing path)");
-//				System.exit(1);
-//			}
-//			Path dirPath = Path.of(path);
-//			if(path == null || Files.exists(dirPath) == false || Files.isDirectory(dirPath) == false) {
-//				System.err.println("parameter after -backup must be an existing path");
-//				System.exit(1);
-//			}
-//			// look for unused CLI entries
-//			if(cli.unused().length > 0) {
-//				System.err.println("Wrong parameter(s): " + String.join("; ", cli.unused()));
-//				System.exit(10);
-//			}
-//			logger.info("Backup devices in {}", path);
-//			try (NonInteractiveDevices model = (ipCollection == null) ? new NonInteractiveDevices(fullScan) : new NonInteractiveDevices(ipCollection)) {
-//				model.execute(d -> {
-//					try {
-//						d.backup(Path.of(path, BackupAction.defFileName(d)));
-//						System.out.println(d.getHostname() + " success");
-//					} catch (Exception e) {
-//						System.out.println(d.getHostname() + " error - " + e.toString());
-//					}
-//				});
-//				logger.info("Backup end");
-//				System.exit(0);
-//			} catch (Exception e) {
-//				e.printStackTrace();
-//				System.exit(1);
-//			}
 			cliBackup(cli, cliIndex, ipCollection, fullScan, logger);
 		} else if((cliIndex = cli.hasEntry("-restore")) >= 0) {
 			cliRestore(cli, cliIndex, ipCollection, fullScan, logger);
 		} else if(cli.hasEntry("-list") >= 0) {
-			// look for unused CLI entries
-			if(cli.unused().length > 0) {
-				System.err.println("Wrong parameter(s): " + String.join("; ", cli.unused()));
-				System.exit(10);
-			}
+			cliEndCheck(cli);
 			logger.info("Retriving list ...");
 			try (NonInteractiveDevices model = (ipCollection == null) ? new NonInteractiveDevices(fullScan) : new NonInteractiveDevices(ipCollection)) {
 				model.execute(d -> System.out.println(d));
@@ -279,11 +244,7 @@ public class Main {
 			System.err.println("parameter after -backup must be an existing path");
 			System.exit(1);
 		}
-		// look for unused CLI entries
-		if(cli.unused().length > 0) {
-			System.err.println("Wrong parameter(s): " + String.join("; ", cli.unused()));
-			System.exit(10);
-		}
+		cliEndCheck(cli);
 		log.info("Backup devices in {}", path);
 		try (NonInteractiveDevices model = (ipCollection == null) ? new NonInteractiveDevices(fullScan) : new NonInteractiveDevices(ipCollection)) {
 			model.execute(d -> {
@@ -313,16 +274,13 @@ public class Main {
 			System.err.println("parameter after -restore must be an existing path");
 			System.exit(1);
 		}
-		if(cli.unused().length > 0) {
-			System.err.println("Wrong parameter(s): " + String.join("; ", cli.unused()));
-			System.exit(10);
-		}
+		cliEndCheck(cli);
 		log.info("Restore devices from {}", path);
 		try (NonInteractiveDevices model = (ipCollection == null) ? new NonInteractiveDevices(fullScan) : new NonInteractiveDevices(ipCollection)) {
 			model.execute(d -> {
 				try {
 					String res = RestoreAction.nonInteractiveRestoreDevice(d, dirPath);
-					System.out.println(d.getHostname() + (res == null ? " success" : (" error - " + res)));
+					System.out.println(d.getHostname() + (res.isEmpty() ? " success" : (" error - " + res)));
 				} catch (FileNotFoundException | NoSuchFileException e1) {
 					// just skip
 				} catch (Exception e) {
@@ -334,6 +292,14 @@ public class Main {
 		} catch (Exception e) {
 			e.printStackTrace();
 			System.exit(1);
+		}
+	}
+	
+	// look for unused CLI entries and exit (10) if wrong parameter(s) are detected
+	private static void cliEndCheck(CLI cli) {
+		if(cli.unused().length > 0) {
+			System.err.println("Wrong parameter(s): " + String.join("; ", cli.unused()));
+			System.exit(10);
 		}
 	}
 	
