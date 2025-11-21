@@ -53,11 +53,9 @@ public class NonInteractiveDevices implements Closeable {
 	private IPCollection ipCollection = null;
 
 	private static final String SERVICE_TYPE1 = "_http._tcp.local.";
-//	private static final String SERVICE_TYPE2 = "_shelly._tcp.local.";
 	private final List<ShellyAbstractDevice> devices = new ArrayList<>();
 
 	private HttpClient httpClient = new HttpClient();
-//	private WebSocketClient wsClient = new WebSocketClient(httpClient);
 	
 	private NonInteractiveDevices() throws Exception {
 		httpClient.setDestinationIdleTimeout(300_000); // 5 min
@@ -66,14 +64,13 @@ public class NonInteractiveDevices implements Closeable {
 //		wsClient.start();
 	}
 	
-	public NonInteractiveDevices(boolean fullScan) throws Exception {
+	public NonInteractiveDevices(boolean fullScan, IPCollection ipCollection) throws Exception {
 		this();
-		scannerInit(fullScan);
-	}
-	
-	public NonInteractiveDevices(IPCollection ipCollection) throws Exception {
-		this();
-		scannerInit(ipCollection);
+		if(ipCollection == null) {
+			scannerInit(fullScan);
+		} else {
+			scannerInit(ipCollection);
+		}
 	}
 
 	public void scannerInit(boolean fullScan) throws IOException {

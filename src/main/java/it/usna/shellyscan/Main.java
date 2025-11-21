@@ -141,8 +141,8 @@ public class Main {
 			cliRestore(cli, cliIndex, ipCollection, fullScan, logger);
 		} else if(cli.hasEntry("-list") >= 0) {
 			cliEndCheck(cli);
-			logger.info("Retriving list ...");
-			try (NonInteractiveDevices model = (ipCollection == null) ? new NonInteractiveDevices(fullScan) : new NonInteractiveDevices(ipCollection)) {
+			logger.info("Retrieving list ...");
+			try (NonInteractiveDevices model = new NonInteractiveDevices(fullScan, ipCollection)) {
 				model.execute(d -> System.out.println(d));
 				logger.info("List end");
 				System.exit(0);
@@ -240,13 +240,13 @@ public class Main {
 			System.exit(1);
 		}
 		Path dirPath = Path.of(path);
-		if(path == null || Files.exists(dirPath) == false || Files.isDirectory(dirPath) == false) {
+		if(Files.exists(dirPath) == false || Files.isDirectory(dirPath) == false) {
 			System.err.println("parameter after -backup must be an existing path");
 			System.exit(1);
 		}
 		cliEndCheck(cli);
 		log.info("Backup devices in {}", path);
-		try (NonInteractiveDevices model = (ipCollection == null) ? new NonInteractiveDevices(fullScan) : new NonInteractiveDevices(ipCollection)) {
+		try (NonInteractiveDevices model = new NonInteractiveDevices(fullScan, ipCollection)) {
 			model.execute(d -> {
 				try {
 					d.backup(Path.of(path, BackupAction.defFileName(d)));
@@ -270,13 +270,13 @@ public class Main {
 			System.exit(1);
 		}
 		Path dirPath = Path.of(path);
-		if(path == null || Files.exists(dirPath) == false || Files.isDirectory(dirPath) == false) {
+		if(Files.exists(dirPath) == false || Files.isDirectory(dirPath) == false) {
 			System.err.println("parameter after -restore must be an existing path");
 			System.exit(1);
 		}
 		cliEndCheck(cli);
 		log.info("Restore devices from {}", path);
-		try (NonInteractiveDevices model = (ipCollection == null) ? new NonInteractiveDevices(fullScan) : new NonInteractiveDevices(ipCollection)) {
+		try (NonInteractiveDevices model = new NonInteractiveDevices(fullScan, ipCollection)) {
 			model.execute(d -> {
 				try {
 					String res = RestoreAction.nonInteractiveRestoreDevice(d, dirPath);
