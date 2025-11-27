@@ -54,6 +54,7 @@ public class ScheduleManager {
 		return device.postCommand("Schedule.Delete", "{\"id\":" + id + "}");
 	}
 	
+	// return "stage" (first found) or null if no enabled auto update is found
 	public String autoFWUpdate() throws IOException {
 		Iterator<JsonNode> jobsIt = getJobs().iterator();
 		while(jobsIt.hasNext()) {
@@ -74,7 +75,7 @@ public class ScheduleManager {
 	}
 	
 	/**
-	 * return null on success
+	 * remove *first* enabled FW update job; return null on success
 	 */
 	public String removeFWUpdate() throws IOException {
 		Iterator<JsonNode> jobsIt = getJobs().iterator();
@@ -102,6 +103,7 @@ public class ScheduleManager {
 		final ObjectNode parameters = JsonNodeFactory.instance.objectNode();
 		parameters.put("stage", stable ? FirmwareManagerG2.STAGE_STABLE : FirmwareManagerG2.STAGE_BETA);
 		call.set("params", parameters);
+		call.put("origin", "shelly_service");
 		final ArrayNode calls = JsonNodeFactory.instance.arrayNode();
 		calls.add(call);
 		out.set("calls", calls);
