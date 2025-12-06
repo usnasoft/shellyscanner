@@ -390,28 +390,25 @@ various fix on scheduler editor
 
 1.3.1
 ---
-button zb/h&t zb
 Dimmer G4
+plug PM gen3
 chacklist - auto fw update
 schedule wall display thermostat - profile selection
 ottimizzazione ip sort (long)
+ottimizazione call agli host BTHome
 "skip" on scripts restore
 Export script fix for certain charsets
-
-No sembra essre utile, le letture si distanziano naturalmente:
-it.usna.shellyscan.model.device.blu.BTHomeDevice.refreshStatus()
-e
-it.usna.shellyscan.model.device.blu.BTHomeDevice.refreshSettings()
-dovrebbero porter lavorare sugli stessi dati se vecchi meno di 0.5 secondi
-->
-definizione di BTHomeManager ?
-invece ho ridotto la lettura alle soli chiavi utili
-
+cli restore
 
 
 
 /rpc/PresenceZone.GetConfig?id=201
 public enum Type boolean -> enum (illuminance)
+
+--- coming ?
+button zb/h&t zb
+i4 gen4
+i4 DC gen4
 
 
 // It would also be nice to add dynamic filters that show, for example, only enabled devices or disabled devices on the main view (?)

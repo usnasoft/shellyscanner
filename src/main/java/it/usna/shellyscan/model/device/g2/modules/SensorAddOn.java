@@ -265,16 +265,16 @@ public class SensorAddOn extends Meters {
 		return newArray;
 	}
 
-	public static String enable(AbstractG2Device d, boolean enable) {
+	private static String enable(AbstractG2Device d, boolean enable) {
 		return d.postCommand("Sys.SetConfig", "{\"config\":{\"device\":{\"addon_type\":" + (enable ? "\"sensor\"" : "null") + "}}}");
 	}
 
-	public static String addSensor(AbstractG2Device d, String type, String id) {
+	private static String addSensor(AbstractG2Device d, String type, String id) {
 		// curl -X POST -d '{"id":1,"method":"SensorAddon.AddPeripheral","params":{"type":"digital_in","attrs":{"cid":100}}}'
 		return d.postCommand("SensorAddon.AddPeripheral", "{\"type\":\"" + type + "\",\"attrs\":{\"cid\":" + id + "}}");
 	}
 
-	public static String addSensor(AbstractG2Device d, String type, String id, String addr) {
+	private static String addSensor(AbstractG2Device d, String type, String id, String addr) {
 		// curl -X POST -d '{"id":1,"method":"SensorAddon.AddPeripheral","params":{"type":"ds18b20","attrs":{"cid":101,"addr":"11:22:33:44:55:66:77:88"}}}'
 		return d.postCommand("SensorAddon.AddPeripheral", "{\"type\":\"" + type + "\",\"attrs\":{\"cid\":" + id + ",\"addr\":\"" + addr + "\"}}");
 	}

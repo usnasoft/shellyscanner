@@ -8,7 +8,6 @@ import java.util.concurrent.TimeUnit;
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.RestoreMsg;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
-import it.usna.shellyscan.model.device.g3.AbstractG3Device;
 import tools.jackson.databind.JsonNode;
 
 public class LoRaAddOn {
@@ -19,25 +18,24 @@ public class LoRaAddOn {
 	
 	private LoRaAddOn() {}
 	
-	public static String enable(AbstractG3Device d, boolean enable) {
+	public static String enable(AbstractG2Device d, boolean enable) {
 		return d.postCommand("Sys.SetConfig", "{\"config\":{\"device\":{\"addon_type\":" + (enable ? "\"" + ADDON_TYPE + "\"" : "null") + "}}}");
 	}
 
 	public static String[] getInfoRequests(String [] cmd) {
-		int lgt = cmd.length;
-		String[] newArray = Arrays.copyOf(cmd, lgt + 2);
-		newArray[lgt] = "/rpc/AddOn.GetInfo";
+		String[] newArray = Arrays.copyOf(cmd, cmd.length + 1);
+		newArray[cmd.length] = "/rpc/AddOn.GetInfo";
 		return newArray;
 	}
 	
-	public static void restoreCheck(AbstractG3Device d, boolean addOn, Map<String, JsonNode> backupJsons, Map<RestoreMsg, Object> res) {
+	public static void restoreCheck(AbstractG2Device d, boolean addOn, Map<String, JsonNode> backupJsons, Map<RestoreMsg, Object> res) {
 		boolean backupAddOn = backupJsons.get("Shelly.GetConfig.json").hasNonNull("lora:" + ID);
 		if(backupAddOn && addOn == false) {
 			res.put(RestoreMsg.WARN_RESTORE_LORA_ENABLE, null);
 		}
 	}
 	
-	public static void restore(AbstractG3Device d, boolean addOn, JsonNode configuration, List<String> errors) throws InterruptedException {
+	public static void restore(AbstractG2Device d, boolean addOn, JsonNode configuration, List<String> errors) throws InterruptedException {
 		boolean backupAddOn = configuration.hasNonNull("lora:" + ID);
 		if(backupAddOn) {
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);

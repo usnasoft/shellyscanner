@@ -30,6 +30,7 @@ import javax.swing.SwingConstants;
 
 import it.usna.shellyscan.controller.UsnaAction;
 import it.usna.shellyscan.view.scheduler.CronUtils;
+import it.usna.shellyscan.view.util.IntegerTextFieldPanel;
 import it.usna.shellyscan.view.util.Msg;
 import it.usna.swing.NumericTextField;
 import tools.jackson.databind.node.JsonNodeFactory;
@@ -42,9 +43,9 @@ class ThermJobPanel extends JPanel {
 	private static final String MONTHS = "*";
 	private float minTarget, maxTarget;
 	private NumericTextField<Float> target;
-	
-	private NumericTextField<Integer> hoursTextField = new NumericTextField<>(0, 0, 23);
-	private NumericTextField<Integer> minutesTextField = new NumericTextField<>(0, 0, 59);
+
+	private IntegerTextFieldPanel hoursTextField = new IntegerTextFieldPanel(0, 0, 23, false);
+	private IntegerTextFieldPanel minutesTextField = new IntegerTextFieldPanel(0, 0, 59, false);
 	private JPanel daysOfWeekPanel;
 	private String daysOfWeek;
 	protected JTextField expressionField;
@@ -68,6 +69,8 @@ class ThermJobPanel extends JPanel {
 			setCron(timespec);
 			target.setValue(temp);
 		}
+		hoursTextField.setColumns(4);
+		minutesTextField.setColumns(4);
 	}
 
 	private void initTempSection() {
@@ -302,8 +305,8 @@ class ThermJobPanel extends JPanel {
 		cronLine = CronUtils.fragStrToNum(cronLine);
 		final String[] values = cronLine.split(" ");
 
-		minutesTextField.setText(values[1]);
-		hoursTextField.setText(values[2]);
+		minutesTextField.setValue(Integer.parseInt(values[1]));
+		hoursTextField.setValue(Integer.parseInt(values[2]));
 
 		for(int i = 0; i < 7; i++) {
 			((JCheckBox) daysOfWeekPanel.getComponent(i)).setSelected(false);

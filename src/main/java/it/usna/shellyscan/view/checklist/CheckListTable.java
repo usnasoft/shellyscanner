@@ -7,7 +7,6 @@ import java.awt.Component;
 import java.awt.Font;
 import java.util.Comparator;
 
-import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.SortOrder;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -108,26 +107,26 @@ class CheckListTable extends ExTooltipTable {
 
 		@Override
 		public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-			JLabel ret = (JLabel)super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+			super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 			if(value == null) {
-				ret.setText(CheckListView.NOT_APPLICABLE_STR);
+				setText(CheckListView.NOT_APPLICABLE_STR);
 				if (isSelected == false) {
-					ret.setForeground(table.getForeground());
+					setForeground(table.getForeground());
 				}
 			} else if(value.toString().equals(redValue)) {
-				ret.setForeground(Color.red);
+				setForeground(Color.red);
 				if (isSelected) {
-					ret.setFont(ret.getFont().deriveFont(Font.BOLD));
+					setFont(getFont().deriveFont(Font.BOLD));
 				}
 			} else if(value.toString().equals(greenValue)) {
-				ret.setForeground(GREEN_OK);
+				setForeground(GREEN_OK);
 				if (isSelected) {
-					ret.setFont(ret.getFont().deriveFont(Font.BOLD));
+					setFont(getFont().deriveFont(Font.BOLD));
 				}
 			} else if (isSelected == false) {
-				ret.setForeground(table.getForeground());
+				setForeground(table.getForeground());
 			}
-			return ret;
+			return this;
 		}
 	}
 
@@ -141,25 +140,24 @@ class CheckListTable extends ExTooltipTable {
 
 		@Override
 		public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-			Component ret;
 			if (value instanceof Boolean val) {
 				if (val) {
-					ret = super.getTableCellRendererComponent(table, CheckListView.TRUE_STR, isSelected, hasFocus, row, column);
-					ret.setForeground(goodVal ? GREEN_OK : Color.red);
+					super.getTableCellRendererComponent(table, CheckListView.TRUE_STR, isSelected, hasFocus, row, column);
+					setForeground(goodVal ? GREEN_OK : Color.red);
 				} else {
-					ret = super.getTableCellRendererComponent(table, CheckListView.FALSE_STR, isSelected, hasFocus, row, column);
-					ret.setForeground(goodVal ? Color.red : GREEN_OK);
+					super.getTableCellRendererComponent(table, CheckListView.FALSE_STR, isSelected, hasFocus, row, column);
+					setForeground(goodVal ? Color.red : GREEN_OK);
 				}
 				if (isSelected) {
-					ret.setFont(ret.getFont().deriveFont(Font.BOLD));
+					setFont(getFont().deriveFont(Font.BOLD));
 				}
 			} else {
-				ret = super.getTableCellRendererComponent(table, value == null ? CheckListView.NOT_APPLICABLE_STR : value, isSelected, hasFocus, row, column);
+				super.getTableCellRendererComponent(table, value == null ? CheckListView.NOT_APPLICABLE_STR : value, isSelected, hasFocus, row, column);
 				if (isSelected == false) {
-					ret.setForeground(table.getForeground());
+					setForeground(table.getForeground());
 				}
 			}
-			return ret;
+			return this;
 		}
 	}
 	
@@ -168,17 +166,17 @@ class CheckListTable extends ExTooltipTable {
 
 		@Override
 		public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-			JLabel ret = (JLabel)super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+			super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 			if(value instanceof BluInetAddressAndPort bluAddr && bluAddr.getAlternativeParents().size() > 0) {
-				ret.setText(bluAddr.getParentsAsString());
-				ret.setForeground(Color.red);
+				setText(bluAddr.getParentsAsString());
+				setForeground(Color.red);
 				if (isSelected) {
-					ret.setFont(ret.getFont().deriveFont(Font.BOLD));
+					setFont(getFont().deriveFont(Font.BOLD));
 				}
 			} else if (isSelected == false) {
-				ret.setForeground(table.getForeground());
+				setForeground(table.getForeground());
 			}
-			return ret;
+			return this;
 		}
 	}
 }

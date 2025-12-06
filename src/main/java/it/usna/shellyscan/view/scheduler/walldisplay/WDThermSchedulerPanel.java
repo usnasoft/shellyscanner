@@ -206,7 +206,7 @@ public class WDThermSchedulerPanel extends /*JPanel*/JSplitPane {
 		duplicateBtn.setContentAreaFilled(false);
 		duplicateBtn.setBorder(BorderFactory.createEmptyBorder(2, 3, 2, 3));
 		
-		JButton copyBtn = new JButton(new UsnaAction(parentDlg, "schCopy", "/images/copy_trasp16.png", e -> {
+		JButton copyBtn = new JButton(new UsnaAction(this, "schCopy", "/images/copy_trasp16.png", e -> {
 			final Clipboard cb = Toolkit.getDefaultToolkit().getSystemClipboard();
 			StringSelection selection = new StringSelection(job.getJson().toString());
 			cb.setContents(selection, selection);
@@ -215,7 +215,7 @@ public class WDThermSchedulerPanel extends /*JPanel*/JSplitPane {
 		copyBtn.setContentAreaFilled(false);
 		copyBtn.setBorder(BorderFactory.createEmptyBorder(2, 3, 2, 3));
 
-		JButton pasteBtn = new JButton(new UsnaAction(parentDlg, "schPaste", "/images/paste_trasp16.png", e -> {
+		JButton pasteBtn = new JButton(new UsnaAction(this, "schPaste", "/images/paste_trasp16.png", e -> {
 			final Clipboard cb = Toolkit.getDefaultToolkit().getSystemClipboard();
 			try {
 				String sch = cb.getContents(this).getTransferData(DataFlavor.stringFlavor).toString();
