@@ -160,31 +160,31 @@ public class SensorAddOn extends Meters {
 	public void fillStatus(JsonNode status) {
 		try {
 			if(switchID != null) {
-				switchOn = status.path(switchID).get("state").asBoolean();
+				switchOn = status.path(switchID).path("state").asBoolean(false);
 			}
 			if(analogID != null) {
-				analog = status.path(analogID).get("percent").floatValue();
+				analog = status.path(analogID).path("percent").floatValue(0);
 			}
 			if(voltmeterID != null) {
-				volt = status.path(voltmeterID).get("voltage").floatValue();
+				volt = status.path(voltmeterID).path("voltage").floatValue(0);
 			}
 			if(extT0ID != null) {
-				extT0 = status.path(extT0ID).get("tC").floatValue();
+				extT0 = status.path(extT0ID).path("tC").floatValue(0);
 			}
 			if(extT1ID != null) {
-				extT1 = status.path(extT1ID).get("tC").floatValue();
+				extT1 = status.path(extT1ID).path("tC").floatValue(0);
 			}
 			if(extT2ID != null) {
-				extT2 = status.path(extT2ID).get("tC").floatValue();
+				extT2 = status.path(extT2ID).path("tC").floatValue(0);
 			}
 			if(extT3ID != null) {
-				extT3 = status.path(extT3ID).get("tC").floatValue();
+				extT3 = status.path(extT3ID).path("tC").floatValue(0);
 			}
 			if(extT4ID != null) {
-				extT4 = status.path(extT4ID).get("tC").floatValue();
+				extT4 = status.path(extT4ID).path("tC").floatValue(0);
 			}
 			if(humidityID != null) {
-				humidity = status.path(humidityID).get("rh").intValue(0);
+				humidity = status.path(humidityID).path("rh").intValue(0);
 			}
 		} catch (RuntimeException e) {
 			LOG.warn("Status Add-on configuration changed?", e);

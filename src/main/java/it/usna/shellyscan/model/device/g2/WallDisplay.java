@@ -18,6 +18,7 @@ import it.usna.shellyscan.model.device.g2.modules.ScheduleManagerThermWD;
 import it.usna.shellyscan.model.device.g2.modules.ThermostatG2;
 import it.usna.shellyscan.model.device.meters.Meters;
 import it.usna.shellyscan.model.device.modules.DeviceModule;
+import it.usna.shellyscan.model.device.modules.DisplayInterface;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.JsonNodeFactory;
 import tools.jackson.databind.node.ObjectNode;
@@ -26,7 +27,7 @@ import tools.jackson.databind.node.ObjectNode;
  * Shelly Wall Display
  * @author usna
  */
-public class WallDisplay extends AbstractG2Device implements ModulesHolder {
+public class WallDisplay extends AbstractG2Device implements DisplayInterface, ModulesHolder {
 	public static final String ID = "WallDisplay";
 	private static final Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.T, Meters.Type.H, Meters.Type.L};
 	private float temp;
@@ -147,6 +148,7 @@ public class WallDisplay extends AbstractG2Device implements ModulesHolder {
 		return meters;
 	}
 	
+	@Override
 	public boolean hasThermostat() {
 		return thermostat != null;
 	}

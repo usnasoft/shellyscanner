@@ -423,8 +423,10 @@ public class DevicesTable extends ExTooltipTable {
 //	}
 	
 	public void addRow(ShellyAbstractDevice device, GhostDevice ghost) {
-		((UsnaTableModel)dataModel).addRow(generateRow(device, ghost, new Object[DevicesTable.COL_COMMAND_IDX + 1]));
-		columnsWidthAdapt();
+		int index = ((UsnaTableModel)dataModel).addRow(generateRow(device, ghost, new Object[DevicesTable.COL_COMMAND_IDX + 1]));
+		if(convertRowIndexToView(index) >= 0) {
+			columnsWidthAdapt();
+		}
 		getRowSorter().allRowsChanged();
 	}
 	
