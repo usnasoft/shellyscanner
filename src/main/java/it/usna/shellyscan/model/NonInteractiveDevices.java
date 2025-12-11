@@ -13,6 +13,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 import javax.jmdns.JmDNS;
 import javax.jmdns.JmmDNS;
@@ -93,7 +94,7 @@ public class NonInteractiveDevices implements Closeable {
 		LOG.debug("IP scan: {}", ipCollection);
 	}
 	
-	private void scanByIP(Consumer<ShellyAbstractDevice> c) throws IOException {
+	private void scanByIP(Consumer<ShellyAbstractDevice> consumer, Predicate<ShellyAbstractDevice> filter) throws IOException {
 		ScheduledExecutorService executor = Executors.newScheduledThreadPool(EXECUTOR_POOL_SIZE);
 		try {
 			int dalay = 0;
@@ -105,7 +106,7 @@ public class NonInteractiveDevices implements Closeable {
 							JsonNode info = isShelly(addr, 80);
 							if(info != null) {
 								Thread.sleep(Devices.MULTI_QUERY_DELAY);
-								create(addr, 80, info, addr.getHostAddress(), c);
+								create(addr, 80, info, addr.getHostAddress(), consumer, filter);
 							}
 						} else {
 							LOG.trace("no ping {}", addr);
@@ -142,8 +143,8 @@ public class NonInteractiveDevices implements Closeable {
 			return null;
 		}
 	}
-
-	public void execute(Consumer<ShellyAbstractDevice> c) throws IOException {
+	
+	public void execute(Consumer<ShellyAbstractDevice> consumer, Predicate<ShellyAbstractDevice> filter) throws IOException {
 		LOG.trace("scan");
 		if(this.ipCollection == null) {
 			for(JmDNS bonjourService: bjServices) {
@@ -154,7 +155,7 @@ public class NonInteractiveDevices implements Closeable {
 					try {
 						JsonNode info = isShelly(dnsInfo.getInetAddresses()[0], 80);
 						if(info != null) {
-							create(dnsInfo.getInetAddresses()[0], 80, info, name, c);
+							create(dnsInfo.getInetAddresses()[0], 80, info, name, consumer, filter);
 						}
 					} catch (TimeoutException e) {
 						LOG.error("scan", e);
@@ -162,18 +163,20 @@ public class NonInteractiveDevices implements Closeable {
 				}
 			}
 		} else {
-			scanByIP(c);
+			scanByIP(consumer, filter);
 		}
 		LOG.debug("end scan");
 	}
 	
-	private void create(InetAddress address, int port, JsonNode info, String hostName, Consumer<ShellyAbstractDevice> consumer) {
+	private void create(InetAddress address, int port, JsonNode info, String hostName, Consumer<ShellyAbstractDevice> consumer, Predicate<ShellyAbstractDevice> filter) {
 		LOG.trace("Creating {}:{} - {}", address, port, hostName);
 		try {
 			ShellyAbstractDevice d = DevicesFactory.create(httpClient, /*wsClient*/null, address, port, info, hostName);
 			if(devices.contains(d) == false) {
 				devices.add(d);
-				consumer.accept(d);
+				if(filter == null || filter.test(d)) {
+					consumer.accept(d);
+				}
 				LOG.debug("Create {}:{} - {}", address, port, d);
 
 				// Range extender
@@ -182,7 +185,7 @@ public class NonInteractiveDevices implements Closeable {
 						try {
 							JsonNode infoEx = isShelly(address, p);
 							if(infoEx != null) {
-								create(d.getAddressAndPort().getAddress(), p, infoEx, d.getHostname() + "-EX" + ":" + p, consumer); // device will later correct hostname
+								create(d.getAddressAndPort().getAddress(), p, infoEx, d.getHostname() + "-EX" + ":" + p, consumer, filter); // device will later correct hostname
 							}
 						} catch (TimeoutException | RuntimeException e) {
 							LOG.debug("timeout {}:{}", d.getAddressAndPort().getAddress(), p, e);
@@ -195,7 +198,12 @@ public class NonInteractiveDevices implements Closeable {
 						String key = compInfo.path("key").asString("");
 						if(key.startsWith(BTHomeDevice.DEVICE_KEY_PREFIX) || key.startsWith(BluTRV.DEVICE_KEY_PREFIX)) {
 							AbstractBluDevice newBlu = DevicesFactory.createBlu((AbstractG2Device)d, httpClient, compInfo, key);
-							consumer.accept(newBlu);
+							if(devices.contains(newBlu) == false) {
+								devices.add(newBlu);
+								if(filter == null || filter.test(newBlu)) {
+									consumer.accept(newBlu);
+								}
+							}
 						}
 					});
 				}

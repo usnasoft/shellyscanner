@@ -15,6 +15,11 @@ public abstract class AbstractG3Device extends AbstractG2Device {
 		super(address, port, hostname);
 	}
 	
+	@Override
+	public String getGeneration() {
+		return "3";
+	}
+	
 //	@Override
 //	public String[] getInfoRequests() {
 //		return new String[] {

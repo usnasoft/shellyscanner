@@ -23,11 +23,6 @@ import it.usna.shellyscan.model.device.GhostDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
 import it.usna.shellyscan.model.device.ShellyUnmanagedDeviceInterface;
-import it.usna.shellyscan.model.device.blu.AbstractBluDevice;
-import it.usna.shellyscan.model.device.blu.BTHomeDevice;
-import it.usna.shellyscan.model.device.g1.AbstractG1Device;
-import it.usna.shellyscan.model.device.g2.AbstractG2Device;
-import it.usna.shellyscan.model.device.g3.AbstractG3Device;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.node.ArrayNode;
@@ -108,7 +103,7 @@ public class DevicesStore {
 		jsonDev.put(SSID, device.getSSID());
 		jsonDev.put(LAST_CON, device.getLastTime());
 		jsonDev.put(BATTERY, device instanceof BatteryDeviceInterface  || (device instanceof GhostDevice g && g.isBatteryOperated()));
-		jsonDev.put(GENERATION, gen(device));
+		jsonDev.put(GENERATION,device.getGeneration());
 		return jsonDev;
 	}
 
@@ -169,7 +164,7 @@ public class DevicesStore {
 	private static GhostDevice toGhost(ShellyAbstractDevice dev) {
 		return new GhostDevice(
 				dev.getAddressAndPort().getAddress(), dev.getAddressAndPort().getPort(), dev.getHostname(), dev.getMacAddress(),
-				dev.getSSID(), dev.getTypeName(), dev.getTypeID(), gen(dev), dev.getName(), dev.getLastTime(),
+				dev.getSSID(), dev.getTypeName(), dev.getTypeID(), dev.getGeneration(), dev.getName(), dev.getLastTime(),
 				dev instanceof BatteryDeviceInterface || (dev instanceof GhostDevice g && g.isBatteryOperated()),
 				"", "");
 	}
@@ -179,23 +174,23 @@ public class DevicesStore {
 		return ind >= 0 ? ghostsList.get(ind) : null;
 	}
 	
-	private static String gen(ShellyAbstractDevice dev) {
-		if(dev instanceof GhostDevice) {
-			return ((GhostDevice) dev).getGeneration();
-		} else if(dev instanceof AbstractG3Device) {
-			return "3";
-		} else if(dev instanceof AbstractG2Device) {
-			return "2";
-		} else if(dev instanceof AbstractG1Device) {
-			return "1";
-		} else if(dev instanceof BTHomeDevice) {
-			return BTHomeDevice.GENERATION;
-		} else if(dev instanceof AbstractBluDevice) {
-			return AbstractBluDevice.GENERATION;
-		} else{
-			return "0";
-		}
-	}
+//	private static String gen(ShellyAbstractDevice dev) {
+//		if(dev instanceof GhostDevice) {
+//			return ((GhostDevice) dev).getGeneration();
+//		} else if(dev instanceof AbstractG3Device) {
+//			return "3";
+//		} else if(dev instanceof AbstractG2Device) {
+//			return "2";
+//		} else if(dev instanceof AbstractG1Device) {
+//			return "1";
+//		} else if(dev instanceof BTHomeDevice) {
+//			return BTHomeDevice.GENERATION;
+//		} else if(dev instanceof AbstractBluDevice) {
+//			return AbstractBluDevice.GENERATION;
+//		} else{
+//			return "0";
+//		}
+//	}
 	
 	/**
 	 * get corresponding dev ghost or generate a new one; the idea is to align model index with ghostsList index for better performances

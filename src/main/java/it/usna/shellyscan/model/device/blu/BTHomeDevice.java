@@ -150,6 +150,11 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 	}
 	
 	@Override
+	public String getGeneration() {
+		return GENERATION;
+	}
+	
+	@Override
 	public String getTypeID() {
 		return typeID;
 	}

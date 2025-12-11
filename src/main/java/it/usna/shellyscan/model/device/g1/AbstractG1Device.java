@@ -73,6 +73,11 @@ public abstract class AbstractG1Device extends ShellyAbstractDevice {
 		try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e) {}
 		fillStatus(getJSON("/status"));
 	}
+	
+	@Override
+	public String getGeneration() {
+		return "1";
+	}
 
 	public void setAuthenticationResult(Authentication.Result auth) {
 		AuthenticationStore store = httpClient.getAuthenticationStore();

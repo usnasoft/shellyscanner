@@ -100,6 +100,7 @@ import it.usna.shellyscan.model.device.g3.ShellyI4G3;
 import it.usna.shellyscan.model.device.g3.ShellyMini1G3;
 import it.usna.shellyscan.model.device.g3.ShellyMini1PMG3;
 import it.usna.shellyscan.model.device.g3.ShellyMiniPMG3;
+import it.usna.shellyscan.model.device.g3.ShellyPlugPMG3;
 import it.usna.shellyscan.model.device.g3.ShellyPlugSG3;
 import it.usna.shellyscan.model.device.g3.ShellyPlugSOutdoorG3;
 import it.usna.shellyscan.model.device.g3.ShellyShutterG3;
@@ -168,8 +169,8 @@ public class DevicesFactory {
 				}
 				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			}
-			
-			d = switch(info.get("type").asString("")) {
+
+			d = switch(info.get("type").asString()) {
 				case Shelly1.ID -> new Shelly1(address, port, name);
 				case Shelly1L.ID -> new Shelly1L(address, port, name);
 				case Shelly1PM.ID -> new Shelly1PM(address, port, name);
@@ -222,7 +223,7 @@ public class DevicesFactory {
 			if(info.get("auth_en").booleanValue(false)) {
 				digestAuthentication(httpClient, address, port, name);
 			}
-			d = switch(info.get("app").asString("")) {
+			d = switch(info.get("app").asString()) {
 				// Plus
 				case ShellyPlus1.ID -> new ShellyPlus1(address, port, name);
 				case ShellyPlus1PM.ID -> new ShellyPlus1PM(address, port, name);
@@ -252,7 +253,7 @@ public class DevicesFactory {
 				case ShellyPro2.ID -> new ShellyPro2(address, port, name);
 				case ShellyPro3.ID -> new ShellyPro3(address, port, name);
 				case ShellyPro4PM.ID -> ShellyProDualCover.MODEL.equals(info.get("model").asString("")) ? new ShellyProDualCover(address, port, name) : new ShellyPro4PM(address, port, name);
-				case ShellyProDimmer1.ID -> ShellyProDimmer2.MODEL.equals(info.get("model").asString("")) ? new ShellyProDimmer2(address, port, name) : new ShellyProDimmer1(address, port, name);
+				case ShellyProDimmer1.ID, ShellyProDimmer1.ID_ADDON -> ShellyProDimmer2.MODEL.equals(info.get("model").asString("")) ? new ShellyProDimmer2(address, port, name) : new ShellyProDimmer1(address, port, name);
 				case ShellyProEM50.ID -> new ShellyProEM50(address, port, name);
 				case ShellyPro3EM.ID -> new ShellyPro3EM(address, port, name);
 				case ShellyProRGBWW.ID -> new ShellyProRGBWW(address, port, name);
@@ -281,7 +282,7 @@ public class DevicesFactory {
 			if(info.get("auth_en").booleanValue(false)) {
 				digestAuthentication(httpClient, address, port, name);
 			}
-			d = switch(info.get("app").asString("")) {
+			d = switch(info.get("app").asString()) {
 			case Shelly1G3.ID -> new Shelly1G3(address, port, name);
 			case Shelly1PMG3.ID -> new Shelly1PMG3(address, port, name);
 			case Shelly2PMG3.ID -> new Shelly2PMG3(address, port, name);
@@ -292,6 +293,7 @@ public class DevicesFactory {
 			case ShellyMini1PMG3.ID -> new ShellyMini1PMG3(address, port, name);
 			case ShellyMiniPMG3.ID -> new ShellyMiniPMG3(address, port, name);
 			case ShellyPlugSG3.ID -> new ShellyPlugSG3(address, port, name);
+			case ShellyPlugPMG3.ID -> new ShellyPlugPMG3(address, port, name);
 			case ShellyPlugSOutdoorG3.ID -> new ShellyPlugSOutdoorG3(address, port, name);
 			case ShellyHTG3.ID -> new ShellyHTG3(address, port, name);
 			case ShellyDimmerG3.ID -> new ShellyDimmerG3(address, port, name);
@@ -338,14 +340,15 @@ public class DevicesFactory {
 			if(info.get("auth_en").booleanValue(false)) {
 				digestAuthentication(httpClient, address, port, name);
 			}
-			d = switch(info.get("app").asString("")) {
-			case Shelly1G4.ID, Shelly1G4.ID_ZB -> new Shelly1G4(address, port, name);
-			case Shelly1PMG4.ID, Shelly1PMG4.ID_ZB -> new Shelly1PMG4(address, port, name);
-			case Shelly2PMG4.ID, Shelly2PMG4.ID_ZB -> new Shelly2PMG4(address, port, name);
-			case ShellyMini1G4.ID, ShellyMini1G4.ID_ZB -> new ShellyMini1G4(address, port, name);
-			case ShellyMini1PMG4.ID, ShellyMini1PMG4.ID_ZB -> new ShellyMini1PMG4(address, port, name);
-			case ShellyDimmerG4.ID, ShellyDimmerG4.ID_ZB -> new ShellyDimmerG4(address, port, name);
-			case ShellyPowerStrip4G.ID, ShellyPowerStrip4G.ID_ZB -> new ShellyPowerStrip4G(address, port, name);
+			d = switch(info.get("model").asString()) {
+			case Shelly1G4.MODEL -> new Shelly1G4(address, port, name);
+			case Shelly1PMG4.MODEL -> new Shelly1PMG4(address, port, name);
+			case Shelly2PMG4.MODEL -> new Shelly2PMG4(address, port, name);
+			case ShellyMini1G4.MODEL -> new ShellyMini1G4(address, port, name);
+			case ShellyMini1PMG4.MODEL -> new ShellyMini1PMG4(address, port, name);
+			case ShellyDimmerG4.MODEL -> new ShellyDimmerG4(address, port, name);
+
+			case ShellyPowerStrip4G.MODEL -> new ShellyPowerStrip4G(address, port, name);
 
 			// PRO
 

@@ -92,6 +92,11 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 		fillSettings(getJSON("/rpc/Shelly.GetConfig"));
 		fillStatus(getJSON("/rpc/Shelly.GetStatus"));
 	}
+	
+	@Override
+	public String getGeneration() {
+		return "2";
+	}
 
 	public void setAuthentication(Authentication auth) {
 		AuthenticationStore store = httpClient.getAuthenticationStore();

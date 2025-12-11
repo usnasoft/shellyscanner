@@ -63,6 +63,7 @@ public class GhostDevice extends ShellyAbstractDevice {
 		return typeID;
 	}
 
+	@Override
 	public String getGeneration() {
 		return gen;
 	}

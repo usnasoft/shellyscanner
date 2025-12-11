@@ -54,6 +54,11 @@ public abstract class AbstractBluDevice extends ShellyAbstractDevice {
 		refreshStatus();
 		refreshSettings();
 	}
+	
+	@Override
+	public String getGeneration() {
+		return GENERATION;
+	}
 
 //	@Override
 //	public BluInetAddressAndPort getAddressAndPort() {

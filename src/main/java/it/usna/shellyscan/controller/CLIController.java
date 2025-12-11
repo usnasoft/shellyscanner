@@ -4,6 +4,7 @@ import java.io.FileNotFoundException;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
+import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -11,6 +12,7 @@ import org.slf4j.Logger;
 
 import it.usna.shellyscan.model.IPCollection;
 import it.usna.shellyscan.model.NonInteractiveDevices;
+import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.util.CLI;
 
 public class CLIController {
@@ -29,6 +31,7 @@ public class CLIController {
 			System.err.println("parameter after -backup must be an existing path");
 			System.exit(1);
 		}
+		Predicate<ShellyAbstractDevice> filter = getFilter(cli);
 		endCheck(cli);
 		log.info("Backup devices in {}", path);
 		try (NonInteractiveDevices model = new NonInteractiveDevices(fullScan, ipCollection)) {
@@ -39,7 +42,7 @@ public class CLIController {
 				} catch (Exception e) {
 					System.out.println(d.getHostname() + " error - " + e.toString());
 				}
-			});
+			}, filter);
 			log.info("Backup end");
 			System.exit(0);
 		} catch (Exception e) {
@@ -59,6 +62,7 @@ public class CLIController {
 			System.err.println("parameter after -restore must be an existing path");
 			System.exit(1);
 		}
+		Predicate<ShellyAbstractDevice> filter = getFilter(cli);
 		endCheck(cli);
 		log.info("Restore devices from {}", path);
 		try (NonInteractiveDevices model = new NonInteractiveDevices(fullScan, ipCollection)) {
@@ -71,7 +75,7 @@ public class CLIController {
 				} catch (Exception e) {
 					System.out.println(d.getHostname() + " error - " + e.toString());
 				}
-			});
+			}, filter);
 			log.info("Restore end");
 			System.exit(0);
 		} catch (Exception e) {
@@ -84,19 +88,20 @@ public class CLIController {
 		String ipOnlyPar = cli.getParameter(cliIndex);
 		boolean ipOnly = false;
 		if(ipOnlyPar != null) {
-			if(ipOnlyPar.equals("iponly")) {
+			if(ipOnlyPar.equals("ip")) {
 				ipOnly = true;
 			} else {
 				cli.rejectParameter(cliIndex);
 			}
 		}
+		Predicate<ShellyAbstractDevice> filter = getFilter(cli);
 		CLIController.endCheck(cli);
 		log.info("Retrieving list ...");
 		try (NonInteractiveDevices model = new NonInteractiveDevices(fullScan, ipCollection)) {
 			if(ipOnly) {
-				model.execute(d -> System.out.println(d.getAddressAndPort().getRepresentation()));
+				model.execute(d -> System.out.println(d.getAddressAndPort().toString() + " /// + " + d), filter);
 			} else {
-				model.execute(d -> System.out.println(d));
+				model.execute(d -> System.out.println(d), filter);
 			}
 			log.info("List end");
 			System.exit(0);
@@ -133,8 +138,21 @@ public class CLIController {
 		}
 	}
 	
+	private static Predicate<ShellyAbstractDevice> getFilter(CLI cli) {
+		int cliIndex;
+		if((cliIndex = cli.hasEntry("-gen")) >= 0) {
+			String gen = cli.getParameter(cliIndex);
+			if(gen == null) {
+				System.err.println("Missing value after -gen");
+				System.exit(1);
+			}
+			return  d -> d.getGeneration().equals(gen);
+		}
+		return null;
+	}
+	
 	// look for unused CLI entries and exit (10) if wrong parameter(s) are detected
-	public static void endCheck(CLI cli) {
+	private static void endCheck(CLI cli) {
 		if(cli.unused().length > 0) {
 			System.err.println("Wrong parameter(s): " + String.join("; ", cli.unused()));
 			System.exit(10);

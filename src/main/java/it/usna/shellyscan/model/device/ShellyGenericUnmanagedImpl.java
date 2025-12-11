@@ -51,6 +51,11 @@ public class ShellyGenericUnmanagedImpl extends ShellyAbstractDevice implements 
 			status = Status.ERROR;
 		}
 	}
+	
+	@Override
+	public String getGeneration() {
+		return "-";
+	}
 
 	@Override
 	public Throwable getException() {
