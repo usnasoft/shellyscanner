@@ -85,11 +85,14 @@ public class CLIController {
 	}
 	
 	public static void list(CLI cli, int cliIndex, IPCollection ipCollection, boolean fullScan, final Logger log) {
-		String ipOnlyPar = cli.getParameter(cliIndex);
+		String listPar = cli.getParameter(cliIndex);
 		boolean ipOnly = false;
-		if(ipOnlyPar != null) {
-			if(ipOnlyPar.equals("ip")) {
+		boolean fullList = false;
+		if(listPar != null) {
+			if(listPar.equals("ip")) {
 				ipOnly = true;
+			} else if(listPar.equals("full")) {
+				fullList = true;
 			} else {
 				cli.rejectParameter(cliIndex);
 			}
@@ -99,7 +102,9 @@ public class CLIController {
 		log.info("Retrieving list ...");
 		try (NonInteractiveDevices model = new NonInteractiveDevices(fullScan, ipCollection)) {
 			if(ipOnly) {
-				model.execute(d -> System.out.println(d.getAddressAndPort().toString() + " /// + " + d), filter);
+				model.execute(d -> System.out.println(d.getAddressAndPort().toString()), filter);
+			} else if(fullList) {
+				model.execute(d -> System.out.println(d.getAddressAndPort().toString() + " / " + d), filter);
 			} else {
 				model.execute(d -> System.out.println(d), filter);
 			}
