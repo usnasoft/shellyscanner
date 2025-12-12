@@ -67,7 +67,7 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 			Map.entry(10, "Blu Distance"),
 			Map.entry(12, "Blu H&T Display ZB"),
 			Map.entry(17, "Blu H&T ZB"),
-			Map.entry(23, "Blu Button Tough1 ZB")
+			Map.entry(23, "Blu Button Tough 1 ZB")
 			);
 	private String typeName;
 	private String typeID;
