@@ -253,7 +253,7 @@ public class DevicesFactory {
 				case ShellyPro2.ID -> new ShellyPro2(address, port, name);
 				case ShellyPro3.ID -> new ShellyPro3(address, port, name);
 				case ShellyPro4PM.ID -> ShellyProDualCover.MODEL.equals(info.get("model").asString("")) ? new ShellyProDualCover(address, port, name) : new ShellyPro4PM(address, port, name);
-				case ShellyProDimmer1.ID, ShellyProDimmer1.ID_ADDON -> ShellyProDimmer2.MODEL.equals(info.get("model").asString("")) ? new ShellyProDimmer2(address, port, name) : new ShellyProDimmer1(address, port, name);
+				case ShellyProDimmer1.ID -> ShellyProDimmer2.MODEL.equals(info.get("model").asString("")) ? new ShellyProDimmer2(address, port, name) : new ShellyProDimmer1(address, port, name);
 				case ShellyProEM50.ID -> new ShellyProEM50(address, port, name);
 				case ShellyPro3EM.ID -> new ShellyPro3EM(address, port, name);
 				case ShellyProRGBWW.ID -> new ShellyProRGBWW(address, port, name);
