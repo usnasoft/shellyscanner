@@ -222,6 +222,8 @@ public abstract class ShellyAbstractDevice {
 	public long getLastTime() {
 		return lastConnection;
 	}
+	
+	public abstract String getGeneration();
 
 	public abstract String[] getInfoRequests();
 
