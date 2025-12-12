@@ -2,10 +2,9 @@ package it.usna.shellyscan.model.device.g2.modules;
 
 import java.io.IOException;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.modules.WhiteInterface;
+import tools.jackson.databind.JsonNode;
 
 /**
  * Used by wall dimmer, dimmer 0/1-10, RGBW, ...
@@ -38,24 +37,24 @@ public class LightWhite implements WhiteInterface {
 	}
 
 	public void fillSettings(JsonNode settingsWhite) {
-		name = settingsWhite.get("name").asText("");
+		name = settingsWhite.get("name").asString("");
 //		JsonNode range = settingsWhite.get("range_map");
 //		if(range != null) {
-//			minB = range.get(0).intValue();
-//			maxB = range.get(1).intValue();
+//			minB = range.get(0).intValue(0);
+//			maxB = range.get(1).intValue(0);
 //		}
 	}
 	
 	public void fillStatus(JsonNode statusWhite) {
 		isOn = statusWhite.get("output").asBoolean();
-		brightness = statusWhite.get("brightness").intValue();
-		source = statusWhite.get("source").asText("-");
+		brightness = statusWhite.get("brightness").intValue(0);
+		source = statusWhite.get("source").asString("-");
 	}
 	
 	public void fillStatus(JsonNode statusWhite, JsonNode input) {
 		isOn = statusWhite.get("output").asBoolean();
-		brightness = statusWhite.get("brightness").intValue();
-		source = statusWhite.get("source").asText("-");
+		brightness = statusWhite.get("brightness").intValue(0);
+		source = statusWhite.get("source").asString("-");
 		inputIsOn = input.get("state").asBoolean();
 	}
 	

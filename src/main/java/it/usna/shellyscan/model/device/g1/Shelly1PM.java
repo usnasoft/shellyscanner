@@ -6,14 +6,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.InternalTmpHolder;
 import it.usna.shellyscan.model.device.ModulesHolder;
 import it.usna.shellyscan.model.device.g1.meters.MetersPower;
 import it.usna.shellyscan.model.device.g1.modules.Relay;
 import it.usna.shellyscan.model.device.meters.Meters;
+import tools.jackson.databind.JsonNode;
 
 public class Shelly1PM extends AbstractG1Device implements ModulesHolder, InternalTmpHolder {
 	public static final String ID = "SHSW-PM";
@@ -36,7 +35,7 @@ public class Shelly1PM extends AbstractG1Device implements ModulesHolder, Intern
 	@Override
 	protected void init() throws IOException {
 		JsonNode settings = getJSON("/settings");
-		this.hostname = settings.get("device").get("hostname").asText("");
+		this.hostname = settings.get("device").get("hostname").asString("");
 		fillSettings(settings);
 		try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e) {}
 		JsonNode status = getJSON("/status");

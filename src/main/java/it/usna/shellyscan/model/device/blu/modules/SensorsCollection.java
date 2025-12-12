@@ -3,24 +3,24 @@ package it.usna.shellyscan.model.device.blu.modules;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.EnumMap;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import com.fasterxml.jackson.databind.JsonNode;
 
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.blu.AbstractBluDevice;
+import it.usna.shellyscan.model.device.blu.BTHomeDevice;
 import it.usna.shellyscan.model.device.meters.Meters;
 import it.usna.shellyscan.model.device.modules.DeviceModule;
+import tools.jackson.databind.JsonNode;
 
 /**
  * Collection of BTHomeDevice related sensors and "Meters" implementation
+ * @see https://bthome.io/format/
  */
 public class SensorsCollection extends Meters {
 	private final AbstractBluDevice blu;
 	private Sensor[] sensorsArray;
-//	private DeviceModule[] moduleSensors;
 	private ArrayList<DeviceModule> modules;
 	private Type[] mTypes;
 	private EnumMap<Type, Sensor> measuresMap = new EnumMap<>(Type.class);
@@ -38,8 +38,8 @@ public class SensorsCollection extends Meters {
 		Meters.Type lastT = null;
 		Meters.Type lastRot = null;
 		for(JsonNode sensorConf: objects) {
-			String comp = sensorConf.path("component").asText();
-			if(comp != null && comp.startsWith(AbstractBluDevice.SENSOR_KEY_PREFIX)) {
+			String comp = sensorConf.path("component").asString("");
+			if(comp != null && comp.startsWith(BTHomeDevice.SENSOR_KEY_PREFIX)) {
 				final int id = Integer.parseInt(comp.substring(13));
 				final Sensor sensor = Sensor.create(id, sensorConf); // create
 				if(sensor instanceof DeviceModule dm) {
@@ -77,7 +77,6 @@ public class SensorsCollection extends Meters {
 		}
 		modules.sort((s1, s2) -> ((Sensor)s1).getIdx() - ((Sensor)s2).getIdx()); // order by idx
 		sensorsArray = sensors.toArray(Sensor[]::new);
-//		moduleSensors = modules.toArray(DeviceModule[]::new);
 		mTypes = measuresMap.keySet().toArray(Type[]::new);
 	}
 	
@@ -85,7 +84,7 @@ public class SensorsCollection extends Meters {
 		return sensorsArray;
 	}
 	
-	public ArrayList<DeviceModule> getModuleSensors() {
+	public List<DeviceModule> getModuleSensors() {
 		return modules;
 	}
 	
@@ -135,14 +134,7 @@ public class SensorsCollection extends Meters {
 	}
 	
 	public String getFullID() {
-		return Stream.of(sensorsArray).map(s -> "s" + s.getObjId()).sorted().collect(Collectors.joining());
-	}
-	
-// use it.usna.shellyscan.model.device.Meters.toString() instead
-//	@Override
-//	public String toString() {
+		return Stream.of(sensorsArray).mapToInt(Sensor::getObjId).sorted().collect(StringBuilder::new, (s,i) -> s.append('s').append(i), StringBuilder::append).toString();
 //		return Stream.of(sensorsArray).map(s -> "s" + s.getObjId()).sorted().collect(Collectors.joining());
-//	}
+	}
 }
-
-// https://bthome.io/format/

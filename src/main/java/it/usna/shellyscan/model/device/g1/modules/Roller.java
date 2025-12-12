@@ -2,11 +2,10 @@ package it.usna.shellyscan.model.device.g1.modules;
 
 import java.io.IOException;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-
 import it.usna.shellyscan.model.device.g1.AbstractG1Device;
 import it.usna.shellyscan.model.device.modules.RollerInterface;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ObjectNode;
 
 /**
  * Used by 2; 2.5
@@ -26,9 +25,12 @@ public class Roller implements RollerInterface {
 	public void fillStatus(JsonNode rollerStatus) {
 		calibrated = rollerStatus.get("positioning").asBoolean();
 		if(calibrated) {
-			position = rollerStatus.get("current_pos").intValue();
+			position = rollerStatus.get("current_pos").intValue(0);
+			if(position > 100) {
+				calibrated = false;
+			}
 		}
-		source = rollerStatus.get("source").asText("-");
+		source = rollerStatus.get("source").asString("-");
 	}
 	
 	@Override
@@ -44,31 +46,31 @@ public class Roller implements RollerInterface {
 	@Override
 	public void setPosition(int pos) throws IOException {
 		final JsonNode roller = parent.getJSON("/roller/" + index + "?go=to_pos&roller_pos=" + pos);
-		position = roller.get("current_pos").intValue();
-		source = roller.get("source").asText("-");
+		position = roller.get("current_pos").intValue(0);
+		source = roller.get("source").asString("-");
 	}
 	
 	@Override
 	public void open() throws IOException {
 		final JsonNode roller = parent.getJSON("/roller/" + index + "?go=open");
 		position = 100;
-		source = roller.get("source").asText("-");
+		source = roller.get("source").asString("-");
 	}
 	
 	@Override
 	public void close() throws IOException {
 		final JsonNode roller = parent.getJSON("/roller/" + index + "?go=close");
 		position = 0;
-		source = roller.get("source").asText("-");
+		source = roller.get("source").asString("-");
 	}
 	
 	@Override
 	public void stop() throws IOException {
 		final JsonNode roller = parent.getJSON("/roller/" + index + "?go=stop");
 		if(calibrated) {
-			position = roller.get("current_pos").intValue();
+			position = roller.get("current_pos").intValue(0);
 		}
-		source = roller.get("source").asText("-");
+		source = roller.get("source").asString("-");
 	}
 	
 	@Override

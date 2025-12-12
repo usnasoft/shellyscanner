@@ -3,11 +3,10 @@ package it.usna.shellyscan.model.device.g1.modules;
 import java.io.IOException;
 import java.util.Map.Entry;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-
 import it.usna.shellyscan.model.device.g1.AbstractG1Device;
 import it.usna.shellyscan.model.device.modules.RGBWInterface;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ObjectNode;
 
 /**
  * Used by RGBW2 (color mode)
@@ -39,7 +38,7 @@ public class LightRGBW implements RGBWInterface {
 		blue = statusColor.get("blue").asInt();
 		white = statusColor.get("white").asInt();
 		gain = statusColor.get("gain").asInt();
-		source = statusColor.get("source").asText("-");
+		source = statusColor.get("source").asString("-");
 	}
 	
 	@Override

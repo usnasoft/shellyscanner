@@ -17,7 +17,7 @@ import javax.swing.JTabbedPane;
 import it.usna.shellyscan.Main;
 import it.usna.shellyscan.controller.UsnaAction;
 import it.usna.shellyscan.model.Devices;
-import it.usna.shellyscan.model.device.g2.WallDisplay;
+import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.view.scheduler.gen2plus.G2SchedulerPanel;
 import it.usna.shellyscan.view.util.ScannerProperties;
 import it.usna.shellyscan.view.util.UtilMiscellaneous;
@@ -26,7 +26,7 @@ import it.usna.swing.UsnaSwingUtils;
 public class WDSchedulerDialog extends JDialog {
 	private static final long serialVersionUID = 1L;
 
-	public WDSchedulerDialog(Window owner, WallDisplay device) {
+	public WDSchedulerDialog(Window owner, AbstractG2Device device) {
 		super(owner, Main.LABELS.getString("schTitle") + " - " + UtilMiscellaneous.getExtendedHostName(device), Dialog.ModalityType.MODELESS);
 		init(device);
 		setLocationRelativeTo(owner);
@@ -40,7 +40,7 @@ public class WDSchedulerDialog extends JDialog {
 		setVisible(true);
 	}
 	
-	private void init(WallDisplay device) {
+	private void init(AbstractG2Device device) {
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		
 		final G2SchedulerPanel schPanel = (device == null) ? new G2SchedulerPanel(this) : new G2SchedulerPanel(this, device);

@@ -12,6 +12,7 @@ import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.ProviderNotFoundException;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,9 +27,6 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import it.usna.shellyscan.Main;
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.RestoreMsg;
@@ -40,6 +38,8 @@ import it.usna.shellyscan.view.DialogAuthentication;
 import it.usna.shellyscan.view.MainView;
 import it.usna.shellyscan.view.util.Msg;
 import it.usna.util.AppProperties;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 
 public class RestoreAction extends UsnaAction {
 	private static final long serialVersionUID = 1L;
@@ -185,7 +185,7 @@ public class RestoreAction extends UsnaAction {
 				Msg.warningMsg(mainView, "<html>" + warn);
 			}
 
-			Map<RestoreMsg, String> resData = new HashMap<>();
+			Map<RestoreMsg, String> resData = new EnumMap<>(RestoreMsg.class);
 
 			if(test.containsKey(RestoreMsg.RESTORE_LOGIN) && multi == false) {
 				DialogAuthentication credentials = new DialogAuthentication(mainView,
@@ -251,17 +251,21 @@ public class RestoreAction extends UsnaAction {
 				resData.put(RestoreMsg.QUESTION_RESTORE_SCRIPTS_OVERRIDE, "true");
 				resData.put(RestoreMsg.QUESTION_RESTORE_SCRIPTS_ENABLE_LIKE_BACKED_UP, "true");
 			} else {
-				boolean overwriteScriptNames = false;
 				String rename = LABELS.getString("lblRename");
-				if(test.containsKey(RestoreMsg.QUESTION_RESTORE_SCRIPTS_OVERRIDE) && 
-						JOptionPane.showOptionDialog(mainView,
-								String.format(LABELS.getString(CHECK_MSG_PREFIX + "QUESTION_RESTORE_SCRIPTS_OVERRIDE"), test.get(RestoreMsg.QUESTION_RESTORE_SCRIPTS_OVERRIDE)),
-								LABELS.getString("msgRestoreTitle"), JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE,
-								null, new Object[] {rename, LABELS.getString("lblOverwrite")}, rename) == 1 /*overwrite*/) {
-					resData.put(RestoreMsg.QUESTION_RESTORE_SCRIPTS_OVERRIDE, "true");
-					overwriteScriptNames = true;
-				}
-				if(test.containsKey(RestoreMsg.QUESTION_RESTORE_SCRIPTS_ENABLE_LIKE_BACKED_UP) && (overwriteScriptNames || test.containsKey(RestoreMsg.QUESTION_RESTORE_SCRIPTS_OVERRIDE) == false) &&
+				if(test.containsKey(RestoreMsg.QUESTION_RESTORE_SCRIPTS_OVERRIDE)) {
+					int answer = JOptionPane.showOptionDialog(mainView,
+							String.format(LABELS.getString(CHECK_MSG_PREFIX + "QUESTION_RESTORE_SCRIPTS_OVERRIDE"), test.get(RestoreMsg.QUESTION_RESTORE_SCRIPTS_OVERRIDE)),
+							LABELS.getString("msgRestoreTitle"), JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE,
+							null, new Object[] {rename, LABELS.getString("lblSkip"), LABELS.getString("lblOverwrite")}, rename);
+					if(answer == 2) { // overwrite
+						resData.put(RestoreMsg.QUESTION_RESTORE_SCRIPTS_OVERRIDE, "true");
+					} else if(answer == 1) { // do not restore scripts
+						resData.put(RestoreMsg.QUESTION_RESTORE_SCRIPTS_SKIP, "true");
+						test.remove(RestoreMsg.QUESTION_RESTORE_SCRIPTS_ENABLE_LIKE_BACKED_UP);
+					}
+				}				
+				if(test.containsKey(RestoreMsg.QUESTION_RESTORE_SCRIPTS_ENABLE_LIKE_BACKED_UP) &&
+						(resData.containsKey(RestoreMsg.QUESTION_RESTORE_SCRIPTS_OVERRIDE) || test.containsKey(RestoreMsg.QUESTION_RESTORE_SCRIPTS_OVERRIDE) == false) &&
 						JOptionPane.showConfirmDialog(mainView,
 								String.format(LABELS.getString(CHECK_MSG_PREFIX + "QUESTION_RESTORE_SCRIPTS_ENABLE_LIKE_BACKED_UP"), test.get(RestoreMsg.QUESTION_RESTORE_SCRIPTS_ENABLE_LIKE_BACKED_UP)),
 								LABELS.getString("msgRestoreTitle"), JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION) {
@@ -312,9 +316,29 @@ public class RestoreAction extends UsnaAction {
 			model.activateRefresh(modelRow);
 		}
 	}
+	
+	public static String nonInteractiveRestoreDevice(final ShellyAbstractDevice device, final Path basePath) throws IOException {
+		final Path file = basePath.resolve(BackupAction.defFileName(device));
+		final Map<String, JsonNode> backupJsons = readBackupFile(file);
+		final Map<RestoreMsg, Object> test = device.restoreCheck(backupJsons);
+
+		for(Map.Entry<RestoreMsg, Object> e: test.entrySet()) {
+			if(e.getKey().getType() == RestoreMsg.Type.PRE) {
+				return e.getKey().toString();
+			}
+		}
+		for(Map.Entry<RestoreMsg, Object> e: test.entrySet()) {
+			if(e.getKey().getType() == RestoreMsg.Type.ERROR) {
+				return e.getKey().toString();
+			}
+		}
+		Map<RestoreMsg, String> resData = Map.of(RestoreMsg.QUESTION_RESTORE_SCRIPTS_OVERRIDE, "true", RestoreMsg.QUESTION_RESTORE_SCRIPTS_ENABLE_LIKE_BACKED_UP, "true");
+		final List<String> restoreResult = device.restore(backupJsons, resData); // Do restore
+		return erroreMsg(restoreResult);
+	}
 
 	private static String erroreMsg(List<String> errors) {
-		String err = errors.stream().filter(s-> s != null && s.length() > 0 && s.startsWith("->r_step:") == false)
+		String err = errors.stream().filter(s-> s != null && s.isEmpty() == false && s.startsWith("->r_step:") == false)
 				.map(s -> LABELS.containsKey(ERROR_MSG_PREFIX + s) ? LABELS.getString(ERROR_MSG_PREFIX + s) : s).distinct().collect(Collectors.joining("\n"));
 		if(err.isEmpty() == false) {
 			LOG.debug(errors.stream().map(s -> s == null ? "-" : s).collect(Collectors.joining("\n")));
@@ -329,7 +353,7 @@ public class RestoreAction extends UsnaAction {
 			pathStream.forEach(p -> {
 				try {
 					if(p.toString().endsWith(".json")) {
-						backupJsons.put(p.getFileName().toString(), jsonMapper.readTree(/*Files.readString(p)*/Files.newBufferedReader(p)));
+						backupJsons.put(p.getFileName().toString(), jsonMapper.readTree(Files.newBufferedReader(p)));
 					} else {
 						backupJsons.put(p.getFileName().toString() + ".json", jsonMapper.createObjectNode().put("code", Files.readString(p/*, StandardCharsets.UTF_8*/)));
 					}

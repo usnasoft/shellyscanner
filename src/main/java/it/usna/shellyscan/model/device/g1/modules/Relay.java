@@ -2,11 +2,10 @@ package it.usna.shellyscan.model.device.g1.modules;
 
 import java.io.IOException;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-
 import it.usna.shellyscan.model.device.g1.AbstractG1Device;
 import it.usna.shellyscan.model.device.modules.RelayInterface;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ObjectNode;
 
 /**
  * Used by 1, 1PM, EM, 2, 2.5, ...
@@ -25,18 +24,18 @@ public class Relay implements RelayInterface {
 	}
 	
 	public void fillSettings(JsonNode settingsRelay) {
-		name = settingsRelay.get("name").asText("");
+		name = settingsRelay.get("name").asString("");
 	}
 	
 	public void fillStatus(JsonNode relay) {
-		isOn = relay.get("ison").booleanValue();
-		source = relay.get("source").asText("-");
+		isOn = relay.get("ison").booleanValue(false);
+		source = relay.get("source").asString("-");
 	}
 	
-	public void fillStatus(JsonNode relay, JsonNode inputs) {
-		isOn = relay.get("ison").booleanValue();
-		source = relay.path("source").asText("-"); //old fw miss "source"
-		inputIsOn = inputs.path("input").booleanValue();
+	public void fillStatus(JsonNode relay, JsonNode input) {
+		isOn = relay.get("ison").booleanValue(false);
+		source = relay.path("source").asString("-"); //old fw miss "source"
+		inputIsOn = input.path("input").asBoolean(false); // 0/1
 	}
 	
 	@Override
@@ -47,16 +46,16 @@ public class Relay implements RelayInterface {
 	@Override
 	public boolean toggle() throws IOException {
 		final JsonNode relay = parent.getJSON("/relay/" + index + "?turn=toggle");
-		isOn = relay.get("ison").booleanValue();
-		source = relay.get("source").asText("-");
+		isOn = relay.get("ison").booleanValue(false);
+		source = relay.get("source").asString("-");
 		return isOn;
 	}
 	
 	@Override
 	public void change(boolean on) throws IOException {
 		final JsonNode relay = parent.getJSON("/relay/" + index + "?turn=" + (on ? "on" : "off"));
-		isOn = relay.get("ison").booleanValue();
-		source = relay.get("source").asText("-");
+		isOn = relay.get("ison").booleanValue(false);
+		source = relay.get("source").asString("-");
 	}
 	
 	@Override

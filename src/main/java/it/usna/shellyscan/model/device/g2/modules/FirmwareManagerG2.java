@@ -2,22 +2,23 @@ package it.usna.shellyscan.model.device.g2.modules;
 
 import java.util.concurrent.TimeUnit;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.BatteryDeviceInterface;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.modules.FirmwareManager;
+import tools.jackson.databind.JsonNode;
 
 //https://shelly-api-docs.shelly.cloud/gen2/Overview/CommonServices/Shelly#shellyupdate
 public class FirmwareManagerG2 implements FirmwareManager {
-
 	private final AbstractG2Device d;
 	private String current;
 	private String stable;
 	private String beta;
 	private boolean updating;
 	private boolean valid;
+	
+	public static final String STAGE_STABLE = "stable";
+	public static final String STAGE_BETA = "beta";
 	
 	public FirmwareManagerG2(AbstractG2Device d) /*throws IOException*/ {
 		this.d = d;
@@ -27,13 +28,13 @@ public class FirmwareManagerG2 implements FirmwareManager {
 	private void init() {
 		try {
 			JsonNode node = d.getJSON("/rpc/Shelly.CheckForUpdate");
-			stable = node.at("/stable/build_id").textValue();
-			beta = node.at("/beta/build_id").textValue();
+			stable = node.at("/stable/build_id").asString(null);
+			beta = node.at("/beta/build_id").asString(null);
 			if(d instanceof BatteryDeviceInterface == false) {
 				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			}
 			JsonNode nodeDevInfo = d.getJSON("/rpc/Shelly.GetDeviceInfo");
-			current = nodeDevInfo.get("fw_id").asText();
+			current = nodeDevInfo.get("fw_id").asString(null);
 			valid = true;
 			updating = false;
 		} catch(/*IO*/Exception e) {
@@ -42,17 +43,17 @@ public class FirmwareManagerG2 implements FirmwareManager {
 			JsonNode node;
 			if(d instanceof BatteryDeviceInterface batteryDevice) {
 				if((node = batteryDevice.getStoredJSON("/rpc/Shelly.CheckForUpdate")) != null) {
-					stable = node.at("/stable/build_id").textValue();
-					beta = node.at("/beta/build_id").textValue();
+					stable = node.at("/stable/build_id").asString(null);
+					beta = node.at("/beta/build_id").asString(null);
 				} else if((node = batteryDevice.getStoredJSON("/rpc/Shelly.GetStatus")) != null) {
 					node = node.at("/sys/available_updates");
-					stable = node.at("/stable/version").textValue(); // not id
-					beta = node.at("/beta/version").textValue(); // not id
+					stable = node.at("/stable/version").asString(null); // not id
+					beta = node.at("/beta/version").asString(null); // not id
 				}
 				if((node = batteryDevice.getStoredJSON("/rpc/Shelly.GetConfig")) != null) { // probably fresher than "/rpc/Shelly.GetDeviceInfo"
-					current = node.at("/sys/device/fw_id").asText();
+					current = node.at("/sys/device/fw_id").asString(null);
 				} else if((node = batteryDevice.getStoredJSON("/shelly")) != null) {
-					current = node.path("fw_id").asText();
+					current = node.path("fw_id").asString(null);
 				}
 			}
 		}
@@ -81,11 +82,10 @@ public class FirmwareManagerG2 implements FirmwareManager {
 	@Override
 	public String update(boolean stable) {
 		updating = true;
-		String res = d.postCommand("Shelly.Update", stable ? "{\"stage\":\"stable\"}" : "{\"stage\":\"beta\"}");
+		String res = d.postCommand("Shelly.Update", stable ? "{\"stage\":\"" + STAGE_STABLE + "\"}" : "{\"stage\":\"" + STAGE_BETA + "\"}");
 		if(res != null && res.isEmpty() == false) {
 			updating = false;
 		}
-//		System.out.println("res " + res + " - " + d.getStatus());
 		return res;
 	}
 
@@ -103,11 +103,3 @@ public class FirmwareManagerG2 implements FirmwareManager {
 		return valid;
 	}
 }
-
-// autoupdate
-// -----------
-//schedule.create - params:
-//calls: 
-//[{method: "Shelly.Update", params: {stage: "beta"}, origin: "shelly_service"}]
-//timespec: 
-//"0 0 0 * * 0,1,2,3,4,5,6"

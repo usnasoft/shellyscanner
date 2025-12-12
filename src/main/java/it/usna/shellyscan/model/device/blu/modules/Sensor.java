@@ -1,11 +1,11 @@
 package it.usna.shellyscan.model.device.blu.modules;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
 import it.usna.shellyscan.model.device.meters.Meters;
+import tools.jackson.databind.JsonNode;
 
 /**
  * Sensor factory / Generic BTHSensor / Measure BTHSensor
+ * @see https://bthome.io/format/
  */
 public class Sensor {
 	protected final int id; // Id of the component instance
@@ -16,7 +16,7 @@ public class Sensor {
 	protected float value;
 
 	public static Sensor create(int id, JsonNode sensorConf) {
-		int objId = sensorConf.path("obj_id").intValue();
+		int objId = sensorConf.path("obj_id").intValue(0);
 		if(objId == InputSensor.OBJ_ID) {
 			return new InputSensor(id, sensorConf);
 		} else if(objId == MotionSensor.OBJ_ID) {
@@ -28,26 +28,26 @@ public class Sensor {
 
 	protected Sensor(int id, JsonNode sensorConf) {
 		this.id = id;
-		this.idx = sensorConf.path("idx").intValue();
+		this.idx = sensorConf.path("idx").intValue(0);
 		this.mType = null;
 	}
 	
 	private Sensor(int id, int objID, JsonNode sensorConf) {
 		this.id = id;
 		this.objID = objID;
-		this.idx = sensorConf.path("idx").intValue();
+		this.idx = sensorConf.path("idx").intValue(0);
 		this.mType = switch(objID) {
 		case 0x01 -> Meters.Type.BAT;
 		case 0x2E -> Meters.Type.H;
 		case 0x45 -> Meters.Type.T;
-		case 0x05 -> Meters.Type.L;
+		case 0x05 -> Meters.Type.L; // lux
+		case 0x1E -> Meters.Type.LIGHT; // dec 30 - 0 (False = No light), 1 (True = Light detected)
 		case 0x2C -> Meters.Type.VIB; // dec 44 - vibration (0-1; on shelly is boolean)
-		case 0x40 -> Meters.Type.DMM; // dec 64 - distance mm
 		case 0x3F -> Meters.Type.ANG; // dec 63 - angle (accelerometer)
+		case 0x40 -> Meters.Type.DMM; // dec 64 - distance mm
 		case 0x60 -> Meters.Type.CHANNEL; //  dec 96 - channel
 		default -> null;
 		};
-		
 		// 0x3C (60) dimmer (weel)
 	}
 	
@@ -63,21 +63,15 @@ public class Sensor {
 		return idx;
 	}
 	
-//	public void fillSConfig(JsonNode config) {
-//		name = config.path("name").asText("");
-//	}
-//	
-//	public void fillStatus(JsonNode status) {
-//		value = status.path("value").floatValue();
-//	}
-	
 	public void fill(JsonNode comp) {
-		name = comp.path("config").path("name").asText("");
+		// config
+		name = comp.path("config").path("name").asString("");
+		// status
 		JsonNode valNode = comp.path("status").path("value");
 		if(valNode.isBoolean()) {
 			value = valNode.asBoolean() ? 1f : 0f;
 		} else {
-			value = valNode.floatValue();
+			value = valNode.floatValue(0); // can be temporarily null
 		}
 	}
 	

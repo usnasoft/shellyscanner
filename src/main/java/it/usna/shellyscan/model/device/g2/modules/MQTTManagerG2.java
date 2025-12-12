@@ -2,12 +2,11 @@ package it.usna.shellyscan.model.device.g2.modules;
 
 import java.io.IOException;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.modules.MQTTManager;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.JsonNodeFactory;
+import tools.jackson.databind.node.ObjectNode;
 
 //https://shelly-api-docs.shelly.cloud/gen2/Components/SystemComponents/Mqtt
 public class MQTTManagerG2 implements MQTTManager {
@@ -32,14 +31,14 @@ public class MQTTManagerG2 implements MQTTManager {
 	private void init() throws IOException {
 		JsonNode settings = d.getJSON("/rpc/MQTT.GetConfig");
 		this.enabled = settings.get("enable").asBoolean();
-		this.server = settings.path("server").asText("");
-		this.user = settings.path("user").asText("");
-		this.prefix = settings.path("topic_prefix").asText("");
-		this.sslCA = settings.path("ssl_ca").asText("");
-		this.control = settings.path("enable_control").asBoolean();
-		this.rpc = settings.path("enable_rpc").asBoolean();
-		this.rpcNtf = settings.path("rpc_ntf").asBoolean();
-		this.statusNtf = settings.path("status_ntf").asBoolean();
+		this.server = settings.path("server").asString("");
+		this.user = settings.path("user").asString("");
+		this.prefix = settings.path("topic_prefix").asString("");
+		this.sslCA = settings.path("ssl_ca").asString("");
+		this.control = settings.path("enable_control").asBoolean(false);
+		this.rpc = settings.path("enable_rpc").asBoolean(false);
+		this.rpcNtf = settings.path("rpc_ntf").asBoolean(false);
+		this.statusNtf = settings.path("status_ntf").asBoolean(false);
 	}
 
 	@Override
@@ -134,8 +133,8 @@ public class MQTTManagerG2 implements MQTTManager {
 	
 	public static String restore(AbstractG2Device parent, final JsonNode mqtt, String pwd) {
 		ObjectNode outConfig = JsonNodeFactory.instance.objectNode();
-		ObjectNode mqttCopy = mqtt.deepCopy();
-		if(pwd != null && pwd.length() > 0) {
+		ObjectNode mqttCopy = (ObjectNode)mqtt.deepCopy();
+		if(pwd != null && pwd.isEmpty() == false) {
 			mqttCopy.put("pass", pwd);
 		}
 		outConfig.set("config", mqttCopy);

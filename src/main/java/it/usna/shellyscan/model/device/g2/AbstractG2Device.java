@@ -3,7 +3,6 @@ package it.usna.shellyscan.model.device.g2;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.InetAddress;
-import java.net.SocketTimeoutException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
@@ -32,12 +31,6 @@ import org.eclipse.jetty.websocket.client.WebSocketClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.exc.StreamReadException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-
 import it.usna.shellyscan.model.DeviceAPIException;
 import it.usna.shellyscan.model.DeviceOfflineException;
 import it.usna.shellyscan.model.Devices;
@@ -64,6 +57,11 @@ import it.usna.shellyscan.model.device.modules.InputResetManager;
 import it.usna.shellyscan.model.device.modules.LoginManager;
 import it.usna.shellyscan.model.device.modules.WIFIManager;
 import it.usna.shellyscan.model.device.modules.WIFIManager.Network;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.exc.StreamReadException;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.JsonNodeFactory;
+import tools.jackson.databind.node.ObjectNode;
 
 /**
  * Base abstract class for any gen2(+) Shelly device
@@ -88,11 +86,16 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 	}
 
 	protected void init(JsonNode devInfo) throws IOException {
-		this.hostname = devInfo.get("id").asText("");
-		this.mac = devInfo.get("mac").asText().toUpperCase();
+		this.hostname = devInfo.get("id").asString("");
+		this.mac = devInfo.get("mac").asString("").toUpperCase();
 
 		fillSettings(getJSON("/rpc/Shelly.GetConfig"));
 		fillStatus(getJSON("/rpc/Shelly.GetStatus"));
+	}
+	
+	@Override
+	public String getGeneration() {
+		return "2";
 	}
 
 	public void setAuthentication(Authentication auth) {
@@ -108,13 +111,13 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 
 	protected void fillSettings(JsonNode config) throws IOException {
 		JsonNode sysNode = config.get("sys");
-		this.name = sysNode.path("device").path("name").asText("");
+		this.name = sysNode.path("device").path("name").asString("");
 
 		JsonNode udp;
 		JsonNode debugNode = sysNode.path("debug");
-		if(debugNode.path("websocket").path("enable").booleanValue()) {
+		if(debugNode.path("websocket").path("enable").booleanValue(false)) {
 			this.debugMode = LogMode.SOCKET;
-		} else if(debugNode.path("mqtt").path("enable").booleanValue()) {
+		} else if(debugNode.path("mqtt").path("enable").booleanValue(false)) {
 			this.debugMode = LogMode.MQTT;
 		} else if((udp = debugNode.get("udp")) != null && udp.get("addr").isNull() == false) {  // no "udp" on wall display ???
 			this.debugMode = LogMode.UDP;
@@ -122,21 +125,21 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 			this.debugMode = LogMode.NONE;
 		}
 
-		this.cloudEnabled = config.path("cloud").path("enable").booleanValue();
-		this.mqttEnabled = config.path("mqtt").path("enable").booleanValue();
+		this.cloudEnabled = config.path("cloud").path("enable").booleanValue(false);
+		this.mqttEnabled = config.path("mqtt").path("enable").booleanValue(false);
 
-		this.rangeExtender = config.get("wifi").path("ap").path("range_extender").path("enable").booleanValue(); // no "ap" on wall display ???
+		this.rangeExtender = config.get("wifi").path("ap").path("range_extender").path("enable").booleanValue(false); // no "ap" on wall display ???
 	}
 
 	protected void fillStatus(JsonNode status) throws IOException {
-		this.cloudConnected = status.path("cloud").path("connected").booleanValue();
+		this.cloudConnected = status.path("cloud").path("connected").booleanValue(false);
 		JsonNode wifiNode = status.get("wifi");
-		this.rssi = wifiNode.path("rssi").intValue();
-		this.ssid = wifiNode.path("ssid").asText();
+		this.rssi = wifiNode.path("rssi").intValue(0);
+		this.ssid = wifiNode.path("ssid").asString("");
 		JsonNode sysNode = status.get("sys");
-		this.uptime = sysNode.get("uptime").intValue();
-		this.rebootRequired = sysNode.path("restart_required").booleanValue();
-		this.mqttConnected = status.path("mqtt").path("connected").booleanValue();
+		this.uptime = sysNode.get("uptime").intValue(0);
+		this.rebootRequired = sysNode.path("restart_required").booleanValue(false);
+		this.mqttConnected = status.path("mqtt").path("connected").booleanValue(false);
 
 		lastConnection = System.currentTimeMillis();
 	}
@@ -240,7 +243,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 	public String postCommand(final String method, JsonNode payload) {
 		try {
 			return postCommand(method, jsonMapper.writeValueAsString(payload));
-		} catch (JsonProcessingException e) {
+		} catch (JacksonException e) {
 			return e.toString();
 		}
 	}
@@ -266,7 +269,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 				}
 			} else {
 				LOG.debug("API error: {}.{} - {}", method, payload, error);
-				return error.path("message").asText("Generic error");
+				return error.path("message").asString("Generic error");
 			}
 		} catch(IOException e) {
 			return "Status-OFFLINE";
@@ -279,7 +282,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 	public JsonNode getJSON(final String command) throws IOException {
 		JsonNode resp = super.getJSON(command);
 		if(resp.has("code") && resp.has("message")) { // e.g.: {"code":-114,"message":"Method KVS.GetMany failed: No such component"}
-			throw new DeviceAPIException(resp.get("code").intValue(), resp.get("message").asText("Generic error"));
+			throw new DeviceAPIException(resp.get("code").intValue(0), resp.get("message").asString("Generic error"));
 		}
 		return resp;
 	}
@@ -295,7 +298,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 			return result;
 		} else {
 			JsonNode error = resp.get("error");
-			throw new DeviceAPIException(error.get("code").intValue(), error.get("message").asText("Generic error"));
+			throw new DeviceAPIException(error.get("code").intValue(0), error.get("message").asString("Generic error"));
 		}
 	}
 	
@@ -313,7 +316,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 		return new JsonPageIterator(this, method, arrayKey);
 	}
 
-	private JsonNode executeRPC(final String method, String payload) throws IOException, StreamReadException { // StreamReadException extends ... IOException
+	private JsonNode executeRPC(final String method, String payload) throws IOException, JacksonException, StreamReadException {
 		try {
 			ContentResponse response = httpClient.POST(uriPrefix + "/rpc")
 					.body(new StringRequestContent("application/json", "{\"id\":1,\"method\":\"" + method + "\",\"params\":" + payload + "}", StandardCharsets.UTF_8))
@@ -328,7 +331,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 				LOG.debug("executeRPC - reponse code: {}", statusCode);
 			}
 			return jsonMapper.readTree(response.getContent());
-		} catch(InterruptedException | ExecutionException | TimeoutException | SocketTimeoutException e) {
+		} catch(InterruptedException | ExecutionException | TimeoutException | JacksonException e) {
 			status = Status.OFF_LINE;
 			throw new DeviceOfflineException(e);
 		}
@@ -383,7 +386,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 				sectionToStream("/rpc/Shelly.GetComponents?dynamic_only=true", "components", "Shelly.GetComponents.json", out);
 			} catch(Exception e) {}
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-			String addon = config.get("sys").get("device").path("addon_type").asText();
+			String addon = config.get("sys").get("device").path("addon_type").asString("");
 			if(SensorAddOn.ADDON_TYPE.equals(addon)) {
 				sectionToStream("/rpc/SensorAddon.GetPeripherals", SensorAddOn.BACKUP_SECTION, out);
 				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
@@ -394,7 +397,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 					try {
 						ZipEntry entry = new ZipEntry(script.getName() + ".mjs");
 						out.putNextEntry(entry);
-						out.write(script.getCode().getBytes()/*code, 0, code.length*/);
+						out.write(script.getCode().getBytes(StandardCharsets.UTF_8)/*code, 0, code.length*/);
 					} catch(IOException e) {
 						LOG.error("backup script {}", script.getName(), e);
 					}
@@ -420,13 +423,13 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 		EnumMap<RestoreMsg, Object> res = new EnumMap<>(RestoreMsg.class);
 		try {
 			JsonNode devInfo = backupJsons.get("Shelly.GetDeviceInfo.json");
-			if(devInfo == null || RestoreUtil.compatibleModels(devInfo.get("app").asText(), this.getTypeID()) == false) {
+			if(devInfo == null || RestoreUtil.compatibleModels(devInfo.get("app").asString(""), this.getTypeID()) == false) {
 				res.put(RestoreMsg.ERR_RESTORE_MODEL, null);
 			} else {
 				JsonNode config = backupJsons.get("Shelly.GetConfig.json");
-				boolean sameDevice = /*devInfo.get("id").asText("").equals(this.hostname)*/devInfo.get("mac").asText("").toUpperCase().equals(this.mac);
+				boolean sameDevice = /*devInfo.get("id").asString("").equals(this.hostname)*/devInfo.get("mac").asString("").toUpperCase().equals(this.mac);
 				if(sameDevice == false) {
-					res.put(RestoreMsg.PRE_QUESTION_RESTORE_HOST, /*fileHostname*/devInfo.get("id").asText(""));
+					res.put(RestoreMsg.PRE_QUESTION_RESTORE_HOST, /*fileHostname*/devInfo.get("id").asString(""));
 				}
 				DynamicComponents.restoreCheck(this, backupJsons, res);
 				if(devInfo.path("auth_en").asBoolean()) {
@@ -435,26 +438,27 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 				Network currentConnection = WIFIManagerG2.currentConnection(this);
 				if(currentConnection != Network.UNKNOWN) {
 					JsonNode wifi = config.at("/wifi/sta");
-					if(wifi.path("enable").asBoolean() && (sameDevice || wifi.path("ipv4mode").asText().equals("dhcp")) && currentConnection != Network.PRIMARY) {
+					if(wifi.path("enable").asBoolean() && (sameDevice || wifi.path("ipv4mode").asString("").equals("dhcp")) && currentConnection != Network.PRIMARY) {
 						if(wifi.path("is_open").asBoolean() == false) {
-							res.put(RestoreMsg.RESTORE_WI_FI1, wifi.path("ssid").asText());
+							res.put(RestoreMsg.RESTORE_WI_FI1, wifi.path("ssid").asString(""));
 						}
 					}
 					JsonNode wifi2 = config.at("/wifi/sta1");
-					if(wifi2.path("enable").asBoolean() && (sameDevice || wifi2.path("ipv4mode").asText().equals("dhcp")) && currentConnection != Network.SECONDARY) {
+					if(wifi2.isMissingNode() == false && wifi2.path("enable").asBoolean() && (sameDevice || wifi2.path("ipv4mode").asString("").equals("dhcp")) && currentConnection != Network.SECONDARY) {
 						if(wifi2.path("is_open").asBoolean() == false) {
-							res.put(RestoreMsg.RESTORE_WI_FI2, wifi2.path("ssid").asText());
+							res.put(RestoreMsg.RESTORE_WI_FI2, wifi2.path("ssid").asString(""));
 						}
 					}
 					JsonNode wifiAP = config.at("/wifi/ap");
-					if(wifiAP.path("enable").asBoolean() && currentConnection != Network.AP) {
+					if(wifiAP.isMissingNode() == false && wifiAP.path("enable").asBoolean() && currentConnection != Network.AP) {
 						if(wifiAP.path("is_open").asBoolean() == false) {
-							res.put(RestoreMsg.RESTORE_WI_FI_AP, wifiAP.path("ssid").asText());
+							res.put(RestoreMsg.RESTORE_WI_FI_AP, wifiAP.path("ssid").asString(""));
 						}
 					}
 				}
-				if(config.at("/mqtt/enable").asBoolean() && config.at("/mqtt/user").asText("").isEmpty() == false) {
-					res.put(RestoreMsg.RESTORE_MQTT, config.at("/mqtt/user").asText());
+				JsonNode mqtt = config.path("mqtt");
+				if(mqtt.isMissingNode() == false && mqtt.path("enable").asBoolean(false) && mqtt.path("user").asString("").isEmpty() == false) {
+					res.put(RestoreMsg.RESTORE_MQTT, mqtt.path("user").asString(""));
 				}
 				JsonNode storedScripts = backupJsons.get("Script.List.json");
 				if(storedScripts != null && storedScripts.path("scripts").size() > 0) {
@@ -463,10 +467,10 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 					List<String> scriptsWithSameName = new ArrayList<>();
 					List<String> existingScriptsNames = existingScripts.stream().map(Script::getName).toList();
 					for(JsonNode jsonScript: storedScripts.get("scripts")) {
-						if(existingScriptsNames.contains(jsonScript.get("name").asText()))
-							scriptsWithSameName.add(jsonScript.get("name").asText());
+						if(existingScriptsNames.contains(jsonScript.get("name").asString("")))
+							scriptsWithSameName.add(jsonScript.get("name").asString(""));
 						if(jsonScript.get("enable").asBoolean())
-							scriptsEnabledByDefault.add(jsonScript.get("name").asText());
+							scriptsEnabledByDefault.add(jsonScript.get("name").asString(""));
 					}
 					if(scriptsWithSameName.isEmpty() == false) {
 						res.put(RestoreMsg.QUESTION_RESTORE_SCRIPTS_OVERRIDE, String.join(", ", scriptsWithSameName));
@@ -507,15 +511,13 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 			errors.add("->r_step:restoreCommonConfig");
 			restoreCommonConfig(config, delay, userPref, errors);
 
-			errors.add("->r_step:restoreSchedule");
-			JsonNode schedule = backupJsons.get("Schedule.List.json");
-			if(schedule != null) { // some devices do not have Schedule.List +H&T
-				TimeUnit.MILLISECONDS.sleep(delay);
-				ScheduleManager.restore(this, schedule, delay, errors);
-			}
+			errors.add("->r_step:Scheduler");
+			ScheduleManager.restore(this, backupJsons, delay, errors);
 
 			errors.add("->r_step:Script");
-			Script.restoreAll(this, backupJsons, delay, userPref.containsKey(RestoreMsg.QUESTION_RESTORE_SCRIPTS_OVERRIDE), userPref.containsKey(RestoreMsg.QUESTION_RESTORE_SCRIPTS_ENABLE_LIKE_BACKED_UP), errors);
+			if(userPref.containsKey(RestoreMsg.QUESTION_RESTORE_SCRIPTS_SKIP) == false) {
+				Script.restoreAll(this, backupJsons, delay, userPref.containsKey(RestoreMsg.QUESTION_RESTORE_SCRIPTS_OVERRIDE), userPref.containsKey(RestoreMsg.QUESTION_RESTORE_SCRIPTS_ENABLE_LIKE_BACKED_UP), errors);
+			}
 
 			errors.add("->r_step:KVS");
 			JsonNode kvs = backupJsons.get("KVS.GetMany.json");
@@ -534,16 +536,17 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 			TimeUnit.MILLISECONDS.sleep(delay);
 			Network currentConnection = WIFIManagerG2.currentConnection(this);
 			if(currentConnection != Network.UNKNOWN) {
-				JsonNode sta1Node = config.at("/wifi/sta1");
-				if(sta1Node.isMissingNode() == false && (userPref.containsKey(RestoreMsg.RESTORE_WI_FI2) || sta1Node.path("is_open").asBoolean() || sta1Node.path("enable").asBoolean() == false) && currentConnection != Network.SECONDARY) {
+				JsonNode wifi2 = config.at("/wifi/sta1");
+				if(wifi2.isMissingNode() == false && (userPref.containsKey(RestoreMsg.RESTORE_WI_FI2) || wifi2.path("is_open").asBoolean() || wifi2.path("enable").asBoolean() == false) && currentConnection != Network.SECONDARY) {
 					TimeUnit.MILLISECONDS.sleep(delay);
 					WIFIManagerG2 wm = new WIFIManagerG2(this, Network.SECONDARY, true);
-					errors.add(wm.restore(sta1Node, userPref.get(RestoreMsg.RESTORE_WI_FI2)));
+					errors.add(wm.restore(wifi2, userPref.get(RestoreMsg.RESTORE_WI_FI2)));
 				}
-				if((userPref.containsKey(RestoreMsg.RESTORE_WI_FI1) || config.at("/wifi/sta/is_open").asBoolean() || config.at("/wifi/sta/enable").asBoolean() == false) && currentConnection != Network.PRIMARY) {
+				JsonNode wifi = config.at("/wifi/sta");
+				if((userPref.containsKey(RestoreMsg.RESTORE_WI_FI1) || wifi.path("is_open").asBoolean() || wifi.path("enable").asBoolean() == false) && currentConnection != Network.PRIMARY) {
 					TimeUnit.MILLISECONDS.sleep(delay);
 					WIFIManagerG2 wm = new WIFIManagerG2(this, Network.PRIMARY, true);
-					errors.add(wm.restore(config.at("/wifi/sta"), userPref.get(RestoreMsg.RESTORE_WI_FI1)));
+					errors.add(wm.restore(wifi, userPref.get(RestoreMsg.RESTORE_WI_FI1)));
 				}
 				
 				TimeUnit.MILLISECONDS.sleep(delay);
@@ -552,7 +555,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 						(userPref.containsKey(RestoreMsg.RESTORE_WI_FI_AP) || apNode.path("is_open").asBoolean() || apNode.path("enable").asBoolean() == false)) {
 					errors.add(WIFIManagerG2.restoreAP_roam(this, config.get("wifi"), userPref.get(RestoreMsg.RESTORE_WI_FI_AP)));
 				} else {
-					errors.add(WIFIManagerG2.restoreRoam(this, config.get("wifi")));
+					errors.add(WIFIManagerG2.restoreRoam(this, config.get("wifi"))); // WIFIManagerG2.restoreAP_roam(...) also restore roam parameters
 				}
 			}
 			
@@ -574,7 +577,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 	}
 
 	// Shelly.GetConfig.json
-	protected void restoreCommonConfig(JsonNode config, final long delay, Map<RestoreMsg, String> userPref, List<String> errors) throws InterruptedException, IOException {
+	protected void restoreCommonConfig(JsonNode config, final long delay, Map<RestoreMsg, String> userPref, List<String> errors) throws InterruptedException {
 		ObjectNode outConfig = JsonNodeFactory.instance.objectNode();
 
 		// BLE.SetConfig
@@ -623,16 +626,16 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 		}
 		
 		final JsonNode mqtt = config.path("mqtt");
-		if(userPref.containsKey(RestoreMsg.RESTORE_MQTT) || mqtt.path("enable").asBoolean() == false || mqtt.path("user").asText("").isEmpty()) {
+		if(mqtt.isMissingNode() == false && userPref.containsKey(RestoreMsg.RESTORE_MQTT) || mqtt.path("enable").asBoolean() == false || mqtt.path("user").asString("").isEmpty()) {
 			TimeUnit.MILLISECONDS.sleep(delay);
 			errors.add(MQTTManagerG2.restore(this, mqtt, userPref.get(RestoreMsg.RESTORE_MQTT)));
 		}
 	}
 	
-	public static ObjectNode createIndexedRestoreNode(JsonNode backConfig, String type, int index) { // todo addon, input, switch
+	public static ObjectNode createIndexedRestoreNode(JsonNode backConfig, String type, int index) {
 		ObjectNode out = JsonNodeFactory.instance.objectNode();
 		out.put("id", index);
-		ObjectNode data = backConfig.get(type + ":" + index).deepCopy();
+		ObjectNode data = (ObjectNode)backConfig.get(type + ":" + index).deepCopy();
 		data.remove("id");
 		out.set("config", data);
 		return out;

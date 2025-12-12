@@ -4,12 +4,11 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.util.List;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
 import it.usna.shellyscan.model.device.ModulesHolder;
 import it.usna.shellyscan.model.device.meters.Meters;
 import it.usna.shellyscan.model.device.modules.DeviceModule;
 import it.usna.shellyscan.model.device.modules.MotionInterface;
+import tools.jackson.databind.JsonNode;
 
 public class ShellyMotion extends AbstractG1Device implements ModulesHolder {
 	public static final String ID = "SHMOS-01";
@@ -79,19 +78,19 @@ public class ShellyMotion extends AbstractG1Device implements ModulesHolder {
 	@Override
 	protected void fillStatus(JsonNode status) throws IOException {
 		super.fillStatus(status);
-		motion = status.get("sensor").get("motion").booleanValue();
-		bat = status.get("bat").get("value").intValue();
-		lux = status.get("lux").get("value").intValue();
+		motion = status.get("sensor").get("motion").booleanValue(false);
+		bat = status.get("bat").get("value").intValue(0);
+		lux = status.get("lux").get("value").intValue(0);
 	}
 
 	@Override
 	protected void restore(JsonNode settings, List<String> errors) throws IOException {
 		JsonNode motion = settings.path("motion");
-		String mSensitivity = motion.get("sensitivity").asText();
-		String mBlind = motion.get("blind_time_minutes").asText();
-		String mPulseCount = motion.get("pulse_count").asText();
-		String mOperatingMode = motion.get("operating_mode").asText();
-		String mEnabled = motion.get("enabled").asText();
+		String mSensitivity = motion.get("sensitivity").asString("");
+		String mBlind = motion.get("blind_time_minutes").asString("");
+		String mPulseCount = motion.get("pulse_count").asString("");
+		String mOperatingMode = motion.get("operating_mode").asString("");
+		String mEnabled = motion.get("enabled").asString("");
 		// sleep_time is a temporary parameter
 		errors.add(sendCommand("/settings?" + jsonNodeToURLPar(settings, "led_status_disable", "tamper_sensitivity", "dark_threshold", "twilight_threshold"/*, "temperature_offset"*/) +
 				"&motion.sensitivity=" + mSensitivity +

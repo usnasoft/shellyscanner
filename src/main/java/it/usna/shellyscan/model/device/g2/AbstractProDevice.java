@@ -1,16 +1,14 @@
 package it.usna.shellyscan.model.device.g2;
 
-import java.io.IOException;
 import java.net.InetAddress;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.RestoreMsg;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.JsonNode;
 
 public abstract class AbstractProDevice extends AbstractG2Device {
 
@@ -22,16 +20,16 @@ public abstract class AbstractProDevice extends AbstractG2Device {
 	public String[] getInfoRequests() {
 		return new String[] {
 				"/rpc/Shelly.GetDeviceInfo?ident=true", "/rpc/Shelly.GetConfig", "/rpc/Shelly.GetStatus", "/rpc/Shelly.CheckForUpdate", "/rpc/Schedule.List", "/rpc/Webhook.List",
-				"/rpc/Script.List", "/rpc/WiFi.ListAPClients" /*, "/rpc/Sys.GetStatus",*/, "/rpc/KVS.GetMany", "/rpc/Shelly.GetComponents", "/rpc/BLE.CloudRelay.ListInfos", "/rpc/KNX.GetConfig"};
+				"/rpc/Script.List", "/rpc/WiFi.ListAPClients", "/rpc/KVS.GetMany", "/rpc/Shelly.GetComponents", "/rpc/BLE.CloudRelay.ListInfos", "/rpc/KNX.GetConfig"};
 	}
 	
 	@Override
-	protected void restoreCommonConfig(JsonNode config, final long delay, Map<RestoreMsg, String> data, List<String> errors) throws InterruptedException, IOException {
+	protected void restoreCommonConfig(JsonNode config, final long delay, Map<RestoreMsg, String> data, List<String> errors) throws InterruptedException {
 		super.restoreCommonConfig(config, delay, data, errors);
 		errors.add(ethRestore(config.get("eth")));
 	}
 	
-	private String ethRestore(JsonNode eth) throws JsonProcessingException, InterruptedException {
+	private String ethRestore(JsonNode eth) throws JacksonException, InterruptedException {
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 		return postCommand("Eth.SetConfig", "{\"config\":" + jsonMapper.writeValueAsString(eth) + "}");
 	}

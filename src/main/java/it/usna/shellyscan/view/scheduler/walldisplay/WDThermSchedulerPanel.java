@@ -28,17 +28,15 @@ import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
 import javax.swing.filechooser.FileNameExtensionFilter;
-
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import it.usna.shellyscan.Main;
 import it.usna.shellyscan.controller.RestoreAction;
 import it.usna.shellyscan.controller.UsnaAction;
 import it.usna.shellyscan.controller.UsnaToggleAction;
 import it.usna.shellyscan.model.Devices;
-import it.usna.shellyscan.model.device.g2.WallDisplay;
+import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.g2.modules.ScheduleManagerThermWD;
 import it.usna.shellyscan.model.device.g2.modules.ScheduleManagerThermWD.Rule;
 import it.usna.shellyscan.model.device.g2.modules.ScheduleManagerThermWD.ThermProfile;
@@ -47,8 +45,10 @@ import it.usna.shellyscan.view.scheduler.CronUtils;
 import it.usna.shellyscan.view.util.Msg;
 import it.usna.shellyscan.view.util.ScannerProperties;
 import it.usna.swing.VerticalFlowLayout;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 
-public class WDThermSchedulerPanel extends JPanel {
+public class WDThermSchedulerPanel extends /*JPanel*/JSplitPane {
 	private static final long serialVersionUID = 1L;
 	private final ProfilesPanel profilesPanel;
 	private JPanel rulesPanel = new JPanel(/*new VerticalFlowLayout(VerticalFlowLayout.TOP, VerticalFlowLayout.CENTER, 0, 0)*/new GridLayout(0, 1, 0, 0));
@@ -58,18 +58,16 @@ public class WDThermSchedulerPanel extends JPanel {
 	private ArrayList<RemovedRule> removed = new ArrayList<>();
 	private int currentProfileId = -1;
 	private final JDialog parentDlg;
-//	private final WallDisplay device;
 
-	public WDThermSchedulerPanel(JDialog parent, WallDisplay device) {
-		setLayout(new BorderLayout());
+	public WDThermSchedulerPanel(JDialog parent, AbstractG2Device device) {
+		setOrientation(JSplitPane.VERTICAL_SPLIT);
 		this.parentDlg = parent;
-//		this.device = device;
 		this.wdSceduleManager = (device != null) ? new ScheduleManagerThermWD(device) : null; // device == null -> design
 		thermostat = new ThermostatG2(device);
 		
 		profilesPanel = new ProfilesPanel(parent, device, wdSceduleManager);
 		profilesPanel.setPreferredSize(new Dimension(getPreferredSize().width, 16 * 5));
-		add(profilesPanel, BorderLayout.NORTH);
+		setTopComponent(profilesPanel);
 		
 		profilesPanel.addPropertyChangeListener(ProfilesPanel.SELECTION_EVENT, propertyChangeEvent -> {
 			try {
@@ -114,11 +112,13 @@ public class WDThermSchedulerPanel extends JPanel {
 			try {
 				for(Rule r: rules.get((Integer)propertyChangeEvent.getOldValue())) {
 					String ts = r.getTimespec();
-					String[] frags = ts.split(" ");
-					r.setTimespec(frags[0] + " " + frags[1] + " " + frags[2] + " " + frags[3] + " " + frags[4] + " " + CronUtils.daysOfWeekAsString(frags[5]));
-					wdSceduleManager.create(r, newId);
-					r.setTimespec(ts);
-					TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+					if(ts != null) {
+						String[] frags = ts.split(" ");
+						r.setTimespec(frags[0] + " " + frags[1] + " " + frags[2] + " " + frags[3] + " " + frags[4] + " " + CronUtils.daysOfWeekAsString(frags[5]));
+						wdSceduleManager.create(r, newId);
+						r.setTimespec(ts);
+						TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+					}
 				}
 			} catch (IOException | InterruptedException e) {
 				Msg.errorMsg(parent, e);
@@ -134,8 +134,7 @@ public class WDThermSchedulerPanel extends JPanel {
 		
 		scrollPane.setViewportView(nPanel);
 		scrollPane.setBorder(BorderFactory.createEmptyBorder());
-		
-		add(scrollPane, BorderLayout.CENTER);
+		setBottomComponent(scrollPane);
 
 		// test & visual
 		if(device == null) {
@@ -176,7 +175,7 @@ public class WDThermSchedulerPanel extends JPanel {
 		addBtn.setContentAreaFilled(false);
 		addBtn.setBorder(BorderFactory.createEmptyBorder(2, 3, 2, 3));
 		
-		JButton removeBtn = new JButton(new UsnaAction(null, "schRemove", "/images/erase-9-16.png", e -> {
+		JButton removeBtn = new JButton(new UsnaAction(this, "schRemove", "/images/erase-9-16.png", e -> {
 			int i;
 			for(i = 0; rulesPanel.getComponent(i) != linePanel; i++);
 			rulesPanel.remove(i);
@@ -191,6 +190,7 @@ public class WDThermSchedulerPanel extends JPanel {
 			lineColors();
 			rulesPanel.revalidate();
 			rulesPanel.repaint(); // last one need this ... do not know why
+			try { TimeUnit.MILLISECONDS.sleep(200); } catch (InterruptedException e1) {} // a small time to show busy pointer
 		}));
 		removeBtn.setContentAreaFilled(false);
 		removeBtn.setBorder(BorderFactory.createEmptyBorder(2, 3, 2, 3));
@@ -206,7 +206,7 @@ public class WDThermSchedulerPanel extends JPanel {
 		duplicateBtn.setContentAreaFilled(false);
 		duplicateBtn.setBorder(BorderFactory.createEmptyBorder(2, 3, 2, 3));
 		
-		JButton copyBtn = new JButton(new UsnaAction(parentDlg, "schCopy", "/images/copy_trasp16.png", e -> {
+		JButton copyBtn = new JButton(new UsnaAction(this, "schCopy", "/images/copy_trasp16.png", e -> {
 			final Clipboard cb = Toolkit.getDefaultToolkit().getSystemClipboard();
 			StringSelection selection = new StringSelection(job.getJson().toString());
 			cb.setContents(selection, selection);
@@ -215,14 +215,14 @@ public class WDThermSchedulerPanel extends JPanel {
 		copyBtn.setContentAreaFilled(false);
 		copyBtn.setBorder(BorderFactory.createEmptyBorder(2, 3, 2, 3));
 
-		JButton pasteBtn = new JButton(new UsnaAction(parentDlg, "schPaste", "/images/paste_trasp16.png", e -> {
+		JButton pasteBtn = new JButton(new UsnaAction(this, "schPaste", "/images/paste_trasp16.png", e -> {
 			final Clipboard cb = Toolkit.getDefaultToolkit().getSystemClipboard();
 			try {
 				String sch = cb.getContents(this).getTransferData(DataFlavor.stringFlavor).toString();
 				final ObjectMapper jsonMapper = new ObjectMapper();
 
 				JsonNode pastedNode = jsonMapper.readTree(sch);
-				job.setCron(pastedNode.get("timespec").asText());
+				job.setCron(pastedNode.get("timespec").asString(""));
 				job.setTarget(pastedNode.get("target_C").floatValue());
 				job.revalidate();
 				try { TimeUnit.MILLISECONDS.sleep(200); } catch (InterruptedException e1) {} // a small time to show busy pointer
@@ -280,7 +280,7 @@ public class WDThermSchedulerPanel extends JPanel {
 			int numJobs = rulesPanel.getComponentCount();
 
 			// Validation
-			if(numJobs == 1) {
+			if(numJobs == 1 && rules.get(currentProfileId).get(0).getId() == null) { // one empty and not on the device (or deleted) in ok
 				ThermJobPanel sl = getThermPanel(0);
 				if(sl.isNullJob() == false && sl.validateData() == false) {
 					return false;
@@ -356,6 +356,7 @@ public class WDThermSchedulerPanel extends JPanel {
 	
 	public void refresh() {
 		rules.clear();
+		removed.clear();
 		profilesPanel.refresh(); // the profile will be selected again so rules will be fetched again
 	}
 	
@@ -377,7 +378,7 @@ public class WDThermSchedulerPanel extends JPanel {
 				if(files.containsKey("Thermostat.Schedule.ListProfiles.json")) { // WD backup
 					JsonNode profilesNode = files.get("Thermostat.Schedule.ListProfiles.json").path("profiles");
 					ArrayList<ThermProfile> profiles = new ArrayList<>();
-					profilesNode.forEach(node -> profiles.add(new ThermProfile(node.get("id").intValue(), node.get("name").textValue())) );
+					profilesNode.forEach(node -> profiles.add(new ThermProfile(node.get("id").intValue(0), node.get("name").asString(""))) );
 					if(profiles.size() > 0) {
 						ThermProfile loadProfile = (ThermProfile)JOptionPane.showInputDialog(this, LABELS.getString("dlgProfileSelectionMsg"), LABELS.getString("dlgProfileSelectionTitle"), JOptionPane.PLAIN_MESSAGE, null, profiles.toArray(), null);
 						if(loadProfile != null) {
@@ -386,8 +387,8 @@ public class WDThermSchedulerPanel extends JPanel {
 								if(rulesPanel.getComponentCount() == 1 && getThermPanel(0).isNullJob()) {
 									rulesPanel.remove(0);
 								}
-								addJob(false, jsonRule.get("timespec").textValue(), jsonRule.get("target_C").floatValue(), Integer.MAX_VALUE);
-								addRule(false, jsonRule.get("timespec").textValue(), jsonRule.get("target_C").floatValue(), Integer.MAX_VALUE);
+								addJob(false, jsonRule.get("timespec").asString(""), jsonRule.get("target_C").floatValue(), Integer.MAX_VALUE);
+								addRule(false, jsonRule.get("timespec").asString(""), jsonRule.get("target_C").floatValue(), Integer.MAX_VALUE);
 							}
 						}
 					} else {
@@ -396,12 +397,12 @@ public class WDThermSchedulerPanel extends JPanel {
 				} else if(files.containsKey("TRV.ListScheduleRules.json")) { // BLU TRV backup
 					JsonNode schNode = files.get("TRV.ListScheduleRules.json").get("rules");
 					for(JsonNode jsonRule: schNode) {
-						if(jsonRule.hasNonNull("target_C") && jsonRule.get("timespec").textValue().startsWith("@") == false) { // do nothing on "pos" or @(sunset|sunrise)
+						if(jsonRule.hasNonNull("target_C") && jsonRule.get("timespec").asString("").startsWith("@") == false) { // do nothing on "pos" or @(sunset|sunrise)
 							if(rulesPanel.getComponentCount() == 1 && getThermPanel(0).isNullJob()) {
 								rulesPanel.remove(0);
 							}
-							addJob(false, jsonRule.get("timespec").textValue(), jsonRule.get("target_C").floatValue(), Integer.MAX_VALUE);
-							addRule(false, jsonRule.get("timespec").textValue(), jsonRule.get("target_C").floatValue(), Integer.MAX_VALUE);
+							addJob(false, jsonRule.get("timespec").asString(""), jsonRule.get("target_C").floatValue(), Integer.MAX_VALUE);
+							addRule(false, jsonRule.get("timespec").asString(""), jsonRule.get("target_C").floatValue(), Integer.MAX_VALUE);
 						}
 					}
 				} else {

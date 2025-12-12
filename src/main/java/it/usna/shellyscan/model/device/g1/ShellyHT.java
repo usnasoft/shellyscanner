@@ -4,9 +4,8 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.util.List;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
 import it.usna.shellyscan.model.device.meters.Meters;
+import tools.jackson.databind.JsonNode;
 
 public class ShellyHT extends AbstractBatteryG1Device {
 	public static final String ID = "SHHT-1";
@@ -60,8 +59,8 @@ public class ShellyHT extends AbstractBatteryG1Device {
 		super.fillStatus(status);
 		this.stStatus = status;
 		temp = status.get("tmp").get("tC").floatValue();
-		humidity = status.get("hum").get("value").intValue();
-		bat = status.get("bat").get("value").intValue();
+		humidity = status.get("hum").get("value").intValue(0);
+		bat = status.get("bat").get("value").intValue(0);
 	}
 
 //	public float getTemp() {
@@ -83,6 +82,6 @@ public class ShellyHT extends AbstractBatteryG1Device {
 		errors.add(sendCommand("/settings?" +
 				jsonNodeToURLPar(settings, "external_power", "temperature_offset", "humidity_offset") + "&" +
 				jsonNodeToURLPar(sensors, "temperature_threshold", "humidity_threshold") + "&" +
-				"temperature_units=" + sensors.get("temperature_unit").asText())); // temperature_units vs temperature_unit !!!
+				"temperature_units=" + sensors.get("temperature_unit").asString(""))); // temperature_units vs temperature_unit !!!
 	}
 }

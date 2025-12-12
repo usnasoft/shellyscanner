@@ -13,7 +13,6 @@ import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
-import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
@@ -44,8 +43,10 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 
 	// Generic
 	static final ImageIcon EDIT_IMG = new ImageIcon(DevicesCommandCellRenderer.class.getResource("/images/Write16.png"));
-	static final ImageIcon UP_IMG = new ImageIcon(DevicesCommandCellRenderer.class.getResource("/images/Arrow16up.png"));
 	static final ImageIcon DOWN_IMG = new ImageIcon(DevicesCommandCellRenderer.class.getResource("/images/Arrow16down.png"));
+	static final ImageIcon UP_IMG = new ImageIcon(DevicesCommandCellRenderer.class.getResource("/images/Arrow16up.png"));
+	static final ImageIcon DOWN_ON_IMG = new ImageIcon(DevicesCommandCellRenderer.class.getResource("/images/Arrow16down_on.png"));
+	static final ImageIcon UP_ON_IMG = new ImageIcon(DevicesCommandCellRenderer.class.getResource("/images/Arrow16up_on.png"));
 	static final ImageIcon STOP_IMG = new ImageIcon(DevicesCommandCellRenderer.class.getResource("/images/PlayerStop16.png"));
 	private JButton onOffButton0 = new JButton();
 	private JLabel label0 = new JLabel();
@@ -83,32 +84,31 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 	@Override
 	public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
 		try {
-			final JComponent ret;
 			final Color foregroundColor = isSelected ? table.getSelectionForeground() : table.getForeground();
 			if(value instanceof RelayInterface[] riArray) {
 				stackedPanel.removeAll();
 				for(int i = 0; i < riArray.length; i++) { // 1, 1PM, EM, 2.5 ...
 					stackedPanel.add(getRelayPanel(riArray[i], foregroundColor, i == 0));
 				}
-				ret = stackedPanel;
+				return stackedPanel;
 			} else if(value instanceof RollerInterface[] rollers) { // 2.5 ...
 				stackedPanel.removeAll();
 				for(int i = 0; i < rollers.length; i++) { // 1, 1PM, EM, 2.5 ...
 					stackedPanel.add(getRollerPanel(rollers[i], foregroundColor, i == 0));
 				}
-				ret = stackedPanel;
+				return stackedPanel;
 			} else if(value instanceof RGBCCTInterface[] lights) { // RGBW Bulbs
-				ret = getRGBCCTPanel(lights[0], foregroundColor, true, true);
+				return getRGBCCTPanel(lights[0], foregroundColor, true, true);
 			} else if(value instanceof RGBWInterface[] rgbs) { // RGBs
-				ret = getRGBWPanel(rgbs[0], foregroundColor, true, true);
+				return getRGBWPanel(rgbs[0], foregroundColor, true, true);
 			} else if(value instanceof RGBInterface[] rgbs) { // RGBs
-				ret = getRGBPanel(rgbs[0], foregroundColor, true, true);
+				return getRGBPanel(rgbs[0], foregroundColor, true, true);
 			} else if(value instanceof WhiteInterface[] lights && lights.length == 1) { // Dimmable (CCT) white
-				ret = getWhitePanel(lights[0], foregroundColor, true, lights[0] instanceof CCTInterface);
+				return getWhitePanel(lights[0], foregroundColor, true, lights[0] instanceof CCTInterface);
 			} else if(value instanceof ThermostatG1 thermostat) { // TRV gen1
-				ret = getThermostatG1Panel(thermostat, foregroundColor);
+				return getThermostatG1Panel(thermostat, foregroundColor);
 			} else if(value instanceof ThermostatInterface[] thermostats) {
-				ret = getThermostatPanel(thermostats[0], foregroundColor);
+				return getThermostatPanel(thermostats[0], foregroundColor);
 			} else if(value instanceof DeviceModule[] modArray) { // mixed modules
 				stackedPanel.removeAll();
 				for(int i = 0; i < modArray.length; i++) {
@@ -130,13 +130,12 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 						stackedPanel.add(motionLabel);
 					}
 				}
-				ret = stackedPanel;
+				return stackedPanel;
 			} else {
 				labelPlain.setText(value == null ? "" : value.toString());
 				labelPlain.setForeground(foregroundColor);
-				ret = labelPlain;
+				return labelPlain;
 			}
-			return ret;
 		} catch(Exception e) {
 			LOG.error("rendering error", e);
 			labelPlain.setText("--");
@@ -146,7 +145,8 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 
 	private JPanel getRelayPanel(RelayInterface rel, final Color foregroundColor, boolean ind0) {
 		JPanel relayPanel = new JPanel(new BorderLayout());
-		final JLabel relayLabel;// = new JLabel(rel.getLabel());
+		relayPanel.setOpaque(false);
+		final JLabel relayLabel;
 		final JButton button;
 		if(ind0) {
 			relayLabel = label0;
@@ -166,7 +166,6 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 		relayButtonPanel.setOpaque(false);
 		relayButtonPanel.add(button);
 
-		relayPanel.setOpaque(false);
 		relayPanel.add(relayLabel, BorderLayout.CENTER);
 		relayPanel.add(relayButtonPanel, BorderLayout.EAST);
 		if(rel.isOn()) {
@@ -176,7 +175,6 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 			button.setText(LABEL_OFF);
 			button.setBackground(BUTTON_OFF_BG_COLOR);
 		}
-//		button.setForeground(rel.isInputOn() ? BUTTON_ON_FG_COLOR : null);
 		return relayPanel;
 	}
 	
@@ -191,8 +189,8 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 		rollerButtonPanel.setOpaque(false);
 		rollerPanel.add(rollerLabel, BorderLayout.CENTER);
 		rollerSouthPanel.add(rollerButtonPanel, BorderLayout.EAST);
-		JButton rollerButtonUp = new JButton(UP_IMG);
-		JButton rollerButtonDown = new JButton(DOWN_IMG);
+		JButton rollerButtonUp = new JButton(roller.isInputOn0() ? DevicesCommandCellRenderer.UP_ON_IMG : DevicesCommandCellRenderer.UP_IMG);
+		JButton rollerButtonDown = new JButton(roller.isInputOn1() ? DevicesCommandCellRenderer.DOWN_ON_IMG : DevicesCommandCellRenderer.DOWN_IMG);
 		JButton rollerButtonStop = new JButton(STOP_IMG);
 		rollerButtonUp.setBorder(BorderFactory.createEmptyBorder());
 		rollerButtonStop.setBorder(BorderFactory.createEmptyBorder());
@@ -211,7 +209,6 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 			rollerLabel.setText(roller.getLabel());
 		}
 		rollerLabel.setForeground(foregroundColor);
-//		rollerPanel.setPreferredSize(new Dimension(500, rollerPanel.getPreferredSize().height));
 		return rollerPanel;
 	}
 	
@@ -259,7 +256,7 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 	private JPanel getRGBSyntheticPanel(RGBInterface rgb, final Color foregroundColor, boolean ind0, boolean addEditButton) {
 		final JPanel panel = new JPanel(new BorderLayout());
 		panel.setOpaque(false);
-		final JLabel label;// = new JLabel(rgb.getLabel() + " " + rgb.getGain() + "%");
+		final JLabel label;
 		JButton button;
 		if(ind0) {
 			button = onOffButton0;

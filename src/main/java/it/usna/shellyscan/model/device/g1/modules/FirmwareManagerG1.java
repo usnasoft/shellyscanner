@@ -2,12 +2,11 @@ package it.usna.shellyscan.model.device.g1.modules;
 
 import java.util.concurrent.TimeUnit;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.BatteryDeviceInterface;
 import it.usna.shellyscan.model.device.g1.AbstractG1Device;
 import it.usna.shellyscan.model.device.modules.FirmwareManager;
+import tools.jackson.databind.JsonNode;
 
 public class FirmwareManagerG1 implements FirmwareManager {
 	private static final String STATUS_UPDATING = "updating";
@@ -30,12 +29,12 @@ public class FirmwareManagerG1 implements FirmwareManager {
 			d.sendCommand("/ota/check");
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			JsonNode otaNode = d.getJSON("/ota");
-			updating = STATUS_UPDATING.equals(otaNode.get("status").asText());
-			current = otaNode.get("old_version").asText();
-			stable = otaNode.get("has_update").booleanValue() ? otaNode.get("new_version").asText() : null;
+			updating = STATUS_UPDATING.equals(otaNode.get("status").asString(""));
+			current = otaNode.get("old_version").asString("");
+			stable = otaNode.get("has_update").booleanValue(false) ? otaNode.get("new_version").asString("") : null;
 			final JsonNode betaNode = otaNode.get("beta_version");
-			boolean hasBeta = betaNode != null && betaNode.asText().equals(current) == false;
-			beta = hasBeta ? betaNode.asText() : null;
+			boolean hasBeta = betaNode != null && betaNode.asString("").equals(current) == false;
+			beta = hasBeta ? betaNode.asString("") : null;
 			valid = true;
 		} catch(/*IO*/Exception e) {
 			valid = updating = false;
@@ -44,13 +43,13 @@ public class FirmwareManagerG1 implements FirmwareManager {
 				JsonNode node = batteryDevice.getStoredJSON("/status");
 				if(node != null) {
 					node = node.get("update");
-					current = node.get("old_version").asText();
-					stable = node.get("has_update").booleanValue() ? node.get("new_version").asText() : null;
+					current = node.get("old_version").asString("");
+					stable = node.get("has_update").booleanValue(false) ? node.get("new_version").asString("") : null;
 					final JsonNode betaNode = node.get("beta_version");
-					boolean hasBeta = betaNode != null && betaNode.asText().equals(current) == false;
-					beta = hasBeta ? betaNode.asText() : null;
+					boolean hasBeta = betaNode != null && betaNode.asString("").equals(current) == false;
+					beta = hasBeta ? betaNode.asString("") : null;
 				} else if((node = batteryDevice.getStoredJSON("/shelly")) != null) {
-					current = node.path("fw").asText();
+					current = node.path("fw").asString("");
 				}
 			}
 		}

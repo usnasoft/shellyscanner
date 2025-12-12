@@ -7,11 +7,10 @@ import java.util.concurrent.TimeUnit;
 
 import org.eclipse.jetty.client.HttpClient;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.ShellyUnmanagedDeviceInterface;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.JsonNode;
 
 public class ShellyG1Unmanaged extends AbstractG1Device implements ShellyUnmanagedDeviceInterface {
 	private String type;
@@ -30,7 +29,7 @@ public class ShellyG1Unmanaged extends AbstractG1Device implements ShellyUnmanag
 		name = "";
 		if(e instanceof IOException && "Status-401".equals(e.getMessage())) {
 			status = Status.NOT_LOOGGED;
-		} else if(e instanceof IOException && e instanceof JsonProcessingException == false) { // JsonProcessingException extends IOException
+		} else if(e instanceof IOException && e instanceof JacksonException == false) { // JsonProcessingException extends IOException
 			status = Status.OFF_LINE;
 		} else {
 			status = Status.ERROR;
@@ -45,8 +44,8 @@ public class ShellyG1Unmanaged extends AbstractG1Device implements ShellyUnmanag
 	protected void init() { // try to retrieve minimal information set
 		try {
 			JsonNode settings = getJSON("/settings");
-			this.hostname = settings.get("device").get("hostname").asText("");
-			this.type = settings.get("device").get("type").asText();
+			this.hostname = settings.get("device").get("hostname").asString("");
+			this.type = settings.get("device").get("type").asString("");
 			fillSettings(settings);
 			try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e) {}
 			fillStatus(getJSON("/status"));

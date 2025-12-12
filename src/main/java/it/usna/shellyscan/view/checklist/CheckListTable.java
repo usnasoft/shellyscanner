@@ -6,10 +6,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
 import java.util.Comparator;
-import java.util.List;
-import java.util.stream.Collectors;
 
-import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.SortOrder;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -17,7 +14,6 @@ import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableRowSorter;
 
 import it.usna.shellyscan.Main;
-import it.usna.shellyscan.model.device.InetAddressAndPort;
 import it.usna.shellyscan.model.device.blu.BluInetAddressAndPort;
 import it.usna.shellyscan.view.DevicesTable;
 import it.usna.swing.table.ExTooltipTable;
@@ -39,7 +35,8 @@ class CheckListTable extends ExTooltipTable {
 	public static final int COL_WIFI2 = 10;
 	public static final int COL_EXTENDER = 11;
 	public static final int COL_SCRIPTS = 12;
-	public static final int COL_LAST = COL_SCRIPTS;
+	public static final int COL_AUTO_FW_UPDATE = 13;
+	public static final int COL_LAST = COL_AUTO_FW_UPDATE;
 	
 	public CheckListTable(UsnaTableModel tModel, final SortOrder ipSort) {
 		super(tModel, true);
@@ -49,7 +46,7 @@ class CheckListTable extends ExTooltipTable {
 		setHeadersTooltip(
 				LABELS.getString("col_status_exp"), null, null, LABELS.getString("col_eco_tooltip"), LABELS.getString("col_ledoff_tooltip"), LABELS.getString("col_logs_tooltip"),
 				LABELS.getString("col_blt_tooltip"), LABELS.getString("col_AP_tooltip"), LABELS.getString("col_roaming_tooltip"), LABELS.getString("col_wifi1_tooltip"),
-				LABELS.getString("col_wifi2_tooltip"), LABELS.getString("col_extender_tooltip"), LABELS.getString("col_scripts_tooltip"));
+				LABELS.getString("col_wifi2_tooltip"), LABELS.getString("col_extender_tooltip"), LABELS.getString("col_scripts_tooltip"), LABELS.getString("col_auto_fw_update_tooltip"));
 
 		TableCellRenderer rendTrueOk = new CheckRenderer(true);
 		TableCellRenderer rendFalseOk = new CheckRenderer(false);
@@ -64,10 +61,11 @@ class CheckListTable extends ExTooltipTable {
 		columnModel.getColumn(COL_WIFI2).setCellRenderer(rendTrueOk);
 		columnModel.getColumn(COL_EXTENDER).setCellRenderer(new StringJudgedRenderer("0", CheckListView.FALSE_STR));
 		columnModel.getColumn(COL_SCRIPTS).setCellRenderer(new StringJudgedRenderer(null, null));
+		columnModel.getColumn(COL_AUTO_FW_UPDATE).setCellRenderer(new StringJudgedRenderer(null, null));
 
 		TableRowSorter<?> rowSorter = ((TableRowSorter<?>) getRowSorter());
 		rowSorter.setSortsOnUpdates(true);
-		final Comparator<?> sorter = (o1, o2) -> { // null, Boolean, String
+		final Comparator<?> sorter = (o1, o2) -> { // use when there is a mix: null, Boolean, String
 			String s1 = o1 == null ? "" : o1.toString();
 			String s2 = o2 == null ? "" : o2.toString();
 			return s1.compareTo(s2);
@@ -81,7 +79,7 @@ class CheckListTable extends ExTooltipTable {
 		rowSorter.setComparator(COL_WIFI1, sorter);
 		rowSorter.setComparator(COL_WIFI2, sorter);
 		rowSorter.setComparator(COL_EXTENDER, sorter);
-		rowSorter.setComparator(COL_SCRIPTS, sorter);
+//		rowSorter.setComparator(COL_SCRIPTS, sorter);
 
 		if (ipSort != SortOrder.UNSORTED) {
 			sortByColumn(COL_IP, ipSort);
@@ -109,26 +107,26 @@ class CheckListTable extends ExTooltipTable {
 
 		@Override
 		public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-			JLabel ret = (JLabel)super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+			super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 			if(value == null) {
-				ret.setText(CheckListView.NOT_APPLICABLE_STR);
+				setText(CheckListView.NOT_APPLICABLE_STR);
 				if (isSelected == false) {
-					ret.setForeground(table.getForeground());
+					setForeground(table.getForeground());
 				}
 			} else if(value.toString().equals(redValue)) {
-				ret.setForeground(Color.red);
+				setForeground(Color.red);
 				if (isSelected) {
-					ret.setFont(ret.getFont().deriveFont(Font.BOLD));
+					setFont(getFont().deriveFont(Font.BOLD));
 				}
 			} else if(value.toString().equals(greenValue)) {
-				ret.setForeground(GREEN_OK);
+				setForeground(GREEN_OK);
 				if (isSelected) {
-					ret.setFont(ret.getFont().deriveFont(Font.BOLD));
+					setFont(getFont().deriveFont(Font.BOLD));
 				}
 			} else if (isSelected == false) {
-				ret.setForeground(table.getForeground());
+				setForeground(table.getForeground());
 			}
-			return ret;
+			return this;
 		}
 	}
 
@@ -142,25 +140,24 @@ class CheckListTable extends ExTooltipTable {
 
 		@Override
 		public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-			Component ret;
 			if (value instanceof Boolean val) {
 				if (val) {
-					ret = super.getTableCellRendererComponent(table, CheckListView.TRUE_STR, isSelected, hasFocus, row, column);
-					ret.setForeground(goodVal ? GREEN_OK : Color.red);
+					super.getTableCellRendererComponent(table, CheckListView.TRUE_STR, isSelected, hasFocus, row, column);
+					setForeground(goodVal ? GREEN_OK : Color.red);
 				} else {
-					ret = super.getTableCellRendererComponent(table, CheckListView.FALSE_STR, isSelected, hasFocus, row, column);
-					ret.setForeground(goodVal ? Color.red : GREEN_OK);
+					super.getTableCellRendererComponent(table, CheckListView.FALSE_STR, isSelected, hasFocus, row, column);
+					setForeground(goodVal ? Color.red : GREEN_OK);
 				}
 				if (isSelected) {
-					ret.setFont(ret.getFont().deriveFont(Font.BOLD));
+					setFont(getFont().deriveFont(Font.BOLD));
 				}
 			} else {
-				ret = super.getTableCellRendererComponent(table, value == null ? CheckListView.NOT_APPLICABLE_STR : value, isSelected, hasFocus, row, column);
+				super.getTableCellRendererComponent(table, value == null ? CheckListView.NOT_APPLICABLE_STR : value, isSelected, hasFocus, row, column);
 				if (isSelected == false) {
-					ret.setForeground(table.getForeground());
+					setForeground(table.getForeground());
 				}
 			}
-			return ret;
+			return this;
 		}
 	}
 	
@@ -169,18 +166,17 @@ class CheckListTable extends ExTooltipTable {
 
 		@Override
 		public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-			JLabel ret = (JLabel)super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-			List<InetAddressAndPort> parents;
-			if(value instanceof BluInetAddressAndPort bluAddr && (parents = bluAddr.getAlternativeParents()).size() > 0) {
-				ret.setText(bluAddr.getRepresentation() + parents.stream().map(InetAddressAndPort::getRepresentation).collect(Collectors.joining(" / ", " / ", "")));
-				ret.setForeground(Color.red);
+			super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+			if(value instanceof BluInetAddressAndPort bluAddr && bluAddr.getAlternativeParents().size() > 0) {
+				setText(bluAddr.getParentsAsString());
+				setForeground(Color.red);
 				if (isSelected) {
-					ret.setFont(ret.getFont().deriveFont(Font.BOLD));
+					setFont(getFont().deriveFont(Font.BOLD));
 				}
 			} else if (isSelected == false) {
-				ret.setForeground(table.getForeground());
+				setForeground(table.getForeground());
 			}
-			return ret;
+			return this;
 		}
 	}
 }

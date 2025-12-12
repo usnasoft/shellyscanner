@@ -4,12 +4,9 @@ import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Image;
 import java.awt.Toolkit;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Base64;
 import java.util.ResourceBundle;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.swing.SwingUtilities;
 
@@ -17,11 +14,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.simple.SimpleLogger;
 
+import it.usna.shellyscan.controller.CLIController;
 import it.usna.shellyscan.controller.DeferrablesContainer;
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.DevicesFactory;
 import it.usna.shellyscan.model.IPCollection;
-import it.usna.shellyscan.model.NonInteractiveDevices;
 import it.usna.shellyscan.view.DevicesTable;
 import it.usna.shellyscan.view.MainView;
 import it.usna.shellyscan.view.chart.ChartType;
@@ -38,32 +35,30 @@ public class Main {
 		System.setProperty("apple.eawt.quitStrategy", "CLOSE_ALL_WINDOWS"); // macOS specific - cmd-Q / -Dapple.eawt.quitStrategy=CLOSE_ALL_WINDOWS
 	}
 	public static final String APP_NAME = "Shelly Scanner";
-	public static final String VERSION = "1.3.0";
-	public static final String VERSION_CODE = "001.003.000r200"; // r0xx alpha; r1xx beta; r2xx stable
+	public static final String VERSION = "1.3.1";
+	public static final String VERSION_CODE = "001.003.001r200"; // r0xx alpha; r1xx beta; r2xx stable
 	public static final Image ICON = Toolkit.getDefaultToolkit().createImage(Main.class.getResource("/images/ShSc24.png"));
 	public static final String BACKUP_FILE_EXT = "sbk";
 	public static final String ARCHIVE_FILE_EXT = "arc";
 
 	public static final ResourceBundle LABELS = ResourceBundle.getBundle("LabelsBundle");
-//	public static final Color BG_COLOR = new Color(50, 60, 65);
 	public static final Color BG_COLOR = new Color(60, 70, 90);
 	public static final Color TAB_LINE1_COLOR = new Color(240, 240, 240);
-//	public static final Color TAB_LINE2 = new Color(160, 180, 255);
 	public static final Color TAB_LINE2_COLOR = new Color(210, 218, 255);
-//	public static final Color STATUS_LINE = new Color(200, 220, 255);
 	public static final Color STATUS_LINE_COLOR = new Color(172, 195, 230);
 	public static final String TAB_VERSION = "5"; // on version change reset table settings
-
-	private static final String IP_SCAN_PAR_FORMAT = "^((?:(?:0|1\\d?\\d?|2[0-4]?\\d?|25[0-5]?|[3-9]\\d?)\\.){2}(?:0|1\\d?\\d?|2[0-4]?\\d?|25[0-5]?|[3-9]\\d?))\\.(0|1\\d?\\d?|2[0-4]?\\d?|25[0-5]?|[3-9]\\d?)-(0|1\\d?\\d?|2[0-4]?\\d?|25[0-5]?|[3-9]\\d?)$";
 
 	public static void main(final String ... args) {
 		// System.setProperty(SimpleLogger.DEFAULT_LOG_LEVEL_KEY, "error");
 		System.setProperty(SimpleLogger.LOG_KEY_PREFIX + "javax.jmdns", "warn");
 		System.setProperty(SimpleLogger.LOG_KEY_PREFIX + "org.eclipse.jetty", "warn");
 		System.setProperty(SimpleLogger.SHOW_DATE_TIME_KEY, "true");
-		final Logger LOG = LoggerFactory.getLogger(Main.class);
-		LOG.info(APP_NAME + " " + VERSION_CODE);
-//		LOG.debug(Runtime.version().toString() + " / " + System.getProperties().getProperty("java.vendor"));
+		final Logger logger = LoggerFactory.getLogger(Main.class);
+		
+		logger.info(APP_NAME + " " + VERSION_CODE);
+		if(logger.isDebugEnabled()) {
+			logger.debug("Runnnning on: " + System.getProperty("os.name") + "; java version: " + Runtime.version().toString() + " / " + System.getProperties().getProperty("java.vendor"));
+		}
 
 		final ScannerProperties appProp = ScannerProperties.init(Path.of(System.getProperty("user.home"), ".shellyScanner"));
 
@@ -79,27 +74,7 @@ public class Main {
 		} else if(cli.hasEntry("-localscan", "-local") >= 0) {
 			fullScan = false;
 		} else if((cliIndex = cli.hasEntry("-ipscan", "-ipscan0", "-ip", "-ip0")) >= 0) {
-			try {
-				final Pattern ipRangePattern = Pattern.compile(IP_SCAN_PAR_FORMAT);
-				Matcher m = ipRangePattern.matcher(cli.getParameter(cliIndex));
-				m.find();
-				String baseIPPar = m.group(1);
-				int firstIP = Integer.parseInt(m.group(2));
-				int lastIP = Integer.parseInt(m.group(3));
-				ipCollection = new IPCollection();
-				ipCollection.add(baseIPPar, firstIP, lastIP);
-				for(int i = 1; (cliIndex = cli.hasEntry("-ipscan" + i, "-ip" + i)) >= 0; i++) {
-					m = ipRangePattern.matcher(cli.getParameter(cliIndex));
-					m.find();
-					baseIPPar = m.group(1);
-					firstIP = Integer.parseInt(m.group(2));
-					lastIP = Integer.parseInt(m.group(3));
-					ipCollection.add(baseIPPar, firstIP, lastIP);
-				}
-			} catch (Exception e) {
-				System.err.println("Wrong parameter format; example: -ipscan 192.168.1.1-254");
-				System.exit(1);
-			}
+			ipCollection = CLIController.getIPCollection(cli, cliIndex);
 		} else if((cliIndex = cli.hasEntry("-noscan")) >= 0) { // only archive (it's actually an IP scan with firstIP > lastIP)
 			ipCollection = new IPCollection();
 		} else {
@@ -132,52 +107,11 @@ public class Main {
 
 		// Non interactive commands
 		if((cliIndex = cli.hasEntry("-backup")) >= 0) {
-			final String path = cli.getParameter(cliIndex);
-			if(path == null) {
-				System.err.println("mandatory parameter after -backup (must be an existing path)");
-				System.exit(1);
-			}
-			Path dirPath = Path.of(path);
-			if(path == null || Files.exists(dirPath) == false || Files.isDirectory(dirPath) == false) {
-				System.err.println("parameter after -backup must be an existing path");
-				System.exit(1);
-			}
-			// look for unused CLI entries
-			if(cli.unused().length > 0) {
-				System.err.println("Wrong parameter(s): " + String.join("; ", cli.unused()));
-				System.exit(10);
-			}
-			LOG.info("Backup devices in {}", path);
-			try (NonInteractiveDevices model = (ipCollection == null) ? new NonInteractiveDevices(fullScan) : new NonInteractiveDevices(ipCollection)) {
-				model.execute(d -> {
-					try {
-						d.backup(Path.of(path, d.getHostname().replaceAll("[^\\w_-]+", "_") + "." + Main.BACKUP_FILE_EXT));
-						System.out.println(d.getHostname() + " success");
-					} catch (Exception e) {
-						System.out.println(d.getHostname() + " error - " + e.toString());
-					}
-				});
-				LOG.info("Backup end");
-				System.exit(0);
-			} catch (Exception e) {
-				e.printStackTrace();
-				System.exit(1);
-			}
-		} else if(cli.hasEntry("-list") >= 0) {
-			// look for unused CLI entries
-			if(cli.unused().length > 0) {
-				System.err.println("Wrong parameter(s): " + String.join("; ", cli.unused()));
-				System.exit(10);
-			}
-			LOG.info("Retriving list ...");
-			try (NonInteractiveDevices model = (ipCollection == null) ? new NonInteractiveDevices(fullScan) : new NonInteractiveDevices(ipCollection)) {
-				model.execute(d -> System.out.println(d));
-				LOG.info("List end");
-				System.exit(0);
-			} catch (Exception e) {
-				e.printStackTrace();
-				System.exit(1);
-			}
+			CLIController.backup(cli, cliIndex, ipCollection, fullScan, logger);
+		} else if((cliIndex = cli.hasEntry("-restore")) >= 0) {
+			CLIController.restore(cli, cliIndex, ipCollection, fullScan, logger);
+		} else if((cliIndex = cli.hasEntry("-list")) >= 0) {
+			CLIController.list(cli, cliIndex, ipCollection, fullScan, logger);
 		}
 
 		// Activate dynamic model - Go interactive

@@ -9,10 +9,6 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.zip.ZipOutputStream;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.ModulesHolder;
 import it.usna.shellyscan.model.device.RestoreMsg;
@@ -22,12 +18,16 @@ import it.usna.shellyscan.model.device.g2.modules.ScheduleManagerThermWD;
 import it.usna.shellyscan.model.device.g2.modules.ThermostatG2;
 import it.usna.shellyscan.model.device.meters.Meters;
 import it.usna.shellyscan.model.device.modules.DeviceModule;
+import it.usna.shellyscan.model.device.modules.DisplayInterface;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.JsonNodeFactory;
+import tools.jackson.databind.node.ObjectNode;
 
 /**
  * Shelly Wall Display
  * @author usna
  */
-public class WallDisplay extends AbstractG2Device implements ModulesHolder {
+public class WallDisplay extends AbstractG2Device implements DisplayInterface, ModulesHolder {
 	public static final String ID = "WallDisplay";
 	private static final Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.T, Meters.Type.H, Meters.Type.L};
 	private float temp;
@@ -106,7 +106,7 @@ public class WallDisplay extends AbstractG2Device implements ModulesHolder {
 		super.fillStatus(status);
 		temp = status.path("temperature:0").path("tC").floatValue();
 		humidity = status.path("humidity:0").path("rh").floatValue();
-		lux = status.path("illuminance:0").path("lux").intValue();
+		lux = status.path("illuminance:0").path("lux").intValue(0);
 		if(relay != null) {
 			relay.fillStatus(status.get("switch:0"), status.get("input:0"));
 		} else {
@@ -116,20 +116,18 @@ public class WallDisplay extends AbstractG2Device implements ModulesHolder {
 	
 	@Override
 	public String[] getInfoRequests() {
-		if(relay != null) {
-			return super.getInfoRequests();
-		} else {
-			ArrayList<String> l = new ArrayList<>(Arrays.asList(
-					"/rpc/Shelly.GetDeviceInfo?ident=true", "/rpc/Shelly.GetConfig", "/rpc/Shelly.GetStatus", "/rpc/Shelly.CheckForUpdate", "/rpc/Schedule.List", "/rpc/Webhook.List",
-					"/rpc/Script.List", "/rpc/WiFi.ListAPClients" /*, "/rpc/Sys.GetStatus",*/, "/rpc/KVS.GetMany", "/rpc/Shelly.GetComponents",
-					"/rpc/Thermostat.Schedule.ListProfiles?id=0"));
+		if(thermostat != null) {
+			ArrayList<String> l = new ArrayList<>(Arrays.asList(super.getInfoRequests()));
+			l.add("/rpc/Thermostat.Schedule.ListProfiles?id=0");
 			try {
 				JsonNode profiles = getJSON("/rpc/Thermostat.Schedule.ListProfiles?id=0").get("profiles");
 				for(JsonNode p: profiles) {
-					l.add("(Thermostat.Schedule.ListRules [" + p.path("name").asText() + "])/rpc/Thermostat.Schedule.ListRules?id=0&profile_id=" + p.get("id").asText());
+					l.add("(Thermostat.Schedule.ListRules [" + p.path("id").asString(null) + "])/rpc/Thermostat.Schedule.ListRules?id=0&profile_id=" + p.get("id").asString(null));
 				}
 			} catch (IOException e) {}
 			return l.toArray(String[]::new);
+		} else {
+			return super.getInfoRequests();
 		}
 	}
 	
@@ -151,12 +149,17 @@ public class WallDisplay extends AbstractG2Device implements ModulesHolder {
 	}
 	
 	@Override
+	public boolean hasThermostat() {
+		return thermostat != null;
+	}
+
+	@Override
 	protected void backup(ZipOutputStream out) throws IOException, InterruptedException {
 		if(thermostat != null) {
 			JsonNode profiles = sectionToStream("/rpc/Thermostat.Schedule.ListProfiles?id=0", "Thermostat.Schedule.ListProfiles.json", out);
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			for(JsonNode p: profiles.get("profiles")) {
-				final String id = p.get("id").asText();
+				final String id = p.get("id").asString("");
 				sectionToStream("/rpc/Thermostat.Schedule.ListRules?id=0&profile_id=" + id, "Thermostat.Schedule.ListRules_profile_id-" + id + ".json", out);
 				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			}

@@ -56,8 +56,6 @@ import org.eclipse.jetty.websocket.api.StatusCode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
 import it.usna.shellyscan.Main;
 import it.usna.shellyscan.controller.UsnaAction;
 import it.usna.shellyscan.controller.UsnaTextAction;
@@ -74,6 +72,7 @@ import it.usna.shellyscan.view.util.ScannerProperties;
 import it.usna.swing.dialog.FindReplaceDialog;
 import it.usna.swing.texteditor.TextLineNumber;
 import it.usna.util.IOFile;
+import tools.jackson.databind.JsonNode;
 
 /**
  * A small text editor for scripts
@@ -561,7 +560,7 @@ public class ScriptFrame extends JFrame {
 	
 	public class LogWebSocketDeviceListener extends WebSocketDeviceListener {
 		public LogWebSocketDeviceListener() {
-			super(node -> node.path("level").intValue() == 2 && node.path("fd").asInt(100 + scriptId) == 100 + scriptId); // Info
+			super(node -> node.path("level").intValue(0) == 2 && node.path("fd").asInt(100 + scriptId) == 100 + scriptId); // Info
 		}
 		
 		@Override
@@ -574,7 +573,7 @@ public class ScriptFrame extends JFrame {
 
 		@Override
 		public void onMessage(JsonNode msg) {
-			logsTextArea.append(msg.path("data").asText() + "\n");
+			logsTextArea.append(msg.path("data").asString("") + "\n");
 			logsTextArea.setCaretPosition(logsTextArea.getDocument().getLength());
 		}
 	}

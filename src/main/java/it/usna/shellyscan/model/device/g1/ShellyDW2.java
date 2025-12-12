@@ -4,9 +4,8 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.util.List;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
 import it.usna.shellyscan.model.device.meters.Meters;
+import tools.jackson.databind.JsonNode;
 
 public class ShellyDW2 extends AbstractBatteryG1Device {
 	public static final String ID = "SHDW-2";
@@ -73,7 +72,7 @@ public class ShellyDW2 extends AbstractBatteryG1Device {
 	protected void fillStatus(JsonNode status) throws IOException {
 		super.fillStatus(status);
 		this.stStatus = status;
-		open = status.get("sensor").get("state").asText("").equals("open");
+		open = status.get("sensor").get("state").asString("").equals("open");
 		bat = status.get("bat").get("value").asInt();
 		lux = status.get("lux").get("value").asInt();
 		temp = (float)status.get("tmp").get("tC").doubleValue();

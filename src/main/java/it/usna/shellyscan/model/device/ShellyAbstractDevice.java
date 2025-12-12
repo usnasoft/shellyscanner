@@ -3,7 +3,6 @@ package it.usna.shellyscan.model.device;
 import java.io.IOException;
 import java.net.Inet6Address;
 import java.net.InetAddress;
-import java.net.SocketTimeoutException;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
@@ -19,11 +18,6 @@ import org.eclipse.jetty.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-
 import it.usna.shellyscan.model.DeviceAPIException;
 import it.usna.shellyscan.model.DeviceOfflineException;
 import it.usna.shellyscan.model.DeviceUnauthorizedException;
@@ -35,6 +29,11 @@ import it.usna.shellyscan.model.device.modules.LoginManager;
 import it.usna.shellyscan.model.device.modules.MQTTManager;
 import it.usna.shellyscan.model.device.modules.TimeAndLocationManager;
 import it.usna.shellyscan.model.device.modules.WIFIManager;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.StreamWriteFeature;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.node.ArrayNode;
 
 /**
  * Base class for any device
@@ -60,7 +59,7 @@ public abstract class ShellyAbstractDevice {
 	protected long lastConnection = 0;
 
 	protected final String uriPrefix;
-	protected final ObjectMapper jsonMapper = new ObjectMapper();
+	protected final JsonMapper jsonMapper = JsonMapper.builder().disable(StreamWriteFeature.AUTO_CLOSE_TARGET).build();  // disable(...) need this for backup
 	
 	public enum Status {ON_LINE, OFF_LINE, NOT_LOOGGED, READING, ERROR, GHOST}; // GHOST not yet detected (in store)
 	public enum LogMode {NONE, FILE, MQTT, SOCKET, UDP, UNDEFINED};
@@ -86,10 +85,9 @@ public abstract class ShellyAbstractDevice {
 		} else {
 			this.uriPrefix = "http://" + addressAndPort.getRepresentation();
 		}
-		jsonMapper.disable(JsonGenerator.Feature.AUTO_CLOSE_TARGET); // need this for backup
 	}
 	
-	public JsonNode getJSON(final String command) throws IOException { //JsonProcessingException extends IOException
+	public JsonNode getJSON(final String command) throws IOException {
 		ContentResponse response;
 		int statusCode;
 		try {
@@ -99,10 +97,10 @@ public abstract class ShellyAbstractDevice {
 				status = Status.ON_LINE;
 				return jsonMapper.readTree(response.getContent());
 			}
-		} catch(InterruptedException | ExecutionException | TimeoutException | SocketTimeoutException e) {
+		} catch(InterruptedException | ExecutionException | TimeoutException | JacksonException e) {
 			status = Status.OFF_LINE;
 			throw new DeviceOfflineException(e);
-		} catch (IOException | RuntimeException e) {
+		} catch (RuntimeException e) { // JacksonException extends RuntimeException
 //			if(status == Status.ON_LINE || status == Status.READING) {
 				status = Status.ERROR;
 //			}
@@ -224,6 +222,8 @@ public abstract class ShellyAbstractDevice {
 	public long getLastTime() {
 		return lastConnection;
 	}
+	
+	public abstract String getGeneration();
 
 	public abstract String[] getInfoRequests();
 
@@ -301,8 +301,8 @@ public abstract class ShellyAbstractDevice {
 					((ArrayNode)arrayNode).addAll(fragmentArrayNode);
 				}
 				JsonNode offsetNode;
-				if((offsetNode = resp.get("offset")) != null && (tot = resp.path("total").intValue()) > 0) { // potentially needs multiple calls
-					offset = offsetNode.intValue() + arrayNode.size();
+				if((offsetNode = resp.get("offset")) != null && (tot = resp.path("total").intValue(0)) > 0) { // potentially needs multiple calls
+					offset = offsetNode.intValue(0) + arrayNode.size();
 					req = section + ((section.contains("?")) ? "&offset=" : "?offset=") + offset;
 				}
 			} while(tot > offset);

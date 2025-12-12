@@ -35,11 +35,6 @@ import javax.swing.text.StyledDocument;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
-
 import it.usna.shellyscan.Main;
 import it.usna.shellyscan.controller.UsnaAction;
 import it.usna.shellyscan.model.Devices;
@@ -53,6 +48,10 @@ import it.usna.shellyscan.view.util.UtilMiscellaneous;
 import it.usna.swing.UsnaSwingUtils;
 import it.usna.swing.dialog.FindReplaceDialog;
 import it.usna.util.UsnaEventListener;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectWriter;
 
 public class DialogDeviceInfo extends JDialog implements UsnaEventListener<Devices.EventType, Integer> {
 	private static final long serialVersionUID = 1L;
@@ -111,6 +110,20 @@ public class DialogDeviceInfo extends JDialog implements UsnaEventListener<Devic
 		buttonsPanel.add(jButtonFind);
 		buttonsPanel.add(jButtonCopyAll);
 		buttonsPanel.add(jButtonClose);
+		
+		// tab navigation - next
+		tabbedPane.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, MainView.SHORTCUT_KEY), "next_tab");
+		tabbedPane.getActionMap().put("next_tab", new UsnaAction(e -> {
+			int selectedIndex = tabbedPane.getSelectedIndex();
+			tabbedPane.setSelectedIndex((selectedIndex == tabbedPane.getTabCount() - 1) ? 0 : selectedIndex + 1);
+		}));
+
+		// tab navigation - previous
+		tabbedPane.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, MainView.SHORTCUT_KEY), "prev_tab");
+		tabbedPane.getActionMap().put("prev_tab", new UsnaAction(e -> {
+			int selectedIndex = tabbedPane.getSelectedIndex();
+			tabbedPane.setSelectedIndex((selectedIndex == 0) ? tabbedPane.getTabCount() - 1 : selectedIndex - 1);
+		}));
 
 		setVisible(true);
 		fill();
@@ -131,7 +144,7 @@ public class DialogDeviceInfo extends JDialog implements UsnaEventListener<Devic
 				} else {
 					name = info.replaceFirst("\\?.*", "").replaceFirst("^/", "").replaceFirst("^rpc/", "").replaceFirst("^Shelly\\.", "");
 				}
-				tabbedPane.add(name, getJsonGetPanel(info, device));
+				tabbedPane.add(name, getJsonPanel(info, device));
 			}
 			if(selected >= 0) {
 				tabbedPane.setSelectedIndex(selected);
@@ -141,7 +154,7 @@ public class DialogDeviceInfo extends JDialog implements UsnaEventListener<Devic
 		}
 	}
 
-	private JPanel getJsonGetPanel(final String info, final ShellyAbstractDevice device) {
+	private JPanel getJsonPanel(final String info, final ShellyAbstractDevice device) {
 		JPanel panel = new JPanel();
 		panel.setLayout(new BorderLayout(0, 0));
 		UsnaTextPane textPane = new UsnaTextPane();
@@ -167,7 +180,7 @@ public class DialogDeviceInfo extends JDialog implements UsnaEventListener<Devic
 				String json = writer.writeValueAsString(storedVal);
 				textPane.setText(json, temporaryStyle);
 				textPane.setCaretPosition(0);
-			} catch (JsonProcessingException e) {}
+			} catch (JacksonException e) {}
 		} else {
 			textPane.setText(Main.LABELS.getString("lblLoading"), temporaryStyle);
 		}
@@ -199,9 +212,9 @@ public class DialogDeviceInfo extends JDialog implements UsnaEventListener<Devic
 						bd.setStoredJSON(req, val);
 					}
 					JsonNode offsetNode;
-					if((offsetNode = val.get("offset")) != null && (tot = val.path("total").intValue()) > 0) { // potentially needs multiple calls
+					if((offsetNode = val.get("offset")) != null && (tot = val.path("total").intValue(0)) > 0) { // potentially needs multiple calls
 						int retrived = retrivedArraySize(val);
-						offset = offsetNode.intValue() + retrived;
+						offset = offsetNode.intValue(0) + retrived;
 						req = info + ((info.contains("?")) ? "&offset=" : "?offset=") + offset;
 					}
 				} while(tot > offset);

@@ -20,7 +20,7 @@ public class UptimeCellRenderer extends DefaultTableCellRenderer {
 		private UptimeMode(int align) {
 			this.align = align;
 		}
-	};
+	}
 	
 	private UptimeMode uptimeMode;
 	
@@ -34,17 +34,17 @@ public class UptimeCellRenderer extends DefaultTableCellRenderer {
 		if(value != null) {
 			if(uptimeMode == UptimeMode.DAY) {
 				int s = ((Number) value).intValue();
-				final int gg = (int)(s / (3600 * 24));
+				final int gg = (s / (3600 * 24));
 				s = s % (3600 * 24);
-				int hh = (int)(s / 3600);
+				int hh = (s / 3600);
 				s = s % 3600;
-				int mm = (int)(s / 60);
+				int mm = (s / 60);
 				s = s % 60;
 				setText(String.format(LABELS.getString("col_uptime_as_day"), gg, hh, mm, s));
 			} else if(uptimeMode == UptimeMode.FROM) { // here we need to avoid changes (no seconds + round minutes)
-				LocalDateTime since = LocalDateTime.now().minusSeconds(((Number) value).intValue());
+				LocalDateTime since = LocalDateTime.now().minusSeconds(((Number) value).longValue());
 				if(since.getSecond() > 31) {
-					since.plusMinutes(1);
+					since = since.plusMinutes(1);
 				}
 				setText(String.format(LABELS.getString("col_uptime_as_From"), since));
 			} else { // UptimeMode.SEC

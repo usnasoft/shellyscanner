@@ -3,9 +3,8 @@ package it.usna.shellyscan.model.device.g2;
 import java.io.IOException;
 import java.util.Iterator;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
+import tools.jackson.databind.JsonNode;
 
 /**
  * Iterate over this kind of Json structure:<br>
@@ -17,7 +16,7 @@ import it.usna.shellyscan.model.device.ShellyAbstractDevice;
  * </code><br>
  * calling "method" with the proper offset when needed
  */
-public class JsonPageIterator implements Iterator<JsonNode>, Iterable<JsonNode> {
+public class JsonPageIterator implements Iterator<JsonNode>/*, Iterable<JsonNode>*/ {
 	private final ShellyAbstractDevice device;
 	private final String method;
 	private final String arrayKey;
@@ -30,7 +29,7 @@ public class JsonPageIterator implements Iterator<JsonNode>, Iterable<JsonNode> 
 		this.method = method;
 		this.arrayKey = arrayKey;
 		JsonNode resp = device.getJSON(method);
-		this.numNodes = resp.path("total").intValue();
+		this.numNodes = resp.path("total").intValue(0);
 		this.current = resp.path(arrayKey).iterator();
 	}
 
@@ -61,8 +60,8 @@ public class JsonPageIterator implements Iterator<JsonNode>, Iterable<JsonNode> 
 		return current.next();
 	}
 
-	@Override
-	public Iterator<JsonNode> iterator() {
-		return this;
-	}
+//	@Override
+//	public Iterator<JsonNode> iterator() {
+//		return this;
+//	}
 }

@@ -31,10 +31,6 @@ import org.eclipse.jetty.websocket.client.WebSocketClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import it.usna.shellyscan.model.device.GhostDevice;
 import it.usna.shellyscan.model.device.InetAddressAndPort;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
@@ -48,6 +44,9 @@ import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.g2.AbstractProDevice;
 import it.usna.shellyscan.model.device.g3.AbstractG3Device;
 import it.usna.shellyscan.model.device.g4.AbstractG4Device;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 
 public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Integer> {
 	private static final Logger LOG = LoggerFactory.getLogger(Devices.class);
@@ -206,7 +205,7 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 				LOG.trace("Not Shelly {}, status {}, node {}", address, resp, shellyNode);
 				return null;
 			}
-		} catch (InterruptedException | ExecutionException | IOException e) { // SocketTimeoutException extends IOException
+		} catch (InterruptedException | ExecutionException | JacksonException e) { // SocketTimeoutException extends IOException
 			LOG.trace("Not Shelly {} - {}", address, port, e);
 			return null;
 		}
@@ -396,13 +395,12 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 				}
 				// BTHome (BLU)
 				if(d instanceof AbstractProDevice || d instanceof AbstractG3Device || d instanceof AbstractG4Device) {
-					for(JsonNode compInfo: ((AbstractG2Device)d).getJSONIterator("/rpc/Shelly.GetComponents?dynamic_only=true", "components")) { // empty on 401
-						String key = compInfo.path("key").asText();
-						if(key.startsWith(AbstractBluDevice.DEVICE_KEY_PREFIX) || key.startsWith(BluTRV.DEVICE_KEY_PREFIX)) {
+					((AbstractG2Device)d).getJSONIterator("/rpc/Shelly.GetComponents?dynamic_only=true", "components").forEachRemaining(compInfo -> {
+						String key = compInfo.path("key").asString("");
+						if(key.startsWith(BTHomeDevice.DEVICE_KEY_PREFIX) || key.startsWith(BluTRV.DEVICE_KEY_PREFIX)) {
 							newBluDevice(d, compInfo, key);
 						}
-//						if(key.startsWith(BluTRV.DEVICE_KEY_PREFIX)) { newBluDevice(d, compInfo, key); }
-					}
+					});
 				}
 			}
 		} catch(DeviceUnauthorizedException e) {
@@ -467,7 +465,7 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 				}
 			}
 		} catch (RuntimeException e) {
-			LOG.error("newBluDevice-parent: {} - key: {}", parent.getAddressAndPort(), compInfo.path("key").asText(), e);
+			LOG.error("newBluDevice-parent: {} - key: {}", parent.getAddressAndPort(), compInfo.path("key").asString(""), e);
 		}
 	}
 
@@ -485,7 +483,7 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 						Thread.sleep(MULTI_QUERY_DELAY);
 					}
 					d.refreshStatus();
-				} catch (JsonProcessingException | RuntimeException e) {
+				} catch (RuntimeException /*| JacksonException*/ e) {
 					LOG.trace("Unexpected-refresh: {}", d, e);
 					d.setStatus(Status.ERROR);
 				} catch (IOException | InterruptedException e) {}

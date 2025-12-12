@@ -6,9 +6,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.InternalTmpHolder;
 import it.usna.shellyscan.model.device.RestoreMsg;
@@ -18,6 +15,8 @@ import it.usna.shellyscan.model.device.g2.meters.EMTotalMeters;
 import it.usna.shellyscan.model.device.g2.modules.EM1Manager;
 import it.usna.shellyscan.model.device.g2.modules.EMManager;
 import it.usna.shellyscan.model.device.meters.Meters;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ObjectNode;
 
 public class ShellyPro3EM extends AbstractProDevice implements InternalTmpHolder {
 	public static final String ID = "Pro3EM";
@@ -43,7 +42,7 @@ public class ShellyPro3EM extends AbstractProDevice implements InternalTmpHolder
 	
 	@Override
 	protected void init(JsonNode devInfo) throws IOException {
-		this.init(devInfo.get("profile").textValue().equals(MODE_TRIPHASE));
+		this.init(devInfo.get("profile").asString("").equals(MODE_TRIPHASE));
 		super.init(devInfo);
 	}
 	
@@ -96,20 +95,20 @@ public class ShellyPro3EM extends AbstractProDevice implements InternalTmpHolder
 	@Override
 	protected void fillSettings(JsonNode configuration) throws IOException {
 //		super.fillSettings(configuration);
-//		boolean current3phase = configuration.get("sys").get("device").get("profile").asText().equals(MODE_TRIPHASE);
+//		boolean current3phase = configuration.get("sys").get("device").get("profile").asString("").equals(MODE_TRIPHASE);
 //		if(current3phase != triphase) {
 //			init(current3phase);
 //		}
 //		if(current3phase) {
-//			meterName[0] = configuration.get("em:0").get("name").asText("");
+//			meterName[0] = configuration.get("em:0").get("name").asString("");
 //		} else {
-//			meterName[0] = configuration.get("em1:0").get("name").asText("");
-//			meterName[1] = configuration.get("em1:1").get("name").asText("");
-//			meterName[2] = configuration.get("em1:2").get("name").asText("");
+//			meterName[0] = configuration.get("em1:0").get("name").asString("");
+//			meterName[1] = configuration.get("em1:1").get("name").asString("");
+//			meterName[2] = configuration.get("em1:2").get("name").asString("");
 //		}
 		
 		super.fillSettings(configuration);
-		boolean config3phase = configuration.get("sys").get("device").get("profile").asText().equals(MODE_TRIPHASE);
+		boolean config3phase = configuration.get("sys").get("device").get("profile").asString("").equals(MODE_TRIPHASE);
 		if(config3phase != triphase) {
 			init(config3phase);
 		}
@@ -274,7 +273,7 @@ public class ShellyPro3EM extends AbstractProDevice implements InternalTmpHolder
 	@Override
 	public void restoreCheck(Map<String, JsonNode> backupJsons, Map<RestoreMsg, Object> res) throws IOException {
 		JsonNode devInfo = backupJsons.get("Shelly.GetDeviceInfo.json");
-		boolean backModeTriphase = MODE_TRIPHASE.equals(devInfo.get("profile").asText());
+		boolean backModeTriphase = MODE_TRIPHASE.equals(devInfo.get("profile").asString(""));
 		if(backModeTriphase != triphase) {
 			res.put(RestoreMsg.ERR_RESTORE_MODE_TRIPHASE, null);
 		}

@@ -6,15 +6,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.InternalTmpHolder;
 import it.usna.shellyscan.model.device.ModulesHolder;
 import it.usna.shellyscan.model.device.g2.modules.Input;
 import it.usna.shellyscan.model.device.g2.modules.Roller;
 import it.usna.shellyscan.model.device.meters.Meters;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.JsonNode;
 
 /**
  * Dual Cover model
@@ -118,14 +117,14 @@ public class ShellyProDualCover extends AbstractProDevice implements ModulesHold
 	protected void fillStatus(JsonNode status) throws IOException {
 		super.fillStatus(status);
 		JsonNode coverStatus0 = status.get("cover:0");
-		roller0.fillStatus(coverStatus0);
+		roller0.fillStatus(coverStatus0, status.get("input:0"), status.get("input:1"));
 		power0 = coverStatus0.get("apower").floatValue();
 		voltage0 = coverStatus0.get("voltage").floatValue();
 		current0 = coverStatus0.get("current").floatValue();
 		pf0 = coverStatus0.get("pf").floatValue();
 
 		JsonNode coverStatus1 = status.get("cover:1");
-		roller1.fillStatus(coverStatus1);
+		roller1.fillStatus(coverStatus0, status.get("input:2"), status.get("input:3"));
 		power1 = coverStatus1.get("apower").floatValue();
 		voltage1 = coverStatus1.get("voltage").floatValue();
 		current1 = coverStatus1.get("current").floatValue();
@@ -135,7 +134,7 @@ public class ShellyProDualCover extends AbstractProDevice implements ModulesHold
 	}
 
 	@Override
-	protected void restore(Map<String, JsonNode> backupJsons, List<String> errors) throws JsonProcessingException, InterruptedException {
+	protected void restore(Map<String, JsonNode> backupJsons, List<String> errors) throws JacksonException, InterruptedException {
 		JsonNode configuration = backupJsons.get("Shelly.GetConfig.json");
 		errors.add(Input.restore(this, configuration, 0));
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);

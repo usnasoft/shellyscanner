@@ -10,8 +10,6 @@ import org.eclipse.jetty.websocket.client.WebSocketClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
 import it.usna.shellyscan.Main;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.ShellyGenericUnmanagedImpl;
@@ -102,6 +100,7 @@ import it.usna.shellyscan.model.device.g3.ShellyI4G3;
 import it.usna.shellyscan.model.device.g3.ShellyMini1G3;
 import it.usna.shellyscan.model.device.g3.ShellyMini1PMG3;
 import it.usna.shellyscan.model.device.g3.ShellyMiniPMG3;
+import it.usna.shellyscan.model.device.g3.ShellyPlugPMG3;
 import it.usna.shellyscan.model.device.g3.ShellyPlugSG3;
 import it.usna.shellyscan.model.device.g3.ShellyPlugSOutdoorG3;
 import it.usna.shellyscan.model.device.g3.ShellyShutterG3;
@@ -117,6 +116,7 @@ import it.usna.shellyscan.model.device.g4.ShellyMini1G4;
 import it.usna.shellyscan.model.device.g4.ShellyMini1PMG4;
 import it.usna.shellyscan.model.device.g4.ShellyPowerStrip4G;
 import it.usna.shellyscan.view.DialogAuthentication;
+import tools.jackson.databind.JsonNode;
 
 public class DevicesFactory {
 	private DevicesFactory() {}
@@ -126,7 +126,7 @@ public class DevicesFactory {
 	private static char[] lastP;
 	
 	public static ShellyAbstractDevice create(HttpClient httpClient, WebSocketClient wsClient, final InetAddress address, int port, JsonNode info, String name) {
-		final int gen = info.path("gen").intValue();
+		final int gen = info.path("gen").intValue(0);
 		if(gen == 0) { // gen1 (info.get("gen") == null)
 			return createG1(httpClient, address, port, info, name);
 		} else if(gen == 2) {
@@ -169,8 +169,8 @@ public class DevicesFactory {
 				}
 				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			}
-			
-			d = switch(info.get("type").asText()) {
+
+			d = switch(info.get("type").asString()) {
 				case Shelly1.ID -> new Shelly1(address, port, name);
 				case Shelly1L.ID -> new Shelly1L(address, port, name);
 				case Shelly1PM.ID -> new Shelly1PM(address, port, name);
@@ -220,10 +220,10 @@ public class DevicesFactory {
 	private static AbstractG2Device createG2(HttpClient httpClient, WebSocketClient wsClient, final InetAddress address, int port, JsonNode info, String name) {
 		AbstractG2Device d;
 		try {
-			if(info.get("auth_en").booleanValue()) {
+			if(info.get("auth_en").booleanValue(false)) {
 				digestAuthentication(httpClient, address, port, name);
 			}
-			d = switch(info.get("app").asText()) {
+			d = switch(info.get("app").asString()) {
 				// Plus
 				case ShellyPlus1.ID -> new ShellyPlus1(address, port, name);
 				case ShellyPlus1PM.ID -> new ShellyPlus1PM(address, port, name);
@@ -241,6 +241,7 @@ public class DevicesFactory {
 				case ShellyPlus0_10VDimmer.ID -> new ShellyPlus0_10VDimmer(address, port, name);
 				case ShellyGateway.ID -> new ShellyGateway(address, port, name);
 				case WallDisplay.ID -> new WallDisplay(address, port, name);
+
 				case ShellyPlusUNI.ID -> new ShellyPlusUNI(address, port, name);
 				// Plus - Battery
 				case ShellyPlusHT.ID -> new ShellyPlusHT(address, port, name);
@@ -251,12 +252,12 @@ public class DevicesFactory {
 				case ShellyPro2PM.ID -> new ShellyPro2PM(address, port, name);
 				case ShellyPro2.ID -> new ShellyPro2(address, port, name);
 				case ShellyPro3.ID -> new ShellyPro3(address, port, name);
-				case ShellyPro4PM.ID -> ShellyProDualCover.MODEL.equals(info.get("model").asText()) ? new ShellyProDualCover(address, port, name) : new ShellyPro4PM(address, port, name);
-				case ShellyProDimmer1.ID -> ShellyProDimmer2.MODEL.equals(info.get("model").asText()) ? new ShellyProDimmer2(address, port, name) : new ShellyProDimmer1(address, port, name);
+				case ShellyPro4PM.ID -> ShellyProDualCover.MODEL.equals(info.get("model").asString("")) ? new ShellyProDualCover(address, port, name) : new ShellyPro4PM(address, port, name);
+				case ShellyProDimmer1.ID -> ShellyProDimmer2.MODEL.equals(info.get("model").asString("")) ? new ShellyProDimmer2(address, port, name) : new ShellyProDimmer1(address, port, name);
 				case ShellyProEM50.ID -> new ShellyProEM50(address, port, name);
 				case ShellyPro3EM.ID -> new ShellyPro3EM(address, port, name);
 				case ShellyProRGBWW.ID -> new ShellyProRGBWW(address, port, name);
-				
+
 				default -> new ShellyG2Unmanaged(address, port, name);
 			};
 		} catch(Exception e) { // really unexpected
@@ -278,10 +279,10 @@ public class DevicesFactory {
 	private static AbstractG3Device createG3(HttpClient httpClient, WebSocketClient wsClient, final InetAddress address, int port, JsonNode info, String name) {
 		AbstractG3Device d;
 		try {
-			if(info.get("auth_en").booleanValue()) {
+			if(info.get("auth_en").booleanValue(false)) {
 				digestAuthentication(httpClient, address, port, name);
 			}
-			d = switch(info.get("app").asText()) {
+			d = switch(info.get("app").asString()) {
 			case Shelly1G3.ID -> new Shelly1G3(address, port, name);
 			case Shelly1PMG3.ID -> new Shelly1PMG3(address, port, name);
 			case Shelly2PMG3.ID -> new Shelly2PMG3(address, port, name);
@@ -292,6 +293,7 @@ public class DevicesFactory {
 			case ShellyMini1PMG3.ID -> new ShellyMini1PMG3(address, port, name);
 			case ShellyMiniPMG3.ID -> new ShellyMiniPMG3(address, port, name);
 			case ShellyPlugSG3.ID -> new ShellyPlugSG3(address, port, name);
+			case ShellyPlugPMG3.ID -> new ShellyPlugPMG3(address, port, name);
 			case ShellyPlugSOutdoorG3.ID -> new ShellyPlugSOutdoorG3(address, port, name);
 			case ShellyHTG3.ID -> new ShellyHTG3(address, port, name);
 			case ShellyDimmerG3.ID -> new ShellyDimmerG3(address, port, name);
@@ -304,7 +306,7 @@ public class DevicesFactory {
 			case ShellyXMOD1.ID -> new ShellyXMOD1(address, port, name);
 			// Powered by Shelly
 			case XT1.ID -> {
-				String type = info.path("svc0").path("type").asText();
+				String type = info.path("svc0").path("type").asString(null);
 				if(PbSXT1St1820.SVC0_TYPE.equals(type)) {
 					yield new PbSXT1St1820(address, port, name);
 				} else if(PbSXT1St802.SVC0_TYPE.equals(type)) {
@@ -335,17 +337,18 @@ public class DevicesFactory {
 	private static AbstractG4Device createG4(HttpClient httpClient, WebSocketClient wsClient, final InetAddress address, int port, JsonNode info, String name) {
 		AbstractG4Device d;
 		try {
-			if(info.get("auth_en").booleanValue()) {
+			if(info.get("auth_en").booleanValue(false)) {
 				digestAuthentication(httpClient, address, port, name);
 			}
-			d = switch(info.get("app").asText()) {
-			case Shelly1G4.ID, Shelly1G4.ID_ZB -> new Shelly1G4(address, port, name);
-			case Shelly1PMG4.ID, Shelly1PMG4.ID_ZB -> new Shelly1PMG4(address, port, name);
-			case Shelly2PMG4.ID, Shelly2PMG4.ID_ZB -> new Shelly2PMG4(address, port, name);
-			case ShellyMini1G4.ID, ShellyMini1G4.ID_ZB -> new ShellyMini1G4(address, port, name);
-			case ShellyMini1PMG4.ID, ShellyMini1PMG4.ID_ZB -> new ShellyMini1PMG4(address, port, name);
-			case ShellyDimmerG4.ID, ShellyDimmerG4.ID_ZB -> new ShellyDimmerG4(address, port, name);
-			case ShellyPowerStrip4G.ID, ShellyPowerStrip4G.ID_ZB -> new ShellyPowerStrip4G(address, port, name);
+			d = switch(info.get("model").asString()) {
+			case Shelly1G4.MODEL -> new Shelly1G4(address, port, name);
+			case Shelly1PMG4.MODEL -> new Shelly1PMG4(address, port, name);
+			case Shelly2PMG4.MODEL -> new Shelly2PMG4(address, port, name);
+			case ShellyMini1G4.MODEL -> new ShellyMini1G4(address, port, name);
+			case ShellyMini1PMG4.MODEL -> new ShellyMini1PMG4(address, port, name);
+			case ShellyDimmerG4.MODEL -> new ShellyDimmerG4(address, port, name);
+
+			case ShellyPowerStrip4G.MODEL -> new ShellyPowerStrip4G(address, port, name);
 
 			// PRO
 
@@ -396,8 +399,8 @@ public class DevicesFactory {
 	public static AbstractBluDevice createBlu(AbstractG2Device parent, HttpClient httpClient, /*WebSocketClient wsClient,*/ JsonNode info, String key) {
 		AbstractBluDevice blu;
 		try {
-			if(key.startsWith(AbstractBluDevice.DEVICE_KEY_PREFIX)) {
-//				final String type = info.path("config").path("meta").path("ui").path("local_name").asText();
+			if(key.startsWith(BTHomeDevice.DEVICE_KEY_PREFIX)) {
+//				final String type = info.path("config").path("meta").path("ui").path("local_name").asString("");
 				int model = info.path("attrs").path("model_id").asInt(-1);
 				blu = new BTHomeDevice(parent, info, model, key.substring(13));
 			} else { // currently only BluTRV

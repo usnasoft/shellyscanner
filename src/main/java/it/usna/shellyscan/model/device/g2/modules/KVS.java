@@ -8,12 +8,11 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.JsonNodeFactory;
+import tools.jackson.databind.node.ObjectNode;
 
 public class KVS {
 	private final AbstractG2Device device;
@@ -38,16 +37,16 @@ public class KVS {
 					kvsItems = many.path("items");
 				}
 				for(JsonNode item: kvsItems) {
-					kvItems.add(new KVItem(item.get("key").asText(), item.get("etag").asText(), item.get("value").asText()));
+					kvItems.add(new KVItem(item.get("key").asString(""), item.get("etag").asString(""), item.get("value").asString("")));
 				}
-				tot = many.get("total").intValue();
+				tot = many.get("total").intValue(0);
 				if(tot > 0) {
-					offset = many.get("offset").intValue() + kvsItems.size();
+					offset = many.get("offset").intValue(0) + kvsItems.size();
 				}
 			} while(tot > offset);
 		} else { // fw < 1.5.0
 			for(Entry<String, JsonNode> entry: kvsItems.properties()) {
-				kvItems.add(new KVItem(entry.getKey(), entry.getValue().get("etag").asText(), entry.getValue().get("value").asText()));
+				kvItems.add(new KVItem(entry.getKey(), entry.getValue().get("etag").asString(""), entry.getValue().get("value").asString("")));
 			}
 		}
 	}
@@ -71,7 +70,7 @@ public class KVS {
 		pars.put("key", key);
 		pars.put("value", value);
 		JsonNode node = device.getJSON("KVS.Set", pars);
-		return kvItems.set(index, new KVItem(key, node.get("etag").asText(), value));
+		return kvItems.set(index, new KVItem(key, node.get("etag").asString(""), value));
 	}
 	
 	public KVItem add(String key, String value) throws IOException {
@@ -79,7 +78,7 @@ public class KVS {
 		pars.put("key", key);
 		pars.put("value", value);
 		JsonNode node = device.getJSON("KVS.Set", pars);
-		KVItem item = new KVItem(key, node.get("etag").asText(), value);
+		KVItem item = new KVItem(key, node.get("etag").asString(""), value);
 		kvItems.add(item);
 		return item;
 	}
@@ -107,7 +106,7 @@ public class KVS {
 		JsonNode kvsItems = kvsMany.path("items");
 		if(kvsItems.isArray()) { // fw >= 1.5.0
 			for(JsonNode item: kvsItems) {
-				KVItem storedItem = new KVItem(item.get("key").asText(), item.get("etag").asText(), item.get("value").asText());
+				KVItem storedItem = new KVItem(item.get("key").asString(""), item.get("etag").asString(""), item.get("value").asString(""));
 				if(kvItems.contains(storedItem) == false) {
 					ObjectNode out = JsonNodeFactory.instance.objectNode();
 					out.put("key", storedItem.key);
@@ -118,7 +117,7 @@ public class KVS {
 			}
 		} else { // fw < 1.5.0
 			for(Entry<String, JsonNode> entry: kvsItems.properties()) {
-				KVItem storedItem = new KVItem(entry.getKey(), entry.getValue().get("etag").asText(), entry.getValue().get("value").asText());
+				KVItem storedItem = new KVItem(entry.getKey(), entry.getValue().get("etag").asString(""), entry.getValue().get("value").asString(""));
 				if(kvItems.contains(storedItem) == false) {
 					ObjectNode out = JsonNodeFactory.instance.objectNode();
 					out.put("key", storedItem.key);

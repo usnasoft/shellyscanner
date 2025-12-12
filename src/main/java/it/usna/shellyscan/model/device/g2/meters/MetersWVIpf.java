@@ -1,8 +1,7 @@
 package it.usna.shellyscan.model.device.g2.meters;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
 import it.usna.shellyscan.model.device.meters.Meters;
+import tools.jackson.databind.JsonNode;
 
 public class MetersWVIpf extends Meters {
 	private static final Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Type.W, Type.PF, Type.V, Type.I};
@@ -17,10 +16,10 @@ public class MetersWVIpf extends Meters {
 	}
 	
 	public void fill(JsonNode status) {
-		power = status.path("apower").floatValue();
-		voltage = status.path("voltage").floatValue();
-		current = status.path("current").floatValue();
-		pf = status.get("pf").floatValue();
+		power = status.path("apower").floatValue(0);
+		voltage = status.path("voltage").floatValue(0);
+		current = status.path("current").floatValue(0);
+		pf = status.path("pf").floatValue(0);
 	}
 	
 	@Override

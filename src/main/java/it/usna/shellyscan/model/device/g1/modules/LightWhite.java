@@ -3,11 +3,10 @@ package it.usna.shellyscan.model.device.g1.modules;
 import java.io.IOException;
 import java.util.Map.Entry;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-
 import it.usna.shellyscan.model.device.g1.AbstractG1Device;
 import it.usna.shellyscan.model.device.modules.WhiteInterface;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ObjectNode;
 
 /**
  * Used by RGBW2 (white mode), Dimmer 1/2
@@ -41,19 +40,19 @@ public class LightWhite implements WhiteInterface {
 	}
 
 	public void fillSettings(JsonNode settingsWhite) {
-		name = settingsWhite.get("name").asText("");
+		name = settingsWhite.get("name").asString("");
 	}
 	
 	public void fillStatus(JsonNode statusWhite) {
 		isOn = statusWhite.get("ison").asBoolean();
 		brightness = statusWhite.get("brightness").asInt();
-		source = statusWhite.get("source").asText("-");
+		source = statusWhite.get("source").asString("-");
 	}
 	
 	public void fillStatus(JsonNode statusWhite, JsonNode statusInput) {
 		isOn = statusWhite.get("ison").asBoolean();
 		brightness = statusWhite.get("brightness").asInt();
-		source = statusWhite.get("source").asText("-");
+		source = statusWhite.get("source").asString("-");
 		inputIsOn = statusInput.get("input").asBoolean();
 	}
 

@@ -5,8 +5,6 @@ import java.net.InetAddress;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.ModulesHolder;
 import it.usna.shellyscan.model.device.g1.meters.MetersPower;
@@ -14,6 +12,7 @@ import it.usna.shellyscan.model.device.g1.modules.LightRGBW;
 import it.usna.shellyscan.model.device.g1.modules.LightWhite;
 import it.usna.shellyscan.model.device.meters.Meters;
 import it.usna.shellyscan.model.device.modules.DeviceModule;
+import tools.jackson.databind.JsonNode;
 
 public class ShellyRGBW2 extends AbstractG1Device implements ModulesHolder/*, RGBWCommander, WhiteCommander*/ {
 	public static final String ID = "SHRGBW2";
@@ -86,7 +85,7 @@ public class ShellyRGBW2 extends AbstractG1Device implements ModulesHolder/*, RG
 	@Override
 	protected void fillSettings(JsonNode settings) throws IOException {
 		super.fillSettings(settings);
-		modeColor = MODE_COLOR.equals(settings.get("mode").asText());
+		modeColor = MODE_COLOR.equals(settings.get("mode").asString(""));
 		if(modeColor) {
 			if(color == null) {
 				color = new LightRGBW(this, 0);
@@ -154,7 +153,7 @@ public class ShellyRGBW2 extends AbstractG1Device implements ModulesHolder/*, RG
 			}
 		}
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-		final boolean backModeColor = MODE_COLOR.equals(settings.get("mode").asText());
+		final boolean backModeColor = MODE_COLOR.equals(settings.get("mode").asString(""));
 		if(backModeColor) {
 			final LightRGBW color = new LightRGBW(this, 0); // just for restore; object is later refreshed (fill called)
 			color.restore(settings.get("lights").get(0));

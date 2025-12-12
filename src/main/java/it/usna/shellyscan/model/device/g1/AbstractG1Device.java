@@ -28,9 +28,6 @@ import org.eclipse.jetty.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.NullNode;
-
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.BatteryDeviceInterface;
 import it.usna.shellyscan.model.device.InetAddressAndPort;
@@ -49,6 +46,8 @@ import it.usna.shellyscan.model.device.modules.LoginManager;
 import it.usna.shellyscan.model.device.modules.TimeAndLocationManager;
 import it.usna.shellyscan.model.device.modules.WIFIManager;
 import it.usna.shellyscan.model.device.modules.WIFIManager.Network;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.NullNode;
 
 /**
  * Base class for any gen1 Shelly device
@@ -63,16 +62,21 @@ public abstract class AbstractG1Device extends ShellyAbstractDevice {
 	
 	public void init(HttpClient httpClient, JsonNode shelly) throws IOException {
 		this.httpClient = httpClient;
-		this.mac = shelly.get("mac").asText().toUpperCase();
+		this.mac = shelly.get("mac").asString("").toUpperCase();
 		init();
 	}
 	
 	protected void init() throws IOException {
 		JsonNode settings = getJSON("/settings");
-		this.hostname = settings.get("device").get("hostname").asText("");
+		this.hostname = settings.get("device").get("hostname").asString("");
 		fillSettings(settings);
 		try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e) {}
 		fillStatus(getJSON("/status"));
+	}
+	
+	@Override
+	public String getGeneration() {
+		return "1";
 	}
 
 	public void setAuthenticationResult(Authentication.Result auth) {
@@ -87,25 +91,25 @@ public abstract class AbstractG1Device extends ShellyAbstractDevice {
 	}
 	
 	protected void fillSettings(JsonNode settings) throws IOException {
-		this.name = settings.path("name").asText("");
+		this.name = settings.path("name").asString("");
 		JsonNode dubugNode;
 		if((dubugNode = settings.get("debug_enable")) != null) {
-			this.debugMode = dubugNode.booleanValue() ? LogMode.FILE : LogMode.NONE; // missing in flood (20201128-102432/v1.9.2@e83f7025)
+			this.debugMode = dubugNode.booleanValue(false) ? LogMode.FILE : LogMode.NONE; // missing in flood (20201128-102432/v1.9.2@e83f7025)
 		} else {
 			this.debugMode = LogMode.UNDEFINED;
 		}
-		this.mqttEnabled = settings.path("mqtt").path("enable").booleanValue();
+		this.mqttEnabled = settings.path("mqtt").path("enable").booleanValue(false);
 	}
 
 	protected void fillStatus(JsonNode status) throws IOException {
 		final JsonNode cloud = status.get("cloud");
-		this.cloudEnabled = cloud.get("enabled").booleanValue();
-		this.cloudConnected = cloud.get("connected").booleanValue();
+		this.cloudEnabled = cloud.get("enabled").booleanValue(false);
+		this.cloudConnected = cloud.get("connected").booleanValue(false);
 		final JsonNode wifi = status.path("wifi_sta");
 		this.rssi = wifi.path("rssi").asInt(0);
-		this.ssid = wifi.path("ssid").asText("");
+		this.ssid = wifi.path("ssid").asString("");
 		this.uptime = status.get("uptime").asInt();
-		this.mqttConnected = status.path("mqtt").path("connected").booleanValue();
+		this.mqttConnected = status.path("mqtt").path("connected").booleanValue(false);
 		
 		lastConnection = System.currentTimeMillis();
 	}
@@ -245,8 +249,8 @@ public abstract class AbstractG1Device extends ShellyAbstractDevice {
 		EnumMap<RestoreMsg, Object> res = new EnumMap<>(RestoreMsg.class);
 		try {
 			JsonNode settings = backupJsons.get("settings.json");
-			final String fileHostname = settings.get("device").get("hostname").asText("");
-			final String fileType = settings.get("device").get("type").asText();
+			final String fileHostname = settings.get("device").get("hostname").asString("");
+			final String fileType = settings.get("device").get("type").asString("");
 			if(fileType.isEmpty() == false && fileType.equals(this.getTypeID()) == false) {
 				res.put(RestoreMsg.ERR_RESTORE_MODEL, null);
 			} else {
@@ -255,19 +259,19 @@ public abstract class AbstractG1Device extends ShellyAbstractDevice {
 					res.put(RestoreMsg.PRE_QUESTION_RESTORE_HOST, fileHostname);
 				}
 				if(settings.at("/login/enabled").asBoolean()) {
-					res.put(RestoreMsg.RESTORE_LOGIN, settings.at("/login/username").asText());
+					res.put(RestoreMsg.RESTORE_LOGIN, settings.at("/login/username").asString(""));
 				}
 				Network currentConnection = WIFIManagerG1.currentConnection(this);
 				if(currentConnection != Network.UNKNOWN) {
-					if(settings.at("/wifi_sta/enabled").asBoolean() && (sameHost || settings.at("/wifi_sta/ipv4_method").asText().equals("dhcp")) && currentConnection != Network.PRIMARY) {
-						res.put(RestoreMsg.RESTORE_WI_FI1, settings.at("/wifi_sta/ssid").asText());
+					if(settings.at("/wifi_sta/enabled").asBoolean() && (sameHost || settings.at("/wifi_sta/ipv4_method").asString("").equals("dhcp")) && currentConnection != Network.PRIMARY) {
+						res.put(RestoreMsg.RESTORE_WI_FI1, settings.at("/wifi_sta/ssid").asString(""));
 					}
-					if(settings.at("/wifi_sta1/enabled").asBoolean() && (sameHost || settings.at("/wifi_sta1/ipv4_method").asText().equals("dhcp")) && currentConnection != Network.SECONDARY) {
-						res.put(RestoreMsg.RESTORE_WI_FI2, settings.at("/wifi_sta1/ssid").asText());
+					if(settings.at("/wifi_sta1/enabled").asBoolean() && (sameHost || settings.at("/wifi_sta1/ipv4_method").asString("").equals("dhcp")) && currentConnection != Network.SECONDARY) {
+						res.put(RestoreMsg.RESTORE_WI_FI2, settings.at("/wifi_sta1/ssid").asString(""));
 					}
 				}
-				if(settings.at("/mqtt/enable").asBoolean() && settings.at("/mqtt/user").asText("").isEmpty() == false) {
-					res.put(RestoreMsg.RESTORE_MQTT, settings.at("/mqtt/user").asText());
+				if(settings.at("/mqtt/enable").asBoolean() && settings.at("/mqtt/user").asString("").isEmpty() == false) {
+					res.put(RestoreMsg.RESTORE_MQTT, settings.at("/mqtt/user").asString(""));
 				}
 			}
 		} catch(RuntimeException e) {
@@ -331,7 +335,7 @@ public abstract class AbstractG1Device extends ShellyAbstractDevice {
 	 * Return errors List
 	 */
 	private void restoreCommons(JsonNode settings, final long delay, Map<RestoreMsg, String> data, ArrayList<String> errors) throws InterruptedException, IOException {
-		errors.add(sendCommand("/settings/cloud?enabled=" + settings.get("cloud").get("enabled").asText()));
+		errors.add(sendCommand("/settings/cloud?enabled=" + settings.get("cloud").get("enabled").asString("")));
 //		LOG.trace("step 2.1");
 		final String[] settigsRestore;
 		if(settings.get("pon_wifi_reset") == null) {
@@ -341,14 +345,14 @@ public abstract class AbstractG1Device extends ShellyAbstractDevice {
 		}
 		String coiotSettings = "";
 		if(settings.get("coiot") != null) {
-			coiotSettings = "&coiot_enable=" + settings.at("/coiot/enabled").asText() +
-					"&coiot_update_period=" + settings.at("/coiot/update_period").asText() +
-					"&coiot_peer=" + URLEncoder.encode(settings.at("/coiot/peer").asText(), StandardCharsets.UTF_8.name());
+			coiotSettings = "&coiot_enable=" + settings.at("/coiot/enabled").asString("") +
+					"&coiot_update_period=" + settings.at("/coiot/update_period").asString("") +
+					"&coiot_peer=" + URLEncoder.encode(settings.at("/coiot/peer").asString(""), StandardCharsets.UTF_8.name());
 		}
 		String sntpSetting = "";
 		JsonNode sntpNode = settings.at("/sntp/server");
 		if(sntpNode.isMissingNode() == false) {
-			sntpSetting = "&sntp_server=" + sntpNode.asText();
+			sntpSetting = "&sntp_server=" + sntpNode.asString("");
 		}
 		TimeUnit.MILLISECONDS.sleep(delay);
 		errors.add(sendCommand("/settings?" + jsonNodeToURLPar(settings, settigsRestore) + coiotSettings + sntpSetting));
@@ -357,13 +361,13 @@ public abstract class AbstractG1Device extends ShellyAbstractDevice {
 		LoginManagerG1 lm = new LoginManagerG1(this, true);
 //		LOG.trace("step 2.2");
 		if(data.containsKey(RestoreMsg.RESTORE_LOGIN)) {
-			errors.add(lm.set(settings.at("/login/username").asText(""), data.get(RestoreMsg.RESTORE_LOGIN).toCharArray()));
+			errors.add(lm.set(settings.at("/login/username").asString(""), data.get(RestoreMsg.RESTORE_LOGIN).toCharArray()));
 		} else if(settings.at("/login/enabled").asBoolean() == false) {
 			errors.add(lm.disable());
 		}
 //		LOG.trace("step 2.3");
 		final JsonNode mqtt = settings.get("mqtt");
-		if(data.containsKey(RestoreMsg.RESTORE_MQTT) || mqtt.path("enable").asBoolean() == false || mqtt.path("user").asText("").isEmpty()) {
+		if(data.containsKey(RestoreMsg.RESTORE_MQTT) || mqtt.path("enable").asBoolean() == false || mqtt.path("user").asString("").isEmpty()) {
 			TimeUnit.MILLISECONDS.sleep(delay);
 			MQTTManagerG1 mqttM = new MQTTManagerG1(this, true);
 			errors.add(mqttM.restore(mqtt, data.get(RestoreMsg.RESTORE_MQTT)));
@@ -376,16 +380,16 @@ public abstract class AbstractG1Device extends ShellyAbstractDevice {
 		if(val.isArray()) {
 			String res;
 			if(val.size() > 0) {
-				res = name + "[]=" + URLEncoder.encode(val.get(0).asText(), StandardCharsets.UTF_8.name());
+				res = name + "[]=" + URLEncoder.encode(val.get(0).asString(""), StandardCharsets.UTF_8.name());
 				for(int i=1; i < val.size(); i++) {
-					res += "&" + name + "[]=" + URLEncoder.encode(val.get(i).asText(), StandardCharsets.UTF_8.name());
+					res += "&" + name + "[]=" + URLEncoder.encode(val.get(i).asString(""), StandardCharsets.UTF_8.name());
 				}
 			} else {
 				res = name + "[]=";
 			}
 			return res;
 		} else {
-			return name + "=" + URLEncoder.encode(val.asText(), StandardCharsets.UTF_8.name());
+			return name + "=" + URLEncoder.encode(val.asString(""), StandardCharsets.UTF_8.name());
 		}
 	}
 	
@@ -399,11 +403,11 @@ public abstract class AbstractG1Device extends ShellyAbstractDevice {
 	}
 
 	public static String jsonNodeToURLPar(JsonNode jNode, String ... pars) throws UnsupportedEncodingException {
-		String res = pars[0] + "=" +  URLEncoder.encode(jNode.get(pars[0]).asText(), StandardCharsets.UTF_8.name());
+		String res = pars[0] + "=" +  URLEncoder.encode(jNode.get(pars[0]).asString(""), StandardCharsets.UTF_8.name());
 		for(int i = 1; i < pars.length; i++) {
 			JsonNode thisNode = jNode.get(pars[i]);
 			if(thisNode != null && thisNode instanceof NullNode == false) {
-				res += "&" + pars[i] + "=" + URLEncoder.encode(thisNode.asText(), StandardCharsets.UTF_8.name());
+				res += "&" + pars[i] + "=" + URLEncoder.encode(thisNode.asString(""), StandardCharsets.UTF_8.name());
 			} else {
 				res += "&" + pars[i] + "=";
 			}

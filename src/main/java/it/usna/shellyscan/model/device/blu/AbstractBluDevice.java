@@ -1,7 +1,6 @@
 package it.usna.shellyscan.model.device.blu;
 
 import java.io.IOException;
-import java.net.SocketTimeoutException;
 import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
 import java.util.concurrent.ExecutionException;
@@ -14,22 +13,20 @@ import org.eclipse.jetty.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.exc.StreamReadException;
-import com.fasterxml.jackson.databind.JsonNode;
-
 import it.usna.shellyscan.model.DeviceAPIException;
 import it.usna.shellyscan.model.DeviceOfflineException;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.g2.JsonPageIterator;
-import it.usna.shellyscan.model.device.g2.modules.DynamicComponents;
 import it.usna.shellyscan.model.device.modules.InputResetManager;
 import it.usna.shellyscan.model.device.modules.LoginManager;
 import it.usna.shellyscan.model.device.modules.MQTTManager;
 import it.usna.shellyscan.model.device.modules.TimeAndLocationManager;
 import it.usna.shellyscan.model.device.modules.WIFIManager;
 import it.usna.shellyscan.model.device.modules.WIFIManager.Network;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.exc.StreamReadException;
+import tools.jackson.databind.JsonNode;
 
 public abstract class AbstractBluDevice extends ShellyAbstractDevice {
 	public static final String GENERATION = "blu";
@@ -37,11 +34,7 @@ public abstract class AbstractBluDevice extends ShellyAbstractDevice {
 	protected final AbstractG2Device parent;
 //	protected WebSocketClient wsClient;
 	protected final String componentIndex;
-	
-	public static final String DEVICE_KEY_PREFIX = DynamicComponents.BTHOME_DEVICE + ":"; // "bthomedevice:";
-	public static final String SENSOR_KEY_PREFIX = DynamicComponents.BTHOME_SENSOR + ":"; // "bthomesensor:";
-	public static final String GROUP_KEY_PREFIX = DynamicComponents.GROUP_TYPE + ":"; // "group:";
-	
+
 	/**
 	 * AbstractBluDevice constructor
 	 * @param parent
@@ -52,7 +45,7 @@ public abstract class AbstractBluDevice extends ShellyAbstractDevice {
 		super(new BluInetAddressAndPort(parent.getAddressAndPort(), Integer.parseInt(index)));
 		this.parent = parent;
 		this.componentIndex = index;
-		this.mac = compInfo.path("config").path("addr").asText();
+		this.mac = compInfo.path("config").path("addr").asString("");
 	}
 	
 	public void init(HttpClient httpClient/*, WebSocketClient wsClient*/) throws IOException {
@@ -60,6 +53,11 @@ public abstract class AbstractBluDevice extends ShellyAbstractDevice {
 //		this.wsClient = wsClient;
 		refreshStatus();
 		refreshSettings();
+	}
+	
+	@Override
+	public String getGeneration() {
+		return GENERATION;
 	}
 
 //	@Override
@@ -83,7 +81,7 @@ public abstract class AbstractBluDevice extends ShellyAbstractDevice {
 	public String postCommand(final String method, JsonNode payload) {
 		try {
 			return postCommand(method, jsonMapper.writeValueAsString(payload));
-		} catch (JsonProcessingException e) {
+		} catch (JacksonException e) {
 			return e.toString();
 		}
 	}
@@ -99,7 +97,7 @@ public abstract class AbstractBluDevice extends ShellyAbstractDevice {
 			return result;
 		} else {
 			JsonNode error = resp.get("error");
-			throw new DeviceAPIException(error.get("code").intValue(), error.get("message").asText("Generic error"));
+			throw new DeviceAPIException(error.get("code").intValue(0), error.get("message").asString("Generic error"));
 		}
 	}
 	
@@ -136,7 +134,7 @@ public abstract class AbstractBluDevice extends ShellyAbstractDevice {
 					return null;
 				}
 			} else {
-				return error.path("message").asText("Generic error");
+				return error.path("message").asString("Generic error");
 			}
 		} catch(IOException e) {
 			return "Status-OFFLINE";
@@ -160,7 +158,7 @@ public abstract class AbstractBluDevice extends ShellyAbstractDevice {
 				LOG.debug("executeRPC - reponse code: {}", statusCode);
 			}
 			return jsonMapper.readTree(response.getContent());
-		} catch(InterruptedException | ExecutionException | TimeoutException | SocketTimeoutException e) {
+		} catch(InterruptedException | ExecutionException | TimeoutException | JacksonException e) {
 			status = Status.OFF_LINE;
 			throw new DeviceOfflineException(e);
 		}

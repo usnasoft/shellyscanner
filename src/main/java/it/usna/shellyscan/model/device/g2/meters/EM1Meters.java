@@ -1,11 +1,10 @@
 package it.usna.shellyscan.model.device.g2.meters;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
 import it.usna.shellyscan.model.device.LabelHolder;
 import it.usna.shellyscan.model.device.g2.modules.EM1Manager;
 import it.usna.shellyscan.model.device.meters.EMHolder;
 import it.usna.shellyscan.model.device.meters.Meters;
+import tools.jackson.databind.JsonNode;
 
 /**
  * EM1 model; also returns EMData module 
@@ -58,7 +57,7 @@ public class EM1Meters extends Meters implements LabelHolder, EMHolder {
 	}
 	
 	public void fillSettings(JsonNode em1Configuration) {
-		label = em1Configuration.get("name").asText("");
+		label = em1Configuration.get("name").asString("");
 	}
 	
 	public void fillStatus(JsonNode em1Status) {

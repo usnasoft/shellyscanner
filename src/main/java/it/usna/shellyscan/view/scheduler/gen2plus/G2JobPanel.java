@@ -18,16 +18,15 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-
 import it.usna.shellyscan.controller.UsnaDropdownAction;
 import it.usna.shellyscan.view.scheduler.AbstractCronPanel;
 import it.usna.shellyscan.view.util.Msg;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.JsonNodeFactory;
+import tools.jackson.databind.node.ObjectNode;
 
 public class G2JobPanel extends AbstractCronPanel {
 	private static final long serialVersionUID = 1L;
@@ -49,10 +48,10 @@ public class G2JobPanel extends AbstractCronPanel {
 			setCron(DEF_CRON);
 			addCall("", "", 0);
 		} else {
-			setCron(scheduleNode.path("timespec").asText());
+			setCron(scheduleNode.path("timespec").asString(""));
 			JsonNode calls = scheduleNode.path("calls");
 			if(calls.size() > 0) {
-				setCalls(scheduleNode.path("calls"));
+				setCalls(/*scheduleNode.path("calls")*/calls);
 			} else {
 				addCall("", "", 0);
 			}
@@ -74,7 +73,7 @@ public class G2JobPanel extends AbstractCronPanel {
 			if(call.hasNonNull("origin")) {
 				systemJob = true;
 			}
-			addCall(call.path("method").asText(), params.isEmpty() ? "" :  params.substring(1, params.length() - 1), i);
+			addCall(call.path("method").asString(""), params.isEmpty() ? "" :  params.substring(1, params.length() - 1), i);
 		}
 		if(systemJob) {
 			enableEdit(callsPanel, false);
@@ -205,7 +204,7 @@ public class G2JobPanel extends AbstractCronPanel {
 				if(parameters.isBlank() == false) {
 					try {
 						JSON_MAPPER.readTree("{" + parameters + "}");
-					} catch (JsonProcessingException e) {
+					} catch (JacksonException e) {
 						callsParameterPanel.getComponent(i).requestFocus();
 						Msg.errorMsg(parentDlg, "schErrorInvalidParameters");
 						return false;
@@ -233,7 +232,7 @@ public class G2JobPanel extends AbstractCronPanel {
 			if(parameters.isBlank() == false) {
 				try {
 					call.set("params", JSON_MAPPER.readTree("{" + parameters + "}"));
-				} catch (JsonProcessingException e) {
+				} catch (JacksonException e) {
 					Msg.errorMsg(parentDlg, "schErrorInvalidParameters");
 					callsParameterPanel.getComponent(i).requestFocus();
 					return null;

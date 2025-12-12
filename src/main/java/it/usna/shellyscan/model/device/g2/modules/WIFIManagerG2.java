@@ -2,12 +2,11 @@ package it.usna.shellyscan.model.device.g2.modules;
 
 import java.io.IOException;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.modules.WIFIManager;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.JsonNodeFactory;
+import tools.jackson.databind.node.ObjectNode;
 
 public class WIFIManagerG2 implements WIFIManager {
 	private String net;
@@ -47,12 +46,12 @@ public class WIFIManagerG2 implements WIFIManager {
 		//'{"id": 1, "method": "Wifi.SetConfig", "params": {"config": {"sta": {"ssid": "Shelly", "pass": "Shelly", "enable": true}}}}'
 		JsonNode wifi = d.getJSON("/rpc/Wifi.GetConfig").get(net);
 		enabled = wifi.get("enable").asBoolean();
-		dSSID = wifi.get("ssid").asText("");
-		staticIP = wifi.get("ipv4mode").asText().equals("static");
-		ip = wifi.get("ip").asText("");
-		netmask = wifi.get("netmask").asText("");
-		gw = wifi.get("gw").asText("");
-		dns = wifi.get("nameserver").asText("");
+		dSSID = wifi.get("ssid").asString("");
+		staticIP = wifi.get("ipv4mode").asString("").equals("static");
+		ip = wifi.get("ip").asString("");
+		netmask = wifi.get("netmask").asString("");
+		gw = wifi.get("gw").asString("");
+		dns = wifi.get("nameserver").asString("");
 	}
 
 	@Override
@@ -145,9 +144,9 @@ public class WIFIManagerG2 implements WIFIManager {
 		try {
 			JsonNode settings = d.getJSON("/rpc/Shelly.GetConfig").get("wifi");
 			JsonNode sta;
-			if((sta = settings.get("sta")).get("enable").asBoolean() && sta.get("ssid").asText("").equals(d.getSSID())) {
+			if((sta = settings.get("sta")).get("enable").asBoolean() && sta.get("ssid").asString("").equals(d.getSSID())) {
 				return Network.PRIMARY;
-			} else if((sta = settings.get("sta1")).get("enable").asBoolean() && sta.get("ssid").asText("").equals(d.getSSID())) {
+			} else if((sta = settings.get("sta1")).get("enable").asBoolean() && sta.get("ssid").asString("").equals(d.getSSID())) {
 				return Network.SECONDARY;
 			} else if(settings.get("ap").get("enable").asBoolean()) {
 				return Network.AP;
@@ -165,10 +164,10 @@ public class WIFIManagerG2 implements WIFIManager {
 
 	public String restore(JsonNode wifi, String pwd) {
 		if(wifi.get("enable").asBoolean()) {
-			if(wifi.get("ipv4mode").asText().equals("static")) {
-				return set(wifi.get("ssid").asText(), pwd, wifi.get("ip").asText(), wifi.get("netmask").asText(""), wifi.get("gw").asText(""), wifi.get("nameserver").asText(""));
+			if(wifi.get("ipv4mode").asString("").equals("static")) {
+				return set(wifi.get("ssid").asString(""), pwd, wifi.get("ip").asString(""), wifi.get("netmask").asString(""), wifi.get("gw").asString(""), wifi.get("nameserver").asString(""));
 			} else {
-				return set(wifi.get("ssid").asText(), pwd);
+				return set(wifi.get("ssid").asString(""), pwd);
 			}
 		} else {
 			return disable();
@@ -183,7 +182,7 @@ public class WIFIManagerG2 implements WIFIManager {
 		if(ap.isMissingNode() == false) {
 			ObjectNode outAP = (ObjectNode)ap.deepCopy();
 //			outAP.remove("ssid");
-			if(ap.path("is_open").booleanValue() == false) {
+			if(ap.path("is_open").booleanValue(false) == false) {
 				outAP.put("pass", pwd);
 			}
 			outWifi.set("ap", outAP);

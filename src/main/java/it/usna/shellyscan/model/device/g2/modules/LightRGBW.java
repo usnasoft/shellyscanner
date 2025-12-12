@@ -2,11 +2,10 @@ package it.usna.shellyscan.model.device.g2.modules;
 
 import java.io.IOException;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.modules.RGBWInterface;
+import tools.jackson.databind.JsonNode;
 
 public class LightRGBW implements RGBWInterface {
 	private final AbstractG2Device parent;
@@ -27,7 +26,7 @@ public class LightRGBW implements RGBWInterface {
 	}
 	
 	public void fillConfig(JsonNode config) {
-		name = config.get("name").asText("");
+		name = config.get("name").asString("");
 	}
 	
 	public void fillStatus(JsonNode statusColor) {
@@ -38,7 +37,7 @@ public class LightRGBW implements RGBWInterface {
 		blue = rgbNode.get(2).asInt();
 		white = statusColor.get("white").asInt();
 		brightness = statusColor.get("brightness").asInt();
-		source = statusColor.get("source").asText("-");
+		source = statusColor.get("source").asString("-");
 	}
 	
 	public void fillStatus(JsonNode statusColor, JsonNode input) {

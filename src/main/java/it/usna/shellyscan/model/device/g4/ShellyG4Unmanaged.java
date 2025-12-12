@@ -5,10 +5,9 @@ import java.net.InetAddress;
 import java.util.List;
 import java.util.Map;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-
 import it.usna.shellyscan.model.device.ShellyUnmanagedDeviceInterface;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.JsonNode;
 
 public class ShellyG4Unmanaged extends AbstractG4Device implements ShellyUnmanagedDeviceInterface {
 	private String type;
@@ -25,7 +24,7 @@ public class ShellyG4Unmanaged extends AbstractG4Device implements ShellyUnmanag
 		name = "";
 		if(e instanceof IOException && "Status-401".equals(e.getMessage())) {
 			status = Status.NOT_LOOGGED;
-		} else if(e instanceof IOException && e instanceof JsonProcessingException == false) { // JsonProcessingException extends IOException
+		} else if(e instanceof IOException && e instanceof JacksonException == false) { // JsonProcessingException extends IOException
 			status = Status.OFF_LINE;
 		} else {
 			status = Status.ERROR;
@@ -35,9 +34,9 @@ public class ShellyG4Unmanaged extends AbstractG4Device implements ShellyUnmanag
 	@Override
 	protected void init(JsonNode devInfo) {
 		try {
-			this.type = devInfo.get("app").asText();
-			this.mac = devInfo.get("mac").asText();
-			this.hostname = devInfo.get("id").asText("");
+			this.type = devInfo.get("app").asString("");
+			this.mac = devInfo.get("mac").asString("");
+			this.hostname = devInfo.get("id").asString("");
 
 			fillSettings(getJSON("/rpc/Shelly.GetConfig"));
 			fillStatus(getJSON("/rpc/Shelly.GetStatus"));

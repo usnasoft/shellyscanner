@@ -2,12 +2,11 @@ package it.usna.shellyscan.model.device.g3.modules;
 
 import java.io.IOException;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
 import it.usna.shellyscan.model.DeviceAPIException;
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.modules.RGBCCTInterface;
+import tools.jackson.databind.JsonNode;
 
 public class LightRGBCCT implements RGBCCTInterface {
 	private static final int INDEX = 0;
@@ -38,22 +37,21 @@ public class LightRGBCCT implements RGBCCTInterface {
 
 	@Override
 	public void setColorMode(boolean color) throws IOException {
-		String ret = parent.postCommand("RGBCCT.SetConfig", "{\"id\":" + INDEX + ",\"config\":{\"mode\":\"" + (color ? "rgb" : "cct") + "\"}}");
+		String ret = parent.postCommand("RGBCCT.Set", "{\"id\":" + INDEX + ",\"mode\":\"" + (color ? "rgb" : "cct") + "\"}");
 		if(ret == null) {
 			colorMode = color;
 		} else {
 			throw new DeviceAPIException(DeviceAPIException.UNAVAILABLE, ret);
 		}
-//		parent.getJSON("/rpc/RGBCCT.SetConfig?id=" + INDEX + "&config={\"mode\":\"" + (color ? "rgb" : "cct") + "\"}");
 		colorMode = color;
 	}
 	
 	public void fillSettings(JsonNode config) {
-		name = config.get("name").asText("");
-		colorMode = "rgb".equals(config.get("mode").textValue()); // Range of values: rgb, cct
+		name = config.get("name").asString("");
 	}
 	
 	public void fillStatus(JsonNode statusRGBCCT) {
+		colorMode = "rgb".equals(statusRGBCCT.get("mode").asString(null)); // Range of values: rgb, cct
 		isOn = statusRGBCCT.get("output").asBoolean();
 		final JsonNode rgbNode = statusRGBCCT.get("rgb");
 		red = rgbNode.get(0).asInt();
@@ -61,9 +59,9 @@ public class LightRGBCCT implements RGBCCTInterface {
 		blue = rgbNode.get(2).asInt();
 		brightness = statusRGBCCT.get("brightness").asInt();
 		
-		temperature = statusRGBCCT.get("ct").intValue();
+		temperature = statusRGBCCT.get("ct").intValue(0);
 		
-		source = statusRGBCCT.get("source").asText("-");
+		source = statusRGBCCT.get("source").asString("-");
 	}
 
 	@Override

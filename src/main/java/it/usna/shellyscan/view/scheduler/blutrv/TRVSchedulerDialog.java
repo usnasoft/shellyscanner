@@ -30,10 +30,6 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-
 import it.usna.shellyscan.Main;
 import it.usna.shellyscan.controller.RestoreAction;
 import it.usna.shellyscan.controller.UsnaAction;
@@ -47,6 +43,9 @@ import it.usna.shellyscan.view.util.ScannerProperties;
 import it.usna.shellyscan.view.util.UtilMiscellaneous;
 import it.usna.swing.UsnaSwingUtils;
 import it.usna.swing.VerticalFlowLayout;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.node.ObjectNode;
 
 public class TRVSchedulerDialog extends JDialog {
 	private static final long serialVersionUID = 1L;
@@ -98,6 +97,7 @@ public class TRVSchedulerDialog extends JDialog {
 	public void refresh() {
 		rulesPanel.removeAll();
 		originalValues.clear();
+		removedId.clear();
 		fill();
 		rulesPanel.revalidate();
 		rulesPanel.repaint(); // last one need this ... do not know why
@@ -142,7 +142,7 @@ public class TRVSchedulerDialog extends JDialog {
 				if(files.containsKey("Thermostat.Schedule.ListProfiles.json")) { // WD backup
 					JsonNode profilesNode = files.get("Thermostat.Schedule.ListProfiles.json").path("profiles");
 					ArrayList<ThermProfile> profiles = new ArrayList<>();
-					profilesNode.forEach(node -> profiles.add(new ThermProfile(node.get("id").intValue(), node.get("name").textValue())) );
+					profilesNode.forEach(node -> profiles.add(new ThermProfile(node.get("id").intValue(0), node.get("name").asString(""))) );
 					if(profiles.size() > 0) {
 						ThermProfile loadProfile = (ThermProfile)JOptionPane.showInputDialog(this, LABELS.getString("dlgProfileSelectionMsg"), LABELS.getString("dlgProfileSelectionTitle"), JOptionPane.PLAIN_MESSAGE, null, profiles.toArray(), null);
 						if(loadProfile != null) {
@@ -186,7 +186,7 @@ public class TRVSchedulerDialog extends JDialog {
 			int numJobs = rulesPanel.getComponentCount();
 
 			// Validation
-			if(numJobs == 1) { // only 1 can be null and must be alone -> (existing jobs deleted?)
+			if(numJobs == 1 && originalValues.get(0).id < 0) { // one empty and not on the device (or deleted) in ok
 				TRVJobPanel sl = (TRVJobPanel)((JPanel)rulesPanel.getComponent(0)).getComponent(0);
 				if(sl.isNullJob() == false && sl.validateData() == false) {
 					return false;
@@ -259,7 +259,7 @@ public class TRVSchedulerDialog extends JDialog {
 		UsnaToggleAction enableAction = new UsnaToggleAction(this, "/images/Standby24.png", "/images/StandbyOn24.png",
 				e -> enableSchedule(linePanel, true), e -> enableSchedule(linePanel, false) );
 		enableAction.setTooltip("lblDisabled", "lblEnabled");
-		enableAction.setSelected(node != null && node.path("enable").booleanValue());
+		enableAction.setSelected(node != null && node.path("enable").booleanValue(false));
 		enableButton.setAction(enableAction);
 		linePanel.add(enableButton);
 
@@ -273,7 +273,7 @@ public class TRVSchedulerDialog extends JDialog {
 		addBtn.setContentAreaFilled(false);
 		addBtn.setBorder(BorderFactory.createEmptyBorder(2, 3, 2, 3));
 		
-		JButton removeBtn = new JButton(new UsnaAction(null, "schRemove", "/images/erase-9-16.png", e -> {
+		JButton removeBtn = new JButton(new UsnaAction(this, "schRemove", "/images/erase-9-16.png", e -> {
 			int i;
 			for(i = 0; rulesPanel.getComponent(i) != linePanel; i++);
 			rulesPanel.remove(i);
@@ -287,6 +287,7 @@ public class TRVSchedulerDialog extends JDialog {
 			lineColors();
 			rulesPanel.revalidate();
 			rulesPanel.repaint(); // last one need this ... do not know why
+			try { TimeUnit.MILLISECONDS.sleep(200); } catch (InterruptedException e1) {} // a small time to show busy pointer
 		}));
 		removeBtn.setContentAreaFilled(false);
 		removeBtn.setBorder(BorderFactory.createEmptyBorder(2, 3, 2, 3));
@@ -317,7 +318,7 @@ public class TRVSchedulerDialog extends JDialog {
 				final ObjectMapper jsonMapper = new ObjectMapper();
 
 				JsonNode pastedNode = jsonMapper.readTree(sch);
-				job.setCron(pastedNode.get("timespec").asText());
+				job.setCron(pastedNode.get("timespec").asString(""));
 				job.setTarget(pastedNode);
 				job.revalidate();
 				try { TimeUnit.MILLISECONDS.sleep(200); } catch (InterruptedException e1) {} // a small time to show busy pointer

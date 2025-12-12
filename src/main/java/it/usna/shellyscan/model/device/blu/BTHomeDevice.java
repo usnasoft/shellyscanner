@@ -21,11 +21,6 @@ import org.eclipse.jetty.client.HttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.ModulesHolder;
 import it.usna.shellyscan.model.device.RestoreMsg;
@@ -40,6 +35,10 @@ import it.usna.shellyscan.model.device.g2.modules.Webhooks.Webhook;
 import it.usna.shellyscan.model.device.meters.Meters;
 import it.usna.shellyscan.model.device.modules.DeviceModule;
 import it.usna.shellyscan.model.device.modules.FirmwareManager;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.JsonNodeFactory;
+import tools.jackson.databind.node.ObjectNode;
 
 /**
  * Generic BTHome device with measures and/or buttons
@@ -47,7 +46,10 @@ import it.usna.shellyscan.model.device.modules.FirmwareManager;
  */
 public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 	public final static String GENERATION = "bth";
-	private final static Logger LOG = LoggerFactory.getLogger(BTHomeDevice.class);
+	public static final String DEVICE_KEY_PREFIX = DynamicComponents.BTHOME_DEVICE + ":"; // "bthomedevice:";
+	public static final String SENSOR_KEY_PREFIX = DynamicComponents.BTHOME_SENSOR + ":"; // "bthomesensor:";
+	private static final String GROUP_KEY_PREFIX = DynamicComponents.GROUP_TYPE + ":"; // "group:";
+	private static final  Logger LOG = LoggerFactory.getLogger(BTHomeDevice.class);
 //	private final static Map<String, String> DEV_DICTIONARY = Map.of(
 //			"SBBT-002C", "Blu Button", "SBMO-003Z", "BLU Motion",
 //			"SBDW-002C", "Blu Door Window", "SBHT-003C", "Blu H&T",
@@ -63,8 +65,9 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 			Map.entry(8, "Blu TRV"),
 			Map.entry(9, "Blu Remote"),
 			Map.entry(10, "Blu Distance"),
+			Map.entry(12, "Blu H&T Display ZB"),
 			Map.entry(17, "Blu H&T ZB"),
-			Map.entry(23, "Blu Button Tough1 ZB")
+			Map.entry(23, "Blu Button Tough 1 ZB")
 			);
 	private String typeName;
 	private String typeID;
@@ -73,6 +76,7 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 	private Webhooks webhooks;
 	private InputActionInterface[] inputs;
 	private DeviceModule[] modules;
+	private String componentsKeys;
 
 	public BTHomeDevice(AbstractG2Device parent, JsonNode compInfo, int modelId, String index) {
 		super(parent, compInfo, index);
@@ -90,8 +94,6 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 		this.httpClient = httpClient;
 		initSensors();
 		hostname = "B" + sensors.getFullID() + "-" + mac;
-//		try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e) {}
-//		refreshStatus();
 		try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e) {}
 		refreshSettings();
 	}
@@ -100,10 +102,24 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 		this.sensors = new SensorsCollection(this);
 		this.meters = sensors.getTypes().length > 0 ? new Meters[] {sensors} : null;
 		
+		// generare key argument to retrive related components
+		StringBuilder keysBuilder = new StringBuilder("[%22");
+		keysBuilder.append(DEVICE_KEY_PREFIX);
+		keysBuilder.append(componentIndex);
+		keysBuilder.append("%22");
+		for(Sensor s: sensors.getSensors()) {
+			keysBuilder.append(",%22");
+			keysBuilder.append(SENSOR_KEY_PREFIX);
+			keysBuilder.append(s.getId());
+			keysBuilder.append("%22");
+		}
+		keysBuilder.append(']');
+		componentsKeys = keysBuilder.toString();
+		
 		try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e) {}
 		refreshStatus(); // init status for this.sensors
 		
-		ArrayList<DeviceModule> tmpModules = sensors.getModuleSensors();
+		List<DeviceModule> tmpModules = sensors.getModuleSensors();
 		List<InputActionInterface> tmpInputs = tmpModules.stream().filter(m -> m instanceof InputActionInterface).map(InputActionInterface.class::cast).collect(Collectors.toList());
 		
 		try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e) {}
@@ -134,6 +150,11 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 	}
 	
 	@Override
+	public String getGeneration() {
+		return GENERATION;
+	}
+	
+	@Override
 	public String getTypeID() {
 		return typeID;
 	}
@@ -155,26 +176,40 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 	
 	@Override
 	public void refreshStatus() throws IOException {
-		Iterator<JsonNode> componentsIt = getJSONIterator("/rpc/Shelly.GetComponents?dynamic_only=true", "components");
+		Iterator<JsonNode> componentsIt = getJSONIterator("/rpc/Shelly.GetComponents?keys=" + componentsKeys, "components");
 		String compKey;
 		boolean devExists = false;
 		while(componentsIt.hasNext()) {
 			JsonNode comp = componentsIt.next();
-			if(devExists == false && comp.path("key").textValue().equals(DEVICE_KEY_PREFIX + componentIndex)) { // devExists == false for efficiency
+			if((compKey = comp.path("key").asString()).startsWith(SENSOR_KEY_PREFIX)) {
+				int id = Integer.parseInt(compKey.substring(13));
+				sensors.getSensor(id).fill(comp);
+			} else { // not a sensor -> is the device
 				fillSettings(comp.path("config"));
 				fillStatus(comp.path("status"));
 				devExists = true;
-			} else if((compKey = comp.path("key").textValue()).startsWith(SENSOR_KEY_PREFIX)) {
-				int id = Integer.parseInt(compKey.substring(13));
-				Sensor sensor = sensors.getSensor(id);
-				if(sensor != null) {
-					sensor.fill(comp);
-				}
 			}
 		}
 		if(devExists == false) {
 			this.rssi = 0;
 		}
+
+//		System.out.println(this  + " - " + System.currentTimeMillis());
+//		DynamicComponents parentComponents = parent.getDynamicComponents();
+//		JsonNode comp = parentComponents.getComponentNode(componentIndex);
+//		if(comp != null) {
+//			fillSettings(comp.path("config"));
+//			fillStatus(comp.path("status"));
+//			for(JsonNode sensorJson: parentComponents.getSensors()) {
+//				int id = Integer.parseInt(sensorJson.path("key").asString().substring(13));
+//				Sensor sensor = sensors.getSensor(id);
+//				if(sensor != null) {
+//					sensor.fill(sensorJson);
+//				}
+//			}
+//		} else {
+//			this.rssi = 0;
+//		}
 	}
 	
 	@Override
@@ -188,13 +223,13 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 	}
 	
 	private void fillSettings(JsonNode config) {
-		this.name = config.path("name").asText("");
+		this.name = config.path("name").asString("");
 	}
 
 	private void fillStatus(JsonNode status) {
-		this.rssi = status.path("rssi").intValue();
-		this.lastConnection = status.path("last_updated_ts").intValue() * 1000L;
-		//	this.battery = status.path("battery").intValue(); // there is a specific sensor for this
+		this.rssi = status.path("rssi").intValue(0);
+		this.lastConnection = status.path("last_updated_ts").intValue(0) * 1000L;
+		//	this.battery = status.path("battery").intValue(0); // there is a specific sensor for this
 	}
 
 	@Override
@@ -242,12 +277,12 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 	public Map<RestoreMsg, Object> restoreCheck(Map<String, JsonNode> backupJsons) {
 		EnumMap<RestoreMsg, Object> res = new EnumMap<>(RestoreMsg.class);
 		JsonNode usnaInfo = backupJsons.get("ShellyScannerBLU.json");
-		if(usnaInfo == null || usnaInfo.path("type").asText("?").equals(typeID) == false) {
+		if(usnaInfo == null || usnaInfo.path("type").asString("?").equals(typeID) == false) {
 			res.put(RestoreMsg.ERR_RESTORE_MODEL, null);
 			return res;
 		}
 		String fileMac;
-		if((fileMac = usnaInfo.path("mac").asText("?")).equals(mac) == false) {
+		if((fileMac = usnaInfo.path("mac").asString("?")).equals(mac) == false) {
 			res.put(RestoreMsg.PRE_QUESTION_RESTORE_HOST, "mac: " + fileMac);
 		}
 		return res;
@@ -261,23 +296,24 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 			
 			// Store groups components into HashMap<String, ArrayNode> groups (they will be removed deleting a sensor)
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-			JsonNode currentComponents = parent.getJSON("/rpc/Shelly.GetComponents?dynamic_only=true&include=[%22status%22]");
 			HashMap<String, ArrayNode> existingGroups = new HashMap<>();
-			for (JsonNode comp: currentComponents.path("components")) {
-				String key = comp.get("key").asText();
+			
+			Iterator<JsonNode> currentComponentsIt = getJSONIterator("/rpc/Shelly.GetComponents?dynamic_only=true&include=[%22status%22]", "components");
+			currentComponentsIt.forEachRemaining(comp -> {
+				String key = comp.get("key").asString("");
 				if(key.startsWith(GROUP_KEY_PREFIX)) {
 					existingGroups.put(key, (ArrayNode)comp.path("status").get("value"));
 				}
-			}
+			});
 
 			JsonNode usnaInfo = backupJsons.get("ShellyScannerBLU.json");
-			String fileComponentIndex = usnaInfo.get("index").textValue();
+			String fileComponentIndex = usnaInfo.get("index").asString("");
 			JsonNode fileComponents = backupJsons.get("Shelly.GetComponents.json").path("components");
 			JsonNode storedWebHooks = backupJsons.get("Webhook.List.json");
 			String fileAddr = null;
 			// BLU configuration: Device
 			for(JsonNode fileComp: fileComponents) {
-				if(fileComp.path("key").textValue().equals(DEVICE_KEY_PREFIX + fileComponentIndex)) { // find the component by fileComponentIndex
+				if(fileComp.path("key").asString("").equals(DEVICE_KEY_PREFIX + fileComponentIndex)) { // find the component by fileComponentIndex
 					ObjectNode out = JsonNodeFactory.instance.objectNode();
 					final int currentComponentIndex = Integer.parseInt(componentIndex);
 					out.put("id", currentComponentIndex); // could be different
@@ -287,7 +323,7 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 					out.set("config", config);
 					TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 					errors.add(parent.postCommand("BTHomeDevice.SetConfig", out));
-					fileAddr = fileComp.at("/config/addr").textValue();
+					fileAddr = fileComp.at("/config/addr").asString("");
 					
 					// /attrs/flags ? Valuable values here?
 
@@ -302,14 +338,14 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 			HashMap<String, String> sensorsDictionary = new HashMap<>(); // old-new key ("bthomesensor:200"-"bthomesensor:201")
 			errors.add(sensors.deleteAll()); // deleting a sensor all related webhooks are removed
 			for(JsonNode fileComp: fileComponents) {
-				final String fileKey = fileComp.path("key").textValue();
-				if(fileKey.startsWith(SENSOR_KEY_PREFIX) && fileComp.at("/config/addr").textValue().equals(fileAddr)) {
+				final String fileKey = fileComp.path("key").asString("");
+				if(fileKey.startsWith(SENSOR_KEY_PREFIX) && fileComp.at("/config/addr").asString("").equals(fileAddr)) {
 					ObjectNode out = JsonNodeFactory.instance.objectNode();
 					ObjectNode config = (ObjectNode)fileComp.path("config");
 					config.put("addr", this.mac);
 					out.set("config", config);
 					TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-					String newKey = parent.getJSON("BTHome.AddSensor", out).get("added").textValue(); // BTHome.AddSensor -> {"added":"bthomesensor:200"}
+					String newKey = parent.getJSON("BTHome.AddSensor", out).get("added").asString(""); // BTHome.AddSensor -> {"added":"bthomesensor:200"}
 					Webhooks.restore(parent, fileKey, newKey, storedWebHooks, Devices.MULTI_QUERY_DELAY, errors); // Webhook.Create - deleting a sensor all related webhooks are removed
 					
 					sensorsDictionary.put(fileKey, newKey);
@@ -321,7 +357,7 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 				ArrayNode conponents = group.getValue();
 				boolean change = false;
 				for(int i = 0; i < conponents.size(); i++) {
-					String newKey = sensorsDictionary.get(conponents.get(i).textValue());
+					String newKey = sensorsDictionary.get(conponents.get(i).asString(""));
 					if(newKey != null) {
 						change = true;
 						conponents.set(i, newKey);

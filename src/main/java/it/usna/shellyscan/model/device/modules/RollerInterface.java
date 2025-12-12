@@ -17,4 +17,12 @@ public interface RollerInterface extends DeviceModule {
 	void close() throws IOException;
 	
 	void stop() throws IOException;
+	
+	default boolean isInputOn0() {
+		return false;
+	}
+	
+	default boolean isInputOn1() {
+		return false;
+	}
 }

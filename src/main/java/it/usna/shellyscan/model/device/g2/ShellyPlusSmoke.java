@@ -5,10 +5,9 @@ import java.net.InetAddress;
 import java.util.List;
 import java.util.Map;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-
 import it.usna.shellyscan.model.device.meters.Meters;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.JsonNode;
 
 public class ShellyPlusSmoke extends AbstractBatteryG2Device {
 	private static final Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.BAT};
@@ -69,12 +68,12 @@ public class ShellyPlusSmoke extends AbstractBatteryG2Device {
 	protected void fillStatus(JsonNode status) throws IOException {
 		super.fillStatus(status);
 		this.statusJ = status;
-		bat = status.path("devicepower:0").path("battery").path("percent").intValue();
+		bat = status.path("devicepower:0").path("battery").path("percent").intValue(0);
 		alarm = status.path("smoke:0").path("alarm").asBoolean();
 	}
 
 	@Override
-	protected void restore(Map<String, JsonNode> backupJsons, List<String> errors) throws JsonProcessingException {
+	protected void restore(Map<String, JsonNode> backupJsons, List<String> errors) throws JacksonException {
 		JsonNode configuration = backupJsons.get("Shelly.GetConfig.json");
 		errors.add(postCommand("Smoke.SetConfig", "{\"config\":" + jsonMapper.writeValueAsString(configuration.get("smoke:0")) + "}"));
 	}

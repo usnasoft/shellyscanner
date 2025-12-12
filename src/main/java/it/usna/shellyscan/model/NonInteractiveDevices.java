@@ -13,6 +13,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 import javax.jmdns.JmDNS;
 import javax.jmdns.JmmDNS;
@@ -25,17 +26,18 @@ import org.eclipse.jetty.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
 import it.usna.shellyscan.model.device.blu.AbstractBluDevice;
+import it.usna.shellyscan.model.device.blu.BTHomeDevice;
 import it.usna.shellyscan.model.device.blu.BluTRV;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.g2.AbstractProDevice;
 import it.usna.shellyscan.model.device.g3.AbstractG3Device;
 import it.usna.shellyscan.model.device.g4.AbstractG4Device;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 
 /**
  * Devices model intended for CLI non iteractive use
@@ -52,11 +54,9 @@ public class NonInteractiveDevices implements Closeable {
 	private IPCollection ipCollection = null;
 
 	private static final String SERVICE_TYPE1 = "_http._tcp.local.";
-//	private static final String SERVICE_TYPE2 = "_shelly._tcp.local.";
 	private final List<ShellyAbstractDevice> devices = new ArrayList<>();
 
 	private HttpClient httpClient = new HttpClient();
-//	private WebSocketClient wsClient = new WebSocketClient(httpClient);
 	
 	private NonInteractiveDevices() throws Exception {
 		httpClient.setDestinationIdleTimeout(300_000); // 5 min
@@ -65,14 +65,13 @@ public class NonInteractiveDevices implements Closeable {
 //		wsClient.start();
 	}
 	
-	public NonInteractiveDevices(boolean fullScan) throws Exception {
+	public NonInteractiveDevices(boolean fullScan, IPCollection ipCollection) throws Exception {
 		this();
-		scannerInit(fullScan);
-	}
-	
-	public NonInteractiveDevices(IPCollection ipCollection) throws Exception {
-		this();
-		scannerInit(ipCollection);
+		if(ipCollection == null) {
+			scannerInit(fullScan);
+		} else {
+			scannerInit(ipCollection);
+		}
 	}
 
 	public void scannerInit(boolean fullScan) throws IOException {
@@ -95,7 +94,7 @@ public class NonInteractiveDevices implements Closeable {
 		LOG.debug("IP scan: {}", ipCollection);
 	}
 	
-	private void scanByIP(Consumer<ShellyAbstractDevice> c) throws IOException {
+	private void scanByIP(Consumer<ShellyAbstractDevice> consumer, Predicate<ShellyAbstractDevice> filter) throws IOException {
 		ScheduledExecutorService executor = Executors.newScheduledThreadPool(EXECUTOR_POOL_SIZE);
 		try {
 			int dalay = 0;
@@ -107,7 +106,7 @@ public class NonInteractiveDevices implements Closeable {
 							JsonNode info = isShelly(addr, 80);
 							if(info != null) {
 								Thread.sleep(Devices.MULTI_QUERY_DELAY);
-								create(addr, 80, info, addr.getHostAddress(), c);
+								create(addr, 80, info, addr.getHostAddress(), consumer, filter);
 							}
 						} else {
 							LOG.trace("no ping {}", addr);
@@ -139,13 +138,13 @@ public class NonInteractiveDevices implements Closeable {
 				LOG.trace("Not Shelly {}, status {}, node {}", address, resp, shellyNode);
 				return null;
 			}
-		} catch (InterruptedException | ExecutionException | IOException e) { // SocketTimeoutException extends IOException
+		} catch (InterruptedException | ExecutionException | JacksonException e) { // SocketTimeoutException extends IOException
 			LOG.trace("Not Shelly {} - {}", address, port, e);
 			return null;
 		}
 	}
-
-	public void execute(Consumer<ShellyAbstractDevice> c) throws IOException {
+	
+	public void execute(Consumer<ShellyAbstractDevice> consumer, Predicate<ShellyAbstractDevice> filter) throws IOException {
 		LOG.trace("scan");
 		if(this.ipCollection == null) {
 			for(JmDNS bonjourService: bjServices) {
@@ -156,7 +155,7 @@ public class NonInteractiveDevices implements Closeable {
 					try {
 						JsonNode info = isShelly(dnsInfo.getInetAddresses()[0], 80);
 						if(info != null) {
-							create(dnsInfo.getInetAddresses()[0], 80, info, name, c);
+							create(dnsInfo.getInetAddresses()[0], 80, info, name, consumer, filter);
 						}
 					} catch (TimeoutException e) {
 						LOG.error("scan", e);
@@ -164,18 +163,20 @@ public class NonInteractiveDevices implements Closeable {
 				}
 			}
 		} else {
-			scanByIP(c);
+			scanByIP(consumer, filter);
 		}
 		LOG.debug("end scan");
 	}
 	
-	private void create(InetAddress address, int port, JsonNode info, String hostName, Consumer<ShellyAbstractDevice> consumer) {
+	private void create(InetAddress address, int port, JsonNode info, String hostName, Consumer<ShellyAbstractDevice> consumer, Predicate<ShellyAbstractDevice> filter) {
 		LOG.trace("Creating {}:{} - {}", address, port, hostName);
 		try {
 			ShellyAbstractDevice d = DevicesFactory.create(httpClient, /*wsClient*/null, address, port, info, hostName);
 			if(devices.contains(d) == false) {
 				devices.add(d);
-				consumer.accept(d);
+				if(filter == null || filter.test(d)) {
+					consumer.accept(d);
+				}
 				LOG.debug("Create {}:{} - {}", address, port, d);
 
 				// Range extender
@@ -184,7 +185,7 @@ public class NonInteractiveDevices implements Closeable {
 						try {
 							JsonNode infoEx = isShelly(address, p);
 							if(infoEx != null) {
-								create(d.getAddressAndPort().getAddress(), p, infoEx, d.getHostname() + "-EX" + ":" + p, consumer); // device will later correct hostname
+								create(d.getAddressAndPort().getAddress(), p, infoEx, d.getHostname() + "-EX" + ":" + p, consumer, filter); // device will later correct hostname
 							}
 						} catch (TimeoutException | RuntimeException e) {
 							LOG.debug("timeout {}:{}", d.getAddressAndPort().getAddress(), p, e);
@@ -193,13 +194,18 @@ public class NonInteractiveDevices implements Closeable {
 				}
 				// BTHome (BLU)
 				if(d instanceof AbstractProDevice || d instanceof AbstractG3Device || d instanceof AbstractG4Device) {
-					for(JsonNode compInfo: ((AbstractG2Device)d).getJSONIterator("/rpc/Shelly.GetComponents?dynamic_only=true", "components")) { // empty on 401
-						String key = compInfo.path("key").asText();
-						if(key.startsWith(AbstractBluDevice.DEVICE_KEY_PREFIX) || key.startsWith(BluTRV.DEVICE_KEY_PREFIX)) {
+					((AbstractG2Device)d).getJSONIterator("/rpc/Shelly.GetComponents?dynamic_only=true", "components").forEachRemaining(compInfo -> {
+						String key = compInfo.path("key").asString("");
+						if(key.startsWith(BTHomeDevice.DEVICE_KEY_PREFIX) || key.startsWith(BluTRV.DEVICE_KEY_PREFIX)) {
 							AbstractBluDevice newBlu = DevicesFactory.createBlu((AbstractG2Device)d, httpClient, compInfo, key);
-							consumer.accept(newBlu);
+							if(devices.contains(newBlu) == false) {
+								devices.add(newBlu);
+								if(filter == null || filter.test(newBlu)) {
+									consumer.accept(newBlu);
+								}
+							}
 						}
-					}
+					});
 				}
 			}
 		} catch(Exception e) {

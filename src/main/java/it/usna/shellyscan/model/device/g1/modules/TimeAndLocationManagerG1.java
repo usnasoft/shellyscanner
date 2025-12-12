@@ -2,10 +2,9 @@ package it.usna.shellyscan.model.device.g1.modules;
 
 import java.io.IOException;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
 import it.usna.shellyscan.model.device.g1.AbstractG1Device;
 import it.usna.shellyscan.model.device.modules.TimeAndLocationManager;
+import tools.jackson.databind.JsonNode;
 
 public class TimeAndLocationManagerG1 implements TimeAndLocationManager {
 	private final AbstractG1Device d;
@@ -22,7 +21,7 @@ public class TimeAndLocationManagerG1 implements TimeAndLocationManager {
 	}
 	
 	private void init(JsonNode settings) {
-		server = settings.path("sntp").path("server").textValue();
+		server = settings.path("sntp").path("server").asString("");
 	}
 	
 	@Override

@@ -1,8 +1,7 @@
 package it.usna.shellyscan.model.device.g2.meters;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
 import it.usna.shellyscan.model.device.meters.Meters;
+import tools.jackson.databind.JsonNode;
 
 public class MetersWVI extends Meters {
 	private static final Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.W, Meters.Type.V, Meters.Type.I};
@@ -16,9 +15,9 @@ public class MetersWVI extends Meters {
 	}
 	
 	public void fill(JsonNode status) {
-		power = status.path("apower").floatValue();
-		voltage = status.path("voltage").floatValue();
-		current = status.path("current").floatValue();
+		power = status.path("apower").floatValue(0); // Shelly +RGBW - "Lights x 4" not calibrated -> missing node
+		voltage = status.path("voltage").floatValue(0);
+		current = status.path("current").floatValue(0); // Shelly +RGBW - "Lights x 4" not calibrated -> missing node
 	}
 	
 	@Override

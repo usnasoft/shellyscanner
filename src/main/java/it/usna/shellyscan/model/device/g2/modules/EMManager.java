@@ -5,10 +5,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.meters.EMDataInterface;
+import tools.jackson.databind.JsonNode;
 
 public class EMManager implements EMDataInterface {
 	private static final int IND_a_total_act_energy = 0;
@@ -38,8 +37,8 @@ public class EMManager implements EMDataInterface {
 			JsonNode energyDataValue = device.getJSON("/rpc/EMData.GetData?add_keys=false&id=" + ID + "&ts=" + nextTs + "&end_ts=" + endTs); // too many values -> too much time
 //			System.out.println("-------------------------------------------------------------------");
 			for(JsonNode energyData: energyDataValue.get("data")) {
-				int ts = energyData.get("ts").intValue();
-				int period = energyData.get("period").intValue();
+				int ts = energyData.get("ts").intValue(0);
+				int period = energyData.get("period").intValue(0);
 				JsonNode enArray = energyData.get("values");
 				for(JsonNode valArray: enArray) {
 					float[] values = new float[valArray.size()];
@@ -51,7 +50,7 @@ public class EMManager implements EMDataInterface {
 //					System.out.println(data.get(data.size() - 1));
 				}
 			}
-			nextTs = energyDataValue.path("next_record_ts").intValue();
+			nextTs = energyDataValue.path("next_record_ts").intValue(0);
 		} while(nextTs > 0);
 
 		return data;
@@ -68,8 +67,8 @@ public class EMManager implements EMDataInterface {
 			JsonNode energyDataValue = device.getJSON("/rpc/EMData.GetData?add_keys=false&id=" + ID + "&ts=" + nextTs + "&end_ts=" + endTs); // too many values -> too much time
 //			System.out.println("-------------------------------------------------------------------");
 			for(JsonNode energyData: energyDataValue.get("data")) {
-				int ts = energyData.get("ts").intValue();
-				int period = energyData.get("period").intValue();
+				int ts = energyData.get("ts").intValue(0);
+				int period = energyData.get("period").intValue(0);
 				JsonNode enArray = energyData.get("values");
 				for(JsonNode valArray: enArray) {
 					data.add(new TimedData(ts, new float[] {
@@ -81,7 +80,7 @@ public class EMManager implements EMDataInterface {
 //					System.out.println(data.get(data.size() - 1));
 				}
 			}
-			nextTs = energyDataValue.path("next_record_ts").intValue();
+			nextTs = energyDataValue.path("next_record_ts").intValue(0);
 		} while(nextTs > 0);
 
 		return data;

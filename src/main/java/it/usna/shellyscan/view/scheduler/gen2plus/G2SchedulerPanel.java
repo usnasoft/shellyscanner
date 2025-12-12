@@ -23,10 +23,6 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-
 import it.usna.shellyscan.Main;
 import it.usna.shellyscan.controller.RestoreAction;
 import it.usna.shellyscan.controller.UsnaAction;
@@ -37,6 +33,9 @@ import it.usna.shellyscan.model.device.g2.modules.ScheduleManager;
 import it.usna.shellyscan.view.util.Msg;
 import it.usna.shellyscan.view.util.ScannerProperties;
 import it.usna.swing.VerticalFlowLayout;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.node.ObjectNode;
 
 /**
  * The complete panel showing and managing gen2+ jobs
@@ -101,6 +100,7 @@ public class G2SchedulerPanel extends JScrollPane {
 	public void refresh() {
 		schedulesPanel.removeAll();
 		originalValues.clear();
+		removedId.clear();
 		fill();
 		schedulesPanel.revalidate();
 		schedulesPanel.repaint(); // last one need this ... do not know why
@@ -147,7 +147,7 @@ public class G2SchedulerPanel extends JScrollPane {
 			int numJobs = schedulesPanel.getComponentCount();
 
 			// Validation
-			if(numJobs == 1) {
+			if(numJobs == 1 && originalValues.get(0).id < 0) { // one empty and not on the device (or deleted) in ok
 				G2JobPanel sl = (G2JobPanel)((JPanel)schedulesPanel.getComponent(0)).getComponent(0);
 				if(sl.isNullJob() == false && sl.validateData() == false) {
 					return false;
@@ -226,7 +226,7 @@ public class G2SchedulerPanel extends JScrollPane {
 		UsnaToggleAction enableAction = new UsnaToggleAction(this, "/images/Standby24.png", "/images/StandbyOn24.png",
 				e -> enableSchedule(linePanel, true), e -> enableSchedule(linePanel, false) );
 		enableAction.setTooltip("lblDisabled", "lblEnabled");
-		enableAction.setSelected(node != null && node.path("enable").booleanValue());
+		enableAction.setSelected(node != null && node.path("enable").booleanValue(false));
 		enableButton.setAction(enableAction);
 		linePanel.add(enableButton);
 
@@ -240,7 +240,7 @@ public class G2SchedulerPanel extends JScrollPane {
 		addBtn.setContentAreaFilled(false);
 		addBtn.setBorder(BorderFactory.createEmptyBorder(2, 3, 2, 3));
 		
-		JButton removeBtn = new JButton(new UsnaAction(null, "schRemove", "/images/erase-9-16.png", e -> {
+		JButton removeBtn = new JButton(new UsnaAction(this, "schRemove", "/images/erase-9-16.png", e -> {
 			int i;
 			for(i = 0; schedulesPanel.getComponent(i) != linePanel; i++);
 			schedulesPanel.remove(i);
@@ -254,6 +254,7 @@ public class G2SchedulerPanel extends JScrollPane {
 			lineColors();
 			schedulesPanel.revalidate();
 			schedulesPanel.repaint(); // last one need this ... do not know why
+			try { TimeUnit.MILLISECONDS.sleep(200); } catch (InterruptedException e1) {} // a small time to show busy pointer
 		}));
 		removeBtn.setContentAreaFilled(false);
 		removeBtn.setBorder(BorderFactory.createEmptyBorder(2, 3, 2, 3));
@@ -284,7 +285,7 @@ public class G2SchedulerPanel extends JScrollPane {
 				final ObjectMapper jsonMapper = new ObjectMapper();
 
 				JsonNode pastedNode = jsonMapper.readTree(sch);
-				job.setCron(pastedNode.get("timespec").asText());
+				job.setCron(pastedNode.get("timespec").asString(""));
 				if(pastedNode.hasNonNull("calls")) {
 					job.setCalls(pastedNode.get("calls"));
 				}

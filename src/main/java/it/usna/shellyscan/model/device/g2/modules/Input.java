@@ -4,10 +4,9 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.g2.modules.Webhooks.Webhook;
+import tools.jackson.databind.JsonNode;
 
 public class Input implements InputActionInterface {
 	private AbstractG2Device parent;
@@ -28,8 +27,8 @@ public class Input implements InputActionInterface {
 	}
 	
 	public void fillSettings(JsonNode input) {
-		name = input.get("name").asText("");
-		enable = input.get("enable").booleanValue();
+		name = input.get("name").asString("");
+		enable = input.get("enable").booleanValue(false);
 //		reverse = input.get("invert").asBoolean();
 	}
 	

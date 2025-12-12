@@ -9,10 +9,15 @@ import it.usna.shellyscan.model.device.g3.AbstractG3Device;
  * @author usna
  */
 public abstract class AbstractG4Device extends AbstractG3Device {
-	protected boolean zigbee;
+//	protected boolean zigbee;
 
 	protected AbstractG4Device(InetAddress address, int port, String hostname) {
 		super(address, port, hostname);
+	}
+	
+	@Override
+	public String getGeneration() {
+		return "4";
 	}
 	
 //	@Override

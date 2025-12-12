@@ -6,13 +6,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.InternalTmpHolder;
 import it.usna.shellyscan.model.device.ModulesHolder;
 import it.usna.shellyscan.model.device.g2.modules.Input;
 import it.usna.shellyscan.model.device.g2.modules.Relay;
+import tools.jackson.databind.JsonNode;
 
 /**
  * Shelly Pro 1 model
@@ -55,7 +54,7 @@ public class ShellyPro1 extends AbstractProDevice implements ModulesHolder, Inte
 		super.fillSettings(configuration);
 		
 		JsonNode switchConf0 = configuration.get("switch:0");
-		inputKey = switchConf0.path("input_id").intValue() == 0 ? "input:0" : "input:1";;
+		inputKey = switchConf0.path("input_id").intValue(0) == 0 ? "input:0" : "input:1";;
 		relay.fillSettings(switchConf0, configuration.get(inputKey));
 	}
 	

@@ -36,4 +36,9 @@ public class DeviceAPIException extends IOException {
 	public String getErrorMessage() {
 		return msg;
 	}
+	
+	@Override
+	public String toString() {
+		return getMessage();
+	}
 }

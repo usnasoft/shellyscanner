@@ -6,8 +6,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.InternalTmpHolder;
 import it.usna.shellyscan.model.device.ModulesHolder;
@@ -17,6 +15,7 @@ import it.usna.shellyscan.model.device.g2.modules.Input;
 import it.usna.shellyscan.model.device.g2.modules.LightWhite;
 import it.usna.shellyscan.model.device.meters.Meters;
 import it.usna.shellyscan.model.device.modules.DeviceModule;
+import tools.jackson.databind.JsonNode;
 
 /**
  * Pro Dimmer 2PM model
@@ -86,7 +85,7 @@ public class ShellyProDimmer2 extends AbstractProDevice implements InternalTmpHo
 	@Override
 	protected void restoreCheck(Map<String, JsonNode> backupJsons, Map<RestoreMsg, Object> resp) {
 		JsonNode devInfo = backupJsons.get("Shelly.GetDeviceInfo.json");
-		if(MODEL.equals(devInfo.get("model").textValue()) == false) {
+		if(MODEL.equals(devInfo.get("model").asString("")) == false) {
 			resp.put(RestoreMsg.ERR_RESTORE_MODEL, null);
 		}
 	}

@@ -5,13 +5,12 @@ import java.net.InetAddress;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.LabelHolder;
 import it.usna.shellyscan.model.device.ModulesHolder;
 import it.usna.shellyscan.model.device.g1.modules.Relay;
 import it.usna.shellyscan.model.device.meters.Meters;
+import tools.jackson.databind.JsonNode;
 
 public class ShellyEM extends AbstractG1Device implements ModulesHolder {
 	public static final String ID = "SHEM";
@@ -107,8 +106,8 @@ public class ShellyEM extends AbstractG1Device implements ModulesHolder {
 		relay.fillSettings(settings.get("relays").get(0));
 		
 		JsonNode eMeters = settings.get("emeters");
-		meterName[0] = eMeters.get(0).get("name").asText("");
-		meterName[1] = eMeters.get(1).get("name").asText("");
+		meterName[0] = eMeters.get(0).get("name").asString("");
+		meterName[1] = eMeters.get(1).get("name").asString("");
 	}
 	
 	@Override

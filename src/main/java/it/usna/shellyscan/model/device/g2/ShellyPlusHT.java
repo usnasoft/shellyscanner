@@ -5,11 +5,10 @@ import java.net.InetAddress;
 import java.util.List;
 import java.util.Map;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-
 import it.usna.shellyscan.model.device.meters.Meters;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ObjectNode;
 
 public class ShellyPlusHT extends AbstractBatteryG2Device {
 	public static final String ID = "PlusHT";
@@ -83,7 +82,7 @@ public class ShellyPlusHT extends AbstractBatteryG2Device {
 	}
 	
 	@Override
-	protected void restore(Map<String, JsonNode> backupJsons, List<String> errors) throws JsonProcessingException {
+	protected void restore(Map<String, JsonNode> backupJsons, List<String> errors) throws JacksonException {
 		JsonNode configuration = backupJsons.get("Shelly.GetConfig.json");
 		errors.add(postCommand("HT_UI.SetConfig", "{\"config\":" + jsonMapper.writeValueAsString(configuration.get("ht_ui")) + "}"));
 		

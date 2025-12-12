@@ -6,12 +6,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.ModulesHolder;
 import it.usna.shellyscan.model.device.g1.modules.Relay;
 import it.usna.shellyscan.model.device.meters.Meters;
+import tools.jackson.databind.JsonNode;
 
 public class ShellyUNI extends AbstractG1Device implements ModulesHolder {
 	public static final String ID = "SHUNI-1";
@@ -29,7 +28,7 @@ public class ShellyUNI extends AbstractG1Device implements ModulesHolder {
 	@Override
 	protected void init() throws IOException {
 		final JsonNode settings = getJSON("/settings");
-		this.hostname = settings.get("device").get("hostname").asText("");
+		this.hostname = settings.get("device").get("hostname").asString("");
 		fillSettings(settings);
 		try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e) {}
 		fillStatus(getJSON("/status"));
@@ -142,7 +141,7 @@ public class ShellyUNI extends AbstractG1Device implements ModulesHolder {
 	@Override
 	protected void restore(JsonNode settings, List<String> errors) throws IOException, InterruptedException {
 		errors.add(sendCommand("/settings?" + jsonNodeToURLPar(settings, "longpush_time", "factory_reset_from_switch") +
-				"&ext_sensors_temperature_unit=" + settings.path("ext_sensors").path("temperature_unit").asText()));
+				"&ext_sensors_temperature_unit=" + settings.path("ext_sensors").path("temperature_unit").asString("")));
 
 		// ret.startsWith("[") ... don't ask ... it's an array and return an array
 		for (int i = 0; i < 3; i++) {
@@ -167,7 +166,7 @@ public class ShellyUNI extends AbstractG1Device implements ModulesHolder {
 		
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 		JsonNode adc0 = settings.get("adcs").get(0);
-		errors.add(sendCommand("/settings/adc/0?range=" + adc0.get("range").asText() + "&offset=" + adc0.path("offset").asText()));
+		errors.add(sendCommand("/settings/adc/0?range=" + adc0.get("range").asString("") + "&offset=" + adc0.path("offset").asString("")));
 		JsonNode relAct = adc0.get("relay_actions");
 
 		for(int index = 0; index < relAct.size(); index++) {

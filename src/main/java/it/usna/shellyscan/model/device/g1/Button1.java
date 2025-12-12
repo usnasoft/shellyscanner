@@ -5,14 +5,13 @@ import java.net.InetAddress;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.ModulesHolder;
 import it.usna.shellyscan.model.device.g1.modules.Actions;
 import it.usna.shellyscan.model.device.meters.Meters;
 import it.usna.shellyscan.model.device.modules.DeviceModule;
 import it.usna.shellyscan.model.device.modules.InputInterface;
+import tools.jackson.databind.JsonNode;
 
 /**
  * Button 1 model
@@ -63,7 +62,7 @@ public class Button1 extends AbstractBatteryG1Device implements ModulesHolder {
 	protected void fillStatus(JsonNode status) throws IOException {
 		super.fillStatus(status);
 		this.stStatus = status;
-		bat = status.get("bat").get("value").intValue();
+		bat = status.get("bat").get("value").intValue(0);
 	}
 	
 	@Override
@@ -83,6 +82,6 @@ public class Button1 extends AbstractBatteryG1Device implements ModulesHolder {
 		errors.add(sendCommand("/settings?" + jsonNodeToURLPar(settings, "remain_awake", "led_status_disable") +
 				"&multipush_time_between_pushes_ms_max=" + multipushtime + "&longpush_duration_ms_max=" + longpushtime));
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-		errors.add(sendCommand("/settings/input/0?name=" + settings.get("inputs").get(0).get("name").asText()));
+		errors.add(sendCommand("/settings/input/0?name=" + settings.get("inputs").get(0).get("name").asString("")));
 	}
 }

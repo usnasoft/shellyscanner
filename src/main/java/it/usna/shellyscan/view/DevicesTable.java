@@ -37,6 +37,7 @@ import it.usna.shellyscan.model.device.ModulesHolder;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
 import it.usna.shellyscan.model.device.blu.AbstractBluDevice;
+import it.usna.shellyscan.model.device.blu.BluInetAddressAndPort;
 import it.usna.shellyscan.model.device.g1.ShellyDW;
 import it.usna.shellyscan.model.device.g1.ShellyFlood;
 import it.usna.shellyscan.model.device.g1.ShellyTRV;
@@ -154,7 +155,6 @@ public class DevicesTable extends ExTooltipTable {
 			if(o2 == null) {
 				return 1;
 			}
-//			return ((Comparable<Object>[])o1)[0].compareTo(((Comparable<Object>[])o2)[0]);
 			return (o1[0]).compareTo(o2[0]);
 		});
 		
@@ -184,7 +184,6 @@ public class DevicesTable extends ExTooltipTable {
 
 	@Override
 	public boolean isCellEditable(final int row, final int column) {
-//		Object val = getValueAt(row, column); return val instanceof DeviceModule || val instanceof DeviceModule[];
 		return convertColumnIndexToModel(column) == COL_COMMAND_IDX;
 	}
 
@@ -233,6 +232,9 @@ public class DevicesTable extends ExTooltipTable {
 			} else if (value instanceof ImageIcon icon) {
 				adaptTooltipLocation = false;
 				return icon.getDescription();
+			} else if (value instanceof BluInetAddressAndPort bluAddr && bluAddr.getAlternativeParents().isEmpty() == false) {
+				adaptTooltipLocation = false;
+				return bluAddr.getParentsAsString();
 			} else if(value instanceof ThermostatG1 therm) { // TRV G1
 				adaptTooltipLocation = false;
 				return String.format(Locale.ENGLISH, LABELS.getString("col_command_therm_tooltip"), therm.getCurrentProfile(), therm.getTargetTemp(), therm.getPosition());
@@ -243,8 +245,8 @@ public class DevicesTable extends ExTooltipTable {
 					boolean labelHolder = false;
 					for(Meters m: meters) {
 						tt += "<tr>";
-						if(m instanceof LabelHolder) {
-							tt += "<td><b>" + ((LabelHolder)m).getLabel() + "</b>&nbsp;</td>";
+						if(m instanceof LabelHolder lh) {
+							tt += "<td><b>" + lh.getLabel() + "</b>&nbsp;</td>";
 							labelHolder = true;
 						} else if(labelHolder) { // skip first cell for alignment
 							tt += "<td></td>";
@@ -312,8 +314,8 @@ public class DevicesTable extends ExTooltipTable {
 				return ret.replaceAll("[ +]+$", "");
 			} else if(modelCol == COL_COMMAND_IDX && value instanceof DeviceModule[] dm) {
 				return Stream.of(dm).filter(d -> d != null).map(d -> d.getLabel()).filter(label -> label != null && label.isEmpty() == false).collect(Collectors.joining(" + "));
-			} else if(value instanceof Object[]) {
-				return Stream.of((Object[])value).filter(v -> v != null).map(v -> v.toString()).collect(Collectors.joining(" + "));
+			} else if(value instanceof Object[] array) {
+				return Stream.of(array).filter(v -> v != null).map(Object::toString).collect(Collectors.joining(" + "));
 			} else {
 				return value.toString();
 			}
@@ -404,7 +406,7 @@ public class DevicesTable extends ExTooltipTable {
 
 	public void resetRowsComputedHeight() {
 		for(int i = 0; i < getRowCount(); i++) {
-			setRowHeight(i, 1); // ONLINE_BULLET.getIconHeight());
+			setRowHeight(i, 1); // or ONLINE_BULLET.getIconHeight()); ?
 		}
 	}
 
@@ -421,8 +423,10 @@ public class DevicesTable extends ExTooltipTable {
 //	}
 	
 	public void addRow(ShellyAbstractDevice device, GhostDevice ghost) {
-		((UsnaTableModel)dataModel).addRow(generateRow(device, ghost, new Object[DevicesTable.COL_COMMAND_IDX + 1]));
-		columnsWidthAdapt();
+		int index = ((UsnaTableModel)dataModel).addRow(generateRow(device, ghost, new Object[DevicesTable.COL_COMMAND_IDX + 1]));
+		if(convertRowIndexToView(index) >= 0) {
+			columnsWidthAdapt();
+		}
 		getRowSorter().allRowsChanged();
 	}
 	
@@ -457,7 +461,7 @@ public class DevicesTable extends ExTooltipTable {
 				if(uptime >= 0) {
 					row[DevicesTable.COL_UPTIME_IDX] = uptime;
 				}
-				row[DevicesTable.COL_INT_TEMP] = (d instanceof InternalTmpHolder) ? ((InternalTmpHolder)d).getInternalTmp() : null;
+				row[DevicesTable.COL_INT_TEMP] = (d instanceof InternalTmpHolder th) ? th.getInternalTmp() : null;
 				row[DevicesTable.COL_MEASURES_IDX] = d.getMeters();
 				row[DevicesTable.COL_DEBUG] = LABELS.getString("debug" + d.getDebugMode().name());
 				DeviceModule[] command = null;
@@ -486,7 +490,7 @@ public class DevicesTable extends ExTooltipTable {
 								res[i] = command[i].getLastSource();
 							}
 						} else {
-							String res[] = new String[command.length]; // Arrays.setAll(res, i -> m[i].getLastSource()); // slower for 2 elements
+							String[] res = new String[command.length]; // Arrays.setAll(res, i -> m[i].getLastSource()); // slower for 2 elements
 							for(int i = 0; i < command.length; i++) {
 								res[i] = command[i].getLastSource();
 							}

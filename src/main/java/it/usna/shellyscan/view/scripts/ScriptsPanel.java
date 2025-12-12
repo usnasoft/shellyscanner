@@ -214,7 +214,7 @@ public class ScriptsPanel extends JPanel {
 		table.addMouseListener(tablePopup.getMouseListener(table));
 
 		// Fill table
-		for (Script sc : Script.list(device)) {
+		for (Script sc : Script.list(device)) { // wall display(s) answer to "/rpc/Script.List" with an empty array -> no exception here
 			scripts.add(new ScriptAndEditor(sc));
 			tModel.addRow(sc.getName(), sc.isEnabled(), sc.isRunning());
 		}

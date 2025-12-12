@@ -378,6 +378,7 @@ virtual components paging - it.usna.shellyscan.model.device.blu.BTHomeDevice.ref
 ---
 Outdoor Plug S G3
 BLU Remote
+BLU Distance
 Power Strip
 Enegy (EM)
 MacOS cmd-C, cmd-V, cmd-X
@@ -386,18 +387,31 @@ fw update multiselection and buttons working on selection (if lenght > 1)
 Enable RPC over MQTT - Enable 'MQTT Control' parametes (gen2+)
 various fix on scheduler editor
 
-// TODO
-BLU Distance/button zb/h&t zb
+
+1.3.1
+---
 Dimmer G4
-It would also be nice to add dynamic filters that show, for example, only enabled devices or disabled devices on the main view (?)
+plug PM gen3
+chacklist - auto fw update
+schedule wall display thermostat - profile selection
+ottimizzazione ip sort (long)
+ottimizazione call agli host BTHome
+"skip" on scripts restore
+Export script fix for certain charsets
+cli restore
+
+
 
 /rpc/PresenceZone.GetConfig?id=201
 public enum Type boolean -> enum (illuminance)
 
-// schedule wall display thermostat - profile selection
-// 1.7.0 https://shelly-api-docs.shelly.cloud/gen2/DynamicComponents/BTHome/BTHomeControl/ (?)
+--- coming ?
+button zb/h&t zb
+i4 gen4
+i4 DC gen4
 
 
+// It would also be nice to add dynamic filters that show, for example, only enabled devices or disabled devices on the main view (?)
 // rgb_xx panel listener (?) -> model su DevicesTable -> su DevicesCommandCellEditor -> DialogEditLights che diventa listener e chiama i 
 // checklist AP ssid != mac (fw 1.5.0 stable)
 // portare il modello sulla tabella per semplificare il calcolo dei tooltip (e delle icone di stato)

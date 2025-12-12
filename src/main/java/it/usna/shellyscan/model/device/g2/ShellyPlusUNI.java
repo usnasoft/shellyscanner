@@ -10,8 +10,6 @@ import java.util.zip.ZipOutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.LabelHolder;
 import it.usna.shellyscan.model.device.ModulesHolder;
@@ -20,6 +18,7 @@ import it.usna.shellyscan.model.device.g2.modules.Input;
 import it.usna.shellyscan.model.device.g2.modules.Relay;
 import it.usna.shellyscan.model.device.g2.modules.SensorAddOn;
 import it.usna.shellyscan.model.device.meters.Meters;
+import tools.jackson.databind.JsonNode;
 
 /**
  * Shelly Shelly Plus UNI model
@@ -83,7 +82,7 @@ public class ShellyPlusUNI extends AbstractG2Device implements ModulesHolder {
 		relay0.fillSettings(configuration.get("switch:0"), configuration.get("input:0"));
 		relay1.fillSettings(configuration.get("switch:1"), configuration.get("input:1"));
 		
-		input2Name = configuration.get("input:2").get("name").asText("");
+		input2Name = configuration.get("input:2").get("name").asString("");
 		
 		addOn.fillSettings(configuration);
 	}
@@ -95,8 +94,8 @@ public class ShellyPlusUNI extends AbstractG2Device implements ModulesHolder {
 		relay1.fillStatus(status.get("switch:1"), status.get("input:1"));
 		
 		JsonNode input2 = status.get("input:2");
-		input2Freq = input2.get("freq").intValue();
-		input2Count = input2.get("counts").path("total").intValue();
+		input2Freq = input2.get("freq").intValue(0);
+		input2Count = input2.get("counts").path("total").intValue(0);
 		
 		addOn.fillStatus(status);
 	}

@@ -13,10 +13,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
 import it.usna.shellyscan.model.device.g1.AbstractG1Device;
 import it.usna.shellyscan.model.device.modules.InputInterface;
+import tools.jackson.databind.JsonNode;
 
 public class Actions {
 //	public static final String PUSH = "shortpush_url";
@@ -54,7 +53,7 @@ public class Actions {
 					final JsonNode val = entry.getValue();
 					if(key.equals("urls")) {
 						for(JsonNode url: val) {
-							urls.add(url.asText());
+							urls.add(url.asString(""));
 						}
 					} else if(key.equals("enabled")) {
 						enabled = val.asBoolean();
@@ -65,7 +64,7 @@ public class Actions {
 				Input input = inputMap.get(index);
 				if(input == null) {
 //					JsonNode in = inputs.get(index);
-					input = new Input(inputs.get(index).get("name").asText(""));
+					input = new Input(inputs.get(index).get("name").asString(""));
 //					input.setReverse(in.path("btn_reverse").asBoolean(false));
 					
 					inputMap.put(index, input);
@@ -109,12 +108,12 @@ public class Actions {
 			String res = "";
 			if(val.size() > 0) {
 				for(int i=0; i < val.size(); i++) {
-					if(val.get(i).isContainerNode()) {
+					if(val.get(i).isContainer()) {
 						for(Entry<String, JsonNode> field: val.get(i).properties()) {
-							res += "&" + name + "[" + i + "][" + field.getKey() + "]=" + URLEncoder.encode(field.getValue().asText(""), StandardCharsets.UTF_8.name());
+							res += "&" + name + "[" + i + "][" + field.getKey() + "]=" + URLEncoder.encode(field.getValue().asString(""), StandardCharsets.UTF_8.name());
 						}
 					} else {
-						res += "&" + name + "[]=" + URLEncoder.encode(val.get(i).asText(""), StandardCharsets.UTF_8.name());
+						res += "&" + name + "[]=" + URLEncoder.encode(val.get(i).asString(""), StandardCharsets.UTF_8.name());
 					}
 				}
 			} else {
@@ -122,7 +121,7 @@ public class Actions {
 			}
 			return res;
 		} else {
-			return "&" + name + "=" + URLEncoder.encode(val.asText(), StandardCharsets.UTF_8.name());
+			return "&" + name + "=" + URLEncoder.encode(val.asString(""), StandardCharsets.UTF_8.name());
 		}
 	}
 

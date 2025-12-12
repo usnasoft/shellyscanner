@@ -9,15 +9,14 @@ import java.util.zip.ZipOutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.ModulesHolder;
 import it.usna.shellyscan.model.device.g3.modules.XT1Thermostat;
 import it.usna.shellyscan.model.device.meters.Meters;
 import it.usna.shellyscan.model.device.modules.DeviceModule;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.JsonNodeFactory;
+import tools.jackson.databind.node.ObjectNode;
 
 /**
  * LinkedGo ST1820 (PbS) model
@@ -76,9 +75,9 @@ public class PbSXT1St1820 extends XT1 implements ModulesHolder {
 		JsonNode sensors = getJSON("/rpc/Shelly.GetComponents?keys=[%22boolean:202%22,%22number:200%22,%22number:201%22,%22number:202%22]");
 		for(JsonNode sensor: sensors.path("components")) {
 			try {
-				String key = sensor.get("key").textValue();
+				String key = sensor.get("key").asString("");
 				if(CURRENT_TEMP_KEY.equals(key)) {
-					boolean celsius = "°C".equals(sensor.path("config").path("meta").path("ui").path("unit").textValue());
+					boolean celsius = "°C".equals(sensor.path("config").path("meta").path("ui").path("unit").asString(null));
 					if(celsius) {
 						temp = sensor.path("status").path("value").floatValue();
 					} else {
@@ -113,7 +112,7 @@ public class PbSXT1St1820 extends XT1 implements ModulesHolder {
 	}
 	
 	@Override
-	protected void restore(Map<String, JsonNode> backupJsons, List<String> errors) throws IOException {
+	protected void restore(Map<String, JsonNode> backupJsons, List<String> errors) {
 		ObjectNode out = JsonNodeFactory.instance.objectNode();
 		out.put("id", 0);
 		ObjectNode config = (ObjectNode)backupJsons.get("Service.GetConfig.json");

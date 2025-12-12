@@ -5,6 +5,8 @@ import static it.usna.shellyscan.Main.LABELS;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -53,7 +55,6 @@ public class PanelWIFI extends AbstractSettingsPanel implements UsnaEventListene
 
 	private static final String IPV4_REGEX = "^((0|1\\d?\\d?|2[0-4]?\\d?|25[0-5]?|[3-9]\\d?)\\.){3}(0|1\\d?\\d?|2[0-4]?\\d?|25[0-5]?|[3-9]\\d?)$";
 	private JButton btnCopy = new JButton(LABELS.getString("btnCopyFrom"));
-//	private JButton btnCopyTo;
 	private DialogDeviceSelection selDialog = null;
 
 	public PanelWIFI(DialogDeviceSettings owner, WIFIManager.Network net) {
@@ -62,9 +63,9 @@ public class PanelWIFI extends AbstractSettingsPanel implements UsnaEventListene
 		setBorder(BorderFactory.createEmptyBorder(6, 6, 2, 6));
 		GridBagLayout gridBagLayout = new GridBagLayout();
 		gridBagLayout.columnWidths = new int[] {0, 0, 0, 0, 0};
-		gridBagLayout.rowHeights = new int[]{0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+		gridBagLayout.rowHeights = new int[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 		gridBagLayout.columnWeights = new double[]{0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
-		gridBagLayout.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
+		gridBagLayout.rowWeights = new double[] {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
 		setLayout(gridBagLayout);
 
 		JLabel lblNewLabel = new JLabel(LABELS.getString("lblEnabled"));
@@ -81,16 +82,6 @@ public class PanelWIFI extends AbstractSettingsPanel implements UsnaEventListene
 		gbc_chckbxEnabled.gridx = 1;
 		gbc_chckbxEnabled.gridy = 0;
 		add(chckbxEnabled, gbc_chckbxEnabled);
-		
-//		btnCopyTo = new JButton(LABELS.getString(net == WIFIManager.Network.PRIMARY ? "dlgSetWIFI1to2" : "dlgSetWIFI2to1"));
-//		GridBagConstraints gbc_btnCopyTo = new GridBagConstraints();
-//		gbc_btnCopyTo.anchor = GridBagConstraints.EAST;
-//		gbc_btnCopyTo.weightx = 1.0;
-//		gbc_btnCopyTo.insets = new Insets(0, 0, 5, 5);
-//		gbc_btnCopyTo.gridx = 3;
-//		gbc_btnCopyTo.gridy = 0;
-//		add(btnCopyTo, gbc_btnCopyTo);
-//		btnCopyTo.addActionListener(e -> copyTo(net == WIFIManager.Network.PRIMARY ? WIFIManager.Network.SECONDARY : WIFIManager.Network.PRIMARY));
 
 		GridBagConstraints gbc_btnCopy = new GridBagConstraints();
 		gbc_btnCopy.anchor = GridBagConstraints.EAST;
@@ -257,6 +248,20 @@ public class PanelWIFI extends AbstractSettingsPanel implements UsnaEventListene
 		});
 
 		chckbxEnabled.addItemListener(event -> setEnabledWIFI(event.getStateChange() == java.awt.event.ItemEvent.SELECTED, rdbtnDhcpNoChange.isSelected() ? null : rdbtnStaticIP.isSelected()));
+		
+		textFieldStaticIP.addFocusListener(new FocusListener() {
+			@Override
+			public void focusLost(FocusEvent e) {
+				String ip = textFieldStaticIP.getText();
+				if(ip.matches(IPV4_REGEX) && textFieldNetmask.getText().isEmpty() && textFieldGateway.getText().isEmpty()) {
+					textFieldNetmask.setText("255.255.255.0");
+					textFieldGateway.setText(ip.substring(0, ip.lastIndexOf('.') + 1));
+				}
+			}
+
+			@Override
+			public void focusGained(FocusEvent e) {}
+		});
 	}
 
 	private void setEnabledWIFI(boolean enabled, Boolean staticIP) {
@@ -276,45 +281,6 @@ public class PanelWIFI extends AbstractSettingsPanel implements UsnaEventListene
 		textFieldDNS.setEnabled(staticIP == null || staticIP == Boolean.TRUE);
 	}
 	
-//	private void copyTo(WIFIManager.Network netFrom) {
-//		if(JOptionPane.showConfirmDialog(this, LABELS.getString("dlgSetConfirmWIFI"), LABELS.getString("dlgSetWIFI"), JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE) == JOptionPane.YES_OPTION) {
-//			String res = "<html>";
-//			ShellyAbstractDevice d = null;
-//			for(int i = 0; i < devices.size(); i++) {
-//				try {
-//					String msg = null;
-//					d = devices.get(i);
-//					WIFIManager wfManagerTo = fwModule.get(i);
-//					WIFIManager wfManagerFrom = d.getWIFIManager(netFrom);
-//					wfManagerFrom.getSSID();
-//					
-////					DialogAuthentication credentials = new DialogAuthentication(this,
-////							LABELS.getString("dlgSetWIFI"), LABELS.getString("dlgSetSSID"), LABELS.getString("labelPassword"), LABELS.getString("labelConfPassword"));
-////					credentials.setUser(test.get(ShellyAbstractDevice.Restore.RESTORE_WI_FI1));
-////					credentials.setMessage(LABELS.getString("msgRestoreEnterWIFI1"));
-////					credentials.editableUser(false);
-////					credentials.setVisible(true);
-//////					if(credentials.getUser() != null) {
-//////						resData.put(ShellyAbstractDevice.Restore.RESTORE_WI_FI1, new String(credentials.getPassword()));
-//////					}
-////					credentials.dispose();
-//					
-//					if(wfManagerTo != null) {
-//						msg = wfManagerTo.copyFrom(wfManagerFrom, null); // todo
-//					}
-//					if(msg != null) {
-//						res += String.format(LABELS.getString("dlgSetMultiMsgFail"), d.getHostname()) + " (" + msg + ")<br>";
-//					} else {
-//						res += String.format(LABELS.getString("dlgSetMultiMsgOk"), d.getHostname()) + "<br>";
-//					}
-//				} catch (IOException e) {
-//					res += String.format(LABELS.getString("dlgSetMultiMsgFail"), d.getHostname()) + "<br>";
-////					e.printStackTrace();
-//				}
-//			}
-//		}
-//	}
-	
 	@Override
 	public String showing() throws InterruptedException {
 		return fill(true);
@@ -328,7 +294,6 @@ public class PanelWIFI extends AbstractSettingsPanel implements UsnaEventListene
 		try {
 			rdbtnDhcpNoChange.setVisible(false);
 			btnCopy.setEnabled(false);
-//			btnCopyTo.setEnabled(false);
 			chckbxEnabled.setEnabled(false);
 			setEnabledWIFI(false, false); // disable while checking
 			boolean enabledGlobal = false;
@@ -397,7 +362,7 @@ public class PanelWIFI extends AbstractSettingsPanel implements UsnaEventListene
 			textFieldNetmask.setText(globalNetmask);
 			textFieldGateway.setText(globalGW);
 			textFieldDNS.setText(globalDNS);			
-			setEnabledWIFI(/*chckbxEnabled.isSelected()*/enabledGlobal, /*rdbtnStaticIP.isSelected()*/staticIPGlobal);
+			setEnabledWIFI(enabledGlobal, staticIPGlobal);
 			btnCopy.setEnabled(true);
 			return null;
 		} catch (/*IOException |*/ RuntimeException e) {

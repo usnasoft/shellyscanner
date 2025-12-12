@@ -2,10 +2,9 @@ package it.usna.shellyscan.model.device.g2.modules;
 
 import java.io.IOException;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.modules.CCTInterface;
+import tools.jackson.databind.JsonNode;
 
 /**
  * CCTInterface implementation for gen 2+ devices.
@@ -48,7 +47,7 @@ public class LightCCT implements CCTInterface {
 	}
 
 	public void fillSettings(JsonNode configCCT) {
-		name = configCCT.get("name").asText("");
+		name = configCCT.get("name").asString("");
 		if(fixRange == false) {
 			final JsonNode ctRange = configCCT.get("ct_range");
 			minTemperature = ctRange.get(0).asInt();
@@ -58,16 +57,16 @@ public class LightCCT implements CCTInterface {
 	
 	public void fillStatus(JsonNode statusCCT) {
 		isOn = statusCCT.get("output").asBoolean();
-		brightness = statusCCT.get("brightness").intValue();
-		temperature = statusCCT.get("ct").intValue();
-		source = statusCCT.get("source").asText("-");
+		brightness = statusCCT.get("brightness").intValue(0);
+		temperature = statusCCT.get("ct").intValue(0);
+		source = statusCCT.get("source").asString("-");
 	}
 	
 	public void fillStatus(JsonNode statusCt, JsonNode input) {
 		isOn = statusCt.get("output").asBoolean();
-		brightness = statusCt.get("brightness").intValue();
-		temperature = statusCt.get("ct").intValue();
-		source = statusCt.get("source").asText("-");
+		brightness = statusCt.get("brightness").intValue(0);
+		temperature = statusCt.get("ct").intValue(0);
+		source = statusCt.get("source").asString("-");
 		inputIsOn = input.get("state").asBoolean();
 	}
 	
