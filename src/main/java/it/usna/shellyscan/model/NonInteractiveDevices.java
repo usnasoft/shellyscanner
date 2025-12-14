@@ -139,7 +139,7 @@ public class NonInteractiveDevices implements Closeable {
 				return null;
 			}
 		} catch (InterruptedException | ExecutionException | JacksonException e) { // SocketTimeoutException extends IOException
-			LOG.trace("Not Shelly {} - {}", address, port, e);
+			LOG.trace("Not Shelly {}:{}", address, port, e);
 			return null;
 		}
 	}
