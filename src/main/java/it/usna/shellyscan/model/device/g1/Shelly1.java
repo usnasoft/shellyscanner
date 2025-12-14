@@ -137,7 +137,7 @@ public class Shelly1 extends AbstractG1Device implements ModulesHolder {
 	protected void fillSettings(JsonNode settings) throws IOException {
 		super.fillSettings(settings);
 		relay.fillSettings(settings.get("relays").get(0));
-		extSwitchRev = settings.path("ext_switch_reverse").asBoolean();
+		extSwitchRev = settings.path("ext_switch_reverse").asBoolean(false);
 	}
 
 	@Override
@@ -147,18 +147,18 @@ public class Shelly1 extends AbstractG1Device implements ModulesHolder {
 
 		JsonNode extTNode = status.path("ext_temperature");
 		if (extTNode.size() > 0) {
-			extT0 = (float) extTNode.path("0").path("tC").asDouble();
-			extT1 = (float) extTNode.path("1").path("tC").asDouble();
-			extT2 = (float) extTNode.path("2").path("tC").asDouble();
+			extT0 = extTNode.path("0").path("tC").asFloat(0f);
+			extT1 = extTNode.path("1").path("tC").asFloat(0f);
+			extT2 = extTNode.path("2").path("tC").asFloat(0f);
 		}
 		JsonNode extHNode = status.path("ext_humidity");
 		if (extHNode.size() > 0) {
-			humidity = extHNode.path("0").path("hum").asInt();
+			humidity = extHNode.path("0").path("hum").asInt(0);
 		}
 
 		JsonNode extSwitchNode = status.path("ext_switch");
 		if (extSwitchNode.size() > 0) {
-			extSwitchStatus = extSwitchNode.path("0").path("input").asInt();
+			extSwitchStatus = extSwitchNode.path("0").path("input").asInt(0);
 		}
 	}
 
