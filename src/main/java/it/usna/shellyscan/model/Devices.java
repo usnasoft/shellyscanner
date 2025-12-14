@@ -193,7 +193,7 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 		}
 	}
 	
-	private JsonNode isShelly(final InetAddress address, int port) throws TimeoutException {
+	private /*synchronized*/ JsonNode isShelly(final InetAddress address, int port) throws TimeoutException {
 		// if(name.startsWith("shelly") || name.startsWith("Shelly")) { // Shelly X devices can have different names
 		try {
 			ContentResponse response = httpClient.newRequest("http://" + address.getHostAddress() + ":" + port + "/shelly").timeout(80, TimeUnit.SECONDS).method(HttpMethod.GET).send();
@@ -206,7 +206,7 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 				return null;
 			}
 		} catch (InterruptedException | ExecutionException | JacksonException e) { // SocketTimeoutException extends IOException
-			LOG.trace("Not Shelly {} - {}", address, port, e);
+			LOG.trace("Not Shelly {}:{}", address, port, e);
 			return null;
 		}
 	}

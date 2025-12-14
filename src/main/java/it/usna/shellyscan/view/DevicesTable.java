@@ -503,7 +503,7 @@ public class DevicesTable extends ExTooltipTable {
 						row[DevicesTable.COL_MEASURES_IDX] = row[DevicesTable.COL_DEBUG] = row[DevicesTable.COL_SOURCE_IDX] = row[DevicesTable.COL_COMMAND_IDX] = null;
 			}
 		} catch(Exception e) {
-			LOG.error("", e);
+			LOG.error("{}", d, e);
 		}
 		return row;
 	}
