@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
@@ -34,6 +35,7 @@ import it.usna.shellyscan.model.device.g1.modules.MQTTManagerG1;
 import it.usna.shellyscan.view.DialogDeviceSelection;
 import it.usna.shellyscan.view.util.IntegerTextFieldPanel;
 import it.usna.shellyscan.view.util.Msg;
+import it.usna.shellyscan.view.util.ScannerProperties;
 import it.usna.shellyscan.view.util.UtilMiscellaneous;
 import it.usna.util.UsnaEventListener;
 
@@ -563,6 +565,7 @@ public class PanelMQTTG1 extends AbstractSettingsPanel implements UsnaEventListe
 				throw new IllegalArgumentException(LABELS.getString("dlgSetMsgMqttUser"));
 			}
 		}
+		int slow = ScannerProperties.instance().getIntProperty("MQTT_SLOW");
 		String res = "<html>";
 		for(int i = 0; i < parentDlg.getLocalSize(); i++) {
 			String msg;
@@ -595,6 +598,9 @@ public class PanelMQTTG1 extends AbstractSettingsPanel implements UsnaEventListe
 					res += String.format(LABELS.getString("dlgSetMultiMsgFail"), parentDlg.getLocalDevice(i).getHostname()) + " (" + msg + ")<br>";
 				} else {
 					res += String.format(LABELS.getString("dlgSetMultiMsgOk"), parentDlg.getLocalDevice(i).getHostname()) + "<br>";
+				}
+				if(slow > 0) {
+					try { TimeUnit.MILLISECONDS.sleep(slow * 10); } catch (InterruptedException e1) {}
 				}
 			}
 		}

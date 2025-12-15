@@ -95,6 +95,17 @@ public class Main {
 				fullScan = scanMode.equals("FULL");
 			}
 		}
+		
+		if((cliIndex = cli.hasEntry("-slow")) >= 0) {
+			try {
+				appProp.setIntProperty("MQTT_SLOW", Integer.parseInt(cli.getParameter(cliIndex)));
+			} catch(NumberFormatException e) {
+				cli.rejectEntry(cliIndex);
+				cli.rejectParameter(cliIndex);
+			}
+		} else {
+			appProp.remove("MQTT_SLOW");
+		}
 
 		// Credentials (from configuration only)
 		String lUser = appProp.getProperty(ScannerProperties.PROP_LOGIN_USER);
@@ -144,8 +155,9 @@ public class Main {
 						model.addListener(chartW);
 						// do not activateGUI
 					} catch(IllegalArgumentException e) { // not a valid chart type
-						activateGUI(view, model, appProp);
 						cli.rejectParameter(cliIndex);
+						activateGUI(view, model, appProp);
+						MeasuresChart.setDoOutStream(true);
 					}
 				} else {
 					activateGUI(view, model, appProp);

@@ -30,7 +30,7 @@ import it.usna.util.UsnaEventListener;
 
 public class DialogDeviceSettings extends JDialog implements UsnaEventListener<Devices.EventType, Integer> {
 	private static final long serialVersionUID = 1L;
-	enum Gen {G1, G2, MIX};
+	enum Gen {G1, G2_PLUS, MIX};
 
 	private JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
 	private JButton btnClose = new JButton(LABELS.getString("dlgClose"));
@@ -92,7 +92,7 @@ public class DialogDeviceSettings extends JDialog implements UsnaEventListener<D
 		final AbstractSettingsPanel panelMQTT;
 		if(devTypes == Gen.G1 && existsOffLine() == false) { // existsOffLine() == false -> deferred mqtt on PanelMQTTMix only
 			panelMQTT = new PanelMQTTG1(this);
-		} else if(devTypes == Gen.G2 && existsOffLine() == false) {
+		} else if(devTypes == Gen.G2_PLUS && existsOffLine() == false) {
 			panelMQTT = new PanelMQTTG2(this);
 		} else /*if(devTypes == Gen.MIX || existsOffLine())*/{
 			panelMQTT = new PanelMQTTMix(this);
@@ -222,9 +222,9 @@ public class DialogDeviceSettings extends JDialog implements UsnaEventListener<D
 			if(d instanceof GhostDevice) {
 				return Gen.MIX; // actually unknown
 			} else if(r == null) {
-				r = d instanceof AbstractG2Device ? Gen.G2 : Gen.G1;
+				r = d instanceof AbstractG2Device ? Gen.G2_PLUS : Gen.G1;
 			} else if(d instanceof AbstractG2Device) {
-				if(r != Gen.G2) {
+				if(r != Gen.G2_PLUS) {
 					return Gen.MIX;
 				}
 			} else if(d instanceof AbstractG1Device) {
