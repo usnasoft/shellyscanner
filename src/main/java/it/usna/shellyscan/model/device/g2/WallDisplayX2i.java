@@ -24,29 +24,43 @@ import tools.jackson.databind.node.JsonNodeFactory;
 import tools.jackson.databind.node.ObjectNode;
 
 /**
- * Shelly Wall Display
+ * Shelly Wall Display X2i
+ * Supported bases:
+ * 2-output power base
+ * 2-output power base
  * @author usna
  */
-public class WallDisplay extends AbstractG2Device implements DisplayInterface, ModulesHolder {
-	public static final String ID = "WallDisplay";
-	private static final Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.T, Meters.Type.H, Meters.Type.L};
+public class WallDisplayX2i extends AbstractG2Device implements DisplayInterface, ModulesHolder {
+	public static final String ID = "WallDisplayV2";
+	private static final Meters.Type[] SUPPORTED_MEASURES_T = new Meters.Type[] {Meters.Type.T, Meters.Type.H, Meters.Type.L};
+	private static final Meters.Type[] SUPPORTED_MEASURES_NO_T = new Meters.Type[] {Meters.Type.L};
 	private float temp;
 	private float humidity;
 	private int lux;
 	private Meters[] meters;
-	private Relay relay = null;
+	private Relay relay0 = null;
+	private Relay relay1 = null;
 	private Relay[] relays = null;
 	private ThermostatG2 thermostat = null;
 	private ThermostatG2[] thermostats = null;
 
-	public WallDisplay(InetAddress address, int port, String hostname) {
+	public WallDisplayX2i(InetAddress address, int port, String hostname) {
 		super(address, port, hostname);
-
+	}
+	
+	@Override
+	protected void init(JsonNode devInfo) throws IOException {
+		super.init(devInfo);
+//		if(devInfo.get("ch").asString().equals("switch:0")) {
+//			// single switch power base
+//		} else ...
+		
 		meters = new Meters[] {
 				new Meters() {
 					@Override
 					public Type[] getTypes() {
-						return SUPPORTED_MEASURES;
+						// (humidity < 0 || temp < -200) : no external h&t sensor connected
+						return (humidity < 0 || temp < -200) ? SUPPORTED_MEASURES_NO_T : SUPPORTED_MEASURES_T;
 					}
 
 					@Override
@@ -65,7 +79,7 @@ public class WallDisplay extends AbstractG2Device implements DisplayInterface, M
 	
 	@Override
 	public String getTypeName() {
-		return "Wall Display";
+		return "Wall Display X2i";
 	}
 	
 	@Override
@@ -75,7 +89,7 @@ public class WallDisplay extends AbstractG2Device implements DisplayInterface, M
 
 	@Override
 	public DeviceModule[] getModules() {
-		return relay != null ? relays : thermostats;
+		return relays != null ? relays : thermostats;
 	}
 
 	@Override
@@ -86,31 +100,62 @@ public class WallDisplay extends AbstractG2Device implements DisplayInterface, M
 			if(thermostat == null) {
 				thermostat = new ThermostatG2(this);
 				thermostats = new ThermostatG2[] {thermostat};
-				relay = null;
+				relay0 = relay1 = null;
 				relays = null;
 			}
 			thermostat.fillSettings(thermostatConf);
 		} else {
-			if(relay == null) {
-				relay = new Relay(this, 0);
-				relays = new Relay[] {relay};
-				thermostat = null;
-				thermostats = null;
+			JsonNode switch0Conf = configuration.get("switch:0");
+			JsonNode switch1Conf = configuration.get("switch:1");
+			if(switch0Conf != null && switch1Conf != null) {
+				if(relay0 == null /*|| relay1 == null*/) {
+					relay0 = new Relay(this, 0);
+					relay1 = new Relay(this, 1);
+					relays = new Relay[] {relay0, relay1};
+					thermostat = null;
+					thermostats = null;
+				}
+				relay0.fillSettings(switch0Conf);
+				relay1.fillSettings(switch1Conf);
+			} else if(switch0Conf != null) {
+				if(relay0 == null || relay1 != null) {
+					relay0 = new Relay(this, 0);
+					relay1 = null;
+					relays = new Relay[] {relay0};
+					thermostat = null;
+					thermostats = null;
+				}
+				JsonNode input0Conf = configuration.get("input:0");
+				if(input0Conf != null) {
+					relay0.fillSettings(switch0Conf, input0Conf);
+				} else {
+					relay0.fillSettings(switch0Conf);
+				}
 			}
-			relay.fillSettings(configuration.get("switch:0"), configuration.get("input:0"));
 		}
 	}
 	
 	@Override
 	protected void fillStatus(JsonNode status) throws IOException {
 		super.fillStatus(status);
-		temp = status.path("temperature:0").path("tC").floatValue();
-		humidity = status.path("humidity:0").path("rh").floatValue();
-		lux = status.path("illuminance:0").path("lux").intValue(0);
-		if(relay != null) {
-			relay.fillStatus(status.get("switch:0"), status.get("input:0"));
-		} else {
+		temp = status.path("temperature:0").path("tC").floatValue(-270f);
+		humidity = status.path("humidity:0").path("rh").floatValue(-2f);
+		lux = status.path("illuminance:0").path("lux").intValue();
+		
+		if(thermostat != null) {
 			thermostat.fillStatus(status.get("thermostat:0"));
+		} else {
+			if(relay0 != null) {
+				JsonNode input0Status = status.get("input:0");
+				if(input0Status != null) {
+					relay0.fillStatus(status.get("switch:0"), input0Status);
+				} else {
+					relay0.fillStatus(status.get("switch:0"));
+				}
+			}
+			if(relay1 != null) {
+				relay1.fillStatus(status.get("switch:1"));
+			}
 		}
 	}
 	
@@ -152,7 +197,7 @@ public class WallDisplay extends AbstractG2Device implements DisplayInterface, M
 	public boolean hasThermostat() {
 		return thermostat != null;
 	}
-
+	
 	@Override
 	protected void backup(ZipOutputStream out) throws IOException, InterruptedException {
 		if(thermostat != null) {
@@ -168,6 +213,12 @@ public class WallDisplay extends AbstractG2Device implements DisplayInterface, M
 
 	@Override
 	public void restoreCheck(Map<String, JsonNode> backupJsons, Map<RestoreMsg, Object> res) throws IOException {
+		JsonNode backupDeviceInfo = backupJsons.get("Shelly.GetDeviceInfo.json");
+		JsonNode deviceInfo = getJSON("/rpc/Shelly.GetDeviceInfo");
+		if(backupDeviceInfo.get("ch").equals(deviceInfo.get("ch")) == false) {
+			res.put(RestoreMsg.ERR_RESTORE_POWER_BASE, null);
+			return;
+		}
 		JsonNode backupConfiguration = backupJsons.get("Shelly.GetConfig.json");
 		boolean thermMode = backupConfiguration.get("thermostat:0") != null;
 		if((thermMode && thermostat == null) || (thermMode == false && thermostat != null)) {
@@ -180,20 +231,26 @@ public class WallDisplay extends AbstractG2Device implements DisplayInterface, M
 		JsonNode backupConfiguration = backupJsons.get("Shelly.GetConfig.json");
 		boolean thermMode = backupConfiguration.get("thermostat:0") != null;
 //		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-		if(thermMode && thermostat != null) { // saved configuration was "thermostat" and the current too? 
+		if(thermMode && thermostat != null) { // saved configuration was "thermostat" and the current is too? 
 			errors.add(thermostat.restore(backupConfiguration));
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			new ScheduleManagerThermWD(this).restore(backupJsons, errors);
-		} else if(thermMode == false && relay != null) {
-			errors.add(relay.restore(backupConfiguration));
-		} else {
-			errors.add(RestoreMsg.ERR_RESTORE_MODE_THERM.name());
 		}
 		
-		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-		errors.add(Input.restore(this, backupConfiguration, 0));
+		if(relay0 != null && backupConfiguration.hasNonNull("switch:0")) {
+			errors.add(relay0.restore(backupConfiguration));
+		}
 		
-		ObjectNode ui = (ObjectNode)backupConfiguration.get("ui").deepCopy();
+		if(relay1 != null && backupConfiguration.hasNonNull("switch:1")) {
+			errors.add(relay1.restore(backupConfiguration));
+		}
+
+		if(backupConfiguration.hasNonNull("input:0")) {
+			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+			errors.add(Input.restore(this, backupConfiguration, 0));
+		}
+		
+		JsonNode ui = backupConfiguration.get("ui")/*.deepCopy()*/;
 		ObjectNode out = JsonNodeFactory.instance.objectNode().set("config", ui);
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 		errors.add(postCommand("Ui.SetConfig", out));
@@ -208,14 +265,14 @@ public class WallDisplay extends AbstractG2Device implements DisplayInterface, M
 		errors.add(postCommand("Illuminance.SetConfig", createIndexedRestoreNode(backupConfiguration, "illuminance", 0)));
 	}
 	
-	@Override
-	public String toString() {
-		if(relay != null) {
-			return super.toString() + " Relay: " + relay;
-		} else {
-			return super.toString() + " Therm: " + thermostat;
-		}
-	}
+//	@Override
+//	public String toString() {
+//		if(relay0 != null) {
+//			return super.toString() + " Relay: " + relay0;
+//		} else {
+//			return super.toString() + " Therm: " + thermostat;
+//		}
+//	}
 }
 
 /*

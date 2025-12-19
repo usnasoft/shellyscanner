@@ -565,7 +565,7 @@ public class PanelMQTTG1 extends AbstractSettingsPanel implements UsnaEventListe
 				throw new IllegalArgumentException(LABELS.getString("dlgSetMsgMqttUser"));
 			}
 		}
-		int slow = ScannerProperties.instance().getIntProperty("MQTT_SLOW");
+		int slow = ScannerProperties.instance().getIntProperty("MQTT_SLOW", 0);
 		String res = "<html>";
 		for(int i = 0; i < parentDlg.getLocalSize(); i++) {
 			String msg;
@@ -599,9 +599,7 @@ public class PanelMQTTG1 extends AbstractSettingsPanel implements UsnaEventListe
 				} else {
 					res += String.format(LABELS.getString("dlgSetMultiMsgOk"), parentDlg.getLocalDevice(i).getHostname()) + "<br>";
 				}
-				if(slow > 0) {
-					try { TimeUnit.MILLISECONDS.sleep(slow * 10); } catch (InterruptedException e1) {}
-				}
+				try { TimeUnit.MILLISECONDS.sleep(slow * 100); } catch (InterruptedException e1) {}
 			}
 		}
 		try {

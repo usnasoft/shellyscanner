@@ -354,7 +354,7 @@ public class PanelMQTTMix extends AbstractSettingsPanel implements UsnaEventList
 		} else {
 			server = user = pwd = prefix = null;
 		}
-		int slow = ScannerProperties.instance().getIntProperty("MQTT_SLOW");
+		int slow = ScannerProperties.instance().getIntProperty("MQTT_SLOW", 0);
 		String res = "<html>";
 		for(int i = 0; i < parentDlg.getLocalSize(); i++) {
 			ShellyAbstractDevice device = parentDlg.getLocalDevice(i);
@@ -372,9 +372,7 @@ public class PanelMQTTMix extends AbstractSettingsPanel implements UsnaEventList
 					} else {
 						res += String.format(LABELS.getString("dlgSetMultiMsgOk"), device.getHostname()) + "<br>";
 					}
-					if(slow > 0) {
-						try { TimeUnit.MILLISECONDS.sleep(slow * 10); } catch (InterruptedException e1) {}
-					}
+					try { TimeUnit.MILLISECONDS.sleep(slow * 100); } catch (InterruptedException e1) {}
 				} else if(device.getStatus() == Status.OFF_LINE || device instanceof GhostDevice) { // defer
 					res += String.format(LABELS.getString("dlgSetMultiMsgQueue"), device.getHostname()) + "<br>";
 					DeferrablesContainer dc = DeferrablesContainer.getInstance();

@@ -102,6 +102,7 @@ public class Main {
 			} catch(NumberFormatException e) {
 				cli.rejectEntry(cliIndex);
 				cli.rejectParameter(cliIndex);
+				appProp.remove("MQTT_SLOW");
 			}
 		} else {
 			appProp.remove("MQTT_SLOW");
