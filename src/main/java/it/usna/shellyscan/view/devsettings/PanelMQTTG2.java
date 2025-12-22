@@ -587,7 +587,7 @@ public class PanelMQTTG2 extends AbstractSettingsPanel implements UsnaEventListe
 				} else {
 					res += String.format(LABELS.getString("dlgSetMultiMsgOk"), parentDlg.getLocalDevice(i).getHostname()) + "<br>";
 				}
-				try { TimeUnit.MILLISECONDS.sleep(slow * 100); } catch (InterruptedException e1) {}
+				try { TimeUnit.MILLISECONDS.sleep(slow * 100L); } catch (InterruptedException e1) {}
 			} else if(device.getStatus() == Status.OFF_LINE || device instanceof GhostDevice) { // defer (hardly if instanceof GhostDevice use PanelMQTTMix)
 				res += String.format(LABELS.getString("dlgSetMultiMsgQueue"), device.getHostname()) + "<br>";
 				DeferrablesContainer dc = DeferrablesContainer.getInstance();
@@ -617,23 +617,23 @@ public class PanelMQTTG2 extends AbstractSettingsPanel implements UsnaEventListe
 				chckbxEnabled.setSelected(m.isEnabled());
 				textFieldServer.setText(m.getServer());
 				textFieldUser.setText(m.getUser());
-				if(m instanceof MQTTManagerG2) {
-					if(((MQTTManagerG2)m).isControlEnabled()) {
+				if(m instanceof MQTTManagerG2 mg2) {
+					if(mg2.isControlEnabled()) {
 						rdbtnMQTTControlYes.setSelected(true);
 					} else {
 						rdbtnMQTTControlNo.setSelected(true);
 					}
-					if(((MQTTManagerG2)m).isRpcEnabled()) {
+					if(mg2.isRpcEnabled()) {
 						rdbtnRPCOverYes.setSelected(true);
 					} else {
 						rdbtnRPCOverNo.setSelected(true);
 					}
-					if(((MQTTManagerG2)m).isRpcNtf()) {
+					if(mg2.isRpcNtf()) {
 						rdbtnRPCYes.setSelected(true);
 					} else {
 						rdbtnRPCNo.setSelected(true);
 					}
-					if(((MQTTManagerG2)m).isStatusNtf()) {
+					if(mg2.isStatusNtf()) {
 						rdbtnGenericSUpdateYes.setSelected(true);
 					} else {
 						rdbtnGenericSUpdateNo.setSelected(true);

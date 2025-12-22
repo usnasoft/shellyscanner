@@ -372,7 +372,7 @@ public class PanelMQTTMix extends AbstractSettingsPanel implements UsnaEventList
 					} else {
 						res += String.format(LABELS.getString("dlgSetMultiMsgOk"), device.getHostname()) + "<br>";
 					}
-					try { TimeUnit.MILLISECONDS.sleep(slow * 100); } catch (InterruptedException e1) {}
+					try { TimeUnit.MILLISECONDS.sleep(slow * 100L); } catch (InterruptedException e1) {}
 				} else if(device.getStatus() == Status.OFF_LINE || device instanceof GhostDevice) { // defer
 					res += String.format(LABELS.getString("dlgSetMultiMsgQueue"), device.getHostname()) + "<br>";
 					DeferrablesContainer dc = DeferrablesContainer.getInstance();
