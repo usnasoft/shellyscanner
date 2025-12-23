@@ -22,6 +22,7 @@ public class RestoreUtil {
 				{Shelly2PMG3.ID, Shelly2PMG4.ID, Shelly2PMG4.ID_ZB}, // 2PM
 				{ShellyDimmerG3.ID, ShellyDimmerG4.ID, ShellyDimmerG4.ID_ZB}, // Dimmer
 				{ShellyPowerStrip4G.ID, ShellyPowerStrip4G.ID_ZB},
+//				{ShellyEMG3.ID},
 		};
 	
 //	private final static List<Set<String>> COMPATIBILITY_LIST = List.of(

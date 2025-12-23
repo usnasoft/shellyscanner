@@ -398,17 +398,23 @@ ottimizzazione ip sort (long)
 ottimizazione call agli host BTHome
 "skip" on scripts restore
 Export script fix for certain charsets
-cli restore
+cli restore / cli list ip/full / cli -gen parameter 
 
 
+1.3.2
+Shelly Wall Display X2i - Supported bases: 2-output power base; 2-output power base
+Shelly EM Gen3
+-slow cli par
 
+todo it.usna.shellyscan.model.device.RestoreUtil
+
+todo - java -jar C:\Users\Administrator\Desktop\shellyscan_1_3_1_sj.jar  -graphs EM -ipscan 192.168.1.200-200
 /rpc/PresenceZone.GetConfig?id=201
 public enum Type boolean -> enum (illuminance)
 
 --- coming ?
 button zb/h&t zb
-i4 gen4
-i4 DC gen4
+
 
 
 // It would also be nice to add dynamic filters that show, for example, only enabled devices or disabled devices on the main view (?)
