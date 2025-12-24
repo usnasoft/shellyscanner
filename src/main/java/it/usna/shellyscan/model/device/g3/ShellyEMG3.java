@@ -18,13 +18,12 @@ import it.usna.shellyscan.model.device.g2.modules.EM1Manager;
 import it.usna.shellyscan.model.device.g2.modules.LoRaAddOn;
 import it.usna.shellyscan.model.device.g2.modules.Relay;
 import it.usna.shellyscan.model.device.g2.modules.SensorAddOn;
-import it.usna.shellyscan.model.device.g4.ShellyEMG4;
 import it.usna.shellyscan.model.device.meters.Meters;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ObjectNode;
 
 public class ShellyEMG3 extends AbstractG3Device implements ModulesHolder, InternalTmpHolder {
-	private static final Logger LOG = LoggerFactory.getLogger(ShellyEMG4.class);
+	private static final Logger LOG = LoggerFactory.getLogger(ShellyEMG3.class);
 	public static final String ID = "EMG3";
 	public static final String MODEL = "S3EM-002CXCEU";
 	private Relay relay = new Relay(this, 0);
