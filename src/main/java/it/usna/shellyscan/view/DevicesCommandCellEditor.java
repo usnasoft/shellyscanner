@@ -129,7 +129,9 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 					if(input.enabled()) {
 						stackedPanel.add(getInputPanel(input, table));
 					}
-				} else if(module instanceof WhiteInterface white) {
+//				} else if(module instanceof WhiteInterface white && modArray.length == 1) {
+//					stackedPanel.add(getWhitePanel(white, white instanceof CCTInterface));
+				} else if(module instanceof WhiteInterface white && modArray.length > 0) {
 					stackedPanel.add(getWhiteSyntheticPanel(white, i == modArray.length - 1));
 				} else if(module instanceof RGBInterface rgb) {
 					stackedPanel.add(getRGBSyntheticPanel(rgb, i == modArray.length - 1));
@@ -597,7 +599,7 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 			editSwitchPanel.setOpaque(false);
 			editSwitchPanel.removeAll();
 			editSwitchPanel.add(lightButton, BorderLayout.EAST);
-			editSwitchPanel.add(BorderLayout.WEST, editDialogButton);
+			editSwitchPanel.add(editDialogButton, BorderLayout.WEST);
 			lightPanel.add(editSwitchPanel, BorderLayout.EAST);
 			lightPanel.setComponentZOrder(editSwitchPanel, 0);
 		} else {

@@ -28,9 +28,9 @@ public class DeviceMetersCellRenderer extends JPanel implements TableCellRendere
 	private static final Insets INSETS_LABEL1 = new Insets(0, 0, 0, 2);
 	private static final Insets INSETS_LABEL2 = new Insets(0, 6, 0, 2);
 
-	private final Border emptyBorder;
 	private static final Border FOCUS_BORDER = UIManager.getBorder("Table.focusCellHighlightBorder");
-	private static final Font LABEL_FONT = new Font("Tahoma", Font.BOLD, 11);
+	private final Font labelFont;
+	private final Border emptyBorder;
 	
 	private static final Component EMPTY_ALIGN_FILLER = Box.createHorizontalStrut(0);
 	private static final GridBagConstraints GBC_FILLER = new GridBagConstraints();
@@ -46,6 +46,8 @@ public class DeviceMetersCellRenderer extends JPanel implements TableCellRendere
 		setLayout(gridBagLayout);
 		final Insets borderInsets = FOCUS_BORDER.getBorderInsets(this);
 		emptyBorder = BorderFactory.createEmptyBorder(borderInsets.top, borderInsets.left, borderInsets.bottom, borderInsets.right);
+		Font defFont = new JLabel().getFont();
+		labelFont = defFont.deriveFont(Font.BOLD, defFont.getSize() - 1);
 	}
 
 	@Override
@@ -71,7 +73,7 @@ public class DeviceMetersCellRenderer extends JPanel implements TableCellRendere
 							gbc_label.gridx = gridCol;
 							gbc_label.gridy = gridRow;
 							label.setForeground(foregroundColor);
-							label.setFont(LABEL_FONT);
+							label.setFont(labelFont);
 							add(label, gbc_label);
 
 							JLabel val;
@@ -119,7 +121,7 @@ public class DeviceMetersCellRenderer extends JPanel implements TableCellRendere
 		}
 		setBorder(hasFocus ? FOCUS_BORDER : emptyBorder);
 		return this;
-//		}catch(Exception e) {
+//		} catch(Exception e) {
 //			e.printStackTrace();
 //			return this;
 //		}

@@ -36,7 +36,7 @@ public class PanelIDE extends JPanel {
 		setLayout(gridBagLayout);
 		
 		JLabel lblNewLabel_5 = new JLabel(LABELS.getString("dlgAppSetIDETitle"));
-		lblNewLabel_5.setFont(new Font("Tahoma", Font.BOLD, 11));
+		lblNewLabel_5.setFont(lblNewLabel_5.getFont().deriveFont(Font.BOLD));
 		GridBagConstraints gbc_lblNewLabel_5 = new GridBagConstraints();
 		gbc_lblNewLabel_5.anchor = GridBagConstraints.NORTHWEST;
 		gbc_lblNewLabel_5.gridwidth = 5;
@@ -46,7 +46,7 @@ public class PanelIDE extends JPanel {
 		add(lblNewLabel_5, gbc_lblNewLabel_5);
 		
 		JLabel lblNewLabel = new JLabel(LABELS.getString("dlgAppSetIDETabSize"));
-		lblNewLabel.setFont(new Font("Tahoma", Font.BOLD, 11));
+		lblNewLabel.setFont(lblNewLabel.getFont().deriveFont(Font.BOLD));
 		GridBagConstraints gbc_lblNewLabel = new GridBagConstraints();
 		gbc_lblNewLabel.fill = GridBagConstraints.VERTICAL;
 		gbc_lblNewLabel.insets = new Insets(0, 0, 5, 15);
@@ -66,7 +66,7 @@ public class PanelIDE extends JPanel {
 		tabSize.setColumns(2);
 		
 		JLabel lblNewLabel_4 = new JLabel(LABELS.getString("dlgAppSetIDEFontSize"));
-		lblNewLabel_4.setFont(new Font("Tahoma", Font.BOLD, 11));
+		lblNewLabel_4.setFont(lblNewLabel_4.getFont().deriveFont(Font.BOLD));
 		GridBagConstraints gbc_lblNewLabel_4 = new GridBagConstraints();
 		gbc_lblNewLabel_4.fill = GridBagConstraints.VERTICAL;
 		gbc_lblNewLabel_4.anchor = GridBagConstraints.NORTHWEST;
@@ -88,7 +88,7 @@ public class PanelIDE extends JPanel {
 		fontSize.setColumns(2);
 		
 		JLabel lblNewLabel_2 = new JLabel(LABELS.getString("dlgAppSetIDEAutoIndent"));
-		lblNewLabel_2.setFont(new Font("Tahoma", Font.BOLD, 11));
+		lblNewLabel_2.setFont(lblNewLabel_2.getFont().deriveFont(Font.BOLD));
 		GridBagConstraints gbc_lblNewLabel_2 = new GridBagConstraints();
 		gbc_lblNewLabel_2.fill = GridBagConstraints.VERTICAL;
 		gbc_lblNewLabel_2.anchor = GridBagConstraints.NORTHWEST;
@@ -138,7 +138,7 @@ public class PanelIDE extends JPanel {
 		indentGroup.add(rdbtnIndentNone);
 		
 		JLabel lblNewLabel_3 = new JLabel(LABELS.getString("dlgAppSetIDEAutoClose"));
-		lblNewLabel_3.setFont(new Font("Tahoma", Font.BOLD, 11));
+		lblNewLabel_3.setFont(lblNewLabel_3.getFont().deriveFont(Font.BOLD));
 		GridBagConstraints gbc_lblNewLabel_3 = new GridBagConstraints();
 		gbc_lblNewLabel_3.anchor = GridBagConstraints.NORTHWEST;
 		gbc_lblNewLabel_3.fill = GridBagConstraints.VERTICAL;
@@ -148,7 +148,7 @@ public class PanelIDE extends JPanel {
 		add(lblNewLabel_3, gbc_lblNewLabel_3);
 		
 		chckbxCloseCurly = new JCheckBox("{ }");
-		chckbxCloseCurly.setFont(new Font("Tahoma", Font.BOLD, 11));
+		chckbxCloseCurly.setFont(chckbxCloseCurly.getFont().deriveFont(Font.BOLD));
 		GridBagConstraints gbc_chckbxCloseCurly = new GridBagConstraints();
 		gbc_chckbxCloseCurly.anchor = GridBagConstraints.NORTHWEST;
 		gbc_chckbxCloseCurly.fill = GridBagConstraints.VERTICAL;
@@ -159,7 +159,7 @@ public class PanelIDE extends JPanel {
 		chckbxCloseCurly.setSelected(appProp.getBoolProperty(ScannerProperties.IDE_AUTOCLOSE_CURLY, false));
 		
 		chckbxClosebracket = new JCheckBox("( )");
-		chckbxClosebracket.setFont(new Font("Tahoma", Font.BOLD, 11));
+		chckbxClosebracket.setFont(chckbxClosebracket.getFont().deriveFont(Font.BOLD));
 		GridBagConstraints gbc_chckbxClosebracket = new GridBagConstraints();
 		gbc_chckbxClosebracket.anchor = GridBagConstraints.NORTHWEST;
 		gbc_chckbxClosebracket.fill = GridBagConstraints.VERTICAL;
@@ -170,7 +170,7 @@ public class PanelIDE extends JPanel {
 		chckbxClosebracket.setSelected(appProp.getBoolProperty(ScannerProperties.IDE_AUTOCLOSE_BRACKET, false));
 		
 		chckbxCloseSquare = new JCheckBox("[ ]");
-		chckbxCloseSquare.setFont(new Font("Tahoma", Font.BOLD, 11));
+		chckbxCloseSquare.setFont(chckbxCloseSquare.getFont().deriveFont(Font.BOLD));
 		GridBagConstraints gbc_chckbxCloseSquare = new GridBagConstraints();
 		gbc_chckbxCloseSquare.anchor = GridBagConstraints.NORTHWEST;
 		gbc_chckbxCloseSquare.fill = GridBagConstraints.VERTICAL;
@@ -181,7 +181,7 @@ public class PanelIDE extends JPanel {
 		chckbxCloseSquare.setSelected(appProp.getBoolProperty(ScannerProperties.IDE_AUTOCLOSE_SQUARE, false));
 		
 		chckbxCloseString = new JCheckBox("\" \"");
-		chckbxCloseString.setFont(new Font("Tahoma", Font.BOLD, 11));
+		chckbxCloseString.setFont(chckbxCloseString.getFont().deriveFont(Font.BOLD));
 		GridBagConstraints gbc_chckbxCloseString = new GridBagConstraints();
 		gbc_chckbxCloseString.fill = GridBagConstraints.VERTICAL;
 		gbc_chckbxCloseString.anchor = GridBagConstraints.NORTHWEST;
@@ -192,7 +192,7 @@ public class PanelIDE extends JPanel {
 		chckbxCloseString.setSelected(appProp.getBoolProperty(ScannerProperties.IDE_AUTOCLOSE_STRING, false));
 		
 		JLabel lblNewLabel_1 = new JLabel(LABELS.getString("dlgAppSetIDEDarkMode"));
-		lblNewLabel_1.setFont(new Font("Tahoma", Font.BOLD, 11));
+		lblNewLabel_1.setFont(lblNewLabel_1.getFont().deriveFont(Font.BOLD));
 		GridBagConstraints gbc_lblNewLabel_1 = new GridBagConstraints();
 		gbc_lblNewLabel_1.anchor = GridBagConstraints.NORTHWEST;
 		gbc_lblNewLabel_1.insets = new Insets(4, 0, 9, 15);
@@ -211,7 +211,7 @@ public class PanelIDE extends JPanel {
 		add(chcDarkMode, gbc_chcDarkMode);
 		
 		JLabel lblNewLabelMsg = new JLabel(LABELS.getString("dlgAppSetIDEMsg"));
-		lblNewLabel_1.setFont(new Font("Tahoma", Font.BOLD, 11));
+		lblNewLabel_1.setFont(lblNewLabelMsg.getFont().deriveFont(Font.BOLD));
 		GridBagConstraints gbc_lblNewLabelMsg = new GridBagConstraints();
 		gbc_lblNewLabelMsg.gridwidth = 5;
 		gbc_lblNewLabelMsg.anchor = GridBagConstraints.NORTHWEST;

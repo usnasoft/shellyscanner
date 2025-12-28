@@ -119,7 +119,10 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 						if(input.enabled()) {
 							stackedPanel.add(getInputPanel(input, foregroundColor));
 						}
-					} else if(module instanceof WhiteInterface white) {
+// 				prima di riattivare (output-addon) serve definire un sistema migliore per l'attivazione del bottone edit (rimuovere ... if(value instanceof WhiteInterface[] ...)
+//					} else if(module instanceof WhiteInterface white && modArray.length == 1) {
+//						stackedPanel.add(getWhitePanel(white, foregroundColor, i == 0, white instanceof CCTInterface));
+					} else if(module instanceof WhiteInterface white && modArray.length > 1) {
 						stackedPanel.add(getWhiteSyntheticPanel(white, foregroundColor, i == 0, i == modArray.length - 1));
 					} else if(module instanceof RGBInterface rgb) {
 						stackedPanel.add(getRGBSyntheticPanel(rgb, foregroundColor, i == 0, i == modArray.length - 1));
@@ -289,12 +292,12 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 		return panel;
 	}
 	
-	private JPanel getWhiteSyntheticPanel(WhiteInterface light, final Color foregroundColor, boolean ind0, boolean addEditButton) {
+	private JPanel getWhiteSyntheticPanel(WhiteInterface light, final Color foregroundColor, boolean useButton0, boolean addEditButton) {
 		final JPanel panel = new JPanel(new BorderLayout());
 		panel.setOpaque(false);
 		final JLabel label;// = new JLabel(light.getLabel() + " " + light.getBrightness() + "%");
 		final JButton button;
-		if(ind0) {
+		if(useButton0) {
 			button = onOffButton0;
 			label = label0;
 			label.setText(light.getLabel() + " " + light.getBrightness() + "%");
@@ -327,6 +330,7 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 	
 	private JPanel getWhitePanel(WhiteInterface light, final Color foregroundColor, boolean useButton0, boolean addEditButton) {
 		final JPanel panel = new JPanel(new BorderLayout());
+//		panel.setOpaque(false);
 		final JLabel label;
 		final JButton button;
 		if(useButton0) {
@@ -355,7 +359,7 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 			JPanel editSwitchPanel = new JPanel(new BorderLayout());
 			editSwitchPanel.setOpaque(false);
 			editSwitchPanel.add(button, BorderLayout.EAST);
-			editSwitchPanel.add(BorderLayout.WEST, editDialogButton);
+			editSwitchPanel.add(editDialogButton, BorderLayout.WEST);
 			panel.add(editSwitchPanel, BorderLayout.EAST);
 			panel.setComponentZOrder(editSwitchPanel, 0);
 		} else {

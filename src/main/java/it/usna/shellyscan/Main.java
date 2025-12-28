@@ -128,7 +128,16 @@ public class Main {
 
 		// Activate dynamic model - Go interactive
 		try {
-			UsnaSwingUtils.setLookAndFeel(UsnaSwingUtils.LF_NIMBUS);
+			float fontMultiplier = 1f;
+			if((cliIndex = cli.hasEntry("-font")) >= 0) {
+				try {
+					fontMultiplier = Float.parseFloat(cli.getParameter(cliIndex));
+				} catch(NumberFormatException e) {
+					cli.rejectEntry(cliIndex);
+					cli.rejectParameter(cliIndex);
+				}
+			}
+			UsnaSwingUtils.setNimbusLookAndFeel(fontMultiplier);
 			UsnaSwingUtils.macOddities();
 			//UIManager.getLookAndFeelDefaults().put("Table:\"Table.cellRenderer\".alternateRowColor", TAB_LINE2_COLOR); // genera strani log
 		} catch (Exception e) {

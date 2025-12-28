@@ -57,7 +57,7 @@ public class PanelNetwork extends JPanel {
 		setLayout(gridBagLayout);
 
 		JLabel lblNewLabel = new JLabel(LABELS.getString("dlgAppSetScanNetworkLabel"));
-		lblNewLabel.setFont(new Font("Tahoma", Font.BOLD, 11));
+		lblNewLabel.setFont(lblNewLabel.getFont().deriveFont(Font.BOLD));
 		lblNewLabel.setHorizontalAlignment(SwingConstants.LEFT);
 		GridBagConstraints gbc_lblNewLabel = new GridBagConstraints();
 		gbc_lblNewLabel.anchor = GridBagConstraints.WEST;
@@ -160,7 +160,7 @@ public class PanelNetwork extends JPanel {
 		add(lblNewLabel_9, gbc_lblNewLabel_9);
 
 		JLabel lblNewLabel_6 = new JLabel(LABELS.getString("dlgAppSetRestrictedLogin"));
-		lblNewLabel_6.setFont(new Font("Tahoma", Font.BOLD, 11));
+		lblNewLabel_6.setFont(lblNewLabel_6.getFont().deriveFont(Font.BOLD));
 		GridBagConstraints gbc_lblNewLabel_6 = new GridBagConstraints();
 		gbc_lblNewLabel_6.anchor = GridBagConstraints.WEST;
 		gbc_lblNewLabel_6.insets = new Insets(0, 0, 5, 5);
@@ -218,7 +218,7 @@ public class PanelNetwork extends JPanel {
 		add(separator_2, gbc_separator_2);
 		
 		JLabel lblNewLabel_rt = new JLabel(LABELS.getString("dlgAppSetRefreshTime"));
-		lblNewLabel_rt.setFont(new Font("Tahoma", Font.BOLD, 11));
+		lblNewLabel_rt.setFont(lblNewLabel_rt.getFont().deriveFont(Font.BOLD));
 		GridBagConstraints gbc_lblNewLabel_rt = new GridBagConstraints();
 		gbc_lblNewLabel_rt.anchor = GridBagConstraints.WEST;
 		gbc_lblNewLabel_rt.insets = new Insets(0, 0, 5, 5);
@@ -236,7 +236,7 @@ public class PanelNetwork extends JPanel {
 		refreshTextField.setColumns(4);
 		
 		JLabel lblNewLabel_4 = new JLabel(LABELS.getString("dlgAppSetConfRefreshTic"));
-		lblNewLabel_4.setFont(new Font("Tahoma", Font.BOLD, 11));
+		lblNewLabel_4.setFont(lblNewLabel_4.getFont().deriveFont(Font.BOLD));
 		GridBagConstraints gbc_lblNewLabel_4 = new GridBagConstraints();
 		gbc_lblNewLabel_4.anchor = GridBagConstraints.WEST;
 		gbc_lblNewLabel_4.insets = new Insets(0, 0, 5, 5);

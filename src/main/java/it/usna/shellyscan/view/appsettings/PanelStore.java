@@ -45,7 +45,7 @@ public class PanelStore extends JPanel {
 		setLayout(gridBagLayout);
 
 		JLabel lblNewLabel = new JLabel(LABELS.getString("dlgAppStoreUseLabel"));
-		lblNewLabel.setFont(new Font("Tahoma", Font.BOLD, 11));
+		lblNewLabel.setFont(lblNewLabel.getFont().deriveFont(Font.BOLD));
 		lblNewLabel.setHorizontalAlignment(SwingConstants.LEFT);
 		GridBagConstraints gbc_lblNewLabel = new GridBagConstraints();
 		gbc_lblNewLabel.fill = GridBagConstraints.VERTICAL;
@@ -65,7 +65,7 @@ public class PanelStore extends JPanel {
 		chckbxUseStore.setSelected(appProp.getBoolProperty(ScannerProperties.PROP_USE_ARCHIVE));
 		
 		JLabel lblStoreFile = new JLabel(LABELS.getString("dlgAppStoreFileLabel"));
-		lblStoreFile.setFont(new Font("Tahoma", Font.BOLD, 11));
+		lblStoreFile.setFont(lblStoreFile.getFont().deriveFont(Font.BOLD));
 		GridBagConstraints gbc_lblStoreFile = new GridBagConstraints();
 		gbc_lblStoreFile.fill = GridBagConstraints.VERTICAL;
 		gbc_lblStoreFile.anchor = GridBagConstraints.NORTHWEST;
@@ -107,7 +107,7 @@ public class PanelStore extends JPanel {
 		add(btnNewButton, gbc_btnNewButton);
 		
 		JLabel lblNewLabel_1 = new JLabel(LABELS.getString("dlgAppStoreAutoReload"));
-		lblNewLabel_1.setFont(new Font("Tahoma", Font.BOLD, 11));
+		lblNewLabel_1.setFont(lblNewLabel_1.getFont().deriveFont(Font.BOLD));
 		GridBagConstraints gbc_lblNewLabel_1 = new GridBagConstraints();
 		gbc_lblNewLabel_1.weighty = 1.0;
 		gbc_lblNewLabel_1.anchor = GridBagConstraints.NORTHWEST;

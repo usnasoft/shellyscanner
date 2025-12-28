@@ -14,7 +14,7 @@ import it.usna.shellyscan.model.device.RestoreMsg;
 import it.usna.shellyscan.model.device.g2.meters.MetersWVI;
 import it.usna.shellyscan.model.device.g2.modules.Input;
 import it.usna.shellyscan.model.device.g2.modules.LightWhite;
-import it.usna.shellyscan.model.device.g2.modules.SensorAddOnPro;
+
 import it.usna.shellyscan.model.device.meters.Meters;
 import it.usna.shellyscan.model.device.modules.DeviceModule;
 import tools.jackson.databind.JsonNode;
@@ -34,7 +34,7 @@ public class ShellyProDimmer1 extends AbstractProDevice implements InternalTmpHo
 	private Meters[] meters;
 	private LightWhite light = new LightWhite(this, 0);
 	private LightWhite[] lightArray = new LightWhite[] {light};
-	private SensorAddOnPro sensorAddOn;
+
 
 	public ShellyProDimmer1(InetAddress address, int port, String hostname) {
 		super(address, port, hostname);
@@ -53,22 +53,9 @@ public class ShellyProDimmer1 extends AbstractProDevice implements InternalTmpHo
 	
 	private JsonNode configure() throws IOException {
 		final JsonNode config = getJSON("/rpc/Shelly.GetConfig");
-		final String addOnType = config.get("sys").get("device").path("addon_type").asString("");
-		if(SensorAddOnPro.ADDON_TYPE.equals(addOnType)) {
-			sensorAddOn = new SensorAddOnPro(this);
-			Meters[] m = sensorAddOn.getMetersArray();
-			ArrayList<Meters> metersList = new ArrayList<Meters>(3);
-			metersList.add(baseMeasures);
-			for(Meters met: m) {
-				if(met.getTypes().length > 0) {
-					metersList.add(met);
-				}
-			}
-			meters = metersList.toArray(Meters[]::new);
-		} else {
-			sensorAddOn = null;
+
 			meters = new Meters[] {baseMeasures};
-		}
+
 		return config;
 	}
 	
@@ -101,9 +88,7 @@ public class ShellyProDimmer1 extends AbstractProDevice implements InternalTmpHo
 	protected void fillSettings(JsonNode configuration) throws IOException {
 		super.fillSettings(configuration);
 		light.fillSettings(configuration.get("light:0"));
-		if(sensorAddOn != null) {
-			sensorAddOn.fillSettings(configuration);
-		}
+
 	}
 	
 	@Override
@@ -113,16 +98,9 @@ public class ShellyProDimmer1 extends AbstractProDevice implements InternalTmpHo
 		internalTmp = lightStatus.get("temperature").get("tC").floatValue();
 		light.fillStatus(lightStatus, status.get("input:0"));
 		baseMeasures.fill(lightStatus);
-		if(sensorAddOn != null) {
-			sensorAddOn.fillStatus(status);
-		}
+
 	}
-	
-	@Override
-	public String[] getInfoRequests() {
-		final String[] cmd = super.getInfoRequests();
-		return (sensorAddOn != null) ? SensorAddOnPro.getInfoRequests(cmd) : cmd;
-	}
+
 	
 	@Override
 	protected void restoreCheck(Map<String, JsonNode> backupJsons, Map<RestoreMsg, Object> resp) {

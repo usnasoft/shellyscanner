@@ -80,6 +80,7 @@ import it.usna.shellyscan.model.device.g2.ShellyProEM50;
 import it.usna.shellyscan.model.device.g2.ShellyProRGBWW;
 import it.usna.shellyscan.model.device.g2.ShellyWallDimmer;
 import it.usna.shellyscan.model.device.g2.WallDisplay;
+import it.usna.shellyscan.model.device.g2.WallDisplayX2i;
 import it.usna.shellyscan.model.device.g2.modules.LoginManagerG2;
 import it.usna.shellyscan.model.device.g3.AbstractG3Device;
 import it.usna.shellyscan.model.device.g3.PbSOgemraySW40;
@@ -93,6 +94,7 @@ import it.usna.shellyscan.model.device.g3.Shelly2LG3;
 import it.usna.shellyscan.model.device.g3.Shelly2PMG3;
 import it.usna.shellyscan.model.device.g3.Shelly3EM63;
 import it.usna.shellyscan.model.device.g3.ShellyDimmerG3;
+import it.usna.shellyscan.model.device.g3.ShellyEMG3;
 import it.usna.shellyscan.model.device.g3.ShellyG3Unmanaged;
 import it.usna.shellyscan.model.device.g3.ShellyGatewayG3;
 import it.usna.shellyscan.model.device.g3.ShellyHTG3;
@@ -209,7 +211,7 @@ public class DevicesFactory {
 			d.init(httpClient, info);
 		} catch(IOException e) {
 			if("Status-401".equals(e.getMessage()) == false) {
-				LOG.warn("create - init {}:{}, address, port", e);
+				LOG.warn("create - init {}:{}", address, port, e);
 			}
 		} catch(RuntimeException e) {
 			LOG.error("create - init {}:{}", address, port, e);
@@ -241,7 +243,7 @@ public class DevicesFactory {
 				case ShellyPlus0_10VDimmer.ID -> new ShellyPlus0_10VDimmer(address, port, name);
 				case ShellyGateway.ID -> new ShellyGateway(address, port, name);
 				case WallDisplay.ID -> new WallDisplay(address, port, name);
-
+				case WallDisplayX2i.ID -> new WallDisplayX2i(address, port, name);
 				case ShellyPlusUNI.ID -> new ShellyPlusUNI(address, port, name);
 				// Plus - Battery
 				case ShellyPlusHT.ID -> new ShellyPlusHT(address, port, name);
@@ -253,11 +255,11 @@ public class DevicesFactory {
 				case ShellyPro2.ID -> new ShellyPro2(address, port, name);
 				case ShellyPro3.ID -> new ShellyPro3(address, port, name);
 				case ShellyPro4PM.ID -> ShellyProDualCover.MODEL.equals(info.get("model").asString("")) ? new ShellyProDualCover(address, port, name) : new ShellyPro4PM(address, port, name);
-				case ShellyProDimmer1.ID -> ShellyProDimmer2.MODEL.equals(info.get("model").asString("")) ? new ShellyProDimmer2(address, port, name) : new ShellyProDimmer1(address, port, name);
+				case ShellyProDimmer1.ID, ShellyProDimmer1.ID_ADDON -> ShellyProDimmer2.MODEL.equals(info.get("model").asString("")) ? new ShellyProDimmer2(address, port, name) : new ShellyProDimmer1(address, port, name);
 				case ShellyProEM50.ID -> new ShellyProEM50(address, port, name);
 				case ShellyPro3EM.ID -> new ShellyPro3EM(address, port, name);
 				case ShellyProRGBWW.ID -> new ShellyProRGBWW(address, port, name);
-
+				
 				default -> new ShellyG2Unmanaged(address, port, name);
 			};
 		} catch(Exception e) { // really unexpected
@@ -300,6 +302,7 @@ public class DevicesFactory {
 			case Shelly3EM63.ID -> new Shelly3EM63(address, port, name);
 			case Shelly1LG3.ID -> new Shelly1LG3(address, port, name);
 			case Shelly2LG3.ID -> new Shelly2LG3(address, port, name);
+			case ShellyEMG3.ID -> new ShellyEMG3(address, port, name);
 			case ShellyGatewayG3.ID -> new ShellyGatewayG3(address, port, name);
 
 			// X
@@ -349,8 +352,6 @@ public class DevicesFactory {
 			case ShellyDimmerG4.MODEL -> new ShellyDimmerG4(address, port, name);
 
 			case ShellyPowerStrip4G.MODEL -> new ShellyPowerStrip4G(address, port, name);
-
-			// PRO
 
 			default -> new ShellyG4Unmanaged(address, port, name);
 			};
