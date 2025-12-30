@@ -129,7 +129,7 @@ public class Main {
 		// Activate dynamic model - Go interactive
 		try {
 			float fontMultiplier = 1f;
-			if((cliIndex = cli.hasEntry("-fontsize")) >= 0) {
+			if((cliIndex = cli.hasEntry("-font")) >= 0) {
 				try {
 					fontMultiplier = Float.parseFloat(cli.getParameter(cliIndex));
 				} catch(NumberFormatException e) {
