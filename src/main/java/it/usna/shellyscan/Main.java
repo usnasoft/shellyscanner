@@ -129,7 +129,7 @@ public class Main {
 		// Activate dynamic model - Go interactive
 		try {
 			float fontMultiplier = 1f;
-			if((cliIndex = cli.hasEntry("-font")) >= 0) {
+			if((cliIndex = cli.hasEntry("-fontsize")) >= 0) {
 				try {
 					fontMultiplier = Float.parseFloat(cli.getParameter(cliIndex));
 				} catch(NumberFormatException e) {
@@ -144,7 +144,6 @@ public class Main {
 			Msg.errorMsg(null, e);
 		}
 		//		UIManager.put("Table.background", new ColorUIResource(TAB_LINE1));
-		//		UIManager.put("Table.alternateRowColor", TAB_LINE2);
 
 		if(TAB_VERSION.equals(appProp.getProperty("TAB_VER")) == false) {
 			appProp.setProperty("TAB_VER", TAB_VERSION);
