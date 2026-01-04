@@ -22,6 +22,7 @@ import tools.jackson.databind.JsonNode;
 public class ShellyPlusi4 extends AbstractG2Device implements ModulesHolder {
 	private static final Logger LOG = LoggerFactory.getLogger(ShellyPlusi4.class);
 	public static final String ID = "PlusI4";
+	public static final String MODEL = "SNSN-0024X";
 	private Input[] inputs;
 	private Webhooks webhooks;
 	private Meters[] meters;

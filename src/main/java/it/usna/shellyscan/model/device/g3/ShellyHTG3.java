@@ -16,6 +16,7 @@ import tools.jackson.databind.node.ObjectNode;
  */
 public class ShellyHTG3 extends AbstractBatteryG3Device {
 	public static final String ID = "HTG3";
+	public static final String MODEL = "S3SN-0U12A";
 	private static final Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.T, Meters.Type.H, Meters.Type.BAT};
 	private float temp;
 	private float humidity;
@@ -53,6 +54,11 @@ public class ShellyHTG3 extends AbstractBatteryG3Device {
 	@Override
 	public String getTypeID() {
 		return ID;
+	}
+	
+	@Override
+	public String getModelID() {
+		return MODEL;
 	}
 	
 	@Override

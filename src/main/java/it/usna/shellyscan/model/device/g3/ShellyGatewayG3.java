@@ -14,6 +14,7 @@ import tools.jackson.databind.JsonNode;
 public class ShellyGatewayG3 extends AbstractG3Device {
 //	private static final Logger LOG = LoggerFactory.getLogger(ShellyGatewayG3.class);
 	public static final String ID = "BluGwG3";
+	public static final String MODEL = "S3GW-1DBT001";
 
 	public ShellyGatewayG3(InetAddress address, int port, String hostname) {
 		super(address, port, hostname);
@@ -36,6 +37,11 @@ public class ShellyGatewayG3 extends AbstractG3Device {
 	@Override
 	public String getTypeID() {
 		return ID;
+	}
+	
+	@Override
+	public String getModelID() {
+		return MODEL;
 	}
 
 	@Override

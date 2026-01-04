@@ -10,15 +10,12 @@ import tools.jackson.core.JacksonException;
 import tools.jackson.databind.JsonNode;
 
 public class ShellyPlusSmoke extends AbstractBatteryG2Device {
+	public static final String ID = "PlusSmoke";
+	public static final String MODEL = "SNSN-0031Z";
 	private static final Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.BAT};
 	private Meters[] meters;
 	private boolean alarm;
-	
-//	public ShellyPlusSmoke(InetAddress address, int port, JsonNode shelly, String hostname) {
-//		this(address, port, hostname);
-//		this.shelly = shelly;
-//	}
-	
+
 	public ShellyPlusSmoke(InetAddress address, int port, String hostname) {
 		super(address, port, hostname);
 		
@@ -37,8 +34,6 @@ public class ShellyPlusSmoke extends AbstractBatteryG2Device {
 		};
 	}
 
-	public static final String ID = "PlusSmoke";
-	
 	@Override
 	public String getTypeID() {
 		return ID;

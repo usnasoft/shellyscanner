@@ -18,6 +18,7 @@ import tools.jackson.databind.node.ObjectNode;
 
 public class ShellyProEM50 extends AbstractProDevice implements ModulesHolder, InternalTmpHolder {
 	public static final String ID = "ProEM";
+	public static final String MODEL = "SPEM-002CEBEU50";
 	private Relay relay = new Relay(this, 0);
 	private Relay[] relays = new Relay[] {relay};
 	private float internalTmp;

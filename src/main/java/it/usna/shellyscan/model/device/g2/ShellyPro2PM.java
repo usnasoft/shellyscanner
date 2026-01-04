@@ -14,14 +14,15 @@ import it.usna.shellyscan.model.device.g2.modules.Input;
 import it.usna.shellyscan.model.device.g2.modules.LoRaAddOn;
 import it.usna.shellyscan.model.device.g2.modules.Relay;
 import it.usna.shellyscan.model.device.g2.modules.Roller;
-
+import it.usna.shellyscan.model.device.g2.modules.SensorAddOnPro;
 import it.usna.shellyscan.model.device.meters.Meters;
 import it.usna.shellyscan.model.device.modules.DeviceModule;
 import tools.jackson.databind.JsonNode;
 
 public class ShellyPro2PM extends AbstractProDevice implements ModulesHolder, InternalTmpHolder {
 	public static final String ID = "Pro2PM";
-	public static final String MODEL = "SPSW-202PE16EU";
+	public static final String MODEL_1 = "SPSW-202PE15UL";
+	public static final String MODEL_2 = "SPSW-202PE16EU";
 	private boolean modeRelay;
 	private static final Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.W, Meters.Type.PF, Meters.Type.V, Meters.Type.I};
 	private Relay relay0, relay1;
@@ -35,7 +36,7 @@ public class ShellyPro2PM extends AbstractProDevice implements ModulesHolder, In
 	private float pf0, pf1;
 	private Meters meters0, meters1;
 	private Meters[] meters;
-
+	private SensorAddOnPro sensorAddOn;
 	private boolean loraAddOn;
 
 	private static final String MODE_RELAY = "switch";
@@ -94,7 +95,23 @@ public class ShellyPro2PM extends AbstractProDevice implements ModulesHolder, In
 	
 	private JsonNode configure() throws IOException {
 		final JsonNode config = getJSON("/rpc/Shelly.GetConfig");
-
+		final String addOnType = config.get("sys").get("device").path("addon_type").asString("");
+		if(SensorAddOnPro.ADDON_TYPE.equals(addOnType)) {
+			sensorAddOn = new SensorAddOnPro(this);
+//			Meters[] m = addOn.getMetersArray();
+//			ArrayList<Meters> metersList = new ArrayList<Meters>(3);
+//			metersList.add(baseMeasures);
+//			for(Meters met: m) {
+//				if(met.getTypes().length > 0) {
+//					metersList.add(met);
+//				}
+//			}
+//			meters = metersList.toArray(Meters[]::new);
+		} else {
+			sensorAddOn = null;
+//			meters = new Meters[] {baseMeasures};
+		}
+		loraAddOn = LoRaAddOn.ADDON_TYPE.equals(addOnType);
 		return config;
 	}
 
@@ -184,7 +201,18 @@ public class ShellyPro2PM extends AbstractProDevice implements ModulesHolder, In
 			roller.fillStatus(cover, status.get("input:0"), status.get("input:1"));
 		}
 	}
-
+	
+	@Override
+	public String[] getInfoRequests() {
+		final String[] cmd = super.getInfoRequests();
+		if(sensorAddOn != null) {
+			return SensorAddOnPro.getInfoRequests(cmd);
+		} else if(loraAddOn) {
+			return LoRaAddOn.getInfoRequests(cmd);
+		} else {
+			return cmd;
+		}
+	}
 	
 	public void setProfile(boolean cover) {
 		postCommand("Shelly.SetProfile", "{\"name\":\"" + (cover ? "cover" : "switch")  +"\"}");
@@ -197,7 +225,7 @@ public class ShellyPro2PM extends AbstractProDevice implements ModulesHolder, In
 		if(backModeRelay != modeRelay) {
 			res.put(RestoreMsg.ERR_RESTORE_MODE_COVER, null);
 		}
-
+		SensorAddOnPro.restoreCheck(this, sensorAddOn, backupJsons, res);
 		LoRaAddOn.restoreCheck(this, loraAddOn, backupJsons, res);
 	}
 
@@ -220,7 +248,7 @@ public class ShellyPro2PM extends AbstractProDevice implements ModulesHolder, In
 		} else {
 			errors.add(RestoreMsg.ERR_RESTORE_MODE_COVER.name());
 		}
-
+		SensorAddOnPro.restore(this, sensorAddOn, backupJsons, errors);
 		LoRaAddOn.restore(this, loraAddOn, configuration, errors);
 	}
 

@@ -97,6 +97,10 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 	public String getGeneration() {
 		return "2";
 	}
+	
+	public String getModelID() {
+		return null;
+	}
 
 	public void setAuthentication(Authentication auth) {
 		AuthenticationStore store = httpClient.getAuthenticationStore();
@@ -386,7 +390,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 				sectionToStream("/rpc/Shelly.GetComponents?dynamic_only=true", "components", "Shelly.GetComponents.json", out);
 			} catch(Exception e) {}
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-			String addon = config.get("sys").get("device").path("addon_type").asString("");
+			String addon = config.get("sys").get("device").path("addon_type").asString();
 			if(SensorAddOn.ADDON_TYPE.equals(addon)) {
 				sectionToStream("/rpc/SensorAddon.GetPeripherals", SensorAddOn.BACKUP_SECTION, out);
 				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
@@ -423,13 +427,13 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 		EnumMap<RestoreMsg, Object> res = new EnumMap<>(RestoreMsg.class);
 		try {
 			JsonNode devInfo = backupJsons.get("Shelly.GetDeviceInfo.json");
-			if(devInfo == null || RestoreUtil.compatibleModels(devInfo.get("app").asString(""), this.getTypeID()) == false) {
+			if(devInfo == null || RestoreUtil.compatibleModels(devInfo, this) == false) {
 				res.put(RestoreMsg.ERR_RESTORE_MODEL, null);
 			} else {
 				JsonNode config = backupJsons.get("Shelly.GetConfig.json");
-				boolean sameDevice = /*devInfo.get("id").asString("").equals(this.hostname)*/devInfo.get("mac").asString("").toUpperCase().equals(this.mac);
+				boolean sameDevice = devInfo.get("mac").asString("").toUpperCase().equals(this.mac);
 				if(sameDevice == false) {
-					res.put(RestoreMsg.PRE_QUESTION_RESTORE_HOST, /*fileHostname*/devInfo.get("id").asString(""));
+					res.put(RestoreMsg.PRE_QUESTION_RESTORE_HOST, devInfo.get("id").asString(""));
 				}
 				DynamicComponents.restoreCheck(this, backupJsons, res);
 				if(devInfo.path("auth_en").asBoolean()) {

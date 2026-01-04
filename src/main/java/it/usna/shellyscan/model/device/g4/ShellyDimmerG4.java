@@ -28,7 +28,7 @@ import tools.jackson.databind.JsonNode;
 public class ShellyDimmerG4 extends AbstractG4Device implements InternalTmpHolder, ModulesHolder {
 	private final static Logger LOG = LoggerFactory.getLogger(ShellyDimmerG4.class);
 	public static final String ID = "DimmerG4";
-	public static final String ID_ZB = "DimmerG4ZB";
+//	public static final String ID_ZB = "DimmerG4ZB";
 	public static final String MODEL = "S4DM-0A101WWL";
 	private float internalTmp;
 	private MetersWVI baseMeasures = new MetersWVI();
@@ -54,7 +54,7 @@ public class ShellyDimmerG4 extends AbstractG4Device implements InternalTmpHolde
 	
 	private JsonNode configure() throws IOException {	
 		final JsonNode config = getJSON("/rpc/Shelly.GetConfig");
-		if(SensorAddOn.ADDON_TYPE.equals(config.get("sys").get("device").path("addon_type").asString(""))) {
+		if(SensorAddOn.ADDON_TYPE.equals(config.get("sys").get("device").path("addon_type").asString())) {
 			sensorAddOn = new SensorAddOn(this);
 			meters = (sensorAddOn.getTypes().length > 0) ? new Meters[] {baseMeasures, sensorAddOn} : new Meters[] {baseMeasures};
 		} else {
@@ -72,6 +72,11 @@ public class ShellyDimmerG4 extends AbstractG4Device implements InternalTmpHolde
 	@Override
 	public String getTypeID() {
 		return ID;
+	}
+	
+	@Override
+	public String getModelID() {
+		return MODEL;
 	}
 	
 	@Override

@@ -16,7 +16,8 @@ import tools.jackson.databind.JsonNode;
 
 public class ShellyPro1PM extends AbstractProDevice implements ModulesHolder, InternalTmpHolder {
 	public static final String ID = "Pro1PM";
-	public static final String MODEL = "SPSW-201PE16EU";
+	public static final String MODEL_1 = "SPSW-201PE15UL";
+	public static final String MODEL_2 = "SPSW-201PE16EU";
 	private static final Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.W, Meters.Type.PF, Meters.Type.V, Meters.Type.I};
 	private Relay relay = new Relay(this, 0);
 	private String inputKey;

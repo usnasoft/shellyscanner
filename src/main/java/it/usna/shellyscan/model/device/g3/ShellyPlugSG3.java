@@ -21,6 +21,7 @@ import tools.jackson.databind.node.ObjectNode;
  */
 public class ShellyPlugSG3 extends AbstractG3Device implements ModulesHolder, InternalTmpHolder {
 	public static final String ID = "PlugSG3";
+	public static final String MODEL = "S3PL-00112EU";
 	private Relay relay = new Relay(this, 0);
 	private float internalTmp;
 	private MetersWVI meters = new MetersWVI();
@@ -38,6 +39,11 @@ public class ShellyPlugSG3 extends AbstractG3Device implements ModulesHolder, In
 	@Override
 	public String getTypeID() {
 		return ID;
+	}
+	
+	@Override
+	public String getModelID() {
+		return MODEL;
 	}
 
 	@Override

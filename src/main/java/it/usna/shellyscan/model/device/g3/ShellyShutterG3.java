@@ -78,7 +78,7 @@ public class ShellyShutterG3 extends AbstractG3Device implements ModulesHolder, 
 	
 	private JsonNode configure() throws IOException {
 		final JsonNode config = getJSON("/rpc/Shelly.GetConfig");
-		final String addOn = config.get("sys").get("device").path("addon_type").asString("");
+		final String addOn = config.get("sys").get("device").path("addon_type").asString();
 		if(SensorAddOn.ADDON_TYPE.equals(addOn)) {
 			sensorAddOn = new SensorAddOn(this);
 			meters = (sensorAddOn.getTypes().length > 0) ? new Meters[] {meters0, sensorAddOn} : new Meters[] {meters0};
@@ -98,6 +98,11 @@ public class ShellyShutterG3 extends AbstractG3Device implements ModulesHolder, 
 	@Override
 	public String getTypeID() {
 		return ID;
+	}
+	
+	@Override
+	public String getModelID() {
+		return MODEL;
 	}
 
 	@Override

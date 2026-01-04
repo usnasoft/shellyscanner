@@ -23,6 +23,7 @@ import tools.jackson.databind.JsonNode;
  */
 public class ShellyXMOD1 extends AbstractG3Device implements ModulesHolder {
 	public static final String ID = "XMOD1";
+	public static final String MODEL = "S3MX-0A";
 	private int numInputs;
 	private int numOutputs;
 	private int numModules;
@@ -79,6 +80,11 @@ public class ShellyXMOD1 extends AbstractG3Device implements ModulesHolder {
 	@Override
 	public String getTypeID() {
 		return ID;
+	}
+	
+	@Override
+	public String getModelID() {
+		return MODEL;
 	}
 
 	@Override

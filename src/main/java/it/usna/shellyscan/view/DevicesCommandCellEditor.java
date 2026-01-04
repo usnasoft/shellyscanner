@@ -49,6 +49,7 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 	
 	// Generic
 	private JButton editDialogButton = new JButton(DevicesCommandCellRenderer.EDIT_IMG);
+	private JPanel stackedPanelContainer = new JPanel(new BorderLayout(0, 0));
 	private JPanel stackedPanel = new JPanel();
 	
 	private final Color selBackground;
@@ -76,7 +77,9 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 
 		BoxLayout stackedPanelLO = new BoxLayout(stackedPanel, BoxLayout.Y_AXIS);
 		stackedPanel.setLayout(stackedPanelLO);
-		stackedPanel.setBackground(selBackground);
+		stackedPanel.setOpaque(false);
+		stackedPanelContainer.add(stackedPanel, BorderLayout.NORTH);
+		stackedPanelContainer.setBackground(selBackground);
 	}
 
 	@Override
@@ -87,14 +90,14 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 				stackedPanel.add(getRelayPanel(rel));
 			}
 			edited = riArray;
-			return stackedPanel;
+			return stackedPanelContainer;
 		} else if(value instanceof RollerInterface[] rollersArray) {
 			stackedPanel.removeAll();
 			for(RollerInterface rel: rollersArray) {
 				stackedPanel.add(getRollerPanel(rel));
 			}
 			edited = rollersArray;
-			return stackedPanel;
+			return stackedPanelContainer;
 		} else if(value instanceof RGBCCTInterface[] bulbsArray) { // RGB/CCT Bulbs
 			JPanel panel = getRGBCCTPanel(bulbsArray[0], true);
 			edited = bulbsArray;
@@ -107,10 +110,10 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 			JPanel panel = getRGBPanel(rgbs[0], true);
 			edited = rgbs;
 			return panel;
-		} else if(value instanceof WhiteInterface[] whitesArray && whitesArray.length == 1) {
-			JPanel panel = getWhitePanel(whitesArray[0], whitesArray[0] instanceof CCTInterface);
-			edited = whitesArray;
-			return panel;
+//		} else if(value instanceof WhiteInterface[] whitesArray && whitesArray.length == 1) {
+//			JPanel panel = getWhitePanel(whitesArray[0], whitesArray[0] instanceof CCTInterface);
+//			edited = whitesArray;
+//			return panel;
 		} else if(value instanceof ThermostatG1 th) { // TRV Gen1
 			JPanel panel = getThermostatG1Panel(th);
 			edited = th;
@@ -129,8 +132,8 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 					if(input.enabled()) {
 						stackedPanel.add(getInputPanel(input, table));
 					}
-//				} else if(module instanceof WhiteInterface white && modArray.length == 1) {
-//					stackedPanel.add(getWhitePanel(white, white instanceof CCTInterface));
+				} else if(module instanceof WhiteInterface white && modArray.length == 1) {
+					stackedPanel.add(getWhitePanel(white, white instanceof CCTInterface));
 				} else if(module instanceof WhiteInterface white && modArray.length > 0) {
 					stackedPanel.add(getWhiteSyntheticPanel(white, i == modArray.length - 1));
 				} else if(module instanceof RGBInterface rgb) {
@@ -138,7 +141,7 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 				}
 			}
 			edited = modArray;
-			return stackedPanel.getComponentCount() > 0 ? stackedPanel : null;
+			return stackedPanel.getComponentCount() > 0 ? stackedPanelContainer : null;
 		}
 		return null;
 	}
@@ -183,9 +186,10 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 	
 	private Component getRollerPanel(RollerInterface roller) {
 		JPanel rollerPanel = new JPanel(new BorderLayout());
+		rollerPanel.setOpaque(false);
 		JLabel rollerLabel = new JLabel();
 		
-		rollerPanel.setBackground(selBackground);
+//		rollerPanel.setBackground(selBackground);
 		rollerLabel.setForeground(selForeground);
 		rollerPanel.add(rollerLabel, BorderLayout.CENTER);
 		JPanel rollerSouthPanel = new JPanel(new BorderLayout());
@@ -552,10 +556,11 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 	private JPanel getWhitePanel(WhiteInterface light, boolean addEditButton) {
 		JLabel lightLabel = new JLabel();
 		JPanel lightPanel = new JPanel(new BorderLayout());
+		lightPanel.setOpaque(false);
 		JButton lightButton = new JButton();
 		JSlider lightBrightness = new JSlider(light.getMinBrightness(), light.getMaxBrightness(), light.getBrightness());
 		
-		lightPanel.setBackground(selBackground);
+//		lightPanel.setBackground(selBackground);
 		lightLabel.setForeground(selForeground);
 		lightPanel.add(lightLabel, BorderLayout.WEST);
 		lightPanel.add(lightButton, BorderLayout.EAST);

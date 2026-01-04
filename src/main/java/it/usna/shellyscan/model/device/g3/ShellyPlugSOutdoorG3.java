@@ -8,6 +8,7 @@ import java.net.InetAddress;
  */
 public class ShellyPlugSOutdoorG3 extends ShellyPlugSG3 {
 	public static final String ID = "OutdoorPlugSG3";
+	public static final String MODEL = "S3PL-20112EU";
 
 	public ShellyPlugSOutdoorG3(InetAddress address, int port, String hostname) {
 		super(address, port, hostname);
@@ -21,6 +22,11 @@ public class ShellyPlugSOutdoorG3 extends ShellyPlugSG3 {
 	@Override
 	public String getTypeID() {
 		return ID;
+	}
+	
+	@Override
+	public String getModelID() {
+		return MODEL;
 	}
 	
 	// matter ?

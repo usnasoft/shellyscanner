@@ -28,7 +28,7 @@ import tools.jackson.databind.JsonNode;
 public class Shelly1PMG4 extends AbstractG4Device implements ModulesHolder, InternalTmpHolder {
 	private static final Logger LOG = LoggerFactory.getLogger(Shelly1PMG4.class);
 	public static final String ID = "S1PMG4";
-	public static final String ID_ZB = "S1PMG4ZB";
+//	public static final String ID_ZB = "S1PMG4ZB";
 	public static final String MODEL = "S4SW-001P16EU";
 	private Relay relay = new Relay(this, 0);
 	private float internalTmp;
@@ -55,7 +55,7 @@ public class Shelly1PMG4 extends AbstractG4Device implements ModulesHolder, Inte
 	
 	private JsonNode configure() throws IOException {
 		final JsonNode config = getJSON("/rpc/Shelly.GetConfig");
-		final String addOn = config.get("sys").get("device").path("addon_type").asString("");
+		final String addOn = config.get("sys").get("device").path("addon_type").asString();
 		if(SensorAddOn.ADDON_TYPE.equals(addOn)) {
 			sensorAddOn = new SensorAddOn(this);
 			meters = (sensorAddOn.getTypes().length > 0) ? new Meters[] {baseMeasures, sensorAddOn} : new Meters[] {baseMeasures};
@@ -77,6 +77,11 @@ public class Shelly1PMG4 extends AbstractG4Device implements ModulesHolder, Inte
 		return ID;
 	}
 
+	@Override
+	public String getModelID() {
+		return MODEL;
+	}
+	
 	@Override
 	public Relay[] getModules() {
 		return relays;

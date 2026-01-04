@@ -14,6 +14,7 @@ import tools.jackson.databind.JsonNode;
 public class ShellyGateway extends AbstractG2Device {
 //	private static final Logger LOG = LoggerFactory.getLogger(ShellyGatewayG3.class);
 	public static final String ID = "BluGw";
+	public static final String MODEL = "GWF-KZ01";
 
 	public ShellyGateway(InetAddress address, int port, String hostname) {
 		super(address, port, hostname);

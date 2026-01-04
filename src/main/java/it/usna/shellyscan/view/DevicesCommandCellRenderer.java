@@ -51,6 +51,7 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 	private JButton onOffButton0 = new JButton();
 	private JLabel label0 = new JLabel();
 	private JButton editDialogButton = new JButton(EDIT_IMG);
+	private JPanel stackedPanelContainer = new JPanel(new BorderLayout(0, 0));
 	private JPanel stackedPanel = new JPanel();
 	private JLabel labelPlain = new JLabel();
 	
@@ -77,6 +78,8 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 
 		BoxLayout stackedPanelLO = new BoxLayout(stackedPanel, BoxLayout.Y_AXIS);
 		stackedPanel.setLayout(stackedPanelLO);
+		stackedPanel.setOpaque(false);
+		stackedPanelContainer.add(stackedPanel, BorderLayout.NORTH);
 		
 		labelPlain.setOpaque(true);
 	}
@@ -90,21 +93,21 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 				for(int i = 0; i < riArray.length; i++) { // 1, 1PM, EM, 2.5 ...
 					stackedPanel.add(getRelayPanel(riArray[i], foregroundColor, i == 0));
 				}
-				return stackedPanel;
+				return stackedPanelContainer;
 			} else if(value instanceof RollerInterface[] rollers) { // 2.5 ...
 				stackedPanel.removeAll();
 				for(int i = 0; i < rollers.length; i++) { // 1, 1PM, EM, 2.5 ...
 					stackedPanel.add(getRollerPanel(rollers[i], foregroundColor, i == 0));
 				}
-				return stackedPanel;
+				return stackedPanelContainer;
 			} else if(value instanceof RGBCCTInterface[] lights) { // RGBW Bulbs
 				return getRGBCCTPanel(lights[0], foregroundColor, true, true);
 			} else if(value instanceof RGBWInterface[] rgbs) { // RGBs
 				return getRGBWPanel(rgbs[0], foregroundColor, true, true);
 			} else if(value instanceof RGBInterface[] rgbs) { // RGBs
 				return getRGBPanel(rgbs[0], foregroundColor, true, true);
-			} else if(value instanceof WhiteInterface[] lights && lights.length == 1) { // Dimmable (CCT) white
-				return getWhitePanel(lights[0], foregroundColor, true, lights[0] instanceof CCTInterface);
+//			} else if(value instanceof WhiteInterface[] lights && lights.length == 1) { // Dimmable (CCT) white
+//				return getWhitePanel(lights[0], foregroundColor, true, lights[0] instanceof CCTInterface);
 			} else if(value instanceof ThermostatG1 thermostat) { // TRV gen1
 				return getThermostatG1Panel(thermostat, foregroundColor);
 			} else if(value instanceof ThermostatInterface[] thermostats) {
@@ -120,8 +123,8 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 							stackedPanel.add(getInputPanel(input, foregroundColor));
 						}
 // 				prima di riattivare (output-addon) serve definire un sistema migliore per l'attivazione del bottone edit (rimuovere ... if(value instanceof WhiteInterface[] ...)
-//					} else if(module instanceof WhiteInterface white && modArray.length == 1) {
-//						stackedPanel.add(getWhitePanel(white, foregroundColor, i == 0, white instanceof CCTInterface));
+					} else if(module instanceof WhiteInterface white && modArray.length == 1) {
+						stackedPanel.add(getWhitePanel(white, foregroundColor, i == 0, white instanceof CCTInterface));
 					} else if(module instanceof WhiteInterface white && modArray.length > 1) {
 						stackedPanel.add(getWhiteSyntheticPanel(white, foregroundColor, i == 0, i == modArray.length - 1));
 					} else if(module instanceof RGBInterface rgb) {
@@ -133,7 +136,7 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 						stackedPanel.add(motionLabel);
 					}
 				}
-				return stackedPanel;
+				return stackedPanelContainer;
 			} else {
 				labelPlain.setText(value == null ? "" : value.toString());
 				labelPlain.setForeground(foregroundColor);
@@ -330,7 +333,7 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 	
 	private JPanel getWhitePanel(WhiteInterface light, final Color foregroundColor, boolean useButton0, boolean addEditButton) {
 		final JPanel panel = new JPanel(new BorderLayout());
-//		panel.setOpaque(false);
+		panel.setOpaque(false);
 		final JLabel label;
 		final JButton button;
 		if(useButton0) {

@@ -16,6 +16,7 @@ import tools.jackson.databind.JsonNode;
  */
 public class ShellyMiniPM extends AbstractG2Device {
 	public static final String ID = "PlusPMMini";
+	public static final String MODEL = "SNPM-001PCEU16";
 	private static final Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.W, Meters.Type.V, Meters.Type.I, Meters.Type.FREQ};
 	private float power;
 	private float voltage;

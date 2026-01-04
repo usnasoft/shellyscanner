@@ -20,6 +20,7 @@ import tools.jackson.databind.node.ObjectNode;
 
 public class Shelly3EM63 extends AbstractG3Device implements InternalTmpHolder {
 	public static final String ID = "S3EMG3";
+	public static final String MODEL = "S3EM-003CXCEU63";
 	private float internalTmp;
 	
 	private EM1Meters meters0, meters1, meters2; // em1
@@ -67,6 +68,11 @@ public class Shelly3EM63 extends AbstractG3Device implements InternalTmpHolder {
 	@Override
 	public String getTypeID() {
 		return ID;
+	}
+	
+	@Override
+	public String getModelID() {
+		return MODEL;
 	}
 
 	@Override

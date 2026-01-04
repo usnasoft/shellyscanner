@@ -58,6 +58,11 @@ public class ShellyMiniPMG3 extends AbstractG3Device {
 	public String getTypeID() {
 		return ID;
 	}
+	
+	@Override
+	public String getModelID() {
+		return MODEL;
+	}
 
 	@Override
 	public Meters[] getMeters() {

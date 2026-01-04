@@ -405,6 +405,7 @@ cli restore / cli list ip/full / cli -gen parameter
 Shelly Wall Display X2i - Supported bases: 2-output power base; 2-output power base
 Shelly EM Gen3
 -slow cli par
+-font cli par
 
 todo it.usna.shellyscan.model.device.RestoreUtil
 

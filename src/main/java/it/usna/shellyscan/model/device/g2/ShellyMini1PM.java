@@ -21,6 +21,7 @@ import tools.jackson.databind.JsonNode;
  */
 public class ShellyMini1PM extends AbstractG2Device implements ModulesHolder, InternalTmpHolder {
 	public static final String ID = "Plus1PMMini";
+	public static final String MODEL = "SNSW-001P8EU";
 	private float internalTmp;
 	private MetersWVI meters = new MetersWVI();
 	private Meters[] metersArray = new Meters[] {meters};

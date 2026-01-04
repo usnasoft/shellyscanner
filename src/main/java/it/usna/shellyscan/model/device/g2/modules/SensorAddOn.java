@@ -330,7 +330,7 @@ public class SensorAddOn extends Meters {
 						if(index.equals(prevIndex) == false) { // dht22 have 2 entries but must be added once
 							prevIndex = index;
 							if(inputValue.has("addr")) {
-								errors.add(addSensor(d, sensor, index, inputValue.get("addr").asString("")));
+								errors.add(addSensor(d, sensor, index, inputValue.get("addr").asString()));
 							} else {
 								errors.add(addSensor(d, sensor, index));
 							}

@@ -29,6 +29,7 @@ import tools.jackson.databind.node.ObjectNode;
  */
 public class WallDisplay extends AbstractG2Device implements DisplayInterface, ModulesHolder {
 	public static final String ID = "WallDisplay";
+	public static final String MODEL = "SAWD-0A1XX10EU1";
 	private static final Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.T, Meters.Type.H, Meters.Type.L};
 	private float temp;
 	private float humidity;

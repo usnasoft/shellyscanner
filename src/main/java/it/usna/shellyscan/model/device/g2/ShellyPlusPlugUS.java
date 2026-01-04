@@ -4,6 +4,7 @@ import java.net.InetAddress;
 
 public class ShellyPlusPlugUS extends ShellyPlusPlugIT {
 	public static final String ID = "PlugUS";
+	public static final String MODEL = "SNPL-00116US";
 
 	public ShellyPlusPlugUS(InetAddress address, int port, String hostname) {
 		super(address, port, hostname);

@@ -41,6 +41,11 @@ public class Shelly2LG3 extends AbstractG3Device implements ModulesHolder, Inter
 	}
 	
 	@Override
+	public String getModelID() {
+		return MODEL;
+	}
+	
+	@Override
 	public int getModulesCount() {
 		return 2;
 	}

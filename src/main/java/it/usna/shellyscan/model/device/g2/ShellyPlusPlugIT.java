@@ -14,6 +14,7 @@ import tools.jackson.databind.JsonNode;
 
 public class ShellyPlusPlugIT extends AbstractG2Device implements ModulesHolder, InternalTmpHolder {
 	public static final String ID = "PlusPlugIT";
+	public static final String MODEL = "SNPL-00110IT";
 	private Relay relay = new Relay(this, 0);
 	private float internalTmp;
 	private MetersWVI meters = new MetersWVI();

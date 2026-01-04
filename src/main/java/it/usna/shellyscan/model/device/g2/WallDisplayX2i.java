@@ -32,6 +32,7 @@ import tools.jackson.databind.node.ObjectNode;
  */
 public class WallDisplayX2i extends AbstractG2Device implements DisplayInterface, ModulesHolder {
 	public static final String ID = "WallDisplayV2";
+	public static final String MODEL = "SAWD-5A1XX10EU0";
 	private static final Meters.Type[] SUPPORTED_MEASURES_T = new Meters.Type[] {Meters.Type.T, Meters.Type.H, Meters.Type.L};
 	private static final Meters.Type[] SUPPORTED_MEASURES_NO_T = new Meters.Type[] {Meters.Type.L};
 	private float temp;
