@@ -74,14 +74,13 @@ public class PanelStore extends JPanel {
 		gbc_lblStoreFile.gridy = 1;
 		add(lblStoreFile, gbc_lblStoreFile);
 		
-		textFieldStoreFileName = new JTextField(appProp.getProperty(ScannerProperties.PROP_ARCHIVE_FILE, ScannerProperties.PROP_ARCHIVE_FILE_DEFAULT));
+		textFieldStoreFileName = new JTextField(appProp.getProperty(ScannerProperties.PROP_ARCHIVE_FILE/*, ScannerProperties.PROP_ARCHIVE_FILE_DEFAULT*/));
 		GridBagConstraints gbc_textFieldStoreFileName = new GridBagConstraints();
 		gbc_textFieldStoreFileName.insets = new Insets(0, 0, 5, 5);
 		gbc_textFieldStoreFileName.fill = GridBagConstraints.HORIZONTAL;
 		gbc_textFieldStoreFileName.gridx = 1;
 		gbc_textFieldStoreFileName.gridy = 1;
 		add(textFieldStoreFileName, gbc_textFieldStoreFileName);
-		textFieldStoreFileName.setColumns(10);
 		
 		JButton btnFile = new JButton(LABELS.getString("dlgAppStoreFileButtonLabel"));
 		GridBagConstraints gbc_btnFile = new GridBagConstraints();
@@ -93,7 +92,7 @@ public class PanelStore extends JPanel {
 		btnFile.addActionListener(event -> {
 			final JFileChooser fc = new JFileChooser(Paths.get(textFieldStoreFileName.getText()).getParent().toFile());
 			fc.setFileFilter(new FileNameExtensionFilter(Main.ARCHIVE_FILE_EXT, Main.ARCHIVE_FILE_EXT));
-			if(fc.showSaveDialog(PanelStore.this) == JFileChooser.APPROVE_OPTION) {
+			if(fc.showDialog(PanelStore.this, LABELS.getString("dlgAppStoreFileButtonLabel")) == JFileChooser.APPROVE_OPTION) {
 				textFieldStoreFileName.setText(fc.getSelectedFile().getPath());
 			}
 		});

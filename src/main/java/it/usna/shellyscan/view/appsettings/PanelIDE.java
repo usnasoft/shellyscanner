@@ -8,10 +8,13 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 
 import javax.swing.ButtonGroup;
+import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
+import javax.swing.JTextField;
 
 import it.usna.shellyscan.view.util.IntegerTextFieldPanel;
 import it.usna.shellyscan.view.util.ScannerProperties;
@@ -29,17 +32,19 @@ public class PanelIDE extends JPanel {
 	private JCheckBox chckbxCloseSquare;
 	private JCheckBox chckbxCloseString;
 	private IntegerTextFieldPanel fontSize;
-	
+	private JTextField defPathTextField;
+
 	PanelIDE(final AppProperties appProp) {
 		GridBagLayout gridBagLayout = new GridBagLayout();
-		gridBagLayout.columnWeights = new double[]{0.0, 0.0, 0.0, 0.0, 1.0};
+		gridBagLayout.columnWidths = new int[]{0, 0, 0, 0, 0, 0};
+		gridBagLayout.columnWeights = new double[]{0.0, 0.0, 0.0, 0.0, 1.0, 0.0};
 		setLayout(gridBagLayout);
 		
 		JLabel lblNewLabel_5 = new JLabel(LABELS.getString("dlgAppSetIDETitle"));
 		lblNewLabel_5.setFont(lblNewLabel_5.getFont().deriveFont(Font.BOLD));
 		GridBagConstraints gbc_lblNewLabel_5 = new GridBagConstraints();
 		gbc_lblNewLabel_5.anchor = GridBagConstraints.NORTHWEST;
-		gbc_lblNewLabel_5.gridwidth = 5;
+		gbc_lblNewLabel_5.gridwidth = 6;
 		gbc_lblNewLabel_5.insets = new Insets(0, 0, 25, 5);
 		gbc_lblNewLabel_5.gridx = 0;
 		gbc_lblNewLabel_5.gridy = 0;
@@ -57,9 +62,9 @@ public class PanelIDE extends JPanel {
 		
 		tabSize = new IntegerTextFieldPanel(appProp.getIntProperty(ScannerProperties.PROP_IDE_TAB_SIZE, ScannerProperties.IDE_TAB_SIZE_DEFAULT), 1, 32, false);
 		GridBagConstraints gbc_textField = new GridBagConstraints();
-		gbc_textField.gridwidth = 4;
+		gbc_textField.gridwidth = 5;
 		gbc_textField.anchor = GridBagConstraints.NORTHWEST;
-		gbc_textField.insets = new Insets(0, 0, 5, 0);
+		gbc_textField.insets = new Insets(0, 0, 5, 5);
 		gbc_textField.gridx = 1;
 		gbc_textField.gridy = 1;
 		add(tabSize, gbc_textField);
@@ -78,9 +83,9 @@ public class PanelIDE extends JPanel {
 		fontSize = new IntegerTextFieldPanel(appProp.getIntProperty(ScannerProperties.PROP_IDE_FONT_SIZE, ScannerProperties.IDE_FONT_SIZE_DEFAULT), 8, 24, false);
 		GridBagConstraints gbc_textFontField = new GridBagConstraints();
 		gbc_textFontField.fill = GridBagConstraints.BOTH;
-		gbc_textFontField.gridwidth = 4;
+		gbc_textFontField.gridwidth = 5;
 		gbc_textFontField.anchor = GridBagConstraints.NORTHWEST;
-		gbc_textFontField.insets = new Insets(0, 0, 5, 0);
+		gbc_textFontField.insets = new Insets(0, 0, 5, 5);
 		gbc_textField.fill = GridBagConstraints.BOTH;
 		gbc_textFontField.gridx = 1;
 		gbc_textFontField.gridy = 2;
@@ -183,9 +188,10 @@ public class PanelIDE extends JPanel {
 		chckbxCloseString = new JCheckBox("\" \"");
 		chckbxCloseString.setFont(chckbxCloseString.getFont().deriveFont(Font.BOLD));
 		GridBagConstraints gbc_chckbxCloseString = new GridBagConstraints();
+		gbc_chckbxCloseString.gridwidth = 2;
 		gbc_chckbxCloseString.fill = GridBagConstraints.VERTICAL;
 		gbc_chckbxCloseString.anchor = GridBagConstraints.NORTHWEST;
-		gbc_chckbxCloseString.insets = new Insets(0, 0, 5, 0);
+		gbc_chckbxCloseString.insets = new Insets(0, 0, 5, 5);
 		gbc_chckbxCloseString.gridx = 4;
 		gbc_chckbxCloseString.gridy = 4;
 		add(chckbxCloseString, gbc_chckbxCloseString);
@@ -209,16 +215,48 @@ public class PanelIDE extends JPanel {
 		gbc_chcDarkMode.gridx = 1;
 		gbc_chcDarkMode.gridy = 5;
 		add(chcDarkMode, gbc_chcDarkMode);
+
+		JLabel lblNewLabel_6 = new JLabel(LABELS.getString("dlgAppSetIDEDefaultPath"));
+		lblNewLabel_6.setFont(lblNewLabel_6.getFont().deriveFont(Font.BOLD));
+		GridBagConstraints gbc_lblNewLabel_6 = new GridBagConstraints();
+		gbc_lblNewLabel_6.anchor = GridBagConstraints.NORTHWEST;
+		gbc_lblNewLabel_6.insets = new Insets(4, 0, 9, 15);
+		gbc_lblNewLabel_6.gridx = 0;
+		gbc_lblNewLabel_6.gridy = 6;
+		add(lblNewLabel_6, gbc_lblNewLabel_6);
+		
+		defPathTextField = new JTextField(appProp.getProperty(ScannerProperties.PROP_SCRIPT_PATH));
+		GridBagConstraints gbc_defPathTextField = new GridBagConstraints();
+		gbc_defPathTextField.fill = GridBagConstraints.HORIZONTAL;
+		gbc_defPathTextField.gridwidth = 4;
+		gbc_defPathTextField.insets = new Insets(0, 0, 5, 5);
+		gbc_defPathTextField.gridx = 1;
+		gbc_defPathTextField.gridy = 6;
+		add(defPathTextField, gbc_defPathTextField);
+		
+		JButton pathButton = new JButton(LABELS.getString("dlgAppStoreFileButtonLabel"));
+		GridBagConstraints gbc_pathButton = new GridBagConstraints();
+		gbc_pathButton.insets = new Insets(0, 0, 5, 0);
+		gbc_pathButton.gridx = 5;
+		gbc_pathButton.gridy = 6;
+		add(pathButton, gbc_pathButton);
+		pathButton.addActionListener(event -> {
+			final JFileChooser fc = new JFileChooser(defPathTextField.getText());
+			fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+			if(fc.showDialog(PanelIDE.this, LABELS.getString("dlgAppStoreFileButtonLabel")) == JFileChooser.APPROVE_OPTION) {
+				defPathTextField.setText(fc.getSelectedFile().getPath());
+			}
+		});
 		
 		JLabel lblNewLabelMsg = new JLabel(LABELS.getString("dlgAppSetIDEMsg"));
-		lblNewLabel_1.setFont(lblNewLabelMsg.getFont().deriveFont(Font.BOLD));
+		lblNewLabelMsg.setFont(lblNewLabelMsg.getFont().deriveFont(Font.BOLD));
 		GridBagConstraints gbc_lblNewLabelMsg = new GridBagConstraints();
-		gbc_lblNewLabelMsg.gridwidth = 5;
+		gbc_lblNewLabelMsg.gridwidth = 6;
 		gbc_lblNewLabelMsg.anchor = GridBagConstraints.NORTHWEST;
 		gbc_lblNewLabelMsg.weighty = 1.0;
 		gbc_lblNewLabelMsg.insets = new Insets(20, 0, 0, 15);
 		gbc_lblNewLabelMsg.gridx = 0;
-		gbc_lblNewLabelMsg.gridy = 6;
+		gbc_lblNewLabelMsg.gridy = 7;
 		add(lblNewLabelMsg, gbc_lblNewLabelMsg);
 	}
 	
@@ -237,5 +275,6 @@ public class PanelIDE extends JPanel {
 		appProp.setBoolProperty(ScannerProperties.IDE_AUTOCLOSE_SQUARE, chckbxCloseSquare.isSelected());
 		appProp.setBoolProperty(ScannerProperties.IDE_AUTOCLOSE_STRING, chckbxCloseString.isSelected());
 		appProp.setBoolProperty(ScannerProperties.PROP_IDE_DARK, chcDarkMode.isSelected());
+		appProp.setProperty(ScannerProperties.PROP_SCRIPT_PATH, defPathTextField.getText());
 	}
 }

@@ -185,7 +185,7 @@ public class Main {
 					boolean useArchive = appProp.getBoolProperty(ScannerProperties.PROP_USE_ARCHIVE);
 					if(useArchive) {
 						try {
-							model.loadFromStore(Path.of(appProp.getProperty(ScannerProperties.PROP_ARCHIVE_FILE, ScannerProperties.PROP_ARCHIVE_FILE_DEFAULT)));
+							model.loadFromStore(Path.of(appProp.getProperty(ScannerProperties.PROP_ARCHIVE_FILE/*, ScannerProperties.PROP_ARCHIVE_FILE_DEFAULT*/)));
 						} catch (/*IO*/Exception e) {
 							appProp.setBoolProperty(ScannerProperties.PROP_USE_ARCHIVE, false);
 							Msg.errorMsg(view, e);

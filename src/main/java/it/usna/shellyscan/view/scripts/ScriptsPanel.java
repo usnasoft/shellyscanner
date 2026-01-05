@@ -50,6 +50,8 @@ import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.g2.modules.Script;
 import it.usna.shellyscan.view.scripts.ide.ScriptFrame;
 import it.usna.shellyscan.view.util.Msg;
+import it.usna.shellyscan.view.util.ScannerProperties;
+//import it.usna.shellyscan.view.util.ScannerProperties;
 import it.usna.swing.UsnaPopupMenu;
 import it.usna.swing.table.ExTooltipTable;
 import it.usna.swing.table.UsnaTableModel;
@@ -164,7 +166,7 @@ public class ScriptsPanel extends JPanel {
 		final JButton btnDownload = new JButton(new UsnaAction(this, "btnDownload", e -> {
 			final int mRow = table.convertRowIndexToModel(table.getSelectedRow());
 			final Script sc = scripts.get(mRow).script;
-			final JFileChooser fc = new JFileChooser();
+			final JFileChooser fc = new JFileChooser(ScannerProperties.instance().getProperty(ScannerProperties.PROP_SCRIPT_PATH));
 			fc.setFileFilter(new FileNameExtensionFilter(LABELS.getString("filetype_js_desc"), DialogDeviceScripts.FILE_EXTENSION));
 			fc.setSelectedFile(new java.io.File(sc.getName()));
 			if (fc.showSaveDialog(ScriptsPanel.this) == JFileChooser.APPROVE_OPTION) {
@@ -181,7 +183,7 @@ public class ScriptsPanel extends JPanel {
 		final JButton btnUpload = new JButton(new UsnaAction(this, "btnUpload", "btnUploadTooltip", null, null, e -> {
 			final int mRow = table.convertRowIndexToModel(table.getSelectedRow());
 			final Script sc = scripts.get(mRow).script;
-			final JFileChooser fc = new JFileChooser();
+			final JFileChooser fc = new JFileChooser(ScannerProperties.instance().getProperty(ScannerProperties.PROP_SCRIPT_PATH));
 			fc.setFileFilter(new FileNameExtensionFilter(LABELS.getString("filetype_js_desc"), DialogDeviceScripts.FILE_EXTENSION));
 			fc.addChoosableFileFilter(new FileNameExtensionFilter(LABELS.getString("filetype_sbk_desc"), Main.BACKUP_FILE_EXT));
 			fc.setSelectedFile(new java.io.File(sc.getName()));

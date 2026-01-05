@@ -145,30 +145,30 @@ public class ScriptFrame extends JFrame {
 		runningStatus(script.isRunning());
 	}
 	
-	private ScriptFrame() throws IOException { // test & design contructor
-		super("test");
-		this.device = null;
-		this.scriptId = 0;
-		setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-	
-		JSplitPane splitPane = new JSplitPane();
-		splitPane.setOneTouchExpandable(true);
-		splitPane.setOrientation(JSplitPane.VERTICAL_SPLIT);
-
-		add(splitPane, BorderLayout.CENTER);
-		
-		splitPane.setTopComponent(editorPanel(null));
-		splitPane.setBottomComponent(logPanel());
-		
-		add(getToolBar(), BorderLayout.NORTH);
-
-		setSize(800, 600);
-		setVisible(true);
-		splitPane.setDividerLocation(0.75d);
-		splitPane.setResizeWeight(0.6d);
-		editor.requestFocus();
-		setLocationRelativeTo(null);
-	}
+//	private ScriptFrame() throws IOException { // test & design contructor
+//		super("test");
+//		this.device = null;
+//		this.scriptId = 0;
+//		setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+//	
+//		JSplitPane splitPane = new JSplitPane();
+//		splitPane.setOneTouchExpandable(true);
+//		splitPane.setOrientation(JSplitPane.VERTICAL_SPLIT);
+//
+//		add(splitPane, BorderLayout.CENTER);
+//		
+//		splitPane.setTopComponent(editorPanel(null));
+//		splitPane.setBottomComponent(logPanel());
+//		
+//		add(getToolBar(), BorderLayout.NORTH);
+//
+//		setSize(800, 600);
+//		setVisible(true);
+//		splitPane.setDividerLocation(0.75d);
+//		splitPane.setResizeWeight(0.6d);
+//		editor.requestFocus();
+//		setLocationRelativeTo(null);
+//	}
 	
 	@Override
 	public void dispose() {
@@ -324,7 +324,7 @@ public class ScriptFrame extends JFrame {
 		});
 		
 		openAction = new UsnaAction(ScriptFrame.this, "dlgOpen", "/images/Open24.png", e -> {
-			final JFileChooser fc = (path == null) ? new JFileChooser() : new JFileChooser(path.getParent().toFile());
+			final JFileChooser fc = new JFileChooser((path == null) ? ScannerProperties.instance().getProperty(ScannerProperties.PROP_SCRIPT_PATH) : path.getParent().toFile().toString());
 			fc.setFileFilter(new FileNameExtensionFilter(LABELS.getString("filetype_js_desc"), DialogDeviceScripts.FILE_EXTENSION));
 			fc.addChoosableFileFilter(new FileNameExtensionFilter(LABELS.getString("filetype_sbk_desc"), Main.BACKUP_FILE_EXT));
 			if(fc.showOpenDialog(ScriptFrame.this) == JFileChooser.APPROVE_OPTION) {
@@ -342,7 +342,7 @@ public class ScriptFrame extends JFrame {
 		});
 		
 		saveAsAction = new UsnaAction(ScriptFrame.this, "dlgSaveAs", "/images/SaveAs24.png", e -> {
-			final JFileChooser fc = (path == null) ? new JFileChooser() : new JFileChooser(path.getParent().toFile());
+			final JFileChooser fc = new JFileChooser((path == null) ? ScannerProperties.instance().getProperty(ScannerProperties.PROP_SCRIPT_PATH) : path.getParent().toFile().toString());
 			fc.setFileFilter(new FileNameExtensionFilter(LABELS.getString("filetype_js_desc"), DialogDeviceScripts.FILE_EXTENSION));
 			if(fc.showSaveDialog(ScriptFrame.this) == JFileChooser.APPROVE_OPTION) {
 				try {
@@ -607,8 +607,8 @@ public class ScriptFrame extends JFrame {
 		return null;
 	}
 	
-	public static void main(String ...strings) throws IOException {
-		ScannerProperties.init(Path.of(System.getProperty("user.home"), ".shellyScanner")).load(true);
-		new ScriptFrame();
-	}
+//	public static void main(String ...strings) throws IOException {
+//		ScannerProperties.init(Path.of(System.getProperty("user.home"), ".shellyScanner")).load(true);
+//		new ScriptFrame();
+//	}
 }

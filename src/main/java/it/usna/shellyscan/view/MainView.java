@@ -638,7 +638,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 	private void storeProperties() {
 		if(appProp.getBoolProperty(ScannerProperties.PROP_USE_ARCHIVE)) {
 			try {
-				model.saveToStore(Paths.get(appProp.getProperty(ScannerProperties.PROP_ARCHIVE_FILE, ScannerProperties.PROP_ARCHIVE_FILE_DEFAULT)));
+				model.saveToStore(Paths.get(appProp.getProperty(ScannerProperties.PROP_ARCHIVE_FILE/*, ScannerProperties.PROP_ARCHIVE_FILE_DEFAULT*/)));
 			} catch (IOException | RuntimeException ex) {
 				LOG.error("Unexpected", ex);
 				Msg.errorMsg(this, "Error storing archive");
