@@ -53,7 +53,7 @@ public class ShellyEMG3 extends AbstractG3Device implements ModulesHolder, Inter
 	
 	private JsonNode configure() throws IOException {
 		final JsonNode config = getJSON("/rpc/Shelly.GetConfig");
-		final String addOn = config.get("sys").get("device").path("addon_type").asString();
+		final String addOn = config.get("sys").get("device").path("addon_type").asString(null);
 		if(SensorAddOn.ADDON_TYPE.equals(addOn)) {
 			sensorAddOn = new SensorAddOn(this);
 			meters = (sensorAddOn.getTypes().length > 0) ? new Meters[] {meters0, meters1, sensorAddOn} : new Meters[] {meters0, meters1};

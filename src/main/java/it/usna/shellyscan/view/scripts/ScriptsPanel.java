@@ -26,7 +26,6 @@ import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
-import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -51,7 +50,6 @@ import it.usna.shellyscan.model.device.g2.modules.Script;
 import it.usna.shellyscan.view.scripts.ide.ScriptFrame;
 import it.usna.shellyscan.view.util.Msg;
 import it.usna.shellyscan.view.util.ScannerProperties;
-//import it.usna.shellyscan.view.util.ScannerProperties;
 import it.usna.swing.UsnaPopupMenu;
 import it.usna.swing.table.ExTooltipTable;
 import it.usna.swing.table.UsnaTableModel;
@@ -65,7 +63,7 @@ public class ScriptsPanel extends JPanel {
 	private final ExTooltipTable table;
 	private final ArrayList<ScriptAndEditor> scripts = new ArrayList<>();
 
-	public ScriptsPanel(JDialog owner, Devices devicesModel, int modelIndex) throws IOException {
+	public ScriptsPanel(Devices devicesModel, int modelIndex) throws IOException {
 		AbstractG2Device device = (AbstractG2Device) devicesModel.get(modelIndex);
 		setLayout(new BorderLayout(0, 0));
 		final UsnaTableModel tModel = new UsnaTableModel(LABELS.getString("lblScrColName"), LABELS.getString("lblEnabled"), LABELS.getString("lblScrColRunning"));
@@ -168,13 +166,20 @@ public class ScriptsPanel extends JPanel {
 			final Script sc = scripts.get(mRow).script;
 			final JFileChooser fc = new JFileChooser(ScannerProperties.instance().getProperty(ScannerProperties.PROP_SCRIPT_PATH));
 			fc.setFileFilter(new FileNameExtensionFilter(LABELS.getString("filetype_js_desc"), DialogDeviceScripts.FILE_EXTENSION));
-			fc.setSelectedFile(new java.io.File(sc.getName()));
+			String fileName = sc.getName();
+			if(fileName.endsWith("." + DialogDeviceScripts.FILE_EXTENSION) == false) {
+				fileName += "." + DialogDeviceScripts.FILE_EXTENSION;
+			}
+			fc.setSelectedFile(new java.io.File(fileName));
 			if (fc.showSaveDialog(ScriptsPanel.this) == JFileChooser.APPROVE_OPTION) {
-				try {
-					Files.writeString(fc.getSelectedFile().toPath(), sc.getCode());
-					Msg.showMsg(ScriptsPanel.this, "btnDownloadSuccess", LABELS.getString("btnDownload"), JOptionPane.INFORMATION_MESSAGE);
-				} catch (IOException e1) {
-					Msg.errorMsg(ScriptsPanel.this, LABELS.getString("msgScrNoCode"));
+				Path selected = fc.getSelectedFile().toPath();
+				if(Files.notExists(selected) || JOptionPane.showConfirmDialog(this, String.format(LABELS.getString("confirmOverwriteFile"), fileName), LABELS.getString("btnDownload"), JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+					try {
+						Files.writeString(selected, sc.getCode());
+						Msg.showMsg(ScriptsPanel.this, "btnDownloadSuccess", LABELS.getString("btnDownload"), JOptionPane.INFORMATION_MESSAGE);
+					} catch (IOException e1) {
+						Msg.errorMsg(ScriptsPanel.this, LABELS.getString("msgScrNoCode"));
+					}
 				}
 			}
 		}));

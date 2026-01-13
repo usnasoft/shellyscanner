@@ -51,7 +51,7 @@ public class ShellyI4G3 extends AbstractG3Device implements ModulesHolder {
 	
 	private JsonNode configure() throws IOException {
 		final JsonNode config = getJSON("/rpc/Shelly.GetConfig");
-		if(SensorAddOn.ADDON_TYPE.equals(config.get("sys").get("device").path("addon_type").asString())) {
+		if(SensorAddOn.ADDON_TYPE.equals(config.get("sys").get("device").path("addon_type").asString(null))) {
 			addOn = new SensorAddOn(this);
 			meters = (addOn.getTypes().length > 0) ? new Meters[] {addOn} : null;
 		} else {

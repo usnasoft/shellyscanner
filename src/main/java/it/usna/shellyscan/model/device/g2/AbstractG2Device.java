@@ -390,7 +390,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 				sectionToStream("/rpc/Shelly.GetComponents?dynamic_only=true", "components", "Shelly.GetComponents.json", out);
 			} catch(Exception e) {}
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-			String addon = config.get("sys").get("device").path("addon_type").asString();
+			String addon = config.get("sys").get("device").path("addon_type").asString(null);
 			if(SensorAddOn.ADDON_TYPE.equals(addon)) {
 				sectionToStream("/rpc/SensorAddon.GetPeripherals", SensorAddOn.BACKUP_SECTION, out);
 				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
@@ -590,28 +590,18 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 		errors.add(postCommand("BLE.SetConfig", outConfig));
 
 		// Cloud.SetConfig
-		ObjectNode outCloud = JsonNodeFactory.instance.objectNode(); // Cloud
-		outCloud.put("enable", config.at("/cloud/enable").asBoolean());
-		outConfig.set("config", outCloud);
+		outConfig.putObject("config").put("enable", config.at("/cloud/enable").asBoolean());
 		TimeUnit.MILLISECONDS.sleep(delay);
 		errors.add(postCommand("Cloud.SetConfig", outConfig));
 
 		// Sys.SetConfig
 		JsonNode sys = config.get("sys");
-		ObjectNode outSys = JsonNodeFactory.instance.objectNode();
-		
 		ObjectNode outDevice = (ObjectNode)sys.get("device")/*.deepCopy()*/;
 		outDevice.remove("mac");
 		outDevice.remove("fw_id");
 		outDevice.remove("addon_type");
 		outDevice.remove("profile");
-		outSys.set("device", outDevice);
-
-		outSys.set("sntp", sys.get("sntp")/*.deepCopy()*/);
-		
-		outSys.set("debug", sys.get("debug"));
-
-		outConfig.set("config", outSys);
+		outConfig.putObject("config").set("device", outDevice).set("sntp", sys.get("sntp")).set("sntp", sys.get("sntp")).set("debug", sys.get("debug"));
 		TimeUnit.MILLISECONDS.sleep(delay);
 		errors.add(postCommand("Sys.SetConfig", outConfig));
 		

@@ -62,7 +62,7 @@ public class PanelIDE extends JPanel {
 		
 		tabSize = new IntegerTextFieldPanel(appProp.getIntProperty(ScannerProperties.PROP_IDE_TAB_SIZE, ScannerProperties.IDE_TAB_SIZE_DEFAULT), 1, 32, false);
 		GridBagConstraints gbc_textField = new GridBagConstraints();
-		gbc_textField.gridwidth = 5;
+		gbc_textField.gridwidth = 2;
 		gbc_textField.anchor = GridBagConstraints.NORTHWEST;
 		gbc_textField.insets = new Insets(0, 0, 5, 5);
 		gbc_textField.gridx = 1;
@@ -82,8 +82,8 @@ public class PanelIDE extends JPanel {
 		
 		fontSize = new IntegerTextFieldPanel(appProp.getIntProperty(ScannerProperties.PROP_IDE_FONT_SIZE, ScannerProperties.IDE_FONT_SIZE_DEFAULT), 8, 24, false);
 		GridBagConstraints gbc_textFontField = new GridBagConstraints();
+		gbc_textFontField.gridwidth = 2;
 		gbc_textFontField.fill = GridBagConstraints.BOTH;
-		gbc_textFontField.gridwidth = 5;
 		gbc_textFontField.anchor = GridBagConstraints.NORTHWEST;
 		gbc_textFontField.insets = new Insets(0, 0, 5, 5);
 		gbc_textField.fill = GridBagConstraints.BOTH;
@@ -188,7 +188,6 @@ public class PanelIDE extends JPanel {
 		chckbxCloseString = new JCheckBox("\" \"");
 		chckbxCloseString.setFont(chckbxCloseString.getFont().deriveFont(Font.BOLD));
 		GridBagConstraints gbc_chckbxCloseString = new GridBagConstraints();
-		gbc_chckbxCloseString.gridwidth = 2;
 		gbc_chckbxCloseString.fill = GridBagConstraints.VERTICAL;
 		gbc_chckbxCloseString.anchor = GridBagConstraints.NORTHWEST;
 		gbc_chckbxCloseString.insets = new Insets(0, 0, 5, 5);

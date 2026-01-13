@@ -36,7 +36,7 @@ public class Main {
 	}
 	public static final String APP_NAME = "Shelly Scanner";
 	public static final String VERSION = "1.3.2 alpha";
-	public static final String VERSION_CODE = "001.003.002r000"; // r0xx alpha; r1xx beta; r2xx stable
+	public static final String VERSION_CODE = "001.003.002r001"; // r0xx alpha; r1xx beta; r2xx stable
 	public static final Image ICON = Toolkit.getDefaultToolkit().createImage(Main.class.getResource("/images/ShSc24.png"));
 	public static final String BACKUP_FILE_EXT = "sbk";
 	public static final String ARCHIVE_FILE_EXT = "arc";
@@ -97,11 +97,14 @@ public class Main {
 		}
 		
 		if((cliIndex = cli.hasEntry("-slow")) >= 0) {
+			String time = cli.getParameter(cliIndex);
 			try {
-				appProp.setIntProperty("MQTT_SLOW", Integer.parseInt(cli.getParameter(cliIndex)));
+				appProp.setIntProperty("MQTT_SLOW", Integer.parseInt(time));
 			} catch(NumberFormatException e) {
 				cli.rejectEntry(cliIndex);
-				cli.rejectParameter(cliIndex);
+				if(time != null) {
+					cli.rejectParameter(cliIndex);
+				}
 				appProp.remove("MQTT_SLOW");
 			}
 		} else {
@@ -130,11 +133,14 @@ public class Main {
 		try {
 			float fontMultiplier = 1f;
 			if((cliIndex = cli.hasEntry("-font")) >= 0) {
+				String size = cli.getParameter(cliIndex);
 				try {
-					fontMultiplier = Float.parseFloat(cli.getParameter(cliIndex));
+					fontMultiplier = Float.parseFloat(size);
 				} catch(NumberFormatException e) {
 					cli.rejectEntry(cliIndex);
-					cli.rejectParameter(cliIndex);
+					if(size != null) {
+						cli.rejectParameter(cliIndex);
+					}
 				}
 			}
 			UsnaSwingUtils.setNimbusLookAndFeel(fontMultiplier);

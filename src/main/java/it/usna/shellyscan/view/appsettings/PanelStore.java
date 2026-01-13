@@ -69,7 +69,7 @@ public class PanelStore extends JPanel {
 		GridBagConstraints gbc_lblStoreFile = new GridBagConstraints();
 		gbc_lblStoreFile.fill = GridBagConstraints.VERTICAL;
 		gbc_lblStoreFile.anchor = GridBagConstraints.NORTHWEST;
-		gbc_lblStoreFile.insets = new Insets(0, 0, 10, 15);
+		gbc_lblStoreFile.insets = new Insets(4, 0, 10, 15);
 		gbc_lblStoreFile.gridx = 0;
 		gbc_lblStoreFile.gridy = 1;
 		add(lblStoreFile, gbc_lblStoreFile);

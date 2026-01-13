@@ -99,7 +99,7 @@ public class ScannerProperties extends AppProperties { // cannot also extend Usn
 		defaultProperty(PROP_ARCHIVE_FILE, Path.of(userPath, "ShellyStore.arc").toString());
 		defaultBoolProperty(PROP_USE_ARCHIVE, true);
 		defaultBoolProperty(PROP_AUTORELOAD_ARCHIVE, true);
-		defaultProperty(PROP_SCRIPT_PATH, Path.of(userPath, "scripts").toString());
+		defaultProperty(PROP_SCRIPT_PATH, userPath);
 	}
 	
 	public static ScannerProperties init(Path file) {

@@ -55,7 +55,7 @@ public class DialogDeviceScripts extends JDialog {
 		// battery operated devices do not support scripts
 		if (device instanceof AbstractBatteryG2Device == false) {
 			try {
-				JPanel scriptsPanel = new ScriptsPanel(this, model, modelIndex);
+				JPanel scriptsPanel = new ScriptsPanel(model, modelIndex);
 				tabs.addTab(LABELS.getString("lblScriptsTab"), scriptsPanel);
 				try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e) {}
 			} catch (/*IO*/Exception e) { // XT1 (and ...?) do not support scripts

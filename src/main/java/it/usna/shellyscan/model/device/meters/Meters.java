@@ -14,7 +14,9 @@ public abstract class Meters implements Comparable<Meters> {
 		FREQ, // Frequency
 		T, // temperature
 		H, // humidity %
+		HD, // humidity % (one decimal)
 		L, // lux
+		LD, // lux - description
 		LIGHT(true), // boolean: 0/false -> no light, 1/true -> light
 		T1, // temperature
 		T2, // temperature

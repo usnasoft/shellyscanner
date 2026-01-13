@@ -1,6 +1,9 @@
 package it.usna.shellyscan.model.device.g1.modules;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 
 import it.usna.shellyscan.model.device.g1.AbstractG1Device;
 import it.usna.shellyscan.model.device.modules.TimeAndLocationManager;
@@ -31,12 +34,19 @@ public class TimeAndLocationManagerG1 implements TimeAndLocationManager {
 
 	@Override
 	public String setSNTPServer(String server) {
-		String ret = d.sendCommand("/settings?sntp_server=" + server);
-		if(ret == null) {
-			this.server = server;
+		try {
+			String ret = d.sendCommand("/settings?sntp_server=" + URLEncoder.encode(server, StandardCharsets.UTF_8.name()));
+			if(ret == null) {
+				this.server = server;
+			}
+			return ret;
+		} catch (UnsupportedEncodingException e) {
+			return e.getMessage();
 		}
-		return ret;
 	}
 }
 
 // https://api.shelly.cloud/timezone/tzlist
+// https://api.shelly.cloud/timezone/tzoffsetlist
+// https://api.shelly.cloud/timezone/autodetect
+// http://<ip>/settings?tzautodetect=false&timezone=Europe/Rome&tz_utc_offset=3600&lat=38.130199&lng=13.329&tz_dst_auto=1
