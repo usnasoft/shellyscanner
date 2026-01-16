@@ -27,6 +27,7 @@ import it.usna.shellyscan.Main;
 import it.usna.shellyscan.model.device.g1.modules.ThermostatG1;
 import it.usna.shellyscan.model.device.modules.CCTInterface;
 import it.usna.shellyscan.model.device.modules.DeviceModule;
+import it.usna.shellyscan.model.device.modules.FloodInterface;
 import it.usna.shellyscan.model.device.modules.InputInterface;
 import it.usna.shellyscan.model.device.modules.MotionInterface;
 import it.usna.shellyscan.model.device.modules.RGBCCTInterface;
@@ -134,6 +135,11 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 						motionLabel.setText(LABELS.getString(pir.motion() ? "labelStatusMotion_true" : "labelStatusMotion_false"));
 						motionLabel.setForeground(foregroundColor);
 						stackedPanel.add(motionLabel);
+					}  else if(module instanceof FloodInterface sensor) {
+						JLabel floodLabel = (i == 0) ? label0 : new JLabel();
+						floodLabel.setText(LABELS.getString(sensor.flood() ? "labelStatusFlood_true" : "labelStatusFlood_false"));
+						floodLabel.setForeground(foregroundColor);
+						stackedPanel.add(floodLabel);
 					}
 				}
 				return stackedPanelContainer;
