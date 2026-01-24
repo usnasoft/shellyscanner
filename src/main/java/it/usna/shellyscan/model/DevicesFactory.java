@@ -69,7 +69,6 @@ import it.usna.shellyscan.model.device.g2.ShellyPlusi4;
 import it.usna.shellyscan.model.device.g2.ShellyPro1;
 import it.usna.shellyscan.model.device.g2.ShellyPro1PM;
 import it.usna.shellyscan.model.device.g2.ShellyPro2;
-import it.usna.shellyscan.model.device.g2.ShellyPro2CB;
 import it.usna.shellyscan.model.device.g2.ShellyPro2PM;
 import it.usna.shellyscan.model.device.g2.ShellyPro3;
 import it.usna.shellyscan.model.device.g2.ShellyPro3EM;
@@ -247,7 +246,7 @@ public class DevicesFactory {
 				case WallDisplay.ID -> new WallDisplay(address, port, name);
 				case WallDisplayX2i.ID -> new WallDisplayX2i(address, port, name);
 				case ShellyPlusUNI.ID -> new ShellyPlusUNI(address, port, name);
-				// Plus - Battery
+				// Plus - Battery operated
 				case ShellyPlusHT.ID -> new ShellyPlusHT(address, port, name);
 				case ShellyPlusSmoke.ID -> new ShellyPlusSmoke(address, port, name);
 				// PRO
@@ -261,13 +260,7 @@ public class DevicesFactory {
 				case ShellyProEM50.ID -> new ShellyProEM50(address, port, name);
 				case ShellyPro3EM.ID -> new ShellyPro3EM(address, port, name);
 				case ShellyProRGBWW.ID -> new ShellyProRGBWW(address, port, name);
-				case ShellyPro2CB.ID -> { // remove ??? QA
-					if(ShellyPro2CB.MODEL.equals(info.get("model").asString(""))) {
-						yield new ShellyPro2CB(address, port, name);
-					} else {
-						yield new ShellyG2Unmanaged(address, port, name);
-					}
-				}
+				
 				default -> new ShellyG2Unmanaged(address, port, name);
 			};
 		} catch(Exception e) { // really unexpected
@@ -360,7 +353,7 @@ public class DevicesFactory {
 			case ShellyDimmerG4.MODEL -> new ShellyDimmerG4(address, port, name);
 
 			case ShellyPowerStrip4G.MODEL -> new ShellyPowerStrip4G(address, port, name);
-
+			// Battery operated
 			case ShellyFloodG4.MODEL -> new ShellyFloodG4(address, port, name);
 
 			// PRO
