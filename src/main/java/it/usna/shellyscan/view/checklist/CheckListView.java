@@ -614,7 +614,7 @@ public class CheckListView extends JDialog implements UsnaEventListener<Devices.
 			wifi1 = "-";
 		}
 		String wifi2;
-		if (settings.at("/wifi_sta1/enabled").asBoolean()) {
+		if (settings.at("/wifi_sta1/enabled").asBoolean(false)) { // some models do not support wi-fi2
 			wifi2 = "static".equals(settings.at("/wifi_sta1/ipv4_method").asString("")) ? TRUE_STR : FALSE_STR;
 		} else {
 			wifi2 = "-";
@@ -682,7 +682,7 @@ public class CheckListView extends JDialog implements UsnaEventListener<Devices.
 			wifi1 = "-";
 		}
 		String wifi2;
-		if (config.at("/wifi/sta1/enable").asBoolean()) {
+		if (config.at("/wifi/sta1/enable").asBoolean(false)) { // some models do not support wi-fi2
 			wifi2 = "static".equals(config.at("/wifi/sta1/ipv4mode").asString()) ? TRUE_STR : FALSE_STR;
 		} else {
 			wifi2 = "-";

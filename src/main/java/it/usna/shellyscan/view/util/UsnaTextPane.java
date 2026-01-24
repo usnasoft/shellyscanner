@@ -56,6 +56,14 @@ public class UsnaTextPane extends JTextPane {
 		doc.setCharacterAttributes(0, doc.getLength(), style, true);
 	}
 	
+	public void clean() {
+		try {
+			doc.remove(0, doc.getLength());
+		} catch (BadLocationException e) {
+			LOG.error("", e);
+		}
+	}
+	
 	@Override
 	public boolean getScrollableTracksViewportWidth() {
 		// Only track viewport width when the viewport is wider than the preferred width
