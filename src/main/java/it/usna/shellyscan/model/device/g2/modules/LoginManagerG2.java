@@ -6,6 +6,7 @@ import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Random;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
@@ -17,7 +18,9 @@ import org.eclipse.jetty.http.HttpStatus;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.modules.LoginManager;
 import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ObjectNode;
 
+//https://shelly-api-docs.shelly.cloud/gen2/General/Authentication
 //https://shelly-api-docs.shelly.cloud/gen2/Overview/CommonServices/Shelly#shellysetauth
 //https://shelly-api-docs.shelly.cloud/gen2/0.14/General/Authentication#authentication
 public class LoginManagerG2 implements LoginManager {
@@ -25,6 +28,7 @@ public class LoginManagerG2 implements LoginManager {
 	private final AbstractG2Device d;
 	private boolean enabled;
 	private String realm;
+	private static Random rnd = new Random();
 
 	public LoginManagerG2(AbstractG2Device d) throws IOException {
 		this.d = d;
@@ -123,33 +127,50 @@ public class LoginManagerG2 implements LoginManager {
 		}
 	}
 	
-	////////////////////////
-	// https://shelly-api-docs.shelly.cloud/gen2/General/Authentication
-	// (response: string, encoding of the string <ha1> + ":" + <nonce> + ":" + <nc> + ":" + <cnonce> + ":" + "auth" + ":" + <ha2>
-	// (ha1: string, <user>:<realm>:<password> encoded in SHA256)
-	// (ha2: string, "dummy_method:dummy_uri" encoded in SHA256)
+	/**
+	 https://shelly-api-docs.shelly.cloud/gen2/General/Authentication
+	 (response: string, encoding of the string <ha1> + ":" + <nonce> + ":" + <nc> + ":" + <cnonce> + ":" + "auth" + ":" + <ha2>
+	 (ha1: string, <user>:<realm>:<password> encoded in SHA256)
+	 (ha2: string, "dummy_method:dummy_uri" encoded in SHA256)
+	 */
+	private static String getResponse(String nonce, String nc, String cnonce, String realm, String pwd) throws NoSuchAlgorithmException {
+		String ha1 = sha256toHex("admin:" + realm + ":" + pwd);
+		String ha2 = sha256toHex("dummy_method:dummy_uri"); // const
+		String resp = ha1 + ":" + nonce + ":" + nc + ":" + cnonce + ":auth:" + ha2;
+		return sha256toHex(resp);
+	}
 	
-//	public static String getResponse(String nonce, String cnonce, String realm, String pwd) throws NoSuchAlgorithmException {
-//		String ha1 = sha256toHex("admin:" + realm + ":" + pwd);
-//		String ha2 = sha256toHex("dummy_method:dummy_uri"); // const
-//		String resp = ha1 + ":" + nonce + ":1:" + cnonce + ":auth:" + ha2;
-//		return sha256toHex(resp);
-//	}
-//	
-//	private static String sha256toHex(String in) throws NoSuchAlgorithmException {
-//		MessageDigest digest = MessageDigest.getInstance("SHA-256");
-//		byte[] hash = digest.digest(in.getBytes(StandardCharsets.UTF_8));
-//		final StringBuilder hexString = new StringBuilder();
-//        for (int i = 0; i < hash.length; i++) {
-//            final String hex = Integer.toHexString(0xff & hash[i]);
-//            if(hex.length() == 1) 
-//              hexString.append('0');
-//            hexString.append(hex);
-//        }
-//        return hexString.toString();
-//	}
+	private static String sha256toHex(String in) throws NoSuchAlgorithmException {
+		MessageDigest digest = MessageDigest.getInstance("SHA-256");
+		byte[] hash = digest.digest(in.getBytes(StandardCharsets.UTF_8));
+		final StringBuilder hexString = new StringBuilder();
+        for (int i = 0; i < hash.length; i++) {
+            final String hex = Integer.toHexString(0xff & hash[i]);
+            if(hex.length() == 1) 
+              hexString.append('0');
+            hexString.append(hex);
+        }
+        return hexString.toString();
+        
+	}
+	
+	public static JsonNode getAuthNode(JsonNode resp) throws NoSuchAlgorithmException {
+		String cnonce = "ShSc" + rnd.nextInt();
+		ObjectNode auth = (ObjectNode)resp.deepCopy();
+		String nc = auth.remove("nc").asString();
+		String response = getResponse(resp.get("nonce").asString(), nc, cnonce, resp.get("realm").asString(), "1234");
+		return auth.put("cnonce", cnonce).put("response", response).put("username", LOGIN_USER);
+	}
 	
 //	public static void main(String ...strings) throws NoSuchAlgorithmException {
-//		getResponse("1714902300", "shellyplus2pm-485519a2bb1c", "1234");
+//		// ws://192.168.1.30/debug/log?
+//		// auth.username=admin
+//		//auth.realm=ShellyWallDisplay-00A90B3358D4
+//		//auth.nonce=1769249562
+//		//auth.cnonce=1769249562579
+//		//auth.algorithm=SHA-256
+//		//auth.response=4dfcde8a65a150467cb21edbc8c971323005c397ac3512c593559296071055ba
+//		//auth.nc=0000002a
+//		System.out.println(getResponse("1769249562", "0000002a", "1769249562579", "ShellyWallDisplay-00A90B3358D4", "1234"));
 //	}
 }

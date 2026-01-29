@@ -2,6 +2,7 @@ package it.usna.shellyscan.model.device.g2;
 
 import java.io.IOException;
 import java.net.InetAddress;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -9,10 +10,14 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.zip.ZipOutputStream;
 
+import it.usna.shellyscan.model.DeviceAPIException;
+import it.usna.shellyscan.model.DeviceOfflineException;
+import it.usna.shellyscan.model.DeviceUnauthorizedException;
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.ModulesHolder;
 import it.usna.shellyscan.model.device.RestoreMsg;
 import it.usna.shellyscan.model.device.g2.modules.Input;
+import it.usna.shellyscan.model.device.g2.modules.LoginManagerG2;
 import it.usna.shellyscan.model.device.g2.modules.Relay;
 import it.usna.shellyscan.model.device.g2.modules.ScheduleManagerThermWD;
 import it.usna.shellyscan.model.device.g2.modules.ThermostatG2;
@@ -153,6 +158,55 @@ public class WallDisplay extends AbstractG2Device implements DisplayInterface, M
 	public boolean hasThermostat() {
 		return thermostat != null;
 	}
+	
+	@Override
+	public boolean setDebugMode(LogMode mode, boolean enable) {
+		try {
+			if(mode == LogMode.SOCKET) {
+				postCommandWithException("Sys.SetConfig", null, "{\"config\": {\"debug\":{\"websocket\":{\"enable\": " + (enable ? "true" : "false") + "}}}}");
+			} else if(mode == LogMode.MQTT) {
+				postCommandWithException("Sys.SetConfig", null, "{\"config\": {\"debug\":{\"mqtt\":{\"enable\": " + (enable ? "true" : "false") + "}}}}");
+			} else if(mode == LogMode.NONE) {
+				postCommandWithException("Sys.SetConfig", null, "{\"config\": {\"debug\":{\"websocket\":{\"enable\": false}, \"mqtt\":{\"enable\": false}}}}"); // \"udp\":{\"addr\": null}
+			} else {
+				return false;
+			}
+			return true;
+		} catch(DeviceUnauthorizedException e) {
+			try {
+				postCommandWithException("Sys.SetConfig", LoginManagerG2.getAuthNode(e.getDetails()).toString(), "{\"config\": {\"debug\":{\"websocket\":{\"enable\": " + (enable ? "true" : "false") + "}}}}");
+			} catch (NoSuchAlgorithmException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			} catch (DeviceAPIException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			} catch (DeviceUnauthorizedException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			} catch (DeviceOfflineException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			} catch (RuntimeException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+			return false;
+		} catch(Exception e) {
+			return false;
+		}
+	}
+	
+	/*
+	 *             {"auth_type":"digest",
+				  "nonce":1769630117,
+				  "nc":"1",
+				  "realm":"ShellyWallDisplay-00082205E31C",
+				  "algorithm":"SHA-256"}
+				  
+				  cnonce ?
+				  response ?
+	 */
 
 	@Override
 	protected void backup(ZipOutputStream out) throws IOException, InterruptedException {

@@ -2,30 +2,41 @@ package it.usna.shellyscan.model;
 
 import java.io.IOException;
 
+import tools.jackson.databind.JsonNode;
+
 public class DeviceAPIException extends IOException {
 	private static final long serialVersionUID = 1L;
-	// Common Errors - https://shelly-api-docs.shelly.cloud/gen2/General/CommonErrors
+	// Common Errors - https://shelly-api-docs.shelly.cloud/gen2/General/CommonErrors ( https://shelly-api-docs.shelly.cloud/gen2/General/RPCProtocol)
 	public static final int INVALID_ARGUMENT = -103;
 	public static final int DEADLINE_EXCEEDED = -104;
 	public static final int RESOURCE_EXHAUSTED = -108;
 	public static final int FAILED_PRECONDITION = -109;
 	public static final int UNAVAILABLE = -114;
+	public static final int UNKNOWN = -1;
 	
 	private final int code;
-	private final String msg;
+//	private final String msg;
 	
 	public DeviceAPIException(int code, String msg) {
+		super(msg);
 		this.code = code;
-		this.msg = msg;
+//		this.msg = msg;
+	}
+	
+	public DeviceAPIException(JsonNode errorNode) {
+		super((errorNode != null) ? errorNode.path("message").asString(null) : "Generic error");
+		this.code = (errorNode != null) ? errorNode.path("code").intValue(UNKNOWN) : UNKNOWN;
+//		this.msg = msg;
 	}
 	
 	public DeviceAPIException(int code) {
 		this.code = code;
-		this.msg = null;
+//		this.msg = null;
 	}
 
 	@Override
 	public String getMessage() {
+		String msg = super.getMessage();
 		return code + ": " + ((msg != null && msg.isEmpty() == false) ? msg : "Generic error");
 	}
 
@@ -33,9 +44,9 @@ public class DeviceAPIException extends IOException {
 		return code;
 	}
 	
-	public String getErrorMessage() {
-		return msg;
-	}
+//	public String getErrorMessage() {
+//		return msg;
+//	}
 	
 	@Override
 	public String toString() {

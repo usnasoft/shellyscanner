@@ -33,6 +33,7 @@ import org.slf4j.LoggerFactory;
 
 import it.usna.shellyscan.model.DeviceAPIException;
 import it.usna.shellyscan.model.DeviceOfflineException;
+import it.usna.shellyscan.model.DeviceUnauthorizedException;
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.BatteryDeviceInterface;
 import it.usna.shellyscan.model.device.InetAddressAndPort;
@@ -58,7 +59,6 @@ import it.usna.shellyscan.model.device.modules.LoginManager;
 import it.usna.shellyscan.model.device.modules.WIFIManager;
 import it.usna.shellyscan.model.device.modules.WIFIManager.Network;
 import tools.jackson.core.JacksonException;
-import tools.jackson.core.exc.StreamReadException;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.JsonNodeFactory;
 import tools.jackson.databind.node.ObjectNode;
@@ -182,7 +182,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 		} else if(mode == LogMode.MQTT) {
 			return postCommand("Sys.SetConfig", "{\"config\": {\"debug\":{\"mqtt\":{\"enable\": " + (enable ? "true" : "false") + "}}}}") == null;
 		} else if(mode == LogMode.NONE) {
-			return postCommand("Sys.SetConfig", "{\"config\": {\"debug\":{\"websocket\":{\"enable\": false}, \"mqtt\":{\"enable\": false}, \"udp\":{\"addr\": null}} } }") == null;
+			return postCommand("Sys.SetConfig", "{\"config\": {\"debug\":{\"websocket\":{\"enable\": false}, \"mqtt\":{\"enable\": false}, \"udp\":{\"addr\": null}}}}") == null;
 		} else {
 			return false;
 		}
@@ -260,10 +260,10 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 			final JsonNode resp = executeRPC(method, payload);
 			JsonNode error;
 			if((error = resp.get("error")) == null) { // {"id":1,"src":"shellyplusi4-xxx","result":{"restart_required":true}}
-//				System.out.println(resp.toPrettyString());
-				if(resp.path("result").path("restart_required").asBoolean(false)) {
-					rebootRequired = true;
-				}
+//				if(resp.path("result").path("restart_required").asBoolean(false)) {
+//					rebootRequired = true;
+//				}
+				rebootRequired = resp.path("result").path("restart_required").asBoolean(false);
 				if(status == Status.NOT_LOOGGED) {
 					return "Status-PROTECTED";
 				} else if(status == Status.ERROR) {
@@ -279,6 +279,39 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 			return "Status-OFFLINE";
 		} catch(RuntimeException e) {
 			return e.getMessage();
+		}
+	}
+	
+	/**
+	 * return null if ok or error description in case of error
+	 */
+	public void postCommandWithException(final String method, String auth, String payload) throws RuntimeException, DeviceAPIException, DeviceUnauthorizedException, DeviceOfflineException {
+		final JsonNode resp;
+		try {
+			if(auth == null) {
+				resp = executeRPC(method, payload);
+			} else {
+				resp = executeRPC(method, auth, payload);
+			}
+		} catch(IOException e) {
+			throw new DeviceOfflineException(e);
+		}
+		JsonNode success;
+		JsonNode error;
+		if((success = resp.get("result")) != null) {
+			rebootRequired = success.path("restart_required").asBoolean(false);
+		} else if(resp.path("code").intValue(0) == HttpStatus.UNAUTHORIZED_401) {
+			try {
+				throw new DeviceUnauthorizedException(jsonMapper.readTree(resp.path("message").asString()));
+			} catch(RuntimeException e) {
+				throw new DeviceUnauthorizedException(resp.path("message"));
+			}
+		} else if((error = resp.get("error")) != null) {
+			if(status == Status.NOT_LOOGGED) {
+				throw new DeviceUnauthorizedException();
+			} else if(status == Status.ERROR) {
+				throw new DeviceAPIException(error);
+			}
 		}
 	}
 	
@@ -301,8 +334,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 		if((result = resp.get("result")) != null) {
 			return result;
 		} else {
-			JsonNode error = resp.get("error");
-			throw new DeviceAPIException(error.get("code").intValue(0), error.get("message").asString("Generic error"));
+			throw new DeviceAPIException(resp.get("error"));
 		}
 	}
 	
@@ -320,10 +352,31 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 		return new JsonPageIterator(this, method, arrayKey);
 	}
 
-	private JsonNode executeRPC(final String method, String payload) throws IOException, JacksonException, StreamReadException {
+	private JsonNode executeRPC(final String method, String payload) throws IOException {
 		try {
 			ContentResponse response = httpClient.POST(uriPrefix + "/rpc")
 					.body(new StringRequestContent("application/json", "{\"id\":1,\"method\":\"" + method + "\",\"params\":" + payload + "}", StandardCharsets.UTF_8))
+					.send();
+			int statusCode = response.getStatus(); //response.getContentAsString()
+			if(statusCode == HttpStatus.OK_200) {
+				status = Status.ON_LINE;
+			} else if(statusCode == HttpStatus.UNAUTHORIZED_401) {
+				status = Status.NOT_LOOGGED;
+			} else /*if(statusCode == HttpURLConnection.HTTP_INTERNAL_ERROR || statusCode == HttpURLConnection.HTTP_BAD_REQUEST)*/ {
+				status = Status.ERROR;
+				LOG.debug("executeRPC - reponse code: {}", statusCode);
+			}
+			return jsonMapper.readTree(response.getContent());
+		} catch(InterruptedException | ExecutionException | TimeoutException | JacksonException e) {
+			status = Status.OFF_LINE;
+			throw new DeviceOfflineException(e);
+		}
+	}
+	
+	private JsonNode executeRPC(final String method, String auth, String payload) throws IOException {
+		try {
+			ContentResponse response = httpClient.POST(uriPrefix + "/rpc")
+					.body(new StringRequestContent("application/json", "{\"id\":1,\"method\":\"" + method + "\",\"auth\":" + auth + ",\"params\":" + payload + "}", StandardCharsets.UTF_8))
 					.send();
 			int statusCode = response.getStatus(); //response.getContentAsString()
 			if(statusCode == HttpStatus.OK_200) {

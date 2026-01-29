@@ -89,8 +89,8 @@ public class Msg {
 			LOG.error("Unexpected", t);
 		}
 		String msg;
-		if(t instanceof DeviceAPIException api && api.getErrorMessage() != null && api.getErrorMessage().isBlank() == false) {
-			msg = api.getErrorMessage();
+		if(t instanceof DeviceAPIException api && api.getMessage() != null && api.getMessage().isBlank() == false) {
+			msg = api.getMessage();
 		} else {
 			msg = t.getMessage();
 			if(msg == null || msg.isBlank()) {
