@@ -451,10 +451,6 @@ ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThread
 	When sending the challange request for the debug endpoint, you have to provide the same auth params, but as get paramethers in format
 	auth.[paramName]=paramValue. For example about the username it will be auth.username=admin&auth.cnonce=…&auth.respose=...
 	 */
-	 
-it.usna.shellyscan.model.device.g2.modules.LoginManagerG2.disable() non funziona si walldispaly 
-
-wall display quando attiva il web socket
 
 ws://192.168.1.30/debug/log?auth.username=admin&auth.realm=ShellyWallDisplay-00A90B3358D4&auth.nonce=1769249562&auth.cnonce=1769249562579&auth.algorithm=SHA-256&auth.response=4dfcde8a65a150467cb21edbc8c971323005c397ac3512c593559296071055ba&auth.nc=0000002a
 ws://192.168.1.30/debug/log?auth.username=admin&auth.realm=ShellyWallDisplay-00A90B3358D4&auth.nonce=1769249562&auth.cnonce=1769249562579&auth.algorithm=SHA-256&auth.response=f775498cb72e3e07802ce084d31cc05b09b4e6db34bd8bf92dab6c2dd7da4f83&auth.nc=00000064

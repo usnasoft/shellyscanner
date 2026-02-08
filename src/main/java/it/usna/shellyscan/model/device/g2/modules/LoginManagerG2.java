@@ -15,6 +15,7 @@ import org.eclipse.jetty.client.DigestAuthentication;
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.http.HttpStatus;
 
+import it.usna.shellyscan.model.DeviceUnauthorizedException;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.modules.LoginManager;
 import tools.jackson.databind.JsonNode;
@@ -22,13 +23,20 @@ import tools.jackson.databind.node.ObjectNode;
 
 //https://shelly-api-docs.shelly.cloud/gen2/General/Authentication
 //https://shelly-api-docs.shelly.cloud/gen2/Overview/CommonServices/Shelly#shellysetauth
-//https://shelly-api-docs.shelly.cloud/gen2/0.14/General/Authentication#authentication
 public class LoginManagerG2 implements LoginManager {
 	public static String LOGIN_USER = "admin";
 	private final AbstractG2Device d;
 	private boolean enabled;
 	private String realm;
 	private static Random rnd = new Random();
+	private static String ha2;
+	static {
+		try {
+			ha2 = sha256toHex("dummy_method:dummy_uri");
+		} catch (NoSuchAlgorithmException e) {
+			ha2 = null;
+		}
+	}
 
 	public LoginManagerG2(AbstractG2Device d) throws IOException {
 		this.d = d;
@@ -68,46 +76,20 @@ public class LoginManagerG2 implements LoginManager {
 		}
 		return msg;
 	}
-	
-//	public static String set(AbstractG2Device d, String pwd) {
-//		try {
-//			LoginManagerG2 l = new LoginManagerG2(d, true);
-//			return l.set("", pwd);
-//		} catch (IOException e) {
-//			return e.getMessage();
-//		}
-//	}
-
-//	@Override
-//	public String set(String dummy, char[] pwd) {
-//		BasicCredentialsProvider credsProvider = new BasicCredentialsProvider();
-//		credsProvider.setCredentials(/*AuthScope.ANY*/new AuthScope(null, -1), new UsernamePasswordCredentials(LOGIN_USER, pwd));
-//		return set(null, pwd, credsProvider);
-//	}
 
 	@Override
 	public String set(String dummy, char[] pwd) {
 		String ha1 = LOGIN_USER + ":" + realm + ":" + new String(pwd);
 		try {
-			MessageDigest digest = MessageDigest.getInstance("SHA-256");
-			String encodedhash = bytesToHex(digest.digest(ha1.getBytes(StandardCharsets.UTF_8)));
+			String encodedhash = sha256toHex(ha1);
 			String msg = d.postCommand("Shelly.SetAuth", "{\"user\":\"" + LOGIN_USER + "\",\"realm\":\"" + realm + "\",\"ha1\":\"" + encodedhash + "\"}");
 			if(msg == null) {
-//				d.setCredentialsProvider(credsProvider);
 				d.setAuthentication(new DigestAuthentication(URI.create("http://" + d.getAddressAndPort().getRepresentation()), DigestAuthentication.ANY_REALM, LOGIN_USER, new String(pwd)));
 			}
 			return msg;
 		} catch (NoSuchAlgorithmException e) {
 			return e.toString();
 		}
-	}
-	
-	private static String bytesToHex(byte[] hash) {
-	    StringBuilder sb = new StringBuilder();
-	    for (byte b : hash) {
-	        sb.append(String.format("%02x", b));
-	    }
-	   return sb.toString();
 	}
 	
 	public static int testDigestAuthentication(HttpClient httpClient, final InetAddress address, int port, /*String user,*/ char[] pwd, String testCommand) {
@@ -133,9 +115,8 @@ public class LoginManagerG2 implements LoginManager {
 	 (ha1: string, <user>:<realm>:<password> encoded in SHA256)
 	 (ha2: string, "dummy_method:dummy_uri" encoded in SHA256)
 	 */
-	private static String getResponse(String nonce, String nc, String cnonce, String realm, String pwd) throws NoSuchAlgorithmException {
-		String ha1 = sha256toHex("admin:" + realm + ":" + pwd);
-		String ha2 = sha256toHex("dummy_method:dummy_uri"); // const
+	private static String getHashResponse(String nonce, String nc, String cnonce, String realm, char[] pwd) throws NoSuchAlgorithmException {
+		String ha1 = sha256toHex(LOGIN_USER + ":" + realm + ":" + new String(pwd));
 		String resp = ha1 + ":" + nonce + ":" + nc + ":" + cnonce + ":auth:" + ha2;
 		return sha256toHex(resp);
 	}
@@ -144,9 +125,9 @@ public class LoginManagerG2 implements LoginManager {
 		MessageDigest digest = MessageDigest.getInstance("SHA-256");
 		byte[] hash = digest.digest(in.getBytes(StandardCharsets.UTF_8));
 		final StringBuilder hexString = new StringBuilder();
-        for (int i = 0; i < hash.length; i++) {
-            final String hex = Integer.toHexString(0xff & hash[i]);
-            if(hex.length() == 1) 
+		for (byte b : hash) {
+            final String hex = Integer.toHexString(0xff & b);
+            if(hex.length() == 1)
               hexString.append('0');
             hexString.append(hex);
         }
@@ -154,12 +135,16 @@ public class LoginManagerG2 implements LoginManager {
         
 	}
 	
-	public static JsonNode getAuthNode(JsonNode resp) throws NoSuchAlgorithmException {
-		String cnonce = "ShSc" + rnd.nextInt();
-		ObjectNode auth = (ObjectNode)resp.deepCopy();
-		String nc = auth.remove("nc").asString();
-		String response = getResponse(resp.get("nonce").asString(), nc, cnonce, resp.get("realm").asString(), "1234");
-		return auth.put("cnonce", cnonce).put("response", response).put("username", LOGIN_USER);
+	public static JsonNode getAuthNode(JsonNode authResp, char[] pwd) throws DeviceUnauthorizedException {
+		try {
+			String cnonce = "ShSc" + rnd.nextInt();
+			ObjectNode auth = (ObjectNode)authResp.deepCopy();
+			String nc = auth.remove("nc").asString();
+			String response = getHashResponse(authResp.get("nonce").asString(), nc, cnonce, authResp.get("realm").asString(), pwd);
+			return auth.put("cnonce", cnonce).put("response", response).put("username", LOGIN_USER);
+		} catch(NoSuchAlgorithmException | RuntimeException e) {
+			throw new DeviceUnauthorizedException(authResp);
+		}
 	}
 	
 //	public static void main(String ...strings) throws NoSuchAlgorithmException {

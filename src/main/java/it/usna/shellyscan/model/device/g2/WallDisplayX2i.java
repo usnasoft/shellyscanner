@@ -177,6 +177,20 @@ public class WallDisplayX2i extends AbstractG2Device implements DisplayInterface
 		}
 	}
 	
+	@Override
+	// no udp (mode == LogMode.NONE)
+	public boolean setDebugMode(LogMode mode, boolean enable) {
+		if(mode == LogMode.SOCKET) {
+			return postCommand("Sys.SetConfig", "{\"config\": {\"debug\":{\"websocket\":{\"enable\": " + (enable ? "true" : "false") + "}}}}") == null;
+		} else if(mode == LogMode.MQTT) {
+			return postCommand("Sys.SetConfig", "{\"config\": {\"debug\":{\"mqtt\":{\"enable\": " + (enable ? "true" : "false") + "}}}}") == null;
+		} else if(mode == LogMode.NONE) {
+			return postCommand("Sys.SetConfig", "{\"config\": {\"debug\":{\"websocket\":{\"enable\": false}, \"mqtt\":{\"enable\": false}}}}") == null;
+		} else {
+			return false;
+		}
+	}
+
 	public float getTemp() {
 		return temp;
 	}

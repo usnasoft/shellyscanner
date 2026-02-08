@@ -128,7 +128,7 @@ public class DialogAuthentication extends JDialog {
 		
 		TextDocumentListener fieldListener = e -> {
 			okButton.setEnabled(
-					(userLabelText == null || fieldUser.getText().length() > 0) &&
+					(userLabelText == null || fieldUser.getText().isEmpty() == false) &&
 					(fieldPwd.getPassword().length > 0 || chckbxNoPwd.isSelected()) &&
 					(confLabelText == null || Arrays.equals(fieldConfirmPwd.getPassword(), fieldPwd.getPassword()))
 					);

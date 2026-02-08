@@ -113,12 +113,14 @@ public class Main {
 
 		// Credentials (from configuration only)
 		String lUser = appProp.getProperty(ScannerProperties.PROP_LOGIN_USER);
-		if(lUser != null && lUser.isEmpty() == false) {
+		String lPwd = appProp.getProperty(ScannerProperties.PROP_LOGIN_PWD);
+		char[] pDecoded = null;
+		if(lPwd != null && lPwd.isEmpty() == false) {
 			try {
-				char[] pDecoded = new String(Base64.getDecoder().decode(appProp.getProperty(ScannerProperties.PROP_LOGIN_PWD).substring(1))).toCharArray();
-				DevicesFactory.setCredential(lUser, pDecoded);
+				pDecoded = new String(Base64.getDecoder().decode(lPwd.substring(1))).toCharArray();
 			} catch(RuntimeException e) {}
 		}
+		DevicesFactory.setCredential((lUser == null || lUser.isEmpty()) ? null : lUser, pDecoded);
 
 		// Non interactive commands
 		if((cliIndex = cli.hasEntry("-backup")) >= 0) {

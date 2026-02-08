@@ -74,6 +74,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 	private static final Logger LOG = LoggerFactory.getLogger(AbstractG2Device.class);
 	protected WebSocketClient wsClient;
 	private boolean rangeExtender;
+	private char[] loginPwd = null;
 
 	protected AbstractG2Device(InetAddress address, int port, String hostname) {
 		super(new InetAddressAndPort(address, port), hostname);
@@ -200,6 +201,10 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 	public String setBLEMode(boolean ble) {
 		return postCommand("BLE.SetConfig", "{\"config\":{\"enable\":" + ble + "}}");
 	}
+	
+	public void setPwd(char[] p) {
+		loginPwd = p;
+	}
 
 	@Override
 	public boolean rebootRequired() {
@@ -281,40 +286,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 			return e.getMessage();
 		}
 	}
-	
-	/**
-	 * return null if ok or error description in case of error
-	 */
-	public void postCommandWithException(final String method, String auth, String payload) throws RuntimeException, DeviceAPIException, DeviceUnauthorizedException, DeviceOfflineException {
-		final JsonNode resp;
-		try {
-			if(auth == null) {
-				resp = executeRPC(method, payload);
-			} else {
-				resp = executeRPC(method, auth, payload);
-			}
-		} catch(IOException e) {
-			throw new DeviceOfflineException(e);
-		}
-		JsonNode success;
-		JsonNode error;
-		if((success = resp.get("result")) != null) {
-			rebootRequired = success.path("restart_required").asBoolean(false);
-		} else if(resp.path("code").intValue(0) == HttpStatus.UNAUTHORIZED_401) {
-			try {
-				throw new DeviceUnauthorizedException(jsonMapper.readTree(resp.path("message").asString()));
-			} catch(RuntimeException e) {
-				throw new DeviceUnauthorizedException(resp.path("message"));
-			}
-		} else if((error = resp.get("error")) != null) {
-			if(status == Status.NOT_LOOGGED) {
-				throw new DeviceUnauthorizedException();
-			} else if(status == Status.ERROR) {
-				throw new DeviceAPIException(error);
-			}
-		}
-	}
-	
+
 	@Override
 	public JsonNode getJSON(final String command) throws IOException {
 		JsonNode resp = super.getJSON(command);
@@ -353,19 +325,34 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 	}
 
 	private JsonNode executeRPC(final String method, String payload) throws IOException {
+		ContentResponse response = null;
 		try {
-			ContentResponse response = httpClient.POST(uriPrefix + "/rpc")
+			response = httpClient.POST(uriPrefix + "/rpc")
 					.body(new StringRequestContent("application/json", "{\"id\":1,\"method\":\"" + method + "\",\"params\":" + payload + "}", StandardCharsets.UTF_8))
 					.send();
-			int statusCode = response.getStatus(); //response.getContentAsString()
+			int statusCode = response.getStatus();
 			if(statusCode == HttpStatus.OK_200) {
 				status = Status.ON_LINE;
 			} else if(statusCode == HttpStatus.UNAUTHORIZED_401) {
-				status = Status.NOT_LOOGGED;
-			} else /*if(statusCode == HttpURLConnection.HTTP_INTERNAL_ERROR || statusCode == HttpURLConnection.HTTP_BAD_REQUEST)*/ {
+				if(loginPwd != null) {
+					JsonNode resp = jsonMapper.readTree(response.getContent());
+					try {
+						resp = jsonMapper.readTree(resp.path("message").asString()); // is a json formatted string (not a node)
+					} catch(RuntimeException e) {
+						resp = resp.path("message");
+					}
+					TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+					return executeRPC(method, LoginManagerG2.getAuthNode(resp, loginPwd).toString(), payload);
+				} else {
+					status = Status.NOT_LOOGGED;
+				}
+			} else {
 				status = Status.ERROR;
 				LOG.debug("executeRPC - reponse code: {}", statusCode);
 			}
+			return jsonMapper.readTree(response.getContent());
+		} catch(DeviceUnauthorizedException e) {
+			status = Status.NOT_LOOGGED;
 			return jsonMapper.readTree(response.getContent());
 		} catch(InterruptedException | ExecutionException | TimeoutException | JacksonException e) {
 			status = Status.OFF_LINE;
@@ -375,20 +362,21 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 	
 	private JsonNode executeRPC(final String method, String auth, String payload) throws IOException {
 		try {
+			LOG.trace("executeRPC with authentication: {}", method);
 			ContentResponse response = httpClient.POST(uriPrefix + "/rpc")
 					.body(new StringRequestContent("application/json", "{\"id\":1,\"method\":\"" + method + "\",\"auth\":" + auth + ",\"params\":" + payload + "}", StandardCharsets.UTF_8))
 					.send();
-			int statusCode = response.getStatus(); //response.getContentAsString()
+			int statusCode = response.getStatus();
 			if(statusCode == HttpStatus.OK_200) {
 				status = Status.ON_LINE;
 			} else if(statusCode == HttpStatus.UNAUTHORIZED_401) {
 				status = Status.NOT_LOOGGED;
-			} else /*if(statusCode == HttpURLConnection.HTTP_INTERNAL_ERROR || statusCode == HttpURLConnection.HTTP_BAD_REQUEST)*/ {
+			} else {
 				status = Status.ERROR;
 				LOG.debug("executeRPC - reponse code: {}", statusCode);
 			}
 			return jsonMapper.readTree(response.getContent());
-		} catch(InterruptedException | ExecutionException | TimeoutException | JacksonException e) {
+		} catch(InterruptedException | ExecutionException | TimeoutException | RuntimeException e) {
 			status = Status.OFF_LINE;
 			throw new DeviceOfflineException(e);
 		}
@@ -411,7 +399,72 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 	auth.[paramName]=paramValue. For example about the username it will be auth.username=admin&auth.cnonce=…&auth.respose=...
 	 */
 	public Future<Session> connectWebSocketLogs(WebSocketDeviceListener listener) throws IOException {
-		return wsClient.connect(listener, URI.create("ws://" + addressAndPort.getRepresentation() + "/debug/log"));
+//		HttpClient httpClient = new HttpClient();
+//		WebSocketClient wsClient = new WebSocketClient(httpClient);
+//		wsClient.addSessionListener(new WebSocketSessionListener() {
+//			@Override
+//			public void onWebSocketSessionClosed(Session session) {
+//				System.out.println(session);
+//			}
+//		});
+//		try {
+//			wsClient.start();
+//		} catch (Exception e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+//		URI uri = URI.create("ws://" + addressAndPort.getRepresentation() + "/debug/log");
+//		Authentication.Result creds = new BasicAuthentication.BasicResult(uri, "admin", "1234");
+//		ClientUpgradeRequest req = new ClientUpgradeRequest(uri);
+
+//		ClientConnector connector  = new ClientConnector();
+//		// Configure the ClientConnector.
+//		connector.setSelectors(1);
+//		connector.setSslContextFactory(new SslContextFactory.Client());
+//		connector.addEventListener(new ClientConnector.ConnectListener() {
+//			@Override
+//			public void onConnectBegin(SocketChannel socketChannel, SocketAddress socketAddress) {
+//				System.out.println(socketChannel);	
+//			}
+//			@Override
+//			public void onConnectFailure(SocketChannel socketChannel, SocketAddress socketAddress, Throwable failure) {
+//				System.out.println(socketChannel);	
+//			}
+//			@Override
+//			public void onConnectSuccess(SocketChannel socketChannel) {
+//				System.out.println(socketChannel);	
+//			}
+//		});
+//
+//		// Pass it to the HttpClient transport.
+//		HttpClientTransport transport = new HttpClientTransportDynamic(connector);
+//		HttpClient httpClient = new HttpClient(transport);
+//		try {
+//			httpClient.start();
+//		} catch (Exception e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+//		WebSocketClient wsClient = new WebSocketClient(httpClient);
+//		try {
+//			wsClient.start();
+//		} catch (Exception e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+		
+		return wsClient.connect(listener, URI.create("ws://" + addressAndPort.getRepresentation() + "/debug/log")/*,
+				new org.eclipse.jetty.websocket.client.JettyUpgradeListener() {
+			@Override
+			public void onHandshakeRequest(org.eclipse.jetty.client.Request request) {
+				System.out.println(request);
+			}
+			
+			@Override
+			public void onHandshakeResponse(org.eclipse.jetty.client.Request request, org.eclipse.jetty.client.Response response) {
+				System.out.println(response);
+			}
+		}*/);
 	}
 
 	@Override

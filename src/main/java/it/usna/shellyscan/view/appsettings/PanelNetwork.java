@@ -307,16 +307,16 @@ public class PanelNetwork extends JPanel {
 		String rlUser = userFieldRL.getText();
 		appProp.setProperty(ScannerProperties.PROP_LOGIN_USER, rlUser);
 		String encodedRlp = "";
-		if(rlUser.length() > 0) {
+//		if(rlUser.length() > 0) {
 			char[] rlp = passwordFieldRL.getPassword();
 			try {
 				String rplStr = new String(rlp);
 				encodedRlp = (char)(rplStr.hashCode() % ('Z' - 'A') + 'A') + Base64.getEncoder().encodeToString(rplStr.getBytes());
 			} catch(RuntimeException e) {}
 			DevicesFactory.setCredential(rlUser, rlp);
-		} else {
-			DevicesFactory.setCredential(null, null);
-		}
+//		} else {
+//			DevicesFactory.setCredential(null, null);
+//		}
 		appProp.setProperty(ScannerProperties.PROP_LOGIN_PWD, encodedRlp);
 		
 		// Refresh

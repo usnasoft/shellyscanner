@@ -45,14 +45,13 @@ import it.usna.shellyscan.model.device.ShellyAbstractDevice.LogMode;
 import it.usna.shellyscan.model.device.blu.AbstractBluDevice;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.g2.WebSocketDeviceListener;
+import it.usna.shellyscan.model.device.modules.DisplayInterface;
 import it.usna.shellyscan.view.util.Msg;
 import it.usna.shellyscan.view.util.UsnaTextPane;
 import it.usna.shellyscan.view.util.UtilMiscellaneous;
 import it.usna.swing.dialog.FindReplaceDialog;
 import tools.jackson.databind.JsonNode;
 
-// https://shelly-api-docs.shelly.cloud/gen2/0.14/General/DebugLogs
-// Warning: Access to log streams over websocket is not restricted, even when authentication is enabled!
 public class DialogDeviceLogsG2 extends JDialog {
 	private static final long serialVersionUID = 1L;
 	private static final Logger LOG = LoggerFactory.getLogger(DialogDeviceLogsG2.class);
@@ -142,7 +141,7 @@ public class DialogDeviceLogsG2 extends JDialog {
 		buttonsPanel.add(comboBox);
 		
 		try {
-			if(device.getLoginManager().isEnabled() && LOG.isTraceEnabled() == false) { // LOG.isTraceEnabled() -> I will study ...
+			if(device.getLoginManager().isEnabled() && device instanceof DisplayInterface && LOG.isTraceEnabled() == false) { // LOG.isTraceEnabled() -> I will study ...
 				Msg.errorMsg(owner, "dlgLogG2ErrEOF");
 				return;
 			}
@@ -173,8 +172,7 @@ public class DialogDeviceLogsG2 extends JDialog {
 					setCursor(Cursor.getDefaultCursor());
 				}
 			});
-			
-			btnActivateLog.doClick();
+//			btnActivateLog.doClick();
 
 			btnStopLog.addActionListener(event -> {
 				try {
