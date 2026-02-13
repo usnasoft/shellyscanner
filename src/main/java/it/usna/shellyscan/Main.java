@@ -36,7 +36,7 @@ public class Main {
 	}
 	public static final String APP_NAME = "Shelly Scanner";
 	public static final String VERSION = "1.3.2";
-	public static final String VERSION_CODE = "001.003.002r100"; // r0xx alpha; r1xx beta; r2xx stable
+	public static final String VERSION_CODE = "001.003.002r200"; // r0xx alpha; r1xx beta; r2xx stable
 	public static final Image ICON = Toolkit.getDefaultToolkit().createImage(Main.class.getResource("/images/ShSc24.png"));
 	public static final String BACKUP_FILE_EXT = "sbk";
 	public static final String ARCHIVE_FILE_EXT = "arc";

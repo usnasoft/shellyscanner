@@ -408,8 +408,8 @@ Shelly EM Gen3 (?)
 Shelly Flood Gen4 (?)
 -slow cli par (Mirco Krug - fb)
 -font cli par (GitHub issue)
+gen2+ protected devices logs
 
-it.usna.shellyscan.model.device.RestoreUtil
 
 todo location
 
