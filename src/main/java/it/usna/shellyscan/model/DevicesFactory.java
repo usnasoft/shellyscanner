@@ -153,11 +153,12 @@ public class DevicesFactory {
 			final boolean auth = info.get("auth").asBoolean();
 			if(auth) {
 				synchronized (DevicesFactory.class) { // wait for this in order to authenticate next protected devices
-					if(lastUser == null || LoginManagerG1.testBasicAuthentication(httpClient, address, port, lastUser, lastP, "/settings") != HttpStatus.OK_200) {
+					if(lastUser == null || lastP == null || LoginManagerG1.testBasicAuthentication(httpClient, address, port, lastUser, lastP, "/settings") != HttpStatus.OK_200) {
 						DialogAuthentication credentialsDlg = new DialogAuthentication(
 								Main.LABELS.getString("dlgAuthTitle"),
 								Main.LABELS.getString("labelUser"),
 								Main.LABELS.getString("labelPassword"));
+						credentialsDlg.setUser(lastUser == null ? "" : lastUser);
 						credentialsDlg.setMessage(String.format(Main.LABELS.getString("dlgAuthMessage"), name));
 						String user;
 						do {
@@ -222,9 +223,10 @@ public class DevicesFactory {
 
 	private static AbstractG2Device createG2(HttpClient httpClient, WebSocketClient wsClient, final InetAddress address, int port, JsonNode info, String name) {
 		AbstractG2Device d;
+		char[] p = null;
 		try {
 			if(info.get("auth_en").booleanValue(false)) {
-				digestAuthentication(httpClient, address, port, name);
+				p = digestAuthentication(httpClient, address, port, name);
 			}
 			d = switch(info.get("app").asString()) {
 				// Plus
@@ -255,12 +257,12 @@ public class DevicesFactory {
 				case ShellyPro2PM.ID -> new ShellyPro2PM(address, port, name);
 				case ShellyPro2.ID -> new ShellyPro2(address, port, name);
 				case ShellyPro3.ID -> new ShellyPro3(address, port, name);
-				case ShellyPro4PM.ID -> ShellyProDualCover.MODEL.equals(info.get("model").asString("")) ? new ShellyProDualCover(address, port, name) : new ShellyPro4PM(address, port, name);
-				case ShellyProDimmer1.ID, ShellyProDimmer1.ID_ADDON -> ShellyProDimmer2.MODEL.equals(info.get("model").asString("")) ? new ShellyProDimmer2(address, port, name) : new ShellyProDimmer1(address, port, name);
+				case ShellyPro4PM.ID -> ShellyProDualCover.MODEL.equals(info.get("model").asString()) ? new ShellyProDualCover(address, port, name) : new ShellyPro4PM(address, port, name);
+				case ShellyProDimmer1.ID, ShellyProDimmer1.ID_ADDON -> ShellyProDimmer2.MODEL.equals(info.get("model").asString()) ? new ShellyProDimmer2(address, port, name) : new ShellyProDimmer1(address, port, name);
 				case ShellyProEM50.ID -> new ShellyProEM50(address, port, name);
 				case ShellyPro3EM.ID -> new ShellyPro3EM(address, port, name);
 				case ShellyProRGBWW.ID -> new ShellyProRGBWW(address, port, name);
-				
+
 				default -> new ShellyG2Unmanaged(address, port, name);
 			};
 		} catch(Exception e) { // really unexpected
@@ -276,14 +278,16 @@ public class DevicesFactory {
 		} catch(RuntimeException e) {
 			LOG.error("create - init {}:{}", address, port, e);
 		}
+		d.setPwd(p);
 		return d;
 	}
 	
 	private static AbstractG3Device createG3(HttpClient httpClient, WebSocketClient wsClient, final InetAddress address, int port, JsonNode info, String name) {
 		AbstractG3Device d;
+		char[] p = null;
 		try {
 			if(info.get("auth_en").booleanValue(false)) {
-				digestAuthentication(httpClient, address, port, name);
+				p = digestAuthentication(httpClient, address, port, name);
 			}
 			d = switch(info.get("app").asString()) {
 			case Shelly1G3.ID -> new Shelly1G3(address, port, name);
@@ -335,14 +339,16 @@ public class DevicesFactory {
 		} catch(RuntimeException e) {
 			LOG.error("create - init {}:{}", address, port, e);
 		}
+		d.setPwd(p);
 		return d;
 	}
 
 	private static AbstractG4Device createG4(HttpClient httpClient, WebSocketClient wsClient, final InetAddress address, int port, JsonNode info, String name) {
 		AbstractG4Device d;
+		char[] p = null;
 		try {
 			if(info.get("auth_en").booleanValue(false)) {
-				digestAuthentication(httpClient, address, port, name);
+				p = digestAuthentication(httpClient, address, port, name);
 			}
 			d = switch(info.get("model").asString()) {
 			case Shelly1G4.MODEL -> new Shelly1G4(address, port, name);
@@ -373,40 +379,43 @@ public class DevicesFactory {
 		} catch(RuntimeException e) {
 			LOG.error("create - init {}:{}", address, port, e);
 		}
+		d.setPwd(p);
 		return d;
 	}
 	
-	private static void digestAuthentication(HttpClient httpClient, final InetAddress address, int port, String name) throws InterruptedException {
+	private static char[] digestAuthentication(HttpClient httpClient, final InetAddress address, int port, String hostname) throws InterruptedException {
 		synchronized (DevicesFactory.class) { // wait for this in order to authenticate all subsequent
-			if(lastUser == null || LoginManagerG2.testDigestAuthentication(httpClient, address, port, lastP, "/rpc/Shelly.GetStatus") != HttpStatus.OK_200) {
+			int status = HttpStatus.UNAUTHORIZED_401;
+			char[] p = lastP;
+			if(p == null || (status = LoginManagerG2.testDigestAuthentication(httpClient, address, port, lastP, "/rpc/Shelly.GetStatus")) != HttpStatus.OK_200) {
 				DialogAuthentication credentialsDlg = new DialogAuthentication(
 						Main.LABELS.getString("dlgAuthTitle"),
 						null /*labelUser*/,
 						Main.LABELS.getString("labelPassword"));
-				credentialsDlg.setUser(LoginManagerG2.LOGIN_USER);
-				credentialsDlg.setMessage(String.format(Main.LABELS.getString("dlgAuthMessage"), name));
-				String user;
+				credentialsDlg.setMessage(String.format(Main.LABELS.getString("dlgAuthMessage"), hostname));
 				do {
 					credentialsDlg.setVisible(true);
-					if((user = credentialsDlg.getUser()) != null) {
-						setCredential(user, credentialsDlg.getPassword().clone()); // ... .clone(): DialogAuthentication clear password after dispose() call
+					if((p = credentialsDlg.getPassword()) != null) {
+						p = p.clone(); // ... .clone(): DialogAuthentication clear password after dispose() call
 					}
-					credentialsDlg.setMessage(String.format(Main.LABELS.getString("dlgAuthMessageError"), name));
-				} while(user != null && LoginManagerG2.testDigestAuthentication(httpClient, address, port, lastP, "/rpc/Shelly.GetStatus") != HttpStatus.OK_200);
+					credentialsDlg.setMessage(String.format(Main.LABELS.getString("dlgAuthMessageError"), hostname));
+				} while(p != null && (status = LoginManagerG2.testDigestAuthentication(httpClient, address, port, p, /*hostname,*/ "/rpc/Shelly.GetStatus")) != HttpStatus.OK_200);
 				credentialsDlg.dispose();
 			}
-//			URI uri = URI.create("http://" + address.getHostAddress() + ":" + port/*+ testCommand*/);
-//			Authentication.Result creds = new BasicAuthentication.BasicResult(uri, "admin", new String( "1234"));
-//			httpClient.getAuthenticationStore().addAuthenticationResult(creds);
+			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+			if(status == HttpStatus.OK_200) {
+				setCredential(lastUser, p);
+				return p;
+			} else {
+				return null;
+			}
 		}
-		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 	}
 	
 	public static AbstractBluDevice createBlu(AbstractG2Device parent, HttpClient httpClient, /*WebSocketClient wsClient,*/ JsonNode info, String key) {
 		AbstractBluDevice blu;
 		try {
 			if(key.startsWith(BTHomeDevice.DEVICE_KEY_PREFIX)) {
-//				final String type = info.path("config").path("meta").path("ui").path("local_name").asString("");
 				int model = info.path("attrs").path("model_id").asInt(-1);
 				blu = new BTHomeDevice(parent, info, model, key.substring(13));
 			} else { // currently only BluTRV

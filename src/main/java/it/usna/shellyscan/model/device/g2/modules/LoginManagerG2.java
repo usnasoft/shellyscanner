@@ -1,11 +1,14 @@
 package it.usna.shellyscan.model.device.g2.modules;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.net.URI;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.List;
 import java.util.Random;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
@@ -25,7 +28,7 @@ import tools.jackson.databind.node.ObjectNode;
 //https://shelly-api-docs.shelly.cloud/gen2/Overview/CommonServices/Shelly#shellysetauth
 public class LoginManagerG2 implements LoginManager {
 	public static String LOGIN_USER = "admin";
-	private final AbstractG2Device d;
+	private final AbstractG2Device device;
 	private boolean enabled;
 	private String realm;
 	private static Random rnd = new Random();
@@ -37,14 +40,15 @@ public class LoginManagerG2 implements LoginManager {
 			ha2 = null;
 		}
 	}
+	private static final String DEF_NC = "1";
 
 	public LoginManagerG2(AbstractG2Device d) throws IOException {
-		this.d = d;
+		this.device = d;
 		init();
 	}
 	
 	public LoginManagerG2(AbstractG2Device d, boolean noInit) throws IOException {
-		this.d = d;
+		this.device = d;
 		if(noInit == false) {
 			init();
 		} else {
@@ -53,7 +57,7 @@ public class LoginManagerG2 implements LoginManager {
 	}
 
 	private void init() throws IOException {
-		JsonNode shelly = d.getJSON("/shelly");
+		JsonNode shelly = device.getJSON("/shelly");
 		this.enabled = shelly.get("auth_en").asBoolean();
 		this.realm = shelly.get("id").asString("");
 	}
@@ -70,9 +74,10 @@ public class LoginManagerG2 implements LoginManager {
 
 	@Override
 	public String disable() {
-		String msg = d.postCommand("Shelly.SetAuth", "{\"user\":\"" + LOGIN_USER + "\",\"realm\":\"" + realm + "\",\"ha1\":null}");
+		String msg = device.postCommand("Shelly.SetAuth", "{\"user\":\"" + LOGIN_USER + "\",\"realm\":\"" + realm + "\",\"ha1\":null}");
 		if(msg == null) {
-			d.setAuthentication(null);
+			device.setAuthentication(null);
+			device.setPwd(null);
 		}
 		return msg;
 	}
@@ -82,9 +87,10 @@ public class LoginManagerG2 implements LoginManager {
 		String ha1 = LOGIN_USER + ":" + realm + ":" + new String(pwd);
 		try {
 			String encodedhash = sha256toHex(ha1);
-			String msg = d.postCommand("Shelly.SetAuth", "{\"user\":\"" + LOGIN_USER + "\",\"realm\":\"" + realm + "\",\"ha1\":\"" + encodedhash + "\"}");
+			String msg = device.postCommand("Shelly.SetAuth", "{\"user\":\"" + LOGIN_USER + "\",\"realm\":\"" + realm + "\",\"ha1\":\"" + encodedhash + "\"}");
 			if(msg == null) {
-				d.setAuthentication(new DigestAuthentication(URI.create("http://" + d.getAddressAndPort().getRepresentation()), DigestAuthentication.ANY_REALM, LOGIN_USER, new String(pwd)));
+				device.setAuthentication(new DigestAuthentication(URI.create("http://" + device.getAddressAndPort().getRepresentation()), DigestAuthentication.ANY_REALM, LOGIN_USER, new String(pwd)));
+				device.setPwd(pwd);
 			}
 			return msg;
 		} catch (NoSuchAlgorithmException e) {
@@ -92,16 +98,16 @@ public class LoginManagerG2 implements LoginManager {
 		}
 	}
 	
-	public static int testDigestAuthentication(HttpClient httpClient, final InetAddress address, int port, /*String user,*/ char[] pwd, String testCommand) {
-		URI uri = URI.create("http://" + address.getHostAddress() + ":" + port/*+ testCommand*/);
-		DigestAuthentication da = new DigestAuthentication(uri, DigestAuthentication.ANY_REALM, LOGIN_USER, new String(pwd));
+	public static int testDigestAuthentication(HttpClient httpClient, final InetAddress address, int port, /*String user,*/ char[] pwd, /*String realm,*/ String testCommand) {
+		URI uri = URI.create("http://" + address.getHostAddress() + ":" + port);
+		DigestAuthentication da = new DigestAuthentication(uri, DigestAuthentication.ANY_REALM/*realm*/, LOGIN_USER, new String(pwd));
 		AuthenticationStore aStore = httpClient.getAuthenticationStore();
 		try {
 			aStore.addAuthentication(da);
 			int status = httpClient.GET("http://" + address.getHostAddress() + ":" + port + testCommand).getStatus();
 			if(status != HttpStatus.OK_200) {
 				aStore.removeAuthentication(da);
-			}
+			}			
 			return status;
 		} catch (InterruptedException | TimeoutException | ExecutionException e) {
 			aStore.removeAuthentication(da);
@@ -132,14 +138,13 @@ public class LoginManagerG2 implements LoginManager {
             hexString.append(hex);
         }
         return hexString.toString();
-        
 	}
 	
 	public static JsonNode getAuthNode(JsonNode authResp, char[] pwd) throws DeviceUnauthorizedException {
 		try {
 			String cnonce = "ShSc" + rnd.nextInt();
 			ObjectNode auth = (ObjectNode)authResp.deepCopy();
-			String nc = auth.remove("nc").asString();
+			String nc = auth.hasNonNull("nc") ? auth.remove("nc").asString() : DEF_NC;
 			String response = getHashResponse(authResp.get("nonce").asString(), nc, cnonce, authResp.get("realm").asString(), pwd);
 			return auth.put("cnonce", cnonce).put("response", response).put("username", LOGIN_USER);
 		} catch(NoSuchAlgorithmException | RuntimeException e) {
@@ -147,15 +152,31 @@ public class LoginManagerG2 implements LoginManager {
 		}
 	}
 	
-//	public static void main(String ...strings) throws NoSuchAlgorithmException {
-//		// ws://192.168.1.30/debug/log?
-//		// auth.username=admin
-//		//auth.realm=ShellyWallDisplay-00A90B3358D4
-//		//auth.nonce=1769249562
-//		//auth.cnonce=1769249562579
-//		//auth.algorithm=SHA-256
-//		//auth.response=4dfcde8a65a150467cb21edbc8c971323005c397ac3512c593559296071055ba
-//		//auth.nc=0000002a
-//		System.out.println(getResponse("1769249562", "0000002a", "1769249562579", "ShellyWallDisplay-00A90B3358D4", "1234"));
-//	}
+	// e.g. [Digest qop=auth, realm=shellypmminig3-54320470a094, nonce=1770886322, algorithm=SHA-256]
+	public static String getAuthString(List<String> wwwAuthenticate, char[] pwd) throws DeviceUnauthorizedException {
+		try {
+			StringBuilder auth = new StringBuilder("auth.username=admin");
+			String realm = null;
+			String nonce = null;
+			String algorithm = null;
+			String nc = DEF_NC;
+			for(String val: wwwAuthenticate) {
+				if(val.startsWith("realm")) realm = val.substring(6);
+				else if(val.startsWith("nonce")) nonce = val.substring(6);
+				else if(val.startsWith("algorithm")) algorithm = val.substring(10);
+				else if(val.startsWith("nc")) nc = val.substring(3);
+			}
+			String cnonce = "ShSc" + rnd.nextInt();
+			String response = getHashResponse(nonce, nc, cnonce, realm, pwd);
+			auth.append("&auth.realm=").append(URLEncoder.encode(realm, StandardCharsets.UTF_8.name()));
+			auth.append("&auth.nonce=").append(URLEncoder.encode(nonce, StandardCharsets.UTF_8.name()));
+			auth.append("&auth.cnonce=").append(URLEncoder.encode(cnonce, StandardCharsets.UTF_8.name()));
+			auth.append("&auth.algorithm=").append(URLEncoder.encode(algorithm, StandardCharsets.UTF_8.name()));
+			auth.append("&auth.response=").append(URLEncoder.encode(response, StandardCharsets.UTF_8.name()));
+			auth.append("&auth.nc=").append(URLEncoder.encode(nc, StandardCharsets.UTF_8.name()));
+			return auth.toString();
+		} catch(NoSuchAlgorithmException | RuntimeException | UnsupportedEncodingException e) {
+			throw new DeviceUnauthorizedException();
+		}
+	}
 }

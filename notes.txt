@@ -445,13 +445,3 @@ In the next version of Shelly Scanner it would be great if you could graph the "
 ------- java 21+ -------
 ThreadFactory factory = Thread.ofVirtual().factory();
 ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(0, factory);
-
---------------
- * Кристиан Тодоров:
-	When sending the challange request for the debug endpoint, you have to provide the same auth params, but as get paramethers in format
-	auth.[paramName]=paramValue. For example about the username it will be auth.username=admin&auth.cnonce=…&auth.respose=...
-	 */
-
-ws://192.168.1.30/debug/log?auth.username=admin&auth.realm=ShellyWallDisplay-00A90B3358D4&auth.nonce=1769249562&auth.cnonce=1769249562579&auth.algorithm=SHA-256&auth.response=4dfcde8a65a150467cb21edbc8c971323005c397ac3512c593559296071055ba&auth.nc=0000002a
-ws://192.168.1.30/debug/log?auth.username=admin&auth.realm=ShellyWallDisplay-00A90B3358D4&auth.nonce=1769249562&auth.cnonce=1769249562579&auth.algorithm=SHA-256&auth.response=f775498cb72e3e07802ce084d31cc05b09b4e6db34bd8bf92dab6c2dd7da4f83&auth.nc=00000064
-ws://192.168.1.30/debug/log?auth.username=admin&auth.realm=ShellyWallDisplay-00A90B3358D4&auth.nonce=1769249562&auth.cnonce=1769249562579&auth.algorithm=SHA-256&auth.response=674697013751623350e4d35bb91a201cdda563a791dad269a684ff173479a536&auth.nc=000000a9

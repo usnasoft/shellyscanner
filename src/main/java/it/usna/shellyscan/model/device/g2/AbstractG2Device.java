@@ -24,6 +24,7 @@ import org.eclipse.jetty.client.ContentResponse;
 import org.eclipse.jetty.client.DigestAuthentication;
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.StringRequestContent;
+import org.eclipse.jetty.http.HttpFields;
 import org.eclipse.jetty.http.HttpStatus;
 import org.eclipse.jetty.websocket.api.Callback;
 import org.eclipse.jetty.websocket.api.Session;
@@ -53,6 +54,7 @@ import it.usna.shellyscan.model.device.g2.modules.SensorAddOn;
 import it.usna.shellyscan.model.device.g2.modules.TimeAndLocationManagerG2;
 import it.usna.shellyscan.model.device.g2.modules.WIFIManagerG2;
 import it.usna.shellyscan.model.device.g2.modules.Webhooks;
+import it.usna.shellyscan.model.device.modules.DisplayInterface;
 import it.usna.shellyscan.model.device.modules.FirmwareManager;
 import it.usna.shellyscan.model.device.modules.InputResetManager;
 import it.usna.shellyscan.model.device.modules.LoginManager;
@@ -112,6 +114,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 		if(auth != null) {
 			store.addAuthentication(auth);
 		}
+		loginPwd = null;
 	}
 
 	protected void fillSettings(JsonNode config) throws IOException {
@@ -393,86 +396,32 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 		}
 	}
 	
-	/** this doesn't work on protected devices
+	/**
 	 * Кристиан Тодоров:
-	When sending the challange request for the debug endpoint, you have to provide the same auth params, but as get paramethers in format
-	auth.[paramName]=paramValue. For example about the username it will be auth.username=admin&auth.cnonce=…&auth.respose=...
+	 * When sending the challange request for the debug endpoint, you have to provide the same auth params, but as get paramethers in format
+	 - auth.[paramName]=paramValue. For example about the username it will be auth.username=admin&auth.cnonce=…&auth.respose=...
 	 */
 	public Future<Session> connectWebSocketLogs(WebSocketDeviceListener listener) throws IOException {
-//		HttpClient httpClient = new HttpClient();
-//		WebSocketClient wsClient = new WebSocketClient(httpClient);
-//		wsClient.addSessionListener(new WebSocketSessionListener() {
-//			@Override
-//			public void onWebSocketSessionClosed(Session session) {
-//				System.out.println(session);
-//			}
-//		});
-//		try {
-//			wsClient.start();
-//		} catch (Exception e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
-//		URI uri = URI.create("ws://" + addressAndPort.getRepresentation() + "/debug/log");
-//		Authentication.Result creds = new BasicAuthentication.BasicResult(uri, "admin", "1234");
-//		ClientUpgradeRequest req = new ClientUpgradeRequest(uri);
-
-//		ClientConnector connector  = new ClientConnector();
-//		// Configure the ClientConnector.
-//		connector.setSelectors(1);
-//		connector.setSslContextFactory(new SslContextFactory.Client());
-//		connector.addEventListener(new ClientConnector.ConnectListener() {
-//			@Override
-//			public void onConnectBegin(SocketChannel socketChannel, SocketAddress socketAddress) {
-//				System.out.println(socketChannel);	
-//			}
-//			@Override
-//			public void onConnectFailure(SocketChannel socketChannel, SocketAddress socketAddress, Throwable failure) {
-//				System.out.println(socketChannel);	
-//			}
-//			@Override
-//			public void onConnectSuccess(SocketChannel socketChannel) {
-//				System.out.println(socketChannel);	
-//			}
-//		});
-//
-//		// Pass it to the HttpClient transport.
-//		HttpClientTransport transport = new HttpClientTransportDynamic(connector);
-//		HttpClient httpClient = new HttpClient(transport);
-//		try {
-//			httpClient.start();
-//		} catch (Exception e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
-//		WebSocketClient wsClient = new WebSocketClient(httpClient);
-//		try {
-//			wsClient.start();
-//		} catch (Exception e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
-		
-		return wsClient.connect(listener, URI.create("ws://" + addressAndPort.getRepresentation() + "/debug/log")/*,
-				new org.eclipse.jetty.websocket.client.JettyUpgradeListener() {
-			@Override
-			public void onHandshakeRequest(org.eclipse.jetty.client.Request request) {
-				System.out.println(request);
+		if(getLoginManager().isEnabled() && this instanceof DisplayInterface == false) {
+			try {
+				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+				var response = httpClient.GET("ws://" + addressAndPort.getRepresentation() + "/debug/log");
+				HttpFields head = response.getHeaders();
+				String auth = LoginManagerG2.getAuthString(head.getCSV("WWW-Authenticate", false), loginPwd);
+				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+				return wsClient.connect(listener, URI.create("ws://" + addressAndPort.getRepresentation() + "/debug/log?" +  auth));
+			} catch (InterruptedException | ExecutionException | TimeoutException | RuntimeException e) {
+				LOG.error("connectWebSocketLogs protected connection", e);
+				throw new DeviceUnauthorizedException();
 			}
-			
-			@Override
-			public void onHandshakeResponse(org.eclipse.jetty.client.Request request, org.eclipse.jetty.client.Response response) {
-				System.out.println(response);
-			}
-		}*/);
+		} else {
+			return wsClient.connect(listener, URI.create("ws://" + addressAndPort.getRepresentation() + "/debug/log"));
+		}
 	}
 
 	@Override
 	public boolean backup(final Path file) throws IOException {
 		try(ZipOutputStream out = new ZipOutputStream(new FileOutputStream(file.toFile()), StandardCharsets.UTF_8)) {
-//			Files.list(fs.getPath("/")).forEach(p -> {
-//				try { Files.delete(p); } catch (IOException e) { }
-//			});
 			sectionToStream("/rpc/Shelly.GetDeviceInfo", "Shelly.GetDeviceInfo.json", out);
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			JsonNode config = sectionToStream("/rpc/Shelly.GetConfig", "Shelly.GetConfig.json", out);
@@ -743,45 +692,4 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 
 	/** device specific */
 	protected abstract void restore(Map<String, JsonNode> backupJsons, List<String> errors) throws IOException, InterruptedException;
-	
-	/* experimental */
-//	public Future<Session> connectWebSocketLogs2(WebSocketDeviceListener listener) throws IOException, InterruptedException, ExecutionException {
-//		//return wsClient.connect(listener, URI.create("ws://" + address.getHostAddress() + ":" + port + "/debug/log"));
-//		//		ClientUpgradeRequest upgrade = new ClientUpgradeRequest();
-//		try {
-//			String nonce = (System.currentTimeMillis() / 1000) + "";
-//			String cnonce = "ss" + nonce;
-//			System.out.println(nonce);
-//
-//			String response = LoginManagerG2.getResponse(nonce, cnonce, hostname, "1234");
-//
-//			CompletableFuture<Session> s = wsClient.connect(listener, URI.create("ws://192.168.1.10/debug/log?" +
-//					"auth.auth_type=digest&" +
-//					"auth.nonce="+ nonce + "&" +
-//					"auth.nc=1&" +
-//					"auth.realm=shellyplus2pm-485519a2bb1c" +
-//					"&auth.algorithm=SHA-256&" +
-//					"auth.username=admin&" +
-//					"auth.cnonce=xdaChipkEtz61jum&" +
-//					"auth.response=" + response),
-//
-//					/*upgrade*/null, new JettyUpgradeListener() {
-//				@Override
-//				public void onHandshakeRequest(org.eclipse.jetty.client.Request request) {
-//					System.out.println(request);
-//				}
-//				@Override
-//				public void onHandshakeResponse(org.eclipse.jetty.client.Request request, org.eclipse.jetty.client.Response response) {
-//					System.out.println(request);
-//					System.out.println(response.getHeaders().getField("WWW-Authenticate").getValueList());
-//				}
-//
-//
-//			}); // this also do upgrade
-//			return s;
-//		} catch (NoSuchAlgorithmException e) {
-//			e.printStackTrace();
-//			return null;
-//		}
-//	}
-} // 477 - 474 - 525 - 568 - 637
+} // 477 - 474 - 525 - 568 - 637 - 695

@@ -45,7 +45,6 @@ import it.usna.shellyscan.model.device.ShellyAbstractDevice.LogMode;
 import it.usna.shellyscan.model.device.blu.AbstractBluDevice;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.g2.WebSocketDeviceListener;
-import it.usna.shellyscan.model.device.modules.DisplayInterface;
 import it.usna.shellyscan.view.util.Msg;
 import it.usna.shellyscan.view.util.UsnaTextPane;
 import it.usna.shellyscan.view.util.UtilMiscellaneous;
@@ -66,9 +65,9 @@ public class DialogDeviceLogsG2 extends JDialog {
 	 * @param owner Window
 	 * @param devicesModel
 	 * @param modelIndex the device model index (in case of BTHome device the it'sindex of the hosting device)
-	 * @param initLlogLevel initial log level
+	 * @param initLogLevel initial log level
 	 */
-	public DialogDeviceLogsG2(final Window owner, Devices devicesModel, int modelIndex, int initLlogLevel) {
+	public DialogDeviceLogsG2(final Window owner, Devices devicesModel, int modelIndex, int initLogLevel) {
 		super(owner, ModalityType.MODELESS);
 		AbstractG2Device device = (AbstractG2Device) devicesModel.get(modelIndex);
 		setTitle(UtilMiscellaneous.getExtendedHostName(device));
@@ -137,15 +136,10 @@ public class DialogDeviceLogsG2 extends JDialog {
 		comboBox.addItem(LABELS.getString("dlgLogG2Lev2")); // info
 		comboBox.addItem(LABELS.getString("dlgLogG2Lev3")); // debug
 		comboBox.addItem(LABELS.getString("dlgLogG2Lev4")); // verbose
-		comboBox.setSelectedIndex(initLlogLevel);
+		comboBox.setSelectedIndex(initLogLevel);
 		buttonsPanel.add(comboBox);
 		
 		try {
-			if(device.getLoginManager().isEnabled() && device instanceof DisplayInterface && LOG.isTraceEnabled() == false) { // LOG.isTraceEnabled() -> I will study ...
-				Msg.errorMsg(owner, "dlgLogG2ErrEOF");
-				return;
-			}
-			
 			if(logWasActive == false) {
 				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 				device.setDebugMode(LogMode.SOCKET, true);

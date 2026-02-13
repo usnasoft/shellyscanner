@@ -24,7 +24,6 @@ import it.usna.shellyscan.model.device.GhostDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
 import it.usna.shellyscan.model.device.blu.AbstractBluDevice;
-import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.g2.modules.LoginManagerG2;
 import it.usna.shellyscan.model.device.modules.LoginManager;
 import it.usna.shellyscan.view.devsettings.DialogDeviceSettings.Gen;
@@ -200,14 +199,8 @@ public class PanelResLogin extends AbstractSettingsPanel {
 					String msg;
 					if(enabled) {
 						msg = lm.set(user, pwd);
-						if(device instanceof AbstractG2Device g2) {
-							g2.setPwd(pwd);
-						}
 					} else {
 						msg = lm.disable();
-						if(device instanceof AbstractG2Device g2) {
-							g2.setPwd(null);
-						}
 					}
 					if(msg != null) {
 						if(LABELS.containsKey(msg)) {
@@ -223,14 +216,8 @@ public class PanelResLogin extends AbstractSettingsPanel {
 					dc.addOrUpdate(parentDlg.getModelIndex(i), DeferrableTask.Type.LOGIN, LABELS.getString(enabled ? "RestrictedLoginTaskEnable" : "RestrictedLoginTaskDisable"), (def, dev) -> {
 						final LoginManager loginManager = dev.getLoginManager();
 						if(enabled) {
-							if(dev instanceof AbstractG2Device g2) {
-								g2.setPwd(pwd);
-							}
 							return loginManager.set(user, pwd);
 						} else {
-							if(dev instanceof AbstractG2Device g2) {
-								g2.setPwd(null);
-							}
 							return loginManager.disable();
 						}
 					});
