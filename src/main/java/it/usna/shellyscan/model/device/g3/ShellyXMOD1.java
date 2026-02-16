@@ -23,6 +23,7 @@ import tools.jackson.databind.JsonNode;
  */
 public class ShellyXMOD1 extends AbstractG3Device implements ModulesHolder {
 	public static final String ID = "XMOD1";
+	public static final String MODEL = "S3MX-0A";
 	private int numInputs;
 	private int numOutputs;
 	private int numModules;
@@ -61,7 +62,7 @@ public class ShellyXMOD1 extends AbstractG3Device implements ModulesHolder {
 		}
 
 		final JsonNode config = getJSON("/rpc/Shelly.GetConfig");
-		if(SensorAddOn.ADDON_TYPE.equals(config.get("sys").get("device").path("addon_type").asString(""))) {
+		if(SensorAddOn.ADDON_TYPE.equals(config.get("sys").get("device").path("addon_type").asString(null))) {
 			addOn = new SensorAddOn(this);
 			meters = (addOn.getTypes().length > 0) ? new Meters[] {addOn} : null;
 		} else {
@@ -79,6 +80,11 @@ public class ShellyXMOD1 extends AbstractG3Device implements ModulesHolder {
 	@Override
 	public String getTypeID() {
 		return ID;
+	}
+	
+	@Override
+	public String getModelID() {
+		return MODEL;
 	}
 
 	@Override

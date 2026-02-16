@@ -24,6 +24,7 @@ import org.eclipse.jetty.client.ContentResponse;
 import org.eclipse.jetty.client.DigestAuthentication;
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.StringRequestContent;
+import org.eclipse.jetty.http.HttpFields;
 import org.eclipse.jetty.http.HttpStatus;
 import org.eclipse.jetty.websocket.api.Callback;
 import org.eclipse.jetty.websocket.api.Session;
@@ -33,6 +34,7 @@ import org.slf4j.LoggerFactory;
 
 import it.usna.shellyscan.model.DeviceAPIException;
 import it.usna.shellyscan.model.DeviceOfflineException;
+import it.usna.shellyscan.model.DeviceUnauthorizedException;
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.BatteryDeviceInterface;
 import it.usna.shellyscan.model.device.InetAddressAndPort;
@@ -52,13 +54,13 @@ import it.usna.shellyscan.model.device.g2.modules.SensorAddOn;
 import it.usna.shellyscan.model.device.g2.modules.TimeAndLocationManagerG2;
 import it.usna.shellyscan.model.device.g2.modules.WIFIManagerG2;
 import it.usna.shellyscan.model.device.g2.modules.Webhooks;
+import it.usna.shellyscan.model.device.modules.DisplayInterface;
 import it.usna.shellyscan.model.device.modules.FirmwareManager;
 import it.usna.shellyscan.model.device.modules.InputResetManager;
 import it.usna.shellyscan.model.device.modules.LoginManager;
 import it.usna.shellyscan.model.device.modules.WIFIManager;
 import it.usna.shellyscan.model.device.modules.WIFIManager.Network;
 import tools.jackson.core.JacksonException;
-import tools.jackson.core.exc.StreamReadException;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.JsonNodeFactory;
 import tools.jackson.databind.node.ObjectNode;
@@ -74,6 +76,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 	private static final Logger LOG = LoggerFactory.getLogger(AbstractG2Device.class);
 	protected WebSocketClient wsClient;
 	private boolean rangeExtender;
+	private char[] loginPwd = null;
 
 	protected AbstractG2Device(InetAddress address, int port, String hostname) {
 		super(new InetAddressAndPort(address, port), hostname);
@@ -97,6 +100,10 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 	public String getGeneration() {
 		return "2";
 	}
+	
+	public String getModelID() {
+		return null;
+	}
 
 	public void setAuthentication(Authentication auth) {
 		AuthenticationStore store = httpClient.getAuthenticationStore();
@@ -107,6 +114,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 		if(auth != null) {
 			store.addAuthentication(auth);
 		}
+		loginPwd = null;
 	}
 
 	protected void fillSettings(JsonNode config) throws IOException {
@@ -178,7 +186,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 		} else if(mode == LogMode.MQTT) {
 			return postCommand("Sys.SetConfig", "{\"config\": {\"debug\":{\"mqtt\":{\"enable\": " + (enable ? "true" : "false") + "}}}}") == null;
 		} else if(mode == LogMode.NONE) {
-			return postCommand("Sys.SetConfig", "{\"config\": {\"debug\":{\"websocket\":{\"enable\": false}, \"mqtt\":{\"enable\": false}, \"udp\":{\"addr\": null}} } }") == null;
+			return postCommand("Sys.SetConfig", "{\"config\": {\"debug\":{\"websocket\":{\"enable\": false}, \"mqtt\":{\"enable\": false}, \"udp\":{\"addr\": null}}}}") == null;
 		} else {
 			return false;
 		}
@@ -195,6 +203,10 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 
 	public String setBLEMode(boolean ble) {
 		return postCommand("BLE.SetConfig", "{\"config\":{\"enable\":" + ble + "}}");
+	}
+	
+	public void setPwd(char[] p) {
+		loginPwd = p;
 	}
 
 	@Override
@@ -256,10 +268,10 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 			final JsonNode resp = executeRPC(method, payload);
 			JsonNode error;
 			if((error = resp.get("error")) == null) { // {"id":1,"src":"shellyplusi4-xxx","result":{"restart_required":true}}
-//				System.out.println(resp.toPrettyString());
-				if(resp.path("result").path("restart_required").asBoolean(false)) {
-					rebootRequired = true;
-				}
+//				if(resp.path("result").path("restart_required").asBoolean(false)) {
+//					rebootRequired = true;
+//				}
+				rebootRequired = resp.path("result").path("restart_required").asBoolean(false);
 				if(status == Status.NOT_LOOGGED) {
 					return "Status-PROTECTED";
 				} else if(status == Status.ERROR) {
@@ -277,7 +289,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 			return e.getMessage();
 		}
 	}
-	
+
 	@Override
 	public JsonNode getJSON(final String command) throws IOException {
 		JsonNode resp = super.getJSON(command);
@@ -297,8 +309,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 		if((result = resp.get("result")) != null) {
 			return result;
 		} else {
-			JsonNode error = resp.get("error");
-			throw new DeviceAPIException(error.get("code").intValue(0), error.get("message").asString("Generic error"));
+			throw new DeviceAPIException(resp.get("error"));
 		}
 	}
 	
@@ -316,22 +327,59 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 		return new JsonPageIterator(this, method, arrayKey);
 	}
 
-	private JsonNode executeRPC(final String method, String payload) throws IOException, JacksonException, StreamReadException {
+	private JsonNode executeRPC(final String method, String payload) throws IOException {
+		ContentResponse response = null;
 		try {
-			ContentResponse response = httpClient.POST(uriPrefix + "/rpc")
+			response = httpClient.POST(uriPrefix + "/rpc")
 					.body(new StringRequestContent("application/json", "{\"id\":1,\"method\":\"" + method + "\",\"params\":" + payload + "}", StandardCharsets.UTF_8))
 					.send();
-			int statusCode = response.getStatus(); //response.getContentAsString()
+			int statusCode = response.getStatus();
 			if(statusCode == HttpStatus.OK_200) {
 				status = Status.ON_LINE;
 			} else if(statusCode == HttpStatus.UNAUTHORIZED_401) {
-				status = Status.NOT_LOOGGED;
-			} else /*if(statusCode == HttpURLConnection.HTTP_INTERNAL_ERROR || statusCode == HttpURLConnection.HTTP_BAD_REQUEST)*/ {
+				if(loginPwd != null) {
+					JsonNode resp = jsonMapper.readTree(response.getContent());
+					try {
+						resp = jsonMapper.readTree(resp.path("message").asString()); // is a json formatted string (not a node)
+					} catch(RuntimeException e) {
+						resp = resp.path("message");
+					}
+					TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+					return executeRPC(method, LoginManagerG2.getAuthNode(resp, loginPwd).toString(), payload);
+				} else {
+					status = Status.NOT_LOOGGED;
+				}
+			} else {
 				status = Status.ERROR;
 				LOG.debug("executeRPC - reponse code: {}", statusCode);
 			}
 			return jsonMapper.readTree(response.getContent());
+		} catch(DeviceUnauthorizedException e) {
+			status = Status.NOT_LOOGGED;
+			return jsonMapper.readTree(response.getContent());
 		} catch(InterruptedException | ExecutionException | TimeoutException | JacksonException e) {
+			status = Status.OFF_LINE;
+			throw new DeviceOfflineException(e);
+		}
+	}
+	
+	private JsonNode executeRPC(final String method, String auth, String payload) throws IOException {
+		try {
+			LOG.trace("executeRPC with authentication: {}", method);
+			ContentResponse response = httpClient.POST(uriPrefix + "/rpc")
+					.body(new StringRequestContent("application/json", "{\"id\":1,\"method\":\"" + method + "\",\"auth\":" + auth + ",\"params\":" + payload + "}", StandardCharsets.UTF_8))
+					.send();
+			int statusCode = response.getStatus();
+			if(statusCode == HttpStatus.OK_200) {
+				status = Status.ON_LINE;
+			} else if(statusCode == HttpStatus.UNAUTHORIZED_401) {
+				status = Status.NOT_LOOGGED;
+			} else {
+				status = Status.ERROR;
+				LOG.debug("executeRPC - reponse code: {}", statusCode);
+			}
+			return jsonMapper.readTree(response.getContent());
+		} catch(InterruptedException | ExecutionException | TimeoutException | RuntimeException e) {
 			status = Status.OFF_LINE;
 			throw new DeviceOfflineException(e);
 		}
@@ -348,21 +396,32 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 		}
 	}
 	
-	/** this doesn't work on protected devices
+	/**
 	 * Кристиан Тодоров:
-	When sending the challange request for the debug endpoint, you have to provide the same auth params, but as get paramethers in format
-	auth.[paramName]=paramValue. For example about the username it will be auth.username=admin&auth.cnonce=…&auth.respose=...
+	 * When sending the challange request for the debug endpoint, you have to provide the same auth params, but as get paramethers in format
+	 - auth.[paramName]=paramValue. For example about the username it will be auth.username=admin&auth.cnonce=…&auth.respose=...
 	 */
 	public Future<Session> connectWebSocketLogs(WebSocketDeviceListener listener) throws IOException {
-		return wsClient.connect(listener, URI.create("ws://" + addressAndPort.getRepresentation() + "/debug/log"));
+		if(getLoginManager().isEnabled() && this instanceof DisplayInterface == false) {
+			try {
+				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+				var response = httpClient.GET("ws://" + addressAndPort.getRepresentation() + "/debug/log");
+				HttpFields head = response.getHeaders();
+				String auth = LoginManagerG2.getAuthString(head.getCSV("WWW-Authenticate", false), loginPwd);
+				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+				return wsClient.connect(listener, URI.create("ws://" + addressAndPort.getRepresentation() + "/debug/log?" +  auth));
+			} catch (InterruptedException | ExecutionException | TimeoutException | RuntimeException e) {
+				LOG.error("connectWebSocketLogs protected connection", e);
+				throw new DeviceUnauthorizedException();
+			}
+		} else {
+			return wsClient.connect(listener, URI.create("ws://" + addressAndPort.getRepresentation() + "/debug/log"));
+		}
 	}
 
 	@Override
 	public boolean backup(final Path file) throws IOException {
 		try(ZipOutputStream out = new ZipOutputStream(new FileOutputStream(file.toFile()), StandardCharsets.UTF_8)) {
-//			Files.list(fs.getPath("/")).forEach(p -> {
-//				try { Files.delete(p); } catch (IOException e) { }
-//			});
 			sectionToStream("/rpc/Shelly.GetDeviceInfo", "Shelly.GetDeviceInfo.json", out);
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			JsonNode config = sectionToStream("/rpc/Shelly.GetConfig", "Shelly.GetConfig.json", out);
@@ -386,7 +445,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 				sectionToStream("/rpc/Shelly.GetComponents?dynamic_only=true", "components", "Shelly.GetComponents.json", out);
 			} catch(Exception e) {}
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-			String addon = config.get("sys").get("device").path("addon_type").asString("");
+			String addon = config.get("sys").get("device").path("addon_type").asString(null);
 			if(SensorAddOn.ADDON_TYPE.equals(addon)) {
 				sectionToStream("/rpc/SensorAddon.GetPeripherals", SensorAddOn.BACKUP_SECTION, out);
 				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
@@ -423,13 +482,13 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 		EnumMap<RestoreMsg, Object> res = new EnumMap<>(RestoreMsg.class);
 		try {
 			JsonNode devInfo = backupJsons.get("Shelly.GetDeviceInfo.json");
-			if(devInfo == null || RestoreUtil.compatibleModels(devInfo.get("app").asString(""), this.getTypeID()) == false) {
+			if(devInfo == null || RestoreUtil.compatibleModels(devInfo, this) == false) {
 				res.put(RestoreMsg.ERR_RESTORE_MODEL, null);
 			} else {
 				JsonNode config = backupJsons.get("Shelly.GetConfig.json");
-				boolean sameDevice = /*devInfo.get("id").asString("").equals(this.hostname)*/devInfo.get("mac").asString("").toUpperCase().equals(this.mac);
+				boolean sameDevice = devInfo.get("mac").asString("").toUpperCase().equals(this.mac);
 				if(sameDevice == false) {
-					res.put(RestoreMsg.PRE_QUESTION_RESTORE_HOST, /*fileHostname*/devInfo.get("id").asString(""));
+					res.put(RestoreMsg.PRE_QUESTION_RESTORE_HOST, devInfo.get("id").asString(""));
 				}
 				DynamicComponents.restoreCheck(this, backupJsons, res);
 				if(devInfo.path("auth_en").asBoolean()) {
@@ -586,28 +645,18 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 		errors.add(postCommand("BLE.SetConfig", outConfig));
 
 		// Cloud.SetConfig
-		ObjectNode outCloud = JsonNodeFactory.instance.objectNode(); // Cloud
-		outCloud.put("enable", config.at("/cloud/enable").asBoolean());
-		outConfig.set("config", outCloud);
+		outConfig.putObject("config").put("enable", config.at("/cloud/enable").asBoolean());
 		TimeUnit.MILLISECONDS.sleep(delay);
 		errors.add(postCommand("Cloud.SetConfig", outConfig));
 
 		// Sys.SetConfig
 		JsonNode sys = config.get("sys");
-		ObjectNode outSys = JsonNodeFactory.instance.objectNode();
-		
 		ObjectNode outDevice = (ObjectNode)sys.get("device")/*.deepCopy()*/;
 		outDevice.remove("mac");
 		outDevice.remove("fw_id");
 		outDevice.remove("addon_type");
 		outDevice.remove("profile");
-		outSys.set("device", outDevice);
-
-		outSys.set("sntp", sys.get("sntp")/*.deepCopy()*/);
-		
-		outSys.set("debug", sys.get("debug"));
-
-		outConfig.set("config", outSys);
+		outConfig.putObject("config").set("device", outDevice).set("sntp", sys.get("sntp")).set("sntp", sys.get("sntp")).set("debug", sys.get("debug"));
 		TimeUnit.MILLISECONDS.sleep(delay);
 		errors.add(postCommand("Sys.SetConfig", outConfig));
 		
@@ -643,45 +692,4 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 
 	/** device specific */
 	protected abstract void restore(Map<String, JsonNode> backupJsons, List<String> errors) throws IOException, InterruptedException;
-	
-	/* experimental */
-//	public Future<Session> connectWebSocketLogs2(WebSocketDeviceListener listener) throws IOException, InterruptedException, ExecutionException {
-//		//return wsClient.connect(listener, URI.create("ws://" + address.getHostAddress() + ":" + port + "/debug/log"));
-//		//		ClientUpgradeRequest upgrade = new ClientUpgradeRequest();
-//		try {
-//			String nonce = (System.currentTimeMillis() / 1000) + "";
-//			String cnonce = "ss" + nonce;
-//			System.out.println(nonce);
-//
-//			String response = LoginManagerG2.getResponse(nonce, cnonce, hostname, "1234");
-//
-//			CompletableFuture<Session> s = wsClient.connect(listener, URI.create("ws://192.168.1.10/debug/log?" +
-//					"auth.auth_type=digest&" +
-//					"auth.nonce="+ nonce + "&" +
-//					"auth.nc=1&" +
-//					"auth.realm=shellyplus2pm-485519a2bb1c" +
-//					"&auth.algorithm=SHA-256&" +
-//					"auth.username=admin&" +
-//					"auth.cnonce=xdaChipkEtz61jum&" +
-//					"auth.response=" + response),
-//
-//					/*upgrade*/null, new JettyUpgradeListener() {
-//				@Override
-//				public void onHandshakeRequest(org.eclipse.jetty.client.Request request) {
-//					System.out.println(request);
-//				}
-//				@Override
-//				public void onHandshakeResponse(org.eclipse.jetty.client.Request request, org.eclipse.jetty.client.Response response) {
-//					System.out.println(request);
-//					System.out.println(response.getHeaders().getField("WWW-Authenticate").getValueList());
-//				}
-//
-//
-//			}); // this also do upgrade
-//			return s;
-//		} catch (NoSuchAlgorithmException e) {
-//			e.printStackTrace();
-//			return null;
-//		}
-//	}
-} // 477 - 474 - 525 - 568 - 637
+} // 477 - 474 - 525 - 568 - 637 - 695

@@ -47,7 +47,7 @@ public class PanelGUI extends JPanel {
 		setLayout(gridBagLayout);
 		
 		JLabel label = new JLabel(LABELS.getString("dlgAppSetDoubleClickLabel"));
-		label.setFont(new Font("Tahoma", Font.BOLD, 11));
+		label.setFont(label.getFont().deriveFont(Font.BOLD));
 		GridBagConstraints gbc_label = new GridBagConstraints();
 		gbc_label.anchor = GridBagConstraints.WEST;
 		gbc_label.insets = new Insets(0, 0, 5, 5);
@@ -91,7 +91,7 @@ public class PanelGUI extends JPanel {
 		add(separator_1_3_1, gbc_separator_1_3_1);
 		
 		JLabel lblNewLabel_6 = new JLabel(LABELS.getString("dlgAppSetUptimeModeLabel"));
-		lblNewLabel_6.setFont(new Font("Tahoma", Font.BOLD, 11));
+		lblNewLabel_6.setFont(lblNewLabel_6.getFont().deriveFont(Font.BOLD));
 		GridBagConstraints gbc_lblNewLabel_6 = new GridBagConstraints();
 		gbc_lblNewLabel_6.anchor = GridBagConstraints.WEST;
 		gbc_lblNewLabel_6.insets = new Insets(0, 0, 5, 5);
@@ -147,7 +147,7 @@ public class PanelGUI extends JPanel {
 		add(separator_2, gbc_separator_2);
 		
 		JLabel lblNewLabel_9 = new JLabel(LABELS.getString("dlgAppSetTempUnitLabel"));
-		lblNewLabel_9.setFont(new Font("Tahoma", Font.BOLD, 11));
+		lblNewLabel_9.setFont(lblNewLabel_9.getFont().deriveFont(Font.BOLD));
 		GridBagConstraints gbc_lblNewLabel_9 = new GridBagConstraints();
 		gbc_lblNewLabel_9.anchor = GridBagConstraints.WEST;
 		gbc_lblNewLabel_9.insets = new Insets(0, 0, 5, 5);
@@ -191,7 +191,7 @@ public class PanelGUI extends JPanel {
 		add(separator_1_3, gbc_separator_1_3);
 		
 		JLabel lblNewLabel_5 = new JLabel(LABELS.getString("dlgAppSetToolbarLabel"));
-		lblNewLabel_5.setFont(new Font("Tahoma", Font.BOLD, 11));
+		lblNewLabel_5.setFont(lblNewLabel_5.getFont().deriveFont(Font.BOLD));
 		GridBagConstraints gbc_lblNewLabel_5 = new GridBagConstraints();
 		gbc_lblNewLabel_5.anchor = GridBagConstraints.WEST;
 		gbc_lblNewLabel_5.insets = new Insets(0, 0, 5, 5);
@@ -218,7 +218,7 @@ public class PanelGUI extends JPanel {
 		add(separator_1, gbc_separator_1);
 		
 		JLabel lblNewLabel_8 = new JLabel(LABELS.getString("dlgAppSetDefFilterLabel"));
-		lblNewLabel_8.setFont(new Font("Tahoma", Font.BOLD, 11));
+		lblNewLabel_8.setFont(lblNewLabel_8.getFont().deriveFont(Font.BOLD));
 		GridBagConstraints gbc_lblNewLabel_8 = new GridBagConstraints();
 		gbc_lblNewLabel_8.anchor = GridBagConstraints.WEST;
 		gbc_lblNewLabel_8.insets = new Insets(0, 0, 5, 5);
@@ -250,7 +250,7 @@ public class PanelGUI extends JPanel {
 		add(separator, gbc_separator);
 		
 		JLabel lblNewLabel = new JLabel(LABELS.getString("dlgAppSetUpdateCHKLabel"));
-		lblNewLabel.setFont(new Font("Tahoma", Font.BOLD, 11));
+		lblNewLabel.setFont(lblNewLabel.getFont().deriveFont(Font.BOLD));
 		GridBagConstraints gbc_lblNewLabel = new GridBagConstraints();
 		gbc_lblNewLabel.anchor = GridBagConstraints.WEST;
 		gbc_lblNewLabel.insets = new Insets(0, 0, 5, 5);
@@ -306,7 +306,7 @@ public class PanelGUI extends JPanel {
 		add(separator_1_2, gbc_separator_1_2);
 		
 		JLabel lblNewLabel_10 = new JLabel(LABELS.getString("dlgAppSetDetailedViewLabel"));
-		lblNewLabel_10.setFont(new Font("Tahoma", Font.BOLD, 11));
+		lblNewLabel_10.setFont(lblNewLabel_10.getFont().deriveFont(Font.BOLD));
 		GridBagConstraints gbc_lblNewLabel_10 = new GridBagConstraints();
 		gbc_lblNewLabel_10.anchor = GridBagConstraints.WEST;
 		gbc_lblNewLabel_10.insets = new Insets(0, 0, 5, 5);
@@ -374,7 +374,7 @@ public class PanelGUI extends JPanel {
 		add(separator_1_1, gbc_separator_1_1);
 		
 		JLabel lblNewLabel_1 = new JLabel(LABELS.getString("dlgAppSetCSV"));
-		lblNewLabel_1.setFont(new Font("Tahoma", Font.BOLD, 11));
+		lblNewLabel_1.setFont(lblNewLabel_1.getFont().deriveFont(Font.BOLD));
 		GridBagConstraints gbc_lblNewLabel_1 = new GridBagConstraints();
 		gbc_lblNewLabel_1.anchor = GridBagConstraints.WEST;
 		gbc_lblNewLabel_1.insets = new Insets(0, 0, 5, 5);
@@ -427,7 +427,7 @@ public class PanelGUI extends JPanel {
 		add(separator_3, gbc_separator_3);
 
 		JLabel lblNewLabel_7 = new JLabel(LABELS.getString("dlgAppSetCharts"));
-		lblNewLabel_7.setFont(new Font("Tahoma", Font.BOLD, 11));
+		lblNewLabel_7.setFont(lblNewLabel_7.getFont().deriveFont(Font.BOLD));
 		GridBagConstraints gbc_lblNewLabel_7 = new GridBagConstraints();
 		gbc_lblNewLabel_7.anchor = GridBagConstraints.WEST;
 		gbc_lblNewLabel_7.insets = new Insets(0, 0, 5, 5);
@@ -459,7 +459,7 @@ public class PanelGUI extends JPanel {
 		add(separator_4, gbc_separator_4);
 		
 		JLabel lblNewLabel_2 = new JLabel(LABELS.getString("dlgAppSetLblColums") + " - " + LABELS.getString(detailedView ? "dlgAppSetLblColumsExtended": "dlgAppSetLblColumsDefault"));
-		lblNewLabel_2.setFont(new Font("Tahoma", Font.BOLD, 11));
+		lblNewLabel_2.setFont(lblNewLabel_2.getFont().deriveFont(Font.BOLD));
 		GridBagConstraints gbc_lblNewLabel_2 = new GridBagConstraints();
 		gbc_lblNewLabel_2.anchor = GridBagConstraints.WEST;
 		gbc_lblNewLabel_2.insets = new Insets(0, 0, 5, 0);

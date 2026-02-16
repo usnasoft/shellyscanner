@@ -19,7 +19,7 @@ import tools.jackson.databind.JsonNode;
  */
 public class ShellyMini1G4 extends AbstractG4Device implements ModulesHolder, InternalTmpHolder {
 	public static final String ID = "Mini1G4";
-	public static final String ID_ZB = "Mini1G4ZB";
+//	public static final String ID_ZB = "Mini1G4ZB";
 	public static final String MODEL = "S4SW-001X8EU";
 	private Relay relay = new Relay(this, 0);
 	private Relay[] relays = new Relay[] {relay};
@@ -37,6 +37,11 @@ public class ShellyMini1G4 extends AbstractG4Device implements ModulesHolder, In
 	@Override
 	public String getTypeID() {
 		return ID;
+	}
+	
+	@Override
+	public String getModelID() {
+		return MODEL;
 	}
 
 	@Override

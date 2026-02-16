@@ -28,6 +28,7 @@ import tools.jackson.databind.JsonNode;
 public class ShellyPlus2PM extends AbstractG2Device implements ModulesHolder, InternalTmpHolder {
 	private static final Logger LOG = LoggerFactory.getLogger(ShellyPlus2PM.class);
 	public static final String ID = "Plus2PM";
+	public static final String MODEL = "SNSW-002P16EU";
 	private static final Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.W, Meters.Type.PF, Meters.Type.V, Meters.Type.I};
 	private boolean modeRelay;
 	private Relay relay0, relay1;

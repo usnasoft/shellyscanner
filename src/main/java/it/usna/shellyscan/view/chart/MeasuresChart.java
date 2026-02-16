@@ -400,27 +400,32 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 				if(meters != null) {
 					for(int i = 0; i < meters.length; i++) {
 						if(meters[i].hasType(Meters.Type.T)) {
-							TimeSeries ts = new TimeSeries(uniqueName(dataset, UtilMiscellaneous.getDescName(d)));
+							String name = meters[i].getName(Meters.Type.T);
+							TimeSeries ts = new TimeSeries(uniqueName(dataset, UtilMiscellaneous.getDescName(d) + (name != null ? "-" + name : "")));
 							temp.add(ts);
 							dataset.addSeries(ts);
 						}
 						if(meters[i].hasType(Meters.Type.T1)) {
-							TimeSeries ts = new TimeSeries(uniqueName(dataset, UtilMiscellaneous.getDescName(d) + "-1"));
+							String name = meters[i].getName(Meters.Type.T1);
+							TimeSeries ts = new TimeSeries(uniqueName(dataset, UtilMiscellaneous.getDescName(d) + (name != null ? "-" + name : "-1")));
 							temp.add(ts);
 							dataset.addSeries(ts);
 						}
 						if(meters[i].hasType(Meters.Type.T2)) {
-							TimeSeries ts = new TimeSeries(uniqueName(dataset, UtilMiscellaneous.getDescName(d) + "-2"));
+							String name = meters[i].getName(Meters.Type.T2);
+							TimeSeries ts = new TimeSeries(uniqueName(dataset, UtilMiscellaneous.getDescName(d) + (name != null ? "-" + name : "-2")));
 							temp.add(ts);
 							dataset.addSeries(ts);
 						}
 						if(meters[i].hasType(Meters.Type.T3)) {
-							TimeSeries ts = new TimeSeries(uniqueName(dataset, UtilMiscellaneous.getDescName(d) + "-3"));
+							String name = meters[i].getName(Meters.Type.T3);
+							TimeSeries ts = new TimeSeries(uniqueName(dataset, UtilMiscellaneous.getDescName(d) + (name != null ? "-" + name : "-3")));
 							temp.add(ts);
 							dataset.addSeries(ts);
 						}
 						if(meters[i].hasType(Meters.Type.T4)) {
-							TimeSeries ts = new TimeSeries(uniqueName(dataset, UtilMiscellaneous.getDescName(d) + "-4"));
+							String name = meters[i].getName(Meters.Type.T4);
+							TimeSeries ts = new TimeSeries(uniqueName(dataset, UtilMiscellaneous.getDescName(d) + (name != null ? "-" + name : "-4")));
 							temp.add(ts);
 							dataset.addSeries(ts);
 						}
@@ -477,7 +482,15 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 				if(meters != null) {
 					for(int i = 0; i < meters.length; i++) {
 						if(meters[i].hasType(currentType.mType)) {
-							String name = (meters[i] instanceof LabelHolder lh) ? UtilMiscellaneous.getDescName(d, lh.getLabel(), i) : UtilMiscellaneous.getDescName(d, i);
+							String name;
+							String meterName = meters[i].getName(currentType.mType);
+							if(meterName != null && meterName.isEmpty() == false) {
+								name = UtilMiscellaneous.getDescName(d) + "-" + meterName;
+							} else if(meters[i] instanceof LabelHolder lh) {
+								name = UtilMiscellaneous.getDescName(d, lh.getLabel(), i);
+							} else {
+								name = UtilMiscellaneous.getDescName(d, i);
+							}
 							TimeSeries ts = new TimeSeries(uniqueName(dataset, name));
 							temp.add(ts);
 							dataset.addSeries(ts);
@@ -553,32 +566,32 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 					if(m[i].hasType(Meters.Type.T)) {
 						float val = m[i].getValue(Meters.Type.T);
 						if(fahrenheit) val = val*1.8f + 32f;
-						ts[j++].addOrUpdate(timestamp, val);
-						outStream(d, 0, /*ChartType.T*/"T", timestamp, val);
+						ts[j].addOrUpdate(timestamp, val);
+						outStream(d, j++, /*ChartType.T.name()*/"T", timestamp, val);
 					}
 					if(m[i].hasType(Meters.Type.T1)) {
 						float val = m[i].getValue(Meters.Type.T1);
 						if(fahrenheit) val = val*1.8f + 32f;
-						ts[j++].addOrUpdate(timestamp, val);
-						outStream(d, 0, /*ChartType.T1*/"T1", timestamp, val);
+						ts[j].addOrUpdate(timestamp, val);
+						outStream(d, j++, "T", timestamp, val);
 					}
 					if(m[i].hasType(Meters.Type.T2)) {
 						float val = m[i].getValue(Meters.Type.T2);
 						if(fahrenheit) val = val*1.8f + 32f;
-						ts[j++].addOrUpdate(timestamp, val);
-						outStream(d, 0, /*ChartType.T2*/"T2", timestamp, val);
+						ts[j].addOrUpdate(timestamp, val);
+						outStream(d, j++, "T", timestamp, val);
 					}
 					if(m[i].hasType(Meters.Type.T3)) {
 						float val = m[i].getValue(Meters.Type.T3);
 						if(fahrenheit) val = val*1.8f + 32f;
-						ts[j++].addOrUpdate(timestamp, val);
-						outStream(d, 0, /*ChartType.T3*/"T3", timestamp, val);
+						ts[j].addOrUpdate(timestamp, val);
+						outStream(d, j++, "T", timestamp, val);
 					}
 					if(m[i].hasType(Meters.Type.T4)) {
 						float val = m[i].getValue(Meters.Type.T4);
 						if(fahrenheit) val = val*1.8f + 32f;
-						ts[j/*++*/].addOrUpdate(timestamp, val);
-						outStream(d, 0, /*ChartType.T4*/"T4", timestamp, val);
+						ts[j].addOrUpdate(timestamp, val);
+						outStream(d, j++, "T", timestamp, val);
 					}
 				}
 			} else if(currentType == ChartType.P_SUM && (m = d.getMeters()) != null) {

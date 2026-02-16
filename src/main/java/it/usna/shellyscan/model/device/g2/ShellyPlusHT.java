@@ -12,6 +12,7 @@ import tools.jackson.databind.node.ObjectNode;
 
 public class ShellyPlusHT extends AbstractBatteryG2Device {
 	public static final String ID = "PlusHT";
+	public static final String MODEL = "SNSN-0013A";
 	private static final Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.T, Meters.Type.H, Meters.Type.BAT};
 	private float temp;
 	private float humidity;

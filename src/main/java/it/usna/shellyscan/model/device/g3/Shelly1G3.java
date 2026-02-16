@@ -14,9 +14,9 @@ import it.usna.shellyscan.model.device.InternalTmpHolder;
 import it.usna.shellyscan.model.device.ModulesHolder;
 import it.usna.shellyscan.model.device.RestoreMsg;
 import it.usna.shellyscan.model.device.g2.modules.Input;
+import it.usna.shellyscan.model.device.g2.modules.LoRaAddOn;
 import it.usna.shellyscan.model.device.g2.modules.Relay;
 import it.usna.shellyscan.model.device.g2.modules.SensorAddOn;
-import it.usna.shellyscan.model.device.g3.modules.LoRaAddOn;
 import it.usna.shellyscan.model.device.meters.Meters;
 import tools.jackson.databind.JsonNode;
 
@@ -72,6 +72,11 @@ public class Shelly1G3 extends AbstractG3Device implements ModulesHolder, Intern
 	@Override
 	public String getTypeID() {
 		return ID;
+	}
+	
+	@Override
+	public String getModelID() {
+		return MODEL;
 	}
 
 	@Override

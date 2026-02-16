@@ -114,7 +114,9 @@ public abstract class ShellyAbstractDevice {
 			String errorMsg;
 			try {
 				errorMsg = jsonMapper.readTree(response.getContent()).toString();
-			} catch(Exception e) {
+			} catch(JacksonException e) {
+				errorMsg = response.getContentAsString();
+			} catch(RuntimeException e) {
 				errorMsg = null;
 			}
 			throw new DeviceAPIException(HttpStatus.INTERNAL_SERVER_ERROR_500, errorMsg);

@@ -19,6 +19,7 @@ import tools.jackson.databind.JsonNode;
  */
 public class ShellyMini1 extends AbstractG2Device implements ModulesHolder, InternalTmpHolder {
 	public static final String ID = "Plus1Mini";
+	public static final String MODEL = "SNSW-001X8EU";
 	private Relay relay = new Relay(this, 0);
 	private Relay[] relays = new Relay[] {relay};
 	private float internalTmp;

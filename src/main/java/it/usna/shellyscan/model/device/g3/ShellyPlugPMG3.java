@@ -18,6 +18,7 @@ import tools.jackson.databind.node.ObjectNode;
  */
 public class ShellyPlugPMG3 extends AbstractG3Device /*implements InternalTmpHolder*/ {
 	public static final String ID = "PlugPMG3";
+	public static final String MODEL = "S3PL-30116EU";
 //	private float internalTmp;
 	private MetersWVI meters = new MetersWVI();
 	private Meters[] metersArray = new Meters[] {meters};
@@ -34,6 +35,11 @@ public class ShellyPlugPMG3 extends AbstractG3Device /*implements InternalTmpHol
 	@Override
 	public String getTypeID() {
 		return ID;
+	}
+	
+	@Override
+	public String getModelID() {
+		return MODEL;
 	}
 	
 //	@Override

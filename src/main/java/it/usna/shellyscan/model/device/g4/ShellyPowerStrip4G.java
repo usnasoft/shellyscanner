@@ -22,7 +22,7 @@ import tools.jackson.databind.node.ObjectNode;
  */
 public class ShellyPowerStrip4G extends AbstractG4Device implements ModulesHolder/*, InternalTmpHolder*/ {
 	public static final String ID = "PowerStrip";
-	public static final String ID_ZB = "PowerStripZB";
+//	public static final String ID_ZB = "PowerStripZB";
 	public static final String MODEL = "S4PL-00416EU";
 //	private float internalTmp;
 	private MetersWVIpf meters0 = new MetersWVIpf();
@@ -48,6 +48,11 @@ public class ShellyPowerStrip4G extends AbstractG4Device implements ModulesHolde
 	@Override
 	public String getTypeID() {
 		return ID;
+	}
+	
+	@Override
+	public String getModelID() {
+		return MODEL;
 	}
 
 	@Override

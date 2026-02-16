@@ -17,7 +17,7 @@ public class ShellyMotion extends AbstractG1Device implements ModulesHolder {
 	private boolean motion;
 	private int bat;
 	private final Meters[] meters;
-	private final MotionInterface[] sensors;
+	private final MotionInterface[] sensor;
 
 	public ShellyMotion(InetAddress address, int port, String hostname) {
 		super(address, port, hostname);
@@ -40,7 +40,7 @@ public class ShellyMotion extends AbstractG1Device implements ModulesHolder {
 				}
 		};
 		
-		sensors = new MotionInterface[] {
+		sensor = new MotionInterface[] {
 				new MotionInterface() {
 					@Override
 					public boolean motion() {
@@ -72,7 +72,7 @@ public class ShellyMotion extends AbstractG1Device implements ModulesHolder {
 
 	@Override
 	public DeviceModule[] getModules() {
-		return sensors;
+		return sensor;
 	}
 	
 	@Override

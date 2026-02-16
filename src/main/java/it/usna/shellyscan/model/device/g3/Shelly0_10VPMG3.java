@@ -16,8 +16,8 @@ import it.usna.shellyscan.model.device.RestoreMsg;
 import it.usna.shellyscan.model.device.g2.meters.MetersWVI;
 import it.usna.shellyscan.model.device.g2.modules.Input;
 import it.usna.shellyscan.model.device.g2.modules.LightWhite;
+import it.usna.shellyscan.model.device.g2.modules.LoRaAddOn;
 import it.usna.shellyscan.model.device.g2.modules.SensorAddOn;
-import it.usna.shellyscan.model.device.g3.modules.LoRaAddOn;
 import it.usna.shellyscan.model.device.meters.Meters;
 import it.usna.shellyscan.model.device.modules.DeviceModule;
 import tools.jackson.databind.JsonNode;
@@ -75,6 +75,11 @@ public class Shelly0_10VPMG3 extends AbstractG3Device implements InternalTmpHold
 	@Override
 	public String getTypeID() {
 		return ID;
+	}
+	
+	@Override
+	public String getModelID() {
+		return MODEL;
 	}
 	
 	@Override

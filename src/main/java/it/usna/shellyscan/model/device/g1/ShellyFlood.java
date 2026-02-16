@@ -4,15 +4,19 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.util.List;
 
+import it.usna.shellyscan.model.device.ModulesHolder;
 import it.usna.shellyscan.model.device.meters.Meters;
+import it.usna.shellyscan.model.device.modules.DeviceModule;
+import it.usna.shellyscan.model.device.modules.FloodInterface;
 import tools.jackson.databind.JsonNode;
 
-public class ShellyFlood extends AbstractBatteryG1Device {
+public class ShellyFlood extends AbstractBatteryG1Device implements ModulesHolder {
 	public static final String ID = "SHWT-1";
 	private static final Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.BAT, Meters.Type.T};
 	private boolean flood;
 	private float temp;
 	private Meters[] meters;
+	private final FloodInterface[] sensor;
 	
 	public ShellyFlood(InetAddress address, int port, String hostname) {
 		super(address, port, hostname);
@@ -31,6 +35,20 @@ public class ShellyFlood extends AbstractBatteryG1Device {
 						} else {
 							return temp;
 						}
+					}
+				}
+		};
+		
+		sensor = new FloodInterface[] {
+				new FloodInterface() {
+					@Override
+					public boolean flood() {
+						return flood && status == Status.ON_LINE;
+					}
+
+					@Override
+					public String toString() {
+						return "flood: " + flood; 
 					}
 				}
 		};
@@ -61,9 +79,9 @@ public class ShellyFlood extends AbstractBatteryG1Device {
 		bat = status.get("bat").get("value").asInt();
 	}
 	
-	public boolean flood() {
-		return flood;
-	}
+//	public boolean flood() {
+//		return flood;
+//	}
 	
 	public float getTemp() {
 		return temp;
@@ -72,6 +90,11 @@ public class ShellyFlood extends AbstractBatteryG1Device {
 	@Override
 	public Meters[] getMeters() {
 		return meters;
+	}
+	
+	@Override
+	public DeviceModule[] getModules() {
+		return sensor;
 	}
 
 	@Override

@@ -51,7 +51,6 @@ public class ScannerProperties extends AppProperties { // cannot also extend Usn
 	
 	public static final String PROP_USE_ARCHIVE = "USE_ARCHIVE";
 	public static final String PROP_ARCHIVE_FILE = "USE_ARCHIVE_FILENAME";
-	public static final String PROP_ARCHIVE_FILE_DEFAULT = Path.of(System.getProperty("user.home"), "ShellyStore.arc").toString();
 	public static final String PROP_AUTORELOAD_ARCHIVE = "AUTORELOAD";
 	
 	public static final String BASE_SCAN_IP = "BASE_SCAN";
@@ -70,6 +69,7 @@ public class ScannerProperties extends AppProperties { // cannot also extend Usn
 	public static final String IDE_AUTOCLOSE_SQUARE = "CL_SQUSARE";
 	public static final String IDE_AUTOCLOSE_STRING = "CL_STRING";
 	public static final String PROP_IDE_DARK = "IDE_DARK";
+	public static final String PROP_SCRIPT_PATH = "SCRIPT_PATH";
 	
 	public static final String VERSION_IGNORE = "IGNORE_VERION_DOWNLOAD";
 	
@@ -85,6 +85,7 @@ public class ScannerProperties extends AppProperties { // cannot also extend Usn
 		} catch (IOException e) {
 			Msg.errorMsg(null, e);
 		}
+		String userPath = System.getProperty("user.home");
 		defaultBoolProperty(PROP_TOOLBAR_CAPTIONS, true);
 		defaultProperty(PROP_CSV_SEPARATOR, PROP_CSV_SEPARATOR_DEFAULT);
 		defaultProperty(PROP_SCAN_MODE, PROP_SCAN_MODE_DEFAULT);
@@ -95,8 +96,10 @@ public class ScannerProperties extends AppProperties { // cannot also extend Usn
 		defaultProperty(PROP_DETAILED_VIEW_SCREEN, PROP_DETAILED_VIEW_SCREEN_FULL);
 		defaultIntProperty(PROP_REFRESH_ITERVAL, PROP_REFRESH_ITERVAL_DEFAULT);
 		defaultIntProperty(PROP_REFRESH_CONF, PROP_REFRESH_CONF_DEFAULT);
+		defaultProperty(PROP_ARCHIVE_FILE, Path.of(userPath, "ShellyStore.arc").toString());
 		defaultBoolProperty(PROP_USE_ARCHIVE, true);
-		defaultBoolProperty(PROP_AUTORELOAD_ARCHIVE, false);
+		defaultBoolProperty(PROP_AUTORELOAD_ARCHIVE, true);
+		defaultProperty(PROP_SCRIPT_PATH, userPath);
 	}
 	
 	public static ScannerProperties init(Path file) {

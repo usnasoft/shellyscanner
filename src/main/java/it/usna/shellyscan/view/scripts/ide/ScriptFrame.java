@@ -71,7 +71,6 @@ import it.usna.shellyscan.view.util.Msg;
 import it.usna.shellyscan.view.util.ScannerProperties;
 import it.usna.swing.dialog.FindReplaceDialog;
 import it.usna.swing.texteditor.TextLineNumber;
-import it.usna.util.IOFile;
 import tools.jackson.databind.JsonNode;
 
 /**
@@ -101,7 +100,7 @@ public class ScriptFrame extends JFrame {
 	private Action gotoAction;
 
 	private Path path = null;
-	private boolean canOverwriteFile = false;
+	private boolean savedFile = false;
 	
 	private EditorPanel editor;
 	private JLabel caretLabel;
@@ -122,6 +121,7 @@ public class ScriptFrame extends JFrame {
 		
 		this.scriptId = script.getId();
 		logWasActive = (device.getDebugMode() == LogMode.SOCKET);
+		path =  Path.of(ScannerProperties.instance().getProperty(ScannerProperties.PROP_SCRIPT_PATH), script.getName());
 		
 		this.device = device;
 		JSplitPane splitPane = new JSplitPane();
@@ -145,30 +145,30 @@ public class ScriptFrame extends JFrame {
 		runningStatus(script.isRunning());
 	}
 	
-	private ScriptFrame() throws IOException { // test & design contructor
-		super("test");
-		this.device = null;
-		this.scriptId = 0;
-		setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-	
-		JSplitPane splitPane = new JSplitPane();
-		splitPane.setOneTouchExpandable(true);
-		splitPane.setOrientation(JSplitPane.VERTICAL_SPLIT);
-
-		add(splitPane, BorderLayout.CENTER);
-		
-		splitPane.setTopComponent(editorPanel(null));
-		splitPane.setBottomComponent(logPanel());
-		
-		add(getToolBar(), BorderLayout.NORTH);
-
-		setSize(800, 600);
-		setVisible(true);
-		splitPane.setDividerLocation(0.75d);
-		splitPane.setResizeWeight(0.6d);
-		editor.requestFocus();
-		setLocationRelativeTo(null);
-	}
+//	private ScriptFrame() throws IOException { // test & design contructor
+//		super("test");
+//		this.device = null;
+//		this.scriptId = 0;
+//		setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+//	
+//		JSplitPane splitPane = new JSplitPane();
+//		splitPane.setOneTouchExpandable(true);
+//		splitPane.setOrientation(JSplitPane.VERTICAL_SPLIT);
+//
+//		add(splitPane, BorderLayout.CENTER);
+//		
+//		splitPane.setTopComponent(editorPanel(null));
+//		splitPane.setBottomComponent(logPanel());
+//		
+//		add(getToolBar(), BorderLayout.NORTH);
+//
+//		setSize(800, 600);
+//		setVisible(true);
+//		splitPane.setDividerLocation(0.75d);
+//		splitPane.setResizeWeight(0.6d);
+//		editor.requestFocus();
+//		setLocationRelativeTo(null);
+//	}
 	
 	@Override
 	public void dispose() {
@@ -324,7 +324,7 @@ public class ScriptFrame extends JFrame {
 		});
 		
 		openAction = new UsnaAction(ScriptFrame.this, "dlgOpen", "/images/Open24.png", e -> {
-			final JFileChooser fc = (path == null) ? new JFileChooser() : new JFileChooser(path.getParent().toFile());
+			final JFileChooser fc = new JFileChooser(path.getParent().toString());
 			fc.setFileFilter(new FileNameExtensionFilter(LABELS.getString("filetype_js_desc"), DialogDeviceScripts.FILE_EXTENSION));
 			fc.addChoosableFileFilter(new FileNameExtensionFilter(LABELS.getString("filetype_sbk_desc"), Main.BACKUP_FILE_EXT));
 			if(fc.showOpenDialog(ScriptFrame.this) == JFileChooser.APPROVE_OPTION) {
@@ -342,24 +342,31 @@ public class ScriptFrame extends JFrame {
 		});
 		
 		saveAsAction = new UsnaAction(ScriptFrame.this, "dlgSaveAs", "/images/SaveAs24.png", e -> {
-			final JFileChooser fc = (path == null) ? new JFileChooser() : new JFileChooser(path.getParent().toFile());
+			final JFileChooser fc = new JFileChooser(path.getParent().toString());
 			fc.setFileFilter(new FileNameExtensionFilter(LABELS.getString("filetype_js_desc"), DialogDeviceScripts.FILE_EXTENSION));
+			String fileName = path.getFileName().toString();
+			if(savedFile == false && fileName.endsWith("." + DialogDeviceScripts.FILE_EXTENSION) == false) {
+				fileName += "." + DialogDeviceScripts.FILE_EXTENSION;
+			}
+			fc.setSelectedFile(new java.io.File(fileName));
 			if(fc.showSaveDialog(ScriptFrame.this) == JFileChooser.APPROVE_OPTION) {
-				try {
-					Path toSave = IOFile.addExtension(fc.getSelectedFile().toPath(), DialogDeviceScripts.FILE_EXTENSION);
-					Files.writeString(toSave, editor.getText());
-					JOptionPane.showMessageDialog(ScriptFrame.this, LABELS.getString("msgFileSaved"), LABELS.getString("dlgScriptEditorTitle"), JOptionPane.INFORMATION_MESSAGE);
-					setTitle(script.getName() + " - " + toSave.getFileName());
-					canOverwriteFile = true;
-				} catch (IOException e1) {
-					Msg.errorMsg(this, e1);
+				Path selected = fc.getSelectedFile().toPath();
+				if(Files.notExists(selected) || JOptionPane.showConfirmDialog(this, String.format(LABELS.getString("confirmOverwriteFile"), fileName), LABELS.getString("dlgSave"), JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+					try {
+						Files.writeString(selected, editor.getText());
+						JOptionPane.showMessageDialog(ScriptFrame.this, LABELS.getString("msgFileSaved"), LABELS.getString("dlgScriptEditorTitle"), JOptionPane.INFORMATION_MESSAGE);
+						setTitle(script.getName() + " - " + selected.getFileName());
+						savedFile = true;
+					} catch (IOException e1) {
+						Msg.errorMsg(this, e1);
+					}
 				}
 				path = fc.getSelectedFile().toPath();
 			}
 		});
 		
 		saveAction = new UsnaAction(ScriptFrame.this, "dlgSave", "/images/Save24.png", e -> {
-			if(canOverwriteFile) {
+			if(savedFile) {
 				try {
 					Files.writeString(path, editor.getText());
 					JOptionPane.showMessageDialog(ScriptFrame.this, LABELS.getString("msgFileSaved"), LABELS.getString("dlgScriptEditorTitle"), JOptionPane.INFORMATION_MESSAGE);
@@ -585,21 +592,21 @@ public class ScriptFrame extends JFrame {
 				if(scriptList.length > 0) {
 					Object sName = JOptionPane.showInputDialog(this, LABELS.getString("scrSelectionMsg"), LABELS.getString("scrSelectionTitle"), JOptionPane.PLAIN_MESSAGE, null, scriptList, null);
 					if(sName != null) {
-						canOverwriteFile = false;
+						savedFile = false;
 						return Files.readString(fs.getPath(sName + ".mjs")).replaceAll("\\r+\\n", "\n");
 					}
 				} else {
 					JOptionPane.showMessageDialog(this, LABELS.getString("scrNoneInZipFile"), LABELS.getString("btnUpload"), JOptionPane.INFORMATION_MESSAGE);
 				}
 			} catch (ProviderNotFoundException e) { // no zip (backup) -> text file
-				canOverwriteFile = true;
+				savedFile = true;
 				return Files.readString(in).replaceAll("\\r+\\n", "\n");
 			}
 		} catch (FileNotFoundException | NoSuchFileException e) {
-			canOverwriteFile = false;
+			savedFile = false;
 			Msg.errorMsg(this, String.format(LABELS.getString("msgFileNotFound"), in.getFileName().toString()));
 		} catch (/*IO*/Exception e) {
-			canOverwriteFile = false;
+			savedFile = false;
 			Msg.errorMsg(this, e);
 		} finally {
 			setCursor(Cursor.getDefaultCursor());
@@ -607,8 +614,8 @@ public class ScriptFrame extends JFrame {
 		return null;
 	}
 	
-	public static void main(String ...strings) throws IOException {
-		ScannerProperties.init(Path.of(System.getProperty("user.home"), ".shellyScanner")).load(true);
-		new ScriptFrame();
-	}
+//	public static void main(String ...strings) throws IOException {
+//		ScannerProperties.init(Path.of(System.getProperty("user.home"), ".shellyScanner")).load(true);
+//		new ScriptFrame();
+//	}
 }

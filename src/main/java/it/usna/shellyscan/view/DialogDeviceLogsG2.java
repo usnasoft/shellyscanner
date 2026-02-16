@@ -6,19 +6,19 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
+import java.awt.FlowLayout;
 import java.awt.Toolkit;
 import java.awt.Window;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
-import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.time.Duration;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
-import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.Box;
 import javax.swing.JButton;
@@ -29,11 +29,9 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.KeyStroke;
-import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
-import javax.swing.text.StyledDocument;
 
 import org.eclipse.jetty.websocket.api.Callback;
 import org.eclipse.jetty.websocket.api.Session;
@@ -67,54 +65,46 @@ public class DialogDeviceLogsG2 extends JDialog {
 	 * @param owner Window
 	 * @param devicesModel
 	 * @param modelIndex the device model index (in case of BTHome device the it'sindex of the hosting device)
-	 * @param initLlogLevel initial log level
+	 * @param initLogLevel initial log level
 	 */
-	public DialogDeviceLogsG2(final Window owner, Devices devicesModel, int modelIndex, int initLlogLevel) {
+	public DialogDeviceLogsG2(final Window owner, Devices devicesModel, int modelIndex, int initLogLevel) {
 		super(owner, ModalityType.MODELESS);
 		AbstractG2Device device = (AbstractG2Device) devicesModel.get(modelIndex);
 		setTitle(UtilMiscellaneous.getExtendedHostName(device));
 		setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
-
-		logWasActive = device.getDebugMode() == LogMode.SOCKET;
-		if(logWasActive == false) {
-			device.setDebugMode(LogMode.SOCKET, true);
-		}
-
-		JPanel buttonsPanel = new JPanel();
-		getContentPane().add(buttonsPanel, BorderLayout.SOUTH);
 		
-		StyledDocument document = textArea.getStyledDocument();
+		logWasActive = device.getDebugMode() == LogMode.SOCKET;
+
+		JPanel buttonsPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 5, 3));
+		getContentPane().add(buttonsPanel, BorderLayout.SOUTH);
+
 		StyleConstants.setForeground(bluStyle, Color.BLUE);
 		textArea.setEditable(false);
 
-		final Action findAction = new AbstractAction(LABELS.getString("btnFind")) {
-			private static final long serialVersionUID = 1L;
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				FindReplaceDialog f = new FindReplaceDialog(DialogDeviceLogsG2.this, textArea, false);
-				f.setLocationRelativeTo(DialogDeviceLogsG2.this);
-				f.setVisible(true);
-			}
-		};
+		final Action findAction = new UsnaAction(null, "btnFind", e -> {
+			FindReplaceDialog f = new FindReplaceDialog(DialogDeviceLogsG2.this, textArea, false);
+			f.setLocationRelativeTo(DialogDeviceLogsG2.this);
+			f.setVisible(true);
+		});
+		
 		JButton jButtonFind = new JButton(findAction);
 		jButtonFind.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_F, MainView.SHORTCUT_KEY), "find_act");
 		jButtonFind.getActionMap().put("find_act", findAction);
 
-		JButton jButtonCopyAll = new JButton(LABELS.getString("btnCopyAll"));
-		jButtonCopyAll.addActionListener(event -> {
+		JButton jButtonCopyAll = new JButton(new UsnaAction(null, "btnCopyAll", e -> {
 			final String cp = textArea.getText();
 			if (cp != null && cp.length() > 0) {
 				final Clipboard cb = Toolkit.getDefaultToolkit().getSystemClipboard();
 				StringSelection selection = new StringSelection(cp);
 				cb.setContents(selection, selection);
 			}
-		});
-
-		JButton jButtonClose = new JButton(LABELS.getString("dlgClose"));
-		jButtonClose.addActionListener(event -> dispose());
+		}));
+		JButton jButtonClean = new JButton(new UsnaAction(null, "lblClean", e -> textArea.clean()));
+		JButton jButtonClose = new JButton(new UsnaAction(null, "dlgClose", e -> dispose()));
 
 		buttonsPanel.add(jButtonFind);
 		buttonsPanel.add(jButtonCopyAll);
+		buttonsPanel.add(jButtonClean);
 		buttonsPanel.add(jButtonClose);
 
 		Component horizontalStrut = Box.createHorizontalStrut(25);
@@ -135,9 +125,7 @@ public class DialogDeviceLogsG2 extends JDialog {
 					devicesModel.pauseRefresh(i);
 				}
 			}
-			try {
-				document.insertString(document.getLength(), ">>>> " + LABELS.getString("dlgLogG2PauseRefreshMsg") + "\n", bluStyle);
-			} catch (BadLocationException e1) {}
+			textArea.append(">>>> " + LABELS.getString("dlgLogG2PauseRefreshMsg") + "\n", bluStyle);
 		});
 
 		JLabel lblNewLabel = new JLabel(LABELS.getString("dlgLogG2Level"));
@@ -148,10 +136,16 @@ public class DialogDeviceLogsG2 extends JDialog {
 		comboBox.addItem(LABELS.getString("dlgLogG2Lev2")); // info
 		comboBox.addItem(LABELS.getString("dlgLogG2Lev3")); // debug
 		comboBox.addItem(LABELS.getString("dlgLogG2Lev4")); // verbose
-		comboBox.setSelectedIndex(initLlogLevel);
+		comboBox.setSelectedIndex(initLogLevel);
 		buttonsPanel.add(comboBox);
 		
 		try {
+			if(logWasActive == false) {
+				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+				device.setDebugMode(LogMode.SOCKET, true);
+			}
+
+			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			WebSocketDeviceListener wsListener = new LogWebSocketDeviceListener();
 			wsSession = device.connectWebSocketLogs(wsListener);
 			wsSession.get().setIdleTimeout(Duration.ofMinutes(30));
@@ -172,8 +166,7 @@ public class DialogDeviceLogsG2 extends JDialog {
 					setCursor(Cursor.getDefaultCursor());
 				}
 			});
-			
-			btnActivateLog.doClick();
+//			btnActivateLog.doClick();
 
 			btnStopLog.addActionListener(event -> {
 				try {
@@ -231,7 +224,11 @@ public class DialogDeviceLogsG2 extends JDialog {
 			setLocationRelativeTo(owner);
 			setVisible(true);
 		} catch (Exception e) {
+			if(logWasActive == false) {
+				device.setDebugMode(LogMode.SOCKET, false);
+			}
 			Msg.errorMsg(owner, e); // Msg.errorMsg(...) do log
+
 		}
 	}
 

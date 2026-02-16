@@ -15,9 +15,9 @@ import it.usna.shellyscan.model.device.ModulesHolder;
 import it.usna.shellyscan.model.device.RestoreMsg;
 import it.usna.shellyscan.model.device.g2.meters.MetersWVI;
 import it.usna.shellyscan.model.device.g2.modules.Input;
+import it.usna.shellyscan.model.device.g2.modules.LoRaAddOn;
 import it.usna.shellyscan.model.device.g2.modules.Relay;
 import it.usna.shellyscan.model.device.g2.modules.SensorAddOn;
-import it.usna.shellyscan.model.device.g3.modules.LoRaAddOn;
 import it.usna.shellyscan.model.device.meters.Meters;
 import tools.jackson.databind.JsonNode;
 
@@ -54,7 +54,7 @@ public class Shelly1PMG3 extends AbstractG3Device implements ModulesHolder, Inte
 	
 	private JsonNode configure() throws IOException {	
 		final JsonNode config = getJSON("/rpc/Shelly.GetConfig");
-		final String addOn = config.get("sys").get("device").path("addon_type").asString();
+		final String addOn = config.get("sys").get("device").path("addon_type").asString(null);
 		if(SensorAddOn.ADDON_TYPE.equals(addOn)) {
 			sensorAddOn = new SensorAddOn(this);
 			meters = (sensorAddOn.getTypes().length > 0) ? new Meters[] {baseMeasures, sensorAddOn} : new Meters[] {baseMeasures};
@@ -74,6 +74,11 @@ public class Shelly1PMG3 extends AbstractG3Device implements ModulesHolder, Inte
 	@Override
 	public String getTypeID() {
 		return ID;
+	}
+	
+	@Override
+	public String getModelID() {
+		return MODEL;
 	}
 
 	@Override

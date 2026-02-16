@@ -51,12 +51,13 @@ public class Relay implements RelayInterface {
 	public String getName() {
 		return name;
 	}
+	
+	public int getIndex() {
+		return index;
+	}
 
 	@Override
 	public boolean toggle() throws IOException {
-//		final JsonNode relay = parent.getJSON("/relay/" + index + "?turn=toggle");
-//		isOn = relay.get("ison").asBoolean();
-//		source = relay.get("source").asString("-");
 		final JsonNode relay = parent.getJSON("/rpc/Switch.Toggle?id=" + index);
 		isOn = relay.get("was_on").asBoolean() == false;
 		source = Devices.SCANNER_AGENT;
@@ -65,9 +66,6 @@ public class Relay implements RelayInterface {
 	
 	@Override
 	public void change(boolean on) throws IOException {
-//		final JsonNode relay = parent.getJSON("/relay/" + index + "?turn=" + (on ? "on" : "off"));
-//		isOn = relay.get("ison").asBoolean();
-//		source = relay.get("source").asString("-");
 		parent.getJSON("/rpc/Switch.Set?id=" + index + "&on=" + on);
 		isOn = on;
 		source = Devices.SCANNER_AGENT;

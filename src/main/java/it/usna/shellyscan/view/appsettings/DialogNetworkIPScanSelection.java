@@ -55,7 +55,7 @@ public class DialogNetworkIPScanSelection extends JDialog {
 		panel.setLayout(gbl_panel);
 
 		JLabel lblNewLabel_1 = new JLabel(LABELS.getString("dlgAppSetIPBase"));
-		lblNewLabel_1.setFont(new Font("Tahoma", Font.BOLD, 11));
+		lblNewLabel_1.setFont(lblNewLabel_1.getFont().deriveFont(Font.BOLD));
 		GridBagConstraints gbc_lblNewLabel_1 = new GridBagConstraints();
 		gbc_lblNewLabel_1.insets = new Insets(5, 10, 10, 5);
 		gbc_lblNewLabel_1.anchor = GridBagConstraints.WEST;
@@ -64,7 +64,7 @@ public class DialogNetworkIPScanSelection extends JDialog {
 		panel.add(lblNewLabel_1, gbc_lblNewLabel_1);
 
 		JLabel lblNewLabel_2 = new JLabel(LABELS.getString("dlgAppSetIPFirst"));
-		lblNewLabel_2.setFont(new Font("Tahoma", Font.BOLD, 11));
+		lblNewLabel_2.setFont(lblNewLabel_2.getFont().deriveFont(Font.BOLD));
 		GridBagConstraints gbc_lblNewLabel_2 = new GridBagConstraints();
 		gbc_lblNewLabel_2.anchor = GridBagConstraints.WEST;
 		gbc_lblNewLabel_2.insets = new Insets(5, 2, 10, 5);
@@ -73,7 +73,7 @@ public class DialogNetworkIPScanSelection extends JDialog {
 		panel.add(lblNewLabel_2, gbc_lblNewLabel_2);
 
 		JLabel lblNewLabel_3 = new JLabel(LABELS.getString("dlgAppSetIPLast"));
-		lblNewLabel_3.setFont(new Font("Tahoma", Font.BOLD, 11));
+		lblNewLabel_3.setFont(lblNewLabel_3.getFont().deriveFont(Font.BOLD));
 		GridBagConstraints gbc_lblNewLabel_3 = new GridBagConstraints();
 		gbc_lblNewLabel_3.insets = new Insets(5, 2, 10, 0);
 		gbc_lblNewLabel_3.anchor = GridBagConstraints.WEST;

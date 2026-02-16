@@ -19,7 +19,8 @@ import tools.jackson.databind.JsonNode;
  */
 public class ShellyPro1 extends AbstractProDevice implements ModulesHolder, InternalTmpHolder {
 	public static final String ID = "Pro1";
-	public static final String MODEL = "SPSW-201XE15UL";
+	public static final String MODEL_1 = "SPSW-201XE15UL";
+	public static final String MODEL_2 = "SPSW-201XE16EU";
 	private Relay relay = new Relay(this, 0);
 	private String inputKey;
 	private float internalTmp;

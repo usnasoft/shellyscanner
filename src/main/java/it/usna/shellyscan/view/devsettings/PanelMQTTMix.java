@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -37,6 +38,7 @@ import it.usna.shellyscan.model.device.blu.AbstractBluDevice;
 import it.usna.shellyscan.model.device.modules.MQTTManager;
 import it.usna.shellyscan.view.DialogDeviceSelection;
 import it.usna.shellyscan.view.util.Msg;
+import it.usna.shellyscan.view.util.ScannerProperties;
 import it.usna.shellyscan.view.util.UtilMiscellaneous;
 import it.usna.util.UsnaEventListener;
 
@@ -352,6 +354,7 @@ public class PanelMQTTMix extends AbstractSettingsPanel implements UsnaEventList
 		} else {
 			server = user = pwd = prefix = null;
 		}
+		int slow = ScannerProperties.instance().getIntProperty("MQTT_SLOW", 0);
 		String res = "<html>";
 		for(int i = 0; i < parentDlg.getLocalSize(); i++) {
 			ShellyAbstractDevice device = parentDlg.getLocalDevice(i);
@@ -369,6 +372,7 @@ public class PanelMQTTMix extends AbstractSettingsPanel implements UsnaEventList
 					} else {
 						res += String.format(LABELS.getString("dlgSetMultiMsgOk"), device.getHostname()) + "<br>";
 					}
+					try { TimeUnit.MILLISECONDS.sleep(slow * 100L); } catch (InterruptedException e1) {}
 				} else if(device.getStatus() == Status.OFF_LINE || device instanceof GhostDevice) { // defer
 					res += String.format(LABELS.getString("dlgSetMultiMsgQueue"), device.getHostname()) + "<br>";
 					DeferrablesContainer dc = DeferrablesContainer.getInstance();

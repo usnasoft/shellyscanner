@@ -471,7 +471,7 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 
 	private ScheduledFuture<?> scheduleRefresh(ShellyAbstractDevice d, int idx, final int interval, final int statusTics) {
 		final Runnable refreshRunner = new Runnable() {
-			private final Integer megIdx = Integer.valueOf(idx);
+			private final Integer msgIdx = Integer.valueOf(idx);
 			private int ticCount = 0;
 
 			@Override
@@ -489,7 +489,7 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 				} catch (IOException | InterruptedException e) {}
 				synchronized(devices) {
 					if(devices.size() > idx && d == devices.get(idx) && Thread.interrupted() == false) { // underlying model unchanged (on rescan)
-						fireEvent(EventType.UPDATE, megIdx);
+						fireEvent(EventType.UPDATE, msgIdx);
 					}
 				}
 			}

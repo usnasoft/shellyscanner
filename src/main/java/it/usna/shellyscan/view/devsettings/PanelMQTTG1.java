@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
@@ -31,9 +32,11 @@ import org.slf4j.LoggerFactory;
 
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.g1.modules.MQTTManagerG1;
+import it.usna.shellyscan.model.device.modules.MQTTManager;
 import it.usna.shellyscan.view.DialogDeviceSelection;
 import it.usna.shellyscan.view.util.IntegerTextFieldPanel;
 import it.usna.shellyscan.view.util.Msg;
+import it.usna.shellyscan.view.util.ScannerProperties;
 import it.usna.shellyscan.view.util.UtilMiscellaneous;
 import it.usna.util.UsnaEventListener;
 
@@ -563,6 +566,7 @@ public class PanelMQTTG1 extends AbstractSettingsPanel implements UsnaEventListe
 				throw new IllegalArgumentException(LABELS.getString("dlgSetMsgMqttUser"));
 			}
 		}
+		int slow = ScannerProperties.instance().getIntProperty("MQTT_SLOW", 0);
 		String res = "<html>";
 		for(int i = 0; i < parentDlg.getLocalSize(); i++) {
 			String msg;
@@ -596,6 +600,7 @@ public class PanelMQTTG1 extends AbstractSettingsPanel implements UsnaEventListe
 				} else {
 					res += String.format(LABELS.getString("dlgSetMultiMsgOk"), parentDlg.getLocalDevice(i).getHostname()) + "<br>";
 				}
+				try { TimeUnit.MILLISECONDS.sleep(slow * 100L); } catch (InterruptedException e1) {}
 			}
 		}
 		try {
@@ -603,24 +608,26 @@ public class PanelMQTTG1 extends AbstractSettingsPanel implements UsnaEventListe
 		} catch (InterruptedException e) {}
 		return res;
 	}
-	
+
 	@Override
 	public void update(ShellyAbstractDevice device, Future<?> future) {
 		if(future.isCancelled() == false) {
 			try {
-				MQTTManagerG1 m = (MQTTManagerG1)device.getMQTTManager();
+				MQTTManager m = device.getMQTTManager();
 				chckbxEnabled.setSelected(m.isEnabled());
 				textFieldServer.setText(m.getServer());
 				textFieldUser.setText(m.getUser());
-				textFieldMaxTimeout.setValue(m.getrTimeoutMax());
-				textFieldMinTimeout.setValue(m.getrTimeoutMin());
-				textFieldKeepAlive.setValue(m.getKeepAlive());
-				textFieldQOS.setValue(m.getQos());
-				textFieldUpdatePeriod.setValue(m.getUpdatePeriod());
-				rdbtnCleanSessionYes.setSelected(m.isCleanSession());
-				rdbtnCleanSessionNo.setSelected(m.isCleanSession() == false);
-				rdbtnRetainYes.setSelected(m.isRetain());
-				rdbtnRetainNo.setSelected(m.isRetain() == false);
+				if(m instanceof MQTTManagerG1 mg1) {
+					textFieldMaxTimeout.setValue(mg1.getrTimeoutMax());
+					textFieldMinTimeout.setValue(mg1.getrTimeoutMin());
+					textFieldKeepAlive.setValue(mg1.getKeepAlive());
+					textFieldQOS.setValue(mg1.getQos());
+					textFieldUpdatePeriod.setValue(mg1.getUpdatePeriod());
+					rdbtnCleanSessionYes.setSelected(mg1.isCleanSession());
+					rdbtnCleanSessionNo.setSelected(mg1.isCleanSession() == false);
+					rdbtnRetainYes.setSelected(mg1.isRetain());
+					rdbtnRetainNo.setSelected(mg1.isRetain() == false);
+				}
 			} catch (IOException e) {
 				LOG.error("copy", e);
 			} catch (UnsupportedOperationException e) {
@@ -628,4 +635,4 @@ public class PanelMQTTG1 extends AbstractSettingsPanel implements UsnaEventListe
 			}
 		}
 	}
-} //629
+}

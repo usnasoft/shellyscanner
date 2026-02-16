@@ -20,6 +20,7 @@ public enum ChartType {
 	//		T4("dlgChartsTemp4Label", "dlgChartsTempYLabel", Meters.Type.T4),
 	T_ALL("dlgChartsTempAllLabel", "dlgChartsTempYLabel", Meters.Type.T),
 	H("dlgChartsHumidityLabel", "dlgChartsHumidityYLabel", Meters.Type.H),
+	HD("dlgChartsHumidityLabel", "dlgChartsHumidityYLabel", Meters.Type.HD),
 	LUX("dlgChartsLuxLabel", "dlgChartsLuxYLabel", Meters.Type.L),
 	FREQ("dlgChartsFreqLabel", "dlgChartsFreqYLabel", Meters.Type.FREQ),
 	DIST("dlgChartsDistanceLabel", "dlgChartsDistanceYLabel", Meters.Type.DMM),

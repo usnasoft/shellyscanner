@@ -173,25 +173,7 @@ public class DevicesStore {
 		int ind = ghostsList.indexOf(d);
 		return ind >= 0 ? ghostsList.get(ind) : null;
 	}
-	
-//	private static String gen(ShellyAbstractDevice dev) {
-//		if(dev instanceof GhostDevice) {
-//			return ((GhostDevice) dev).getGeneration();
-//		} else if(dev instanceof AbstractG3Device) {
-//			return "3";
-//		} else if(dev instanceof AbstractG2Device) {
-//			return "2";
-//		} else if(dev instanceof AbstractG1Device) {
-//			return "1";
-//		} else if(dev instanceof BTHomeDevice) {
-//			return BTHomeDevice.GENERATION;
-//		} else if(dev instanceof AbstractBluDevice) {
-//			return AbstractBluDevice.GENERATION;
-//		} else{
-//			return "0";
-//		}
-//	}
-	
+
 	/**
 	 * get corresponding dev ghost or generate a new one; the idea is to align model index with ghostsList index for better performances
 	 * @param dev ShellyAbstractDevice

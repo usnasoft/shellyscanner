@@ -39,7 +39,6 @@ import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
 import it.usna.shellyscan.model.device.blu.AbstractBluDevice;
 import it.usna.shellyscan.model.device.blu.BluInetAddressAndPort;
 import it.usna.shellyscan.model.device.g1.ShellyDW;
-import it.usna.shellyscan.model.device.g1.ShellyFlood;
 import it.usna.shellyscan.model.device.g1.ShellyTRV;
 import it.usna.shellyscan.model.device.g1.modules.ThermostatG1;
 import it.usna.shellyscan.model.device.g2.ShellyPlusSmoke;
@@ -469,8 +468,6 @@ public class DevicesTable extends ExTooltipTable {
 					row[DevicesTable.COL_COMMAND_IDX] = command = mh.getModules();
 				} else if(d instanceof ShellyDW dw) {
 					row[DevicesTable.COL_COMMAND_IDX] = LABELS.getString("labelStatusOpen") + ": " + (dw.isOpen() ? YES : NO);
-				} else if(d instanceof ShellyFlood flood) {
-					row[DevicesTable.COL_COMMAND_IDX] = LABELS.getString("labelStatusFlood") + ": " + (flood.flood() ? YES : NO);
 				} else if(d instanceof ShellyPlusSmoke smoke) {
 					row[DevicesTable.COL_COMMAND_IDX] = String.format(LABELS.getString("labelStatusSmoke"), smoke.getAlarm() ? YES : NO);
 				} else if(d instanceof ShellyTRV trv) { // very specific

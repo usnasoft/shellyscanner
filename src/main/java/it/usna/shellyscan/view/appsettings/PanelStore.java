@@ -45,7 +45,7 @@ public class PanelStore extends JPanel {
 		setLayout(gridBagLayout);
 
 		JLabel lblNewLabel = new JLabel(LABELS.getString("dlgAppStoreUseLabel"));
-		lblNewLabel.setFont(new Font("Tahoma", Font.BOLD, 11));
+		lblNewLabel.setFont(lblNewLabel.getFont().deriveFont(Font.BOLD));
 		lblNewLabel.setHorizontalAlignment(SwingConstants.LEFT);
 		GridBagConstraints gbc_lblNewLabel = new GridBagConstraints();
 		gbc_lblNewLabel.fill = GridBagConstraints.VERTICAL;
@@ -65,23 +65,22 @@ public class PanelStore extends JPanel {
 		chckbxUseStore.setSelected(appProp.getBoolProperty(ScannerProperties.PROP_USE_ARCHIVE));
 		
 		JLabel lblStoreFile = new JLabel(LABELS.getString("dlgAppStoreFileLabel"));
-		lblStoreFile.setFont(new Font("Tahoma", Font.BOLD, 11));
+		lblStoreFile.setFont(lblStoreFile.getFont().deriveFont(Font.BOLD));
 		GridBagConstraints gbc_lblStoreFile = new GridBagConstraints();
 		gbc_lblStoreFile.fill = GridBagConstraints.VERTICAL;
 		gbc_lblStoreFile.anchor = GridBagConstraints.NORTHWEST;
-		gbc_lblStoreFile.insets = new Insets(0, 0, 10, 15);
+		gbc_lblStoreFile.insets = new Insets(4, 0, 10, 15);
 		gbc_lblStoreFile.gridx = 0;
 		gbc_lblStoreFile.gridy = 1;
 		add(lblStoreFile, gbc_lblStoreFile);
 		
-		textFieldStoreFileName = new JTextField(appProp.getProperty(ScannerProperties.PROP_ARCHIVE_FILE, ScannerProperties.PROP_ARCHIVE_FILE_DEFAULT));
+		textFieldStoreFileName = new JTextField(appProp.getProperty(ScannerProperties.PROP_ARCHIVE_FILE/*, ScannerProperties.PROP_ARCHIVE_FILE_DEFAULT*/));
 		GridBagConstraints gbc_textFieldStoreFileName = new GridBagConstraints();
 		gbc_textFieldStoreFileName.insets = new Insets(0, 0, 5, 5);
 		gbc_textFieldStoreFileName.fill = GridBagConstraints.HORIZONTAL;
 		gbc_textFieldStoreFileName.gridx = 1;
 		gbc_textFieldStoreFileName.gridy = 1;
 		add(textFieldStoreFileName, gbc_textFieldStoreFileName);
-		textFieldStoreFileName.setColumns(10);
 		
 		JButton btnFile = new JButton(LABELS.getString("dlgAppStoreFileButtonLabel"));
 		GridBagConstraints gbc_btnFile = new GridBagConstraints();
@@ -93,7 +92,7 @@ public class PanelStore extends JPanel {
 		btnFile.addActionListener(event -> {
 			final JFileChooser fc = new JFileChooser(Paths.get(textFieldStoreFileName.getText()).getParent().toFile());
 			fc.setFileFilter(new FileNameExtensionFilter(Main.ARCHIVE_FILE_EXT, Main.ARCHIVE_FILE_EXT));
-			if(fc.showSaveDialog(PanelStore.this) == JFileChooser.APPROVE_OPTION) {
+			if(fc.showDialog(PanelStore.this, LABELS.getString("dlgAppStoreFileButtonLabel")) == JFileChooser.APPROVE_OPTION) {
 				textFieldStoreFileName.setText(fc.getSelectedFile().getPath());
 			}
 		});
@@ -107,7 +106,7 @@ public class PanelStore extends JPanel {
 		add(btnNewButton, gbc_btnNewButton);
 		
 		JLabel lblNewLabel_1 = new JLabel(LABELS.getString("dlgAppStoreAutoReload"));
-		lblNewLabel_1.setFont(new Font("Tahoma", Font.BOLD, 11));
+		lblNewLabel_1.setFont(lblNewLabel_1.getFont().deriveFont(Font.BOLD));
 		GridBagConstraints gbc_lblNewLabel_1 = new GridBagConstraints();
 		gbc_lblNewLabel_1.weighty = 1.0;
 		gbc_lblNewLabel_1.anchor = GridBagConstraints.NORTHWEST;

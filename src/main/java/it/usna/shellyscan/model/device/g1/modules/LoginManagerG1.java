@@ -65,8 +65,8 @@ public class LoginManagerG1 implements LoginManager {
 	public String set(String user, char[] pwd) {
 		try {
 			String cmd = 
-					"/settings/login?enabled=true&username=" + URLEncoder.encode(user, StandardCharsets.UTF_8.toString()) +
-					"&password=" + URLEncoder.encode(new String(pwd), StandardCharsets.UTF_8.toString());
+					"/settings/login?enabled=true&username=" + URLEncoder.encode(user, StandardCharsets.UTF_8.name()) +
+					"&password=" + URLEncoder.encode(new String(pwd), StandardCharsets.UTF_8.name());
 			String msg = d.sendCommand(cmd);
 			if(msg == null) {
 //				d.setAuthentication(new BasicAuthentication(URI.create("http://" + d.getAddress().getHostAddress()), BasicAuthentication.ANY_REALM, user, new String(pwd)));

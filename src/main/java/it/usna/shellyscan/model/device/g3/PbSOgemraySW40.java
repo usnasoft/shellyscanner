@@ -21,6 +21,7 @@ import tools.jackson.databind.JsonNode;
  */
 public class PbSOgemraySW40 extends AbstractG3Device implements ModulesHolder, InternalTmpHolder {
 	public static final String ID = "Ogemray25";
+	public static final String MODEL = "S3PB-O3AR000001";
 	private Relay relay = new Relay(this, 0);
 	private float internalTmp;
 	private Relay[] relays = new Relay[] {relay};
@@ -39,6 +40,11 @@ public class PbSOgemraySW40 extends AbstractG3Device implements ModulesHolder, I
 	@Override
 	public String getTypeID() {
 		return ID;
+	}
+	
+	@Override
+	public String getModelID() {
+		return MODEL;
 	}
 
 	@Override

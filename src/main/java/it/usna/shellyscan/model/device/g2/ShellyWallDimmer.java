@@ -13,6 +13,7 @@ import tools.jackson.databind.JsonNode;
 
 public class ShellyWallDimmer extends AbstractG2Device implements ModulesHolder {
 	public static final String ID = "PlusWallDimmer";
+	public static final String MODEL = "SNDM-0013US";
 	private LightWhite light = new LightWhite(this, 1, 0);
 	private LightWhite[] lightArray = new LightWhite[] {light};
 

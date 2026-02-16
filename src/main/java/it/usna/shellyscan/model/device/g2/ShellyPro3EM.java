@@ -20,6 +20,7 @@ import tools.jackson.databind.node.ObjectNode;
 
 public class ShellyPro3EM extends AbstractProDevice implements InternalTmpHolder {
 	public static final String ID = "Pro3EM";
+	public static final String MODEL = "SPEM-003CEBEU";
 	private float internalTmp;
 //	private float power[] = new float[3], totPower;
 //	private float apparent[] = new float[3], totApparent;

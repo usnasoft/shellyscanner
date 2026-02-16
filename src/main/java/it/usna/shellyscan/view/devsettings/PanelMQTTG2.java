@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
@@ -29,11 +30,16 @@ import javax.swing.SwingConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import it.usna.shellyscan.controller.DeferrableTask;
+import it.usna.shellyscan.controller.DeferrablesContainer;
+import it.usna.shellyscan.model.device.GhostDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
+import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
 import it.usna.shellyscan.model.device.g2.modules.MQTTManagerG2;
 import it.usna.shellyscan.model.device.modules.MQTTManager;
 import it.usna.shellyscan.view.DialogDeviceSelection;
 import it.usna.shellyscan.view.util.Msg;
+import it.usna.shellyscan.view.util.ScannerProperties;
 import it.usna.shellyscan.view.util.UtilMiscellaneous;
 import it.usna.util.UsnaEventListener;
 
@@ -534,35 +540,44 @@ public class PanelMQTTG2 extends AbstractSettingsPanel implements UsnaEventListe
 		Boolean prc = rdbtnRPCOverYes.isSelected() ? Boolean.TRUE : rdbtnRPCOverNo.isSelected() ? Boolean.FALSE : null;
 		Boolean prcNtf = rdbtnRPCYes.isSelected() ? Boolean.TRUE : rdbtnRPCNo.isSelected() ? Boolean.FALSE : null;
 		Boolean genNtf = rdbtnGenericSUpdateYes.isSelected() ? Boolean.TRUE : rdbtnGenericSUpdateNo.isSelected() ? Boolean.FALSE : null;
-		final String server = textFieldServer.getText().trim();
-		String user = textFieldUser.getText().trim();
-		String pwd = new String(textFieldPwd.getPassword()).trim();
+		final String server;
+		final String user;
+		final String pwd;
+		final String prefix;
 		if(enabled) {
-			if(chckbxNoPWD.isSelected()) {
-				user = pwd = null;
-			}
 			// Validation
+			server = textFieldServer.getText().trim();
 			if(server.isEmpty()) {
 				throw new IllegalArgumentException(LABELS.getString("dlgSetMsgMqttServer"));
 			}
-			if(chckbxNoPWD.isSelected() == false && (user.isEmpty() || pwd.isEmpty())) {
-				throw new IllegalArgumentException(LABELS.getString("dlgSetMsgMqttUser"));
+			if(chckbxDefaultPrefix.isSelected()) {
+				prefix = null;
+			} else if(parentDlg.getLocalSize() > 1) {
+				prefix = "";
+			} else {
+				prefix = textFieldID.getText();
 			}
+			if(chckbxNoPWD.isSelected()) {
+				user = pwd = null;
+			} else {
+				user = textFieldUser.getText().trim();
+				pwd = new String(textFieldPwd.getPassword()).trim();
+				if(user.isEmpty() || pwd.isEmpty()) {
+					throw new IllegalArgumentException(LABELS.getString("dlgSetMsgMqttUser"));
+				}
+			}
+		} else {
+			server = user = pwd = prefix = null;
 		}
+
+		int slow = ScannerProperties.instance().getIntProperty("MQTT_SLOW", 0);
 		String res = "<html>";
 		for(int i = 0; i < parentDlg.getLocalSize(); i++) {
+			ShellyAbstractDevice device = parentDlg.getLocalDevice(i);
 			String msg;
 			MQTTManagerG2 mqttM = mqttModule.get(i);
 			if(mqttM != null) {
 				if(enabled) {
-					String prefix ;
-					if(chckbxDefaultPrefix.isSelected()) {
-						prefix = null;
-					} else if(parentDlg.getLocalSize() > 1) {
-						prefix = "";
-					} else {
-						prefix = textFieldID.getText();
-					}
 					msg = mqttM.set(control, prc, prcNtf, genNtf, server, user, pwd, prefix);
 				} else {
 					msg = mqttM.disable();
@@ -572,6 +587,20 @@ public class PanelMQTTG2 extends AbstractSettingsPanel implements UsnaEventListe
 				} else {
 					res += String.format(LABELS.getString("dlgSetMultiMsgOk"), parentDlg.getLocalDevice(i).getHostname()) + "<br>";
 				}
+				try { TimeUnit.MILLISECONDS.sleep(slow * 100L); } catch (InterruptedException e1) {}
+			} else if(device.getStatus() == Status.OFF_LINE || device instanceof GhostDevice) { // defer (hardly if instanceof GhostDevice use PanelMQTTMix)
+				res += String.format(LABELS.getString("dlgSetMultiMsgQueue"), device.getHostname()) + "<br>";
+				DeferrablesContainer dc = DeferrablesContainer.getInstance();
+				dc.addOrUpdate(parentDlg.getModelIndex(i), DeferrableTask.Type.MQTT, LABELS.getString(enabled ? "dlgSetMQTTTaskDescEnable" : "dlgSetMQTTTaskDescDisable"), (def, dev) -> {
+					final MQTTManagerG2 mqttManager = (MQTTManagerG2)dev.getMQTTManager();
+					if(enabled) {
+						return mqttManager.set(control, prc, prcNtf, genNtf, server, user, pwd, prefix);
+					} else {
+						return mqttManager.disable();
+					}
+				});
+			} else {
+				res += String.format(LABELS.getString("dlgSetMultiMsgExclude"), device.getHostname()) + "<br>";
 			}
 		}
 		try {
@@ -588,23 +617,23 @@ public class PanelMQTTG2 extends AbstractSettingsPanel implements UsnaEventListe
 				chckbxEnabled.setSelected(m.isEnabled());
 				textFieldServer.setText(m.getServer());
 				textFieldUser.setText(m.getUser());
-				if(m instanceof MQTTManagerG2) {
-					if(((MQTTManagerG2)m).isControlEnabled()) {
+				if(m instanceof MQTTManagerG2 mg2) {
+					if(mg2.isControlEnabled()) {
 						rdbtnMQTTControlYes.setSelected(true);
 					} else {
 						rdbtnMQTTControlNo.setSelected(true);
 					}
-					if(((MQTTManagerG2)m).isRpcEnabled()) {
+					if(mg2.isRpcEnabled()) {
 						rdbtnRPCOverYes.setSelected(true);
 					} else {
 						rdbtnRPCOverNo.setSelected(true);
 					}
-					if(((MQTTManagerG2)m).isRpcNtf()) {
+					if(mg2.isRpcNtf()) {
 						rdbtnRPCYes.setSelected(true);
 					} else {
 						rdbtnRPCNo.setSelected(true);
 					}
-					if(((MQTTManagerG2)m).isStatusNtf()) {
+					if(mg2.isStatusNtf()) {
 						rdbtnGenericSUpdateYes.setSelected(true);
 					} else {
 						rdbtnGenericSUpdateNo.setSelected(true);

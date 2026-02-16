@@ -53,7 +53,7 @@ public class ShellyDimmerG3 extends AbstractG3Device implements InternalTmpHolde
 	
 	private JsonNode configure() throws IOException {	
 		final JsonNode config = getJSON("/rpc/Shelly.GetConfig");
-		if(SensorAddOn.ADDON_TYPE.equals(config.get("sys").get("device").path("addon_type").asString(""))) {
+		if(SensorAddOn.ADDON_TYPE.equals(config.get("sys").get("device").path("addon_type").asString(null))) {
 			sensorAddOn = new SensorAddOn(this);
 			meters = (sensorAddOn.getTypes().length > 0) ? new Meters[] {baseMeasures, sensorAddOn} : new Meters[] {baseMeasures};
 		} else {
@@ -71,6 +71,11 @@ public class ShellyDimmerG3 extends AbstractG3Device implements InternalTmpHolde
 	@Override
 	public String getTypeID() {
 		return ID;
+	}
+	
+	@Override
+	public String getModelID() {
+		return MODEL;
 	}
 	
 	@Override

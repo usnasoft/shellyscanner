@@ -27,6 +27,7 @@ import tools.jackson.databind.JsonNode;
 public class ShellyPlusUNI extends AbstractG2Device implements ModulesHolder {
 	private static final Logger LOG = LoggerFactory.getLogger(ShellyPlusUNI.class);
 	public static final String ID = "PlusUni";
+	public static final String MODEL = "SNSN-0043X";
 	private Relay relay0 = new Relay(this, 0);
 	private Relay relay1 = new Relay(this, 1);
 	private Relay[] relays = new Relay[] {relay0, relay1};

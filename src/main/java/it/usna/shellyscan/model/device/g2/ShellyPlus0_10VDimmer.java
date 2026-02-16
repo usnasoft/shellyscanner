@@ -26,6 +26,7 @@ import tools.jackson.databind.JsonNode;
 public class ShellyPlus0_10VDimmer extends AbstractG2Device implements /*InternalTmpHolder,*/ ModulesHolder {
 	private static final Logger LOG = LoggerFactory.getLogger(ShellyPlus0_10VDimmer.class);
 	public static final String ID = "Plus10V";
+	public static final String MODEL = "SNDM-00100WW";
 //	private float internalTmp;
 //	private float power;
 //	private float voltage;

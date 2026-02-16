@@ -61,6 +61,7 @@ import it.usna.shellyscan.controller.UsnaDropdownAction;
 import it.usna.shellyscan.controller.UsnaSelectedAction;
 import it.usna.shellyscan.controller.UsnaToggleAction;
 import it.usna.shellyscan.model.Devices;
+import it.usna.shellyscan.model.device.BatteryDeviceInterface;
 import it.usna.shellyscan.model.device.GhostDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
@@ -567,7 +568,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 					}*/
 				}
 				infoAction.setEnabled(singleSelection);
-				schedulerEditAction.setEnabled(singleSelectionNoGhost && (d instanceof AbstractG2Device || d instanceof BluTRV));
+				schedulerEditAction.setEnabled(singleSelectionNoGhost && (d instanceof AbstractG2Device || d instanceof BluTRV) && d instanceof BatteryDeviceInterface == false);
 				infoLogAction.setEnabled(singleSelectionNoGhost);
 				checkListAction.setEnabled(selectionNoGhost);
 				rebootAction.setEnabled(selectionNoGhost && selectionNoBTHome);
@@ -638,7 +639,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 	private void storeProperties() {
 		if(appProp.getBoolProperty(ScannerProperties.PROP_USE_ARCHIVE)) {
 			try {
-				model.saveToStore(Paths.get(appProp.getProperty(ScannerProperties.PROP_ARCHIVE_FILE, ScannerProperties.PROP_ARCHIVE_FILE_DEFAULT)));
+				model.saveToStore(Paths.get(appProp.getProperty(ScannerProperties.PROP_ARCHIVE_FILE/*, ScannerProperties.PROP_ARCHIVE_FILE_DEFAULT*/)));
 			} catch (IOException | RuntimeException ex) {
 				LOG.error("Unexpected", ex);
 				Msg.errorMsg(this, "Error storing archive");

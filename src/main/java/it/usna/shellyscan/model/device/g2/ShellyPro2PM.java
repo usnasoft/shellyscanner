@@ -11,15 +11,18 @@ import it.usna.shellyscan.model.device.InternalTmpHolder;
 import it.usna.shellyscan.model.device.ModulesHolder;
 import it.usna.shellyscan.model.device.RestoreMsg;
 import it.usna.shellyscan.model.device.g2.modules.Input;
+import it.usna.shellyscan.model.device.g2.modules.LoRaAddOn;
 import it.usna.shellyscan.model.device.g2.modules.Relay;
 import it.usna.shellyscan.model.device.g2.modules.Roller;
+
 import it.usna.shellyscan.model.device.meters.Meters;
 import it.usna.shellyscan.model.device.modules.DeviceModule;
 import tools.jackson.databind.JsonNode;
 
 public class ShellyPro2PM extends AbstractProDevice implements ModulesHolder, InternalTmpHolder {
 	public static final String ID = "Pro2PM";
-	public static final String MODEL = "SPSW-202PE16EU";
+	public static final String MODEL_1 = "SPSW-202PE15UL";
+	public static final String MODEL_2 = "SPSW-202PE16EU";
 	private boolean modeRelay;
 	private static final Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.W, Meters.Type.PF, Meters.Type.V, Meters.Type.I};
 	private Relay relay0, relay1;
@@ -33,6 +36,8 @@ public class ShellyPro2PM extends AbstractProDevice implements ModulesHolder, In
 	private float pf0, pf1;
 	private Meters meters0, meters1;
 	private Meters[] meters;
+
+	private boolean loraAddOn;
 
 	private static final String MODE_RELAY = "switch";
 
@@ -75,6 +80,25 @@ public class ShellyPro2PM extends AbstractProDevice implements ModulesHolder, In
 				}
 			}
 		};
+	}
+	
+	@Override
+	protected void init(JsonNode devInfo) throws IOException {
+		this.hostname = devInfo.get("id").asString("");
+		this.mac = devInfo.get("mac").asString("");
+		
+		final JsonNode config = configure();
+			
+		fillSettings(config);
+		fillStatus(getJSON("/rpc/Shelly.GetStatus"));
+	}
+	
+	private JsonNode configure() throws IOException {
+		final JsonNode config = getJSON("/rpc/Shelly.GetConfig");
+		final String addOnType = config.get("sys").get("device").path("addon_type").asString("");
+
+		loraAddOn = LoRaAddOn.ADDON_TYPE.equals(addOnType);
+		return config;
 	}
 
 	@Override
@@ -163,6 +187,7 @@ public class ShellyPro2PM extends AbstractProDevice implements ModulesHolder, In
 			roller.fillStatus(cover, status.get("input:0"), status.get("input:1"));
 		}
 	}
+
 	
 	public void setProfile(boolean cover) {
 		postCommand("Shelly.SetProfile", "{\"name\":\"" + (cover ? "cover" : "switch")  +"\"}");
@@ -175,6 +200,8 @@ public class ShellyPro2PM extends AbstractProDevice implements ModulesHolder, In
 		if(backModeRelay != modeRelay) {
 			res.put(RestoreMsg.ERR_RESTORE_MODE_COVER, null);
 		}
+
+		LoRaAddOn.restoreCheck(this, loraAddOn, backupJsons, res);
 	}
 
 	@Override
@@ -196,6 +223,8 @@ public class ShellyPro2PM extends AbstractProDevice implements ModulesHolder, In
 		} else {
 			errors.add(RestoreMsg.ERR_RESTORE_MODE_COVER.name());
 		}
+
+		LoRaAddOn.restore(this, loraAddOn, configuration, errors);
 	}
 
 	@Override

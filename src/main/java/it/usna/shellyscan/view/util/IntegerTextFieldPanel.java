@@ -19,6 +19,7 @@ public class IntegerTextFieldPanel extends JPanel {
 		super(new FlowLayout(FlowLayout.LEFT, 0, 0));
 		setOpaque(false);
 		itf = new NumericTextField<Integer>(min, max);
+		itf.setGroupingUsed(false);
 		add(itf);
 		
 		upB = new JButton(itf.upAction());

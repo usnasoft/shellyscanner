@@ -68,6 +68,11 @@ public class PbSXT1St1820 extends XT1 implements ModulesHolder {
 	}
 	
 	@Override
+	public String getModelID() {
+		return MODEL;
+	}
+	
+	@Override
 	protected void fillStatus(JsonNode status) throws IOException {
 		super.fillStatus(status);
 

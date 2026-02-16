@@ -35,8 +35,8 @@ public class Main {
 		System.setProperty("apple.eawt.quitStrategy", "CLOSE_ALL_WINDOWS"); // macOS specific - cmd-Q / -Dapple.eawt.quitStrategy=CLOSE_ALL_WINDOWS
 	}
 	public static final String APP_NAME = "Shelly Scanner";
-	public static final String VERSION = "1.3.1";
-	public static final String VERSION_CODE = "001.003.001r201"; // r0xx alpha; r1xx beta; r2xx stable
+	public static final String VERSION = "1.3.2";
+	public static final String VERSION_CODE = "001.003.002r200"; // r0xx alpha; r1xx beta; r2xx stable
 	public static final Image ICON = Toolkit.getDefaultToolkit().createImage(Main.class.getResource("/images/ShSc24.png"));
 	public static final String BACKUP_FILE_EXT = "sbk";
 	public static final String ARCHIVE_FILE_EXT = "arc";
@@ -95,15 +95,32 @@ public class Main {
 				fullScan = scanMode.equals("FULL");
 			}
 		}
+		
+		if((cliIndex = cli.hasEntry("-slow")) >= 0) {
+			String time = cli.getParameter(cliIndex);
+			try {
+				appProp.setIntProperty("MQTT_SLOW", Integer.parseInt(time));
+			} catch(NumberFormatException e) {
+				cli.rejectEntry(cliIndex);
+				if(time != null) {
+					cli.rejectParameter(cliIndex);
+				}
+				appProp.remove("MQTT_SLOW");
+			}
+		} else {
+			appProp.remove("MQTT_SLOW");
+		}
 
 		// Credentials (from configuration only)
 		String lUser = appProp.getProperty(ScannerProperties.PROP_LOGIN_USER);
-		if(lUser != null && lUser.isEmpty() == false) {
+		String lPwd = appProp.getProperty(ScannerProperties.PROP_LOGIN_PWD);
+		char[] pDecoded = null;
+		if(lPwd != null && lPwd.isEmpty() == false) {
 			try {
-				char[] pDecoded = new String(Base64.getDecoder().decode(appProp.getProperty(ScannerProperties.PROP_LOGIN_PWD).substring(1))).toCharArray();
-				DevicesFactory.setCredential(lUser, pDecoded);
+				pDecoded = new String(Base64.getDecoder().decode(lPwd.substring(1))).toCharArray();
 			} catch(RuntimeException e) {}
 		}
+		DevicesFactory.setCredential((lUser == null || lUser.isEmpty()) ? null : lUser, pDecoded);
 
 		// Non interactive commands
 		if((cliIndex = cli.hasEntry("-backup")) >= 0) {
@@ -116,14 +133,25 @@ public class Main {
 
 		// Activate dynamic model - Go interactive
 		try {
-			UsnaSwingUtils.setLookAndFeel(UsnaSwingUtils.LF_NIMBUS);
+			float fontMultiplier = 1f;
+			if((cliIndex = cli.hasEntry("-font")) >= 0) {
+				String size = cli.getParameter(cliIndex);
+				try {
+					fontMultiplier = Float.parseFloat(size);
+				} catch(NumberFormatException e) {
+					cli.rejectEntry(cliIndex);
+					if(size != null) {
+						cli.rejectParameter(cliIndex);
+					}
+				}
+			}
+			UsnaSwingUtils.setNimbusLookAndFeel(fontMultiplier);
 			UsnaSwingUtils.macOddities();
 			//UIManager.getLookAndFeelDefaults().put("Table:\"Table.cellRenderer\".alternateRowColor", TAB_LINE2_COLOR); // genera strani log
 		} catch (Exception e) {
 			Msg.errorMsg(null, e);
 		}
 		//		UIManager.put("Table.background", new ColorUIResource(TAB_LINE1));
-		//		UIManager.put("Table.alternateRowColor", TAB_LINE2);
 
 		if(TAB_VERSION.equals(appProp.getProperty("TAB_VER")) == false) {
 			appProp.setProperty("TAB_VER", TAB_VERSION);
@@ -144,9 +172,9 @@ public class Main {
 						model.addListener(chartW);
 						// do not activateGUI
 					} catch(IllegalArgumentException e) { // not a valid chart type
+						cli.rejectParameter(cliIndex);
 						activateGUI(view, model, appProp);
 						MeasuresChart.setDoOutStream(true);
-						cli.rejectParameter(cliIndex);
 					}
 				} else {
 					activateGUI(view, model, appProp);
@@ -165,7 +193,7 @@ public class Main {
 					boolean useArchive = appProp.getBoolProperty(ScannerProperties.PROP_USE_ARCHIVE);
 					if(useArchive) {
 						try {
-							model.loadFromStore(Path.of(appProp.getProperty(ScannerProperties.PROP_ARCHIVE_FILE, ScannerProperties.PROP_ARCHIVE_FILE_DEFAULT)));
+							model.loadFromStore(Path.of(appProp.getProperty(ScannerProperties.PROP_ARCHIVE_FILE/*, ScannerProperties.PROP_ARCHIVE_FILE_DEFAULT*/)));
 						} catch (/*IO*/Exception e) {
 							appProp.setBoolProperty(ScannerProperties.PROP_USE_ARCHIVE, false);
 							Msg.errorMsg(view, e);

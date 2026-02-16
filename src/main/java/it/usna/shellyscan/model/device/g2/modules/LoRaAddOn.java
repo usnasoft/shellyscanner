@@ -1,4 +1,4 @@
-package it.usna.shellyscan.model.device.g3.modules;
+package it.usna.shellyscan.model.device.g2.modules;
 
 import java.util.Arrays;
 import java.util.List;
