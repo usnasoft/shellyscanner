@@ -411,6 +411,12 @@ Shelly Flood Gen4 (?)
 gen2+ protected devices logs
 
 
+1.3.3
+---
+Plug M Gen3
+bug fixend on Shelly Pro Dual Cover
+
+todo backup notes
 todo location
 
 todo - java -jar C:\Users\Administrator\Desktop\shellyscan_1_3_1_sj.jar  -graphs EM -ipscan 192.168.1.200-200

@@ -124,7 +124,7 @@ public class ShellyProDualCover extends AbstractProDevice implements ModulesHold
 		pf0 = coverStatus0.get("pf").floatValue();
 
 		JsonNode coverStatus1 = status.get("cover:1");
-		roller1.fillStatus(coverStatus0, status.get("input:2"), status.get("input:3"));
+		roller1.fillStatus(coverStatus1, status.get("input:2"), status.get("input:3"));
 		power1 = coverStatus1.get("apower").floatValue();
 		voltage1 = coverStatus1.get("voltage").floatValue();
 		current1 = coverStatus1.get("current").floatValue();
