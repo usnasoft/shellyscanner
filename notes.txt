@@ -416,6 +416,8 @@ gen2+ protected devices logs
 Plug M Gen3
 bug fixend on Shelly Pro Dual Cover
 
+todo it.usna.shellyscan.model.device.g2.meters.EMTotalMeters implements IgnoreSum
+
 todo backup notes
 todo location
 

@@ -121,7 +121,7 @@ public class ScriptFrame extends JFrame {
 		
 		this.scriptId = script.getId();
 		logWasActive = (device.getDebugMode() == LogMode.SOCKET);
-		path =  Path.of(ScannerProperties.instance().getProperty(ScannerProperties.PROP_SCRIPT_PATH), script.getName());
+		path = Path.of(ScannerProperties.instance().getProperty(ScannerProperties.PROP_SCRIPT_PATH), script.getName());
 		
 		this.device = device;
 		JSplitPane splitPane = new JSplitPane();

@@ -23,7 +23,7 @@ public class Shelly3EM63 extends AbstractG3Device implements InternalTmpHolder {
 	public static final String MODEL = "S3EM-003CXCEU63";
 	private float internalTmp;
 	
-	private EM1Meters meters0, meters1, meters2; // em1
+	private EM1Meters em1meters0, em1meters1, em1meters2; // em1
 	private EMPhaseMeters emMeters0, emMeters1, emMeters2; //em
 	private EMTotalMeters emTotal; // em
 	private Meters meters[];
@@ -49,12 +49,12 @@ public class Shelly3EM63 extends AbstractG3Device implements InternalTmpHolder {
 			emMeters2 = new EMPhaseMeters("c");
 			emTotal = new EMTotalMeters(new EMManager(this));
 			meters = new Meters[] {emMeters0, emMeters1, emMeters2, emTotal};
-			meters0 = meters1 = meters2 = null;
+			em1meters0 = em1meters1 = em1meters2 = null;
 		} else {
-			meters0 = new EM1Meters(new EM1Manager(this, 0));
-			meters1 = new EM1Meters(new EM1Manager(this, 1));
-			meters2 = new EM1Meters(new EM1Manager(this, 2));
-			meters = new Meters[] {meters0, meters1, meters2};
+			em1meters0 = new EM1Meters(new EM1Manager(this, 0));
+			em1meters1 = new EM1Meters(new EM1Manager(this, 1));
+			em1meters2 = new EM1Meters(new EM1Manager(this, 2));
+			meters = new Meters[] {em1meters0, em1meters1, em1meters2};
 			emMeters0 = emMeters1 = emMeters2 = null;
 			emTotal = null;
 		}
@@ -95,9 +95,9 @@ public class Shelly3EM63 extends AbstractG3Device implements InternalTmpHolder {
 		if(config3phase) {
 			emMeters0.fillSettings(configuration.get("em:0"));
 		} else {
-			meters0.fillSettings(configuration.get("em1:0"));
-			meters1.fillSettings(configuration.get("em1:1"));
-			meters2.fillSettings(configuration.get("em1:2"));
+			em1meters0.fillSettings(configuration.get("em1:0"));
+			em1meters1.fillSettings(configuration.get("em1:1"));
+			em1meters2.fillSettings(configuration.get("em1:2"));
 		}
 	}
 
@@ -111,9 +111,9 @@ public class Shelly3EM63 extends AbstractG3Device implements InternalTmpHolder {
 			emMeters2.fillStatus(em0);
 			emTotal.fillStatus(em0);
 		} else {
-			meters0.fillStatus(status.get("em1:0"));
-			meters1.fillStatus(status.get("em1:1"));
-			meters2.fillStatus(status.get("em1:2"));
+			em1meters0.fillStatus(status.get("em1:0"));
+			em1meters1.fillStatus(status.get("em1:1"));
+			em1meters2.fillStatus(status.get("em1:2"));
 		}
 
 		internalTmp = status.path("temperature:0").path("tC").floatValue();

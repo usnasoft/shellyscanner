@@ -92,7 +92,7 @@ public class EMManager implements EMDataInterface {
 	}
 
 	public static String[] getInfoRequests(String [] cmd) {
-		String[] newArray = Arrays.copyOf(cmd, cmd.length);
+		String[] newArray = Arrays.copyOf(cmd, cmd.length + 1);
 		newArray[cmd.length] = "/rpc/EMData.GetRecords?id=0";
 		return newArray;
 	}

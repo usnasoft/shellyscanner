@@ -2,6 +2,7 @@ package it.usna.shellyscan.model.device.blu;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -103,19 +104,17 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 		this.meters = sensors.getTypes().length > 0 ? new Meters[] {sensors} : null;
 		
 		// generare key argument to retrive related components
-		StringBuilder keysBuilder = new StringBuilder("[%22");
+		StringBuilder keysBuilder = new StringBuilder("[\"");
 		keysBuilder.append(DEVICE_KEY_PREFIX);
 		keysBuilder.append(componentIndex);
-		keysBuilder.append("%22");
 		for(Sensor s: sensors.getSensors()) {
-			keysBuilder.append(",%22");
+			keysBuilder.append("\",\"");
 			keysBuilder.append(SENSOR_KEY_PREFIX);
 			keysBuilder.append(s.getId());
-			keysBuilder.append("%22");
 		}
-		keysBuilder.append(']');
-		componentsKeys = keysBuilder.toString();
-		
+		keysBuilder.append("\"]");
+		componentsKeys = URLEncoder.encode(keysBuilder.toString(), StandardCharsets.UTF_8.name());
+
 		try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e) {}
 		refreshStatus(); // init status for this.sensors
 		
@@ -177,6 +176,7 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 	@Override
 	public void refreshStatus() throws IOException {
 		Iterator<JsonNode> componentsIt = getJSONIterator("/rpc/Shelly.GetComponents?keys=" + componentsKeys, "components");
+		
 		String compKey;
 		boolean devExists = false;
 		while(componentsIt.hasNext()) {
@@ -193,23 +193,6 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 		if(devExists == false) {
 			this.rssi = 0;
 		}
-
-//		System.out.println(this  + " - " + System.currentTimeMillis());
-//		DynamicComponents parentComponents = parent.getDynamicComponents();
-//		JsonNode comp = parentComponents.getComponentNode(componentIndex);
-//		if(comp != null) {
-//			fillSettings(comp.path("config"));
-//			fillStatus(comp.path("status"));
-//			for(JsonNode sensorJson: parentComponents.getSensors()) {
-//				int id = Integer.parseInt(sensorJson.path("key").asString().substring(13));
-//				Sensor sensor = sensors.getSensor(id);
-//				if(sensor != null) {
-//					sensor.fill(sensorJson);
-//				}
-//			}
-//		} else {
-//			this.rssi = 0;
-//		}
 	}
 	
 	@Override

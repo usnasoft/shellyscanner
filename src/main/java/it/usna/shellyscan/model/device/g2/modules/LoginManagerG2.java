@@ -152,7 +152,7 @@ public class LoginManagerG2 implements LoginManager {
 		}
 	}
 	
-	// e.g. [Digest qop=auth, realm=shellypmminig3-54320470a094, nonce=1770886322, algorithm=SHA-256]
+	// e.g. [Digest qop=auth, realm=shellypmminig3-xxxx, nonce=1770886322, algorithm=SHA-256]
 	public static String getAuthString(List<String> wwwAuthenticate, char[] pwd) throws DeviceUnauthorizedException {
 		try {
 			StringBuilder auth = new StringBuilder("auth.username=admin");

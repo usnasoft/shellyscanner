@@ -65,6 +65,7 @@ import it.usna.shellyscan.model.device.InternalTmpHolder;
 import it.usna.shellyscan.model.device.LabelHolder;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
+import it.usna.shellyscan.model.device.g2.meters.EMTotalMeters;
 import it.usna.shellyscan.model.device.meters.EMDataInterface;
 import it.usna.shellyscan.model.device.meters.EMDataInterface.TimedData;
 import it.usna.shellyscan.model.device.meters.EMHolder;
@@ -317,11 +318,7 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 		} , KeyStroke.getKeyStroke(KeyEvent.VK_R, MainView.SHORTCUT_KEY), JComponent.WHEN_IN_FOCUSED_WINDOW);
 		rootPane.registerKeyboardAction(e -> btnPause.doClick(), KeyStroke.getKeyStroke(KeyEvent.VK_P, MainView.SHORTCUT_KEY), JComponent.WHEN_IN_FOCUSED_WINDOW);
 		rootPane.registerKeyboardAction(e -> chartPanel.doCopy(), KeyStroke.getKeyStroke(KeyEvent.VK_C, MainView.SHORTCUT_KEY), JComponent.WHEN_IN_FOCUSED_WINDOW);
-		
-//		yAxis.addChangeListener(e -> { //zoom (mouse wheel) update
-//			adjustScrollBar();
-//		});
-		
+
 		initDataSet(plot.getRangeAxis(), dataset, model, ind);
 		
 		setSize(920, 480);
@@ -481,7 +478,7 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 				Meters[] meters = d.getMeters();
 				if(meters != null) {
 					for(int i = 0; i < meters.length; i++) {
-						if(meters[i].hasType(currentType.mType)) {
+						if(meters[i].hasType(currentType.mType) && meters[i] instanceof EMTotalMeters == false) {
 							String name;
 							String meterName = meters[i].getName(currentType.mType);
 							if(meterName != null && meterName.isEmpty() == false) {
@@ -597,10 +594,15 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 			} else if(currentType == ChartType.P_SUM && (m = d.getMeters()) != null) {
 				boolean exists = false;
 				float sumW = 0;
-				for(int i = 0; i < m.length; i++) {
-					if(m[i].hasType(Meters.Type.W)) {
-						sumW += m[i].getValue(Meters.Type.W);
+				for(Meters met: m) {
+					if(met.hasType(Meters.Type.W)) {
 						exists = true;
+						if(met instanceof EMTotalMeters) {
+							sumW = met.getValue(Meters.Type.W);
+							break;
+						} else {
+							sumW += met.getValue(Meters.Type.W);
+						}
 					}
 				}
 				if(exists) {
@@ -639,9 +641,9 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 				}
 			} else if((m = d.getMeters()) != null) {
 				int j = 0;
-				for(int i = 0; i < m.length; i++) {
-					if(m[i].hasType(currentType.mType) /*&& j < ts.length*/) {
-						float val = m[i].getValue(currentType.mType);
+				for(Meters met: m) {
+					if(met.hasType(currentType.mType) && met instanceof EMTotalMeters == false /*&& j < ts.length*/) {
+						float val = met.getValue(currentType.mType);
 						ts[j].addOrUpdate(timestamp, val);
 						outStream(d, j, currentType.name(), timestamp, val);
 						j++;
