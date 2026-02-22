@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.RestoreMsg;
+import it.usna.shellyscan.model.device.RestoreUtil;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.meters.Meters;
 import tools.jackson.databind.JsonNode;
@@ -355,13 +356,13 @@ public class SensorAddOn extends Meters {
 							TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 							String typeIdx[] = inputKey.split(":");
 							if(typeIdx[0].equals("temperature")) {
-								errors.add(d.postCommand("Temperature.SetConfig", AbstractG2Device.createIndexedRestoreNode(backConfig, "temperature", Integer.parseInt(typeIdx[1]))));
+								errors.add(d.postCommand("Temperature.SetConfig", RestoreUtil.createIndexedRestoreNode(backConfig, "temperature", Integer.parseInt(typeIdx[1]))));
 							} else if(typeIdx[0].equals("humidity")) {
-								errors.add(d.postCommand("Humidity.SetConfig", AbstractG2Device.createIndexedRestoreNode(backConfig, "humidity", Integer.parseInt(typeIdx[1]))));
+								errors.add(d.postCommand("Humidity.SetConfig", RestoreUtil.createIndexedRestoreNode(backConfig, "humidity", Integer.parseInt(typeIdx[1]))));
 							} else if(typeIdx[0].equals("input")) {
-								errors.add(d.postCommand("Input.SetConfig", AbstractG2Device.createIndexedRestoreNode(backConfig, "input", Integer.parseInt(typeIdx[1]))));
+								errors.add(d.postCommand("Input.SetConfig", RestoreUtil.createIndexedRestoreNode(backConfig, "input", Integer.parseInt(typeIdx[1]))));
 							} else if(typeIdx[0].equals("voltmeter")) {
-								errors.add(d.postCommand("Voltmeter.SetConfig", AbstractG2Device.createIndexedRestoreNode(backConfig, "voltmeter", Integer.parseInt(typeIdx[1]))));
+								errors.add(d.postCommand("Voltmeter.SetConfig", RestoreUtil.createIndexedRestoreNode(backConfig, "voltmeter", Integer.parseInt(typeIdx[1]))));
 							}
 						}
 					}

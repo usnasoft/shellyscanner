@@ -9,6 +9,7 @@ import java.util.concurrent.TimeUnit;
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.InternalTmpHolder;
 import it.usna.shellyscan.model.device.RestoreMsg;
+import it.usna.shellyscan.model.device.RestoreUtil;
 import it.usna.shellyscan.model.device.g2.meters.EM1Meters;
 import it.usna.shellyscan.model.device.g2.meters.EMPhaseMeters;
 import it.usna.shellyscan.model.device.g2.meters.EMTotalMeters;
@@ -141,21 +142,21 @@ public class Shelly3EM63 extends AbstractG3Device implements InternalTmpHolder {
 	protected void restore(Map<String, JsonNode> backupJsons, List<String> errors) throws InterruptedException {
 		JsonNode config = backupJsons.get("Shelly.GetConfig.json");
 		if(triphase) {
-			ObjectNode conf = createIndexedRestoreNode(config, "em", 0);
+			ObjectNode conf = RestoreUtil.createIndexedRestoreNode(config, "em", 0);
 			((ObjectNode)conf.get("config")).remove("ct_type");
 			errors.add(postCommand("EM.SetConfig", conf));
 		} else {
-			ObjectNode conf = createIndexedRestoreNode(config, "em1", 0);
+			ObjectNode conf = RestoreUtil.createIndexedRestoreNode(config, "em1", 0);
 			((ObjectNode)conf.get("config")).remove("ct_type");
 			errors.add(postCommand("EM1.SetConfig", conf));
 			
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-			conf = createIndexedRestoreNode(config, "em1", 1);
+			conf = RestoreUtil.createIndexedRestoreNode(config, "em1", 1);
 			((ObjectNode)conf.get("config")).remove("ct_type");
 			errors.add(postCommand("EM1.SetConfig", conf));
 			
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-			conf = createIndexedRestoreNode(config, "em1", 2);
+			conf = RestoreUtil.createIndexedRestoreNode(config, "em1", 2);
 			((ObjectNode)conf.get("config")).remove("ct_type");
 			errors.add(postCommand("EM1.SetConfig", conf));
 		}

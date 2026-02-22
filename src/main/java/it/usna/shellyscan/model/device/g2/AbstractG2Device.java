@@ -385,7 +385,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 		}
 	}
 
-	public CompletableFuture<Session> connectWebSocketClient(WebSocketDeviceListener listener/*, boolean activate*/) throws IOException, InterruptedException, ExecutionException {
+	public CompletableFuture<Session> connectWebSocketClient(WebSocketDeviceListener listener) throws IOException, InterruptedException, ExecutionException {
 		try {
 			CompletableFuture<Session> s = wsClient.connect(listener, URI.create("ws://" + addressAndPort.getRepresentation() + "/rpc")); // this also do upgrade
 			s.get().sendText("{\"id\":2, \"src\":\"S_Scanner\", \"method\":\"Shelly.GetDeviceInfo\"}", Callback.NOOP);
@@ -680,16 +680,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 			errors.add(MQTTManagerG2.restore(this, mqtt, userPref.get(RestoreMsg.RESTORE_MQTT)));
 		}
 	}
-	
-	public static ObjectNode createIndexedRestoreNode(JsonNode backConfig, String type, int index) {
-		ObjectNode out = JsonNodeFactory.instance.objectNode();
-		out.put("id", index);
-		ObjectNode data = (ObjectNode)backConfig.get(type + ":" + index).deepCopy();
-		data.remove("id");
-		out.set("config", data);
-		return out;
-	}
 
 	/** device specific */
 	protected abstract void restore(Map<String, JsonNode> backupJsons, List<String> errors) throws IOException, InterruptedException;
-} // 477 - 474 - 525 - 568 - 637 - 695
+} // 477 - 474 - 525 - 568 - 637 - 695 - 686

@@ -3,6 +3,7 @@ package it.usna.shellyscan.model.device.g2.modules;
 import java.io.IOException;
 
 import it.usna.shellyscan.model.Devices;
+import it.usna.shellyscan.model.device.RestoreUtil;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.modules.RelayInterface;
 import tools.jackson.databind.JsonNode;
@@ -92,7 +93,7 @@ public class Relay implements RelayInterface {
 	}
 	
 	public String restore(JsonNode config) {
-		return parent.postCommand("Switch.SetConfig", AbstractG2Device.createIndexedRestoreNode(config, "switch", index));
+		return parent.postCommand("Switch.SetConfig", RestoreUtil.createIndexedRestoreNode(config, "switch", index));
 	}
 	
 	@Override

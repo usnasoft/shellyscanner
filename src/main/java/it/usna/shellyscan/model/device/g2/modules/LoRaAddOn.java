@@ -7,6 +7,7 @@ import java.util.concurrent.TimeUnit;
 
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.RestoreMsg;
+import it.usna.shellyscan.model.device.RestoreUtil;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import tools.jackson.databind.JsonNode;
 
@@ -42,7 +43,7 @@ public class LoRaAddOn {
 			if(addOn == false) {
 				errors.add(enable(d, true));
 			} else {
-				errors.add(d.postCommand("LoRa.SetConfig", AbstractG2Device.createIndexedRestoreNode(configuration, "lora", ID)));
+				errors.add(d.postCommand("LoRa.SetConfig", RestoreUtil.createIndexedRestoreNode(configuration, "lora", ID)));
 			}
 		}
 	}

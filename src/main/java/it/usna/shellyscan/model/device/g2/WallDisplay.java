@@ -12,6 +12,7 @@ import java.util.zip.ZipOutputStream;
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.ModulesHolder;
 import it.usna.shellyscan.model.device.RestoreMsg;
+import it.usna.shellyscan.model.device.RestoreUtil;
 import it.usna.shellyscan.model.device.g2.modules.Input;
 import it.usna.shellyscan.model.device.g2.modules.Relay;
 import it.usna.shellyscan.model.device.g2.modules.ScheduleManagerThermWD;
@@ -216,11 +217,11 @@ public class WallDisplay extends AbstractG2Device implements DisplayInterface, M
 		// can't restore /sys/ext_sensor_id since external sensors must be approved by the user
 
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-		errors.add(postCommand("Temperature.SetConfig", createIndexedRestoreNode(backupConfiguration, "temperature", 0)));
+		errors.add(postCommand("Temperature.SetConfig", RestoreUtil.createIndexedRestoreNode(backupConfiguration, "temperature", 0)));
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-		errors.add(postCommand("Humidity.SetConfig", createIndexedRestoreNode(backupConfiguration, "humidity", 0)));
+		errors.add(postCommand("Humidity.SetConfig", RestoreUtil.createIndexedRestoreNode(backupConfiguration, "humidity", 0)));
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-		errors.add(postCommand("Illuminance.SetConfig", createIndexedRestoreNode(backupConfiguration, "illuminance", 0)));
+		errors.add(postCommand("Illuminance.SetConfig", RestoreUtil.createIndexedRestoreNode(backupConfiguration, "illuminance", 0)));
 	}
 	
 	@Override

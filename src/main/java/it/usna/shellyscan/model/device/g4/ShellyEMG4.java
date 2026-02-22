@@ -1,4 +1,4 @@
-package it.usna.shellyscan.model.device.g3;
+package it.usna.shellyscan.model.device.g4;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -23,10 +23,11 @@ import it.usna.shellyscan.model.device.meters.Meters;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ObjectNode;
 
-public class ShellyEMG3 extends AbstractG3Device implements ModulesHolder, InternalTmpHolder {
-	private static final Logger LOG = LoggerFactory.getLogger(ShellyEMG3.class);
-	public static final String ID = "EMG3";
-	public static final String MODEL = "S3EM-002CXCEU";
+public class ShellyEMG4 extends AbstractG4Device implements ModulesHolder, InternalTmpHolder {
+	private static final Logger LOG = LoggerFactory.getLogger(ShellyEMG4.class);
+	public static final String ID = "EMG4";
+	public static final String ID_ZB = "EMG4ZB";
+	public static final String MODEL = "S4EM-002CXCEU";
 	private Relay relay = new Relay(this, 0);
 	private Relay[] relays = new Relay[] {relay};
 	private float internalTmp;
@@ -35,7 +36,7 @@ public class ShellyEMG3 extends AbstractG3Device implements ModulesHolder, Inter
 	private SensorAddOn sensorAddOn;
 	private boolean loraAddOn;
 
-	public ShellyEMG3(InetAddress address, int port, String hostname) {
+	public ShellyEMG4(InetAddress address, int port, String hostname) {
 		super(address, port, hostname);
 		meters0 = new EM1Meters(new EM1Manager(this, 0));
 		meters1 = new EM1Meters(new EM1Manager(this, 1));
@@ -68,7 +69,7 @@ public class ShellyEMG3 extends AbstractG3Device implements ModulesHolder, Inter
 
 	@Override
 	public String getTypeName() {
-		return "Shelly EM G3";
+		return "Shelly EM G4";
 	}
 
 	@Override

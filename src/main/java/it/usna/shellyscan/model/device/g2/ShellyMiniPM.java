@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import it.usna.shellyscan.model.Devices;
+import it.usna.shellyscan.model.device.RestoreUtil;
 import it.usna.shellyscan.model.device.meters.Meters;
 import tools.jackson.databind.JsonNode;
 
@@ -84,6 +85,6 @@ public class ShellyMiniPM extends AbstractG2Device {
 	protected void restore(Map<String, JsonNode> backupJsons, List<String> errors) throws InterruptedException {
 		JsonNode config = backupJsons.get("Shelly.GetConfig.json");
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-		errors.add(postCommand("PM1.SetConfig", createIndexedRestoreNode(config, "pm1", 0)));
+		errors.add(postCommand("PM1.SetConfig", RestoreUtil.createIndexedRestoreNode(config, "pm1", 0)));
 	}
 }

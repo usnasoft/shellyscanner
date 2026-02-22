@@ -14,6 +14,8 @@ import it.usna.shellyscan.model.device.g4.ShellyDimmerG4;
 import it.usna.shellyscan.model.device.g4.ShellyMini1G4;
 import it.usna.shellyscan.model.device.g4.ShellyMini1PMG4;
 import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.JsonNodeFactory;
+import tools.jackson.databind.node.ObjectNode;
 
 public class RestoreUtil {
 
@@ -46,5 +48,14 @@ public class RestoreUtil {
 			}
 		}
 		return false;
+	}
+	
+	public static ObjectNode createIndexedRestoreNode(JsonNode backConfig, String type, int index) {
+		ObjectNode out = JsonNodeFactory.instance.objectNode();
+		out.put("id", index);
+		ObjectNode data = (ObjectNode)backConfig.get(type + ":" + index).deepCopy();
+		data.remove("id");
+		out.set("config", data);
+		return out;
 	}
 }
