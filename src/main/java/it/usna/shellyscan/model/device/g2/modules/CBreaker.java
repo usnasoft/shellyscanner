@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.Arrays;
 
 import it.usna.shellyscan.model.Devices;
+import it.usna.shellyscan.model.device.RestoreUtil;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.modules.RelayInterface;
 import tools.jackson.databind.JsonNode;
@@ -84,7 +85,7 @@ public class CBreaker implements /*DeviceModule*/RelayInterface {
 	
 	public String restore(JsonNode config) {
 		//todo test
-		return parent.postCommand("CB.SetConfig", AbstractG2Device.createIndexedRestoreNode(config, "cb", 0));
+		return parent.postCommand("CB.SetConfig", RestoreUtil.createIndexedRestoreNode(config, "cb", 0));
 	}
 	
 	@Override
