@@ -352,7 +352,7 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 				create(address, port, info, hostName);
 			} else if(force && (hostName.startsWith("shelly") || hostName.startsWith("Shelly"))) { // ShellyBulbDuo-xxx, ShellyWallDisplay-xxx, ...
 				LOG.warn("create with error (info==null) {}:{}", address, port);
-				newDevice(DevicesFactory.createWithError(httpClient, address, port, hostName, new NullPointerException()));
+				newDevice(DevicesFactory.createWithError(httpClient, address, port, hostName, new DeviceAPIException(DeviceAPIException.UNKNOWN)));
 			}
 //			Thread.sleep(Devices.MULTI_QUERY_DELAY);
 		} catch(TimeoutException e) { // SocketTimeoutException extends IOException
@@ -364,7 +364,7 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 	}
 
 	/**
-	 * Create a device JsonNode info (/shelly) given
+	 * Create a device - JsonNode info (/shelly) given
 	 */
 	private void create(InetAddress address, int port, JsonNode info, String hostName) {
 		LOG.trace("Creating {}:{} - {}", address, port, hostName);
@@ -622,6 +622,17 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 		}
 		LOG.debug("Model closed");
 	}
+	
+//	103966 [pool-1-thread-29] TRACE it.usna.shellyscan.model.Devices - getting info (/shelly) /192.168.1.17:80 - shellyprorgbwwpm-2cbcbba78f08
+//	103966 [pool-1-thread-91] TRACE it.usna.shellyscan.model.Devices - getting info (/shelly) /192.168.1.17:80 - Pro RGBWW
+//	private ShellyAbstractDevice findByIP(InetAddress ip, int port) {
+//		for(ShellyAbstractDevice d: devices) {
+//			if(d.getAddressAndPort().getAddress().equals(ip) && d.getAddressAndPort().getPort() == port) {
+//				return d;
+//			}
+//		}
+//		return null;
+//	}
 
 	private final class MDNSListener implements ServiceListener {
 		@Override

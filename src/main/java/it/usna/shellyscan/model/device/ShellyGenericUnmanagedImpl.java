@@ -9,6 +9,7 @@ import java.util.regex.Pattern;
 
 import org.eclipse.jetty.client.HttpClient;
 
+import it.usna.shellyscan.model.DeviceUnauthorizedException;
 import it.usna.shellyscan.model.device.modules.FirmwareManager;
 import it.usna.shellyscan.model.device.modules.InputResetManager;
 import it.usna.shellyscan.model.device.modules.LoginManager;
@@ -16,7 +17,6 @@ import it.usna.shellyscan.model.device.modules.MQTTManager;
 import it.usna.shellyscan.model.device.modules.TimeAndLocationManager;
 import it.usna.shellyscan.model.device.modules.WIFIManager;
 import it.usna.shellyscan.model.device.modules.WIFIManager.Network;
-import tools.jackson.core.JacksonException;
 import tools.jackson.databind.JsonNode;
 
 /**
@@ -43,9 +43,9 @@ public class ShellyGenericUnmanagedImpl extends ShellyAbstractDevice implements 
 	public ShellyGenericUnmanagedImpl(InetAddress address, int port, String hostname, HttpClient httpClient, Throwable e) {
 		this(address, port, hostname, httpClient);
 		this.ex = e;
-		if(e instanceof IOException && "Status-401".equals(e.getMessage())) {
+		if(e instanceof DeviceUnauthorizedException /*&& "Status-401".equals(e.getMessage())*/) {
 			status = Status.NOT_LOOGGED;
-		} else if(e instanceof IOException && e instanceof JacksonException == false) { // JsonProcessingException extends IOException
+		} else if(e instanceof IOException /*&& e instanceof JacksonException == false*/) {
 			status = Status.OFF_LINE;
 		} else {
 			status = Status.ERROR;
