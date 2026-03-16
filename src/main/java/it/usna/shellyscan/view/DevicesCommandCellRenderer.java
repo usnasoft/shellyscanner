@@ -7,6 +7,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.LayoutManager;
 import java.util.MissingResourceException;
 
 import javax.swing.BorderFactory;
@@ -30,6 +31,7 @@ import it.usna.shellyscan.model.device.modules.DeviceModule;
 import it.usna.shellyscan.model.device.modules.FloodInterface;
 import it.usna.shellyscan.model.device.modules.InputInterface;
 import it.usna.shellyscan.model.device.modules.MotionInterface;
+import it.usna.shellyscan.model.device.modules.PresenceInterface;
 import it.usna.shellyscan.model.device.modules.RGBCCTInterface;
 import it.usna.shellyscan.model.device.modules.RGBInterface;
 import it.usna.shellyscan.model.device.modules.RGBWInterface;
@@ -51,6 +53,7 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 	static final ImageIcon STOP_IMG = new ImageIcon(DevicesCommandCellRenderer.class.getResource("/images/PlayerStop16.png"));
 	private JButton onOffButton0 = new JButton();
 	private JLabel label0 = new JLabel();
+	private JPanel panel0 = new JPanel();
 	private JButton editDialogButton = new JButton(EDIT_IMG);
 	private JPanel stackedPanelContainer = new JPanel(new BorderLayout(0, 0));
 	private JPanel stackedPanel = new JPanel();
@@ -74,6 +77,7 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 		this.tempUnitCelsius = celsius;
 		// Generic
 		onOffButton0.setBorder(BUTTON_BORDERS);
+		panel0.setOpaque(false);
 		editDialogButton.setBorder(BorderFactory.createEmptyBorder(0, 2, 0, 2));
 		editDialogButton.setContentAreaFilled(false);
 
@@ -107,34 +111,51 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 				return getRGBWPanel(rgbs[0], foregroundColor, true, true);
 			} else if(value instanceof RGBInterface[] rgbs) { // RGBs
 				return getRGBPanel(rgbs[0], foregroundColor, true, true);
-//			} else if(value instanceof WhiteInterface[] lights && lights.length == 1) { // Dimmable (CCT) white
-//				return getWhitePanel(lights[0], foregroundColor, true, lights[0] instanceof CCTInterface);
 			} else if(value instanceof ThermostatG1 thermostat) { // TRV gen1
 				return getThermostatG1Panel(thermostat, foregroundColor);
 			} else if(value instanceof ThermostatInterface[] thermostats) {
 				return getThermostatPanel(thermostats[0], foregroundColor);
 			} else if(value instanceof DeviceModule[] modArray) { // mixed modules
 				stackedPanel.removeAll();
+				
+				DeviceModule module;
+				int indEditButton = modArray.length - 1;
+				while(indEditButton > 0 && ! ((module = modArray[indEditButton]) instanceof CCTInterface || module instanceof RGBInterface || (module instanceof WhiteInterface && modArray.length > 2))) {
+					indEditButton--;
+				}
+				
 				for(int i = 0; i < modArray.length; i++) {
-					DeviceModule module = modArray[i];
+					module = modArray[i];
 					if(module instanceof RelayInterface rel) {
 						stackedPanel.add(getRelayPanel(rel, foregroundColor, i == 0));
 					} else if(module instanceof InputInterface input) {
 						if(input.enabled()) {
-							stackedPanel.add(getInputPanel(input, foregroundColor));
+							stackedPanel.add(getInputPanel(input, foregroundColor, i == 0));
 						}
-// 				prima di riattivare (output-addon) serve definire un sistema migliore per l'attivazione del bottone edit (rimuovere ... if(value instanceof WhiteInterface[] ...)
-					} else if(module instanceof WhiteInterface white && modArray.length == 1) {
-						stackedPanel.add(getWhitePanel(white, foregroundColor, i == 0, white instanceof CCTInterface));
-					} else if(module instanceof WhiteInterface white && modArray.length > 1) {
-						stackedPanel.add(getWhiteSyntheticPanel(white, foregroundColor, i == 0, i == modArray.length - 1));
+					} else if(module instanceof WhiteInterface white && modArray.length <= 2) {
+						stackedPanel.add(getWhitePanel(white, foregroundColor, i == 0, i == indEditButton));
+					} else if(module instanceof WhiteInterface white /*&& modArray.length > 2*/) {
+						stackedPanel.add(getWhiteSyntheticPanel(white, foregroundColor, i == 0, i == indEditButton));
 					} else if(module instanceof RGBInterface rgb) {
-						stackedPanel.add(getRGBSyntheticPanel(rgb, foregroundColor, i == 0, i == modArray.length - 1));
+						stackedPanel.add(getRGBSyntheticPanel(rgb, foregroundColor, i == 0, i == indEditButton));
 					} else if(module instanceof MotionInterface pir) {
 						JLabel motionLabel = (i == 0) ? label0 : new JLabel();
 						motionLabel.setText(LABELS.getString(pir.motion() ? "labelStatusMotion_true" : "labelStatusMotion_false"));
 						motionLabel.setForeground(foregroundColor);
 						stackedPanel.add(motionLabel);
+					} else if(module instanceof PresenceInterface presence) {
+						JPanel p = getSectionPanel(i == 0, new BorderLayout(8, 0));
+						JLabel motionLabel = (i == 0) ? label0 : new JLabel();
+						motionLabel.setText(LABELS.getString("labelPresenceNum"));
+						motionLabel.setForeground(foregroundColor);
+						JLabel numLabel =  new JLabel(presence.numObjects() + "");
+						numLabel.setForeground(foregroundColor);
+						if(presence.numObjects() == 0) {
+							numLabel.setEnabled(false);
+						}
+						p.add(motionLabel, BorderLayout.WEST);
+						p.add(numLabel, BorderLayout.CENTER);
+						stackedPanel.add(p);
 					}  else if(module instanceof FloodInterface sensor) {
 						JLabel floodLabel = (i == 0) ? label0 : new JLabel();
 						floodLabel.setText(LABELS.getString(sensor.flood() ? "labelStatusFlood_true" : "labelStatusFlood_false"));
@@ -156,8 +177,7 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 	}
 
 	private JPanel getRelayPanel(RelayInterface rel, final Color foregroundColor, boolean ind0) {
-		JPanel relayPanel = new JPanel(new BorderLayout());
-		relayPanel.setOpaque(false);
+		JPanel relayPanel = getSectionPanel(ind0, new BorderLayout());
 		final JLabel relayLabel;
 		final JButton button;
 		if(ind0) {
@@ -191,8 +211,7 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 	}
 	
 	private JPanel getRollerPanel(RollerInterface roller, final Color foregroundColor, boolean ind0) {
-		final JPanel rollerPanel = new JPanel(new BorderLayout());
-		rollerPanel.setOpaque(false);
+		final JPanel rollerPanel = getSectionPanel(ind0, new BorderLayout());
 		final JLabel rollerLabel = (ind0) ? label0 : new JLabel();
 		
 		JPanel rollerSouthPanel = new JPanel(new BorderLayout());
@@ -224,8 +243,8 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 		return rollerPanel;
 	}
 	
-	private JPanel getInputPanel(InputInterface inp, final Color foregroundColor) {
-		final JPanel actionsPanel = new JPanel(new BorderLayout());
+	private JPanel getInputPanel(InputInterface inp, final Color foregroundColor, boolean ind0) {
+		final JPanel actionsPanel = getSectionPanel(ind0, new BorderLayout());
 		String inpName = inp.getLabel();
 		JLabel actionsLabel = new JLabel(inpName == null || inpName.isEmpty() ? "\u25CB" : inpName);
 		actionsLabel.setForeground(foregroundColor);
@@ -261,13 +280,11 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 		actionsButtonsPanel.setOpaque(false);
 		actionsPanel.add(actionsButtonsPanel, BorderLayout.EAST);
 		actionsPanel.add(actionsLabel, BorderLayout.WEST);
-		actionsPanel.setOpaque(false);
 		return actionsPanel;
 	}
 	
 	private JPanel getRGBSyntheticPanel(RGBInterface rgb, final Color foregroundColor, boolean ind0, boolean addEditButton) {
-		final JPanel panel = new JPanel(new BorderLayout());
-		panel.setOpaque(false);
+		final JPanel panel = getSectionPanel(ind0, new BorderLayout());
 		final JLabel label;
 		JButton button;
 		if(ind0) {
@@ -302,8 +319,7 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 	}
 	
 	private JPanel getWhiteSyntheticPanel(WhiteInterface light, final Color foregroundColor, boolean useButton0, boolean addEditButton) {
-		final JPanel panel = new JPanel(new BorderLayout());
-		panel.setOpaque(false);
+		final JPanel panel = getSectionPanel(useButton0, new BorderLayout());
 		final JLabel label;// = new JLabel(light.getLabel() + " " + light.getBrightness() + "%");
 		final JButton button;
 		if(useButton0) {
@@ -338,8 +354,7 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 	}
 	
 	private JPanel getWhitePanel(WhiteInterface light, final Color foregroundColor, boolean useButton0, boolean addEditButton) {
-		final JPanel panel = new JPanel(new BorderLayout());
-		panel.setOpaque(false);
+		final JPanel panel = getSectionPanel(useButton0, new BorderLayout());
 		final JLabel label;
 		final JButton button;
 		if(useButton0) {
@@ -571,6 +586,18 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 		trvProfileLabel.setForeground(foregroundColor);
 		
 		return trvPanel; 
+	}
+	
+	private JPanel getSectionPanel(boolean first, LayoutManager lm) {
+		if(first) {
+			panel0.removeAll();
+			panel0.setLayout(lm);
+			return panel0;
+		} else {
+			JPanel panel = new JPanel(lm);
+			panel.setOpaque(false);
+			return panel;
+		}
 	}
 	
 	public void setTempUnit(boolean celsius) {

@@ -144,7 +144,7 @@ public class RGBPanel extends LightPanel {
 					colorPanel(sliderRed.getValue(), sliderGreen.getValue(), sliderBlue.getValue(), sliderWhite.getValue());
 				}
 			};
-			JPanel whitePanel = new JPanel(new BorderLayout(10, 0));
+			JPanel whitePanel = new JPanel(new BorderLayout(20, 0));
 			whitePanel.setOpaque(false);
 			whitePanel.add(labelWhite, BorderLayout.NORTH);
 			whitePanel.add(sliderWhite, BorderLayout.CENTER);

@@ -110,10 +110,6 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 			JPanel panel = getRGBPanel(rgbs[0], true);
 			edited = rgbs;
 			return panel;
-//		} else if(value instanceof WhiteInterface[] whitesArray && whitesArray.length == 1) {
-//			JPanel panel = getWhitePanel(whitesArray[0], whitesArray[0] instanceof CCTInterface);
-//			edited = whitesArray;
-//			return panel;
 		} else if(value instanceof ThermostatG1 th) { // TRV Gen1
 			JPanel panel = getThermostatG1Panel(th);
 			edited = th;
@@ -124,20 +120,27 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 			return panel;
 		} else if(value instanceof DeviceModule[] modArray) { // mixed
 			stackedPanel.removeAll();
+			
+			DeviceModule module;
+			int indEditButton = modArray.length - 1;
+			while(indEditButton > 0 && ! ((module = modArray[indEditButton]) instanceof CCTInterface || module instanceof RGBInterface || (module instanceof WhiteInterface && modArray.length > 2))) {
+				indEditButton--;
+			}
+			
 			for(int i = 0; i < modArray.length; i++) {
-				DeviceModule module = modArray[i];
+				module = modArray[i];
 				if(module instanceof RelayInterface rel) {
 					stackedPanel.add(getRelayPanel(rel));
 				} else if(module instanceof InputInterface input) {
 					if(input.enabled()) {
 						stackedPanel.add(getInputPanel(input, table));
 					}
-				} else if(module instanceof WhiteInterface white && modArray.length == 1) {
-					stackedPanel.add(getWhitePanel(white, white instanceof CCTInterface));
-				} else if(module instanceof WhiteInterface white && modArray.length > 0) {
-					stackedPanel.add(getWhiteSyntheticPanel(white, i == modArray.length - 1));
+				} else if(module instanceof WhiteInterface white && modArray.length <= 2) {
+					stackedPanel.add(getWhitePanel(white, i == indEditButton));
+				} else if(module instanceof WhiteInterface white /*&& modArray.length > 2*/) {
+					stackedPanel.add(getWhiteSyntheticPanel(white, i == indEditButton));
 				} else if(module instanceof RGBInterface rgb) {
-					stackedPanel.add(getRGBSyntheticPanel(rgb, i == modArray.length - 1));
+					stackedPanel.add(getRGBSyntheticPanel(rgb, i == indEditButton));
 				}
 			}
 			edited = modArray;

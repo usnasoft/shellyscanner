@@ -414,6 +414,7 @@ gen2+ protected devices logs
 1.3.3
 ---
 Plug M Gen3
+Shelly Mini EM G4
 bug fixed on Shelly Pro Dual Cover
 bug fixed on 3EM total power graph 
 

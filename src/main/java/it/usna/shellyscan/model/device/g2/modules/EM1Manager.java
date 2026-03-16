@@ -40,7 +40,6 @@ public class EM1Manager implements EMDataInterface {
 		int nextTs = startTs;
 		do {
 			JsonNode energyDataValue = device.getJSON("/rpc/EM1Data.GetData?add_keys=false&id=" + id + "&ts=" + nextTs + "&end_ts=" + endTs); // too many values -> too much time
-//			System.out.println("-------------------------------------------------------------------");
 			for(JsonNode energyData: energyDataValue.get("data")) {
 				int ts = energyData.get("ts").intValue(0);
 				int period = energyData.get("period").intValue(0);
@@ -70,7 +69,6 @@ public class EM1Manager implements EMDataInterface {
 		int nextTs = startTs;
 		do {
 			JsonNode energyDataValue = device.getJSON("/rpc/EM1Data.GetData?add_keys=false&id=" + id + "&ts=" + nextTs + "&end_ts=" + endTs); // too many values -> too much time
-//			System.out.println("-------------------------------------------------------------------");
 			for(JsonNode energyData: energyDataValue.get("data")) {
 				int ts = energyData.get("ts").intValue(0);
 				int period = energyData.get("period").intValue(0);
@@ -104,7 +102,6 @@ public class EM1Manager implements EMDataInterface {
 		int nextTs = startTs;
 		do {
 			JsonNode energyDataValue = device.getJSON("/rpc/EM1Data.GetNetEnergies?id=" + id + "&ts=" + nextTs + "&end_ts=" + endTs + "&add_keys=false&period=" + period);
-//			System.out.println("-------------------------------------------------------------------");
 			for(JsonNode energyData: energyDataValue.get("data")) {
 				int ts = energyData.get("ts").intValue(0);
 				int thisPeriod = energyData.get("period").intValue(0);
