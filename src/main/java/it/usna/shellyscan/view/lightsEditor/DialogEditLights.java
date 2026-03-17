@@ -11,6 +11,7 @@ import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
 import javax.swing.AbstractAction;
@@ -37,9 +38,9 @@ import it.usna.swing.VerticalFlowLayout;
 
 public class DialogEditLights extends JDialog {
 	private static final long serialVersionUID = 1L;
-	private final LightPanel commandPanels[];
-	static final ImageIcon offImg = new ImageIcon(DialogEditLights.class.getResource("/images/Standby24.png"));
-	private static final ImageIcon onImg = new ImageIcon(DialogEditLights.class.getResource("/images/StandbyOn24.png"));
+	private final ArrayList<LightPanel> commandPanels = new ArrayList<>(5);
+	static final ImageIcon OFF_IMG = new ImageIcon(DialogEditLights.class.getResource("/images/Standby24.png"));
+	private static final ImageIcon ON_IMG = new ImageIcon(DialogEditLights.class.getResource("/images/StandbyOn24.png"));
 	private static final Logger LOG = LoggerFactory.getLogger(DialogEditLights.class);
 
 	public DialogEditLights(final Window owner, DeviceModule[] lights) {
@@ -47,11 +48,9 @@ public class DialogEditLights extends JDialog {
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		getContentPane().setLayout(new BorderLayout(0, 0));
 
-		commandPanels = new LightPanel[lights.length];
-
 		JPanel commandStackedPanel = commandPanel(lights);
 		getContentPane().add(commandStackedPanel, BorderLayout.CENTER);
-		if(lights.length > 1) {
+		if(commandPanels.size() > 1) {
 			getContentPane().add(northPanel(lights), BorderLayout.NORTH);
 		}
 		
@@ -72,8 +71,8 @@ public class DialogEditLights extends JDialog {
 	private JPanel northPanel(DeviceModule[] lights) {
 		JPanel panel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
 		panel.setBackground(Color.LIGHT_GRAY);
-		JButton offButton = new JButton(offImg);
-		JButton onButton = new JButton(onImg);
+		JButton offButton = new JButton(OFF_IMG);
+		JButton onButton = new JButton(ON_IMG);
 		offButton.setBorder(BorderFactory.createEmptyBorder(0, 2, 0, 2));
 		onButton.setBorder(BorderFactory.createEmptyBorder(0, 2, 0, 2));
 		offButton.setContentAreaFilled(false);
@@ -91,8 +90,8 @@ public class DialogEditLights extends JDialog {
 	private void switchAll(DeviceModule[] lights, boolean on) {
 		try {
 			setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-			for(int i = 0; i < lights.length; i++) {
-				commandPanels[i].change(on);
+			for(LightPanel panel: commandPanels) {
+				panel.change(on);
 				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			}
 		} catch (IOException | InterruptedException e1) {
@@ -103,18 +102,21 @@ public class DialogEditLights extends JDialog {
 	}
 	
 	private JPanel commandPanel(DeviceModule[] lights) {
-		JPanel stackedPanel = new JPanel(new VerticalFlowLayout(VerticalFlowLayout.TOP, VerticalFlowLayout.LEFT, 0, 0));	
+		JPanel stackedPanel = new JPanel(new VerticalFlowLayout(VerticalFlowLayout.TOP, VerticalFlowLayout.LEFT, 0, 0));
 		for(int i = 0; i < lights.length; i++) {
 			if(lights[i] instanceof RGBCCTInterface rgbcct) { // rgbcct extends rgb & cct
-				stackedPanel.add((commandPanels[i] = new RGBCCTPanel(rgbcct)));
+				commandPanels.add(new RGBCCTPanel(rgbcct));
 			} else if(lights[i] instanceof RGBInterface rgb) { // rgbw extends rgb
-				stackedPanel.add((commandPanels[i] = new RGBPanel(rgb)));
+				commandPanels.add(new RGBPanel(rgb));
 			} else if(lights[i] instanceof CCTInterface cct) {
-				stackedPanel.add((commandPanels[i] = new CCTPanel(cct)));
+				commandPanels.add(new CCTPanel(cct));
 			} else if(lights[i] instanceof WhiteInterface w) {
-				stackedPanel.add((commandPanels[i] = new WhitePanel(w)));
+				commandPanels.add(new WhitePanel(w));
 			}
-			commandPanels[i].setBackground(i % 2 == 0 ? Main.TAB_LINE1_COLOR : Main.TAB_LINE2_COLOR);
+		}
+		for(int i = 0; i < commandPanels.size(); i++) {
+			stackedPanel.add(commandPanels.get(i));
+			commandPanels.get(i).setBackground(i % 2 == 0 ? Main.TAB_LINE1_COLOR : Main.TAB_LINE2_COLOR);
 		}
 		return stackedPanel;
 	}

@@ -80,7 +80,7 @@ public class CCTPanel extends LightPanel {
 		temperaturePanel.setOpaque(false);
 		temperaturePanel.add(labelTemperature, BorderLayout.NORTH);
 		temperaturePanel.add(temperatureSlider, BorderLayout.CENTER);
-		temperaturePanel.add(Box.createHorizontalStrut(DialogEditLights.offImg.getIconWidth()), BorderLayout.EAST);
+		temperaturePanel.add(Box.createHorizontalStrut(DialogEditLights.OFF_IMG.getIconWidth()), BorderLayout.EAST);
 		temperatureSliderListener = e -> {
 			if(temperatureSlider.getValueIsAdjusting() == false) {
 				try {

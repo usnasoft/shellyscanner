@@ -113,21 +113,21 @@ public class RGBPanel extends LightPanel {
 		redPanel.setOpaque(false);
 		redPanel.add(labelRed, BorderLayout.NORTH);
 		redPanel.add(sliderRed, BorderLayout.CENTER);
-		redPanel.add(Box.createHorizontalStrut(DialogEditLights.offImg.getIconWidth()), BorderLayout.EAST);
+		redPanel.add(Box.createHorizontalStrut(DialogEditLights.OFF_IMG.getIconWidth()), BorderLayout.EAST);
 		this.add(redPanel);
 
 		JPanel greenPanel = new JPanel(new BorderLayout(20, 0));
 		greenPanel.setOpaque(false);
 		greenPanel.add(labelGreen, BorderLayout.NORTH);
 		greenPanel.add(sliderGreen, BorderLayout.CENTER);
-		greenPanel.add(Box.createHorizontalStrut(DialogEditLights.offImg.getIconWidth()), BorderLayout.EAST);
+		greenPanel.add(Box.createHorizontalStrut(DialogEditLights.OFF_IMG.getIconWidth()), BorderLayout.EAST);
 		this.add(greenPanel);
 
 		JPanel bluePanel = new JPanel(new BorderLayout(20, 0));
 		bluePanel.setOpaque(false);
 		bluePanel.add(labelBlue, BorderLayout.NORTH);
 		bluePanel.add(sliderBlue, BorderLayout.CENTER);
-		bluePanel.add(Box.createHorizontalStrut(DialogEditLights.offImg.getIconWidth()), BorderLayout.EAST);
+		bluePanel.add(Box.createHorizontalStrut(DialogEditLights.OFF_IMG.getIconWidth()), BorderLayout.EAST);
 		this.add(bluePanel);
 		
 		if(light instanceof RGBWInterface rgbw) {
@@ -148,7 +148,7 @@ public class RGBPanel extends LightPanel {
 			whitePanel.setOpaque(false);
 			whitePanel.add(labelWhite, BorderLayout.NORTH);
 			whitePanel.add(sliderWhite, BorderLayout.CENTER);
-			whitePanel.add(Box.createHorizontalStrut(DialogEditLights.offImg.getIconWidth()), BorderLayout.EAST);
+			whitePanel.add(Box.createHorizontalStrut(DialogEditLights.OFF_IMG.getIconWidth()), BorderLayout.EAST);
 			this.add(whitePanel);
 		}
 

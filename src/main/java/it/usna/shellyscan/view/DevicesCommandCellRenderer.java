@@ -120,7 +120,7 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 				
 				DeviceModule module;
 				int indEditButton = modArray.length - 1;
-				while(indEditButton > 0 && ! ((module = modArray[indEditButton]) instanceof CCTInterface || module instanceof RGBInterface || (module instanceof WhiteInterface && modArray.length > 2))) {
+				while(indEditButton >= 0 && ! ((module = modArray[indEditButton]) instanceof CCTInterface || module instanceof RGBInterface || (module instanceof WhiteInterface && modArray.length > 2))) {
 					indEditButton--;
 				}
 				
