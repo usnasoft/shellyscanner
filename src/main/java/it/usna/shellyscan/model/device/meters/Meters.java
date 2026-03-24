@@ -10,6 +10,7 @@ public abstract class Meters implements Comparable<Meters> {
 		VAR, // reactive power
 		PF, // power factor
 		V, // voltage
+		XV, // voltage - custom expression (sensor addon)
 		I, // current
 		FREQ, // Frequency
 		T, // temperature

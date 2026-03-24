@@ -12,6 +12,7 @@ public enum ChartType {
 	Q("dlgChartsQPowerLabel", "dlgChartsQPowerYLabel", Meters.Type.VAR), // only gen1 EM
 	S("dlgChartsSPowerLabel", "dlgChartsSPowerYLabel", Meters.Type.VA),
 	V("dlgChartsVoltageLabel", "dlgChartsVoltageYLabel", Meters.Type.V),
+	XV("dlgChartsXVoltageLabel", "dlgChartsXVoltageYLabel", Meters.Type.XV), // Voltage custom expression
 	I("dlgChartsCurrentLabel", "dlgChartsCurrentYLabel", Meters.Type.I),
 	//		T("dlgChartsTempLabel", "dlgChartsTempYLabel", Meters.Type.T),
 	//		T1("dlgChartsTemp1Label", "dlgChartsTempYLabel", Meters.Type.T1),

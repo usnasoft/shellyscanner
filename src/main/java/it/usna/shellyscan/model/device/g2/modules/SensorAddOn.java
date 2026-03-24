@@ -50,11 +50,15 @@ public class SensorAddOn extends Meters {
 	private String voltmeterID;
 	private float volt;
 	private String voltmeterName;
+	private boolean xVoltSupported = false; // custom expression
+	private float xVolt;
+	private String xVoltUnit;
+	
 
 	public SensorAddOn(AbstractG2Device d) throws IOException {
 		try {
 			JsonNode peripherals = d.getJSON("/rpc/SensorAddon.GetPeripherals");
-			ArrayList<Meters.Type> types = new ArrayList<>();
+			List<Meters.Type> supportedList = new ArrayList<>();
 
 			if(peripherals.get("dht22") instanceof ObjectNode dht22Node && dht22Node.size() > 0) {
 				Iterator<String> dht22 = dht22Node.propertyNames().iterator();
@@ -66,27 +70,27 @@ public class SensorAddOn extends Meters {
 						humidityID = par;
 					}
 				}
-				types.add(Type.T);
-				types.add(Type.H);
+				supportedList.add(Type.T);
+				supportedList.add(Type.H);
 			}
 			if(peripherals.get("ds18b20") instanceof ObjectNode ds18b20Node && ds18b20Node.size() > 0) {
 				Iterator<String> temp = ds18b20Node.propertyNames().iterator();
 				for(int i = 0; temp.hasNext(); i++) {
 					if(i == 0) {
 						extT0ID = temp.next();
-						types.add(Type.T);
+						supportedList.add(Type.T);
 					} else if(i == 1) {
 						extT1ID = temp.next();
-						types.add(Type.T1);
+						supportedList.add(Type.T1);
 					} else if(i == 2) {
 						extT2ID = temp.next();
-						types.add(Type.T2);
+						supportedList.add(Type.T2);
 					} else if(i == 3) {
 						extT3ID = temp.next();
-						types.add(Type.T3);
+						supportedList.add(Type.T3);
 					} else if(i == 4) {
 						extT4ID = temp.next();
-						types.add(Type.T4);
+						supportedList.add(Type.T4);
 					}
 				}
 			}
@@ -94,24 +98,24 @@ public class SensorAddOn extends Meters {
 				Iterator<String> digInIterator = digIn.propertyNames().iterator();
 				if(digInIterator.hasNext()) {
 					switchID = digInIterator.next();
-					types.add(Type.EX);
+					supportedList.add(Type.EX);
 				}
 			}
 			if(peripherals.get("analog_in") instanceof ObjectNode analogIn) {
 				Iterator<String> analogInIterator = analogIn.propertyNames().iterator();
 				if(analogInIterator.hasNext()) {
 					analogID = analogInIterator.next();
-					types.add(Type.PERC);
+					supportedList.add(Type.PERC);
 				}
 			}
 			if(peripherals.get("voltmeter") instanceof ObjectNode voltIn) {
 				Iterator<String> voltInIterator = voltIn.propertyNames().iterator();
 				if(voltInIterator.hasNext()) {
 					voltmeterID = voltInIterator.next();
-					types.add(Type.V);
+					supportedList.add(Type.V);
 				}
 			}
-			supported = types.toArray(Type[]::new);
+			supported = supportedList.toArray(Type[]::new);
 		} catch (RuntimeException e) {
 			supported = new Type[0];
 			LOG.error("Add-on init error", e);
@@ -134,6 +138,7 @@ public class SensorAddOn extends Meters {
 			}
 			if(voltmeterID != null && (cnf = configuration.get(voltmeterID)) != null) {
 				voltmeterName = cnf.path("name").asString("");
+				xVoltUnit = cnf.path("xvoltage").path("unit").asString(null);
 			}
 			if(extT0ID != null && (cnf = configuration.get(extT0ID)) != null) {
 				extT0Name = cnf.path("name").asString("");
@@ -164,25 +169,44 @@ public class SensorAddOn extends Meters {
 				switchOn = status.path(switchID).path("state").asBoolean(false);
 			}
 			if(analogID != null) {
-				analog = status.path(analogID).path("percent").floatValue(0);
+				analog = status.path(analogID).path("percent").floatValue(0f);
 			}
 			if(voltmeterID != null) {
-				volt = status.path(voltmeterID).path("voltage").floatValue(0);
+				var voltNode = status.path(voltmeterID);
+				volt = voltNode.path("voltage").floatValue(0f);
+				var xVoltNode = voltNode.path("xvoltage");
+				if(xVoltNode.isMissingNode()) {
+					if(xVoltSupported) {
+						xVolt = 0f;
+						xVoltSupported = false;
+						var tempList = new ArrayList<Meters.Type>(List.of(supported));
+						tempList.remove(Meters.Type.XV);
+						supported = tempList.toArray(Type[]::new);
+					}
+				} else {
+					xVolt = xVoltNode.floatValue(0f);
+					if(xVoltSupported == false) {
+						xVoltSupported = true;
+						var tempList = new ArrayList<Meters.Type>(List.of(supported));
+						tempList.add(Meters.Type.XV);
+						supported = tempList.toArray(Type[]::new);
+					}
+				}
 			}
 			if(extT0ID != null) {
-				extT0 = status.path(extT0ID).path("tC").floatValue(0);
+				extT0 = status.path(extT0ID).path("tC").floatValue(0f);
 			}
 			if(extT1ID != null) {
-				extT1 = status.path(extT1ID).path("tC").floatValue(0);
+				extT1 = status.path(extT1ID).path("tC").floatValue(0f);
 			}
 			if(extT2ID != null) {
-				extT2 = status.path(extT2ID).path("tC").floatValue(0);
+				extT2 = status.path(extT2ID).path("tC").floatValue(0f);
 			}
 			if(extT3ID != null) {
-				extT3 = status.path(extT3ID).path("tC").floatValue(0);
+				extT3 = status.path(extT3ID).path("tC").floatValue(0f);
 			}
 			if(extT4ID != null) {
-				extT4 = status.path(extT4ID).path("tC").floatValue(0);
+				extT4 = status.path(extT4ID).path("tC").floatValue(0f);
 			}
 			if(humidityID != null) {
 				humidity = status.path(humidityID).path("rh").intValue(0);
@@ -202,6 +226,10 @@ public class SensorAddOn extends Meters {
 
 	public float getVoltage() {
 		return volt;
+	}
+	
+	public float getXVoltage() {
+		return xVolt;
 	}
 
 	public float getTemp0() {
@@ -233,7 +261,8 @@ public class SensorAddOn extends Meters {
 		return switch(t) {
 		case EX -> switchOn ? 1f : 0f;
 		case PERC -> analog;
-		case V -> volt;
+		case V-> volt;
+		case XV-> xVolt;
 		case T -> extT0;
 		case T1 -> extT1;
 		case T2 -> extT2;
@@ -250,6 +279,7 @@ public class SensorAddOn extends Meters {
 		case EX -> switchName;
 		case PERC -> analogName;
 		case V -> voltmeterName;
+		case XV -> voltmeterName + "[" + xVoltUnit + "]";
 		case T -> extT0Name;
 		case T1 -> extT1Name;
 		case T2 -> extT2Name;
@@ -386,5 +416,3 @@ public class SensorAddOn extends Meters {
 //		}
 //	}
 }
-
-//todo Gen2 fw 1.0.0 - Input invert and range_map configuration properties for analog input type

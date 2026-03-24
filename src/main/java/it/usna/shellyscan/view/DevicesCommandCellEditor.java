@@ -322,7 +322,7 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 		if(addEditButton) {
 			JPanel editSwitchPanel = new JPanel(new BorderLayout());
 			editSwitchPanel.setOpaque(false);
-			editSwitchPanel.removeAll();
+//			editSwitchPanel.removeAll();
 			editSwitchPanel.add(lightButton, BorderLayout.EAST);
 			editSwitchPanel.add(BorderLayout.WEST, editDialogButton);
 			lightPanel.add(editSwitchPanel, BorderLayout.EAST);
@@ -381,7 +381,7 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 		if(addEditButton) {
 			JPanel editSwitchPanel = new JPanel(new BorderLayout());
 			editSwitchPanel.setOpaque(false);
-			editSwitchPanel.removeAll();
+//			editSwitchPanel.removeAll();
 			editSwitchPanel.add(lightButton, BorderLayout.EAST);
 			editSwitchPanel.add(BorderLayout.WEST, editDialogButton);
 			lightPanel.add(editSwitchPanel, BorderLayout.EAST);
@@ -459,7 +459,7 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 		if(addEditButton) {
 			JPanel editSwitchPanel = new JPanel(new BorderLayout());
 			editSwitchPanel.setOpaque(false);
-			editSwitchPanel.removeAll();
+//			editSwitchPanel.removeAll();
 			editSwitchPanel.add(lightButton, BorderLayout.EAST);
 			editSwitchPanel.add(BorderLayout.WEST, editDialogButton);
 			lightPanel.add(editSwitchPanel, BorderLayout.EAST);
@@ -503,7 +503,7 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 		if(addEditButton) {
 			JPanel editSwitchPanel = new JPanel(new BorderLayout());
 			editSwitchPanel.setOpaque(false);
-			editSwitchPanel.removeAll();
+//			editSwitchPanel.removeAll();
 			editSwitchPanel.add(relayButton, BorderLayout.EAST);
 			editSwitchPanel.add(BorderLayout.WEST, editDialogButton);
 			relayPanel.add(editSwitchPanel, BorderLayout.EAST);
@@ -546,7 +546,7 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 		if(addEditButton) {
 			JPanel editSwitchPanel = new JPanel(new BorderLayout());
 			editSwitchPanel.setOpaque(false);
-			editSwitchPanel.removeAll();
+//			editSwitchPanel.removeAll();
 			editSwitchPanel.add(relayButton, BorderLayout.EAST);
 			editSwitchPanel.add(BorderLayout.WEST, editDialogButton);
 			panel.add(editSwitchPanel, BorderLayout.EAST);
@@ -605,7 +605,7 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 		if(addEditButton) {
 			JPanel editSwitchPanel = new JPanel(new BorderLayout());
 			editSwitchPanel.setOpaque(false);
-			editSwitchPanel.removeAll();
+//			editSwitchPanel.removeAll();
 			editSwitchPanel.add(lightButton, BorderLayout.EAST);
 			editSwitchPanel.add(editDialogButton, BorderLayout.WEST);
 			lightPanel.add(editSwitchPanel, BorderLayout.EAST);

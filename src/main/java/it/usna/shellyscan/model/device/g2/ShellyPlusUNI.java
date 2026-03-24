@@ -102,6 +102,11 @@ public class ShellyPlusUNI extends AbstractG2Device implements ModulesHolder {
 	}
 	
 	@Override
+	public String[] getInfoRequests() {
+		return SensorAddOn.getInfoRequests(super.getInfoRequests());
+	}
+	
+	@Override
 	public void restoreCheck(Map<String, JsonNode> backupJsons, Map<RestoreMsg, Object> res) {
 		try {
 			configure(); // maybe useless in case of mDNS use since you must reboot before -> on reboot the device registers again on mDNS ad execute a reload

@@ -31,7 +31,7 @@ import it.usna.shellyscan.model.device.modules.DeviceModule;
 import it.usna.shellyscan.model.device.modules.FloodInterface;
 import it.usna.shellyscan.model.device.modules.InputInterface;
 import it.usna.shellyscan.model.device.modules.MotionInterface;
-import it.usna.shellyscan.model.device.modules.PresenceInterface;
+import it.usna.shellyscan.model.device.modules.PresenceZoneInterface;
 import it.usna.shellyscan.model.device.modules.RGBCCTInterface;
 import it.usna.shellyscan.model.device.modules.RGBInterface;
 import it.usna.shellyscan.model.device.modules.RGBWInterface;
@@ -143,7 +143,7 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 						motionLabel.setText(LABELS.getString(pir.motion() ? "labelStatusMotion_true" : "labelStatusMotion_false"));
 						motionLabel.setForeground(foregroundColor);
 						stackedPanel.add(motionLabel);
-					} else if(module instanceof PresenceInterface presence) {
+					} else if(module instanceof PresenceZoneInterface presence) {
 						JPanel p = getSectionPanel(i == 0, new BorderLayout(8, 0));
 						JLabel motionLabel = (i == 0) ? label0 : new JLabel();
 						motionLabel.setText(LABELS.getString("labelPresenceNum"));

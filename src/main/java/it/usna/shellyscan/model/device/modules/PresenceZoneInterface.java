@@ -1,6 +1,6 @@
 package it.usna.shellyscan.model.device.modules;
 
-public interface PresenceInterface extends DeviceModule {
+public interface PresenceZoneInterface extends DeviceModule {
 	int numObjects();
 	
 	@Override
