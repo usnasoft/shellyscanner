@@ -102,6 +102,7 @@ import it.usna.shellyscan.model.device.g3.ShellyI4G3;
 import it.usna.shellyscan.model.device.g3.ShellyMini1G3;
 import it.usna.shellyscan.model.device.g3.ShellyMini1PMG3;
 import it.usna.shellyscan.model.device.g3.ShellyMiniPMG3;
+import it.usna.shellyscan.model.device.g3.ShellyPlugMG3;
 import it.usna.shellyscan.model.device.g3.ShellyPlugPMG3;
 import it.usna.shellyscan.model.device.g3.ShellyPlugSG3;
 import it.usna.shellyscan.model.device.g3.ShellyPlugSOutdoorG3;
@@ -117,6 +118,7 @@ import it.usna.shellyscan.model.device.g4.ShellyFloodG4;
 import it.usna.shellyscan.model.device.g4.ShellyG4Unmanaged;
 import it.usna.shellyscan.model.device.g4.ShellyMini1G4;
 import it.usna.shellyscan.model.device.g4.ShellyMini1PMG4;
+import it.usna.shellyscan.model.device.g4.ShellyMiniEMG4;
 import it.usna.shellyscan.model.device.g4.ShellyPowerStrip4G;
 import it.usna.shellyscan.view.DialogAuthentication;
 import tools.jackson.databind.JsonNode;
@@ -211,10 +213,10 @@ public class DevicesFactory {
 		}
 		try {
 			d.init(httpClient, info);
+		} catch(DeviceUnauthorizedException e) {
+			// do nothing
 		} catch(IOException e) {
-			if("Status-401".equals(e.getMessage()) == false) {
-				LOG.warn("create - init {}:{}", address, port, e);
-			}
+			LOG.warn("create - init {}:{}", address, port, e);
 		} catch(RuntimeException e) {
 			LOG.error("create - init {}:{}", address, port, e);
 		}
@@ -271,10 +273,10 @@ public class DevicesFactory {
 		}
 		try {
 			d.init(httpClient, wsClient, info);
+		} catch(DeviceUnauthorizedException e) {
+			// do nothing
 		} catch(IOException e) {
-			if("Status-401".equals(e.getMessage()) == false) {
-				LOG.warn("create - init {}:{}", address, port, e);
-			}
+			LOG.warn("create - init {}:{}", address, port, e);
 		} catch(RuntimeException e) {
 			LOG.error("create - init {}:{}", address, port, e);
 		}
@@ -301,6 +303,7 @@ public class DevicesFactory {
 			case ShellyMiniPMG3.ID -> new ShellyMiniPMG3(address, port, name);
 			case ShellyPlugSG3.ID -> new ShellyPlugSG3(address, port, name);
 			case ShellyPlugPMG3.ID -> new ShellyPlugPMG3(address, port, name);
+			case ShellyPlugMG3.ID -> new ShellyPlugMG3(address, port, name);
 			case ShellyPlugSOutdoorG3.ID -> new ShellyPlugSOutdoorG3(address, port, name);
 			case ShellyHTG3.ID -> new ShellyHTG3(address, port, name);
 			case ShellyDimmerG3.ID -> new ShellyDimmerG3(address, port, name);
@@ -332,10 +335,10 @@ public class DevicesFactory {
 		}
 		try {
 			d.init(httpClient, wsClient, info);
+		} catch(DeviceUnauthorizedException e) {
+			// do nothing
 		} catch(IOException e) {
-			if("Status-401".equals(e.getMessage()) == false) {
-				LOG.warn("create - init {}:{}", address, port, e);
-			}
+			LOG.warn("create - init {}:{}", address, port, e);
 		} catch(RuntimeException e) {
 			LOG.error("create - init {}:{}", address, port, e);
 		}
@@ -356,13 +359,12 @@ public class DevicesFactory {
 			case Shelly2PMG4.MODEL -> new Shelly2PMG4(address, port, name);
 			case ShellyMini1G4.MODEL -> new ShellyMini1G4(address, port, name);
 			case ShellyMini1PMG4.MODEL -> new ShellyMini1PMG4(address, port, name);
+			case ShellyMiniEMG4.MODEL -> new ShellyMiniEMG4(address, port, name);
 			case ShellyDimmerG4.MODEL -> new ShellyDimmerG4(address, port, name);
-
+			
 			case ShellyPowerStrip4G.MODEL -> new ShellyPowerStrip4G(address, port, name);
 			// Battery operated
 			case ShellyFloodG4.MODEL -> new ShellyFloodG4(address, port, name);
-
-			// PRO
 
 			default -> new ShellyG4Unmanaged(address, port, name);
 			};
@@ -372,10 +374,10 @@ public class DevicesFactory {
 		}
 		try {
 			d.init(httpClient, wsClient, info);
+		} catch(DeviceUnauthorizedException e) {
+			// do nothing
 		} catch(IOException e) {
-			if("Status-401".equals(e.getMessage()) == false) {
-				LOG.warn("create - init {}:{}", address, port, e);
-			}
+			LOG.warn("create - init {}:{}", address, port, e);
 		} catch(RuntimeException e) {
 			LOG.error("create - init {}:{}", address, port, e);
 		}
@@ -387,7 +389,7 @@ public class DevicesFactory {
 		synchronized (DevicesFactory.class) { // wait for this in order to authenticate all subsequent
 			int status = HttpStatus.UNAUTHORIZED_401;
 			char[] p = lastP;
-			if(p == null || (status = LoginManagerG2.testDigestAuthentication(httpClient, address, port, lastP, "/rpc/Shelly.GetStatus")) != HttpStatus.OK_200) {
+			if(lastP == null || (status = LoginManagerG2.testDigestAuthentication(httpClient, address, port, lastP, "/rpc/Shelly.GetStatus")) != HttpStatus.OK_200) {
 				DialogAuthentication credentialsDlg = new DialogAuthentication(
 						Main.LABELS.getString("dlgAuthTitle"),
 						null /*labelUser*/,
@@ -404,7 +406,7 @@ public class DevicesFactory {
 			}
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			if(status == HttpStatus.OK_200) {
-				setCredential(lastUser, p);
+				lastP = p;
 				return p;
 			} else {
 				return null;
@@ -438,7 +440,9 @@ public class DevicesFactory {
 
 	// default credentials
 	public static void setCredential(String user, char[] p) {
-		lastUser = user;
-		lastP = p;
+		synchronized (DevicesFactory.class) {
+			lastUser = user;
+			lastP = p;
+		}
 	}
 }
