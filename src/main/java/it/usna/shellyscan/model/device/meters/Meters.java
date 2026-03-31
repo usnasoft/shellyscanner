@@ -10,42 +10,55 @@ public abstract class Meters implements Comparable<Meters> {
 		VAR, // reactive power
 		PF, // power factor
 		V, // voltage
-		XV, // voltage - custom expression (sensor addon)
+		VL, // voltage - low (addon / UNI)
+		VX, // voltage - custom expression (sensor addon)
 		I, // current
 		FREQ, // Frequency
-		T, // temperature
+		T(Float.MAX_VALUE), // temperature
 		H, // humidity % (int)
 		HD, // humidity % (one decimal)
 		L, // lux
 		LD(true), // lux(description) 0 -> dark, 1 -> twilight, 2 -> bright
 		LIGHT(true), // boolean: 0/false -> no light, 1/true -> light
-		T1, // temperature
-		T2, // temperature
-		T3, // temperature
-		T4, // temperature
+		T1(Float.MAX_VALUE), // temperature
+		T2(Float.MAX_VALUE), // temperature
+		T3(Float.MAX_VALUE), // temperature
+		T4(Float.MAX_VALUE), // temperature
 		EX(true), // boolean: ext switch status
 		PERC, // 0-100
 		NUM, // integer - UNI counter
 		DMM, // distance [mm]
 		VIB(true), // boolean: vibration - 0=false; 1=true
-		ANG, // angle - accelerometer
-		ANG1, // angle - accelerometer
-		ANG2, // angle - accelerometer
-		CHANNEL, // channel - BLU remore channel
+		ANG(Float.MAX_VALUE), // angle - accelerometer
+		ANG1(Float.MAX_VALUE), // angle - accelerometer
+		ANG2(Float.MAX_VALUE), // angle - accelerometer
+		CHANNEL(Float.MAX_VALUE), // channel - BLU remore channel
 		BAT; // battery %
 		
-		final boolean enumType; // 0 or not 0
+		final boolean enumType; // the value should be translated as a specific status
+		final float nullValue; // the value considered as "off" (default: 0)
 		
-		private Type() {
+		Type() {
 			enumType = false;
+			nullValue = 0;
 		}
 		
-		private Type(boolean b) {
+		Type(boolean b) {
 			enumType = b;
+			nullValue = 0;
+		}
+		
+		Type(float disabledVal) {
+			enumType = false;
+			this.nullValue = disabledVal;
 		}
 		
 		public boolean isEnumType() {
 			return enumType;
+		}
+		
+		public float getNullValue() {
+			return nullValue;
 		}
 	};
 

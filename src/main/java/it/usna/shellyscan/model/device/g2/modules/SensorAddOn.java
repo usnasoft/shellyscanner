@@ -112,7 +112,7 @@ public class SensorAddOn extends Meters {
 				Iterator<String> voltInIterator = voltIn.propertyNames().iterator();
 				if(voltInIterator.hasNext()) {
 					voltmeterID = voltInIterator.next();
-					supportedList.add(Type.V);
+					supportedList.add(Type.VL);
 				}
 			}
 			supported = supportedList.toArray(Type[]::new);
@@ -180,7 +180,7 @@ public class SensorAddOn extends Meters {
 						xVolt = 0f;
 						xVoltSupported = false;
 						var tempList = new ArrayList<Meters.Type>(List.of(supported));
-						tempList.remove(Meters.Type.XV);
+						tempList.remove(Meters.Type.VX);
 						supported = tempList.toArray(Type[]::new);
 					}
 				} else {
@@ -188,7 +188,7 @@ public class SensorAddOn extends Meters {
 					if(xVoltSupported == false) {
 						xVoltSupported = true;
 						var tempList = new ArrayList<Meters.Type>(List.of(supported));
-						tempList.add(Meters.Type.XV);
+						tempList.add(Meters.Type.VX);
 						supported = tempList.toArray(Type[]::new);
 					}
 				}
@@ -261,8 +261,8 @@ public class SensorAddOn extends Meters {
 		return switch(t) {
 		case EX -> switchOn ? 1f : 0f;
 		case PERC -> analog;
-		case V-> volt;
-		case XV-> xVolt;
+		case VL-> volt;
+		case VX-> xVolt;
 		case T -> extT0;
 		case T1 -> extT1;
 		case T2 -> extT2;
@@ -278,8 +278,8 @@ public class SensorAddOn extends Meters {
 		return switch(t) {
 		case EX -> switchName;
 		case PERC -> analogName;
-		case V -> voltmeterName;
-		case XV -> voltmeterName + "[" + xVoltUnit + "]";
+		case VL -> voltmeterName;
+		case VX -> voltmeterName + "[" + xVoltUnit + "]";
 		case T -> extT0Name;
 		case T1 -> extT1Name;
 		case T2 -> extT2Name;

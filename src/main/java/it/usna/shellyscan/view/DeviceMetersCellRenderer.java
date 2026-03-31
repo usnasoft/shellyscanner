@@ -92,7 +92,7 @@ public class DeviceMetersCellRenderer extends JPanel implements TableCellRendere
 								}
 							} else {
 								val = new JLabel(String.format(Locale.ENGLISH, Main.LABELS.getString("METER_VAL_" + t), metValue));
-								if(metValue == 0f) {
+								if(metValue == t.getNullValue()) {
 									val.setEnabled(false);
 								}
 							}
@@ -132,14 +132,14 @@ public class DeviceMetersCellRenderer extends JPanel implements TableCellRendere
 	}
 	
 	private static boolean isVisible(Meters.Type t) {
-		return /*t != Meters.Type.VAR &&*/ t != Meters.Type.VA && t != Meters.Type.FREQ && t != Meters.Type.XV;
+		return /*t != Meters.Type.VAR &&*/ t != Meters.Type.VA && t != Meters.Type.FREQ && t != Meters.Type.VX;
 	}
 	
 	public static boolean hasHiddenMeasures(Meters meters) {
 		Type[] types = meters.getTypes();
 		if(types.length > HIDE_LIMIT) {
 			for(Meters.Type t: meters.getTypes()) {
-				if(/*t == Meters.Type.VAR ||*/ t == Meters.Type.VA || t == Meters.Type.FREQ || t == Meters.Type.XV) {
+				if(/*t == Meters.Type.VAR ||*/ t == Meters.Type.VA || t == Meters.Type.FREQ || t == Meters.Type.VX) {
 					return true;
 				}
 			}

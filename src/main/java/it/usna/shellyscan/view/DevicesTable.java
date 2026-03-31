@@ -422,7 +422,7 @@ public class DevicesTable extends ExTooltipTable {
 //	}
 	
 	public void addRow(ShellyAbstractDevice device, GhostDevice ghost) {
-		int index = ((UsnaTableModel)dataModel).addRow(generateRow(device, ghost, new Object[DevicesTable.COL_COMMAND_IDX + 1]));
+		int index = ((UsnaTableModel)dataModel).addRow(generateRow(device, ghost.getKeyNote(), new Object[DevicesTable.COL_COMMAND_IDX + 1]));
 		if(convertRowIndexToView(index) >= 0) {
 			columnsWidthAdapt();
 		}
@@ -430,7 +430,7 @@ public class DevicesTable extends ExTooltipTable {
 	}
 	
 	public void updateRow(ShellyAbstractDevice device, GhostDevice ghost, int modelIndex) {
-		generateRow(device, ghost, ((UsnaTableModel)dataModel).getRow(modelIndex));
+		generateRow(device, ghost.getKeyNote(), ((UsnaTableModel)dataModel).getRow(modelIndex));
 		((UsnaTableModel)dataModel).fireTableRowsUpdated(modelIndex, modelIndex);
 		final int i1 = selectionModel.getAnchorSelectionIndex(); // getRowSorter().allRowsChanged() do not preserve the selected cell; this mess the selection dragging the mouse
 //		final int i2 = lsm.getLeadSelectionIndex();
@@ -439,13 +439,13 @@ public class DevicesTable extends ExTooltipTable {
 //		lsm.setLeadSelectionIndex(i2);
 	}
 	
-	private static Object[] generateRow(ShellyAbstractDevice d, GhostDevice g, final Object row[]) {
+	private static Object[] generateRow(ShellyAbstractDevice d, String keyNote, final Object row[]) {
 		try {
 			row[DevicesTable.COL_STATUS_IDX] = getStatusIcon(d);
 			row[DevicesTable.COL_TYPE] = d.getTypeName();
 			row[DevicesTable.COL_DEVICE] = d.getHostname();
 			row[DevicesTable.COL_NAME] = d.getName();
-			row[DevicesTable.COL_KEYWORD] = g.getKeyNote();
+			row[DevicesTable.COL_KEYWORD] = keyNote;
 			row[DevicesTable.COL_MAC_IDX] = d.getMacAddress();
 			row[DevicesTable.COL_IP_IDX] = d.getAddressAndPort();
 			row[DevicesTable.COL_SSID_IDX] = d.getSSID();
