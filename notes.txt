@@ -415,6 +415,9 @@ gen2+ protected devices logs
 ---
 Plug M Gen3
 Shelly Mini EM G4
+Shelly Duo Bulb E27 Gen3
+Shelly Multicolor Bulb E27 Gen3
+Shelly Presence
 Chart: V custom expression
 bug fixed on Shelly Pro Dual Cover
 bug fixed on 3EM total power graph 
