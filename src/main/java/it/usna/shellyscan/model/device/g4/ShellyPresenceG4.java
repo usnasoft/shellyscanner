@@ -11,6 +11,7 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import it.usna.shellyscan.model.DeviceAPIException;
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.ModulesHolder;
 import it.usna.shellyscan.model.device.RestoreUtil;
@@ -153,8 +154,13 @@ public class ShellyPresenceG4 extends AbstractG4Device implements ModulesHolder 
 						errors.add(new PresenceZoneG4(this, key.substring(13)).restore(backupComponents, key));
 						currentZones.remove(key);
 					} else {
-						// create zone
-						// todo Presence.AddZone - https://next-api-docs.shelly.cloud/gen2/ComponentsAndServices/Presence#presenceaddzone
+						try {
+							PresenceZoneG4.addZone(this, (ObjectNode)comp.deepCopy().path("config"));
+						} catch(DeviceAPIException e) {
+							errors.add(e.getMessage());
+						} catch(Exception e) {
+							errors.add("Error adding stored " + key);
+						}
 					}
 				}
 			}

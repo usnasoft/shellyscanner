@@ -42,6 +42,20 @@ public class PresenceZoneG4 implements PresenceZoneInterface {
 	}
 	
 	/**
+	 * 
+	 * @param d the device
+	 * @param zoneConfiguration hte configuration (this node will be altered)
+	 * @return the generated component key
+	 * @throws IOException
+	 */
+	public static String addZone(AbstractG4Device d, ObjectNode zoneConfiguration) throws IOException {
+		zoneConfiguration.remove("id");
+		ObjectNode out = JsonNodeFactory.instance.objectNode().set("config", zoneConfiguration);
+		JsonNode newZone =  d.getJSON("Presence.AddZone", out);
+		return newZone.path("added").asString();
+	}
+	
+	/**
 	 * Restore data from backupComponents with backKey key on the current (this.id) PresenceZone
 	 * @param backupComponents
 	 * @param backKey
@@ -57,7 +71,7 @@ public class PresenceZoneG4 implements PresenceZoneInterface {
 		}
 		return null;
 	}
-	
+
 	private String configZone(JsonNode backZone) {
 		ObjectNode data = (ObjectNode)backZone.get("config").deepCopy();
 		/*int backId =*/ data.remove("id")/*.asInt()*/;
