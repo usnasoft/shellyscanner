@@ -430,10 +430,8 @@ todo - java -jar C:\Users\Administrator\Desktop\shellyscan_1_3_1_sj.jar  -graphs
 /rpc/PresenceZone.GetConfig?id=201
 http://192.168.1.15/rpc/Voltmeter.SetConfig?id=100&config={%22xvoltage%22:null}
 
+
 --- coming ?
-button zb/h&t zb
-
-
 
 
 With the Shelly Plus Uni you can apply a "Custom voltage expression" to translate the analogue/voltage input into something relevant. In my screengrab below, the expression translates the voltage to a water pressure in bar. The Shelly Plus Uni outputs this under the variable "xvoltage".

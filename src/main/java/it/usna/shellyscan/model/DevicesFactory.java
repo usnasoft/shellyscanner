@@ -93,6 +93,8 @@ import it.usna.shellyscan.model.device.g3.Shelly1PMG3;
 import it.usna.shellyscan.model.device.g3.Shelly2LG3;
 import it.usna.shellyscan.model.device.g3.Shelly2PMG3;
 import it.usna.shellyscan.model.device.g3.Shelly3EM63;
+import it.usna.shellyscan.model.device.g3.ShellyBulbDuoG3;
+import it.usna.shellyscan.model.device.g3.ShellyBulbRGBG3;
 import it.usna.shellyscan.model.device.g3.ShellyDimmerG3;
 import it.usna.shellyscan.model.device.g3.ShellyEMG3;
 import it.usna.shellyscan.model.device.g3.ShellyG3Unmanaged;
@@ -120,6 +122,7 @@ import it.usna.shellyscan.model.device.g4.ShellyMini1G4;
 import it.usna.shellyscan.model.device.g4.ShellyMini1PMG4;
 import it.usna.shellyscan.model.device.g4.ShellyMiniEMG4;
 import it.usna.shellyscan.model.device.g4.ShellyPowerStrip4G;
+import it.usna.shellyscan.model.device.g4.ShellyPresenceG4;
 import it.usna.shellyscan.view.DialogAuthentication;
 import tools.jackson.databind.JsonNode;
 
@@ -312,7 +315,8 @@ public class DevicesFactory {
 			case Shelly2LG3.ID -> new Shelly2LG3(address, port, name);
 			case ShellyEMG3.ID -> new ShellyEMG3(address, port, name);
 			case ShellyGatewayG3.ID -> new ShellyGatewayG3(address, port, name);
-
+			case ShellyBulbDuoG3.ID -> new ShellyBulbDuoG3(address, port, name);
+			case ShellyBulbRGBG3.ID -> new ShellyBulbRGBG3(address, port, name);
 			// X
 			case ShellyXMOD1.ID -> new ShellyXMOD1(address, port, name);
 			// Powered by Shelly
@@ -361,10 +365,14 @@ public class DevicesFactory {
 			case ShellyMini1PMG4.MODEL -> new ShellyMini1PMG4(address, port, name);
 			case ShellyMiniEMG4.MODEL -> new ShellyMiniEMG4(address, port, name);
 			case ShellyDimmerG4.MODEL -> new ShellyDimmerG4(address, port, name);
-			
 			case ShellyPowerStrip4G.MODEL -> new ShellyPowerStrip4G(address, port, name);
+			
+
+			case ShellyPresenceG4.MODEL -> new ShellyPresenceG4(address, port, name);
 			// Battery operated
+
 			case ShellyFloodG4.MODEL -> new ShellyFloodG4(address, port, name);
+			// PRO
 
 			default -> new ShellyG4Unmanaged(address, port, name);
 			};

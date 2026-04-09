@@ -45,6 +45,7 @@ public class Sensor {
 		case 0x2C -> Meters.Type.VIB; // dec 44 - vibration (0-1; on shelly is boolean)
 		case 0x3F -> Meters.Type.ANG; // dec 63 - angle (accelerometer)
 		case 0x40 -> Meters.Type.DMM; // dec 64 - distance mm
+		case 0x5F -> Meters.Type.RAIN; // dec 95 - precipitation mm
 		case 0x60 -> Meters.Type.CHANNEL; //  dec 96 - channel
 		default -> null;
 		};

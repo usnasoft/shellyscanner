@@ -28,6 +28,7 @@ public abstract class Meters implements Comparable<Meters> {
 		PERC, // 0-100
 		NUM, // integer - UNI counter
 		DMM, // distance [mm]
+		RAIN, // precipitation [mm]
 		VIB(true), // boolean: vibration - 0=false; 1=true
 		ANG(Float.MAX_VALUE), // angle - accelerometer
 		ANG1(Float.MAX_VALUE), // angle - accelerometer
