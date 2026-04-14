@@ -9,12 +9,14 @@ import java.awt.Window;
 import java.nio.file.Path;
 import java.util.concurrent.TimeUnit;
 
+import javax.swing.Box;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 
 import it.usna.shellyscan.Main;
+import it.usna.shellyscan.controller.UsnaOpenUrlAction;
 import it.usna.shellyscan.controller.UsnaAction;
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
@@ -80,6 +82,8 @@ public class WDSchedulerDialog extends JDialog {
 				thermPanel.loadFromBackup();
 			}
 		}) ));
+		buttonsPanel.add(Box.createHorizontalStrut(30));
+		buttonsPanel.add(new JButton(new UsnaOpenUrlAction(this, "helpBtnLabel", LABELS.getString("dlgSchedulerManualUrl"))));
 		buttonsPanel.add(new JButton(new UsnaAction("dlgClose", e -> dispose() )));
 		
 		getContentPane().add(buttonsPanel, BorderLayout.SOUTH);

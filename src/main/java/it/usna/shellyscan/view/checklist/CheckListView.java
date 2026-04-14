@@ -52,6 +52,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import it.usna.shellyscan.Main;
+import it.usna.shellyscan.controller.UsnaOpenUrlAction;
 import it.usna.shellyscan.controller.UsnaAction;
 import it.usna.shellyscan.controller.UsnaDropdownAction;
 import it.usna.shellyscan.controller.UsnaSelectedAction;
@@ -285,13 +286,7 @@ public class CheckListView extends JDialog implements UsnaEventListener<Devices.
 			exeService.schedule(() -> refreshAction.setEnabled(true), 600, TimeUnit.MILLISECONDS);
 		});
 
-		Action helpAction = new UsnaAction(this, "helpBtnTooltip", "helpBtnTooltip", null, "/images/Question24.png", e -> {
-			try {
-				Desktop.getDesktop().browse(URI.create(LABELS.getString("dlgChecklistManualUrl")));
-			} catch (IOException | UnsupportedOperationException ex) {
-				Msg.errorMsg(this, ex);
-			}
-		});
+		Action helpAction = new UsnaOpenUrlAction(this, "helpBtnTooltip", "helpBtnTooltip", "/images/Question24.png", LABELS.getString("dlgChecklistManualUrl"));
 
 		fill();
 

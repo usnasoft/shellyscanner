@@ -5,12 +5,10 @@ import static it.usna.shellyscan.Main.LABELS;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Cursor;
-import java.awt.Desktop;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
-import java.net.URI;
 import java.nio.file.Path;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
@@ -58,6 +56,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import it.usna.shellyscan.Main;
+import it.usna.shellyscan.controller.UsnaOpenUrlAction;
 import it.usna.shellyscan.controller.UsnaAction;
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.Devices.EventType;
@@ -144,13 +143,7 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 		commandPanel.add(eastCommandPanel, BorderLayout.EAST);
 		mainPanel.add(commandPanel, BorderLayout.SOUTH);
 
-		JButton btnHelp = new JButton(new UsnaAction("helpBtnLabel", e -> {
-			try {
-				Desktop.getDesktop().browse(URI.create(LABELS.getString("dlgChartsManualUrl")));
-			} catch (IOException | UnsupportedOperationException ex) {
-				Msg.errorMsg(this, ex);
-			}
-		}));
+		JButton btnHelp = new JButton(new UsnaOpenUrlAction(this, "helpBtnLabel", LABELS.getString("dlgChartsManualUrl")));
 		JButton btnClear = new JButton(new UsnaAction("dlgChartsBtnClear", e -> {
 			initDataSet(plot.getRangeAxis(), dataset, model, ind);
 			adjustScrollBar();

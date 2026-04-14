@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import javax.swing.BorderFactory;
+import javax.swing.Box;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
@@ -31,6 +32,7 @@ import javax.swing.JScrollPane;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 import it.usna.shellyscan.Main;
+import it.usna.shellyscan.controller.UsnaOpenUrlAction;
 import it.usna.shellyscan.controller.RestoreAction;
 import it.usna.shellyscan.controller.UsnaAction;
 import it.usna.shellyscan.controller.UsnaToggleAction;
@@ -122,6 +124,8 @@ public class TRVSchedulerDialog extends JDialog {
 		}) ));
 		buttonsPanel.add(new JButton(new UsnaAction(this, "labelRefresh", e -> refresh()) ));
 		buttonsPanel.add(new JButton(new UsnaAction("lblLoadFile", e -> loadFromBackup()) ));
+		buttonsPanel.add(Box.createHorizontalStrut(30));
+		buttonsPanel.add(new JButton(new UsnaOpenUrlAction(this, "helpBtnLabel", LABELS.getString("dlgSchedulerManualUrl"))));
 		buttonsPanel.add(new JButton(new UsnaAction("dlgClose", e -> dispose()) ));
 
 		pack();

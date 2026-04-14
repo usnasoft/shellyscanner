@@ -1,14 +1,18 @@
 package it.usna.shellyscan.view.scheduler.gen2plus;
 
+import static it.usna.shellyscan.Main.LABELS;
+
 import java.awt.BorderLayout;
 import java.awt.Dialog;
 import java.awt.Window;
 
+import javax.swing.Box;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
 
 import it.usna.shellyscan.Main;
+import it.usna.shellyscan.controller.UsnaOpenUrlAction;
 import it.usna.shellyscan.controller.UsnaAction;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.view.util.UtilMiscellaneous;
@@ -45,6 +49,8 @@ public class G2SchedulerDialog extends JDialog {
 		}) ));
 		buttonsPanel.add(new JButton(new UsnaAction(this, "labelRefresh", e -> scPanel.refresh() )));
 		buttonsPanel.add(new JButton(new UsnaAction("lblLoadFile", e -> scPanel.loadFromBackup() )));
+		buttonsPanel.add(Box.createHorizontalStrut(30));
+		buttonsPanel.add(new JButton(new UsnaOpenUrlAction(this, "helpBtnLabel", LABELS.getString("dlgSchedulerManualUrl"))));
 		buttonsPanel.add(new JButton(new UsnaAction("dlgClose", e -> dispose() )));
 
 		pack();
