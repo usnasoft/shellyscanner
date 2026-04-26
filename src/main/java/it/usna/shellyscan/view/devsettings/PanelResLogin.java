@@ -23,7 +23,7 @@ import it.usna.shellyscan.controller.DeferrablesContainer;
 import it.usna.shellyscan.model.device.GhostDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
-import it.usna.shellyscan.model.device.blu.AbstractBluDevice;
+import it.usna.shellyscan.model.device.blu.AbstractBTHomeDevice;
 import it.usna.shellyscan.model.device.g2.modules.LoginManagerG2;
 import it.usna.shellyscan.model.device.modules.LoginManager;
 import it.usna.shellyscan.view.devsettings.DialogDeviceSettings.Gen;
@@ -140,7 +140,7 @@ public class PanelResLogin extends AbstractSettingsPanel {
 		for(int i = 0; i < parentDlg.getLocalSize(); i++) {
 			try {
 				ShellyAbstractDevice d = parentDlg.getLocalDevice(i);
-				if(d instanceof AbstractBluDevice) {
+				if(d instanceof AbstractBTHomeDevice) {
 					exclude += "<br>" + UtilMiscellaneous.getFullName(d);
 					excludeCount++;
 					loginModule.add(null);
@@ -193,7 +193,7 @@ public class PanelResLogin extends AbstractSettingsPanel {
 		String res = "<html>";
 		for(int i = 0; i < parentDlg.getLocalSize(); i++) {
 			final ShellyAbstractDevice device = parentDlg.getLocalDevice(i);
-			if(device instanceof AbstractBluDevice == false) { // not blu
+			if(device instanceof AbstractBTHomeDevice == false) { // not blu
 				final LoginManager lm = loginModule.get(i);
 				if(lm != null) {
 					String msg;

@@ -168,7 +168,7 @@ public class CheckListView extends JDialog implements UsnaEventListener<Devices.
 		Action bleAction = new UsnaSelectedAction(this, table, "setBLE_action", "setBLE_action_tooletip", null, "/images/Bluetooth24.png", localRow -> { // AbstractG2Device
 			Object ble = tModel.getValueAt(localRow, CheckListTable.COL_BLE);
 			AbstractG2Device d = (AbstractG2Device) getLocalDevice(localRow);
-			d.setBLEMode(FALSE_STR.equals(ble));
+			d.setBLEEnabled(FALSE_STR.equals(ble));
 			try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e1) {}
 			updateRow(d, localRow);
 		});

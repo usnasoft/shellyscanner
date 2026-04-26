@@ -4,14 +4,18 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.util.List;
 
+import it.usna.shellyscan.model.device.ModulesHolder;
 import it.usna.shellyscan.model.device.meters.Meters;
+import it.usna.shellyscan.model.device.modules.DWInterface;
+import it.usna.shellyscan.model.device.modules.DeviceModule;
 import tools.jackson.databind.JsonNode;
 
-public class ShellyDW extends AbstractBatteryG1Device {
+public class ShellyDW extends AbstractBatteryG1Device implements ModulesHolder, DWInterface {
 	public static final String ID = "SHDW-1";
 	private static final Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.BAT};
 	private boolean open;
 	private Meters[] meters;
+	private DWInterface[] dwModule;
 
 	public ShellyDW(InetAddress address, int port, String hostname) {
 		super(address, port, hostname);
@@ -41,13 +45,19 @@ public class ShellyDW extends AbstractBatteryG1Device {
 		return ID;
 	}
 	
-	public boolean isOpen() {
-		return open;
-	}
-	
 	@Override
 	public Meters[] getMeters() {
 		return meters;
+	}
+	
+	@Override
+	public boolean open() {
+		return open;
+	}
+
+	@Override
+	public DeviceModule[] getModules() {
+		return dwModule;
 	}
 	
 	@Override

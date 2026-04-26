@@ -8,7 +8,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
 import it.usna.shellyscan.model.Devices;
-import it.usna.shellyscan.model.device.blu.AbstractBluDevice;
+import it.usna.shellyscan.model.device.blu.AbstractBTHomeDevice;
 import it.usna.shellyscan.model.device.blu.BTHomeDevice;
 import it.usna.shellyscan.model.device.meters.Meters;
 import it.usna.shellyscan.model.device.modules.DeviceModule;
@@ -19,13 +19,13 @@ import tools.jackson.databind.JsonNode;
  * @see https://bthome.io/format/
  */
 public class SensorsCollection extends Meters {
-	private final AbstractBluDevice blu;
+	private final AbstractBTHomeDevice blu;
 	private Sensor[] sensorsArray;
 	private ArrayList<DeviceModule> modules;
 	private Type[] mTypes;
 	private EnumMap<Type, Sensor> measuresMap = new EnumMap<>(Type.class);
 	
-	public SensorsCollection(AbstractBluDevice blu) throws IOException {
+	public SensorsCollection(AbstractBTHomeDevice blu) throws IOException {
 		this.blu = blu;
 		init();
 	}

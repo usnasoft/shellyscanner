@@ -51,7 +51,7 @@ import it.usna.shellyscan.model.Devices.EventType;
 import it.usna.shellyscan.model.device.GhostDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
-import it.usna.shellyscan.model.device.blu.AbstractBluDevice;
+import it.usna.shellyscan.model.device.blu.AbstractBTHomeDevice;
 import it.usna.shellyscan.model.device.blu.BTHomeDevice;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.g2.WebSocketDeviceListener;
@@ -332,7 +332,7 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 		if(fm.upadating()) {
 			fwInfo.uptime = d.getUptime();
 		}
-		if(d instanceof AbstractG2Device || d instanceof AbstractBluDevice) { // G3 extends G2
+		if(d instanceof AbstractG2Device || d instanceof AbstractBTHomeDevice) { // G3 extends G2
 			try {
 				fwInfo.wsSession = wsEventListener(index, /*(AbstractG2Device)*/d);
 			} catch (IOException | InterruptedException | ExecutionException e) {
@@ -418,7 +418,7 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 	}
 
 	private Future<Session> wsEventListener(int index, ShellyAbstractDevice d) throws IOException, InterruptedException, ExecutionException {
-		if(d instanceof AbstractBluDevice blu) {
+		if(d instanceof AbstractBTHomeDevice blu) {
 			return ((AbstractG2Device)blu.getParent()).connectWebSocketClient(new FMUpdateListener(index, BTHomeDevice.DEVICE_KEY_PREFIX + blu.getIndex()));
 		} else {
 			return ((AbstractG2Device)d).connectWebSocketClient(new FMUpdateListener(index, "sys"));

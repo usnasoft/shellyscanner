@@ -26,7 +26,7 @@ import javax.swing.table.TableCellEditor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import it.usna.shellyscan.model.device.blu.AbstractBluDevice;
+import it.usna.shellyscan.model.device.blu.AbstractBTHomeDevice;
 import it.usna.shellyscan.model.device.g1.modules.ThermostatG1;
 import it.usna.shellyscan.model.device.modules.CCTInterface;
 import it.usna.shellyscan.model.device.modules.DeviceModule;
@@ -651,7 +651,7 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 						thermProfileLabel.setText(/*thermostat.getCurrentProfile() + " " +*/ (Math.round((((float)thermSlider.getValue()) / therm.getUnitDivision()) * 18f + 320f) / 10f) + "°F");
 					}
 				} else {
-					if(therm instanceof AbstractBluDevice) {
+					if(therm instanceof AbstractBTHomeDevice) {
 						table.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 					}
 					try {
@@ -666,7 +666,7 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 		});
 		thermActiveButton.addActionListener(e -> {
 //			if(edited instanceof ThermostatInterface[] th) {
-				if(therm instanceof AbstractBluDevice) {
+				if(therm instanceof AbstractBTHomeDevice) {
 					table.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 				}
 				try {
@@ -680,7 +680,7 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 		});
 		thermButtonUp.addActionListener(e -> {
 			if(/*edited instanceof ThermostatInterface[] th &&*/ therm.getTargetTemp() < therm.getMaxTargetTemp()) {
-				if(therm instanceof AbstractBluDevice) {
+				if(therm instanceof AbstractBTHomeDevice) {
 					table.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 				}
 				try {
@@ -694,7 +694,7 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 		});
 		thermButtonDown.addActionListener(e -> {
 			if(/*edited instanceof ThermostatInterface[] th &&*/ therm.getTargetTemp() > therm.getMinTargetTemp()) {
-				if(therm instanceof AbstractBluDevice) {
+				if(therm instanceof AbstractBTHomeDevice) {
 					table.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 				}
 				try {

@@ -28,9 +28,9 @@ import tools.jackson.core.JacksonException;
 import tools.jackson.core.exc.StreamReadException;
 import tools.jackson.databind.JsonNode;
 
-public abstract class AbstractBluDevice extends ShellyAbstractDevice {
+public abstract class AbstractBTHomeDevice extends ShellyAbstractDevice {
 	public static final String GENERATION = "blu";
-	private static final Logger LOG = LoggerFactory.getLogger(AbstractBluDevice.class);
+	private static final Logger LOG = LoggerFactory.getLogger(AbstractBTHomeDevice.class);
 	protected final AbstractG2Device parent;
 //	protected WebSocketClient wsClient;
 	protected final String componentIndex;
@@ -41,11 +41,11 @@ public abstract class AbstractBluDevice extends ShellyAbstractDevice {
 	 * @param compInfo
 	 * @param index
 	 */
-	protected AbstractBluDevice(AbstractG2Device parent, JsonNode compInfo, String index) {
+	protected AbstractBTHomeDevice(AbstractG2Device parent, /*JsonNode compInfo*/String mac, String index) {
 		super(new BluInetAddressAndPort(parent.getAddressAndPort(), Integer.parseInt(index)));
 		this.parent = parent;
 		this.componentIndex = index;
-		this.mac = compInfo.path("config").path("addr").asString("");
+		this.mac = mac;//compInfo.path("config").path("addr").asString("");
 	}
 	
 	public void init(HttpClient httpClient/*, WebSocketClient wsClient*/) throws IOException {

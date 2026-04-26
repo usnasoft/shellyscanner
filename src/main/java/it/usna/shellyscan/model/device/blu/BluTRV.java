@@ -31,8 +31,8 @@ import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.JsonNodeFactory;
 import tools.jackson.databind.node.ObjectNode;
 
-public class BluTRV extends AbstractBluDevice implements ThermostatInterface, ModulesHolder {
-	private static final Logger LOG = LoggerFactory.getLogger(AbstractBluDevice.class);
+public class BluTRV extends AbstractBTHomeDevice implements ThermostatInterface, ModulesHolder {
+	private static final Logger LOG = LoggerFactory.getLogger(AbstractBTHomeDevice.class);
 	private static final String TRV_DEVICE = "blutrv";
 	public static final String DEVICE_KEY_PREFIX = TRV_DEVICE + ":";
 	public static final String ID = "BluTRV";
@@ -47,7 +47,7 @@ public class BluTRV extends AbstractBluDevice implements ThermostatInterface, Mo
 	private boolean tempChanged = false;
 	
 	public BluTRV(AbstractG2Device parent, JsonNode compInfo, String index) {
-		super(parent, compInfo, index);
+		super(parent, compInfo.path("config").path("addr").asString(""), index);
 		meters = new Meters[] {
 				new Meters() {
 					@Override

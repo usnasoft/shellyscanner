@@ -5,16 +5,19 @@ import java.net.InetAddress;
 import java.util.List;
 import java.util.Map;
 
+import it.usna.shellyscan.model.device.ModulesHolder;
 import it.usna.shellyscan.model.device.meters.Meters;
+import it.usna.shellyscan.model.device.modules.SmokeInterface;
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.JsonNode;
 
-public class ShellyPlusSmoke extends AbstractBatteryG2Device {
+public class ShellyPlusSmoke extends AbstractBatteryG2Device implements ModulesHolder, SmokeInterface {
 	public static final String ID = "PlusSmoke";
 	public static final String MODEL = "SNSN-0031Z";
 	private static final Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.BAT};
 	private Meters[] meters;
 	private boolean alarm;
+	private SmokeInterface[] smokeModule;
 
 	public ShellyPlusSmoke(InetAddress address, int port, String hostname) {
 		super(address, port, hostname);
@@ -32,6 +35,8 @@ public class ShellyPlusSmoke extends AbstractBatteryG2Device {
 					}
 				}
 		};
+		
+		smokeModule = new SmokeInterface[] {this};
 	}
 
 	@Override
@@ -48,9 +53,15 @@ public class ShellyPlusSmoke extends AbstractBatteryG2Device {
 	public Meters[] getMeters() {
 		return meters;
 	}
-
-	public boolean getAlarm() {
+	
+	@Override
+	public boolean smoke() {
 		return alarm;
+	}
+
+	@Override
+	public SmokeInterface[] getModules() {
+		return smokeModule;
 	}
 
 	@Override

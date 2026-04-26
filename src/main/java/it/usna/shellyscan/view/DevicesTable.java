@@ -36,12 +36,10 @@ import it.usna.shellyscan.model.device.LabelHolder;
 import it.usna.shellyscan.model.device.ModulesHolder;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
-import it.usna.shellyscan.model.device.blu.AbstractBluDevice;
+import it.usna.shellyscan.model.device.blu.AbstractBTHomeDevice;
 import it.usna.shellyscan.model.device.blu.BluInetAddressAndPort;
-import it.usna.shellyscan.model.device.g1.ShellyDW;
 import it.usna.shellyscan.model.device.g1.ShellyTRV;
 import it.usna.shellyscan.model.device.g1.modules.ThermostatG1;
-import it.usna.shellyscan.model.device.g2.ShellyPlusSmoke;
 import it.usna.shellyscan.model.device.meters.Meters;
 import it.usna.shellyscan.model.device.modules.DeviceModule;
 import it.usna.shellyscan.view.util.ScannerProperties;
@@ -65,8 +63,6 @@ public class DevicesTable extends ExTooltipTable {
 	public static final ImageIcon ERROR_BULLET = new ImageIcon(DevicesTable.class.getResource("/images/bullet_error.png"), LABELS.getString("labelDevError"));
 	private static final String TRUE = LABELS.getString("true_yn");
 	private static final String FALSE = LABELS.getString("false_yn");
-	private static final String YES = LABELS.getString("true_yna");
-	private static final String NO = LABELS.getString("false_yna");
 	
 	// model columns indexes
 	public static final int COL_STATUS_IDX = 0;
@@ -452,7 +448,7 @@ public class DevicesTable extends ExTooltipTable {
 			Status status = d.getStatus();
 			if(status != Status.NOT_LOOGGED && status != Status.ERROR && status != Status.GHOST /*&&(d instanceof ShellyUnmanagedDevice == false || ((ShellyUnmanagedDevice)d).geException() == null)*/) {
 				row[DevicesTable.COL_RSSI_IDX] = d.getRssi();
-				if(d instanceof AbstractBluDevice == false) {
+				if(d instanceof AbstractBTHomeDevice == false) {
 					row[DevicesTable.COL_CLOUD] = (d.getCloudEnabled() ? TRUE : FALSE) + " " + (d.getCloudConnected() ? TRUE : FALSE);
 					row[DevicesTable.COL_MQTT] = (d.getMQTTEnabled() ? TRUE : FALSE) + " " + (d.getMQTTConnected() ? TRUE : FALSE);
 				}
@@ -466,10 +462,6 @@ public class DevicesTable extends ExTooltipTable {
 				DeviceModule[] command = null;
 				if(d instanceof ModulesHolder mh && mh.getModulesCount() > 0) {
 					row[DevicesTable.COL_COMMAND_IDX] = command = mh.getModules();
-				} else if(d instanceof ShellyDW dw) {
-					row[DevicesTable.COL_COMMAND_IDX] = LABELS.getString("labelStatusOpen") + ": " + (dw.isOpen() ? YES : NO);
-				} else if(d instanceof ShellyPlusSmoke smoke) {
-					row[DevicesTable.COL_COMMAND_IDX] = String.format(LABELS.getString("labelStatusSmoke"), smoke.getAlarm() ? YES : NO);
 				} else if(d instanceof ShellyTRV trv) { // very specific
 					ThermostatG1 thermostat = trv.getThermostat();
 					if(thermostat.isEnabled()) {
@@ -507,7 +499,7 @@ public class DevicesTable extends ExTooltipTable {
 	
 	public static ImageIcon getStatusIcon(ShellyAbstractDevice d) {
 		if(d.getStatus() == Status.ON_LINE) {
-			if(d instanceof AbstractBluDevice) {
+			if(d instanceof AbstractBTHomeDevice) {
 				return new ImageIcon(BLUIMG, String.format(LABELS.getString("labelDevOnLIneBTHome"), LocalDateTime.ofInstant(Instant.ofEpochMilli(d.getLastTime()), ZoneId.systemDefault())));
 			} else {
 				return d.rebootRequired() ? ONLINE_BULLET_REBOOT : ONLINE_BULLET;

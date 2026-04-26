@@ -34,7 +34,7 @@ import it.usna.shellyscan.controller.DeferrablesContainer;
 import it.usna.shellyscan.model.device.GhostDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
-import it.usna.shellyscan.model.device.blu.AbstractBluDevice;
+import it.usna.shellyscan.model.device.blu.AbstractBTHomeDevice;
 import it.usna.shellyscan.model.device.modules.MQTTManager;
 import it.usna.shellyscan.view.DialogDeviceSelection;
 import it.usna.shellyscan.view.util.Msg;
@@ -260,7 +260,7 @@ public class PanelMQTTMix extends AbstractSettingsPanel implements UsnaEventList
 			for(int i = 0; i < parentDlg.getLocalSize(); i++) {
 				try {
 					d = parentDlg.getLocalDevice(i);
-					if(d instanceof AbstractBluDevice) {
+					if(d instanceof AbstractBTHomeDevice) {
 						mqttModule.add(null);
 						exclude += "<br>" + UtilMiscellaneous.getFullName(d);
 						excludeCount++;
@@ -358,7 +358,7 @@ public class PanelMQTTMix extends AbstractSettingsPanel implements UsnaEventList
 		String res = "<html>";
 		for(int i = 0; i < parentDlg.getLocalSize(); i++) {
 			ShellyAbstractDevice device = parentDlg.getLocalDevice(i);
-			if(device instanceof AbstractBluDevice == false) { // not blu
+			if(device instanceof AbstractBTHomeDevice == false) { // not blu
 				MQTTManager mqttM = mqttModule.get(i);
 				if(mqttM != null) {
 					String msg;

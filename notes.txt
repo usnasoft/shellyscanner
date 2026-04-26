@@ -418,13 +418,16 @@ Shelly Mini EM G4
 Shelly Duo Bulb E27 Gen3
 Shelly Multicolor Bulb E27 Gen3
 Shelly Presence
+BLU DW status
 Chart: V custom expression
 bug fixed on Shelly Pro Dual Cover
-bug fixed on 3EM total power graph 
+bug fixed on 3EM total power graph
 
 
 todo backup notes
 todo location
+
+todo blu reload (num IP)
 
 todo - java -jar C:\Users\Administrator\Desktop\shellyscan_1_3_1_sj.jar  -graphs EM -ipscan 192.168.1.200-200
 /rpc/PresenceZone.GetConfig?id=201

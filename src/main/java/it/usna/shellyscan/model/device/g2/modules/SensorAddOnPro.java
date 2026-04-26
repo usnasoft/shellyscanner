@@ -16,6 +16,7 @@ import it.usna.shellyscan.model.device.RestoreMsg;
 import it.usna.shellyscan.model.device.RestoreUtil;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.meters.Meters;
+import it.usna.shellyscan.model.device.meters.Meters.Type;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ObjectNode;
 
@@ -27,8 +28,7 @@ public class SensorAddOnPro {
 	private static final Logger LOG = LoggerFactory.getLogger(SensorAddOnPro.class);
 	public static final String BACKUP_SECTION = "SensorAddon.GetPeripherals.json";
 	public static final String ADDON_TYPE = "sensor";
-	private Meters.Type[] supported0;
-	private Meters.Type[] supported1;
+	private Meters.Type[][] supported = new Meters.Type[2][];
 
 	private String[] extT0ID = new String[2];
 	private String[] extT1ID = new String[2];
@@ -63,6 +63,9 @@ public class SensorAddOnPro {
 	private String[] voltmeterID = new String[2];
 	private float[] volt = new float[2];
 	private String[] voltmeterName = new String[2];
+	private boolean xVoltSupported[] = {false, false}; // custom expression
+	private float[] xVolt = new float[2];
+	private String[] xVoltUnit = new String[2];
 	
 	private Meters[] meters;
 	
@@ -71,7 +74,7 @@ public class SensorAddOnPro {
 	public SensorAddOnPro(AbstractG2Device d) throws IOException {
 		try {
 			JsonNode peripherals = d.getJSON("/rpc/SensorAddon.GetPeripherals");
-			List<ArrayList<Meters.Type>> suppertedList = List.of(new ArrayList<Meters.Type>(), new ArrayList<Meters.Type>());
+			List<List<Meters.Type>> suppertedList = List.of(new ArrayList<Meters.Type>(), new ArrayList<Meters.Type>());
 
 			if(peripherals.get("dht22") instanceof ObjectNode dht22Node && dht22Node.size() > 0) {
 				for(Entry<String, JsonNode> p: dht22Node.properties()) {
@@ -129,7 +132,7 @@ public class SensorAddOnPro {
 				for(Entry<String, JsonNode> p: voltIn.properties()) {
 					int group = p.getValue().get("io").intValue();
 					voltmeterID[group] = p.getKey();
-					suppertedList.get(group).add(Meters.Type.V);
+					suppertedList.get(group).add(Meters.Type.VL);
 				}
 			}
 			if(peripherals.get("digital_out") instanceof ObjectNode sw) {
@@ -141,10 +144,10 @@ public class SensorAddOnPro {
 				}
 			}
 			
-			supported0 = suppertedList.get(0).toArray(Meters.Type[]::new);
-			supported1 = suppertedList.get(1).toArray(Meters.Type[]::new);
+			supported[0] = suppertedList.get(0).toArray(Meters.Type[]::new);
+			supported[1] = suppertedList.get(1).toArray(Meters.Type[]::new);
 		} catch (RuntimeException e) {
-			supported0 = supported1 = new Meters.Type[0];
+			supported[0] = supported[1] = new Meters.Type[0];
 			LOG.error("Add-on init error", e);
 		}
 		
@@ -152,7 +155,7 @@ public class SensorAddOnPro {
 				new Meters() {
 					@Override
 					public Type[] getTypes() {
-						return supported0;
+						return supported[0];
 					}
 
 					@Override
@@ -161,6 +164,7 @@ public class SensorAddOnPro {
 						case EX -> digitalInputOn[0] ? 1f : 0f;
 						case PERC -> analog[0];
 						case V -> volt[0];
+						case VX-> xVolt[0];
 						case T -> extT0[0];
 						case T1 -> extT1[0];
 						case T2 -> extT2[0];
@@ -177,6 +181,7 @@ public class SensorAddOnPro {
 						case EX -> digitalInputName[0];
 						case PERC -> analogName[0];
 						case V -> voltmeterName[0];
+						case VX -> voltmeterName[0] + "[" + xVoltUnit[0] + "]";
 						case T -> extT0Name[0];
 						case T1 -> extT1Name[0];
 						case T2 -> extT2Name[0];
@@ -190,7 +195,7 @@ public class SensorAddOnPro {
 				new Meters() {
 					@Override
 					public Type[] getTypes() {
-						return supported1;
+						return supported[1];
 					}
 
 					@Override
@@ -198,7 +203,8 @@ public class SensorAddOnPro {
 						return switch(t) {
 						case EX -> digitalInputOn[1] ? 1f : 0f;
 						case PERC -> analog[1];
-						case V -> volt[1];
+						case VL -> volt[1];
+						case VX-> xVolt[1];
 						case T -> extT0[1];
 						case T1 -> extT1[1];
 						case T2 -> extT2[1];
@@ -214,7 +220,8 @@ public class SensorAddOnPro {
 						return switch(t) {
 						case EX -> digitalInputName[1];
 						case PERC -> analogName[1];
-						case V -> voltmeterName[1];
+						case VL -> voltmeterName[1];
+						case VX -> voltmeterName[1] + "[" + xVoltUnit[1] + "]";
 						case T -> extT0Name[1];
 						case T1 -> extT1Name[1];
 						case T2 -> extT2Name[1];
@@ -248,6 +255,7 @@ public class SensorAddOnPro {
 				}
 				if(voltmeterID[i] != null && (cnf = configuration.get(voltmeterID[i])) != null) {
 					voltmeterName[i] = cnf.path("name").asString("");
+					xVoltUnit[i] = cnf.path("xvoltage").path("unit").asString(null);
 				}
 				if(extT0ID[i] != null && (cnf = configuration.get(extT0ID[i])) != null) {
 					extT0Name[i] = cnf.path("name").asString("");
@@ -286,7 +294,26 @@ public class SensorAddOnPro {
 					analog[i] = status.path(analogID[i]).path("percent").floatValue(0);
 				}
 				if(voltmeterID[i] != null) {
-					volt[i] = status.path(voltmeterID[i]).path("voltage").floatValue(0);
+					var voltNode = status.path(voltmeterID[i]);
+					volt[i] = voltNode.path("voltage").floatValue(0f);
+					var xVoltNode = voltNode.path("xvoltage");
+					if(xVoltNode.isMissingNode()) {
+						xVolt[i] = 0f;
+						if(xVoltSupported[i]) {
+							xVoltSupported[i] = false;
+							var tempList = new ArrayList<Meters.Type>(List.of(supported[i]));
+							tempList.remove(Meters.Type.VX);
+							supported[i] = tempList.toArray(Type[]::new);
+						}
+					} else {
+						xVolt[i] = xVoltNode.floatValue(0f);
+						if(xVoltSupported[i] == false) {
+							xVoltSupported[i] = true;
+							var tempList = new ArrayList<Meters.Type>(List.of(supported[i]));
+							tempList.add(Meters.Type.VX);
+							supported[i] = tempList.toArray(Type[]::new);
+						}
+					}
 				}
 				if(extT0ID[i] != null) {
 					extT0[i] = status.path(extT0ID[i]).path("tC").floatValue(0);
@@ -320,6 +347,19 @@ public class SensorAddOnPro {
 		newArray[cmd.length] = "/rpc/SensorAddon.GetPeripherals";
 		return newArray;
 	}
+	
+	public Meters[] addMetersArray(Meters ... baseMeters) {
+		ArrayList<Meters> metersList = new ArrayList<Meters>(4);
+		for(Meters m: baseMeters) {
+			metersList.add(m);
+		}
+		for(Meters met: meters) {
+			if(met.getTypes().length > 0) {
+				metersList.add(met);
+			}
+		}
+		return metersList.toArray(Meters[]::new);
+	}
 
 	private static String enable(AbstractG2Device d, boolean enable) {
 		return d.postCommand("Sys.SetConfig", "{\"config\":{\"device\":{\"addon_type\":" + (enable ? "\"sensor\"" : "null") + "}}}");
@@ -344,7 +384,7 @@ public class SensorAddOnPro {
 			}
 			if(addOn == null && backupNumSensors > 0) { // NO addon on the device but addon on backup -> enable (must reboot and later install sensors)
 				res.put(RestoreMsg.WARN_RESTORE_ADDON_ENABLE, null);// msg: Please reboot the device at the end of the restore process and restore again to install sensors
-			} else if(addOn != null && (addOn.supported0.length + addOn.supported1.length) > 0 && backupNumSensors > 0) { // will restore configuration (if possible)
+			} else if(addOn != null && (addOn.supported[0].length + addOn.supported[1].length) > 0 && backupNumSensors > 0) { // will restore configuration (if possible)
 				try {
 					TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 					JsonNode devicePeripherals = d.getJSON("/rpc/SensorAddon.GetPeripherals");
@@ -354,7 +394,7 @@ public class SensorAddOnPro {
 				} catch (IOException | InterruptedException e) {
 					LOG.error("SensorAddOn.restoreCheck", e);
 				}
-			} else if(addOn != null && (addOn.supported0.length + addOn.supported1.length) == 0 && backupNumSensors > 0) { // will install sensors
+			} else if(addOn != null && (addOn.supported[0].length + addOn.supported[1].length) == 0 && backupNumSensors > 0) { // will install sensors
 				res.put(RestoreMsg.WARN_RESTORE_ADDON_INSTALL, null); // msg: Please reboot the device at the end of restore process and restore again to restore full sensors configuration
 			}
 		}
@@ -368,7 +408,7 @@ public class SensorAddOnPro {
 		} else if(backupAddOn != null && addOn == null) { // NO addon on the device but addon on backup -> enable (must reboot)
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			errors.add(enable(d, true));
-		} else if(backupAddOn != null && (addOn.supported0.length + addOn.supported1.length) == 0) { // addon exists on backup and on device but no sensor installed on the device -> install backup sensors (must reboot)
+		} else if(backupAddOn != null && (addOn.supported[0].length + addOn.supported[1].length) == 0) { // addon exists on backup and on device but no sensor installed on the device -> install backup sensors (must reboot)
 			for(Map.Entry<String, JsonNode> entry: backupAddOn.properties()) {
 				if(entry.getValue() != null && entry.getValue().isEmpty() == false) {
 					String sensor = entry.getKey();

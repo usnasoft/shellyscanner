@@ -71,11 +71,11 @@ import tools.jackson.databind.node.ObjectNode;
  */
 public abstract class AbstractG2Device extends ShellyAbstractDevice {
 	public static final int LOG_VERBOSE = 4;
-//	public static final int LOG_WARN = 1;
 
 	private static final Logger LOG = LoggerFactory.getLogger(AbstractG2Device.class);
 	protected WebSocketClient wsClient;
-	private boolean rangeExtender;
+	private boolean rangeExtenderEnabled;
+//	private boolean bleEnabled; removed from fw 2.0.0
 	private char[] loginPwd = null;
 
 	protected AbstractG2Device(InetAddress address, int port, String hostname) {
@@ -135,8 +135,8 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 
 		this.cloudEnabled = config.path("cloud").path("enable").booleanValue(false);
 		this.mqttEnabled = config.path("mqtt").path("enable").booleanValue(false);
-
-		this.rangeExtender = config.get("wifi").path("ap").path("range_extender").path("enable").booleanValue(false); // no "ap" on wall display ???
+		this.rangeExtenderEnabled = config.get("wifi").path("ap").path("range_extender").path("enable").booleanValue(false); // no "ap" on wall display ???
+//		this.bleEnabled = config.path("ble").path("enable").booleanValue(false); removed from fw 2.0.0
 	}
 
 	protected void fillStatus(JsonNode status) throws IOException {
@@ -201,9 +201,13 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 		return ret;
 	}
 
-	public String setBLEMode(boolean ble) {
-		return postCommand("BLE.SetConfig", "{\"config\":{\"enable\":" + ble + "}}");
+	public String setBLEEnabled(boolean enable) {
+		return postCommand("BLE.SetConfig", "{\"config\":{\"enable\":" + enable + "}}");
 	}
+	
+//	public boolean isBLEEnabled() {
+//		return bleEnabled;
+//	}
 	
 	public void setPwd(char[] p) {
 		loginPwd = p;
@@ -215,7 +219,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 	}
 
 	public boolean isExtender() {
-		return rangeExtender;
+		return rangeExtenderEnabled;
 	}
 
 	@Override
@@ -268,9 +272,6 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 			final JsonNode resp = executeRPC(method, payload);
 			JsonNode error;
 			if((error = resp.get("error")) == null) { // {"id":1,"src":"shellyplusi4-xxx","result":{"restart_required":true}}
-//				if(resp.path("result").path("restart_required").asBoolean(false)) {
-//					rebootRequired = true;
-//				}
 				rebootRequired = resp.path("result").path("restart_required").asBoolean(false);
 				if(status == Status.NOT_LOOGGED) {
 					return "Status-PROTECTED";

@@ -25,7 +25,7 @@ public class BluInetAddressAndPort extends InetAddressAndPort {
 		return index;
 	}
 	
-	public void addAlternativeParent(AbstractBluDevice otherBlu) {	
+	public void addAlternativeParent(AbstractBTHomeDevice otherBlu) {	
 		addAlternativeParent(otherBlu.parent.getAddressAndPort());
 		((BluInetAddressAndPort)otherBlu.getAddressAndPort()).getAlternativeParents().forEach(this::addAlternativeParent);
 	}

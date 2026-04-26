@@ -45,7 +45,7 @@ import tools.jackson.databind.node.ObjectNode;
  * Generic BTHome device with measures and/or buttons
  * https://shelly-api-docs.shelly.cloud/gen2/DynamicComponents/BTHome/
  */
-public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
+public class BTHomeDevice extends AbstractBTHomeDevice implements ModulesHolder {
 	public final static String GENERATION = "bth";
 	public static final String DEVICE_KEY_PREFIX = DynamicComponents.BTHOME_DEVICE + ":"; // "bthomedevice:";
 	public static final String SENSOR_KEY_PREFIX = DynamicComponents.BTHOME_SENSOR + ":"; // "bthomesensor:";
@@ -65,10 +65,11 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 			Map.entry(7, "Blu RC Button 4"), // line
 			Map.entry(8, "Blu TRV"),
 			Map.entry(9, "Blu Remote"),
-			Map.entry(10, "Blu Distance"),
-			Map.entry(12, "Blu H&T Display ZB"),
-			Map.entry(0x0B, "Weather Station"),
+			Map.entry(0x0A, "Blu Distance"), // 10
+			Map.entry(0x0B, "Weather Station"), // 11
+			Map.entry(0x0C, "Blu H&T Display ZB"), // 12
 			Map.entry(0x11, "Blu H&T ZB"), // 17
+			Map.entry(0x13, "Blu ---"), // 19
 			Map.entry(0x14, "Blu Door Window ZB"), // 20
 			Map.entry(0x15, "Blu Wall Switch 4 ZB"), // 21
 			Map.entry(0x16, "Blu RC Button 4 ZB"), // 22 - line
@@ -84,7 +85,7 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 	private String componentsKeys;
 
 	public BTHomeDevice(AbstractG2Device parent, JsonNode compInfo, int modelId, String index) {
-		super(parent, compInfo, index);
+		super(parent, compInfo.path("config").path("addr").asString(""), index);
 		typeID = "BLU" + modelId;
 
 		String modelDesc = MODELS_DICTIONARY.get(modelId);

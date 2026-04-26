@@ -27,6 +27,7 @@ import org.slf4j.LoggerFactory;
 import it.usna.shellyscan.Main;
 import it.usna.shellyscan.model.device.g1.modules.ThermostatG1;
 import it.usna.shellyscan.model.device.modules.CCTInterface;
+import it.usna.shellyscan.model.device.modules.DWInterface;
 import it.usna.shellyscan.model.device.modules.DeviceModule;
 import it.usna.shellyscan.model.device.modules.FloodInterface;
 import it.usna.shellyscan.model.device.modules.InputInterface;
@@ -37,6 +38,7 @@ import it.usna.shellyscan.model.device.modules.RGBInterface;
 import it.usna.shellyscan.model.device.modules.RGBWInterface;
 import it.usna.shellyscan.model.device.modules.RelayInterface;
 import it.usna.shellyscan.model.device.modules.RollerInterface;
+import it.usna.shellyscan.model.device.modules.SmokeInterface;
 import it.usna.shellyscan.model.device.modules.ThermostatInterface;
 import it.usna.shellyscan.model.device.modules.WhiteInterface;
 import it.usna.swing.VerticalFlowLayout;
@@ -139,26 +141,31 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 					} else if(module instanceof RGBInterface rgb) {
 						stackedPanel.add(getRGBSyntheticPanel(rgb, foregroundColor, i == 0, i == indEditButton));
 					} else if(module instanceof MotionInterface pir) {
-						JLabel motionLabel = (i == 0) ? label0 : new JLabel();
-						motionLabel.setText(LABELS.getString(pir.motion() ? "labelStatusMotion_true" : "labelStatusMotion_false"));
+						JLabel motionLabel = getSelectionLabel((i == 0), LABELS.getString(pir.motion() ? "labelStatusMotion_true" : "labelStatusMotion_false"));
 						motionLabel.setForeground(foregroundColor);
 						stackedPanel.add(motionLabel);
+					} else if(module instanceof DWInterface dw) {
+						JLabel dwLabel = getSelectionLabel((i == 0), LABELS.getString(dw.open() ? "labelStatusDW_open" : "labelStatusDW_closed"));
+						dwLabel.setForeground(foregroundColor);
+						stackedPanel.add(dwLabel);
+					} else if(module instanceof SmokeInterface smoke) {
+						JLabel smokeLabel = getSelectionLabel((i == 0), LABELS.getString(smoke.smoke() ? "labelStatusSmoke_yes" : "labelStatusSmoke_no"));
+						smokeLabel.setForeground(foregroundColor);
+						stackedPanel.add(smokeLabel);
 					} else if(module instanceof PresenceZoneInterface presence) {
 						JPanel p = getSectionPanel(i == 0, new BorderLayout(8, 0));
-						JLabel motionLabel = (i == 0) ? label0 : new JLabel();
-						motionLabel.setText(LABELS.getString("labelPresenceNum"));
-						motionLabel.setForeground(foregroundColor);
+						JLabel presenceLabel = getSelectionLabel((i == 0), LABELS.getString("labelPresenceNum"));
+						presenceLabel.setForeground(foregroundColor);
 						JLabel numLabel =  new JLabel(presence.numObjects() + "");
 						numLabel.setForeground(foregroundColor);
 						if(presence.numObjects() == 0) {
 							numLabel.setEnabled(false);
 						}
-						p.add(motionLabel, BorderLayout.WEST);
+						p.add(presenceLabel, BorderLayout.WEST);
 						p.add(numLabel, BorderLayout.CENTER);
 						stackedPanel.add(p);
 					}  else if(module instanceof FloodInterface sensor) {
-						JLabel floodLabel = (i == 0) ? label0 : new JLabel();
-						floodLabel.setText(LABELS.getString(sensor.flood() ? "labelStatusFlood_true" : "labelStatusFlood_false"));
+						JLabel floodLabel = getSelectionLabel((i == 0), LABELS.getString(sensor.flood() ? "labelStatusFlood_true" : "labelStatusFlood_false"));
 						floodLabel.setForeground(foregroundColor);
 						stackedPanel.add(floodLabel);
 					}
@@ -597,6 +604,15 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 			JPanel panel = new JPanel(lm);
 			panel.setOpaque(false);
 			return panel;
+		}
+	}
+	
+	private JLabel getSelectionLabel(boolean first, String text) {
+		if(first) {
+			label0.setText(text);
+			return label0;
+		} else {
+			return new JLabel(text);
 		}
 	}
 	
