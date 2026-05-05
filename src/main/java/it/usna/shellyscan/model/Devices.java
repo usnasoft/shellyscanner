@@ -369,6 +369,8 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 	/**
 	 * Create a device - JsonNode info (/shelly) given
 	 */
+	private List<BLEDevice> BLEDevicesList = new ArrayList<BLEDevice>();
+	
 	private void create(InetAddress address, int port, JsonNode info, String hostName) {
 		LOG.trace("Creating {}:{} - {}", address, port, hostName);
 		try {
@@ -410,15 +412,15 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 					// todo
 					// creare una lista di "bleDevices" BLEDevice accumulando i gw i aggiungere i gw ai BTHomeDevice in lista;
 					// alla creazione di un BTHomeDevice verificare se esiste già in bleDevices stesso mac, sommare i gw e rimuovere
-//					if(g2.isBLEEnabled()) {
+
 					TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-						g2.getJSONIterator("/rpc/BLE.CloudRelay.ListInfos", "devices").forEachRemaining(bleDev -> {
-							LOG.debug(d.getAddressAndPort() + " - " + bleDev);
-							Entry<String, JsonNode> nodeEntry = bleDev.properties().iterator().next();
-							new BLEDevice(g2, nodeEntry.getKey(), "0");
-							// todo new BLEDevice
-						});
-//					}
+					g2.getJSONIterator("/rpc/BLE.CloudRelay.ListInfos", "devices").forEachRemaining(bleDev -> {
+						LOG.debug(d.getAddressAndPort() + " - " + bleDev);
+						Entry<String, JsonNode> nodeEntry = bleDev.properties().iterator().next();
+						String mac = nodeEntry.getKey();
+						new BLEDevice(g2, mac , "0");
+						// todo new BLEDevice
+					});
 				}
 			}
 		} catch(DeviceUnauthorizedException e) {

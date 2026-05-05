@@ -13,10 +13,10 @@ import org.slf4j.LoggerFactory;
 import it.usna.shellyscan.Main;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.ShellyGenericUnmanagedImpl;
-import it.usna.shellyscan.model.device.blu.AbstractBluDevice;
+import it.usna.shellyscan.model.device.blu.AbstractBTHomeDevice;
 import it.usna.shellyscan.model.device.blu.BTHomeDevice;
 import it.usna.shellyscan.model.device.blu.BluTRV;
-import it.usna.shellyscan.model.device.blu.ShellyBluUnmanaged;
+import it.usna.shellyscan.model.device.blu.ShellyBTHomeUnmanaged;
 import it.usna.shellyscan.model.device.g1.AbstractG1Device;
 import it.usna.shellyscan.model.device.g1.Button1;
 import it.usna.shellyscan.model.device.g1.Shelly1;
@@ -116,6 +116,7 @@ import it.usna.shellyscan.model.device.g4.Shelly1G4;
 import it.usna.shellyscan.model.device.g4.Shelly1PMG4;
 import it.usna.shellyscan.model.device.g4.Shelly2PMG4;
 import it.usna.shellyscan.model.device.g4.ShellyDimmerG4;
+import it.usna.shellyscan.model.device.g4.ShellyEMG4;
 import it.usna.shellyscan.model.device.g4.ShellyFloodG4;
 import it.usna.shellyscan.model.device.g4.ShellyG4Unmanaged;
 import it.usna.shellyscan.model.device.g4.ShellyMini1G4;
@@ -366,7 +367,8 @@ public class DevicesFactory {
 			case ShellyMiniEMG4.MODEL -> new ShellyMiniEMG4(address, port, name);
 			case ShellyDimmerG4.MODEL -> new ShellyDimmerG4(address, port, name);
 			case ShellyPowerStrip4G.MODEL -> new ShellyPowerStrip4G(address, port, name);
-			
+
+			case ShellyEMG4.MODEL -> new ShellyEMG4(address, port, name);
 
 			case ShellyPresenceG4.MODEL -> new ShellyPresenceG4(address, port, name);
 			// Battery operated
@@ -422,8 +424,8 @@ public class DevicesFactory {
 		}
 	}
 	
-	public static AbstractBluDevice createBlu(AbstractG2Device parent, HttpClient httpClient, /*WebSocketClient wsClient,*/ JsonNode info, String key) {
-		AbstractBluDevice blu;
+	public static AbstractBTHomeDevice createBlu(AbstractG2Device parent, HttpClient httpClient, /*WebSocketClient wsClient,*/ JsonNode info, String key) {
+		AbstractBTHomeDevice blu;
 		try {
 			if(key.startsWith(BTHomeDevice.DEVICE_KEY_PREFIX)) {
 				int model = info.path("attrs").path("model_id").asInt(-1);
@@ -434,7 +436,7 @@ public class DevicesFactory {
 		} catch(Exception e) { // really unexpected
 			LOG.error("createBlu", e);
 			String index = key.substring(key.indexOf(':') + 1);
-			blu = new ShellyBluUnmanaged(parent, info, index, e);
+			blu = new ShellyBTHomeUnmanaged(parent, info, index, e);
 		}
 		try {
 			blu.init(httpClient/*, wsClient*/);

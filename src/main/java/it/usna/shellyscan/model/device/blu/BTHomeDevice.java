@@ -56,25 +56,6 @@ public class BTHomeDevice extends AbstractBTHomeDevice implements ModulesHolder 
 //			"SBDW-002C", "Blu Door Window", "SBHT-003C", "Blu H&T",
 //			"SBBT-004CEU", "Blu Wall Switch 4", "SBBT-004CUS", "Blu RC Button 4");
 
-	private static final Map<Integer, String> MODELS_DICTIONARY =  Map.ofEntries(
-			Map.entry(1, "Blu Button"),
-			Map.entry(2, "Blu Door Window"),
-			Map.entry(3, "Blu H&T"),
-			Map.entry(5, "Blu Motion"),
-			Map.entry(6, "Blu Wall Switch 4"), // Square
-			Map.entry(7, "Blu RC Button 4"), // line
-			Map.entry(8, "Blu TRV"),
-			Map.entry(9, "Blu Remote"),
-			Map.entry(0x0A, "Blu Distance"), // 10
-			Map.entry(0x0B, "Weather Station"), // 11
-			Map.entry(0x0C, "Blu H&T Display ZB"), // 12
-			Map.entry(0x11, "Blu H&T ZB"), // 17
-			Map.entry(0x13, "Blu ---"), // 19
-			Map.entry(0x14, "Blu Door Window ZB"), // 20
-			Map.entry(0x15, "Blu Wall Switch 4 ZB"), // 21
-			Map.entry(0x16, "Blu RC Button 4 ZB"), // 22 - line
-			Map.entry(0x17, "Blu Button Tough 1 ZB") // 23
-			);
 	private String typeName;
 	private String typeID;
 	private SensorsCollection sensors;
@@ -88,9 +69,26 @@ public class BTHomeDevice extends AbstractBTHomeDevice implements ModulesHolder 
 		super(parent, compInfo.path("config").path("addr").asString(""), index);
 		typeID = "BLU" + modelId;
 
-		String modelDesc = MODELS_DICTIONARY.get(modelId);
-		this.typeName = (modelDesc == null) ? "Generic BTHome" : modelDesc;
-
+		this.typeName = switch(modelId) {
+		case 1 -> "Blu Button";
+		case 2 -> "Blu Door Window";
+		case 3 -> "Blu H&T";
+		case 5 -> "Blu Motion";
+		case 6 -> "Blu Wall Switch 4"; // Square
+		case 7 -> "Blu RC Button 4"; // line
+		case 8 -> "Blu TRV";
+		case 9 -> "Blu Remote";
+		case 0x0A -> "Blu Distance"; // 10
+		case 0x0B -> "Weather Station"; // 11
+		case 0x0C -> "Blu H&T Display ZB"; // 12
+		case 0x11 -> "Blu H&T ZB"; // 17
+		case 0x13 -> "Blu ---"; // 19
+		case 0x14 -> "Blu Door Window ZB"; // 20
+		case 0x15 -> "Blu Wall Switch 4 ZB"; // 21
+		case 0x16 -> "Blu RC Button 4 ZB"; // 22 - line
+		case 0x17 -> "Blu Button Tough 1 ZB"; // 23
+		default -> "Generic BTHome";
+		};
 		this.webhooks = new Webhooks(parent);
 		this.uptime = -1;
 	}

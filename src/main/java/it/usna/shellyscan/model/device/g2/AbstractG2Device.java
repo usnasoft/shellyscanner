@@ -54,7 +54,7 @@ import it.usna.shellyscan.model.device.g2.modules.SensorAddOn;
 import it.usna.shellyscan.model.device.g2.modules.TimeAndLocationManagerG2;
 import it.usna.shellyscan.model.device.g2.modules.WIFIManagerG2;
 import it.usna.shellyscan.model.device.g2.modules.Webhooks;
-import it.usna.shellyscan.model.device.modules.DisplayInterface;
+import it.usna.shellyscan.model.device.modules.WallDisplayInterface;
 import it.usna.shellyscan.model.device.modules.FirmwareManager;
 import it.usna.shellyscan.model.device.modules.InputResetManager;
 import it.usna.shellyscan.model.device.modules.LoginManager;
@@ -403,7 +403,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 	 - auth.[paramName]=paramValue. For example about the username it will be auth.username=admin&auth.cnonce=…&auth.respose=...
 	 */
 	public Future<Session> connectWebSocketLogs(WebSocketDeviceListener listener) throws IOException {
-		if(getLoginManager().isEnabled() && this instanceof DisplayInterface == false) {
+		if(getLoginManager().isEnabled() && this instanceof WallDisplayInterface == false) {
 			try {
 				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 				var response = httpClient.GET("ws://" + addressAndPort.getRepresentation() + "/debug/log");
