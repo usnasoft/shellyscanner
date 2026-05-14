@@ -7,7 +7,6 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
@@ -39,7 +38,6 @@ import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
 import it.usna.shellyscan.model.device.ShellyUnmanagedDeviceInterface;
 import it.usna.shellyscan.model.device.blu.AbstractBTHomeDevice;
-import it.usna.shellyscan.model.device.blu.BLEDevice;
 import it.usna.shellyscan.model.device.blu.BTHomeDevice;
 import it.usna.shellyscan.model.device.blu.BluInetAddressAndPort;
 import it.usna.shellyscan.model.device.blu.BluTRV;
@@ -90,13 +88,6 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 		httpClient.setDestinationIdleTimeout(300_000); // 5 min
 		httpClient.setMaxConnectionsPerDestination(8);
 		httpClient.start();
-		
-//		wsClient.setConnectTimeout(100_000);
-//		wsClient.setIdleTimeout(Duration.ofMinutes(100));
-//		wsClient.setInputBufferSize(100_000);
-//		wsClient.setMaxBinaryMessageSize(100_000);
-//		wsClient.setMaxTextMessageSize(100_000);
-//		wsClient.setOutputBufferSize(100_000);
 		wsClient.setStopAtShutdown(true);
 		wsClient.start();
 	}
@@ -365,12 +356,10 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 			}
 		}
 	}
-
+	
 	/**
 	 * Create a device - JsonNode info (/shelly) given
 	 */
-	private List<BLEDevice> BLEDevicesList = new ArrayList<BLEDevice>();
-	
 	private void create(InetAddress address, int port, JsonNode info, String hostName) {
 		LOG.trace("Creating {}:{} - {}", address, port, hostName);
 		try {
@@ -413,14 +402,14 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 					// creare una lista di "bleDevices" BLEDevice accumulando i gw i aggiungere i gw ai BTHomeDevice in lista;
 					// alla creazione di un BTHomeDevice verificare se esiste già in bleDevices stesso mac, sommare i gw e rimuovere
 
-					TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-					g2.getJSONIterator("/rpc/BLE.CloudRelay.ListInfos", "devices").forEachRemaining(bleDev -> {
-						LOG.debug(d.getAddressAndPort() + " - " + bleDev);
-						Entry<String, JsonNode> nodeEntry = bleDev.properties().iterator().next();
-						String mac = nodeEntry.getKey();
-						new BLEDevice(g2, mac , "0");
-						// todo new BLEDevice
-					});
+//					TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+//					g2.getJSONIterator("/rpc/BLE.CloudRelay.ListInfos", "devices").forEachRemaining(bleDev -> {
+//						LOG.debug(d.getAddressAndPort() + " - " + bleDev);
+//						Entry<String, JsonNode> nodeEntry = bleDev.properties().iterator().next();
+//						String mac = nodeEntry.getKey();
+//						new BLEDevice(g2, mac , "0");
+//						// todo new BLEDevice
+//					});
 				}
 			}
 		} catch(DeviceUnauthorizedException e) {
@@ -653,6 +642,17 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 //		}
 //		return null;
 //	}
+	
+	public int indexByMac(String mac) {
+		synchronized(devices) {
+			for(int i = 0; i < devices.size(); i++) {
+				if(devices.get(i).getMacAddress().equals(mac)) {
+					return i;
+				}
+			}
+		}
+		return -1;
+	}
 
 	private final class MDNSListener implements ServiceListener {
 		@Override

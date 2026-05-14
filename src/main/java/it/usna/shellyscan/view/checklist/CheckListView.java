@@ -52,9 +52,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import it.usna.shellyscan.Main;
-import it.usna.shellyscan.controller.UsnaOpenUrlAction;
 import it.usna.shellyscan.controller.UsnaAction;
 import it.usna.shellyscan.controller.UsnaDropdownAction;
+import it.usna.shellyscan.controller.UsnaOpenUrlAction;
 import it.usna.shellyscan.controller.UsnaSelectedAction;
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.Devices.EventType;
@@ -63,8 +63,11 @@ import it.usna.shellyscan.model.device.InetAddressAndPort;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice.LogMode;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
+import it.usna.shellyscan.model.device.blu.AbstractBTHomeDevice;
+import it.usna.shellyscan.model.device.blu.BLEGateway;
 import it.usna.shellyscan.model.device.g1.AbstractG1Device;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
+import it.usna.shellyscan.model.device.g2.JsonPageIterator;
 import it.usna.shellyscan.model.device.g2.modules.FirmwareManagerG2;
 import it.usna.shellyscan.model.device.g2.modules.RangeExtenderManager;
 import it.usna.shellyscan.model.device.g2.modules.ScheduleManager;
@@ -81,6 +84,7 @@ import it.usna.shellyscan.view.util.UtilMiscellaneous;
 import it.usna.swing.UsnaPopupMenu;
 import it.usna.swing.table.UsnaTableModel;
 import it.usna.swing.texteditor.TextDocumentListener;
+import it.usna.util.AccumulatingUniqueMap;
 import it.usna.util.UsnaEventListener;
 import tools.jackson.databind.JsonNode;
 
@@ -96,6 +100,7 @@ public class CheckListView extends JDialog implements UsnaEventListener<Devices.
 	private final JToolBar toolBar = new JToolBar();
 	private final CheckListTable table;
 	private final UsnaTableModel tModel;
+	private AccumulatingUniqueMap<String, BLEGateway> bleDevicesGWMap = new AccumulatingUniqueMap<>();
 	private ScheduledExecutorService exeService /* = Executors.newFixedThreadPool(20) */;
 
 	public CheckListView(final Frame owner, Devices appModel, int[] devicesInd, final SortOrder ipSort) {
@@ -282,6 +287,7 @@ public class CheckListView extends JDialog implements UsnaEventListener<Devices.
 		refreshAction.setActionListener(e -> {
 			tModel.clear();
 			refreshAction.setEnabled(false);
+			bleDevicesGWMap.clear();
 			fill();
 			exeService.schedule(() -> refreshAction.setEnabled(true), 600, TimeUnit.MILLISECONDS);
 		});
@@ -533,6 +539,7 @@ public class CheckListView extends JDialog implements UsnaEventListener<Devices.
 	}
 
 	private void fill() {
+		boolean blu = false;
 		if(exeService != null && exeService.isShutdown() == false) {
 			exeService.shutdownNow();
 		}
@@ -543,8 +550,31 @@ public class CheckListView extends JDialog implements UsnaEventListener<Devices.
 			tRow[CheckListTable.COL_STATUS] = DevicesTable.UPDATING_BULLET;
 			tRow[CheckListTable.COL_NAME] = UtilMiscellaneous.getExtendedHostName(d);
 			tRow[CheckListTable.COL_IP] = d.getAddressAndPort();
-			final int row = tModel.addRow(tRow);
-			updateRow(d, row);
+			/*final int row =*/ tModel.addRow(tRow);
+			if(d instanceof AbstractBTHomeDevice) {
+				blu = true;
+			}
+		}
+		for (int i = 0; i < devicesInd.length; i++) {
+			updateRow(appModel.get(devicesInd[i]), i);
+		}
+		// BLU devices to check
+		if(blu) {
+			exeService.execute(() -> {
+				for (int i = 0; i < appModel.size(); i++) {
+					if(getLocalIndex(i) == -1) {
+						final ShellyAbstractDevice d = appModel.get(i);
+						if(d instanceof AbstractG2Device g2 && d instanceof BatteryDeviceInterface == false && d.getStatus() == Status.ON_LINE) {
+							try {
+								gateways(g2);
+							} catch (IOException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
+						}
+					}
+				}
+			});
 		}
 	}
 	
@@ -561,7 +591,7 @@ public class CheckListView extends JDialog implements UsnaEventListener<Devices.
 					g1Row(g1, d.getJSON("/settings"), tRow);
 				} else if (d instanceof AbstractG2Device g2) { // G2-G3-...
 					g2Row(g2, d.getJSON("/rpc/Shelly.GetConfig"), d.getJSON("/rpc/Shelly.GetStatus"), tRow);
-				} else /*if (d instanceof AbstractBluDevice blu)*/ {
+				} else /*if (d instanceof AbstractBTHomeDevice blu)*/ {
 					//bluRow(blu, tRow);
 					tRow[CheckListTable.COL_STATUS] = DevicesTable.getStatusIcon(d);
 				}
@@ -629,7 +659,7 @@ public class CheckListView extends JDialog implements UsnaEventListener<Devices.
 		tRow[CheckListTable.COL_AUTO_FW_UPDATE] = NOT_APPLICABLE_STR;
 	}
 
-	private static void g2Row(AbstractG2Device d, JsonNode config, JsonNode status, Object[] tRow) {
+	private void g2Row(AbstractG2Device d, JsonNode config, JsonNode status, Object[] tRow) {
 		Boolean eco = boolVal(config.at("/sys/device/eco_mode"));
 		Object ap = boolVal(config.at("/wifi/ap/enable"));
 		if (ap != null && ap == Boolean.TRUE && config.at("/wifi/ap/is_open").asBoolean(true) == false) {
@@ -647,20 +677,34 @@ public class CheckListView extends JDialog implements UsnaEventListener<Devices.
 		}
 		Object debug = (logModes.isEmpty()) ? Boolean.FALSE : logModes.stream().map(log -> LABELS.getString("debug" + log.name())).collect(Collectors.joining(", "));
 		Object ble;
-		JsonNode bleEnableNode = config.at("/ble/enable");
-		if(bleEnableNode.isMissingNode()) {
+		if(d instanceof BatteryDeviceInterface) {
 			ble = NOT_APPLICABLE_STR;
-		} else if(bleEnableNode.asBoolean()) {
-			try {
-				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-//				ble = d.getJSON("/rpc/BLE.CloudRelay.ListInfos").get("total"); // fw >= 1.5.0
-				ble = d.getJSON("/rpc/BLE.CloudRelay.List").get("addrs").size();
-			} catch (/*IO*/Exception e) {
-//				config.at("/ble/observer/enable").booleanValue(false) // fw < 1.5.0
-				ble = TRUE_STR;
-			}
 		} else {
-			ble = FALSE_STR;
+			JsonNode bleEnableNode = config.at("/ble/enable");
+			if(bleEnableNode.isMissingNode()) {
+				// fw >= 2.0.0
+				try {
+					TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+					ble = gateways(d);
+				} catch (/*IO*/Exception e) {
+					ble = NOT_APPLICABLE_STR;
+//					System.out.println(d);
+//					e.printStackTrace();
+				}
+			} else if(bleEnableNode.asBoolean()) {
+				try {
+					TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+//					ble = d.getJSON("/rpc/BLE.CloudRelay.List").get("addrs").size();
+					ble = gateways(d);
+				} catch (/*IO*/Exception e) {
+					// config.at("/ble/observer/enable").booleanValue(false) // fw < 1.5.0
+					ble = TRUE_STR;
+//					System.out.println(d);
+//					e.printStackTrace();
+				}
+			} else {
+				ble = FALSE_STR;
+			}
 		}
 		String roaming;
 		if (config.at("/wifi/roam").isMissingNode()) {
@@ -725,6 +769,25 @@ public class CheckListView extends JDialog implements UsnaEventListener<Devices.
 		tRow[CheckListTable.COL_EXTENDER] = extender;
 		tRow[CheckListTable.COL_SCRIPTS] = scripts;
 		tRow[CheckListTable.COL_AUTO_FW_UPDATE] = autoFWupdate;
+	}
+	
+	private int gateways(AbstractG2Device d) throws IOException {
+		JsonPageIterator bluIt = d.getJSONIterator("/rpc/BLE.CloudRelay.ListInfos", "devices");
+		while(bluIt.hasNext()) {
+			JsonNode blu = bluIt.next();
+			blu.forEachEntry((bluMac, val) -> {
+				bleDevicesGWMap.addVal(bluMac, new BLEGateway(d, val.get("last_seen").longValue(0L)));
+				int bluIndex = appModel.indexByMac(bluMac);
+				if(bluIndex >= 0) {
+					int localIndex = getLocalIndex(bluIndex);
+					if(localIndex >= 0) {
+//						tModel.setValueAt(bleDevicesGWMap.get(bluMac).size(), localIndex, CheckListTable.COL_BLE);
+						tModel.setValueAt(bleDevicesGWMap.get(bluMac), localIndex, CheckListTable.COL_BLE);
+					}
+				}
+			});
+		}
+		return bluIt.size();
 	}
 	
 //	private static void bluRow(AbstractBluDevice d, Object[] tRow) {

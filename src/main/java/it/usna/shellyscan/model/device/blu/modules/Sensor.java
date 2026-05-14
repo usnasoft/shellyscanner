@@ -41,6 +41,7 @@ public class Sensor {
 		this.mType = switch(objID) {
 		case 0x01 -> Meters.Type.BAT;
 		case 0x05 -> Meters.Type.L; // lux
+		case 0x15 -> Meters.Type.BATE; // 21 - 0 (False = Normal), 1 (True = Low)
 		case 0x1E -> Meters.Type.LIGHT; // 30 - 0 (False = No light), 1 (True = Light detected)
 		case 0x2C -> Meters.Type.VIB; // 44 - vibration (0-1; on shelly is boolean)
 		case 0x2E -> Meters.Type.H; // 46
@@ -48,7 +49,7 @@ public class Sensor {
 		case 0x40 -> Meters.Type.DMM; // 64 - distance mm
 		case 0x45 -> Meters.Type.T; // 69
 		case 0x5F -> Meters.Type.RAIN; // 95 - precipitation mm
-		case 0x64 -> Meters.Type.LD; // 100 - light level: 0 (dark) - 1 (twilight) - 2 (bright)
+		case 0x64 -> Meters.Type.LE; // 100 - light level: 0 (dark) - 1 (twilight) - 2 (bright)
 		default -> null;
 		};
 		// 0x3C (60) dimmer (weel)

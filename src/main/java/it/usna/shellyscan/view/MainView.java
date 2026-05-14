@@ -570,7 +570,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 				infoAction.setEnabled(singleSelection);
 				schedulerEditAction.setEnabled(singleSelectionNoGhost && (d instanceof AbstractG2Device || d instanceof BluTRV) && d instanceof BatteryDeviceInterface == false);
 				infoLogAction.setEnabled(singleSelectionNoGhost);
-				checkListAction.setEnabled(selectionNoGhost);
+				checkListAction.setEnabled(selection/*NoGhost*/);
 				rebootAction.setEnabled(selectionNoGhost && selectionNoBTHome);
 				browseAction.setEnabled(selectionNoGhost /*&& browserSupported*/);
 				backupAction.setEnabled(selection /*&& selectionNoBLU*/);

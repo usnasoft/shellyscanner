@@ -18,7 +18,7 @@ public abstract class Meters implements Comparable<Meters> {
 		H, // humidity % (int)
 		HD, // humidity % (one decimal)
 		L, // lux
-		LD(true), // lux(description) 0 -> dark, 1 -> twilight, 2 -> bright
+		LE(true), // lux(enum) 0 -> dark, 1 -> twilight, 2 -> bright
 		LIGHT(true), // boolean: 0/false -> no light, 1/true -> light
 		T1(Float.MAX_VALUE), // temperature
 		T2(Float.MAX_VALUE), // temperature
@@ -34,7 +34,8 @@ public abstract class Meters implements Comparable<Meters> {
 		ANG1(Float.MAX_VALUE), // angle - accelerometer
 		ANG2(Float.MAX_VALUE), // angle - accelerometer
 		CHANNEL(Float.MAX_VALUE), // channel - BLU remore channel
-		BAT; // battery %
+		BAT, // battery %
+		BATE(true); // battery boolean - 0 (False = Normal), 1 (True = Low)
 		
 		final boolean enumType; // the value should be translated as a specific status
 		final float nullValue; // the value considered as "off" (default: 0)

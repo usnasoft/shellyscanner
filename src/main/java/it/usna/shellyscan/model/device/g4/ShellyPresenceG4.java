@@ -30,7 +30,7 @@ import tools.jackson.databind.node.ObjectNode;
  */
 public class ShellyPresenceG4 extends AbstractG4Device implements ModulesHolder {
 	private static final Logger LOG = LoggerFactory.getLogger(ShellyPresenceG4.class);
-	private static final Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.LD};
+	private static final Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.LE};
 	public static final String ID = "PresenceG4";
 	public static final String MODEL = "S4SN-0U61X";
 	private float illumination;

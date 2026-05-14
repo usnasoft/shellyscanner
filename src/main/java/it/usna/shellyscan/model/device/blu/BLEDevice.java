@@ -18,6 +18,9 @@ import it.usna.shellyscan.model.device.modules.WIFIManager;
 import it.usna.shellyscan.model.device.modules.WIFIManager.Network;
 import tools.jackson.databind.JsonNode;
 
+/**
+ * NOT USED
+ */
 public class BLEDevice extends ShellyAbstractDevice {
 	public static final String GENERATION = "ble";
 	private String typeName;
