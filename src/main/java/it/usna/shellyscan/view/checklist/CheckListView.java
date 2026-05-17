@@ -771,23 +771,27 @@ public class CheckListView extends JDialog implements UsnaEventListener<Devices.
 		tRow[CheckListTable.COL_AUTO_FW_UPDATE] = autoFWupdate;
 	}
 	
-	private int gateways(AbstractG2Device d) throws IOException {
+	private List<?> gateways(AbstractG2Device d) throws IOException {
+		ArrayList<Object> bluDevList = new ArrayList<>(); // BTHomeDevice or MAC (String)
 		JsonPageIterator bluIt = d.getJSONIterator("/rpc/BLE.CloudRelay.ListInfos", "devices");
 		while(bluIt.hasNext()) {
 			JsonNode blu = bluIt.next();
 			blu.forEachEntry((bluMac, val) -> {
-				bleDevicesGWMap.addVal(bluMac, new BLEGateway(d, val.get("last_seen").longValue(0L)));
+				bleDevicesGWMap.addVal(bluMac, new BLEGateway(d, val.get("last_seen").intValue(0)));
 				int bluIndex = appModel.indexByMac(bluMac);
 				if(bluIndex >= 0) {
+					bluDevList.add(appModel.get(bluIndex));
 					int localIndex = getLocalIndex(bluIndex);
 					if(localIndex >= 0) {
 //						tModel.setValueAt(bleDevicesGWMap.get(bluMac).size(), localIndex, CheckListTable.COL_BLE);
 						tModel.setValueAt(bleDevicesGWMap.get(bluMac), localIndex, CheckListTable.COL_BLE);
 					}
+				} else {
+					bluDevList.add(bluMac);
 				}
 			});
 		}
-		return bluIt.size();
+		return bluDevList;
 	}
 	
 //	private static void bluRow(AbstractBluDevice d, Object[] tRow) {

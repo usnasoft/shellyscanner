@@ -2,7 +2,7 @@ package it.usna.shellyscan.model.device.blu;
 
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 
-public record BLEGateway(AbstractG2Device gw, long lastSeen) implements Comparable<BLEGateway> {
+public record BLEGateway(AbstractG2Device gw, int lastSeen) implements Comparable<BLEGateway> {
 	@Override
 	public int compareTo(BLEGateway o) {
 		if(this.gw.equals(o.gw)) {

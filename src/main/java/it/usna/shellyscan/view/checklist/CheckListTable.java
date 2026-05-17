@@ -19,6 +19,7 @@ import javax.swing.table.TableRowSorter;
 
 import it.usna.shellyscan.Main;
 import it.usna.shellyscan.model.device.blu.BLEGateway;
+import it.usna.shellyscan.model.device.blu.BTHomeDevice;
 import it.usna.shellyscan.model.device.blu.BluInetAddressAndPort;
 import it.usna.shellyscan.view.DevicesTable;
 import it.usna.shellyscan.view.util.UtilMiscellaneous;
@@ -76,6 +77,11 @@ class CheckListTable extends ExTooltipTable {
 			String s2 = o2 == null ? "" : o2.toString();
 			return s1.compareTo(s2);
 		};
+//		final Comparator<?> collectionSorter = (o1, o2) -> { // use when there is a mix: null, Boolean, String
+//			String s1 = o1 == null ? -1 : o1.toString();
+//			String s2 = o2 == null ? "" : o2.toString();
+//			return s1.compareTo(s2);
+//		};
 		rowSorter.setComparator(COL_ECO, sorter);
 		rowSorter.setComparator(COL_LED, sorter);
 		rowSorter.setComparator(COL_LOGS, sorter);
@@ -94,21 +100,22 @@ class CheckListTable extends ExTooltipTable {
 	
 	@Override
 	protected String getToolTipText(Object value, boolean cellTooSmall, int r, int c) {
-		if(value instanceof Collection gwCollection && convertColumnIndexToModel(c) == COL_BLE) {
+		if(value instanceof Collection<?> gwCollection && convertColumnIndexToModel(c) == COL_BLE) {
 			StringBuilder res = new StringBuilder("<html><table>");
-//			gwCollection.stream().sorted(Comparator.reverseOrder()).forEach(gw -> {
-//				if(gw instanceof String) {
-//					
-//				}
-////				res.append("<tr>");
-//			});
-			for(Object gw : gwCollection) {
-				res.append("<tr>");
-				if(gw instanceof BLEGateway gateway) {
-					res.append("<td>").append(UtilMiscellaneous.getDescName(gateway.gw())).append("</td><td>").append(gateway.gw().getAddressAndPort()).append("</td>");
+			gwCollection.stream().filter(w -> w instanceof BLEGateway).map(w -> (BLEGateway) w).sorted(Comparator.reverseOrder()).forEach(gw -> {
+				res.append("<tr>")
+				.append("<td>").append(UtilMiscellaneous.getDescName(gw.gw()))
+				.append("</td><td>").append(gw.gw().getAddressAndPort())
+				.append("</td><td>").append(System.currentTimeMillis()/1000 - gw.lastSeen()).append("</td>")
+				.append("</tr>");
+			});
+			gwCollection.stream().filter(w -> w instanceof BLEGateway == false).forEach(blu -> {
+				if(blu instanceof BTHomeDevice bth) {
+					res.append("<tr>").append("<td>").append(UtilMiscellaneous.getDescName(bth)).append("</td></tr>");
+				} else {
+					res.append("<tr>").append("<td>").append(blu).append("</td></tr>");
 				}
-				res.append("</tr>");
-			}
+			});
 			return res.toString();
 		} else {
 			return super.getToolTipText(value, cellTooSmall, r, c);
@@ -209,7 +216,7 @@ class CheckListTable extends ExTooltipTable {
 				setEnabled(true);
 			} else if(value instanceof Collection c) {
 				setText(c.size() + "");
-				setEnabled(true);
+				setEnabled(c.size() > 0);
 			} else if(value instanceof Number n && n.intValue() == 0) {
 				setEnabled(false);
 			} else {
