@@ -172,10 +172,12 @@ public class CheckListView extends JDialog implements UsnaEventListener<Devices.
 
 		Action bleAction = new UsnaSelectedAction(this, table, "setBLE_action", "setBLE_action_tooletip", null, "/images/Bluetooth24.png", localRow -> { // AbstractG2Device
 			Object ble = tModel.getValueAt(localRow, CheckListTable.COL_BLE);
-			AbstractG2Device d = (AbstractG2Device) getLocalDevice(localRow);
-			d.setBLEEnabled(FALSE_STR.equals(ble));
-			try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e1) {}
-			updateRow(d, localRow);
+			if(ble instanceof String) {
+				AbstractG2Device d = (AbstractG2Device) getLocalDevice(localRow);
+				d.setBLEEnabled(FALSE_STR.equals(ble));
+				try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e1) {}
+				updateRow(d, localRow);
+			}
 		});
 
 		Action apModeAction = new UsnaSelectedAction(this, table, "setAPMode_action", "setAPMode_action_tooletip", null, "/images/Rss24.png", localRow -> { // AbstractG2Device
@@ -649,7 +651,7 @@ public class CheckListView extends JDialog implements UsnaEventListener<Devices.
 		tRow[CheckListTable.COL_ECO] = eco;
 		tRow[CheckListTable.COL_LED] = ledOff;
 		tRow[CheckListTable.COL_LOGS] = debug;
-		tRow[CheckListTable.COL_BLE] = NOT_APPLICABLE_STR;
+		tRow[CheckListTable.COL_BLE] = null;//NOT_APPLICABLE_STR;
 		tRow[CheckListTable.COL_AP] = NOT_APPLICABLE_STR;
 		tRow[CheckListTable.COL_ROAMING] = roaming;
 		tRow[CheckListTable.COL_WIFI1] = wifi1;
@@ -687,9 +689,7 @@ public class CheckListView extends JDialog implements UsnaEventListener<Devices.
 					TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 					ble = gateways(d);
 				} catch (/*IO*/Exception e) {
-					ble = NOT_APPLICABLE_STR;
-//					System.out.println(d);
-//					e.printStackTrace();
+					ble = null; //NOT_APPLICABLE_STR;
 				}
 			} else if(bleEnableNode.asBoolean()) {
 				try {
@@ -699,8 +699,6 @@ public class CheckListView extends JDialog implements UsnaEventListener<Devices.
 				} catch (/*IO*/Exception e) {
 					// config.at("/ble/observer/enable").booleanValue(false) // fw < 1.5.0
 					ble = TRUE_STR;
-//					System.out.println(d);
-//					e.printStackTrace();
 				}
 			} else {
 				ble = FALSE_STR;

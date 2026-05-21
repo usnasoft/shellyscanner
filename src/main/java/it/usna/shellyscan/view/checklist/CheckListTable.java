@@ -77,15 +77,21 @@ class CheckListTable extends ExTooltipTable {
 			String s2 = o2 == null ? "" : o2.toString();
 			return s1.compareTo(s2);
 		};
-//		final Comparator<?> collectionSorter = (o1, o2) -> { // use when there is a mix: null, Boolean, String
-//			String s1 = o1 == null ? -1 : o1.toString();
-//			String s2 = o2 == null ? "" : o2.toString();
-//			return s1.compareTo(s2);
-//		};
+		final Comparator<?> collectionSorter = (o1, o2) -> { // use when there is a mix: null, Boolean, String
+			int x1 = 0;
+			int x2 = 0;
+			if(o1 instanceof Collection c) x1 = c.size();
+			else if(o1.equals(CheckListView.FALSE_STR)) x1 = Integer.MIN_VALUE;
+			else if(o1.equals(CheckListView.TRUE_STR)) x1 = Integer.MIN_VALUE + 1;
+			if(o2 instanceof Collection c) x2 = c.size();
+			else if(o2.equals(CheckListView.FALSE_STR)) x2 = Integer.MIN_VALUE;
+			else if(o2.equals(CheckListView.TRUE_STR)) x2 = Integer.MIN_VALUE + 1;
+			return x1 - x2;
+		};
 		rowSorter.setComparator(COL_ECO, sorter);
 		rowSorter.setComparator(COL_LED, sorter);
 		rowSorter.setComparator(COL_LOGS, sorter);
-		rowSorter.setComparator(COL_BLE, sorter);
+		rowSorter.setComparator(COL_BLE, collectionSorter);
 		rowSorter.setComparator(COL_AP, sorter);
 		rowSorter.setComparator(COL_ROAMING, sorter);
 		rowSorter.setComparator(COL_WIFI1, sorter);
@@ -102,6 +108,7 @@ class CheckListTable extends ExTooltipTable {
 	protected String getToolTipText(Object value, boolean cellTooSmall, int r, int c) {
 		if(value instanceof Collection<?> gwCollection && convertColumnIndexToModel(c) == COL_BLE) {
 			StringBuilder res = new StringBuilder("<html><table>");
+			// BLU devices (list of gateways)
 			gwCollection.stream().filter(w -> w instanceof BLEGateway).map(w -> (BLEGateway) w).sorted(Comparator.reverseOrder()).forEach(gw -> {
 				res.append("<tr>")
 				.append("<td>").append(UtilMiscellaneous.getDescName(gw.gw()))
@@ -109,6 +116,7 @@ class CheckListTable extends ExTooltipTable {
 				.append("</td><td>").append(System.currentTimeMillis()/1000 - gw.lastSeen()).append("</td>")
 				.append("</tr>");
 			});
+			// Gateways (list of BLU devices)
 			gwCollection.stream().filter(w -> w instanceof BLEGateway == false).forEach(blu -> {
 				if(blu instanceof BTHomeDevice bth) {
 					res.append("<tr>").append("<td>").append(UtilMiscellaneous.getDescName(bth)).append("</td></tr>");
@@ -210,18 +218,18 @@ class CheckListTable extends ExTooltipTable {
 
 		@Override
 		public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-			super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 			if(value == null) {
-				setText(CheckListView.NOT_APPLICABLE_STR);
+				value = CheckListView.NOT_APPLICABLE_STR;
 				setEnabled(true);
 			} else if(value instanceof Collection c) {
-				setText(c.size() + "");
+				value = c.size() + "";
 				setEnabled(c.size() > 0);
 			} else if(value instanceof Number n && n.intValue() == 0) {
 				setEnabled(false);
 			} else {
 				setEnabled(true);
 			}
+			super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 			return this;
 		}
 	}
@@ -237,9 +245,12 @@ class CheckListTable extends ExTooltipTable {
 				setForeground(Color.red);
 				if (isSelected) {
 					setFont(getFont().deriveFont(Font.BOLD));
+				} else {
+					setFont(getFont().deriveFont(Font.PLAIN));
 				}
 			} else if (isSelected == false) {
 				setForeground(table.getForeground());
+				setFont(getFont().deriveFont(Font.PLAIN));
 			}
 			return this;
 		}
