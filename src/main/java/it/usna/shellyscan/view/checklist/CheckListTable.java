@@ -18,8 +18,8 @@ import javax.swing.table.TableColumn;
 import javax.swing.table.TableRowSorter;
 
 import it.usna.shellyscan.Main;
+import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.blu.BLEGateway;
-import it.usna.shellyscan.model.device.blu.BTHomeDevice;
 import it.usna.shellyscan.model.device.blu.BluInetAddressAndPort;
 import it.usna.shellyscan.view.DevicesTable;
 import it.usna.shellyscan.view.util.UtilMiscellaneous;
@@ -110,18 +110,21 @@ class CheckListTable extends ExTooltipTable {
 			StringBuilder res = new StringBuilder("<html><table>");
 			// BLU devices (list of gateways)
 			gwCollection.stream().filter(w -> w instanceof BLEGateway).map(w -> (BLEGateway) w).sorted(Comparator.reverseOrder()).forEach(gw -> {
-				res.append("<tr>")
-				.append("<td>").append(UtilMiscellaneous.getDescName(gw.gw()))
+				res
+				.append("<tr><td>").append(UtilMiscellaneous.getDescName(gw.gw()))
 				.append("</td><td>").append(gw.gw().getAddressAndPort())
-				.append("</td><td>").append(System.currentTimeMillis()/1000 - gw.lastSeen()).append("</td>")
-				.append("</tr>");
+				.append("</td><td>").append(System.currentTimeMillis()/1000 - gw.lastSeen())
+				.append("</td></tr>");
 			});
 			// Gateways (list of BLU devices)
 			gwCollection.stream().filter(w -> w instanceof BLEGateway == false).forEach(blu -> {
-				if(blu instanceof BTHomeDevice bth) {
-					res.append("<tr>").append("<td>").append(UtilMiscellaneous.getDescName(bth)).append("</td></tr>");
+				if(blu instanceof ShellyAbstractDevice bth) {
+					res
+					.append("<tr><td>").append(UtilMiscellaneous.getDescName(bth))
+					.append("</td><td>").append(bth.getMacAddress())
+					.append("</td></tr>");
 				} else {
-					res.append("<tr>").append("<td>").append(blu).append("</td></tr>");
+					res.append("<tr><td>").append(blu).append("</td></tr>");
 				}
 			});
 			return res.toString();
