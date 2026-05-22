@@ -146,7 +146,6 @@ public class ShellyProDimmer1 extends AbstractProDevice implements InternalTmpHo
 
 	@Override
 	protected void restore(Map<String, JsonNode> backupJsons, List<String> errors) throws InterruptedException {
-		// todo addon
 		JsonNode configuration = backupJsons.get("Shelly.GetConfig.json");
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 		errors.add(Input.restore(this, configuration, 0));

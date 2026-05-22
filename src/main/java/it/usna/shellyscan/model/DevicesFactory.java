@@ -259,7 +259,7 @@ public class DevicesFactory {
 				case ShellyPlusSmoke.ID -> new ShellyPlusSmoke(address, port, name);
 				// PRO
 				case ShellyPro1PM.ID -> new ShellyPro1PM(address, port, name);
-				case ShellyPro1.ID -> new ShellyPro1(address, port, name);
+				case ShellyPro1.ID, ShellyPro1.ID_ADDON -> new ShellyPro1(address, port, name);
 				case ShellyPro2PM.ID -> new ShellyPro2PM(address, port, name);
 				case ShellyPro2.ID -> new ShellyPro2(address, port, name);
 				case ShellyPro3.ID -> new ShellyPro3(address, port, name);
