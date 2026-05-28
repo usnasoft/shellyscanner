@@ -134,6 +134,8 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 						if(input.enabled()) {
 							stackedPanel.add(getInputPanel(input, foregroundColor, i == 0));
 						}
+					} else if(module instanceof RollerInterface rol) {
+						stackedPanel.add(getRollerPanel(rol, foregroundColor, i == 0));
 					} else if(module instanceof WhiteInterface white && modArray.length <= 2) {
 						stackedPanel.add(getWhitePanel(white, foregroundColor, i == 0, i == indEditButton));
 					} else if(module instanceof WhiteInterface white /*&& modArray.length > 2*/) {

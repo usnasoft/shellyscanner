@@ -426,9 +426,9 @@ bug fixed on 3EM total power graph
 
 addon PRO:
 Shelly Pro 1 (X)
-Shelly Pro 1PM
+Shelly Pro 1PM (X)
 Shelly Pro 2
-Shelly Pro 2PM
+Shelly Pro 2PM (X)
 Shelly Pro 3EM
 Shelly Pro Dimmer 0/1–10V PM
 Shelly Pro Dimmer 1PM (X)
@@ -437,9 +437,9 @@ Shelly Pro EM-50
 
 LORA addon PRO:
 Shelly Pro 1 (X)
-Shelly Pro 1PM
+Shelly Pro 1PM (X)
 Shelly Pro 2
-Shelly Pro 2PM
+Shelly Pro 2PM (X)
 Shelly Pro 3EM
 Shelly Pro Dimmer 0/1–10V PM
 Shelly Pro Dimmer 1PM (X)
@@ -459,12 +459,7 @@ http://192.168.1.15/rpc/Voltmeter.SetConfig?id=100&config={%22xvoltage%22:null}
 
 
 --- coming ?
-
-
-With the Shelly Plus Uni you can apply a "Custom voltage expression" to translate the analogue/voltage input into something relevant. In my screengrab below, the expression translates the voltage to a water pressure in bar. The Shelly Plus Uni outputs this under the variable "xvoltage".
-In the next version of Shelly Scanner it would be great if you could graph the "xvoltage" and not just "volatge"
--  https://shelly-api-docs.shelly.cloud/gen2/ComponentsAndServices/Voltmeter
-
+// scheduler hints for camera
 // It would also be nice to add dynamic filters that show, for example, only enabled devices or disabled devices on the main view (?)
 // rgb_xx panel listener (?) -> model su DevicesTable -> su DevicesCommandCellEditor -> DialogEditLights che diventa listener e chiama i 
 // checklist AP ssid != mac (fw 1.5.0 stable)
@@ -476,7 +471,6 @@ In the next version of Shelly Scanner it would be great if you could graph the "
 // gestione "reading": se stato online leggo ShellyAbstractDevice.lastConnection, se systime - lastConnection > intervallo * 3 modifico lo stato - si, ma dove, task specifico?
 // InetAddressAndPort potrebbe mantenere direttamente i byte (sarebbe estremamente ottimizzato); tuttavia attenderei l'introduzione di IPv6
 // color weel https://stackoverflow.com/questions/36252778/how-to-draw-a-rgb-color-wheel-in-java
-// in case of new bulbs (render of single CCT - bulbs as CCT/RGB)
 // https://smarthomecircle.com/connect-xiaomi-temperature-and-humidity-bluetooth-sensor-to-home-assistant
 // addon dimmer gen3 (currently not supported by fw)
 // Webhook.ListSupported

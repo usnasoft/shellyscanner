@@ -93,8 +93,8 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 			return stackedPanelContainer;
 		} else if(value instanceof RollerInterface[] rollersArray) {
 			stackedPanel.removeAll();
-			for(RollerInterface rel: rollersArray) {
-				stackedPanel.add(getRollerPanel(rel));
+			for(RollerInterface rol: rollersArray) {
+				stackedPanel.add(getRollerPanel(rol));
 			}
 			edited = rollersArray;
 			return stackedPanelContainer;
@@ -135,6 +135,8 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 					if(input.enabled()) {
 						stackedPanel.add(getInputPanel(input, table));
 					}
+				} else if(module instanceof RollerInterface rol) {
+					stackedPanel.add(getRollerPanel(rol));
 				} else if(module instanceof WhiteInterface white && modArray.length <= 2) {
 					stackedPanel.add(getWhitePanel(white, i == indEditButton));
 				} else if(module instanceof WhiteInterface white /*&& modArray.length > 2*/) {

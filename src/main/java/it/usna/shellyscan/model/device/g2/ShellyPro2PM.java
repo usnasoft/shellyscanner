@@ -21,6 +21,7 @@ import tools.jackson.databind.JsonNode;
 
 public class ShellyPro2PM extends AbstractProDevice implements ModulesHolder, InternalTmpHolder {
 	public static final String ID = "Pro2PM";
+	public static final String ID_ADDON = "Pro2PMProAddon";
 	public static final String MODEL_1 = "SPSW-202PE15UL";
 	public static final String MODEL_2 = "SPSW-202PE16EU";
 	private boolean modeRelay;
@@ -28,7 +29,7 @@ public class ShellyPro2PM extends AbstractProDevice implements ModulesHolder, In
 	private Relay relay0, relay1;
 	private Relay[] relaysArray;
 	private Roller roller;
-	private DeviceModule[] rollersArray;
+	private DeviceModule[] rollersArray; // roller (+ add-on switch)
 	private float internalTmp;
 	private float power0, power1;
 	private float voltage0, voltage1;

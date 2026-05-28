@@ -22,7 +22,7 @@ import tools.jackson.databind.JsonNode;
  * NOT USED
  */
 public class BLEDevice extends ShellyAbstractDevice {
-	public static final String GENERATION = "ble";
+	public static final String GENERATION = "blu";
 	private String typeName;
 	private ArrayList<ShellyAbstractDevice> gateWays = new ArrayList<>();
 

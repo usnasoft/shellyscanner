@@ -349,7 +349,7 @@ public class SensorAddOnPro {
 	}
 	
 	public Meters[] addMetersArray(Meters ... baseMeters) {
-		ArrayList<Meters> metersList = new ArrayList<Meters>(4);
+		ArrayList<Meters> metersList = new ArrayList<Meters>(baseMeters.length + 2);
 		for(Meters m: baseMeters) {
 			metersList.add(m);
 		}

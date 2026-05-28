@@ -2,7 +2,6 @@ package it.usna.shellyscan.model.device.g2;
 
 import java.io.IOException;
 import java.net.InetAddress;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -55,14 +54,7 @@ public class ShellyPro1 extends AbstractProDevice implements ModulesHolder, Inte
 		final String addOnType = config.get("sys").get("device").path("addon_type").asString(null);
 		if(SensorAddOnPro.ADDON_TYPE.equals(addOnType)) {
 			sensorAddOn = new SensorAddOnPro(this);
-			Meters[] m = sensorAddOn.getMetersArray();
-			ArrayList<Meters> metersList = new ArrayList<Meters>(2);
-			for(Meters met: m) {
-				if(met.getTypes().length > 0) {
-					metersList.add(met);
-				}
-			}
-			meters = metersList.toArray(Meters[]::new);
+			meters = sensorAddOn.addMetersArray();
 			if(sensorAddOn.getDigitalOut() == null) {
 				relays = new Relay[] {relay};
 			} else {
@@ -117,6 +109,7 @@ public class ShellyPro1 extends AbstractProDevice implements ModulesHolder, Inte
 	@Override
 	protected void fillStatus(JsonNode status) throws IOException {
 		super.fillStatus(status);
+		
 		JsonNode switchStatus = status.get("switch:0");
 		relay.fillStatus(switchStatus, status.get(inputKey));
 		internalTmp = switchStatus.get("temperature").get("tC").floatValue();

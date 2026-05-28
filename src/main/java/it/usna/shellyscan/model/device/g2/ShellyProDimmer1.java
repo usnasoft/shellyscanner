@@ -2,7 +2,6 @@ package it.usna.shellyscan.model.device.g2;
 
 import java.io.IOException;
 import java.net.InetAddress;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -56,15 +55,16 @@ public class ShellyProDimmer1 extends AbstractProDevice implements InternalTmpHo
 		final String addOnType = config.get("sys").get("device").path("addon_type").asString(null);
 		if(SensorAddOnPro.ADDON_TYPE.equals(addOnType)) {
 			sensorAddOn = new SensorAddOnPro(this);
-			Meters[] m = sensorAddOn.getMetersArray();
-			ArrayList<Meters> metersList = new ArrayList<Meters>(3);
-			metersList.add(baseMeasures);
-			for(Meters met: m) {
-				if(met.getTypes().length > 0) {
-					metersList.add(met);
-				}
-			}
-			meters = metersList.toArray(Meters[]::new);
+//			Meters[] m = sensorAddOn.getMetersArray();
+//			ArrayList<Meters> metersList = new ArrayList<Meters>(3);
+//			metersList.add(baseMeasures);
+//			for(Meters met: m) {
+//				if(met.getTypes().length > 0) {
+//					metersList.add(met);
+//				}
+//			}
+//			meters = metersList.toArray(Meters[]::new);
+			meters = sensorAddOn.addMetersArray(baseMeasures);
 			lightArray = new DeviceModule[] {light, sensorAddOn.getDigitalOut()};
 		} else {
 			sensorAddOn = null;
