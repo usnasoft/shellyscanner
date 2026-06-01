@@ -142,6 +142,18 @@ public class ShellyPro1PM extends AbstractProDevice implements ModulesHolder, In
 	}
 	
 	@Override
+	public String[] getInfoRequests() {	
+		final String[] cmd = super.getInfoRequests();
+		if(sensorAddOn != null) {
+			return SensorAddOnPro.getInfoRequests(cmd);
+		} else if(hasLoraAddOn) {
+			return LoRaAddOn.getInfoRequests(cmd);
+		} else {
+			return cmd;
+		}
+	}
+	
+	@Override
 	public void restoreCheck(Map<String, JsonNode> backupJsons, Map<RestoreMsg, Object> resp) {
 		SensorAddOnPro.restoreCheck(this, sensorAddOn, backupJsons, resp);
 		LoRaAddOn.restoreCheck(this, hasLoraAddOn, backupJsons, resp);

@@ -9,29 +9,60 @@ import java.util.concurrent.TimeUnit;
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.InternalTmpHolder;
 import it.usna.shellyscan.model.device.ModulesHolder;
+import it.usna.shellyscan.model.device.RestoreMsg;
 import it.usna.shellyscan.model.device.RestoreUtil;
 import it.usna.shellyscan.model.device.g2.meters.EM1Meters;
 import it.usna.shellyscan.model.device.g2.modules.EM1Manager;
+import it.usna.shellyscan.model.device.g2.modules.LoRaAddOn;
 import it.usna.shellyscan.model.device.g2.modules.Relay;
+import it.usna.shellyscan.model.device.g2.modules.SensorAddOnPro;
 import it.usna.shellyscan.model.device.meters.Meters;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ObjectNode;
 
 public class ShellyProEM50 extends AbstractProDevice implements ModulesHolder, InternalTmpHolder {
 	public static final String ID = "ProEM";
+	public static final String ID_ADDON = "ProEMProAddon";
 	public static final String MODEL = "SPEM-002CEBEU50";
 	private Relay relay = new Relay(this, 0);
-	private Relay[] relays = new Relay[] {relay};
+	private Relay[] relays; // = new Relay[] {relay};
 	private float internalTmp;
 	private EM1Meters meters0, meters1;
 	private Meters meters[];
+	private SensorAddOnPro sensorAddOn;
+	private boolean hasLoraAddOn;
 
 	public ShellyProEM50(InetAddress address, int port, String hostname) {
 		super(address, port, hostname);
-
 		meters0 = new EM1Meters(new EM1Manager(this, 0));
 		meters1 = new EM1Meters(new EM1Manager(this, 1));
-		meters = new Meters[] {meters0, meters1};
+	}
+	
+	@Override
+	protected void init(JsonNode devInfo) throws IOException {
+		this.hostname = devInfo.get("id").asString("");
+		this.mac = devInfo.get("mac").asString("");
+		
+		final JsonNode config = configure();
+			
+		fillSettings(config);
+		fillStatus(getJSON("/rpc/Shelly.GetStatus"));
+	}
+	
+	private JsonNode configure() throws IOException {
+		final JsonNode config = getJSON("/rpc/Shelly.GetConfig");
+		final String addOnType = config.get("sys").get("device").path("addon_type").asString(null);
+		if(SensorAddOnPro.ADDON_TYPE.equals(addOnType)) {
+			sensorAddOn = new SensorAddOnPro(this);
+			meters = sensorAddOn.addMetersArray(meters0, meters1);
+			relays = new Relay[] {relay, sensorAddOn.getDigitalOut()};
+		} else {
+			sensorAddOn = null;
+			meters = new Meters[] {meters0, meters1};
+			relays = new Relay[] {relay};
+			hasLoraAddOn = LoRaAddOn.ADDON_TYPE.equals(addOnType);
+		}
+		return config;
 	}
 
 	@Override
@@ -66,6 +97,10 @@ public class ShellyProEM50 extends AbstractProDevice implements ModulesHolder, I
 		
 		meters0.fillSettings(configuration.get("em1:0"));
 		meters1.fillSettings(configuration.get("em1:1"));
+		
+		if(sensorAddOn != null) {
+			sensorAddOn.fillSettings(configuration);
+		}
 	}
 
 	@Override
@@ -77,27 +112,47 @@ public class ShellyProEM50 extends AbstractProDevice implements ModulesHolder, I
 		
 		meters0.fillStatus(status.get("em1:0"));
 		meters1.fillStatus(status.get("em1:1"));
+		
+		if(sensorAddOn != null) {
+			sensorAddOn.fillStatus(status);
+		}
 	}
 	
 	@Override
 	public String[] getInfoRequests() {
-		return EM1Manager.getInfoRequests(super.getInfoRequests(), 0, 1);
+		final String[] cmd = EM1Manager.getInfoRequests(super.getInfoRequests(), 0, 1);
+		if(sensorAddOn != null) {
+			return SensorAddOnPro.getInfoRequests(cmd);
+		} else if(hasLoraAddOn) {
+			return LoRaAddOn.getInfoRequests(cmd);
+		} else {
+			return cmd;
+		}
+	}
+	
+	@Override
+	public void restoreCheck(Map<String, JsonNode> backupJsons, Map<RestoreMsg, Object> resp) {
+		SensorAddOnPro.restoreCheck(this, sensorAddOn, backupJsons, resp);
+		LoRaAddOn.restoreCheck(this, hasLoraAddOn, backupJsons, resp);
 	}
 
 	@Override
 	protected void restore(Map<String, JsonNode> backupJsons, List<String> errors) throws InterruptedException {
-		JsonNode config = backupJsons.get("Shelly.GetConfig.json");
-		errors.add(relay.restore(config));
+		JsonNode configuration = backupJsons.get("Shelly.GetConfig.json");
+		errors.add(relay.restore(configuration));
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 
-		ObjectNode conf = RestoreUtil.createIndexedRestoreNode(config, "em1", 0);
+		ObjectNode conf = RestoreUtil.createIndexedRestoreNode(configuration, "em1", 0);
 		((ObjectNode)conf.get("config")).remove("ct_type");
 		errors.add(postCommand("EM1.SetConfig", conf));
 		
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-		conf = RestoreUtil.createIndexedRestoreNode(config, "em1", 1);
+		conf = RestoreUtil.createIndexedRestoreNode(configuration, "em1", 1);
 		((ObjectNode)conf.get("config")).remove("ct_type");
 		errors.add(postCommand("EM1.SetConfig", conf));
+		
+		SensorAddOnPro.restore(this, sensorAddOn, backupJsons, errors);
+		LoRaAddOn.restore(this, hasLoraAddOn, configuration, errors);
 	}
 
 	@Override

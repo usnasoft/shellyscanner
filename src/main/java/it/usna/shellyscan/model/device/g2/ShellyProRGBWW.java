@@ -15,6 +15,7 @@ import it.usna.shellyscan.model.device.g2.modules.Input;
 import it.usna.shellyscan.model.device.g2.modules.LightCCT;
 import it.usna.shellyscan.model.device.g2.modules.LightRGB;
 import it.usna.shellyscan.model.device.g2.modules.LightWhite;
+import it.usna.shellyscan.model.device.g2.modules.LoRaAddOn;
 import it.usna.shellyscan.model.device.meters.Meters;
 import it.usna.shellyscan.model.device.modules.DeviceModule;
 import tools.jackson.databind.JsonNode;
@@ -24,7 +25,6 @@ import tools.jackson.databind.JsonNode;
  * @author usna
  */
 public class ShellyProRGBWW extends AbstractProDevice implements ModulesHolder, InternalTmpHolder {
-//	private static final Logger LOG = LoggerFactory.getLogger(ShellyProRGBWW.class);
 	public static final String ID = "ProRGBWWPM";
 	public static final String MODEL = "SPDC-0D5PE16EU";
 	public enum Profile {
@@ -49,6 +49,7 @@ public class ShellyProRGBWW extends AbstractProDevice implements ModulesHolder, 
 	private MetersWVI meters3 = new MetersWVI();
 	private MetersWVI meters4 = new MetersWVI();
 	private Meters[] meters;
+	private boolean hasLoraAddOn;
 
 	public ShellyProRGBWW(InetAddress address, int port, String hostname) {
 		super(address, port, hostname);
@@ -59,8 +60,12 @@ public class ShellyProRGBWW extends AbstractProDevice implements ModulesHolder, 
 		this.hostname = devInfo.get("id").asString("");
 		this.mac = devInfo.get("mac").asString("");
 
-		fillSettings(getJSON("/rpc/Shelly.GetConfig"));
+		final JsonNode config = getJSON("/rpc/Shelly.GetConfig");
+		fillSettings(config);
 		fillStatus(getJSON("/rpc/Shelly.GetStatus"));
+		
+		final String addOnType = config.get("sys").get("device").path("addon_type").asString(null);
+		hasLoraAddOn = LoRaAddOn.ADDON_TYPE.equals(addOnType);
 	}
 	
 	@Override
@@ -217,17 +222,27 @@ public class ShellyProRGBWW extends AbstractProDevice implements ModulesHolder, 
 			internalTmp = rgb.get("temperature").path("tC").floatValue();
 		}
 	}
+	
+	@Override
+	public String[] getInfoRequests() {	
+		if(hasLoraAddOn) {
+			return LoRaAddOn.getInfoRequests(super.getInfoRequests());
+		} else {
+			return super.getInfoRequests();
+		}
+	}
 
 	public void setProfile(Profile mode) {
 		postCommand("Shelly.SetProfile", "{\"name\":\"" + mode.code  +"\"}");
 	}
 
 	@Override
-	public void restoreCheck(Map<String, JsonNode> backupJsons, Map<RestoreMsg, Object> res) throws IOException {
+	public void restoreCheck(Map<String, JsonNode> backupJsons, Map<RestoreMsg, Object> resp) throws IOException {
 		JsonNode devInfo = backupJsons.get("Shelly.GetDeviceInfo.json");
 		if(profile.code.equals(devInfo.get("profile").asString("")) == false) {
-			res.put(RestoreMsg.ERR_RESTORE_PROFILE, new String[] {profile.code, devInfo.get("profile").asString("")});
+			resp.put(RestoreMsg.ERR_RESTORE_PROFILE, new String[] {profile.code, devInfo.get("profile").asString("")});
 		}
+		LoRaAddOn.restoreCheck(this, hasLoraAddOn, backupJsons, resp);
 	}
 
 	@Override
@@ -276,6 +291,7 @@ public class ShellyProRGBWW extends AbstractProDevice implements ModulesHolder, 
 			errors.add(RestoreMsg.ERR_RESTORE_PROFILE.name());
 		}
 		
+		LoRaAddOn.restore(this, hasLoraAddOn, configuration, errors);
 		// TODO ?
 //		final boolean hf = configuration.get("plusrgbwpm").get("hf_mode").booleanValue(false);
 //		errors.add(postCommand("PlusRGBWPM.SetConfig", "{\"config\":{\"hf_mode\":" + hf + "}}"));
