@@ -19,9 +19,9 @@ public class Sensor {
 		final int objId = sensorConf.path("obj_id").intValue(0);
 		if(objId == InputSensor.OBJ_ID) {
 			return new InputSensor(id, sensorConf);
-		} else if(objId == MotionSensor.OBJ_ID) {
+		} else if(objId == MotionSensor.OBJ_ID) { // 0x21 - 33
 			return new MotionSensor(id, sensorConf);
-		} else if(objId == DWSensor.OBJ_ID) {
+		} else if(objId == DWSensor.OBJ_ID) { // 0x2d - 45
 			return new DWSensor(id, sensorConf);
 		} else {
 			return new Sensor(id, objId, sensorConf);

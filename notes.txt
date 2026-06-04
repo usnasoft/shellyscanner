@@ -419,6 +419,7 @@ Shelly EM Gen4
 Shelly Duo Bulb E27 Gen3
 Shelly Multicolor Bulb E27 Gen3
 Shelly Presence
+Shelly Flood S Gen4
 BLU DW status
 Chart: V custom expression
 bug fixed on Shelly Pro Dual Cover
@@ -427,25 +428,25 @@ bug fixed on 3EM total power graph
 addon PRO:
 Shelly Pro 1 (X)
 Shelly Pro 1PM (X)
-Shelly Pro 2
+Shelly Pro 2 (X)
 Shelly Pro 2PM (X)
 Shelly Pro 3EM
-Shelly Pro Dimmer 0/1–10V PM
+Shelly Pro Dimmer 0/1–10V PM (not supported)
 Shelly Pro Dimmer 1PM (X)
-Shelly Pro Dimmer 2PM
-Shelly Pro EM-50
+Shelly Pro Dimmer 2PM (X)
+Shelly Pro EM-50 (X)
 
 LORA addon PRO:
 Shelly Pro 1 (X)
 Shelly Pro 1PM (X)
-Shelly Pro 2
+Shelly Pro 2 (X)
 Shelly Pro 2PM (X)
 Shelly Pro 3EM
-Shelly Pro Dimmer 0/1–10V PM
+Shelly Pro Dimmer 0/1–10V PM (not supported)
 Shelly Pro Dimmer 1PM (X)
-Shelly Pro Dimmer 2PM
-Shelly Pro EM-50
-Shelly Pro RGBWW PM
+Shelly Pro Dimmer 2PM (X)
+Shelly Pro EM-50 (X)
+Shelly Pro RGBWW PM (X)
 
 
 todo backup notes

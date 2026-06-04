@@ -21,6 +21,7 @@ import tools.jackson.databind.node.ObjectNode;
 
 public class ShellyPro3EM extends AbstractProDevice implements InternalTmpHolder {
 	public static final String ID = "Pro3EM";
+	public static final String ID_ADDON = "Pro3EMProAddon";
 	public static final String MODEL = "SPEM-003CEBEU";
 	private float internalTmp;
 	private EM1Meters em1meters0, em1meters1, em1meters2; // em1
@@ -37,18 +38,11 @@ public class ShellyPro3EM extends AbstractProDevice implements InternalTmpHolder
 	
 	@Override
 	protected void init(JsonNode devInfo) throws IOException {
-		this.init(devInfo.get("profile").asString("").equals(MODE_TRIPHASE));
+		configurePhases(devInfo.get("profile").asString("").equals(MODE_TRIPHASE));
 		super.init(devInfo);
 	}
 	
-	private void init(boolean triphase) {
-//		this.triphase = triphase;
-//		if(triphase) {
-//			meters = new Meters[] {new EMMeters(0), new EMMeters(1), new EMMeters(2), new TotalEMMeters()};
-//			meterName[1] = meterName[2] = "";
-//		} else {
-//			meters = new Meters[] {new EMMeters(0), new EMMeters(1), new EMMeters(2)};
-//		}
+	private void configurePhases(boolean triphase) {
 		this.triphase = triphase;
 		if(triphase) {
 			emMeters0 = new EMPhaseMeters("a");
@@ -66,6 +60,39 @@ public class ShellyPro3EM extends AbstractProDevice implements InternalTmpHolder
 			emTotal = null;
 		}
 	}
+	
+//	@Override
+//	protected void init(JsonNode devInfo) throws IOException {
+//		configure(devInfo.get("profile").asString("").equals(MODE_TRIPHASE));
+//		this.hostname = devInfo.get("id").asString("");
+//		this.mac = devInfo.get("mac").asString("").toUpperCase();
+//
+//		final JsonNode config = configure(devInfo.get("profile").asString("").equals(MODE_TRIPHASE));
+//		
+//		fillSettings(config);
+//		fillStatus(getJSON("/rpc/Shelly.GetStatus"));
+//	}
+//	
+//	private JsonNode configure(boolean triphase) throws IOException {
+//		final JsonNode config = getJSON("/rpc/Shelly.GetConfig");
+//		this.triphase = triphase;
+//		if(triphase) {
+//			emMeters0 = new EMPhaseMeters("a");
+//			emMeters1 = new EMPhaseMeters("b");
+//			emMeters2 = new EMPhaseMeters("c");
+//			emTotal = new EMTotalMeters(new EMManager(this));
+//			meters = new Meters[] {emMeters0, emMeters1, emMeters2, emTotal};
+//			em1meters0 = em1meters1 = em1meters2 = null;
+//		} else {
+//			em1meters0 = new EM1Meters(new EM1Manager(this, 0));
+//			em1meters1 = new EM1Meters(new EM1Manager(this, 1));
+//			em1meters2 = new EM1Meters(new EM1Manager(this, 2));
+//			meters = new Meters[] {em1meters0, em1meters1, em1meters2};
+//			emMeters0 = emMeters1 = emMeters2 = null;
+//			emTotal = null;
+//		}
+//		return config;
+//	}
 
 	@Override
 	public String getTypeName() {
@@ -92,7 +119,7 @@ public class ShellyPro3EM extends AbstractProDevice implements InternalTmpHolder
 		super.fillSettings(configuration);
 		boolean config3phase = configuration.get("sys").get("device").get("profile").asString("").equals(MODE_TRIPHASE);
 		if(config3phase != triphase) {
-			init(config3phase);
+			configurePhases(config3phase);
 		}
 		if(config3phase) {
 			emMeters0.fillSettings(configuration.get("em:0"));

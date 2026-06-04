@@ -28,10 +28,10 @@ public class ShellyProDimmer1 extends AbstractProDevice implements InternalTmpHo
 	public static final String ID_ADDON = "ProDimmerxProAddon";
 	public static final String MODEL = "SPDM-001PE01EU";
 	private float internalTmp;
-	private MetersWVI baseMeasures = new MetersWVI();
+	private final MetersWVI baseMeasures = new MetersWVI();
 	private Meters[] meters;
-	private LightWhite light = new LightWhite(this, 0);
-	private DeviceModule[] lightArray;// = new LightWhite[] {light};
+	private final LightWhite light = new LightWhite(this, 0);
+	private DeviceModule[] lightArray; // = new LightWhite[] {light};
 	private SensorAddOnPro sensorAddOn;
 	private boolean hasLoraAddOn;
 
@@ -55,15 +55,6 @@ public class ShellyProDimmer1 extends AbstractProDevice implements InternalTmpHo
 		final String addOnType = config.get("sys").get("device").path("addon_type").asString(null);
 		if(SensorAddOnPro.ADDON_TYPE.equals(addOnType)) {
 			sensorAddOn = new SensorAddOnPro(this);
-//			Meters[] m = sensorAddOn.getMetersArray();
-//			ArrayList<Meters> metersList = new ArrayList<Meters>(3);
-//			metersList.add(baseMeasures);
-//			for(Meters met: m) {
-//				if(met.getTypes().length > 0) {
-//					metersList.add(met);
-//				}
-//			}
-//			meters = metersList.toArray(Meters[]::new);
 			meters = sensorAddOn.addMetersArray(baseMeasures);
 			lightArray = new DeviceModule[] {light, sensorAddOn.getDigitalOut()};
 		} else {
