@@ -15,10 +15,15 @@ import it.usna.shellyscan.model.device.g2.meters.EMPhaseMeters;
 import it.usna.shellyscan.model.device.g2.meters.EMTotalMeters;
 import it.usna.shellyscan.model.device.g2.modules.EM1Manager;
 import it.usna.shellyscan.model.device.g2.modules.EMManager;
+import it.usna.shellyscan.model.device.g2.modules.LoRaAddOn;
+import it.usna.shellyscan.model.device.g2.modules.SensorAddOnPro;
 import it.usna.shellyscan.model.device.meters.Meters;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ObjectNode;
 
+/**
+ * ShellyPro3EM model - sensor add-on switch not yet implemented
+ */
 public class ShellyPro3EM extends AbstractProDevice implements InternalTmpHolder {
 	public static final String ID = "Pro3EM";
 	public static final String ID_ADDON = "Pro3EMProAddon";
@@ -29,6 +34,8 @@ public class ShellyPro3EM extends AbstractProDevice implements InternalTmpHolder
 	private EMTotalMeters emTotal; // em
 	private Meters meters[];
 	private boolean triphase;
+	private SensorAddOnPro sensorAddOn;
+	private boolean hasLoraAddOn;
 	
 	private static final String MODE_TRIPHASE = "triphase";
 
@@ -38,8 +45,26 @@ public class ShellyPro3EM extends AbstractProDevice implements InternalTmpHolder
 	
 	@Override
 	protected void init(JsonNode devInfo) throws IOException {
-		configurePhases(devInfo.get("profile").asString("").equals(MODE_TRIPHASE));
-		super.init(devInfo);
+		this.hostname = devInfo.get("id").asString("");
+		this.mac = devInfo.get("mac").asString("");
+
+		final JsonNode config = configure();
+
+		fillSettings(config);
+		fillStatus(getJSON("/rpc/Shelly.GetStatus"));
+	}
+	
+	private JsonNode configure() throws IOException {
+		final JsonNode config = getJSON("/rpc/Shelly.GetConfig");
+		final String addOnType = config.get("sys").get("device").path("addon_type").asString(null);
+		if(SensorAddOnPro.ADDON_TYPE.equals(addOnType)) {
+			sensorAddOn = new SensorAddOnPro(this);
+		} else {
+			sensorAddOn = null;
+			hasLoraAddOn = LoRaAddOn.ADDON_TYPE.equals(addOnType);
+		}
+		configurePhases(config.get("sys").get("device").get("profile").asString("").equals(MODE_TRIPHASE));
+		return config;
 	}
 	
 	private void configurePhases(boolean triphase) {
@@ -49,15 +74,23 @@ public class ShellyPro3EM extends AbstractProDevice implements InternalTmpHolder
 			emMeters1 = new EMPhaseMeters("b");
 			emMeters2 = new EMPhaseMeters("c");
 			emTotal = new EMTotalMeters(new EMManager(this));
-			meters = new Meters[] {emMeters0, emMeters1, emMeters2, emTotal};
 			em1meters0 = em1meters1 = em1meters2 = null;
+			if(sensorAddOn != null) {
+				meters = sensorAddOn.addMetersArray(emMeters0, emMeters1, emMeters2, emTotal);
+			} else {
+				meters = new Meters[] {emMeters0, emMeters1, emMeters2, emTotal};
+			}
 		} else {
 			em1meters0 = new EM1Meters(new EM1Manager(this, 0));
 			em1meters1 = new EM1Meters(new EM1Manager(this, 1));
 			em1meters2 = new EM1Meters(new EM1Manager(this, 2));
-			meters = new Meters[] {em1meters0, em1meters1, em1meters2};
 			emMeters0 = emMeters1 = emMeters2 = null;
 			emTotal = null;
+			if(sensorAddOn != null) {
+				meters = sensorAddOn.addMetersArray(em1meters0, em1meters1, em1meters2);
+			} else {
+				meters = new Meters[] {em1meters0, em1meters1, em1meters2};
+			}
 		}
 	}
 	
@@ -128,6 +161,9 @@ public class ShellyPro3EM extends AbstractProDevice implements InternalTmpHolder
 			em1meters1.fillSettings(configuration.get("em1:1"));
 			em1meters2.fillSettings(configuration.get("em1:2"));
 		}
+		if(sensorAddOn != null) {
+			sensorAddOn.fillSettings(configuration);
+		}
 	}
 
 	@Override
@@ -144,26 +180,33 @@ public class ShellyPro3EM extends AbstractProDevice implements InternalTmpHolder
 			em1meters1.fillStatus(status.get("em1:1"));
 			em1meters2.fillStatus(status.get("em1:2"));
 		}
-
+		if(sensorAddOn != null) {
+			sensorAddOn.fillStatus(status);
+		}
 		internalTmp = status.path("temperature:0").path("tC").floatValue();
 	}
 	
 	@Override
 	public String[] getInfoRequests() {
-		if(triphase) {
-			return EMManager.getInfoRequests(super.getInfoRequests());
+		String[] cmd = triphase ? EMManager.getInfoRequests(super.getInfoRequests()) : EM1Manager.getInfoRequests(super.getInfoRequests(), 0, 1, 2);
+		if(sensorAddOn != null) {
+			return SensorAddOnPro.getInfoRequests(cmd);
+		} else if(hasLoraAddOn) {
+			return LoRaAddOn.getInfoRequests(cmd);
 		} else {
-			return EM1Manager.getInfoRequests(super.getInfoRequests(), 0, 1, 2);
+			return cmd;
 		}
 	}
 	
 	@Override
-	public void restoreCheck(Map<String, JsonNode> backupJsons, Map<RestoreMsg, Object> res) throws IOException {
+	public void restoreCheck(Map<String, JsonNode> backupJsons, Map<RestoreMsg, Object> resp) throws IOException {
 		JsonNode devInfo = backupJsons.get("Shelly.GetDeviceInfo.json");
 		boolean backModeTriphase = MODE_TRIPHASE.equals(devInfo.get("profile").asString(""));
 		if(backModeTriphase != triphase) {
-			res.put(RestoreMsg.ERR_RESTORE_MODE_TRIPHASE, null);
+			resp.put(RestoreMsg.ERR_RESTORE_MODE_TRIPHASE, null);
 		}
+		SensorAddOnPro.restoreCheck(this, sensorAddOn, backupJsons, resp);
+		LoRaAddOn.restoreCheck(this, hasLoraAddOn, backupJsons, resp);
 	}
 
 	@Override
@@ -187,6 +230,9 @@ public class ShellyPro3EM extends AbstractProDevice implements InternalTmpHolder
 			conf = RestoreUtil.createIndexedRestoreNode(config, "em1", 2);
 			((ObjectNode)conf.get("config")).remove("ct_type");
 			errors.add(postCommand("EM1.SetConfig", conf));
+			
+			SensorAddOnPro.restore(this, sensorAddOn, backupJsons, errors);
+			LoRaAddOn.restore(this, hasLoraAddOn, config, errors);
 		}
 	}
 }

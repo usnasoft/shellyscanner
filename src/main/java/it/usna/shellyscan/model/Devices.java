@@ -634,14 +634,16 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 	
 //	103966 [pool-1-thread-29] TRACE it.usna.shellyscan.model.Devices - getting info (/shelly) /192.168.1.17:80 - shellyprorgbwwpm-2cbcbba78f08
 //	103966 [pool-1-thread-91] TRACE it.usna.shellyscan.model.Devices - getting info (/shelly) /192.168.1.17:80 - Pro RGBWW
-//	private ShellyAbstractDevice findByIP(InetAddress ip, int port) {
-//		for(ShellyAbstractDevice d: devices) {
-//			if(d.getAddressAndPort().getAddress().equals(ip) && d.getAddressAndPort().getPort() == port) {
-//				return d;
-//			}
-//		}
-//		return null;
-//	}
+	public int indexByIP(InetAddressAndPort ip) {
+		synchronized(devices) {
+			for(int i = 0; i < devices.size(); i++) {
+				if(devices.get(i).getAddressAndPort().equals(ip)) {
+					return i;
+				}
+			}
+		}
+		return -1;
+	}
 	
 	public int indexByMac(String mac) {
 		synchronized(devices) {

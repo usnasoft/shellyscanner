@@ -15,6 +15,8 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -65,6 +67,8 @@ import it.usna.shellyscan.model.device.ShellyAbstractDevice.LogMode;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
 import it.usna.shellyscan.model.device.blu.AbstractBTHomeDevice;
 import it.usna.shellyscan.model.device.blu.BLEGateway;
+import it.usna.shellyscan.model.device.blu.BTHomeDevice;
+import it.usna.shellyscan.model.device.blu.BluInetAddressAndPort;
 import it.usna.shellyscan.model.device.g1.AbstractG1Device;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.g2.JsonPageIterator;
@@ -170,14 +174,54 @@ public class CheckListView extends JDialog implements UsnaEventListener<Devices.
 		logsButton.setHorizontalTextPosition(SwingConstants.CENTER);
 		logsButton.setVerticalTextPosition(SwingConstants.BOTTOM);
 
-		Action bleAction = new UsnaSelectedAction(this, table, "setBLE_action", "setBLE_action_tooletip", null, "/images/Bluetooth24.png", localRow -> { // AbstractG2Device
-			Object ble = tModel.getValueAt(localRow, CheckListTable.COL_BLE);
-			if(ble instanceof String) {
-				AbstractG2Device d = (AbstractG2Device) getLocalDevice(localRow);
-				d.setBLEEnabled(FALSE_STR.equals(ble));
-				try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e1) {}
-				updateRow(d, localRow);
+		Action bleAction = new UsnaSelectedAction(this, table, "setBLE_action", "setBLE_action_tooletip", null, "/images/Bluetooth24.png", localRow -> {
+			ShellyAbstractDevice d = getLocalDevice(localRow);
+			Object bleVal = tModel.getValueAt(localRow, CheckListTable.COL_BLE);
+			if(d instanceof BTHomeDevice) {
+				// hosts (bth)
+				var addr = (BluInetAddressAndPort)d.getAddressAndPort();
+				int idxParent = appModel.indexByIP(addr.getParent());
+//				if(idx >= 0) {
+					System.out.println(UtilMiscellaneous.getDescName(appModel.get(idxParent)) + " - " + addr.getRepresentation());
+//				} else {
+//					System.out.println(addr.getRepresentation());
+//				}
+				addr.getAlternativeParents().forEach(p -> {
+					int idx = appModel.indexByIP(p);
+//					if(idx >= 0) {
+						System.out.println(UtilMiscellaneous.getDescName(appModel.get(idx)) + " - " + p);
+//					} else {
+//						System.out.println(p.getRepresentation());
+//					}
+				});
+				//gw
+				System.out.println();
+
+				if(bleVal instanceof Collection<?> coll) {
+					coll.stream().map(w -> (BLEGateway) w).sorted(Comparator.reverseOrder()).forEach(gw -> {
+						System.out.println(UtilMiscellaneous.getDescName(gw.gw())  + " - " +  gw.gw().getAddressAndPort().getRepresentation() + " - " + gw.lastSeen());
+					});
+				}
+//				((Collection<BLEGateway>)bleVal).stream()./*filter(w -> w instanceof BLEGateway).*/map(w -> (BLEGateway) w).sorted(Comparator.reverseOrder()).forEach(gw -> {
+//					System.out.println(UtilMiscellaneous.getDescName(gw.gw())  + " - " +  gw.gw().getAddressAndPort().getRepresentation() + " - " + gw.lastSeen());
+//				});
+			} else if(bleVal instanceof List<?>) { // wi-fi (else) && fw >= 2.0.0 (List)
+				List<?> hosted = (List<?>)tModel.getValueAt(localRow, CheckListTable.COL_BLE);
+				hosted.stream().forEach(blu -> {
+					if(blu instanceof ShellyAbstractDevice bth) {
+						System.out.println(UtilMiscellaneous.getDescName(bth) + " - " + bth.getMacAddress());
+					} else {
+						System.out.println(blu); // mac
+					}
+				});
 			}
+//			Object ble = tModel.getValueAt(localRow, CheckListTable.COL_BLE);
+//			if(ble instanceof String) {
+//				AbstractG2Device d = (AbstractG2Device) getLocalDevice(localRow);
+//				d.setBLEEnabled(FALSE_STR.equals(ble));
+//				try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e1) {}
+//				updateRow(d, localRow);
+//			}e
 		});
 
 		Action apModeAction = new UsnaSelectedAction(this, table, "setAPMode_action", "setAPMode_action_tooletip", null, "/images/Rss24.png", localRow -> { // AbstractG2Device
@@ -323,7 +367,7 @@ public class CheckListView extends JDialog implements UsnaEventListener<Devices.
 						logsG1Action.setEnabled(false);
 						logsG2Action.setEnabled(false);
 					}
-					bleAction.setEnabled(sameStringValuesOrInt(modelRow, CheckListTable.COL_BLE));
+					bleAction.setEnabled(/*sameStringValuesOrInt(modelRow, CheckListTable.COL_BLE)*/modelRow.length == 1 && (getLocalDevice(modelRow[0]) instanceof AbstractG2Device || getLocalDevice(modelRow[0]) instanceof BTHomeDevice));
 					apModeAction.setEnabled(sameBooleanValues(modelRow, CheckListTable.COL_AP, AbstractG2Device.class));
 					roamingAction.setEnabled(sameStringValuesOrInt(modelRow, CheckListTable.COL_ROAMING));
 					rangeExtenderAction.setEnabled(sameStringValuesOrInt(modelRow, CheckListTable.COL_EXTENDER));

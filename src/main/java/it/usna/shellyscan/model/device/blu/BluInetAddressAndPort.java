@@ -35,6 +35,10 @@ public class BluInetAddressAndPort extends InetAddressAndPort {
 			alternativeParents.add(parent);
 		}
 	}
+	
+	public InetAddressAndPort getParent() {
+		return new InetAddressAndPort(address, port);
+	}
 
 	public List<InetAddressAndPort> getAlternativeParents() {
 		return alternativeParents;
@@ -58,7 +62,6 @@ public class BluInetAddressAndPort extends InetAddressAndPort {
 			return index - b.index;
 		}
 		return 1; // blue is greater than non blue
-		
 	}
 	
 	public String getParentsAsString() {
