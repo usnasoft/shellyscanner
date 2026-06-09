@@ -177,7 +177,7 @@ public class CheckListView extends JDialog implements UsnaEventListener<Devices.
 		Action bleAction = new UsnaSelectedAction(this, table, "setBLE_action", "setBLE_action_tooletip", null, "/images/Bluetooth24.png", localRow -> {
 			ShellyAbstractDevice d = getLocalDevice(localRow);
 			Object bleVal = tModel.getValueAt(localRow, CheckListTable.COL_BLE);
-			if(d instanceof BTHomeDevice) {
+			if(d instanceof BTHomeDevice bth) {
 				// hosts (bth)
 				var addr = (BluInetAddressAndPort)d.getAddressAndPort();
 				int idxParent = appModel.indexByIP(addr.getParent());
@@ -186,10 +186,10 @@ public class CheckListView extends JDialog implements UsnaEventListener<Devices.
 //				} else {
 //					System.out.println(addr.getRepresentation());
 //				}
-				addr.getAlternativeParents().forEach(p -> {
-					int idx = appModel.indexByIP(p);
+				addr.getAlternativeParents().forEach(a -> {
+					int idx = appModel.indexByIP(a);
 //					if(idx >= 0) {
-						System.out.println(UtilMiscellaneous.getDescName(appModel.get(idx)) + " - " + p);
+						System.out.println(UtilMiscellaneous.getDescName(appModel.get(idx)) + " - " + a.getRepresentation());
 //					} else {
 //						System.out.println(p.getRepresentation());
 //					}
@@ -199,12 +199,10 @@ public class CheckListView extends JDialog implements UsnaEventListener<Devices.
 
 				if(bleVal instanceof Collection<?> coll) {
 					coll.stream().map(w -> (BLEGateway) w).sorted(Comparator.reverseOrder()).forEach(gw -> {
-						System.out.println(UtilMiscellaneous.getDescName(gw.gw())  + " - " +  gw.gw().getAddressAndPort().getRepresentation() + " - " + gw.lastSeen());
+						System.out.println(UtilMiscellaneous.getDescName(gw.gw()) + " - " +  gw.gw().getAddressAndPort().getRepresentation() + " - " + gw.lastSeen());
 					});
 				}
-//				((Collection<BLEGateway>)bleVal).stream()./*filter(w -> w instanceof BLEGateway).*/map(w -> (BLEGateway) w).sorted(Comparator.reverseOrder()).forEach(gw -> {
-//					System.out.println(UtilMiscellaneous.getDescName(gw.gw())  + " - " +  gw.gw().getAddressAndPort().getRepresentation() + " - " + gw.lastSeen());
-//				});
+				new DialogBluDevicesInfo(this, bth, bleVal, appModel);
 			} else if(bleVal instanceof List<?>) { // wi-fi (else) && fw >= 2.0.0 (List)
 				List<?> hosted = (List<?>)tModel.getValueAt(localRow, CheckListTable.COL_BLE);
 				hosted.stream().forEach(blu -> {
@@ -214,6 +212,7 @@ public class CheckListView extends JDialog implements UsnaEventListener<Devices.
 						System.out.println(blu); // mac
 					}
 				});
+				new DialogWiFiDevicesInfo(this, bleVal);
 			}
 //			Object ble = tModel.getValueAt(localRow, CheckListTable.COL_BLE);
 //			if(ble instanceof String) {
