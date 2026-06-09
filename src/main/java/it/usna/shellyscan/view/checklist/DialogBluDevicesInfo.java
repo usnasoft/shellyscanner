@@ -19,6 +19,7 @@ import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.RowFilter;
@@ -42,24 +43,99 @@ import it.usna.swing.texteditor.TextDocumentListener;
  */
 public class DialogBluDevicesInfo extends JDialog {
 	private static final long serialVersionUID = 1L;
+	
+	private ExTooltipTable btHomeTable;
+	private ExTooltipTable gatewaysTable;
 	//test: BLE.ListPairedDevices
 
 //	private Future<?> updateTaskFuture;
 
 	public DialogBluDevicesInfo(final Window owner, BTHomeDevice d, Object bleVal, Devices appModel) {
-		super(owner, "Hosts"); //todo LABELS.getString("xxx")
+		super(owner, LABELS.getString("dlgBLEInfoTitle"));
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		
+		JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
+		
+		var bth = btHomePanel(d, bleVal, appModel);
+		tabbedPane.add("BTHome hosts", bth); // todo
+		
+		var gw = gatewaysPanel(bleVal);
+		tabbedPane.add("Gateways", gw); // todo
+		
+		getContentPane().add(tabbedPane, BorderLayout.CENTER);
+
+		JButton btnClose = new JButton(LABELS.getString("dlgClose"));
+		btnClose.setBorder(BorderFactory.createEmptyBorder(2, 7, 2, 8));
+		btnClose.addActionListener(e -> dispose());
+		
+		JPanel panelFind = new JPanel(new FlowLayout(FlowLayout.RIGHT, 3, 0));
+		panelFind.setBorder(BorderFactory.createEmptyBorder(1, 0, 3, 0));
+		getContentPane().add(panelFind, BorderLayout.SOUTH);
+		
+		JLabel label = new JLabel(LABELS.getString("lblFilter"));
+		panelFind.add(label);
+		
+		JTextField textFieldFilter = new JTextField();
+		textFieldFilter.setColumns(18);
+		textFieldFilter.setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));
+		panelFind.add(textFieldFilter);
+		
+		textFieldFilter.getDocument().addDocumentListener((TextDocumentListener)e -> {
+			final int[] cols = new int[] {0, 1};
+			String filter = textFieldFilter.getText();
+			TableRowSorter<?> sorterBth = (TableRowSorter<?>)btHomeTable.getRowSorter();
+			TableRowSorter<?> sorterGw = (TableRowSorter<?>)gatewaysTable.getRowSorter();
+			if(filter.isEmpty()) {
+				sorterBth.setRowFilter(null);
+				sorterGw.setRowFilter(null);
+			} else {
+				filter = filter.replace("\\E", "\\e");
+				sorterBth.setRowFilter(RowFilter.regexFilter("(?i).*\\Q" + filter + "\\E.*", cols));
+				sorterGw.setRowFilter(RowFilter.regexFilter("(?i).*\\Q" + filter + "\\E.*", cols));
+			}
+		});
+		textFieldFilter.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_F, MainView.SHORTCUT_KEY), "find_focus_sel");
+		textFieldFilter.getActionMap().put("find_focus_sel", new UsnaAction(e -> textFieldFilter.requestFocus()));
+		
+		final UsnaAction eraseFilterAction = new UsnaAction(this, null, "/images/erase-9-16.png", e -> {
+			textFieldFilter.setText("");
+			textFieldFilter.requestFocusInWindow();
+			btHomeTable.clearSelection();
+			gatewaysTable.clearSelection();
+		});
+		JButton eraseFilterButton = new JButton(eraseFilterAction);
+		eraseFilterButton.setContentAreaFilled(false);
+		eraseFilterButton.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_E, MainView.SHORTCUT_KEY), "find_erase_sel");
+		eraseFilterButton.getActionMap().put("find_erase_sel", eraseFilterAction);
+		eraseFilterButton.setBorder(BorderFactory.createEmptyBorder(1, 2, 1, 2));
+		
+		panelFind.add(eraseFilterButton);
+		panelFind.add(Box.createHorizontalStrut(12));
+		panelFind.add(btnClose);
+
+		rootPane.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "escape_close");
+		rootPane.getActionMap().put("escape_close", new AbstractAction() {
+			private static final long serialVersionUID = 1L;
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				dispose();
+			}
+		});
+
+		setSize(450, 300);
+		setLocationRelativeTo(owner);
+		setVisible(true);
+		
+	}
+	
+	private JComponent btHomePanel(BTHomeDevice d, Object bleVal, Devices appModel) {
 		UsnaTableModel tModel = new UsnaTableModel(LABELS.getString("col_device"), LABELS.getString("col_ip"));
-		ExTooltipTable table = new ExTooltipTable(tModel, true);
+		btHomeTable = new ExTooltipTable(tModel, true);
 
 		JScrollPane scrollPane = new JScrollPane();
-		scrollPane.setViewportView(table);
-		getContentPane().add(scrollPane, BorderLayout.CENTER);
-		
-		
-		
-		
+		scrollPane.setBorder(BorderFactory.createEmptyBorder(0, 0, 3, 0));
+		scrollPane.setViewportView(btHomeTable);
+
 		var addr = (BluInetAddressAndPort)d.getAddressAndPort();
 		int idxParent = appModel.indexByIP(addr.getParent());
 //		if(idx >= 0) {
@@ -88,68 +164,35 @@ public class DialogBluDevicesInfo extends JDialog {
 			});
 		}
 		
-		table.sortByColumn(1, SortOrder.ASCENDING);
-		table.activateSingleCellStringCopy();
+		btHomeTable.sortByColumn(1, SortOrder.ASCENDING);
+		btHomeTable.activateSingleCellStringCopy();
+		btHomeTable.columnsWidthAdapt();
+		return scrollPane;
+	}
+	
+	private JComponent gatewaysPanel(Object bleVal) {
+		UsnaTableModel tModel = new UsnaTableModel(LABELS.getString("col_device"), LABELS.getString("col_ip"), "Last seen"); // TODO
+		gatewaysTable = new ExTooltipTable(tModel, true);
 
-//		table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		JScrollPane scrollPane = new JScrollPane();
+		scrollPane.setBorder(BorderFactory.createEmptyBorder(0, 0, 3, 0));
+		scrollPane.setViewportView(gatewaysTable);
+		getContentPane().add(scrollPane, BorderLayout.CENTER);
 		
-		JButton btnClose = new JButton(LABELS.getString("dlgClose"));
-		btnClose.setBorder(BorderFactory.createEmptyBorder(2, 7, 2, 8));
-		btnClose.addActionListener(e -> dispose());
-		
-		JPanel panelFind = new JPanel(new FlowLayout(FlowLayout.RIGHT, 3, 0));
-		panelFind.setBorder(BorderFactory.createEmptyBorder(1, 0, 3, 0));
-		getContentPane().add(panelFind, BorderLayout.SOUTH);
-		
-		JLabel label = new JLabel(LABELS.getString("lblFilter"));
-		panelFind.add(label);
-		
-		JTextField textFieldFilter = new JTextField();
-		textFieldFilter.setColumns(18);
-		textFieldFilter.setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));
-		panelFind.add(textFieldFilter);
-		
-		textFieldFilter.getDocument().addDocumentListener((TextDocumentListener)e -> {
-			final int[] cols = new int[] {0, 1};
-			String filter = textFieldFilter.getText();
-			TableRowSorter<?> sorter = (TableRowSorter<?>)table.getRowSorter();
-			if(filter.isEmpty()) {
-				sorter.setRowFilter(null);
-			} else {
-				filter = filter.replace("\\E", "\\e");
-				sorter.setRowFilter(RowFilter.regexFilter("(?i).*\\Q" + filter + "\\E.*", cols));
-			}
-		});
-		textFieldFilter.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_F, MainView.SHORTCUT_KEY), "find_focus_sel");
-		textFieldFilter.getActionMap().put("find_focus_sel", new UsnaAction(e -> textFieldFilter.requestFocus()));
-		
-		final UsnaAction eraseFilterAction = new UsnaAction(this, null, "/images/erase-9-16.png", e -> {
-			textFieldFilter.setText("");
-			textFieldFilter.requestFocusInWindow();
-			table.clearSelection();
-		});
-		JButton eraseFilterButton = new JButton(eraseFilterAction);
-		eraseFilterButton.setContentAreaFilled(false);
-		eraseFilterButton.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_E, MainView.SHORTCUT_KEY), "find_erase_sel");
-		eraseFilterButton.getActionMap().put("find_erase_sel", eraseFilterAction);
-		eraseFilterButton.setBorder(BorderFactory.createEmptyBorder(1, 2, 1, 2));
-		
-		panelFind.add(eraseFilterButton);
-		panelFind.add(Box.createHorizontalStrut(12));
-		panelFind.add(btnClose);
 
-		rootPane.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "escape_close");
-		rootPane.getActionMap().put("escape_close", new AbstractAction() {
-			private static final long serialVersionUID = 1L;
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				dispose();
-			}
-		});
+		//gw
+		System.out.println();
 
-		setSize(450, 300);//		UsnaSwingUtils.setLocationRelativeTo(this, owner, SwingConstants.RIGHT, -8, 0);
-		setLocationRelativeTo(owner);
-		setVisible(true);
-		table.columnsWidthAdapt();
+		if(bleVal instanceof Collection<?> coll) {
+			coll.stream().map(w -> (BLEGateway) w)/*.sorted(Comparator.reverseOrder())*/.forEach(gw -> {
+				System.out.println(UtilMiscellaneous.getDescName(gw.gw())  + " - " +  gw.gw().getAddressAndPort().getRepresentation() + " - " + gw.lastSeen());
+				tModel.addRow(UtilMiscellaneous.getDescName(gw.gw()), gw.gw().getAddressAndPort().getRepresentation(), gw.lastSeen());
+			});
+		}
+		
+		gatewaysTable.sortByColumn(1, SortOrder.ASCENDING);
+		gatewaysTable.activateSingleCellStringCopy();
+		gatewaysTable.columnsWidthAdapt();
+		return scrollPane;
 	}
 }

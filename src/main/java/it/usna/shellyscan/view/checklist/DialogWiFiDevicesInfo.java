@@ -43,7 +43,7 @@ public class DialogWiFiDevicesInfo extends JDialog {
 //	private Future<?> updateTaskFuture;
 
 	public DialogWiFiDevicesInfo(final Window owner, Object bleVal) {
-		super(owner, "BLE devices"); //todo LABELS.getString("xxx")
+		super(owner, LABELS.getString("dlgWiFiDevInfoTitle"));
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		
 		UsnaTableModel tModel = new UsnaTableModel(LABELS.getString("col_device"), LABELS.getString("col_mac"));
@@ -51,29 +51,17 @@ public class DialogWiFiDevicesInfo extends JDialog {
 
 		JScrollPane scrollPane = new JScrollPane();
 		scrollPane.setViewportView(table);
+		scrollPane.setBorder(BorderFactory.createEmptyBorder(0, 0, 3, 0));
 		getContentPane().add(scrollPane, BorderLayout.CENTER);
 		
-		
-		
-		
-		List<?> hosted = (List<?>)bleVal;
-		hosted.stream().forEach(blu -> {
+		((List<?>)bleVal).stream().forEach(blu -> {
 			if(blu instanceof ShellyAbstractDevice bth) {
 				tModel.addRow(UtilMiscellaneous.getDescName(bth), bth.getMacAddress());
 			} else { // mac (String)
 				tModel.addRow(null, blu);
 			}
 		});
-		
 
-//		ArrayList<ShellyAbstractDevice> modelMap = new ArrayList<>();
-//		for(int i = 0; i < model.size(); i++) {
-//			ShellyAbstractDevice d = model.get(i);
-//			if(d.getStatus() == ShellyAbstractDevice.Status.ON_LINE) {
-//				tModel.addRow(UtilMiscellaneous.getExtendedHostName(d), d.getAddressAndPort());
-//				modelMap.add(d);
-//			}
-//		}
 		table.sortByColumn(1, SortOrder.ASCENDING);
 		table.activateSingleCellStringCopy();
 
