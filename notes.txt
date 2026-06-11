@@ -404,8 +404,8 @@ cli restore / cli list ip/full / cli -gen parameter
 1.3.2
 ---
 Shelly Wall Display X2i - Supported bases: 2-output power base; 2-output power base
-Shelly EM Gen3 (?)
-Shelly Flood Gen4 (?)
+Shelly EM Gen3
+Shelly Flood Gen4
 -slow cli par (Mirco Krug - fb)
 -font cli par (GitHub issue)
 gen2+ protected devices logs
