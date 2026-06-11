@@ -8,7 +8,6 @@ import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.util.Collection;
-import java.util.Comparator;
 
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
@@ -43,12 +42,8 @@ import it.usna.swing.texteditor.TextDocumentListener;
  */
 public class DialogBluDevicesInfo extends JDialog {
 	private static final long serialVersionUID = 1L;
-	
 	private ExTooltipTable btHomeTable;
 	private ExTooltipTable gatewaysTable;
-	//test: BLE.ListPairedDevices
-
-//	private Future<?> updateTaskFuture;
 
 	public DialogBluDevicesInfo(final Window owner, BTHomeDevice d, Object bleVal, Devices appModel) {
 		super(owner, LABELS.getString("dlgBLEInfoTitle"));
@@ -57,10 +52,10 @@ public class DialogBluDevicesInfo extends JDialog {
 		JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
 		
 		var bth = btHomePanel(d, bleVal, appModel);
-		tabbedPane.add("BTHome hosts", bth); // todo
+		tabbedPane.add(LABELS.getString("dlgBLEInfoBTHomeHosts"), bth);
 		
 		var gw = gatewaysPanel(bleVal);
-		tabbedPane.add("Gateways", gw); // todo
+		tabbedPane.add(LABELS.getString("dlgBLEInfoBTHomeGW"), gw);
 		
 		getContentPane().add(tabbedPane, BorderLayout.CENTER);
 
@@ -139,31 +134,18 @@ public class DialogBluDevicesInfo extends JDialog {
 		var addr = (BluInetAddressAndPort)d.getAddressAndPort();
 		int idxParent = appModel.indexByIP(addr.getParent());
 //		if(idx >= 0) {
-			System.out.println(UtilMiscellaneous.getDescName(appModel.get(idxParent)) + " - " + addr.getRepresentation());
+//			System.out.println(UtilMiscellaneous.getDescName(appModel.get(idxParent)) + " - " + addr.getRepresentation());
 			tModel.addRow(UtilMiscellaneous.getDescName(appModel.get(idxParent)), addr.getParent());
 //		} else {
-//			System.out.println(addr.getRepresentation());
 //		}
 		addr.getAlternativeParents().forEach(p -> {
 			int idx = appModel.indexByIP(p);
 //			if(idx >= 0) {
-				System.out.println(UtilMiscellaneous.getDescName(appModel.get(idx)) + " - " + p);
+//				System.out.println(UtilMiscellaneous.getDescName(appModel.get(idx)) + " - " + p);
 				tModel.addRow(UtilMiscellaneous.getDescName(appModel.get(idx)), p);
 //			} else {
-//				System.out.println(p.getRepresentation());
 //			}
 		});
-		
-		// todo (tab?)
-		//gw
-		System.out.println();
-
-		if(bleVal instanceof Collection<?> coll) {
-			coll.stream().map(w -> (BLEGateway) w).sorted(Comparator.reverseOrder()).forEach(gw -> {
-				System.out.println(UtilMiscellaneous.getDescName(gw.gw())  + " - " +  gw.gw().getAddressAndPort().getRepresentation() + " - " + gw.lastSeen());
-			});
-		}
-		
 		btHomeTable.sortByColumn(1, SortOrder.ASCENDING);
 		btHomeTable.activateSingleCellStringCopy();
 		btHomeTable.columnsWidthAdapt();
@@ -178,15 +160,11 @@ public class DialogBluDevicesInfo extends JDialog {
 		scrollPane.setBorder(BorderFactory.createEmptyBorder(0, 0, 3, 0));
 		scrollPane.setViewportView(gatewaysTable);
 		getContentPane().add(scrollPane, BorderLayout.CENTER);
-		
-
-		//gw
-		System.out.println();
 
 		if(bleVal instanceof Collection<?> coll) {
 			coll.stream().map(w -> (BLEGateway) w)/*.sorted(Comparator.reverseOrder())*/.forEach(gw -> {
-				System.out.println(UtilMiscellaneous.getDescName(gw.gw())  + " - " +  gw.gw().getAddressAndPort().getRepresentation() + " - " + gw.lastSeen());
-				tModel.addRow(UtilMiscellaneous.getDescName(gw.gw()), gw.gw().getAddressAndPort().getRepresentation(), gw.lastSeen());
+//				System.out.println(UtilMiscellaneous.getDescName(gw.gw())  + " - " +  gw.gw().getAddressAndPort().getRepresentation() + " - " + gw.lastSeen());
+				tModel.addRow(UtilMiscellaneous.getDescName(gw.gw()), gw.gw().getAddressAndPort().getRepresentation(), System.currentTimeMillis()/1000 - gw.lastSeen());
 			});
 		}
 		

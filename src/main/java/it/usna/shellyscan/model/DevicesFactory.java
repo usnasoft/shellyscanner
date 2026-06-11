@@ -118,6 +118,7 @@ import it.usna.shellyscan.model.device.g4.Shelly2PMG4;
 import it.usna.shellyscan.model.device.g4.ShellyDimmerG4;
 import it.usna.shellyscan.model.device.g4.ShellyEMG4;
 import it.usna.shellyscan.model.device.g4.ShellyFloodG4;
+import it.usna.shellyscan.model.device.g4.ShellyFloodSG4;
 import it.usna.shellyscan.model.device.g4.ShellyG4Unmanaged;
 import it.usna.shellyscan.model.device.g4.ShellyMini1G4;
 import it.usna.shellyscan.model.device.g4.ShellyMini1PMG4;
@@ -258,15 +259,15 @@ public class DevicesFactory {
 				case ShellyPlusHT.ID -> new ShellyPlusHT(address, port, name);
 				case ShellyPlusSmoke.ID -> new ShellyPlusSmoke(address, port, name);
 				// PRO
-				case ShellyPro1PM.ID -> new ShellyPro1PM(address, port, name);
+				case ShellyPro1PM.ID, ShellyPro1PM.ID_ADDON -> new ShellyPro1PM(address, port, name);
 				case ShellyPro1.ID, ShellyPro1.ID_ADDON -> new ShellyPro1(address, port, name);
-				case ShellyPro2PM.ID -> new ShellyPro2PM(address, port, name);
-				case ShellyPro2.ID -> new ShellyPro2(address, port, name);
+				case ShellyPro2PM.ID, ShellyPro2PM.ID_ADDON -> new ShellyPro2PM(address, port, name);
+				case ShellyPro2.ID, ShellyPro2.ID_ADDON -> new ShellyPro2(address, port, name);
 				case ShellyPro3.ID -> new ShellyPro3(address, port, name);
 				case ShellyPro4PM.ID -> ShellyProDualCover.MODEL.equals(info.get("model").asString()) ? new ShellyProDualCover(address, port, name) : new ShellyPro4PM(address, port, name);
 				case ShellyProDimmer1.ID, ShellyProDimmer1.ID_ADDON -> ShellyProDimmer2.MODEL.equals(info.get("model").asString()) ? new ShellyProDimmer2(address, port, name) : new ShellyProDimmer1(address, port, name);
-				case ShellyProEM50.ID -> new ShellyProEM50(address, port, name);
-				case ShellyPro3EM.ID -> new ShellyPro3EM(address, port, name);
+				case ShellyProEM50.ID, ShellyProEM50.ID_ADDON -> new ShellyProEM50(address, port, name);
+				case ShellyPro3EM.ID, ShellyPro3EM.ID_ADDON -> new ShellyPro3EM(address, port, name);
 				case ShellyProRGBWW.ID -> new ShellyProRGBWW(address, port, name);
 
 				default -> new ShellyG2Unmanaged(address, port, name);
@@ -367,15 +368,12 @@ public class DevicesFactory {
 			case ShellyMiniEMG4.MODEL -> new ShellyMiniEMG4(address, port, name);
 			case ShellyDimmerG4.MODEL -> new ShellyDimmerG4(address, port, name);
 			case ShellyPowerStrip4G.MODEL -> new ShellyPowerStrip4G(address, port, name);
-
 			case ShellyEMG4.MODEL -> new ShellyEMG4(address, port, name);
-
 			case ShellyPresenceG4.MODEL -> new ShellyPresenceG4(address, port, name);
 			// Battery operated
-
+			case ShellyFloodSG4.MODEL -> new ShellyFloodSG4(address, port, name);
 			case ShellyFloodG4.MODEL -> new ShellyFloodG4(address, port, name);
 			// PRO
-
 			default -> new ShellyG4Unmanaged(address, port, name);
 			};
 		} catch(Exception e) { // really unexpected

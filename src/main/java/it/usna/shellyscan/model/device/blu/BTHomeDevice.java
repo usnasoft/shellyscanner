@@ -82,12 +82,12 @@ public class BTHomeDevice extends AbstractBTHomeDevice implements ModulesHolder 
 		case 0x0B -> "Weather Station"; // 11
 		case 0x0C -> "Blu H&T Display ZB"; // 12
 		case 0x11 -> "Blu H&T ZB"; // 17
-		case 0x13 -> "Blu x"; // 19
+		case 0x13 -> "Blu Motion ZB"; // 19
 		case 0x14 -> "Blu Door Window ZB"; // 20
 		case 0x15 -> "Blu Wall Switch 4 ZB"; // 21
 		case 0x16 -> "Blu RC Button 4 ZB"; // 22 - line
 		case 0x17 -> "Blu Button Tough 1 ZB"; // 23
-		case 0x21 -> "Blu y"; // 33
+		case 0x21 -> "Blu x"; // 33
 		default -> "Generic BTHome";
 		};
 		this.webhooks = new Webhooks(parent);

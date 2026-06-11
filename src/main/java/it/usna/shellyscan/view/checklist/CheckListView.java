@@ -15,8 +15,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -68,7 +66,6 @@ import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
 import it.usna.shellyscan.model.device.blu.AbstractBTHomeDevice;
 import it.usna.shellyscan.model.device.blu.BLEGateway;
 import it.usna.shellyscan.model.device.blu.BTHomeDevice;
-import it.usna.shellyscan.model.device.blu.BluInetAddressAndPort;
 import it.usna.shellyscan.model.device.g1.AbstractG1Device;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.g2.JsonPageIterator;
@@ -178,40 +175,8 @@ public class CheckListView extends JDialog implements UsnaEventListener<Devices.
 			ShellyAbstractDevice d = getLocalDevice(localRow);
 			Object bleVal = tModel.getValueAt(localRow, CheckListTable.COL_BLE);
 			if(d instanceof BTHomeDevice bth) {
-				// hosts (bth)
-				var addr = (BluInetAddressAndPort)d.getAddressAndPort();
-				int idxParent = appModel.indexByIP(addr.getParent());
-//				if(idx >= 0) {
-					System.out.println(UtilMiscellaneous.getDescName(appModel.get(idxParent)) + " - " + addr.getRepresentation());
-//				} else {
-//					System.out.println(addr.getRepresentation());
-//				}
-				addr.getAlternativeParents().forEach(a -> {
-					int idx = appModel.indexByIP(a);
-//					if(idx >= 0) {
-						System.out.println(UtilMiscellaneous.getDescName(appModel.get(idx)) + " - " + a.getRepresentation());
-//					} else {
-//						System.out.println(p.getRepresentation());
-//					}
-				});
-				//gw
-				System.out.println();
-
-				if(bleVal instanceof Collection<?> coll) {
-					coll.stream().map(w -> (BLEGateway) w).sorted(Comparator.reverseOrder()).forEach(gw -> {
-						System.out.println(UtilMiscellaneous.getDescName(gw.gw()) + " - " +  gw.gw().getAddressAndPort().getRepresentation() + " - " + gw.lastSeen());
-					});
-				}
 				new DialogBluDevicesInfo(this, bth, bleVal, appModel);
 			} else if(bleVal instanceof List<?>) { // wi-fi (else) && fw >= 2.0.0 (List)
-				List<?> hosted = (List<?>)tModel.getValueAt(localRow, CheckListTable.COL_BLE);
-				hosted.stream().forEach(blu -> {
-					if(blu instanceof ShellyAbstractDevice bth) {
-						System.out.println(UtilMiscellaneous.getDescName(bth) + " - " + bth.getMacAddress());
-					} else {
-						System.out.println(blu); // mac
-					}
-				});
 				new DialogWiFiDevicesInfo(this, bleVal);
 			}
 //			Object ble = tModel.getValueAt(localRow, CheckListTable.COL_BLE);

@@ -38,9 +38,6 @@ import it.usna.swing.texteditor.TextDocumentListener;
  */
 public class DialogWiFiDevicesInfo extends JDialog {
 	private static final long serialVersionUID = 1L;
-	//test: BLE.ListPairedDevices
-
-//	private Future<?> updateTaskFuture;
 
 	public DialogWiFiDevicesInfo(final Window owner, Object bleVal) {
 		super(owner, LABELS.getString("dlgWiFiDevInfoTitle"));
@@ -64,8 +61,6 @@ public class DialogWiFiDevicesInfo extends JDialog {
 
 		table.sortByColumn(1, SortOrder.ASCENDING);
 		table.activateSingleCellStringCopy();
-
-//		table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		
 		JButton btnClose = new JButton(LABELS.getString("dlgClose"));
 		btnClose.setBorder(BorderFactory.createEmptyBorder(2, 7, 2, 8));
@@ -121,7 +116,7 @@ public class DialogWiFiDevicesInfo extends JDialog {
 			}
 		});
 
-		setSize(450, 300);//		UsnaSwingUtils.setLocationRelativeTo(this, owner, SwingConstants.RIGHT, -8, 0);
+		setSize(450, 300);
 		setLocationRelativeTo(owner);
 		setVisible(true);
 		table.columnsWidthAdapt();
