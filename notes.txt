@@ -449,6 +449,11 @@ Shelly Pro EM-50 (X)
 Shelly Pro RGBWW PM (X)
 
 
+1.3.4
+---
+Shelly Dimmer 0/1-10V Gen4
+
+
 todo backup notes
 todo location
 
@@ -475,6 +480,8 @@ http://192.168.1.15/rpc/Voltmeter.SetConfig?id=100&config={%22xvoltage%22:null}
 // https://smarthomecircle.com/connect-xiaomi-temperature-and-humidity-bluetooth-sensor-to-home-assistant
 // addon dimmer gen3 (currently not supported by fw)
 // Webhook.ListSupported
+
+https://jetty.org/docs/jetty/12.1/operations-guide/keystore/index.html
 
 ------- java 21+ -------
 ThreadFactory factory = Thread.ofVirtual().factory();

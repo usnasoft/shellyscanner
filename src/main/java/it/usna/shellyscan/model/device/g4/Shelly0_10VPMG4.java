@@ -1,0 +1,162 @@
+package it.usna.shellyscan.model.device.g4;
+
+import java.io.IOException;
+import java.net.InetAddress;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import it.usna.shellyscan.model.Devices;
+import it.usna.shellyscan.model.device.InternalTmpHolder;
+import it.usna.shellyscan.model.device.ModulesHolder;
+import it.usna.shellyscan.model.device.RestoreMsg;
+import it.usna.shellyscan.model.device.g2.meters.MetersWVI;
+import it.usna.shellyscan.model.device.g2.modules.Input;
+import it.usna.shellyscan.model.device.g2.modules.LightWhite;
+import it.usna.shellyscan.model.device.g2.modules.LoRaAddOn;
+import it.usna.shellyscan.model.device.g2.modules.SensorAddOn;
+import it.usna.shellyscan.model.device.meters.Meters;
+import it.usna.shellyscan.model.device.modules.DeviceModule;
+import tools.jackson.databind.JsonNode;
+
+/**
+ * Shelly dimmer 0/1-10 G4 model
+ * @author usna
+ */
+public class Shelly0_10VPMG4 extends AbstractG4Device implements InternalTmpHolder, ModulesHolder {
+	private static final Logger LOG = LoggerFactory.getLogger(Shelly0_10VPMG4.class);
+	public static final String ID = "Dimmer0110VPMG4";
+	public static final String MODEL = "S4DM-0010WW";
+	private float internalTmp;
+	private MetersWVI baseMeasures = new MetersWVI();
+	private Meters[] meters;
+	private LightWhite light = new LightWhite(this, 0);
+	private LightWhite[] lightArray = new LightWhite[] {light};
+	private SensorAddOn sensorAddOn;
+	private boolean loraAddOn;
+
+	public Shelly0_10VPMG4(InetAddress address, int port, String hostname) {
+		super(address, port, hostname);
+	}
+	
+	@Override
+	protected void init(JsonNode devInfo) throws IOException {
+		this.hostname = devInfo.get("id").asString("");
+		this.mac = devInfo.get("mac").asString("");
+		
+		final JsonNode config = configure();
+		
+		fillSettings(config);
+		fillStatus(getJSON("/rpc/Shelly.GetStatus"));
+	}
+	
+	private JsonNode configure() throws IOException {
+		final JsonNode config = getJSON("/rpc/Shelly.GetConfig");
+		final String addOn = config.get("sys").get("device").path("addon_type").asString("");
+		if(SensorAddOn.ADDON_TYPE.equals(addOn)) {
+			sensorAddOn = new SensorAddOn(this);
+			meters = (sensorAddOn.getTypes().length > 0) ? new Meters[] {baseMeasures, sensorAddOn} : new Meters[] {baseMeasures};
+		} else {
+			sensorAddOn = null;
+			meters = new Meters[] {baseMeasures};
+		}
+		loraAddOn = LoRaAddOn.ADDON_TYPE.equals(addOn);
+		return config;
+	}
+	
+	@Override
+	public String getTypeName() {
+		return "Shelly Dimmer 0/1-10V G4";
+	}
+	
+	@Override
+	public String getTypeID() {
+		return ID;
+	}
+	
+	@Override
+	public String getModelID() {
+		return MODEL;
+	}
+	
+	@Override
+	public float getInternalTmp() {
+		return internalTmp;
+	}
+	
+	@Override
+	public Meters[] getMeters() {
+		return meters;
+	}
+
+	@Override
+	public DeviceModule[] getModules() {
+		return lightArray;
+	}
+	
+	@Override
+	protected void fillSettings(JsonNode configuration) throws IOException {
+		super.fillSettings(configuration);
+		light.fillSettings(configuration.get("light:0"));
+		if(sensorAddOn != null) {
+			sensorAddOn.fillSettings(configuration);
+		}
+	}
+	
+	@Override
+	protected void fillStatus(JsonNode status) throws IOException {
+		super.fillStatus(status);
+		JsonNode lightStatus = status.get("light:0");
+		internalTmp = lightStatus.get("temperature").get("tC").floatValue();
+		baseMeasures.fill(lightStatus);
+		light.fillStatus(lightStatus, status.get("input:0"));
+		if(sensorAddOn != null) {
+			sensorAddOn.fillStatus(status);
+		}
+	}
+	
+	@Override
+	public String[] getInfoRequests() {
+		final String[] cmd = super.getInfoRequests();
+		if(sensorAddOn != null) {
+			return SensorAddOn.getInfoRequests(cmd);
+		} else if(loraAddOn) {
+			return LoRaAddOn.getInfoRequests(cmd);
+		} else {
+			return cmd;
+		}
+	}
+
+	@Override
+	public void restoreCheck(Map<String, JsonNode> backupJsons, Map<RestoreMsg, Object> res) throws IOException {
+		try {
+			configure(); // maybe useless in case of mDNS use since you must reboot before -> on reboot the device registers again on mDNS ad execute a reload
+		} catch (IOException e) {
+			LOG.error("restoreCheck", e);
+		}
+		SensorAddOn.restoreCheck(this, sensorAddOn, backupJsons, res);
+		LoRaAddOn.restoreCheck(this, loraAddOn, backupJsons, res);
+	}
+	
+	@Override
+	protected void restore(Map<String, JsonNode> backupJsons, List<String> errors) throws InterruptedException {
+		JsonNode configuration = backupJsons.get("Shelly.GetConfig.json");
+		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+		errors.add(Input.restore(this, configuration, 0));
+		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+		errors.add(Input.restore(this, configuration, 1));
+		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+		errors.add(light.restore(configuration));
+		
+		SensorAddOn.restore(this, sensorAddOn, backupJsons, errors);
+		LoRaAddOn.restore(this, loraAddOn, configuration, errors);
+	}
+
+	@Override
+	public String toString() {
+		return super.toString() + " Light: " + light;
+	}
+}

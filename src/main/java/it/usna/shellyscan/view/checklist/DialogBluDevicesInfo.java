@@ -164,7 +164,7 @@ public class DialogBluDevicesInfo extends JDialog {
 		if(bleVal instanceof Collection<?> coll) {
 			coll.stream().map(w -> (BLEGateway) w)/*.sorted(Comparator.reverseOrder())*/.forEach(gw -> {
 //				System.out.println(UtilMiscellaneous.getDescName(gw.gw())  + " - " +  gw.gw().getAddressAndPort().getRepresentation() + " - " + gw.lastSeen());
-				tModel.addRow(UtilMiscellaneous.getDescName(gw.gw()), gw.gw().getAddressAndPort().getRepresentation(), System.currentTimeMillis()/1000 - gw.lastSeen());
+				tModel.addRow(UtilMiscellaneous.getDescName(gw.gw()), gw.gw().getAddressAndPort(), System.currentTimeMillis()/1000 - gw.lastSeen());
 			});
 		}
 		

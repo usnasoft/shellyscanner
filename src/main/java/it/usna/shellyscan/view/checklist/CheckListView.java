@@ -572,14 +572,13 @@ public class CheckListView extends JDialog implements UsnaEventListener<Devices.
 		if(blu) {
 			exeService.execute(() -> {
 				for (int i = 0; i < appModel.size(); i++) {
-					if(getLocalIndex(i) == -1) {
+					if(getLocalIndex(i) == -1) { // known but not in this checklist
 						final ShellyAbstractDevice d = appModel.get(i);
 						if(d instanceof AbstractG2Device g2 && d instanceof BatteryDeviceInterface == false && d.getStatus() == Status.ON_LINE) {
 							try {
 								gateways(g2);
 							} catch (IOException e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
+								LOG.error("gateways {}", g2, e);
 							}
 						}
 					}
@@ -777,19 +776,18 @@ public class CheckListView extends JDialog implements UsnaEventListener<Devices.
 		tRow[CheckListTable.COL_AUTO_FW_UPDATE] = autoFWupdate;
 	}
 	
-	private List<?> gateways(AbstractG2Device d) throws IOException {
+	private List<?> gateways(AbstractG2Device g2) throws IOException {
 		ArrayList<Object> bluDevList = new ArrayList<>(); // BTHomeDevice or MAC (String)
-		JsonPageIterator bluIt = d.getJSONIterator("/rpc/BLE.CloudRelay.ListInfos", "devices");
+		JsonPageIterator bluIt = g2.getJSONIterator("/rpc/BLE.CloudRelay.ListInfos", "devices");
 		while(bluIt.hasNext()) {
 			JsonNode blu = bluIt.next();
 			blu.forEachEntry((bluMac, val) -> {
-				bleDevicesGWMap.addVal(bluMac, new BLEGateway(d, val.get("last_seen").intValue(0)));
+				bleDevicesGWMap.addVal(bluMac, new BLEGateway(g2, val.get("last_seen").intValue(0)));
 				int bluIndex = appModel.indexByMac(bluMac);
 				if(bluIndex >= 0) {
 					bluDevList.add(appModel.get(bluIndex));
 					int localIndex = getLocalIndex(bluIndex);
 					if(localIndex >= 0) {
-//						tModel.setValueAt(bleDevicesGWMap.get(bluMac).size(), localIndex, CheckListTable.COL_BLE);
 						tModel.setValueAt(bleDevicesGWMap.get(bluMac), localIndex, CheckListTable.COL_BLE);
 					}
 				} else {
