@@ -143,7 +143,7 @@ public class MeasuresChart extends JFrame implements UsnaEventListener<Devices.E
 		commandPanel.add(eastCommandPanel, BorderLayout.EAST);
 		mainPanel.add(commandPanel, BorderLayout.SOUTH);
 
-		JButton btnHelp = new JButton(new UsnaOpenUrlAction(this, "helpBtnLabel", LABELS.getString("dlgChartsManualUrl")));
+		JButton btnHelp = new JButton(new UsnaOpenUrlAction(this, "helpBtnLabel", "helpOnlineBtnTooltip", LABELS.getString("dlgChartsManualUrl")));
 		JButton btnClear = new JButton(new UsnaAction("dlgChartsBtnClear", e -> {
 			initDataSet(plot.getRangeAxis(), dataset, model, ind);
 			adjustScrollBar();

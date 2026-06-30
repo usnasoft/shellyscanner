@@ -24,6 +24,7 @@ import it.usna.shellyscan.controller.DeferrableTask.Status;
 import it.usna.shellyscan.controller.DeferrablesContainer;
 import it.usna.shellyscan.controller.DeferrablesContainer.DeferrableRecord;
 import it.usna.shellyscan.controller.UsnaAction;
+import it.usna.shellyscan.controller.UsnaOpenUrlAction;
 import it.usna.shellyscan.controller.UsnaSelectedAction;
 import it.usna.swing.UsnaPopupMenu;
 import it.usna.swing.table.ExTooltipTable;
@@ -78,9 +79,11 @@ public class DialogDeferrables extends JFrame implements UsnaEventListener<Defer
 		});
 		abortAction.setEnabled(false);
 		JButton abortButton = new JButton(abortAction);
+		JButton helpButton = new JButton(new UsnaOpenUrlAction(this, "helpBtnLabel", "helpOnlineBtnTooltip", LABELS.getString("dlgDeferrablesManualUrl")));
 		JButton closeButton = new JButton(new UsnaAction("dlgClose", e -> dispose()));
 		JPanel buttonsPanel = new JPanel();
 		buttonsPanel.add(abortButton);
+		buttonsPanel.add(helpButton);
 		buttonsPanel.add(closeButton);
 
 		getContentPane().add(buttonsPanel, BorderLayout.SOUTH);

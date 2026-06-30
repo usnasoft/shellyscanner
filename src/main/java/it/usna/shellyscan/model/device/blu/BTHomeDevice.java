@@ -87,7 +87,8 @@ public class BTHomeDevice extends AbstractBTHomeDevice implements ModulesHolder 
 		case 0x15 -> "Blu Wall Switch 4 ZB"; // 21
 		case 0x16 -> "Blu RC Button 4 ZB"; // 22 - line
 		case 0x17 -> "Blu Button Tough 1 ZB"; // 23
-		case 0x21 -> "Blu x"; // 33
+		case 0x20 -> "Blu 1"; // 32
+		case 0x21 -> "Blu 2"; // 33
 		default -> "Generic BTHome";
 		};
 		this.webhooks = new Webhooks(parent);
@@ -201,7 +202,7 @@ public class BTHomeDevice extends AbstractBTHomeDevice implements ModulesHolder 
 	
 	@Override
 	public void refreshSettings() throws IOException {
-		if(inputs.length > 0) {
+		if(inputs != null && inputs.length > 0) {
 			webhooks.fillBTHomesensorSettings();
 			for(int i = 0; i < inputs.length; i++) {
 				inputs[i].associateWH(webhooks);

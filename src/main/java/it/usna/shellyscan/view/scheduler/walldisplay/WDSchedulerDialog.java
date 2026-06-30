@@ -83,7 +83,7 @@ public class WDSchedulerDialog extends JDialog {
 			}
 		}) ));
 		buttonsPanel.add(Box.createHorizontalStrut(30));
-		buttonsPanel.add(new JButton(new UsnaOpenUrlAction(this, "helpBtnLabel", LABELS.getString("dlgSchedulerManualUrl"))));
+		buttonsPanel.add(new JButton(new UsnaOpenUrlAction(this, "helpBtnLabel", "helpOnlineBtnTooltip", LABELS.getString("dlgSchedulerManualUrl"))));
 		buttonsPanel.add(new JButton(new UsnaAction("dlgClose", e -> dispose() )));
 		
 		getContentPane().add(buttonsPanel, BorderLayout.SOUTH);

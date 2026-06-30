@@ -50,7 +50,7 @@ public class G2SchedulerDialog extends JDialog {
 		buttonsPanel.add(new JButton(new UsnaAction(this, "labelRefresh", e -> scPanel.refresh() )));
 		buttonsPanel.add(new JButton(new UsnaAction("lblLoadFile", e -> scPanel.loadFromBackup() )));
 		buttonsPanel.add(Box.createHorizontalStrut(30));
-		buttonsPanel.add(new JButton(new UsnaOpenUrlAction(this, "helpBtnLabel", LABELS.getString("dlgSchedulerManualUrl"))));
+		buttonsPanel.add(new JButton(new UsnaOpenUrlAction(this, "helpBtnLabel", "helpOnlineBtnTooltip", LABELS.getString("dlgSchedulerManualUrl"))));
 		buttonsPanel.add(new JButton(new UsnaAction("dlgClose", e -> dispose() )));
 
 		pack();

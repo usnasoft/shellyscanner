@@ -125,7 +125,7 @@ public class TRVSchedulerDialog extends JDialog {
 		buttonsPanel.add(new JButton(new UsnaAction(this, "labelRefresh", e -> refresh()) ));
 		buttonsPanel.add(new JButton(new UsnaAction("lblLoadFile", e -> loadFromBackup()) ));
 		buttonsPanel.add(Box.createHorizontalStrut(30));
-		buttonsPanel.add(new JButton(new UsnaOpenUrlAction(this, "helpBtnLabel", LABELS.getString("dlgSchedulerManualUrl"))));
+		buttonsPanel.add(new JButton(new UsnaOpenUrlAction(this, "helpBtnLabel", "helpOnlineBtnTooltip", LABELS.getString("dlgSchedulerManualUrl"))));
 		buttonsPanel.add(new JButton(new UsnaAction("dlgClose", e -> dispose()) ));
 
 		pack();

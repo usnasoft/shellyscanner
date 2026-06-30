@@ -8,13 +8,21 @@ import java.net.URI;
 
 import javax.swing.JOptionPane;
 
+import it.usna.shellyscan.Main;
 import it.usna.shellyscan.view.util.Msg;
 
 public class UsnaOpenUrlAction extends UsnaAction {
 	private static final long serialVersionUID = 1L;
 	
-	public UsnaOpenUrlAction(Component owner, String nameId, String url) {
+//	public UsnaOpenUrlAction(Component owner, String nameId, String url) {
+//		super(owner, nameId, listener(owner, url));
+//	}
+	
+	public UsnaOpenUrlAction(Component owner, String nameId, String tooltipId, String url) {
 		super(owner, nameId, listener(owner, url));
+		if(tooltipId != null) {
+			putValue(SHORT_DESCRIPTION, Main.LABELS.getString(tooltipId));
+		}
 	}
 	
 	public UsnaOpenUrlAction(Component owner, String nameId, String tooltipId, String largeIcon, String url) {

@@ -302,7 +302,7 @@ public class CheckListView extends JDialog implements UsnaEventListener<Devices.
 			exeService.schedule(() -> refreshAction.setEnabled(true), 600, TimeUnit.MILLISECONDS);
 		});
 
-		Action helpAction = new UsnaOpenUrlAction(this, "helpBtnTooltip", "helpBtnTooltip", "/images/Question24.png", LABELS.getString("dlgChecklistManualUrl"));
+		Action helpAction = new UsnaOpenUrlAction(this, "helpBtnTooltip", "helpOnlineBtnTooltip", "/images/Question24.png", LABELS.getString("dlgChecklistManualUrl"));
 
 		fill();
 
