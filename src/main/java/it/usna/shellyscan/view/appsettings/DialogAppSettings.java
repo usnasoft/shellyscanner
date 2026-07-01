@@ -62,6 +62,7 @@ public class DialogAppSettings extends JDialog {
 		btnOKButton.addActionListener(event -> {
 			panelNetwork.store(appProp, model);
 			panelIDE.store(appProp);
+			panelGUI.store(appProp);
 
 			// CSV
 			appProp.setProperty(ScannerProperties.PROP_CSV_SEPARATOR, panelGUI.csvTextField.getText());

@@ -144,6 +144,8 @@ public class Main {
 						cli.rejectParameter(cliIndex);
 					}
 				}
+			} else {
+				fontMultiplier = Float.parseFloat(appProp.getProperty(ScannerProperties.PROP_FONT_SIZE));
 			}
 			UsnaSwingUtils.setNimbusLookAndFeel(fontMultiplier);
 			UsnaSwingUtils.macOddities();

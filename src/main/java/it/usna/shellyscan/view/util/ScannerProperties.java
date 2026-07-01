@@ -32,6 +32,11 @@ public class ScannerProperties extends AppProperties { // cannot also extend Usn
 	public static final String PROP_UPDATECHK_STABLE = "STABLE";
 	public static final String PROP_UPDATECHK_DEV = "BETA";
 	
+	public static final String PROP_FONT_SIZE = "FONT_SIZE";
+	public static final String PROP_FONT_SIZE_SMALL = "0.8";
+	public static final String PROP_FONT_SIZE_MEDIUM = "1";
+	public static final String PROP_FONT_SIZE_BIG = "1.3";
+	
 	public static final String PROP_CHARTS_START = "CHART_DEF";
 	public static final String PROP_CHARTS_EXPORT = "CHART_EXPORT";
 	
@@ -94,6 +99,7 @@ public class ScannerProperties extends AppProperties { // cannot also extend Usn
 		defaultProperty(PROP_UPTIME_MODE, PROP_UPTIME_MODE_DEFAULT);
 		defaultProperty(PROP_UPDATECHK_ACTION, PROP_UPDATECHK_DEV);
 		defaultProperty(PROP_DETAILED_VIEW_SCREEN, PROP_DETAILED_VIEW_SCREEN_FULL);
+		defaultProperty(PROP_FONT_SIZE, PROP_FONT_SIZE_MEDIUM);
 		defaultIntProperty(PROP_REFRESH_ITERVAL, PROP_REFRESH_ITERVAL_DEFAULT);
 		defaultIntProperty(PROP_REFRESH_CONF, PROP_REFRESH_CONF_DEFAULT);
 		defaultProperty(PROP_ARCHIVE_FILE, Path.of(userPath, "ShellyStore.arc").toString());

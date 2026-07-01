@@ -256,6 +256,7 @@ public class PanelNetwork extends JPanel {
 		JLabel lblNewLabel_5 = new JLabel(LABELS.getString("dlgAppSetRefreshMsg"));
 		lblNewLabel_5.setVerticalAlignment(SwingConstants.TOP);
 		GridBagConstraints gbc_lblNewLabel_5 = new GridBagConstraints();
+		gbc_lblNewLabel_5.insets = new Insets(10, 0, 0, 0);
 		gbc_lblNewLabel_5.weighty = 1.0;
 		gbc_lblNewLabel_5.fill = GridBagConstraints.HORIZONTAL;
 		gbc_lblNewLabel_5.anchor = GridBagConstraints.NORTHWEST;
