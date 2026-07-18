@@ -42,11 +42,11 @@ public class FWUpdateTable extends ExTooltipTable {
 				if(model.getValueAt(row, column) == null) return "";
 				FirmwareManager fw = fwPanel.getFirmwareManager(row);
 				if(column == COL_CURRENT && fw != null) {
-					return FirmwareManager.getShortVersion(fw.current());
+					return fw.current();
 				} else if(column == COL_STABLE && fw != null) {
-					return FirmwareManager.getShortVersion(fw.newStable());
+					return fw.newStable();
 				} else if(column == COL_BETA && fw != null) {
-					return FirmwareManager.getShortVersion(fw.newBeta());
+					return fw.newBeta();
 				}
 				return model.getValueAt(row, column).toString();
 			}
@@ -79,7 +79,7 @@ public class FWUpdateTable extends ExTooltipTable {
 		JCheckBox editorComponent = (JCheckBox)super.prepareEditor(editor, row, column);
 		FirmwareManager fw = fwPanel.getFirmwareManager(convertRowIndexToModel(row));
 		if(fw != null) {
-			editorComponent.setText(FirmwareManager.getShortVersion(column == COL_STABLE ? fw.newStable() : fw.newBeta()));
+			editorComponent.setText(FirmwareManager.getShortVersion(column == COL_STABLE ? fw.newStableBuild() : fw.newBetaBuild()));
 		} else if(column == COL_STABLE) { // no info -> try update
 			editorComponent.setText(Main.LABELS.getString("labelUpdateToAny"));
 		}
@@ -116,11 +116,11 @@ public class FWUpdateTable extends ExTooltipTable {
 	protected String cellValueAsString(Object value, int row, int column) {
 		FirmwareManager fw = fwPanel.getFirmwareManager(convertRowIndexToModel(row));
 		if(column == COL_CURRENT && fw != null) {
-			return fw.current();
+			return fw.currentBuild();
 		} else if(column == COL_STABLE && fw != null) {
-			return fw.newStable();
+			return fw.newStableBuild();
 		} else if(column == COL_BETA && fw != null) {
-			return fw.newBeta();
+			return fw.newBetaBuild();
 		}
 		return super.cellValueAsString(value, row, column);
 	}
@@ -156,19 +156,19 @@ public class FWUpdateTable extends ExTooltipTable {
 		
 		@Override
 		public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-			if(value == null || value instanceof Boolean) {
+			if(value == null) {
+				JCheckBox comp = (JCheckBox)table.getDefaultRenderer(Boolean.class).getTableCellRendererComponent(table, Boolean.FALSE, isSelected, hasFocus, row, column);
+				comp.setEnabled(false);
+				comp.setText("");
+				return comp;
+			} else if(value instanceof Boolean) {
 				JCheckBox comp = (JCheckBox)table.getDefaultRenderer(Boolean.class).getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-				if(value == null) {
-					comp.setEnabled(false);
-					comp.setText("");
-				} else {
-					comp.setEnabled(true);
-					FirmwareManager fw = fwPanel.getFirmwareManager(convertRowIndexToModel(row));
-					if(fw != null) {
-						comp.setText(FirmwareManager.getShortVersion(column == COL_STABLE ? fw.newStable() : fw.newBeta()));
-					} else if(column == COL_STABLE) { // no info -> try update
-						comp.setText(Main.LABELS.getString("labelUpdateToAny"));
-					}
+				comp.setEnabled(true);
+				FirmwareManager fw = fwPanel.getFirmwareManager(convertRowIndexToModel(row));
+				if(fw != null) {
+					comp.setText(column == COL_STABLE ? fw.newStable() : fw.newBeta());
+				} else if(column == COL_STABLE) { // no info -> try update
+					comp.setText(Main.LABELS.getString("labelUpdateToAny"));
 				}
 				return comp;
 			} else {

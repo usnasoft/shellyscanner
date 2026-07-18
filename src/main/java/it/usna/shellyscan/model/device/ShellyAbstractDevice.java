@@ -317,20 +317,6 @@ public abstract class ShellyAbstractDevice {
 			throw new DeviceOfflineException(e);
 		}
 	}
-	
-	// to be used with "offset"; data will be merged on a single file (gen2+)
-	protected JsonNode sectionToStream(final String section, final String arrayKey, final String entryName, ZipOutputStream out) throws IOException {
-		try {
-			ZipEntry entry = new ZipEntry(entryName);
-			out.putNextEntry(entry);
-			JsonNode resp = getPagedJson(section, arrayKey);
-			jsonMapper.writer().writeValue(out, resp);
-			return resp;
-		} catch (InterruptedException e) {
-			LOG.debug("sectionToStream {}-{}", section, arrayKey, e);
-			throw new DeviceOfflineException(e);
-		}
-	}
 
 	@Override
 	public int hashCode() {
@@ -346,4 +332,4 @@ public abstract class ShellyAbstractDevice {
 	public String toString() {
 		return getTypeName() + "-" + name + ": " + addressAndPort.getRepresentation() + " (" + hostname + ")";
 	}
-} //278 - 399 - 316 - 251 - 237 - 231 - 247 - 271 - 332 - 323
+}

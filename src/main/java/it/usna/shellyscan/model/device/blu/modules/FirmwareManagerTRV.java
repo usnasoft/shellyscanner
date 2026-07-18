@@ -16,8 +16,9 @@ public class FirmwareManagerTRV implements FirmwareManager {
 	private static final Logger LOG = LoggerFactory.getLogger(FirmwareManagerTRV.class);
 
 	private final BluTRV d;
+	private String currentBuild;
 	private String current;
-	private String stable;
+	private String stableBuild;
 //	private String beta;
 	private boolean updating;
 	private boolean valid;
@@ -31,16 +32,20 @@ public class FirmwareManagerTRV implements FirmwareManager {
 		updating = false;
 		try {
 			JsonNode deviceInfoNode = d.getJSON("/rpc/BluTrv.GetRemoteDeviceInfo?id=" + d.getIndex());
-			current = deviceInfoNode.at("/device_info/fw_id").asString("");
+			currentBuild = deviceInfoNode.at("/device_info/fw_id").asString("");
+			current = deviceInfoNode.at("/device_info/ver").asString(null);
+			if(current == null) {
+				current = FirmwareManager.getShortVersion(currentBuild);
+			}
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			
 			JsonNode newFwNode = d.getJSON("/rpc/BluTrv.CheckForUpdates?id=" + d.getIndex());
-			String lastFW = newFwNode.path("fw_id").asString("");
+			String lastFWBuild = newFwNode.path("fw_id").asString("");
 			
-			if(lastFW != null && lastFW.isEmpty() == false && lastFW.equals(current) == false) {
-				this.stable = lastFW;
+			if(lastFWBuild != null && lastFWBuild.isEmpty() == false && lastFWBuild.equals(currentBuild) == false) {
+				this.stableBuild = lastFWBuild;
 			} else {
-				this.stable = null;
+				this.stableBuild = null;
 			}
 			valid = true;
 		} catch(/*IO*/Exception e) {
@@ -54,8 +59,18 @@ public class FirmwareManagerTRV implements FirmwareManager {
 	}
 	
 	@Override
+	public String currentBuild() {
+		return currentBuild;
+	}
+	
+	@Override
 	public String current() {
 		return current;
+	}
+	
+	@Override
+	public String newBetaBuild() {
+		return null;
 	}
 	
 	@Override
@@ -64,8 +79,13 @@ public class FirmwareManagerTRV implements FirmwareManager {
 	}
 	
 	@Override
+	public String newStableBuild() {
+		return stableBuild;
+	}
+	
+	@Override
 	public String newStable() {
-		return stable;
+		return FirmwareManager.getShortVersion(stableBuild);
 	}
 	
 	@Override

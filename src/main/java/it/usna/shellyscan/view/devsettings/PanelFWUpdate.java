@@ -246,12 +246,12 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 		FirmwareManager fw = getFirmwareManager(localIndex);
 		if(fw != null) {
 			if(fw.upadating()) {
-				return new Object[] {DevicesTable.UPDATING_BULLET, UtilMiscellaneous.getExtendedHostName(d), FirmwareManager.getShortVersion(fw.current()),
+				return new Object[] {DevicesTable.UPDATING_BULLET, UtilMiscellaneous.getExtendedHostName(d), fw.current(),
 						(d instanceof AbstractG2Device) ? String.format(LABELS.getString("lbl_downloading"), 0) : LABELS.getString("labelUpdating"), ""};
 			} else {
-				Boolean stableCell = (fw.newStable() != null) ? (select && (fw.current() == null || fw.newStable().compareTo(fw.current()) > 0)) : null;
-				Boolean betaCell = (fw.newBeta() != null) ? Boolean.FALSE : null;
-				return new Object[] {DevicesTable.getStatusIcon(d), UtilMiscellaneous.getExtendedHostName(d), FirmwareManager.getShortVersion(fw.current()), stableCell, betaCell};
+				Boolean stableCell = (fw.newStableBuild() != null) ? (select && (fw.currentBuild() == null || fw.newStableBuild().compareTo(fw.currentBuild()) > 0)) : null;
+				Boolean betaCell = (fw.newBetaBuild() != null) ? Boolean.FALSE : null;
+				return new Object[] {DevicesTable.getStatusIcon(d), UtilMiscellaneous.getExtendedHostName(d), fw.current(), stableCell, betaCell};
 			}
 		} else {
 			DeferrablesContainer dc = DeferrablesContainer.getInstance();

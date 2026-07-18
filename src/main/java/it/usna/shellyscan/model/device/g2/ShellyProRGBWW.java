@@ -286,15 +286,17 @@ public class ShellyProRGBWW extends AbstractProDevice implements ModulesHolder, 
 				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 				errors.add(light1.restore(configuration));
 			}
-			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 		} else {
 			errors.add(RestoreMsg.ERR_RESTORE_PROFILE.name());
 		}
 		
+		JsonNode hfNode = configuration.get("prorgbwwpm").path("hf_mode");
+		if(hfNode.isMissingNode() == false) {
+			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+			errors.add(postCommand("ProRGBWWPM.SetConfig", "{\"config\":{\"hf_mode\":" + hfNode.booleanValue(false) + "}}"));
+		}
+
 		LoRaAddOn.restore(this, hasLoraAddOn, configuration, errors);
-		// TODO ?
-//		final boolean hf = configuration.get("plusrgbwpm").get("hf_mode").booleanValue(false);
-//		errors.add(postCommand("PlusRGBWPM.SetConfig", "{\"config\":{\"hf_mode\":" + hf + "}}"));
 	}
 	
 	@Override

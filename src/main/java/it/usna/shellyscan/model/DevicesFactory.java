@@ -112,6 +112,7 @@ import it.usna.shellyscan.model.device.g3.ShellyShutterG3;
 import it.usna.shellyscan.model.device.g3.ShellyXMOD1;
 import it.usna.shellyscan.model.device.g3.XT1;
 import it.usna.shellyscan.model.device.g4.AbstractG4Device;
+import it.usna.shellyscan.model.device.g4.Shelly0_10VPMG4;
 import it.usna.shellyscan.model.device.g4.Shelly1G4;
 import it.usna.shellyscan.model.device.g4.Shelly1PMG4;
 import it.usna.shellyscan.model.device.g4.Shelly2PMG4;
@@ -367,6 +368,7 @@ public class DevicesFactory {
 			case ShellyMini1PMG4.MODEL -> new ShellyMini1PMG4(address, port, name);
 			case ShellyMiniEMG4.MODEL -> new ShellyMiniEMG4(address, port, name);
 			case ShellyDimmerG4.MODEL -> new ShellyDimmerG4(address, port, name);
+			case Shelly0_10VPMG4.MODEL -> new Shelly0_10VPMG4(address, port, name);
 			case ShellyPowerStrip4G.MODEL -> new ShellyPowerStrip4G(address, port, name);
 			case ShellyEMG4.MODEL -> new ShellyEMG4(address, port, name);
 			case ShellyPresenceG4.MODEL -> new ShellyPresenceG4(address, port, name);

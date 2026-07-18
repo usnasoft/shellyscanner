@@ -51,10 +51,6 @@ public class BTHomeDevice extends AbstractBTHomeDevice implements ModulesHolder 
 	public static final String SENSOR_KEY_PREFIX = DynamicComponents.BTHOME_SENSOR + ":"; // "bthomesensor:";
 	private static final String GROUP_KEY_PREFIX = DynamicComponents.GROUP_TYPE + ":"; // "group:";
 	private static final  Logger LOG = LoggerFactory.getLogger(BTHomeDevice.class);
-//	private final static Map<String, String> DEV_DICTIONARY = Map.of(
-//			"SBBT-002C", "Blu Button", "SBMO-003Z", "BLU Motion",
-//			"SBDW-002C", "Blu Door Window", "SBHT-003C", "Blu H&T",
-//			"SBBT-004CEU", "Blu Wall Switch 4", "SBBT-004CUS", "Blu RC Button 4");
 
 	private String typeName;
 	private String typeID;
@@ -252,7 +248,7 @@ public class BTHomeDevice extends AbstractBTHomeDevice implements ModulesHolder 
 			out.putNextEntry(entry);
 			jsonMapper.writer().writeValue(out, usnaData);
 
-			sectionToStream("/rpc/Shelly.GetComponents?dynamic_only=true", "components", "Shelly.GetComponents.json", out); // "status" is used for groups
+			parent.sectionToStream("/rpc/Shelly.GetComponents?dynamic_only=true", "components", "Shelly.GetComponents.json", out); // "status" is used for groups
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			sectionToStream("/rpc/Webhook.List", "Webhook.List.json", out);
 		} catch(InterruptedException e) {

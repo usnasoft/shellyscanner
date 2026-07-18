@@ -62,6 +62,7 @@ import it.usna.shellyscan.model.device.modules.WIFIManager;
 import it.usna.shellyscan.model.device.modules.WIFIManager.Network;
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.JsonNodeFactory;
 import tools.jackson.databind.node.ObjectNode;
 
@@ -75,7 +76,6 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 	private static final Logger LOG = LoggerFactory.getLogger(AbstractG2Device.class);
 	protected WebSocketClient wsClient;
 	private boolean rangeExtenderEnabled;
-//	private boolean bleEnabled; removed from fw 2.0.0
 	private char[] loginPwd = null;
 
 	protected AbstractG2Device(InetAddress address, int port, String hostname) {
@@ -136,7 +136,6 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 		this.cloudEnabled = config.path("cloud").path("enable").booleanValue(false);
 		this.mqttEnabled = config.path("mqtt").path("enable").booleanValue(false);
 		this.rangeExtenderEnabled = config.get("wifi").path("ap").path("range_extender").path("enable").booleanValue(false); // no "ap" on wall display ???
-//		this.bleEnabled = config.path("ble").path("enable").booleanValue(false); removed from fw 2.0.0
 	}
 
 	protected void fillStatus(JsonNode status) throws IOException {
@@ -204,11 +203,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 	public String setBLEEnabled(boolean enable) {
 		return postCommand("BLE.SetConfig", "{\"config\":{\"enable\":" + enable + "}}");
 	}
-	
-//	public boolean isBLEEnabled() {
-//		return bleEnabled;
-//	}
-	
+
 	public void setPwd(char[] p) {
 		loginPwd = p;
 	}
@@ -313,20 +308,6 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 			throw new DeviceAPIException(resp.get("error"));
 		}
 	}
-	
-	/**
-	 * example: <code> {
-	 *  "items" : [ {"key" : "key", "etag" : "xxxyyy", "value" : "{}"} ],
-	 *  "offset" : 0, "total" : 1
-	 * } </code>
-	 * @param method - e.g. /rpc/KVS.GetMany
-	 * @param arrayKey - e.g. items
-	 * @return an Iterator&lt;JsonNode&gt; & Iterable&lt;JsonNode&gt; navigating through pages
-	 * @throws IOException
-	 */
-	public JsonPageIterator getJSONIterator(final String method, final String arrayKey) throws IOException {
-		return new JsonPageIterator(this, method, arrayKey);
-	}
 
 	private JsonNode executeRPC(final String method, String payload) throws IOException {
 		ContentResponse response = null;
@@ -384,6 +365,51 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 			status = Status.OFF_LINE;
 			throw new DeviceOfflineException(e);
 		}
+	}
+
+	/**
+	 * example: <code> {
+	 *  "items" : [ {"key" : "key", "etag" : "xxxyyy", "value" : "{}"} ],
+	 *  "offset" : 0, "total" : 1
+	 * } </code>
+	 * @param method - e.g. /rpc/KVS.GetMany
+	 * @param arrayKey - e.g. items
+	 * @return an Iterator&lt;JsonNode&gt; & Iterable&lt;JsonNode&gt; navigating through pages
+	 * @throws IOException
+	 */
+	public JsonPageIterator getJSONIterator(final String method, final String arrayKey) throws IOException {
+		return new JsonPageIterator(this, method, arrayKey);
+	}
+	
+	/**
+	 * to be used with "offset"; data will be merged on a single node (gen2+); prefer the use of it.usna.shellyscan.model.device.g2.JsonPageIterator instead
+	 * @param call
+	 * @param arrayKey
+	 * @return a node with merged values
+	 * @throws IOException
+	 * @throws InterruptedException
+	 * @see it.usna.shellyscan.model.device.g2.JsonPageIterator
+	 */
+	public JsonNode getPagedJson(final String call, final String arrayKey) throws IOException, InterruptedException {
+		String req = call;
+		int offset = 0;
+		int tot = 0;
+		JsonNode resp = getJSON(req);
+		JsonNode arrayNode = resp.path(arrayKey);
+		do {
+			if(offset > 0) {
+				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+				JsonNode fragment = getJSON(req);
+				ArrayNode fragmentArrayNode = (ArrayNode)fragment.path(arrayKey);
+				((ArrayNode)arrayNode).addAll(fragmentArrayNode);
+			}
+			JsonNode offsetNode;
+			if((offsetNode = resp.get("offset")) != null && (tot = resp.path("total").intValue(0)) > 0) { // potentially needs multiple calls
+				offset = offsetNode.intValue(0) + arrayNode.size();
+				req = call + ((call.contains("?")) ? "&offset=" : "?offset=") + offset;
+			}
+		} while(tot > offset);
+		return resp;
 	}
 
 	public CompletableFuture<Session> connectWebSocketClient(WebSocketDeviceListener listener) throws IOException, InterruptedException, ExecutionException {
@@ -681,7 +707,20 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 			errors.add(MQTTManagerG2.restore(this, mqtt, userPref.get(RestoreMsg.RESTORE_MQTT)));
 		}
 	}
+	
+	// to be used with "offset"; data will be merged on a single file (gen2+)
+	public void sectionToStream(final String section, final String arrayKey, final String entryName, ZipOutputStream out) throws IOException {
+		try {
+			ZipEntry entry = new ZipEntry(entryName);
+			out.putNextEntry(entry);
+			JsonNode resp = getPagedJson(section, arrayKey);
+			jsonMapper.writer().writeValue(out, resp);
+		} catch (InterruptedException e) {
+			LOG.debug("sectionToStream {}-{}", section, arrayKey, e);
+			throw new DeviceOfflineException(e);
+		}
+	}
 
 	/** device specific */
 	protected abstract void restore(Map<String, JsonNode> backupJsons, List<String> errors) throws IOException, InterruptedException;
-} // 477 - 474 - 525 - 568 - 637 - 695 - 686
+} // 477 - 474 - 525 - 568 - 637 - 695 - 686 - 726
