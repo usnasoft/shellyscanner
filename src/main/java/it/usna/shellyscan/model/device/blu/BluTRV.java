@@ -32,7 +32,7 @@ import tools.jackson.databind.node.JsonNodeFactory;
 import tools.jackson.databind.node.ObjectNode;
 
 public class BluTRV extends AbstractBTHomeDevice implements ThermostatInterface, ModulesHolder {
-	private static final Logger LOG = LoggerFactory.getLogger(AbstractBTHomeDevice.class);
+	private static final Logger LOG = LoggerFactory.getLogger(BluTRV.class);
 	private static final String TRV_DEVICE = "blutrv";
 	public static final String DEVICE_KEY_PREFIX = TRV_DEVICE + ":";
 	public static final String ID = "BluTRV";

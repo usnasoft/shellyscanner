@@ -66,7 +66,6 @@ import it.usna.shellyscan.model.device.GhostDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
 import it.usna.shellyscan.model.device.blu.AbstractBTHomeDevice;
-import it.usna.shellyscan.model.device.blu.BTHomeDevice;
 import it.usna.shellyscan.model.device.blu.BluTRV;
 import it.usna.shellyscan.model.device.g1.AbstractG1Device;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
@@ -548,10 +547,10 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 	private void rowsSelectionManager() {
 		tableSelectionListener = e -> {
 			if(e.getValueIsAdjusting() == false) {
-				boolean singleSelection, singleSelectionNoGhost, selection, selectionNoGhost, selectionNoBTHome;
+				boolean singleSelection, singleSelectionNoGhost, selection, selectionNoGhost, selectionRebootCapable;
 				int selectedRows = devicesTable.getSelectedRowCount();
 				singleSelection = singleSelectionNoGhost = selectedRows == 1;
-				selection = selectionNoGhost = selectionNoBTHome = selectedRows > 0;
+				selection = selectionNoGhost = selectionRebootCapable = selectedRows > 0;
 				ShellyAbstractDevice d = null;
 				for(int idx: devicesTable.getSelectedRows()) {
 					d = model.get(devicesTable.convertRowIndexToModel(idx));
@@ -560,15 +559,15 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 //						if(d.getGeneration().equals(BTHomeDevice.GENERATION)) {
 //							selectionNoBTHome = false;
 //						}
-					} else if(d instanceof BTHomeDevice) {
-						selectionNoBTHome = false;
+					} else if(d instanceof AbstractBTHomeDevice && d instanceof BluTRV == false) {
+						selectionRebootCapable = false;
 					}
 				}
 				infoAction.setEnabled(singleSelection);
 				schedulerEditAction.setEnabled(singleSelectionNoGhost && (d instanceof AbstractG2Device || d instanceof BluTRV) && d instanceof BatteryDeviceInterface == false);
 				infoLogAction.setEnabled(singleSelectionNoGhost);
 				checkListAction.setEnabled(selection/*NoGhost*/);
-				rebootAction.setEnabled(selectionNoGhost && selectionNoBTHome);
+				rebootAction.setEnabled(selectionNoGhost && selectionRebootCapable);
 				browseAction.setEnabled(selectionNoGhost /*&& browserSupported*/);
 				backupAction.setEnabled(selection /*&& selectionNoBLU*/);
 				restoreAction.setEnabled(selection/*singleSelection*/ /*&& selectionNoBLU*/ /*&& d.getStatus() != Status.NOT_LOOGGED*/);

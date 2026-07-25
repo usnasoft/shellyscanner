@@ -85,6 +85,7 @@ public class BTHomeDevice extends AbstractBTHomeDevice implements ModulesHolder 
 		case 0x17 -> "Blu Button Tough 1 ZB"; // 23
 		case 0x20 -> "Blu 1"; // 32
 		case 0x21 -> "Blu 2"; // 33
+		case 0x203A -> "Blu 3"; // 8250
 		default -> "Generic BTHome";
 		};
 		this.webhooks = new Webhooks(parent);

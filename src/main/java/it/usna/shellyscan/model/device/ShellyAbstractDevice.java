@@ -49,7 +49,7 @@ public abstract class ShellyAbstractDevice {
 	protected boolean cloudConnected;
 	protected boolean mqttEnabled;
 	protected boolean mqttConnected;
-	protected LogMode debugMode = LogMode.NONE;
+	protected LogMode debugMode = LogMode.UNDEFINED;
 	protected int rssi;
 	protected String ssid;
 	protected int uptime;

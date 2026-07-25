@@ -47,9 +47,13 @@ public class Sensor {
 		case 0x2E -> Meters.Type.H; // 46
 		case 0x3F -> Meters.Type.ANG; // 63 - angle (accelerometer)
 		case 0x40 -> Meters.Type.DMM; // 64 - distance mm
+		case 0x43 -> Meters.Type.I; // 67
 		case 0x45 -> Meters.Type.T; // 69
+		case 0x4A -> Meters.Type.V; // 74
+		case 0x5C -> Meters.Type.W; // 92
 		case 0x5F -> Meters.Type.RAIN; // 95 - precipitation mm
 		case 0x64 -> Meters.Type.LE; // 100 - light level: 0 (dark) - 1 (twilight) - 2 (bright)
+
 		default -> null;
 		};
 		// 0x3C (60) dimmer (weel)
