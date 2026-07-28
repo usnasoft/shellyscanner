@@ -419,7 +419,7 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 
 	private Future<Session> wsEventListener(int index, ShellyAbstractDevice d) throws IOException, InterruptedException, ExecutionException {
 		if(d instanceof AbstractBTHomeDevice blu) {
-			return ((AbstractG2Device)blu.getParent()).connectWebSocketClient(new FMUpdateListener(index, BTHomeDevice.DEVICE_KEY_PREFIX + blu.getIndex()));
+			return ((AbstractG2Device)blu.getParent()).connectWebSocketClient(new FMUpdateListener(index, BTHomeDevice.DEVICE_KEY_PREFIX + blu.getBTHomeIndex()));
 		} else {
 			return ((AbstractG2Device)d).connectWebSocketClient(new FMUpdateListener(index, "sys"));
 		}

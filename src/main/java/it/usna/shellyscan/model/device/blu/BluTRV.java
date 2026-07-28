@@ -37,6 +37,7 @@ public class BluTRV extends AbstractBTHomeDevice implements ThermostatInterface,
 	public static final String DEVICE_KEY_PREFIX = TRV_DEVICE + ":";
 	public static final String ID = "BluTRV";
 	private static final Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.T, Meters.Type.BAT};
+	private String btHomeIndex;
 	private int battery;
 	private float externalTemp;
 	private float targetTemp;
@@ -82,6 +83,16 @@ public class BluTRV extends AbstractBTHomeDevice implements ThermostatInterface,
 	@Override
 	public String getTypeID() {
 		return ID;
+	}
+	
+	@Override
+	public String getBTHomeIndex() {
+		return btHomeIndex;
+	}
+	
+	@Override
+	public void setBTHomeIndex(String id) {
+		btHomeIndex = id;
 	}
 	
 	@Override

@@ -31,7 +31,7 @@ public class FirmwareManagerTRV implements FirmwareManager {
 	private void init() {
 		updating = false;
 		try {
-			JsonNode deviceInfoNode = d.getJSON("/rpc/BluTrv.GetRemoteDeviceInfo?id=" + d.getIndex());
+			JsonNode deviceInfoNode = d.getJSON("/rpc/BluTrv.GetRemoteDeviceInfo?id=" + d.getComponentIndex());
 			currentBuild = deviceInfoNode.at("/device_info/fw_id").asString("");
 			current = deviceInfoNode.at("/device_info/ver").asString(null);
 			if(current == null) {
@@ -39,7 +39,7 @@ public class FirmwareManagerTRV implements FirmwareManager {
 			}
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			
-			JsonNode newFwNode = d.getJSON("/rpc/BluTrv.CheckForUpdates?id=" + d.getIndex());
+			JsonNode newFwNode = d.getJSON("/rpc/BluTrv.CheckForUpdates?id=" + d.getComponentIndex());
 			String lastFWBuild = newFwNode.path("fw_id").asString("");
 			
 			if(lastFWBuild != null && lastFWBuild.isEmpty() == false && lastFWBuild.equals(currentBuild) == false) {
@@ -100,7 +100,7 @@ public class FirmwareManagerTRV implements FirmwareManager {
 //		}).start();
 		new Thread(() -> {
 			try {
-				d.getJSON("/rpc/BluTrv.UpdateFirmware?id=" + d.getIndex()); // this call is blocking -> DeviceOfflineException
+				d.getJSON("/rpc/BluTrv.UpdateFirmware?id=" + d.getComponentIndex()); // this call is blocking -> DeviceOfflineException
 			} catch (DeviceOfflineException e) {
 				LOG.trace("FirmwareManagerTRV.update timeout");
 				updating = false;

@@ -26,6 +26,7 @@ import org.slf4j.LoggerFactory;
 
 import it.usna.shellyscan.Main;
 import it.usna.shellyscan.model.device.g1.modules.ThermostatG1;
+import it.usna.shellyscan.model.device.modules.CBreakerInterface;
 import it.usna.shellyscan.model.device.modules.CCTInterface;
 import it.usna.shellyscan.model.device.modules.DWInterface;
 import it.usna.shellyscan.model.device.modules.DeviceModule;
@@ -117,6 +118,8 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 				return getThermostatG1Panel(thermostat, foregroundColor);
 			} else if(value instanceof ThermostatInterface[] thermostats) {
 				return getThermostatPanel(thermostats[0], foregroundColor);
+			} else if(value instanceof CBreakerInterface[] cbs) {
+				return getCBSwitchPanel(cbs[0], foregroundColor/*, true*/);
 			} else if(value instanceof DeviceModule[] modArray) { // mixed modules
 				stackedPanel.removeAll();
 				
@@ -216,6 +219,30 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 			button.setText(LABEL_OFF);
 			button.setBackground(BUTTON_OFF_BG_COLOR);
 		}
+		return relayPanel;
+	}
+	
+	private JPanel getCBSwitchPanel(CBreakerInterface sw, final Color foregroundColor/*, boolean ind0*/) {
+		JPanel relayPanel = new JPanel(new BorderLayout());
+		final JLabel relayLabel;
+		relayLabel = new JLabel(sw.getLabel());
+		final JButton button = new JButton();
+		button.setBorder(BUTTON_BORDERS);
+		relayLabel.setForeground(foregroundColor);
+		JPanel relayButtonPanel = new JPanel(new VerticalFlowLayout(VerticalFlowLayout.CENTER, VerticalFlowLayout.CENTER, 0, 0));
+		relayButtonPanel.setOpaque(false);
+		relayButtonPanel.add(button);
+
+		relayPanel.add(relayLabel, BorderLayout.CENTER);
+		relayPanel.add(relayButtonPanel, BorderLayout.EAST);
+		if(sw.isOn()) {
+			button.setText(LABEL_ON);
+			button.setBackground(BUTTON_ON_BG_COLOR);
+		} else {
+			button.setText(LABEL_OFF);
+			button.setBackground(BUTTON_OFF_BG_COLOR);
+		}
+		button.setEnabled(!sw.isLocked());
 		return relayPanel;
 	}
 	

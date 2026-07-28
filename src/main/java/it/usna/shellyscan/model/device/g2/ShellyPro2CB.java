@@ -10,7 +10,7 @@ import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.InternalTmpHolder;
 import it.usna.shellyscan.model.device.ModulesHolder;
 import it.usna.shellyscan.model.device.RestoreUtil;
-import it.usna.shellyscan.model.device.g2.modules.CBreaker;
+import it.usna.shellyscan.model.device.g2.modules.CBreakerPro;
 import it.usna.shellyscan.model.device.meters.Meters;
 import it.usna.shellyscan.model.device.modules.DeviceModule;
 import tools.jackson.databind.JsonNode;
@@ -22,8 +22,8 @@ public class ShellyPro2CB extends AbstractProDevice implements ModulesHolder, In
 	public static final String ID = "ProCB";
 	public static final String MODEL = "SPCB-02VENEU";
 	private static final Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.V};
-	private CBreaker breaker = new CBreaker(this);
-	private CBreaker[] breakers = new CBreaker[] {breaker};
+	private CBreakerPro breaker = new CBreakerPro(this);
+	private CBreakerPro[] breakers = new CBreakerPro[] {breaker};
 	private float voltage;
 	private String voltmeterName;
 	private float internalTmp;
@@ -96,7 +96,7 @@ public class ShellyPro2CB extends AbstractProDevice implements ModulesHolder, In
 	
 	@Override
 	public String[] getInfoRequests() {
-		return CBreaker.getInfoRequests(super.getInfoRequests());
+		return CBreakerPro.getInfoRequests(super.getInfoRequests());
 	}
 
 	@Override

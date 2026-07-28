@@ -65,7 +65,6 @@ import it.usna.shellyscan.model.device.ShellyAbstractDevice.LogMode;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
 import it.usna.shellyscan.model.device.blu.AbstractBTHomeDevice;
 import it.usna.shellyscan.model.device.blu.BLEGateway;
-import it.usna.shellyscan.model.device.blu.BTHomeDevice;
 import it.usna.shellyscan.model.device.g1.AbstractG1Device;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.g2.JsonPageIterator;
@@ -174,7 +173,7 @@ public class CheckListView extends JDialog implements UsnaEventListener<Devices.
 		Action bleAction = new UsnaSelectedAction(this, table, "setBLE_action", "setBLE_action_tooletip", null, "/images/Bluetooth24.png", localRow -> {
 			ShellyAbstractDevice d = getLocalDevice(localRow);
 			Object bleVal = tModel.getValueAt(localRow, CheckListTable.COL_BLE);
-			if(d instanceof BTHomeDevice bth) {
+			if(d instanceof AbstractBTHomeDevice bth) {
 				new DialogBluDevicesInfo(this, bth, bleVal, appModel);
 			} else if(bleVal instanceof List<?>) { // wi-fi (else) && fw >= 2.0.0 (List)
 				new DialogWiFiDevicesInfo(this, bleVal);
@@ -331,7 +330,7 @@ public class CheckListView extends JDialog implements UsnaEventListener<Devices.
 						logsG1Action.setEnabled(false);
 						logsG2Action.setEnabled(false);
 					}
-					bleAction.setEnabled(/*sameStringValuesOrInt(modelRow, CheckListTable.COL_BLE)*/modelRow.length == 1 && (getLocalDevice(modelRow[0]) instanceof AbstractG2Device || getLocalDevice(modelRow[0]) instanceof BTHomeDevice));
+					bleAction.setEnabled(/*sameStringValuesOrInt(modelRow, CheckListTable.COL_BLE)*/modelRow.length == 1 && (getLocalDevice(modelRow[0]) instanceof AbstractG2Device || getLocalDevice(modelRow[0]) instanceof AbstractBTHomeDevice));
 					apModeAction.setEnabled(sameBooleanValues(modelRow, CheckListTable.COL_AP, AbstractG2Device.class));
 					roamingAction.setEnabled(sameStringValuesOrInt(modelRow, CheckListTable.COL_ROAMING));
 					rangeExtenderAction.setEnabled(sameStringValuesOrInt(modelRow, CheckListTable.COL_EXTENDER));

@@ -18,9 +18,11 @@ import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
 import javax.swing.JTable;
+import javax.swing.UIManager;
 import javax.swing.table.TableCellEditor;
 
 import org.slf4j.Logger;
@@ -28,6 +30,7 @@ import org.slf4j.LoggerFactory;
 
 import it.usna.shellyscan.model.device.blu.AbstractBTHomeDevice;
 import it.usna.shellyscan.model.device.g1.modules.ThermostatG1;
+import it.usna.shellyscan.model.device.modules.CBreakerInterface;
 import it.usna.shellyscan.model.device.modules.CCTInterface;
 import it.usna.shellyscan.model.device.modules.DeviceModule;
 import it.usna.shellyscan.model.device.modules.InputInterface;
@@ -118,6 +121,10 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 			JPanel panel = getThermostatPanel(ths[0], table);
 			edited = ths;
 			return panel;
+		} else if(value instanceof CBreakerInterface[] cbs) {
+			JPanel panel = getCBSwitchPanel(cbs[0], table);
+			edited = cbs;
+			return panel;
 		} else if(value instanceof DeviceModule[] modArray) { // mixed
 			stackedPanel.removeAll();
 			
@@ -187,6 +194,51 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 			relayButton.setForeground(DevicesCommandCellRenderer.BUTTON_ON_FG_COLOR);
 		}
 		return relayPanel;
+	}
+	
+	private JPanel getCBSwitchPanel(CBreakerInterface sw, JTable table) {
+		if(sw.isLocked() == false) {
+			JLabel relayLabel = new JLabel(sw.getLabel());
+			relayLabel.setForeground(selForeground);
+			JPanel relayPanel = new JPanel(new BorderLayout());
+			relayPanel.setBackground(selBackground);
+			JButton relayButton = new JButton();
+			relayButton.setBorder(DevicesCommandCellRenderer.BUTTON_BORDERS);
+			relayButton.addActionListener(e -> {
+				table.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+				try {
+					final String cancel = UIManager.getString("OptionPane.cancelButtonText");
+					if(JOptionPane.showOptionDialog(
+							table, LABELS.getString("action_CBSwitch_confirm"), LABELS.getString("action_toggle"),
+							JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null,
+							new Object[] {LABELS.getString("action_toggle"), cancel}, cancel) == 0) {
+					sw.toggle();
+					}
+				} catch (Exception ex) {
+					LOG.error("getCBSwitchPanel {}", sw, ex);
+				}
+				table.setCursor(Cursor.getDefaultCursor());
+				cancelCellEditing();
+			});
+
+			JPanel relayButtonPanel = new JPanel(new VerticalFlowLayout(VerticalFlowLayout.CENTER, VerticalFlowLayout.CENTER, 0, 0));
+			relayButtonPanel.setOpaque(false);
+			relayButtonPanel.add(relayButton);
+
+			relayPanel.add(relayLabel, BorderLayout.CENTER);
+			relayPanel.add(relayButtonPanel, BorderLayout.EAST);
+
+			if(sw.isOn()) {
+				relayButton.setText(DevicesCommandCellRenderer.LABEL_ON);
+				relayButton.setBackground(DevicesCommandCellRenderer.BUTTON_ON_BG_COLOR);
+			} else {
+				relayButton.setText(DevicesCommandCellRenderer.LABEL_OFF);
+				relayButton.setBackground(DevicesCommandCellRenderer.BUTTON_OFF_BG_COLOR);
+			}
+			return relayPanel;
+		} else {
+			return null;
+		}
 	}
 	
 	private Component getRollerPanel(RollerInterface roller) {

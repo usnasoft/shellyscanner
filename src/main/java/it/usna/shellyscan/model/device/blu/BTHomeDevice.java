@@ -61,8 +61,9 @@ public class BTHomeDevice extends AbstractBTHomeDevice implements ModulesHolder 
 	private DeviceModule[] modules;
 	private String componentsKeys;
 
-	public BTHomeDevice(AbstractG2Device parent, JsonNode compInfo, int modelId, String index) {
+	public BTHomeDevice(AbstractG2Device parent, JsonNode compInfo, /*int modelId,*/ String index) {
 		super(parent, compInfo.path("config").path("addr").asString(""), index);
+		final int modelId = compInfo.path("attrs").path("model_id").asInt(-1);
 		typeID = "BLU" + modelId;
 
 		this.typeName = switch(modelId) {
@@ -102,39 +103,44 @@ public class BTHomeDevice extends AbstractBTHomeDevice implements ModulesHolder 
 	}
 	
 	private void initSensors() throws IOException {
-		this.sensors = new SensorsCollection(this);
-		this.meters = sensors.getTypes().length > 0 ? new Meters[] {sensors} : null;
-		
-		// generare key argument to retrive related components
-		StringBuilder keysBuilder = new StringBuilder("[\"");
-		keysBuilder.append(DEVICE_KEY_PREFIX);
-		keysBuilder.append(componentIndex);
-		for(Sensor s: sensors.getSensors()) {
-			keysBuilder.append("\",\"");
-			keysBuilder.append(SENSOR_KEY_PREFIX);
-			keysBuilder.append(s.getId());
-		}
-		keysBuilder.append("\"]");
-		componentsKeys = URLEncoder.encode(keysBuilder.toString(), StandardCharsets.UTF_8.name());
+		try {
+			this.sensors = new SensorsCollection(this);
+			this.meters = sensors.getTypes().length > 0 ? new Meters[] {sensors} : null;
 
-		try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e) {}
-		refreshStatus(); // init status for this.sensors
-		
-		List<DeviceModule> tmpModules = sensors.getModuleSensors();
-		List<InputActionInterface> tmpInputs = tmpModules.stream().filter(m -> m instanceof InputActionInterface).map(InputActionInterface.class::cast).collect(Collectors.toList());
-		
-		try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e) {}
-		
-		// device inputs
-		webhooks.fillBTHomesensorSettings();
-		List<Webhook> devActions = webhooks.getHooksList(DynamicComponents.BTHOME_DEVICE + componentIndex);
-		if(devActions != null) {
-			List<InputOnDevice> devIn = deviceInputs(devActions);
-			tmpInputs.addAll(devIn);
-			tmpModules.addAll(devIn);
+			// generare key argument to retrive related components
+			StringBuilder keysBuilder = new StringBuilder("[\"");
+			keysBuilder.append(DEVICE_KEY_PREFIX);
+			keysBuilder.append(componentIndex);
+			for(Sensor s: sensors.getSensors()) {
+				keysBuilder.append("\",\"");
+				keysBuilder.append(SENSOR_KEY_PREFIX);
+				keysBuilder.append(s.getId());
+			}
+			keysBuilder.append("\"]");
+			componentsKeys = URLEncoder.encode(keysBuilder.toString(), StandardCharsets.UTF_8.name());
+
+			try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e) {}
+			refreshStatus(); // init status for this.sensors
+
+			List<DeviceModule> tmpModules = sensors.getModuleSensors();
+			List<InputActionInterface> tmpInputs = tmpModules.stream().filter(m -> m instanceof InputActionInterface).map(InputActionInterface.class::cast).collect(Collectors.toList());
+
+			try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e) {}
+
+			// device inputs
+			webhooks.fillBTHomesensorSettings();
+			List<Webhook> devActions = webhooks.getHooksList(DynamicComponents.BTHOME_DEVICE + componentIndex);
+			if(devActions != null) {
+				List<InputOnDevice> devIn = deviceInputs(devActions);
+				tmpInputs.addAll(devIn);
+				tmpModules.addAll(devIn);
+			}
+			this.inputs = tmpInputs.toArray(InputActionInterface[]::new);
+			this.modules = tmpModules.toArray(DeviceModule[]::new);
+		} catch(IOException | RuntimeException e) {
+			this.modules = new DeviceModule[0];
+			throw e;
 		}
-		this.inputs = tmpInputs.toArray(InputActionInterface[]::new);
-		this.modules = tmpModules.toArray(DeviceModule[]::new);
 	}
 	
 	private List<InputOnDevice> deviceInputs(List<Webhook> devActions) {

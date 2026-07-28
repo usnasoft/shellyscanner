@@ -69,8 +69,20 @@ public abstract class AbstractBTHomeDevice extends ShellyAbstractDevice {
 		return parent;
 	}
 	
-	public String getIndex() {
+	public String getComponentIndex() {
 		return componentIndex;
+	}
+	
+	public String getBTHomeIndex() {
+		return componentIndex;
+	}
+	
+	/**
+	 * A device such as BluTRV has a blutrv:xxx and an associated bthomedevice:xxx on the same host; the second is used e.g. by fw update websocket
+	 * @param id
+	 */
+	public void setBTHomeIndex(String id) {
+		throw new UnsupportedOperationException();
 	}
 	
 	@Override

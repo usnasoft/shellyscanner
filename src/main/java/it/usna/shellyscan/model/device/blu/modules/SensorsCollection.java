@@ -31,7 +31,7 @@ public class SensorsCollection extends Meters {
 	}
 	
 	private void init() throws IOException {
-		JsonNode objects = blu.getJSON("/rpc/BTHomeDevice.GetKnownObjects?id=" + blu.getIndex()).path("objects");
+		JsonNode objects = blu.getJSON("/rpc/BTHomeDevice.GetKnownObjects?id=" + blu.getComponentIndex()).path("objects");
 
 		ArrayList<Sensor> sensors = new ArrayList<>();
 		/*ArrayList<Sensor>*/ modules = new ArrayList<>();

@@ -453,6 +453,7 @@ Shelly Pro RGBWW PM (X)
 ---
 Shelly Dimmer 0/1-10V Gen4
 ProRGBWWPM.SetConfig hf_mode
+bluTRV optimized code on gateway gen3
 
 todo: Firmware 2.0.0
 - wi-fi channel in checklist ?

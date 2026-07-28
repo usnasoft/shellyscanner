@@ -6,22 +6,20 @@ import java.util.Arrays;
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.RestoreUtil;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
-import it.usna.shellyscan.model.device.modules.RelayInterface;
+import it.usna.shellyscan.model.device.modules.CBreakerInterface;
 import tools.jackson.databind.JsonNode;
 
 /**
- 
-import tools.jackson.databind.JsonNode;* Circuit Breaker model
+ Circuit Breaker model
  */
-// todo specific renderer (and, if later useful, interface) with "isLocked" evidence; removal of "isInputOn"
-public class CBreaker implements /*DeviceModule*/RelayInterface {
+public class CBreakerPro implements CBreakerInterface {
 	private final AbstractG2Device parent;
 	private String name;
 	private boolean isOn;
 	private boolean isLocked;
 	private String source;
 	
-	public CBreaker(AbstractG2Device parent) {
+	public CBreakerPro(AbstractG2Device parent) {
 		this.parent = parent;
 	}
 	
@@ -37,20 +35,19 @@ public class CBreaker implements /*DeviceModule*/RelayInterface {
 
 	@Override
 	public String getLabel() {
-		return (name == null || name.isEmpty()) ? parent.getName() : name;
-	}
-
-	public String getName() {
+//		return (name == null || name.isEmpty()) ? parent.getName() : name;
 		return name;
 	}
 
 	// output: only accepts false, otherwise an error is returned. The breaker lever can not be engaged remotely!
+	@Override
 	public boolean toggle() throws IOException {
 		change(! isOn);
 		return isOn;
 	}
 
 	// output: only accepts false, otherwise an error is returned. The breaker lever can not be engaged remotely!
+	@Override
 	public void change(boolean on) throws IOException {
 		if(parent.postCommand("CB.Set", "{\"id\":0,\"output\":" + on + "}") == null) {
 			isOn = on;
@@ -58,6 +55,7 @@ public class CBreaker implements /*DeviceModule*/RelayInterface {
 		}
 	}
 
+	@Override
 	public boolean isOn() {
 		return isOn;
 	}
@@ -67,14 +65,9 @@ public class CBreaker implements /*DeviceModule*/RelayInterface {
 		return source;
 	}
 
+	@Override
 	public boolean isLocked() {
 		return isLocked;
-	}
-	
-	// to be removed on RelayInterface removal (?)
-	@Override
-	public boolean isInputOn() {
-		return false;
 	}
 	
 	public static String[] getInfoRequests(String [] cmd) {

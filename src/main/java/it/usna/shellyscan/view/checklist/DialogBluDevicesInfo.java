@@ -27,8 +27,8 @@ import javax.swing.table.TableRowSorter;
 
 import it.usna.shellyscan.controller.UsnaAction;
 import it.usna.shellyscan.model.Devices;
+import it.usna.shellyscan.model.device.blu.AbstractBTHomeDevice;
 import it.usna.shellyscan.model.device.blu.BLEGateway;
-import it.usna.shellyscan.model.device.blu.BTHomeDevice;
 import it.usna.shellyscan.model.device.blu.BluInetAddressAndPort;
 import it.usna.shellyscan.view.MainView;
 import it.usna.shellyscan.view.util.UtilMiscellaneous;
@@ -45,7 +45,7 @@ public class DialogBluDevicesInfo extends JDialog {
 	private ExTooltipTable btHomeTable;
 	private ExTooltipTable gatewaysTable;
 
-	public DialogBluDevicesInfo(final Window owner, BTHomeDevice d, Object bleVal, Devices appModel) {
+	public DialogBluDevicesInfo(final Window owner, AbstractBTHomeDevice d, Object bleVal, Devices appModel) {
 		super(owner, LABELS.getString("dlgBLEInfoTitle"));
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		
@@ -123,7 +123,7 @@ public class DialogBluDevicesInfo extends JDialog {
 		
 	}
 	
-	private JComponent btHomePanel(BTHomeDevice d, Object bleVal, Devices appModel) {
+	private JComponent btHomePanel(AbstractBTHomeDevice d, Object bleVal, Devices appModel) {
 		UsnaTableModel tModel = new UsnaTableModel(LABELS.getString("col_device"), LABELS.getString("col_ip"));
 		btHomeTable = new ExTooltipTable(tModel, true);
 
