@@ -455,8 +455,12 @@ Shelly Dimmer 0/1-10V Gen4
 ProRGBWWPM.SetConfig hf_mode
 bluTRV optimized code on gateway gen3
 
+todo CB backup/restore
+todo rivedere TRV restore
+
 todo: Firmware 2.0.0
 - wi-fi channel in checklist ?
+
 lnm
  - https://shelly-api-docs.shelly.cloud/gen2/General/LocalNetworkMessaging
  - https://shelly-api-docs.shelly.cloud/gen2/DynamicComponents/LNM/#lnmgetconfig

@@ -91,11 +91,6 @@ public class BluTRV extends AbstractBTHomeDevice implements ThermostatInterface,
 	}
 	
 	@Override
-	public void setBTHomeIndex(String id) {
-		btHomeIndex = id;
-	}
-	
-	@Override
 	public Meters[] getMeters() {
 		return meters;
 	}
@@ -104,6 +99,7 @@ public class BluTRV extends AbstractBTHomeDevice implements ThermostatInterface,
 	public void refreshSettings() throws IOException {
 		JsonNode settings = getJSON("/rpc/BluTrv.GetConfig?id=" + componentIndex);
 		this.name = settings.get("name").asString("");
+		this.btHomeIndex = settings.get("trv").asString("").substring(13);
 		
 		try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e) { }
 		JsonNode remoteConfig = getJSON("/rpc/BluTrv.GetRemoteConfig?id=" + componentIndex).get("config");
