@@ -452,10 +452,13 @@ Shelly Pro RGBWW PM (X)
 1.3.4
 ---
 Shelly Dimmer 0/1-10V Gen4
-ProRGBWWPM.SetConfig hf_mode
+ProRGBWWPM.SetConfig hf_mode restore
 bluTRV optimized code on gateway gen3
+sheduler : Shelly RGB bulb G3 (new hints)
+sheduler : test button
 
 todo CB backup/restore
+todo Ca backup/restore
 todo rivedere TRV restore
 
 todo: Firmware 2.0.0

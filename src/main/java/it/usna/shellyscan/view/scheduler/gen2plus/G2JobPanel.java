@@ -11,14 +11,15 @@ import java.util.Iterator;
 
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
+import it.usna.shellyscan.controller.UsnaAction;
 import it.usna.shellyscan.controller.UsnaDropdownAction;
+import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.view.scheduler.AbstractCronPanel;
 import it.usna.shellyscan.view.util.Msg;
 import tools.jackson.core.JacksonException;
@@ -34,16 +35,18 @@ public class G2JobPanel extends AbstractCronPanel {
 	private JPanel callsParameterPanel;
 	private JPanel callsOperationsPanel;
 	private boolean systemJob = false;
+	private final AbstractG2Device device;
 	private final MethodHints mHints;
 	private static final ObjectMapper JSON_MAPPER = new ObjectMapper();
 
 	/**
 	 * @wbp.parser.constructor
 	 */
-	public G2JobPanel(JDialog parent, JsonNode scheduleNode, MethodHints mHints) {
+	public G2JobPanel(JDialog parent, AbstractG2Device device, JsonNode scheduleNode, MethodHints mHints) {
 		super(parent);
 		initCallSection();
 		this.mHints = mHints;
+		this.device = device;
 		if(scheduleNode == null) {
 			setCron(DEF_CRON);
 			addCall("", "", 0);
@@ -92,21 +95,19 @@ public class G2JobPanel extends AbstractCronPanel {
 
 		JPanel callOpPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
 		callOpPanel.setOpaque(false);
-		JButton addB = new JButton(new ImageIcon(getClass().getResource("/images/plus_transp16.png")));
-		addB.setContentAreaFilled(false);
-		addB.setBorder(BorderFactory.createEmptyBorder(4, 3, 4, 3));
-		addB.addActionListener(e ->  {
+		
+		JButton addB = new JButton(new UsnaAction(null, "btnMethodAddTooltip", "/images/plus_transp16.png", e -> { //new ImageIcon(getClass().getResource("/images/plus_transp16.png")));
 			Component[] list = callsOperationsPanel.getComponents();
 			int i;
 			for(i = 0; list[i] != callOpPanel; i++);
 			addCall("", "", i + 1);
 			callsOperationsPanel.revalidate();
-		});
+		}));
+		addB.setContentAreaFilled(false);
+		addB.setBorder(BorderFactory.createEmptyBorder(4, 2, 4, 3));
 		callOpPanel.add(addB);
-		JButton minusB = new JButton(new ImageIcon(getClass().getResource("/images/erase-9-16.png")));
-		minusB.setContentAreaFilled(false);
-		minusB.setBorder(BorderFactory.createEmptyBorder(4, 3, 4, 3));
-		minusB.addActionListener(e ->  {
+		
+		JButton minusB = new JButton(new UsnaAction(null, "btnMethodRemoveTooltip", "/images/erase-9-16.png", e -> {
 			Component[] list = callsOperationsPanel.getComponents();
 			if(list.length > 1) {
 				int i;
@@ -116,7 +117,9 @@ public class G2JobPanel extends AbstractCronPanel {
 				callsOperationsPanel.remove(i);
 				callsOperationsPanel.revalidate();
 			}
-		});
+		}));
+		minusB.setContentAreaFilled(false);
+		minusB.setBorder(BorderFactory.createEmptyBorder(4, 3, 4, 3));
 		callOpPanel.add(minusB);
 
 		JButton btnSelectCombo = new JButton();
@@ -131,6 +134,16 @@ public class G2JobPanel extends AbstractCronPanel {
 		btnSelectCombo.setContentAreaFilled(false);
 		btnSelectCombo.setBorder(BorderFactory.createEmptyBorder(4, 3, 4, 3));
 		callOpPanel.add(btnSelectCombo);
+		
+		JButton testButton = new JButton(new UsnaAction(parentDlg, "btnMethodTestTooltip", "/images/Play16.png", e -> {
+			String res = device.postCommand(methodTF.getText(), "{" + paramsTF.getText() + "}");
+			if(res != null) {
+			Msg.errorMsg(parentDlg, res);
+			}
+		}));
+		testButton.setContentAreaFilled(false);
+		testButton.setBorder(BorderFactory.createEmptyBorder(3, 2, 4, 0));
+		callOpPanel.add(testButton);
 
 		callsOperationsPanel.add(callOpPanel, index);
 	}

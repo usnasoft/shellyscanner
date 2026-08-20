@@ -113,7 +113,7 @@ public class MethodHints {
 					methodsList.add(new Method(nameBase + "Off", "CCT.Set", "\"id\":" + id + ",\"on\":false"));
 					methodsList.add(new Method(nameBase + "Toggle", "CCT.Toggle", "\"id\":" + id));
 					methodsList.add(new Method(nameBase + "On 50%", "CCT.Set", "\"id\":" + id + ",\"on\":true,\"brightness\":50"));
-					methodsList.add(new Method(nameBase + "On 4000K", "CCT.Set", "\"id\":" + id + ",\"on\":true,\"ct\":4000"));
+					methodsList.add(new Method(nameBase + "On, 4000K", "CCT.Set", "\"id\":" + id + ",\"on\":true,\"ct\":4000"));
 				} else if(key.startsWith("rgbcct:")) {
 					int id = comp.get("config").path("id").intValue(0);
 					String nameBase = actionBaseName(comp);
@@ -121,6 +121,10 @@ public class MethodHints {
 					methodsList.add(new Method(nameBase + "Off", "RGBCCT.Set", "\"id\":" + id + ",\"on\":false"));
 					methodsList.add(new Method(nameBase + "Toggle", "RGBCCT.Toggle", "\"id\":" + id));
 					methodsList.add(new Method(nameBase + "On 50%", "RGBCCT.Set", "\"id\":" + id + ",\"on\":true,\"brightness\":50"));
+					methodsList.add(new Method(nameBase + "To CCT", "RGBCCT.Set", "\"id\":" + id + ",\"mode\":\"cct\""));
+					methodsList.add(new Method(nameBase + "To RGB", "RGBCCT.Set", "\"id\":" + id + ",\"mode\":\"rgb\""));
+					methodsList.add(new Method(nameBase + "On, red", "RGBCCT.Set", "\"id\":" + id + ",\"mode\":\"rgb\",\"on\":true,\"rgb\":[255,0,0]"));
+					methodsList.add(new Method(nameBase + "On, 4000K", "RGBCCT.Set", "\"id\":" + id + ",\"mode\":\"cct\",\"on\":true,\"ct\":4000"));
 				} else if(device instanceof ModulesHolder mh && mh.getModulesCount() > 0 && mh.getModules()[0] instanceof XT1Thermostat therm) {
 					// LinkedGo ST802 & LinkedGo ST1820
 					if(key.equals("number:" + therm.getTargetTempId())) {
