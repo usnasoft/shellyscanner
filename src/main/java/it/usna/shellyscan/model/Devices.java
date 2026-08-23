@@ -301,7 +301,7 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 				if(d.getStatus() == Status.ERROR) {
 					LOG.error("Unexpected on reboot", e);
 				} else {
-					LOG.debug("reboot {} - {}", d.toString(), d.getStatus());
+					LOG.debug("reboot {} - {}", d, d.getStatus());
 				}
 			} finally {
 				activateRefresh(ind);
@@ -391,10 +391,19 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 				if(d instanceof AbstractG2Device g2 && d instanceof BatteryDeviceInterface == false) {
 					if(d instanceof AbstractProDevice || d instanceof AbstractG3Device || d instanceof AbstractG4Device) {
 						TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+						HashSet<String> specialBLUSet = new HashSet<>();
 						g2.getJSONIterator("/rpc/Shelly.GetComponents?dynamic_only=true", "components").forEachRemaining(compInfo -> {
 							String key = compInfo.path("key").asString("");
-							if(key.startsWith(BTHomeDevice.DEVICE_KEY_PREFIX) || key.startsWith(BluTRV.DEVICE_KEY_PREFIX)) {
-								newBluDevice(d, compInfo, key);
+							if(key.startsWith(BluTRV.DEVICE_KEY_PREFIX) ) {
+								try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e) {}
+								AbstractBTHomeDevice newBlu = newBluDevice(g2, compInfo, key);
+								specialBLUSet.add(newBlu.getMacAddress());
+							} else if(key.startsWith(BTHomeDevice.DEVICE_KEY_PREFIX)) {
+								String newMacAddr = compInfo.path("config").path("addr").asString(null);
+								if(specialBLUSet.contains(newMacAddr) == false) {
+									try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e) {}
+									newBluDevice(g2, compInfo, key);
+								}
 							}
 						});
 					}
@@ -444,9 +453,9 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 		}
 	}
 	
-	private void newBluDevice(ShellyAbstractDevice parent, JsonNode compInfo, String key) {
+	private AbstractBTHomeDevice newBluDevice(ShellyAbstractDevice parent, JsonNode compInfo, String key) {
+		AbstractBTHomeDevice newBlu = DevicesFactory.createBlu((AbstractG2Device)parent, httpClient, /*wsClient,*/ compInfo, key);
 		try {
-			AbstractBTHomeDevice newBlu = DevicesFactory.createBlu((AbstractG2Device)parent, httpClient, /*wsClient,*/ compInfo, key);
 			synchronized(devices) {
 				int ind = devices.indexOf(newBlu);
 				if(ind >= 0) { // already in list
@@ -476,6 +485,7 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 		} catch (RuntimeException e) {
 			LOG.error("newBluDevice-parent: {} - key: {}", parent.getAddressAndPort(), compInfo.path("key").asString(""), e);
 		}
+		return newBlu;
 	}
 
 	private ScheduledFuture<?> scheduleRefresh(ShellyAbstractDevice d, int idx, final int interval, final int statusTics) {

@@ -97,9 +97,15 @@ public class BTHomeDevice extends AbstractBTHomeDevice implements ModulesHolder 
 	public void init(HttpClient httpClient) throws IOException {
 		this.httpClient = httpClient;
 		initSensors();
+//		try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e) {}
+		// refreshSettings();
+		if(inputs != null && inputs.length > 0) {
+			// webhooks.fillBTHomesensorSettings();
+			for(int i = 0; i < inputs.length; i++) {
+				inputs[i].associateWH(webhooks);
+			}
+		}
 		hostname = "B" + sensors.getFullID() + "-" + mac;
-		try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e) {}
-		refreshSettings();
 	}
 	
 	private void initSensors() throws IOException {
