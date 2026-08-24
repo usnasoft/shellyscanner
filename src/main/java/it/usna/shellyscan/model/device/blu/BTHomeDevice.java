@@ -46,11 +46,12 @@ import tools.jackson.databind.node.ObjectNode;
  * https://shelly-api-docs.shelly.cloud/gen2/DynamicComponents/BTHome/
  */
 public class BTHomeDevice extends AbstractBTHomeDevice implements ModulesHolder {
-	public final static String GENERATION = "bth";
+	public static final String GENERATION = "bth";
 	public static final String DEVICE_KEY_PREFIX = DynamicComponents.BTHOME_DEVICE + ":"; // "bthomedevice:";
 	public static final String SENSOR_KEY_PREFIX = DynamicComponents.BTHOME_SENSOR + ":"; // "bthomesensor:";
 	private static final String GROUP_KEY_PREFIX = DynamicComponents.GROUP_TYPE + ":"; // "group:";
-	private static final  Logger LOG = LoggerFactory.getLogger(BTHomeDevice.class);
+	private static final String SHELLY_SCANNER_GENERATED_FILE = "ShellyScannerBLU.json";
+	private static final Logger LOG = LoggerFactory.getLogger(BTHomeDevice.class);
 
 	private String typeName;
 	private String typeID;
@@ -67,14 +68,14 @@ public class BTHomeDevice extends AbstractBTHomeDevice implements ModulesHolder 
 		typeID = "BLU" + modelId;
 
 		this.typeName = switch(modelId) {
-		case 1 -> "Blu Button";
-		case 2 -> "Blu Door Window";
-		case 3 -> "Blu H&T";
-		case 5 -> "Blu Motion";
-		case 6 -> "Blu Wall Switch 4"; // Square
-		case 7 -> "Blu RC Button 4"; // line
-		case 8 -> "Blu TRV";
-		case 9 -> "Blu Remote";
+		case 0x01 -> "Blu Button";
+		case 0x02 -> "Blu Door Window";
+		case 0x03 -> "Blu H&T";
+		case 0x05 -> "Blu Motion";
+		case 0x06 -> "Blu Wall Switch 4"; // Square
+		case 0x07 -> "Blu RC Button 4"; // line
+		case 0x08 -> "Blu TRV";
+		case 0x09 -> "Blu Remote";
 		case 0x0A -> "Blu Distance"; // 10
 		case 0x0B -> "Weather Station"; // 11
 		case 0x0C -> "Blu H&T Display ZB"; // 12
@@ -257,7 +258,7 @@ public class BTHomeDevice extends AbstractBTHomeDevice implements ModulesHolder 
 		usnaData.put("type", typeID);
 		usnaData.put("mac", mac);
 		try(ZipOutputStream out = new ZipOutputStream(new FileOutputStream(file.toFile()), StandardCharsets.UTF_8)) {
-			ZipEntry entry = new ZipEntry("ShellyScannerBLU.json");
+			ZipEntry entry = new ZipEntry(SHELLY_SCANNER_GENERATED_FILE);
 			out.putNextEntry(entry);
 			jsonMapper.writer().writeValue(out, usnaData);
 
@@ -273,7 +274,7 @@ public class BTHomeDevice extends AbstractBTHomeDevice implements ModulesHolder 
 	@Override
 	public Map<RestoreMsg, Object> restoreCheck(Map<String, JsonNode> backupJsons) {
 		EnumMap<RestoreMsg, Object> res = new EnumMap<>(RestoreMsg.class);
-		JsonNode usnaInfo = backupJsons.get("ShellyScannerBLU.json");
+		JsonNode usnaInfo = backupJsons.get(SHELLY_SCANNER_GENERATED_FILE);
 		if(usnaInfo == null || usnaInfo.path("type").asString("?").equals(typeID) == false) {
 			res.put(RestoreMsg.ERR_RESTORE_MODEL, null);
 			return res;
@@ -303,7 +304,7 @@ public class BTHomeDevice extends AbstractBTHomeDevice implements ModulesHolder 
 				}
 			});
 
-			JsonNode usnaInfo = backupJsons.get("ShellyScannerBLU.json");
+			JsonNode usnaInfo = backupJsons.get(SHELLY_SCANNER_GENERATED_FILE);
 			String fileComponentIndex = usnaInfo.get("index").asString("");
 			JsonNode fileComponents = backupJsons.get("Shelly.GetComponents.json").path("components");
 			JsonNode storedWebHooks = backupJsons.get("Webhook.List.json");
