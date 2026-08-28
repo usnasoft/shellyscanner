@@ -2,8 +2,8 @@ package it.usna.shellyscan.view.util;
 
 import java.awt.Color;
 
-public class Kelvin2RGB {
-	private Kelvin2RGB() {}
+public class ColorUtil {
+	private ColorUtil() {}
 	
 	// https://github.com/vendor-vandor/pidome-unofficial/blob/d1b15bf85085452a664c2892ffb26260df441007/pidome-pidome-server-connector/src/main/java/org/pidome/server/connector/tools/ColorImpl.java
 	public static Color kelvinToColor(long kelvin/*, String colorType*/){
@@ -69,4 +69,24 @@ public class Kelvin2RGB {
 //        }
         return new Color((int)r, (int)g, (int)b);
     }
+	
+	public static Color rgbwColor(int red, int green, int blue, int white) {
+		if(white >= 0) {
+			// rgbw -> rgb
+			int rr = red + white * 2;
+			int gg = green + white * 2;
+			int bb = blue + white * 2;
+			int max = rr;
+			if(gg > max) max = gg;
+			if(bb > max) max = bb;
+			if(max > 255) {
+				rr = (int)(rr * 255f / max);
+				gg = (int)(gg * 255f / max);
+				bb = (int)(bb * 255f / max);
+			}
+			return new Color(rr, gg, bb);
+		} else {
+			return new Color(red, green, blue);
+		}
+	}
 }

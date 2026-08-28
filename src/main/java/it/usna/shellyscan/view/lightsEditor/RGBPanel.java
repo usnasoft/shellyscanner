@@ -25,6 +25,7 @@ import it.usna.shellyscan.controller.UsnaAction;
 import it.usna.shellyscan.controller.UsnaToggleAction;
 import it.usna.shellyscan.model.device.modules.RGBInterface;
 import it.usna.shellyscan.model.device.modules.RGBWInterface;
+import it.usna.shellyscan.view.util.ColorUtil;
 import it.usna.swing.VerticalFlowLayout;
 
 /**
@@ -76,7 +77,7 @@ public class RGBPanel extends LightPanel {
 				labelRed.setText(LABELS.getString("labelRed") + ": " + sliderRed.getValue());
 				labelGreen.setText(LABELS.getString("labelGreen") + ": " + sliderGreen.getValue());
 				labelBlue.setText(LABELS.getString("labelBlue") + ": " + sliderBlue.getValue());
-				colorPanel(sliderRed.getValue(), sliderGreen.getValue(), sliderBlue.getValue(), light instanceof RGBWInterface ? sliderWhite.getValue() : 0);
+				previewColorPanel.setBackground(ColorUtil.rgbwColor(sliderRed.getValue(), sliderGreen.getValue(), sliderBlue.getValue(), light instanceof RGBWInterface ? sliderWhite.getValue() : -1));
 			}
 		};
 
@@ -141,7 +142,7 @@ public class RGBPanel extends LightPanel {
 					}
 				} else {
 					labelWhite.setText(LABELS.getString("labelWhite") + ": " + sliderWhite.getValue());
-					colorPanel(sliderRed.getValue(), sliderGreen.getValue(), sliderBlue.getValue(), sliderWhite.getValue());
+					previewColorPanel.setBackground(ColorUtil.rgbwColor(sliderRed.getValue(), sliderGreen.getValue(), sliderBlue.getValue(), sliderWhite.getValue()));
 				}
 			};
 			JPanel whitePanel = new JPanel(new BorderLayout(20, 0));
@@ -257,9 +258,9 @@ public class RGBPanel extends LightPanel {
 			int white = rgbw.getWhite();
 			labelWhite.setText(LABELS.getString("labelWhite") + ": " + white);
 			sliderWhite.setValue(white);
-			colorPanel(red, green, blue, white);
+			previewColorPanel.setBackground(ColorUtil.rgbwColor(red, green, blue, white));
 		} else {
-			colorPanel(red, green, blue, 0);
+			previewColorPanel.setBackground(ColorUtil.rgbwColor(red, green, blue, -1));
 		}
 
 		sliderRed.addChangeListener(rgbSliderListener);
@@ -267,26 +268,6 @@ public class RGBPanel extends LightPanel {
 		sliderBlue.addChangeListener(rgbSliderListener);
 		if(light instanceof RGBWInterface) {
 			sliderWhite.addChangeListener(whiteSliderListener);
-		}
-	}
-	
-	private void colorPanel(int red, int green, int blue, int white) {
-		if(light instanceof RGBWInterface) {
-			// rgbw -> rgb
-			int rr = red + white * 2;
-			int gg = green + white * 2;
-			int bb = blue + white * 2;
-			int max = rr;
-			if(gg > max) max = gg;
-			if(bb > max) max = bb;
-			if(max > 255) {
-				rr = (int)(rr * 255f / max);
-				gg = (int)(gg * 255f / max);
-				bb = (int)(bb * 255f / max);
-			}
-			previewColorPanel.setBackground(new Color(rr, gg, bb));
-		} else {
-			previewColorPanel.setBackground(new Color(red, green, blue));
 		}
 	}
 }

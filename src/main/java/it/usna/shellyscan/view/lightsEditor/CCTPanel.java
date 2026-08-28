@@ -21,7 +21,7 @@ import org.slf4j.LoggerFactory;
 
 import it.usna.shellyscan.controller.UsnaToggleAction;
 import it.usna.shellyscan.model.device.modules.CCTInterface;
-import it.usna.shellyscan.view.util.Kelvin2RGB;
+import it.usna.shellyscan.view.util.ColorUtil;
 import it.usna.shellyscan.view.util.UtilMiscellaneous;
 import it.usna.swing.VerticalFlowLayout;
 
@@ -91,7 +91,7 @@ public class CCTPanel extends LightPanel {
 				}
 			} else {
 				labelTemperature.setText(LABELS.getString("labelTemperature") + ": " + temperatureSlider.getValue() + "K");
-				previewWhitePanel.setBackground(Kelvin2RGB.kelvinToColor(temperatureSlider.getValue()));
+				previewWhitePanel.setBackground(ColorUtil.kelvinToColor(temperatureSlider.getValue()));
 			}
 		};
 		this.add(temperaturePanel);
@@ -101,9 +101,9 @@ public class CCTPanel extends LightPanel {
 		final JButton k3000 = new JButton("3000K");
 		final JButton k4500 = new JButton("4500K");
 		final JButton k6000 = new JButton("6000K");
-		k3000.setBackground(Kelvin2RGB.kelvinToColor(3000));
-		k4500.setBackground(Kelvin2RGB.kelvinToColor(4500));
-		k6000.setBackground(Kelvin2RGB.kelvinToColor(6000));
+		k3000.setBackground(ColorUtil.kelvinToColor(3000));
+		k4500.setBackground(ColorUtil.kelvinToColor(4500));
+		k6000.setBackground(ColorUtil.kelvinToColor(6000));
 		k3000.setBorder(BorderFactory.createEmptyBorder(2, 7, 2, 7));
 		k4500.setBorder(BorderFactory.createEmptyBorder(2, 7, 2, 7));
 		k6000.setBorder(BorderFactory.createEmptyBorder(2, 7, 2, 7));
@@ -146,7 +146,7 @@ public class CCTPanel extends LightPanel {
 		brightnessSlider.setValue(light.getBrightness());
 		labelTemperature.setText(LABELS.getString("labelTemperature") + ": " + light.getTemperature() + "K");
 		temperatureSlider.setValue(light.getTemperature());
-		previewWhitePanel.setBackground(Kelvin2RGB.kelvinToColor(light.getTemperature()));
+		previewWhitePanel.setBackground(ColorUtil.kelvinToColor(light.getTemperature()));
 		
 		brightnessSlider.addChangeListener(brightenessSliderListener);
 		temperatureSlider.addChangeListener(temperatureSliderListener);

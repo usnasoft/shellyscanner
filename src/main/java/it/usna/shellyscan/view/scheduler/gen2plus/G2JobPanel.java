@@ -21,6 +21,7 @@ import it.usna.shellyscan.controller.UsnaAction;
 import it.usna.shellyscan.controller.UsnaDropdownAction;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.view.scheduler.AbstractCronPanel;
+import it.usna.shellyscan.view.scheduler.gen2plus.pareditor.ParamEditorDialog;
 import it.usna.shellyscan.view.util.Msg;
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.JsonNode;
@@ -92,6 +93,14 @@ public class G2JobPanel extends AbstractCronPanel {
 		paramsTF.setColumns(40); // not all the space needed space (in case of long strings)
 		callsPanel.add(methodTF, index);
 		callsParameterPanel.add(paramsTF, index);
+		
+		paramsTF.addMouseListener(new java.awt.event.MouseAdapter() {
+			public void mouseClicked(java.awt.event.MouseEvent evt) {
+				if (evt.getClickCount() == 2) {
+					new ParamEditorDialog(parentDlg, paramsTF);
+				}
+			}
+		});
 
 		JPanel callOpPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
 		callOpPanel.setOpaque(false);
@@ -136,9 +145,11 @@ public class G2JobPanel extends AbstractCronPanel {
 		callOpPanel.add(btnSelectCombo);
 		
 		JButton testButton = new JButton(new UsnaAction(parentDlg, "btnMethodTestTooltip", "/images/Play16.png", e -> {
-			String res = device.postCommand(methodTF.getText(), "{" + paramsTF.getText() + "}");
-			if(res != null) {
-			Msg.errorMsg(parentDlg, res);
+			if(!methodTF.getText().isBlank()) {
+				String res = device.postCommand(methodTF.getText(), "{" + paramsTF.getText() + "}");
+				if(res != null) {
+					Msg.errorMsg(parentDlg, res);
+				}
 			}
 		}));
 		testButton.setContentAreaFilled(false);

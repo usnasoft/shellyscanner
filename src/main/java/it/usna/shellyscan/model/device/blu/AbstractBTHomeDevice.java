@@ -31,6 +31,7 @@ import tools.jackson.databind.JsonNode;
 public abstract class AbstractBTHomeDevice extends ShellyAbstractDevice {
 	public static final String GENERATION = "blu";
 	private static final Logger LOG = LoggerFactory.getLogger(AbstractBTHomeDevice.class);
+	protected static final String SHELLY_SCANNER_GENERATED_FILE = "ShellyScannerBLU.json";
 	protected final AbstractG2Device parent;
 //	protected WebSocketClient wsClient;
 	protected final String componentIndex;

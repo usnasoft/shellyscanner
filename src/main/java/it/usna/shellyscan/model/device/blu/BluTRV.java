@@ -240,7 +240,7 @@ public class BluTRV extends AbstractBTHomeDevice implements ThermostatInterface,
 		final ArrayList<String> errors = new ArrayList<>();
 		try {
 			// BluTrv.SetConfig
-			JsonNode storedConfig = backupJsons.get("Shelly.GetConfig.json");
+			JsonNode storedConfig = backupJsons.get("Shelly.GetConfig.json"); // BluTrv.GetConfig
 			ObjectNode out = JsonNodeFactory.instance.objectNode();
 			out.put("id", Integer.parseInt(componentIndex));
 			ObjectNode outConfig = JsonNodeFactory.instance.objectNode();
@@ -249,7 +249,7 @@ public class BluTRV extends AbstractBTHomeDevice implements ThermostatInterface,
 			errors.add(postCommand("BluTrv.SetConfig", out)); // http://192.168.1.29/rpc/BluTrv.SetConfig?id=200&config={%22name%22:%22xxx%22}
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 
-			JsonNode storedRemoteConfig = backupJsons.get("Shelly.GetRemoteConfig.json").get("config");
+			JsonNode storedRemoteConfig = backupJsons.get("Shelly.GetRemoteConfig.json").get("config"); // BluTrv.GetRemoteConfig
 			out = JsonNodeFactory.instance.objectNode();
 			out.put("id", Integer.parseInt(componentIndex));
 
@@ -288,34 +288,12 @@ public class BluTRV extends AbstractBTHomeDevice implements ThermostatInterface,
 
 			ScheduleManagerTRV.restore(this, backupJsons.get("TRV.ListScheduleRules.json"), errors);
 
-			final int storedId = storedConfig.get("id").intValue(0);
-			final int currentId = Integer.parseInt(componentIndex);
+			final int storedComponentId = storedConfig.get("id").intValue(-1);
+			final int currentComponetId = Integer.parseInt(componentIndex);
 			JsonNode storedWebHooks = backupJsons.get("Webhook.List.json");
-			Webhooks.delete(parent, TRV_DEVICE, currentId, Devices.MULTI_QUERY_DELAY);
+			Webhooks.delete(parent, TRV_DEVICE, currentComponetId, Devices.MULTI_QUERY_DELAY);
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-			Webhooks.restore(parent, TRV_DEVICE, storedId, currentId, storedWebHooks, Devices.MULTI_QUERY_DELAY, errors);
-			
-//			// todo bthomesensor actions restore
-//          come distinguere tra i 2 sensori "obj_id" : 69 ?
-			// spero ne prossimi fw ci siano delle action specifiche per il TRV
-			
-//			JsonNode storedBTHSensors = backupJsons.get("BTHomeDevice.GetKnownObjects.json").get("objects");
-//			final String storedBtHome = storedConfig.get("trv").asString("");
-//			String bhtIndex = storedBtHome.substring(storedBtHome.indexOf(':') + 1);
-//			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-//			JsonNode existingBTHSensors = getJSON("/rpc/BTHomeDevice.GetKnownObjects?id=" + bhtIndex).get("objects");
-//			
-//			for(JsonNode sensorConf: storedBTHSensors) {
-//				String comp = sensorConf.path("component").asString("");
-//				if(comp != null && comp.startsWith(SENSOR_KEY_PREFIX)) {
-//					String oldCid = comp.substring(13);
-////					confronto tra storedBTHSensors e existingBTHSensors
-////					TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-////					Webhooks.delete
-////					TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-////					Webhooks.restore
-//				}
-//			}
+			Webhooks.restore(parent, TRV_DEVICE, storedComponentId, currentComponetId, storedWebHooks, Devices.MULTI_QUERY_DELAY, errors);
 		} catch(RuntimeException | InterruptedException e) {
 			LOG.error("restore - RuntimeException", e);
 			errors.add(RestoreMsg.ERR_UNKNOWN.toString());

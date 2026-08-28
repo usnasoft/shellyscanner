@@ -50,7 +50,6 @@ public class BTHomeDevice extends AbstractBTHomeDevice implements ModulesHolder 
 	public static final String DEVICE_KEY_PREFIX = DynamicComponents.BTHOME_DEVICE + ":"; // "bthomedevice:";
 	public static final String SENSOR_KEY_PREFIX = DynamicComponents.BTHOME_SENSOR + ":"; // "bthomesensor:";
 	private static final String GROUP_KEY_PREFIX = DynamicComponents.GROUP_TYPE + ":"; // "group:";
-	private static final String SHELLY_SCANNER_GENERATED_FILE = "ShellyScannerBLU.json";
 	private static final Logger LOG = LoggerFactory.getLogger(BTHomeDevice.class);
 
 	private String typeName;
