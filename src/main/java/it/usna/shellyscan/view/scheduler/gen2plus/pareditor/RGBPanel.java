@@ -2,7 +2,6 @@ package it.usna.shellyscan.view.scheduler.gen2plus.pareditor;
 
 import static it.usna.shellyscan.Main.LABELS;
 
-import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -18,13 +17,15 @@ import javax.swing.JSlider;
 import javax.swing.event.ChangeListener;
 
 import it.usna.shellyscan.controller.UsnaAction;
+import it.usna.shellyscan.view.scheduler.gen2plus.pareditor.ParamEditorDialog.EditorPanel;
 import it.usna.shellyscan.view.util.ColorUtil;
+import it.usna.shellyscan.view.util.UtilMiscellaneous;
 import it.usna.swing.VerticalFlowLayout;
 
 /**
  * RGB(W)Panel for the scheduler
  */
-public class RGBPanel extends JPanel {
+public class RGBPanel extends JPanel implements EditorPanel {
 	private static final long serialVersionUID = 1L;
 
 	private JLabel labelRed = new JLabel();
@@ -42,13 +43,13 @@ public class RGBPanel extends JPanel {
 
 	public RGBPanel(final String parameters) {
 		setBorder(BorderFactory.createEmptyBorder(6, 8, 12, 8));
-		setLayout(new VerticalFlowLayout(VerticalFlowLayout.CENTER, VerticalFlowLayout.CENTER, 0, 0));
+		setLayout(new VerticalFlowLayout(VerticalFlowLayout.CENTER, VerticalFlowLayout.LEFT, 0, 0));
 		
 		var rgbMatcher = RGB_PATTERN.matcher(parameters);
 		rgbMatcher.find();
-		sliderRed = new JSlider(0, 255, Integer.parseInt(rgbMatcher.group(1)));
-		sliderGreen = new JSlider(0, 255, Integer.parseInt(rgbMatcher.group(2)));
-		sliderBlue = new JSlider(0, 255, Integer.parseInt(rgbMatcher.group(3)));
+		sliderRed = new JSlider(0, 255, UtilMiscellaneous.clamp(Integer.parseInt(rgbMatcher.group(1)), 0, 255));
+		sliderGreen = new JSlider(0, 255, UtilMiscellaneous.clamp(Integer.parseInt(rgbMatcher.group(2)), 0, 255));
+		sliderBlue = new JSlider(0, 255, UtilMiscellaneous.clamp(Integer.parseInt(rgbMatcher.group(3)), 0, 255));
 		
 		var whiteMatcher = WHITE_PATTERN.matcher(parameters);
 		white = whiteMatcher.find();
@@ -59,36 +60,22 @@ public class RGBPanel extends JPanel {
 			labelBlue.setText(LABELS.getString("labelBlue") + ": " + sliderBlue.getValue());
 			previewColorPanel.setBackground(ColorUtil.rgbwColor(sliderRed.getValue(), sliderGreen.getValue(), sliderBlue.getValue(), white ? sliderWhite.getValue() : -1));
 		};
-		JPanel redPanel = new JPanel(new BorderLayout(20, 0));
-		redPanel.setOpaque(false);
-		redPanel.add(labelRed, BorderLayout.NORTH);
-		redPanel.add(sliderRed, BorderLayout.CENTER);
-		this.add(redPanel);
-
-		JPanel greenPanel = new JPanel(new BorderLayout(20, 0));
-		greenPanel.setOpaque(false);
-		greenPanel.add(labelGreen, BorderLayout.NORTH);
-		greenPanel.add(sliderGreen, BorderLayout.CENTER);
-		this.add(greenPanel);
-
-		JPanel bluePanel = new JPanel(new BorderLayout(20, 0));
-		bluePanel.setOpaque(false);
-		bluePanel.add(labelBlue, BorderLayout.NORTH);
-		bluePanel.add(sliderBlue, BorderLayout.CENTER);
-		this.add(bluePanel);
+		this.add(labelRed);
+		this.add(sliderRed);
+		this.add(labelGreen);
+		this.add(sliderGreen);
+		this.add(labelBlue);
+		this.add(sliderBlue);
 		
 		if(white) {
-			sliderWhite = new JSlider(0, 255, Integer.parseInt(whiteMatcher.group(1)));
+			sliderWhite = new JSlider(0, 255, UtilMiscellaneous.clamp(Integer.parseInt(whiteMatcher.group(1)), 0, 255));
 			ChangeListener whiteSliderListener = e -> {
 				labelWhite.setText(LABELS.getString("labelWhite") + ": " + sliderWhite.getValue());
 				previewColorPanel.setBackground(ColorUtil.rgbwColor(sliderRed.getValue(), sliderGreen.getValue(), sliderBlue.getValue(), sliderWhite.getValue()));
 			};
 			sliderWhite.addChangeListener(whiteSliderListener);
-			JPanel whitePanel = new JPanel(new BorderLayout(20, 0));
-			whitePanel.setOpaque(false);
-			whitePanel.add(labelWhite, BorderLayout.NORTH);
-			whitePanel.add(sliderWhite, BorderLayout.CENTER);
-			this.add(whitePanel);
+			this.add(labelWhite);
+			this.add(sliderWhite);
 			whiteSliderListener.stateChanged(null);
 		}
 
@@ -171,6 +158,7 @@ public class RGBPanel extends JPanel {
 		return m.find();
 	}
 	
+	@Override
 	public String change(String par) {
 		var m = RGB_PATTERN.matcher(par);
 		String ret = m.replaceFirst("\"rgb\":[" + sliderRed.getValue() + "," + sliderGreen.getValue() + "," + sliderBlue.getValue() + "]");
@@ -180,18 +168,4 @@ public class RGBPanel extends JPanel {
 		}
 		return ret;
 	}
-	
-//	public static void main(String ...strings) {
-//		String par = "xxx\"rgb\" : [ 1, 20, 3]yyy";
-//		var m = RGB_PATTERN.matcher(par);
-//		if(m.find()) {
-//			System.out.println(m.group(0));
-//			System.out.println(m.group(1));
-//			System.out.println(m.group(2));
-//			System.out.println(m.group(3));
-//			
-//			m = RGB_PATTERN.matcher(par);
-//			System.out.println(m.replaceFirst("\"rgb\":[1,2,3]"));
-//		}
-//	}
 }

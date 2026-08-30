@@ -8,6 +8,7 @@ import java.awt.FlowLayout;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
+import java.util.ArrayList;
 
 import javax.swing.AbstractAction;
 import javax.swing.JButton;
@@ -18,6 +19,7 @@ import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 
 import it.usna.shellyscan.controller.UsnaAction;
+import it.usna.swing.VerticalFlowLayout;
 
 public class ParamEditorDialog extends JDialog {
 	private static final long serialVersionUID = 1L;
@@ -25,27 +27,48 @@ public class ParamEditorDialog extends JDialog {
 	public ParamEditorDialog(final Window owner, final JTextField paramsTF) {
 		super(owner, LABELS.getString("dlgLightsEditorTitle"), Dialog.ModalityType.DOCUMENT_MODAL);
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-		getContentPane().setLayout(new BorderLayout(0, 0));
+//		setLayout(new VerticalFlowLayout(VerticalFlowLayout.CENTER, VerticalFlowLayout.LEFT, 0, 0));
 		
-		RGBPanel rgb;
-		if(RGBPanel.check(paramsTF.getText())) {
-			rgb = new RGBPanel(paramsTF.getText());
-			getContentPane().add(rgb);
-		} else {
+		setLayout(new BorderLayout());
+		
+		JPanel editorsPanel = new JPanel(new VerticalFlowLayout(VerticalFlowLayout.CENTER, VerticalFlowLayout.LEFT, 0, 0));
+		ArrayList<EditorPanel> editorsList = new ArrayList<>();
+		String par = paramsTF.getText();
+		if(RGBPanel.check(par)) {
+			var rgb = new RGBPanel(par);
+			editorsPanel.add(rgb);
+			editorsList.add(rgb);
+		} else if(SliderPar.White.check(par)) { // SliderPar.White do not coexists with RGBPanel
+			var white = new SliderPar.White(par);
+			editorsPanel.add(white);
+			editorsList.add(white);
+		}
+		if(SliderPar.Dimmer.check(par)) {
+			var dimmer = new SliderPar.Dimmer(par);
+			editorsPanel.add(dimmer);
+			editorsList.add(dimmer);
+		}
+		if(SliderPar.CT.check(par)) {
+			var ct = new SliderPar.CT(par);
+			editorsPanel.add(ct);
+			editorsList.add(ct);
+		}
+		if(editorsList.isEmpty()) {
 			dispose();
 			return;
 		}
+		add(editorsPanel, BorderLayout.CENTER);
 		
-		JPanel buttonsPanel = new JPanel(new FlowLayout());
+		JPanel buttonsPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
 		JButton btnOKButton = new JButton(new UsnaAction("dlgOK", e -> {
-			paramsTF.setText(rgb.change(paramsTF.getText()));
+			editorsList.forEach(p -> paramsTF.setText(p.change(paramsTF.getText())));
 			dispose();
 		}));
 		JButton btnClose = new JButton(new UsnaAction("dlgClose", e -> dispose()));
 		
 		buttonsPanel.add(btnOKButton);
 		buttonsPanel.add(btnClose);
-		getContentPane().add(buttonsPanel, BorderLayout.SOUTH);
+		add(buttonsPanel, BorderLayout.SOUTH);
 
 		rootPane.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "escape_close");
 		rootPane.getActionMap().put("escape_close", new AbstractAction() {
@@ -59,6 +82,10 @@ public class ParamEditorDialog extends JDialog {
 		pack();
 		setLocationRelativeTo(owner);
 		setVisible(true);
+	}
+	
+	interface EditorPanel {
+		String change(String par);
 	}
 	
 //	public static void main(String ...strings) {
