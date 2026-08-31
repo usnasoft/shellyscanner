@@ -14,38 +14,9 @@ import it.usna.shellyscan.view.scheduler.gen2plus.pareditor.ParamEditorDialog.Ed
 import it.usna.shellyscan.view.util.UtilMiscellaneous;
 import it.usna.swing.VerticalFlowLayout;
 
-//public class DimmerPanel extends JPanel implements EditorPanel {
-//	private static final long serialVersionUID = 1L;
-//	private JLabel labelWhite = new JLabel();
-//	private JSlider sliderBrightness;
-//	private static final Pattern BRIGHTNESS_PATTERN = Pattern.compile("\"brightness\"\\s*:\\s*(\\d+)");
-//	
-//	public DimmerPanel(final String parameters) {
-//		setBorder(BorderFactory.createEmptyBorder(6, 8, 12, 8));
-//		setLayout(new VerticalFlowLayout(VerticalFlowLayout.CENTER, VerticalFlowLayout.LEFT, 0, 0));
-//		
-//		var whiteMatcher = BRIGHTNESS_PATTERN.matcher(parameters);
-//		whiteMatcher.find();
-//		sliderBrightness = new JSlider(0, 100, UtilMiscellaneous.clamp(Integer.parseInt(whiteMatcher.group(1)), 0, 100));
-//		this.add(labelWhite);
-//		this.add(sliderBrightness);
-//		ChangeListener cl = e -> labelWhite.setText(LABELS.getString("labelBrightness") + ": " + sliderBrightness.getValue());
-//		sliderBrightness.addChangeListener(cl);
-//		cl.stateChanged(null);
-//	}
-//	
-//	public static boolean check(String par) {
-//		var m = BRIGHTNESS_PATTERN.matcher(par);
-//		return m.find();
-//	}
-//	
-//	@Override
-//	public String change(String par) {
-//		var m = BRIGHTNESS_PATTERN.matcher(par);
-//		return  m.replaceFirst("\"brightness\":" + sliderBrightness.getValue());
-//	}
-//}
-
+/**
+ * Various single value parameters (rendered as a slider)
+ */
 abstract class SliderPar extends JPanel implements EditorPanel {
 	private static final long serialVersionUID = 1L;
 	protected JSlider slider;
@@ -119,6 +90,25 @@ abstract class SliderPar extends JPanel implements EditorPanel {
 		public String change(String par) {
 			var m = CT_PATTERN.matcher(par);
 			return  m.replaceFirst("\"ct\":" + slider.getValue());
+		}
+	}
+	
+	static class Position extends SliderPar {
+		private static final long serialVersionUID = 1L;
+		private static final Pattern POSITION_PATTERN = Pattern.compile("\"pos\"\\s*:\\s*(\\d+)");
+
+		public Position(final String parameters) {
+			super(parameters, LABELS.getString("lblTargetPos"), POSITION_PATTERN, 0, 100);
+		}
+
+		public static boolean check(String par) {
+			return POSITION_PATTERN.matcher(par).find();
+		}
+		
+		@Override
+		public String change(String par) {
+			var m = POSITION_PATTERN.matcher(par);
+			return  m.replaceFirst("\"pos\":" + slider.getValue());
 		}
 	}
 }

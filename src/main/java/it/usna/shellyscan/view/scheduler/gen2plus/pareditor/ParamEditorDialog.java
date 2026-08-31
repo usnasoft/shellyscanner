@@ -27,29 +27,37 @@ public class ParamEditorDialog extends JDialog {
 	public ParamEditorDialog(final Window owner, final JTextField paramsTF) {
 		super(owner, LABELS.getString("dlgLightsEditorTitle"), Dialog.ModalityType.DOCUMENT_MODAL);
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-//		setLayout(new VerticalFlowLayout(VerticalFlowLayout.CENTER, VerticalFlowLayout.LEFT, 0, 0));
-		
 		setLayout(new BorderLayout());
 		
 		JPanel editorsPanel = new JPanel(new VerticalFlowLayout(VerticalFlowLayout.CENTER, VerticalFlowLayout.LEFT, 0, 0));
 		ArrayList<EditorPanel> editorsList = new ArrayList<>();
 		String par = paramsTF.getText();
-		if(RGBPanel.check(par)) {
-			var rgb = new RGBPanel(par);
-			editorsPanel.add(rgb);
-			editorsList.add(rgb);
-		} else if(SliderPar.White.check(par)) { // SliderPar.White do not coexists with RGBPanel
-			var white = new SliderPar.White(par);
-			editorsPanel.add(white);
-			editorsList.add(white);
+		if(SwitchEditor.check(par)) {
+			var swEditor = new SwitchEditor(par);
+			editorsPanel.add(swEditor);
+			editorsList.add(swEditor);
 		}
 		if(SliderPar.Dimmer.check(par)) {
 			var dimmer = new SliderPar.Dimmer(par);
 			editorsPanel.add(dimmer);
 			editorsList.add(dimmer);
 		}
+		if(RGBPanel.check(par)) {
+			var rgb = new RGBPanel(par);
+			editorsPanel.add(rgb);
+			editorsList.add(rgb);
+		} else if(SliderPar.White.check(par)) { // else -> SliderPar.White do not coexists with RGBPanel
+			var white = new SliderPar.White(par);
+			editorsPanel.add(white);
+			editorsList.add(white);
+		}
 		if(SliderPar.CT.check(par)) {
 			var ct = new SliderPar.CT(par);
+			editorsPanel.add(ct);
+			editorsList.add(ct);
+		}
+		if(SliderPar.Position.check(par)) {
+			var ct = new SliderPar.Position(par);
 			editorsPanel.add(ct);
 			editorsList.add(ct);
 		}
@@ -84,6 +92,17 @@ public class ParamEditorDialog extends JDialog {
 		setVisible(true);
 	}
 	
+	//	todo: edit icon on label -> it.usna.shellyscan.view.scheduler.gen2plus.G2JobPanel.addCall(String, String, int).btnSelectCombo
+	public static boolean canEdit(String par) {
+		return
+				SwitchEditor.check(par) ||
+				SliderPar.Dimmer.check(par) ||
+				RGBPanel.check(par) ||
+				SliderPar.White.check(par) ||
+				SliderPar.CT.check(par) ||
+				SliderPar.Position.check(par);
+	}
+
 	interface EditorPanel {
 		String change(String par);
 	}
