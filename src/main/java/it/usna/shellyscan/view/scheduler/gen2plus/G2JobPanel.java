@@ -96,7 +96,7 @@ public class G2JobPanel extends AbstractCronPanel {
 		callsPanel.add(methodTF, index);
 		callsParameterPanel.add(paramsTF, index);
 		
-		UsnaAction paramEditAction = new UsnaAction(parentDlg, "edit", e -> {new ParamEditorDialog(parentDlg, paramsTF);});
+		UsnaAction paramEditAction = new UsnaAction(parentDlg, "edit", e -> new ParamEditorDialog(parentDlg, paramsTF));
 		
 		paramsTF.addMouseListener(new java.awt.event.MouseAdapter() {
 			public void mouseClicked(java.awt.event.MouseEvent evt) {

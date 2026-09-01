@@ -457,9 +457,7 @@ bluTRV optimized code on gateway gen3
 sheduler : Shelly RGB bulb G3 (new hints)
 sheduler : test button
 
-todo CB backup/restore
 todo Ca backup/restore
-todo rivedere TRV restore
 
 todo: Firmware 2.0.0
 - wi-fi channel in checklist ?
