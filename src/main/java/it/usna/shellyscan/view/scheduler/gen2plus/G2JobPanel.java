@@ -7,7 +7,9 @@ import java.awt.Cursor;
 import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
@@ -94,10 +96,12 @@ public class G2JobPanel extends AbstractCronPanel {
 		callsPanel.add(methodTF, index);
 		callsParameterPanel.add(paramsTF, index);
 		
+		UsnaAction paramEditAction = new UsnaAction(parentDlg, "edit", e -> {new ParamEditorDialog(parentDlg, paramsTF);});
+		
 		paramsTF.addMouseListener(new java.awt.event.MouseAdapter() {
 			public void mouseClicked(java.awt.event.MouseEvent evt) {
 				if (evt.getClickCount() == 2) {
-					new ParamEditorDialog(parentDlg, paramsTF);
+					paramEditAction.actionPerformed(null);
 				}
 			}
 		});
@@ -135,7 +139,15 @@ public class G2JobPanel extends AbstractCronPanel {
 		btnSelectCombo.setAction(new UsnaDropdownAction(btnSelectCombo, "lblMethodSelect", "/images/expand-more.png", () -> {
 			try {
 				this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-				return mHints.get(methodTF, paramsTF);
+				Object[] menu = mHints.get(methodTF, paramsTF);
+				if(ParamEditorDialog.canEdit(paramsTF.getText())) {
+					ArrayList<Object> m = new ArrayList<>();
+					m.add(paramEditAction);
+					m.add(null);
+					m.addAll(List.of(menu));
+					menu = m.toArray(Object[]::new);
+				}
+				return menu;
 			} finally {
 				this.setCursor(Cursor.getDefaultCursor());
 			}

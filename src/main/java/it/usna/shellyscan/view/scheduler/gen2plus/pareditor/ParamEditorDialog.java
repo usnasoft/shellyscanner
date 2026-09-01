@@ -25,7 +25,7 @@ public class ParamEditorDialog extends JDialog {
 	private static final long serialVersionUID = 1L;
 
 	public ParamEditorDialog(final Window owner, final JTextField paramsTF) {
-		super(owner, LABELS.getString("dlgLightsEditorTitle"), Dialog.ModalityType.DOCUMENT_MODAL);
+		super(owner, LABELS.getString("dlgScParameterEditorTitle"), Dialog.ModalityType.DOCUMENT_MODAL);
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		setLayout(new BorderLayout());
 		

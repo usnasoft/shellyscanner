@@ -23,7 +23,7 @@ public class SwitchEditor extends JPanel implements EditorPanel {
 	
 	public SwitchEditor(final String parameters) {
 		setBorder(BorderFactory.createEmptyBorder(6, 8, 12, 8));
-		setLayout(new BorderLayout(0, 0));
+		setLayout(new BorderLayout(65, 0));
 		
 		this.add(new JLabel(LABELS.getString("lblOnOff")), BorderLayout.WEST);
 		
@@ -33,6 +33,7 @@ public class SwitchEditor extends JPanel implements EditorPanel {
 
 		onOffButton.setSelectedIcon(new ImageIcon(SwitchEditor.class.getResource("/images/StandbyOn24.png")));
 		onOffButton.setContentAreaFilled(false);
+		onOffButton.setRolloverEnabled(false);
 		onOffButton.setBorder(BorderFactory.createEmptyBorder());
 		onOffButton.setSelected(on);
 
@@ -48,10 +49,4 @@ public class SwitchEditor extends JPanel implements EditorPanel {
 		var m = ON_OFF_PATTERN.matcher(par);
 		return  m.replaceFirst("\"on\":" + (onOffButton.isSelected() ? "true" : "false"));
 	}
-	
-//	public static void main(String ...strings) {
-//		var m = ON_OFF_PATTERN.matcher("\"on\" : true");
-//		m.find();
-//		System.out.println(m.group(1));
-//	}
 }
