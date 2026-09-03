@@ -57,11 +57,17 @@ public class ParamEditorDialog extends JDialog {
 			editorsList.add(ct);
 		}
 		if(SliderPar.Position.check(par)) {
-			var ct = new SliderPar.Position(par);
-			editorsPanel.add(ct);
-			editorsList.add(ct);
+			var pos = new SliderPar.Position(par);
+			editorsPanel.add(pos);
+			editorsList.add(pos);
 		}
-		if(editorsList.isEmpty()) {
+		if(SliderPar.SlatPosition.check(par)) {
+			var spos = new SliderPar.SlatPosition(par);
+			editorsPanel.add(spos);
+			editorsList.add(spos);
+		}
+		
+		if(editorsList.isEmpty()) { // if not (known) editor in list quietly exit; 
 			dispose();
 			return;
 		}
@@ -100,7 +106,8 @@ public class ParamEditorDialog extends JDialog {
 				RGBPanel.check(par) ||
 				SliderPar.White.check(par) ||
 				SliderPar.CT.check(par) ||
-				SliderPar.Position.check(par);
+				SliderPar.Position.check(par) ||
+				SliderPar.SlatPosition.check(par);
 	}
 
 	interface EditorPanel {

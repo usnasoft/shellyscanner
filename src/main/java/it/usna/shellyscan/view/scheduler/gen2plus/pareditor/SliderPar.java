@@ -111,4 +111,23 @@ abstract class SliderPar extends JPanel implements EditorPanel {
 			return  m.replaceFirst("\"pos\":" + slider.getValue());
 		}
 	}
+	
+	static class SlatPosition extends SliderPar {
+		private static final long serialVersionUID = 1L;
+		private static final Pattern POSITION_PATTERN = Pattern.compile("\"slat_pos\"\\s*:\\s*(\\d+)");
+
+		public SlatPosition(final String parameters) {
+			super(parameters, LABELS.getString("lblTargetPos"), POSITION_PATTERN, 0, 100);
+		}
+
+		public static boolean check(String par) {
+			return POSITION_PATTERN.matcher(par).find();
+		}
+		
+		@Override
+		public String change(String par) {
+			var m = POSITION_PATTERN.matcher(par);
+			return  m.replaceFirst("\"slat_pos\":" + slider.getValue());
+		}
+	}
 }

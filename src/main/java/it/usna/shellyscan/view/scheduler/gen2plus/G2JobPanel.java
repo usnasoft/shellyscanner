@@ -141,11 +141,16 @@ public class G2JobPanel extends AbstractCronPanel {
 				this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 				Object[] menu = mHints.get(methodTF, paramsTF);
 				if(ParamEditorDialog.canEdit(paramsTF.getText())) {
-					ArrayList<Object> m = new ArrayList<>();
-					m.add(paramEditAction);
-					m.add(null);
-					m.addAll(List.of(menu));
-					menu = m.toArray(Object[]::new);
+//					ArrayList<Object> m = new ArrayList<>(menu.length + 2);
+//					m.add(paramEditAction);
+//					m.add(null);
+//					m.addAll(List.of(menu));
+//					menu = m.toArray(Object[]::new);
+					Object[] tmp = new Object[menu.length + 2];
+					System.arraycopy(menu, 0, tmp, 2, menu.length);
+					tmp[0] = paramEditAction;
+					tmp[1] = null;
+					menu = tmp;
 				}
 				return menu;
 			} finally {
