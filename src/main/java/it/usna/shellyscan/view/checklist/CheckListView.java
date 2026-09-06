@@ -56,6 +56,7 @@ import it.usna.shellyscan.controller.UsnaAction;
 import it.usna.shellyscan.controller.UsnaDropdownAction;
 import it.usna.shellyscan.controller.UsnaOpenUrlAction;
 import it.usna.shellyscan.controller.UsnaSelectedAction;
+import it.usna.shellyscan.controller.UsnaSelectedAction2;
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.Devices.EventType;
 import it.usna.shellyscan.model.device.BatteryDeviceInterface;
@@ -178,21 +179,23 @@ public class CheckListView extends JDialog implements UsnaEventListener<Devices.
 			} else if(bleVal instanceof List<?>) { // wi-fi (else) && fw >= 2.0.0 (List)
 				new DialogWiFiDevicesInfo(this, bleVal);
 			}
-//			Object ble = tModel.getValueAt(localRow, CheckListTable.COL_BLE);
-//			if(ble instanceof String) {
-//				AbstractG2Device d = (AbstractG2Device) getLocalDevice(localRow);
-//				d.setBLEEnabled(FALSE_STR.equals(ble));
-//				try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e1) {}
-//				updateRow(d, localRow);
-//			}e
 		});
 
-		Action apModeAction = new UsnaSelectedAction(this, table, "setAPMode_action", "setAPMode_action_tooletip", null, "/images/Rss24.png", localRow -> { // AbstractG2Device
+		Action apModeAction = new UsnaSelectedAction2(this, table, "setAPMode_action", "setAPMode_action_tooletip", null, "/images/Rss24.png", localRow -> { // AbstractG2Device
 			Object ap = tModel.getValueAt(localRow, CheckListTable.COL_AP);
 			AbstractG2Device d = (AbstractG2Device) getLocalDevice(localRow);
-			WIFIManagerG2.enableAP(d, !((ap instanceof Boolean && ap == Boolean.TRUE) || (ap instanceof String && TRUE_STR.equals(ap))));
+			String res = WIFIManagerG2.enableAP(d, !((ap instanceof Boolean && ap == Boolean.TRUE) || (ap instanceof String && TRUE_STR.equals(ap))));
+			if(res != null) {
+				res = UtilMiscellaneous.getDescName(d) + " - " + res;
+			}
 			try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e1) {}
 			updateRow(d, localRow);
+			return res;
+		}, err -> {
+			String msg = err.stream().filter(e -> e != null).collect(Collectors.joining("\n"));
+			if(!msg.isBlank()) {
+				Msg.errorMsg(CheckListView.this, msg);
+			}
 		});
 		
 		Action roamingAction = new UsnaSelectedAction(this, table, "setRoaming_action", "setRoaming_action_tooletip", null, "/images/Roaming24.png", localRow -> {
@@ -205,12 +208,20 @@ public class CheckListView extends JDialog implements UsnaEventListener<Devices.
 			updateRow(d, localRow);
 		});
 
-		Action rangeExtenderAction = new UsnaSelectedAction(this, table, "setExtender_action", "setExtender_action_tooletip", null, "/images/Extender24.png", localRow -> { // AbstractG2Device
-			Object ext = tModel.getValueAt(localRow, CheckListTable.COL_EXTENDER);
+		Action rangeExtenderAction = new UsnaSelectedAction2(this, table, "setExtender_action", "setExtender_action_tooletip", null, "/images/Extender24.png", localRow -> { // AbstractG2Device
 			AbstractG2Device d = (AbstractG2Device) getLocalDevice(localRow);
-			RangeExtenderManager.enable(d, FALSE_STR.equals(ext));
+			String res = RangeExtenderManager.enable(d, FALSE_STR.equals(tModel.getValueAt(localRow, CheckListTable.COL_EXTENDER)));
+			if(res != null) {
+				res = UtilMiscellaneous.getDescName(d) + " - " + res;
+			}
 			try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e1) {}
 			updateRow(d, localRow);
+			return res;
+		}, err -> {
+			String msg = err.stream().filter(e -> e != null).collect(Collectors.joining("\n"));
+			if(!msg.isBlank()) {
+				Msg.errorMsg(CheckListView.this, msg);
+			}
 		});
 		
 		Action scriptsEditAction = new UsnaAction("col_scripts", e -> {
@@ -670,9 +681,6 @@ public class CheckListView extends JDialog implements UsnaEventListener<Devices.
 	private void g2Row(AbstractG2Device d, JsonNode config, JsonNode status, Object[] tRow) {
 		Boolean eco = boolVal(config.at("/sys/device/eco_mode"));
 		Object ap = boolVal(config.at("/wifi/ap/enable"));
-		if (ap != null && ap == Boolean.TRUE && config.at("/wifi/ap/is_open").asBoolean(true) == false) {
-			ap = TRUE_STR; // AP active but protected with pwd
-		}
 		ArrayList<LogMode> logModes = new ArrayList<>();
 		if(config.at("/sys/debug/websocket/enable").booleanValue(false)) {
 			logModes.add(LogMode.SOCKET);
@@ -700,7 +708,6 @@ public class CheckListView extends JDialog implements UsnaEventListener<Devices.
 			} else if(bleEnableNode.asBoolean()) {
 				try {
 					TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-//					ble = d.getJSON("/rpc/BLE.CloudRelay.List").get("addrs").size();
 					ble = gateways(d);
 				} catch (/*IO*/Exception e) {
 					// config.at("/ble/observer/enable").booleanValue(false) // fw < 1.5.0

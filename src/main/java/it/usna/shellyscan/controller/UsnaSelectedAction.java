@@ -45,7 +45,7 @@ public class UsnaSelectedAction extends UsnaAction {
 	 * @param largeIcon
 	 */
 	protected UsnaSelectedAction(Component w, String nameId, String tooltipId, String smallIcon, String largeIcon) {
-		this(w,  largeIcon, tooltipId);
+		this(w, largeIcon, tooltipId);
 		putValue(NAME, LABELS.getString(nameId));
 		if(smallIcon != null) {
 			putValue(SMALL_ICON, new ImageIcon(UsnaSelectedAction.class.getResource(smallIcon)));

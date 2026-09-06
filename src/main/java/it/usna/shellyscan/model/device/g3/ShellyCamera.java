@@ -9,8 +9,9 @@ import java.util.concurrent.TimeUnit;
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.ModulesHolder;
 import it.usna.shellyscan.model.device.RestoreUtil;
+import it.usna.shellyscan.model.device.g3.modules.Camera;
+import it.usna.shellyscan.model.device.modules.CameraInterface;
 import it.usna.shellyscan.model.device.modules.DeviceModule;
-import it.usna.shellyscan.model.device.modules.MotionInterface;
 import tools.jackson.databind.JsonNode;
 
 /**
@@ -20,25 +21,11 @@ import tools.jackson.databind.JsonNode;
 public class ShellyCamera extends AbstractG3Device implements ModulesHolder {
 	public static final String ID = "Camera";
 	public static final String MODEL = "S1CM-0DXW00";
-	private final MotionInterface[] motion;
-	private boolean motionDetected;
+	private final Camera cam = new Camera();
+	private final CameraInterface[] motion = new CameraInterface[] {cam};
 
 	public ShellyCamera(InetAddress address, int port, String hostname) {
 		super(address, port, hostname);
-		
-		motion = new MotionInterface[] {
-				new MotionInterface() {
-					@Override
-					public boolean motion() {
-						return motionDetected;
-					}
-					
-					@Override
-					public String toString() {
-						return "motion: " + motionDetected; 
-					}
-				}
-		};
 	}
 	
 	@Override
@@ -69,7 +56,7 @@ public class ShellyCamera extends AbstractG3Device implements ModulesHolder {
 	@Override
 	protected void fillStatus(JsonNode status) throws IOException {
 		super.fillStatus(status);
-		motionDetected = status.get("camera:0").get("motion").booleanValue(false);
+		cam.fillStatus(status.get("camera:0"));
 	}
 
 	@Override
@@ -79,11 +66,15 @@ public class ShellyCamera extends AbstractG3Device implements ModulesHolder {
 		errors.add(postCommand("Camera.SetConfig", RestoreUtil.createIndexedRestoreNode(backupConfiguration, "camera", 0)));
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 		errors.add(postCommand("Storage.SetConfig", RestoreUtil.createIndexedRestoreNode(backupConfiguration, "storage", 0)));
+		
 		// todo verifica e integrazione (camerazone ...)
+		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+		JsonNode backupVirtualComp = backupJsons.get("Shelly.GetComponents.json");
+		Camera.restoreZones(this, backupVirtualComp, errors);
 	}
 	
 	@Override
 	public String toString() {
-		return super.toString() + " Motion: " + motionDetected;
+		return super.toString() + " Motion: " + cam.motion();
 	}
 }

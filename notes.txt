@@ -457,7 +457,13 @@ bluTRV optimized code on gateway gen3
 sheduler : Shelly RGB bulb G3 (new hints)
 sheduler : test button
 
-todo Ca backup/restore
+checklist:
+ - AP only boolean (error msg on "no password"
+ - Extendes (error msg on "no password"
+ 
+
+todo Camera backup/restore
+todo AP mandatory pwd (checklist)
 
 todo: Firmware 2.0.0
 - wi-fi channel in checklist ?

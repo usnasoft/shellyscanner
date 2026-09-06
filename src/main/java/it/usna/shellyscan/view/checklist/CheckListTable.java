@@ -62,7 +62,7 @@ class CheckListTable extends ExTooltipTable {
 		columnModel.getColumn(COL_LED).setCellRenderer(rendTrueOk);
 		columnModel.getColumn(COL_LOGS).setCellRenderer(rendFalseOk);
 		columnModel.getColumn(COL_BLE).setCellRenderer(new BLERenderer());
-		columnModel.getColumn(COL_AP).setCellRenderer(rendFalseOk);
+		columnModel.getColumn(COL_AP).setCellRenderer(new BooleanRenderer());
 		columnModel.getColumn(COL_ROAMING).setCellRenderer(rendFalseOk);
 		columnModel.getColumn(COL_WIFI1).setCellRenderer(rendTrueOk);
 		columnModel.getColumn(COL_WIFI2).setCellRenderer(rendTrueOk);
@@ -180,6 +180,24 @@ class CheckListTable extends ExTooltipTable {
 				}
 			} else if (isSelected == false) {
 				setForeground(table.getForeground());
+			}
+			return this;
+		}
+	}
+	
+	private static class BooleanRenderer extends DefaultTableCellRenderer {
+		private static final long serialVersionUID = 1L;
+
+		@Override
+		public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+			if (value instanceof Boolean val) {
+				if (val) {
+					super.getTableCellRendererComponent(table, CheckListView.TRUE_STR, isSelected, hasFocus, row, column);
+				} else {
+					super.getTableCellRendererComponent(table, CheckListView.FALSE_STR, isSelected, hasFocus, row, column);
+				}
+			} else {
+				super.getTableCellRendererComponent(table, value == null ? CheckListView.NOT_APPLICABLE_STR : value, isSelected, hasFocus, row, column);
 			}
 			return this;
 		}
