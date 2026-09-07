@@ -66,8 +66,6 @@ public class ShellyCamera extends AbstractG3Device implements ModulesHolder {
 		errors.add(postCommand("Camera.SetConfig", RestoreUtil.createIndexedRestoreNode(backupConfiguration, "camera", 0)));
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 		errors.add(postCommand("Storage.SetConfig", RestoreUtil.createIndexedRestoreNode(backupConfiguration, "storage", 0)));
-		
-		// todo verifica e integrazione (camerazone ...)
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 		JsonNode backupVirtualComp = backupJsons.get("Shelly.GetComponents.json");
 		Camera.restoreZones(this, backupVirtualComp, errors);

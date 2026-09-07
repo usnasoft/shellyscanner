@@ -93,14 +93,12 @@ public class BLEDevice extends ShellyAbstractDevice {
 	}
 
 	@Override
-	public boolean setEcoMode(boolean eco) {
-		// TODO Auto-generated method stub
-		return false;
+	public String setEcoMode(boolean eco) {
+		return null;
 	}
 
 	@Override
 	public FirmwareManager getFWManager() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 

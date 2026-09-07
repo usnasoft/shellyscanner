@@ -2,7 +2,7 @@ package it.usna.shellyscan.model.device.g4;
 
 import java.io.IOException;
 import java.net.InetAddress;
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -133,7 +133,8 @@ public class ShellyPresenceG4 extends AbstractG4Device implements ModulesHolder 
 		errors.add(mainZone.restore(backupComponents, backMainZoneKey));
 
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-		Map<String, JsonNode> currentZones = new HashMap<String, JsonNode>(); // without main_zone
+		//Map<String, JsonNode> currentZones = new HashMap<String, JsonNode>(); // without main_zone
+		HashSet<String> currentZones = new HashSet<>();
 
 		try {
 			// Collection of the current zones excluding main zone
@@ -142,7 +143,8 @@ public class ShellyPresenceG4 extends AbstractG4Device implements ModulesHolder 
 				JsonNode comp = compIt.next();
 				final String key = comp.path("key").asString("");
 				if(key.startsWith("presencezone:") && key.equals("presencezone:" + mainZone.getId()) == false) {
-					currentZones.put(key, comp);
+//					currentZones.put(key, comp);
+					currentZones.add(key);
 				}
 			}
 			// If a stored zone (not main) have the same id of a current zone -> restore
@@ -150,7 +152,7 @@ public class ShellyPresenceG4 extends AbstractG4Device implements ModulesHolder 
 			for(JsonNode comp: compArray) {
 				final String key = comp.path("key").asString("");
 				if(key.startsWith("presencezone:") && key.equals(backMainZoneKey) == false) {
-					if(currentZones.containsKey(key)) {
+					if(currentZones.contains(key) /*currentZones.containsKey(key)*/) {
 						errors.add(new PresenceZoneG4(this, key.substring(13)).restore(backupComponents, key));
 						currentZones.remove(key);
 					} else {
@@ -164,7 +166,7 @@ public class ShellyPresenceG4 extends AbstractG4Device implements ModulesHolder 
 					}
 				}
 			}
-			for(String key: currentZones.keySet()) {
+			for(String key: currentZones/*.keySet()*/) {
 				errors.add(postCommand("Presence.DeleteZone", "{\"id\":" + key.substring(13) + "}"));
 			}
 		} catch (IOException e) {

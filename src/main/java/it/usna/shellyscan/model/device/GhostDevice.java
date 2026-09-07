@@ -114,7 +114,7 @@ public class GhostDevice extends ShellyAbstractDevice {
 	}
 
 	@Override
-	public boolean setEcoMode(boolean eco) {
+	public String setEcoMode(boolean eco) {
 		throw new UnsupportedOperationException();
 	}
 

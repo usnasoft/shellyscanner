@@ -267,7 +267,7 @@ public abstract class ShellyAbstractDevice {
 
 	public abstract void reboot() throws IOException;
 	
-	public abstract boolean setEcoMode(boolean eco);
+	public abstract String setEcoMode(boolean eco);
 	
 	public abstract void refreshSettings() throws IOException;
 	

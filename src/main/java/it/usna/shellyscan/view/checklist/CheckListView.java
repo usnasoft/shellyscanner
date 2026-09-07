@@ -16,9 +16,11 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -126,12 +128,9 @@ public class CheckListView extends JDialog implements UsnaEventListener<Devices.
 		};
 		table = new CheckListTable(tModel, ipSort);
 
-		Action ecoModeAction = new UsnaSelectedAction(this, table, "setEcoMode_action", "setEcoMode_action_tooletip", null, "/images/leaf24.png", localRow -> {
+		Action ecoModeAction = new LocalSelectedAction("setEcoMode_action", "setEcoMode_action_tooletip", "/images/leaf24.png", (localRow, d) -> {
 			Boolean eco = (Boolean) tModel.getValueAt(localRow, CheckListTable.COL_ECO);
-			ShellyAbstractDevice d = getLocalDevice(localRow);
-			d.setEcoMode(!eco);
-			try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e1) {}
-			updateRow(d, localRow);
+			return d.setEcoMode(!eco);
 		});
 
 		Action ledAction = new UsnaSelectedAction(this, table, "setLED_action", "setLED_action_tooletip", null, "/images/Light24.png", localRow -> { // AbstractG1Device
@@ -181,48 +180,23 @@ public class CheckListView extends JDialog implements UsnaEventListener<Devices.
 			}
 		});
 
-		Action apModeAction = new UsnaSelectedAction2(this, table, "setAPMode_action", "setAPMode_action_tooletip", null, "/images/Rss24.png", localRow -> { // AbstractG2Device
+		Action apModeAction = new LocalSelectedAction("setAPMode_action", "setAPMode_action_tooletip", "/images/Rss24.png", (localRow, d) -> {
 			Object ap = tModel.getValueAt(localRow, CheckListTable.COL_AP);
-			AbstractG2Device d = (AbstractG2Device) getLocalDevice(localRow);
-			String res = WIFIManagerG2.enableAP(d, !((ap instanceof Boolean && ap == Boolean.TRUE) || (ap instanceof String && TRUE_STR.equals(ap))));
-			if(res != null) {
-				res = UtilMiscellaneous.getDescName(d) + " - " + res;
-			}
-			try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e1) {}
-			updateRow(d, localRow);
-			return res;
-		}, err -> {
-			String msg = err.stream().filter(e -> e != null).collect(Collectors.joining("\n"));
-			if(!msg.isBlank()) {
-				Msg.errorMsg(CheckListView.this, msg);
+			return WIFIManagerG2.enableAP((AbstractG2Device)d, !((ap instanceof Boolean && ap == Boolean.TRUE) /*|| (ap instanceof String && TRUE_STR.equals(ap))*/));
+		});
+		
+		Action roamingAction = new LocalSelectedAction("setRoaming_action", "setRoaming_action_tooletip", "/images/Roaming24.png", (localRow, d) -> {
+			Object roam = tModel.getValueAt(localRow, CheckListTable.COL_ROAMING);
+			try {
+				return d.getWIFIManager(null).enableRoaming(FALSE_STR.equals(roam));
+			} catch (IOException e) {
+				return e.getMessage();
 			}
 		});
 		
-		Action roamingAction = new UsnaSelectedAction(this, table, "setRoaming_action", "setRoaming_action_tooletip", null, "/images/Roaming24.png", localRow -> {
-			Object roam = tModel.getValueAt(localRow, CheckListTable.COL_ROAMING);
-			ShellyAbstractDevice d = getLocalDevice(localRow);
-			try {
-				d.getWIFIManager(null).enableRoaming(FALSE_STR.equals(roam));
-			} catch (IOException e) { }
-			try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e1) {}
-			updateRow(d, localRow);
-		});
-
-		Action rangeExtenderAction = new UsnaSelectedAction2(this, table, "setExtender_action", "setExtender_action_tooletip", null, "/images/Extender24.png", localRow -> { // AbstractG2Device
-			AbstractG2Device d = (AbstractG2Device) getLocalDevice(localRow);
-			String res = RangeExtenderManager.enable(d, FALSE_STR.equals(tModel.getValueAt(localRow, CheckListTable.COL_EXTENDER)));
-			if(res != null) {
-				res = UtilMiscellaneous.getDescName(d) + " - " + res;
-			}
-			try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e1) {}
-			updateRow(d, localRow);
-			return res;
-		}, err -> {
-			String msg = err.stream().filter(e -> e != null).collect(Collectors.joining("\n"));
-			if(!msg.isBlank()) {
-				Msg.errorMsg(CheckListView.this, msg);
-			}
-		});
+		Action rangeExtenderAction = new LocalSelectedAction("setExtender_action", "setExtender_action_tooletip", "/images/Extender24.png", (localRow, d) -> 
+			RangeExtenderManager.enable((AbstractG2Device)d, FALSE_STR.equals(tModel.getValueAt(localRow, CheckListTable.COL_EXTENDER)))
+		);
 		
 		Action scriptsEditAction = new UsnaAction("col_scripts", e -> {
 			DialogDeviceScripts w = new DialogDeviceScripts(CheckListView.this, appModel, devicesInd[table.getSelectedModelRow()]);
@@ -855,6 +829,26 @@ public class CheckListView extends JDialog implements UsnaEventListener<Devices.
 	public void update(PropertyEvent e, String propKey) {
 		if(ScannerProperties.PROP_TOOLBAR_CAPTIONS.equals(propKey)) {
 			updateHideCaptions();
+		}
+	}
+	
+	private class LocalSelectedAction extends UsnaSelectedAction2 {
+		private static final long serialVersionUID = 1L;
+		public LocalSelectedAction(String nameId, String tooltipId, String img, BiFunction<Integer, ShellyAbstractDevice, String> func) {
+			super(CheckListView.this, table, nameId, tooltipId, null, img,
+					localRow -> {
+						ShellyAbstractDevice d = getLocalDevice(localRow);
+						String res = func.apply(localRow, d);
+						try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e1) {}
+						updateRow(d, localRow);
+						try { TimeUnit.MILLISECONDS.sleep(500); } catch (InterruptedException e1) {}
+						return (res == null) ? null : UtilMiscellaneous.getDescName(d) + " - " + res;
+					}, err -> {
+						String msg = err.stream().filter(Objects::nonNull).collect(Collectors.joining("\n"));
+						if(!msg.isBlank()) {
+							Msg.errorMsg(CheckListView.this, msg);
+						}
+					});
 		}
 	}
 }

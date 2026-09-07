@@ -108,7 +108,7 @@ public class ShellyGenericUnmanagedImpl extends ShellyAbstractDevice implements 
 	}
 
 	@Override
-	public boolean setEcoMode(boolean eco) {
+	public String setEcoMode(boolean eco) {
 		throw new UnsupportedOperationException();
 	}
 
