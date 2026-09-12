@@ -21,7 +21,7 @@ import tools.jackson.databind.JsonNode;
 public class ShellyCamera extends AbstractG3Device implements ModulesHolder {
 	public static final String ID = "Camera";
 	public static final String MODEL = "S1CM-0DXW00";
-	private final Camera cam = new Camera();
+	private final Camera cam = new Camera(this);
 	private final CameraInterface[] motion = new CameraInterface[] {cam};
 
 	public ShellyCamera(InetAddress address, int port, String hostname) {
@@ -48,10 +48,10 @@ public class ShellyCamera extends AbstractG3Device implements ModulesHolder {
 		return motion;
 	}
 
-	@Override
-	protected void fillSettings(JsonNode configuration) throws IOException {
-		super.fillSettings(configuration);
-	}
+//	@Override
+//	protected void fillSettings(JsonNode configuration) throws IOException {
+//		super.fillSettings(configuration);
+//	}
 	
 	@Override
 	protected void fillStatus(JsonNode status) throws IOException {
@@ -63,12 +63,12 @@ public class ShellyCamera extends AbstractG3Device implements ModulesHolder {
 	protected void restore(Map<String, JsonNode> backupJsons, List<String> errors) throws InterruptedException {
 		JsonNode backupConfiguration = backupJsons.get("Shelly.GetConfig.json");
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-		errors.add(postCommand("Camera.SetConfig", RestoreUtil.createIndexedRestoreNode(backupConfiguration, "camera", 0)));
-		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 		errors.add(postCommand("Storage.SetConfig", RestoreUtil.createIndexedRestoreNode(backupConfiguration, "storage", 0)));
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+		cam.restore(backupConfiguration, errors);
+		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 		JsonNode backupVirtualComp = backupJsons.get("Shelly.GetComponents.json");
-		Camera.restoreZones(this, backupVirtualComp, errors);
+		cam.restoreZones(backupVirtualComp, errors);
 	}
 	
 	@Override

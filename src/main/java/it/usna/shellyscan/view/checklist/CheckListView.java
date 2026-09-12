@@ -186,9 +186,8 @@ public class CheckListView extends JDialog implements UsnaEventListener<Devices.
 		});
 		
 		Action roamingAction = new LocalSelectedAction("setRoaming_action", "setRoaming_action_tooletip", "/images/Roaming24.png", (localRow, d) -> {
-			Object roam = tModel.getValueAt(localRow, CheckListTable.COL_ROAMING);
 			try {
-				return d.getWIFIManager(null).enableRoaming(FALSE_STR.equals(roam));
+				return d.getWIFIManager(null).enableRoaming(FALSE_STR.equals(tModel.getValueAt(localRow, CheckListTable.COL_ROAMING)));
 			} catch (IOException e) {
 				return e.getMessage();
 			}

@@ -161,9 +161,14 @@ public class G2JobPanel extends AbstractCronPanel {
 		
 		JButton testButton = new JButton(new UsnaAction(parentDlg, "btnMethodTestTooltip", "/images/Play16.png", e -> {
 			if(!methodTF.getText().isBlank()) {
-				String res = device.postCommand(methodTF.getText(), "{" + paramsTF.getText() + "}");
-				if(res != null) {
-					Msg.errorMsg(parentDlg, res);
+				try {
+					this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+					String res = device.postCommand(methodTF.getText(), "{" + paramsTF.getText() + "}");
+					if(res != null) {
+						Msg.errorMsg(parentDlg, res);
+					}
+				} finally {
+					this.setCursor(Cursor.getDefaultCursor());
 				}
 			}
 		}));

@@ -24,10 +24,10 @@ import javax.swing.table.TableCellRenderer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import it.usna.shellyscan.Main;
 import it.usna.shellyscan.model.device.g1.modules.ThermostatG1;
 import it.usna.shellyscan.model.device.modules.CBreakerInterface;
 import it.usna.shellyscan.model.device.modules.CCTInterface;
+import it.usna.shellyscan.model.device.modules.CameraInterface;
 import it.usna.shellyscan.model.device.modules.DWInterface;
 import it.usna.shellyscan.model.device.modules.DeviceModule;
 import it.usna.shellyscan.model.device.modules.FloodInterface;
@@ -54,13 +54,17 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 	static final ImageIcon DOWN_ON_IMG = new ImageIcon(DevicesCommandCellRenderer.class.getResource("/images/Arrow16down_on.png"));
 	static final ImageIcon UP_ON_IMG = new ImageIcon(DevicesCommandCellRenderer.class.getResource("/images/Arrow16up_on.png"));
 	static final ImageIcon STOP_IMG = new ImageIcon(DevicesCommandCellRenderer.class.getResource("/images/PlayerStop16.png"));
+	static final ImageIcon LOCK_IMG = new ImageIcon(DevicesCommandCellRenderer.class.getResource("/images/Lock16.png"));
+	static final ImageIcon UNLOCK_IMG = new ImageIcon(DevicesCommandCellRenderer.class.getResource("/images/LockOpen16.png"));
 	private JButton onOffButton0 = new JButton();
 	private JLabel label0 = new JLabel();
 	private JPanel panel0 = new JPanel();
-	private JButton editDialogButton = new JButton(EDIT_IMG);
+	private JLabel editDialogButton = new JLabel(EDIT_IMG); // this is a real button on DevicesCommandCellEditor
 	private JPanel stackedPanelContainer = new JPanel(new BorderLayout(0, 0));
 	private JPanel stackedPanel = new JPanel();
 	private JLabel labelPlain = new JLabel();
+	private JLabel lockIconLabel = new JLabel(LOCK_IMG); // this is a button on DevicesCommandCellEditor
+	private JLabel unlockIconLabel = new JLabel(UNLOCK_IMG); // this is a button on DevicesCommandCellEditor
 	
 	static final Color BUTTON_ON_BG_COLOR = new Color(125, 217, 240);
 	static final Color BUTTON_OFF_BG_COLOR = Color.WHITE;
@@ -71,8 +75,8 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 	static final Border BUTTON_BORDERS = BorderFactory.createEmptyBorder(BUTTON_MARGIN_V, BUTTON_MARGIN_H, BUTTON_MARGIN_V, BUTTON_MARGIN_H);
 //	static final Border BUTTON_BORDERS_SMALL = BorderFactory.createEmptyBorder(BUTTON_MARGIN_V, BUTTON_MARGIN_H-2, BUTTON_MARGIN_V, BUTTON_MARGIN_H-2);
 	static final Border BUTTON_BORDERS_SMALLER = BorderFactory.createEmptyBorder(BUTTON_MARGIN_V, BUTTON_MARGIN_H-5, BUTTON_MARGIN_V, BUTTON_MARGIN_H-5);
-	static final String LABEL_ON = Main.LABELS.getString("btnOnLabel");
-	static final String LABEL_OFF = Main.LABELS.getString("btnOffLabel");
+	static final String LABEL_ON = LABELS.getString("btnOnLabel");
+	static final String LABEL_OFF = LABELS.getString("btnOffLabel");
 	
 	private boolean tempUnitCelsius;
 
@@ -82,7 +86,9 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 		onOffButton0.setBorder(BUTTON_BORDERS);
 		panel0.setOpaque(false);
 		editDialogButton.setBorder(BorderFactory.createEmptyBorder(0, 2, 0, 2));
-		editDialogButton.setContentAreaFilled(false);
+//		editDialogButton.setContentAreaFilled(false);
+		lockIconLabel.setBorder(BorderFactory.createEmptyBorder(1, 4, 1, 4));
+		unlockIconLabel.setBorder(BorderFactory.createEmptyBorder(1, 4, 1, 4));
 
 		BoxLayout stackedPanelLO = new BoxLayout(stackedPanel, BoxLayout.Y_AXIS);
 		stackedPanel.setLayout(stackedPanelLO);
@@ -148,7 +154,14 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 					} else if(module instanceof MotionInterface pir) {
 						JLabel motionLabel = getSelectionLabel((i == 0), LABELS.getString(pir.motion() ? "labelStatusMotion_true" : "labelStatusMotion_false"));
 						motionLabel.setForeground(foregroundColor);
-						stackedPanel.add(motionLabel);
+						if(module instanceof CameraInterface cam) {
+							JPanel p = getSectionPanel(i == 0, new BorderLayout(0, 0));
+							p.add(motionLabel, BorderLayout.CENTER);
+							p.add(cam.getPrivacy() ? lockIconLabel : unlockIconLabel, BorderLayout.EAST);
+							stackedPanel.add(p);
+						} else {
+							stackedPanel.add(motionLabel);
+						}
 					} else if(module instanceof DWInterface dw) {
 						JLabel dwLabel = getSelectionLabel((i == 0), LABELS.getString(dw.open() ? "labelStatusDW_open" : "labelStatusDW_closed"));
 						dwLabel.setForeground(foregroundColor);
@@ -256,9 +269,9 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 		rollerButtonPanel.setOpaque(false);
 		rollerPanel.add(rollerLabel, BorderLayout.CENTER);
 		rollerSouthPanel.add(rollerButtonPanel, BorderLayout.EAST);
-		JButton rollerButtonUp = new JButton(roller.isInputOn0() ? DevicesCommandCellRenderer.UP_ON_IMG : DevicesCommandCellRenderer.UP_IMG);
-		JButton rollerButtonDown = new JButton(roller.isInputOn1() ? DevicesCommandCellRenderer.DOWN_ON_IMG : DevicesCommandCellRenderer.DOWN_IMG);
-		JButton rollerButtonStop = new JButton(STOP_IMG);
+		JLabel rollerButtonUp = new JLabel(roller.isInputOn0() ? DevicesCommandCellRenderer.UP_ON_IMG : DevicesCommandCellRenderer.UP_IMG);
+		JLabel rollerButtonDown = new JLabel(roller.isInputOn1() ? DevicesCommandCellRenderer.DOWN_ON_IMG : DevicesCommandCellRenderer.DOWN_IMG);
+		JLabel rollerButtonStop = new JLabel(STOP_IMG);
 		rollerButtonUp.setBorder(BorderFactory.createEmptyBorder());
 		rollerButtonStop.setBorder(BorderFactory.createEmptyBorder());
 		rollerButtonDown.setBorder(BorderFactory.createEmptyBorder());
