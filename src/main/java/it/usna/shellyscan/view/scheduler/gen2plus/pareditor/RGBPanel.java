@@ -20,7 +20,7 @@ import it.usna.shellyscan.controller.UsnaAction;
 import it.usna.shellyscan.view.scheduler.gen2plus.pareditor.ParamEditorDialog.EditorPanel;
 import it.usna.shellyscan.view.util.ColorUtil;
 import it.usna.shellyscan.view.util.UtilMiscellaneous;
-import it.usna.swing.VerticalFlowLayout;
+import it.usna.swing.VerticalFlowLayout2;
 
 /**
  * RGB(W)Panel for the scheduler
@@ -43,7 +43,7 @@ public class RGBPanel extends JPanel implements EditorPanel {
 
 	public RGBPanel(final String parameters) {
 		setBorder(BorderFactory.createEmptyBorder(6, 8, 12, 8));
-		setLayout(new VerticalFlowLayout(VerticalFlowLayout.CENTER, VerticalFlowLayout.LEFT, 0, 0));
+		setLayout(new VerticalFlowLayout2(VerticalFlowLayout2.VAlign.CENTER, VerticalFlowLayout2.HAlign.LEFT, 0, 0));
 		
 		var rgbMatcher = RGB_PATTERN.matcher(parameters);
 		rgbMatcher.find();
@@ -80,6 +80,7 @@ public class RGBPanel extends JPanel implements EditorPanel {
 		}
 
 		JPanel colorsPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+//		colorsPanel.setPreferredSize(new Dimension(200, colorsPanel.getPreferredSize().height));
 		colorsPanel.setOpaque(false);
 		JButton redButton = new JButton(new RGBButtonAction(255, 0, 0));
 		redButton.setBorder(BorderFactory.createEmptyBorder(10, 12, 8, 12));
@@ -119,7 +120,7 @@ public class RGBPanel extends JPanel implements EditorPanel {
 		colorsPanel.add(blueButton);
 		colorsPanel.add(violetButton);
 		colorsPanel.add(whiteButton);
-		this.add(colorsPanel);
+		this.add(colorsPanel, VerticalFlowLayout2.HAlign.CENTER);
 
 		previewColorPanel.setBorder(BorderFactory.createLineBorder(Color.GRAY));
 		previewColorPanel.setPreferredSize(new Dimension(200, 10));
@@ -149,7 +150,7 @@ public class RGBPanel extends JPanel implements EditorPanel {
 			if(white) {
 				sliderWhite.setValue(0);
 			}
-			previewColorPanel.setBackground(ColorUtil.rgbwColor(sliderRed.getValue(), sliderGreen.getValue(), sliderBlue.getValue(), white ? sliderWhite.getValue() : -1));
+			previewColorPanel.setBackground(ColorUtil.rgbwColor(red, green, blue, white ? sliderWhite.getValue() : -1));
 		}
 	}
 	
@@ -168,4 +169,4 @@ public class RGBPanel extends JPanel implements EditorPanel {
 		}
 		return ret;
 	}
-}
+} //172

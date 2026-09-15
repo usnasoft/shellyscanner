@@ -103,6 +103,7 @@ public class CheckListView extends JDialog implements UsnaEventListener<Devices.
 	private final JToolBar toolBar = new JToolBar();
 	private final CheckListTable table;
 	private final UsnaTableModel tModel;
+	private final ListSelectionListener selListener;
 	private AccumulatingUniqueMap<String, BLEGateway> bleDevicesGWMap = new AccumulatingUniqueMap<>();
 	private ScheduledExecutorService exeService /* = Executors.newFixedThreadPool(20) */;
 
@@ -297,7 +298,7 @@ public class CheckListView extends JDialog implements UsnaEventListener<Devices.
 
 		table.setRowHeight(table.getRowHeight() + 3);
 
-		ListSelectionListener selListener = e -> {
+		selListener = e -> {
 			if(e.getValueIsAdjusting() == false) {
 				Object val;
 				int modelRow[] = table.getSelectedModelRows();
@@ -609,6 +610,7 @@ public class CheckListView extends JDialog implements UsnaEventListener<Devices.
 			if(i1 >= 0) {
 				table.getSelectionModel().setAnchorSelectionIndex(i1);
 			}
+			selListener.valueChanged(new ListSelectionEvent(table, -1, -1, false));
 		});
 	}
 
