@@ -116,7 +116,9 @@ import it.usna.shellyscan.model.device.g3.XT1;
 import it.usna.shellyscan.model.device.g4.AbstractG4Device;
 import it.usna.shellyscan.model.device.g4.Shelly0_10VPMG4;
 import it.usna.shellyscan.model.device.g4.Shelly1G4;
+import it.usna.shellyscan.model.device.g4.Shelly1LG4;
 import it.usna.shellyscan.model.device.g4.Shelly1PMG4;
+import it.usna.shellyscan.model.device.g4.Shelly2LG4;
 import it.usna.shellyscan.model.device.g4.Shelly2PMG4;
 import it.usna.shellyscan.model.device.g4.ShellyDimmerG4;
 import it.usna.shellyscan.model.device.g4.ShellyEMG4;
@@ -375,7 +377,8 @@ public class DevicesFactory {
 			case Shelly0_10VPMG4.MODEL -> new Shelly0_10VPMG4(address, port, name);
 			case ShellyPowerStrip4G.MODEL -> new ShellyPowerStrip4G(address, port, name);
 			case ShellyEMG4.MODEL -> new ShellyEMG4(address, port, name);
-
+			case Shelly1LG4.MODEL -> new Shelly1LG4(address, port, name);
+			case Shelly2LG4.MODEL -> new Shelly2LG4(address, port, name);
 			case ShellyPresenceG4.MODEL -> new ShellyPresenceG4(address, port, name);
 
 			// Battery operated

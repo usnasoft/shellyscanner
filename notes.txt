@@ -469,6 +469,8 @@ todo: Firmware 2.0.0
   
 todo Unificazione AP-extender X - V - num
 
+todo VerticalWrapLayout -> VerticalFlowLayout2
+
 todo backup notes
 todo location
 
