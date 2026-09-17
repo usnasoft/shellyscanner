@@ -25,7 +25,7 @@ public class BluInetAddressAndPort extends InetAddressAndPort {
 		return index;
 	}
 	
-	public void addAlternativeParent(AbstractBluDevice otherBlu) {	
+	public void addAlternativeParent(AbstractBTHomeDevice otherBlu) {	
 		addAlternativeParent(otherBlu.parent.getAddressAndPort());
 		((BluInetAddressAndPort)otherBlu.getAddressAndPort()).getAlternativeParents().forEach(this::addAlternativeParent);
 	}
@@ -34,6 +34,10 @@ public class BluInetAddressAndPort extends InetAddressAndPort {
 		if(alternativeParents.contains(parent) == false && this.equivalent(parent) == false) {
 			alternativeParents.add(parent);
 		}
+	}
+	
+	public InetAddressAndPort getParent() {
+		return new InetAddressAndPort(address, port);
 	}
 
 	public List<InetAddressAndPort> getAlternativeParents() {
@@ -58,7 +62,6 @@ public class BluInetAddressAndPort extends InetAddressAndPort {
 			return index - b.index;
 		}
 		return 1; // blue is greater than non blue
-		
 	}
 	
 	public String getParentsAsString() {

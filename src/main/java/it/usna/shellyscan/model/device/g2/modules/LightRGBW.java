@@ -3,6 +3,7 @@ package it.usna.shellyscan.model.device.g2.modules;
 import java.io.IOException;
 
 import it.usna.shellyscan.model.Devices;
+import it.usna.shellyscan.model.device.RestoreUtil;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.modules.RGBWInterface;
 import tools.jackson.databind.JsonNode;
@@ -133,7 +134,7 @@ public class LightRGBW implements RGBWInterface {
 	}
 	
 	public String restore(JsonNode config) {
-		return parent.postCommand("RGBW.SetConfig", AbstractG2Device.createIndexedRestoreNode(config, "rgbw", index));
+		return parent.postCommand("RGBW.SetConfig", RestoreUtil.createIndexedRestoreNode(config, "rgbw", index));
 	}
 	
 //	@Override

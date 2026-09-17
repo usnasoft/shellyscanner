@@ -9,31 +9,33 @@ import java.util.concurrent.TimeUnit;
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.InternalTmpHolder;
 import it.usna.shellyscan.model.device.RestoreMsg;
+import it.usna.shellyscan.model.device.RestoreUtil;
 import it.usna.shellyscan.model.device.g2.meters.EM1Meters;
 import it.usna.shellyscan.model.device.g2.meters.EMPhaseMeters;
 import it.usna.shellyscan.model.device.g2.meters.EMTotalMeters;
 import it.usna.shellyscan.model.device.g2.modules.EM1Manager;
 import it.usna.shellyscan.model.device.g2.modules.EMManager;
+import it.usna.shellyscan.model.device.g2.modules.LoRaAddOn;
+import it.usna.shellyscan.model.device.g2.modules.SensorAddOnPro;
 import it.usna.shellyscan.model.device.meters.Meters;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ObjectNode;
 
+/**
+ * ShellyPro3EM model - sensor add-on switch not yet implemented
+ */
 public class ShellyPro3EM extends AbstractProDevice implements InternalTmpHolder {
 	public static final String ID = "Pro3EM";
+	public static final String ID_ADDON = "Pro3EMProAddon";
 	public static final String MODEL = "SPEM-003CEBEU";
 	private float internalTmp;
-//	private float power[] = new float[3], totPower;
-//	private float apparent[] = new float[3], totApparent;
-//	private float voltage[] = new float[3];
-//	private float current[] = new float[3], totCurrent;
-//	private float pf[] = new float[3];
-//	private float freq[] = new float[3];
-//	private String meterName[] = new String[3];
-	private EM1Meters meters0, meters1, meters2; // em1
-	private EMPhaseMeters emMeters0, emMeters1, emMeters2; //em
+	private EM1Meters em1meters0, em1meters1, em1meters2; // em1
+	private EMPhaseMeters emMeters0, emMeters1, emMeters2; //em (triphase)
 	private EMTotalMeters emTotal; // em
 	private Meters meters[];
 	private boolean triphase;
+	private SensorAddOnPro sensorAddOn;
+	private boolean hasLoraAddOn;
 	
 	private static final String MODE_TRIPHASE = "triphase";
 
@@ -43,35 +45,87 @@ public class ShellyPro3EM extends AbstractProDevice implements InternalTmpHolder
 	
 	@Override
 	protected void init(JsonNode devInfo) throws IOException {
-		this.init(devInfo.get("profile").asString("").equals(MODE_TRIPHASE));
-		super.init(devInfo);
+		this.hostname = devInfo.get("id").asString("");
+		this.mac = devInfo.get("mac").asString("");
+
+		final JsonNode config = configure();
+
+		fillSettings(config);
+		fillStatus(getJSON("/rpc/Shelly.GetStatus"));
 	}
 	
-	private void init(boolean triphase) {
-//		this.triphase = triphase;
-//		if(triphase) {
-//			meters = new Meters[] {new EMMeters(0), new EMMeters(1), new EMMeters(2), new TotalEMMeters()};
-//			meterName[1] = meterName[2] = "";
-//		} else {
-//			meters = new Meters[] {new EMMeters(0), new EMMeters(1), new EMMeters(2)};
-//		}
+	private JsonNode configure() throws IOException {
+		final JsonNode config = getJSON("/rpc/Shelly.GetConfig");
+		final String addOnType = config.get("sys").get("device").path("addon_type").asString(null);
+		if(SensorAddOnPro.ADDON_TYPE.equals(addOnType)) {
+			sensorAddOn = new SensorAddOnPro(this);
+		} else {
+			sensorAddOn = null;
+			hasLoraAddOn = LoRaAddOn.ADDON_TYPE.equals(addOnType);
+		}
+		configurePhases(config.get("sys").get("device").get("profile").asString("").equals(MODE_TRIPHASE));
+		return config;
+	}
+	
+	private void configurePhases(boolean triphase) {
 		this.triphase = triphase;
 		if(triphase) {
 			emMeters0 = new EMPhaseMeters("a");
 			emMeters1 = new EMPhaseMeters("b");
 			emMeters2 = new EMPhaseMeters("c");
 			emTotal = new EMTotalMeters(new EMManager(this));
-			meters = new Meters[] {emMeters0, emMeters1, emMeters2, emTotal};
-			meters0 = meters1 = meters2 = null;
+			em1meters0 = em1meters1 = em1meters2 = null;
+			if(sensorAddOn != null) {
+				meters = sensorAddOn.addMetersArray(emMeters0, emMeters1, emMeters2, emTotal);
+			} else {
+				meters = new Meters[] {emMeters0, emMeters1, emMeters2, emTotal};
+			}
 		} else {
-			meters0 = new EM1Meters(new EM1Manager(this, 0));
-			meters1 = new EM1Meters(new EM1Manager(this, 1));
-			meters2 = new EM1Meters(new EM1Manager(this, 2));
-			meters = new Meters[] {meters0, meters1, meters2};
+			em1meters0 = new EM1Meters(new EM1Manager(this, 0));
+			em1meters1 = new EM1Meters(new EM1Manager(this, 1));
+			em1meters2 = new EM1Meters(new EM1Manager(this, 2));
 			emMeters0 = emMeters1 = emMeters2 = null;
 			emTotal = null;
+			if(sensorAddOn != null) {
+				meters = sensorAddOn.addMetersArray(em1meters0, em1meters1, em1meters2);
+			} else {
+				meters = new Meters[] {em1meters0, em1meters1, em1meters2};
+			}
 		}
 	}
+	
+//	@Override
+//	protected void init(JsonNode devInfo) throws IOException {
+//		configure(devInfo.get("profile").asString("").equals(MODE_TRIPHASE));
+//		this.hostname = devInfo.get("id").asString("");
+//		this.mac = devInfo.get("mac").asString("").toUpperCase();
+//
+//		final JsonNode config = configure(devInfo.get("profile").asString("").equals(MODE_TRIPHASE));
+//		
+//		fillSettings(config);
+//		fillStatus(getJSON("/rpc/Shelly.GetStatus"));
+//	}
+//	
+//	private JsonNode configure(boolean triphase) throws IOException {
+//		final JsonNode config = getJSON("/rpc/Shelly.GetConfig");
+//		this.triphase = triphase;
+//		if(triphase) {
+//			emMeters0 = new EMPhaseMeters("a");
+//			emMeters1 = new EMPhaseMeters("b");
+//			emMeters2 = new EMPhaseMeters("c");
+//			emTotal = new EMTotalMeters(new EMManager(this));
+//			meters = new Meters[] {emMeters0, emMeters1, emMeters2, emTotal};
+//			em1meters0 = em1meters1 = em1meters2 = null;
+//		} else {
+//			em1meters0 = new EM1Meters(new EM1Manager(this, 0));
+//			em1meters1 = new EM1Meters(new EM1Manager(this, 1));
+//			em1meters2 = new EM1Meters(new EM1Manager(this, 2));
+//			meters = new Meters[] {em1meters0, em1meters1, em1meters2};
+//			emMeters0 = emMeters1 = emMeters2 = null;
+//			emTotal = null;
+//		}
+//		return config;
+//	}
 
 	@Override
 	public String getTypeName() {
@@ -95,91 +149,25 @@ public class ShellyPro3EM extends AbstractProDevice implements InternalTmpHolder
 
 	@Override
 	protected void fillSettings(JsonNode configuration) throws IOException {
-//		super.fillSettings(configuration);
-//		boolean current3phase = configuration.get("sys").get("device").get("profile").asString("").equals(MODE_TRIPHASE);
-//		if(current3phase != triphase) {
-//			init(current3phase);
-//		}
-//		if(current3phase) {
-//			meterName[0] = configuration.get("em:0").get("name").asString("");
-//		} else {
-//			meterName[0] = configuration.get("em1:0").get("name").asString("");
-//			meterName[1] = configuration.get("em1:1").get("name").asString("");
-//			meterName[2] = configuration.get("em1:2").get("name").asString("");
-//		}
-		
 		super.fillSettings(configuration);
 		boolean config3phase = configuration.get("sys").get("device").get("profile").asString("").equals(MODE_TRIPHASE);
 		if(config3phase != triphase) {
-			init(config3phase);
+			configurePhases(config3phase);
 		}
 		if(config3phase) {
 			emMeters0.fillSettings(configuration.get("em:0"));
 		} else {
-			meters0.fillSettings(configuration.get("em1:0"));
-			meters1.fillSettings(configuration.get("em1:1"));
-			meters2.fillSettings(configuration.get("em1:2"));
+			em1meters0.fillSettings(configuration.get("em1:0"));
+			em1meters1.fillSettings(configuration.get("em1:1"));
+			em1meters2.fillSettings(configuration.get("em1:2"));
+		}
+		if(sensorAddOn != null) {
+			sensorAddOn.fillSettings(configuration);
 		}
 	}
 
 	@Override
 	protected void fillStatus(JsonNode status) throws IOException {
-//		super.fillStatus(status);
-//		if(triphase) {
-//			JsonNode em_0 = status.get("em:0");
-//			
-//			power[0] = em_0.get("a_act_power").floatValue();
-//			apparent[0] = em_0.get("a_aprt_power").floatValue();
-//			current[0] = em_0.get("a_current").floatValue();
-//			pf[0] = em_0.get("a_pf").floatValue();
-//			voltage[0] = em_0.get("a_voltage").floatValue();
-//			freq[0] = em_0.get("a_freq").floatValue();
-//			
-//			power[1] = em_0.get("b_act_power").floatValue();
-//			apparent[1] = em_0.get("b_aprt_power").floatValue();
-//			current[1] = em_0.get("b_current").floatValue();
-//			pf[1] = em_0.get("b_pf").floatValue();
-//			voltage[1] = em_0.get("b_voltage").floatValue();
-//			freq[1] = em_0.get("b_freq").floatValue();
-//			
-//			power[2] = em_0.get("c_act_power").floatValue();
-//			apparent[2] = em_0.get("c_aprt_power").floatValue();
-//			current[2] = em_0.get("c_current").floatValue();
-//			pf[2] = em_0.get("c_pf").floatValue();
-//			voltage[2] = em_0.get("c_voltage").floatValue();
-//			freq[2] = em_0.get("c_freq").floatValue();
-//
-//			totPower = em_0.path("total_act_power").floatValue();
-//			totApparent = em_0.path("total_aprt_power").floatValue();
-//			totCurrent = em_0.path("total_current").floatValue();
-//		} else {
-//			JsonNode em1_0 = status.get("em1:0");
-//			power[0] = em1_0.get("act_power").floatValue();
-//			apparent[0] = em1_0.get("aprt_power").floatValue();
-//			current[0] = em1_0.get("current").floatValue();
-//			pf[0] = em1_0.get("pf").floatValue();
-//			voltage[0] = em1_0.get("voltage").floatValue();
-//			freq[0] = em1_0.get("freq").floatValue();
-//
-//			JsonNode em1_1 = status.get("em1:1");
-//			power[1] = em1_1.get("act_power").floatValue();
-//			apparent[1] = em1_1.get("aprt_power").floatValue();
-//			current[1] = em1_1.get("current").floatValue();
-//			pf[1] = em1_1.get("pf").floatValue();
-//			voltage[1] = em1_1.get("voltage").floatValue();
-//			freq[1] = em1_1.get("freq").floatValue();
-//
-//			JsonNode em1_2 = status.get("em1:2");
-//			power[2] = em1_2.get("act_power").floatValue();
-//			apparent[2] = em1_2.get("aprt_power").floatValue();
-//			current[2] = em1_2.get("current").floatValue();
-//			pf[2] = em1_2.get("pf").floatValue();
-//			voltage[2] = em1_2.get("voltage").floatValue();
-//			freq[2] = em1_2.get("freq").floatValue();
-//		}
-//
-//		internalTmp = status.path("temperature:0").path("tC").floatValue();
-		
 		super.fillStatus(status);
 		if(triphase) {
 			JsonNode em0 = status.get("em:0");
@@ -188,129 +176,63 @@ public class ShellyPro3EM extends AbstractProDevice implements InternalTmpHolder
 			emMeters2.fillStatus(em0);
 			emTotal.fillStatus(em0);
 		} else {
-			meters0.fillStatus(status.get("em1:0"));
-			meters1.fillStatus(status.get("em1:1"));
-			meters2.fillStatus(status.get("em1:2"));
+			em1meters0.fillStatus(status.get("em1:0"));
+			em1meters1.fillStatus(status.get("em1:1"));
+			em1meters2.fillStatus(status.get("em1:2"));
 		}
-
+		if(sensorAddOn != null) {
+			sensorAddOn.fillStatus(status);
+		}
 		internalTmp = status.path("temperature:0").path("tC").floatValue();
 	}
 	
 	@Override
 	public String[] getInfoRequests() {
-		if(triphase) {
-			return EMManager.getInfoRequests(super.getInfoRequests());
+		String[] cmd = triphase ? EMManager.getInfoRequests(super.getInfoRequests()) : EM1Manager.getInfoRequests(super.getInfoRequests(), 0, 1, 2);
+		if(sensorAddOn != null) {
+			return SensorAddOnPro.getInfoRequests(cmd);
+		} else if(hasLoraAddOn) {
+			return LoRaAddOn.getInfoRequests(cmd);
 		} else {
-			return EM1Manager.getInfoRequests(super.getInfoRequests(), 0, 1, 2);
+			return cmd;
 		}
 	}
 	
-//	private class EMMeters extends Meters implements LabelHolder {
-//		private static final Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.W, Meters.Type.VA, Meters.Type.PF, Meters.Type.V, Meters.Type.I, Meters.Type.FREQ};
-//		private int ind;
-//
-//		private EMMeters(int ind) {
-//			this.ind = ind;
-//		}
-//		
-//		@Override
-//		public Type[] getTypes() {
-//			return SUPPORTED_MEASURES;
-//		}
-//
-//		@Override
-//		public float getValue(Type t) {
-//			if(t == Type.W) {
-//				return power[ind];
-//			} else if(t == Type.VA) {
-//				return apparent[ind];
-//			} else if(t == Type.I) {
-//				return current[ind];
-//			} else if(t == Type.PF) {
-//				return pf[ind];
-//			} else if(t == Type.FREQ) {
-//				return freq[ind];
-//			} else {
-//				return voltage[ind];
-//			}
-//		}
-//
-//		@Override
-//		public String getLabel() {
-//			return meterName[ind];
-//		}
-//		
-//		@Override
-//		public String toString() {
-//			return meterName[ind] + ": " + Type.W + "=" + power[ind] + " " + Type.I + "=" + current[ind] + " " + Type.PF + "=" + pf[ind] + " " + Type.V + "=" + voltage[ind];
-//		}
-//	}
-//
-//	private class TotalEMMeters extends Meters {
-//		private static final Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.W, Meters.Type.VA, Meters.Type.I};
-//
-//		@Override
-//		public Type[] getTypes() {
-//			return SUPPORTED_MEASURES;
-//		}
-//
-//		@Override
-//		public float getValue(Type t) {
-//			if(t == Type.W) {
-//				return totPower;
-//			} else if(t == Type.VA) {
-//				return totApparent;
-//			} else { //if(t == Type.I)
-//				return totCurrent;
-//			}
-//		}
-//		
-//		@Override
-//		public String toString() {
-//			return Type.W + "=" + totPower + " " + Type.VA + "=" + totApparent + " " + Type.I + "=" + totCurrent;
-//		}
-//	}
-	
 	@Override
-	public void restoreCheck(Map<String, JsonNode> backupJsons, Map<RestoreMsg, Object> res) throws IOException {
+	public void restoreCheck(Map<String, JsonNode> backupJsons, Map<RestoreMsg, Object> resp) throws IOException {
 		JsonNode devInfo = backupJsons.get("Shelly.GetDeviceInfo.json");
 		boolean backModeTriphase = MODE_TRIPHASE.equals(devInfo.get("profile").asString(""));
 		if(backModeTriphase != triphase) {
-			res.put(RestoreMsg.ERR_RESTORE_MODE_TRIPHASE, null);
+			resp.put(RestoreMsg.ERR_RESTORE_MODE_TRIPHASE, null);
 		}
+		SensorAddOnPro.restoreCheck(this, sensorAddOn, backupJsons, resp);
+		LoRaAddOn.restoreCheck(this, hasLoraAddOn, backupJsons, resp);
 	}
 
 	@Override
 	protected void restore(Map<String, JsonNode> backupJsons, List<String> errors) throws InterruptedException {
-//		JsonNode config = backupJsons.get("Shelly.GetConfig.json");
-//		if(triphase) {
-//			errors.add(postCommand("EM.SetConfig", createIndexedRestoreNode(config, "em", 0)));
-//		} else {
-//			errors.add(postCommand("EM1.SetConfig", createIndexedRestoreNode(config, "em1", 0)));
-//			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-//			errors.add(postCommand("EM1.SetConfig", createIndexedRestoreNode(config, "em1", 1)));
-//			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-//			errors.add(postCommand("EM1.SetConfig", createIndexedRestoreNode(config, "em1", 2)));
-//		}
 		JsonNode config = backupJsons.get("Shelly.GetConfig.json");
 		if(triphase) {
-			ObjectNode conf = createIndexedRestoreNode(config, "em", 0);
+			ObjectNode conf = RestoreUtil.createIndexedRestoreNode(config, "em", 0);
 			((ObjectNode)conf.get("config")).remove("ct_type");
 			errors.add(postCommand("EM.SetConfig", conf));
 		} else {
-			ObjectNode conf = createIndexedRestoreNode(config, "em1", 0);
+			ObjectNode conf = RestoreUtil.createIndexedRestoreNode(config, "em1", 0);
 			((ObjectNode)conf.get("config")).remove("ct_type");
 			errors.add(postCommand("EM1.SetConfig", conf));
 			
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-			conf = createIndexedRestoreNode(config, "em1", 1);
+			conf = RestoreUtil.createIndexedRestoreNode(config, "em1", 1);
 			((ObjectNode)conf.get("config")).remove("ct_type");
 			errors.add(postCommand("EM1.SetConfig", conf));
 			
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-			conf = createIndexedRestoreNode(config, "em1", 2);
+			conf = RestoreUtil.createIndexedRestoreNode(config, "em1", 2);
 			((ObjectNode)conf.get("config")).remove("ct_type");
 			errors.add(postCommand("EM1.SetConfig", conf));
+			
+			SensorAddOnPro.restore(this, sensorAddOn, backupJsons, errors);
+			LoRaAddOn.restore(this, hasLoraAddOn, config, errors);
 		}
 	}
 }

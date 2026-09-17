@@ -59,6 +59,7 @@ public class DialogDeviceSelection extends JDialog {
 		ExTooltipTable table = new ExTooltipTable(tModel, true);
 
 		JScrollPane scrollPane = new JScrollPane();
+		scrollPane.setBorder(BorderFactory.createEmptyBorder(0, 0, 3, 0));
 		scrollPane.setViewportView(table);
 		getContentPane().add(scrollPane, BorderLayout.CENTER);
 

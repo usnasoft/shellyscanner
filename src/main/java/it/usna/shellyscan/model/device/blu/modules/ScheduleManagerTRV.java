@@ -54,9 +54,9 @@ public class ScheduleManagerTRV {
 	
 	public static void restore(BluTRV trv, JsonNode storedSchedule, List<String> errors) throws InterruptedException, IOException {
 		ObjectNode out = JsonNodeFactory.instance.objectNode();
-		out.put("id", Integer.parseInt(trv.getIndex()));
+		out.put("id", Integer.parseInt(trv.getComponentIndex()));
 		// BluTrv.Call - TRV.RemoveScheduleRule
-		JsonNode existingRules = trv.getJSON("/rpc/BluTrv.Call?id=" + trv.getIndex() + "&method=%22TRV.ListScheduleRules%22&params=%7B%22id%22:0%7D").get("rules");
+		JsonNode existingRules = trv.getJSON("/rpc/BluTrv.Call?id=" + trv.getComponentIndex() + "&method=%22TRV.ListScheduleRules%22&params=%7B%22id%22:0%7D").get("rules");
 		ObjectNode scheduleParams = JsonNodeFactory.instance.objectNode();
 		scheduleParams.put("id", 0);
 		out.put("method", "TRV.RemoveScheduleRule");

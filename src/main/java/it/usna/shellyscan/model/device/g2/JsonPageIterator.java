@@ -59,6 +59,10 @@ public class JsonPageIterator implements Iterator<JsonNode>/*, Iterable<JsonNode
 		nextIdx++;
 		return current.next();
 	}
+	
+	public int size() {
+		return numNodes;
+	}
 
 //	@Override
 //	public Iterator<JsonNode> iterator() {

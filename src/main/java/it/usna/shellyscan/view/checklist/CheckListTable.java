@@ -5,17 +5,24 @@ import static it.usna.shellyscan.Main.LABELS;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
+import java.awt.FontMetrics;
+import java.util.Collection;
 import java.util.Comparator;
 
 import javax.swing.JTable;
 import javax.swing.SortOrder;
+import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumn;
 import javax.swing.table.TableRowSorter;
 
 import it.usna.shellyscan.Main;
+import it.usna.shellyscan.model.device.ShellyAbstractDevice;
+import it.usna.shellyscan.model.device.blu.BLEGateway;
 import it.usna.shellyscan.model.device.blu.BluInetAddressAndPort;
 import it.usna.shellyscan.view.DevicesTable;
+import it.usna.shellyscan.view.util.UtilMiscellaneous;
 import it.usna.swing.table.ExTooltipTable;
 import it.usna.swing.table.UsnaTableModel;
 
@@ -54,8 +61,8 @@ class CheckListTable extends ExTooltipTable {
 		columnModel.getColumn(COL_ECO).setCellRenderer(rendTrueOk);
 		columnModel.getColumn(COL_LED).setCellRenderer(rendTrueOk);
 		columnModel.getColumn(COL_LOGS).setCellRenderer(rendFalseOk);
-		columnModel.getColumn(COL_BLE).setCellRenderer(new StringJudgedRenderer("0", CheckListView.FALSE_STR));
-		columnModel.getColumn(COL_AP).setCellRenderer(rendFalseOk);
+		columnModel.getColumn(COL_BLE).setCellRenderer(new BLERenderer());
+		columnModel.getColumn(COL_AP).setCellRenderer(new BooleanRenderer());
 		columnModel.getColumn(COL_ROAMING).setCellRenderer(rendFalseOk);
 		columnModel.getColumn(COL_WIFI1).setCellRenderer(rendTrueOk);
 		columnModel.getColumn(COL_WIFI2).setCellRenderer(rendTrueOk);
@@ -70,10 +77,21 @@ class CheckListTable extends ExTooltipTable {
 			String s2 = o2 == null ? "" : o2.toString();
 			return s1.compareTo(s2);
 		};
+		final Comparator<?> collectionSorter = (o1, o2) -> { // use when there is a mix: null, Boolean, String
+			int x1 = 0;
+			int x2 = 0;
+			if(o1 instanceof Collection c) x1 = c.size();
+			else if(o1.equals(CheckListView.FALSE_STR)) x1 = Integer.MIN_VALUE;
+			else if(o1.equals(CheckListView.TRUE_STR)) x1 = Integer.MIN_VALUE + 1;
+			if(o2 instanceof Collection c) x2 = c.size();
+			else if(o2.equals(CheckListView.FALSE_STR)) x2 = Integer.MIN_VALUE;
+			else if(o2.equals(CheckListView.TRUE_STR)) x2 = Integer.MIN_VALUE + 1;
+			return x1 - x2;
+		};
 		rowSorter.setComparator(COL_ECO, sorter);
 		rowSorter.setComparator(COL_LED, sorter);
 		rowSorter.setComparator(COL_LOGS, sorter);
-		rowSorter.setComparator(COL_BLE, sorter);
+		rowSorter.setComparator(COL_BLE, collectionSorter);
 		rowSorter.setComparator(COL_AP, sorter);
 		rowSorter.setComparator(COL_ROAMING, sorter);
 		rowSorter.setComparator(COL_WIFI1, sorter);
@@ -84,6 +102,43 @@ class CheckListTable extends ExTooltipTable {
 		if (ipSort != SortOrder.UNSORTED) {
 			sortByColumn(COL_IP, ipSort);
 		}
+	}
+	
+	@Override
+	protected String getToolTipText(Object value, boolean cellTooSmall, int r, int c) {
+		if(value instanceof Collection<?> gwCollection && convertColumnIndexToModel(c) == COL_BLE) {
+			StringBuilder res = new StringBuilder("<html><table>");
+			// BLU devices (list of gateways)
+			gwCollection.stream().filter(w -> w instanceof BLEGateway).map(w -> (BLEGateway) w).sorted(Comparator.reverseOrder()).forEach(gw -> {
+				res
+				.append("<tr><td>").append(UtilMiscellaneous.getDescName(gw.gw()))
+				.append("</td><td>").append(gw.gw().getAddressAndPort())
+				.append("</td><td>").append(System.currentTimeMillis()/1000 - gw.lastSeen())
+				.append("</td></tr>");
+			});
+			// Gateways (list of BLU devices)
+			gwCollection.stream().filter(w -> w instanceof BLEGateway == false).forEach(blu -> {
+				if(blu instanceof ShellyAbstractDevice bth) {
+					res
+					.append("<tr><td>").append(UtilMiscellaneous.getDescName(bth))
+					.append("</td><td>").append(bth.getMacAddress())
+					.append("</td></tr>");
+				} else {
+					res.append("<tr><td>").append(blu).append("</td></tr>");
+				}
+			});
+			return res.toString();
+		} else {
+			return super.getToolTipText(value, cellTooSmall, r, c);
+		}
+	}
+	
+	@Override
+	public void columnsWidthAdapt() {
+		super.columnsWidthAdapt();
+		final FontMetrics fm = getFontMetrics(getFont());
+		TableColumn tc = columnModel.getColumn(COL_BLE);
+		tc.setPreferredWidth(Math.max(SwingUtilities.computeStringWidth(fm, "99"), SwingUtilities.computeStringWidth(fm, tc.getHeaderValue().toString())));
 	}
 	
 	@Override
@@ -129,6 +184,24 @@ class CheckListTable extends ExTooltipTable {
 			return this;
 		}
 	}
+	
+	private static class BooleanRenderer extends DefaultTableCellRenderer {
+		private static final long serialVersionUID = 1L;
+
+		@Override
+		public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+			if (value instanceof Boolean val) {
+				if (val) {
+					super.getTableCellRendererComponent(table, CheckListView.TRUE_STR, isSelected, hasFocus, row, column);
+				} else {
+					super.getTableCellRendererComponent(table, CheckListView.FALSE_STR, isSelected, hasFocus, row, column);
+				}
+			} else {
+				super.getTableCellRendererComponent(table, value == null ? CheckListView.NOT_APPLICABLE_STR : value, isSelected, hasFocus, row, column);
+			}
+			return this;
+		}
+	}
 
 	private static class CheckRenderer extends DefaultTableCellRenderer {
 		private static final long serialVersionUID = 1L;
@@ -161,6 +234,27 @@ class CheckListTable extends ExTooltipTable {
 		}
 	}
 	
+	private static class BLERenderer extends DefaultTableCellRenderer {
+		private static final long serialVersionUID = 1L;
+
+		@Override
+		public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+			if(value == null) {
+				value = CheckListView.NOT_APPLICABLE_STR;
+				setEnabled(true);
+			} else if(value instanceof Collection c) {
+				value = c.size() + "";
+				setEnabled(c.size() > 0);
+			} else if(value instanceof Number n && n.intValue() == 0) {
+				setEnabled(false);
+			} else {
+				setEnabled(true);
+			}
+			super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+			return this;
+		}
+	}
+	
 	private static class InetAddressAndPortRenderer extends DefaultTableCellRenderer {
 		private static final long serialVersionUID = 1L;
 
@@ -172,9 +266,12 @@ class CheckListTable extends ExTooltipTable {
 				setForeground(Color.red);
 				if (isSelected) {
 					setFont(getFont().deriveFont(Font.BOLD));
+				} else {
+					setFont(getFont().deriveFont(Font.PLAIN));
 				}
 			} else if (isSelected == false) {
 				setForeground(table.getForeground());
+				setFont(getFont().deriveFont(Font.PLAIN));
 			}
 			return this;
 		}

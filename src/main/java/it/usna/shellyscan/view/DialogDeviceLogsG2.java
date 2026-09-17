@@ -42,7 +42,7 @@ import org.slf4j.LoggerFactory;
 import it.usna.shellyscan.controller.UsnaAction;
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice.LogMode;
-import it.usna.shellyscan.model.device.blu.AbstractBluDevice;
+import it.usna.shellyscan.model.device.blu.AbstractBTHomeDevice;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.g2.WebSocketDeviceListener;
 import it.usna.shellyscan.view.util.Msg;
@@ -121,7 +121,7 @@ public class DialogDeviceLogsG2 extends JDialog {
 		btnsStopAppRefresh.addActionListener(event -> {
 			devicesModel.pauseRefresh(modelIndex);
 			for(int i = 0; i < devicesModel.size(); i++) {
-				if(devicesModel.get(i) instanceof AbstractBluDevice blu && blu.getAddressAndPort().equivalent(device.getAddressAndPort())) {
+				if(devicesModel.get(i) instanceof AbstractBTHomeDevice blu && blu.getAddressAndPort().equivalent(device.getAddressAndPort())) {
 					devicesModel.pauseRefresh(i);
 				}
 			}
@@ -210,7 +210,7 @@ public class DialogDeviceLogsG2 extends JDialog {
 					}
 					devicesModel.activateRefresh(modelIndex);
 					for(int i = 0; i < devicesModel.size(); i++) {
-						if(devicesModel.get(i) instanceof AbstractBluDevice blu && blu.getAddressAndPort().equivalent(device.getAddressAndPort())) {
+						if(devicesModel.get(i) instanceof AbstractBTHomeDevice blu && blu.getAddressAndPort().equivalent(device.getAddressAndPort())) {
 							devicesModel.activateRefresh(i);
 						}
 					}

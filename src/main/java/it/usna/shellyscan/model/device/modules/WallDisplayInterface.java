@@ -1,5 +1,5 @@
 package it.usna.shellyscan.model.device.modules;
 
-public interface DisplayInterface {
+public interface WallDisplayInterface {
 	public boolean hasThermostat();
 }

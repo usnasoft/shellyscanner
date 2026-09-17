@@ -11,15 +11,17 @@ import java.util.Iterator;
 
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
+import it.usna.shellyscan.controller.UsnaAction;
 import it.usna.shellyscan.controller.UsnaDropdownAction;
+import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.view.scheduler.AbstractCronPanel;
+import it.usna.shellyscan.view.scheduler.gen2plus.pareditor.ParamEditorDialog;
 import it.usna.shellyscan.view.util.Msg;
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.JsonNode;
@@ -34,16 +36,18 @@ public class G2JobPanel extends AbstractCronPanel {
 	private JPanel callsParameterPanel;
 	private JPanel callsOperationsPanel;
 	private boolean systemJob = false;
+	private final AbstractG2Device device;
 	private final MethodHints mHints;
 	private static final ObjectMapper JSON_MAPPER = new ObjectMapper();
 
 	/**
 	 * @wbp.parser.constructor
 	 */
-	public G2JobPanel(JDialog parent, JsonNode scheduleNode, MethodHints mHints) {
+	public G2JobPanel(JDialog parent, AbstractG2Device device, JsonNode scheduleNode, MethodHints mHints) {
 		super(parent);
 		initCallSection();
 		this.mHints = mHints;
+		this.device = device;
 		if(scheduleNode == null) {
 			setCron(DEF_CRON);
 			addCall("", "", 0);
@@ -89,24 +93,32 @@ public class G2JobPanel extends AbstractCronPanel {
 		paramsTF.setColumns(40); // not all the space needed space (in case of long strings)
 		callsPanel.add(methodTF, index);
 		callsParameterPanel.add(paramsTF, index);
+		
+		UsnaAction paramEditAction = new UsnaAction(parentDlg, "edit", e -> new ParamEditorDialog(parentDlg, paramsTF));
+		
+		paramsTF.addMouseListener(new java.awt.event.MouseAdapter() {
+			public void mouseClicked(java.awt.event.MouseEvent evt) {
+				if (evt.getClickCount() == 2) {
+					paramEditAction.actionPerformed(null);
+				}
+			}
+		});
 
 		JPanel callOpPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
 		callOpPanel.setOpaque(false);
-		JButton addB = new JButton(new ImageIcon(getClass().getResource("/images/plus_transp16.png")));
-		addB.setContentAreaFilled(false);
-		addB.setBorder(BorderFactory.createEmptyBorder(4, 3, 4, 3));
-		addB.addActionListener(e ->  {
+		
+		JButton addB = new JButton(new UsnaAction(null, "btnMethodAddTooltip", "/images/plus_transp16.png", e -> { //new ImageIcon(getClass().getResource("/images/plus_transp16.png")));
 			Component[] list = callsOperationsPanel.getComponents();
 			int i;
 			for(i = 0; list[i] != callOpPanel; i++);
 			addCall("", "", i + 1);
 			callsOperationsPanel.revalidate();
-		});
+		}));
+		addB.setContentAreaFilled(false);
+		addB.setBorder(BorderFactory.createEmptyBorder(4, 2, 4, 3));
 		callOpPanel.add(addB);
-		JButton minusB = new JButton(new ImageIcon(getClass().getResource("/images/erase-9-16.png")));
-		minusB.setContentAreaFilled(false);
-		minusB.setBorder(BorderFactory.createEmptyBorder(4, 3, 4, 3));
-		minusB.addActionListener(e ->  {
+		
+		JButton minusB = new JButton(new UsnaAction(null, "btnMethodRemoveTooltip", "/images/erase-9-16.png", e -> {
 			Component[] list = callsOperationsPanel.getComponents();
 			if(list.length > 1) {
 				int i;
@@ -116,14 +128,29 @@ public class G2JobPanel extends AbstractCronPanel {
 				callsOperationsPanel.remove(i);
 				callsOperationsPanel.revalidate();
 			}
-		});
+		}));
+		minusB.setContentAreaFilled(false);
+		minusB.setBorder(BorderFactory.createEmptyBorder(4, 3, 4, 3));
 		callOpPanel.add(minusB);
 
 		JButton btnSelectCombo = new JButton();
 		btnSelectCombo.setAction(new UsnaDropdownAction(btnSelectCombo, "lblMethodSelect", "/images/expand-more.png", () -> {
 			try {
 				this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-				return mHints.get(methodTF, paramsTF);
+				Object[] menu = mHints.get(methodTF, paramsTF);
+				if(ParamEditorDialog.canEdit(paramsTF.getText())) {
+//					ArrayList<Object> m = new ArrayList<>(menu.length + 2);
+//					m.add(paramEditAction);
+//					m.add(null);
+//					m.addAll(List.of(menu));
+//					menu = m.toArray(Object[]::new);
+					Object[] tmp = new Object[menu.length + 2];
+					System.arraycopy(menu, 0, tmp, 2, menu.length);
+					tmp[0] = paramEditAction;
+					tmp[1] = null;
+					menu = tmp;
+				}
+				return menu;
 			} finally {
 				this.setCursor(Cursor.getDefaultCursor());
 			}
@@ -131,6 +158,23 @@ public class G2JobPanel extends AbstractCronPanel {
 		btnSelectCombo.setContentAreaFilled(false);
 		btnSelectCombo.setBorder(BorderFactory.createEmptyBorder(4, 3, 4, 3));
 		callOpPanel.add(btnSelectCombo);
+		
+		JButton testButton = new JButton(new UsnaAction(parentDlg, "btnMethodTestTooltip", "/images/Play16.png", e -> {
+			if(!methodTF.getText().isBlank()) {
+				try {
+					this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+					String res = device.postCommand(methodTF.getText(), "{" + paramsTF.getText() + "}");
+					if(res != null) {
+						Msg.errorMsg(parentDlg, res);
+					}
+				} finally {
+					this.setCursor(Cursor.getDefaultCursor());
+				}
+			}
+		}));
+		testButton.setContentAreaFilled(false);
+		testButton.setBorder(BorderFactory.createEmptyBorder(3, 2, 4, 0));
+		callOpPanel.add(testButton);
 
 		callsOperationsPanel.add(callOpPanel, index);
 	}

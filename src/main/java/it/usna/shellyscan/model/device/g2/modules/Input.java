@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 
+import it.usna.shellyscan.model.device.RestoreUtil;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.g2.modules.Webhooks.Webhook;
 import tools.jackson.databind.JsonNode;
@@ -93,7 +94,7 @@ public class Input implements InputActionInterface {
 	}
 	
 	public static String restore(AbstractG2Device parent, JsonNode config, int index) {
-		return parent.postCommand("Input.SetConfig", AbstractG2Device.createIndexedRestoreNode(config, "input", index));
+		return parent.postCommand("Input.SetConfig", RestoreUtil.createIndexedRestoreNode(config, "input", index));
 	}
 	
 	@Override

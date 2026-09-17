@@ -12,17 +12,17 @@ import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.modules.FirmwareManager;
 import tools.jackson.databind.JsonNode;
 
-public class ShellyBluUnmanaged extends AbstractBluDevice implements ShellyUnmanagedDeviceInterface {
+public class ShellyBTHomeUnmanaged extends AbstractBTHomeDevice implements ShellyUnmanagedDeviceInterface {
 	private String type;
 	private Throwable ex;
 
-	private ShellyBluUnmanaged(ShellyAbstractDevice parent, JsonNode info, String localName, String componentIndex) {
-		super((AbstractG2Device)parent, info, componentIndex);
+	private ShellyBTHomeUnmanaged(ShellyAbstractDevice parent, JsonNode compInfo, String localName, String componentIndex) {
+		super((AbstractG2Device)parent, compInfo.path("config").path("addr").asString(""), componentIndex);
 		this.type = localName;
 		this.hostname = localName + "-" + mac;
 	}
 	
-	public ShellyBluUnmanaged(ShellyAbstractDevice parent, JsonNode info, String index, Throwable ex) {
+	public ShellyBTHomeUnmanaged(ShellyAbstractDevice parent, JsonNode info, String index, Throwable ex) {
 		this(parent, info, info.path("config").path("meta").path("ui").path("local_name").asString(""), index);
 		this.ex = ex;
 		status = Status.ERROR;

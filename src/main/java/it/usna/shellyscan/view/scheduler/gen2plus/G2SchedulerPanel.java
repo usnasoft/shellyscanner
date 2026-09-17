@@ -217,7 +217,7 @@ public class G2SchedulerPanel extends JScrollPane {
 
 	private void addJob(JsonNode node, int pos) {
 		JPanel linePanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
-		G2JobPanel job = new G2JobPanel(parentDlg, node, mHints);
+		G2JobPanel job = new G2JobPanel(parentDlg, device, node, mHints);
 		linePanel.add(job);
 
 		JButton enableButton = new JButton();

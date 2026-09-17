@@ -13,10 +13,10 @@ import org.slf4j.LoggerFactory;
 import it.usna.shellyscan.Main;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.ShellyGenericUnmanagedImpl;
-import it.usna.shellyscan.model.device.blu.AbstractBluDevice;
+import it.usna.shellyscan.model.device.blu.AbstractBTHomeDevice;
 import it.usna.shellyscan.model.device.blu.BTHomeDevice;
 import it.usna.shellyscan.model.device.blu.BluTRV;
-import it.usna.shellyscan.model.device.blu.ShellyBluUnmanaged;
+import it.usna.shellyscan.model.device.blu.ShellyBTHomeUnmanaged;
 import it.usna.shellyscan.model.device.g1.AbstractG1Device;
 import it.usna.shellyscan.model.device.g1.Button1;
 import it.usna.shellyscan.model.device.g1.Shelly1;
@@ -69,6 +69,7 @@ import it.usna.shellyscan.model.device.g2.ShellyPlusi4;
 import it.usna.shellyscan.model.device.g2.ShellyPro1;
 import it.usna.shellyscan.model.device.g2.ShellyPro1PM;
 import it.usna.shellyscan.model.device.g2.ShellyPro2;
+import it.usna.shellyscan.model.device.g2.ShellyPro2CB;
 import it.usna.shellyscan.model.device.g2.ShellyPro2PM;
 import it.usna.shellyscan.model.device.g2.ShellyPro3;
 import it.usna.shellyscan.model.device.g2.ShellyPro3EM;
@@ -93,6 +94,9 @@ import it.usna.shellyscan.model.device.g3.Shelly1PMG3;
 import it.usna.shellyscan.model.device.g3.Shelly2LG3;
 import it.usna.shellyscan.model.device.g3.Shelly2PMG3;
 import it.usna.shellyscan.model.device.g3.Shelly3EM63;
+import it.usna.shellyscan.model.device.g3.ShellyBulbDuoG3;
+import it.usna.shellyscan.model.device.g3.ShellyBulbRGBG3;
+import it.usna.shellyscan.model.device.g3.ShellyCamera;
 import it.usna.shellyscan.model.device.g3.ShellyDimmerG3;
 import it.usna.shellyscan.model.device.g3.ShellyEMG3;
 import it.usna.shellyscan.model.device.g3.ShellyG3Unmanaged;
@@ -102,6 +106,7 @@ import it.usna.shellyscan.model.device.g3.ShellyI4G3;
 import it.usna.shellyscan.model.device.g3.ShellyMini1G3;
 import it.usna.shellyscan.model.device.g3.ShellyMini1PMG3;
 import it.usna.shellyscan.model.device.g3.ShellyMiniPMG3;
+import it.usna.shellyscan.model.device.g3.ShellyPlugMG3;
 import it.usna.shellyscan.model.device.g3.ShellyPlugPMG3;
 import it.usna.shellyscan.model.device.g3.ShellyPlugSG3;
 import it.usna.shellyscan.model.device.g3.ShellyPlugSOutdoorG3;
@@ -109,15 +114,22 @@ import it.usna.shellyscan.model.device.g3.ShellyShutterG3;
 import it.usna.shellyscan.model.device.g3.ShellyXMOD1;
 import it.usna.shellyscan.model.device.g3.XT1;
 import it.usna.shellyscan.model.device.g4.AbstractG4Device;
+import it.usna.shellyscan.model.device.g4.Shelly0_10VPMG4;
 import it.usna.shellyscan.model.device.g4.Shelly1G4;
+import it.usna.shellyscan.model.device.g4.Shelly1LG4;
 import it.usna.shellyscan.model.device.g4.Shelly1PMG4;
+import it.usna.shellyscan.model.device.g4.Shelly2LG4;
 import it.usna.shellyscan.model.device.g4.Shelly2PMG4;
 import it.usna.shellyscan.model.device.g4.ShellyDimmerG4;
+import it.usna.shellyscan.model.device.g4.ShellyEMG4;
 import it.usna.shellyscan.model.device.g4.ShellyFloodG4;
+import it.usna.shellyscan.model.device.g4.ShellyFloodSG4;
 import it.usna.shellyscan.model.device.g4.ShellyG4Unmanaged;
 import it.usna.shellyscan.model.device.g4.ShellyMini1G4;
 import it.usna.shellyscan.model.device.g4.ShellyMini1PMG4;
+import it.usna.shellyscan.model.device.g4.ShellyMiniEMG4;
 import it.usna.shellyscan.model.device.g4.ShellyPowerStrip4G;
+import it.usna.shellyscan.model.device.g4.ShellyPresenceG4;
 import it.usna.shellyscan.view.DialogAuthentication;
 import tools.jackson.databind.JsonNode;
 
@@ -211,10 +223,10 @@ public class DevicesFactory {
 		}
 		try {
 			d.init(httpClient, info);
+		} catch(DeviceUnauthorizedException e) {
+			// do nothing
 		} catch(IOException e) {
-			if("Status-401".equals(e.getMessage()) == false) {
-				LOG.warn("create - init {}:{}", address, port, e);
-			}
+			LOG.warn("create - init {}:{}", address, port, e);
 		} catch(RuntimeException e) {
 			LOG.error("create - init {}:{}", address, port, e);
 		}
@@ -252,16 +264,17 @@ public class DevicesFactory {
 				case ShellyPlusHT.ID -> new ShellyPlusHT(address, port, name);
 				case ShellyPlusSmoke.ID -> new ShellyPlusSmoke(address, port, name);
 				// PRO
-				case ShellyPro1PM.ID -> new ShellyPro1PM(address, port, name);
-				case ShellyPro1.ID -> new ShellyPro1(address, port, name);
-				case ShellyPro2PM.ID -> new ShellyPro2PM(address, port, name);
-				case ShellyPro2.ID -> new ShellyPro2(address, port, name);
+				case ShellyPro1PM.ID, ShellyPro1PM.ID_ADDON -> new ShellyPro1PM(address, port, name);
+				case ShellyPro1.ID, ShellyPro1.ID_ADDON -> new ShellyPro1(address, port, name);
+				case ShellyPro2PM.ID, ShellyPro2PM.ID_ADDON -> new ShellyPro2PM(address, port, name);
+				case ShellyPro2.ID, ShellyPro2.ID_ADDON -> new ShellyPro2(address, port, name);
 				case ShellyPro3.ID -> new ShellyPro3(address, port, name);
 				case ShellyPro4PM.ID -> ShellyProDualCover.MODEL.equals(info.get("model").asString()) ? new ShellyProDualCover(address, port, name) : new ShellyPro4PM(address, port, name);
 				case ShellyProDimmer1.ID, ShellyProDimmer1.ID_ADDON -> ShellyProDimmer2.MODEL.equals(info.get("model").asString()) ? new ShellyProDimmer2(address, port, name) : new ShellyProDimmer1(address, port, name);
-				case ShellyProEM50.ID -> new ShellyProEM50(address, port, name);
-				case ShellyPro3EM.ID -> new ShellyPro3EM(address, port, name);
+				case ShellyProEM50.ID, ShellyProEM50.ID_ADDON -> new ShellyProEM50(address, port, name);
+				case ShellyPro3EM.ID, ShellyPro3EM.ID_ADDON -> new ShellyPro3EM(address, port, name);
 				case ShellyProRGBWW.ID -> new ShellyProRGBWW(address, port, name);
+				case ShellyPro2CB.ID -> new ShellyPro2CB(address, port, name); // do not include; based on an obsolete prototype
 
 				default -> new ShellyG2Unmanaged(address, port, name);
 			};
@@ -271,10 +284,10 @@ public class DevicesFactory {
 		}
 		try {
 			d.init(httpClient, wsClient, info);
+		} catch(DeviceUnauthorizedException e) {
+			// do nothing
 		} catch(IOException e) {
-			if("Status-401".equals(e.getMessage()) == false) {
-				LOG.warn("create - init {}:{}", address, port, e);
-			}
+			LOG.warn("create - init {}:{}", address, port, e);
 		} catch(RuntimeException e) {
 			LOG.error("create - init {}:{}", address, port, e);
 		}
@@ -301,6 +314,7 @@ public class DevicesFactory {
 			case ShellyMiniPMG3.ID -> new ShellyMiniPMG3(address, port, name);
 			case ShellyPlugSG3.ID -> new ShellyPlugSG3(address, port, name);
 			case ShellyPlugPMG3.ID -> new ShellyPlugPMG3(address, port, name);
+			case ShellyPlugMG3.ID -> new ShellyPlugMG3(address, port, name);
 			case ShellyPlugSOutdoorG3.ID -> new ShellyPlugSOutdoorG3(address, port, name);
 			case ShellyHTG3.ID -> new ShellyHTG3(address, port, name);
 			case ShellyDimmerG3.ID -> new ShellyDimmerG3(address, port, name);
@@ -309,7 +323,9 @@ public class DevicesFactory {
 			case Shelly2LG3.ID -> new Shelly2LG3(address, port, name);
 			case ShellyEMG3.ID -> new ShellyEMG3(address, port, name);
 			case ShellyGatewayG3.ID -> new ShellyGatewayG3(address, port, name);
-
+			case ShellyBulbDuoG3.ID -> new ShellyBulbDuoG3(address, port, name);
+			case ShellyBulbRGBG3.ID -> new ShellyBulbRGBG3(address, port, name);
+			case ShellyCamera.ID -> new ShellyCamera(address, port, name);
 			// X
 			case ShellyXMOD1.ID -> new ShellyXMOD1(address, port, name);
 			// Powered by Shelly
@@ -332,10 +348,10 @@ public class DevicesFactory {
 		}
 		try {
 			d.init(httpClient, wsClient, info);
+		} catch(DeviceUnauthorizedException e) {
+			// do nothing
 		} catch(IOException e) {
-			if("Status-401".equals(e.getMessage()) == false) {
-				LOG.warn("create - init {}:{}", address, port, e);
-			}
+			LOG.warn("create - init {}:{}", address, port, e);
 		} catch(RuntimeException e) {
 			LOG.error("create - init {}:{}", address, port, e);
 		}
@@ -356,12 +372,18 @@ public class DevicesFactory {
 			case Shelly2PMG4.MODEL -> new Shelly2PMG4(address, port, name);
 			case ShellyMini1G4.MODEL -> new ShellyMini1G4(address, port, name);
 			case ShellyMini1PMG4.MODEL -> new ShellyMini1PMG4(address, port, name);
+			case ShellyMiniEMG4.MODEL -> new ShellyMiniEMG4(address, port, name);
 			case ShellyDimmerG4.MODEL -> new ShellyDimmerG4(address, port, name);
-
+			case Shelly0_10VPMG4.MODEL -> new Shelly0_10VPMG4(address, port, name);
 			case ShellyPowerStrip4G.MODEL -> new ShellyPowerStrip4G(address, port, name);
-			// Battery operated
-			case ShellyFloodG4.MODEL -> new ShellyFloodG4(address, port, name);
+			case ShellyEMG4.MODEL -> new ShellyEMG4(address, port, name);
+			case Shelly1LG4.MODEL -> new Shelly1LG4(address, port, name);
+			case Shelly2LG4.MODEL -> new Shelly2LG4(address, port, name);
+			case ShellyPresenceG4.MODEL -> new ShellyPresenceG4(address, port, name);
 
+			// Battery operated
+			case ShellyFloodSG4.MODEL -> new ShellyFloodSG4(address, port, name);
+			case ShellyFloodG4.MODEL -> new ShellyFloodG4(address, port, name);
 			// PRO
 
 			default -> new ShellyG4Unmanaged(address, port, name);
@@ -372,10 +394,10 @@ public class DevicesFactory {
 		}
 		try {
 			d.init(httpClient, wsClient, info);
+		} catch(DeviceUnauthorizedException e) {
+			// do nothing
 		} catch(IOException e) {
-			if("Status-401".equals(e.getMessage()) == false) {
-				LOG.warn("create - init {}:{}", address, port, e);
-			}
+			LOG.warn("create - init {}:{}", address, port, e);
 		} catch(RuntimeException e) {
 			LOG.error("create - init {}:{}", address, port, e);
 		}
@@ -387,7 +409,7 @@ public class DevicesFactory {
 		synchronized (DevicesFactory.class) { // wait for this in order to authenticate all subsequent
 			int status = HttpStatus.UNAUTHORIZED_401;
 			char[] p = lastP;
-			if(p == null || (status = LoginManagerG2.testDigestAuthentication(httpClient, address, port, lastP, "/rpc/Shelly.GetStatus")) != HttpStatus.OK_200) {
+			if(lastP == null || (status = LoginManagerG2.testDigestAuthentication(httpClient, address, port, lastP, "/rpc/Shelly.GetStatus")) != HttpStatus.OK_200) {
 				DialogAuthentication credentialsDlg = new DialogAuthentication(
 						Main.LABELS.getString("dlgAuthTitle"),
 						null /*labelUser*/,
@@ -404,7 +426,7 @@ public class DevicesFactory {
 			}
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			if(status == HttpStatus.OK_200) {
-				setCredential(lastUser, p);
+				lastP = p;
 				return p;
 			} else {
 				return null;
@@ -412,19 +434,22 @@ public class DevicesFactory {
 		}
 	}
 	
-	public static AbstractBluDevice createBlu(AbstractG2Device parent, HttpClient httpClient, /*WebSocketClient wsClient,*/ JsonNode info, String key) {
-		AbstractBluDevice blu;
+	public static AbstractBTHomeDevice createBlu(AbstractG2Device parent, HttpClient httpClient, /*WebSocketClient wsClient,*/ JsonNode info, String key) {
+		AbstractBTHomeDevice blu;
 		try {
 			if(key.startsWith(BTHomeDevice.DEVICE_KEY_PREFIX)) {
-				int model = info.path("attrs").path("model_id").asInt(-1);
-				blu = new BTHomeDevice(parent, info, model, key.substring(13));
-			} else { // currently only BluTRV
+//				int model = info.path("attrs").path("model_id").asInt(-1);
+				blu = new BTHomeDevice(parent, info/*, model*/, key.substring(13));
+			} else if(key.startsWith(BluTRV.DEVICE_KEY_PREFIX)) {
 				blu = new BluTRV(parent, info, key.substring(7));
+
+			} else {
+				blu = null;
 			}
 		} catch(Exception e) { // really unexpected
 			LOG.error("createBlu", e);
 			String index = key.substring(key.indexOf(':') + 1);
-			blu = new ShellyBluUnmanaged(parent, info, index, e);
+			blu = new ShellyBTHomeUnmanaged(parent, info, index, e);
 		}
 		try {
 			blu.init(httpClient/*, wsClient*/);
@@ -438,7 +463,9 @@ public class DevicesFactory {
 
 	// default credentials
 	public static void setCredential(String user, char[] p) {
-		lastUser = user;
-		lastP = p;
+		synchronized (DevicesFactory.class) {
+			lastUser = user;
+			lastP = p;
+		}
 	}
 }

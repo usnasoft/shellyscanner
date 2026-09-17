@@ -54,7 +54,7 @@ import it.usna.shellyscan.model.device.g2.modules.SensorAddOn;
 import it.usna.shellyscan.model.device.g2.modules.TimeAndLocationManagerG2;
 import it.usna.shellyscan.model.device.g2.modules.WIFIManagerG2;
 import it.usna.shellyscan.model.device.g2.modules.Webhooks;
-import it.usna.shellyscan.model.device.modules.DisplayInterface;
+import it.usna.shellyscan.model.device.modules.WallDisplayInterface;
 import it.usna.shellyscan.model.device.modules.FirmwareManager;
 import it.usna.shellyscan.model.device.modules.InputResetManager;
 import it.usna.shellyscan.model.device.modules.LoginManager;
@@ -62,6 +62,7 @@ import it.usna.shellyscan.model.device.modules.WIFIManager;
 import it.usna.shellyscan.model.device.modules.WIFIManager.Network;
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.JsonNodeFactory;
 import tools.jackson.databind.node.ObjectNode;
 
@@ -71,11 +72,10 @@ import tools.jackson.databind.node.ObjectNode;
  */
 public abstract class AbstractG2Device extends ShellyAbstractDevice {
 	public static final int LOG_VERBOSE = 4;
-//	public static final int LOG_WARN = 1;
 
 	private static final Logger LOG = LoggerFactory.getLogger(AbstractG2Device.class);
 	protected WebSocketClient wsClient;
-	private boolean rangeExtender;
+	private boolean rangeExtenderEnabled;
 	private char[] loginPwd = null;
 
 	protected AbstractG2Device(InetAddress address, int port, String hostname) {
@@ -135,8 +135,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 
 		this.cloudEnabled = config.path("cloud").path("enable").booleanValue(false);
 		this.mqttEnabled = config.path("mqtt").path("enable").booleanValue(false);
-
-		this.rangeExtender = config.get("wifi").path("ap").path("range_extender").path("enable").booleanValue(false); // no "ap" on wall display ???
+		this.rangeExtenderEnabled = config.get("wifi").path("ap").path("range_extender").path("enable").booleanValue(false); // no "ap" on wall display ???
 	}
 
 	protected void fillStatus(JsonNode status) throws IOException {
@@ -175,8 +174,8 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 	}
 
 	@Override
-	public boolean setEcoMode(boolean eco) {
-		return postCommand("Sys.SetConfig", "{\"config\":{\"device\":{\"eco_mode\":" + eco + "}}}") == null;
+	public String setEcoMode(boolean eco) {
+		return postCommand("Sys.SetConfig", "{\"config\":{\"device\":{\"eco_mode\":" + eco + "}}}");
 	}
 
 	@Override
@@ -201,10 +200,10 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 		return ret;
 	}
 
-	public String setBLEMode(boolean ble) {
-		return postCommand("BLE.SetConfig", "{\"config\":{\"enable\":" + ble + "}}");
+	public String setBLEEnabled(boolean enable) {
+		return postCommand("BLE.SetConfig", "{\"config\":{\"enable\":" + enable + "}}");
 	}
-	
+
 	public void setPwd(char[] p) {
 		loginPwd = p;
 	}
@@ -215,7 +214,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 	}
 
 	public boolean isExtender() {
-		return rangeExtender;
+		return rangeExtenderEnabled;
 	}
 
 	@Override
@@ -268,9 +267,6 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 			final JsonNode resp = executeRPC(method, payload);
 			JsonNode error;
 			if((error = resp.get("error")) == null) { // {"id":1,"src":"shellyplusi4-xxx","result":{"restart_required":true}}
-//				if(resp.path("result").path("restart_required").asBoolean(false)) {
-//					rebootRequired = true;
-//				}
 				rebootRequired = resp.path("result").path("restart_required").asBoolean(false);
 				if(status == Status.NOT_LOOGGED) {
 					return "Status-PROTECTED";
@@ -311,20 +307,6 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 		} else {
 			throw new DeviceAPIException(resp.get("error"));
 		}
-	}
-	
-	/**
-	 * example: <code> {
-	 *  "items" : [ {"key" : "key", "etag" : "xxxyyy", "value" : "{}"} ],
-	 *  "offset" : 0, "total" : 1
-	 * } </code>
-	 * @param method - e.g. /rpc/KVS.GetMany
-	 * @param arrayKey - e.g. items
-	 * @return an Iterator&lt;JsonNode&gt; & Iterable&lt;JsonNode&gt; navigating through pages
-	 * @throws IOException
-	 */
-	public JsonPageIterator getJSONIterator(final String method, final String arrayKey) throws IOException {
-		return new JsonPageIterator(this, method, arrayKey);
 	}
 
 	private JsonNode executeRPC(final String method, String payload) throws IOException {
@@ -385,7 +367,52 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 		}
 	}
 
-	public CompletableFuture<Session> connectWebSocketClient(WebSocketDeviceListener listener/*, boolean activate*/) throws IOException, InterruptedException, ExecutionException {
+	/**
+	 * example: <code> {
+	 *  "items" : [ {"key" : "key", "etag" : "xxxyyy", "value" : "{}"} ],
+	 *  "offset" : 0, "total" : 1
+	 * } </code>
+	 * @param method - e.g. /rpc/KVS.GetMany
+	 * @param arrayKey - e.g. items
+	 * @return an Iterator&lt;JsonNode&gt; & Iterable&lt;JsonNode&gt; navigating through pages
+	 * @throws IOException
+	 */
+	public JsonPageIterator getJSONIterator(final String method, final String arrayKey) throws IOException {
+		return new JsonPageIterator(this, method, arrayKey);
+	}
+	
+	/**
+	 * to be used with "offset"; data will be merged on a single node (gen2+); prefer the use of it.usna.shellyscan.model.device.g2.JsonPageIterator instead
+	 * @param call
+	 * @param arrayKey
+	 * @return a node with merged values
+	 * @throws IOException
+	 * @throws InterruptedException
+	 * @see it.usna.shellyscan.model.device.g2.JsonPageIterator
+	 */
+	public JsonNode getPagedJson(final String call, final String arrayKey) throws IOException, InterruptedException {
+		String req = call;
+		int offset = 0;
+		int tot = 0;
+		JsonNode resp = getJSON(req);
+		JsonNode arrayNode = resp.path(arrayKey);
+		do {
+			if(offset > 0) {
+				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+				JsonNode fragment = getJSON(req);
+				ArrayNode fragmentArrayNode = (ArrayNode)fragment.path(arrayKey);
+				((ArrayNode)arrayNode).addAll(fragmentArrayNode);
+			}
+			JsonNode offsetNode;
+			if((offsetNode = resp.get("offset")) != null && (tot = resp.path("total").intValue(0)) > 0) { // potentially needs multiple calls
+				offset = offsetNode.intValue(0) + arrayNode.size();
+				req = call + ((call.contains("?")) ? "&offset=" : "?offset=") + offset;
+			}
+		} while(tot > offset);
+		return resp;
+	}
+
+	public CompletableFuture<Session> connectWebSocketClient(WebSocketDeviceListener listener) throws IOException, InterruptedException, ExecutionException {
 		try {
 			CompletableFuture<Session> s = wsClient.connect(listener, URI.create("ws://" + addressAndPort.getRepresentation() + "/rpc")); // this also do upgrade
 			s.get().sendText("{\"id\":2, \"src\":\"S_Scanner\", \"method\":\"Shelly.GetDeviceInfo\"}", Callback.NOOP);
@@ -402,7 +429,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 	 - auth.[paramName]=paramValue. For example about the username it will be auth.username=admin&auth.cnonce=…&auth.respose=...
 	 */
 	public Future<Session> connectWebSocketLogs(WebSocketDeviceListener listener) throws IOException {
-		if(getLoginManager().isEnabled() && this instanceof DisplayInterface == false) {
+		if(getLoginManager().isEnabled() && this instanceof WallDisplayInterface == false) {
 			try {
 				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 				var response = httpClient.GET("ws://" + addressAndPort.getRepresentation() + "/debug/log");
@@ -681,15 +708,19 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 		}
 	}
 	
-	public static ObjectNode createIndexedRestoreNode(JsonNode backConfig, String type, int index) {
-		ObjectNode out = JsonNodeFactory.instance.objectNode();
-		out.put("id", index);
-		ObjectNode data = (ObjectNode)backConfig.get(type + ":" + index).deepCopy();
-		data.remove("id");
-		out.set("config", data);
-		return out;
+	// to be used with "offset"; data will be merged on a single file (gen2+)
+	public void sectionToStream(final String section, final String arrayKey, final String entryName, ZipOutputStream out) throws IOException {
+		try {
+			ZipEntry entry = new ZipEntry(entryName);
+			out.putNextEntry(entry);
+			JsonNode resp = getPagedJson(section, arrayKey);
+			jsonMapper.writer().writeValue(out, resp);
+		} catch (InterruptedException e) {
+			LOG.debug("sectionToStream {}-{}", section, arrayKey, e);
+			throw new DeviceOfflineException(e);
+		}
 	}
 
 	/** device specific */
 	protected abstract void restore(Map<String, JsonNode> backupJsons, List<String> errors) throws IOException, InterruptedException;
-} // 477 - 474 - 525 - 568 - 637 - 695
+} // 477 - 474 - 525 - 568 - 637 - 695 - 686 - 726

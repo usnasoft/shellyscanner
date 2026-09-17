@@ -10,7 +10,10 @@ import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.InternalTmpHolder;
 import it.usna.shellyscan.model.device.ModulesHolder;
 import it.usna.shellyscan.model.device.g2.modules.Input;
+import it.usna.shellyscan.model.device.g2.modules.LoRaAddOn;
 import it.usna.shellyscan.model.device.g2.modules.Relay;
+import it.usna.shellyscan.model.device.g2.modules.SensorAddOnPro;
+import it.usna.shellyscan.model.device.meters.Meters;
 import tools.jackson.databind.JsonNode;
 
 /**
@@ -19,17 +22,52 @@ import tools.jackson.databind.JsonNode;
  */
 public class ShellyPro2 extends AbstractProDevice implements ModulesHolder, InternalTmpHolder {
 	public static final String ID = "Pro2";
+	public static final String ID_ADDON = "Pro2ProAddon";
 	public static final String MODEL_1 = "SPSW-202XE15UL";
 	public static final String MODEL_2 = "SPSW-202XE16EU";
 	private Relay relay0 = new Relay(this, 0);
 	private Relay relay1 = new Relay(this, 1);
-	private Relay[] relays = new Relay[] {relay0, relay1};
+	private Relay[] relays; // = new Relay[] {relay0, relay1};
 	private float internalTmp;
+	private Meters[] meters;
+	private SensorAddOnPro sensorAddOn;
+	private boolean hasLoraAddOn;
 
 	public ShellyPro2(InetAddress address, int port, String hostname) {
 		super(address, port, hostname);
 	}
+	
+	@Override
+	protected void init(JsonNode devInfo) throws IOException {
+		this.hostname = devInfo.get("id").asString("");
+		this.mac = devInfo.get("mac").asString("");
+		
+		final JsonNode config = configure();
+			
+		fillSettings(config);
+		fillStatus(getJSON("/rpc/Shelly.GetStatus"));
+	}
 
+	private JsonNode configure() throws IOException {
+		final JsonNode config = getJSON("/rpc/Shelly.GetConfig");
+		final String addOnType = config.get("sys").get("device").path("addon_type").asString(null);
+		if(SensorAddOnPro.ADDON_TYPE.equals(addOnType)) {
+			sensorAddOn = new SensorAddOnPro(this);
+			meters = sensorAddOn.addMetersArray();
+			if(sensorAddOn.getDigitalOut() == null) {
+				relays = new Relay[] {relay0, relay1};
+			} else {
+				relays = new Relay[] {relay0, relay1, sensorAddOn.getDigitalOut()};
+			}
+		} else {
+			sensorAddOn = null;
+			meters = null;
+			relays = new Relay[] {relay0, relay1};
+			hasLoraAddOn = LoRaAddOn.ADDON_TYPE.equals(addOnType);
+		}
+		return config;
+	}
+	
 	@Override
 	public String getTypeName() {
 		return "Shelly Pro 2";
@@ -54,12 +92,21 @@ public class ShellyPro2 extends AbstractProDevice implements ModulesHolder, Inte
 	public float getInternalTmp() {
 		return internalTmp;
 	}
+	
+	@Override
+	public Meters[] getMeters() {
+		return meters;
+	}
 
 	@Override
 	protected void fillSettings(JsonNode configuration) throws IOException {
 		super.fillSettings(configuration);
+		
 		relay0.fillSettings(configuration.get("switch:0"), configuration.get("input:0"));
 		relay1.fillSettings(configuration.get("switch:1"), configuration.get("input:1"));
+		if(sensorAddOn != null) {
+			sensorAddOn.fillSettings(configuration);
+		}
 	}
 
 	@Override
@@ -73,6 +120,21 @@ public class ShellyPro2 extends AbstractProDevice implements ModulesHolder, Inte
 		relay1.fillStatus(switchStatus1, status.get("input:1"));
 
 		internalTmp = switchStatus0.path("temperature").path("tC").floatValue();
+		if(sensorAddOn != null) {
+			sensorAddOn.fillStatus(status);
+		}
+	}
+	
+	@Override
+	public String[] getInfoRequests() {	
+		final String[] cmd = super.getInfoRequests();
+		if(sensorAddOn != null) {
+			return SensorAddOnPro.getInfoRequests(cmd);
+		} else if(hasLoraAddOn) {
+			return LoRaAddOn.getInfoRequests(cmd);
+		} else {
+			return cmd;
+		}
 	}
 
 	@Override
@@ -85,6 +147,9 @@ public class ShellyPro2 extends AbstractProDevice implements ModulesHolder, Inte
 		errors.add(relay0.restore(configuration));
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 		errors.add(relay1.restore(configuration));
+		
+		SensorAddOnPro.restore(this, sensorAddOn, backupJsons, errors);
+		LoRaAddOn.restore(this, hasLoraAddOn, configuration, errors);
 	}
 
 	@Override

@@ -16,11 +16,13 @@ public class Sensor {
 	protected float value;
 
 	public static Sensor create(int id, JsonNode sensorConf) {
-		int objId = sensorConf.path("obj_id").intValue(0);
+		final int objId = sensorConf.path("obj_id").intValue(0);
 		if(objId == InputSensor.OBJ_ID) {
 			return new InputSensor(id, sensorConf);
-		} else if(objId == MotionSensor.OBJ_ID) {
+		} else if(objId == MotionSensor.OBJ_ID) { // 0x21 - 33
 			return new MotionSensor(id, sensorConf);
+		} else if(objId == DWSensor.OBJ_ID) { // 0x2d - 45
+			return new DWSensor(id, sensorConf);
 		} else {
 			return new Sensor(id, objId, sensorConf);
 		}
@@ -38,14 +40,20 @@ public class Sensor {
 		this.idx = sensorConf.path("idx").intValue(0);
 		this.mType = switch(objID) {
 		case 0x01 -> Meters.Type.BAT;
-		case 0x2E -> Meters.Type.H;
-		case 0x45 -> Meters.Type.T;
 		case 0x05 -> Meters.Type.L; // lux
-		case 0x1E -> Meters.Type.LIGHT; // dec 30 - 0 (False = No light), 1 (True = Light detected)
-		case 0x2C -> Meters.Type.VIB; // dec 44 - vibration (0-1; on shelly is boolean)
-		case 0x3F -> Meters.Type.ANG; // dec 63 - angle (accelerometer)
-		case 0x40 -> Meters.Type.DMM; // dec 64 - distance mm
-		case 0x60 -> Meters.Type.CHANNEL; //  dec 96 - channel
+		case 0x15 -> Meters.Type.BATE; // 21 - 0 (False = Normal), 1 (True = Low)
+		case 0x1E -> Meters.Type.LIGHT; // 30 - 0 (False = No light), 1 (True = Light detected)
+		case 0x2C -> Meters.Type.VIB; // 44 - vibration (0-1; on shelly is boolean)
+		case 0x2E -> Meters.Type.H; // 46
+		case 0x3F -> Meters.Type.ANG; // 63 - angle (accelerometer)
+		case 0x40 -> Meters.Type.DMM; // 64 - distance mm
+		case 0x43 -> Meters.Type.I; // 67
+		case 0x45 -> Meters.Type.T; // 69
+		case 0x4A -> Meters.Type.V; // 74
+		case 0x5C -> Meters.Type.W; // 92
+		case 0x5F -> Meters.Type.RAIN; // 95 - precipitation mm
+		case 0x64 -> Meters.Type.LE; // 100 - light level: 0 (dark) - 1 (twilight) - 2 (bright)
+
 		default -> null;
 		};
 		// 0x3C (60) dimmer (weel)

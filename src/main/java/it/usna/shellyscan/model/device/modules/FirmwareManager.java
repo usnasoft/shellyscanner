@@ -13,9 +13,15 @@ public interface FirmwareManager {
 	
 	void chech();
 	
+	String currentBuild();
+	
 	String current();
 	
+	String newBetaBuild();
+	
 	String newBeta();
+	
+	String newStableBuild();
 	
 	String newStable();
 	

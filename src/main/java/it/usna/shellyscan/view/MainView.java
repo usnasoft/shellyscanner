@@ -65,12 +65,11 @@ import it.usna.shellyscan.model.device.BatteryDeviceInterface;
 import it.usna.shellyscan.model.device.GhostDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
-import it.usna.shellyscan.model.device.blu.AbstractBluDevice;
-import it.usna.shellyscan.model.device.blu.BTHomeDevice;
+import it.usna.shellyscan.model.device.blu.AbstractBTHomeDevice;
 import it.usna.shellyscan.model.device.blu.BluTRV;
 import it.usna.shellyscan.model.device.g1.AbstractG1Device;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
-import it.usna.shellyscan.model.device.modules.DisplayInterface;
+import it.usna.shellyscan.model.device.modules.WallDisplayInterface;
 import it.usna.shellyscan.view.appsettings.DialogAppSettings;
 import it.usna.shellyscan.view.chart.MeasuresChart;
 import it.usna.shellyscan.view.checklist.CheckListView;
@@ -129,7 +128,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 			i -> new DialogDeviceInfo(MainView.this, model, i) );
 	
 	private Action schedulerEditAction = new UsnaSelectedAction(this, devicesTable, "action_scheduler_name", "action_scheduler_tooltip", null, "/images/Calendar.png", i -> {
-		if((model.get(i) instanceof DisplayInterface display && display.hasThermostat())) {
+		if((model.get(i) instanceof WallDisplayInterface display && display.hasThermostat())) {
 			new WDSchedulerDialog(MainView.this, (AbstractG2Device)model.get(i));
 		} else if(model.get(i) instanceof AbstractG2Device g2) {
 			new G2SchedulerDialog(MainView.this, g2);
@@ -141,7 +140,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 	private Action infoLogAction = new UsnaSelectedAction(this, devicesTable, "action_info_log_name", "action_info_log_tooltip", null, "/images/Document2.png", i -> {
 		if(model.get(i) instanceof AbstractG2Device) {
 			new DialogDeviceLogsG2(MainView.this, model, i, AbstractG2Device.LOG_VERBOSE);
-		} else if(model.get(i) instanceof AbstractBluDevice blu) {
+		} else if(model.get(i) instanceof AbstractBTHomeDevice blu) {
 			new DialogDeviceLogsG2(MainView.this, model, model.getIndex(blu.getParent()), AbstractG2Device.LOG_VERBOSE);
 		} else { // G1
 			new DialogDeviceLogsG1(this, model.get(i));
@@ -226,7 +225,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 	// also asks for credential if needed (login action)
 	private UsnaAction reloadAction = new UsnaSelectedAction(this, devicesTable, "action_name_reload", null, "/images/Loop16.png", null, i -> {
 		final ShellyAbstractDevice d = model.get(i);
-		model.create(d.getAddressAndPort().getAddress(), d.getAddressAndPort().getPort(), d instanceof AbstractBluDevice blu ? blu.getParent().getHostname() : d.getHostname(), false);
+		model.create(d.getAddressAndPort().getAddress(), d.getAddressAndPort().getPort(), d instanceof AbstractBTHomeDevice blu ? blu.getParent().getHostname() : d.getHostname(), false);
 		devicesTable.setRowHeight(devicesTable.convertRowIndexToView(i), DevicesTable.ONLINE_BULLET.getIconHeight()); // reset row height
 	});
 
@@ -371,7 +370,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 				new SelectionAction(devicesTable, "labelSelectG1", null, null, i -> model.get(i) instanceof AbstractG1Device),
 				new SelectionAction(devicesTable, "labelSelectG2", null, null, i -> model.get(i) instanceof AbstractG2Device /*&& model.get(i) instanceof AbstractG3Device == false*/), // G2+
 				new SelectionAction(devicesTable, "labelSelectWIFI", null, null, i -> model.get(i) instanceof AbstractG1Device || model.get(i) instanceof AbstractG2Device),
-				new SelectionAction(devicesTable, "labelSelectBLU", null, null, i -> model.get(i) instanceof AbstractBluDevice),
+				new SelectionAction(devicesTable, "labelSelectBLU", null, null, i -> model.get(i) instanceof AbstractBTHomeDevice),
 				new SelectionAction(devicesTable, "labelSelectGhosts", null, null, i -> model.get(i) instanceof GhostDevice)
 		}));
 		btnSelectCombo.setContentAreaFilled(false);
@@ -548,34 +547,31 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 	private void rowsSelectionManager() {
 		tableSelectionListener = e -> {
 			if(e.getValueIsAdjusting() == false) {
-				boolean singleSelection, singleSelectionNoGhost, selection, selectionNoGhost, /*selectionNoBLU,*/ selectionNoBTHome;
+				boolean singleSelection, singleSelectionNoGhost, selection, selectionNoGhost, selectionRebootCapable;
 				int selectedRows = devicesTable.getSelectedRowCount();
 				singleSelection = singleSelectionNoGhost = selectedRows == 1;
-				selection = selectionNoGhost = /*selectionNoBLU =*/ selectionNoBTHome = selectedRows > 0;
+				selection = selectionNoGhost = selectionRebootCapable = selectedRows > 0;
 				ShellyAbstractDevice d = null;
 				for(int idx: devicesTable.getSelectedRows()) {
 					d = model.get(devicesTable.convertRowIndexToModel(idx));
 					if(d instanceof GhostDevice) {
 						selectionNoGhost = singleSelectionNoGhost = false;
-					} else if(d instanceof BTHomeDevice) {
-						selectionNoBTHome = false;
+//						if(d.getGeneration().equals(BTHomeDevice.GENERATION)) {
+//							selectionNoBTHome = false;
+//						}
+					} else if(d instanceof AbstractBTHomeDevice && d instanceof BluTRV == false) {
+						selectionRebootCapable = false;
 					}
-					/*else if(d instanceof AbstractBluDevice) {
-						selectionNoBLU = false;
-						if(d instanceof BTHomeDevice) {
-							selectionNnoBTHome = false;
-						}
-					}*/
 				}
 				infoAction.setEnabled(singleSelection);
 				schedulerEditAction.setEnabled(singleSelectionNoGhost && (d instanceof AbstractG2Device || d instanceof BluTRV) && d instanceof BatteryDeviceInterface == false);
 				infoLogAction.setEnabled(singleSelectionNoGhost);
-				checkListAction.setEnabled(selectionNoGhost);
-				rebootAction.setEnabled(selectionNoGhost && selectionNoBTHome);
+				checkListAction.setEnabled(selection/*NoGhost*/);
+				rebootAction.setEnabled(selectionNoGhost && selectionRebootCapable);
 				browseAction.setEnabled(selectionNoGhost /*&& browserSupported*/);
 				backupAction.setEnabled(selection /*&& selectionNoBLU*/);
 				restoreAction.setEnabled(selection/*singleSelection*/ /*&& selectionNoBLU*/ /*&& d.getStatus() != Status.NOT_LOOGGED*/);
-				devicesSettingsAction.setEnabled(selection && /*selectionNoBLU*/selectionNoBTHome);
+				devicesSettingsAction.setEnabled(selection /*&& selectionNoBTHome*/);
 				chartAction.setEnabled(selectionNoGhost);
 				scriptManagerAction.setEnabled(singleSelectionNoGhost && d instanceof AbstractG2Device);
 				notesAction.setEnabled(singleSelection && useArchive);

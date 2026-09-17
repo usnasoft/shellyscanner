@@ -1,0 +1,58 @@
+"fcd2" : "RAAMAV88AgVgAA==" - Blu Remote
+         44 00 0c 01 5f 3c 0205 60 00
+"fcd2" : "QABzAWQeAC5FRcMA" - Blu H&T Display ZB
+         40 00 73 01 64 1e 00 2e 45 45 c300 -- 40 00 c2 01 64 1e 00 2e 44 45 c500
+"fcd2" : "RABGAWI6AToAOgA6AA=="
+"fcd2" : "QABjAWQuP0XTAA=="
+
+
+https://github.com/ALLTERCO/shelly-script-examples/blob/main/ble/ble-shelly-dw.shelly.js
+
+https://shelly-api-docs.shelly.cloud/gen2/ComponentsAndServices/BLE
+
+
+
+  0x00: { n: "pid", t: uint8 },
+  0x01: { n: "battery", t: uint8, u: "%" },
+  0x02: { n: "temperature", t: int16, f: 0.01, u: "tC" },
+  0x03: { n: "humidity", t: uint16, f: 0.01, u: "%" },
+  0x05: { n: "illuminance", t: uint24, f: 0.01 },
+  0x21: { n: "motion", t: uint8 },
+  0x2d: { n: "window", t: uint8 },
+  0x2e: { n: "humidity", t: uint8, u: "%" },
+  0x3a: { n: "button", t: uint8 },
+  0x3f: { n: "rotation", t: int16, f: 0.1 },
+  0x45: { n: "temperature", t: int16, f: 0.1, u: "tC" },
+  ...
+  
+  -------
+// First byte: BTHome device info, 0x40 - no encryption, BTHome v.2
+// bit 0: “Encryption flag”
+// bit 1-4: “Reserved for future use”
+// bit 5-7: “BTHome Version”
+
+// Device name can be obtained if an active scan is performed
+// You can rely only on the addresss filtering and forego device name matching
+
+leggiamo solo non criptati e BTHome Version 2
+  
+  esempio - Blu H&T Display ZB
+  40 00 73 01 64 1e 00 2e 45 45 c3 00 - Blu H&T Display ZB
+  
+  40 = 0100 0000 -  40 & 0x1 = 0 (non criptato); 40 >> 5 = 2
+  00 (pid - packet id) = 73
+  01 (batteria) = 64
+  1e (light) = 00 (dark)
+  2e (humidity) = 45
+  45 (temp int16) = 00 c3 = 195 (0.1 -> 19.5)
+  
+  
+  
+  
+
+https://bthome.io/format/
+Sensor data
+Binary Sensor data
+Events
+
+Little-endian notation is a data storage format where the least significant byte (LSB)—the "little end"—is stored at the lowest memory address, with subsequent bytes stored in increasing higher addresses

@@ -2,6 +2,7 @@ package it.usna.shellyscan.model.device.g2.modules;
 
 import java.io.IOException;
 
+import it.usna.shellyscan.model.device.RestoreUtil;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.modules.RollerInterface;
 import tools.jackson.databind.JsonNode;
@@ -107,7 +108,7 @@ public class Roller implements RollerInterface {
 	}
 	
 	public String restore(JsonNode config) {
-		return parent.postCommand("Cover.SetConfig", AbstractG2Device.createIndexedRestoreNode(config, "cover", index));
+		return parent.postCommand("Cover.SetConfig", RestoreUtil.createIndexedRestoreNode(config, "cover", index));
 	}
 	
 	@Override

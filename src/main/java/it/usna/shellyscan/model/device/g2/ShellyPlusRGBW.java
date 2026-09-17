@@ -243,11 +243,11 @@ public class ShellyPlusRGBW extends AbstractG2Device implements ModulesHolder, I
 			} else /*if(profile == Mode.RGB)*/ {
 				errors.add(rgbLight.restore(configuration));
 			}
-			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 		} else {
 			errors.add(RestoreMsg.ERR_RESTORE_PROFILE.name());
 		}
 		
+		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 		final boolean hf = configuration.get("plusrgbwpm").get("hf_mode").booleanValue(false);
 		errors.add(postCommand("PlusRGBWPM.SetConfig", "{\"config\":{\"hf_mode\":" + hf + "}}"));
 		

@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import it.usna.shellyscan.model.device.ModulesHolder;
+import it.usna.shellyscan.model.device.RestoreUtil;
 import it.usna.shellyscan.model.device.meters.Meters;
 import it.usna.shellyscan.model.device.modules.DeviceModule;
 import it.usna.shellyscan.model.device.modules.FloodInterface;
@@ -103,7 +104,7 @@ public class ShellyFloodG4 extends AbstractBatteryG4Device implements ModulesHol
 	@Override
 	protected void restore(Map<String, JsonNode> backupJsons, List<String> errors) throws InterruptedException {
 		JsonNode configuration = backupJsons.get("Shelly.GetConfig.json");
-		errors.add(postCommand("Flood.SetConfig", createIndexedRestoreNode(configuration, "flood", 0)));
+		errors.add(postCommand("Flood.SetConfig", RestoreUtil.createIndexedRestoreNode(configuration, "flood", 0)));
 	}
 	
 	@Override

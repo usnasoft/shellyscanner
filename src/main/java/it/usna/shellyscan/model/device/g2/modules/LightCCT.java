@@ -2,6 +2,7 @@ package it.usna.shellyscan.model.device.g2.modules;
 
 import java.io.IOException;
 
+import it.usna.shellyscan.model.device.RestoreUtil;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.modules.CCTInterface;
 import tools.jackson.databind.JsonNode;
@@ -134,7 +135,7 @@ public class LightCCT implements CCTInterface {
 	}
 	
 	public String restore(JsonNode config) {
-		return parent.postCommand("CCT.SetConfig", AbstractG2Device.createIndexedRestoreNode(config, "cct", index));
+		return parent.postCommand("CCT.SetConfig", RestoreUtil.createIndexedRestoreNode(config, "cct", index));
 	}
 	
 	@Override

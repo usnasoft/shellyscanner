@@ -164,13 +164,12 @@ public abstract class AbstractG1Device extends ShellyAbstractDevice {
 	}
 	
 	@Override
-	public boolean setEcoMode(boolean eco) {
-		if(sendCommand("/settings?eco_mode_enabled=" + eco) == null) {
+	public String setEcoMode(boolean eco) {
+		String ret = sendCommand("/settings?eco_mode_enabled=" + eco);
+		if(ret == null) {
 			rebootRequired = true;
-			return true;
-		} else {
-			return false;
 		}
+		return ret;
 	}
 	
 	/** not all devices accept this command */

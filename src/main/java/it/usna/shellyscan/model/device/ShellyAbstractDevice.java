@@ -49,7 +49,7 @@ public abstract class ShellyAbstractDevice {
 	protected boolean cloudConnected;
 	protected boolean mqttEnabled;
 	protected boolean mqttConnected;
-	protected LogMode debugMode = LogMode.NONE;
+	protected LogMode debugMode = LogMode.UNDEFINED;
 	protected int rssi;
 	protected String ssid;
 	protected int uptime;
@@ -129,6 +129,40 @@ public abstract class ShellyAbstractDevice {
 		}
 	}
 	
+	/**
+	 * to be used with "offset"; data will be merged on a single node (gen2+); prefer the use of it.usna.shellyscan.model.device.g2.JsonPageIterator instead
+	 * @param call
+	 * @param arrayKey
+	 * @return a node with merged values
+	 * @throws IOException
+	 * @throws InterruptedException
+	 * @see it.usna.shellyscan.model.device.g2.JsonPageIterator
+	 */
+	public JsonNode getPagedJson(final String call, final String arrayKey) throws IOException, InterruptedException {
+		String req = call;
+		int offset = 0;
+		int tot = 0;
+		JsonNode resp = getJSON(req);
+		JsonNode arrayNode = resp.path(arrayKey);
+		do {
+			if(offset > 0) {
+				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+				JsonNode fragment = getJSON(req);
+				ArrayNode fragmentArrayNode = (ArrayNode)fragment.path(arrayKey);
+				((ArrayNode)arrayNode).addAll(fragmentArrayNode);
+			}
+			JsonNode offsetNode;
+			if((offsetNode = resp.get("offset")) != null && (tot = resp.path("total").intValue(0)) > 0) { // potentially needs multiple calls
+				offset = offsetNode.intValue(0) + arrayNode.size();
+				req = call + ((call.contains("?")) ? "&offset=" : "?offset=") + offset;
+			}
+		} while(tot > offset);
+		return resp;
+	}
+	
+	/**
+	 * Response is a plain String (G1 devices log)
+	 */
 	public String httpGetAsString(final String command) throws IOException {
 		try {
 			return httpClient.GET(uriPrefix + command).getContentAsString();
@@ -233,7 +267,7 @@ public abstract class ShellyAbstractDevice {
 
 	public abstract void reboot() throws IOException;
 	
-	public abstract boolean setEcoMode(boolean eco);
+	public abstract String setEcoMode(boolean eco);
 	
 	public abstract void refreshSettings() throws IOException;
 	
@@ -272,46 +306,14 @@ public abstract class ShellyAbstractDevice {
 	 */
 	protected JsonNode sectionToStream(String section, String entryName, ZipOutputStream out) throws IOException {
 		try {
-			JsonNode resp = getJSON(section);
 			ZipEntry entry = new ZipEntry(entryName);
 			out.putNextEntry(entry);
+			JsonNode resp = getJSON(section);
 			jsonMapper.writer().writeValue(out, resp);
 			out.closeEntry();
 			return resp;
 		} catch (RuntimeException e) {
 			LOG.debug("sectionToStream {}", section, e);
-			throw new DeviceOfflineException(e);
-		}
-	}
-	
-	// to be used with "offset"; data will be merged on a single file (gen2+)
-	protected JsonNode sectionToStream(final String section, final String arrayKey, final String entryName, ZipOutputStream out) throws IOException {
-		try {
-			ZipEntry entry = new ZipEntry(entryName);
-			out.putNextEntry(entry);
-			
-			String req = section;
-			int offset = 0;
-			int tot = 0;
-			JsonNode resp = getJSON(req);
-			JsonNode arrayNode = resp.path(arrayKey);
-			do {
-				if(offset > 0) {
-					TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-					JsonNode fragment = getJSON(req);
-					ArrayNode fragmentArrayNode = (ArrayNode)fragment.path(arrayKey);
-					((ArrayNode)arrayNode).addAll(fragmentArrayNode);
-				}
-				JsonNode offsetNode;
-				if((offsetNode = resp.get("offset")) != null && (tot = resp.path("total").intValue(0)) > 0) { // potentially needs multiple calls
-					offset = offsetNode.intValue(0) + arrayNode.size();
-					req = section + ((section.contains("?")) ? "&offset=" : "?offset=") + offset;
-				}
-			} while(tot > offset);
-			jsonMapper.writer().writeValue(out, resp);
-			return resp;
-		} catch (InterruptedException e) {
-			LOG.debug("sectionToStream {}-{}", section, arrayKey, e);
 			throw new DeviceOfflineException(e);
 		}
 	}
@@ -330,4 +332,4 @@ public abstract class ShellyAbstractDevice {
 	public String toString() {
 		return getTypeName() + "-" + name + ": " + addressAndPort.getRepresentation() + " (" + hostname + ")";
 	}
-} //278 - 399 - 316 - 251 - 237 - 231 - 247 - 271 - 332 - 323
+}

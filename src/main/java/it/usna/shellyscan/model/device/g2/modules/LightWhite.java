@@ -2,6 +2,7 @@ package it.usna.shellyscan.model.device.g2.modules;
 
 import java.io.IOException;
 
+import it.usna.shellyscan.model.device.RestoreUtil;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.modules.WhiteInterface;
 import tools.jackson.databind.JsonNode;
@@ -103,7 +104,7 @@ public class LightWhite implements WhiteInterface {
 	}
 	
 	public String restore(JsonNode config) {
-		return parent.postCommand("Light.SetConfig", AbstractG2Device.createIndexedRestoreNode(config, "light", index));
+		return parent.postCommand("Light.SetConfig", RestoreUtil.createIndexedRestoreNode(config, "light", index));
 	}
 	
 	@Override

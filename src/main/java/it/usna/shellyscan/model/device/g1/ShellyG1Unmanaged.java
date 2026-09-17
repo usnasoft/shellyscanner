@@ -7,9 +7,9 @@ import java.util.concurrent.TimeUnit;
 
 import org.eclipse.jetty.client.HttpClient;
 
+import it.usna.shellyscan.model.DeviceUnauthorizedException;
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.ShellyUnmanagedDeviceInterface;
-import tools.jackson.core.JacksonException;
 import tools.jackson.databind.JsonNode;
 
 public class ShellyG1Unmanaged extends AbstractG1Device implements ShellyUnmanagedDeviceInterface {
@@ -27,9 +27,9 @@ public class ShellyG1Unmanaged extends AbstractG1Device implements ShellyUnmanag
 		this.ex = e;
 		this.hostname = hostname;
 		name = "";
-		if(e instanceof IOException && "Status-401".equals(e.getMessage())) {
+		if(e instanceof DeviceUnauthorizedException /*&& "Status-401".equals(e.getMessage())*/) {
 			status = Status.NOT_LOOGGED;
-		} else if(e instanceof IOException && e instanceof JacksonException == false) { // JsonProcessingException extends IOException
+		} else if(e instanceof IOException/* && e instanceof JacksonException == false*/) {
 			status = Status.OFF_LINE;
 		} else {
 			status = Status.ERROR;

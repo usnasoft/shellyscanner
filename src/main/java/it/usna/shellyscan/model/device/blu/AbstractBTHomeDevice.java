@@ -28,9 +28,10 @@ import tools.jackson.core.JacksonException;
 import tools.jackson.core.exc.StreamReadException;
 import tools.jackson.databind.JsonNode;
 
-public abstract class AbstractBluDevice extends ShellyAbstractDevice {
+public abstract class AbstractBTHomeDevice extends ShellyAbstractDevice {
 	public static final String GENERATION = "blu";
-	private static final Logger LOG = LoggerFactory.getLogger(AbstractBluDevice.class);
+	private static final Logger LOG = LoggerFactory.getLogger(AbstractBTHomeDevice.class);
+	protected static final String SHELLY_SCANNER_GENERATED_FILE = "ShellyScannerBLU.json";
 	protected final AbstractG2Device parent;
 //	protected WebSocketClient wsClient;
 	protected final String componentIndex;
@@ -41,11 +42,11 @@ public abstract class AbstractBluDevice extends ShellyAbstractDevice {
 	 * @param compInfo
 	 * @param index
 	 */
-	protected AbstractBluDevice(AbstractG2Device parent, JsonNode compInfo, String index) {
+	protected AbstractBTHomeDevice(AbstractG2Device parent, /*JsonNode compInfo*/String mac, String index) {
 		super(new BluInetAddressAndPort(parent.getAddressAndPort(), Integer.parseInt(index)));
 		this.parent = parent;
 		this.componentIndex = index;
-		this.mac = compInfo.path("config").path("addr").asString("");
+		this.mac = mac;//compInfo.path("config").path("addr").asString("");
 	}
 	
 	public void init(HttpClient httpClient/*, WebSocketClient wsClient*/) throws IOException {
@@ -69,7 +70,14 @@ public abstract class AbstractBluDevice extends ShellyAbstractDevice {
 		return parent;
 	}
 	
-	public String getIndex() {
+	public String getComponentIndex() {
+		return componentIndex;
+	}
+	
+	/**
+	 * A device such as BluTRV has a blutrv:xxx and an associated bthomedevice:yyy on the same host; the second is used e.g. by fw update websocket
+	 */
+	public String getBTHomeIndex() {
 		return componentIndex;
 	}
 	
@@ -180,7 +188,7 @@ public abstract class AbstractBluDevice extends ShellyAbstractDevice {
 	}
 
 	@Override
-	public boolean setEcoMode(boolean eco) {
+	public String setEcoMode(boolean eco) {
 		throw new UnsupportedOperationException();
 	}
 

@@ -61,18 +61,33 @@ public class FirmwareManagerG1 implements FirmwareManager {
 	}
 	
 	@Override
-	public String current() {
+	public String currentBuild() {
 		return current;
 	}
 	
 	@Override
-	public String newBeta() {
+	public String current() {
+		return FirmwareManager.getShortVersion(current);
+	}
+	
+	@Override
+	public String newBetaBuild() {
 		return beta;
 	}
 	
 	@Override
-	public String newStable() {
+	public String newBeta() {
+		return FirmwareManager.getShortVersion(beta);
+	}
+	
+	@Override
+	public String newStableBuild() {
 		return stable;
+	}
+	
+	@Override
+	public String newStable() {
+		return FirmwareManager.getShortVersion(stable);
 	}
 	
 	@Override

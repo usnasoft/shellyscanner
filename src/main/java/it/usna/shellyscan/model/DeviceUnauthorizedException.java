@@ -19,9 +19,9 @@ public class DeviceUnauthorizedException extends IOException {
 		authdDetails = details;
 	}
 	
-	public DeviceUnauthorizedException(String msg) {
-		super(msg);
-	}
+//	public DeviceUnauthorizedException(String msg) {
+//		super(msg);
+//	}
 	
 	public JsonNode getDetails() {
 		return authdDetails;

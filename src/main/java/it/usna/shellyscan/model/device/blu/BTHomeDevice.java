@@ -2,6 +2,7 @@ package it.usna.shellyscan.model.device.blu;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -44,31 +45,13 @@ import tools.jackson.databind.node.ObjectNode;
  * Generic BTHome device with measures and/or buttons
  * https://shelly-api-docs.shelly.cloud/gen2/DynamicComponents/BTHome/
  */
-public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
-	public final static String GENERATION = "bth";
+public class BTHomeDevice extends AbstractBTHomeDevice implements ModulesHolder {
+	public static final String GENERATION = "bth";
 	public static final String DEVICE_KEY_PREFIX = DynamicComponents.BTHOME_DEVICE + ":"; // "bthomedevice:";
 	public static final String SENSOR_KEY_PREFIX = DynamicComponents.BTHOME_SENSOR + ":"; // "bthomesensor:";
 	private static final String GROUP_KEY_PREFIX = DynamicComponents.GROUP_TYPE + ":"; // "group:";
-	private static final  Logger LOG = LoggerFactory.getLogger(BTHomeDevice.class);
-//	private final static Map<String, String> DEV_DICTIONARY = Map.of(
-//			"SBBT-002C", "Blu Button", "SBMO-003Z", "BLU Motion",
-//			"SBDW-002C", "Blu Door Window", "SBHT-003C", "Blu H&T",
-//			"SBBT-004CEU", "Blu Wall Switch 4", "SBBT-004CUS", "Blu RC Button 4");
+	private static final Logger LOG = LoggerFactory.getLogger(BTHomeDevice.class);
 
-	private static final Map<Integer, String> MODELS_DICTIONARY =  Map.ofEntries(
-			Map.entry(1, "Blu Button"),
-			Map.entry(2, "Blu Door Window"),
-			Map.entry(3, "Blu H&T"),
-			Map.entry(5, "Blu Motion"),
-			Map.entry(6, "Blu Wall Switch 4"), // Square
-			Map.entry(7, "Blu RC Button 4"), // line
-			Map.entry(8, "Blu TRV"),
-			Map.entry(9, "Blu Remote"),
-			Map.entry(10, "Blu Distance"),
-			Map.entry(12, "Blu H&T Display ZB"),
-			Map.entry(17, "Blu H&T ZB"),
-			Map.entry(23, "Blu Button Tough 1 ZB")
-			);
 	private String typeName;
 	private String typeID;
 	private SensorsCollection sensors;
@@ -78,13 +61,34 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 	private DeviceModule[] modules;
 	private String componentsKeys;
 
-	public BTHomeDevice(AbstractG2Device parent, JsonNode compInfo, int modelId, String index) {
-		super(parent, compInfo, index);
+	public BTHomeDevice(AbstractG2Device parent, JsonNode compInfo, /*int modelId,*/ String index) {
+		super(parent, compInfo.path("config").path("addr").asString(""), index);
+		final int modelId = compInfo.path("attrs").path("model_id").asInt(-1);
 		typeID = "BLU" + modelId;
 
-		String modelDesc = MODELS_DICTIONARY.get(modelId);
-		this.typeName = (modelDesc == null) ? "Generic BTHome" : modelDesc;
-
+		this.typeName = switch(modelId) {
+		case 0x01 -> "Blu Button";
+		case 0x02 -> "Blu Door Window";
+		case 0x03 -> "Blu H&T";
+		case 0x05 -> "Blu Motion";
+		case 0x06 -> "Blu Wall Switch 4"; // Square
+		case 0x07 -> "Blu RC Button 4"; // line
+		case 0x08 -> "Blu TRV";
+		case 0x09 -> "Blu Remote";
+		case 0x0A -> "Blu Distance"; // 10
+		case 0x0B -> "Weather Station"; // 11
+		case 0x0C -> "Blu H&T Display ZB"; // 12
+		case 0x11 -> "Blu H&T ZB"; // 17
+		case 0x13 -> "Blu Motion ZB"; // 19
+		case 0x14 -> "Blu Door Window ZB"; // 20
+		case 0x15 -> "Blu Wall Switch 4 ZB"; // 21
+		case 0x16 -> "Blu RC Button 4 ZB"; // 22 - line
+		case 0x17 -> "Blu Button Tough 1 ZB"; // 23
+		case 0x20 -> "Blu 1"; // 32
+		case 0x21 -> "Blu 2"; // 33
+		case 0x203A -> "Blu 3"; // 8250
+		default -> "Generic BTHome";
+		};
 		this.webhooks = new Webhooks(parent);
 		this.uptime = -1;
 	}
@@ -93,47 +97,56 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 	public void init(HttpClient httpClient) throws IOException {
 		this.httpClient = httpClient;
 		initSensors();
+//		try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e) {}
+		// refreshSettings();
+		if(inputs != null && inputs.length > 0) {
+			// webhooks.fillBTHomesensorSettings();
+			for(int i = 0; i < inputs.length; i++) {
+				inputs[i].associateWH(webhooks);
+			}
+		}
 		hostname = "B" + sensors.getFullID() + "-" + mac;
-		try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e) {}
-		refreshSettings();
 	}
 	
 	private void initSensors() throws IOException {
-		this.sensors = new SensorsCollection(this);
-		this.meters = sensors.getTypes().length > 0 ? new Meters[] {sensors} : null;
-		
-		// generare key argument to retrive related components
-		StringBuilder keysBuilder = new StringBuilder("[%22");
-		keysBuilder.append(DEVICE_KEY_PREFIX);
-		keysBuilder.append(componentIndex);
-		keysBuilder.append("%22");
-		for(Sensor s: sensors.getSensors()) {
-			keysBuilder.append(",%22");
-			keysBuilder.append(SENSOR_KEY_PREFIX);
-			keysBuilder.append(s.getId());
-			keysBuilder.append("%22");
+		try {
+			this.sensors = new SensorsCollection(this);
+			this.meters = sensors.getTypes().length > 0 ? new Meters[] {sensors} : null;
+
+			// generare key argument to retrive related components
+			StringBuilder keysBuilder = new StringBuilder("[\"");
+			keysBuilder.append(DEVICE_KEY_PREFIX);
+			keysBuilder.append(componentIndex);
+			for(Sensor s: sensors.getSensors()) {
+				keysBuilder.append("\",\"");
+				keysBuilder.append(SENSOR_KEY_PREFIX);
+				keysBuilder.append(s.getId());
+			}
+			keysBuilder.append("\"]");
+			componentsKeys = URLEncoder.encode(keysBuilder.toString(), StandardCharsets.UTF_8.name());
+
+			try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e) {}
+			refreshStatus(); // init status for this.sensors
+
+			List<DeviceModule> tmpModules = sensors.getModuleSensors();
+			List<InputActionInterface> tmpInputs = tmpModules.stream().filter(m -> m instanceof InputActionInterface).map(InputActionInterface.class::cast).collect(Collectors.toList());
+
+			try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e) {}
+
+			// device inputs
+			webhooks.fillBTHomesensorSettings();
+			List<Webhook> devActions = webhooks.getHooksList(DynamicComponents.BTHOME_DEVICE + componentIndex);
+			if(devActions != null) {
+				List<InputOnDevice> devIn = deviceInputs(devActions);
+				tmpInputs.addAll(devIn);
+				tmpModules.addAll(devIn);
+			}
+			this.inputs = tmpInputs.toArray(InputActionInterface[]::new);
+			this.modules = tmpModules.toArray(DeviceModule[]::new);
+		} catch(IOException | RuntimeException e) {
+			this.modules = new DeviceModule[0];
+			throw e;
 		}
-		keysBuilder.append(']');
-		componentsKeys = keysBuilder.toString();
-		
-		try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e) {}
-		refreshStatus(); // init status for this.sensors
-		
-		List<DeviceModule> tmpModules = sensors.getModuleSensors();
-		List<InputActionInterface> tmpInputs = tmpModules.stream().filter(m -> m instanceof InputActionInterface).map(InputActionInterface.class::cast).collect(Collectors.toList());
-		
-		try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e) {}
-		
-		// device inputs
-		webhooks.fillBTHomesensorSettings();
-		List<Webhook> devActions = webhooks.getHooksList(DynamicComponents.BTHOME_DEVICE + componentIndex);
-		if(devActions != null) {
-			List<InputOnDevice> devIn = deviceInputs(devActions);
-			tmpInputs.addAll(devIn);
-			tmpModules.addAll(devIn);
-		}
-		this.inputs = tmpInputs.toArray(InputActionInterface[]::new);
-		this.modules = tmpModules.toArray(DeviceModule[]::new);
 	}
 	
 	private List<InputOnDevice> deviceInputs(List<Webhook> devActions) {
@@ -142,7 +155,7 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 			String condition = hook.getCondition();
 			set.add(condition == null ? "" : condition);
 		}
-		return set.stream().sorted().map(cond -> new InputOnDevice(cond, componentIndex/*, sensors*/)).toList();
+		return set.stream().sorted().map(cond -> new InputOnDevice(cond, componentIndex)).toList();
 	}
 	
 	public void setTypeName(String name) {
@@ -177,6 +190,7 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 	@Override
 	public void refreshStatus() throws IOException {
 		Iterator<JsonNode> componentsIt = getJSONIterator("/rpc/Shelly.GetComponents?keys=" + componentsKeys, "components");
+		
 		String compKey;
 		boolean devExists = false;
 		while(componentsIt.hasNext()) {
@@ -193,28 +207,11 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 		if(devExists == false) {
 			this.rssi = 0;
 		}
-
-//		System.out.println(this  + " - " + System.currentTimeMillis());
-//		DynamicComponents parentComponents = parent.getDynamicComponents();
-//		JsonNode comp = parentComponents.getComponentNode(componentIndex);
-//		if(comp != null) {
-//			fillSettings(comp.path("config"));
-//			fillStatus(comp.path("status"));
-//			for(JsonNode sensorJson: parentComponents.getSensors()) {
-//				int id = Integer.parseInt(sensorJson.path("key").asString().substring(13));
-//				Sensor sensor = sensors.getSensor(id);
-//				if(sensor != null) {
-//					sensor.fill(sensorJson);
-//				}
-//			}
-//		} else {
-//			this.rssi = 0;
-//		}
 	}
 	
 	@Override
 	public void refreshSettings() throws IOException {
-		if(inputs.length > 0) {
+		if(inputs != null && inputs.length > 0) {
 			webhooks.fillBTHomesensorSettings();
 			for(int i = 0; i < inputs.length; i++) {
 				inputs[i].associateWH(webhooks);
@@ -229,7 +226,7 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 	private void fillStatus(JsonNode status) {
 		this.rssi = status.path("rssi").intValue(0);
 		this.lastConnection = status.path("last_updated_ts").intValue(0) * 1000L;
-		//	this.battery = status.path("battery").intValue(0); // there is a specific sensor for this
+		// this.battery = status.path("battery").intValue(0); // there is a specific sensor for this
 	}
 
 	@Override
@@ -260,11 +257,11 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 		usnaData.put("type", typeID);
 		usnaData.put("mac", mac);
 		try(ZipOutputStream out = new ZipOutputStream(new FileOutputStream(file.toFile()), StandardCharsets.UTF_8)) {
-			ZipEntry entry = new ZipEntry("ShellyScannerBLU.json");
+			ZipEntry entry = new ZipEntry(SHELLY_SCANNER_GENERATED_FILE);
 			out.putNextEntry(entry);
 			jsonMapper.writer().writeValue(out, usnaData);
 
-			sectionToStream("/rpc/Shelly.GetComponents?dynamic_only=true", "components", "Shelly.GetComponents.json", out); // "status" is used for groups
+			parent.sectionToStream("/rpc/Shelly.GetComponents?dynamic_only=true", "components", "Shelly.GetComponents.json", out); // "status" is used for groups
 			TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 			sectionToStream("/rpc/Webhook.List", "Webhook.List.json", out);
 		} catch(InterruptedException e) {
@@ -276,7 +273,7 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 	@Override
 	public Map<RestoreMsg, Object> restoreCheck(Map<String, JsonNode> backupJsons) {
 		EnumMap<RestoreMsg, Object> res = new EnumMap<>(RestoreMsg.class);
-		JsonNode usnaInfo = backupJsons.get("ShellyScannerBLU.json");
+		JsonNode usnaInfo = backupJsons.get(SHELLY_SCANNER_GENERATED_FILE);
 		if(usnaInfo == null || usnaInfo.path("type").asString("?").equals(typeID) == false) {
 			res.put(RestoreMsg.ERR_RESTORE_MODEL, null);
 			return res;
@@ -306,7 +303,7 @@ public class BTHomeDevice extends AbstractBluDevice implements ModulesHolder {
 				}
 			});
 
-			JsonNode usnaInfo = backupJsons.get("ShellyScannerBLU.json");
+			JsonNode usnaInfo = backupJsons.get(SHELLY_SCANNER_GENERATED_FILE);
 			String fileComponentIndex = usnaInfo.get("index").asString("");
 			JsonNode fileComponents = backupJsons.get("Shelly.GetComponents.json").path("components");
 			JsonNode storedWebHooks = backupJsons.get("Webhook.List.json");

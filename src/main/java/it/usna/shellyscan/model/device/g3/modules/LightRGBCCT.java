@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import it.usna.shellyscan.model.DeviceAPIException;
 import it.usna.shellyscan.model.Devices;
+import it.usna.shellyscan.model.device.RestoreUtil;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.modules.RGBCCTInterface;
 import tools.jackson.databind.JsonNode;
@@ -15,11 +16,11 @@ public class LightRGBCCT implements RGBCCTInterface {
 	private String name;
 	private boolean isOn;
 	private String source;
+	private int brightness; // Gain - 0..100
 	// rgb
 	private int red; // 0..255
 	private int green; // 0..255
 	private int blue; // 0..255
-	private int brightness; // Gain - 0..100
 	//cct
 	private int temperature;
 	private static final int MIN_TEMP = 2700;
@@ -170,13 +171,8 @@ public class LightRGBCCT implements RGBCCTInterface {
 	}
 	
 	public String restore(JsonNode config) {
-		return parent.postCommand("RGBCCT.SetConfig", AbstractG2Device.createIndexedRestoreNode(config, "rgbcct", INDEX));
+		return parent.postCommand("RGBCCT.SetConfig", RestoreUtil.createIndexedRestoreNode(config, "rgbcct", INDEX));
 	}
-	
-//	@Override
-//	public AbstractG2Device getParent() {
-//		return parent;
-//	}
 	
 	@Override
 	public String toString() {

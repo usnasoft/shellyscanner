@@ -4,19 +4,24 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.util.List;
 
+import it.usna.shellyscan.model.device.ModulesHolder;
 import it.usna.shellyscan.model.device.meters.Meters;
+import it.usna.shellyscan.model.device.modules.DWInterface;
+import it.usna.shellyscan.model.device.modules.DeviceModule;
 import tools.jackson.databind.JsonNode;
 
-public class ShellyDW2 extends AbstractBatteryG1Device {
+public class ShellyDW2 extends AbstractBatteryG1Device implements ModulesHolder, DWInterface {
 	public static final String ID = "SHDW-2";
 	private static final Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.BAT, Meters.Type.T, Meters.Type.L};
 	private boolean open;
 	private float temp;
 	private int lux;
 	private Meters[] meters;
+	private DWInterface[] dwModule;
 	
 	public ShellyDW2(InetAddress address, int port, String hostname) {
 		super(address, port, hostname);
+		dwModule = new DWInterface[] {this};
 		
 		meters = new Meters[] {
 				new Meters() {
@@ -63,6 +68,16 @@ public class ShellyDW2 extends AbstractBatteryG1Device {
 	}
 	
 	@Override
+	public boolean open() {
+		return open;
+	}
+
+	@Override
+	public DeviceModule[] getModules() {
+		return dwModule;
+	}
+	
+	@Override
 	protected void fillSettings(JsonNode settings) throws IOException {
 		super.fillSettings(settings);
 		this.stSettings = settings;
@@ -77,7 +92,7 @@ public class ShellyDW2 extends AbstractBatteryG1Device {
 		lux = status.get("lux").get("value").asInt();
 		temp = (float)status.get("tmp").get("tC").doubleValue();
 	}
-	
+
 	@Override
 	protected void restore(JsonNode settings, List<String> errors) throws IOException {
 		errors.add(sendCommand("/settings?" +

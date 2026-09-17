@@ -8,6 +8,7 @@ import java.awt.FlowLayout;
 import java.awt.Frame;
 import java.awt.Window;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.IntStream;
 
 import javax.swing.JButton;
 import javax.swing.JDialog;
@@ -21,6 +22,7 @@ import it.usna.shellyscan.model.Devices.EventType;
 import it.usna.shellyscan.model.device.GhostDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
+import it.usna.shellyscan.model.device.blu.BTHomeDevice;
 import it.usna.shellyscan.model.device.g1.AbstractG1Device;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.modules.WIFIManager;
@@ -60,6 +62,13 @@ public class DialogDeviceSettings extends JDialog implements UsnaEventListener<D
 	}
 
 	private void init(final Window owner, Devices model, int[] devicesInd, int defaultPanel) {
+		devicesInd = IntStream.of(devicesInd).filter(idx -> model.get(idx) instanceof BTHomeDevice == false && model.get(idx).getGeneration().equals(BTHomeDevice.GENERATION) == false).toArray();
+		// model.get(idx).getGeneration().equals(BTHomeDevice.GENERATION) == false - to detects BLE ghosts
+		if(devicesInd.length == 0) {
+			Msg.errorMsg(this, LABELS.getString("msgAllDevicesExcluded"));
+			super.dispose();
+			return;
+		}
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		this.model = model;
 		this.devicesInd = devicesInd;

@@ -13,6 +13,8 @@ import it.usna.shellyscan.model.device.RestoreMsg;
 import it.usna.shellyscan.model.device.g2.meters.MetersWVI;
 import it.usna.shellyscan.model.device.g2.modules.Input;
 import it.usna.shellyscan.model.device.g2.modules.LightWhite;
+import it.usna.shellyscan.model.device.g2.modules.LoRaAddOn;
+import it.usna.shellyscan.model.device.g2.modules.SensorAddOnPro;
 import it.usna.shellyscan.model.device.meters.Meters;
 import it.usna.shellyscan.model.device.modules.DeviceModule;
 import tools.jackson.databind.JsonNode;
@@ -23,17 +25,48 @@ import tools.jackson.databind.JsonNode;
  */
 public class ShellyProDimmer2 extends AbstractProDevice implements InternalTmpHolder, ModulesHolder {
 	public static final String ID = "ProDimmerx";
+	public static final String ID_ADDON = "ProDimmerxProAddon";
 	public static final String MODEL = "SPDM-002PE01EU";
 	private float internalTmp;
 	private final MetersWVI meters0 = new MetersWVI();
 	private final MetersWVI meters1 = new MetersWVI();
-	private final Meters[] meters = new Meters[] {meters0, meters1};
+	private Meters[] meters; // = new Meters[] {meters0, meters1};
 	private final LightWhite light0 = new LightWhite(this, 0);
 	private final LightWhite light1 = new LightWhite(this, 1);
-	private final LightWhite[] lightArray = new LightWhite[] {light0, light1};
+	private DeviceModule[] lightArray; // = new LightWhite[] {light0, light1};
+	private SensorAddOnPro sensorAddOn;
+	private boolean hasLoraAddOn;
 
 	public ShellyProDimmer2(InetAddress address, int port, String hostname) {
 		super(address, port, hostname);
+	}
+	
+	@Override
+	protected void init(JsonNode devInfo) throws IOException {
+		this.hostname = devInfo.get("id").asString("");
+		this.mac = devInfo.get("mac").asString("");
+		
+		final JsonNode config = configure();
+			
+		fillSettings(config);
+		fillStatus(getJSON("/rpc/Shelly.GetStatus"));
+	}
+	
+	private JsonNode configure() throws IOException {
+		final JsonNode config = getJSON("/rpc/Shelly.GetConfig");
+		final String addOnType = config.get("sys").get("device").path("addon_type").asString(null);
+		if(SensorAddOnPro.ADDON_TYPE.equals(addOnType)) {
+			sensorAddOn = new SensorAddOnPro(this);
+			meters = sensorAddOn.addMetersArray(meters0, meters1);
+			lightArray = new DeviceModule[] {light0, light1, sensorAddOn.getDigitalOut()};
+		} else {
+			sensorAddOn = null;
+			meters = new Meters[] {meters0, meters1};
+			lightArray = new DeviceModule[] {light0, light1};
+			
+			hasLoraAddOn = LoRaAddOn.ADDON_TYPE.equals(addOnType);
+		}
+		return config;
 	}
 	
 	@Override
@@ -66,6 +99,10 @@ public class ShellyProDimmer2 extends AbstractProDevice implements InternalTmpHo
 		super.fillSettings(configuration);
 		light0.fillSettings(configuration.get("light:0"));
 		light1.fillSettings(configuration.get("light:1"));
+		
+		if(sensorAddOn != null) {
+			sensorAddOn.fillSettings(configuration);
+		}
 	}
 	
 	@Override
@@ -80,6 +117,22 @@ public class ShellyProDimmer2 extends AbstractProDevice implements InternalTmpHo
 		light1.fillStatus(lightStatus1, status.get("input:2"));
 		
 		internalTmp = lightStatus0.get("temperature").get("tC").floatValue();
+		
+		if(sensorAddOn != null) {
+			sensorAddOn.fillStatus(status);
+		}
+	}
+	
+	@Override
+	public String[] getInfoRequests() {	
+		final String[] cmd = super.getInfoRequests();
+		if(sensorAddOn != null) {
+			return SensorAddOnPro.getInfoRequests(cmd);
+		} else if(hasLoraAddOn) {
+			return LoRaAddOn.getInfoRequests(cmd);
+		} else {
+			return cmd;
+		}
 	}
 	
 	@Override
@@ -88,6 +141,8 @@ public class ShellyProDimmer2 extends AbstractProDevice implements InternalTmpHo
 		if(MODEL.equals(devInfo.get("model").asString("")) == false) {
 			resp.put(RestoreMsg.ERR_RESTORE_MODEL, null);
 		}
+		SensorAddOnPro.restoreCheck(this, sensorAddOn, backupJsons, resp);
+		LoRaAddOn.restoreCheck(this, hasLoraAddOn, backupJsons, resp);
 	}
 
 	@Override
@@ -106,6 +161,9 @@ public class ShellyProDimmer2 extends AbstractProDevice implements InternalTmpHo
 		errors.add(Input.restore(this, configuration, 3));
 		TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 		errors.add(light1.restore(configuration));
+		
+		SensorAddOnPro.restore(this, sensorAddOn, backupJsons, errors);
+		LoRaAddOn.restore(this, hasLoraAddOn, configuration, errors);
 	}
 	
 	@Override

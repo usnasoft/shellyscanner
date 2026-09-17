@@ -71,6 +71,6 @@ public class EM1Meters extends Meters implements LabelHolder, EMHolder {
 	
 	@Override
 	public String toString() {
-		return label + ": " + Type.W + "=" + power+ " " + Type.I + "=" + current + " " + Type.PF + "=" + pf + " " + Type.V + "=" + voltage;
+		return label + ": " + Type.W + "=" + power + " " + Type.I + "=" + current + " " + Type.PF + "=" + pf + " " + Type.V + "=" + voltage;
 	}
 }
