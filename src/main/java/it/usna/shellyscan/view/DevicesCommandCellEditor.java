@@ -44,7 +44,7 @@ import it.usna.shellyscan.model.device.modules.ThermostatInterface;
 import it.usna.shellyscan.model.device.modules.WhiteInterface;
 import it.usna.shellyscan.view.lightsEditor.DialogEditLights;
 import it.usna.shellyscan.view.util.Msg;
-import it.usna.swing.VerticalFlowLayout;
+import it.usna.swing.VerticalFlowLayout2;
 
 public class DevicesCommandCellEditor extends AbstractCellEditor implements TableCellEditor {
 	private static final long serialVersionUID = 1L;
@@ -178,7 +178,7 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 //			}
 		});
 		
-		JPanel relayButtonPanel = new JPanel(new VerticalFlowLayout(VerticalFlowLayout.CENTER, VerticalFlowLayout.CENTER, 0, 0));
+		JPanel relayButtonPanel = new JPanel(new VerticalFlowLayout2(VerticalFlowLayout2.VAlign.CENTER, VerticalFlowLayout2.HAlign.CENTER, 0, 0));
 		relayButtonPanel.setOpaque(false);
 		relayButtonPanel.add(relayButton);
 
@@ -224,7 +224,7 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 				cancelCellEditing();
 			});
 
-			JPanel relayButtonPanel = new JPanel(new VerticalFlowLayout(VerticalFlowLayout.CENTER, VerticalFlowLayout.CENTER, 0, 0));
+			JPanel relayButtonPanel = new JPanel(new VerticalFlowLayout2(VerticalFlowLayout2.VAlign.CENTER, VerticalFlowLayout2.HAlign.CENTER, 0, 0));
 			relayButtonPanel.setOpaque(false);
 			relayButtonPanel.add(relayButton);
 

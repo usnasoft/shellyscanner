@@ -34,7 +34,7 @@ import it.usna.shellyscan.model.device.modules.DeviceModule;
 import it.usna.shellyscan.model.device.modules.RGBCCTInterface;
 import it.usna.shellyscan.model.device.modules.RGBInterface;
 import it.usna.shellyscan.model.device.modules.WhiteInterface;
-import it.usna.swing.VerticalFlowLayout;
+import it.usna.swing.VerticalFlowLayout2;
 
 public class DialogEditLights extends JDialog {
 	private static final long serialVersionUID = 1L;
@@ -102,7 +102,7 @@ public class DialogEditLights extends JDialog {
 	}
 	
 	private JPanel commandPanel(DeviceModule[] lights) {
-		JPanel stackedPanel = new JPanel(new VerticalFlowLayout(VerticalFlowLayout.TOP, VerticalFlowLayout.LEFT, 0, 0));
+		JPanel stackedPanel = new JPanel(new VerticalFlowLayout2(VerticalFlowLayout2.VAlign.CENTER, VerticalFlowLayout2.HAlign.CENTER, 0, 0));
 		for(int i = 0; i < lights.length; i++) {
 			if(lights[i] instanceof RGBCCTInterface rgbcct) { // rgbcct extends rgb & cct
 				commandPanels.add(new RGBCCTPanel(rgbcct));

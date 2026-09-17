@@ -26,7 +26,7 @@ import it.usna.shellyscan.controller.UsnaToggleAction;
 import it.usna.shellyscan.model.device.modules.RGBInterface;
 import it.usna.shellyscan.model.device.modules.RGBWInterface;
 import it.usna.shellyscan.view.util.ColorUtil;
-import it.usna.swing.VerticalFlowLayout;
+import it.usna.swing.VerticalFlowLayout2;
 
 /**
  * RGB(W)Panel
@@ -54,7 +54,7 @@ public class RGBPanel extends LightPanel {
 	public RGBPanel(final RGBInterface light) {
 		this.light = light;
 		setBorder(BorderFactory.createEmptyBorder(6, 8, 12, 8));
-		setLayout(new VerticalFlowLayout(VerticalFlowLayout.CENTER, VerticalFlowLayout.CENTER, 0, 0));
+		setLayout(new VerticalFlowLayout2(VerticalFlowLayout2.VAlign.CENTER, VerticalFlowLayout2.HAlign.CENTER, 0, 0));
 
 		// set initial values to avoid listeners to call the device in initial adjust
 		sliderGain = new JSlider(0, 100, light.getGain());

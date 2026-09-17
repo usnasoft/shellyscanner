@@ -44,7 +44,7 @@ import it.usna.shellyscan.model.device.g2.modules.ThermostatG2;
 import it.usna.shellyscan.view.scheduler.CronUtils;
 import it.usna.shellyscan.view.util.Msg;
 import it.usna.shellyscan.view.util.ScannerProperties;
-import it.usna.swing.VerticalFlowLayout;
+import it.usna.swing.VerticalFlowLayout2;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
@@ -233,14 +233,14 @@ public class WDThermSchedulerPanel extends /*JPanel*/JSplitPane {
 		pasteBtn.setContentAreaFilled(false);
 		pasteBtn.setBorder(BorderFactory.createEmptyBorder(2, 3, 2, 3));
 		
-		JPanel opPanel1 = new JPanel(new VerticalFlowLayout(VerticalFlowLayout.CENTER, VerticalFlowLayout.CENTER, 0, 5));
+		JPanel opPanel1 = new JPanel(new VerticalFlowLayout2(VerticalFlowLayout2.VAlign.CENTER, VerticalFlowLayout2.HAlign.CENTER, 0, 5));
 		opPanel1.setOpaque(false);
 		opPanel1.add(addBtn);
 		opPanel1.add(duplicateBtn);
 		opPanel1.add(removeBtn);
 		commandPanel.add(opPanel1);
 		
-		JPanel opPanel2 = new JPanel(new VerticalFlowLayout(VerticalFlowLayout.CENTER, VerticalFlowLayout.CENTER, 0, 5));
+		JPanel opPanel2 = new JPanel(new VerticalFlowLayout2(VerticalFlowLayout2.VAlign.CENTER, VerticalFlowLayout2.HAlign.CENTER, 0, 5));
 		opPanel2.setOpaque(false);
 		opPanel2.add(copyBtn);
 		opPanel2.add(pasteBtn);

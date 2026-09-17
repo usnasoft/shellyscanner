@@ -23,7 +23,7 @@ import it.usna.shellyscan.controller.UsnaToggleAction;
 import it.usna.shellyscan.model.device.modules.CCTInterface;
 import it.usna.shellyscan.view.util.ColorUtil;
 import it.usna.shellyscan.view.util.UtilMiscellaneous;
-import it.usna.swing.VerticalFlowLayout;
+import it.usna.swing.VerticalFlowLayout2;
 
 public class CCTPanel extends LightPanel {
 	private static final Logger LOG = LoggerFactory.getLogger(CCTPanel.class);
@@ -41,7 +41,7 @@ public class CCTPanel extends LightPanel {
 	public CCTPanel(final CCTInterface light) {
 		this.light = light;
 		setBorder(BorderFactory.createEmptyBorder(6, 8, 12, 8));
-		setLayout(new VerticalFlowLayout(VerticalFlowLayout.CENTER, VerticalFlowLayout.CENTER, 0, 0));
+		setLayout(new VerticalFlowLayout2(VerticalFlowLayout2.VAlign.CENTER, VerticalFlowLayout2.HAlign.CENTER, 0, 0));
 		// set initial values to avoid listeners to call the device in initial adjust
 		brightnessSlider = new JSlider(light.getMinBrightness(), light.getMaxBrightness(), light.getBrightness());
 		temperatureSlider = new JSlider(light.getMinTemperature(), light.getMaxTemperature(), light.getTemperature());

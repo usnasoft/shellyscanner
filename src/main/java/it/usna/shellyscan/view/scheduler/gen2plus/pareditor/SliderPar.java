@@ -12,7 +12,7 @@ import javax.swing.event.ChangeListener;
 
 import it.usna.shellyscan.view.scheduler.gen2plus.pareditor.ParamEditorDialog.EditorPanel;
 import it.usna.shellyscan.view.util.UtilMiscellaneous;
-import it.usna.swing.VerticalFlowLayout;
+import it.usna.swing.VerticalFlowLayout2;
 
 /**
  * Various single value parameters (rendered as a slider)
@@ -23,7 +23,7 @@ abstract class SliderPar extends JPanel implements EditorPanel {
 	
 	public SliderPar(final String parameters, String parName, Pattern pattern, int min, int max) {
 		setBorder(BorderFactory.createEmptyBorder(6, 8, 12, 8));
-		setLayout(new VerticalFlowLayout(VerticalFlowLayout.CENTER, VerticalFlowLayout.LEFT, 0, 0));
+		setLayout(new VerticalFlowLayout2(VerticalFlowLayout2.VAlign.CENTER, VerticalFlowLayout2.HAlign.LEFT, 0, 0));
 		
 		var matcher = pattern.matcher(parameters);
 		matcher.find();

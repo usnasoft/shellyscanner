@@ -42,7 +42,7 @@ import it.usna.shellyscan.model.device.modules.RollerInterface;
 import it.usna.shellyscan.model.device.modules.SmokeInterface;
 import it.usna.shellyscan.model.device.modules.ThermostatInterface;
 import it.usna.shellyscan.model.device.modules.WhiteInterface;
-import it.usna.swing.VerticalFlowLayout;
+import it.usna.swing.VerticalFlowLayout2;
 
 public class DevicesCommandCellRenderer implements TableCellRenderer {
 	private static final Logger LOG = LoggerFactory.getLogger(DevicesCommandCellRenderer.class);
@@ -219,7 +219,7 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 			}
 		}
 		relayLabel.setForeground(foregroundColor);
-		JPanel relayButtonPanel = new JPanel(new VerticalFlowLayout(VerticalFlowLayout.CENTER, VerticalFlowLayout.CENTER, 0, 0));
+		JPanel relayButtonPanel = new JPanel(new VerticalFlowLayout2(VerticalFlowLayout2.VAlign.CENTER, VerticalFlowLayout2.HAlign.CENTER, 0, 0));
 		relayButtonPanel.setOpaque(false);
 		relayButtonPanel.add(button);
 
@@ -242,7 +242,7 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 		final JButton button = new JButton();
 		button.setBorder(BUTTON_BORDERS);
 		relayLabel.setForeground(foregroundColor);
-		JPanel relayButtonPanel = new JPanel(new VerticalFlowLayout(VerticalFlowLayout.CENTER, VerticalFlowLayout.CENTER, 0, 0));
+		JPanel relayButtonPanel = new JPanel(new VerticalFlowLayout2(VerticalFlowLayout2.VAlign.CENTER, VerticalFlowLayout2.HAlign.CENTER, 0, 0));
 		relayButtonPanel.setOpaque(false);
 		relayButtonPanel.add(button);
 

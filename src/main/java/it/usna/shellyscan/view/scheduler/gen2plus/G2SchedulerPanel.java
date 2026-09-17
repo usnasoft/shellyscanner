@@ -32,7 +32,7 @@ import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.g2.modules.ScheduleManager;
 import it.usna.shellyscan.view.util.Msg;
 import it.usna.shellyscan.view.util.ScannerProperties;
-import it.usna.swing.VerticalFlowLayout;
+import it.usna.swing.VerticalFlowLayout2;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.node.ObjectNode;
@@ -49,7 +49,7 @@ public class G2SchedulerPanel extends JScrollPane {
 	private final MethodHints mHints;
 	private final ArrayList<ScheduleData> originalValues = new ArrayList<>();
 	private final ArrayList<Integer> removedId = new ArrayList<>();
-	private final JPanel schedulesPanel = new JPanel(new VerticalFlowLayout(VerticalFlowLayout.TOP, VerticalFlowLayout.CENTER, 0, 0));
+	private final JPanel schedulesPanel = new JPanel(new VerticalFlowLayout2(VerticalFlowLayout2.VAlign.TOP, VerticalFlowLayout2.HAlign.CENTER, 0, 0));
 
 	public G2SchedulerPanel(JDialog parent, AbstractG2Device device) {
 		super(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
@@ -298,7 +298,7 @@ public class G2SchedulerPanel extends JScrollPane {
 		pasteBtn.setContentAreaFilled(false);
 		pasteBtn.setBorder(BorderFactory.createEmptyBorder(2, 3, 2, 3));
 		
-		JPanel opPanel = new JPanel(new VerticalFlowLayout());
+		JPanel opPanel = new JPanel(new VerticalFlowLayout2());
 		opPanel.setOpaque(false);
 		opPanel.add(addBtn);
 		if(job.hasSystemCalls() == false) {

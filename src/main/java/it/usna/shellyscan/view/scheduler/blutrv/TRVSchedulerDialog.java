@@ -32,9 +32,9 @@ import javax.swing.JScrollPane;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 import it.usna.shellyscan.Main;
-import it.usna.shellyscan.controller.UsnaOpenUrlAction;
 import it.usna.shellyscan.controller.RestoreAction;
 import it.usna.shellyscan.controller.UsnaAction;
+import it.usna.shellyscan.controller.UsnaOpenUrlAction;
 import it.usna.shellyscan.controller.UsnaToggleAction;
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.blu.BluTRV;
@@ -44,7 +44,7 @@ import it.usna.shellyscan.view.util.Msg;
 import it.usna.shellyscan.view.util.ScannerProperties;
 import it.usna.shellyscan.view.util.UtilMiscellaneous;
 import it.usna.swing.UsnaSwingUtils;
-import it.usna.swing.VerticalFlowLayout;
+import it.usna.swing.VerticalFlowLayout2;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.node.ObjectNode;
@@ -56,7 +56,7 @@ public class TRVSchedulerDialog extends JDialog {
 	private final BluTRV device;
 	private final ArrayList<ScheduleData> originalValues = new ArrayList<>();
 	private final ArrayList<Integer> removedId = new ArrayList<>();
-	private final JPanel rulesPanel = new JPanel(new VerticalFlowLayout(VerticalFlowLayout.TOP, VerticalFlowLayout.CENTER, 0, 0));
+	private final JPanel rulesPanel = new JPanel(new VerticalFlowLayout2(VerticalFlowLayout2.VAlign.TOP, VerticalFlowLayout2.HAlign.CENTER, 0, 0));
 
 	public TRVSchedulerDialog(Window owner, BluTRV device) {
 		super(owner, Main.LABELS.getString("schTitle") + " - " + UtilMiscellaneous.getExtendedHostName(device), Dialog.ModalityType.MODELESS);
@@ -333,7 +333,7 @@ public class TRVSchedulerDialog extends JDialog {
 		pasteBtn.setContentAreaFilled(false);
 		pasteBtn.setBorder(BorderFactory.createEmptyBorder(2, 3, 2, 3));
 		
-		JPanel opPanel = new JPanel(new VerticalFlowLayout());
+		JPanel opPanel = new JPanel(new VerticalFlowLayout2());
 		opPanel.setOpaque(false);
 		opPanel.add(addBtn);
 		opPanel.add(duplicateBtn);
