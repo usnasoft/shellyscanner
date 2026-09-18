@@ -183,25 +183,25 @@ public class Shelly2PMG3 extends AbstractG3Device implements ModulesHolder, Inte
 		if(modeRelay) {
 			JsonNode switchStatus0 = status.get("switch:0");
 			relay0.fillStatus(switchStatus0, status.get("input:0"));
-			power0 = switchStatus0.path("apower").floatValue();
-			voltage0 = switchStatus0.path("voltage").floatValue();
-			current0 = switchStatus0.path("current").floatValue();
-			pf0 = switchStatus0.path("pf").floatValue();
+			power0 = switchStatus0.path("apower").floatValue(0);
+			voltage0 = switchStatus0.path("voltage").floatValue(0);
+			current0 = switchStatus0.path("current").floatValue(0);
+			pf0 = switchStatus0.path("pf").floatValue(0);
 
 			JsonNode switchStatus1 = status.get("switch:1");
 			relay1.fillStatus(switchStatus1, status.get("input:1"));
-			power1 = switchStatus1.path("apower").floatValue();
-			voltage1 = switchStatus1.path("voltage").floatValue();
-			current1 = switchStatus1.path("current").floatValue();
-			pf1 = switchStatus1.path("pf").floatValue();
+			power1 = switchStatus1.path("apower").floatValue(0);
+			voltage1 = switchStatus1.path("voltage").floatValue(0);
+			current1 = switchStatus1.path("current").floatValue(0);
+			pf1 = switchStatus1.path("pf").floatValue(0);
 
 			internalTmp = switchStatus0.path("temperature").path("tC").floatValue();
 		} else {
 			JsonNode cover = status.get("cover:0");
-			power0 = cover.path("apower").floatValue();
-			voltage0 = cover.path("voltage").floatValue();
-			current0 = cover.path("current").floatValue();
-			pf0 = cover.path("pf").floatValue();
+			power0 = cover.path("apower").floatValue(0);
+			voltage0 = cover.path("voltage").floatValue(0);
+			current0 = cover.path("current").floatValue(0);
+			pf0 = cover.path("pf").floatValue(0);
 			internalTmp = cover.path("temperature").path("tC").floatValue();
 			roller.fillStatus(cover, status.get("input:0"), status.get("input:1"));
 		}
