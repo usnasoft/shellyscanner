@@ -1,35 +1,11 @@
 package it.usna.shellyscan.model.device.g3;
-import java.net.InetAddress;
-import java.util.List;
-import java.util.Map;
-
-import tools.jackson.databind.JsonNode;
 
 /**
  * XT1 PbS base model
  */
-public class XT1 extends AbstractG3Device {
-//	private static final Logger LOG = LoggerFactory.getLogger(AbstractG3Device.class);
-	public static final String ID = "XT1";
-	
-	public XT1(InetAddress address, int port, String hostname) {
-		super(address, port, hostname);
-	}
-
-	@Override
-	public String getTypeName() {
-		return "XT1";
-	}
-
-	@Override
-	public String getTypeID() {
-		return ID;
-	}
-	
-	@Override
-	protected void restore(Map<String, JsonNode> backupJsons, List<String> errors) throws InterruptedException {
-		// @Override on subclasses if needed
-	}
+public interface XT1 {
+	static final String ID = "XT1";
+	static final String MODEL = "S3XT-0S";
 }
 
 // model S3XT-0S (LinkedGo ST1820)

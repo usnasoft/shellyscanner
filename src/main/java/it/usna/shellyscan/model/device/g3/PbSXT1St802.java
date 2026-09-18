@@ -22,9 +22,8 @@ import tools.jackson.databind.node.ObjectNode;
 /**
  * LinkedGo ST802 (PbS) model
  */
-public class PbSXT1St802 extends XT1 implements ModulesHolder {
+public class PbSXT1St802 extends AbstractG3Device implements ModulesHolder, XT1 {
 	private static final Logger LOG = LoggerFactory.getLogger(PbSXT1St802.class);
-	public static final String MODEL = "S3XT-0S";
 	public static final String SVC0_TYPE = "linkedgo-st-802-hvac";
 	public enum Mode { COOL, DRY, HEAT, VENTILATION };
 	private Mode mode;
@@ -72,6 +71,11 @@ public class PbSXT1St802 extends XT1 implements ModulesHolder {
 	@Override
 	public String getTypeName() {
 		return "LinkedGo ST802";
+	}
+	
+	@Override
+	public String getTypeID() {
+		return ID;
 	}
 	
 	@Override

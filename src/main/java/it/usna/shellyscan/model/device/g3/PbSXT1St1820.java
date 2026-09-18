@@ -21,9 +21,8 @@ import tools.jackson.databind.node.ObjectNode;
 /**
  * LinkedGo ST1820 (PbS) model
  */
-public class PbSXT1St1820 extends XT1 implements ModulesHolder {
+public class PbSXT1St1820 extends AbstractG3Device implements ModulesHolder, XT1 {
 	private static final Logger LOG = LoggerFactory.getLogger(PbSXT1St1820.class);
-	public static final String MODEL = "S3XT-0S";
 	public static final String SVC0_TYPE = "linkedgo-st1820-floor-thermostat";
 	private static final Meters.Type[] SUPPORTED_MEASURES = new Meters.Type[] {Meters.Type.T, Meters.Type.H};
 	private static final String CURRENT_TEMP_KEY = "number:201";
@@ -65,6 +64,11 @@ public class PbSXT1St1820 extends XT1 implements ModulesHolder {
 	@Override
 	public String getTypeName() {
 		return "LinkedGo ST1820";
+	}
+	
+	@Override
+	public String getTypeID() {
+		return ID;
 	}
 	
 	@Override
