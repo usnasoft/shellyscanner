@@ -6,6 +6,7 @@ import it.usna.shellyscan.model.device.g3.Shelly1PMG3;
 import it.usna.shellyscan.model.device.g3.Shelly2PMG3;
 import it.usna.shellyscan.model.device.g3.ShellyDimmerG3;
 import it.usna.shellyscan.model.device.g3.ShellyEMG3;
+import it.usna.shellyscan.model.device.g3.ShellyI4G3;
 import it.usna.shellyscan.model.device.g3.ShellyMini1G3;
 import it.usna.shellyscan.model.device.g3.ShellyMini1PMG3;
 import it.usna.shellyscan.model.device.g4.Shelly1G4;
@@ -13,6 +14,7 @@ import it.usna.shellyscan.model.device.g4.Shelly1PMG4;
 import it.usna.shellyscan.model.device.g4.Shelly2PMG4;
 import it.usna.shellyscan.model.device.g4.ShellyDimmerG4;
 import it.usna.shellyscan.model.device.g4.ShellyEMG4;
+import it.usna.shellyscan.model.device.g4.ShellyI4G4;
 import it.usna.shellyscan.model.device.g4.ShellyMini1G4;
 import it.usna.shellyscan.model.device.g4.ShellyMini1PMG4;
 import tools.jackson.databind.JsonNode;
@@ -28,6 +30,7 @@ public class RestoreUtil {
 				{Shelly2PMG3.ID, Shelly2PMG4.ID}, // 2PM
 				{ShellyDimmerG3.ID, ShellyDimmerG4.ID}, // Dimmer
 				{ShellyEMG3.ID, ShellyEMG4.ID}, // EM
+				{ShellyI4G3.ID, ShellyI4G4.ID}, // i4
 		};
 
 	public static boolean compatibleModels(JsonNode devInfoBack, AbstractG2Device dev) {

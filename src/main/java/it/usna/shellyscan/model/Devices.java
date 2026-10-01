@@ -391,34 +391,8 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 				if(d instanceof AbstractG2Device g2 && d instanceof BatteryDeviceInterface == false) {
 					if(d instanceof AbstractProDevice || d instanceof AbstractG3Device || d instanceof AbstractG4Device) {
 						TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-						HashSet<String> specialBLUSet = new HashSet<>();
-						g2.getJSONIterator("/rpc/Shelly.GetComponents?dynamic_only=true", "components").forEachRemaining(compInfo -> {
-							String key = compInfo.path("key").asString("");
-							if(key.startsWith(BluTRV.DEVICE_KEY_PREFIX) ) {
-								try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e) {}
-								AbstractBTHomeDevice newBlu = newBluDevice(g2, compInfo, key);
-								specialBLUSet.add(newBlu.getMacAddress());
-							} else if(key.startsWith(BTHomeDevice.DEVICE_KEY_PREFIX)) {
-								String newMacAddr = compInfo.path("config").path("addr").asString(null);
-								if(specialBLUSet.contains(newMacAddr) == false) {
-									try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e) {}
-									newBluDevice(g2, compInfo, key);
-								}
-							}
-						});
+						createBlu(g2);
 					}
-					// todo
-					// creare una lista di "bleDevices" BLEDevice accumulando i gw i aggiungere i gw ai BTHomeDevice in lista;
-					// alla creazione di un BTHomeDevice verificare se esiste già in bleDevices stesso mac, sommare i gw e rimuovere
-
-//					TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-//					g2.getJSONIterator("/rpc/BLE.CloudRelay.ListInfos", "devices").forEachRemaining(bleDev -> {
-//						LOG.debug(d.getAddressAndPort() + " - " + bleDev);
-//						Entry<String, JsonNode> nodeEntry = bleDev.properties().iterator().next();
-//						String mac = nodeEntry.getKey();
-//						new BLEDevice(g2, mac , "0");
-//						// todo new BLEDevice
-//					});
 				}
 			}
 		} catch(DeviceUnauthorizedException e) {
@@ -428,6 +402,29 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 		}
 	}
 	
+	public void createBlu(AbstractG2Device g2) {
+		try {
+			HashSet<String> specialBLUSet = new HashSet<>(); // list of "special" (have specific API) BLU devices (TRV, ---)
+			g2.getJSONIterator("/rpc/Shelly.GetComponents?dynamic_only=true", "components").forEachRemaining(compInfo -> {
+				String key = compInfo.path("key").asString("");
+				// here we assume that specia BLU (TRV, ...) always comes first
+				if(key.startsWith(BluTRV.DEVICE_KEY_PREFIX) ) {
+					try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e) {}
+					AbstractBTHomeDevice newBlu = newBluDevice(g2, compInfo, key);
+					specialBLUSet.add(newBlu.getMacAddress());
+				} else if(key.startsWith(BTHomeDevice.DEVICE_KEY_PREFIX)) {
+					String newMacAddr = compInfo.path("config").path("addr").asString(null);
+					if(specialBLUSet.contains(newMacAddr) == false) { // not already loaded as "specia" -> load as BTHome
+						try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e) {}
+						newBluDevice(g2, compInfo, key);
+					}
+				}
+			});
+		} catch(Exception e) {
+			LOG.error("Unexpected-blu-add: {}; host: {}", g2.getAddressAndPort(), g2.getHostname(), e);
+		}
+	}
+
 	// Add or update (existence tested by mac address) a device
 	private void newDevice(ShellyAbstractDevice d) {
 		synchronized(devices) {
@@ -505,7 +502,9 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 				} catch (RuntimeException /*| JacksonException*/ e) {
 					LOG.trace("Unexpected-refresh: {}", d, e);
 					d.setStatus(Status.ERROR);
-				} catch (IOException | InterruptedException e) {}
+				} catch (IOException | InterruptedException e) {
+					LOG.trace("Unexpected-refresh: {}", d, e);
+				}
 				synchronized(devices) {
 					if(devices.size() > idx && d == devices.get(idx) && Thread.interrupted() == false) { // underlying model unchanged (on rescan)
 						fireEvent(EventType.UPDATE, msgIdx);

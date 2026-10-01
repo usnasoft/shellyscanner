@@ -106,7 +106,7 @@ public abstract class ShellyAbstractDevice {
 //			}
 			throw e;
 		}
-		if(statusCode == HttpStatus.UNAUTHORIZED_401) {
+		if(statusCode == HttpStatus.UNAUTHORIZED_401 || statusCode == HttpStatus.TOO_MANY_REQUESTS_429) {
 			status = Status.NOT_LOOGGED;
 			throw new DeviceUnauthorizedException();
 		} else if(statusCode == HttpStatus.INTERNAL_SERVER_ERROR_500) {

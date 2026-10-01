@@ -68,7 +68,7 @@ public class BTHomeDevice extends AbstractBTHomeDevice implements ModulesHolder 
 
 		this.typeName = switch(modelId) {
 		case 0x01 -> "Blu Button";
-		case 0x02 -> "Blu Door Window";
+		case 0x02 -> "Blu Door/Window";
 		case 0x03 -> "Blu H&T";
 		case 0x05 -> "Blu Motion";
 		case 0x06 -> "Blu Wall Switch 4"; // Square
@@ -80,12 +80,12 @@ public class BTHomeDevice extends AbstractBTHomeDevice implements ModulesHolder 
 		case 0x0C -> "Blu H&T Display ZB"; // 12
 		case 0x11 -> "Blu H&T ZB"; // 17
 		case 0x13 -> "Blu Motion ZB"; // 19
-		case 0x14 -> "Blu Door Window ZB"; // 20
+		case 0x14 -> "Blu Door/Window ZB"; // 20
 		case 0x15 -> "Blu Wall Switch 4 ZB"; // 21
 		case 0x16 -> "Blu RC Button 4 ZB"; // 22 - line
 		case 0x17 -> "Blu Button Tough 1 ZB"; // 23
-		case 0x20 -> "Blu 1"; // 32
-		case 0x21 -> "Blu 2"; // 33
+		case 0x20 -> "BLU Door/Window Mini ZB"; // 32
+		case 0x21 -> "BLU Door/Window Outdoor ZB"; // 33
 		case 0x203A -> "Blu 3"; // 8250
 		default -> "Generic BTHome";
 		};

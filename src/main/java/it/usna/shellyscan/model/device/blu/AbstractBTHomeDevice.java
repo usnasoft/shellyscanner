@@ -66,7 +66,7 @@ public abstract class AbstractBTHomeDevice extends ShellyAbstractDevice {
 //		return (BluInetAddressAndPort)addressAndPort;
 //	}
 	
-	public ShellyAbstractDevice getParent() {
+	public AbstractG2Device getParent() {
 		return parent;
 	}
 	
