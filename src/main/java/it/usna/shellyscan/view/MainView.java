@@ -6,6 +6,7 @@ import java.awt.BorderLayout;
 import java.awt.Container;
 import java.awt.Cursor;
 import java.awt.Desktop;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
@@ -102,6 +103,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 	private JButton selectAllBtn;
 	private JButton selectOnlineBtn;
 	private JButton selectOfflineBtn;
+	private JButton selectGhostsBtn;
 	private boolean useArchive;
 	private JTextField textFieldFilter = new JTextField();
 	private Devices model;
@@ -310,6 +312,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		
 		// Status bar
 		JPanel statusPanel = new JPanel(new BorderLayout(6, 0));
+		statusPanel.setBorder(BorderFactory.createEmptyBorder(0, 2, 0, 2));
 		statusLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 3, 0));
 		statusPanel.add(statusLabel, BorderLayout.CENTER);
 
@@ -318,50 +321,50 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		selectionPanel.setOpaque(false);
 		
 		Action selectAll = new UsnaAction(null, "labelSelectAll", "/images/list_unordered.png", e -> devicesTable.selectAll());
-		Action selectOnLine = new SelectionAction(devicesTable, "labelSelectOnLine", "/images/list_online.png", i -> model.get(i).getStatus() == Status.ON_LINE);
-		Action selectOffLine = new SelectionAction(devicesTable, "labelSelectOffLine", "/images/list_offline.png", i -> model.get(i).getStatus() == Status.OFF_LINE);
-		
-		selectionPanel.add(Box.createHorizontalStrut(3));
-		
 		selectAllBtn = new JButton(selectAll);
-		selectAllBtn.setBorder(BorderFactory.createEmptyBorder(2, 20, 3, 20));
+		selectAllBtn.setBorder(BorderFactory.createEmptyBorder(2, 18, 3, 18));
 		selectAllBtn.setBackground(Main.STATUS_LINE_COLOR);
 		selectionPanel.add(selectAllBtn);
 		
+		Action selectOnLine = new SelectionAction(devicesTable, "labelSelectOnLine", "/images/list_online.png", i -> model.get(i).getStatus() == Status.ON_LINE);
 		selectOnlineBtn = new JButton(selectOnLine);
-		selectOnlineBtn.setBorder(BorderFactory.createEmptyBorder(2, 20, 3, 20));
+		selectOnlineBtn.setBorder(BorderFactory.createEmptyBorder(2, 18, 3, 18));
 		selectOnlineBtn.setBackground(Main.STATUS_LINE_COLOR);
 		selectionPanel.add(selectOnlineBtn);
 		
+		Action selectOffLine = new SelectionAction(devicesTable, "labelSelectOffLine", "/images/list_offline.png", i -> model.get(i).getStatus() == Status.OFF_LINE);
 		selectOfflineBtn = new JButton(selectOffLine) ;
-		selectOfflineBtn.setBorder(BorderFactory.createEmptyBorder(2, 20, 3, 20));
+		selectOfflineBtn.setBorder(BorderFactory.createEmptyBorder(2, 18, 3, 18));
 		selectOfflineBtn.setBackground(Main.STATUS_LINE_COLOR);
 		selectionPanel.add(selectOfflineBtn);
+		
+		Action selectGhosts = new SelectionAction(devicesTable, "labelSelectGhosts", "/images/list_ghost.png", i -> model.get(i).getStatus() == Status.GHOST);
+		selectGhostsBtn = new JButton(selectGhosts) ;
+		selectGhostsBtn.setBorder(BorderFactory.createEmptyBorder(2, 18, 3, 18));
+		selectGhostsBtn.setBackground(Main.STATUS_LINE_COLOR);
+		selectionPanel.add(selectGhostsBtn);
 		
 		// selection popup
 		JButton btnSelectCombo = new JButton();
 		btnSelectCombo.setAction(new UsnaDropdownAction(btnSelectCombo, "labelSelectDevices", "/images/expand-more.png", new Object[] {
 				new SelectionAction(devicesTable, "labelSelectOnLineReboot", null, null, i -> model.get(i).getStatus() == Status.ON_LINE && model.get(i).rebootRequired()),
 				new SelectionAction(devicesTable, "labelSelectG1", null, null, i -> model.get(i) instanceof AbstractG1Device),
-				new SelectionAction(devicesTable, "labelSelectG2", null, null, i -> model.get(i) instanceof AbstractG2Device /*&& model.get(i) instanceof AbstractG3Device == false*/), // G2+
+				new SelectionAction(devicesTable, "labelSelectG2", null, null, i -> model.get(i) instanceof AbstractG2Device), // G2+
 				new SelectionAction(devicesTable, "labelSelectWIFI", null, null, i -> model.get(i) instanceof AbstractG1Device || model.get(i) instanceof AbstractG2Device),
 				new SelectionAction(devicesTable, "labelSelectBLU", null, null, i -> model.get(i) instanceof AbstractBTHomeDevice),
-				new SelectionAction(devicesTable, "labelSelectGhosts", null, null, i -> model.get(i) instanceof GhostDevice)
 		}));
 		btnSelectCombo.setContentAreaFilled(false);
-		btnSelectCombo.setBorder(BorderFactory.createEmptyBorder(1, 5, 1, 5));
+		btnSelectCombo.setBorder(BorderFactory.createEmptyBorder(3, 5, 1, 5));
 		selectionPanel.add(btnSelectCombo);
 		
 		statusPanel.add(selectionPanel, BorderLayout.WEST);
 
-		JPanel statusFilterPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 2, 0));
+		JPanel statusFilterPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
 		statusFilterPanel.setOpaque(false);
 		JLabel filterLabel = new JLabel(LABELS.getString("lblFilter"));
-		filterLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 2, 0));
+		filterLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 3, 0));
 		statusFilterPanel.add(filterLabel);
-		textFieldFilter.setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));
-		textFieldFilter.setColumns(16);
-		
+				
 		JComboBox<String> comboFilterCol = new JComboBox<>();
 		comboFilterCol.addItem(LABELS.getString("lblFilterFull"));
 		comboFilterCol.addItem(LABELS.getString("col_type"));
@@ -370,10 +373,14 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		comboFilterCol.addItem(LABELS.getString("col_keyword"));
 		comboFilterCol.addActionListener( event -> setColFilter(comboFilterCol) );
 		comboFilterCol.setSelectedIndex(appProp.getIntProperty(ScannerProperties.PROP_DEFAULT_FILTER_IDX));
-		statusFilterPanel.add(comboFilterCol);
-		statusFilterPanel.add(textFieldFilter);
+		Dimension cp = comboFilterCol.getPreferredSize();
+		comboFilterCol.setPreferredSize(new Dimension(cp.width, cp.height - 2));
+		statusFilterPanel.add(comboFilterCol);		
 		
+		textFieldFilter.setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));
+		textFieldFilter.setColumns(16);
 		textFieldFilter.getDocument().addDocumentListener( (TextDocumentListener)event -> setColFilter(comboFilterCol) );
+		statusFilterPanel.add(textFieldFilter);
 		
 		JButton eraseFilterButton = new JButton(eraseFilterAction);
 		eraseFilterButton.setBorder(BorderFactory.createEmptyBorder(0, 2, 0, 6));
@@ -739,20 +746,15 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 	private synchronized void displayStatus() {
 		int onLine = 0;
 		int offLine = 0;
-		int notLogged = 0;
-		int error = 0;
 		int ghosts = 0;
 		for(int idx = 0; idx < model.size(); idx++) {
 			switch(model.get(idx).getStatus()) {
 			case ON_LINE -> onLine++;
 			case OFF_LINE -> offLine++;
-			case NOT_LOOGGED -> notLogged++;
-			case ERROR -> error++;
 			case GHOST -> ghosts++;
 			default -> {}
 			}
 		}
-		//System.out.println("ON_LINE: " + onLine + "; OFF_LINE: " + offLine + "; NOT_LOOGGED: " + notLogged + "; ERROR: " + error + "; GHOST: " + ghosts);
 		if(textFieldFilter.getText().isEmpty()) {
 			selectAllBtn.setText(String.format(LABELS.getString("num_tot_devices"), model.size()));
 		} else {
@@ -760,9 +762,10 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		}
 		selectOnlineBtn.setText(String.format(LABELS.getString("num_online_devices"), onLine));
 		selectOfflineBtn.setText(String.format(LABELS.getString("num_offline_devices"), offLine));
+		selectGhostsBtn.setText(String.format(LABELS.getString("num_ghost_devices"), ghosts));
 
 		if(statusLineReserved == false) {
 			statusLabel.setText(String.format(LABELS.getString("selected_status"), devicesTable.getSelectedRowCount()));
 		}
 	}
-} //557 - 614 - 620 - 669 - 705 - 727 - 699 - 760 - 782 - 811 - 805 - 646 - 699 - 706 - 688 - 698 - 707 - 720
+} //557 - 614 - 620 - 669 - 705 - 727 - 699 - 760 - 782 - 811 - 805 - 646 - 699 - 706 - 688 - 698 - 707 - 720 - 772
