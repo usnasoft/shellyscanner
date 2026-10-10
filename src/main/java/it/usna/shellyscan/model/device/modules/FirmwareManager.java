@@ -52,5 +52,6 @@ public interface FirmwareManager {
 //		System.out.println(getShortVersion("20211222-144927/0.9.2-beta2-gc538a83"));
 //		System.out.println(getShortVersion("20211222-144927/0.9.2-beta2-gc538a83"));
 //		System.out.println(getShortVersion("20241031-171026/2.3.0-d508f135-beta4-QA"));
+//	    System.out.println(getShortVersion("20261008-204133/v1.5.1-rc20@8a00ef8c"));
 //	}
 }

@@ -99,6 +99,9 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 	private AppProperties temporaryProp = new AppProperties(); // normal view properties stored here on detailed view
 	private JLabel statusLabel = new JLabel();
 	private boolean statusLineReserved = false;
+	private JButton selectAllBtn;
+	private JButton selectOnlineBtn;
+	private JButton selectOfflineBtn;
 	private boolean useArchive;
 	private JTextField textFieldFilter = new JTextField();
 	private Devices model;
@@ -306,33 +309,56 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		contentPane.setBackground(Main.STATUS_LINE_COLOR);
 		
 		// Status bar
-		JPanel statusPanel = new JPanel();
-		statusPanel.setLayout(new BorderLayout(6, 0));
+		JPanel statusPanel = new JPanel(new BorderLayout(6, 0));
+		statusLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 3, 0));
 		statusPanel.add(statusLabel, BorderLayout.CENTER);
-		
-		JPanel statusLeftPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 2, 0));
-		statusLeftPanel.setOpaque(false);
 
-		JButton btnshowDeferrables = new JButton("0", DEFERRED_ICON);
-		btnshowDeferrables.addActionListener(new UsnaAction(this, "labelShowDeferrables", e -> {
-			if(dialogDeferrables == null) { // single dialog
-				dialogDeferrables = new DialogDeferrables();
-				dialogDeferrables.setLocationRelativeTo(this);
-			}
-			if(dialogDeferrables.getExtendedState() == JFrame.ICONIFIED) {
-				dialogDeferrables.setExtendedState(JFrame.NORMAL);
-			} else {
-				dialogDeferrables.setVisible(true);
-			}
-			btnshowDeferrables.setIcon(DEFERRED_ICON); // reset button icon (not success/fail)
-		}));
-		btnshowDeferrables.setBorder(BorderFactory.createEmptyBorder(4, 9, 3, 7));
-		statusLeftPanel.add(btnshowDeferrables);
-		statusPanel.add(statusLeftPanel, BorderLayout.WEST);
+		// Status bar - selection panel
+		JPanel selectionPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 1));
+		selectionPanel.setOpaque(false);
 		
+		Action selectAll = new UsnaAction(null, "labelSelectAll", "/images/list_unordered.png", e -> devicesTable.selectAll());
+		Action selectOnLine = new SelectionAction(devicesTable, "labelSelectOnLine", "/images/list_online.png", i -> model.get(i).getStatus() == Status.ON_LINE);
+		Action selectOffLine = new SelectionAction(devicesTable, "labelSelectOffLine", "/images/list_offline.png", i -> model.get(i).getStatus() == Status.OFF_LINE);
+		
+		selectionPanel.add(Box.createHorizontalStrut(3));
+		
+		selectAllBtn = new JButton(selectAll);
+		selectAllBtn.setBorder(BorderFactory.createEmptyBorder(2, 20, 3, 20));
+		selectAllBtn.setBackground(Main.STATUS_LINE_COLOR);
+		selectionPanel.add(selectAllBtn);
+		
+		selectOnlineBtn = new JButton(selectOnLine);
+		selectOnlineBtn.setBorder(BorderFactory.createEmptyBorder(2, 20, 3, 20));
+		selectOnlineBtn.setBackground(Main.STATUS_LINE_COLOR);
+		selectionPanel.add(selectOnlineBtn);
+		
+		selectOfflineBtn = new JButton(selectOffLine) ;
+		selectOfflineBtn.setBorder(BorderFactory.createEmptyBorder(2, 20, 3, 20));
+		selectOfflineBtn.setBackground(Main.STATUS_LINE_COLOR);
+		selectionPanel.add(selectOfflineBtn);
+		
+		// selection popup
+		JButton btnSelectCombo = new JButton();
+		btnSelectCombo.setAction(new UsnaDropdownAction(btnSelectCombo, "labelSelectDevices", "/images/expand-more.png", new Object[] {
+				new SelectionAction(devicesTable, "labelSelectOnLineReboot", null, null, i -> model.get(i).getStatus() == Status.ON_LINE && model.get(i).rebootRequired()),
+				new SelectionAction(devicesTable, "labelSelectG1", null, null, i -> model.get(i) instanceof AbstractG1Device),
+				new SelectionAction(devicesTable, "labelSelectG2", null, null, i -> model.get(i) instanceof AbstractG2Device /*&& model.get(i) instanceof AbstractG3Device == false*/), // G2+
+				new SelectionAction(devicesTable, "labelSelectWIFI", null, null, i -> model.get(i) instanceof AbstractG1Device || model.get(i) instanceof AbstractG2Device),
+				new SelectionAction(devicesTable, "labelSelectBLU", null, null, i -> model.get(i) instanceof AbstractBTHomeDevice),
+				new SelectionAction(devicesTable, "labelSelectGhosts", null, null, i -> model.get(i) instanceof GhostDevice)
+		}));
+		btnSelectCombo.setContentAreaFilled(false);
+		btnSelectCombo.setBorder(BorderFactory.createEmptyBorder(1, 5, 1, 5));
+		selectionPanel.add(btnSelectCombo);
+		
+		statusPanel.add(selectionPanel, BorderLayout.WEST);
+
 		JPanel statusFilterPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 2, 0));
 		statusFilterPanel.setOpaque(false);
-		statusFilterPanel.add(new JLabel(LABELS.getString("lblFilter")));
+		JLabel filterLabel = new JLabel(LABELS.getString("lblFilter"));
+		filterLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 2, 0));
+		statusFilterPanel.add(filterLabel);
 		textFieldFilter.setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));
 		textFieldFilter.setColumns(16);
 		
@@ -350,36 +376,27 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		textFieldFilter.getDocument().addDocumentListener( (TextDocumentListener)event -> setColFilter(comboFilterCol) );
 		
 		JButton eraseFilterButton = new JButton(eraseFilterAction);
-		eraseFilterButton.setBorder(BorderFactory.createEmptyBorder(0, 2, 0, 2));
+		eraseFilterButton.setBorder(BorderFactory.createEmptyBorder(0, 2, 0, 6));
 		eraseFilterButton.setContentAreaFilled(false);
 		eraseFilterButton.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_E, SHORTCUT_KEY), "find_erase");
 		eraseFilterButton.getActionMap().put("find_erase", eraseFilterAction);
 		statusFilterPanel.add(eraseFilterButton);
-
-		Action selectAll = new UsnaAction(null, "labelSelectAll", null, "/images/list_unordered.png", null, e -> devicesTable.selectAll());
-		Action selectOnLine = new SelectionAction(devicesTable, "labelSelectOnLine", null, "/images/list_online.png", i -> model.get(i).getStatus() == Status.ON_LINE);
 		
-		JButton btnSelectAll = new JButton(selectAll);
-		btnSelectAll.setBorder(BorderFactory.createEmptyBorder(2, 7, 2, 8));
-		statusFilterPanel.add(btnSelectAll);
-		
-		JButton btnSelectOnline = new JButton(selectOnLine);
-		btnSelectOnline.setBorder(BorderFactory.createEmptyBorder(2, 7, 2, 8));
-		statusFilterPanel.add(btnSelectOnline);
-		
-		// Selection popup
-		JButton btnSelectCombo = new JButton();
-		btnSelectCombo.setAction(new UsnaDropdownAction(btnSelectCombo, "labelSelectDevices", "/images/expand-more.png", new Object[] {
-				new SelectionAction(devicesTable, "labelSelectOnLineReboot", null, null, i -> model.get(i).getStatus() == Status.ON_LINE && model.get(i).rebootRequired()),
-				new SelectionAction(devicesTable, "labelSelectG1", null, null, i -> model.get(i) instanceof AbstractG1Device),
-				new SelectionAction(devicesTable, "labelSelectG2", null, null, i -> model.get(i) instanceof AbstractG2Device /*&& model.get(i) instanceof AbstractG3Device == false*/), // G2+
-				new SelectionAction(devicesTable, "labelSelectWIFI", null, null, i -> model.get(i) instanceof AbstractG1Device || model.get(i) instanceof AbstractG2Device),
-				new SelectionAction(devicesTable, "labelSelectBLU", null, null, i -> model.get(i) instanceof AbstractBTHomeDevice),
-				new SelectionAction(devicesTable, "labelSelectGhosts", null, null, i -> model.get(i) instanceof GhostDevice)
+		JButton btnshowDeferrables = new JButton("0", DEFERRED_ICON);
+		btnshowDeferrables.addActionListener(new UsnaAction(this, "labelShowDeferrables", e -> {
+			if(dialogDeferrables == null) { // single dialog
+				dialogDeferrables = new DialogDeferrables();
+				dialogDeferrables.setLocationRelativeTo(this);
+			}
+			if(dialogDeferrables.getExtendedState() == JFrame.ICONIFIED) {
+				dialogDeferrables.setExtendedState(JFrame.NORMAL);
+			} else {
+				dialogDeferrables.setVisible(true);
+			}
+			btnshowDeferrables.setIcon(DEFERRED_ICON); // reset button icon (not success/fail)
 		}));
-		btnSelectCombo.setContentAreaFilled(false);
-		btnSelectCombo.setBorder(BorderFactory.createEmptyBorder(1, 0, 1, 3));
-		statusFilterPanel.add(btnSelectCombo);
+		btnshowDeferrables.setBorder(BorderFactory.createEmptyBorder(2, 9, 3, 7));
+		statusFilterPanel.add(btnshowDeferrables);
 		
 		statusPanel.add(statusFilterPanel, BorderLayout.EAST);
 		statusPanel.setBackground(Main.STATUS_LINE_COLOR);
@@ -718,14 +735,34 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 	public synchronized void setStatus(String status) {
 		statusLabel.setText(status);
 	}
-	
+
 	private synchronized void displayStatus() {
-		if(statusLineReserved == false) {
-			if(textFieldFilter.getText().isEmpty()) {
-				statusLabel.setText(String.format(LABELS.getString("scanning_end"), model.size(), devicesTable.getSelectedRowCount()));
-			} else {
-				statusLabel.setText(String.format(LABELS.getString("filter_status"), model.size(), devicesTable.getRowCount(), devicesTable.getSelectedRowCount()));
+		int onLine = 0;
+		int offLine = 0;
+		int notLogged = 0;
+		int error = 0;
+		int ghosts = 0;
+		for(int idx = 0; idx < model.size(); idx++) {
+			switch(model.get(idx).getStatus()) {
+			case ON_LINE -> onLine++;
+			case OFF_LINE -> offLine++;
+			case NOT_LOOGGED -> notLogged++;
+			case ERROR -> error++;
+			case GHOST -> ghosts++;
+			default -> {}
 			}
+		}
+		//System.out.println("ON_LINE: " + onLine + "; OFF_LINE: " + offLine + "; NOT_LOOGGED: " + notLogged + "; ERROR: " + error + "; GHOST: " + ghosts);
+		if(textFieldFilter.getText().isEmpty()) {
+			selectAllBtn.setText(String.format(LABELS.getString("num_tot_devices"), model.size()));
+		} else {
+			selectAllBtn.setText(String.format(LABELS.getString("num_tot_sh_devices"), devicesTable.getRowCount(), model.size()));
+		}
+		selectOnlineBtn.setText(String.format(LABELS.getString("num_online_devices"), onLine));
+		selectOfflineBtn.setText(String.format(LABELS.getString("num_offline_devices"), offLine));
+
+		if(statusLineReserved == false) {
+			statusLabel.setText(String.format(LABELS.getString("selected_status"), devicesTable.getSelectedRowCount()));
 		}
 	}
 } //557 - 614 - 620 - 669 - 705 - 727 - 699 - 760 - 782 - 811 - 805 - 646 - 699 - 706 - 688 - 698 - 707 - 720

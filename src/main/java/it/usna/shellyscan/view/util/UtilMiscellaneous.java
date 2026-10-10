@@ -21,6 +21,11 @@ public class UtilMiscellaneous {
 		return (dName == null || dName.isEmpty()) ? d.getHostname() : dName;
 	}
 	
+	public static String getDescNameOrType(ShellyAbstractDevice d) {
+		final String dName = d.getName();
+		return (dName == null || dName.isEmpty()) ? d.getTypeName() : dName;
+	}
+	
 	public static String getDescName(ShellyAbstractDevice d, int channel) {
 		if(d instanceof ModulesHolder) {
 			DeviceModule[] ri = ((ModulesHolder)d).getModules();

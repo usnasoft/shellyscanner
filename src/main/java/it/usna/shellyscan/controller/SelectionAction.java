@@ -22,6 +22,13 @@ public class SelectionAction extends UsnaAction {
 			putValue(SMALL_ICON, new ImageIcon(getClass().getResource(smallIcon)));
 		}
 	}
+	
+	public SelectionAction(JTable table, String tooltipId, String smallIcon, IntPredicate predicate) {
+		this(table, tooltipId, predicate);
+		if(smallIcon != null) {
+			putValue(SMALL_ICON, new ImageIcon(getClass().getResource(smallIcon)));
+		}
+	}
 
 	public SelectionAction(JTable table, String tooltipId, IntPredicate test) {
 		super(null, tooltipId, null, null);

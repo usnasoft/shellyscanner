@@ -470,7 +470,9 @@ lnm restore
 ---
 Shelly i4 Gen4
 
+Plug C G4 ha BLU Motion ZB come BTHome ma non gateway -> doppio tab anche qui?
 
+todo: status count in status bar
 
 todo: Firmware 2.0.0
 - wi-fi channel in checklist ?

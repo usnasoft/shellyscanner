@@ -57,7 +57,7 @@ public class Main {
 		
 		logger.info(APP_NAME + " " + VERSION_CODE);
 		if(logger.isDebugEnabled()) {
-			logger.debug("Runnnning on: " + System.getProperty("os.name") + "; java version: " + Runtime.version().toString() + " / " + System.getProperties().getProperty("java.vendor"));
+			logger.debug("Runnnning on: {}; java version: {} / {}", System.getProperty("os.name"), Runtime.version(), System.getProperties().getProperty("java.vendor"));
 		}
 
 		final ScannerProperties appProp = ScannerProperties.init(Path.of(System.getProperty("user.home"), ".shellyScanner"));

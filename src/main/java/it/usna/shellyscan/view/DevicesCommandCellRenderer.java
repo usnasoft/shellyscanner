@@ -55,7 +55,7 @@ public class DevicesCommandCellRenderer implements TableCellRenderer {
 	static final ImageIcon UP_ON_IMG = new ImageIcon(DevicesCommandCellRenderer.class.getResource("/images/Arrow16up_on.png"));
 	static final ImageIcon STOP_IMG = new ImageIcon(DevicesCommandCellRenderer.class.getResource("/images/PlayerStop16.png"));
 	static final ImageIcon LOCK_IMG = new ImageIcon(DevicesCommandCellRenderer.class.getResource("/images/Lock16.png"));
-	static final ImageIcon UNLOCK_IMG = new ImageIcon(DevicesCommandCellRenderer.class.getResource("/images/LockOpen16.png"));
+	static final ImageIcon UNLOCK_IMG = new ImageIcon(DevicesCommandCellRenderer.class.getResource("/images/LockOpenBlue16.png"));
 	private JButton onOffButton0 = new JButton();
 	private JLabel label0 = new JLabel();
 	private JPanel panel0 = new JPanel();

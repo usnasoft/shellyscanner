@@ -53,7 +53,7 @@ public class DialogWiFiDevicesInfo extends JDialog {
 		
 		((List<?>)bleVal).stream().forEach(blu -> {
 			if(blu instanceof ShellyAbstractDevice bth) {
-				tModel.addRow(UtilMiscellaneous.getDescName(bth), bth.getMacAddress());
+				tModel.addRow(UtilMiscellaneous.getDescNameOrType(bth), bth.getMacAddress());
 			} else { // mac (String)
 				tModel.addRow(null, blu);
 			}
