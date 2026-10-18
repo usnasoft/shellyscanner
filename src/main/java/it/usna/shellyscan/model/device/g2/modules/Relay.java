@@ -30,7 +30,7 @@ public class Relay implements RelayInterface {
 	}
 	
 	public void fillSettings(JsonNode configuration, JsonNode input) {
-		name = configuration.get("name").asString("");
+		name = configuration.get("name").asString(null);
 		if(name == null || name.isEmpty()) {
 			name = input.get("name").asString("");
 		}

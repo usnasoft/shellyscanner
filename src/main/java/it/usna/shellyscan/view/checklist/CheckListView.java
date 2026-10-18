@@ -657,6 +657,8 @@ public class CheckListView extends JDialog implements UsnaEventListener<Devices.
 		Boolean eco = boolVal(config.at("/sys/device/eco_mode"));
 		Object ap = boolVal(config.at("/wifi/ap/enable"));
 		ArrayList<LogMode> logModes = new ArrayList<>();
+		Status oldStatus = d.getStatus();
+		
 		if(config.at("/sys/debug/websocket/enable").booleanValue(false)) {
 			logModes.add(LogMode.SOCKET);
 		}
@@ -721,7 +723,6 @@ public class CheckListView extends JDialog implements UsnaEventListener<Devices.
 		}
 		String scripts = NOT_APPLICABLE_STR;
 		if (d instanceof BatteryDeviceInterface == false) {
-			Status oldStatus = d.getStatus();
 			try {
 				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
 				List<Script> sList = Script.list(d);
@@ -740,6 +741,7 @@ public class CheckListView extends JDialog implements UsnaEventListener<Devices.
 			}
 		} catch (Exception e) {
 			autoFWupdate = NOT_APPLICABLE_STR;
+			d.setStatus(oldStatus); // restore the old status; now is probably Status.ERROR (some devices do not support scripts)
 			LOG.debug("fw auto update: {}", d, e);
 		}
 		

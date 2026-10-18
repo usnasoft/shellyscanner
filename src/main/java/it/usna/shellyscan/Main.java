@@ -43,7 +43,7 @@ public class Main {
 
 	public static final ResourceBundle LABELS = ResourceBundle.getBundle("LabelsBundle");
 	public static final Color BG_COLOR = new Color(60, 70, 90);
-	public static final Color TAB_LINE1_COLOR = new Color(240, 240, 240);
+	public static final Color TAB_LINE1_COLOR = Color.WHITE;//new Color(240, 240, 240);
 	public static final Color TAB_LINE2_COLOR = new Color(210, 218, 255);
 	public static final Color STATUS_LINE_COLOR = new Color(172, 195, 230);
 	public static final String TAB_VERSION = "5"; // on version change reset table settings
@@ -120,7 +120,7 @@ public class Main {
 				pDecoded = new String(Base64.getDecoder().decode(lPwd.substring(1))).toCharArray();
 			} catch(RuntimeException e) {}
 		}
-		DevicesFactory.setCredential((lUser == null || lUser.isEmpty()) ? null : lUser, pDecoded);
+		DevicesFactory.setCredentials((lUser == null || lUser.isEmpty()) ? null : lUser, pDecoded);
 
 		// Non interactive commands
 		if((cliIndex = cli.hasEntry("-backup")) >= 0) {
@@ -147,7 +147,14 @@ public class Main {
 			} else {
 				fontMultiplier = Float.parseFloat(appProp.getProperty(ScannerProperties.PROP_FONT_SIZE));
 			}
+//			try {
+//			    UIManager.setLookAndFeel( new FlatLightLaf() );
+//			} catch( Exception ex ) {
+//			    System.err.println( "Failed to initialize LaF" );
+//			}
 			UsnaSwingUtils.setNimbusLookAndFeel(fontMultiplier);
+//			UIManager.put("nimbusBlueGrey", Color.WHITE);
+//			UIManager.put("nimbusLightBackground", Color.WHITE);
 			UsnaSwingUtils.macOddities();
 			//UIManager.getLookAndFeelDefaults().put("Table:\"Table.cellRenderer\".alternateRowColor", TAB_LINE2_COLOR); // genera strani log
 		} catch (Exception e) {

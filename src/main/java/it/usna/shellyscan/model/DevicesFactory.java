@@ -114,6 +114,7 @@ import it.usna.shellyscan.model.device.g3.ShellyShutterG3;
 import it.usna.shellyscan.model.device.g3.ShellyXMOD1;
 import it.usna.shellyscan.model.device.g3.XT1;
 import it.usna.shellyscan.model.device.g4.AbstractG4Device;
+import it.usna.shellyscan.model.device.g4.LoquedGateway;
 import it.usna.shellyscan.model.device.g4.Shelly0_10VPMG4;
 import it.usna.shellyscan.model.device.g4.Shelly1G4;
 import it.usna.shellyscan.model.device.g4.Shelly1LG4;
@@ -125,6 +126,7 @@ import it.usna.shellyscan.model.device.g4.ShellyEMG4;
 import it.usna.shellyscan.model.device.g4.ShellyFloodG4;
 import it.usna.shellyscan.model.device.g4.ShellyFloodSG4;
 import it.usna.shellyscan.model.device.g4.ShellyG4Unmanaged;
+import it.usna.shellyscan.model.device.g4.ShellyI4G4;
 import it.usna.shellyscan.model.device.g4.ShellyMini1G4;
 import it.usna.shellyscan.model.device.g4.ShellyMini1PMG4;
 import it.usna.shellyscan.model.device.g4.ShellyMiniEMG4;
@@ -139,6 +141,7 @@ public class DevicesFactory {
 	private static final Logger LOG = LoggerFactory.getLogger(DevicesFactory.class);
 	private static String lastUser;
 	private static char[] lastP;
+	private static boolean login = true;
 	
 	public static ShellyAbstractDevice create(HttpClient httpClient, WebSocketClient wsClient, final InetAddress address, int port, JsonNode info, String name) {
 		final int gen = info.path("gen").intValue(0);
@@ -165,7 +168,7 @@ public class DevicesFactory {
 			final boolean auth = info.get("auth").asBoolean();
 			if(auth) {
 				synchronized (DevicesFactory.class) { // wait for this in order to authenticate next protected devices
-					if(lastUser == null || lastP == null || LoginManagerG1.testBasicAuthentication(httpClient, address, port, lastUser, lastP, "/settings") != HttpStatus.OK_200) {
+					if((lastUser == null || lastP == null || LoginManagerG1.testBasicAuthentication(httpClient, address, port, lastUser, lastP, "/settings") != HttpStatus.OK_200) && login) {
 						DialogAuthentication credentialsDlg = new DialogAuthentication(
 								Main.LABELS.getString("dlgAuthTitle"),
 								Main.LABELS.getString("labelUser"),
@@ -176,7 +179,7 @@ public class DevicesFactory {
 						do {
 							credentialsDlg.setVisible(true);
 							if((user = credentialsDlg.getUser()) != null) {
-								setCredential(user, credentialsDlg.getPassword().clone());
+								setCredentials(user, credentialsDlg.getPassword().clone());
 							}
 							credentialsDlg.setMessage(String.format(Main.LABELS.getString("dlgAuthMessageError"), name));
 						} while(user != null && LoginManagerG1.testBasicAuthentication(httpClient, address, port, lastUser, lastP, "/settings") != HttpStatus.OK_200);
@@ -336,10 +339,11 @@ public class DevicesFactory {
 				} else if(PbSXT1St802.SVC0_TYPE.equals(type)) {
 					yield new PbSXT1St802(address, port, name);
 				} else {
-					yield new XT1(address, port, name);
+					yield new ShellyG3Unmanaged(address, port, name);
 				}
 			}
 			case PbSOgemraySW40.ID -> new PbSOgemraySW40(address, port, name);
+
 			default -> new ShellyG3Unmanaged(address, port, name);
 			};
 		} catch(Exception e) { // really unexpected
@@ -380,7 +384,9 @@ public class DevicesFactory {
 			case Shelly1LG4.MODEL -> new Shelly1LG4(address, port, name);
 			case Shelly2LG4.MODEL -> new Shelly2LG4(address, port, name);
 			case ShellyPresenceG4.MODEL -> new ShellyPresenceG4(address, port, name);
-
+			case ShellyI4G4.MODEL -> new ShellyI4G4(address, port, name);
+			case LoquedGateway.MODEL -> new LoquedGateway(address, port, name);
+			
 			// Battery operated
 			case ShellyFloodSG4.MODEL -> new ShellyFloodSG4(address, port, name);
 			case ShellyFloodG4.MODEL -> new ShellyFloodG4(address, port, name);
@@ -409,7 +415,7 @@ public class DevicesFactory {
 		synchronized (DevicesFactory.class) { // wait for this in order to authenticate all subsequent
 			int status = HttpStatus.UNAUTHORIZED_401;
 			char[] p = lastP;
-			if(lastP == null || (status = LoginManagerG2.testDigestAuthentication(httpClient, address, port, lastP, "/rpc/Shelly.GetStatus")) != HttpStatus.OK_200) {
+			if((lastP == null || (status = LoginManagerG2.testDigestAuthentication(httpClient, address, port, lastP, "/rpc/Shelly.GetStatus")) != HttpStatus.OK_200) && login) {
 				DialogAuthentication credentialsDlg = new DialogAuthentication(
 						Main.LABELS.getString("dlgAuthTitle"),
 						null /*labelUser*/,
@@ -462,10 +468,15 @@ public class DevicesFactory {
 	}
 
 	// default credentials
-	public static void setCredential(String user, char[] p) {
+	public static void setCredentials(String user, char[] p) {
 		synchronized (DevicesFactory.class) {
 			lastUser = user;
 			lastP = p;
 		}
+	}
+	
+	// ask credentials if default credentials do not exists or are wrong
+	public static void askCredentials(boolean ask) {
+		login = ask;
 	}
 }

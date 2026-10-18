@@ -1,5 +1,5 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="https://www.w3.org/2001/XMLSchema-instance"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>it.usna</groupId>
@@ -8,10 +8,16 @@
 	<name>Shelly Scanner</name>
 	<packaging>jar</packaging>
 
+	<organization>
+		<name>USNA</name>
+		<url>https://www.usna.it/</url>
+	</organization>
+
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven.compiler.source>17</maven.compiler.source>
 		<maven.compiler.target>17</maven.compiler.target>
+		<eclipseJettyVersion>12.1.14</eclipseJettyVersion>
 	</properties>
 
 	<build>
@@ -100,7 +106,7 @@
 		<dependency>
 			<groupId>org.jmdns</groupId>
 			<artifactId>jmdns</artifactId>
-			<version>3.6.3</version>
+			<version>3.6.4</version>
 			<!--<version>3.6.2-SNAPSHOT</version>-->
 		</dependency>
 		<dependency>
@@ -111,17 +117,38 @@
 		<dependency>
 			<groupId>org.eclipse.jetty</groupId>
 			<artifactId>jetty-client</artifactId>
-			<version>12.1.14</version>
+			<version>${eclipseJettyVersion}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.eclipse.jetty.websocket</groupId>
 			<artifactId>jetty-websocket-jetty-client</artifactId>
-			<version>12.1.14</version>
+			<version>${eclipseJettyVersion}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.jfree</groupId>
 			<artifactId>jfreechart</artifactId>
 			<version>1.5.6</version>
 		</dependency>
+
+<!--		<dependency>
+			<groupId>com.formdev</groupId>
+			<artifactId>flatlaf</artifactId>
+			<version>3.7.2</version>
+			<classifier>no-natives</classifier>
+		</dependency>
+
+		 if using other FlatLaf libraries, it is required to exclude
+		"com.formdev:flatlaf" 
+		<dependency>
+			<groupId>com.formdev</groupId>
+			<artifactId>flatlaf-extras</artifactId>
+			<version>3.7.2</version>
+			<exclusions>
+				<exclusion>
+					<groupId>com.formdev</groupId>
+					<artifactId>flatlaf</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>-->
 	</dependencies>
 </project>

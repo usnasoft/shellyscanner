@@ -44,7 +44,6 @@ import it.usna.shellyscan.model.device.blu.BluTRV;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.g2.AbstractProDevice;
 import it.usna.shellyscan.model.device.g3.AbstractG3Device;
-import it.usna.shellyscan.model.device.g4.AbstractG4Device;
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
@@ -388,11 +387,9 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 					});
 				}
 				// BTHome (BLU)
-				if(d instanceof AbstractG2Device g2 && d instanceof BatteryDeviceInterface == false) {
-					if(d instanceof AbstractProDevice || d instanceof AbstractG3Device || d instanceof AbstractG4Device) {
-						TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-						createBlu(g2);
-					}
+				if(d instanceof BatteryDeviceInterface == false && (d instanceof AbstractProDevice || d instanceof AbstractG3Device)) { // G4 extends G3
+					TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
+					createBlu((AbstractG2Device)d);
 				}
 			}
 		} catch(DeviceUnauthorizedException e) {
@@ -408,7 +405,7 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 			g2.getJSONIterator("/rpc/Shelly.GetComponents?dynamic_only=true", "components").forEachRemaining(compInfo -> {
 				String key = compInfo.path("key").asString("");
 				// here we assume that specia BLU (TRV, ...) always comes first
-				if(key.startsWith(BluTRV.DEVICE_KEY_PREFIX) ) {
+				if(key.startsWith(BluTRV.DEVICE_KEY_PREFIX)) {
 					try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e) {}
 					AbstractBTHomeDevice newBlu = newBluDevice(g2, compInfo, key);
 					specialBLUSet.add(newBlu.getMacAddress());
@@ -424,7 +421,7 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 			LOG.error("Unexpected-blu-add: {}; host: {}", g2.getAddressAndPort(), g2.getHostname(), e);
 		}
 	}
-
+	
 	// Add or update (existence tested by mac address) a device
 	private void newDevice(ShellyAbstractDevice d) {
 		synchronized(devices) {
@@ -432,14 +429,17 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 			if(ind >= 0) {
 				ShellyAbstractDevice existingDevice = devices.get(ind);
 				if(d instanceof ShellyUnmanagedDeviceInterface == false || existingDevice instanceof ShellyUnmanagedDeviceInterface || existingDevice instanceof GhostDevice) { // Do not replace device if was recognized and now is not
-//					if(d.getTypeID() != existingDevice.getTypeID() || d instanceof BatteryDeviceInterface == false) { // who cares: full refresh
-						if(refreshProcess.get(ind) != null) {
-							refreshProcess.get(ind).cancel(true);
-						}
-						devices.set(ind, d);
-						fireEvent(EventType.SUBSTITUTE, ind);
-						refreshProcess.set(ind, scheduleRefresh(d, ind, refreshInterval, refreshTics));
-//					} // else -> don't loose stored informations on BatteryDeviceInterface implementation
+					if(refreshProcess.get(ind) != null) {
+						refreshProcess.get(ind).cancel(true);
+					}
+					devices.set(ind, d);
+					fireEvent(EventType.SUBSTITUTE, ind);
+					refreshProcess.set(ind, scheduleRefresh(d, ind, refreshInterval, refreshTics));
+					// remove any subsequent row representing the same device (very rare)
+					int second;
+					if((second = indexOf(d, ind + 1)) >= 0) {
+						remove(second);
+					}
 				}
 			} else {
 				final int idx = devices.size();
@@ -641,8 +641,17 @@ public class Devices extends it.usna.util.UsnaObservable<Devices.EventType, Inte
 		LOG.debug("Model closed");
 	}
 	
-//	103966 [pool-1-thread-29] TRACE it.usna.shellyscan.model.Devices - getting info (/shelly) /192.168.1.17:80 - shellyprorgbwwpm-2cbcbba78f08
-//	103966 [pool-1-thread-91] TRACE it.usna.shellyscan.model.Devices - getting info (/shelly) /192.168.1.17:80 - Pro RGBWW
+	private int indexOf(ShellyAbstractDevice d, int fromIndex) {
+		synchronized(devices) {
+			for (int i = fromIndex; i < devices.size(); i++) {
+				if (devices.get(i).equals(d)) {
+					return i;
+				}
+			}
+		}
+		return -1;
+	}
+
 	public int indexByIP(InetAddressAndPort ip) {
 		synchronized(devices) {
 			for(int i = 0; i < devices.size(); i++) {
