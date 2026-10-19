@@ -97,13 +97,13 @@ public class PanelStore extends JPanel {
 			}
 		});
 		
-		JButton btnNewButton = new JButton(LABELS.getString("dlgAppStoreClearButtonLabel"));
+		JButton btnClearArchive = new JButton(LABELS.getString("dlgAppStoreClearButtonLabel"));
 		GridBagConstraints gbc_btnNewButton = new GridBagConstraints();
 		gbc_btnNewButton.anchor = GridBagConstraints.NORTHWEST;
 		gbc_btnNewButton.insets = new Insets(0, 0, 10, 15);
 		gbc_btnNewButton.gridx = 1;
 		gbc_btnNewButton.gridy = 2;
-		add(btnNewButton, gbc_btnNewButton);
+		add(btnClearArchive, gbc_btnNewButton);
 		
 		JLabel lblNewLabel_1 = new JLabel(LABELS.getString("dlgAppStoreAutoReload"));
 		lblNewLabel_1.setFont(lblNewLabel_1.getFont().deriveFont(Font.BOLD));
@@ -125,7 +125,9 @@ public class PanelStore extends JPanel {
 		gbc_chckbxNewCheckBox.gridx = 1;
 		gbc_chckbxNewCheckBox.gridy = 3;
 		add(autoReloadCheckBox, gbc_chckbxNewCheckBox);
-		btnNewButton.addActionListener(event -> {
+		autoReloadCheckBox.setSelected(appProp.getBoolProperty(ScannerProperties.PROP_AUTORELOAD_ARCHIVE));
+		
+		btnClearArchive.addActionListener(event -> {
 			final String cancel = UIManager.getString("OptionPane.cancelButtonText");
 			if(JOptionPane.showOptionDialog(
 					PanelStore.this, LABELS.getString("dlgAppStoreDeleteConfirm"), LABELS.getString("warningTitle"),
@@ -134,7 +136,6 @@ public class PanelStore extends JPanel {
 				removeGhosts(model);
 			}
 		});
-		autoReloadCheckBox.setSelected(appProp.getBoolProperty(ScannerProperties.PROP_AUTORELOAD_ARCHIVE));
 		
 		ChangeListener enableListener = e -> {
 			textFieldStoreFileName.setEnabled(chckbxUseStore.isSelected());

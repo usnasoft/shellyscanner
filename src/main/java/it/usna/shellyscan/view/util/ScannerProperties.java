@@ -48,6 +48,7 @@ public class ScannerProperties extends AppProperties { // cannot also extend Usn
 	
 	public static final String PROP_LOGIN_USER = "RLUSER";
 	public static final String PROP_LOGIN_PWD = "RLPWD";
+	public static final String PROP_ASK_PWD = "ASKPWD";
 	
 	public static final String PROP_REFRESH_ITERVAL = "REFRESH_INTERVAL";
 	private static final int PROP_REFRESH_ITERVAL_DEFAULT = 2;
@@ -106,6 +107,7 @@ public class ScannerProperties extends AppProperties { // cannot also extend Usn
 		defaultBoolProperty(PROP_USE_ARCHIVE, true);
 		defaultBoolProperty(PROP_AUTORELOAD_ARCHIVE, true);
 		defaultProperty(PROP_SCRIPT_PATH, userPath);
+		defaultBoolProperty(PROP_ASK_PWD, true);
 	}
 	
 	public static ScannerProperties init(Path file) {

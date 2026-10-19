@@ -42,6 +42,7 @@ public class PanelNetwork extends JPanel {
 	private JPasswordField passwordFieldRL;
 	private IntegerTextFieldPanel refreshTextField;
 	private IntegerTextFieldPanel confRefreshtextField;
+	private JCheckBox askCredentialsCheckBox;
 	
 	private JPanel panelIP = new JPanel();
 	private JButton btnIPEdit = new JButton(LABELS.getString("edit"));
@@ -51,7 +52,7 @@ public class PanelNetwork extends JPanel {
 		dialogIP = new DialogNetworkIPScanSelection(parent);
 		
 		GridBagLayout gridBagLayout = new GridBagLayout();
-		gridBagLayout.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+		gridBagLayout.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
 		gridBagLayout.columnWeights = new double[]{1.0, 1.0, 0.0, 10.0};
 		gridBagLayout.columnWidths = new int[]{0, 0, 0, 10};
 		setLayout(gridBagLayout);
@@ -98,7 +99,7 @@ public class PanelNetwork extends JPanel {
 		
 		JScrollPane scrollPane = new JScrollPane();
 		GridBagConstraints gbc_scrollPane = new GridBagConstraints();
-		gbc_scrollPane.insets = new Insets(5, 0, 5, 0);
+		gbc_scrollPane.insets = new Insets(5, 0, 5, 5);
 		gbc_scrollPane.gridwidth = 2;
 		gbc_scrollPane.fill = GridBagConstraints.HORIZONTAL;
 		gbc_scrollPane.gridx = 1;
@@ -114,7 +115,7 @@ public class PanelNetwork extends JPanel {
 			fillIPPanel();
 		});
 		GridBagConstraints gbc_btnIPEdit = new GridBagConstraints();
-		gbc_btnIPEdit.insets = new Insets(1, 0, 1, 0);
+		gbc_btnIPEdit.insets = new Insets(1, 0, 5, 0);
 		gbc_btnIPEdit.gridx = 3;
 		gbc_btnIPEdit.gridy = 1;
 		add(btnIPEdit, gbc_btnIPEdit);
@@ -190,16 +191,6 @@ public class PanelNetwork extends JPanel {
 		gbc_passwordFieldRL.gridy = 4;
 		add(passwordFieldRL, gbc_passwordFieldRL);
 
-		JLabel lblNewLabel_7 = new JLabel(LABELS.getString("dlgAppSetRestrictedLogigMsg"));
-		GridBagConstraints gbc_lblNewLabel_7 = new GridBagConstraints();
-		gbc_lblNewLabel_7.anchor = GridBagConstraints.NORTHWEST;
-		gbc_lblNewLabel_7.fill = GridBagConstraints.HORIZONTAL;
-		gbc_lblNewLabel_7.gridwidth = 2;
-		gbc_lblNewLabel_7.insets = new Insets(0, 0, 5, 5);
-		gbc_lblNewLabel_7.gridx = 0;
-		gbc_lblNewLabel_7.gridy = 5;
-		add(lblNewLabel_7, gbc_lblNewLabel_7);
-
 		JCheckBox chckbxShowPwd = new JCheckBox(LABELS.getString("labelShowPwd"));
 		GridBagConstraints gbc_chckbxNewCheckBox = new GridBagConstraints();
 		gbc_chckbxNewCheckBox.insets = new Insets(0, 0, 5, 5);
@@ -207,6 +198,26 @@ public class PanelNetwork extends JPanel {
 		gbc_chckbxNewCheckBox.gridx = 2;
 		gbc_chckbxNewCheckBox.gridy = 5;
 		add(chckbxShowPwd, gbc_chckbxNewCheckBox);
+				
+		askCredentialsCheckBox = new JCheckBox(LABELS.getString("dlgAppSetRestrictedLoginAsk"));
+		GridBagConstraints gbc_askCredentialsCheckBox = new GridBagConstraints();
+		gbc_askCredentialsCheckBox.gridwidth = 2;
+		gbc_askCredentialsCheckBox.anchor = GridBagConstraints.NORTHWEST;
+		gbc_askCredentialsCheckBox.insets = new Insets(0, 0, 5, 5);
+		gbc_askCredentialsCheckBox.gridx = 1;
+		gbc_askCredentialsCheckBox.gridy = 6;
+		add(askCredentialsCheckBox, gbc_askCredentialsCheckBox);
+		askCredentialsCheckBox.setSelected(appProp.getBoolProperty(ScannerProperties.PROP_ASK_PWD));
+
+		JLabel lblNewLabel_7 = new JLabel(LABELS.getString("dlgAppSetRestrictedLogigMsg"));
+		GridBagConstraints gbc_lblNewLabel_7 = new GridBagConstraints();
+		gbc_lblNewLabel_7.anchor = GridBagConstraints.NORTHWEST;
+		gbc_lblNewLabel_7.fill = GridBagConstraints.HORIZONTAL;
+		gbc_lblNewLabel_7.gridwidth = 3;
+		gbc_lblNewLabel_7.insets = new Insets(0, 0, 5, 0);
+		gbc_lblNewLabel_7.gridx = 1;
+		gbc_lblNewLabel_7.gridy = 7;
+		add(lblNewLabel_7, gbc_lblNewLabel_7);
 
 		JSeparator separator_2 = new JSeparator();
 		GridBagConstraints gbc_separator_2 = new GridBagConstraints();
@@ -214,7 +225,7 @@ public class PanelNetwork extends JPanel {
 		gbc_separator_2.fill = GridBagConstraints.HORIZONTAL;
 		gbc_separator_2.gridwidth = 4;
 		gbc_separator_2.gridx = 0;
-		gbc_separator_2.gridy = 6;
+		gbc_separator_2.gridy = 8;
 		add(separator_2, gbc_separator_2);
 		
 		JLabel lblNewLabel_rt = new JLabel(LABELS.getString("dlgAppSetRefreshTime"));
@@ -223,7 +234,7 @@ public class PanelNetwork extends JPanel {
 		gbc_lblNewLabel_rt.anchor = GridBagConstraints.WEST;
 		gbc_lblNewLabel_rt.insets = new Insets(0, 0, 5, 5);
 		gbc_lblNewLabel_rt.gridx = 0;
-		gbc_lblNewLabel_rt.gridy = 7;
+		gbc_lblNewLabel_rt.gridy = 9;
 		add(lblNewLabel_rt, gbc_lblNewLabel_rt);
 		
 		refreshTextField = new IntegerTextFieldPanel(appProp.getIntProperty(ScannerProperties.PROP_REFRESH_ITERVAL/*, ScannerProperties.PROP_REFRESH_ITERVAL_DEFAULT*/), 1, 3600, false);
@@ -231,7 +242,7 @@ public class PanelNetwork extends JPanel {
 		gbc_refreshtextField.anchor = GridBagConstraints.WEST;
 		gbc_refreshtextField.insets = new Insets(0, 0, 5, 5);
 		gbc_refreshtextField.gridx = 1;
-		gbc_refreshtextField.gridy = 7;
+		gbc_refreshtextField.gridy = 9;
 		add(refreshTextField, gbc_refreshtextField);
 		refreshTextField.setColumns(4);
 		
@@ -241,7 +252,7 @@ public class PanelNetwork extends JPanel {
 		gbc_lblNewLabel_4.anchor = GridBagConstraints.WEST;
 		gbc_lblNewLabel_4.insets = new Insets(0, 0, 5, 5);
 		gbc_lblNewLabel_4.gridx = 0;
-		gbc_lblNewLabel_4.gridy = 8;
+		gbc_lblNewLabel_4.gridy = 10;
 		add(lblNewLabel_4, gbc_lblNewLabel_4);
 		
 		confRefreshtextField = new IntegerTextFieldPanel(appProp.getIntProperty(ScannerProperties.PROP_REFRESH_CONF/*, ScannerProperties.PROP_REFRESH_CONF_DEFAULT*/), 1, 9999, false);
@@ -249,7 +260,7 @@ public class PanelNetwork extends JPanel {
 		gbc_confRefreshtextField.insets = new Insets(0, 0, 5, 5);
 		gbc_confRefreshtextField.anchor = GridBagConstraints.WEST;
 		gbc_confRefreshtextField.gridx = 1;
-		gbc_confRefreshtextField.gridy = 8;
+		gbc_confRefreshtextField.gridy = 10;
 		add(confRefreshtextField, gbc_confRefreshtextField);
 		confRefreshtextField.setColumns(4);
 		
@@ -262,7 +273,7 @@ public class PanelNetwork extends JPanel {
 		gbc_lblNewLabel_5.anchor = GridBagConstraints.NORTHWEST;
 		gbc_lblNewLabel_5.gridwidth = 4;
 		gbc_lblNewLabel_5.gridx = 0;
-		gbc_lblNewLabel_5.gridy = 9;
+		gbc_lblNewLabel_5.gridy = 11;
 		add(lblNewLabel_5, gbc_lblNewLabel_5);
 		
 		final char pwdEchoChar = passwordFieldRL.getEchoChar();
@@ -308,17 +319,17 @@ public class PanelNetwork extends JPanel {
 		String rlUser = userFieldRL.getText();
 		appProp.setProperty(ScannerProperties.PROP_LOGIN_USER, rlUser);
 		String encodedRlp = "";
-//		if(rlUser.length() > 0) {
-			char[] rlp = passwordFieldRL.getPassword();
-			try {
-				String rplStr = new String(rlp);
-				encodedRlp = (char)(rplStr.hashCode() % ('Z' - 'A') + 'A') + Base64.getEncoder().encodeToString(rplStr.getBytes());
-			} catch(RuntimeException e) {}
-			DevicesFactory.setCredential(rlUser, rlp);
-//		} else {
-//			DevicesFactory.setCredential(null, null);
-//		}
+		char[] rlp = passwordFieldRL.getPassword();
+		try {
+			String rplStr = new String(rlp);
+			encodedRlp = (char)(rplStr.hashCode() % ('Z' - 'A') + 'A') + Base64.getEncoder().encodeToString(rplStr.getBytes());
+		} catch(RuntimeException e) {}
+		DevicesFactory.setCredentials(rlUser, rlp);
 		appProp.setProperty(ScannerProperties.PROP_LOGIN_PWD, encodedRlp);
+		
+		boolean askCredentials = askCredentialsCheckBox.isSelected();
+		appProp.setBoolProperty(ScannerProperties.PROP_ASK_PWD, askCredentials);
+		DevicesFactory.askCredentials(askCredentials);
 		
 		// Refresh
 		boolean r0 = appProp.changeProperty(ScannerProperties.PROP_REFRESH_ITERVAL, refreshTextField.getText());

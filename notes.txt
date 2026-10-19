@@ -470,8 +470,7 @@ lnm restore
 ---
 Shelly i4 Gen4
 new status bar
-
-todo login: do no ask
+login: do no ask (-nopwd)
 
 Plug C G4 ha BLU Motion ZB come BTHome ma non gateway -> doppio tab anche qui?
 

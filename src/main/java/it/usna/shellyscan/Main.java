@@ -121,6 +121,8 @@ public class Main {
 			} catch(RuntimeException e) {}
 		}
 		DevicesFactory.setCredentials((lUser == null || lUser.isEmpty()) ? null : lUser, pDecoded);
+		boolean askPwd = cli.hasEntry("-nopwd") < 0 && appProp.getBoolProperty(ScannerProperties.PROP_ASK_PWD);
+		DevicesFactory.askCredentials(askPwd);
 
 		// Non interactive commands
 		if((cliIndex = cli.hasEntry("-backup")) >= 0) {
