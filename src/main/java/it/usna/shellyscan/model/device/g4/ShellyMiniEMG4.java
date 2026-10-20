@@ -18,11 +18,10 @@ import tools.jackson.databind.node.ObjectNode;
  * Em mini Gen 4 model
  */
 public class ShellyMiniEMG4 extends AbstractG4Device {
-//	private static final Logger LOG = LoggerFactory.getLogger(ShellyMiniEMG4.class);
 	public static final String ID = "MiniEMG4";
 	public static final String MODEL = "S4EM-001PXCEU16";
 	private EM1MiniMeters meters0;
-	private Meters meters[];
+	private Meters[] meters;
 
 	public ShellyMiniEMG4(InetAddress address, int port, String hostname) {
 		super(address, port, hostname);
