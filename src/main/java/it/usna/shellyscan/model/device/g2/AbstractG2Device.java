@@ -676,6 +676,13 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 		TimeUnit.MILLISECONDS.sleep(delay);
 		errors.add(postCommand("Cloud.SetConfig", outConfig));
 
+		JsonNode modbus = config.get("modbus");
+		if(modbus != null && modbus.has("enable")) {
+			outConfig.putObject("config").put("enable", modbus.get("enable").asBoolean());
+			TimeUnit.MILLISECONDS.sleep(delay);
+			errors.add(postCommand("Modbus.SetConfig", outConfig));
+		}
+
 		// Sys.SetConfig
 		JsonNode sys = config.get("sys");
 		ObjectNode outDevice = (ObjectNode)sys.get("device")/*.deepCopy()*/;
