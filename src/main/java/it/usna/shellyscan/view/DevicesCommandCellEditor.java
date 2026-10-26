@@ -44,7 +44,7 @@ import it.usna.shellyscan.model.device.modules.ThermostatInterface;
 import it.usna.shellyscan.model.device.modules.WhiteInterface;
 import it.usna.shellyscan.view.lightsEditor.DialogEditLights;
 import it.usna.shellyscan.view.util.Msg;
-import it.usna.swing.VerticalFlowLayout2;
+import it.usna.swing.VerticalFlowLayout;
 
 public class DevicesCommandCellEditor extends AbstractCellEditor implements TableCellEditor {
 	private static final long serialVersionUID = 1L;
@@ -110,10 +110,6 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 			JPanel panel = getRGBWPanel(rgbws[0], true);
 			edited = rgbws;
 			return panel;
-		} else if(value instanceof RGBInterface[] rgbs) {
-			JPanel panel = getRGBPanel(rgbs[0], true);
-			edited = rgbs;
-			return panel;
 		} else if(value instanceof ThermostatG1 th) { // TRV Gen1
 			JPanel panel = getThermostatG1Panel(th);
 			edited = th;
@@ -145,12 +141,18 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 					}
 				} else if(module instanceof RollerInterface rol) {
 					stackedPanel.add(getRollerPanel(rol));
-				} else if(module instanceof WhiteInterface white && modArray.length <= 2) {
-					stackedPanel.add(getWhitePanel(white, i == indEditButton));
-				} else if(module instanceof WhiteInterface white /*&& modArray.length > 2*/) {
-					stackedPanel.add(getWhiteSyntheticPanel(white, i == indEditButton));
+				} else if(module instanceof WhiteInterface white) {
+					if(modArray.length <= 2) {
+						stackedPanel.add(getWhitePanel(white, i == indEditButton));
+					} else {
+						stackedPanel.add(getWhiteSyntheticPanel(white, i == indEditButton));
+					}
 				} else if(module instanceof RGBInterface rgb) {
-					stackedPanel.add(getRGBSyntheticPanel(rgb, i == indEditButton));
+					if(modArray.length <= 2) {
+						stackedPanel.add(getRGBPanel(rgb, i == indEditButton));
+					} else {
+						stackedPanel.add(getRGBSyntheticPanel(rgb, i == indEditButton));
+					}
 				} else if (module instanceof CameraInterface cam) {
 					stackedPanel.add(getCameraPanel(cam, table));
 				}
@@ -178,7 +180,7 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 //			}
 		});
 		
-		JPanel relayButtonPanel = new JPanel(new VerticalFlowLayout2(VerticalFlowLayout2.VAlign.CENTER, VerticalFlowLayout2.HAlign.CENTER, 0, 0));
+		JPanel relayButtonPanel = new JPanel(new VerticalFlowLayout(VerticalFlowLayout.VAlign.CENTER, VerticalFlowLayout.HAlign.CENTER, 0, 0));
 		relayButtonPanel.setOpaque(false);
 		relayButtonPanel.add(relayButton);
 
@@ -224,7 +226,7 @@ public class DevicesCommandCellEditor extends AbstractCellEditor implements Tabl
 				cancelCellEditing();
 			});
 
-			JPanel relayButtonPanel = new JPanel(new VerticalFlowLayout2(VerticalFlowLayout2.VAlign.CENTER, VerticalFlowLayout2.HAlign.CENTER, 0, 0));
+			JPanel relayButtonPanel = new JPanel(new VerticalFlowLayout(VerticalFlowLayout.VAlign.CENTER, VerticalFlowLayout.HAlign.CENTER, 0, 0));
 			relayButtonPanel.setOpaque(false);
 			relayButtonPanel.add(relayButton);
 
