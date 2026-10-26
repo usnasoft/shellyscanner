@@ -20,7 +20,7 @@ import it.usna.shellyscan.controller.UsnaAction;
 import it.usna.shellyscan.view.scheduler.gen2plus.pareditor.ParamEditorDialog.EditorPanel;
 import it.usna.shellyscan.view.util.ColorUtil;
 import it.usna.shellyscan.view.util.UtilMiscellaneous;
-import it.usna.swing.VerticalFlowLayout2;
+import it.usna.swing.VerticalFlowLayout;
 
 /**
  * RGB(W)Panel for the scheduler
@@ -43,7 +43,7 @@ public class RGBPanel extends JPanel implements EditorPanel {
 
 	public RGBPanel(final String parameters) {
 		setBorder(BorderFactory.createEmptyBorder(6, 8, 12, 8));
-		setLayout(new VerticalFlowLayout2(VerticalFlowLayout2.VAlign.CENTER, VerticalFlowLayout2.HAlign.LEFT, 0, 0));
+		setLayout(new VerticalFlowLayout(VerticalFlowLayout.VAlign.CENTER, VerticalFlowLayout.HAlign.LEFT, 0, 0));
 		
 		var rgbMatcher = RGB_PATTERN.matcher(parameters);
 		rgbMatcher.find();
@@ -120,7 +120,7 @@ public class RGBPanel extends JPanel implements EditorPanel {
 		colorsPanel.add(blueButton);
 		colorsPanel.add(violetButton);
 		colorsPanel.add(whiteButton);
-		this.add(colorsPanel, VerticalFlowLayout2.HAlign.CENTER);
+		this.add(colorsPanel, VerticalFlowLayout.HAlign.CENTER);
 
 		previewColorPanel.setBorder(BorderFactory.createLineBorder(Color.GRAY));
 		previewColorPanel.setPreferredSize(new Dimension(200, 10));

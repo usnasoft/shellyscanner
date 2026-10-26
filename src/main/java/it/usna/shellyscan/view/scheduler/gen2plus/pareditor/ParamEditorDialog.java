@@ -19,7 +19,7 @@ import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 
 import it.usna.shellyscan.controller.UsnaAction;
-import it.usna.swing.VerticalFlowLayout2;
+import it.usna.swing.VerticalFlowLayout;
 
 public class ParamEditorDialog extends JDialog {
 	private static final long serialVersionUID = 1L;
@@ -30,7 +30,7 @@ public class ParamEditorDialog extends JDialog {
 		setLayout(new BorderLayout());
 		
 //		JPanel editorsPanel = new JPanel(new VerticalFlowLayout(VerticalFlowLayout.CENTER, VerticalFlowLayout.LEFT, 0, 0));
-		JPanel editorsPanel = new JPanel(new VerticalFlowLayout2(VerticalFlowLayout2.VAlign.CENTER, VerticalFlowLayout2.HAlign.CENTER, 0, 0));
+		JPanel editorsPanel = new JPanel(new VerticalFlowLayout(VerticalFlowLayout.VAlign.CENTER, VerticalFlowLayout.HAlign.CENTER, 0, 0));
 		ArrayList<EditorPanel> editorsList = new ArrayList<>();
 		String par = paramsTF.getText();
 		if(SwitchEditor.check(par)) {

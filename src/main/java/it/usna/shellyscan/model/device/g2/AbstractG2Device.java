@@ -268,6 +268,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 			JsonNode error;
 			if((error = resp.get("error")) == null) { // {"id":1,"src":"shellyplusi4-xxx","result":{"restart_required":true}}
 				rebootRequired = resp.path("result").path("restart_required").asBoolean(false);
+//				if(rebootRequired) LOG.debug("reload: {} {}", method, payload);
 				if(status == Status.NOT_LOOGGED) {
 					return "Status-PROTECTED";
 				} else if(status == Status.ERROR) {
@@ -705,7 +706,7 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 		if(zigbee != null) {
 			outConfig.set("config", zigbee/*.deepCopy()*/);
 			TimeUnit.MILLISECONDS.sleep(delay);
-			errors.add(postCommand("Zigbee.SetConfig", outConfig));
+//			errors.add(postCommand("Zigbee.SetConfig", outConfig));
 		}
 		
 		final JsonNode mqtt = config.path("mqtt");

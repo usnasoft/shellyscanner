@@ -111,6 +111,9 @@ public class Msg {
 		} else if(device.getStatus() == Status.NOT_LOOGGED) {
 			showMsg(owner, Main.LABELS.getString("Status-PROTECTED") + ".", Main.LABELS.getString("errorTitle"), JOptionPane.ERROR_MESSAGE);
 			return true;
+		} else if(e.getMessage() != null && e.getMessage().startsWith("Satus-") && Main.LABELS.containsKey(e.getMessage())) {
+			showMsg(owner, Main.LABELS.getString(e.getMessage()) + ".", Main.LABELS.getString("errorTitle"), JOptionPane.ERROR_MESSAGE);
+			return false;
 		} else {
 			errorMsg(owner, e);
 			return false;

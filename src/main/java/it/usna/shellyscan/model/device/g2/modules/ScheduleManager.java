@@ -115,7 +115,7 @@ public class ScheduleManager {
 	 */
 	public static void restore(AbstractG2Device parent, Map<String, JsonNode> backupJsons, final long delay, List<String> errors) throws InterruptedException {
 		JsonNode schedule = backupJsons.get("Schedule.List.json");
-		if(schedule != null) { // some devices do not have Schedule.List +H&T
+		if(schedule != null && schedule.isMissingNode() == false) { // some devices do not have Schedule.List +H&T
 			TimeUnit.MILLISECONDS.sleep(delay);
 			errors.add(parent.postCommand("Schedule.DeleteAll", "{}"));
 			for(JsonNode sc: schedule.get("jobs")) {
