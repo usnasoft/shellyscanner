@@ -5,13 +5,11 @@ import java.io.IOException;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
-import javax.swing.JLabel;
-import javax.swing.JSlider;
-import javax.swing.event.ChangeListener;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import it.usna.shellyscan.Main;
 import it.usna.shellyscan.controller.UsnaToggleAction;
 import it.usna.shellyscan.model.device.modules.WhiteInterface;
 
@@ -19,18 +17,26 @@ public class WhitePanel extends LightPanel {
 	private static final Logger LOG = LoggerFactory.getLogger(WhitePanel.class);
 	private static final long serialVersionUID = 1L;
 	private final WhiteInterface light;
-	private final JLabel label = new JLabel();
 	private final UsnaToggleAction switchAction;
-	private final JSlider brightnessSlider;
-	private final ChangeListener brightenessSliderListener;
+	private SliderPanel brightnessSlider;
 	
 	public WhitePanel(final WhiteInterface light) {
+		super(new BorderLayout(20, 0));
 		this.light = light;
 		setBorder(BorderFactory.createEmptyBorder(6, 8, 12, 8));
+		
+		brightnessSlider = new SliderPanel(light.getMinBrightness(), light.getMaxBrightness(), () -> light.getBrightness(), "%", () -> {
+			String label = light.getLabel();
+			return (label != null && label.isBlank() == false) ? label : Main.LABELS.getString("labelBrightness");
+			}, val -> {
+			try {
+				light.setBrightness(val);
+			} catch (IOException e1) {
+				LOG.error("brightness", e1);
+			}
+			adjust();
+		});
 
-		setLayout(new BorderLayout(20, 0));
-		brightnessSlider = new JSlider(light.getMinBrightness(), light.getMaxBrightness(), light.getBrightness());
-		add(label, BorderLayout.NORTH);
 		switchAction = new UsnaToggleAction(null, "/images/Standby24.png", "/images/StandbyOn24.png", e -> {
 			try {
 				light.toggle();
@@ -41,24 +47,13 @@ public class WhitePanel extends LightPanel {
 		});
 		JButton switchButton = new JButton(switchAction);
 		switchButton.setContentAreaFilled(false);
-		switchButton.setBorder(BorderFactory.createEmptyBorder());
+		switchButton.setBorder(BorderFactory.createEmptyBorder(10, 0, 0, 0));
 		add(switchButton, BorderLayout.EAST);
-		brightenessSliderListener = e -> {
-			if(brightnessSlider.getValueIsAdjusting() == false) {
-				try {
-					light.setBrightness(brightnessSlider.getValue());
-				} catch (IOException e1) {
-					LOG.error("brightness", e1);
-				}
-				adjust();
-			} else {
-				label.setText(light.getLabel() + " " + brightnessSlider.getValue() + "%");
-			}
-		};
+
 		add(brightnessSlider, BorderLayout.CENTER);
 		adjust();
 	}
-	
+
 	@Override
 	public void change(boolean on) throws IOException {
 		light.change(on);
@@ -66,12 +61,7 @@ public class WhitePanel extends LightPanel {
 	}
 
 	private void adjust() {
-		brightnessSlider.removeChangeListener(brightenessSliderListener);
-		
 		switchAction.setSelected(light.isOn());
-		label.setText(light.getLabel() + " " + light.getBrightness() + "%");
-		brightnessSlider.setValue(light.getBrightness());
-		
-		brightnessSlider.addChangeListener(brightenessSliderListener);
+		brightnessSlider.adjust();
 	}
 }

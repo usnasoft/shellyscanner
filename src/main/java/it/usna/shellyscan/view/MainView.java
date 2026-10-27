@@ -403,6 +403,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 			btnshowDeferrables.setIcon(DEFERRED_ICON); // reset button icon (not success/fail)
 		}));
 		btnshowDeferrables.setBorder(BorderFactory.createEmptyBorder(2, 9, 3, 7));
+		btnshowDeferrables.setToolTipText(LABELS.getString("labelShowDeferrablesTootips"));
 		statusFilterPanel.add(btnshowDeferrables);
 		
 		statusPanel.add(statusFilterPanel, BorderLayout.EAST);
@@ -418,7 +419,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		contentPane.add(scrollPane, BorderLayout.CENTER);
 		devicesTable.sortByColumn(DevicesTable.COL_IP_IDX, SortOrder.ASCENDING);
 		devicesTable.loadColPos(appProp);
-		devicesTable.setUptimeRenderMode(appProp.getProperty(ScannerProperties.PROP_UPTIME_MODE/*, ScannerProperties.PROP_UPTIME_MODE_DEFAULT*/));
+		devicesTable.setUptimeRenderMode(appProp.getProperty(ScannerProperties.PROP_UPTIME_MODE));
 		
 		scrollPane.setViewportView(devicesTable);
 		scrollPane.getViewport().setBackground(Main.BG_COLOR);

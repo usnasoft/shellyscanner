@@ -11,14 +11,12 @@ import java.io.IOException;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.JButton;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JSlider;
-import javax.swing.event.ChangeListener;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import it.usna.shellyscan.Main;
 import it.usna.shellyscan.controller.UsnaToggleAction;
 import it.usna.shellyscan.model.device.modules.CCTInterface;
 import it.usna.shellyscan.view.util.ColorUtil;
@@ -29,26 +27,39 @@ public class CCTPanel extends LightPanel {
 	private static final Logger LOG = LoggerFactory.getLogger(CCTPanel.class);
 	private static final long serialVersionUID = 1L;
 	private final CCTInterface light;
-	private final JLabel labelBrighteness = new JLabel();
 	private final UsnaToggleAction switchAction;
-	private final JSlider brightnessSlider;
-	private final JLabel labelTemperature = new JLabel();
-	private final JSlider temperatureSlider;
+	private final SliderPanel brightnessSlider;
+	private final SliderPanel temperatureSlider;
 	private final JPanel previewWhitePanel = new JPanel();
-	private final ChangeListener temperatureSliderListener;
-	private final ChangeListener brightenessSliderListener;
-	
+
 	public CCTPanel(final CCTInterface light) {
+		super(new VerticalFlowLayout(VerticalFlowLayout.VAlign.CENTER, VerticalFlowLayout.HAlign.CENTER, 0, 0));
 		this.light = light;
 		setBorder(BorderFactory.createEmptyBorder(6, 8, 12, 8));
-		setLayout(new VerticalFlowLayout(VerticalFlowLayout.VAlign.CENTER, VerticalFlowLayout.HAlign.CENTER, 0, 0));
-		// set initial values to avoid listeners to call the device in initial adjust
-		brightnessSlider = new JSlider(light.getMinBrightness(), light.getMaxBrightness(), light.getBrightness());
-		temperatureSlider = new JSlider(light.getMinTemperature(), light.getMaxTemperature(), light.getTemperature());
+
+		brightnessSlider = new SliderPanel(light.getMinBrightness(), light.getMaxBrightness(), () -> light.getBrightness(), "%", () -> {
+			String label = light.getLabel();
+			return (label != null && label.isBlank() == false) ? label : Main.LABELS.getString("labelBrightness");
+			}, val -> {
+			try {
+				light.setBrightness(val);
+			} catch (IOException e1) {
+				LOG.error("brightness", e1);
+			}
+			adjust();
+		});
+		
+		temperatureSlider = new SliderPanel(light.getMinTemperature(), light.getMaxTemperature(), () -> light.getTemperature(), "K", () -> LABELS.getString("labelTemperature"), val -> {
+			try {
+				light.setTemperature(val);
+			} catch (IOException e1) {
+				LOG.error("brightness", e1);
+			}
+			adjust();
+		}, val -> previewWhitePanel.setBackground(ColorUtil.kelvinToColor(val)));
 
 		JPanel switchPanel = new JPanel(new BorderLayout(20, 0));
 		switchPanel.setOpaque(false);
-		switchPanel.add(labelBrighteness, BorderLayout.NORTH);
 		switchAction = new UsnaToggleAction(null, "/images/Standby24.png", "/images/StandbyOn24.png", e -> {
 			try {
 				light.toggle();
@@ -59,69 +70,24 @@ public class CCTPanel extends LightPanel {
 		});
 		JButton switchButton = new JButton(switchAction);
 		switchButton.setContentAreaFilled(false);
-		switchButton.setBorder(BorderFactory.createEmptyBorder());
+		switchButton.setBorder(BorderFactory.createEmptyBorder(10, 0, 0, 0));
 		switchPanel.add(switchButton, BorderLayout.EAST);
 		switchPanel.add(brightnessSlider, BorderLayout.CENTER);
-		brightenessSliderListener = e -> {
-			if(brightnessSlider.getValueIsAdjusting() == false) {
-				try {
-					light.setBrightness(brightnessSlider.getValue());
-					adjust();
-				} catch (IOException e1) {
-					LOG.error("sliderGain", e1);
-				}
-			} else {
-				labelBrighteness.setText(light.getLabel() + " " + brightnessSlider.getValue() + "%");
-			}
-		};
+
 		this.add(switchPanel);
 
 		JPanel temperaturePanel = new JPanel(new BorderLayout(20, 0));
 		temperaturePanel.setOpaque(false);
-		temperaturePanel.add(labelTemperature, BorderLayout.NORTH);
 		temperaturePanel.add(temperatureSlider, BorderLayout.CENTER);
 		temperaturePanel.add(Box.createHorizontalStrut(DialogEditLights.OFF_IMG.getIconWidth()), BorderLayout.EAST);
-		temperatureSliderListener = e -> {
-			if(temperatureSlider.getValueIsAdjusting() == false) {
-				try {
-					light.setTemperature(temperatureSlider.getValue());
-					adjust();
-				} catch (IOException e1) {
-					LOG.error("sliderTemp", e1);
-				}
-			} else {
-				labelTemperature.setText(LABELS.getString("labelTemperature") + ": " + temperatureSlider.getValue() + "K");
-				previewWhitePanel.setBackground(ColorUtil.kelvinToColor(temperatureSlider.getValue()));
-			}
-		};
+
 		this.add(temperaturePanel);
 		
 		JPanel kbuttonsPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
 		kbuttonsPanel.setOpaque(false);
-		final JButton k3000 = new JButton("3000K");
-		final JButton k4500 = new JButton("4500K");
-		final JButton k6000 = new JButton("6000K");
-		k3000.setBackground(ColorUtil.kelvinToColor(3000));
-		k4500.setBackground(ColorUtil.kelvinToColor(4500));
-		k6000.setBackground(ColorUtil.kelvinToColor(6000));
-		k3000.setBorder(BorderFactory.createEmptyBorder(2, 7, 2, 7));
-		k4500.setBorder(BorderFactory.createEmptyBorder(2, 7, 2, 7));
-		k6000.setBorder(BorderFactory.createEmptyBorder(2, 7, 2, 7));
-		k3000.addActionListener(e -> {
-			temperatureSlider.setValue(UtilMiscellaneous.clamp(3000, light.getMinTemperature(), light.getMaxTemperature())); // slider listener will call the device
-			adjust();
-		});
-		k4500.addActionListener(e -> {
-			temperatureSlider.setValue(UtilMiscellaneous.clamp(4500, light.getMinTemperature(), light.getMaxTemperature())); // slider listener will call the device
-			adjust();
-		});
-		k6000.addActionListener(e -> {
-			temperatureSlider.setValue(UtilMiscellaneous.clamp(6000, light.getMinTemperature(), light.getMaxTemperature())); // slider listener will call the device
-			adjust();
-		});
-		kbuttonsPanel.add(k3000);
-		kbuttonsPanel.add(k4500);
-		kbuttonsPanel.add(k6000);
+		kbuttonsPanel.add(tempButton(3000));
+		kbuttonsPanel.add(tempButton(4500));
+		kbuttonsPanel.add(tempButton(6000));
 		this.add(kbuttonsPanel);
 		
 		previewWhitePanel.setBorder(BorderFactory.createLineBorder(Color.GRAY));
@@ -131,6 +97,21 @@ public class CCTPanel extends LightPanel {
 		adjust();
 	}
 	
+	private JButton tempButton(int temp) {
+		final JButton btn = new JButton(temp + "K");
+		btn.setBackground(ColorUtil.kelvinToColor(temp));
+		btn.setBorder(BorderFactory.createEmptyBorder(2, 7, 2, 7));
+		btn.addActionListener(e -> {
+			try {
+				light.setTemperature(UtilMiscellaneous.clamp(temp, light.getMinTemperature(), light.getMaxTemperature()));
+			} catch (IOException ex) {
+				LOG.error("tempButton set", ex);
+			}
+			adjust();
+		});
+		return btn;
+	}
+	
 	@Override
 	public void change(boolean on) throws IOException {
 		light.change(on);
@@ -138,17 +119,10 @@ public class CCTPanel extends LightPanel {
 	}
 
 	void adjust() {
-		brightnessSlider.removeChangeListener(brightenessSliderListener);
-		temperatureSlider.removeChangeListener(temperatureSliderListener);
-		
 		switchAction.setSelected(light.isOn());
-		labelBrighteness.setText(light.getLabel() + " " + light.getBrightness() + "%");
-		brightnessSlider.setValue(light.getBrightness());
-		labelTemperature.setText(LABELS.getString("labelTemperature") + ": " + light.getTemperature() + "K");
-		temperatureSlider.setValue(light.getTemperature());
 		previewWhitePanel.setBackground(ColorUtil.kelvinToColor(light.getTemperature()));
-		
-		brightnessSlider.addChangeListener(brightenessSliderListener);
-		temperatureSlider.addChangeListener(temperatureSliderListener);
+
+		brightnessSlider.adjust();
+		temperatureSlider.adjust();
 	}
 }

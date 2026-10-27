@@ -7,6 +7,7 @@ import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dialog;
 import java.awt.FlowLayout;
+import java.awt.LayoutManager;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
@@ -22,6 +23,7 @@ import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.KeyStroke;
 
 import org.slf4j.Logger;
@@ -34,7 +36,7 @@ import it.usna.shellyscan.model.device.modules.DeviceModule;
 import it.usna.shellyscan.model.device.modules.RGBCCTInterface;
 import it.usna.shellyscan.model.device.modules.RGBInterface;
 import it.usna.shellyscan.model.device.modules.WhiteInterface;
-import it.usna.swing.VerticalFlowLayout2;
+import it.usna.swing.VerticalFlowLayout;
 
 public class DialogEditLights extends JDialog {
 	private static final long serialVersionUID = 1L;
@@ -48,8 +50,12 @@ public class DialogEditLights extends JDialog {
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		getContentPane().setLayout(new BorderLayout(0, 0));
 
-		JPanel commandStackedPanel = commandPanel(lights);
-		getContentPane().add(commandStackedPanel, BorderLayout.CENTER);
+		JScrollPane scrollPane = new JScrollPane(/*JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS*/);
+		scrollPane.setBorder(BorderFactory.createEmptyBorder(2, 0, 1, 0));
+		JPanel commandStackedPanel = commandPanel(lights, scrollPane);
+		scrollPane.setViewportView(commandStackedPanel);
+
+		getContentPane().add(scrollPane, BorderLayout.CENTER);
 		if(commandPanels.size() > 1) {
 			getContentPane().add(northPanel(lights), BorderLayout.NORTH);
 		}
@@ -101,8 +107,8 @@ public class DialogEditLights extends JDialog {
 		}
 	}
 	
-	private JPanel commandPanel(DeviceModule[] lights) {
-		JPanel stackedPanel = new JPanel(new VerticalFlowLayout2(VerticalFlowLayout2.VAlign.CENTER, VerticalFlowLayout2.HAlign.CENTER, 0, 0));
+	private JPanel commandPanel(DeviceModule[] lights, JScrollPane scrollPane) {
+		JPanel stackedPanel = new JPanel(new VerticalFlowLayout(VerticalFlowLayout.VAlign.TOP, VerticalFlowLayout.HAlign.CENTER, 0, 0));
 		for(int i = 0; i < lights.length; i++) {
 			if(lights[i] instanceof RGBCCTInterface rgbcct) { // rgbcct extends rgb & cct
 				commandPanels.add(new RGBCCTPanel(rgbcct));
@@ -110,6 +116,7 @@ public class DialogEditLights extends JDialog {
 				commandPanels.add(new RGBPanel(rgb));
 			} else if(lights[i] instanceof CCTInterface cct) {
 				commandPanels.add(new CCTPanel(cct));
+
 			} else if(lights[i] instanceof WhiteInterface w) {
 				commandPanels.add(new WhitePanel(w));
 			}
@@ -123,6 +130,13 @@ public class DialogEditLights extends JDialog {
 }
 
 abstract class LightPanel extends JPanel {
+	public LightPanel() {
+	}
+	
+	public LightPanel(LayoutManager l) {
+		super(l);
+	}
+	
 	private static final long serialVersionUID = 1L;
 	public abstract void change(boolean on) throws IOException;
 }
