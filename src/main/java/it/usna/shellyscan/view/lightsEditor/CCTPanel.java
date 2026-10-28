@@ -9,7 +9,6 @@ import java.awt.FlowLayout;
 import java.io.IOException;
 
 import javax.swing.BorderFactory;
-import javax.swing.Box;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 
@@ -33,9 +32,13 @@ public class CCTPanel extends LightPanel {
 	private final JPanel previewWhitePanel = new JPanel();
 
 	public CCTPanel(final CCTInterface light) {
-		super(new VerticalFlowLayout(VerticalFlowLayout.VAlign.CENTER, VerticalFlowLayout.HAlign.CENTER, 0, 0));
-		this.light = light;
+		super(new BorderLayout(20, 0));
 		setBorder(BorderFactory.createEmptyBorder(6, 8, 12, 8));
+		this.light = light;
+		
+		JPanel centerPanel = new JPanel(new VerticalFlowLayout(VerticalFlowLayout.VAlign.CENTER, VerticalFlowLayout.HAlign.CENTER, 0, 0));
+		centerPanel.setOpaque(false);
+		add(centerPanel, BorderLayout.CENTER);
 
 		brightnessSlider = new SliderPanel(light.getMinBrightness(), light.getMaxBrightness(), () -> light.getBrightness(), "%", () -> {
 			String label = light.getLabel();
@@ -48,6 +51,7 @@ public class CCTPanel extends LightPanel {
 			}
 			adjust();
 		});
+		centerPanel.add(brightnessSlider);
 		
 		temperatureSlider = new SliderPanel(light.getMinTemperature(), light.getMaxTemperature(), () -> light.getTemperature(), "K", () -> LABELS.getString("labelTemperature"), val -> {
 			try {
@@ -57,9 +61,8 @@ public class CCTPanel extends LightPanel {
 			}
 			adjust();
 		}, val -> previewWhitePanel.setBackground(ColorUtil.kelvinToColor(val)));
+		centerPanel.add(temperatureSlider);
 
-		JPanel switchPanel = new JPanel(new BorderLayout(20, 0));
-		switchPanel.setOpaque(false);
 		switchAction = new UsnaToggleAction(null, "/images/Standby24.png", "/images/StandbyOn24.png", e -> {
 			try {
 				light.toggle();
@@ -68,31 +71,25 @@ public class CCTPanel extends LightPanel {
 				LOG.error("toggle", e1);
 			}
 		});
+		
+		JPanel switchButtonPanel = new JPanel(new VerticalFlowLayout(VerticalFlowLayout.VAlign.TOP, VerticalFlowLayout.HAlign.LEFT, 0, 0));
 		JButton switchButton = new JButton(switchAction);
 		switchButton.setContentAreaFilled(false);
 		switchButton.setBorder(BorderFactory.createEmptyBorder(10, 0, 0, 0));
-		switchPanel.add(switchButton, BorderLayout.EAST);
-		switchPanel.add(brightnessSlider, BorderLayout.CENTER);
-
-		this.add(switchPanel);
-
-		JPanel temperaturePanel = new JPanel(new BorderLayout(20, 0));
-		temperaturePanel.setOpaque(false);
-		temperaturePanel.add(temperatureSlider, BorderLayout.CENTER);
-		temperaturePanel.add(Box.createHorizontalStrut(DialogEditLights.OFF_IMG.getIconWidth()), BorderLayout.EAST);
-
-		this.add(temperaturePanel);
+		switchButtonPanel.setOpaque(false);
+		switchButtonPanel.add(switchButton);
+		add(switchButtonPanel, BorderLayout.EAST);
 		
 		JPanel kbuttonsPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
 		kbuttonsPanel.setOpaque(false);
 		kbuttonsPanel.add(tempButton(3000));
 		kbuttonsPanel.add(tempButton(4500));
 		kbuttonsPanel.add(tempButton(6000));
-		this.add(kbuttonsPanel);
+		centerPanel.add(kbuttonsPanel);
 		
 		previewWhitePanel.setBorder(BorderFactory.createLineBorder(Color.GRAY));
-		previewWhitePanel.setPreferredSize(new Dimension(200, 10));
-		this.add(previewWhitePanel);
+		previewWhitePanel.setPreferredSize(new Dimension(190, 10));
+		centerPanel.add(previewWhitePanel);
 		
 		adjust();
 	}

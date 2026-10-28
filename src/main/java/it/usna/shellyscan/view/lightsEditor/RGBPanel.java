@@ -11,7 +11,6 @@ import java.io.IOException;
 
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
-import javax.swing.Box;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 
@@ -27,7 +26,7 @@ import it.usna.shellyscan.view.util.ColorUtil;
 import it.usna.swing.VerticalFlowLayout;
 
 /**
- * RGB(W)Panel
+ * RGB(W) Panel
  */
 public class RGBPanel extends LightPanel {
 	private static final long serialVersionUID = 1L;
@@ -43,9 +42,13 @@ public class RGBPanel extends LightPanel {
 	private final JPanel previewColorPanel = new JPanel();
 
 	public RGBPanel(final RGBInterface light) {
-		super(new VerticalFlowLayout(VerticalFlowLayout.VAlign.CENTER, VerticalFlowLayout.HAlign.CENTER, 0, 0));
-		this.light = light;
+		super(new BorderLayout(20, 0));
 		setBorder(BorderFactory.createEmptyBorder(6, 8, 12, 8));
+		this.light = light;
+		
+		JPanel centerPanel = new JPanel(new VerticalFlowLayout(VerticalFlowLayout.VAlign.CENTER, VerticalFlowLayout.HAlign.CENTER, 0, 0));
+		centerPanel.setOpaque(false);
+		add(centerPanel, BorderLayout.CENTER);
 
 		sliderGain = new SliderPanel(0, 100, () -> light.getGain(), "%", () -> {
 			String label = light.getLabel();
@@ -58,6 +61,7 @@ public class RGBPanel extends LightPanel {
 			}
 			adjust();
 		});
+		centerPanel.add(sliderGain);
 		
 		sliderRed = new SliderPanel(0, 255, () -> light.getRed(), "", LABELS.getString("labelRed"), val -> {
 			try {
@@ -65,6 +69,7 @@ public class RGBPanel extends LightPanel {
 			} catch(Exception e) {}
 			adjust();
 		}, val -> previewColorPanel.setBackground(ColorUtil.rgbwColor(val, light.getGreen(), light.getBlue(), light instanceof RGBWInterface rgbw ? rgbw.getWhite() : -1)));
+		centerPanel.add(sliderRed);
 		
 		sliderGreen = new SliderPanel(0, 255, () -> light.getGreen(), "", LABELS.getString("labelGreen"), val -> {
 			try {
@@ -72,6 +77,7 @@ public class RGBPanel extends LightPanel {
 			} catch(Exception e) {}
 			adjust();
 		}, val -> previewColorPanel.setBackground(ColorUtil.rgbwColor(light.getRed(), val, light.getBlue(), light instanceof RGBWInterface rgbw ? rgbw.getWhite() : -1)));
+		centerPanel.add(sliderGreen);
 		
 		sliderBlue = new SliderPanel(0, 255, () -> light.getBlue(), "", LABELS.getString("labelBlue"), val -> {
 			try {
@@ -79,6 +85,7 @@ public class RGBPanel extends LightPanel {
 			} catch(Exception e) {}
 			adjust();
 		}, val -> previewColorPanel.setBackground(ColorUtil.rgbwColor(light.getRed(), light.getGreen(), val, light instanceof RGBWInterface rgbw ? rgbw.getWhite() : -1)));
+		centerPanel.add(sliderBlue);
 
 		if(light instanceof RGBWInterface rgbw) {
 			sliderWhite = new SliderPanel(0, 255, () -> rgbw.getWhite(), "", LABELS.getString("labelWhite"), val -> {
@@ -87,6 +94,7 @@ public class RGBPanel extends LightPanel {
 				} catch(Exception e) {}
 				adjust();
 			}, val -> previewColorPanel.setBackground(ColorUtil.rgbwColor(light.getRed(), light.getGreen(), light.getBlue(), val)));
+			centerPanel.add(sliderWhite);
 		}
 
 		JPanel switchPanel = new JPanel(new BorderLayout(20, 0));
@@ -99,37 +107,14 @@ public class RGBPanel extends LightPanel {
 				LOG.error("toggle", e1);
 			}
 		});
+		
+		JPanel switchButtonPanel = new JPanel(new VerticalFlowLayout(VerticalFlowLayout.VAlign.TOP, VerticalFlowLayout.HAlign.LEFT, 0, 0));
 		JButton switchButton = new JButton(switchAction);
 		switchButton.setContentAreaFilled(false);
 		switchButton.setBorder(BorderFactory.createEmptyBorder(10, 0, 0, 0));
-		switchPanel.add(switchButton, BorderLayout.EAST);
-		switchPanel.add(sliderGain, BorderLayout.CENTER);
-		this.add(switchPanel);
-		JPanel redPanel = new JPanel(new BorderLayout(20, 0));
-		redPanel.setOpaque(false);
-		redPanel.add(sliderRed, BorderLayout.CENTER);
-		redPanel.add(Box.createHorizontalStrut(DialogEditLights.OFF_IMG.getIconWidth()), BorderLayout.EAST);
-		this.add(redPanel);
-
-		JPanel greenPanel = new JPanel(new BorderLayout(20, 0));
-		greenPanel.setOpaque(false);
-		greenPanel.add(sliderGreen, BorderLayout.CENTER);
-		greenPanel.add(Box.createHorizontalStrut(DialogEditLights.OFF_IMG.getIconWidth()), BorderLayout.EAST);
-		this.add(greenPanel);
-
-		JPanel bluePanel = new JPanel(new BorderLayout(20, 0));
-		bluePanel.setOpaque(false);
-		bluePanel.add(sliderBlue, BorderLayout.CENTER);
-		bluePanel.add(Box.createHorizontalStrut(DialogEditLights.OFF_IMG.getIconWidth()), BorderLayout.EAST);
-		this.add(bluePanel);
-		
-		if(light instanceof RGBWInterface) {
-			JPanel whitePanel = new JPanel(new BorderLayout(20, 0));
-			whitePanel.setOpaque(false);
-			whitePanel.add(sliderWhite, BorderLayout.CENTER);
-			whitePanel.add(Box.createHorizontalStrut(DialogEditLights.OFF_IMG.getIconWidth()), BorderLayout.EAST);
-			this.add(whitePanel);
-		}
+		switchButtonPanel.setOpaque(false);
+		switchButtonPanel.add(switchButton);
+		add(switchButtonPanel, BorderLayout.EAST);
 
 		JPanel colorsPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
 		colorsPanel.setOpaque(false);
@@ -150,15 +135,15 @@ public class RGBPanel extends LightPanel {
 
 		colorsPanel.add(colorButton(Color.RED));
 		colorsPanel.add(colorButton(Color.GREEN));
-		colorsPanel.add(colorButton(Color.YELLOW));
 		colorsPanel.add(colorButton(Color.BLUE));
+		colorsPanel.add(colorButton(Color.YELLOW));
 		colorsPanel.add(colorButton(new Color(255, 0, 255))); // violet
 		colorsPanel.add(whiteButton);
-		this.add(colorsPanel);
+		centerPanel.add(colorsPanel);
 
 		previewColorPanel.setBorder(BorderFactory.createLineBorder(Color.GRAY));
-		previewColorPanel.setPreferredSize(new Dimension(200, 10));
-		this.add(previewColorPanel);
+		previewColorPanel.setPreferredSize(new Dimension(190, 10));
+		centerPanel.add(previewColorPanel);
 
 		adjust();
 	}
@@ -197,12 +182,11 @@ public class RGBPanel extends LightPanel {
 		int blue = light.getBlue();
 
 		if(light instanceof RGBWInterface rgbw) {
-			int white = rgbw.getWhite();
-			previewColorPanel.setBackground(ColorUtil.rgbwColor(red, green, blue, white));
+			previewColorPanel.setBackground(ColorUtil.rgbwColor(red, green, blue, rgbw.getWhite()));
 			
 			sliderWhite.adjust();
 		} else {
-			previewColorPanel.setBackground(ColorUtil.rgbwColor(red, green, blue, -1));
+			previewColorPanel.setBackground(new Color(red, green, blue));
 		}
 
 		sliderGain.adjust();
