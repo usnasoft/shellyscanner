@@ -8,6 +8,9 @@ import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.JsonNodeFactory;
 import tools.jackson.databind.node.ObjectNode;
 
+/**
+ * TimeAndLocationManager implementation for G2+
+ */
 public class TimeAndLocationManagerG2 implements TimeAndLocationManager {
 	private final AbstractG2Device d;
 	private String server;
@@ -20,6 +23,11 @@ public class TimeAndLocationManagerG2 implements TimeAndLocationManager {
 		init(d.getJSON("/rpc/Shelly.GetConfig"));
 	}
 	
+	/**
+	 *  use this constructor if "settings" is known in order to decrease the device effort
+	 * @param d the device
+	 * @param settings JsonNode configuration node
+	 */
 	public TimeAndLocationManagerG2(AbstractG2Device d, JsonNode settings) {
 		this.d = d;
 		init(settings);

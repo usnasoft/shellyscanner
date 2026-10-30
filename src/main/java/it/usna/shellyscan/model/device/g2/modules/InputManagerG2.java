@@ -5,19 +5,27 @@ import java.util.ArrayList;
 import java.util.Map.Entry;
 
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
-import it.usna.shellyscan.model.device.modules.InputResetManager;
+import it.usna.shellyscan.model.device.modules.InpuManager;
 import tools.jackson.databind.JsonNode;
 
-public class InputResetManagerG2 implements InputResetManager {
+/**
+ * InputResetManager model implementation for G2+
+ */
+public class InputManagerG2 implements InpuManager {
 	private final AbstractG2Device parent;
 	private Status mode = Status.NOT_APPLICABLE;
 	private ArrayList<Integer> ids = new ArrayList<>();
 	
-	public InputResetManagerG2(AbstractG2Device d) throws IOException {
+	public InputManagerG2(AbstractG2Device d) throws IOException {
 		this(d, d.getJSON("/rpc/Shelly.GetConfig"));
 	}
 	
-	public InputResetManagerG2(AbstractG2Device d, JsonNode config) {
+	/**
+	 *  use this constructor if "settings" is known in order to decrease the device effort
+	 * @param d the device
+	 * @param settings JsonNode configuration node
+	 */
+	public InputManagerG2(AbstractG2Device d, JsonNode config) {
 		this.parent = d;
 		Status currentMode;
 		for(Entry<String, JsonNode> node: config.properties()) {

@@ -5,7 +5,6 @@ import static it.usna.shellyscan.Main.LABELS;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Color;
-import java.awt.Cursor;
 import java.awt.FlowLayout;
 import java.awt.event.ActionListener;
 import java.io.IOException;
@@ -19,6 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import it.usna.shellyscan.model.device.modules.RGBCCTInterface;
+import it.usna.swing.BusyCursor;
 
 public class RGBCCTPanel extends LightPanel {
 	private static final long serialVersionUID = 1L;
@@ -55,8 +55,7 @@ public class RGBCCTPanel extends LightPanel {
 		typePanel.setBackground(Color.LIGHT_GRAY);
 	
 		ActionListener modeAction = e -> {
-			setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-			try {
+			try (var res = new BusyCursor(this)) {
 				if(colorButton.isSelected() && light.isColorMode() == false) {
 					light.setColorMode(true);
 					adjust();
@@ -67,7 +66,6 @@ public class RGBCCTPanel extends LightPanel {
 			} catch (IOException ex) {
 				LOG.error("modeAction", ex);
 			}
-			setCursor(Cursor.getDefaultCursor());
 		};
 
 		cctButton = new JRadioButton(LABELS.getString("labelWhite"));

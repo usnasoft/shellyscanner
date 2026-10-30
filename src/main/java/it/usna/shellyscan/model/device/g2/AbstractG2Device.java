@@ -43,7 +43,7 @@ import it.usna.shellyscan.model.device.RestoreUtil;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.g2.modules.DynamicComponents;
 import it.usna.shellyscan.model.device.g2.modules.FirmwareManagerG2;
-import it.usna.shellyscan.model.device.g2.modules.InputResetManagerG2;
+import it.usna.shellyscan.model.device.g2.modules.InputManagerG2;
 import it.usna.shellyscan.model.device.g2.modules.KVS;
 import it.usna.shellyscan.model.device.g2.modules.LoginManagerG2;
 import it.usna.shellyscan.model.device.g2.modules.MQTTManagerG2;
@@ -56,7 +56,7 @@ import it.usna.shellyscan.model.device.g2.modules.WIFIManagerG2;
 import it.usna.shellyscan.model.device.g2.modules.Webhooks;
 import it.usna.shellyscan.model.device.modules.WallDisplayInterface;
 import it.usna.shellyscan.model.device.modules.FirmwareManager;
-import it.usna.shellyscan.model.device.modules.InputResetManager;
+import it.usna.shellyscan.model.device.modules.InpuManager;
 import it.usna.shellyscan.model.device.modules.LoginManager;
 import it.usna.shellyscan.model.device.modules.WIFIManager;
 import it.usna.shellyscan.model.device.modules.WIFIManager.Network;
@@ -247,8 +247,8 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 	}
 	
 	@Override
-	public InputResetManager getInputResetManager() throws IOException {
-		return new InputResetManagerG2(this);
+	public InpuManager getInputResetManager() throws IOException {
+		return new InputManagerG2(this);
 	}
 
 	public String postCommand(final String method, JsonNode payload) {

@@ -24,7 +24,7 @@ import it.usna.shellyscan.model.DeviceUnauthorizedException;
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.meters.Meters;
 import it.usna.shellyscan.model.device.modules.FirmwareManager;
-import it.usna.shellyscan.model.device.modules.InputResetManager;
+import it.usna.shellyscan.model.device.modules.InpuManager;
 import it.usna.shellyscan.model.device.modules.LoginManager;
 import it.usna.shellyscan.model.device.modules.MQTTManager;
 import it.usna.shellyscan.model.device.modules.TimeAndLocationManager;
@@ -283,7 +283,7 @@ public abstract class ShellyAbstractDevice {
 	
 	public abstract TimeAndLocationManager getTimeAndLocationManager() throws IOException;
 	
-	public abstract InputResetManager getInputResetManager() throws IOException;
+	public abstract InpuManager getInputResetManager() throws IOException;
 	
 	public abstract boolean backup(final Path file) throws IOException; // false: use of stored data; could not connect to device
 	

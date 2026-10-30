@@ -35,13 +35,13 @@ import it.usna.shellyscan.model.device.RestoreMsg;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.g1.modules.Actions;
 import it.usna.shellyscan.model.device.g1.modules.FirmwareManagerG1;
-import it.usna.shellyscan.model.device.g1.modules.InputResetManagerG1;
+import it.usna.shellyscan.model.device.g1.modules.InputManagerG1;
 import it.usna.shellyscan.model.device.g1.modules.LoginManagerG1;
 import it.usna.shellyscan.model.device.g1.modules.MQTTManagerG1;
 import it.usna.shellyscan.model.device.g1.modules.TimeAndLocationManagerG1;
 import it.usna.shellyscan.model.device.g1.modules.WIFIManagerG1;
 import it.usna.shellyscan.model.device.modules.FirmwareManager;
-import it.usna.shellyscan.model.device.modules.InputResetManager;
+import it.usna.shellyscan.model.device.modules.InpuManager;
 import it.usna.shellyscan.model.device.modules.LoginManager;
 import it.usna.shellyscan.model.device.modules.TimeAndLocationManager;
 import it.usna.shellyscan.model.device.modules.WIFIManager;
@@ -226,8 +226,8 @@ public abstract class AbstractG1Device extends ShellyAbstractDevice {
 	}
 	
 	@Override
-	public InputResetManager getInputResetManager() throws IOException {
-		return new InputResetManagerG1(this);
+	public InpuManager getInputResetManager() throws IOException {
+		return new InputManagerG1(this);
 	}
 	
 	@Override

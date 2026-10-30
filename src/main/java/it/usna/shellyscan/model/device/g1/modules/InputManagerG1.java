@@ -3,18 +3,26 @@ package it.usna.shellyscan.model.device.g1.modules;
 import java.io.IOException;
 
 import it.usna.shellyscan.model.device.g1.AbstractG1Device;
-import it.usna.shellyscan.model.device.modules.InputResetManager;
+import it.usna.shellyscan.model.device.modules.InpuManager;
 import tools.jackson.databind.JsonNode;
 
-public class InputResetManagerG1 implements InputResetManager {
+/**
+ * InputResetManager model implementation for G1
+ */
+public class InputManagerG1 implements InpuManager {
 	private final AbstractG1Device parent;
 	private Status mode;
 	
-	public InputResetManagerG1(AbstractG1Device d) throws IOException {
+	public InputManagerG1(AbstractG1Device d) throws IOException {
 		this(d, d.getJSON("/settings"));
 	}
 	
-	public InputResetManagerG1(AbstractG1Device d, JsonNode config) {
+	/**
+	 *  use this constructor if "settings" is known in order to decrease the device effort
+	 * @param d the device
+	 * @param settings JsonNode configuration node
+	 */
+	public InputManagerG1(AbstractG1Device d, JsonNode config) {
 		this.parent = d;
 		JsonNode reset = config.path("factory_reset_from_switch");
 		if(reset.isMissingNode()) {

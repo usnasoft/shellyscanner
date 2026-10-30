@@ -6,10 +6,8 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.event.ActionEvent;
 import java.io.IOException;
 
-import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JPanel;
@@ -97,8 +95,6 @@ public class RGBPanel extends LightPanel {
 			centerPanel.add(sliderWhite);
 		}
 
-		JPanel switchPanel = new JPanel(new BorderLayout(20, 0));
-		switchPanel.setOpaque(false);
 		switchAction = new UsnaToggleAction(null, "/images/Standby24.png", "/images/StandbyOn24.png", e -> {
 			try {
 				light.toggle();
@@ -149,19 +145,17 @@ public class RGBPanel extends LightPanel {
 	}
 	
 	private JButton colorButton(Color color) {
-		JButton btn = new JButton(new AbstractAction() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				try {
-					if(light instanceof RGBWInterface rgbw) {
-						rgbw.setColor(color.getRed(), color.getGreen(), color.getBlue(), 0);
-					} else {
-						light.setColor(color.getRed(), color.getGreen(), color.getBlue());
-					}
-					adjust();
-				} catch (IOException e1) {
-					LOG.error("color button", e1);
+		JButton btn = new JButton();
+		btn.addActionListener(e -> {
+			try {
+				if(light instanceof RGBWInterface rgbw) {
+					rgbw.setColor(color.getRed(), color.getGreen(), color.getBlue(), 0);
+				} else {
+					light.setColor(color.getRed(), color.getGreen(), color.getBlue());
 				}
+				adjust();
+			} catch (IOException e1) {
+				LOG.error("color button", e1);
 			}
 		});
 		btn.setBorder(BorderFactory.createEmptyBorder(10, 12, 8, 12));

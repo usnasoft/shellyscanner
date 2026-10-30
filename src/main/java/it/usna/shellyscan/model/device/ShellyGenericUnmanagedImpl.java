@@ -11,7 +11,7 @@ import org.eclipse.jetty.client.HttpClient;
 
 import it.usna.shellyscan.model.DeviceUnauthorizedException;
 import it.usna.shellyscan.model.device.modules.FirmwareManager;
-import it.usna.shellyscan.model.device.modules.InputResetManager;
+import it.usna.shellyscan.model.device.modules.InpuManager;
 import it.usna.shellyscan.model.device.modules.LoginManager;
 import it.usna.shellyscan.model.device.modules.MQTTManager;
 import it.usna.shellyscan.model.device.modules.TimeAndLocationManager;
@@ -138,7 +138,7 @@ public class ShellyGenericUnmanagedImpl extends ShellyAbstractDevice implements 
 	}
 	
 	@Override
-	public InputResetManager getInputResetManager() {
+	public InpuManager getInputResetManager() {
 		throw new UnsupportedOperationException();
 	}
 

@@ -9,15 +9,23 @@ import it.usna.shellyscan.model.device.g1.AbstractG1Device;
 import it.usna.shellyscan.model.device.modules.TimeAndLocationManager;
 import tools.jackson.databind.JsonNode;
 
+/**
+ * TimeAndLocationManager model implementation for G1
+ */
 public class TimeAndLocationManagerG1 implements TimeAndLocationManager {
 	private final AbstractG1Device d;
 	private String server;
-	
+
 	public TimeAndLocationManagerG1(AbstractG1Device d) throws IOException {
 		this.d = d;
 		init(d.getJSON("/settings"));
 	}
 	
+	/**
+	 *  use this constructor if "settings" is known in order to decrease the device effort
+	 * @param d the device
+	 * @param settings JsonNode settings node
+	 */
 	public TimeAndLocationManagerG1(AbstractG1Device d, JsonNode settings) {
 		this.d = d;
 		init(settings);

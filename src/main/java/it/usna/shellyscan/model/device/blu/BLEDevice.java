@@ -10,7 +10,7 @@ import it.usna.shellyscan.model.device.RestoreMsg;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.modules.FirmwareManager;
-import it.usna.shellyscan.model.device.modules.InputResetManager;
+import it.usna.shellyscan.model.device.modules.InpuManager;
 import it.usna.shellyscan.model.device.modules.LoginManager;
 import it.usna.shellyscan.model.device.modules.MQTTManager;
 import it.usna.shellyscan.model.device.modules.TimeAndLocationManager;
@@ -127,7 +127,7 @@ public class BLEDevice extends ShellyAbstractDevice {
 	}
 
 	@Override
-	public InputResetManager getInputResetManager() throws IOException {
+	public InpuManager getInputResetManager() throws IOException {
 		// TODO Auto-generated method stub
 		return null;
 	}

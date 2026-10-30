@@ -34,12 +34,12 @@ import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
 import it.usna.shellyscan.model.device.blu.AbstractBTHomeDevice;
 import it.usna.shellyscan.model.device.g1.AbstractG1Device;
-import it.usna.shellyscan.model.device.g1.modules.InputResetManagerG1;
+import it.usna.shellyscan.model.device.g1.modules.InputManagerG1;
 import it.usna.shellyscan.model.device.g1.modules.TimeAndLocationManagerG1;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
-import it.usna.shellyscan.model.device.g2.modules.InputResetManagerG2;
+import it.usna.shellyscan.model.device.g2.modules.InputManagerG2;
 import it.usna.shellyscan.model.device.g2.modules.TimeAndLocationManagerG2;
-import it.usna.shellyscan.model.device.modules.InputResetManager;
+import it.usna.shellyscan.model.device.modules.InpuManager;
 import it.usna.shellyscan.model.device.modules.TimeAndLocationManager;
 import it.usna.shellyscan.view.util.Msg;
 import it.usna.shellyscan.view.util.UtilMiscellaneous;
@@ -212,15 +212,15 @@ public class PanelOthers extends AbstractSettingsPanel {
 			}
 			try {
 				final TimeAndLocationManager timeManager;
-				final InputResetManager inputResetMode;
+				final InpuManager inputResetMode;
 				if (d instanceof AbstractG1Device g1) {
 					JsonNode config = d.getJSON("/settings");
 					timeManager = new TimeAndLocationManagerG1(g1, config);
-					inputResetMode = new InputResetManagerG1(g1, config);
+					inputResetMode = new InputManagerG1(g1, config);
 				} else if (d instanceof AbstractG2Device g2) { // G2-G3-G4
 					JsonNode config = d.getJSON("/rpc/Shelly.GetConfig");
 					timeManager = new TimeAndLocationManagerG2(g2, config);
-					inputResetMode = new InputResetManagerG2(g2, config);
+					inputResetMode = new InputManagerG2(g2, config);
 				} else if (d instanceof GhostDevice) {
 					devicesData.add(null);
 					continue;
@@ -417,5 +417,5 @@ public class PanelOthers extends AbstractSettingsPanel {
 		}
 	}
 	
-	private record DeviceData(TimeAndLocationManager timeManager, InputResetManager inReset) {};
+	private record DeviceData(TimeAndLocationManager timeManager, InpuManager inReset) {};
 }

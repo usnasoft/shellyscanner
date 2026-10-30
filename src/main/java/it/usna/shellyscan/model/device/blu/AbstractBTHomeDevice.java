@@ -18,7 +18,7 @@ import it.usna.shellyscan.model.DeviceOfflineException;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.g2.JsonPageIterator;
-import it.usna.shellyscan.model.device.modules.InputResetManager;
+import it.usna.shellyscan.model.device.modules.InpuManager;
 import it.usna.shellyscan.model.device.modules.LoginManager;
 import it.usna.shellyscan.model.device.modules.MQTTManager;
 import it.usna.shellyscan.model.device.modules.TimeAndLocationManager;
@@ -213,7 +213,7 @@ public abstract class AbstractBTHomeDevice extends ShellyAbstractDevice {
 	}
 	
 	@Override
-	public InputResetManager getInputResetManager() {
+	public InpuManager getInputResetManager() {
 		throw new UnsupportedOperationException();
 	}
 	

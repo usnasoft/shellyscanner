@@ -1,6 +1,6 @@
 package it.usna.shellyscan.model.device.modules;
 
-public interface InputResetManager {
+public interface InpuManager {
 	enum Status {TRUE, FALSE, NOT_APPLICABLE, MIX};
 	
 	Status getVal();
