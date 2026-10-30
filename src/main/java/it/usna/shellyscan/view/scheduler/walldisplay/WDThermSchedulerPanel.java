@@ -4,7 +4,6 @@ import static it.usna.shellyscan.Main.LABELS;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
-import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
@@ -44,6 +43,7 @@ import it.usna.shellyscan.model.device.g2.modules.ThermostatG2;
 import it.usna.shellyscan.view.scheduler.CronUtils;
 import it.usna.shellyscan.view.util.Msg;
 import it.usna.shellyscan.view.util.ScannerProperties;
+import it.usna.swing.BusyCursor;
 import it.usna.swing.VerticalFlowLayout;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
@@ -70,8 +70,7 @@ public class WDThermSchedulerPanel extends /*JPanel*/JSplitPane {
 		setTopComponent(profilesPanel);
 		
 		profilesPanel.addPropertyChangeListener(ProfilesPanel.SELECTION_EVENT, propertyChangeEvent -> {
-			try {
-				setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+			try (var cres = new BusyCursor(this)) {
 				currentProfileId = (Integer)propertyChangeEvent.getNewValue();
 				List<Rule> rulesList = rules.get(currentProfileId);
 				if(rulesList == null && currentProfileId >= 0) {
@@ -97,8 +96,6 @@ public class WDThermSchedulerPanel extends /*JPanel*/JSplitPane {
 				rulesPanel.repaint(); // last one need this ... do not know why
 			} catch (IOException e) {
 				Msg.errorMsg(parent, e);
-			} finally {
-				setCursor(Cursor.getDefaultCursor());
 			}
 		});
 		
@@ -370,8 +367,7 @@ public class WDThermSchedulerPanel extends /*JPanel*/JSplitPane {
 		fc.setAcceptAllFileFilterUsed(false);
 		fc.setFileFilter(new FileNameExtensionFilter(LABELS.getString("filetype_sbk_desc"), Main.BACKUP_FILE_EXT));
 		if(fc.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
-			try {
-				setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+			try (var cres = new BusyCursor(this)) {
 				appProp.setProperty("LAST_PATH", fc.getCurrentDirectory().getCanonicalPath());
 				Map<String, JsonNode> files = RestoreAction.readBackupFile(fc.getSelectedFile().toPath());
 
@@ -415,7 +411,6 @@ public class WDThermSchedulerPanel extends /*JPanel*/JSplitPane {
 			} finally {
 				rulesPanel.revalidate();
 				lineColors();
-				setCursor(Cursor.getDefaultCursor());
 			}
 		}
 	}

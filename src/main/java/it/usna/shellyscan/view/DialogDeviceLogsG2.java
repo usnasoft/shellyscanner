@@ -5,7 +5,6 @@ import static it.usna.shellyscan.Main.LABELS;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Cursor;
 import java.awt.FlowLayout;
 import java.awt.Toolkit;
 import java.awt.Window;
@@ -48,6 +47,7 @@ import it.usna.shellyscan.model.device.g2.WebSocketDeviceListener;
 import it.usna.shellyscan.view.util.Msg;
 import it.usna.shellyscan.view.util.UsnaTextPane;
 import it.usna.shellyscan.view.util.UtilMiscellaneous;
+import it.usna.swing.BusyCursor;
 import it.usna.swing.dialog.FindReplaceDialog;
 import tools.jackson.databind.JsonNode;
 
@@ -152,8 +152,7 @@ public class DialogDeviceLogsG2 extends JDialog {
 			btnActivateLog.setEnabled(false);
 
 			btnActivateLog.addActionListener(event -> {
-				try {
-					setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+				try (var cres = new BusyCursor(this)) {
 					if (wsSession.get().isOpen() == false) {
 						wsSession = device.connectWebSocketLogs(wsListener);
 						wsSession.get().setIdleTimeout(Duration.ofMinutes(30));
@@ -162,26 +161,19 @@ public class DialogDeviceLogsG2 extends JDialog {
 					btnStopLog.setEnabled(true);
 				} catch (Exception e1) {
 					LOG.error("webSocketClient.connect", e1);
-				} finally {
-					setCursor(Cursor.getDefaultCursor());
 				}
 			});
 //			btnActivateLog.doClick();
 
 			btnStopLog.addActionListener(event -> {
-				try {
-					setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-					try {
-						if (wsSession.get().isOpen()) {
-							wsSession.get().close(StatusCode.NORMAL, "bye", Callback.NOOP);
-						}
-						btnActivateLog.setEnabled(true);
-						btnStopLog.setEnabled(false);
-					} catch (/*IOException |*/ InterruptedException | ExecutionException e1) {
-						LOG.error("webSocketClient.close", e1);
+				try (var cres = new BusyCursor(this)) {
+					if (wsSession.get().isOpen()) {
+						wsSession.get().close(StatusCode.NORMAL, "bye", Callback.NOOP);
 					}
-				} finally {
-					setCursor(Cursor.getDefaultCursor());
+					btnActivateLog.setEnabled(true);
+					btnStopLog.setEnabled(false);
+				} catch (/*IOException |*/ InterruptedException | ExecutionException e1) {
+					LOG.error("webSocketClient.close", e1);
 				}
 			});
 

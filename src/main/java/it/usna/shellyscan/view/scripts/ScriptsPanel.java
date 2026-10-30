@@ -5,7 +5,6 @@ import static it.usna.shellyscan.Main.LABELS;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Cursor;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.io.FileNotFoundException;
@@ -50,6 +49,7 @@ import it.usna.shellyscan.model.device.g2.modules.Script;
 import it.usna.shellyscan.view.scripts.ide.ScriptFrame;
 import it.usna.shellyscan.view.util.Msg;
 import it.usna.shellyscan.view.util.ScannerProperties;
+import it.usna.swing.BusyCursor;
 import it.usna.swing.UsnaPopupMenu;
 import it.usna.swing.table.ExTooltipTable;
 import it.usna.swing.table.UsnaTableModel;
@@ -100,8 +100,7 @@ public class ScriptsPanel extends JPanel {
 
 			@Override
 			public void editingStopped(ChangeEvent e) {
-				ScriptsPanel.this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-				try {
+				try (var cres = new BusyCursor(ScriptsPanel.this)) {
 					final int mCol = convertColumnIndexToModel(getEditingColumn());
 					final int mRow = convertRowIndexToModel(getEditingRow());
 					final Script sc = scripts.get(mRow).script;
@@ -117,8 +116,6 @@ public class ScriptsPanel extends JPanel {
 						}
 					}
 					super.editingStopped(e);
-				} finally {
-					ScriptsPanel.this.setCursor(Cursor.getDefaultCursor());
 				}
 			}
 		};

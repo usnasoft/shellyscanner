@@ -2,7 +2,6 @@ package it.usna.shellyscan.view.util;
 
 import static it.usna.shellyscan.Main.LABELS;
 
-import java.awt.Cursor;
 import java.awt.Desktop;
 import java.awt.Window;
 import java.io.IOException;
@@ -20,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import it.usna.shellyscan.Main;
+import it.usna.swing.BusyCursor;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
@@ -27,8 +27,7 @@ public class ApplicationUpdateCHK {
 	private static final Logger LOG = LoggerFactory.getLogger(ApplicationUpdateCHK.class);
 	
 	public static void checkForUpdates(final Window w) {
-		w.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-		try {
+		try (var cres = new BusyCursor(w)) {
 			List<Release> rel = remoteCheck(true, "000");
 			if(rel.isEmpty()) {
 				Msg.showMsg(w, LABELS.getString("aboutCheckUpdatesNone"), currentVersion(), JOptionPane.INFORMATION_MESSAGE);
@@ -48,8 +47,6 @@ public class ApplicationUpdateCHK {
 		} catch(IOException e) {
 			LOG.warn("CheckUpdate", e);
 			Msg.errorMsg(w, LABELS.getString("aboutCheckUpdatesError"));
-		} finally {
-			w.setCursor(Cursor.getDefaultCursor());
 		}
 	}
 
@@ -59,8 +56,7 @@ public class ApplicationUpdateCHK {
 	public static void checkForUpdates(final Window w, final ScannerProperties appProp) {
 		String mode = appProp.getProperty(ScannerProperties.PROP_UPDATECHK_ACTION);
 		if(mode.equals("NEVER") == false) {
-			w.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-			try {
+			try (var cres = new BusyCursor(w)) {
 				String ignoreRel = appProp.getProperty(ScannerProperties.VERSION_IGNORE, "000");
 				List<Release> rel = remoteCheck(mode.endsWith("BETA"), ignoreRel);
 				if(rel.size() > 0) {
@@ -79,8 +75,6 @@ public class ApplicationUpdateCHK {
 				}
 			} catch(IOException e) {
 				LOG.warn("CheckUpdate", e);
-			} finally {
-				w.setCursor(Cursor.getDefaultCursor());
 			}
 		}
 	}

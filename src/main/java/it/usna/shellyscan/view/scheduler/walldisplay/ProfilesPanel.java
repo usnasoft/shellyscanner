@@ -4,7 +4,6 @@ import static it.usna.shellyscan.Main.LABELS;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
-import java.awt.Cursor;
 import java.awt.FlowLayout;
 import java.io.IOException;
 import java.util.List;
@@ -34,6 +33,7 @@ import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.g2.modules.ScheduleManagerThermWD;
 import it.usna.shellyscan.model.device.g2.modules.ScheduleManagerThermWD.ThermProfile;
 import it.usna.shellyscan.view.util.Msg;
+import it.usna.swing.BusyCursor;
 import it.usna.swing.table.ExTooltipTable;
 import it.usna.swing.table.UsnaTableModel;
 
@@ -104,8 +104,7 @@ class ProfilesPanel extends JPanel {
 			
 			@Override
 			public void editingStopped(ChangeEvent e) {
-				parent.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-				try {
+				try (var cres = new BusyCursor(parent)) {
 					final int mRow = convertRowIndexToModel(getEditingRow());
 					String value = (String) getCellEditor().getCellEditorValue();
 					// No empty profile names allowed -> go back to original value
@@ -147,8 +146,6 @@ class ProfilesPanel extends JPanel {
 						}
 						currentProfile = wdSceduleManager.getCurrentProfile();
 					}
-				} finally {
-					parent.setCursor(Cursor.getDefaultCursor());
 				}
 				super.editingStopped(e);
 			}

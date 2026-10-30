@@ -3,7 +3,6 @@ package it.usna.shellyscan.view;
 import static it.usna.shellyscan.Main.LABELS;
 
 import java.awt.BorderLayout;
-import java.awt.Cursor;
 import java.awt.FlowLayout;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
@@ -36,6 +35,7 @@ import it.usna.shellyscan.controller.UsnaAction;
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.view.util.UtilMiscellaneous;
+import it.usna.swing.BusyCursor;
 import it.usna.swing.UsnaSwingUtils;
 import it.usna.swing.table.ExTooltipTable;
 import it.usna.swing.table.UsnaTableModel;
@@ -128,14 +128,11 @@ public class DialogDeviceSelection extends JDialog {
 					updateTaskFuture.cancel(true);
 				}
 				updateTaskFuture = exeService.submit(() -> {
-					setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-					try {
+					try (var cres = new BusyCursor(this)) {
 						int row = table.getSelectedModelRow();
 						if(row >= 0) {
 							listener.update(modelMap.get(row), updateTaskFuture);
 						}
-					} finally {
-						setCursor(Cursor.getDefaultCursor());
 					}
 				});
 			}

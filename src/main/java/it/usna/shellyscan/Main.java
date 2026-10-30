@@ -1,7 +1,6 @@
 package it.usna.shellyscan;
 
 import java.awt.Color;
-import java.awt.Cursor;
 import java.awt.Image;
 import java.awt.Toolkit;
 import java.nio.file.Path;
@@ -27,6 +26,7 @@ import it.usna.shellyscan.view.chart.NonInteractiveMeasuresChart;
 import it.usna.shellyscan.view.util.ApplicationUpdateCHK;
 import it.usna.shellyscan.view.util.Msg;
 import it.usna.shellyscan.view.util.ScannerProperties;
+import it.usna.swing.BusyCursor;
 import it.usna.swing.UsnaSwingUtils;
 import it.usna.util.CLI;
 
@@ -199,8 +199,7 @@ public class Main {
 			final boolean fullScanFinal = fullScan;
 			final IPCollection ipCollectionFinal = ipCollection;
 			SwingUtilities.invokeLater(() -> {
-				try {
-					view.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+				try (var res = new BusyCursor(view)) {
 					boolean useArchive = appProp.getBoolProperty(ScannerProperties.PROP_USE_ARCHIVE);
 					if(useArchive) {
 						try {
@@ -220,8 +219,6 @@ public class Main {
 				} catch (/*IO*/Exception e) {
 					Msg.errorMsg(null, e);
 					System.exit(1);
-				} finally {
-					view.setCursor(Cursor.getDefaultCursor());
 				}
 			});
 			if(cli.unused().length > 0) {

@@ -3,7 +3,6 @@ package it.usna.shellyscan.view.scheduler.gen2plus;
 import static it.usna.shellyscan.Main.LABELS;
 
 import java.awt.Component;
-import java.awt.Cursor;
 import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
@@ -23,6 +22,7 @@ import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.view.scheduler.AbstractCronPanel;
 import it.usna.shellyscan.view.scheduler.gen2plus.pareditor.ParamEditorDialog;
 import it.usna.shellyscan.view.util.Msg;
+import it.usna.swing.BusyCursor;
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
@@ -135,8 +135,7 @@ public class G2JobPanel extends AbstractCronPanel {
 
 		JButton btnSelectCombo = new JButton();
 		btnSelectCombo.setAction(new UsnaDropdownAction(btnSelectCombo, "lblMethodSelect", "/images/expand-more.png", () -> {
-			try {
-				this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+			try (var cres = new BusyCursor(this)) {
 				Object[] menu = mHints.get(methodTF, paramsTF);
 				if(ParamEditorDialog.canEdit(paramsTF.getText())) {
 //					ArrayList<Object> m = new ArrayList<>(menu.length + 2);
@@ -151,8 +150,6 @@ public class G2JobPanel extends AbstractCronPanel {
 					menu = tmp;
 				}
 				return menu;
-			} finally {
-				this.setCursor(Cursor.getDefaultCursor());
 			}
 		}));
 		btnSelectCombo.setContentAreaFilled(false);
@@ -161,14 +158,11 @@ public class G2JobPanel extends AbstractCronPanel {
 		
 		JButton testButton = new JButton(new UsnaAction(parentDlg, "btnMethodTestTooltip", "/images/Play16.png", e -> {
 			if(!methodTF.getText().isBlank()) {
-				try {
-					this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+				try (var cres = new BusyCursor(this)) {
 					String res = device.postCommand(methodTF.getText(), "{" + paramsTF.getText() + "}");
 					if(res != null) {
 						Msg.errorMsg(parentDlg, res);
 					}
-				} finally {
-					this.setCursor(Cursor.getDefaultCursor());
 				}
 			}
 		}));

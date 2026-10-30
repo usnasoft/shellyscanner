@@ -3,7 +3,6 @@ package it.usna.shellyscan.view.devsettings;
 import static it.usna.shellyscan.Main.LABELS;
 
 import java.awt.BorderLayout;
-import java.awt.Cursor;
 import java.awt.FlowLayout;
 import java.awt.Frame;
 import java.awt.Window;
@@ -28,6 +27,7 @@ import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.modules.WIFIManager;
 import it.usna.shellyscan.view.util.Msg;
 import it.usna.shellyscan.view.util.UtilMiscellaneous;
+import it.usna.swing.BusyCursor;
 import it.usna.util.UsnaEventListener;
 
 public class DialogDeviceSettings extends JDialog implements UsnaEventListener<Devices.EventType, Integer> {
@@ -159,8 +159,7 @@ public class DialogDeviceSettings extends JDialog implements UsnaEventListener<D
 		}
 		currentPanel = ((AbstractSettingsPanel)tabbedPane.getSelectedComponent());
 		showCurrentThread = new Thread(() -> {
-			setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-			try {
+			try (var res = new BusyCursor(this)) {
 				btnClose.requestFocus(); // remove focus from form element, it could be disabled now
 				String msg = currentPanel.showing();
 				if(Thread.interrupted() == false) {
@@ -171,17 +170,13 @@ public class DialogDeviceSettings extends JDialog implements UsnaEventListener<D
 						btnApplyClose.setEnabled(true);
 					}
 				}
-			} catch (InterruptedException e) {
-			} finally {
-				setCursor(Cursor.getDefaultCursor());
-			}
+			} catch (InterruptedException e) {}
 		});
 		showCurrentThread.start();
 	}
 	
 	private boolean apply(AbstractSettingsPanel panel, String name) {
-		setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-		try {
+		try (var res = new BusyCursor(this)) {
 			String msg = panel.apply();
 			firePropertyChange("S_APPLY", null, null);
 			if(msg != null && msg.length() > 0) {
@@ -194,8 +189,6 @@ public class DialogDeviceSettings extends JDialog implements UsnaEventListener<D
 		} catch(Exception e) {
 			Msg.errorMsg(this, e);
 			return false;
-		} finally {
-			setCursor(Cursor.getDefaultCursor());
 		}
 	}
 	

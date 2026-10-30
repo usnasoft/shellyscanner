@@ -4,7 +4,6 @@ import static it.usna.shellyscan.Main.LABELS;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Cursor;
 import java.awt.GridLayout;
 import java.io.IOException;
 
@@ -25,6 +24,7 @@ import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.g2.modules.KVS;
 import it.usna.shellyscan.model.device.g2.modules.KVS.KVItem;
 import it.usna.shellyscan.view.util.Msg;
+import it.usna.swing.BusyCursor;
 import it.usna.swing.table.ExTooltipTable;
 import it.usna.swing.table.UsnaTableModel;
 
@@ -70,8 +70,7 @@ public class KVSPanel extends JPanel {
 
 			@Override
 			public void editingStopped(ChangeEvent e) {
-				KVSPanel.this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-				try {
+				try (var cres = new BusyCursor(KVSPanel.this)) {
 					final int mRow = convertRowIndexToModel(getEditingRow());
 					if (mRow < kvs.size()) { // existing element -> value
 						String value = (String) getCellEditor().getCellEditorValue();
@@ -91,8 +90,6 @@ public class KVSPanel extends JPanel {
 					super.editingStopped(e);
 				} catch (IOException e1) {
 					Msg.errorMsg(KVSPanel.this, e1);
-				} finally {
-					KVSPanel.this.setCursor(Cursor.getDefaultCursor());
 				}
 			}
 
