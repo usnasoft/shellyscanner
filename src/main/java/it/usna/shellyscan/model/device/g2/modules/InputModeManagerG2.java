@@ -14,23 +14,33 @@ import tools.jackson.databind.JsonNode;
 /**
  * Input mode for:
  * - "switch:N" components paired with "input:N" (same id) of type "button" or "switch";
- * - "light:N" components (dimmers); all the device inputs of type "button" or "switch"
+ * - "light:N", "rgb:N", "rgbw:N" and "cct:N" components (dimmers); all the device inputs of type "button" or "switch"
  *   not paired with a switch are considered dimmer inputs.
+ *   rgb/rgbw do not support "dual_dim": "dim" is used (cct is managed only if the device reports in_mode).
  * Covers are not managed (different in_mode semantics).
  * Channels in a device specific mode (e.g. "cycle", "activate") are never changed.
  */
 public class InputModeManagerG2 implements InputModeManager {
 	/** basic relay modes: any other in_mode (e.g. "cycle", "activate") is device specific and is kept */
 	private static final Set<String> SWITCH_BASIC_MODES = Set.of("momentary", "follow", "flip", "detached");
-	/** basic dimmer modes: any other in_mode (e.g. "activate") is device specific and is kept */
+	/** basic dimmer modes (light, rgb, rgbw, cct): any other in_mode (e.g. "activate") is device specific and is kept */
 	private static final Set<String> LIGHT_BASIC_MODES = Set.of("dim", "dual_dim", "follow", "flip", "detached");
 
 	private final AbstractG2Device parent;
 	private InputMode typeMode = InputMode.NOT_APPLICABLE;
 	private final Map<Integer, String> switches = new HashMap<>(); // id -> current in_mode
-	private final Map<Integer, String> lights = new HashMap<>(); // id -> current in_mode
+	private final ArrayList<Dimmer> lights = new ArrayList<>();
 	private final Map<Integer, String> inputTypes = new HashMap<>(); // id -> "button" | "switch"
 	private final ArrayList<Integer> lightInputIds = new ArrayList<>();
+	
+	/** dimmable components: component prefix and "SetConfig" method */
+	private static final String[][] DIMMERS = {
+			{"light:", "Light.SetConfig"},
+			{"rgb:", "RGB.SetConfig"},
+			{"rgbw:", "RGBW.SetConfig"},
+			{"cct:", "CCT.SetConfig"}};
+	
+	private record Dimmer(String method, int id, String inMode) {}
 
 	public InputModeManagerG2(AbstractG2Device d) throws IOException {
 		this(d, d.getJSON("/rpc/Shelly.GetConfig"));
@@ -60,11 +70,16 @@ public class InputModeManagerG2 implements InputModeManager {
 					switches.put(id, inMode.asString(""));
 					merge(toSwitchMode(inputTypes.get(id), inMode.asString("")));
 				}
-			} else if(name.startsWith("light:")) {
-				final int id = parseId(name, 6);
-				if(id >= 0) {
-					lights.put(id, inMode.asString(""));
-					merge(toLightMode(inMode.asString("")));
+			} else {
+				for(String[] dim: DIMMERS) {
+					if(name.startsWith(dim[0])) {
+						final int id = parseId(name, dim[0].length());
+						if(id >= 0) {
+							lights.add(new Dimmer(dim[1], id, inMode.asString("")));
+							merge(toLightMode(inMode.asString("")));
+						}
+						break;
+					}
 				}
 			}
 		}
@@ -162,7 +177,7 @@ public class InputModeManagerG2 implements InputModeManager {
 		}
 
 		// dimmers - inputs could be shared by channels: if any channel is in a device specific mode the dimmer is not changed
-		if(lights.size() > 0 && lights.values().stream().allMatch(LIGHT_BASIC_MODES::contains)) {
+		if(lights.size() > 0 && lights.stream().allMatch(l -> LIGHT_BASIC_MODES.contains(l.inMode()))) {
 			applied = true;
 			boolean inputsOk = true;
 			for(int id: lightInputIds) {
@@ -173,16 +188,16 @@ public class InputModeManagerG2 implements InputModeManager {
 				}
 			}
 			if(inputsOk) { // do not change in_mode if an input type change failed
-				for(Map.Entry<Integer, String> light: lights.entrySet()) {
-					final String current = light.getValue();
+				for(Dimmer light: lights) {
+					final String current = light.inMode();
 					final String lightInMode = switch(target) {
-						// keep one/two buttons mode if already a button mode, otherwise one button
+						// keep one/two buttons mode if already a button mode, otherwise one button (rgb, rgbw: "dim" only)
 						case BUTTON -> (current.equals("dim") || current.equals("dual_dim")) ? current : "dim";
 						case SWITCH_FLIP -> "flip";
 						case SWITCH_FOLLOW -> "follow";
 						default -> "detached";
 					};
-					String localMsg = parent.postCommand("Light.SetConfig", "{\"id\":" + light.getKey() + ",\"config\":{\"in_mode\":\"" + lightInMode + "\"}}");
+					String localMsg = parent.postCommand(light.method(), "{\"id\":" + light.id() + ",\"config\":{\"in_mode\":\"" + lightInMode + "\"}}");
 					if(localMsg != null) {
 						msg = localMsg;
 					}

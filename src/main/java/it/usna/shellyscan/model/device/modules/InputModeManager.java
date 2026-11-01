@@ -1,7 +1,7 @@
 package it.usna.shellyscan.model.device.modules;
 
 /**
- * Manage the input mode of relay and dimmer outputs (button / switch / detached)
+ * Manage the input mode of relay and dimmer (light, rgb, rgbw, cct) outputs (button / switch / detached)
  */
 public interface InputModeManager {
 	enum InputMode {
