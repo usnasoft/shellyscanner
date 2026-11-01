@@ -187,6 +187,7 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 					exeService.schedule(() -> {
 						fwModule.chech();
 						tModel.setRow(row, createTableRow(row, true));
+						countSelection();
 					}, i , TimeUnit.MILLISECONDS);
 				}
 			}
