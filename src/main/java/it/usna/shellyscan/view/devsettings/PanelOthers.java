@@ -15,8 +15,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
 import javax.swing.AbstractButton;
-import javax.swing.Box;
 import javax.swing.BorderFactory;
+import javax.swing.Box;
 import javax.swing.ButtonGroup;
 import javax.swing.ButtonModel;
 import javax.swing.JOptionPane;
@@ -35,19 +35,18 @@ import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.GhostDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
-import it.usna.shellyscan.model.device.blu.AbstractBTHomeDevice;
 import it.usna.shellyscan.model.device.g1.AbstractG1Device;
-import it.usna.shellyscan.model.device.g1.modules.InputModeManagerG1;
 import it.usna.shellyscan.model.device.g1.modules.InputManagerG1;
+import it.usna.shellyscan.model.device.g1.modules.InputModeManagerG1;
 import it.usna.shellyscan.model.device.g1.modules.PowerOnStateManagerG1;
 import it.usna.shellyscan.model.device.g1.modules.TimeAndLocationManagerG1;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
-import it.usna.shellyscan.model.device.g2.modules.InputModeManagerG2;
 import it.usna.shellyscan.model.device.g2.modules.InputManagerG2;
+import it.usna.shellyscan.model.device.g2.modules.InputModeManagerG2;
 import it.usna.shellyscan.model.device.g2.modules.PowerOnStateManagerG2;
 import it.usna.shellyscan.model.device.g2.modules.TimeAndLocationManagerG2;
-import it.usna.shellyscan.model.device.modules.InputModeManager;
 import it.usna.shellyscan.model.device.modules.InputManager;
+import it.usna.shellyscan.model.device.modules.InputModeManager;
 import it.usna.shellyscan.model.device.modules.PowerOnStateManager;
 import it.usna.shellyscan.model.device.modules.TimeAndLocationManager;
 import it.usna.shellyscan.view.util.Msg;
@@ -297,7 +296,7 @@ public class PanelOthers extends AbstractSettingsPanel {
 
 				String ntpServer = timeManager.getSNTPServer();
 				boolean cloudEnabled = d.getCloudEnabled();
-				devicesData.add(new DeviceData(timeManager, inputResetMode, inputMode, powerOn));
+				devicesData.add(new DeviceData(d, timeManager, inputResetMode, inputMode, powerOn));
 				inModeGlobal = mergeInputMode(inModeGlobal, inputMode.getInputMode());
 				powerOnGlobal = mergePowerOn(powerOnGlobal, powerOn.getVal());
 				
@@ -413,68 +412,74 @@ public class PanelOthers extends AbstractSettingsPanel {
 		if(server.isEmpty()) {
 			throw new IllegalArgumentException(LABELS.getString("dlgNTPServerEmptyError"));
 		}
-		String res = "<html>";
-		for(int i = 0; i < parentDlg.getLocalSize(); i++) {
-			final ShellyAbstractDevice device = parentDlg.getLocalDevice(i);
-			if(device instanceof AbstractBTHomeDevice == false) { // not blu
-				if(device.getStatus() == Status.OFF_LINE || device instanceof GhostDevice) { // defer
-					res += String.format(LABELS.getString("dlgSetMultiMsgQueue"), device.getHostname()) + "<br>";
-					DeferrablesContainer dc = DeferrablesContainer.getInstance();
-					dc.addOrUpdate(parentDlg.getModelIndex(i), DeferrableTask.Type.NTP, LABELS.getString("dlgNTPServer"),
-							(def, dev) -> dev.getTimeAndLocationManager().setSNTPServer(server) );
-				} else {
-					try {
-						DeviceData data = devicesData.get(i);
-						String msg;
-						if(data == null) {
-							msg = device.getTimeAndLocationManager().setSNTPServer(server);
-						} else {
-							msg = data.timeManager.setSNTPServer(server);
-						}
-						if(msg != null) {
-							if(LABELS.containsKey(msg)) {
-								msg = LABELS.getString(msg);
-							}
-							res += String.format(LABELS.getString("dlgSetMultiMsgFail"), device.getHostname()) + " (" + msg + ")<br>";
-						} else {
-							res += String.format(LABELS.getString("dlgSetMultiMsgOk"), device.getHostname()) + "<br>";
-						}
-					} catch(IOException e) {
-						res += String.format(LABELS.getString("dlgSetMultiMsgFail"), device.getHostname()) + "<br>";
-					}
-				}
-			}
-		}
-		return res;
+//		String res = "<html>";
+//		for(int i = 0; i < parentDlg.getLocalSize(); i++) {
+//			final ShellyAbstractDevice device = parentDlg.getLocalDevice(i);
+//			if(device instanceof AbstractBTHomeDevice == false) { // not blu
+//				if(device.getStatus() == Status.OFF_LINE || device instanceof GhostDevice) { // defer
+//					res += String.format(LABELS.getString("dlgSetMultiMsgQueue"), device.getHostname()) + "<br>";
+//					DeferrablesContainer dc = DeferrablesContainer.getInstance();
+//					dc.addOrUpdate(parentDlg.getModelIndex(i), DeferrableTask.Type.NTP, LABELS.getString("dlgNTPServer"),
+//							(def, dev) -> dev.getTimeAndLocationManager().setSNTPServer(server) );
+//				} else {
+//					try {
+//						DeviceData data = devicesData.get(i);
+//						String msg;
+//						if(data == null) {
+//							msg = device.getTimeAndLocationManager().setSNTPServer(server);
+//						} else {
+//							msg = data.timeManager.setSNTPServer(server);
+//						}
+//						if(msg != null) {
+//							if(LABELS.containsKey(msg)) {
+//								msg = LABELS.getString(msg);
+//							}
+//							res += String.format(LABELS.getString("dlgSetMultiMsgFail"), device.getHostname()) + " (" + msg + ")<br>";
+//						} else {
+//							res += String.format(LABELS.getString("dlgSetMultiMsgOk"), device.getHostname()) + "<br>";
+//						}
+//					} catch(IOException e) {
+//						res += String.format(LABELS.getString("dlgSetMultiMsgFail"), device.getHostname()) + "<br>";
+//					}
+//				}
+//			}
+//		}
+//		return res;
+		return applyToAll(DeferrableTask.Type.CLOUD_ENABLE, LABELS.getString("dlgNTPServer"),
+		dev -> dev.getTimeAndLocationManager().setSNTPServer(server),
+		data -> data.timeManager.setSNTPServer(server));
 	}
 	
-	private String applyCloud() {
+	private String applyCloud() {	
 		final boolean enable = radioCloudEnable.isSelected();
 		final boolean disable = radioCloudDisable.isSelected();
 		if(enable || disable) {
-			String res = "<html>";
-			for(int i = 0; i < parentDlg.getLocalSize(); i++) {
-				final ShellyAbstractDevice device = parentDlg.getLocalDevice(i);
-				if(device instanceof AbstractG1Device || device instanceof AbstractG2Device || device instanceof GhostDevice) {
-					if(device.getStatus() == Status.OFF_LINE || device instanceof GhostDevice) { // defer
-						res += String.format(LABELS.getString("dlgSetMultiMsgQueue"), device.getHostname()) + "<br>";
-						DeferrablesContainer dc = DeferrablesContainer.getInstance();
-						dc.addOrUpdate(parentDlg.getModelIndex(i), DeferrableTask.Type.CLOUD_ENABLE, LABELS.getString("dlgCloudConf"),
-								(def, dev) -> dev.setCloudEnabled(enable) );
-					} else {
-						String msg = device.setCloudEnabled(enable);
-						if(msg != null) {
-							if(LABELS.containsKey(msg)) {
-								msg = LABELS.getString(msg);
-							}
-							res += String.format(LABELS.getString("dlgSetMultiMsgFail"), device.getHostname()) + " (" + msg + ")<br>";
-						} else {
-							res += String.format(LABELS.getString("dlgSetMultiMsgOk"), device.getHostname()) + "<br>";
-						}
-					}
-				}
-			}
-			return res;
+//			String res = "<html>";
+//			for(int i = 0; i < parentDlg.getLocalSize(); i++) {
+//				final ShellyAbstractDevice device = parentDlg.getLocalDevice(i);
+//				if(device instanceof AbstractG1Device || device instanceof AbstractG2Device || device instanceof GhostDevice) {
+//					if(device.getStatus() == Status.OFF_LINE || device instanceof GhostDevice) { // defer
+//						res += String.format(LABELS.getString("dlgSetMultiMsgQueue"), device.getHostname()) + "<br>";
+//						DeferrablesContainer dc = DeferrablesContainer.getInstance();
+//						dc.addOrUpdate(parentDlg.getModelIndex(i), DeferrableTask.Type.CLOUD_ENABLE, LABELS.getString("dlgCloudConf"),
+//								(def, dev) -> dev.setCloudEnabled(enable) );
+//					} else {
+//						String msg = device.setCloudEnabled(enable);
+//						if(msg != null) {
+//							if(LABELS.containsKey(msg)) {
+//								msg = LABELS.getString(msg);
+//							}
+//							res += String.format(LABELS.getString("dlgSetMultiMsgFail"), device.getHostname()) + " (" + msg + ")<br>";
+//						} else {
+//							res += String.format(LABELS.getString("dlgSetMultiMsgOk"), device.getHostname()) + "<br>";
+//						}
+//					}
+//				}
+//			}
+//			return res;
+			return applyToAll(DeferrableTask.Type.CLOUD_ENABLE, LABELS.getString("dlgCloudConf"),
+					dev -> dev.setCloudEnabled(true),
+					data -> data.device.setCloudEnabled(true));
 		} else {
 			throw new IllegalArgumentException(LABELS.getString("dlgCloudEmptyError"));
 		}
@@ -484,39 +489,42 @@ public class PanelOthers extends AbstractSettingsPanel {
 		final boolean enable = radioResetEnable.isSelected();
 		final boolean disable = radioResetDisable.isSelected();
 		if(enable || disable) {
-			String res = "<html>";
-			for(int i = 0; i < parentDlg.getLocalSize(); i++) {
-				final ShellyAbstractDevice device = parentDlg.getLocalDevice(i);
-				if(device instanceof AbstractG1Device || device instanceof AbstractG2Device || device instanceof GhostDevice) {
-					if(device.getStatus() == Status.OFF_LINE || device instanceof GhostDevice) { // defer
-						res += String.format(LABELS.getString("dlgSetMultiMsgQueue"), device.getHostname()) + "<br>";
-						DeferrablesContainer dc = DeferrablesContainer.getInstance();
-						dc.addOrUpdate(parentDlg.getModelIndex(i), DeferrableTask.Type.INPUT_RESET_ENABLE, LABELS.getString("dlgResetConf"),
-								(def, dev) -> dev.getInputManager().enableReset(enable) );
-					} else {
-						try {
-							DeviceData data = devicesData.get(i);
-							String msg;
-							if(data == null) {
-								msg = device.getInputManager().enableReset(enable);
-							} else {
-								msg = data.inReset.enableReset(enable);
-							}
-							if(msg != null) {
-								if(LABELS.containsKey(msg)) {
-									msg = LABELS.getString(msg);
-								}
-								res += String.format(LABELS.getString("dlgSetMultiMsgFail"), device.getHostname()) + " (" + msg + ")<br>";
-							} else {
-								res += String.format(LABELS.getString("dlgSetMultiMsgOk"), device.getHostname()) + "<br>";
-							}
-						} catch(IOException e) {
-							res += String.format(LABELS.getString("dlgSetMultiMsgFail"), device.getHostname()) + "<br>";
-						}
-					}
-				}
-			}
-			return res;
+//			String res = "<html>";
+//			for(int i = 0; i < parentDlg.getLocalSize(); i++) {
+//				final ShellyAbstractDevice device = parentDlg.getLocalDevice(i);
+//				if(device instanceof AbstractG1Device || device instanceof AbstractG2Device || device instanceof GhostDevice) {
+//					if(device.getStatus() == Status.OFF_LINE || device instanceof GhostDevice) { // defer
+//						res += String.format(LABELS.getString("dlgSetMultiMsgQueue"), device.getHostname()) + "<br>";
+//						DeferrablesContainer dc = DeferrablesContainer.getInstance();
+//						dc.addOrUpdate(parentDlg.getModelIndex(i), DeferrableTask.Type.INPUT_RESET_ENABLE, LABELS.getString("dlgResetConf"),
+//								(def, dev) -> dev.getInputManager().enableReset(enable) );
+//					} else {
+//						try {
+//							DeviceData data = devicesData.get(i);
+//							String msg;
+//							if(data == null) {
+//								msg = device.getInputManager().enableReset(enable);
+//							} else {
+//								msg = data.inReset.enableReset(enable);
+//							}
+//							if(msg != null) {
+//								if(LABELS.containsKey(msg)) {
+//									msg = LABELS.getString(msg);
+//								}
+//								res += String.format(LABELS.getString("dlgSetMultiMsgFail"), device.getHostname()) + " (" + msg + ")<br>";
+//							} else {
+//								res += String.format(LABELS.getString("dlgSetMultiMsgOk"), device.getHostname()) + "<br>";
+//							}
+//						} catch(IOException e) {
+//							res += String.format(LABELS.getString("dlgSetMultiMsgFail"), device.getHostname()) + "<br>";
+//						}
+//					}
+//				}
+//			}
+//			return res;
+			return applyToAll(DeferrableTask.Type.CLOUD_ENABLE, LABELS.getString("dlgResetConf"),
+			dev -> dev.getInputManager().enableReset(enable),
+			data -> data.inReset.enableReset(enable));
 		} else {
 			throw new IllegalArgumentException(LABELS.getString("dlgResetEmptyError"));
 		}
@@ -620,5 +628,5 @@ public class PanelOthers extends AbstractSettingsPanel {
 		}
 	}
 	
-	private record DeviceData(TimeAndLocationManager timeManager, InputManager inReset, InputModeManager inMode, PowerOnStateManager powerOn) {};
+	private record DeviceData(ShellyAbstractDevice device, TimeAndLocationManager timeManager, InputManager inReset, InputModeManager inMode, PowerOnStateManager powerOn) {};
 } // 421-653 - 624
