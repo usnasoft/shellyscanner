@@ -54,14 +54,14 @@ public class PanelResLogin extends AbstractSettingsPanel {
 		JLabel lblNewLabel = new JLabel(LABELS.getString("lblEnabled"));
 		GridBagConstraints gbc_lblNewLabel = new GridBagConstraints();
 		gbc_lblNewLabel.anchor = GridBagConstraints.WEST;
-		gbc_lblNewLabel.insets = new Insets(0, 0, 5, 5);
+		gbc_lblNewLabel.insets = new Insets(5, 0, 5, 5);
 		gbc_lblNewLabel.gridx = 0;
 		gbc_lblNewLabel.gridy = 0;
 		add(lblNewLabel, gbc_lblNewLabel);
 
 		GridBagConstraints gbc_chckbxEnabled = new GridBagConstraints();
 		gbc_chckbxEnabled.anchor = GridBagConstraints.WEST;
-		gbc_chckbxEnabled.insets = new Insets(0, 0, 5, 5);
+		gbc_chckbxEnabled.insets = new Insets(5, 0, 5, 5);
 		gbc_chckbxEnabled.gridx = 1;
 		gbc_chckbxEnabled.gridy = 0;
 		add(chckbxEnabled, gbc_chckbxEnabled);

@@ -94,7 +94,7 @@ public class InputManagerG1 implements InputManager {
 		}
 	}
 	
-	//***** Input mode
+	//***** Input mode *****
 	private void merge(InputMode current) {
 		if(typeMode == InputMode.NOT_APPLICABLE) {
 			typeMode = current;

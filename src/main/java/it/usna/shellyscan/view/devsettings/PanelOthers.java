@@ -22,7 +22,6 @@ import javax.swing.ButtonModel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
-import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 
 import org.slf4j.Logger;
@@ -37,16 +36,13 @@ import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
 import it.usna.shellyscan.model.device.g1.AbstractG1Device;
 import it.usna.shellyscan.model.device.g1.modules.InputManagerG1;
-import it.usna.shellyscan.model.device.g1.modules.InputModeManagerG1;
 import it.usna.shellyscan.model.device.g1.modules.PowerOnStateManagerG1;
 import it.usna.shellyscan.model.device.g1.modules.TimeAndLocationManagerG1;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.g2.modules.InputManagerG2;
-import it.usna.shellyscan.model.device.g2.modules.InputModeManagerG2;
 import it.usna.shellyscan.model.device.g2.modules.PowerOnStateManagerG2;
 import it.usna.shellyscan.model.device.g2.modules.TimeAndLocationManagerG2;
 import it.usna.shellyscan.model.device.modules.InputManager;
-import it.usna.shellyscan.model.device.modules.InputModeManager;
 import it.usna.shellyscan.model.device.modules.PowerOnStateManager;
 import it.usna.shellyscan.model.device.modules.TimeAndLocationManager;
 import it.usna.shellyscan.view.util.Msg;
@@ -88,12 +84,13 @@ public class PanelOthers extends AbstractSettingsPanel {
 		super(parent);
 		setLayout(new BorderLayout(0, 0));
 		
-		JScrollPane scrollPane = new JScrollPane();
-		add(scrollPane, BorderLayout.CENTER);
+//		JScrollPane scrollPane = new JScrollPane();
+//		add(scrollPane, BorderLayout.CENTER);
 		
 		JPanel contentPanel = new JPanel();
 		contentPanel.setBorder(BorderFactory.createEmptyBorder(6, 6, 2, 6));
-		scrollPane.setViewportView(contentPanel);
+//		scrollPane.setViewportView(contentPanel);
+		add(contentPanel, BorderLayout.CENTER);
 		
 		GridBagLayout gridBagLayout = new GridBagLayout();
 		gridBagLayout.columnWidths = new int[] {0, 0, 30};
@@ -105,7 +102,7 @@ public class PanelOthers extends AbstractSettingsPanel {
 		rdbtnSNTP = new JRadioButton(LABELS.getString("dlgNTPServer"));
 		GridBagConstraints gbc_rdbtnSNTP = new GridBagConstraints();
 		gbc_rdbtnSNTP.anchor = GridBagConstraints.WEST;
-		gbc_rdbtnSNTP.insets = new Insets(0, 0, 5, 5);
+		gbc_rdbtnSNTP.insets = new Insets(5, 0, 6, 5);
 		gbc_rdbtnSNTP.gridx = 0;
 		gbc_rdbtnSNTP.gridy = 0;
 		contentPanel.add(rdbtnSNTP, gbc_rdbtnSNTP);
@@ -114,7 +111,7 @@ public class PanelOthers extends AbstractSettingsPanel {
 		GridBagConstraints gbc_textField = new GridBagConstraints();
 		gbc_textField.gridwidth = 2;
 		gbc_textField.anchor = GridBagConstraints.WEST;
-		gbc_textField.insets = new Insets(0, 0, 5, 0);
+		gbc_textField.insets = new Insets(5, 0, 6, 0);
 		gbc_textField.fill = GridBagConstraints.HORIZONTAL;
 		gbc_textField.gridx = 1;
 		gbc_textField.gridy = 0;
@@ -124,7 +121,7 @@ public class PanelOthers extends AbstractSettingsPanel {
 		rdbtnCloud = new JRadioButton(LABELS.getString("dlgCloudConf"));
 		GridBagConstraints gbc_rdbtnCloud = new GridBagConstraints();
 		gbc_rdbtnCloud.anchor = GridBagConstraints.WEST;
-		gbc_rdbtnCloud.insets = new Insets(0, 0, 10, 5);
+		gbc_rdbtnCloud.insets = new Insets(5, 0, 10, 5);
 		gbc_rdbtnCloud.gridx = 0;
 		gbc_rdbtnCloud.gridy = 1;
 		contentPanel.add(rdbtnCloud, gbc_rdbtnCloud);
@@ -136,7 +133,7 @@ public class PanelOthers extends AbstractSettingsPanel {
 		rdbtnInReset = new JRadioButton(LABELS.getString("dlgResetConf"));
 		GridBagConstraints gbc_rdbtnInReset = new GridBagConstraints();
 		gbc_rdbtnInReset.anchor = GridBagConstraints.WEST;
-		gbc_rdbtnInReset.insets = new Insets(0, 0, 5, 5);
+		gbc_rdbtnInReset.insets = new Insets(5, 0, 10, 5);
 		gbc_rdbtnInReset.gridx = 0;
 		gbc_rdbtnInReset.gridy = 2;
 		contentPanel.add(rdbtnInReset, gbc_rdbtnInReset);
@@ -150,7 +147,7 @@ public class PanelOthers extends AbstractSettingsPanel {
 		rdbtnInMode.setToolTipText(LABELS.getString("dlgInputModeConfTooltip"));
 		GridBagConstraints gbc_rdbtnInMode = new GridBagConstraints();
 		gbc_rdbtnInMode.anchor = GridBagConstraints.WEST;
-		gbc_rdbtnInMode.insets = new Insets(5, 0, 5, 5);
+		gbc_rdbtnInMode.insets = new Insets(5, 0, 10, 5);
 		gbc_rdbtnInMode.gridx = 0;
 		gbc_rdbtnInMode.gridy = 3;
 		contentPanel.add(rdbtnInMode, gbc_rdbtnInMode);
@@ -166,7 +163,7 @@ public class PanelOthers extends AbstractSettingsPanel {
 		rdbtnPowerOn.setToolTipText(LABELS.getString("dlgPowerOnConfTooltip"));
 		GridBagConstraints gbc_rdbtnPowerOn = new GridBagConstraints();
 		gbc_rdbtnPowerOn.anchor = GridBagConstraints.WEST;
-		gbc_rdbtnPowerOn.insets = new Insets(5, 0, 5, 5);
+		gbc_rdbtnPowerOn.insets = new Insets(5, 0, 10, 5);
 		gbc_rdbtnPowerOn.gridx = 0;
 		gbc_rdbtnPowerOn.gridy = 4;
 		contentPanel.add(rdbtnPowerOn, gbc_rdbtnPowerOn);
@@ -207,7 +204,7 @@ public class PanelOthers extends AbstractSettingsPanel {
 		GridBagConstraints gbc = new GridBagConstraints();
 		gbc.gridwidth = 2;
 		gbc.anchor = GridBagConstraints.WEST;
-		gbc.insets = new Insets(5, 0, 5, 0);
+		gbc.insets = new Insets(5, 0, 10, 5);
 		gbc.gridx = 1;
 		gbc.gridy = row;
 		return gbc;
@@ -259,7 +256,7 @@ public class PanelOthers extends AbstractSettingsPanel {
 		String sntpServerGlobal = "";
 		Boolean cloudEnabledGlobal = null;
 		Boolean resetEnabledGlobal = null;
-		InputModeManager.InputMode inModeGlobal = InputModeManager.InputMode.NOT_APPLICABLE;
+		InputManager.InputMode inModeGlobal = InputManager.InputMode.NOT_APPLICABLE;
 		PowerOnStateManager.State powerOnGlobal = PowerOnStateManager.State.NOT_APPLICABLE;
 		boolean first = true;
 		for(int i = 0; i < parentDlg.getLocalSize(); i++) {
@@ -269,20 +266,17 @@ public class PanelOthers extends AbstractSettingsPanel {
 			}
 			try {
 				final TimeAndLocationManager timeManager;
-				final InputManager inputResetMode;
-				final InputModeManager inputMode;
+				final InputManager inputManager;
 				final PowerOnStateManager powerOn;
 				if (d instanceof AbstractG1Device g1) {
 					JsonNode config = d.getJSON("/settings");
 					timeManager = new TimeAndLocationManagerG1(g1, config);
-					inputResetMode = new InputManagerG1(g1, config);
-					inputMode = new InputModeManagerG1(g1, config);
+					inputManager = new InputManagerG1(g1, config);
 					powerOn = new PowerOnStateManagerG1(g1, config);
 				} else if (d instanceof AbstractG2Device g2) { // G2-G3-G4
 					JsonNode config = d.getJSON("/rpc/Shelly.GetConfig");
 					timeManager = new TimeAndLocationManagerG2(g2, config);
-					inputResetMode = new InputManagerG2(g2, config);
-					inputMode = new InputModeManagerG2(g2, config);
+					inputManager = new InputManagerG2(g2, config);
 					powerOn = new PowerOnStateManagerG2(g2, config);
 				} else if (d instanceof GhostDevice) {
 					devicesData.add(null);
@@ -296,19 +290,19 @@ public class PanelOthers extends AbstractSettingsPanel {
 
 				String ntpServer = timeManager.getSNTPServer();
 				boolean cloudEnabled = d.getCloudEnabled();
-				devicesData.add(new DeviceData(d, timeManager, inputResetMode, inputMode, powerOn));
-				inModeGlobal = mergeInputMode(inModeGlobal, inputMode.getInputMode());
+				devicesData.add(new DeviceData(d, timeManager, inputManager, powerOn));
+				inModeGlobal = mergeInputMode(inModeGlobal, inputManager.getInputMode());
 				powerOnGlobal = mergePowerOn(powerOnGlobal, powerOn.getVal());
 				
 				if(first) {
 					sntpServerGlobal = ntpServer;
 					cloudEnabledGlobal = cloudEnabled;
-					resetEnabledGlobal = inputResetMode.getResetModeAsBoolean();
+					resetEnabledGlobal = inputManager.getResetModeAsBoolean();
 					first = false;
 				} else {
 					if(ntpServer == null || ntpServer.equals(sntpServerGlobal) == false) sntpServerGlobal = "";
 					if(cloudEnabled != cloudEnabledGlobal) cloudEnabledGlobal = null;
-					if(inputResetMode.getResetModeAsBoolean() != resetEnabledGlobal) resetEnabledGlobal = null;
+					if(inputManager.getResetModeAsBoolean() != resetEnabledGlobal) resetEnabledGlobal = null;
 				}
 			} catch (DeviceOfflineException | UnsupportedOperationException e) {
 				LOG.debug("PanelOthers.showing offline {}", d.getHostname());
@@ -366,13 +360,13 @@ public class PanelOthers extends AbstractSettingsPanel {
 	}
 
 	/** devices where the setting is not applicable are ignored; different values -> MIX */
-	private static InputModeManager.InputMode mergeInputMode(InputModeManager.InputMode global, InputModeManager.InputMode current) {
-		if(current == InputModeManager.InputMode.NOT_APPLICABLE) {
+	private static InputManager.InputMode mergeInputMode(InputManager.InputMode global, InputManager.InputMode current) {
+		if(current == InputManager.InputMode.NOT_APPLICABLE) {
 			return global;
-		} else if(global == InputModeManager.InputMode.NOT_APPLICABLE) {
+		} else if(global == InputManager.InputMode.NOT_APPLICABLE) {
 			return current;
 		} else {
-			return global == current ? global : InputModeManager.InputMode.MIX;
+			return global == current ? global : InputManager.InputMode.MIX;
 		}
 	}
 	
@@ -412,74 +406,18 @@ public class PanelOthers extends AbstractSettingsPanel {
 		if(server.isEmpty()) {
 			throw new IllegalArgumentException(LABELS.getString("dlgNTPServerEmptyError"));
 		}
-//		String res = "<html>";
-//		for(int i = 0; i < parentDlg.getLocalSize(); i++) {
-//			final ShellyAbstractDevice device = parentDlg.getLocalDevice(i);
-//			if(device instanceof AbstractBTHomeDevice == false) { // not blu
-//				if(device.getStatus() == Status.OFF_LINE || device instanceof GhostDevice) { // defer
-//					res += String.format(LABELS.getString("dlgSetMultiMsgQueue"), device.getHostname()) + "<br>";
-//					DeferrablesContainer dc = DeferrablesContainer.getInstance();
-//					dc.addOrUpdate(parentDlg.getModelIndex(i), DeferrableTask.Type.NTP, LABELS.getString("dlgNTPServer"),
-//							(def, dev) -> dev.getTimeAndLocationManager().setSNTPServer(server) );
-//				} else {
-//					try {
-//						DeviceData data = devicesData.get(i);
-//						String msg;
-//						if(data == null) {
-//							msg = device.getTimeAndLocationManager().setSNTPServer(server);
-//						} else {
-//							msg = data.timeManager.setSNTPServer(server);
-//						}
-//						if(msg != null) {
-//							if(LABELS.containsKey(msg)) {
-//								msg = LABELS.getString(msg);
-//							}
-//							res += String.format(LABELS.getString("dlgSetMultiMsgFail"), device.getHostname()) + " (" + msg + ")<br>";
-//						} else {
-//							res += String.format(LABELS.getString("dlgSetMultiMsgOk"), device.getHostname()) + "<br>";
-//						}
-//					} catch(IOException e) {
-//						res += String.format(LABELS.getString("dlgSetMultiMsgFail"), device.getHostname()) + "<br>";
-//					}
-//				}
-//			}
-//		}
-//		return res;
 		return applyToAll(DeferrableTask.Type.CLOUD_ENABLE, LABELS.getString("dlgNTPServer"),
-		dev -> dev.getTimeAndLocationManager().setSNTPServer(server),
-		data -> data.timeManager.setSNTPServer(server));
+				dev -> dev.getTimeAndLocationManager().setSNTPServer(server),
+				data -> data.timeManager.setSNTPServer(server));
 	}
 	
 	private String applyCloud() {	
 		final boolean enable = radioCloudEnable.isSelected();
 		final boolean disable = radioCloudDisable.isSelected();
 		if(enable || disable) {
-//			String res = "<html>";
-//			for(int i = 0; i < parentDlg.getLocalSize(); i++) {
-//				final ShellyAbstractDevice device = parentDlg.getLocalDevice(i);
-//				if(device instanceof AbstractG1Device || device instanceof AbstractG2Device || device instanceof GhostDevice) {
-//					if(device.getStatus() == Status.OFF_LINE || device instanceof GhostDevice) { // defer
-//						res += String.format(LABELS.getString("dlgSetMultiMsgQueue"), device.getHostname()) + "<br>";
-//						DeferrablesContainer dc = DeferrablesContainer.getInstance();
-//						dc.addOrUpdate(parentDlg.getModelIndex(i), DeferrableTask.Type.CLOUD_ENABLE, LABELS.getString("dlgCloudConf"),
-//								(def, dev) -> dev.setCloudEnabled(enable) );
-//					} else {
-//						String msg = device.setCloudEnabled(enable);
-//						if(msg != null) {
-//							if(LABELS.containsKey(msg)) {
-//								msg = LABELS.getString(msg);
-//							}
-//							res += String.format(LABELS.getString("dlgSetMultiMsgFail"), device.getHostname()) + " (" + msg + ")<br>";
-//						} else {
-//							res += String.format(LABELS.getString("dlgSetMultiMsgOk"), device.getHostname()) + "<br>";
-//						}
-//					}
-//				}
-//			}
-//			return res;
 			return applyToAll(DeferrableTask.Type.CLOUD_ENABLE, LABELS.getString("dlgCloudConf"),
-					dev -> dev.setCloudEnabled(true),
-					data -> data.device.setCloudEnabled(true));
+					dev -> dev.setCloudEnabled(enable),
+					data -> data.device.setCloudEnabled(enable));
 		} else {
 			throw new IllegalArgumentException(LABELS.getString("dlgCloudEmptyError"));
 		}
@@ -489,63 +427,30 @@ public class PanelOthers extends AbstractSettingsPanel {
 		final boolean enable = radioResetEnable.isSelected();
 		final boolean disable = radioResetDisable.isSelected();
 		if(enable || disable) {
-//			String res = "<html>";
-//			for(int i = 0; i < parentDlg.getLocalSize(); i++) {
-//				final ShellyAbstractDevice device = parentDlg.getLocalDevice(i);
-//				if(device instanceof AbstractG1Device || device instanceof AbstractG2Device || device instanceof GhostDevice) {
-//					if(device.getStatus() == Status.OFF_LINE || device instanceof GhostDevice) { // defer
-//						res += String.format(LABELS.getString("dlgSetMultiMsgQueue"), device.getHostname()) + "<br>";
-//						DeferrablesContainer dc = DeferrablesContainer.getInstance();
-//						dc.addOrUpdate(parentDlg.getModelIndex(i), DeferrableTask.Type.INPUT_RESET_ENABLE, LABELS.getString("dlgResetConf"),
-//								(def, dev) -> dev.getInputManager().enableReset(enable) );
-//					} else {
-//						try {
-//							DeviceData data = devicesData.get(i);
-//							String msg;
-//							if(data == null) {
-//								msg = device.getInputManager().enableReset(enable);
-//							} else {
-//								msg = data.inReset.enableReset(enable);
-//							}
-//							if(msg != null) {
-//								if(LABELS.containsKey(msg)) {
-//									msg = LABELS.getString(msg);
-//								}
-//								res += String.format(LABELS.getString("dlgSetMultiMsgFail"), device.getHostname()) + " (" + msg + ")<br>";
-//							} else {
-//								res += String.format(LABELS.getString("dlgSetMultiMsgOk"), device.getHostname()) + "<br>";
-//							}
-//						} catch(IOException e) {
-//							res += String.format(LABELS.getString("dlgSetMultiMsgFail"), device.getHostname()) + "<br>";
-//						}
-//					}
-//				}
-//			}
-//			return res;
 			return applyToAll(DeferrableTask.Type.CLOUD_ENABLE, LABELS.getString("dlgResetConf"),
-			dev -> dev.getInputManager().enableReset(enable),
-			data -> data.inReset.enableReset(enable));
+					dev -> dev.getInputManager().enableReset(enable),
+					data -> data.inputManager.enableReset(enable));
 		} else {
 			throw new IllegalArgumentException(LABELS.getString("dlgResetEmptyError"));
 		}
 	}
 	
 	private String applyInputMode() {
-		final InputModeManager.InputMode mode;
+		final InputManager.InputMode mode;
 		if(radioInModeButton.isSelected()) {
-			mode = InputModeManager.InputMode.BUTTON;
+			mode = InputManager.InputMode.BUTTON;
 		} else if(radioInModeFlip.isSelected()) {
-			mode = InputModeManager.InputMode.SWITCH_FLIP;
+			mode = InputManager.InputMode.SWITCH_FLIP;
 		} else if(radioInModeFollow.isSelected()) {
-			mode = InputModeManager.InputMode.SWITCH_FOLLOW;
+			mode = InputManager.InputMode.SWITCH_FOLLOW;
 		} else if(radioInModeDetached.isSelected()) {
-			mode = InputModeManager.InputMode.DETACHED;
+			mode = InputManager.InputMode.DETACHED;
 		} else {
 			throw new IllegalArgumentException(LABELS.getString("dlgInputModeEmptyError"));
 		}
 		return applyToAll(DeferrableTask.Type.INPUT_MODE, LABELS.getString("dlgInputModeConf"),
-				dev -> inputModeManager(dev).setInputMode(mode),
-				data -> data.inMode.setInputMode(mode));
+				dev -> dev.getInputManager().setInputMode(mode),
+				data -> data.inputManager.setInputMode(mode));
 	}
 	
 	private String applyPowerOn() {
@@ -589,9 +494,7 @@ public class PanelOthers extends AbstractSettingsPanel {
 					try {
 						DeviceData data = devicesData.get(i);
 						String msg = (data == null) ? fromDevice.set(device) : fromData.apply(data);
-						/*if("notApplicable".equals(msg)) { // bulk use: devices without this setting are just skipped
-							res += String.format(LABELS.getString("dlgSetMultiMsgSkip"), device.getHostname()) + "<br>";
-						} else*/ if(msg != null) {
+						if(msg != null) {
 							if(LABELS.containsKey(msg)) {
 								msg = LABELS.getString(msg);
 							}
@@ -608,16 +511,6 @@ public class PanelOthers extends AbstractSettingsPanel {
 		return res;
 	}
 	
-	private static InputModeManager inputModeManager(ShellyAbstractDevice d) throws IOException {
-		if(d instanceof AbstractG1Device g1) {
-			return new InputModeManagerG1(g1);
-		} else if(d instanceof AbstractG2Device g2) {
-			return new InputModeManagerG2(g2);
-		} else {
-			throw new UnsupportedOperationException();
-		}
-	}
-	
 	private static PowerOnStateManager powerOnManager(ShellyAbstractDevice d) throws IOException {
 		if(d instanceof AbstractG1Device g1) {
 			return new PowerOnStateManagerG1(g1);
@@ -628,5 +521,5 @@ public class PanelOthers extends AbstractSettingsPanel {
 		}
 	}
 	
-	private record DeviceData(ShellyAbstractDevice device, TimeAndLocationManager timeManager, InputManager inReset, InputModeManager inMode, PowerOnStateManager powerOn) {};
-} // 421-653 - 624
+	private record DeviceData(ShellyAbstractDevice device, TimeAndLocationManager timeManager, InputManager inputManager, PowerOnStateManager powerOn) {};
+}

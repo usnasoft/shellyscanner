@@ -5,8 +5,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.TimeUnit;
 import java.util.Set;
 
+import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.modules.InputManager;
 import tools.jackson.databind.JsonNode;
@@ -63,7 +65,7 @@ public class InputManagerG2 implements InputManager {
 		for(Entry<String, JsonNode> node: config.properties()) {
 			String name;
 			int id;
-			if((name = node.getKey()).startsWith("input:") && (id = Integer.parseInt(name.split(":")[1])) < 100) {
+			if((name = node.getKey()).startsWith("input:") && (id = Integer.parseInt(name.substring(6))) < 100) {
 				JsonNode reset = node.getValue().path("factory_reset");
 				if(reset.isMissingNode()) {
 					currentMode = ResetMode.NOT_APPLICABLE;
@@ -159,7 +161,7 @@ public class InputManagerG2 implements InputManager {
 		}
 	}
 
-	//***** Input mode
+	//***** Input mode *****
 	private static int parseId(String name, int prefixLength) {
 		try {
 			return Integer.parseInt(name.substring(prefixLength));
@@ -280,6 +282,8 @@ public class InputManagerG2 implements InputManager {
 		if(type == null || type.equals(inputTypes.get(id))) {
 			return null;
 		}
-		return parent.postCommand("Input.SetConfig", "{\"id\":" + id + ",\"config\":{\"type\":\"" + type + "\"}}");
+		String ret = parent.postCommand("Input.SetConfig", "{\"id\":" + id + ",\"config\":{\"type\":\"" + type + "\"}}");
+		try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e) {}
+		return ret;
 	}
 }
