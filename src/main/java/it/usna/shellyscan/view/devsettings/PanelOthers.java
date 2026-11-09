@@ -320,23 +320,19 @@ public class PanelOthers extends AbstractSettingsPanel {
 			}
 		}
 		ntpServerTextField.setText(sntpServerGlobal);
-		if(cloudEnabledGlobal != null) {
-			if(cloudEnabledGlobal) {
-				radioCloudEnable.setSelected(true);
-			} else {
-				radioCloudDisable.setSelected(true);
-			}
-		} else {
+		if(cloudEnabledGlobal == null) {
 			radioCloudGroup.clearSelection();
-		}
-		if(resetEnabledGlobal != null) {
-			if(resetEnabledGlobal) {
-				radioResetEnable.setSelected(true);
-			} else {
-				radioResetDisable.setSelected(true);
-			}
+		} else if(cloudEnabledGlobal) {
+			radioCloudEnable.setSelected(true);
 		} else {
+			radioCloudDisable.setSelected(true);
+		}
+		if(resetEnabledGlobal == null) {
 			radioResetGroup.clearSelection();
+		} else if(resetEnabledGlobal) {
+			radioResetEnable.setSelected(true);
+		} else {
+			radioResetDisable.setSelected(true);
 		}
 		switch(inModeGlobal) {
 			case BUTTON -> radioInModeButton.setSelected(true);

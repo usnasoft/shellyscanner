@@ -143,13 +143,16 @@ public class RestoreAction extends UsnaAction {
 
 					@Override
 					protected void done() {
-						mainView.reserveStatusLine(false);
-						mainView.getRootPane().setCursor(Cursor.getDefaultCursor());
-						worker = null;
+						try {
+							mainView.reserveStatusLine(false);
+							mainView.getRootPane().setCursor(Cursor.getDefaultCursor());
+						} finally {
+							worker = null;
+						}
 					}
 				}
 				
-				new RestoreWorker().execute();
+				(worker = new RestoreWorker()).execute();
 			}
 		});
 	}

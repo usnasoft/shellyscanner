@@ -29,7 +29,6 @@ import org.slf4j.LoggerFactory;
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.modules.WIFIManager;
-import it.usna.shellyscan.view.DialogDeviceSelection;
 import it.usna.shellyscan.view.util.Msg;
 import it.usna.shellyscan.view.util.UtilMiscellaneous;
 import it.usna.util.UsnaEventListener;

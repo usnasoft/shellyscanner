@@ -162,8 +162,8 @@ public class DialogDeviceSettings extends JDialog implements UsnaEventListener<D
 			try (var res = new BusyCursor(this)) {
 				btnClose.requestFocus(); // remove focus from form element, it could be disabled now
 				String msg = currentPanel.showing();
-				if(Thread.interrupted() == false) {
-					if(isVisible() && currentPanel.isVisible() && msg != null && msg.length() > 0) {
+				if(!Thread.interrupted()) {
+					if(isVisible() && currentPanel.isVisible() && msg != null && !msg.isEmpty()) {
 						Msg.errorMsg(this, msg);
 					} else { //if(msg == null) { // "" -> panel displayed his own message
 						btnOKButton.setEnabled(true);
@@ -179,7 +179,7 @@ public class DialogDeviceSettings extends JDialog implements UsnaEventListener<D
 		try (var res = new BusyCursor(this)) {
 			String msg = panel.apply();
 			firePropertyChange("S_APPLY", null, null);
-			if(msg != null && msg.length() > 0) {
+			if(msg != null && !msg.isEmpty()) {
 				Msg.showHtmlMessageDialog(this, msg, name, JOptionPane.INFORMATION_MESSAGE);
 			}
 			return true;
@@ -192,8 +192,8 @@ public class DialogDeviceSettings extends JDialog implements UsnaEventListener<D
 		}
 	}
 	
-	ShellyAbstractDevice getLocalDevice(int index) {
-		return model.get(devicesInd[index]);
+	ShellyAbstractDevice getLocalDevice(int localIndex) {
+		return model.get(devicesInd[localIndex]);
 	}
 	
 	int getLocalIndex(int modelIndex) {

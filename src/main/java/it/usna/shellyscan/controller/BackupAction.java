@@ -94,7 +94,7 @@ public class BackupAction extends UsnaAction {
 			if(ind.length > 1) {
 				fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 				if(fc.showSaveDialog(mainView) == JFileChooser.APPROVE_OPTION) {
-					new BackWorker().execute();
+					(worker = new BackWorker()).execute();
 					appProp.setProperty("LAST_PATH", fc.getSelectedFile().getPath());
 				}
 			} else if(ind.length == 1) {

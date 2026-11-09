@@ -457,6 +457,13 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 						tModel.setValueAt("", index, FWUpdateTable.COL_BETA);
 						devicesFWData.get(index).rebootTime = System.currentTimeMillis();
 						break;
+					} else if(eventType.equals("ota_error")/* && component.equals(comp)*/) {
+						tModel.setValueAt(DevicesTable.ERROR_BULLET, index, FWUpdateTable.COL_STATUS);
+						tModel.setValueAt(LABELS.getString("lbl_error"), index, FWUpdateTable.COL_STABLE);
+						tModel.setValueAt("", index, FWUpdateTable.COL_BETA);
+//						devicesFWData.get(index).rebootTime = System.currentTimeMillis(); // will stay on for a while
+						LOG.error("ota_error: {}", event.path("msg").asString("no msg"));
+						break;
 					}
 				}
 			} catch(Exception e) {
@@ -491,7 +498,7 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 	public void update(EventType mesgType, Integer pos) {
 		if(mesgType == Devices.EventType.UPDATE || mesgType == Devices.EventType.SUBSTITUTE) {
 			final int localIndex = parentDlg.getLocalIndex(pos);
-			if(localIndex >= 0) {
+			if(localIndex >= 0 && tModel.getValueAt(localIndex, FWUpdateTable.COL_STATUS) != DevicesTable.ERROR_BULLET) {
 				final ShellyAbstractDevice device = parentDlg.getModel().get(pos);
 				ShellyAbstractDevice.Status newStatus = device.getStatus();
 
@@ -540,3 +547,4 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 // {"src":"shellyplusi4-a8032ab1fe78","dst":"S_Scanner","method":"NotifyEvent","params":{"ts":1677696109.49,"events":[{"component":"sys", "event":"ota_success", "msg":"Update applied, rebooting", "ts":1677696109.49}]}}
 // {"src":"shellyplusi4-a8032ab1fe78","dst":"S_Scanner","method":"NotifyEvent","params":{"ts":1677696109.57,"events":[{"component":"sys", "event":"scheduled_restart", "time_ms": 435, "ts":1677696109.57}]}}
 // BluTRV ... {"component":"bthomedevice:200","event":"ota_progress","msg":"Updating","progress_percent":100,"ts":1.73229721333E9}
+// {"src":"shelly1pmg4-a085e3bc92d0","dst":"S_Scanner","method":"NotifyEvent","params":{"ts":1.79371394142E9,"events":[{"component":"sys","event":"ota_error","msg":"DATA_LOSS: ZIP flush error : premature end of data","ts":1.79371394142E9}]}}

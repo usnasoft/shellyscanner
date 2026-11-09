@@ -5,6 +5,7 @@ import static it.usna.shellyscan.Main.LABELS;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.FlowLayout;
+import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
@@ -23,12 +24,14 @@ import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.RowFilter;
 import javax.swing.SortOrder;
 import javax.swing.SwingConstants;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
@@ -51,6 +54,7 @@ import it.usna.util.UsnaEventListener;
  */
 public class DialogDeviceSelection extends JDialog {
 	private static final long serialVersionUID = 1L;
+	private static final int HIDDEN_DEV_COLUMN = 2;
 
 	private Future<?> updateTaskFuture;
 
@@ -59,14 +63,21 @@ public class DialogDeviceSelection extends JDialog {
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		
 		UsnaTableModel tModel = new UsnaTableModel(LABELS.getString("col_device"), LABELS.getString("col_ip"));
-		ExTooltipTable table = new ExTooltipTable(tModel, true) {
+		ExTooltipTable table = new ExTooltipTable(tModel, true);
+		
+		TableCellRenderer r = new DefaultTableCellRenderer() {
 			@Override
-			public Component prepareRenderer(TableCellRenderer renderer, int row, int column) {
-				Component comp = super.prepareRenderer(renderer, row, column);
-//				if()
+			public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+				Component comp = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+				if(owner.getLocalIndex(table.convertRowIndexToModel(row)) < 0) {
+					setFont(getFont().deriveFont(Font.PLAIN));
+				} else {
+					setFont(getFont().deriveFont(Font.BOLD));
+				}
 				return comp;
 			}
 		};
+		table.getColumnModel().getColumn(0).setCellRenderer(r);
 
 		JScrollPane scrollPane = new JScrollPane();
 		scrollPane.setBorder(BorderFactory.createEmptyBorder(0, 0, 3, 0));
@@ -75,9 +86,7 @@ public class DialogDeviceSelection extends JDialog {
 
 		for(int i = 0; i < model.size(); i++) {
 			ShellyAbstractDevice d = model.get(i);
-//			if(d.getStatus() == ShellyAbstractDevice.Status.ON_LINE) {
-				tModel.addRow(UtilMiscellaneous.getExtendedHostName(d), d.getAddressAndPort(), d);
-//			}
+			tModel.addRow(UtilMiscellaneous.getExtendedHostName(d), d.getAddressAndPort(), d);
 		}
 		table.sortByColumn(1, SortOrder.ASCENDING);
 
@@ -99,28 +108,22 @@ public class DialogDeviceSelection extends JDialog {
 		textFieldFilter.setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));
 		panelFind.add(textFieldFilter);
 		
-		RowFilter<TableModel, Integer> onLineFilter = new RowFilter<TableModel, Integer>() {
+		final RowFilter<TableModel, Integer> onLineFilter = new RowFilter<TableModel, Integer>() {
 			@Override
 			public boolean include(Entry<? extends TableModel, ? extends Integer> entry) {
-				return ((ShellyAbstractDevice)entry.getModel().getValueAt(entry.getIdentifier(), 2)).getStatus() == ShellyAbstractDevice.Status.ON_LINE;
+				return ((ShellyAbstractDevice)entry.getModel().getValueAt(entry.getIdentifier(), HIDDEN_DEV_COLUMN)).getStatus() == ShellyAbstractDevice.Status.ON_LINE;
 			}
 		};
+		((TableRowSorter<? extends TableModel>)table.getRowSorter()).setRowFilter(onLineFilter);
+		
 		textFieldFilter.getDocument().addDocumentListener((TextDocumentListener)e -> {
 			final int[] cols = new int[] {0, 1};
 			String filter = textFieldFilter.getText();
 			TableRowSorter<? extends TableModel> sorter = (TableRowSorter<? extends TableModel>)table.getRowSorter();
 			if(filter.isEmpty()) {
-//				sorter.setRowFilter(null);
-				
 				sorter.setRowFilter(onLineFilter);
 			} else {
-				filter = filter.replace("\\E", "\\e");
-//				List<RowFilter<TableModel, Integer>> filters = new ArrayList<>(2);
-//				filters.add(onLineFilter);
-//				filters.add(RowFilter.regexFilter("(?i).*\\Q" + filter + "\\E.*", cols));
-				
-//				sorter.setRowFilter(RowFilter.regexFilter("(?i).*\\Q" + filter + "\\E.*", cols));
-				List<RowFilter<TableModel, Integer>> filters = List.of(RowFilter.regexFilter("(?i).*\\Q" + filter + "\\E.*", cols), onLineFilter);
+				List<RowFilter<TableModel, Integer>> filters = List.of(RowFilter.regexFilter("(?i).*\\Q" + filter.replace("\\E", "\\e") + "\\E.*", cols), onLineFilter);
 				sorter.setRowFilter(RowFilter.andFilter(filters));
 			}
 		});
@@ -153,7 +156,7 @@ public class DialogDeviceSelection extends JDialog {
 					try (var cres = new BusyCursor(this)) {
 						int row = table.getSelectedModelRow();
 						if(row >= 0) {
-							listener.update((ShellyAbstractDevice)tModel.getValueAt(2, row), updateTaskFuture);
+							listener.update((ShellyAbstractDevice)tModel.getValueAt(row, HIDDEN_DEV_COLUMN), updateTaskFuture);
 						}
 					}
 				});
@@ -180,7 +183,6 @@ public class DialogDeviceSelection extends JDialog {
 		});
 
 		setSize(450, owner.getHeight());		UsnaSwingUtils.setLocationRelativeTo(this, owner, SwingConstants.RIGHT, -8, 0);
-//		setLocationRelativeTo(owner);
 		setVisible(true);
 		table.columnsWidthAdapt();
 	}

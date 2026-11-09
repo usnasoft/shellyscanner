@@ -36,7 +36,6 @@ import it.usna.shellyscan.model.device.ShellyAbstractDevice;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
 import it.usna.shellyscan.model.device.blu.AbstractBTHomeDevice;
 import it.usna.shellyscan.model.device.modules.MQTTManager;
-import it.usna.shellyscan.view.DialogDeviceSelection;
 import it.usna.shellyscan.view.util.Msg;
 import it.usna.shellyscan.view.util.ScannerProperties;
 import it.usna.shellyscan.view.util.UtilMiscellaneous;

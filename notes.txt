@@ -471,11 +471,10 @@ lnm restore
 ---
 Shelly i4 Gen4
 new status bar
-login: do no ask (-nopwd)
+application settings: login: ask credentials (-nopwd)
+device settings: others: power on, switch mode
 
 Plug C G4 ha BLU Motion ZB come BTHome ma non gateway -> doppio tab anche qui?
-
-todo: status count in status bar
 
 todo: Firmware 2.0.0
 - wi-fi channel in checklist ?
