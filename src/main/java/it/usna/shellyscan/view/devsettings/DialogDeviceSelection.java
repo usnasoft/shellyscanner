@@ -117,13 +117,12 @@ public class DialogDeviceSelection extends JDialog {
 		((TableRowSorter<? extends TableModel>)table.getRowSorter()).setRowFilter(onLineFilter);
 		
 		textFieldFilter.getDocument().addDocumentListener((TextDocumentListener)e -> {
-			final int[] cols = new int[] {0, 1};
 			String filter = textFieldFilter.getText();
 			TableRowSorter<? extends TableModel> sorter = (TableRowSorter<? extends TableModel>)table.getRowSorter();
 			if(filter.isEmpty()) {
 				sorter.setRowFilter(onLineFilter);
 			} else {
-				List<RowFilter<TableModel, Integer>> filters = List.of(RowFilter.regexFilter("(?i).*\\Q" + filter.replace("\\E", "\\e") + "\\E.*", cols), onLineFilter);
+				List<RowFilter<TableModel, Integer>> filters = List.of(RowFilter.regexFilter("(?i).*\\Q" + filter.replace("\\E", "\\e") + "\\E.*", new int[] {0, 1}), onLineFilter);
 				sorter.setRowFilter(RowFilter.andFilter(filters));
 			}
 		});

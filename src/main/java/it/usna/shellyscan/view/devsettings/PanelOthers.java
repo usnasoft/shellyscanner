@@ -19,6 +19,7 @@ import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.ButtonGroup;
 import javax.swing.ButtonModel;
+import javax.swing.JButton;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
@@ -29,6 +30,7 @@ import org.slf4j.LoggerFactory;
 
 import it.usna.shellyscan.controller.DeferrableTask;
 import it.usna.shellyscan.controller.DeferrablesContainer;
+import it.usna.shellyscan.controller.UsnaAction;
 import it.usna.shellyscan.model.DeviceOfflineException;
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.GhostDevice;
@@ -47,6 +49,7 @@ import it.usna.shellyscan.model.device.modules.PowerOnStateManager;
 import it.usna.shellyscan.model.device.modules.TimeAndLocationManager;
 import it.usna.shellyscan.view.util.Msg;
 import it.usna.shellyscan.view.util.UtilMiscellaneous;
+import it.usna.swing.table.UsnaTableModel;
 import tools.jackson.databind.JsonNode;
 
 public class PanelOthers extends AbstractSettingsPanel {
@@ -77,19 +80,16 @@ public class PanelOthers extends AbstractSettingsPanel {
 	private JRadioButton radioPowerOnOn;
 	private JRadioButton radioPowerOnLast;
 	private JRadioButton radioPowerOnMatch;
+	JButton infoSntp, infoCloud, infoReset, infoInMode, infoPowerOn;
 	
 	private ArrayList<DeviceData> devicesData = new ArrayList<>();
 
 	protected PanelOthers(DialogDeviceSettings parent) {
 		super(parent);
 		setLayout(new BorderLayout(0, 0));
-		
-//		JScrollPane scrollPane = new JScrollPane();
-//		add(scrollPane, BorderLayout.CENTER);
-		
+
 		JPanel contentPanel = new JPanel();
 		contentPanel.setBorder(BorderFactory.createEmptyBorder(6, 6, 2, 6));
-//		scrollPane.setViewportView(contentPanel);
 		add(contentPanel, BorderLayout.CENTER);
 		
 		GridBagLayout gridBagLayout = new GridBagLayout();
@@ -109,7 +109,6 @@ public class PanelOthers extends AbstractSettingsPanel {
 		
 		ntpServerTextField = new JTextField();
 		GridBagConstraints gbc_textField = new GridBagConstraints();
-		gbc_textField.gridwidth = 2;
 		gbc_textField.anchor = GridBagConstraints.WEST;
 		gbc_textField.insets = new Insets(5, 0, 6, 0);
 		gbc_textField.fill = GridBagConstraints.HORIZONTAL;
@@ -117,6 +116,9 @@ public class PanelOthers extends AbstractSettingsPanel {
 		gbc_textField.gridy = 0;
 		contentPanel.add(ntpServerTextField, gbc_textField);
 		ntpServerTextField.setColumns(30);
+
+		infoSntp = infoButton(parent, LABELS.getString("dlgNTPServer"), data -> (data.timeManager == null) ? "-" : data.timeManager.getSNTPServer());
+		contentPanel.add(infoSntp, infoButtonConstraints(0));
 		
 		rdbtnCloud = new JRadioButton(LABELS.getString("dlgCloudConf"));
 		GridBagConstraints gbc_rdbtnCloud = new GridBagConstraints();
@@ -129,7 +131,10 @@ public class PanelOthers extends AbstractSettingsPanel {
 		radioCloudEnable = new JRadioButton(LABELS.getString("lblEnabled"));
 		radioCloudDisable = new JRadioButton(LABELS.getString("lblDisabled"));
 		contentPanel.add(optionsPanel(radioCloudGroup, radioCloudEnable, radioCloudDisable), optionsConstraints(1));
-	
+
+		infoCloud = infoButton(parent, LABELS.getString("dlgCloudConf"), data -> (data.device.getCloudEnabled()) ? " " + LABELS.getString("true_yn") : " " + LABELS.getString("false_yn"));
+		contentPanel.add(infoCloud, infoButtonConstraints(1));
+
 		rdbtnInReset = new JRadioButton(LABELS.getString("dlgResetConf"));
 		GridBagConstraints gbc_rdbtnInReset = new GridBagConstraints();
 		gbc_rdbtnInReset.anchor = GridBagConstraints.WEST;
@@ -141,6 +146,15 @@ public class PanelOthers extends AbstractSettingsPanel {
 		radioResetEnable = new JRadioButton(LABELS.getString("lblEnabled"));
 		radioResetDisable = new JRadioButton(LABELS.getString("lblDisabled"));
 		contentPanel.add(optionsPanel(radioResetGroup, radioResetEnable, radioResetDisable), optionsConstraints(2));
+		
+		infoReset = infoButton(parent, LABELS.getString("dlgResetConf"), data -> {
+			if(data.inputManager != null && data.inputManager.getResetModeAsBoolean() != null) {
+				return (data.inputManager.getResetModeAsBoolean() ) ? " " + LABELS.getString("true_yn") : " " + LABELS.getString("false_yn");
+			} else {
+				return " -";
+			}
+		});
+		contentPanel.add(infoReset, infoButtonConstraints(2));
 		
 		// Input mode (button / switch)
 		rdbtnInMode = new JRadioButton(LABELS.getString("dlgInputModeConf"));
@@ -158,6 +172,21 @@ public class PanelOthers extends AbstractSettingsPanel {
 		radioInModeDetached = new JRadioButton(LABELS.getString("dlgInputModeDetached"));
 		contentPanel.add(optionsPanel(radioInModeGroup, radioInModeButton, radioInModeFlip, radioInModeFollow, radioInModeDetached), optionsConstraints(3));
 		
+		infoInMode = infoButton(parent, LABELS.getString("dlgResetConf"), data -> {
+			if(data.inputManager != null) {
+				return switch(data.inputManager.getInputMode()) {
+				case BUTTON -> LABELS.getString("dlgInputModeButton");
+				case SWITCH_FLIP -> LABELS.getString("dlgInputModeFlip");
+				case SWITCH_FOLLOW -> LABELS.getString("dlgInputModeFollow");
+				case DETACHED -> LABELS.getString("dlgInputModeDetached");
+				default -> "-"; // OTHER, MIX, NOT_APPLICABLE
+				};
+			} else {
+				return "-";
+			}
+		});
+		contentPanel.add(infoInMode, infoButtonConstraints(3));
+		
 		// Power on default (output state when power is restored)
 		rdbtnPowerOn = new JRadioButton(LABELS.getString("dlgPowerOnConf"));
 		rdbtnPowerOn.setToolTipText(LABELS.getString("dlgPowerOnConfTooltip"));
@@ -174,6 +203,21 @@ public class PanelOthers extends AbstractSettingsPanel {
 		radioPowerOnMatch = new JRadioButton(LABELS.getString("dlgPowerOnMatch"));
 		contentPanel.add(optionsPanel(radioPowerOnGroup, radioPowerOnOff, radioPowerOnOn, radioPowerOnLast, radioPowerOnMatch), optionsConstraints(4));
 		
+		infoPowerOn = infoButton(parent, LABELS.getString("dlgResetConf"), data -> {
+			if(data.powerOn != null) {
+				return switch(data.powerOn.getVal()) {
+				case OFF -> LABELS.getString("dlgPowerOnOff");
+				case ON -> LABELS.getString("dlgPowerOnOn");
+				case RESTORE_LAST -> LABELS.getString("dlgPowerOnLast");
+				case MATCH_INPUT -> LABELS.getString("dlgPowerOnMatch");
+				default -> "-"; // MIX, NOT_APPLICABLE
+				};
+			} else {
+				return "-";
+			}
+		});
+		contentPanel.add(infoPowerOn, infoButtonConstraints(4));
+		
 		radioMainSectionGroup.add(rdbtnSNTP);
 		radioMainSectionGroup.add(rdbtnCloud);
 		radioMainSectionGroup.add(rdbtnInReset);
@@ -184,12 +228,10 @@ public class PanelOthers extends AbstractSettingsPanel {
 		rdbtnInReset.addActionListener(e -> radioSelection(e));
 		rdbtnInMode.addActionListener(e -> radioSelection(e));
 		rdbtnPowerOn.addActionListener(e -> radioSelection(e));
-
-		rdbtnSNTP.setSelected(true);
 	}
 	
 	private static JPanel optionsPanel(ButtonGroup group, JRadioButton... options) {
-		JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+		final JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
 		for(int i = 0; i < options.length; i++) {
 			if(i > 0) {
 				panel.add(Box.createHorizontalStrut(10));
@@ -201,13 +243,35 @@ public class PanelOthers extends AbstractSettingsPanel {
 	}
 	
 	private static GridBagConstraints optionsConstraints(int row) {
-		GridBagConstraints gbc = new GridBagConstraints();
-		gbc.gridwidth = 2;
+		final GridBagConstraints gbc = new GridBagConstraints();
 		gbc.anchor = GridBagConstraints.WEST;
 		gbc.insets = new Insets(5, 0, 10, 5);
 		gbc.gridx = 1;
 		gbc.gridy = row;
 		return gbc;
+	}
+
+	private JButton infoButton(DialogDeviceSettings parent, String colLabel, Function<DeviceData, String> consumer) {
+		final JButton infoBtn = new JButton(new UsnaAction("lblInfo", e -> {
+			UsnaTableModel tModel = new UsnaTableModel(LABELS.getString("col_device"), LABELS.getString("col_ip"), colLabel);
+			devicesData.forEach(data -> {
+				if(data != null) {
+					tModel.addRow(UtilMiscellaneous.getDescName(data.device), data.device.getAddressAndPort(), consumer.apply(data));
+				}
+			});
+			new DialogDeviceInfo(parent, tModel);
+		}));
+		infoBtn.setBorder(BorderFactory.createEmptyBorder(2, 10, 2, 10));
+		return infoBtn;
+	}
+	
+	private static GridBagConstraints infoButtonConstraints(int row) {
+		final GridBagConstraints gbc_infoBtn = new GridBagConstraints();
+		gbc_infoBtn.anchor = GridBagConstraints.EAST;
+		gbc_infoBtn.fill = GridBagConstraints.NONE;
+		gbc_infoBtn.gridx = 2;
+		gbc_infoBtn.gridy = row;
+		return gbc_infoBtn;
 	}
 	
 	private void radioSelection(ActionEvent e) {
@@ -244,14 +308,19 @@ public class PanelOthers extends AbstractSettingsPanel {
 	}
 
 	private String fill(boolean showExcluded) throws InterruptedException {
+		ButtonModel selectedRadio = radioMainSectionGroup.getSelection();
+		enableRadioGroup(radioMainSectionGroup, false);
+		radioMainSectionGroup.clearSelection();
+		radioSelection(null); // form not active
+		infoSntp.setEnabled(false);
+		infoCloud.setEnabled(false);
+		infoReset.setEnabled(false);
+		infoInMode.setEnabled(false);
+		infoPowerOn.setEnabled(false);
+		
 		String exclude = "<html>" + LABELS.getString("dlgExcludedDevicesMsg");
 		int excludeCount = 0;
 		devicesData.clear();
-		
-		ButtonModel selectedRadio = radioMainSectionGroup.getSelection();
-		enableRadioGroup(radioMainSectionGroup, false);
-		selectedRadio.setSelected(false);
-		radioSelection(null); // form not active
 		ShellyAbstractDevice d = null;
 		String sntpServerGlobal = "";
 		Boolean cloudEnabledGlobal = null;
@@ -339,19 +408,29 @@ public class PanelOthers extends AbstractSettingsPanel {
 			case SWITCH_FLIP -> radioInModeFlip.setSelected(true);
 			case SWITCH_FOLLOW -> radioInModeFollow.setSelected(true);
 			case DETACHED -> radioInModeDetached.setSelected(true);
-			default -> radioInModeGroup.clearSelection();
+			default -> radioInModeGroup.clearSelection(); // OTHER, MIX, NOT_APPLICABLE
 		}
 		switch(powerOnGlobal) {
 			case OFF -> radioPowerOnOff.setSelected(true);
 			case ON -> radioPowerOnOn.setSelected(true);
 			case RESTORE_LAST -> radioPowerOnLast.setSelected(true);
 			case MATCH_INPUT -> radioPowerOnMatch.setSelected(true);
-			default -> radioPowerOnGroup.clearSelection();
+			default -> radioPowerOnGroup.clearSelection(); // MIX, NOT_APPLICABLE
 		}
 		
-		selectedRadio.setSelected(true); // form is now active
+		// form is now active
+		if(selectedRadio != null) {
+			selectedRadio.setSelected(true);
+		} else {
+			rdbtnSNTP.setSelected(true); // default
+		}
 		radioSelection(null);
 		enableRadioGroup(radioMainSectionGroup, true);
+		infoSntp.setEnabled(true);
+		infoCloud.setEnabled(true);
+		infoReset.setEnabled(true);
+		infoInMode.setEnabled(true);
+		infoPowerOn.setEnabled(true);
 		return null;
 	}
 
@@ -387,8 +466,10 @@ public class PanelOthers extends AbstractSettingsPanel {
 			res = applyInputReset();
 		} else if(rdbtnInMode.isSelected()) {
 			res = applyInputMode();
-		} else {
+		} else  if(rdbtnPowerOn.isSelected()) {
 			res = applyPowerOn();
+		} else {
+			return null;
 		}
 		try {
 			try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e) {}

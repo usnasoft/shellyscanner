@@ -445,7 +445,10 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 					String eventType = event.path("event").asString("");
 					String comp = event.path("component").asString("");
 					if(eventType.equals("ota_progress") && component.equals(comp)) { // dowloading
-						getFirmwareManager(index).upadating(true);
+						FirmwareManager fm = getFirmwareManager(index);
+						if(fm != null) {
+							fm.upadating(true);
+						}
 						int progress = event.path("progress_percent").asInt();
 						tModel.setValueAt(DevicesTable.UPDATING_BULLET, index, FWUpdateTable.COL_STATUS);
 						tModel.setValueAt(String.format(LABELS.getString("lbl_downloading"), progress), index, FWUpdateTable.COL_STABLE);
@@ -518,7 +521,7 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 						if(newStatus == Status.ON_LINE) {
 							exeService.submit(() -> {
 								try {
-									tModel.setValueAt(DevicesTable.ONLINE_BULLET, localIndex, FWUpdateTable.COL_STATUS);
+									tModel.setValueAt(DevicesTable.UPDATING_BULLET, localIndex, FWUpdateTable.COL_STATUS);
 									Thread.sleep(Devices.MULTI_QUERY_DELAY);
 									fwInfo.fwModule = device.getFWManager();
 									tModel.setRow(localIndex, createTableRow(localIndex, true));

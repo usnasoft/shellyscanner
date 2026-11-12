@@ -472,7 +472,8 @@ lnm restore
 Shelly i4 Gen4
 new status bar
 application settings: login: ask credentials (-nopwd)
-device settings: others: power on, switch mode
+device settings: others: power on, switch mode - info
+device settings: devices selection (selected devices - on the main table - are bold)
 
 Plug C G4 ha BLU Motion ZB come BTHome ma non gateway -> doppio tab anche qui?
 

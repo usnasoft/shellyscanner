@@ -82,6 +82,7 @@ import it.usna.shellyscan.view.scripts.DialogDeviceScripts;
 import it.usna.shellyscan.view.util.Msg;
 import it.usna.shellyscan.view.util.ScannerProperties;
 import it.usna.shellyscan.view.util.ScannerProperties.PropertyEvent;
+import it.usna.swing.BusyCursor;
 import it.usna.swing.UsnaPopupMenu;
 import it.usna.swing.table.UsnaTableModel;
 import it.usna.swing.texteditor.TextDocumentListener;
@@ -173,8 +174,8 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 	});
 
 	private Action refreshAction = new UsnaAction(null, "action_refresh_name", "action_refresh_tooltip", null, "/images/Refresh.png", e ->
-		SwingUtilities.invokeLater(() -> {
-			setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+	SwingUtilities.invokeLater(() -> {
+		try(var x = new BusyCursor(this)) {
 			setEnabled(false);
 			devicesTable.removeEditor(); //	devicesTable.stopCellEditing();
 			for(int i = 0; i < tabModel.getRowCount(); i++) {
@@ -190,10 +191,9 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 			try { Thread.sleep(300); } catch (InterruptedException e1) {}
 			devicesTable.columnsWidthAdapt();
 			setEnabled(true);
-			setCursor(Cursor.getDefaultCursor());
-		})
-	);
-	
+		}
+	}));
+
 	private Action rebootAction = new UsnaSelectedAction(this, devicesTable, "action_reboot_name", "action_reboot_tooltip", null, "/images/nuke.png", () -> {
 		final String cancel = UIManager.getString("OptionPane.cancelButtonText");
 		return JOptionPane.showOptionDialog(

@@ -131,9 +131,7 @@ public class DialogDeviceSettings extends JDialog implements UsnaEventListener<D
 
 		tabbedPane.addChangeListener(e -> {
 			showCurrent();
-			try {
-				TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY);
-			} catch (InterruptedException e1) {}
+			try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e1) {}
 		});
 		setVisible(true);
 		showCurrent();
@@ -162,8 +160,8 @@ public class DialogDeviceSettings extends JDialog implements UsnaEventListener<D
 			try (var res = new BusyCursor(this)) {
 				btnClose.requestFocus(); // remove focus from form element, it could be disabled now
 				String msg = currentPanel.showing();
-				if(!Thread.interrupted()) {
-					if(isVisible() && currentPanel.isVisible() && msg != null && !msg.isEmpty()) {
+				if(!Thread.interrupted()/*!showCurrentThread.isAlive()*/ && currentPanel.isVisible()) {
+					if(isVisible() /*&& currentPanel.isVisible()*/ && msg != null && !msg.isEmpty()) {
 						Msg.errorMsg(this, msg);
 					} else { //if(msg == null) { // "" -> panel displayed his own message
 						btnOKButton.setEnabled(true);
