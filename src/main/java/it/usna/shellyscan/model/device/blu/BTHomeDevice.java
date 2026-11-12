@@ -84,10 +84,12 @@ public class BTHomeDevice extends AbstractBTHomeDevice implements ModulesHolder 
 		case 0x15 -> "Blu Wall Switch 4 ZB"; // 21
 		case 0x16 -> "Blu RC Button 4 ZB"; // 22 - line
 		case 0x17 -> "Blu Button Tough 1 ZB"; // 23
+		case 0x18 -> "KB"; // 24
 		case 0x20 -> "BLU Door/Window Mini ZB"; // 32
 		case 0x21 -> "BLU Door/Window Outdoor ZB"; // 33
-		case 0x203A -> "Blu 3"; // 8250
-		default -> "Generic BTHome";
+		case 0x28 -> "B2"; // 40
+		case 0x203A -> "Blu X"; // 8250
+		default -> compInfo.path("attrs").path("model_idname").asString("Generic BTHome");
 		};
 		this.webhooks = new Webhooks(parent);
 		this.uptime = -1;
