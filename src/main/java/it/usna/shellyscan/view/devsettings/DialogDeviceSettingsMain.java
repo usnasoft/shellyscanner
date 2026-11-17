@@ -30,7 +30,7 @@ import it.usna.shellyscan.view.util.UtilMiscellaneous;
 import it.usna.swing.BusyCursor;
 import it.usna.util.UsnaEventListener;
 
-public class DialogDeviceSettings extends JDialog implements UsnaEventListener<Devices.EventType, Integer> {
+public class DialogDeviceSettingsMain extends JDialog implements UsnaEventListener<Devices.EventType, Integer> {
 	private static final long serialVersionUID = 1L;
 	enum Gen {G1, G2_PLUS, MIX};
 
@@ -51,18 +51,19 @@ public class DialogDeviceSettings extends JDialog implements UsnaEventListener<D
 	/**
 	 * @wbp.parser.constructor
 	 */
-	public DialogDeviceSettings(final Frame owner, Devices model, int[] devicesInd) {
+	public DialogDeviceSettingsMain(final Frame owner, Devices model, int[] devicesInd) {
 		super(owner, false);
 		init(owner, model, devicesInd, FW);
 	}
 	
-	public DialogDeviceSettings(final JDialog owner, Devices model, int[] devicesInd, int defaultPanel) {
+	public DialogDeviceSettingsMain(final JDialog owner, Devices model, int[] devicesInd, int defaultPanel) {
 		super(owner, false);
 		init(owner, model, devicesInd, defaultPanel);
 	}
 
 	private void init(final Window owner, Devices model, int[] devicesInd, int defaultPanel) {
 		devicesInd = IntStream.of(devicesInd).filter(idx -> model.get(idx) instanceof BTHomeDevice == false && model.get(idx).getGeneration().equals(BTHomeDevice.GENERATION) == false).toArray();
+		// BluTRV extends AbstractBTHomeDevice
 		// model.get(idx).getGeneration().equals(BTHomeDevice.GENERATION) == false - to detects BLE ghosts
 		if(devicesInd.length == 0) {
 			Msg.errorMsg(this, LABELS.getString("msgAllDevicesExcluded"));
@@ -92,6 +93,8 @@ public class DialogDeviceSettings extends JDialog implements UsnaEventListener<D
 		Gen devTypes = getTypes();
 		PanelFWUpdate panelFW = new PanelFWUpdate(this);
 		tabbedPane.add(LABELS.getString("dlgSetFWUpdate"), panelFW);
+		PanelAlternativeFW panelFWAlternate = new PanelAlternativeFW(this);
+		tabbedPane.add(LABELS.getString("dlgSetFWAlernative"), panelFWAlternate);
 		PanelWIFI panelWIFI1 = new PanelWIFI(this, WIFIManager.Network.PRIMARY);
 		tabbedPane.add(LABELS.getString("dlgSetWIFI1"), panelWIFI1);
 		PanelWIFI panelWIFI2 = new PanelWIFI(this, WIFIManager.Network.SECONDARY);

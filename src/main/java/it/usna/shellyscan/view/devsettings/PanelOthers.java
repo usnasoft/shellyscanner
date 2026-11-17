@@ -84,7 +84,7 @@ public class PanelOthers extends AbstractSettingsPanel {
 	
 	private ArrayList<DeviceData> devicesData = new ArrayList<>();
 
-	protected PanelOthers(DialogDeviceSettings parent) {
+	protected PanelOthers(DialogDeviceSettingsMain parent) {
 		super(parent);
 		setLayout(new BorderLayout(0, 0));
 
@@ -251,7 +251,7 @@ public class PanelOthers extends AbstractSettingsPanel {
 		return gbc;
 	}
 
-	private JButton infoButton(DialogDeviceSettings parent, String colLabel, Function<DeviceData, String> consumer) {
+	private JButton infoButton(DialogDeviceSettingsMain parent, String colLabel, Function<DeviceData, String> consumer) {
 		final JButton infoBtn = new JButton(new UsnaAction("lblInfo", e -> {
 			UsnaTableModel tModel = new UsnaTableModel(LABELS.getString("col_device"), LABELS.getString("col_ip"), colLabel);
 			devicesData.forEach(data -> {

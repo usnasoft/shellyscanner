@@ -72,7 +72,7 @@ public class PanelMQTTG2 extends AbstractSettingsPanel implements UsnaEventListe
 	private JButton btnCopy = new JButton(LABELS.getString("btnCopyFrom"));
 	private DialogDeviceSelection selDialog = null;
 
-	public PanelMQTTG2(DialogDeviceSettings owner) {
+	public PanelMQTTG2(DialogDeviceSettingsMain owner) {
 		super(owner);
 		JPanel contentPanel = new JPanel();
 		contentPanel.setBorder(BorderFactory.createEmptyBorder(6, 6, 2, 6));

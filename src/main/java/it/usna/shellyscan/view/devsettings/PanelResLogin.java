@@ -26,7 +26,7 @@ import it.usna.shellyscan.model.device.ShellyAbstractDevice.Status;
 import it.usna.shellyscan.model.device.blu.AbstractBTHomeDevice;
 import it.usna.shellyscan.model.device.g2.modules.LoginManagerG2;
 import it.usna.shellyscan.model.device.modules.LoginManager;
-import it.usna.shellyscan.view.devsettings.DialogDeviceSettings.Gen;
+import it.usna.shellyscan.view.devsettings.DialogDeviceSettingsMain.Gen;
 import it.usna.shellyscan.view.util.Msg;
 import it.usna.shellyscan.view.util.UtilMiscellaneous;
 
@@ -40,7 +40,7 @@ public class PanelResLogin extends AbstractSettingsPanel {
 	private final Gen types;
 	private ArrayList<LoginManager> loginModule = new ArrayList<>();
 
-	public PanelResLogin(DialogDeviceSettings parent, Gen types) {
+	public PanelResLogin(DialogDeviceSettingsMain parent, Gen types) {
 		super(parent);
 		this.types = types;
 		setBorder(BorderFactory.createEmptyBorder(6, 6, 2, 6));

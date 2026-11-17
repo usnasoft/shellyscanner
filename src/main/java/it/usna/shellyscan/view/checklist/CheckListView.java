@@ -5,10 +5,8 @@ import static it.usna.shellyscan.Main.LABELS;
 import java.awt.BorderLayout;
 import java.awt.Container;
 import java.awt.Desktop;
-import java.awt.FlowLayout;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
@@ -32,15 +30,11 @@ import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
-import javax.swing.JComponent;
 import javax.swing.JDialog;
-import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JTextField;
 import javax.swing.JToolBar;
-import javax.swing.KeyStroke;
 import javax.swing.RowFilter;
 import javax.swing.SortOrder;
 import javax.swing.SwingConstants;
@@ -48,6 +42,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 
 import org.slf4j.Logger;
@@ -77,8 +72,8 @@ import it.usna.shellyscan.model.device.g2.modules.ScheduleManager;
 import it.usna.shellyscan.model.device.g2.modules.Script;
 import it.usna.shellyscan.model.device.g2.modules.WIFIManagerG2;
 import it.usna.shellyscan.view.DevicesTable;
-import it.usna.shellyscan.view.MainView;
-import it.usna.shellyscan.view.devsettings.DialogDeviceSettings;
+import it.usna.shellyscan.view.TableFilterPanel;
+import it.usna.shellyscan.view.devsettings.DialogDeviceSettingsMain;
 import it.usna.shellyscan.view.scripts.DialogDeviceScripts;
 import it.usna.shellyscan.view.util.Msg;
 import it.usna.shellyscan.view.util.ScannerProperties;
@@ -86,7 +81,6 @@ import it.usna.shellyscan.view.util.ScannerProperties.PropertyEvent;
 import it.usna.shellyscan.view.util.UtilMiscellaneous;
 import it.usna.swing.UsnaPopupMenu;
 import it.usna.swing.table.UsnaTableModel;
-import it.usna.swing.texteditor.TextDocumentListener;
 import it.usna.util.AccumulatingUniqueMap;
 import it.usna.util.UsnaEventListener;
 import tools.jackson.databind.JsonNode;
@@ -379,7 +373,7 @@ public class CheckListView extends JDialog implements UsnaEventListener<Devices.
 						public void actionPerformed(ActionEvent e) {
 							final int[] modelRows =  table.getSelectedModelRows();
 							int devIdx[] = IntStream.of(modelRows).map(i -> devicesInd[i]).toArray();
-							DialogDeviceSettings w = new DialogDeviceSettings(CheckListView.this, appModel, devIdx, (col == CheckListTable.COL_WIFI1) ? DialogDeviceSettings.WIFI1 : DialogDeviceSettings.WIFI2);
+							DialogDeviceSettingsMain w = new DialogDeviceSettingsMain(CheckListView.this, appModel, devIdx, (col == CheckListTable.COL_WIFI1) ? DialogDeviceSettingsMain.WIFI1 : DialogDeviceSettingsMain.WIFI2);
 							w.addPropertyChangeListener("S_APPLY", propertyChangeEvent -> {
 								try { TimeUnit.MILLISECONDS.sleep(Devices.MULTI_QUERY_DELAY); } catch (InterruptedException e1) {}
 								for(int localRow: modelRows) {
@@ -429,47 +423,20 @@ public class CheckListView extends JDialog implements UsnaEventListener<Devices.
 		updateHideCaptions();
 		contentPane.add(toolBar, BorderLayout.NORTH);
 
-		JPanel panelBottom = new JPanel(new BorderLayout(0, 0));
-		panelBottom.setBorder(BorderFactory.createEmptyBorder(2, 0, 3, 0));
+		JPanel panelBottom = new JPanel(new BorderLayout(12, 0));
+		panelBottom.setBorder(BorderFactory.createEmptyBorder(2, 0, 0, 0));
 		panelBottom.setBackground(Main.STATUS_LINE_COLOR);
 		contentPane.add(panelBottom, BorderLayout.SOUTH);
 
-		// Filter panel
-		JPanel panelRight = new JPanel(new FlowLayout(FlowLayout.RIGHT, 3, 0));
-		panelRight.setOpaque(false);
-		panelBottom.add(panelRight, BorderLayout.EAST);
-
-		panelRight.add(new JLabel(LABELS.getString("lblFilter")));
-		JTextField textFieldFilter = new JTextField();
-		textFieldFilter.setColumns(20);
-		textFieldFilter.setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));
-		panelRight.add(textFieldFilter);
-		textFieldFilter.getDocument().addDocumentListener((TextDocumentListener)e -> {
-			TableRowSorter<?> sorter = (TableRowSorter<?>) table.getRowSorter();
-			String filter = textFieldFilter.getText();
+		JButton btnClose = new JButton(new UsnaAction("dlgClose", e -> dispose()));
+		btnClose.setBorder(BorderFactory.createEmptyBorder(0, 8, 0, 8));
+		TableFilterPanel panelFind = new TableFilterPanel(20, true, filter -> {
+			TableRowSorter<? extends TableModel> sorter = (TableRowSorter<? extends TableModel>)table.getRowSorter();
 			sorter.setRowFilter(filter.isEmpty() ? null : RowFilter.regexFilter("(?i).*\\Q" + filter.replace("\\E", "\\e") + "\\E.*", new int[] {CheckListTable.COL_NAME, CheckListTable.COL_IP}));
 		});
-
-		textFieldFilter.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_F, MainView.SHORTCUT_KEY), "find_focus_mw");
-		textFieldFilter.getActionMap().put("find_focus_mw", new UsnaAction(e -> textFieldFilter.requestFocus()));
-
-		final Action eraseFilterAction = new UsnaAction(this, null, "/images/erase-9-16.png", e -> {
-			textFieldFilter.setText("");
-			textFieldFilter.requestFocusInWindow();
-			table.clearSelection();
-		});
-
-		JButton eraseFilterButton = new JButton(eraseFilterAction);
-		eraseFilterButton.setBorder(BorderFactory.createEmptyBorder(1, 2, 1, 2));
-		eraseFilterButton.setContentAreaFilled(false);
-		eraseFilterButton.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_E, MainView.SHORTCUT_KEY), "find_erase");
-		eraseFilterButton.getActionMap().put("find_erase", eraseFilterAction);
-		panelRight.add(eraseFilterButton);
-		panelRight.add(Box.createHorizontalStrut(12));
-
-		JButton btnClose = new JButton(new UsnaAction("dlgClose", e -> dispose()));
-		btnClose.setBorder(BorderFactory.createEmptyBorder(2, 7, 2, 8));
-		panelRight.add(btnClose);
+		panelFind.setOpaque(false);
+		panelBottom.add(panelFind, BorderLayout.CENTER);
+		panelBottom.add(btnClose, BorderLayout.EAST);
 
 		setSize(1000, 598);
 		setVisible(true);

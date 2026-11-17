@@ -2,7 +2,6 @@ package it.usna.shellyscan.controller;
 
 import java.awt.Component;
 import java.awt.Desktop;
-import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.net.URI;
 
@@ -19,27 +18,25 @@ public class UsnaOpenUrlAction extends UsnaAction {
 //	}
 	
 	public UsnaOpenUrlAction(Component owner, String nameId, String tooltipId, String url) {
-		super(owner, nameId, listener(owner, url));
+		super(owner, nameId, e -> openUrl(owner, url));
 		if(tooltipId != null) {
 			putValue(SHORT_DESCRIPTION, Main.LABELS.getString(tooltipId));
 		}
 	}
 	
 	public UsnaOpenUrlAction(Component owner, String nameId, String tooltipId, String largeIcon, String url) {
-		super(owner, nameId, tooltipId, null, largeIcon, listener(owner, url));
+		super(owner, nameId, tooltipId, null, largeIcon, e -> openUrl(owner, url));
 	}
-	
-	private static ActionListener listener(Component owner, String url) {
-		return e -> {
-			if(Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
-				try {
-					Desktop.getDesktop().browse(URI.create(url));
-				} catch (IOException | UnsupportedOperationException ex) {
-					Msg.errorMsg(owner, ex);
-				}
-			} else {
-				JOptionPane.showMessageDialog(owner, url, "", JOptionPane.PLAIN_MESSAGE);
+
+	public static void openUrl(Component owner, String url) {
+		if(Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
+			try {
+				Desktop.getDesktop().browse(URI.create(url));
+			} catch (IOException | UnsupportedOperationException ex) {
+				Msg.errorMsg(owner, ex);
 			}
-		};
+		} else {
+			JOptionPane.showMessageDialog(owner, url, "", JOptionPane.PLAIN_MESSAGE);
+		}
 	}
 }

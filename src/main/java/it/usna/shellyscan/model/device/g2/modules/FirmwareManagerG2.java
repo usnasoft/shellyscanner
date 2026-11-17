@@ -17,6 +17,13 @@ public class FirmwareManagerG2 implements FirmwareManager {
 	private String current;
 	private String stable;
 	private String beta;
+	private String altApp;
+	private String altDesc;
+	private String altStableBuild;
+	private String altBetaBuild;
+	private String altStable;
+	private String altBeta;
+	
 	private boolean updating;
 	private boolean valid;
 	
@@ -41,6 +48,17 @@ public class FirmwareManagerG2 implements FirmwareManager {
 			JsonNode nodeDevInfo = d.getJSON("/rpc/Shelly.GetDeviceInfo");
 			currentBuild = nodeDevInfo.get("fw_id").asString(null);
 			current = nodeDevInfo.get("ver").asString(null);
+
+			if(node.hasNonNull("alt")) {
+				node.get("alt").forEachEntry((altKey, altNode) -> {
+					altApp = altKey;
+					altDesc = altNode.path("desc").asString("alt");
+					altStableBuild = altNode.at("/stable/build_id").asString(null);
+					altStable = altNode.at("/stable/version").asString(null);
+					altBetaBuild = altNode.at("/beta/build_id").asString(null);
+					altBeta = altNode.at("/beta/version").asString(null);
+				});
+			}
 			valid = true;
 			updating = false;
 		} catch(/*IO*/Exception e) {
@@ -55,6 +73,7 @@ public class FirmwareManagerG2 implements FirmwareManager {
 					beta = node.at("/beta/version").asString(null);
 				} else if((node = batteryDevice.getStoredJSON("/rpc/Shelly.GetStatus")) != null) {
 					node = node.at("/sys/available_updates");
+	
 					stableBuild = current = node.at("/stable/version").asString(null); // not id
 					betaBuild = beta = node.at("/beta/version").asString(null); // not id
 				}
@@ -112,6 +131,43 @@ public class FirmwareManagerG2 implements FirmwareManager {
 			updating = false;
 		}
 		return res;
+	}
+	
+	public String alternativeApp() {
+		return altDesc;
+	}
+	
+	public String alternativeDescription() {
+		return altDesc;
+	}
+	
+	public String altBetaBuild() {
+		return altBetaBuild;
+	}
+	
+	public String altBeta() {
+		return altBeta;
+	}
+
+	public String altStableBuild() {
+		return altStableBuild;
+	}
+	
+	public String altStable() {
+		return altStable;
+	}
+
+	public String updateAlternate(String app, boolean stable) {
+		updating = true;
+		String res = d.postCommand("Shelly.InstallAlt", stable ? "{\"app\":\"" + app + "\", \"stage\":\"" + STAGE_STABLE + "\"}" : "{\"stage\":\"" + STAGE_BETA + "\"}");
+		if(res != null && res.isEmpty() == false) {
+			updating = false;
+		}
+		return res;
+	}
+	
+	public String updateAlternate(boolean stable) {
+		return updateAlternate(altApp, stable);
 	}
 
 	@Override

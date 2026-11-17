@@ -4,14 +4,11 @@ import static it.usna.shellyscan.Main.LABELS;
 
 import java.awt.BorderLayout;
 import java.awt.Cursor;
-import java.awt.Desktop;
 import java.awt.FlowLayout;
 import java.awt.FontMetrics;
-import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -27,13 +24,10 @@ import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.JButton;
-import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JTextField;
-import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.table.TableColumn;
 
@@ -45,6 +39,7 @@ import org.slf4j.LoggerFactory;
 import it.usna.shellyscan.controller.DeferrableTask;
 import it.usna.shellyscan.controller.DeferrablesContainer;
 import it.usna.shellyscan.controller.UsnaAction;
+import it.usna.shellyscan.controller.UsnaOpenUrlAction;
 import it.usna.shellyscan.controller.UsnaSelectedAction;
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.Devices.EventType;
@@ -57,12 +52,10 @@ import it.usna.shellyscan.model.device.g2.AbstractG2Device;
 import it.usna.shellyscan.model.device.g2.WebSocketDeviceListener;
 import it.usna.shellyscan.model.device.modules.FirmwareManager;
 import it.usna.shellyscan.view.DevicesTable;
-import it.usna.shellyscan.view.MainView;
-import it.usna.shellyscan.view.util.Msg;
+import it.usna.shellyscan.view.TableFilterPanel;
 import it.usna.shellyscan.view.util.UtilMiscellaneous;
 import it.usna.swing.UsnaPopupMenu;
 import it.usna.swing.table.UsnaTableModel;
-import it.usna.swing.texteditor.TextDocumentListener;
 import it.usna.util.UsnaEventListener;
 import tools.jackson.databind.JsonNode;
 
@@ -79,7 +72,6 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 	private List<DeviceFirmware> devicesFWData;
 
 	private JLabel lblCount = new JLabel();
-	private JTextField textFieldFilter = new JTextField();
 	private JButton btnCheck;
 
 	private ScheduledExecutorService exeService = Executors.newScheduledThreadPool(35);
@@ -87,7 +79,7 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 
 	private static final Logger LOG = LoggerFactory.getLogger(PanelFWUpdate.class);
 
-	public PanelFWUpdate(DialogDeviceSettings parent) {
+	public PanelFWUpdate(DialogDeviceSettingsMain parent) {
 		super(parent);
 		setLayout(new BorderLayout(0, 0));
 		
@@ -153,28 +145,12 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 		btnPanelLeft.add(Box.createHorizontalStrut(6));
 		btnPanelLeft.add(lblCount);
 		
-		textFieldFilter.setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));
-		textFieldFilter.setColumns(12);
-		textFieldFilter.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_F, MainView.SHORTCUT_KEY), "find_focus_fw");
-		textFieldFilter.getActionMap().put("find_focus_fw", new UsnaAction(e -> textFieldFilter.requestFocus()));
-		btnPanelRight.add(textFieldFilter);
-		
-		UsnaAction eraseFilterAction =  new UsnaAction(null, null, "/images/erase-9-16.png", e -> {
-			textFieldFilter.setText("");
-			textFieldFilter.requestFocusInWindow();
-		});
-		JButton eraseFilterButton = new JButton(eraseFilterAction);
-		eraseFilterButton.setBorder(BorderFactory.createEmptyBorder(0, 2, 0, 2));
-		eraseFilterButton.setContentAreaFilled(false);
-		eraseFilterButton.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_E, MainView.SHORTCUT_KEY), "find_erase_fw");
-		eraseFilterButton.getActionMap().put("find_erase_fw", eraseFilterAction);
-		btnPanelRight.add(eraseFilterButton);
-		
-		textFieldFilter.getDocument().addDocumentListener( (TextDocumentListener)event -> {
-			table.setRowFilter(textFieldFilter.getText());
+		TableFilterPanel panelFind = new TableFilterPanel(12, false, filter -> {
+			table.setRowFilter(filter);
 			countSelection();
 		});
-
+		btnPanelRight.add(panelFind);
+		
 		btnCheck = new JButton(new UsnaAction("btn_check", event -> {
 			setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 			btnCheck.setEnabled(false);
@@ -197,19 +173,13 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 			}, i + 1000, TimeUnit.MILLISECONDS);
 		}));
 		btnCheck.setBorder(BorderFactory.createEmptyBorder(4, 7, 4, 7));
-		btnPanelRight.add(Box.createHorizontalStrut(6));
+		btnPanelRight.add(Box.createHorizontalStrut(3));
 		btnPanelRight.add(btnCheck);
 
 		Action browseAction = new UsnaSelectedAction(parentDlg, table, "action_web_name", null, "/images/Computer16.png", null, () ->
 		table.getSelectedRowCount() <= 8 ||
 		JOptionPane.showConfirmDialog(parentDlg, LABELS.getString("action_web_confirm"), LABELS.getString("action_web_name"), JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE) == JOptionPane.OK_OPTION,
-		i -> {
-			try {
-				Desktop.getDesktop().browse(URI.create("http://" + parentDlg.getLocalDevice(i).getAddressAndPort().getRepresentation()));
-			} catch (IOException | UnsupportedOperationException ex) {
-				Msg.errorMsg(parentDlg, ex);
-			}
-		});
+		i -> UsnaOpenUrlAction.openUrl(this, "http://" + parentDlg.getLocalDevice(i).getAddressAndPort().getRepresentation()));
 
 		Action nosortAction = new UsnaAction("lblNoSort", e -> table.clearSort());
 
@@ -269,7 +239,6 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 		lblCount.setText("");
 		btnCheck.setEnabled(false);
 		final int size = parentDlg.getLocalSize();
-//		devicesFWData = Stream.generate(DeviceFirmware::new).limit(size).collect(Collectors.toList());
 		devicesFWData = Stream.generate(DeviceFirmware::new).limit(size).toList();
 		tModel.clear();
 		try {
@@ -544,7 +513,7 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 			}
 		}
 	}
-} // 346 - 362 - 462 - 476 - 509 - 418 - 438 - 540
+} // 346 - 362 - 462 - 476 - 509 - 418 - 438 - 540 - 516
 
 // {"src":"shellyplusi4-a8032ab1fe78","dst":"S_Scanner","method":"NotifyEvent","params":{"ts":1677696108.45,"events":[{"component":"sys", "event":"ota_progress", "msg":"Waiting for data", "progress_percent":99, "ts":1677696108.45}]}}
 // {"src":"shellyplusi4-a8032ab1fe78","dst":"S_Scanner","method":"NotifyEvent","params":{"ts":1677696109.49,"events":[{"component":"sys", "event":"ota_success", "msg":"Update applied, rebooting", "ts":1677696109.49}]}}

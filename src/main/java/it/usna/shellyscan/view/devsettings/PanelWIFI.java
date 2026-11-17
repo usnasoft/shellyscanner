@@ -56,7 +56,7 @@ public class PanelWIFI extends AbstractSettingsPanel implements UsnaEventListene
 	private JButton btnCopy = new JButton(LABELS.getString("btnCopyFrom"));
 	private DialogDeviceSelection selDialog = null;
 
-	public PanelWIFI(DialogDeviceSettings owner, WIFIManager.Network net) {
+	public PanelWIFI(DialogDeviceSettingsMain owner, WIFIManager.Network net) {
 		super(owner);
 		this.netModule = net;
 		setBorder(BorderFactory.createEmptyBorder(6, 6, 2, 6));

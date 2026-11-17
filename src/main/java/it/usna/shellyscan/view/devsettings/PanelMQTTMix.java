@@ -61,7 +61,7 @@ public class PanelMQTTMix extends AbstractSettingsPanel implements UsnaEventList
 	private JButton btnCopy = new JButton(LABELS.getString("btnCopyFrom"));
 	private DialogDeviceSelection selDialog = null;
 
-	public PanelMQTTMix(DialogDeviceSettings owner) {
+	public PanelMQTTMix(DialogDeviceSettingsMain owner) {
 		super(owner);
 		JPanel contentPanel = new JPanel();
 		contentPanel.setBorder(BorderFactory.createEmptyBorder(6, 6, 2, 6));

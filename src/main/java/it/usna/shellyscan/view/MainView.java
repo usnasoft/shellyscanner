@@ -5,7 +5,6 @@ import static it.usna.shellyscan.Main.LABELS;
 import java.awt.BorderLayout;
 import java.awt.Container;
 import java.awt.Cursor;
-import java.awt.Desktop;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Rectangle;
@@ -16,7 +15,6 @@ import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.IOException;
-import java.net.URI;
 import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
@@ -59,6 +57,7 @@ import it.usna.shellyscan.controller.RestoreAction;
 import it.usna.shellyscan.controller.SelectionAction;
 import it.usna.shellyscan.controller.UsnaAction;
 import it.usna.shellyscan.controller.UsnaDropdownAction;
+import it.usna.shellyscan.controller.UsnaOpenUrlAction;
 import it.usna.shellyscan.controller.UsnaSelectedAction;
 import it.usna.shellyscan.controller.UsnaToggleAction;
 import it.usna.shellyscan.model.Devices;
@@ -74,7 +73,7 @@ import it.usna.shellyscan.model.device.modules.WallDisplayInterface;
 import it.usna.shellyscan.view.appsettings.DialogAppSettings;
 import it.usna.shellyscan.view.chart.MeasuresChart;
 import it.usna.shellyscan.view.checklist.CheckListView;
-import it.usna.shellyscan.view.devsettings.DialogDeviceSettings;
+import it.usna.shellyscan.view.devsettings.DialogDeviceSettingsMain;
 import it.usna.shellyscan.view.scheduler.blutrv.TRVSchedulerDialog;
 import it.usna.shellyscan.view.scheduler.gen2plus.G2SchedulerDialog;
 import it.usna.shellyscan.view.scheduler.walldisplay.WDSchedulerDialog;
@@ -215,16 +214,10 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 	});
 	
 	private Action browseAction = new UsnaSelectedAction(this, devicesTable, "action_web_name", "action_web_tooltip", "/images/Computer16.png", "/images/Computer.png", () ->
-		devicesTable.getSelectedRowCount() <= 8 || JOptionPane.showConfirmDialog(MainView.this, LABELS.getString("action_web_confirm"), LABELS.getString("action_web_name"),
-				JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE) == JOptionPane.OK_OPTION,
-	ind -> {
-		try {
-			Desktop.getDesktop().browse(URI.create("http://" + model.get(ind).getAddressAndPort().getRepresentation()));
-		} catch (IOException | UnsupportedOperationException e) { // browserSupported = Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE);
-			Msg.errorMsg(this, e);
-		}
-	});
-	
+	devicesTable.getSelectedRowCount() <= 8 || JOptionPane.showConfirmDialog(MainView.this, LABELS.getString("action_web_confirm"), LABELS.getString("action_web_name"),
+			JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE) == JOptionPane.OK_OPTION,
+			ind -> UsnaOpenUrlAction.openUrl(this, "http://" + model.get(ind).getAddressAndPort().getRepresentation()));
+
 	private Action aboutAction = new UsnaAction(this, "action_about_name", "action_about_tooltip", null, "/images/question.png", e -> DialogAbout.show(MainView.this));
 	
 	// also asks for credential if needed (login action)
@@ -282,14 +275,14 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 	private Action csvExportAction = new ExportCSVAction(this, devicesTable);
 
 	private Action devicesSettingsAction = new UsnaAction(this, "action_general_conf_name", "action_general_conf_tooltip", "/images/Tool16.png", "/images/Tool.png", e ->
-		new DialogDeviceSettings(this, model, devicesTable.getSelectedModelRows())
+		new DialogDeviceSettingsMain(this, model, devicesTable.getSelectedModelRows())
 	);
 	
 	private Action eraseFilterAction = new UsnaAction(null, null, "/images/erase-9-16.png", e -> {
 		textFieldFilter.setText("");
 		textFieldFilter.requestFocusInWindow();
 //		devicesTable.clearSelection();
-		displayStatus();
+//		displayStatus();
 	});
 
 	public MainView(final Devices model, final ScannerProperties appProp) {
@@ -375,7 +368,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		comboFilterCol.setSelectedIndex(appProp.getIntProperty(ScannerProperties.PROP_DEFAULT_FILTER_IDX));
 		Dimension cp = comboFilterCol.getPreferredSize();
 		comboFilterCol.setPreferredSize(new Dimension(cp.width, cp.height - 2));
-		statusFilterPanel.add(comboFilterCol);		
+		statusFilterPanel.add(comboFilterCol);
 		
 		textFieldFilter.setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));
 		textFieldFilter.setColumns(16);
@@ -388,7 +381,7 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 		eraseFilterButton.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_E, SHORTCUT_KEY), "find_erase");
 		eraseFilterButton.getActionMap().put("find_erase", eraseFilterAction);
 		statusFilterPanel.add(eraseFilterButton);
-		
+
 		JButton btnshowDeferrables = new JButton("0", DEFERRED_ICON);
 		btnshowDeferrables.addActionListener(new UsnaAction(this, "labelShowDeferrables", e -> {
 			if(dialogDeferrables == null) { // single dialog
@@ -769,4 +762,4 @@ public class MainView extends MainWindow implements UsnaEventListener<Devices.Ev
 			statusLabel.setText(String.format(LABELS.getString("selected_status"), devicesTable.getSelectedRowCount()));
 		}
 	}
-} //557 - 614 - 620 - 669 - 705 - 727 - 699 - 760 - 782 - 811 - 805 - 646 - 699 - 706 - 688 - 698 - 707 - 720 - 772
+} //557 - 614 - 620 - 669 - 705 - 727 - 699 - 760 - 782 - 811 - 805 - 646 - 699 - 706 - 688 - 698 - 707 - 720 - 772 - 765
