@@ -19,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import it.usna.shellyscan.Main;
+import it.usna.shellyscan.controller.UsnaOpenUrlAction;
 import it.usna.swing.BusyCursor;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
@@ -37,11 +38,7 @@ public class ApplicationUpdateCHK {
 				Object[] options = new Object[] {LABELS.getString("aboutCheckUpdatesDownload"), changelogBtn(w), LABELS.getString("dlgClose")};
 				int choice = JOptionPane.showOptionDialog(w, msg, currentVersion(), JOptionPane.OK_CANCEL_OPTION, JOptionPane.INFORMATION_MESSAGE, null, options, null);
 				if(choice == 0) { // download
-					try {
-						Desktop.getDesktop().browse(URI.create(LABELS.getString("downloadURL")));
-					} catch (IOException | UnsupportedOperationException ex) {
-						Msg.errorMsg(w, LABELS.getString("downloadURL"));
-					}
+					UsnaOpenUrlAction.openUrl(w, LABELS.getString("downloadURL"));
 				}
 			}
 		} catch(IOException e) {
@@ -64,11 +61,7 @@ public class ApplicationUpdateCHK {
 					final Object[] options = new Object[] {LABELS.getString("aboutCheckUpdatesDownload"), changelogBtn(w), LABELS.getString("aboutCheckUpdatesSkip"), LABELS.getString("dlgClose")};
 					int choice = JOptionPane.showOptionDialog(w, msg, currentVersion(), JOptionPane.YES_NO_CANCEL_OPTION , JOptionPane.INFORMATION_MESSAGE, null, options, null);
 					if(choice == 0) { // download
-						try {
-							Desktop.getDesktop().browse(URI.create(LABELS.getString("downloadURL")));
-						} catch (IOException | UnsupportedOperationException ex) {
-							Msg.errorMsg(w, LABELS.getString("downloadURL"));
-						}
+						UsnaOpenUrlAction.openUrl(w, LABELS.getString("downloadURL"));
 					} else if(choice == 2) { // skip
 						appProp.setProperty(ScannerProperties.VERSION_IGNORE, rel.stream().map(r -> r.relId()).collect(Collectors.maxBy(String.CASE_INSENSITIVE_ORDER)).get()); // new ignore
 					}
@@ -83,11 +76,7 @@ public class ApplicationUpdateCHK {
 	private static JButton changelogBtn(final Window w) {
 		JButton changelog = new JButton(LABELS.getString("aboutCheckUpdatesChangelog"));
 		changelog.addActionListener(e -> {
-			try {
-				Desktop.getDesktop().browse(URI.create(LABELS.getString("changelogURL")));
-			} catch (IOException | UnsupportedOperationException ex) {
-				Msg.errorMsg(w, LABELS.getString("changelogURL"));
-			}
+			UsnaOpenUrlAction.openUrl(w, LABELS.getString("changelogURL"));
 		});
 		return changelog;
 	}

@@ -99,11 +99,11 @@ public class PanelAlternativeFW extends AbstractSettingsPanel implements UsnaEve
 		JButton btnUnselectAll = new JButton(new UsnaAction("btn_unselectAll", event -> {
 			IntStream sel = (table.getSelectedRowCount() > 1) ? table.getSelectedModelRowsStream() : IntStream.range(0, tModel.getRowCount());
 			sel.forEach(i -> {
-				if(tModel.getValueAt(i, FWUpdateTable.COL_STABLE) instanceof Boolean) {
-					tModel.setValueAt(Boolean.FALSE, i, FWUpdateTable.COL_STABLE);
+				if(tModel.getValueAt(i, FWAlternativeTable.COL_STABLE) instanceof Boolean) {
+					tModel.setValueAt(Boolean.FALSE, i, FWAlternativeTable.COL_STABLE);
 				}
-				if(tModel.getValueAt(i, FWUpdateTable.COL_BETA) instanceof Boolean) {
-					tModel.setValueAt(Boolean.FALSE, i, FWUpdateTable.COL_BETA);
+				if(tModel.getValueAt(i, FWAlternativeTable.COL_BETA) instanceof Boolean) {
+					tModel.setValueAt(Boolean.FALSE, i, FWAlternativeTable.COL_BETA);
 				}
 			});
 			countSelection();
@@ -114,10 +114,10 @@ public class PanelAlternativeFW extends AbstractSettingsPanel implements UsnaEve
 		JButton btnSelectStable = new JButton(new UsnaAction("btn_selectAllSta", event -> {
 			IntStream sel = (table.getSelectedRowCount() > 1) ? table.getSelectedModelRowsStream() : IntStream.range(0, tModel.getRowCount());
 			sel.forEach(i -> {
-				if(tModel.getValueAt(i, FWUpdateTable.COL_STABLE) instanceof Boolean) {
-					tModel.setValueAt(Boolean.TRUE, i, FWUpdateTable.COL_STABLE);
-					if(tModel.getValueAt(i, FWUpdateTable.COL_BETA) instanceof Boolean) {
-						tModel.setValueAt(Boolean.FALSE, i, FWUpdateTable.COL_BETA);
+				if(tModel.getValueAt(i, FWAlternativeTable.COL_STABLE) instanceof Boolean) {
+					tModel.setValueAt(Boolean.TRUE, i, FWAlternativeTable.COL_STABLE);
+					if(tModel.getValueAt(i, FWAlternativeTable.COL_BETA) instanceof Boolean) {
+						tModel.setValueAt(Boolean.FALSE, i, FWAlternativeTable.COL_BETA);
 					}
 				}
 			});
@@ -129,10 +129,10 @@ public class PanelAlternativeFW extends AbstractSettingsPanel implements UsnaEve
 		JButton btnSelectBeta = new JButton(new UsnaAction("btn_selectAllbeta", event -> {
 			IntStream sel = (table.getSelectedRowCount() > 1) ? table.getSelectedModelRowsStream() : IntStream.range(0, tModel.getRowCount());
 			sel.forEach(i -> {
-				if(tModel.getValueAt(i, FWUpdateTable.COL_BETA) instanceof Boolean) {
-					tModel.setValueAt(Boolean.TRUE, i, FWUpdateTable.COL_BETA);
-					if(tModel.getValueAt(i, FWUpdateTable.COL_STABLE) instanceof Boolean) {
-						tModel.setValueAt(Boolean.FALSE, i, FWUpdateTable.COL_STABLE);
+				if(tModel.getValueAt(i, FWAlternativeTable.COL_BETA) instanceof Boolean) {
+					tModel.setValueAt(Boolean.TRUE, i, FWAlternativeTable.COL_BETA);
+					if(tModel.getValueAt(i, FWAlternativeTable.COL_STABLE) instanceof Boolean) {
+						tModel.setValueAt(Boolean.FALSE, i, FWAlternativeTable.COL_STABLE);
 					}
 				}
 			});
@@ -156,8 +156,8 @@ public class PanelAlternativeFW extends AbstractSettingsPanel implements UsnaEve
 			int i;
 			for(i = 0; i < devicesFWData.size(); i++) {
 				FirmwareManager fwModule = devicesFWData.get(i).fwModule;
-				if(fwModule != null && tModel.getValueAt(i, FWUpdateTable.COL_STATUS) != DevicesTable.UPDATING_BULLET) {
-					tModel.setValueAt(DevicesTable.UPDATING_BULLET, i, FWUpdateTable.COL_STATUS);
+				if(fwModule != null && tModel.getValueAt(i, FWAlternativeTable.COL_STATUS) != DevicesTable.UPDATING_BULLET) {
+					tModel.setValueAt(DevicesTable.UPDATING_BULLET, i, FWAlternativeTable.COL_STATUS);
 					final int row = i;
 					exeService.schedule(() -> {
 						fwModule.chech();
@@ -201,7 +201,7 @@ public class PanelAlternativeFW extends AbstractSettingsPanel implements UsnaEve
 
 	private void fillTable() {
 		tModel.clear();
-		for(int i = 0; i < parentDlg.getLocalSize(); i++) {
+		for(int i = 0; i < devicesFWData.size(); i++) {
 			if(Thread.interrupted() == false) {
 				tModel.addRow(createTableRow(i));
 			}
@@ -228,9 +228,9 @@ public class PanelAlternativeFW extends AbstractSettingsPanel implements UsnaEve
 			} else {
 				DeferrablesContainer dc = DeferrablesContainer.getInstance();
 				if(dc.indexOf(parentDlg.getModelIndex(localIndex), DeferrableTask.Type.FW_UPDATE) < 0) {
-					return new Object[] {DevicesTable.getStatusIcon(d), UtilMiscellaneous.getExtendedHostName(d), null /*current fw unknown*/, Boolean.FALSE /*any*/};
+					return new Object[] {DevicesTable.getStatusIcon(d), UtilMiscellaneous.getExtendedHostName(d), "" /*description unknown*/, null};
 				} else {
-					return new Object[] {DevicesTable.getStatusIcon(d), UtilMiscellaneous.getExtendedHostName(d), null,  LABELS.getString("labelRequested")};
+					return new Object[] {DevicesTable.getStatusIcon(d), UtilMiscellaneous.getExtendedHostName(d), "",  LABELS.getString("labelRequested")};
 				}
 			}
 		} else {
@@ -242,12 +242,13 @@ public class PanelAlternativeFW extends AbstractSettingsPanel implements UsnaEve
 	String showing() throws InterruptedException {
 		lblCount.setText("");
 		btnCheck.setEnabled(false);
-		devicesFWData = new ArrayList<>();
+		final int size = parentDlg.getLocalSize();
+		devicesFWData = new ArrayList<>(size);
 		tModel.clear();
 		try {
 			List<Callable<Void>> calls = new ArrayList<>();
-			for(int i = 0; i < parentDlg.getLocalSize(); i++) {
-				if(parentDlg.getLocalDevice(i) instanceof AbstractG2Device) {
+			for(int i = 0; i < size; i++) {
+				if(parentDlg.getLocalDevice(i) instanceof AbstractG2Device) { // 3 & 4 & ... extends 2
 					devicesFWData.add(new DeviceFirmware());
 					calls.add(new GetFWManagerCaller(i));
 				} else {
@@ -260,10 +261,10 @@ public class PanelAlternativeFW extends AbstractSettingsPanel implements UsnaEve
 
 			table.columnsWidthAdapt();
 			final FontMetrics fm = getGraphics().getFontMetrics();
-			TableColumn stableColumn = table.getColumnModel().getColumn(FWUpdateTable.COL_STABLE);
-			stableColumn.setPreferredWidth(Math.max(SwingUtilities.computeStringWidth(fm, "0.12.0"), stableColumn.getPreferredWidth()));
-			TableColumn betaColumn = table.getColumnModel().getColumn(FWUpdateTable.COL_BETA);
-			betaColumn.setPreferredWidth(Math.max(SwingUtilities.computeStringWidth(fm, "0.12.0-beta1"), betaColumn.getPreferredWidth()));
+			TableColumn stableColumn = table.getColumnModel().getColumn(FWAlternativeTable.COL_STABLE);
+			stableColumn.setPreferredWidth(Math.max(SwingUtilities.computeStringWidth(fm, "0.00.0"), stableColumn.getPreferredWidth()));
+			TableColumn betaColumn = table.getColumnModel().getColumn(FWAlternativeTable.COL_BETA);
+			betaColumn.setPreferredWidth(Math.max(SwingUtilities.computeStringWidth(fm, "0.00.0-beta1"), betaColumn.getPreferredWidth()));
 			btnCheck.setEnabled(true);
 			return null;
 		} catch (RuntimeException e) {
@@ -326,8 +327,8 @@ public class PanelAlternativeFW extends AbstractSettingsPanel implements UsnaEve
 			String res = "";
 			for(int i = 0; i < tModel.getRowCount(); i++) {
 				if(table.convertRowIndexToView(i) >= 0) { // included in filter
-					Object update = tModel.getValueAt(i, FWUpdateTable.COL_STABLE);
-					Object beta = tModel.getValueAt(i, FWUpdateTable.COL_BETA);
+					Object update = tModel.getValueAt(i, FWAlternativeTable.COL_STABLE);
+					Object beta = tModel.getValueAt(i, FWAlternativeTable.COL_BETA);
 					if(update == Boolean.TRUE) {
 						res += updateDeviceFW(i, true);
 					} else if(beta == Boolean.TRUE) {
@@ -383,8 +384,8 @@ public class PanelAlternativeFW extends AbstractSettingsPanel implements UsnaEve
 		int countB = 0;
 		for(int i = 0; i < tModel.getRowCount(); i++) {
 			if(table.convertRowIndexToView(i) >= 0) {
-				Object update = tModel.getValueAt(i, FWUpdateTable.COL_STABLE);
-				Object beta = tModel.getValueAt(i, FWUpdateTable.COL_BETA);
+				Object update = tModel.getValueAt(i, FWAlternativeTable.COL_STABLE);
+				Object beta = tModel.getValueAt(i, FWAlternativeTable.COL_BETA);
 				if(update == Boolean.TRUE) countS++;
 				if(beta == Boolean.TRUE) countB++;
 			}
@@ -421,20 +422,20 @@ public class PanelAlternativeFW extends AbstractSettingsPanel implements UsnaEve
 							fm.upadating(true);
 						}
 						int progress = event.path("progress_percent").asInt();
-						tModel.setValueAt(DevicesTable.UPDATING_BULLET, index, FWUpdateTable.COL_STATUS);
-						tModel.setValueAt(String.format(LABELS.getString("lbl_downloading"), progress), index, FWUpdateTable.COL_STABLE);
-						tModel.setValueAt("", index, FWUpdateTable.COL_BETA);
+						tModel.setValueAt(DevicesTable.UPDATING_BULLET, index, FWAlternativeTable.COL_STATUS);
+						tModel.setValueAt(String.format(LABELS.getString("lbl_downloading"), progress), index, FWAlternativeTable.COL_STABLE);
+						tModel.setValueAt("", index, FWAlternativeTable.COL_BETA);
 						break;
 					} else if((eventType.equals("ota_success") || eventType.equals("scheduled_restart")) && component.equals(comp)) { // rebooting
-						tModel.setValueAt(DevicesTable.OFFLINE_BULLET, index, FWUpdateTable.COL_STATUS);
-						tModel.setValueAt(LABELS.getString("lbl_rebooting"), index, FWUpdateTable.COL_STABLE);
-						tModel.setValueAt("", index, FWUpdateTable.COL_BETA);
+						tModel.setValueAt(DevicesTable.OFFLINE_BULLET, index, FWAlternativeTable.COL_STATUS);
+						tModel.setValueAt(LABELS.getString("lbl_rebooting"), index, FWAlternativeTable.COL_STABLE);
+						tModel.setValueAt("", index, FWAlternativeTable.COL_BETA);
 						devicesFWData.get(index).rebootTime = System.currentTimeMillis();
 						break;
 					} else if(eventType.equals("ota_error")/* && component.equals(comp)*/) {
-						tModel.setValueAt(DevicesTable.ERROR_BULLET, index, FWUpdateTable.COL_STATUS);
-						tModel.setValueAt(LABELS.getString("lbl_error"), index, FWUpdateTable.COL_STABLE);
-						tModel.setValueAt("", index, FWUpdateTable.COL_BETA);
+						tModel.setValueAt(DevicesTable.ERROR_BULLET, index, FWAlternativeTable.COL_STATUS);
+						tModel.setValueAt(LABELS.getString("lbl_error"), index, FWAlternativeTable.COL_STABLE);
+						tModel.setValueAt("", index, FWAlternativeTable.COL_BETA);
 //						devicesFWData.get(index).rebootTime = System.currentTimeMillis(); // will stay on for a while
 						LOG.error("ota_error: {}", event.path("msg").asString("no msg"));
 						break;
@@ -472,7 +473,7 @@ public class PanelAlternativeFW extends AbstractSettingsPanel implements UsnaEve
 	public void update(EventType mesgType, Integer pos) {
 		if(mesgType == Devices.EventType.UPDATE || mesgType == Devices.EventType.SUBSTITUTE) {
 			final int localIndex = parentDlg.getLocalIndex(pos);
-			if(localIndex >= 0 && devicesFWData.get(localIndex) != null && tModel.getValueAt(localIndex, FWUpdateTable.COL_STATUS) != DevicesTable.ERROR_BULLET) {
+			if(localIndex >= 0 && devicesFWData.get(localIndex) != null && tModel.getValueAt(localIndex, FWAlternativeTable.COL_STATUS) != DevicesTable.ERROR_BULLET) {
 				final ShellyAbstractDevice device = parentDlg.getModel().get(pos);
 				ShellyAbstractDevice.Status newStatus = device.getStatus();
 
@@ -492,7 +493,7 @@ public class PanelAlternativeFW extends AbstractSettingsPanel implements UsnaEve
 						if(newStatus == Status.ON_LINE) {
 							exeService.submit(() -> {
 								try {
-									tModel.setValueAt(DevicesTable.UPDATING_BULLET, localIndex, FWUpdateTable.COL_STATUS);
+									tModel.setValueAt(DevicesTable.UPDATING_BULLET, localIndex, FWAlternativeTable.COL_STATUS);
 									Thread.sleep(Devices.MULTI_QUERY_DELAY);
 									fwInfo.fwModule = device.getFWManager();
 									tModel.setRow(localIndex, createTableRow(localIndex));
@@ -507,7 +508,7 @@ public class PanelAlternativeFW extends AbstractSettingsPanel implements UsnaEve
 								}
 							});
 						} else if(fwInfo.fwModule.upadating() == false) {
-							tModel.setValueAt(DevicesTable.getStatusIcon(device), localIndex, FWUpdateTable.COL_STATUS);
+							tModel.setValueAt(DevicesTable.getStatusIcon(device), localIndex, FWAlternativeTable.COL_STATUS);
 						}
 						fwInfo.status = newStatus;
 					}

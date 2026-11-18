@@ -5,7 +5,6 @@ import static it.usna.shellyscan.Main.LABELS;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Cursor;
-import java.awt.Desktop;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
@@ -58,6 +57,7 @@ import org.slf4j.LoggerFactory;
 
 import it.usna.shellyscan.Main;
 import it.usna.shellyscan.controller.UsnaAction;
+import it.usna.shellyscan.controller.UsnaOpenUrlAction;
 import it.usna.shellyscan.controller.UsnaTextAction;
 import it.usna.shellyscan.controller.UsnaToggleAction;
 import it.usna.shellyscan.model.device.ShellyAbstractDevice.LogMode;
@@ -520,11 +520,7 @@ public class ScriptFrame extends JFrame {
 			String close = LABELS.getString("dlgClose");
 			if(JOptionPane.showOptionDialog(this, LABELS.getString("dlgScriptEditorHelp"), LABELS.getString("dlgScriptEditorTitle"),
 					JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null, new Object[] {close, LABELS.getString("lblManual")}, close) == 1) {
-				try {
-					Desktop.getDesktop().browse(URI.create(LABELS.getString("dlgIDEManualUrl")));
-				} catch (IOException | UnsupportedOperationException ex) {
-					Msg.errorMsg(this, ex);
-				}
+				UsnaOpenUrlAction.openUrl(this, LABELS.getString("dlgIDEManualUrl"));
 			}
 		});
 		

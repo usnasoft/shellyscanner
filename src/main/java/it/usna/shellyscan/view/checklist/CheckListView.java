@@ -263,13 +263,7 @@ public class CheckListView extends JDialog implements UsnaEventListener<Devices.
 		Action browseAction = new UsnaSelectedAction(this, table, "action_web_name", "action_web_tooltip", null, "/images/Computer24.png", () -> {
 			return table.getSelectedRowCount() <= 8 || JOptionPane.showConfirmDialog(this, LABELS.getString("action_web_confirm"), LABELS.getString("action_web_name"),
 					JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE) == JOptionPane.OK_OPTION;
-		}, i -> {
-			try {
-				Desktop.getDesktop().browse(URI.create("http://" + getLocalDevice(i).getAddressAndPort().getRepresentation()));
-			} catch (IOException | UnsupportedOperationException e) {
-				Msg.errorMsg(this, e);
-			}
-		});
+		}, i -> UsnaOpenUrlAction.openUrl(this, "http://" + getLocalDevice(i).getAddressAndPort().getRepresentation()));
 
 		UsnaAction refreshAction = new UsnaAction(this, "labelRefresh", "labelRefresh", null, "/images/Refresh24.png");
 		refreshAction.setActionListener(e -> {

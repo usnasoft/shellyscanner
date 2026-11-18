@@ -3,10 +3,7 @@ package it.usna.shellyscan.view;
 import static it.usna.shellyscan.Main.LABELS;
 
 import java.awt.Component;
-import java.awt.Desktop;
 import java.awt.Window;
-import java.io.IOException;
-import java.net.URI;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -19,6 +16,7 @@ import javax.swing.text.html.HTMLDocument;
 
 import it.usna.shellyscan.Main;
 import it.usna.shellyscan.controller.UsnaAction;
+import it.usna.shellyscan.controller.UsnaOpenUrlAction;
 import it.usna.shellyscan.view.util.ApplicationUpdateCHK;
 
 public class DialogAbout {
@@ -31,15 +29,9 @@ public class DialogAbout {
 		ep.setEditable(false);
 		((HTMLDocument)ep.getDocument()).setBase(DialogAbout.class.getResource("/images/"));
 		ep.addHyperlinkListener(ev -> {
-			try {
-				if(ev.getEventType().equals(HyperlinkEvent.EventType.ACTIVATED)) {
-					if(Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
-						Desktop.getDesktop().browse(URI.create(ev.getURL().toString()));
-					} else {
-						JOptionPane.showMessageDialog(ep, ev.getURL(), "", JOptionPane.PLAIN_MESSAGE);
-					}
-				}
-			} catch (IOException ex) {/* cannot run the browser */}
+			if(ev.getEventType().equals(HyperlinkEvent.EventType.ACTIVATED)) {
+				UsnaOpenUrlAction.openUrl(ep, ev.getURL().toString());
+			}
 		});
 		
 		// JButton Check Updates
