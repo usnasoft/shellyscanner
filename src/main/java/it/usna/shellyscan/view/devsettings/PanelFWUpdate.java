@@ -411,31 +411,32 @@ public class PanelFWUpdate extends AbstractSettingsPanel implements UsnaEventLis
 		public void onMessage(JsonNode msg) {
 			try {
 				for(JsonNode event: msg.path("params").path("events")) {
-					String eventType = event.path("event").asString("");
 					String comp = event.path("component").asString("");
-					if(eventType.equals("ota_progress") && component.equals(comp)) { // dowloading
-						FirmwareManager fm = getFirmwareManager(index);
-						if(fm != null) {
-							fm.upadating(true);
+					if(component.equals(comp)) {
+						final String eventType = event.path("event").asString("");
+						if(eventType.equals("ota_progress")) { // dowloading
+							FirmwareManager fm = getFirmwareManager(index);
+							if(fm != null) {
+								fm.upadating(true);
+							}
+							int progress = event.path("progress_percent").asInt();
+							tModel.setValueAt(DevicesTable.UPDATING_BULLET, index, FWUpdateTable.COL_STATUS);
+							tModel.setValueAt(String.format(LABELS.getString("lbl_downloading"), progress), index, FWUpdateTable.COL_STABLE);
+							tModel.setValueAt("", index, FWUpdateTable.COL_BETA);
+							break;
+						} else if(eventType.equals("ota_success") || eventType.equals("scheduled_restart")) { // rebooting
+							tModel.setValueAt(DevicesTable.OFFLINE_BULLET, index, FWUpdateTable.COL_STATUS);
+							tModel.setValueAt(LABELS.getString("lbl_rebooting"), index, FWUpdateTable.COL_STABLE);
+							tModel.setValueAt("", index, FWUpdateTable.COL_BETA);
+							devicesFWData.get(index).rebootTime = System.currentTimeMillis();
+							break;
+						} else if(eventType.equals("ota_error")) {
+							tModel.setValueAt(DevicesTable.ERROR_BULLET, index, FWUpdateTable.COL_STATUS);
+							tModel.setValueAt(LABELS.getString("lbl_error"), index, FWUpdateTable.COL_STABLE);
+							tModel.setValueAt("", index, FWUpdateTable.COL_BETA);
+							LOG.error("ota_error: {}", event.path("msg").asString("no msg"));
+							break;
 						}
-						int progress = event.path("progress_percent").asInt();
-						tModel.setValueAt(DevicesTable.UPDATING_BULLET, index, FWUpdateTable.COL_STATUS);
-						tModel.setValueAt(String.format(LABELS.getString("lbl_downloading"), progress), index, FWUpdateTable.COL_STABLE);
-						tModel.setValueAt("", index, FWUpdateTable.COL_BETA);
-						break;
-					} else if((eventType.equals("ota_success") || eventType.equals("scheduled_restart")) && component.equals(comp)) { // rebooting
-						tModel.setValueAt(DevicesTable.OFFLINE_BULLET, index, FWUpdateTable.COL_STATUS);
-						tModel.setValueAt(LABELS.getString("lbl_rebooting"), index, FWUpdateTable.COL_STABLE);
-						tModel.setValueAt("", index, FWUpdateTable.COL_BETA);
-						devicesFWData.get(index).rebootTime = System.currentTimeMillis();
-						break;
-					} else if(eventType.equals("ota_error")/* && component.equals(comp)*/) {
-						tModel.setValueAt(DevicesTable.ERROR_BULLET, index, FWUpdateTable.COL_STATUS);
-						tModel.setValueAt(LABELS.getString("lbl_error"), index, FWUpdateTable.COL_STABLE);
-						tModel.setValueAt("", index, FWUpdateTable.COL_BETA);
-//						devicesFWData.get(index).rebootTime = System.currentTimeMillis(); // will stay on for a while
-						LOG.error("ota_error: {}", event.path("msg").asString("no msg"));
-						break;
 					}
 				}
 			} catch(Exception e) {

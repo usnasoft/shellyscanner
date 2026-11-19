@@ -79,7 +79,7 @@ public class FWUpdateTable extends ExTooltipTable {
 		JCheckBox editorComponent = (JCheckBox)super.prepareEditor(editor, row, column);
 		FirmwareManager fw = fwPanel.getFirmwareManager(convertRowIndexToModel(row));
 		if(fw != null) {
-			editorComponent.setText(FirmwareManager.getShortVersion(column == COL_STABLE ? fw.newStableBuild() : fw.newBetaBuild()));
+			editorComponent.setText(column == COL_STABLE ? fw.newStable() : fw.newBeta());
 		} else if(column == COL_STABLE) { // no info -> try update
 			editorComponent.setText(Main.LABELS.getString("labelUpdateToAny"));
 		}

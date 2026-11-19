@@ -18,7 +18,6 @@ import javax.swing.table.TableStringConverter;
 
 import it.usna.shellyscan.Main;
 import it.usna.shellyscan.model.device.g2.modules.FirmwareManagerG2;
-import it.usna.shellyscan.model.device.modules.FirmwareManager;
 import it.usna.shellyscan.view.DevicesTable;
 import it.usna.swing.table.ExTooltipTable;
 
@@ -78,7 +77,7 @@ public class FWAlternativeTable extends ExTooltipTable {
 		JCheckBox editorComponent = (JCheckBox)super.prepareEditor(editor, row, column);
 		FirmwareManagerG2 fw = fwPanel.getFirmwareManager(convertRowIndexToModel(row));
 		if(fw != null) {
-			editorComponent.setText(FirmwareManager.getShortVersion(column == COL_STABLE ? fw.altStableBuild() : fw.altBetaBuild()));
+			editorComponent.setText(column == COL_STABLE ? fw.altStable() : fw.altBeta());
 		} else if(column == COL_STABLE) { // no info -> try update
 			editorComponent.setText(Main.LABELS.getString("labelUpdateToAny"));
 		}
@@ -104,7 +103,7 @@ public class FWAlternativeTable extends ExTooltipTable {
 	
 	@Override
 	protected String getToolTipText(Object value, boolean cellTooSmall, int row, int col) {
-		if (value != null && (col == COL_DESC || col == COL_STABLE || col == COL_BETA)) {
+		if (value != null && (col == COL_STABLE || col == COL_BETA)) {
 			return cellValueAsString(value, row, col);
 		} else {
 			return super.getToolTipText(value, cellTooSmall, row, col);

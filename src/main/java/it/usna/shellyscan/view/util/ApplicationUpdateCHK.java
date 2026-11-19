@@ -2,10 +2,8 @@ package it.usna.shellyscan.view.util;
 
 import static it.usna.shellyscan.Main.LABELS;
 
-import java.awt.Desktop;
 import java.awt.Window;
 import java.io.IOException;
-import java.net.URI;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
