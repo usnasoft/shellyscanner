@@ -1,5 +1,7 @@
 package it.usna.shellyscan.model.device.modules;
 
+import java.util.List;
+
 /**
  * Manage the output state after a power on (power supply restored)
  */
@@ -12,7 +14,15 @@ public interface PowerOnStateManager {
 		MIX,			// different states on different channels
 		NOT_APPLICABLE
 	};
+	
+	/**
+	 * @return the list (devices with multiple channels)
+	 */
+	List<State> getValues();
 
+	/**
+	 * @return in case of multiple channels with different values return MIX; the value instead
+	 */
 	State getVal();
 
 	/**

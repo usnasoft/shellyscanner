@@ -31,6 +31,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import it.usna.shellyscan.view.util.ScannerProperties;
+import it.usna.swing.texteditor.SelectWordAction;
 import it.usna.swing.texteditor.SyntaxEditor;
 
 public class EditorPanel extends SyntaxEditor {
@@ -170,6 +171,8 @@ public class EditorPanel extends SyntaxEditor {
 				}
 			});
 		});
+		
+		getActionMap().put("select-word", new SelectWordAction(SelectWordAction.SEPARATORS));
 	}
 
 	private static SimpleAttributeSet baseStyle() {

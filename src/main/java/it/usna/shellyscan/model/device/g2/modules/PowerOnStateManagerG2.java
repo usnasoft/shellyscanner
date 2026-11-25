@@ -2,6 +2,7 @@ package it.usna.shellyscan.model.device.g2.modules;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map.Entry;
 
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
@@ -17,13 +18,14 @@ public class PowerOnStateManagerG2 implements PowerOnStateManager {
 			{"light:", "Light.SetConfig"},
 			{"rgb:", "RGB.SetConfig"},
 			{"rgbw:", "RGBW.SetConfig"},
-			{"cct:", "CCT.SetConfig"}};
+			{"cct:", "CCT.SetConfig"},
+			{"rgbcct:", "RGBCCT.SetConfig"}};
 
 	private final AbstractG2Device parent;
 	private State state = State.NOT_APPLICABLE;
 	private final ArrayList<Channel> channels = new ArrayList<>();
 
-	private record Channel(String method, int id, boolean isSwitch) {}
+	private record Channel(String method, int id, boolean isSwitch, State state) {}
 
 	public PowerOnStateManagerG2(AbstractG2Device d) throws IOException {
 		this(d, d.getJSON("/rpc/Shelly.GetConfig"));
@@ -39,8 +41,8 @@ public class PowerOnStateManagerG2 implements PowerOnStateManager {
 					if(initial.isMissingNode() == false) {
 						try {
 							final int id = Integer.parseInt(name.substring(comp[0].length()));
-							channels.add(new Channel(comp[1], id, comp[0].equals("switch:")));
 							State current = toState(initial.asString(""));
+							channels.add(new Channel(comp[1], id, comp[0].equals("switch:"), current));
 							if(state == State.NOT_APPLICABLE) {
 								state = current;
 							} else if(state != current) {
@@ -64,6 +66,12 @@ public class PowerOnStateManagerG2 implements PowerOnStateManager {
 		};
 	}
 
+	@Override
+	public List<State> getValues() {
+		return channels.stream().map(ch -> ch.state).toList();
+	}
+
+	
 	@Override
 	public State getVal() {
 		return state;

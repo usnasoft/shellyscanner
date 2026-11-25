@@ -691,10 +691,20 @@ public abstract class AbstractG2Device extends ShellyAbstractDevice {
 		outDevice.remove("fw_id");
 		outDevice.remove("addon_type");
 		outDevice.remove("profile");
-		outConfig.putObject("config").set("device", outDevice).set("sntp", sys.get("sntp")).set("sntp", sys.get("sntp")).set("debug", sys.get("debug"));
+		ObjectNode configNode = outConfig.putObject("config");
+		configNode.set("device", outDevice).set("sntp", sys.get("sntp")).set("sntp", sys.get("sntp")).set("debug", sys.get("debug"));
+		JsonNode iuData = sys.get("ui_data");
+		if(iuData != null) {
+			((ObjectNode)iuData).remove("device_revision");
+			configNode.set("ui_data", iuData);
+		}
+		JsonNode rpcudpData = sys.get("rpc_udp");
+		if(rpcudpData != null) {
+			configNode.set("rpc_udp", rpcudpData);
+		}
 		TimeUnit.MILLISECONDS.sleep(delay);
 		errors.add(postCommand("Sys.SetConfig", outConfig));
-		
+
 		JsonNode matter = config.get("matter"); // some gen3 & gen4+
 		if(matter != null) {
 			outConfig.set("config", matter/*.deepCopy()*/);

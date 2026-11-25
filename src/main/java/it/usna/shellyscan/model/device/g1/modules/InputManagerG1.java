@@ -2,6 +2,7 @@ package it.usna.shellyscan.model.device.g1.modules;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 import it.usna.shellyscan.model.device.g1.AbstractG1Device;
@@ -34,7 +35,7 @@ public class InputManagerG1 implements InputManager {
 	}
 
 	/**
-	 *  use this constructor if "settings" is known in order to decrease the device effort
+	 * Use this constructor if "settings" is known in order to decrease the device effort
 	 * @param d the device
 	 * @param settings JsonNode configuration node
 	 */
@@ -72,6 +73,11 @@ public class InputManagerG1 implements InputManager {
 	@Override
 	public ResetMode getResetMode() {
 		return resetMode;
+	}
+	
+	@Override
+	public List<ResetMode> getResetModes() {
+		return List.of(resetMode);
 	}
 
 	@Override

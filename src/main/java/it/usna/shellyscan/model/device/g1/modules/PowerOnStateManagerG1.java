@@ -2,6 +2,7 @@ package it.usna.shellyscan.model.device.g1.modules;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 
 import it.usna.shellyscan.model.device.g1.AbstractG1Device;
 import it.usna.shellyscan.model.device.modules.PowerOnStateManager;
@@ -15,7 +16,7 @@ public class PowerOnStateManagerG1 implements PowerOnStateManager {
 	private State state = State.NOT_APPLICABLE;
 	private final ArrayList<Channel> channels = new ArrayList<>();
 
-	private record Channel(String endpoint, boolean isRelay) {}
+	private record Channel(String endpoint, boolean isRelay, State state) {}
 
 	public PowerOnStateManagerG1(AbstractG1Device d) throws IOException {
 		this(d, d.getJSON("/settings"));
@@ -45,8 +46,8 @@ public class PowerOnStateManagerG1 implements PowerOnStateManager {
 	private void add(JsonNode channel, String endpoint, boolean isRelay) {
 		JsonNode def = channel.path("default_state");
 		if(def.isMissingNode() == false) {
-			channels.add(new Channel(endpoint, isRelay));
 			State current = toState(def.asString(""));
+			channels.add(new Channel(endpoint, isRelay, current));
 			if(state == State.NOT_APPLICABLE) {
 				state = current;
 			} else if(state != current) {
@@ -63,6 +64,11 @@ public class PowerOnStateManagerG1 implements PowerOnStateManager {
 			case "switch" -> State.MATCH_INPUT;
 			default -> State.MIX; // unknown value: no global selection
 		};
+	}
+	
+	@Override
+	public List<State> getValues() {
+		return channels.stream().map(ch -> ch.state).toList();
 	}
 
 	@Override

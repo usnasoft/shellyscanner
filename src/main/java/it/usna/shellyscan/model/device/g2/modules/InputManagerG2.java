@@ -3,10 +3,11 @@ package it.usna.shellyscan.model.device.g2.modules;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.concurrent.TimeUnit;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import it.usna.shellyscan.model.Devices;
 import it.usna.shellyscan.model.device.g2.AbstractG2Device;
@@ -25,10 +26,13 @@ import tools.jackson.databind.JsonNode;
  * Covers are not managed (different in_mode semantics).
  * Channels in a device specific mode (e.g. "cycle", "activate") are never changed.
  */
+
+// todo unificare "switches" (Map<Integer, String>) e "lights" (ArrayList<Dimmer>)
 public class InputManagerG2 implements InputManager {
 	private final AbstractG2Device parent;
 	private ResetMode resetMode = ResetMode.NOT_APPLICABLE;
-	private ArrayList<Integer> ids = new ArrayList<>();
+	private ArrayList<InputReset> inputResetList = new ArrayList<>();
+	private record InputReset(ResetMode mode, int id) {}
 
 	/** basic relay modes: any other in_mode (e.g. "cycle", "activate") is device specific and is kept */
 	private static final Set<String> SWITCH_BASIC_MODES = Set.of("momentary", "follow", "flip", "detached");
@@ -36,26 +40,29 @@ public class InputManagerG2 implements InputManager {
 	private static final Set<String> LIGHT_BASIC_MODES = Set.of("dim", "dual_dim", "follow", "flip", "detached");
 
 	private InputMode typeMode = InputMode.NOT_APPLICABLE;
-	private final Map<Integer, String> switches = new HashMap<>(); // id -> current in_mode
-	private final ArrayList<Dimmer> lights = new ArrayList<>();
+//	private final Map<Integer, String> switches = new HashMap<>(); // id -> current in_mode
+	private final ArrayList<Switch> switches = new ArrayList<>(); // id -> current in_mode
+	private final ArrayList<Output> lights = new ArrayList<>();
 	private final Map<Integer, String> inputTypes = new HashMap<>(); // id -> "button" | "switch"
-	private final ArrayList<Integer> lightInputIds = new ArrayList<>();
+//	private final ArrayList<Integer> lightInputIds = new ArrayList<>();
 
 	/** dimmable components: component prefix and "SetConfig" method */
-	private static final String[][] DIMMERS = {
+	private static final String[][] OUTPUTS_TYPES = {
 			{"light:", "Light.SetConfig"},
 			{"rgb:", "RGB.SetConfig"},
 			{"rgbw:", "RGBW.SetConfig"},
-			{"cct:", "CCT.SetConfig"}};
+			{"cct:", "CCT.SetConfig"},
+			/*{"rgbcct:", "RGBCCT.SetConfig"}*/};
 
-	private record Dimmer(String method, int id, String inMode) {}
+	private record Switch(int id, String inMode) {}
+	private record Output(String method, int id, String inMode) {}
 
 	public InputManagerG2(AbstractG2Device d) throws IOException {
 		this(d, d.getJSON("/rpc/Shelly.GetConfig"));
 	}
 
 	/**
-	 *  use this constructor if "settings" is known in order to decrease the device effort
+	 * Use this constructor if "settings" is known in order to decrease the device effort
 	 * @param d the device
 	 * @param settings JsonNode configuration node
 	 */
@@ -63,67 +70,54 @@ public class InputManagerG2 implements InputManager {
 		this.parent = d;
 		ResetMode currentMode;
 		for(Entry<String, JsonNode> node: config.properties()) {
-			String name;
+			String name = node.getKey();
+			// factory reset by input & input types (button/switch)
 			int id;
-			if((name = node.getKey()).startsWith("input:") && (id = Integer.parseInt(name.substring(6))) < 100) {
+			if(name.startsWith("input:") && (id = Integer.parseInt(name.substring(6))) < 100) {
 				JsonNode reset = node.getValue().path("factory_reset");
 				if(reset.isMissingNode()) {
 					currentMode = ResetMode.NOT_APPLICABLE;
 				} else if(reset.booleanValue(false)) {
 					currentMode = ResetMode.TRUE;
-					ids.add(id);
 				} else {
 					currentMode = ResetMode.FALSE;
-					ids.add(id);
 				}
-				if(resetMode == ResetMode.TRUE && currentMode == ResetMode.FALSE || resetMode == ResetMode.FALSE && currentMode == ResetMode.TRUE) {
-					resetMode = ResetMode.MIX;
-					break;
-				} else if(currentMode != ResetMode.NOT_APPLICABLE) {
-					resetMode = currentMode;
-				}
-			}
-		}
+				inputResetList.add(new InputReset(currentMode, id));
 
-		for(Entry<String, JsonNode> node: config.properties()) {
-			final String name = node.getKey();
-			if(name.startsWith("input:")) {
+				// global reset mode
+				if(resetMode == ResetMode.NOT_APPLICABLE) {
+					resetMode = currentMode;
+				} else if(resetMode != currentMode) {
+					resetMode = ResetMode.MIX;
+				}
+				
+				// input types button/switch
 				final String type = node.getValue().path("type").asString("");
-				final int id = parseId(name, 6);
-				if(id >= 0 && id < 100 && (type.equals("button") || type.equals("switch"))) {
+				if(type.equals("button") || type.equals("switch")) {
 					inputTypes.put(id, type);
 				}
 			}
-		}
-		for(Entry<String, JsonNode> node: config.properties()) {
-			final String name = node.getKey();
+			
+			// input mode (momentary, follow, flip, ...)
 			final JsonNode inMode = node.getValue().path("in_mode");
-			if(inMode.isMissingNode()) {
-				continue;
-			}
-			if(name.startsWith("switch:")) {
-				final int id = parseId(name, 7);
-				if(id >= 0 && inputTypes.containsKey(id)) {
-					switches.put(id, inMode.asString(""));
-					merge(toSwitchMode(inputTypes.get(id), inMode.asString("")));
-				}
-			} else {
-				for(String[] dim: DIMMERS) {
-					if(name.startsWith(dim[0])) {
-						final int id = parseId(name, dim[0].length());
-						if(id >= 0) {
-							lights.add(new Dimmer(dim[1], id, inMode.asString("")));
-							merge(toLightMode(inMode.asString("")));
-						}
-						break;
+			if(inMode.isMissingNode() == false) {
+				if(name.startsWith("switch:")) {
+					id = parseId(name, 7);
+					if(id >= 0 && inputTypes.containsKey(id)) {
+						switches.add(new Switch(id, inMode.asString("")));
+						merge(toInModeMode(inMode.asString("")));
 					}
-				}
-			}
-		}
-		if(lights.size() > 0) {
-			for(Integer inId: inputTypes.keySet()) {
-				if(switches.containsKey(inId) == false) {
-					lightInputIds.add(inId);
+				} else {
+					for(String[] dim: OUTPUTS_TYPES) {
+						if(name.startsWith(dim[0])) {
+							id = parseId(name, dim[0].length());
+							if(id >= 0) {
+								lights.add(new Output(dim[1], id, inMode.asString("")));
+								merge(toInModeMode(inMode.asString("")));
+							}
+							break;
+						}
+					}
 				}
 			}
 		}
@@ -132,6 +126,11 @@ public class InputManagerG2 implements InputManager {
 	@Override
 	public ResetMode getResetMode() {
 		return resetMode;
+	}
+	
+	@Override
+	public List<ResetMode> getResetModes() {
+		return inputResetList.stream().map(ir -> ir.mode).toList();
 	}
 
 	@Override
@@ -147,18 +146,18 @@ public class InputManagerG2 implements InputManager {
 
 	@Override
 	public String enableReset(boolean enable) {
-		if(resetMode == ResetMode.NOT_APPLICABLE) {
-			return "notApplicable";
-		} else {
-			String msg = null;
-			for(int id: ids) {
-				String localMsg = parent.postCommand("Input.SetConfig", "{\"id\":" + id + ",\"config\":{\"factory_reset\":" + enable + "}");
+		String msg = null;
+		for(InputReset ir: inputResetList) {
+			if(ir.mode != ResetMode.NOT_APPLICABLE) {
+				String localMsg = parent.postCommand("Input.SetConfig", "{\"id\":" + ir.id + ",\"config\":{\"factory_reset\":" + enable + "}");
 				if(localMsg != null) {
 					msg = localMsg;
 				}
+			} else {
+				msg = "notApplicable";
 			}
-			return msg;
 		}
+		return msg;
 	}
 
 	//***** Input mode *****
@@ -171,6 +170,7 @@ public class InputManagerG2 implements InputManager {
 	}
 
 	private void merge(InputMode current) {
+		// todo add mode to array
 		if(typeMode == InputMode.NOT_APPLICABLE) {
 			typeMode = current;
 		} else if(typeMode != current) {
@@ -178,22 +178,9 @@ public class InputManagerG2 implements InputManager {
 		}
 	}
 
-	private static InputMode toSwitchMode(String inputType, String inMode) {
-		if(inMode.equals("detached")) {
-			return InputMode.DETACHED;
-		} else if(inputType.equals("button") && inMode.equals("momentary")) {
-			return InputMode.BUTTON;
-		} else if(inputType.equals("switch") && inMode.equals("flip")) {
-			return InputMode.SWITCH_FLIP;
-		} else if(inputType.equals("switch") && inMode.equals("follow")) {
-			return InputMode.SWITCH_FOLLOW;
-		} else {
-			return InputMode.OTHER;
-		}
-	}
-
-	private static InputMode toLightMode(String inMode) {
+	private static InputMode toInModeMode(String inMode) {
 		return switch(inMode) {
+		case "momentary" -> InputMode.BUTTON; // "switch:" specific
 		case "dim", "dual_dim" -> InputMode.BUTTON; // one or two buttons: not managed here
 		case "flip" -> InputMode.SWITCH_FLIP;
 		case "follow" -> InputMode.SWITCH_FOLLOW;
@@ -221,9 +208,6 @@ public class InputManagerG2 implements InputManager {
 		case DETACHED -> null; // keep current input type
 		default -> throw new IllegalArgumentException(target.name());
 		};
-		String msg = null;
-		boolean applied = false;
-
 		// relays
 		final String switchInMode = switch(target) {
 		case BUTTON -> "momentary";
@@ -231,12 +215,15 @@ public class InputManagerG2 implements InputManager {
 		case SWITCH_FOLLOW -> "follow";
 		default -> "detached";
 		};
-		for(Map.Entry<Integer, String> sw: switches.entrySet()) {
-			if(SWITCH_BASIC_MODES.contains(sw.getValue()) == false) {
+		String msg = null;
+		boolean applied = false;
+		//for(Map.Entry<Integer, String> sw: switches.entrySet()) {
+		for(Switch sw: switches) {
+			if(SWITCH_BASIC_MODES.contains(sw.inMode) == false) {
 				continue; // device specific mode (e.g. "cycle"): keep it
 			}
 			applied = true;
-			final int id = sw.getKey();
+			final int id = sw.id;
 			String localMsg = setInputType(id, inputType);
 			if(localMsg == null) { // do not change in_mode if input type change failed
 				localMsg = parent.postCommand("Switch.SetConfig", "{\"id\":" + id + ",\"config\":{\"in_mode\":\"" + switchInMode + "\"}}");
@@ -250,7 +237,8 @@ public class InputManagerG2 implements InputManager {
 		if(lights.size() > 0 && lights.stream().allMatch(l -> LIGHT_BASIC_MODES.contains(l.inMode()))) {
 			applied = true;
 			boolean inputsOk = true;
-			for(int id: lightInputIds) {
+//			for(int id: lightInputIds) {
+			for(int id: inputTypes.keySet()) {
 				String localMsg = setInputType(id, inputType);
 				if(localMsg != null) {
 					msg = localMsg;
@@ -258,7 +246,7 @@ public class InputManagerG2 implements InputManager {
 				}
 			}
 			if(inputsOk) { // do not change in_mode if an input type change failed
-				for(Dimmer light: lights) {
+				for(Output light: lights) {
 					final String current = light.inMode();
 					final String lightInMode = switch(target) {
 					// keep one/two buttons mode if already a button mode, otherwise one button (rgb, rgbw: "dim" only)

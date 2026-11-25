@@ -1,5 +1,7 @@
 package it.usna.shellyscan.model.device.modules;
 
+import java.util.List;
+
 /**
  * Inputs configurations interface.
  * Currently manages "factory_reset_from_switch" / "factory_reset"
@@ -10,7 +12,16 @@ public interface InputManager {
 	// Reset
 	enum ResetMode {TRUE, FALSE, NOT_APPLICABLE, MIX};
 	
+	/**
+	 * @return in case of multiple channels with different values return MIX; the value instead
+	 */
 	ResetMode getResetMode();
+	
+	/**
+	 * @return the list (devices with multiple channels; gen1 devices always have a single value)
+	 */
+	List<ResetMode> getResetModes();
+	
 	
 	Boolean getResetModeAsBoolean();
 	
@@ -33,6 +44,8 @@ public interface InputManager {
 	};
 
 	InputMode getInputMode();
+	
+//	List<InputMode> getInputModes();
 
 	/**
 	 * @return null if ok or error description in case of error

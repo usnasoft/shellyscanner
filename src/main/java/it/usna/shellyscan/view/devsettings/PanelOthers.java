@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
@@ -45,6 +46,7 @@ import it.usna.shellyscan.model.device.g2.modules.InputManagerG2;
 import it.usna.shellyscan.model.device.g2.modules.PowerOnStateManagerG2;
 import it.usna.shellyscan.model.device.g2.modules.TimeAndLocationManagerG2;
 import it.usna.shellyscan.model.device.modules.InputManager;
+import it.usna.shellyscan.model.device.modules.InputManager.InputMode;
 import it.usna.shellyscan.model.device.modules.PowerOnStateManager;
 import it.usna.shellyscan.model.device.modules.TimeAndLocationManager;
 import it.usna.shellyscan.view.util.Msg;
@@ -132,7 +134,7 @@ public class PanelOthers extends AbstractSettingsPanel {
 		radioCloudDisable = new JRadioButton(LABELS.getString("lblDisabled"));
 		contentPanel.add(optionsPanel(radioCloudGroup, radioCloudEnable, radioCloudDisable), optionsConstraints(1));
 
-		infoCloud = infoButton(parent, LABELS.getString("dlgCloudConf"), data -> (data.device.getCloudEnabled()) ? " " + LABELS.getString("true_yn") : " " + LABELS.getString("false_yn"));
+		infoCloud = infoButton(parent, LABELS.getString("dlgCloudConf"), data -> (data.device.getCloudEnabled()) ? LABELS.getString("true_yn") : LABELS.getString("false_yn"));
 		contentPanel.add(infoCloud, infoButtonConstraints(1));
 
 		rdbtnInReset = new JRadioButton(LABELS.getString("dlgResetConf"));
@@ -148,8 +150,16 @@ public class PanelOthers extends AbstractSettingsPanel {
 		contentPanel.add(optionsPanel(radioResetGroup, radioResetEnable, radioResetDisable), optionsConstraints(2));
 		
 		infoReset = infoButton(parent, LABELS.getString("dlgResetConf"), data -> {
-			if(data.inputManager != null && data.inputManager.getResetModeAsBoolean() != null) {
-				return (data.inputManager.getResetModeAsBoolean() ) ? " " + LABELS.getString("true_yn") : " " + LABELS.getString("false_yn");
+			if(data.inputManager != null && data.inputManager.getResetModes().size() > 0) {
+				return data.inputManager.getResetModes().stream().map(status -> {
+					if(status == InputManager.ResetMode.TRUE) {
+						return LABELS.getString("true_yn");
+					} else if(status == InputManager.ResetMode.FALSE) {
+						return LABELS.getString("false_yn");
+					} else {
+						return "-";
+					}
+				}).collect(Collectors.joining(" "));
 			} else {
 				return " -";
 			}
@@ -166,21 +176,16 @@ public class PanelOthers extends AbstractSettingsPanel {
 		gbc_rdbtnInMode.gridy = 3;
 		contentPanel.add(rdbtnInMode, gbc_rdbtnInMode);
 		
-		radioInModeButton = new JRadioButton(LABELS.getString("dlgInputModeButton"));
-		radioInModeFlip = new JRadioButton(LABELS.getString("dlgInputModeFlip"));
-		radioInModeFollow = new JRadioButton(LABELS.getString("dlgInputModeFollow"));
-		radioInModeDetached = new JRadioButton(LABELS.getString("dlgInputModeDetached"));
+		radioInModeButton = new JRadioButton(LABELS.getString("dlgInputMode-BUTTON"));
+		radioInModeFlip = new JRadioButton(LABELS.getString("dlgInputMode-SWITCH_FLIP"));
+		radioInModeFollow = new JRadioButton(LABELS.getString("dlgInputMode-SWITCH_FOLLOW"));
+		radioInModeDetached = new JRadioButton(LABELS.getString("dlgInputMode-DETACHED"));
 		contentPanel.add(optionsPanel(radioInModeGroup, radioInModeButton, radioInModeFlip, radioInModeFollow, radioInModeDetached), optionsConstraints(3));
 		
-		infoInMode = infoButton(parent, LABELS.getString("dlgResetConf"), data -> {
+		infoInMode = infoButton(parent, LABELS.getString("dlgInputModeConf"), data -> {
 			if(data.inputManager != null) {
-				return switch(data.inputManager.getInputMode()) {
-				case BUTTON -> LABELS.getString("dlgInputModeButton");
-				case SWITCH_FLIP -> LABELS.getString("dlgInputModeFlip");
-				case SWITCH_FOLLOW -> LABELS.getString("dlgInputModeFollow");
-				case DETACHED -> LABELS.getString("dlgInputModeDetached");
-				default -> "-"; // OTHER, MIX, NOT_APPLICABLE
-				};
+				InputMode mode = data.inputManager.getInputMode();
+				return LABELS.containsKey("dlgInputMode-" + mode) ? LABELS.getString("dlgInputMode-" + mode) : "-";
 			} else {
 				return "-";
 			}
@@ -197,21 +202,15 @@ public class PanelOthers extends AbstractSettingsPanel {
 		gbc_rdbtnPowerOn.gridy = 4;
 		contentPanel.add(rdbtnPowerOn, gbc_rdbtnPowerOn);
 		
-		radioPowerOnOff = new JRadioButton(LABELS.getString("dlgPowerOnOff"));
-		radioPowerOnOn = new JRadioButton(LABELS.getString("dlgPowerOnOn"));
-		radioPowerOnLast = new JRadioButton(LABELS.getString("dlgPowerOnLast"));
-		radioPowerOnMatch = new JRadioButton(LABELS.getString("dlgPowerOnMatch"));
+		radioPowerOnOff = new JRadioButton(LABELS.getString("dlgPowerOn-OFF"));
+		radioPowerOnOn = new JRadioButton(LABELS.getString("dlgPowerOn-ON"));
+		radioPowerOnLast = new JRadioButton(LABELS.getString("dlgPowerOn-RESTORE_LAST"));
+		radioPowerOnMatch = new JRadioButton(LABELS.getString("dlgPowerOn-MATCH_INPUT"));
 		contentPanel.add(optionsPanel(radioPowerOnGroup, radioPowerOnOff, radioPowerOnOn, radioPowerOnLast, radioPowerOnMatch), optionsConstraints(4));
-		
-		infoPowerOn = infoButton(parent, LABELS.getString("dlgResetConf"), data -> {
-			if(data.powerOn != null) {
-				return switch(data.powerOn.getVal()) {
-				case OFF -> LABELS.getString("dlgPowerOnOff");
-				case ON -> LABELS.getString("dlgPowerOnOn");
-				case RESTORE_LAST -> LABELS.getString("dlgPowerOnLast");
-				case MATCH_INPUT -> LABELS.getString("dlgPowerOnMatch");
-				default -> "-"; // MIX, NOT_APPLICABLE
-				};
+
+		infoPowerOn = infoButton(parent, LABELS.getString("dlgPowerOnConf"), data -> {
+			if(data.powerOn != null && data.powerOn.getValues().size() > 0) {
+				return data.powerOn.getValues().stream().map(status -> LABELS.containsKey("dlgPowerOn-" + status) ? LABELS.getString("dlgPowerOn-" + status) : " ").collect(Collectors.joining(" - "));
 			} else {
 				return "-";
 			}

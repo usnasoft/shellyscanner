@@ -474,6 +474,10 @@ new status bar
 application settings: login: ask credentials (-nopwd)
 device settings: others: power on, switch mode - info
 device settings: devices selection (selected devices - on the main table - are bold)
+device settings: new tab: alternative FW
+restore: added ui_data, rpc_udp
+ide: word selection (double click)
+
 
 Plug C G4 ha BLU Motion ZB come BTHome ma non gateway -> doppio tab anche qui?
 
